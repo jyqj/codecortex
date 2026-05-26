@@ -1,5 +1,6 @@
 pub mod alloc_stats;
 pub mod broker_patterns;
+pub mod c_cpp;
 pub mod chunker;
 pub mod framework;
 pub mod generic;
@@ -27,6 +28,8 @@ pub struct ParserRegistry {
     rust: rust::RustParser,
     go: go::GoParser,
     java: java::JavaParser,
+    c_parser: c_cpp::CCppParser,
+    cpp_parser: c_cpp::CCppParser,
     // Spec-driven parsers for languages with LangSpec but no tree-sitter grammar.
     spec_csharp: SpecDrivenParser,
     spec_php: SpecDrivenParser,
@@ -45,6 +48,8 @@ impl ParserRegistry {
             rust: rust::RustParser::new(),
             go: go::GoParser::new(),
             java: java::JavaParser::new(),
+            c_parser: c_cpp::CCppParser::new(Language::C),
+            cpp_parser: c_cpp::CCppParser::new(Language::Cpp),
             spec_csharp: SpecDrivenParser::new(&lang_spec::CSHARP_SPEC),
             spec_php: SpecDrivenParser::new(&lang_spec::PHP_SPEC),
             spec_ruby: SpecDrivenParser::new(&lang_spec::RUBY_SPEC),
@@ -103,6 +108,14 @@ impl ParserRegistry {
             }
             Language::Java => {
                 self.java
+                    .parse_with_timeout(file_path, content, language, timeout_micros)
+            }
+            Language::C => {
+                self.c_parser
+                    .parse_with_timeout(file_path, content, language, timeout_micros)
+            }
+            Language::Cpp => {
+                self.cpp_parser
                     .parse_with_timeout(file_path, content, language, timeout_micros)
             }
             // Spec-driven parsers: Heuristic tier, better than Generic fallback.

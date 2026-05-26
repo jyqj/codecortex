@@ -61,6 +61,8 @@ pub enum Language {
     Ruby,
     Swift,
     Kotlin,
+    C,
+    Cpp,
     Unknown,
 }
 
@@ -83,6 +85,8 @@ impl Language {
             "rb" | "rake" => Self::Ruby,
             "swift" => Self::Swift,
             "kt" | "kts" => Self::Kotlin,
+            "c" => Self::C,
+            "cpp" | "cc" | "cxx" | "h" | "hpp" | "hxx" => Self::Cpp,
             _ => Self::Unknown,
         }
     }
@@ -105,6 +109,8 @@ impl Language {
             Self::Ruby => "ruby",
             Self::Swift => "swift",
             Self::Kotlin => "kotlin",
+            Self::C => "c",
+            Self::Cpp => "cpp",
             Self::Unknown => "unknown",
         }
     }
@@ -130,6 +136,8 @@ impl Language {
             "ruby" | "rb" => Self::Ruby,
             "swift" => Self::Swift,
             "kotlin" | "kt" => Self::Kotlin,
+            "c" => Self::C,
+            "cpp" | "c++" | "cxx" => Self::Cpp,
             _ => Self::Unknown,
         }
     }

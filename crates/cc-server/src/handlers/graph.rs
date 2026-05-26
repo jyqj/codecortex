@@ -1,0 +1,565 @@
+//! Graph domain handlers: graph queries, trace paths, symbol refs, caller/callee graphs,
+//! dependents, dead code, references, and route handlers.
+
+use crate::engine::CodeIndex;
+use std::sync::Arc;
+use std::sync::Mutex;
+
+/// Execute a graph query (Cypher with fallback to legacy GraphQueryEngine).
+pub fn graph_query(
+    runtime: Arc<Mutex<CodeIndex>>,
+    query: &str,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let results = rt.graph_query(query).map_err(|e| e.to_string())?;
+    serde_json::to_value(results).map_err(|e| e.to_string())
+}
+
+/// Trace call path between two symbols.
+pub fn trace_path(
+    runtime: Arc<Mutex<CodeIndex>>,
+    from: &str,
+    to: &str,
+    max_depth: usize,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let paths = rt
+        .trace_path(from, to, max_depth)
+        .map_err(|e| e.to_string())?;
+    serde_json::to_value(paths).map_err(|e| e.to_string())
+}
+
+/// Find references to a symbol.
+pub fn symbol_refs(
+    runtime: Arc<Mutex<CodeIndex>>,
+    symbol: &str,
+    limit: usize,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let refs = rt.symbol_refs(symbol, limit).map_err(|e| e.to_string())?;
+    serde_json::to_value(refs).map_err(|e| e.to_string())
+}
+
+pub fn list_unresolved_refs(
+    runtime: Arc<Mutex<CodeIndex>>,
+    limit: usize,
+    file_path: Option<&str>,
+    kind: Option<&str>,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    rt.list_unresolved_refs(limit, file_path, kind)
+        .map_err(|e| e.to_string())
+}
+
+/// Find tests impacted by the given set of files.
+pub fn find_impacted_tests(
+    runtime: Arc<Mutex<CodeIndex>>,
+    files: &[String],
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let tests = rt.find_impacted_tests(files).map_err(|e| e.to_string())?;
+    serde_json::to_value(tests).map_err(|e| e.to_string())
+}
+
+// ── New handlers ────────────────────────────────────────────────────
+
+/// Get files that depend on (import) the given file, including transitive dependents.
+///
+/// Extracts: `file_path` (required).
+/// Uses a reverse-imports Cypher query to find direct importers, then a second
+/// pass for 2-hop transitive dependents.
+pub fn get_dependents(
+    runtime: Arc<Mutex<CodeIndex>>,
+    params: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let file_path = params
+        .get("file_path")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "missing required parameter: file_path".to_string())?;
+
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    // Query direct dependents via parameterized SQL on imports table
+    let rows = db
+        .query_json(
+            "SELECT DISTINCT file_path FROM imports WHERE resolved_path = ?1 LIMIT 200",
+            &[file_path.to_string()],
+        )
+        .map_err(|e| e.to_string())?;
+
+    // Collect unique direct dependents
+    let mut dependents: Vec<String> = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    for row in &rows {
+        if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
+            if fp != file_path && seen.insert(fp.to_string()) {
+                dependents.push(fp.to_string());
+            }
+        }
+    }
+
+    // 2-hop: find importers of the direct dependents
+    let mut transitive: Vec<String> = Vec::new();
+    for dep in &dependents {
+        let rows2 = db
+            .query_json(
+                "SELECT DISTINCT file_path FROM imports WHERE resolved_path = ?1 LIMIT 100",
+                &[dep.clone()],
+            )
+            .unwrap_or_default();
+        for row in &rows2 {
+            if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
+                if fp != file_path && seen.insert(fp.to_string()) {
+                    transitive.push(fp.to_string());
+                }
+            }
+        }
+    }
+
+    dependents.extend(transitive);
+    dependents.sort();
+
+    Ok(serde_json::json!({
+        "file_path": file_path,
+        "dependents": dependents,
+        "count": dependents.len(),
+    }))
+}
+
+/// Find symbols that appear to be dead code (no incoming callers or references).
+///
+/// Extracts: `scope` (optional file_path prefix filter).
+/// Queries all symbols, then checks for incoming call edges and references.
+pub fn find_dead_code(
+    runtime: Arc<Mutex<CodeIndex>>,
+    params: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let scope = params.get("scope").and_then(|v| v.as_str());
+
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    // Fetch all symbols via parameterized SQL
+    let all_symbols = if let Some(prefix) = scope {
+        let pattern = format!("%{}%", prefix);
+        db.query_json(
+            "SELECT name, symbol_uid, file_path, kind FROM symbols \
+             WHERE file_path LIKE ?1 LIMIT 2000",
+            &[pattern],
+        )
+        .map_err(|e| e.to_string())?
+    } else {
+        db.query_json(
+            "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT 2000",
+            &[],
+        )
+        .map_err(|e| e.to_string())?
+    };
+
+    // Fetch all call edges to build a set of UIDs that have callers
+    let edge_rows = db
+        .query_json(
+            "SELECT DISTINCT callee_symbol_uid FROM call_edges \
+             WHERE callee_symbol_uid IS NOT NULL LIMIT 10000",
+            &[],
+        )
+        .unwrap_or_default();
+    let mut has_callers = std::collections::HashSet::new();
+    for row in &edge_rows {
+        if let Some(uid) = row.get("callee_symbol_uid").and_then(|v| v.as_str()) {
+            has_callers.insert(uid.to_string());
+        }
+    }
+
+    let excluded_names = ["main", "__init__", "__main__", "setup", "configure"];
+    let excluded_prefixes = ["test_", "Test"];
+
+    let mut dead_items: Vec<serde_json::Value> = Vec::new();
+
+    for row in &all_symbols {
+        let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
+        let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
+        let file_path = row.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
+        let kind = row.get("kind").and_then(|v| v.as_str()).unwrap_or("");
+
+        if uid.is_empty() || name.is_empty() {
+            continue;
+        }
+
+        // Scope filter
+        if let Some(prefix) = scope {
+            if !file_path.starts_with(prefix) {
+                continue;
+            }
+        }
+
+        // Exclusions
+        if excluded_names.contains(&name) {
+            continue;
+        }
+        if excluded_prefixes.iter().any(|p| name.starts_with(p)) {
+            continue;
+        }
+
+        // Check if symbol has callers
+        if !has_callers.contains(uid) {
+            // Also check symbol_refs
+            let has_refs = rt
+                .symbol_refs(name, 1)
+                .map(|r| !r.is_empty())
+                .unwrap_or(false);
+            if !has_refs {
+                dead_items.push(serde_json::json!({
+                    "symbol_name": name,
+                    "symbol_uid": uid,
+                    "file_path": file_path,
+                    "kind": kind,
+                    "reason": "no-callers",
+                }));
+            }
+        }
+    }
+
+    Ok(serde_json::json!({
+        "dead_code": dead_items,
+        "count": dead_items.len(),
+    }))
+}
+
+/// Find all references to a symbol across the codebase.
+///
+/// Extracts: `symbol_name` (required), `include_unresolved` (default false).
+/// Delegates to `symbol_refs` on the runtime, with optional unresolved filtering.
+pub fn find_references(
+    runtime: Arc<Mutex<CodeIndex>>,
+    params: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let symbol_name = params
+        .get("symbol_name")
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "missing required parameter: symbol_name".to_string())?;
+    let include_unresolved = params
+        .get("include_unresolved")
+        .and_then(|v| v.as_bool())
+        .unwrap_or(false);
+    let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(50) as usize;
+
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let refs = rt
+        .symbol_refs(symbol_name, limit)
+        .map_err(|e| e.to_string())?;
+
+    // Filter out unresolved references if requested
+    let filtered: Vec<serde_json::Value> = refs
+        .iter()
+        .filter(|r| {
+            if include_unresolved {
+                true
+            } else {
+                r.target_symbol_uid.is_some()
+            }
+        })
+        .map(|r| {
+            serde_json::json!({
+                "file_path": r.file_path,
+                "line": r.line,
+                "symbol_name": r.symbol_name,
+                "target_symbol_uid": r.target_symbol_uid,
+                "resolution_kind": r.resolution_kind,
+                "confidence": r.confidence,
+            })
+        })
+        .collect();
+
+    Ok(serde_json::json!({
+        "symbol": symbol_name,
+        "references": filtered,
+        "count": filtered.len(),
+    }))
+}
+
+/// Get structured architecture overview as JSON.
+///
+/// Supports optional `aspects` (comma-separated: languages, packages, entry_points, routes,
+/// hotspots, boundaries, communities) and `limit` (default 10) parameters.
+/// When aspects is empty/absent, all aspects are returned.
+pub fn get_architecture(
+    runtime: Arc<Mutex<CodeIndex>>,
+    params: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let aspects_str = params
+        .get("aspects")
+        .and_then(|v| v.as_str())
+        .unwrap_or("")
+        .trim()
+        .to_string();
+    let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(10) as usize;
+
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    // Parse aspects list; empty means all
+    let aspect_vec: Vec<&str> = if aspects_str.is_empty() {
+        vec![]
+    } else {
+        aspects_str.split(',').map(|s| s.trim()).collect()
+    };
+
+    let info = db
+        .get_architecture_info(&aspect_vec, limit)
+        .map_err(|e| e.to_string())?;
+
+    serde_json::to_value(info).map_err(|e| e.to_string())
+}
+
+/// Find HTTP route handlers matching a pattern.
+///
+/// Extracts: `route_path` (optional pattern to match).
+/// Queries the route_edges table via Cypher ROUTES relationship.
+pub fn find_route_handlers(
+    runtime: Arc<Mutex<CodeIndex>>,
+    params: serde_json::Value,
+) -> Result<serde_json::Value, String> {
+    let route_path = params.get("route_path").and_then(|v| v.as_str());
+    let method_filter = params.get("method").and_then(|v| v.as_str());
+    let framework_filter = params.get("framework").and_then(|v| v.as_str());
+    let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
+
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    // Build parameterized SQL query for route_edges
+    let rows = if let Some(pattern) = route_path {
+        let like_pattern = format!("%{}%", pattern);
+        db.query_json(
+            &format!(
+                "SELECT route_path, method, handler_name, file_path, framework, line \
+                 FROM route_edges WHERE route_path LIKE ?1 LIMIT {}",
+                limit
+            ),
+            &[like_pattern],
+        )
+        .map_err(|e| e.to_string())?
+    } else {
+        db.query_json(
+            &format!(
+                "SELECT route_path, method, handler_name, file_path, framework, line \
+                 FROM route_edges LIMIT {}",
+                limit
+            ),
+            &[],
+        )
+        .map_err(|e| e.to_string())?
+    };
+
+    // Post-filter by method and framework if specified
+    let filtered: Vec<serde_json::Value> = rows
+        .into_iter()
+        .filter(|row| {
+            if let Some(method) = method_filter {
+                let row_method = row.get("method").and_then(|v| v.as_str()).unwrap_or("");
+                if !row_method.eq_ignore_ascii_case(method) {
+                    return false;
+                }
+            }
+            if let Some(fw) = framework_filter {
+                let row_fw = row.get("framework").and_then(|v| v.as_str()).unwrap_or("");
+                if !row_fw.eq_ignore_ascii_case(fw) {
+                    return false;
+                }
+            }
+            true
+        })
+        .map(|row| {
+            serde_json::json!({
+                "route_path": row.get("route_path").cloned().unwrap_or(serde_json::Value::Null),
+                "method": row.get("method").cloned().unwrap_or(serde_json::Value::Null),
+                "handler": row.get("handler_name").cloned().unwrap_or(serde_json::Value::Null),
+                "file_path": row.get("file_path").cloned().unwrap_or(serde_json::Value::Null),
+                "framework": row.get("framework").cloned().unwrap_or(serde_json::Value::Null),
+                "line": row.get("line").cloned().unwrap_or(serde_json::Value::Null),
+            })
+        })
+        .collect();
+
+    Ok(serde_json::json!({
+        "route_handlers": filtered,
+        "count": filtered.len(),
+    }))
+}
+
+/// Find consumers of a topic or queue.
+///
+/// Queries infra_edges with kind IN ('binds_topic', 'consumes_queue') and joins
+/// infra_nodes to resolve source/target names. Filters by topic_or_queue name.
+pub fn find_async_consumers(
+    runtime: Arc<Mutex<CodeIndex>>,
+    topic_or_queue: &str,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    let pattern = format!("%{}%", topic_or_queue);
+    let rows = db
+        .query_json(
+            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
+                    ie.confidence, ie.properties, \
+                    src.name AS source_name, src.kind AS source_kind, \
+                    src.file_path AS source_file, \
+                    src.bound_symbol_uid AS source_bound_uid, \
+                    CASE \
+                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
+                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
+                        ELSE 'unknown' \
+                    END AS target_type, \
+                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
+                    tgt_infra.kind AS target_kind, \
+                    COALESCE(tgt_infra.file_path, tgt_route.file_path) AS target_file, \
+                    COALESCE(tgt_infra.bound_symbol_uid, tgt_route.handler_symbol_uid) AS target_bound_uid, \
+                    tgt_route.route_path AS target_route_path, \
+                    tgt_route.method AS target_method, \
+                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
+             FROM infra_edges ie \
+             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
+             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
+             LEFT JOIN route_nodes tgt_route ON ie.target_node_id = tgt_route.route_id \
+             WHERE ie.kind IN ('binds_topic', 'consumes_queue') \
+               AND (src.name LIKE ?1 OR ie.properties LIKE ?1)",
+            &[pattern],
+        )
+        .map_err(|e| e.to_string())?;
+
+    Ok(serde_json::json!({
+        "topic_or_queue": topic_or_queue,
+        "consumers": rows,
+        "count": rows.len(),
+    }))
+}
+
+/// Find infrastructure bindings for a service or route.
+///
+/// Two query dimensions:
+/// 1. infra_nodes — matches by name or bound_symbol_uid
+/// 2. route_nodes — matches by route_path, normalized_path, handler_name, or handler_symbol_uid
+///
+/// Then fetches associated infra_edges connected to any matched infra node_ids
+/// or route_ids.
+pub fn find_service_bindings(
+    runtime: Arc<Mutex<CodeIndex>>,
+    service_or_route: &str,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    let pattern = format!("%{}%", service_or_route);
+
+    // ── Dimension 1: infra_nodes ──────────────────────────────────────
+    let matched_infra_nodes = db
+        .query_json(
+            "SELECT node_id, file_path, kind, name, namespace, line, end_line, \
+                    properties, bound_symbol_uid, binding_confidence \
+             FROM infra_nodes \
+             WHERE name LIKE ?1 OR bound_symbol_uid LIKE ?1",
+            &[pattern.clone()],
+        )
+        .map_err(|e| e.to_string())?;
+
+    let infra_node_ids: Vec<String> = matched_infra_nodes
+        .iter()
+        .filter_map(|n| {
+            n.get("node_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        })
+        .collect();
+
+    // ── Dimension 2: route_nodes ──────────────────────────────────────
+    let matched_routes = db
+        .query_json(
+            "SELECT route_id, file_path, route_path, method, handler_symbol_uid, \
+                    handler_name, framework, line, end_line, normalized_path, confidence \
+             FROM route_nodes \
+             WHERE route_path LIKE ?1 \
+                OR normalized_path LIKE ?1 \
+                OR handler_name LIKE ?1 \
+                OR handler_symbol_uid LIKE ?1",
+            &[pattern],
+        )
+        .map_err(|e| e.to_string())?;
+
+    let route_ids: Vec<String> = matched_routes
+        .iter()
+        .filter_map(|r| {
+            r.get("route_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        })
+        .collect();
+
+    // ── Dimension 3: related edges ────────────────────────────────────
+    // Collect all IDs (infra node_ids + route_ids) for a single edge query
+    let mut all_ids: Vec<String> = Vec::with_capacity(infra_node_ids.len() + route_ids.len());
+    all_ids.extend(infra_node_ids);
+    all_ids.extend(route_ids);
+
+    let related_edges = if all_ids.is_empty() {
+        Vec::new()
+    } else {
+        let placeholders: Vec<String> = (1..=all_ids.len()).map(|i| format!("?{}", i)).collect();
+        let ph_str = placeholders.join(",");
+        let sql = format!(
+            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
+                    ie.confidence, ie.properties, \
+                    src.name AS source_name, src.kind AS source_kind, \
+                    CASE \
+                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
+                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
+                        ELSE 'unknown' \
+                    END AS target_type, \
+                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
+                    COALESCE(tgt_infra.kind, 'route') AS target_kind, \
+                    tgt_route.route_path AS target_route_path, \
+                    tgt_route.method AS target_method, \
+                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
+             FROM infra_edges ie \
+             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
+             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
+             LEFT JOIN route_nodes tgt_route ON ie.target_node_id = tgt_route.route_id \
+             WHERE ie.source_node_id IN ({ph}) OR ie.target_node_id IN ({ph})",
+            ph = ph_str,
+        );
+        db.query_json(&sql, &all_ids).map_err(|e| e.to_string())?
+    };
+
+    Ok(serde_json::json!({
+        "service_or_route": service_or_route,
+        "matched_infra_nodes": matched_infra_nodes,
+        "matched_routes": matched_routes,
+        "related_edges": related_edges,
+    }))
+}
+
+/// List cross-package call boundaries (architecture violations / coupling).
+///
+/// Delegates to GraphOps::compute_package_boundaries, truncated to the
+/// requested limit.
+pub fn list_package_boundaries(
+    runtime: Arc<Mutex<CodeIndex>>,
+    limit: u32,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    // Fetch all call edges (same as get_architecture does)
+    let all_edges = db.call_uid_edges().map_err(|e| e.to_string())?;
+
+    let mut boundaries =
+        crate::engine::compute_package_boundaries(db, &all_edges).map_err(|e| e.to_string())?;
+    boundaries.truncate(limit as usize);
+
+    Ok(serde_json::json!({
+        "package_boundaries": boundaries,
+        "count": boundaries.len(),
+    }))
+}

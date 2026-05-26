@@ -1,0 +1,29 @@
+[package]
+name = "cc-server"
+version.workspace = true
+edition.workspace = true
+
+[[bin]]
+name = "codecortex"
+path = "src/main.rs"
+
+[dependencies]
+cc-model = { path = "../cc-model" }
+cc-db = { path = "../cc-db" }
+cc-index = { path = "../cc-index" }
+cc-search = { path = "../cc-search" }
+clap.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+rmcp.workspace = true
+tokio-util = { version = "0.7", features = ["rt"] }
+dirs.workspace = true
+notify.workspace = true
+rusqlite.workspace = true
+regex.workspace = true
+
+[dev-dependencies]
+tempfile = "3"

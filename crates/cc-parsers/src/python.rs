@@ -12,6 +12,7 @@ use cc_model::edge::{
 use cc_model::id::StableId;
 use cc_model::route_normalize::normalize_route_path;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
@@ -1573,6 +1574,140 @@ impl PythonParser {
             ctx.dispatch_sites.push(ds);
         }
     }
+
+    // =========================================================================
+    // Type assignment extraction
+    // =========================================================================
+
+    /// Extract local variable type assignments from the AST.
+    ///
+    /// Patterns recognized:
+    /// - `assignment` where RHS is `call` and callee is capitalized → Constructor
+    /// - Type-annotated assignment: `x: Foo = ...` → TypeAnnotation
+    fn extract_type_assigns(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> Vec<TypeAssignRecord> {
+        let mut assigns = Vec::new();
+        let root = tree.root_node();
+        self.walk_for_type_assigns_py(&root, source, file_path, symbols, &mut assigns);
+        assigns
+    }
+
+    /// Recursively walk AST to find assignment and annotated assignment nodes.
+    fn walk_for_type_assigns_py(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        match node.kind() {
+            "assignment" => {
+                self.extract_py_assignment(node, source, file_path, symbols, assigns);
+            }
+            "typed_default_parameter" | "typed_parameter" => {
+                // Handled in function signatures, not local assigns
+            }
+            _ => {}
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_for_type_assigns_py(&child, source, file_path, symbols, assigns);
+        }
+    }
+
+    /// Extract type info from a Python `assignment` node.
+    /// Handles both `x = Foo()` and `x: Foo = ...`.
+    fn extract_py_assignment(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        let left = match node.child_by_field_name("left") {
+            Some(n) => n,
+            None => return,
+        };
+        let right = node.child_by_field_name("right");
+
+        let line = node.start_position().row as u32 + 1;
+        let enclosing = find_enclosing_function(symbols, line)
+            .and_then(|s| s.symbol_uid.clone());
+
+        // Get variable name — only handle simple identifiers
+        let var_name = if left.kind() == "identifier" {
+            match left.utf8_text(source).ok() {
+                Some(n) => n.to_string(),
+                None => return,
+            }
+        } else {
+            return;
+        };
+
+        // Check for type annotation: `x: Foo = ...`
+        // In tree-sitter Python, type annotation shows as a sibling `type` field
+        let type_node = node.child_by_field_name("type");
+        if let Some(tn) = type_node {
+            let type_text = match tn.utf8_text(source).ok() {
+                Some(t) => t.trim().to_string(),
+                None => String::new(),
+            };
+            // Strip generics
+            let base = if let Some(idx) = type_text.find('[') {
+                &type_text[..idx]
+            } else {
+                &type_text
+            };
+            let base = base.trim();
+            if !base.is_empty() && base.starts_with(|c: char| c.is_ascii_uppercase()) {
+                assigns.push(TypeAssignRecord {
+                    file_path: file_path.to_string(),
+                    enclosing_symbol_uid: enclosing.clone(),
+                    var_name: var_name.clone(),
+                    type_name: base.to_string(),
+                    line,
+                    confidence: 0.95,
+                    source: TypeAssignSource::TypeAnnotation,
+                });
+                return; // Don't also add constructor if we have annotation
+            }
+        }
+
+        // Check RHS for constructor pattern: `x = Foo(...)` where Foo is capitalized
+        if let Some(rhs) = right {
+            if rhs.kind() == "call" {
+                let func_node = match rhs.child_by_field_name("function") {
+                    Some(n) => n,
+                    None => return,
+                };
+                let callee = match func_node.utf8_text(source).ok() {
+                    Some(t) => t.to_string(),
+                    None => return,
+                };
+                // Get the leaf name (for dotted calls like `module.Foo()`)
+                let leaf = callee.rsplit('.').next().unwrap_or(&callee);
+                if leaf.starts_with(|c: char| c.is_ascii_uppercase()) {
+                    assigns.push(TypeAssignRecord {
+                        file_path: file_path.to_string(),
+                        enclosing_symbol_uid: enclosing,
+                        var_name,
+                        type_name: leaf.to_string(),
+                        line,
+                        confidence: 0.85,
+                        source: TypeAssignSource::Constructor,
+                    });
+                }
+            }
+        }
+    }
 }
 
 /// Accumulator for single-pass DFS extraction results.
@@ -2112,6 +2247,9 @@ impl FileParser for PythonParser {
         let mut data_flow_edges = self.extract_type_refs(content, &symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &symbols, file_path));
 
+        let type_assigns =
+            self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
+
         let tier = ParserTier::Semantic;
         let confidence = 0.85;
         let chunks = self
@@ -2143,6 +2281,7 @@ impl FileParser for PythonParser {
             data_flow_edges,
             dispatch_sites: ast_ctx.dispatch_sites,
             diagnostics,
+            type_assigns,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,

@@ -8,6 +8,7 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use std::collections::{HashMap, HashSet};
 
@@ -1379,6 +1380,158 @@ impl JavaParser {
             .filter(|s| s.start_line <= line && s.end_line >= line)
             .min_by_key(|s| s.end_line - s.start_line)
     }
+
+    // =========================================================================
+    // Type assignment extraction
+    // =========================================================================
+
+    /// Extract local variable type assignments from the AST.
+    ///
+    /// Patterns recognized:
+    /// - `local_variable_declaration`: `Type varName = ...`
+    ///   - TypeAnnotation from the declared type
+    ///   - Constructor if initializer is `object_creation_expression` (`new Foo(...)`)
+    fn extract_type_assigns(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> Vec<TypeAssignRecord> {
+        let mut assigns = Vec::new();
+        let root = tree.root_node();
+        self.walk_for_type_assigns(&root, source, file_path, symbols, &mut assigns);
+        assigns
+    }
+
+    /// Recursively walk AST to find `local_variable_declaration` nodes.
+    fn walk_for_type_assigns(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        if node.kind() == "local_variable_declaration" {
+            self.extract_local_var_type_assign(node, source, file_path, symbols, assigns);
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_for_type_assigns(&child, source, file_path, symbols, assigns);
+        }
+    }
+
+    /// Extract type info from a `local_variable_declaration` node.
+    /// In Java: `Type varName = expr;` or `var varName = new Type(...);`
+    fn extract_local_var_type_assign(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        // Get the type node
+        let type_node = match node.child_by_field_name("type") {
+            Some(n) => n,
+            None => return,
+        };
+        let type_text = match type_node.utf8_text(source).ok() {
+            Some(t) => t.to_string(),
+            None => return,
+        };
+
+        let line = node.start_position().row as u32 + 1;
+        let enclosing = self
+            .find_enclosing_method(symbols, line)
+            .and_then(|s| s.symbol_uid.clone());
+
+        // Find variable_declarator children
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() != "variable_declarator" {
+                continue;
+            }
+            let name_node = match child.child_by_field_name("name") {
+                Some(n) => n,
+                None => continue,
+            };
+            let var_name = match name_node.utf8_text(source).ok() {
+                Some(n) => n.to_string(),
+                None => continue,
+            };
+
+            // Check if the type is `var` (Java 10+ local type inference)
+            let is_var = type_text == "var";
+
+            // Check initializer for constructor pattern
+            let initializer = child.child_by_field_name("value");
+            let has_new_expr = initializer
+                .map(|init| self.find_object_creation_type(&init, source))
+                .unwrap_or(None);
+
+            if let Some(new_type) = has_new_expr {
+                // `new Foo(...)` — Constructor
+                assigns.push(TypeAssignRecord {
+                    file_path: file_path.to_string(),
+                    enclosing_symbol_uid: enclosing.clone(),
+                    var_name: var_name.clone(),
+                    type_name: new_type,
+                    line,
+                    confidence: 0.95,
+                    source: TypeAssignSource::Constructor,
+                });
+            } else if !is_var && !type_text.is_empty() {
+                // Explicit type annotation: `Foo x = ...`
+                // Strip generics for the base type
+                let base_type = if let Some(idx) = type_text.find('<') {
+                    type_text[..idx].to_string()
+                } else {
+                    type_text.clone()
+                };
+                if !base_type.is_empty() {
+                    assigns.push(TypeAssignRecord {
+                        file_path: file_path.to_string(),
+                        enclosing_symbol_uid: enclosing.clone(),
+                        var_name,
+                        type_name: base_type,
+                        line,
+                        confidence: 0.95,
+                        source: TypeAssignSource::TypeAnnotation,
+                    });
+                }
+            }
+        }
+    }
+
+    /// Find the type name from an `object_creation_expression` (`new Foo(...)`).
+    fn find_object_creation_type(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        if node.kind() == "object_creation_expression" {
+            let type_node = node.child_by_field_name("type")?;
+            let type_text = type_node.utf8_text(source).ok()?;
+            // Strip generics
+            let base = if let Some(idx) = type_text.find('<') {
+                &type_text[..idx]
+            } else {
+                type_text
+            };
+            return Some(base.trim().to_string());
+        }
+        // Check if node wraps an object_creation_expression (e.g., cast)
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            if child.kind() == "object_creation_expression" {
+                return self.find_object_creation_type(&child, source);
+            }
+        }
+        None
+    }
 }
 
 impl Default for JavaParser {
@@ -1427,6 +1580,8 @@ impl FileParser for JavaParser {
             self.extract_calls(&tree, content.as_bytes(), file_path, &symbols);
         let semantic_edges =
             self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
+        let type_assigns =
+            self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1452,6 +1607,7 @@ impl FileParser for JavaParser {
             symbol_refs,
             call_edges,
             semantic_edges,
+            type_assigns,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,

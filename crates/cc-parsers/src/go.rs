@@ -8,6 +8,7 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use std::collections::{HashMap, HashSet};
 
@@ -822,6 +823,295 @@ impl GoParser {
     }
 
     // =========================================================================
+    // Type assignment extraction
+    // =========================================================================
+
+    /// Extract local variable type assignments from function/method bodies.
+    ///
+    /// Patterns recognized:
+    /// - `short_var_declaration` (`:=`):
+    ///   - RHS is `call_expression` with callee starting with `New` or uppercase → FactoryCall
+    ///   - RHS is `composite_literal` with type → Constructor
+    ///   - RHS is `unary_expression` with `&` + `composite_literal` → Constructor (pointer)
+    /// - `var_declaration` with type annotation → TypeAnnotation
+    fn extract_type_assigns(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> Vec<TypeAssignRecord> {
+        let mut assigns = Vec::new();
+        let root = tree.root_node();
+        let mut root_cursor = root.walk();
+
+        for child in root.children(&mut root_cursor) {
+            match child.kind() {
+                "function_declaration" | "method_declaration" => {
+                    let caller_sym = self.find_symbol_for_decl(&child, source, symbols);
+                    let enclosing_uid = caller_sym.and_then(|s| s.symbol_uid.clone());
+                    if let Some(body) = child.child_by_field_name("body") {
+                        self.walk_type_assigns(
+                            &body,
+                            source,
+                            file_path,
+                            &enclosing_uid,
+                            &mut assigns,
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        assigns
+    }
+
+    /// Recursively walk AST nodes to find variable declarations with type information.
+    fn walk_type_assigns(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        enclosing_uid: &Option<String>,
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        match node.kind() {
+            "short_var_declaration" => {
+                self.extract_short_var_assign(node, source, file_path, enclosing_uid, assigns);
+            }
+            "var_declaration" => {
+                self.extract_var_decl_assign(node, source, file_path, enclosing_uid, assigns);
+            }
+            _ => {}
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_type_assigns(&child, source, file_path, enclosing_uid, assigns);
+        }
+    }
+
+    /// Extract type info from `short_var_declaration` (`:=`).
+    fn extract_short_var_assign(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        enclosing_uid: &Option<String>,
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        // short_var_declaration: left := right
+        let left = match node.child_by_field_name("left") {
+            Some(n) => n,
+            None => return,
+        };
+        let right = match node.child_by_field_name("right") {
+            Some(n) => n,
+            None => return,
+        };
+
+        // Get the first variable name from the left side (expression_list)
+        let var_name = self.first_identifier_text(&left, source);
+        let var_name = match var_name {
+            Some(n) => n,
+            None => return,
+        };
+
+        let line = node.start_position().row as u32 + 1;
+
+        // Get the first expression from the right side (expression_list)
+        let rhs = self.first_named_child(&right);
+        let rhs = match rhs {
+            Some(n) => n,
+            None => return,
+        };
+
+        // Check RHS patterns
+        if let Some(record) =
+            self.infer_type_from_rhs(&rhs, source, file_path, &var_name, line, enclosing_uid)
+        {
+            assigns.push(record);
+        }
+    }
+
+    /// Extract type info from `var_declaration` with type annotation.
+    fn extract_var_decl_assign(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        enclosing_uid: &Option<String>,
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        // var_declaration contains var_spec children
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() == "var_spec" {
+                let name_node = child.child_by_field_name("name");
+                let type_node = child.child_by_field_name("type");
+
+                if let (Some(name_n), Some(type_n)) = (name_node, type_node) {
+                    let var_name = match name_n.utf8_text(source).ok() {
+                        Some(n) => n.to_string(),
+                        None => continue,
+                    };
+                    let type_text = match type_n.utf8_text(source).ok() {
+                        Some(t) => t.trim_start_matches('*').trim().to_string(),
+                        None => continue,
+                    };
+                    if type_text.is_empty() {
+                        continue;
+                    }
+                    let line = child.start_position().row as u32 + 1;
+                    assigns.push(TypeAssignRecord {
+                        file_path: file_path.to_string(),
+                        enclosing_symbol_uid: enclosing_uid.clone(),
+                        var_name,
+                        type_name: type_text,
+                        line,
+                        confidence: 0.95,
+                        source: TypeAssignSource::TypeAnnotation,
+                    });
+                }
+            }
+        }
+    }
+
+    /// Infer the type of a variable from its RHS expression.
+    fn infer_type_from_rhs(
+        &self,
+        rhs: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        var_name: &str,
+        line: u32,
+        enclosing_uid: &Option<String>,
+    ) -> Option<TypeAssignRecord> {
+        match rhs.kind() {
+            "composite_literal" => {
+                // Foo{...} or pkg.Foo{...}
+                let type_node = rhs.child_by_field_name("type")?;
+                let type_text = type_node.utf8_text(source).ok()?;
+                let type_name = type_text.trim_start_matches('*').trim().to_string();
+                if type_name.is_empty() {
+                    return None;
+                }
+                Some(TypeAssignRecord {
+                    file_path: file_path.to_string(),
+                    enclosing_symbol_uid: enclosing_uid.clone(),
+                    var_name: var_name.to_string(),
+                    type_name,
+                    line,
+                    confidence: 0.95,
+                    source: TypeAssignSource::Constructor,
+                })
+            }
+            "unary_expression" => {
+                // &Foo{...} (address-of composite literal)
+                let operator = rhs.child_by_field_name("operator")?;
+                let op_text = operator.utf8_text(source).ok()?;
+                if op_text != "&" {
+                    return None;
+                }
+                let operand = rhs.child_by_field_name("operand")?;
+                if operand.kind() == "composite_literal" {
+                    let type_node = operand.child_by_field_name("type")?;
+                    let type_text = type_node.utf8_text(source).ok()?;
+                    let type_name = type_text.trim().to_string();
+                    if type_name.is_empty() {
+                        return None;
+                    }
+                    return Some(TypeAssignRecord {
+                        file_path: file_path.to_string(),
+                        enclosing_symbol_uid: enclosing_uid.clone(),
+                        var_name: var_name.to_string(),
+                        type_name,
+                        line,
+                        confidence: 0.95,
+                        source: TypeAssignSource::Constructor,
+                    });
+                }
+                None
+            }
+            "call_expression" => {
+                // NewFoo() or pkg.NewFoo()
+                let func_node = rhs.child_by_field_name("function")?;
+                let callee_text = func_node.utf8_text(source).ok()?;
+
+                // Extract the leaf function name
+                let leaf = callee_text.rsplit('.').next().unwrap_or(callee_text);
+
+                // Pattern: NewXxx() → type = Xxx
+                if leaf.starts_with("New") && leaf.len() > 3 {
+                    let type_name = leaf[3..].to_string();
+                    if !type_name.is_empty()
+                        && type_name.starts_with(|c: char| c.is_ascii_uppercase())
+                    {
+                        return Some(TypeAssignRecord {
+                            file_path: file_path.to_string(),
+                            enclosing_symbol_uid: enclosing_uid.clone(),
+                            var_name: var_name.to_string(),
+                            type_name,
+                            line,
+                            confidence: 0.85,
+                            source: TypeAssignSource::FactoryCall,
+                        });
+                    }
+                }
+
+                // Pattern: Xxx() where Xxx starts with uppercase (constructor-like)
+                if leaf.starts_with(|c: char| c.is_ascii_uppercase()) && leaf != "New" {
+                    return Some(TypeAssignRecord {
+                        file_path: file_path.to_string(),
+                        enclosing_symbol_uid: enclosing_uid.clone(),
+                        var_name: var_name.to_string(),
+                        type_name: leaf.to_string(),
+                        line,
+                        confidence: 0.70,
+                        source: TypeAssignSource::FactoryCall,
+                    });
+                }
+
+                None
+            }
+            _ => None,
+        }
+    }
+
+    /// Get the text of the first `identifier` child in a node.
+    fn first_identifier_text(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() == "identifier" {
+                return child.utf8_text(source).ok().map(|s| s.to_string());
+            }
+        }
+        // If node itself is an identifier
+        if node.kind() == "identifier" {
+            return node.utf8_text(source).ok().map(|s| s.to_string());
+        }
+        None
+    }
+
+    /// Get the first named child of a node (useful for expression_list).
+    fn first_named_child<'a>(&self, node: &tree_sitter::Node<'a>) -> Option<tree_sitter::Node<'a>> {
+        if node.kind() == "expression_list" {
+            let mut cursor = node.walk();
+            for child in node.named_children(&mut cursor) {
+                return Some(child);
+            }
+            None
+        } else {
+            Some(*node)
+        }
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 
@@ -976,6 +1266,8 @@ impl FileParser for GoParser {
             self.extract_calls(&tree, content.as_bytes(), file_path, &symbols);
         let semantic_edges =
             self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
+        let type_assigns =
+            self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -999,6 +1291,7 @@ impl FileParser for GoParser {
             symbol_refs,
             call_edges,
             semantic_edges,
+            type_assigns,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,

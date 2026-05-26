@@ -646,6 +646,9 @@ impl Indexer {
             .collect();
         catalog.build_type_catalog(&all_symbols);
 
+        // Phase 4b-1: Feed type_assigns into TypeCatalog for variable type inference
+        catalog.add_type_assigns_from_outcomes(&write_units);
+
         // Phase 4b-2: Generate hierarchy edges (Defines, DefinesMethod, ContainsFile)
         let file_paths: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
         let hierarchy_edges = crate::hierarchy::generate_hierarchy_edges(&all_symbols, &file_paths);

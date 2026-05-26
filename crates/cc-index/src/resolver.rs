@@ -207,6 +207,31 @@ impl SymbolCatalog {
         self.type_catalog = Some(tc);
     }
 
+    /// Feed type assignment records into the TypeCatalog for variable type inference.
+    ///
+    /// Call this after `build_type_catalog`, passing type_assigns from each
+    /// parsed file's `ParseOutcome`.
+    pub fn add_type_assigns(&mut self, assigns: &[cc_model::type_assign::TypeAssignRecord]) {
+        if let Some(ref mut tc) = self.type_catalog {
+            tc.add_type_assigns(assigns);
+        }
+    }
+
+    /// Convenience: feed type_assigns from all write units into the TypeCatalog.
+    pub fn add_type_assigns_from_outcomes(
+        &mut self,
+        write_units: &[cc_db::index_db::FileWriteUnit],
+    ) {
+        if self.type_catalog.is_none() {
+            return;
+        }
+        for unit in write_units {
+            if !unit.outcome.type_assigns.is_empty() {
+                self.add_type_assigns(&unit.outcome.type_assigns);
+            }
+        }
+    }
+
     /// Register all symbols from a parsed file.
     pub fn add_symbols(&mut self, symbols: &[SymbolRecord]) {
         for sym in symbols {
@@ -1203,7 +1228,33 @@ impl SymbolCatalog {
                 let callee = &edge.callee_symbol;
                 let leaf = callee.rsplit('.').next().unwrap_or(callee);
 
-                // Try receiver-based resolution first
+                // Try type_assign-enhanced receiver resolution first:
+                // If receiver_expr is a variable name like "x", resolve x → Foo
+                // via type_assigns, then look up Foo.method_name.
+                if let Some(ref recv) = edge.receiver_expr {
+                    if let Some(resolved_type) =
+                        tc.resolve_var_type(&edge.file_path, recv)
+                    {
+                        if let Some(uid) =
+                            tc.resolve_method_by_receiver(leaf, resolved_type)
+                        {
+                            if let Some(idx) = self.find_by_uid(uid) {
+                                let e = &self.entries[idx];
+                                edge.target_symbol_id = Some(e.symbol_id.clone());
+                                edge.target_file_path = Some(e.file_path.clone());
+                                edge.callee_symbol_uid = Some(uid.to_string());
+                                edge.resolution_kind = ResolutionKind::ScopeResolved;
+                                edge.resolution_confidence = 0.90;
+                                edge.resolution_strategy =
+                                    "type_assign_receiver".to_string();
+                                edge.parser_confidence = 0.90;
+                                continue;
+                            }
+                        }
+                    }
+                }
+
+                // Try receiver-based resolution (using raw receiver expression)
                 if let Some(ref recv) = edge.receiver_expr {
                     if let Some(uid) = tc.resolve_method_by_receiver(leaf, recv) {
                         if let Some(idx) = self.find_by_uid(uid) {

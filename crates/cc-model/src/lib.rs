@@ -14,6 +14,7 @@ pub mod route_normalize;
 pub mod scope;
 pub mod search;
 pub mod symbol;
+pub mod type_assign;
 pub mod working_set;
 
 // Re-export top-level types for convenience
@@ -39,6 +40,7 @@ pub use scope::ScopeInfo;
 pub use search::SearchHit;
 /// Core enums used across the codebase
 pub use symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+pub use type_assign::{TypeAssignRecord, TypeAssignSource};
 pub use working_set::{WorkingSetEntry, WorkspaceSelection, WorkspaceState};
 
 /// Language and parser tier enums

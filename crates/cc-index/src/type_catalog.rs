@@ -9,6 +9,7 @@
 use std::collections::HashMap;
 
 use cc_model::symbol::SymbolRecord;
+use cc_model::type_assign::TypeAssignRecord;
 
 // ---------------------------------------------------------------------------
 // Data structures
@@ -51,6 +52,8 @@ pub struct TypeCatalog {
     short_to_qnames: HashMap<String, Vec<String>>,
     /// alias_name (lowercase) -> canonical_name (lowercase)
     type_aliases: HashMap<String, String>,
+    /// Maps (file_path, var_name_lowercase) -> type_name for local variable type inference.
+    type_assign_index: HashMap<(String, String), String>,
 }
 
 impl TypeCatalog {
@@ -142,6 +145,7 @@ impl TypeCatalog {
             type_index_by_qname,
             short_to_qnames,
             type_aliases,
+            type_assign_index: HashMap::new(),
         }
     }
 
@@ -329,6 +333,30 @@ impl TypeCatalog {
     /// Returns true if this catalog has any method entries.
     pub fn has_methods(&self) -> bool {
         !self.method_index.is_empty()
+    }
+
+    /// Populate the type_assign_index from parsed type assignment records.
+    ///
+    /// Call this after `build_from_symbols` during the indexing pipeline,
+    /// feeding in `ParseOutcome::type_assigns` from each file.
+    /// Last write wins for the same (file, var_name) pair.
+    pub fn add_type_assigns(&mut self, assigns: &[TypeAssignRecord]) {
+        for assign in assigns {
+            self.type_assign_index.insert(
+                (assign.file_path.clone(), assign.var_name.to_lowercase()),
+                assign.type_name.clone(),
+            );
+        }
+    }
+
+    /// Resolve a variable name to its inferred type within a file.
+    ///
+    /// Returns the type name if a type assignment was recorded for the given
+    /// file and variable name.
+    pub fn resolve_var_type(&self, file_path: &str, var_name: &str) -> Option<&str> {
+        self.type_assign_index
+            .get(&(file_path.to_string(), var_name.to_lowercase()))
+            .map(|s| s.as_str())
     }
 }
 

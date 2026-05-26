@@ -15,6 +15,7 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
@@ -2435,6 +2436,197 @@ impl JsTsParser {
 
         edges
     }
+
+    // =========================================================================
+    // Type assignment extraction
+    // =========================================================================
+
+    /// Extract local variable type assignments from the AST.
+    ///
+    /// Patterns recognized:
+    /// - `variable_declarator` with type annotation (TypeScript) → TypeAnnotation
+    /// - `variable_declarator` with `new_expression` initializer → Constructor
+    fn extract_type_assigns(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> Vec<TypeAssignRecord> {
+        let mut assigns = Vec::new();
+        let root = tree.root_node();
+        self.walk_for_type_assigns_jsts(&root, source, file_path, symbols, &mut assigns);
+        assigns
+    }
+
+    /// Recursively walk AST to find `variable_declarator` nodes.
+    fn walk_for_type_assigns_jsts(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        if node.kind() == "variable_declarator" {
+            self.extract_var_declarator_type_assign(node, source, file_path, symbols, assigns);
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_for_type_assigns_jsts(&child, source, file_path, symbols, assigns);
+        }
+    }
+
+    /// Extract type info from a `variable_declarator` node.
+    fn extract_var_declarator_type_assign(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        assigns: &mut Vec<TypeAssignRecord>,
+    ) {
+        let name_node = match node.child_by_field_name("name") {
+            Some(n) => n,
+            None => return,
+        };
+        let var_name = match name_node.utf8_text(source).ok() {
+            Some(n) => n.to_string(),
+            None => return,
+        };
+
+        let line = node.start_position().row as u32 + 1;
+        let enclosing = Self::find_enclosing_symbol(symbols, line)
+            .and_then(|s| s.symbol_uid.clone());
+
+        // Check for TypeScript type annotation on the name node
+        // e.g., `const x: Foo = ...`
+        let type_annotation = self.find_ts_type_annotation(&name_node, source);
+
+        // Check for `new_expression` in the value
+        let value_node = node.child_by_field_name("value");
+        let new_type = value_node
+            .and_then(|v| self.find_new_expression_type(&v, source));
+
+        if let Some(new_type_name) = new_type {
+            assigns.push(TypeAssignRecord {
+                file_path: file_path.to_string(),
+                enclosing_symbol_uid: enclosing.clone(),
+                var_name: var_name.clone(),
+                type_name: new_type_name,
+                line,
+                confidence: 0.95,
+                source: TypeAssignSource::Constructor,
+            });
+        } else if let Some(type_name) = type_annotation {
+            assigns.push(TypeAssignRecord {
+                file_path: file_path.to_string(),
+                enclosing_symbol_uid: enclosing,
+                var_name,
+                type_name,
+                line,
+                confidence: 0.95,
+                source: TypeAssignSource::TypeAnnotation,
+            });
+        }
+    }
+
+    /// Find TypeScript type annotation child of a node.
+    /// Looks for `type_annotation` child containing `: TypeName`.
+    fn find_ts_type_annotation(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        let mut cursor = node.walk();
+        // Check siblings — in TS, type_annotation is often a sibling or child
+        // of the name node within the declarator
+        let parent = node.parent()?;
+        let mut pcursor = parent.walk();
+        for child in parent.children(&mut pcursor) {
+            if child.kind() == "type_annotation" {
+                // Get the type text — skip the leading ":"
+                let text = child.utf8_text(source).ok()?;
+                let trimmed = text.trim().trim_start_matches(':').trim();
+                // Strip generics for base type
+                let base = if let Some(idx) = trimmed.find('<') {
+                    &trimmed[..idx]
+                } else {
+                    trimmed
+                };
+                let base = base.trim();
+                if !base.is_empty() && base.starts_with(|c: char| c.is_ascii_uppercase()) {
+                    return Some(base.to_string());
+                }
+            }
+        }
+        // Also check direct children
+        for child in node.children(&mut cursor) {
+            if child.kind() == "type_annotation" {
+                let text = child.utf8_text(source).ok()?;
+                let trimmed = text.trim().trim_start_matches(':').trim();
+                let base = if let Some(idx) = trimmed.find('<') {
+                    &trimmed[..idx]
+                } else {
+                    trimmed
+                };
+                let base = base.trim();
+                if !base.is_empty() && base.starts_with(|c: char| c.is_ascii_uppercase()) {
+                    return Some(base.to_string());
+                }
+            }
+        }
+        None
+    }
+
+    /// Find the type name from a `new_expression` (`new Foo(...)`).
+    fn find_new_expression_type(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        if node.kind() == "new_expression" {
+            let constructor = node.child_by_field_name("constructor")?;
+            let text = constructor.utf8_text(source).ok()?;
+            let base = if let Some(idx) = text.find('<') {
+                &text[..idx]
+            } else {
+                text
+            };
+            let base = base.trim();
+            if !base.is_empty() {
+                return Some(base.to_string());
+            }
+        }
+        // Check if the node contains a new_expression (e.g., `await new Foo()`)
+        if node.kind() == "await_expression" {
+            let mut cursor = node.walk();
+            for child in node.named_children(&mut cursor) {
+                if let Some(t) = self.find_new_expression_type(&child, source) {
+                    return Some(t);
+                }
+            }
+        }
+        None
+    }
+
+    /// Find the innermost enclosing symbol for a given line number.
+    fn find_enclosing_symbol(
+        symbols: &[SymbolRecord],
+        line: u32,
+    ) -> Option<&SymbolRecord> {
+        symbols
+            .iter()
+            .filter(|s| {
+                matches!(
+                    s.kind,
+                    SymbolKind::Function | SymbolKind::Method
+                )
+            })
+            .filter(|s| s.start_line <= line && s.end_line >= line)
+            .min_by_key(|s| s.end_line - s.start_line)
+    }
 }
 
 /// Find the innermost enclosing function/method for a given line number.
@@ -2554,6 +2746,9 @@ impl FileParser for JsTsParser {
         let mut data_flow_edges = self.extract_type_refs(content, &ast_ctx.symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &ast_ctx.symbols, file_path));
 
+        let type_assigns =
+            self.extract_type_assigns(&tree, content.as_bytes(), file_path, &ast_ctx.symbols);
+
         let chunks = self.chunker.chunk_with_symbols(
             file_path,
             content,
@@ -2590,6 +2785,7 @@ impl FileParser for JsTsParser {
             semantic_edges,
             data_flow_edges,
             dispatch_sites: ast_ctx.dispatch_sites,
+            type_assigns,
             parser_tier: tier,
             parser_confidence: confidence,
             http_call_edges: ast_ctx.http_call_edges,
@@ -2656,6 +2852,9 @@ impl FileParser for JsTsParser {
         let mut data_flow_edges = self.extract_type_refs(content, &ast_ctx.symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &ast_ctx.symbols, file_path));
 
+        let type_assigns =
+            self.extract_type_assigns(&tree, content.as_bytes(), file_path, &ast_ctx.symbols);
+
         let chunks = self.chunker.chunk_with_symbols(
             file_path,
             content,
@@ -2689,6 +2888,7 @@ impl FileParser for JsTsParser {
             semantic_edges,
             data_flow_edges,
             dispatch_sites: ast_ctx.dispatch_sites,
+            type_assigns,
             parser_tier: tier,
             parser_confidence: confidence,
             http_call_edges: ast_ctx.http_call_edges,

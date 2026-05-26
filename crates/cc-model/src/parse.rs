@@ -8,6 +8,7 @@ use crate::{
     },
     scope::ScopeInfo,
     symbol::{SymbolRecord, SymbolRefRecord},
+    type_assign::TypeAssignRecord,
     ParserTier,
 };
 use serde::{Deserialize, Serialize};
@@ -30,6 +31,7 @@ pub struct ParseOutcome {
     pub literal_index: Vec<LiteralRecord>,
     pub dispatch_sites: Vec<DispatchSiteRecord>,
     pub scopes: Vec<ScopeInfo>,
+    pub type_assigns: Vec<TypeAssignRecord>,
     pub parser_tier: ParserTier,
     pub parser_confidence: f64,
     pub is_test_file: bool,
@@ -53,6 +55,7 @@ impl Default for ParseOutcome {
             literal_index: Vec::new(),
             dispatch_sites: Vec::new(),
             scopes: Vec::new(),
+            type_assigns: Vec::new(),
             parser_tier: ParserTier::Generic,
             parser_confidence: 0.3,
             is_test_file: false,

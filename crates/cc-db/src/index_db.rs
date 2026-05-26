@@ -3654,6 +3654,72 @@ impl IndexDb {
         Ok(result)
     }
 
+    /// Find all methods belonging to a given container (class/struct name),
+    /// returning `(symbol_uid, name, file_path, start_line)`.
+    pub fn find_methods_by_container(
+        &self,
+        container: &str,
+    ) -> CcResult<Vec<(String, String, String, u32)>> {
+        let conn = self.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT symbol_uid, name, file_path, start_line \
+                 FROM symbols WHERE container = ?1 AND kind = 'method' AND symbol_uid IS NOT NULL \
+                 ORDER BY file_path, start_line",
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(rusqlite::params![container], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, u32>(3)?,
+                ))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Find all classes that have methods matching any of the given name patterns.
+    /// Returns `(container, file_path)` pairs (deduplicated).
+    pub fn find_classes_with_method_names(
+        &self,
+        method_names: &[&str],
+    ) -> CcResult<Vec<(String, String)>> {
+        if method_names.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.read_conn()?;
+        let placeholders: String = method_names
+            .iter()
+            .enumerate()
+            .map(|(i, _)| format!("?{}", i + 1))
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT DISTINCT container, file_path \
+             FROM symbols WHERE kind = 'method' AND container IS NOT NULL AND name IN ({}) \
+             ORDER BY file_path",
+            placeholders
+        );
+        let mut stmt = conn
+            .prepare(&sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
+        for name in method_names {
+            params.push(Box::new(name.to_string()));
+        }
+        let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+            params.iter().map(|p| p.as_ref()).collect();
+        let rows = stmt
+            .query_map(param_refs.as_slice(), |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
     // ── Synthetic call edges ────────────────────────────────────
 
     /// Delete all synthetic call edges produced by a given synthesizer.
@@ -3903,6 +3969,7 @@ impl IndexDb {
                         "event_emitter" => cc_model::DispatchKind::EventEmitter,
                         "callback_relay" => cc_model::DispatchKind::CallbackRelay,
                         "reactive_binding" => cc_model::DispatchKind::ReactiveBinding,
+                        "field_observer" => cc_model::DispatchKind::FieldObserver,
                         _ => cc_model::DispatchKind::Direct,
                     },
                     call_kind: row.get(15)?,

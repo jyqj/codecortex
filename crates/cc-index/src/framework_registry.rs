@@ -80,6 +80,53 @@ fn import_marker_table() -> &'static [(&'static str, &'static [&'static str])] {
         ("axum", &["axum"]),
         ("actix", &["actix-web", "actix_web"]),
         ("rocket", &["rocket"]),
+        // --- Laravel (PHP) ---
+        (
+            "laravel",
+            &[
+                "Illuminate\\",
+                "Illuminate\\Http",
+                "Illuminate\\Routing",
+                "Illuminate\\Support",
+            ],
+        ),
+        // --- Rails (Ruby) ---
+        (
+            "rails",
+            &[
+                "rails",
+                "action_controller",
+                "active_record",
+                "action_view",
+            ],
+        ),
+        // --- ASP.NET (C#) ---
+        (
+            "aspnet",
+            &[
+                "Microsoft.AspNetCore",
+                "Microsoft.AspNetCore.Mvc",
+                "Microsoft.AspNetCore.Http",
+            ],
+        ),
+        // --- SvelteKit ---
+        ("sveltekit", &["@sveltejs/kit", "$app/navigation"]),
+        // --- Vue Router ---
+        ("vue_router", &["vue-router"]),
+        // --- Nuxt ---
+        ("nuxt", &["nuxt", "#app", "@nuxt/kit"]),
+        // --- Remix ---
+        (
+            "remix",
+            &[
+                "@remix-run/react",
+                "@remix-run/node",
+                "@remix-run/cloudflare",
+                "@remix-run/serve",
+            ],
+        ),
+        // --- Hono ---
+        ("hono", &["hono"]),
     ]
 }
 
@@ -103,6 +150,51 @@ fn file_path_pattern_table() -> &'static [(&'static str, &'static [&'static str]
                 "Repository.java",
             ],
         ),
+        // --- Laravel ---
+        (
+            "laravel",
+            &[
+                "app/Http/Controllers",
+                "routes/web.php",
+                "routes/api.php",
+                "app/Providers",
+                "resources/views",
+            ],
+        ),
+        // --- Rails ---
+        (
+            "rails",
+            &[
+                "app/controllers/",
+                "config/routes.rb",
+                "app/models/",
+                "app/views/",
+            ],
+        ),
+        // --- ASP.NET ---
+        (
+            "aspnet",
+            &[
+                "Controllers/",
+                "Program.cs",
+                "Startup.cs",
+                "appsettings.json",
+            ],
+        ),
+        // --- SvelteKit ---
+        (
+            "sveltekit",
+            &[
+                "src/routes/+page.svelte",
+                "src/routes/+layout.svelte",
+                "src/routes/+server.ts",
+                "svelte.config",
+            ],
+        ),
+        // --- Nuxt ---
+        ("nuxt", &["nuxt.config", "pages/", "composables/"]),
+        // --- Remix ---
+        ("remix", &["app/routes/", "app/root.tsx", "app/root.jsx"]),
     ]
 }
 
@@ -121,6 +213,13 @@ fn role_to_framework() -> &'static [(&'static str, &'static str)] {
         ("spring_controller", "spring"),
         ("spring_service", "spring"),
         ("spring_repository", "spring"),
+        ("laravel_controller", "laravel"),
+        ("rails_controller", "rails"),
+        ("aspnet_controller", "aspnet"),
+        ("gin_handler", "gin"),
+        ("axum_handler", "axum"),
+        ("actix_handler", "actix"),
+        ("rocket_handler", "rocket"),
     ]
 }
 
@@ -219,6 +318,121 @@ fn activation_literals_table() -> &'static [(&'static str, &'static [&'static st
             "gorilla",
             &["gorilla", "mux.NewRouter", "mux.Router", "gorilla/mux"],
         ),
+        (
+            "gin",
+            &[
+                "gin",
+                "gin.Default",
+                "gin.New",
+                "gin.Context",
+                "r.GET",
+                "r.POST",
+            ],
+        ),
+        (
+            "echo",
+            &[
+                "echo",
+                "echo.New",
+                "echo.Context",
+                "e.GET",
+                "e.POST",
+            ],
+        ),
+        (
+            "axum",
+            &[
+                "axum",
+                "Router::new",
+                ".route(",
+                "axum::extract",
+                "axum::response",
+            ],
+        ),
+        (
+            "actix",
+            &[
+                "actix",
+                "actix-web",
+                "HttpServer",
+                "web::get",
+                "web::post",
+                "web::resource",
+            ],
+        ),
+        (
+            "rocket",
+            &[
+                "rocket",
+                "#[get",
+                "#[post",
+                "rocket::launch",
+                "rocket::routes",
+            ],
+        ),
+        (
+            "laravel",
+            &[
+                "laravel",
+                "Eloquent",
+                "Illuminate",
+                "artisan",
+                "Route::get",
+                "Route::post",
+            ],
+        ),
+        (
+            "rails",
+            &[
+                "rails",
+                "ActiveRecord",
+                "ActionController",
+                "routes.rb",
+                "resources",
+            ],
+        ),
+        (
+            "aspnet",
+            &[
+                "asp.net",
+                "aspnet",
+                "ApiController",
+                "HttpGet",
+                "HttpPost",
+                "IActionResult",
+            ],
+        ),
+        (
+            "sveltekit",
+            &[
+                "sveltekit",
+                "svelte",
+                "+page.svelte",
+                "+server",
+                "load function",
+            ],
+        ),
+        (
+            "nuxt",
+            &[
+                "nuxt",
+                "nuxt3",
+                "useFetch",
+                "defineNuxtConfig",
+                "useAsyncData",
+            ],
+        ),
+        (
+            "remix",
+            &[
+                "remix",
+                "@remix-run",
+                "loader",
+                "action",
+                "useLoaderData",
+            ],
+        ),
+        ("vue_router", &["vue-router", "router", "useRoute", "useRouter", "createRouter"]),
     ]
 }
 
@@ -244,6 +458,14 @@ fn normalize_route_framework(fw: &str) -> Option<&'static str> {
         "chi" => Some("chi"),
         "gorilla" => Some("gorilla"),
         "net/http" | "net_http" => Some("net_http"),
+        "laravel" => Some("laravel"),
+        "rails" => Some("rails"),
+        "aspnet" | "asp.net" => Some("aspnet"),
+        "sveltekit" => Some("sveltekit"),
+        "vue_router" | "vue-router" => Some("vue_router"),
+        "nuxt" => Some("nuxt"),
+        "remix" => Some("remix"),
+        "hono" => Some("hono"),
         _ => None,
     }
 }
@@ -444,6 +666,11 @@ pub fn check_package_markers(project_path: &Path) -> HashMap<String, f64> {
                 ("vue", "vue"),
                 ("angular", "@angular/core"),
                 ("hono", "hono"),
+                ("sveltekit", "@sveltejs/kit"),
+                ("vue_router", "vue-router"),
+                ("nuxt", "nuxt"),
+                ("remix", "@remix-run/react"),
+                ("remix", "@remix-run/node"),
             ];
             for &(fw_key, dep) in checks {
                 if deps.contains(&dep.to_string()) {
@@ -517,6 +744,56 @@ pub fn check_package_markers(project_path: &Path) -> HashMap<String, f64> {
                 *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
             }
         }
+    }
+
+    // --- composer.json (PHP / Laravel) ---
+    if let Ok(content) = std::fs::read_to_string(project_path.join("composer.json")) {
+        let lower = content.to_lowercase();
+        let checks: &[(&str, &str)] = &[
+            ("laravel", "laravel/framework"),
+            ("laravel", "illuminate/"),
+        ];
+        for &(fw_key, dep) in checks {
+            if lower.contains(dep) {
+                let entry = results.entry(fw_key.to_string()).or_insert(0.0);
+                *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
+            }
+        }
+    }
+
+    // --- Gemfile (Ruby / Rails) ---
+    if let Ok(content) = std::fs::read_to_string(project_path.join("Gemfile")) {
+        let checks: &[(&str, &str)] = &[("rails", "rails")];
+        for &(fw_key, dep) in checks {
+            if content.contains(dep) {
+                let entry = results.entry(fw_key.to_string()).or_insert(0.0);
+                *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
+            }
+        }
+    }
+
+    // --- *.csproj (ASP.NET / C#) ---
+    for fname in &[
+        "*.csproj",
+    ] {
+        // Walk one level for .csproj files
+        let _ = fname; // placeholder for pattern
+        if let Ok(entries) = std::fs::read_dir(project_path) {
+            for entry in entries.flatten() {
+                let path = entry.path();
+                if path.extension().and_then(|e| e.to_str()) == Some("csproj") {
+                    if let Ok(content) = std::fs::read_to_string(&path) {
+                        if content.contains("Microsoft.AspNetCore")
+                            || content.contains("Microsoft.NET.Sdk.Web")
+                        {
+                            let entry = results.entry("aspnet".to_string()).or_insert(0.0);
+                            *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
+                        }
+                    }
+                }
+            }
+        }
+        break; // only one iteration needed for this glob pattern
     }
 
     results
@@ -1112,6 +1389,110 @@ mod tests {
         assert!(
             detections.is_empty(),
             "no framework should be detected for generic utility imports"
+        );
+    }
+
+    #[test]
+    fn test_detect_new_frameworks_import_signal() {
+        let (_tmp, db) = setup_test_db();
+
+        // Laravel detection via import
+        insert_test_file(
+            &db,
+            "app/Http/Controllers/UserController.php",
+            &["Illuminate\\Http"],
+        );
+        let dets = detect_file_frameworks(&db, "app/Http/Controllers/UserController.php");
+        assert!(
+            dets.iter().any(|d| d.framework_key == "laravel"),
+            "should detect laravel from Illuminate import + file path, got: {:?}",
+            dets.iter().map(|d| &d.framework_key).collect::<Vec<_>>()
+        );
+
+        // SvelteKit detection via import
+        insert_test_file(&db, "src/routes/+page.svelte", &["@sveltejs/kit"]);
+        let dets = detect_file_frameworks(&db, "src/routes/+page.svelte");
+        assert!(
+            dets.iter().any(|d| d.framework_key == "sveltekit"),
+            "should detect sveltekit from import + file path, got: {:?}",
+            dets.iter().map(|d| &d.framework_key).collect::<Vec<_>>()
+        );
+
+        // Remix detection via import
+        insert_test_file(&db, "app/routes/index.tsx", &["@remix-run/react"]);
+        let dets = detect_file_frameworks(&db, "app/routes/index.tsx");
+        assert!(
+            dets.iter().any(|d| d.framework_key == "remix"),
+            "should detect remix from import + file path, got: {:?}",
+            dets.iter().map(|d| &d.framework_key).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn test_check_package_markers_laravel() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(
+            tmp.path().join("composer.json"),
+            r#"{"require":{"laravel/framework":"^10.0","php":"^8.1"}}"#,
+        )
+        .unwrap();
+
+        let markers = check_package_markers(tmp.path());
+        assert!(
+            markers.contains_key("laravel"),
+            "should detect laravel from composer.json"
+        );
+    }
+
+    #[test]
+    fn test_check_package_markers_rails() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(
+            tmp.path().join("Gemfile"),
+            "source 'https://rubygems.org'\ngem 'rails', '~> 7.0'\ngem 'puma'\n",
+        )
+        .unwrap();
+
+        let markers = check_package_markers(tmp.path());
+        assert!(
+            markers.contains_key("rails"),
+            "should detect rails from Gemfile"
+        );
+    }
+
+    #[test]
+    fn test_check_package_markers_sveltekit() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(
+            tmp.path().join("package.json"),
+            r#"{"devDependencies":{"@sveltejs/kit":"^2.0","svelte":"^4.0"}}"#,
+        )
+        .unwrap();
+
+        let markers = check_package_markers(tmp.path());
+        assert!(
+            markers.contains_key("sveltekit"),
+            "should detect sveltekit from package.json"
+        );
+    }
+
+    #[test]
+    fn test_normalize_route_framework_new_entries() {
+        assert_eq!(normalize_route_framework("laravel"), Some("laravel"));
+        assert_eq!(normalize_route_framework("rails"), Some("rails"));
+        assert_eq!(normalize_route_framework("aspnet"), Some("aspnet"));
+        assert_eq!(normalize_route_framework("asp.net"), Some("aspnet"));
+        assert_eq!(normalize_route_framework("sveltekit"), Some("sveltekit"));
+        assert_eq!(normalize_route_framework("nuxt"), Some("nuxt"));
+        assert_eq!(normalize_route_framework("remix"), Some("remix"));
+        assert_eq!(normalize_route_framework("hono"), Some("hono"));
+        assert_eq!(
+            normalize_route_framework("vue_router"),
+            Some("vue_router")
+        );
+        assert_eq!(
+            normalize_route_framework("vue-router"),
+            Some("vue_router")
         );
     }
 }

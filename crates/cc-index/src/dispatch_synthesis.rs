@@ -5,6 +5,11 @@
 //!    (produces `RendersComponent` semantic edges).
 //! 3. **State setter** – matches `setFoo(...)` / `this.setState(...)` → re-render
 //!    (produces synthetic call edges).
+//! 4. **Field-backed observer** – detects registrar/dispatcher method pairs within
+//!    the same class (e.g. `on`/`emit`, `subscribe`/`notify`) and creates edges
+//!    from dispatcher to registrar targets.
+//! 5. **React re-render chain** – extends state setter synthesis by linking
+//!    re-rendering components to their JSX child components.
 
 use std::collections::{HashMap, HashSet};
 
@@ -54,6 +59,8 @@ pub struct SynthesisStats {
     pub skipped_fanout: usize,
     pub jsx_edges: usize,
     pub setter_edges: usize,
+    pub field_observer_edges: usize,
+    pub react_rerender_edges: usize,
 }
 
 /// Run event-emitter synthesis: match emit sites to on sites and produce
@@ -69,6 +76,8 @@ pub fn run_event_emitter_synthesis(
             skipped_fanout: 0,
             jsx_edges: 0,
             setter_edges: 0,
+            field_observer_edges: 0,
+            react_rerender_edges: 0,
         });
     }
 
@@ -216,6 +225,8 @@ pub fn run_event_emitter_synthesis(
         skipped_fanout,
         jsx_edges: 0,
         setter_edges: 0,
+        field_observer_edges: 0,
+        react_rerender_edges: 0,
     })
 }
 
@@ -550,6 +561,416 @@ pub fn run_state_setter_synthesis(db: &IndexDb) -> CcResult<usize> {
     }
 
     // 5. Batch insert.
+    let count = synthetic_edges.len();
+    if !synthetic_edges.is_empty() {
+        db.insert_synthetic_call_edges(&synthetic_edges)?;
+    }
+
+    Ok(count)
+}
+
+// ── Field-backed observer synthesis ──────────────────────────
+
+/// Well-known registrar method name prefixes.
+const REGISTRAR_PREFIXES: &[&str] = &[
+    "on",
+    "add",
+    "subscribe",
+    "register",
+    "attach",
+    "listen",
+    "bind",
+];
+
+/// Well-known dispatcher method name prefixes.
+const DISPATCHER_PREFIXES: &[&str] = &[
+    "emit", "fire", "dispatch", "trigger", "notify", "publish", "broadcast", "send",
+];
+
+/// Returns true if `name` starts with any of the given prefixes (case-insensitive check
+/// on the prefix, with the character after the prefix being uppercase or end-of-string
+/// to avoid false positives like "addition" matching "add").
+fn matches_method_prefix(name: &str, prefixes: &[&str]) -> bool {
+    let lower = name.to_ascii_lowercase();
+    for prefix in prefixes {
+        if lower.starts_with(prefix) {
+            let rest = &name[prefix.len()..];
+            // Accept exact match ("on") or camelCase boundary ("onClick")
+            if rest.is_empty() || rest.starts_with(|c: char| c.is_ascii_uppercase() || c == '_') {
+                return true;
+            }
+        }
+    }
+    false
+}
+
+/// Detect field-backed observer patterns: classes that have both registrar methods
+/// (on/add/subscribe/...) and dispatcher methods (emit/fire/dispatch/...) are
+/// likely observer/event-bus implementations. We create synthetic edges from
+/// each dispatcher method to every registrar method's handler targets within
+/// the same class.
+///
+/// The approach:
+/// 1. Find all classes that have methods matching registrar OR dispatcher name patterns.
+/// 2. For each such class, partition its methods into registrars and dispatchers.
+/// 3. If a class has at least one registrar AND one dispatcher, pair them.
+/// 4. For each dispatcher→registrar pair, create a synthetic call edge.
+///
+/// This complements the event-emitter synthesis (which matches by event name string)
+/// by catching cases where the event bus pattern is used but event names aren't
+/// statically detectable.
+pub fn run_field_observer_synthesis(
+    db: &IndexDb,
+    config: &SynthesisConfig,
+) -> CcResult<usize> {
+    if !config.enabled {
+        return Ok(0);
+    }
+
+    // 1. Delete old field_observer synthetic edges.
+    db.delete_synthetic_call_edges("field_observer")?;
+
+    // 2. Collect all registrar and dispatcher method names to query.
+    //    We query for classes that contain methods matching either pattern.
+    //    Since we can't do prefix matching in SQL efficiently, we query all
+    //    methods and filter in Rust.
+
+    // First, find all classes that have CallbackStore or CallbackInvoke dispatch sites.
+    let store_sites =
+        db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackStore.as_str())?;
+    let invoke_sites =
+        db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackInvoke.as_str())?;
+
+    // Build a map of (class_uid → store_sites) and (class_uid → invoke_sites).
+    let mut class_stores: HashMap<String, Vec<&DispatchSiteRecord>> = HashMap::new();
+    let mut class_invokes: HashMap<String, Vec<&DispatchSiteRecord>> = HashMap::new();
+    for site in &store_sites {
+        if let Some(ref uid) = site.enclosing_symbol_uid {
+            class_stores.entry(uid.clone()).or_default().push(site);
+        }
+    }
+    for site in &invoke_sites {
+        if let Some(ref uid) = site.enclosing_symbol_uid {
+            class_invokes.entry(uid.clone()).or_default().push(site);
+        }
+    }
+
+    let mut synthetic_edges: Vec<CallEdgeRecord> = Vec::new();
+
+    // Strategy A: Use CallbackStore/CallbackInvoke dispatch sites (if available).
+    // These are emitted by the parser when it detects `this.field.push(callback)` (store)
+    // and `this.field.forEach(cb => cb())` (invoke) patterns.
+    let store_class_uids: HashSet<&str> = class_stores.keys().map(|s| s.as_str()).collect();
+    for (invoke_uid, invokes) in &class_invokes {
+        if !store_class_uids.contains(invoke_uid.as_str()) {
+            continue;
+        }
+        let stores = match class_stores.get(invoke_uid) {
+            Some(s) => s,
+            None => continue,
+        };
+
+        // Match by field name (the `key` field in dispatch sites).
+        let mut store_by_key: HashMap<&str, Vec<&&DispatchSiteRecord>> = HashMap::new();
+        for store in stores {
+            store_by_key
+                .entry(store.key.as_str())
+                .or_default()
+                .push(&store);
+        }
+
+        for invoke in invokes {
+            let matching_stores = match store_by_key.get(invoke.key.as_str()) {
+                Some(s) => s,
+                None => continue,
+            };
+
+            // Fanout cap.
+            if matching_stores.len() > config.event_fanout_cap {
+                continue;
+            }
+
+            for store in matching_stores {
+                let handler_uid = match &store.handler_symbol_uid {
+                    Some(uid) => uid.clone(),
+                    None => continue,
+                };
+
+                synthetic_edges.push(CallEdgeRecord {
+                    edge_id: synth_edge_id("fo", &invoke.site_id, &store.site_id),
+                    file_path: invoke.file_path.clone(),
+                    caller_symbol: None,
+                    callee_symbol: store.handler_expr.clone().unwrap_or_default(),
+                    line: invoke.line,
+                    start_col: invoke.col,
+                    caller_symbol_uid: invoke.enclosing_symbol_uid.clone(),
+                    callee_symbol_uid: Some(handler_uid),
+                    dispatch_kind: DispatchKind::FieldObserver,
+                    call_kind: "field_observer".to_string(),
+                    resolution_kind: ResolutionKind::Heuristic,
+                    resolution_confidence: 0.65,
+                    resolution_strategy: "callback_store_invoke_field".to_string(),
+                    parser_tier: ParserTier::Heuristic,
+                    parser_confidence: 0.65,
+                    synthesized_by: Some("field_observer".to_string()),
+                    synthesis_key: Some(format!("{}.{}", invoke_uid, invoke.key)),
+                    registered_file: Some(store.file_path.clone()),
+                    registered_line: Some(store.line),
+                    ..Default::default()
+                });
+            }
+        }
+    }
+
+    // Strategy B: Name-based heuristic — scan for classes with registrar + dispatcher
+    // method names even without explicit CallbackStore/CallbackInvoke dispatch sites.
+    // This catches patterns like:
+    //   class EventBus { on(...) { ... }  emit(...) { ... } }
+    // where the parser didn't emit specific dispatch site records.
+
+    // Collect all candidate registrar/dispatcher method names for querying.
+    let registrar_query_names: Vec<&str> = REGISTRAR_PREFIXES.to_vec();
+    let dispatcher_query_names: Vec<&str> = DISPATCHER_PREFIXES.to_vec();
+
+    // Find classes that have methods with registrar names.
+    let registrar_classes = db.find_classes_with_method_names(&registrar_query_names)?;
+    let dispatcher_classes = db.find_classes_with_method_names(&dispatcher_query_names)?;
+
+    // Intersect: classes that have both registrar and dispatcher methods.
+    let registrar_containers: HashSet<(&str, &str)> = registrar_classes
+        .iter()
+        .map(|(c, f)| (c.as_str(), f.as_str()))
+        .collect();
+    let candidate_containers: Vec<(&str, &str)> = dispatcher_classes
+        .iter()
+        .filter_map(|(c, f)| {
+            if registrar_containers.contains(&(c.as_str(), f.as_str())) {
+                Some((c.as_str(), f.as_str()))
+            } else {
+                None
+            }
+        })
+        .collect();
+
+    // Deduplicate — we only need unique containers.
+    let unique_containers: HashSet<&str> = candidate_containers
+        .iter()
+        .map(|(c, _)| *c)
+        .collect();
+
+    // Track edges we've already created (from Strategy A) to avoid duplicates.
+    let existing_edge_ids: HashSet<String> =
+        synthetic_edges.iter().map(|e| e.edge_id.clone()).collect();
+
+    for container in unique_containers {
+        let methods = db.find_methods_by_container(container)?;
+        if methods.is_empty() {
+            continue;
+        }
+
+        let mut registrars: Vec<(&str, &str, &str, u32)> = Vec::new(); // (uid, name, file, line)
+        let mut dispatchers: Vec<(&str, &str, &str, u32)> = Vec::new();
+        for (uid, name, file_path, line) in &methods {
+            if matches_method_prefix(name, REGISTRAR_PREFIXES) {
+                registrars.push((uid.as_str(), name.as_str(), file_path.as_str(), *line));
+            }
+            if matches_method_prefix(name, DISPATCHER_PREFIXES) {
+                dispatchers.push((uid.as_str(), name.as_str(), file_path.as_str(), *line));
+            }
+        }
+
+        if registrars.is_empty() || dispatchers.is_empty() {
+            continue;
+        }
+
+        // Fanout cap per dispatcher.
+        if registrars.len() > config.event_fanout_cap {
+            continue;
+        }
+
+        for (disp_uid, _disp_name, disp_file, disp_line) in &dispatchers {
+            for (reg_uid, reg_name, reg_file, reg_line) in &registrars {
+                // Skip self-reference.
+                if disp_uid == reg_uid {
+                    continue;
+                }
+
+                let edge_id = synth_edge_id("fo", disp_uid, reg_uid);
+                if existing_edge_ids.contains(&edge_id) {
+                    continue;
+                }
+
+                synthetic_edges.push(CallEdgeRecord {
+                    edge_id,
+                    file_path: disp_file.to_string(),
+                    caller_symbol: None,
+                    callee_symbol: reg_name.to_string(),
+                    line: *disp_line,
+                    start_col: 0,
+                    caller_symbol_uid: Some(disp_uid.to_string()),
+                    callee_symbol_uid: Some(reg_uid.to_string()),
+                    dispatch_kind: DispatchKind::FieldObserver,
+                    call_kind: "field_observer".to_string(),
+                    resolution_kind: ResolutionKind::Heuristic,
+                    resolution_confidence: 0.55,
+                    resolution_strategy: "name_pattern_registrar_dispatcher".to_string(),
+                    parser_tier: ParserTier::Heuristic,
+                    parser_confidence: 0.55,
+                    synthesized_by: Some("field_observer".to_string()),
+                    synthesis_key: Some(format!("{}.{}", container, reg_name)),
+                    registered_file: Some(reg_file.to_string()),
+                    registered_line: Some(*reg_line),
+                    ..Default::default()
+                });
+            }
+        }
+    }
+
+    // 3. Batch insert.
+    let count = synthetic_edges.len();
+    if !synthetic_edges.is_empty() {
+        db.insert_synthetic_call_edges(&synthetic_edges)?;
+    }
+
+    Ok(count)
+}
+
+// ── React re-render chain synthesis ─────────────────────────
+
+/// Enhance state setter synthesis with re-render chain:
+/// When a setState call triggers a re-render, also link to child components
+/// rendered via JSX in the render/return body.
+///
+/// Chain: setState caller → component render → child component renders
+///
+/// This runs after both state setter synthesis and JSX synthesis, and creates
+/// additional `react_rerender` edges for the render→child component links
+/// that form the cascade path.
+pub fn run_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<usize> {
+    // 1. Delete old react_rerender synthetic edges.
+    db.delete_synthetic_call_edges("react_rerender")?;
+
+    // 2. Load existing state setter edges to find components that have setState triggers.
+    //    These were created by run_state_setter_synthesis and point caller → component.
+    //    The callee_symbol_uid is the component that re-renders.
+    let all_sites = db.load_all_dispatch_sites()?;
+
+    // Collect class components with setState calls.
+    let class_setter_sites: Vec<&DispatchSiteRecord> = all_sites
+        .iter()
+        .filter(|s| {
+            s.site_kind == DispatchSiteKind::StateSetterCall && s.key == "setState"
+        })
+        .collect();
+
+    // Collect functional component setter bindings.
+    let func_setter_bindings: Vec<&DispatchSiteRecord> = all_sites
+        .iter()
+        .filter(|s| s.site_kind == DispatchSiteKind::StateSetterBinding)
+        .collect();
+
+    // Collect JSX tag sites — these tell us which components are rendered in which parent.
+    let jsx_sites: Vec<&DispatchSiteRecord> = all_sites
+        .iter()
+        .filter(|s| s.site_kind == DispatchSiteKind::JsxTag)
+        .collect();
+
+    if jsx_sites.is_empty() {
+        return Ok(0);
+    }
+
+    // 3. Build a map: component_uid → JSX children rendered by that component.
+    let mut component_children: HashMap<&str, Vec<&DispatchSiteRecord>> = HashMap::new();
+    for site in &jsx_sites {
+        if let Some(ref uid) = site.enclosing_symbol_uid {
+            component_children
+                .entry(uid.as_str())
+                .or_default()
+                .push(site);
+        }
+    }
+
+    // 4. For class components with setState, find the render method and its JSX children.
+    let component_kinds: &[&str] = &["function", "class", "component", "hook"];
+    let mut synthetic_edges: Vec<CallEdgeRecord> = Vec::new();
+
+    // Collect all component UIDs that have state setters.
+    let mut rerendering_components: HashSet<String> = HashSet::new();
+
+    for site in &class_setter_sites {
+        if let Some(ref caller_uid) = site.enclosing_symbol_uid {
+            // Find the render method in the same class.
+            if let Ok(Some(render_uid)) = db.find_method_in_same_class(caller_uid, "render") {
+                rerendering_components.insert(render_uid);
+            }
+        }
+    }
+
+    // For functional components, the component itself is the "render".
+    for binding in &func_setter_bindings {
+        if let Some(ref uid) = binding.enclosing_symbol_uid {
+            rerendering_components.insert(uid.clone());
+        }
+    }
+
+    // 5. For each re-rendering component, find JSX children and resolve them.
+    for component_uid in &rerendering_components {
+        let children = match component_children.get(component_uid.as_str()) {
+            Some(c) => c,
+            None => continue,
+        };
+
+        for child_jsx in children {
+            // Resolve the JSX tag name to a component symbol.
+            let child_name = &child_jsx.key;
+            let matches = db.find_symbols_by_name_and_kinds(child_name, component_kinds)?;
+
+            // Same resolution logic as JSX synthesis: prefer same-file, then unique global.
+            let target = if let Some(m) = matches.iter().find(|s| s.file_path == child_jsx.file_path)
+            {
+                m.symbol_uid.clone()
+            } else if matches.len() == 1 {
+                matches[0].symbol_uid.clone()
+            } else {
+                None
+            };
+
+            let child_uid = match target {
+                Some(uid) => uid,
+                None => continue,
+            };
+
+            // Skip self-reference.
+            if child_uid == *component_uid {
+                continue;
+            }
+
+            synthetic_edges.push(CallEdgeRecord {
+                edge_id: synth_edge_id("rr", component_uid, &child_uid),
+                file_path: child_jsx.file_path.clone(),
+                caller_symbol: None,
+                callee_symbol: child_name.clone(),
+                line: child_jsx.line,
+                start_col: child_jsx.col,
+                caller_symbol_uid: Some(component_uid.clone()),
+                callee_symbol_uid: Some(child_uid),
+                dispatch_kind: DispatchKind::ReactiveBinding,
+                call_kind: "react_rerender".to_string(),
+                resolution_kind: ResolutionKind::Heuristic,
+                resolution_confidence: 0.60,
+                resolution_strategy: "rerender_jsx_child".to_string(),
+                parser_tier: ParserTier::Heuristic,
+                parser_confidence: 0.60,
+                synthesized_by: Some("react_rerender".to_string()),
+                synthesis_key: Some(format!("{}.{}", component_uid, child_name)),
+                registered_file: Some(child_jsx.file_path.clone()),
+                registered_line: Some(child_jsx.line),
+                ..Default::default()
+            });
+        }
+    }
+
+    // 6. Batch insert.
     let count = synthetic_edges.len();
     if !synthetic_edges.is_empty() {
         db.insert_synthetic_call_edges(&synthetic_edges)?;

@@ -3,8 +3,8 @@
 use crate::chunker::Chunker;
 use crate::traits::FileParser;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, ImportRecord, ResolutionKind, SemanticEdgeRecord,
-    SemanticRelation,
+    CallEdgeRecord, DispatchKind, ImportRecord, ResolutionKind, RouteEdgeRecord,
+    SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
@@ -1112,6 +1112,252 @@ impl GoParser {
     }
 
     // =========================================================================
+    // Route extraction (Go HTTP frameworks)
+    // =========================================================================
+
+    /// HTTP method names recognized for route registration patterns.
+    const ROUTE_METHODS: &'static [&'static str] = &[
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "HEAD",
+        "OPTIONS",
+        "Handle",
+        "HandleFunc",
+        "Any",
+        "Group",
+    ];
+
+    /// Detect framework from import paths present in the file.
+    fn detect_go_framework(imports: &[ImportRecord]) -> Option<&'static str> {
+        for imp in imports {
+            let path = imp.import_string.as_str();
+            if path.contains("gin-gonic/gin") {
+                return Some("gin");
+            }
+            if path.contains("labstack/echo") {
+                return Some("echo");
+            }
+            if path.contains("go-chi/chi") {
+                return Some("chi");
+            }
+            if path.contains("gofiber/fiber") {
+                return Some("fiber");
+            }
+            if path.contains("gorilla/mux") {
+                return Some("gorilla");
+            }
+        }
+        // Check for net/http (stdlib)
+        for imp in imports {
+            if imp.import_string == "net/http" {
+                return Some("net_http");
+            }
+        }
+        None
+    }
+
+    /// Extract route edges from function/method bodies.
+    ///
+    /// Looks for patterns like:
+    ///   - `r.GET("/path", handler)` — Gin/Chi/Echo style
+    ///   - `http.HandleFunc("/path", handler)` — stdlib net/http
+    ///   - `router.Handle("/path", handler)` — generic
+    fn extract_route_edges(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        imports: &[ImportRecord],
+        symbols: &[SymbolRecord],
+    ) -> Vec<RouteEdgeRecord> {
+        let mut routes = Vec::new();
+        let framework = Self::detect_go_framework(imports);
+        let root = tree.root_node();
+        let mut root_cursor = root.walk();
+
+        for child in root.children(&mut root_cursor) {
+            match child.kind() {
+                "function_declaration" | "method_declaration" => {
+                    let caller_sym = self.find_symbol_for_decl(&child, source, symbols);
+                    if let Some(body) = child.child_by_field_name("body") {
+                        self.walk_route_calls(
+                            &body,
+                            source,
+                            file_path,
+                            framework,
+                            &caller_sym,
+                            &mut routes,
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        routes
+    }
+
+    /// Recursively walk AST nodes to find route registration call expressions.
+    fn walk_route_calls(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        framework: Option<&str>,
+        caller_sym: &Option<&SymbolRecord>,
+        routes: &mut Vec<RouteEdgeRecord>,
+    ) {
+        if node.kind() == "call_expression" {
+            self.try_extract_route(node, source, file_path, framework, caller_sym, routes);
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_route_calls(&child, source, file_path, framework, caller_sym, routes);
+        }
+    }
+
+    /// Attempt to extract a route from a single call_expression node.
+    ///
+    /// Matches patterns:
+    ///   selector_expression: `obj.GET("/path", handler)` or `obj.HandleFunc("/path", handler)`
+    ///   identifier: `HandleFunc(...)` (less common standalone)
+    fn try_extract_route(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        framework: Option<&str>,
+        caller_sym: &Option<&SymbolRecord>,
+        routes: &mut Vec<RouteEdgeRecord>,
+    ) {
+        let func_node = match node.child_by_field_name("function") {
+            Some(n) => n,
+            None => return,
+        };
+
+        let (method_name, _receiver_text) = match func_node.kind() {
+            "selector_expression" => {
+                let field = func_node.child_by_field_name("field");
+                let operand = func_node.child_by_field_name("operand");
+                let field_text = match field.and_then(|n| n.utf8_text(source).ok()) {
+                    Some(t) => t.to_string(),
+                    None => return,
+                };
+                let operand_text = operand
+                    .and_then(|n| n.utf8_text(source).ok())
+                    .map(String::from);
+                (field_text, operand_text)
+            }
+            _ => return, // Only selector expressions for route registration
+        };
+
+        // Check if the method name matches a route registration pattern
+        let is_route_method = Self::ROUTE_METHODS
+            .iter()
+            .any(|m| m.eq_ignore_ascii_case(&method_name));
+        // Also check lowercase versions common in some frameworks
+        let method_lower = method_name.to_lowercase();
+        let is_lowercase_route = matches!(
+            method_lower.as_str(),
+            "get" | "post" | "put" | "delete" | "patch" | "head" | "options"
+                | "handle" | "handlefunc" | "any" | "group"
+        );
+
+        if !is_route_method && !is_lowercase_route {
+            return;
+        }
+
+        // Extract arguments
+        let args_node = match node.child_by_field_name("arguments") {
+            Some(n) => n,
+            None => return,
+        };
+
+        // First argument should be the route path (a string literal)
+        let mut arg_cursor = args_node.walk();
+        let mut args: Vec<tree_sitter::Node> = Vec::new();
+        for arg in args_node.named_children(&mut arg_cursor) {
+            args.push(arg);
+        }
+
+        if args.is_empty() {
+            return;
+        }
+
+        // Extract route path from first argument (must be a string literal)
+        let route_path = match args[0].kind() {
+            "interpreted_string_literal" | "raw_string_literal" => {
+                args[0]
+                    .utf8_text(source)
+                    .ok()
+                    .map(|s| {
+                        s.trim_start_matches('"')
+                            .trim_end_matches('"')
+                            .trim_start_matches('`')
+                            .trim_end_matches('`')
+                            .to_string()
+                    })
+            }
+            _ => None,
+        };
+
+        let route_path = match route_path {
+            Some(p) if !p.is_empty() => p,
+            _ => return,
+        };
+
+        // Extract handler name from second argument if present
+        let handler_name = if args.len() > 1 {
+            args[1].utf8_text(source).ok().map(|s| s.to_string())
+        } else {
+            None
+        };
+
+        // Determine HTTP method from the call method name
+        let http_method = match method_lower.as_str() {
+            "get" => Some("GET".to_string()),
+            "post" => Some("POST".to_string()),
+            "put" => Some("PUT".to_string()),
+            "delete" => Some("DELETE".to_string()),
+            "patch" => Some("PATCH".to_string()),
+            "head" => Some("HEAD".to_string()),
+            "options" => Some("OPTIONS".to_string()),
+            "any" => None, // matches all methods
+            "handle" | "handlefunc" | "group" => None,
+            _ => None,
+        };
+
+        let line = node.start_position().row as u32 + 1;
+        let start_col = node.start_position().column as u32;
+        let end_line = node.end_position().row as u32 + 1;
+        let end_col = node.end_position().column as u32;
+
+        routes.push(RouteEdgeRecord {
+            edge_id: StableId::edge_id("route", file_path, line, start_col),
+            file_path: file_path.to_string(),
+            route_path,
+            handler_name: handler_name.clone(),
+            method: http_method,
+            line,
+            start_col,
+            end_line: Some(end_line),
+            end_col,
+            handler_symbol_id: None,
+            handler_symbol_uid: None,
+            handler_expr: handler_name,
+            router_symbol_uid: caller_sym.and_then(|s| s.symbol_uid.clone()),
+            framework: framework.map(String::from),
+            route_kind: Some("http".to_string()),
+            confidence: 0.80,
+            parser_tier: ParserTier::TreeSitter,
+        });
+    }
+
+    // =========================================================================
     // Helpers
     // =========================================================================
 
@@ -1268,6 +1514,8 @@ impl FileParser for GoParser {
             self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
+        let route_edges =
+            self.extract_route_edges(&tree, content.as_bytes(), file_path, &imports, &symbols);
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1292,6 +1540,7 @@ impl FileParser for GoParser {
             call_edges,
             semantic_edges,
             type_assigns,
+            route_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -1481,5 +1730,125 @@ func main() {
         assert!(dynamic.is_some(), "should have dynamic call to Println");
         assert_eq!(dynamic.unwrap().dispatch_kind, DispatchKind::Dynamic);
         assert_eq!(dynamic.unwrap().receiver_expr.as_deref(), Some("fmt"));
+    }
+
+    #[test]
+    fn parse_gin_route_edges() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "github.com/gin-gonic/gin"
+
+func setupRouter() {
+    r := gin.Default()
+    r.GET("/api/users", getUsers)
+    r.POST("/api/users", createUser)
+    r.DELETE("/api/users/:id", deleteUser)
+}
+
+func getUsers(c *gin.Context) {}
+func createUser(c *gin.Context) {}
+func deleteUser(c *gin.Context) {}
+"#;
+        let outcome = parser.parse("routes.go", code, Language::Go).unwrap();
+        assert!(
+            outcome.route_edges.len() >= 3,
+            "should detect at least 3 route edges, got {}",
+            outcome.route_edges.len()
+        );
+
+        let get_route = outcome
+            .route_edges
+            .iter()
+            .find(|r| r.route_path == "/api/users" && r.method.as_deref() == Some("GET"));
+        assert!(get_route.is_some(), "should detect GET /api/users route");
+        assert_eq!(
+            get_route.unwrap().framework.as_deref(),
+            Some("gin"),
+            "should detect gin framework"
+        );
+        assert_eq!(
+            get_route.unwrap().handler_name.as_deref(),
+            Some("getUsers"),
+            "should extract handler name"
+        );
+
+        let delete_route = outcome
+            .route_edges
+            .iter()
+            .find(|r| r.route_path == "/api/users/:id");
+        assert!(
+            delete_route.is_some(),
+            "should detect DELETE /api/users/:id route"
+        );
+        assert_eq!(delete_route.unwrap().method.as_deref(), Some("DELETE"));
+    }
+
+    #[test]
+    fn parse_net_http_route_edges() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "net/http"
+
+func main() {
+    http.HandleFunc("/health", healthHandler)
+    http.HandleFunc("/api/data", dataHandler)
+}
+
+func healthHandler(w http.ResponseWriter, r *http.Request) {}
+func dataHandler(w http.ResponseWriter, r *http.Request) {}
+"#;
+        let outcome = parser.parse("server.go", code, Language::Go).unwrap();
+        assert!(
+            outcome.route_edges.len() >= 2,
+            "should detect at least 2 route edges from net/http, got {}",
+            outcome.route_edges.len()
+        );
+
+        let health = outcome
+            .route_edges
+            .iter()
+            .find(|r| r.route_path == "/health");
+        assert!(health.is_some(), "should detect /health route");
+        assert_eq!(
+            health.unwrap().framework.as_deref(),
+            Some("net_http"),
+            "should detect net_http framework"
+        );
+    }
+
+    #[test]
+    fn parse_echo_route_edges() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "github.com/labstack/echo/v4"
+
+func main() {
+    e := echo.New()
+    e.GET("/users", getUsers)
+    e.POST("/users", createUser)
+    e.PUT("/users/:id", updateUser)
+}
+
+func getUsers(c echo.Context) error { return nil }
+func createUser(c echo.Context) error { return nil }
+func updateUser(c echo.Context) error { return nil }
+"#;
+        let outcome = parser.parse("echo_server.go", code, Language::Go).unwrap();
+        assert!(
+            outcome.route_edges.len() >= 3,
+            "should detect at least 3 echo routes, got {}",
+            outcome.route_edges.len()
+        );
+
+        let put_route = outcome
+            .route_edges
+            .iter()
+            .find(|r| r.route_path == "/users/:id");
+        assert!(put_route.is_some(), "should detect PUT /users/:id route");
+        assert_eq!(put_route.unwrap().method.as_deref(), Some("PUT"));
+        assert_eq!(put_route.unwrap().framework.as_deref(), Some("echo"));
     }
 }

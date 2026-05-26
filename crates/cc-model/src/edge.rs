@@ -14,6 +14,7 @@ pub enum DispatchKind {
     EventEmitter,
     CallbackRelay,
     ReactiveBinding,
+    FieldObserver,
 }
 
 impl DispatchKind {
@@ -27,6 +28,7 @@ impl DispatchKind {
             Self::EventEmitter => "event_emitter",
             Self::CallbackRelay => "callback_relay",
             Self::ReactiveBinding => "reactive_binding",
+            Self::FieldObserver => "field_observer",
         }
     }
 }

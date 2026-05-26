@@ -823,6 +823,22 @@ impl Indexer {
             if setter_count > 0 {
                 tracing::info!(edges = setter_count, "state setter synthesis complete");
             }
+
+            // Phase 7e: Field-backed observer synthesis
+            let observer_count = crate::dispatch_synthesis::run_field_observer_synthesis(
+                &self.db,
+                &synthesis_config,
+            )?;
+            if observer_count > 0 {
+                tracing::info!(edges = observer_count, "field observer synthesis complete");
+            }
+
+            // Phase 7f: React re-render chain synthesis
+            let rerender_count =
+                crate::dispatch_synthesis::run_react_rerender_chain_synthesis(&self.db)?;
+            if rerender_count > 0 {
+                tracing::info!(edges = rerender_count, "React re-render chain synthesis complete");
+            }
         } else {
             // If synthesis was enabled in a previous run and is disabled now,
             // proactively remove stale synthetic edges so callers/callees and
@@ -831,11 +847,20 @@ impl Indexer {
             let removed_event = self.db.delete_synthetic_call_edges("event_emitter")?;
             let removed_setter = self.db.delete_synthetic_call_edges("react_state_setter")?;
             let removed_jsx = self.db.delete_synthetic_semantic_edges("synth:jsx:")?;
-            if removed_event > 0 || removed_setter > 0 || removed_jsx > 0 {
+            let removed_observer = self.db.delete_synthetic_call_edges("field_observer")?;
+            let removed_rerender = self.db.delete_synthetic_call_edges("react_rerender")?;
+            if removed_event > 0
+                || removed_setter > 0
+                || removed_jsx > 0
+                || removed_observer > 0
+                || removed_rerender > 0
+            {
                 tracing::info!(
                     event_edges = removed_event,
                     setter_edges = removed_setter,
                     jsx_edges = removed_jsx,
+                    observer_edges = removed_observer,
+                    rerender_edges = removed_rerender,
                     "dispatch synthesis disabled; removed stale synthetic edges"
                 );
             }

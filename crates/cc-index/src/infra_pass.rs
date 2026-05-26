@@ -17,6 +17,7 @@ pub enum InfraFileType {
     Dockerfile,
     DockerCompose,
     K8sManifest,
+    Kustomize,
 }
 
 /// Discover infra files using strong-feature filtering (not blanket *.yaml).
@@ -51,7 +52,7 @@ pub fn discover_infra_files(project_path: &Path) -> Vec<InfraCandidate> {
         {
             Some(InfraFileType::DockerCompose)
         } else if file_name == "kustomization.yaml" || file_name == "kustomization.yml" {
-            Some(InfraFileType::K8sManifest)
+            Some(InfraFileType::Kustomize)
         } else if (file_name.ends_with(".yaml") || file_name.ends_with(".yml"))
             && is_k8s_manifest(path)
         {
@@ -84,39 +85,229 @@ fn is_k8s_manifest(path: &Path) -> bool {
 }
 
 /// Parse a Dockerfile into InfraNodes + InfraEdges.
+///
+/// Handles multi-stage builds (`FROM ... AS name`), `COPY --from=stage`,
+/// `EXPOSE` directives, and tracks `ENV` key names as stage metadata.
 pub fn parse_dockerfile(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let mut nodes = Vec::new();
-    let edges = Vec::new();
+    let mut edges = Vec::new();
+
+    // State tracking for multi-stage builds
+    let mut current_stage: Option<String> = None; // node_id of the current stage
+    let mut stage_node_ids: std::collections::HashMap<String, String> =
+        std::collections::HashMap::new(); // alias → node_id
+    let mut stage_count: u32 = 0;
+    let mut current_env_keys: Vec<String> = Vec::new();
 
     for (line_num, line) in content.lines().enumerate() {
         let trimmed = line.trim();
-        if let Some(rest) = trimmed.strip_prefix("FROM ") {
-            // FROM image:tag [AS alias]
-            let image_clean = rest
-                .split_whitespace()
-                .next()
-                .unwrap_or(rest)
-                .split(" AS ")
-                .next()
-                .unwrap_or(rest)
-                .trim();
+        let line_1based = (line_num + 1) as u32;
 
-            let node_id = StableId::edge_id("infra", rel_path, (line_num + 1) as u32, 0);
+        // Case-insensitive FROM detection
+        let from_rest = trimmed
+            .strip_prefix("FROM ")
+            .or_else(|| trimmed.strip_prefix("from "));
+
+        if let Some(rest) = from_rest {
+            // Flush ENV keys from previous stage
+            flush_env_keys(&mut nodes, &current_stage, &mut current_env_keys);
+
+            stage_count += 1;
+
+            // Parse: FROM image:tag [AS alias]
+            let parts: Vec<&str> = rest.split_whitespace().collect();
+            let image_name = parts.first().copied().unwrap_or(rest).trim();
+
+            // Check for AS alias (case-insensitive)
+            let alias = if parts.len() >= 3 && parts[1].eq_ignore_ascii_case("AS") {
+                Some(parts[2].to_string())
+            } else {
+                None
+            };
+
+            // Create DockerImage node
+            let img_node_id = StableId::edge_id("infra", rel_path, line_1based, 0);
             nodes.push(InfraNode {
-                node_id,
+                node_id: img_node_id.clone(),
                 file_path: rel_path.to_string(),
                 kind: InfraKind::DockerImage,
-                name: image_clean.to_string(),
+                name: image_name.to_string(),
                 namespace: None,
-                line: (line_num + 1) as u32,
+                line: line_1based,
                 end_line: None,
                 properties: serde_json::json!({"raw_from": trimmed}),
                 bound_symbol_uid: None,
                 binding_confidence: None,
             });
+
+            // Create DockerStage node and link stage → image
+            let stage_name = alias
+                .clone()
+                .unwrap_or_else(|| format!("stage-{}", stage_count - 1));
+            let stage_node_id =
+                StableId::edge_id("infra_stage", rel_path, line_1based, 0);
+
+            let mut stage_props = serde_json::json!({
+                "stage_index": stage_count - 1,
+                "base_image": image_name,
+            });
+            if alias.is_none() {
+                stage_props["unnamed"] = serde_json::json!(true);
+            }
+
+            nodes.push(InfraNode {
+                node_id: stage_node_id.clone(),
+                file_path: rel_path.to_string(),
+                kind: InfraKind::DockerStage,
+                name: stage_name.clone(),
+                namespace: None,
+                line: line_1based,
+                end_line: None,
+                properties: stage_props,
+                bound_symbol_uid: None,
+                binding_confidence: None,
+            });
+
+            // Edge: stage → base image (DependsOn)
+            edges.push(InfraEdge {
+                edge_id: StableId::edge_id("infra_e_stage", rel_path, line_1based, 0),
+                source_node_id: stage_node_id.clone(),
+                target_node_id: img_node_id,
+                kind: InfraEdgeKind::DependsOn,
+                confidence: 1.0,
+                properties: serde_json::json!({}),
+            });
+
+            if alias.is_some() {
+                stage_node_ids.insert(stage_name, stage_node_id.clone());
+            }
+            current_stage = Some(stage_node_id);
+            continue;
+        }
+
+        // COPY --from=<stage> detection (case-insensitive)
+        let copy_from = if let Some(after) = trimmed.strip_prefix("COPY --from=") {
+            after.split_whitespace().next()
+        } else if let Some(after) = trimmed.strip_prefix("copy --from=") {
+            after.split_whitespace().next()
+        } else {
+            None
+        };
+
+        if let Some(source_stage) = copy_from {
+            if let Some(ref cur_stage_id) = current_stage {
+                if let Some(src_stage_id) = stage_node_ids.get(source_stage) {
+                    edges.push(InfraEdge {
+                        edge_id: StableId::edge_id(
+                            "infra_e_copy",
+                            rel_path,
+                            line_1based,
+                            0,
+                        ),
+                        source_node_id: cur_stage_id.clone(),
+                        target_node_id: src_stage_id.clone(),
+                        kind: InfraEdgeKind::DependsOn,
+                        confidence: 1.0,
+                        properties: serde_json::json!({"copy_from": source_stage}),
+                    });
+                }
+            }
+            continue;
+        }
+
+        // EXPOSE detection (case-insensitive)
+        let expose_rest = trimmed
+            .strip_prefix("EXPOSE ")
+            .or_else(|| trimmed.strip_prefix("expose "));
+
+        if let Some(ports_str) = expose_rest {
+            // EXPOSE can list multiple ports: EXPOSE 80 443
+            for (idx, port) in ports_str.split_whitespace().enumerate() {
+                let port_clean = port.trim();
+                if port_clean.is_empty() {
+                    continue;
+                }
+                let expose_node_id =
+                    StableId::edge_id("infra_expose", rel_path, line_1based, idx as u32);
+                nodes.push(InfraNode {
+                    node_id: expose_node_id.clone(),
+                    file_path: rel_path.to_string(),
+                    kind: InfraKind::DockerExpose,
+                    name: port_clean.to_string(),
+                    namespace: None,
+                    line: line_1based,
+                    end_line: None,
+                    properties: serde_json::json!({"port": port_clean}),
+                    bound_symbol_uid: None,
+                    binding_confidence: None,
+                });
+
+                // Link EXPOSE to current stage
+                if let Some(ref stage_id) = current_stage {
+                    edges.push(InfraEdge {
+                        edge_id: StableId::edge_id(
+                            "infra_e_expose",
+                            rel_path,
+                            line_1based,
+                            idx as u32,
+                        ),
+                        source_node_id: stage_id.clone(),
+                        target_node_id: expose_node_id,
+                        kind: InfraEdgeKind::ExposesPort,
+                        confidence: 1.0,
+                        properties: serde_json::json!({}),
+                    });
+                }
+            }
+            continue;
+        }
+
+        // ENV detection (case-insensitive) — track key names as metadata
+        let env_rest = trimmed
+            .strip_prefix("ENV ")
+            .or_else(|| trimmed.strip_prefix("env "));
+
+        if let Some(env_str) = env_rest {
+            // ENV KEY=value or ENV KEY value
+            let key = if let Some(eq_pos) = env_str.find('=') {
+                env_str[..eq_pos].trim().to_string()
+            } else {
+                env_str
+                    .split_whitespace()
+                    .next()
+                    .unwrap_or("")
+                    .to_string()
+            };
+            if !key.is_empty() {
+                current_env_keys.push(key);
+            }
         }
     }
+
+    // Flush trailing ENV keys for the last stage
+    flush_env_keys(&mut nodes, &current_stage, &mut current_env_keys);
+
     (nodes, edges)
+}
+
+/// Flush accumulated ENV keys into the current stage node's properties.
+fn flush_env_keys(
+    nodes: &mut [InfraNode],
+    current_stage: &Option<String>,
+    env_keys: &mut Vec<String>,
+) {
+    if env_keys.is_empty() {
+        return;
+    }
+    if let Some(ref stage_nid) = current_stage {
+        for node in nodes.iter_mut() {
+            if node.node_id == *stage_nid {
+                node.properties["env_keys"] = serde_json::json!(*env_keys);
+                break;
+            }
+        }
+    }
+    env_keys.clear();
 }
 
 /// Parse docker-compose YAML into InfraNodes + InfraEdges.
@@ -216,59 +407,385 @@ pub fn parse_docker_compose(rel_path: &str, content: &str) -> (Vec<InfraNode>, V
 }
 
 /// Parse K8s manifest into InfraNodes + InfraEdges.
+///
+/// Supports multi-document YAML (separated by `---`).
+/// Extracts cross-reference edges between resources based on selectors,
+/// configMapRef/secretRef, and volume mounts.
 pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let mut nodes = Vec::new();
-    let edges = Vec::new();
+    let mut edges = Vec::new();
 
-    let mut kind_str = None;
-    let mut name_str = None;
-    let mut namespace_str = None;
-    let mut in_metadata = false;
+    // Split on `---` to handle multi-document YAML
+    let documents: Vec<&str> = content.split("\n---").collect();
 
-    for (line_num, line) in content.lines().enumerate() {
-        let trimmed = line.trim();
-        let indent = line.len() - line.trim_start().len();
+    // Per-document metadata for cross-referencing
+    struct K8sDoc {
+        node_id: String,
+        kind: String,
+        name: String,
+        labels: Vec<(String, String)>,
+        config_map_refs: Vec<String>,
+        secret_refs: Vec<String>,
+        pvc_refs: Vec<String>,
+        selector_labels: Vec<(String, String)>,
+    }
+    let mut docs: Vec<K8sDoc> = Vec::new();
 
-        if let Some(k) = trimmed.strip_prefix("kind:") {
-            kind_str = Some((k.trim().to_string(), line_num + 1));
-        }
-        if trimmed == "metadata:" {
-            in_metadata = true;
-            continue;
-        }
-        if in_metadata && indent == 0 && !trimmed.is_empty() {
-            in_metadata = false;
-        }
-        if in_metadata {
-            if let Some(n) = trimmed.strip_prefix("name:") {
-                name_str = Some(n.trim().trim_matches('"').trim_matches('\'').to_string());
+    for doc in &documents {
+        let mut kind_str = None;
+        let mut name_str = None;
+        let mut namespace_str = None;
+        let mut in_metadata = false;
+        let mut in_labels = false;
+        let mut labels: Vec<(String, String)> = Vec::new();
+        let mut metadata_indent = 0usize;
+        let mut labels_indent = 0usize;
+
+        // Cross-reference tracking
+        let mut selector_labels: Vec<(String, String)> = Vec::new();
+        let mut in_selector = false;
+        let mut in_match_labels = false;
+        let mut selector_indent = 0usize;
+        let mut match_labels_indent = 0usize;
+        let mut config_map_refs: Vec<String> = Vec::new();
+        let mut secret_refs: Vec<String> = Vec::new();
+        let mut pvc_refs: Vec<String> = Vec::new();
+
+        for (line_num, line) in doc.lines().enumerate() {
+            let trimmed = line.trim();
+            if trimmed.is_empty() || trimmed.starts_with('#') {
+                continue;
             }
-            if let Some(ns) = trimmed.strip_prefix("namespace:") {
-                namespace_str = Some(ns.trim().trim_matches('"').trim_matches('\'').to_string());
+            let indent = line.len() - line.trim_start().len();
+
+            // Top-level kind (indent == 0)
+            if indent == 0 {
+                if let Some(k) = trimmed.strip_prefix("kind:") {
+                    kind_str = Some((k.trim().to_string(), line_num + 1));
+                }
+            }
+
+            // metadata block
+            if trimmed == "metadata:" && indent == 0 {
+                in_metadata = true;
+                metadata_indent = indent;
+                in_labels = false;
+                continue;
+            }
+            if in_metadata && indent <= metadata_indent && !trimmed.is_empty() && trimmed != "metadata:" {
+                in_metadata = false;
+                in_labels = false;
+            }
+            if in_metadata {
+                if trimmed == "labels:" {
+                    in_labels = true;
+                    labels_indent = indent;
+                    continue;
+                }
+                if in_labels {
+                    if indent <= labels_indent && !trimmed.is_empty() {
+                        in_labels = false;
+                    } else if let Some((k, v)) = parse_yaml_kv(trimmed) {
+                        labels.push((k, strip_quotes(&v)));
+                    }
+                }
+                if let Some(n) = trimmed.strip_prefix("name:") {
+                    name_str = Some(n.trim().trim_matches('"').trim_matches('\'').to_string());
+                }
+                if let Some(ns) = trimmed.strip_prefix("namespace:") {
+                    namespace_str = Some(ns.trim().trim_matches('"').trim_matches('\'').to_string());
+                }
+            }
+
+            // selector / matchLabels block (for Service -> Deployment linking)
+            if trimmed == "selector:" || trimmed.starts_with("selector:") {
+                in_selector = true;
+                selector_indent = indent;
+                in_match_labels = false;
+                continue;
+            }
+            if in_selector && indent <= selector_indent && !trimmed.is_empty() {
+                in_selector = false;
+                in_match_labels = false;
+            }
+            if in_selector {
+                if trimmed == "matchLabels:" {
+                    in_match_labels = true;
+                    match_labels_indent = indent;
+                    continue;
+                }
+                if in_match_labels {
+                    if indent <= match_labels_indent && !trimmed.is_empty() {
+                        in_match_labels = false;
+                    } else if let Some((k, v)) = parse_yaml_kv(trimmed) {
+                        selector_labels.push((k, strip_quotes(&v)));
+                    }
+                }
+                // Service selector without matchLabels (flat key-value pairs)
+                if !in_match_labels && indent > selector_indent {
+                    if let Some((k, v)) = parse_yaml_kv(trimmed) {
+                        if k != "matchLabels" && k != "matchExpressions" {
+                            selector_labels.push((k, strip_quotes(&v)));
+                        }
+                    }
+                }
+            }
+
+            // configMapRef / secretRef references
+            if let Some(rest) = trimmed.strip_prefix("configMapRef:") {
+                let n = rest.trim();
+                if !n.is_empty() {
+                    config_map_refs.push(strip_quotes(n));
+                }
+            }
+            if trimmed.starts_with("configMap:") {
+                if let Some(rest) = trimmed.strip_prefix("configMap:") {
+                    let r = rest.trim();
+                    if !r.is_empty() && !r.starts_with('{') {
+                        config_map_refs.push(strip_quotes(r));
+                    }
+                }
+            }
+            if let Some(rest) = trimmed.strip_prefix("secretRef:") {
+                let r = rest.trim();
+                if !r.is_empty() {
+                    secret_refs.push(strip_quotes(r));
+                }
+            }
+            if trimmed.starts_with("secret:") {
+                if let Some(rest) = trimmed.strip_prefix("secret:") {
+                    let r = rest.trim();
+                    if !r.is_empty() && !r.starts_with('{') {
+                        secret_refs.push(strip_quotes(r));
+                    }
+                }
+            }
+            if let Some(rest) = trimmed.strip_prefix("claimName:") {
+                pvc_refs.push(strip_quotes(rest.trim()));
+            }
+        }
+
+        if let (Some((kind, line)), Some(name)) = (kind_str, name_str) {
+            let infra_kind = match kind.as_str() {
+                "Deployment" => Some(InfraKind::K8sDeployment),
+                "Service" => Some(InfraKind::K8sService),
+                "Ingress" | "IngressRoute" => Some(InfraKind::K8sIngress),
+                "ConfigMap" => Some(InfraKind::K8sConfigMap),
+                "Secret" => Some(InfraKind::K8sSecret),
+                "StatefulSet" => Some(InfraKind::K8sStatefulSet),
+                "DaemonSet" => Some(InfraKind::K8sDaemonSet),
+                "Job" => Some(InfraKind::K8sJob),
+                "CronJob" => Some(InfraKind::K8sCronJob),
+                "PersistentVolumeClaim" => Some(InfraKind::K8sPvc),
+                "ServiceAccount" => Some(InfraKind::K8sServiceAccount),
+                "Namespace" => Some(InfraKind::K8sNamespace),
+                _ => None,
+            };
+
+            if let Some(ik) = infra_kind {
+                let node_id = StableId::edge_id("infra_k8s", rel_path, line as u32, 0);
+                nodes.push(InfraNode {
+                    node_id: node_id.clone(),
+                    file_path: rel_path.to_string(),
+                    kind: ik,
+                    name: name.clone(),
+                    namespace: namespace_str,
+                    line: line as u32,
+                    end_line: None,
+                    properties: serde_json::json!({"k8s_kind": kind}),
+                    bound_symbol_uid: None,
+                    binding_confidence: None,
+                });
+                docs.push(K8sDoc {
+                    node_id,
+                    kind: kind.clone(),
+                    name,
+                    labels,
+                    config_map_refs,
+                    secret_refs,
+                    pvc_refs,
+                    selector_labels,
+                });
             }
         }
     }
 
-    if let (Some((kind, line)), Some(name)) = (kind_str, name_str) {
-        let infra_kind = match kind.as_str() {
-            "Deployment" => Some(InfraKind::K8sDeployment),
-            "Service" => Some(InfraKind::K8sService),
-            _ => None,
-        };
+    // Phase 2: Build cross-reference edges between documents
+    for doc in &docs {
+        // Service -> Deployment/StatefulSet by selector label matching
+        if doc.kind == "Service" && !doc.selector_labels.is_empty() {
+            for target in &docs {
+                if !matches!(target.kind.as_str(), "Deployment" | "StatefulSet" | "DaemonSet") {
+                    continue;
+                }
+                let all_match = doc.selector_labels.iter().all(|(sk, sv)| {
+                    target.labels.iter().any(|(tk, tv)| tk == sk && tv == sv)
+                });
+                if all_match {
+                    let edge_id = StableId::edge_id(
+                        "infra_xref",
+                        rel_path,
+                        0,
+                        edges.len() as u32,
+                    );
+                    edges.push(InfraEdge {
+                        edge_id,
+                        source_node_id: doc.node_id.clone(),
+                        target_node_id: target.node_id.clone(),
+                        kind: InfraEdgeKind::RoutesTo,
+                        confidence: 0.85,
+                        properties: serde_json::json!({"via": "selector_match"}),
+                    });
+                }
+            }
+        }
 
-        if let Some(ik) = infra_kind {
-            let node_id = StableId::edge_id("infra_k8s", rel_path, line as u32, 0);
-            nodes.push(InfraNode {
-                node_id,
-                file_path: rel_path.to_string(),
-                kind: ik,
-                name,
-                namespace: namespace_str,
-                line: line as u32,
-                end_line: None,
-                properties: serde_json::json!({"k8s_kind": kind}),
-                bound_symbol_uid: None,
-                binding_confidence: None,
+        // Workload -> ConfigMap / Secret / PVC by ref
+        if matches!(
+            doc.kind.as_str(),
+            "Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob"
+        ) {
+            for cm_name in &doc.config_map_refs {
+                if let Some(target) = docs.iter().find(|d| d.kind == "ConfigMap" && d.name == *cm_name) {
+                    let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
+                    edges.push(InfraEdge {
+                        edge_id,
+                        source_node_id: doc.node_id.clone(),
+                        target_node_id: target.node_id.clone(),
+                        kind: InfraEdgeKind::DependsOn,
+                        confidence: 0.9,
+                        properties: serde_json::json!({"via": "configMapRef"}),
+                    });
+                }
+            }
+            for sec_name in &doc.secret_refs {
+                if let Some(target) = docs.iter().find(|d| d.kind == "Secret" && d.name == *sec_name) {
+                    let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
+                    edges.push(InfraEdge {
+                        edge_id,
+                        source_node_id: doc.node_id.clone(),
+                        target_node_id: target.node_id.clone(),
+                        kind: InfraEdgeKind::DependsOn,
+                        confidence: 0.9,
+                        properties: serde_json::json!({"via": "secretRef"}),
+                    });
+                }
+            }
+            for pvc_name in &doc.pvc_refs {
+                if let Some(target) =
+                    docs.iter().find(|d| d.kind == "PersistentVolumeClaim" && d.name == *pvc_name)
+                {
+                    let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
+                    edges.push(InfraEdge {
+                        edge_id,
+                        source_node_id: doc.node_id.clone(),
+                        target_node_id: target.node_id.clone(),
+                        kind: InfraEdgeKind::DependsOn,
+                        confidence: 0.9,
+                        properties: serde_json::json!({"via": "persistentVolumeClaim"}),
+                    });
+                }
+            }
+        }
+    }
+
+    (nodes, edges)
+}
+
+/// Parse a kustomization.yaml into InfraNodes + InfraEdges.
+///
+/// Creates a `KustomizeOverlay` node for the directory and `DependsOn` edges
+/// to referenced resources, bases, patches, and components.
+pub fn parse_kustomize(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<InfraEdge>) {
+    let mut nodes = Vec::new();
+    let mut edges = Vec::new();
+
+    // Derive overlay name from the parent directory
+    let overlay_name = Path::new(rel_path)
+        .parent()
+        .and_then(|p| p.file_name())
+        .and_then(|n| n.to_str())
+        .unwrap_or("root");
+
+    let node_id = StableId::edge_id("infra_kustomize", rel_path, 1, 0);
+    nodes.push(InfraNode {
+        node_id: node_id.clone(),
+        file_path: rel_path.to_string(),
+        kind: InfraKind::KustomizeOverlay,
+        name: overlay_name.to_string(),
+        namespace: None,
+        line: 1,
+        end_line: None,
+        properties: serde_json::json!({}),
+        bound_symbol_uid: None,
+        binding_confidence: None,
+    });
+
+    // Keys whose list items are referenced paths
+    let import_keys: &[&str] = &[
+        "resources:",
+        "bases:",
+        "patches:",
+        "patchesStrategicMerge:",
+        "patchesJson6902:",
+        "components:",
+    ];
+
+    let mut in_import_section = false;
+    let mut section_indent = 0usize;
+
+    for (line_num, line) in content.lines().enumerate() {
+        let trimmed = line.trim();
+        if trimmed.is_empty() || trimmed.starts_with('#') {
+            continue;
+        }
+        let indent = line.len() - line.trim_start().len();
+
+        // Check if this line starts an import section
+        let is_import_key = import_keys.iter().any(|k| trimmed == *k || trimmed.starts_with(k));
+
+        if is_import_key {
+            in_import_section = true;
+            section_indent = indent;
+            continue;
+        }
+
+        // A new top-level key ends the current section
+        if in_import_section && indent <= section_indent && !trimmed.starts_with('-') {
+            in_import_section = false;
+        }
+
+        if in_import_section && trimmed.starts_with("- ") {
+            let ref_path = trimmed.strip_prefix("- ").unwrap_or("").trim();
+            // Skip complex patch entries (those with sub-keys like `path:`)
+            if ref_path.is_empty() || ref_path.contains(':') {
+                continue;
+            }
+            let ref_clean = strip_quotes(ref_path);
+            if ref_clean.is_empty() {
+                continue;
+            }
+
+            // Resolve relative path against kustomization file's directory
+            let base_dir = Path::new(rel_path).parent().unwrap_or(Path::new(""));
+            let resolved = base_dir.join(&ref_clean).to_string_lossy().to_string();
+
+            let edge_id = StableId::edge_id(
+                "infra_kustomize_dep",
+                rel_path,
+                (line_num + 1) as u32,
+                0,
+            );
+            edges.push(InfraEdge {
+                edge_id,
+                source_node_id: node_id.clone(),
+                target_node_id: format!("kustomize_ref:{}", resolved),
+                kind: InfraEdgeKind::DependsOn,
+                confidence: 0.9,
+                properties: serde_json::json!({
+                    "raw_ref": ref_clean,
+                    "resolved_path": resolved,
+                }),
             });
         }
     }
@@ -343,6 +860,7 @@ pub fn run_infra_pass(project_path: &Path) -> (Vec<InfraNode>, Vec<InfraEdge>) {
             InfraFileType::Dockerfile => parse_dockerfile(&candidate.rel_path, &content),
             InfraFileType::DockerCompose => parse_docker_compose(&candidate.rel_path, &content),
             InfraFileType::K8sManifest => parse_k8s_manifest(&candidate.rel_path, &content),
+            InfraFileType::Kustomize => parse_kustomize(&candidate.rel_path, &content),
         };
 
         all_nodes.extend(nodes);
@@ -810,5 +1328,389 @@ webhook:
         let bindings = scan_yaml_for_bindings(yaml, "config/pubsub.yaml");
         assert_eq!(bindings.len(), 1);
         assert_eq!(bindings[0].target_url, "/api/v1/notifications/webhook");
+    }
+
+    #[test]
+    fn test_dockerfile_multistage() {
+        let content = r#"FROM node:18 AS builder
+WORKDIR /app
+COPY . .
+RUN npm run build
+ENV NODE_ENV=production
+
+FROM nginx:alpine AS runtime
+COPY --from=builder /app/dist /usr/share/nginx/html
+EXPOSE 80
+ENV PORT=80
+"#;
+        let (nodes, edges) = parse_dockerfile("Dockerfile", content);
+
+        // DockerImage nodes for "node:18" and "nginx:alpine"
+        let image_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerImage)
+            .collect();
+        assert_eq!(image_nodes.len(), 2);
+        assert_eq!(image_nodes[0].name, "node:18");
+        assert_eq!(image_nodes[1].name, "nginx:alpine");
+
+        // DockerStage nodes for "builder" and "runtime"
+        let stage_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerStage)
+            .collect();
+        assert_eq!(stage_nodes.len(), 2);
+        assert_eq!(stage_nodes[0].name, "builder");
+        assert_eq!(stage_nodes[1].name, "runtime");
+
+        // DockerExpose node for "80"
+        let expose_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerExpose)
+            .collect();
+        assert_eq!(expose_nodes.len(), 1);
+        assert_eq!(expose_nodes[0].name, "80");
+
+        // Edges: stage→image (DependsOn) x2 + copy-from (DependsOn) x1 + expose (ExposesPort) x1
+        let depends_edges: Vec<_> = edges
+            .iter()
+            .filter(|e| e.kind == InfraEdgeKind::DependsOn)
+            .collect();
+        assert_eq!(depends_edges.len(), 3); // 2 stage→image + 1 copy-from
+
+        // Verify COPY --from=builder creates edge from runtime → builder
+        let copy_edge = edges
+            .iter()
+            .find(|e| {
+                e.properties
+                    .get("copy_from")
+                    .and_then(|v| v.as_str())
+                    == Some("builder")
+            })
+            .expect("should have copy-from edge");
+        assert_eq!(copy_edge.source_node_id, stage_nodes[1].node_id);
+        assert_eq!(copy_edge.target_node_id, stage_nodes[0].node_id);
+
+        // Verify ExposesPort edge
+        let expose_edges: Vec<_> = edges
+            .iter()
+            .filter(|e| e.kind == InfraEdgeKind::ExposesPort)
+            .collect();
+        assert_eq!(expose_edges.len(), 1);
+        assert_eq!(expose_edges[0].source_node_id, stage_nodes[1].node_id);
+        assert_eq!(expose_edges[0].target_node_id, expose_nodes[0].node_id);
+
+        // Verify ENV keys stored as metadata on stage nodes
+        let builder_env = stage_nodes[0]
+            .properties
+            .get("env_keys")
+            .and_then(|v| v.as_array())
+            .expect("builder should have env_keys");
+        assert_eq!(builder_env.len(), 1);
+        assert_eq!(builder_env[0].as_str().unwrap(), "NODE_ENV");
+
+        let runtime_env = stage_nodes[1]
+            .properties
+            .get("env_keys")
+            .and_then(|v| v.as_array())
+            .expect("runtime should have env_keys");
+        assert_eq!(runtime_env.len(), 1);
+        assert_eq!(runtime_env[0].as_str().unwrap(), "PORT");
+    }
+
+    #[test]
+    fn test_dockerfile_single_stage_no_alias() {
+        let content = "FROM python:3.11\nRUN pip install flask\nEXPOSE 5000\n";
+        let (nodes, edges) = parse_dockerfile("Dockerfile", content);
+
+        let image_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerImage)
+            .collect();
+        assert_eq!(image_nodes.len(), 1);
+        assert_eq!(image_nodes[0].name, "python:3.11");
+
+        // Unnamed stage
+        let stage_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerStage)
+            .collect();
+        assert_eq!(stage_nodes.len(), 1);
+        assert_eq!(stage_nodes[0].name, "stage-0");
+        assert_eq!(
+            stage_nodes[0].properties.get("unnamed").and_then(|v| v.as_bool()),
+            Some(true)
+        );
+
+        // EXPOSE 5000
+        let expose_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerExpose)
+            .collect();
+        assert_eq!(expose_nodes.len(), 1);
+        assert_eq!(expose_nodes[0].name, "5000");
+
+        // Edges: 1 stage→image + 1 expose
+        assert_eq!(edges.len(), 2);
+    }
+
+    #[test]
+    fn test_dockerfile_expose_multiple_ports() {
+        let content = "FROM nginx:latest\nEXPOSE 80 443\n";
+        let (nodes, _edges) = parse_dockerfile("Dockerfile", content);
+
+        let expose_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerExpose)
+            .collect();
+        assert_eq!(expose_nodes.len(), 2);
+        assert_eq!(expose_nodes[0].name, "80");
+        assert_eq!(expose_nodes[1].name, "443");
+    }
+
+    #[test]
+    fn test_dockerfile_expose_with_protocol() {
+        let content = "FROM redis:7\nEXPOSE 6379/tcp\n";
+        let (nodes, _edges) = parse_dockerfile("Dockerfile", content);
+
+        let expose_nodes: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::DockerExpose)
+            .collect();
+        assert_eq!(expose_nodes.len(), 1);
+        assert_eq!(expose_nodes[0].name, "6379/tcp");
+    }
+
+    #[test]
+    fn test_k8s_multi_resource_extraction() {
+        let yaml = "\
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-app
+  labels:
+    app: web
+spec:
+  selector:
+    matchLabels:
+      app: web
+  template:
+    spec:
+      containers:
+      - name: web
+        image: nginx:1.25
+      volumes:
+      - name: config-vol
+        configMap: app-config
+      - name: secret-vol
+        secret: db-credentials
+      - name: data-vol
+        persistentVolumeClaim:
+          claimName: app-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-svc
+spec:
+  selector:
+    app: web
+  ports:
+  - port: 80
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  labels:
+    app: web
+data:
+  key: value
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-credentials
+type: Opaque
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: app-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: web-ingress
+spec:
+  rules:
+  - host: example.com
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: web-sa
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: db
+  labels:
+    app: db
+spec:
+  selector:
+    matchLabels:
+      app: db
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: log-agent
+  labels:
+    app: logs
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: db-migrate
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cleanup
+";
+        let (nodes, edges) = parse_k8s_manifest("k8s/app.yaml", yaml);
+
+        // Verify all resource types are extracted
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sDeployment && n.name == "web-app"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sService && n.name == "web-svc"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sConfigMap && n.name == "app-config"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sSecret && n.name == "db-credentials"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sPvc && n.name == "app-data"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sNamespace && n.name == "production"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sIngress && n.name == "web-ingress"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sServiceAccount && n.name == "web-sa"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sStatefulSet && n.name == "db"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sDaemonSet && n.name == "log-agent"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sJob && n.name == "db-migrate"));
+        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sCronJob && n.name == "cleanup"));
+        assert_eq!(nodes.len(), 12);
+
+        // Verify cross-reference edges
+        // Service -> Deployment via selector match (app: web)
+        let routes_to: Vec<_> = edges.iter().filter(|e| e.kind == InfraEdgeKind::RoutesTo).collect();
+        assert_eq!(routes_to.len(), 1, "Service should route to Deployment by label match");
+
+        // Deployment -> ConfigMap, Secret, PVC via refs
+        let depends_on: Vec<_> = edges.iter().filter(|e| e.kind == InfraEdgeKind::DependsOn).collect();
+        assert_eq!(depends_on.len(), 3, "Deployment should depend on ConfigMap, Secret, and PVC");
+    }
+
+    #[test]
+    fn test_k8s_single_resource() {
+        let yaml = "\
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: staging
+data:
+  DB_HOST: localhost
+";
+        let (nodes, edges) = parse_k8s_manifest("k8s/config.yaml", yaml);
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].kind, InfraKind::K8sConfigMap);
+        assert_eq!(nodes[0].name, "my-config");
+        assert_eq!(nodes[0].namespace, Some("staging".to_string()));
+        assert!(edges.is_empty());
+    }
+
+    #[test]
+    fn test_k8s_unknown_kind_skipped() {
+        let yaml = "\
+apiVersion: v1
+kind: NetworkPolicy
+metadata:
+  name: deny-all
+";
+        let (nodes, _edges) = parse_k8s_manifest("k8s/netpol.yaml", yaml);
+        assert!(nodes.is_empty(), "Unknown kind should be skipped");
+    }
+
+    #[test]
+    fn test_kustomize_parsing() {
+        let yaml = "\
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+- deployment.yaml
+- service.yaml
+- ../base
+
+bases:
+- ../../common
+
+patches:
+- patch-replicas.yaml
+
+patchesStrategicMerge:
+- patch-env.yaml
+
+components:
+- ../../components/monitoring
+
+namespace: production
+";
+        let (nodes, edges) = parse_kustomize("overlays/prod/kustomization.yaml", yaml);
+
+        // Should have one KustomizeOverlay node
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].kind, InfraKind::KustomizeOverlay);
+        assert_eq!(nodes[0].name, "prod");
+
+        // Should have edges for all referenced paths:
+        // resources: 3 (deployment.yaml, service.yaml, ../base)
+        // bases: 1 (../../common)
+        // patches: 1 (patch-replicas.yaml)
+        // patchesStrategicMerge: 1 (patch-env.yaml)
+        // components: 1 (../../components/monitoring)
+        assert_eq!(edges.len(), 7);
+
+        // Check all edges are DependsOn
+        assert!(edges.iter().all(|e| e.kind == InfraEdgeKind::DependsOn));
+
+        // Verify resolved paths
+        let resolved_paths: Vec<String> = edges
+            .iter()
+            .filter_map(|e| e.properties.get("resolved_path").and_then(|v| v.as_str()).map(String::from))
+            .collect();
+        assert!(resolved_paths.contains(&"overlays/prod/deployment.yaml".to_string()));
+        assert!(resolved_paths.contains(&"overlays/prod/service.yaml".to_string()));
+        assert!(resolved_paths.contains(&"overlays/prod/../base".to_string()));
+        assert!(resolved_paths.contains(&"overlays/prod/../../common".to_string()));
+        assert!(resolved_paths.contains(&"overlays/prod/../../components/monitoring".to_string()));
+    }
+
+    #[test]
+    fn test_kustomize_root_overlay() {
+        let yaml = "\
+resources:
+- namespace.yaml
+";
+        let (nodes, edges) = parse_kustomize("kustomization.yaml", yaml);
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0].kind, InfraKind::KustomizeOverlay);
+        // Root-level kustomization has no parent dir → "root"
+        assert_eq!(nodes[0].name, "root");
+        assert_eq!(edges.len(), 1);
     }
 }

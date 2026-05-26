@@ -24,7 +24,7 @@ pub fn tool_domain(tool_name: &str) -> &'static str {
         "set_project" | "build_index" | "index_status" | "search" | "find_symbol"
         | "list_files" | "file_symbols" | "callers" | "callees" | "analyze_impact"
         | "summarize_file" | "search_in_context" | "explore_symbols" | "get_symbol_source"
-        | "graph_schema" => DOMAIN_CORE,
+        | "graph_schema" | "ingest_trace" => DOMAIN_CORE,
         "prepare_edit_region" | "expand_code_region" | "task_symbols" => DOMAIN_CONTEXT,
         "graph_query"
         | "trace_path"
@@ -59,7 +59,7 @@ pub fn domain_listing(active: &HashSet<&'static str>) -> Vec<serde_json::Value> 
             "tools": ["set_project", "build_index", "index_status", "search", "find_symbol",
                        "list_files", "file_symbols", "callers", "callees", "analyze_impact",
                        "summarize_file", "search_in_context", "explore_symbols",
-                       "get_symbol_source", "graph_schema"]
+                       "get_symbol_source", "graph_schema", "ingest_trace"]
         }),
         serde_json::json!({
             "domain": DOMAIN_CONTEXT,
@@ -320,6 +320,27 @@ pub struct ListUnresolvedRefsParams {
 
 #[derive(Deserialize, schemars::JsonSchema, Default)]
 pub struct GraphSchemaParams {
+    #[serde(default)]
+    pub project_path: Option<String>,
+}
+
+#[derive(Deserialize, schemars::JsonSchema, Clone)]
+pub struct TraceInput {
+    pub method: String,
+    pub path: String,
+    #[serde(default)]
+    pub source_service: Option<String>,
+    #[serde(default)]
+    pub target_service: Option<String>,
+    #[serde(default)]
+    pub status_code: Option<u16>,
+    #[serde(default)]
+    pub duration_ms: Option<f64>,
+}
+
+#[derive(Deserialize, schemars::JsonSchema, Default)]
+pub struct IngestTraceParams {
+    pub traces: Vec<TraceInput>,
     #[serde(default)]
     pub project_path: Option<String>,
 }

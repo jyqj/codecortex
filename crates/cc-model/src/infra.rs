@@ -9,9 +9,22 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "snake_case")]
 pub enum InfraKind {
     DockerImage,
+    DockerStage,    // A named build stage (FROM ... AS name)
+    DockerExpose,   // EXPOSE port
     ComposeService,
     K8sDeployment,
     K8sService,
+    K8sIngress,
+    K8sConfigMap,
+    K8sSecret,
+    K8sStatefulSet,
+    K8sDaemonSet,
+    K8sJob,
+    K8sCronJob,
+    K8sPvc,
+    K8sServiceAccount,
+    K8sNamespace,
+    KustomizeOverlay,
     /// PubSub topic, Kafka topic, SNS topic
     MessageTopic,
     /// SQS queue, RabbitMQ queue, Cloud Tasks queue
@@ -22,9 +35,22 @@ impl InfraKind {
     pub fn as_str(&self) -> &'static str {
         match self {
             Self::DockerImage => "docker_image",
+            Self::DockerStage => "docker_stage",
+            Self::DockerExpose => "docker_expose",
             Self::ComposeService => "compose_service",
             Self::K8sDeployment => "k8s_deployment",
             Self::K8sService => "k8s_service",
+            Self::K8sIngress => "k8s_ingress",
+            Self::K8sConfigMap => "k8s_config_map",
+            Self::K8sSecret => "k8s_secret",
+            Self::K8sStatefulSet => "k8s_stateful_set",
+            Self::K8sDaemonSet => "k8s_daemon_set",
+            Self::K8sJob => "k8s_job",
+            Self::K8sCronJob => "k8s_cron_job",
+            Self::K8sPvc => "k8s_pvc",
+            Self::K8sServiceAccount => "k8s_service_account",
+            Self::K8sNamespace => "k8s_namespace",
+            Self::KustomizeOverlay => "kustomize_overlay",
             Self::MessageTopic => "message_topic",
             Self::MessageQueue => "message_queue",
         }

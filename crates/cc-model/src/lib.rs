@@ -14,6 +14,7 @@ pub mod route_normalize;
 pub mod scope;
 pub mod search;
 pub mod symbol;
+pub mod trace;
 pub mod type_assign;
 pub mod working_set;
 
@@ -40,6 +41,7 @@ pub use scope::ScopeInfo;
 pub use search::SearchHit;
 /// Core enums used across the codebase
 pub use symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+pub use trace::{TraceIngestResult, TraceObservation};
 pub use type_assign::{TypeAssignRecord, TypeAssignSource};
 pub use working_set::{WorkingSetEntry, WorkspaceSelection, WorkspaceState};
 

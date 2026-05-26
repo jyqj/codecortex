@@ -138,3 +138,13 @@ pub fn graph_schema(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value,
     let rt = runtime.lock().map_err(|e| e.to_string())?;
     rt.graph_schema().map_err(|e| e.to_string())
 }
+
+/// Ingest runtime HTTP trace observations.
+pub fn ingest_trace(
+    runtime: Arc<Mutex<CodeIndex>>,
+    traces: &[cc_model::TraceObservation],
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let result = rt.ingest_traces(traces).map_err(|e| e.to_string())?;
+    serde_json::to_value(result).map_err(|e| e.to_string())
+}

@@ -10,7 +10,7 @@ use cc_model::config::{
 use cc_model::context::{ContextEnvelope, ContextNode, ContextSpan, NodeType, Role};
 use cc_model::impact::ImpactReport;
 use cc_model::search::SearchRequest;
-use cc_model::{CcError, CcResult, Intent};
+use cc_model::{CcError, CcResult, Intent, TraceIngestResult, TraceObservation};
 use cc_search::SearchEngine;
 use serde::Serialize;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -887,6 +887,48 @@ impl CodeIndex {
         compute_package_boundaries(self.ensure_db()?, all_edges)
     }
 
+    /// Ingest runtime HTTP trace observations and match them against
+    /// statically-detected route handlers.
+    pub fn ingest_traces(&self, traces: &[TraceObservation]) -> CcResult<TraceIngestResult> {
+        let db = self.ensure_db()?;
+
+        let mut confirmed = 0usize;
+        let mut unmatched = 0usize;
+
+        for trace in traces {
+            let normalized = normalize_trace_path(&trace.path);
+            let method_upper = trace.method.to_uppercase();
+
+            // Exact match: normalized_path + method
+            let matched = db.route_nodes_by_normalized_path_and_method(
+                &normalized,
+                Some(&method_upper),
+                1,
+            );
+            if let Ok(rows) = &matched {
+                if !rows.is_empty() {
+                    confirmed += 1;
+                    continue;
+                }
+            }
+
+            // Fuzzy match: try prefix matching by progressively stripping
+            // trailing segments from the normalized path.
+            if fuzzy_match_trace(db, &method_upper, &normalized) {
+                confirmed += 1;
+            } else {
+                unmatched += 1;
+            }
+        }
+
+        Ok(TraceIngestResult {
+            traces_received: traces.len(),
+            edges_confirmed: confirmed,
+            edges_discovered: 0, // reserved for future confidence update pipeline
+            edges_unmatched: unmatched,
+        })
+    }
+
     /// Return a schema overview of the index: node kinds with counts,
     /// edge table counts, total files and chunks.
     pub fn graph_schema(&self) -> CcResult<serde_json::Value> {
@@ -987,6 +1029,66 @@ fn slice_lines(
         source.push_str("\n// ... truncated");
     }
     source
+}
+
+/// Normalize a concrete runtime path into a canonical form for matching.
+///
+/// Replaces numeric segments with `*` and UUID-like segments with `*`,
+/// then delegates to `normalize_route_path` for the remaining transforms.
+fn normalize_trace_path(path: &str) -> String {
+    let mut segments: Vec<String> = Vec::new();
+    for seg in path.split('/') {
+        if seg.is_empty() {
+            continue;
+        }
+        if is_numeric_id(seg) || is_uuid_like(seg) {
+            segments.push("*".to_string());
+        } else {
+            segments.push(seg.to_string());
+        }
+    }
+    if segments.is_empty() {
+        return "/".to_string();
+    }
+    let reassembled = format!("/{}", segments.join("/"));
+    cc_model::route_normalize::normalize_route_path(&reassembled)
+}
+
+/// Check if a segment looks like a numeric ID (all digits).
+fn is_numeric_id(seg: &str) -> bool {
+    !seg.is_empty() && seg.chars().all(|c| c.is_ascii_digit())
+}
+
+/// Check if a segment looks like a UUID (hex + dashes, 32-36 chars).
+fn is_uuid_like(seg: &str) -> bool {
+    let len = seg.len();
+    (32..=36).contains(&len) && seg.chars().all(|c| c.is_ascii_hexdigit() || c == '-')
+}
+
+/// Try fuzzy matching by progressively stripping trailing path segments.
+fn fuzzy_match_trace(
+    db: &std::sync::Arc<cc_db::index_db::IndexDb>,
+    method: &str,
+    normalized_path: &str,
+) -> bool {
+    // Try replacing the last non-wildcard segment with * and re-matching
+    let segments: Vec<&str> = normalized_path.split('/').filter(|s| !s.is_empty()).collect();
+    // Walk backwards, try replacing each non-* segment with *
+    for idx in (0..segments.len()).rev() {
+        if segments[idx] == "*" {
+            continue;
+        }
+        let mut trial = segments.clone();
+        trial[idx] = "*";
+        let trial_path = format!("/{}", trial.join("/"));
+        if let Ok(rows) = db.route_nodes_by_normalized_path_and_method(&trial_path, Some(method), 1)
+        {
+            if !rows.is_empty() {
+                return true;
+            }
+        }
+    }
+    false
 }
 
 fn detect_intent(query: &str) -> Intent {

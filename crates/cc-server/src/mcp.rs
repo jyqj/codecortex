@@ -366,6 +366,34 @@ impl CodeCortexMcpServer {
         spawn_handler!(index, handlers::core::graph_schema)
     }
 
+    #[tool(
+        name = "ingest_trace",
+        description = "Ingest runtime HTTP trace data to confirm or discover API call edges. Accepts observed HTTP requests and matches them against statically-detected route handlers."
+    )]
+    async fn tool_ingest_trace(
+        &self,
+        Parameters(p): Parameters<tools::IngestTraceParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let observations: Vec<cc_model::TraceObservation> = p
+            .traces
+            .iter()
+            .map(|t| cc_model::TraceObservation {
+                method: t.method.clone(),
+                path: t.path.clone(),
+                source_service: t.source_service.clone(),
+                target_service: t.target_service.clone(),
+                status_code: t.status_code,
+                duration_ms: t.duration_ms,
+                timestamp: None,
+            })
+            .collect();
+        let project_path = p.project_path;
+        let index = self.index_for_project_path(project_path.as_deref()).await?;
+        spawn_handler!(index, move |rt| {
+            handlers::core::ingest_trace(rt, &observations)
+        })
+    }
+
     // ── context ───────────────────────────────────────────────
 
     #[tool(

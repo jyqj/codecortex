@@ -22,16 +22,10 @@ pub fn tool_domain(tool_name: &str) -> &'static str {
     match tool_name {
         "list_tool_domains" | "activate_domain" => DOMAIN_META,
         "set_project" | "build_index" | "index_status" | "search" | "find_symbol"
-        | "list_files" | "file_symbols" | "list_communities" | "list_frameworks"
-        | "index_capabilities" | "callers" | "callees" | "analyze_impact" | "summarize_file" => {
-            DOMAIN_CORE
-        }
-        "search_in_context"
-        | "prepare_edit_region"
-        | "expand_code_region"
-        | "task_symbols"
-        | "explore_symbols"
-        | "get_symbol_source" => DOMAIN_CONTEXT,
+        | "list_files" | "file_symbols" | "callers" | "callees" | "analyze_impact"
+        | "summarize_file" | "search_in_context" | "explore_symbols" | "get_symbol_source"
+        | "graph_schema" => DOMAIN_CORE,
+        "prepare_edit_region" | "expand_code_region" | "task_symbols" => DOMAIN_CONTEXT,
         "graph_query"
         | "trace_path"
         | "symbol_refs"
@@ -44,7 +38,10 @@ pub fn tool_domain(tool_name: &str) -> &'static str {
         | "find_async_consumers"
         | "find_service_bindings"
         | "list_package_boundaries"
-        | "list_unresolved_refs" => DOMAIN_GRAPH,
+        | "list_unresolved_refs"
+        | "list_communities"
+        | "list_frameworks"
+        | "index_capabilities" => DOMAIN_GRAPH,
         _ => DOMAIN_CORE,
     }
 }
@@ -60,14 +57,14 @@ pub fn domain_listing(active: &HashSet<&'static str>) -> Vec<serde_json::Value> 
             "domain": DOMAIN_CORE,
             "active": active.contains(DOMAIN_CORE),
             "tools": ["set_project", "build_index", "index_status", "search", "find_symbol",
-                       "list_files", "file_symbols", "list_communities", "list_frameworks",
-                       "index_capabilities", "callers", "callees", "analyze_impact",
-                       "summarize_file"]
+                       "list_files", "file_symbols", "callers", "callees", "analyze_impact",
+                       "summarize_file", "search_in_context", "explore_symbols",
+                       "get_symbol_source", "graph_schema"]
         }),
         serde_json::json!({
             "domain": DOMAIN_CONTEXT,
             "active": active.contains(DOMAIN_CONTEXT),
-            "tools": ["search_in_context", "prepare_edit_region", "expand_code_region", "task_symbols", "explore_symbols", "get_symbol_source"]
+            "tools": ["prepare_edit_region", "expand_code_region", "task_symbols"]
         }),
         serde_json::json!({
             "domain": DOMAIN_GRAPH,
@@ -75,7 +72,8 @@ pub fn domain_listing(active: &HashSet<&'static str>) -> Vec<serde_json::Value> 
             "tools": ["graph_query", "trace_path", "symbol_refs", "find_impacted_tests",
                        "get_dependents", "find_dead_code", "find_references",
                        "get_architecture", "find_route_handlers", "find_async_consumers",
-                       "find_service_bindings", "list_package_boundaries", "list_unresolved_refs"]
+                       "find_service_bindings", "list_package_boundaries", "list_unresolved_refs",
+                       "list_communities", "list_frameworks", "index_capabilities"]
         }),
     ]
 }
@@ -316,6 +314,12 @@ pub struct ListUnresolvedRefsParams {
     pub file_path: Option<String>,
     #[serde(default)]
     pub kind: Option<String>,
+    #[serde(default)]
+    pub project_path: Option<String>,
+}
+
+#[derive(Deserialize, schemars::JsonSchema, Default)]
+pub struct GraphSchemaParams {
     #[serde(default)]
     pub project_path: Option<String>,
 }

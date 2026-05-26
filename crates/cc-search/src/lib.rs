@@ -1,4 +1,5 @@
 pub mod cypher;
+pub mod dsl;
 pub mod embeddings;
 pub mod engine;
 pub mod graph_query;

@@ -58,7 +58,33 @@ impl SearchEngine {
     /// Core search — hybrid vector + lexical + grep with RRF fusion and reranking.
     pub fn search(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
         let conn = self.db.read_conn()?;
-        let query_text = augmented_query_text(request);
+
+        // ── DSL filter extraction ──────────────────────────────
+        let parsed = crate::dsl::parse_search_dsl(&request.query);
+        let mut request = request.clone();
+
+        // Apply DSL path_filter as path_prefix (if not already set).
+        if parsed.path_filter.is_some() && request.path_prefix.is_none() {
+            request.path_prefix = parsed.path_filter.clone();
+        }
+
+        // Apply DSL lang_filter as languages constraint (if not already set).
+        if let Some(ref lang_str) = parsed.lang_filter {
+            if request.languages.is_none() {
+                let lang = cc_model::Language::from_name(lang_str);
+                if lang != cc_model::Language::Unknown {
+                    request.languages = Some(vec![lang]);
+                }
+            }
+        }
+
+        // Replace query with cleaned text (filters stripped).
+        if !parsed.text.is_empty() {
+            request.query = parsed.text.clone();
+        }
+        // If only filters were given with no free text, keep original query for embedding.
+
+        let query_text = augmented_query_text(&request);
         let expanded = expand_query_text(&query_text);
         let top_k = if request.top_k == 0 {
             10
@@ -70,7 +96,6 @@ impl SearchEngine {
         let preselect_limit = request
             .file_preselect_limit
             .unwrap_or_else(|| 60usize.max(top_k * 12));
-        let mut request = request.clone();
         let preselect_result = crate::preselect::preselect_files(
             &self.db,
             &query_text,
@@ -308,6 +333,35 @@ impl SearchEngine {
                 source: "index".into(),
                 lane: None,
                 metadata,
+            });
+        }
+
+        // ── DSL post-filters: kind, name ────────────────────────
+        if let Some(ref kind_filter) = parsed.kind_filter {
+            results.retain(|hit| {
+                match &hit.symbol_kind {
+                    Some(sk) => crate::dsl::matches_kind(sk, kind_filter),
+                    None => false, // no symbol_kind => filtered out
+                }
+            });
+        }
+        if let Some(ref name_filter) = parsed.name_filter {
+            let nf_lower = name_filter.to_lowercase();
+            // Boost hits whose symbol_name matches; filter out those that don't.
+            for hit in &mut results {
+                if let Some(ref sn) = hit.symbol_name {
+                    if sn.to_lowercase().contains(&nf_lower) {
+                        hit.rerank_score += 0.25;
+                        hit.reasons.push(format!("dsl-name:{}", name_filter));
+                    }
+                }
+            }
+            // Keep only hits that have a matching symbol name.
+            results.retain(|hit| {
+                hit.symbol_name
+                    .as_ref()
+                    .map(|sn| sn.to_lowercase().contains(&nf_lower))
+                    .unwrap_or(false)
             });
         }
 

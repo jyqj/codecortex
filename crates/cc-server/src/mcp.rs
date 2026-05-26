@@ -231,27 +231,6 @@ impl CodeCortexMcpServer {
         ))
     }
 
-    #[tool(
-        name = "list_communities",
-        description = "List detected code communities"
-    )]
-    async fn tool_list_communities(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::list_communities)
-    }
-
-    #[tool(name = "list_frameworks", description = "List detected frameworks")]
-    async fn tool_list_frameworks(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::list_frameworks)
-    }
-
-    #[tool(
-        name = "index_capabilities",
-        description = "Report available index capabilities"
-    )]
-    async fn tool_index_capabilities(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::index_capabilities)
-    }
-
     #[tool(name = "callers", description = "Find callers of a symbol")]
     async fn tool_callers(
         &self,
@@ -309,8 +288,6 @@ impl CodeCortexMcpServer {
         ))
     }
 
-    // ── context ───────────────────────────────────────────────
-
     #[tool(
         name = "search_in_context",
         description = "Search code with context envelope, accepting explicit intent"
@@ -328,6 +305,68 @@ impl CodeCortexMcpServer {
             rt, &query, top_k, intent
         ))
     }
+
+    #[tool(
+        name = "explore_symbols",
+        description = "Batch explore symbols: returns source code, callers, callees, and semantic relations in one call"
+    )]
+    async fn tool_explore_symbols(
+        &self,
+        Parameters(p): Parameters<tools::ExploreSymbolsParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let project_path = p.project_path.clone();
+        let index = self.index_for_project_path(project_path.as_deref()).await?;
+        spawn_handler!(index, move |rt| {
+            handlers::context::explore_symbols(
+                rt,
+                &p.symbols,
+                p.max_callers,
+                p.max_callees,
+                p.include_source,
+                p.include_relations,
+            )
+        })
+    }
+
+    #[tool(
+        name = "get_symbol_source",
+        description = "Read exact symbol source by name or qualified name with line numbers and ambiguity candidates"
+    )]
+    async fn tool_get_symbol_source(
+        &self,
+        Parameters(p): Parameters<tools::GetSymbolSourceParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let symbol = p.symbol;
+        let exact = p.exact;
+        let include_line_numbers = p.include_line_numbers;
+        let max_chars = p.max_chars;
+        let project_path = p.project_path;
+        let index = self.index_for_project_path(project_path.as_deref()).await?;
+        spawn_handler!(index, move |rt| {
+            handlers::context::get_symbol_source(
+                rt,
+                &symbol,
+                exact,
+                include_line_numbers,
+                max_chars,
+            )
+        })
+    }
+
+    #[tool(
+        name = "graph_schema",
+        description = "Show available node kinds, edge types, and their counts in the index. Use before writing Cypher queries."
+    )]
+    async fn tool_graph_schema(
+        &self,
+        Parameters(p): Parameters<tools::GraphSchemaParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let project_path = p.project_path;
+        let index = self.index_for_project_path(project_path.as_deref()).await?;
+        spawn_handler!(index, handlers::core::graph_schema)
+    }
+
+    // ── context ───────────────────────────────────────────────
 
     #[tool(
         name = "prepare_edit_region",
@@ -388,53 +427,6 @@ impl CodeCortexMcpServer {
         let index = self.index_for_project_path(project_path.as_deref()).await?;
         spawn_handler!(index, move |rt| {
             handlers::context::task_symbols(rt, &task, max_symbols, expand_depth, intent.as_deref())
-        })
-    }
-
-    #[tool(
-        name = "explore_symbols",
-        description = "Batch explore symbols: returns source code, callers, callees, and semantic relations in one call"
-    )]
-    async fn tool_explore_symbols(
-        &self,
-        Parameters(p): Parameters<tools::ExploreSymbolsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let project_path = p.project_path.clone();
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::explore_symbols(
-                rt,
-                &p.symbols,
-                p.max_callers,
-                p.max_callees,
-                p.include_source,
-                p.include_relations,
-            )
-        })
-    }
-
-    #[tool(
-        name = "get_symbol_source",
-        description = "Read exact symbol source by name or qualified name with line numbers and ambiguity candidates"
-    )]
-    async fn tool_get_symbol_source(
-        &self,
-        Parameters(p): Parameters<tools::GetSymbolSourceParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let symbol = p.symbol;
-        let exact = p.exact;
-        let include_line_numbers = p.include_line_numbers;
-        let max_chars = p.max_chars;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::get_symbol_source(
-                rt,
-                &symbol,
-                exact,
-                include_line_numbers,
-                max_chars,
-            )
         })
     }
 
@@ -630,6 +622,27 @@ impl CodeCortexMcpServer {
         let project_path = project_path_from_value(&p);
         let index = self.index_for_project_path(project_path.as_deref()).await?;
         spawn_handler!(index, move |rt| handlers::graph::find_route_handlers(rt, p))
+    }
+
+    #[tool(
+        name = "list_communities",
+        description = "List detected code communities"
+    )]
+    async fn tool_list_communities(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        spawn_handler!(self.index().await, handlers::core::list_communities)
+    }
+
+    #[tool(name = "list_frameworks", description = "List detected frameworks")]
+    async fn tool_list_frameworks(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        spawn_handler!(self.index().await, handlers::core::list_frameworks)
+    }
+
+    #[tool(
+        name = "index_capabilities",
+        description = "Report available index capabilities"
+    )]
+    async fn tool_index_capabilities(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        spawn_handler!(self.index().await, handlers::core::index_capabilities)
     }
 }
 

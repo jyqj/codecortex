@@ -886,6 +886,72 @@ impl CodeIndex {
     ) -> CcResult<Vec<PackageBoundary>> {
         compute_package_boundaries(self.ensure_db()?, all_edges)
     }
+
+    /// Return a schema overview of the index: node kinds with counts,
+    /// edge table counts, total files and chunks.
+    pub fn graph_schema(&self) -> CcResult<serde_json::Value> {
+        let db = self.ensure_db()?;
+
+        // Symbol kind counts
+        let kind_rows = db.query_json(
+            "SELECT kind, COUNT(*) AS cnt FROM symbols GROUP BY kind ORDER BY cnt DESC",
+            &[],
+        )?;
+        let node_kinds: Vec<serde_json::Value> = kind_rows
+            .into_iter()
+            .map(|row| {
+                serde_json::json!({
+                    "kind": row.get("kind").cloned().unwrap_or(serde_json::Value::Null),
+                    "count": row.get("cnt").cloned().unwrap_or(serde_json::json!(0)),
+                })
+            })
+            .collect();
+
+        // Edge table counts — query each table; tolerate missing tables
+        let edge_tables = [
+            "call_edges",
+            "import_edges",
+            "semantic_edges",
+            "test_edges",
+            "route_edges",
+            "http_call_edges",
+            "data_flow_edges",
+            "co_change_edges",
+        ];
+        let mut edge_counts = serde_json::Map::new();
+        for table in &edge_tables {
+            let sql = format!("SELECT COUNT(*) AS cnt FROM {}", table);
+            let count = db
+                .query_json(&sql, &[])
+                .ok()
+                .and_then(|rows| rows.into_iter().next())
+                .and_then(|row| row.get("cnt").cloned())
+                .unwrap_or(serde_json::json!(0));
+            edge_counts.insert(table.to_string(), count);
+        }
+
+        // Total files and chunks
+        let file_count = db
+            .query_json("SELECT COUNT(*) AS cnt FROM files", &[])
+            .ok()
+            .and_then(|rows| rows.into_iter().next())
+            .and_then(|row| row.get("cnt").cloned())
+            .unwrap_or(serde_json::json!(0));
+
+        let chunk_count = db
+            .query_json("SELECT COUNT(*) AS cnt FROM chunks", &[])
+            .ok()
+            .and_then(|rows| rows.into_iter().next())
+            .and_then(|row| row.get("cnt").cloned())
+            .unwrap_or(serde_json::json!(0));
+
+        Ok(serde_json::json!({
+            "node_kinds": node_kinds,
+            "edge_counts": edge_counts,
+            "total_files": file_count,
+            "total_chunks": chunk_count,
+        }))
+    }
 }
 
 fn slice_lines(

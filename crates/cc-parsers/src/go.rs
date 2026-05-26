@@ -1,4 +1,4 @@
-//! Go parser using regex-based outline extraction (Heuristic tier).
+//! Go parser using tree-sitter AST extraction (TreeSitter tier).
 
 use crate::chunker::Chunker;
 use crate::traits::FileParser;
@@ -9,546 +9,308 @@ use cc_model::edge::{
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
-use regex::Regex;
 use std::collections::{HashMap, HashSet};
-use std::sync::LazyLock;
-
-// --- regex patterns ---
-
-/// Matches top-level functions:  `func Name(`
-/// and methods:                  `func (recv Type) Name(`
-static GO_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^func\s+(?:\([^)]*\)\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*\(").expect("go func re")
-});
-
-/// Matches method receiver:  `func (recv Type) Name(`
-static GO_METHOD_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"(?m)^func\s+\(\s*\w+\s+\*?([A-Za-z_][A-Za-z0-9_]*)\s*\)\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(",
-    )
-    .expect("go method re")
-});
-
-/// `type Name struct`
-static GO_STRUCT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^type\s+([A-Za-z_][A-Za-z0-9_]*)\s+struct\b").expect("go struct re")
-});
-
-/// `type Name interface`
-static GO_INTERFACE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^type\s+([A-Za-z_][A-Za-z0-9_]*)\s+interface\b").expect("go interface re")
-});
-
-/// `type Name = ...` or `type Name underlying` (post-filter struct/interface)
-static GO_TYPEDEF_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^type\s+([A-Za-z_][A-Za-z0-9_]*)\s+(\S+)").expect("go typedef re")
-});
-
-/// Single-line import: `import "path"`
-static GO_IMPORT_SINGLE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"(?m)^import\s+"([^"]+)""#).expect("go import single re"));
-
-/// Multi-line import block entries: `"path"` inside `import ( ... )`
-static GO_IMPORT_ENTRY_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)^\s+(?:[A-Za-z_][A-Za-z0-9_]*\s+)?"([^"]+)""#).expect("go import entry re")
-});
-
-/// Matches struct embedding: a bare type name inside a struct body (e.g., `Bar` in `type Foo struct { Bar }`).
-static GO_EMBED_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?m)^\s+\*?([A-Z][A-Za-z0-9_]*)\s*$").expect("go embed re"));
-
-/// Matches full Go function signature: captures params and optional return type.
-/// `func Name(params) returnType`  or  `func (recv Type) Name(params) (returnTypes)`
-static GO_FUNC_SIG_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?m)^func\s+(?:\([^)]*\)\s+)?[A-Za-z_][A-Za-z0-9_]*\s*\(([^)]*)\)\s*(.*?)\s*\{")
-        .expect("go func sig re")
-});
-
-/// Call pattern: `name(`
-static GO_CALL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(").expect("go call re"));
 
 static GO_KEYWORDS: &[&str] = &[
-    "func",
-    "var",
-    "const",
-    "type",
-    "struct",
-    "interface",
-    "map",
-    "chan",
-    "go",
-    "select",
-    "case",
-    "switch",
-    "if",
-    "else",
-    "for",
-    "range",
-    "return",
-    "break",
-    "continue",
-    "defer",
-    "import",
-    "package",
-    "fallthrough",
-    "goto",
-    "default",
-    "make",
-    "new",
-    "len",
-    "cap",
-    "append",
-    "copy",
-    "delete",
-    "close",
-    "panic",
-    "recover",
-    "print",
-    "println",
-    "nil",
-    "true",
-    "false",
-    "iota",
-    "string",
-    "int",
-    "int8",
-    "int16",
-    "int32",
-    "int64",
-    "uint",
-    "uint8",
-    "uint16",
-    "uint32",
-    "uint64",
-    "float32",
-    "float64",
-    "bool",
-    "byte",
-    "rune",
-    "error",
+    "func", "var", "const", "type", "struct", "interface", "map", "chan", "go", "select", "case",
+    "switch", "if", "else", "for", "range", "return", "break", "continue", "defer", "import",
+    "package", "fallthrough", "goto", "default", "make", "new", "len", "cap", "append", "copy",
+    "delete", "close", "panic", "recover", "print", "println", "nil", "true", "false", "iota",
+    "string", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32",
+    "uint64", "float32", "float64", "bool", "byte", "rune", "error",
 ];
 
 pub struct GoParser {
+    language: tree_sitter::Language,
     chunker: Chunker,
 }
 
 impl GoParser {
     pub fn new() -> Self {
         Self {
+            language: tree_sitter_go::LANGUAGE.into(),
             chunker: Chunker::default(),
         }
     }
 
-    /// Extract Go parameter types from a raw params string like "a int, b string, c bool".
-    /// Returns comma-separated types like "int, string, bool".
-    fn extract_go_param_types(raw: &str) -> String {
-        if raw.trim().is_empty() {
-            return String::new();
-        }
-        // Split by comma, each part is "name type" or just "type" (for unnamed params)
-        raw.split(',')
-            .filter_map(|part| {
-                let part = part.trim();
-                if part.is_empty() {
-                    return None;
-                }
-                // Last word is the type (handles "a int", "b *MyStruct", "c ...string")
-                let tokens: Vec<&str> = part.split_whitespace().collect();
-                if tokens.len() >= 2 {
-                    Some(tokens[tokens.len() - 1].to_string())
-                } else if tokens.len() == 1 {
-                    // Could be just a type (unnamed parameter) or a single-token like "error"
-                    Some(tokens[0].to_string())
-                } else {
-                    None
-                }
-            })
-            .collect::<Vec<_>>()
-            .join(", ")
-    }
+    // =========================================================================
+    // Symbol extraction
+    // =========================================================================
 
-    /// Find the end line of a brace-delimited block starting at `start_line` (0-indexed).
-    fn find_block_end(lines: &[&str], start_line: usize) -> usize {
-        let mut depth: i32 = 0;
-        for (i, line) in lines[start_line..].iter().enumerate() {
-            for ch in line.chars() {
-                match ch {
-                    '{' => depth += 1,
-                    '}' => {
-                        depth -= 1;
-                        if depth <= 0 {
-                            return start_line + i;
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        }
-        // If no closing brace found, return last line
-        lines.len().saturating_sub(1)
-    }
-
-    fn extract_symbols_and_imports(
+    /// Extract all top-level declarations from the tree-sitter AST.
+    fn extract_symbols(
         &self,
-        content: &str,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
         file_path: &str,
-    ) -> (Vec<SymbolRecord>, Vec<ImportRecord>) {
-        let lines: Vec<&str> = content.lines().collect();
+    ) -> Vec<SymbolRecord> {
         let mut symbols = Vec::new();
-        let mut imports = Vec::new();
+        let root = tree.root_node();
+        let mut cursor = root.walk();
 
-        // --- imports ---
-        for cap in GO_IMPORT_SINGLE_RE.captures_iter(content) {
-            imports.push(ImportRecord {
-                file_path: file_path.to_string(),
-                import_string: cap[1].to_string(),
-                resolved_path: None,
-                imported_name: None,
-                alias: None,
-                is_namespace: false,
-                is_default: false,
-                is_reexport: false,
-            });
-        }
-
-        // Multi-line import blocks
-        let mut in_import_block = false;
-        for line in &lines {
-            let trimmed = line.trim();
-            if trimmed.starts_with("import (") || trimmed == "import (" {
-                in_import_block = true;
-                continue;
-            }
-            if in_import_block {
-                if trimmed == ")" {
-                    in_import_block = false;
-                    continue;
-                }
-                if let Some(cap) = GO_IMPORT_ENTRY_RE.captures(line) {
-                    imports.push(ImportRecord {
-                        file_path: file_path.to_string(),
-                        import_string: cap[1].to_string(),
-                        resolved_path: None,
-                        imported_name: None,
-                        alias: None,
-                        is_namespace: false,
-                        is_default: false,
-                        is_reexport: false,
-                    });
-                }
-            }
-        }
-
-        // --- structs ---
-        for cap in GO_STRUCT_RE.captures_iter(content) {
-            let name = &cap[1];
-            let m = cap.get(0).unwrap();
-            let start_line = content[..m.start()].matches('\n').count();
-            let end_line = Self::find_block_end(&lines, start_line);
-            symbols.push(self.make_symbol(
-                file_path,
-                name,
-                SymbolKind::Class,
-                name,
-                None,
-                start_line as u32 + 1,
-                end_line as u32 + 1,
-                0,
-                Some(&format!("type {} struct", name)),
-            ));
-        }
-
-        // --- interfaces ---
-        for cap in GO_INTERFACE_RE.captures_iter(content) {
-            let name = &cap[1];
-            let m = cap.get(0).unwrap();
-            let start_line = content[..m.start()].matches('\n').count();
-            let end_line = Self::find_block_end(&lines, start_line);
-            symbols.push(self.make_symbol(
-                file_path,
-                name,
-                SymbolKind::Interface,
-                name,
-                None,
-                start_line as u32 + 1,
-                end_line as u32 + 1,
-                0,
-                Some(&format!("type {} interface", name)),
-            ));
-        }
-
-        // --- type aliases (skip struct/interface already matched) ---
-        let struct_names: HashSet<String> = symbols.iter().map(|s| s.name.clone()).collect();
-        for cap in GO_TYPEDEF_RE.captures_iter(content) {
-            let name = &cap[1];
-            let following = &cap[2];
-            if struct_names.contains(name) || following == "struct" || following == "interface" {
-                continue;
-            }
-            let m = cap.get(0).unwrap();
-            let start_line = content[..m.start()].matches('\n').count();
-            symbols.push(self.make_symbol(
-                file_path,
-                name,
-                SymbolKind::TypeAlias,
-                name,
-                None,
-                start_line as u32 + 1,
-                start_line as u32 + 1,
-                0,
-                Some(&format!("type {}", name)),
-            ));
-        }
-
-        // --- functions & methods ---
-        for cap in GO_FUNC_RE.captures_iter(content) {
-            let func_name = &cap[1];
-            let m = cap.get(0).unwrap();
-            let start_line = content[..m.start()].matches('\n').count();
-            let end_line = Self::find_block_end(&lines, start_line);
-
-            // Determine if it's a method
-            let line_text = lines.get(start_line).unwrap_or(&"");
-            let (kind, qname, container) = if let Some(mc) = GO_METHOD_RE.captures(line_text) {
-                let receiver = mc[1].to_string();
-                let mname = &mc[2];
-                (
-                    SymbolKind::Method,
-                    format!("{}.{}", receiver, mname),
-                    Some(receiver),
-                )
-            } else {
-                (SymbolKind::Function, func_name.to_string(), None)
-            };
-
-            // Extract parameter types and return type from the signature line
-            let (param_types, return_type, param_count) =
-                if let Some(sc) = GO_FUNC_SIG_RE.captures(line_text) {
-                    let raw_params = sc[1].trim();
-                    let raw_ret = sc[2].trim().trim_start_matches('(').trim_end_matches(')');
-                    let pt = Self::extract_go_param_types(raw_params);
-                    let pc = if raw_params.is_empty() {
-                        0u32
-                    } else {
-                        pt.split(", ").count() as u32
-                    };
-                    let rt = if raw_ret.is_empty() {
-                        None
-                    } else {
-                        Some(raw_ret.to_string())
-                    };
-                    (if pt.is_empty() { None } else { Some(pt) }, rt, Some(pc))
-                } else {
-                    (None, None, None)
-                };
-
-            let sig = format!("func {}", func_name);
-            let mut sym = self.make_symbol(
-                file_path,
-                func_name,
-                kind,
-                &qname,
-                container.as_deref(),
-                start_line as u32 + 1,
-                end_line as u32 + 1,
-                0,
-                Some(&sig),
-            );
-            sym.receiver_type = container.clone();
-            sym.param_types = param_types;
-            sym.return_type = return_type;
-            sym.param_count = param_count;
-            symbols.push(sym);
-        }
-
-        (symbols, imports)
-    }
-
-    fn extract_calls(
-        &self,
-        content: &str,
-        file_path: &str,
-        symbols: &[SymbolRecord],
-    ) -> (Vec<SymbolRefRecord>, Vec<CallEdgeRecord>) {
-        let lines: Vec<&str> = content.lines().collect();
-        let keywords: HashSet<&str> = GO_KEYWORDS.iter().copied().collect();
-        let mut refs = Vec::new();
-        let mut calls = Vec::new();
-
-        let mut by_name: HashMap<String, (&str, &str)> = HashMap::new();
-        for sym in symbols {
-            if let Some(uid) = &sym.symbol_uid {
-                by_name
-                    .entry(sym.name.clone())
-                    .or_insert((sym.symbol_id.as_str(), uid.as_str()));
-            }
-        }
-
-        for sym in symbols
-            .iter()
-            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-        {
-            let start = sym.start_line.saturating_sub(1) as usize;
-            let end = (sym.end_line as usize).min(lines.len());
-            for (offset, line) in lines[start..end].iter().enumerate() {
-                let line_no = (start + offset + 1) as u32;
-                for cap in GO_CALL_RE.captures_iter(line) {
-                    let Some(m) = cap.get(1) else { continue };
-                    let callee = m.as_str();
-                    if keywords.contains(callee) {
-                        continue;
+        for child in root.children(&mut cursor) {
+            match child.kind() {
+                "function_declaration" => {
+                    if let Some(sym) = self.extract_function(&child, source, file_path) {
+                        symbols.push(sym);
                     }
-                    let start_col = m.start() as u32;
-                    let target = by_name.get(callee);
-                    let ref_id = StableId::ref_id(file_path, callee, line_no, start_col);
-                    refs.push(SymbolRefRecord {
-                        ref_id: ref_id.clone(),
-                        file_path: file_path.to_string(),
-                        symbol_name: callee.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "call".into(),
-                        line: line_no,
-                        column: start_col,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(callee.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Heuristic,
-                        parser_confidence: 0.6,
-                    });
-                    calls.push(CallEdgeRecord {
-                        edge_id: StableId::edge_id("call", file_path, line_no, start_col),
-                        file_path: file_path.to_string(),
-                        caller_symbol: Some(sym.name.clone()),
-                        callee_symbol: callee.to_string(),
-                        line: line_no,
-                        start_col,
-                        end_line: Some(line_no),
-                        end_col: m.end() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        caller_symbol_id: Some(sym.symbol_id.clone()),
-                        caller_symbol_uid: sym.symbol_uid.clone(),
-                        callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        callee_ref_id: Some(ref_id),
-                        dispatch_kind: DispatchKind::Direct,
-                        call_kind: "direct".into(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        receiver_expr: None,
-                        arg_count: None,
-                        is_optional_chain: false,
-                        is_awaited: false,
-                        is_constructor: false,
-                        parser_tier: ParserTier::Heuristic,
-                        parser_confidence: 0.6,
-                        synthesized_by: None,
-                        synthesis_key: None,
-                        registered_file: None,
-                        registered_line: None,
-                    });
                 }
-            }
-        }
-
-        (refs, calls)
-    }
-
-    fn extract_semantic_edges(
-        &self,
-        content: &str,
-        file_path: &str,
-        symbols: &[SymbolRecord],
-        tier: ParserTier,
-    ) -> Vec<SemanticEdgeRecord> {
-        let lines: Vec<&str> = content.lines().collect();
-        let mut edges = Vec::new();
-
-        // Find struct embeddings: for each struct symbol, scan its body for embedded types
-        for sym in symbols.iter().filter(|s| s.kind == SymbolKind::Class) {
-            let start = sym.start_line.saturating_sub(1) as usize;
-            let end = (sym.end_line as usize).min(lines.len());
-            for (offset, line) in lines[start..end].iter().enumerate() {
-                if let Some(cap) = GO_EMBED_RE.captures(line) {
-                    let embedded = &cap[1];
-                    // Skip the struct's own name
-                    if embedded == sym.name {
-                        continue;
+                "method_declaration" => {
+                    if let Some(sym) = self.extract_method(&child, source, file_path) {
+                        symbols.push(sym);
                     }
-                    let line_no = (start + offset + 1) as u32;
-                    edges.push(SemanticEdgeRecord {
-                        edge_id: format!("se-{}:{}:inherits:{}", file_path, line_no, embedded),
-                        file_path: file_path.to_string(),
-                        source_symbol: sym.name.clone(),
-                        source_symbol_uid: sym.symbol_uid.clone(),
-                        target_symbol: embedded.to_string(),
-                        target_symbol_uid: None,
-                        relation_kind: SemanticRelation::Inherits,
-                        line: line_no,
-                        confidence: 0.95,
-                        parser_tier: tier,
-                    });
                 }
+                "type_declaration" => {
+                    self.extract_type_declaration(&child, source, file_path, &mut symbols);
+                }
+                _ => {}
             }
         }
 
-        edges
+        symbols
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn make_symbol(
+    /// Extract a `function_declaration` node into a SymbolRecord.
+    fn extract_function(
         &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
         file_path: &str,
-        name: &str,
-        kind: SymbolKind,
-        qname: &str,
-        container: Option<&str>,
-        start_line: u32,
-        end_line: u32,
-        start_col: u32,
-        signature: Option<&str>,
-    ) -> SymbolRecord {
-        let symbol_id = StableId::edge_id("sym", file_path, start_line, start_col);
-        let symbol_uid = StableId::symbol_uid(file_path, qname, kind.as_str(), signature);
-        SymbolRecord {
+    ) -> Option<SymbolRecord> {
+        let name_node = node.child_by_field_name("name")?;
+        let name = name_node.utf8_text(source).ok()?;
+
+        let params_node = node.child_by_field_name("parameters");
+        let params_text = params_node
+            .and_then(|n| n.utf8_text(source).ok())
+            .unwrap_or("()");
+
+        let (param_types, param_count) = self.extract_param_types(&params_node, source);
+        let return_type = self.extract_result_type(node, source);
+
+        let signature = match &return_type {
+            Some(rt) => format!("func {}{} {}", name, params_text, rt),
+            None => format!("func {}{}", name, params_text),
+        };
+
+        let qname = name.to_string();
+        let symbol_id = StableId::edge_id(
+            "sym",
+            file_path,
+            node.start_position().row as u32 + 1,
+            node.start_position().column as u32,
+        );
+        let symbol_uid =
+            StableId::symbol_uid(file_path, &qname, "function", Some(&signature));
+
+        let end_line = node
+            .child_by_field_name("body")
+            .map(|b| b.end_position().row as u32 + 1)
+            .unwrap_or(node.end_position().row as u32 + 1);
+
+        let doc = self.extract_doc_comment(node, source);
+
+        Some(SymbolRecord {
+            symbol_id,
+            file_path: file_path.to_string(),
+            name: name.to_string(),
+            kind: SymbolKind::Function,
+            container: None,
+            start_line: node.start_position().row as u32 + 1,
+            end_line,
+            start_col: node.start_position().column as u32,
+            end_col: node.end_position().column as u32,
+            signature: Some(signature),
+            doc,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+            qname: Some(qname),
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: Some(symbol_uid),
+            framework_role: None,
+            receiver_type: None,
+            param_types,
+            return_type,
+            param_count: Some(param_count),
+            base_types: None,
+            implements: None,
+        })
+    }
+
+    /// Extract a `method_declaration` node into a SymbolRecord.
+    fn extract_method(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+    ) -> Option<SymbolRecord> {
+        let name_node = node.child_by_field_name("name")?;
+        let name = name_node.utf8_text(source).ok()?;
+
+        // Extract receiver type
+        let receiver_node = node.child_by_field_name("receiver")?;
+        let receiver_type = self.extract_receiver_type(&receiver_node, source)?;
+
+        let params_node = node.child_by_field_name("parameters");
+        let params_text = params_node
+            .and_then(|n| n.utf8_text(source).ok())
+            .unwrap_or("()");
+
+        let (param_types, param_count) = self.extract_param_types(&params_node, source);
+        let return_type = self.extract_result_type(node, source);
+
+        let signature = match &return_type {
+            Some(rt) => format!("func ({}) {}{} {}", receiver_type, name, params_text, rt),
+            None => format!("func ({}) {}{}", receiver_type, name, params_text),
+        };
+
+        let qname = format!("{}.{}", receiver_type, name);
+        let symbol_id = StableId::edge_id(
+            "sym",
+            file_path,
+            node.start_position().row as u32 + 1,
+            node.start_position().column as u32,
+        );
+        let symbol_uid =
+            StableId::symbol_uid(file_path, &qname, "method", Some(&signature));
+
+        let end_line = node
+            .child_by_field_name("body")
+            .map(|b| b.end_position().row as u32 + 1)
+            .unwrap_or(node.end_position().row as u32 + 1);
+
+        let doc = self.extract_doc_comment(node, source);
+
+        Some(SymbolRecord {
+            symbol_id,
+            file_path: file_path.to_string(),
+            name: name.to_string(),
+            kind: SymbolKind::Method,
+            container: Some(receiver_type.clone()),
+            start_line: node.start_position().row as u32 + 1,
+            end_line,
+            start_col: node.start_position().column as u32,
+            end_col: node.end_position().column as u32,
+            signature: Some(signature),
+            doc,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+            qname: Some(qname),
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: Some(symbol_uid),
+            framework_role: None,
+            receiver_type: Some(receiver_type),
+            param_types,
+            return_type,
+            param_count: Some(param_count),
+            base_types: None,
+            implements: None,
+        })
+    }
+
+    /// Extract receiver type name from a method receiver parameter_list.
+    /// Handles both `(r RecvType)` and `(r *RecvType)`.
+    fn extract_receiver_type(
+        &self,
+        receiver_node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        // receiver is a parameter_list containing one parameter_declaration
+        let mut cursor = receiver_node.walk();
+        for child in receiver_node.children(&mut cursor) {
+            if child.kind() == "parameter_declaration" {
+                let type_node = child.child_by_field_name("type")?;
+                let type_text = type_node.utf8_text(source).ok()?;
+                // Strip pointer prefix `*`
+                let cleaned = type_text.trim_start_matches('*');
+                return Some(cleaned.to_string());
+            }
+        }
+        None
+    }
+
+    /// Extract `type_declaration` children into SymbolRecords.
+    fn extract_type_declaration(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &mut Vec<SymbolRecord>,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                "type_spec" => {
+                    if let Some(sym) = self.extract_type_spec(&child, source, file_path) {
+                        symbols.push(sym);
+                    }
+                }
+                "type_alias" => {
+                    if let Some(sym) = self.extract_type_alias(&child, source, file_path) {
+                        symbols.push(sym);
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// Extract a `type_spec` (e.g., `type Foo struct { ... }` or `type Bar interface { ... }`).
+    fn extract_type_spec(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+    ) -> Option<SymbolRecord> {
+        let name_node = node.child_by_field_name("name")?;
+        let name = name_node.utf8_text(source).ok()?;
+        let type_node = node.child_by_field_name("type")?;
+
+        let kind = match type_node.kind() {
+            "struct_type" => SymbolKind::Class,
+            "interface_type" => SymbolKind::Interface,
+            _ => SymbolKind::TypeAlias,
+        };
+
+        let kind_str = match kind {
+            SymbolKind::Class => "struct",
+            SymbolKind::Interface => "interface",
+            _ => "type",
+        };
+
+        let signature = format!("type {} {}", name, kind_str);
+        let qname = name.to_string();
+        let symbol_id = StableId::edge_id(
+            "sym",
+            file_path,
+            node.start_position().row as u32 + 1,
+            node.start_position().column as u32,
+        );
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), None);
+
+        let doc = self.extract_doc_comment(node, source);
+
+        Some(SymbolRecord {
             symbol_id,
             file_path: file_path.to_string(),
             name: name.to_string(),
             kind,
-            container: container.map(String::from),
-            start_line,
-            end_line,
-            start_col,
-            end_col: 0,
-            signature: signature.map(String::from),
-            doc: None,
-            parser_tier: ParserTier::Heuristic,
-            parser_confidence: 0.6,
-            qname: Some(qname.to_string()),
+            container: None,
+            start_line: node.start_position().row as u32 + 1,
+            end_line: node.end_position().row as u32 + 1,
+            start_col: node.start_position().column as u32,
+            end_col: node.end_position().column as u32,
+            signature: Some(signature),
+            doc,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+            qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
             export_name: None,
@@ -561,6 +323,609 @@ impl GoParser {
             param_count: None,
             base_types: None,
             implements: None,
+        })
+    }
+
+    /// Extract a `type_alias` (e.g., `type ID = string`).
+    fn extract_type_alias(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+    ) -> Option<SymbolRecord> {
+        let name_node = node.child_by_field_name("name")?;
+        let name = name_node.utf8_text(source).ok()?;
+        let type_node = node.child_by_field_name("type");
+        let type_text = type_node.and_then(|n| n.utf8_text(source).ok());
+
+        let signature = match type_text {
+            Some(tt) => format!("type {} = {}", name, tt),
+            None => format!("type {}", name),
+        };
+
+        let qname = name.to_string();
+        let symbol_id = StableId::edge_id(
+            "sym",
+            file_path,
+            node.start_position().row as u32 + 1,
+            node.start_position().column as u32,
+        );
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, "type_alias", None);
+
+        Some(SymbolRecord {
+            symbol_id,
+            file_path: file_path.to_string(),
+            name: name.to_string(),
+            kind: SymbolKind::TypeAlias,
+            container: None,
+            start_line: node.start_position().row as u32 + 1,
+            end_line: node.end_position().row as u32 + 1,
+            start_col: node.start_position().column as u32,
+            end_col: node.end_position().column as u32,
+            signature: Some(signature),
+            doc: None,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+            qname: Some(qname),
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: Some(symbol_uid),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        })
+    }
+
+    // =========================================================================
+    // Import extraction
+    // =========================================================================
+
+    /// Extract imports from `import_declaration` nodes.
+    fn extract_imports(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+    ) -> Vec<ImportRecord> {
+        let mut imports = Vec::new();
+        let root = tree.root_node();
+        let mut cursor = root.walk();
+
+        for child in root.children(&mut cursor) {
+            if child.kind() == "import_declaration" {
+                self.extract_import_declaration(&child, source, file_path, &mut imports);
+            }
+        }
+
+        imports
+    }
+
+    /// Extract import specs from a single `import_declaration`.
+    fn extract_import_declaration(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        imports: &mut Vec<ImportRecord>,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            match child.kind() {
+                "import_spec" => {
+                    if let Some(imp) = self.extract_import_spec(&child, source, file_path) {
+                        imports.push(imp);
+                    }
+                }
+                "import_spec_list" => {
+                    let mut list_cursor = child.walk();
+                    for spec in child.children(&mut list_cursor) {
+                        if spec.kind() == "import_spec" {
+                            if let Some(imp) = self.extract_import_spec(&spec, source, file_path) {
+                                imports.push(imp);
+                            }
+                        }
+                    }
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// Extract a single `import_spec` into an ImportRecord.
+    fn extract_import_spec(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+    ) -> Option<ImportRecord> {
+        let path_node = node.child_by_field_name("path")?;
+        let path_text = path_node.utf8_text(source).ok()?;
+        // Remove quotes from path
+        let import_path = path_text
+            .trim_start_matches('"')
+            .trim_end_matches('"')
+            .trim_start_matches('`')
+            .trim_end_matches('`');
+
+        let alias_node = node.child_by_field_name("name");
+        let alias = alias_node.and_then(|n| n.utf8_text(source).ok()).map(String::from);
+
+        // Last segment of path is the imported package name
+        let imported_name = import_path.rsplit('/').next().map(String::from);
+
+        Some(ImportRecord {
+            file_path: file_path.to_string(),
+            import_string: import_path.to_string(),
+            resolved_path: None,
+            imported_name,
+            alias,
+            is_namespace: false,
+            is_default: false,
+            is_reexport: false,
+        })
+    }
+
+    // =========================================================================
+    // Call extraction (AST-based)
+    // =========================================================================
+
+    /// Walk function/method bodies for `call_expression` nodes to extract calls.
+    fn extract_calls(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> (Vec<SymbolRefRecord>, Vec<CallEdgeRecord>) {
+        let keywords: HashSet<&str> = GO_KEYWORDS.iter().copied().collect();
+        let mut refs = Vec::new();
+        let mut calls = Vec::new();
+
+        // Build name -> (symbol_id, symbol_uid) map for resolution
+        let mut by_name: HashMap<String, (&str, &str)> = HashMap::new();
+        for sym in symbols {
+            if let Some(uid) = &sym.symbol_uid {
+                by_name
+                    .entry(sym.name.clone())
+                    .or_insert((sym.symbol_id.as_str(), uid.as_str()));
+            }
+        }
+
+        let root = tree.root_node();
+        let mut root_cursor = root.walk();
+
+        for child in root.children(&mut root_cursor) {
+            match child.kind() {
+                "function_declaration" | "method_declaration" => {
+                    // Find the corresponding symbol
+                    let caller_sym = self.find_symbol_for_decl(&child, source, symbols);
+                    if let Some(body) = child.child_by_field_name("body") {
+                        self.walk_calls(
+                            &body,
+                            source,
+                            file_path,
+                            &keywords,
+                            &by_name,
+                            &caller_sym,
+                            &mut refs,
+                            &mut calls,
+                        );
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        (refs, calls)
+    }
+
+    /// Find the SymbolRecord matching a function/method declaration node.
+    fn find_symbol_for_decl<'a>(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        symbols: &'a [SymbolRecord],
+    ) -> Option<&'a SymbolRecord> {
+        let name_node = node.child_by_field_name("name")?;
+        let name = name_node.utf8_text(source).ok()?;
+        let line = node.start_position().row as u32 + 1;
+        symbols
+            .iter()
+            .find(|s| s.name == name && s.start_line == line)
+    }
+
+    /// Recursively walk AST nodes to find `call_expression` nodes.
+    #[allow(clippy::too_many_arguments)]
+    fn walk_calls(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        caller_sym: &Option<&SymbolRecord>,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        if node.kind() == "call_expression" {
+            self.extract_single_call(
+                node, source, file_path, keywords, by_name, caller_sym, refs, calls,
+            );
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_calls(
+                &child, source, file_path, keywords, by_name, caller_sym, refs, calls,
+            );
+        }
+    }
+
+    /// Extract a single call from a `call_expression` node.
+    #[allow(clippy::too_many_arguments)]
+    fn extract_single_call(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        caller_sym: &Option<&SymbolRecord>,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        let func_node = match node.child_by_field_name("function") {
+            Some(n) => n,
+            None => return,
+        };
+
+        // Count arguments
+        let arg_count = node.child_by_field_name("arguments").map(|args| {
+            let mut cnt = 0u32;
+            let mut arg_cursor = args.walk();
+            for arg_child in args.named_children(&mut arg_cursor) {
+                // Skip non-expression children like commas
+                if arg_child.is_named() {
+                    cnt += 1;
+                }
+            }
+            cnt
+        });
+
+        let (callee, dispatch_kind, receiver_expr) = match func_node.kind() {
+            "selector_expression" => {
+                // obj.Method(...)
+                let operand = func_node.child_by_field_name("operand");
+                let field = func_node.child_by_field_name("field");
+                let operand_text = operand.and_then(|n| n.utf8_text(source).ok());
+                let field_text = field.and_then(|n| n.utf8_text(source).ok());
+                match field_text {
+                    Some(f) => (
+                        f.to_string(),
+                        DispatchKind::Dynamic,
+                        operand_text.map(String::from),
+                    ),
+                    None => return,
+                }
+            }
+            "identifier" => {
+                let text = match func_node.utf8_text(source).ok() {
+                    Some(t) => t.to_string(),
+                    None => return,
+                };
+                (text, DispatchKind::Direct, None)
+            }
+            _ => {
+                // Parenthesized or complex expression — skip
+                return;
+            }
+        };
+
+        if keywords.contains(callee.as_str()) {
+            return;
+        }
+
+        let line_no = func_node.start_position().row as u32 + 1;
+        let start_col = func_node.start_position().column as u32;
+        let end_col = func_node.end_position().column as u32;
+
+        let target = by_name.get(&callee);
+        let ref_id = StableId::ref_id(file_path, &callee, line_no, start_col);
+
+        refs.push(SymbolRefRecord {
+            ref_id: ref_id.clone(),
+            file_path: file_path.to_string(),
+            symbol_name: callee.clone(),
+            container: caller_sym.and_then(|s| s.qname.clone()),
+            ref_kind: "call".into(),
+            line: line_no,
+            column: start_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            ref_name: Some(callee.clone()),
+            scope_id: caller_sym.and_then(|s| s.scope_id.clone()),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            ref_end_line: Some(line_no),
+            ref_end_col: Some(end_col),
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+        });
+
+        calls.push(CallEdgeRecord {
+            edge_id: StableId::edge_id("call", file_path, line_no, start_col),
+            file_path: file_path.to_string(),
+            caller_symbol: caller_sym.map(|s| s.name.clone()),
+            callee_symbol: callee,
+            line: line_no,
+            start_col,
+            end_line: Some(line_no),
+            end_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            caller_symbol_id: caller_sym.map(|s| s.symbol_id.clone()),
+            caller_symbol_uid: caller_sym.and_then(|s| s.symbol_uid.clone()),
+            callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            callee_ref_id: Some(ref_id),
+            dispatch_kind,
+            call_kind: match dispatch_kind {
+                DispatchKind::Direct => "direct",
+                DispatchKind::Dynamic => "dynamic",
+                _ => "unknown",
+            }
+            .into(),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            receiver_expr,
+            arg_count,
+            is_optional_chain: false,
+            is_awaited: false,
+            is_constructor: false,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+            synthesized_by: None,
+            synthesis_key: None,
+            registered_file: None,
+            registered_line: None,
+        });
+    }
+
+    // =========================================================================
+    // Semantic edge extraction (struct embeddings)
+    // =========================================================================
+
+    /// Extract struct embedding relationships from `struct_type` bodies.
+    fn extract_semantic_edges(
+        &self,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> Vec<SemanticEdgeRecord> {
+        let mut edges = Vec::new();
+        let root = tree.root_node();
+        let mut root_cursor = root.walk();
+
+        for child in root.children(&mut root_cursor) {
+            if child.kind() == "type_declaration" {
+                let mut decl_cursor = child.walk();
+                for spec in child.children(&mut decl_cursor) {
+                    if spec.kind() == "type_spec" {
+                        self.extract_embedding_edges(
+                            &spec, source, file_path, symbols, &mut edges,
+                        );
+                    }
+                }
+            }
+        }
+
+        edges
+    }
+
+    /// For a given `type_spec` node, if it's a struct, find embedded types.
+    fn extract_embedding_edges(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        symbols: &[SymbolRecord],
+        edges: &mut Vec<SemanticEdgeRecord>,
+    ) {
+        let name_node = match node.child_by_field_name("name") {
+            Some(n) => n,
+            None => return,
+        };
+        let struct_name = match name_node.utf8_text(source).ok() {
+            Some(n) => n,
+            None => return,
+        };
+
+        let type_node = match node.child_by_field_name("type") {
+            Some(n) => n,
+            None => return,
+        };
+        if type_node.kind() != "struct_type" {
+            return;
+        }
+
+        // Find the corresponding symbol for uid
+        let struct_sym = symbols.iter().find(|s| s.name == struct_name);
+
+        // Walk field_declaration_list
+        let mut type_cursor = type_node.walk();
+        for field_list_child in type_node.children(&mut type_cursor) {
+            if field_list_child.kind() == "field_declaration_list" {
+                let mut fl_cursor = field_list_child.walk();
+                for field in field_list_child.children(&mut fl_cursor) {
+                    if field.kind() == "field_declaration" {
+                        // Embedded type: field_declaration with no `name` field
+                        let has_name = field.child_by_field_name("name").is_some();
+                        if !has_name {
+                            if let Some(type_field) = field.child_by_field_name("type") {
+                                let embedded_text = type_field
+                                    .utf8_text(source)
+                                    .ok()
+                                    .map(|t| t.trim_start_matches('*').to_string());
+                                if let Some(embedded) = embedded_text {
+                                    if embedded == struct_name || embedded.is_empty() {
+                                        continue;
+                                    }
+                                    let line = field.start_position().row as u32 + 1;
+                                    edges.push(SemanticEdgeRecord {
+                                        edge_id: format!(
+                                            "se-{}:{}:inherits:{}",
+                                            file_path, line, embedded
+                                        ),
+                                        file_path: file_path.to_string(),
+                                        source_symbol: struct_name.to_string(),
+                                        source_symbol_uid: struct_sym
+                                            .and_then(|s| s.symbol_uid.clone()),
+                                        target_symbol: embedded,
+                                        target_symbol_uid: None,
+                                        relation_kind: SemanticRelation::Inherits,
+                                        line,
+                                        confidence: 0.95,
+                                        parser_tier: ParserTier::TreeSitter,
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // =========================================================================
+    // Helpers
+    // =========================================================================
+
+    /// Extract parameter types from a `parameter_list` node.
+    /// Returns (comma-separated types string, param count).
+    fn extract_param_types(
+        &self,
+        params_node: &Option<tree_sitter::Node>,
+        source: &[u8],
+    ) -> (Option<String>, u32) {
+        let params_node = match params_node {
+            Some(n) => *n,
+            None => return (None, 0),
+        };
+
+        let mut types = Vec::new();
+        let mut cursor = params_node.walk();
+        for child in params_node.children(&mut cursor) {
+            match child.kind() {
+                "parameter_declaration" => {
+                    if let Some(type_node) = child.child_by_field_name("type") {
+                        let type_text = type_node.utf8_text(source).unwrap_or("");
+                        // Count how many names this declaration has (e.g., `a, b int` = 2)
+                        let mut name_count = 0u32;
+                        let mut nc = child.walk();
+                        for ch in child.children(&mut nc) {
+                            if ch.kind() == "identifier" {
+                                name_count += 1;
+                            }
+                        }
+                        // If no names, it's a single unnamed param
+                        let count = if name_count == 0 { 1 } else { name_count };
+                        for _ in 0..count {
+                            types.push(type_text.to_string());
+                        }
+                    }
+                }
+                "variadic_parameter_declaration" => {
+                    if let Some(type_node) = child.child_by_field_name("type") {
+                        let type_text = type_node.utf8_text(source).unwrap_or("");
+                        types.push(format!("...{}", type_text));
+                    }
+                }
+                _ => {}
+            }
+        }
+
+        let count = types.len() as u32;
+        if types.is_empty() {
+            (None, 0)
+        } else {
+            (Some(types.join(", ")), count)
+        }
+    }
+
+    /// Extract the result (return) type from a function/method declaration.
+    fn extract_result_type(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        let result_node = node.child_by_field_name("result")?;
+        let text = result_node.utf8_text(source).ok()?;
+        let trimmed = text.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    }
+
+    /// Extract doc comment immediately preceding a node.
+    /// Go doc comments are `//` comments on consecutive lines right before the declaration.
+    fn extract_doc_comment(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        let mut comments = Vec::new();
+        let mut prev = node.prev_sibling();
+        while let Some(sib) = prev {
+            if sib.kind() == "comment" {
+                let text = sib.utf8_text(source).ok()?;
+                // Check it's on the line immediately before
+                if sib.end_position().row + 1 >= node.start_position().row
+                    || (!comments.is_empty()
+                        && sib.end_position().row + 1
+                            >= comments
+                                .last()
+                                .map(|_| sib.end_position().row + 1)
+                                .unwrap_or(0))
+                {
+                    comments.push(text.trim_start_matches("//").trim().to_string());
+                    prev = sib.prev_sibling();
+                    continue;
+                }
+            }
+            break;
+        }
+        if comments.is_empty() {
+            None
+        } else {
+            comments.reverse();
+            Some(comments.join("\n"))
         }
     }
 }
@@ -573,35 +938,7 @@ impl Default for GoParser {
 
 impl FileParser for GoParser {
     fn parse(&self, file_path: &str, content: &str, language: Language) -> CcResult<ParseOutcome> {
-        let (symbols, imports) = self.extract_symbols_and_imports(content, file_path);
-        let (symbol_refs, call_edges) = self.extract_calls(content, file_path, &symbols);
-        let tier = ParserTier::Heuristic;
-        let confidence = 0.6;
-        let semantic_edges = self.extract_semantic_edges(content, file_path, &symbols, tier);
-        let chunks = self
-            .chunker
-            .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
-        let summary = format!(
-            "{} (go, {} lines, {} symbols)",
-            file_path,
-            content.lines().count(),
-            symbols.len()
-        );
-        let is_test = file_path.ends_with("_test.go");
-
-        Ok(ParseOutcome {
-            summary,
-            chunks,
-            symbols,
-            imports,
-            symbol_refs,
-            call_edges,
-            semantic_edges,
-            parser_tier: tier,
-            parser_confidence: confidence,
-            is_test_file: is_test,
-            ..Default::default()
-        })
+        self.parse_with_timeout(file_path, content, language, None)
     }
 
     fn parse_with_timeout(
@@ -611,22 +948,41 @@ impl FileParser for GoParser {
         language: Language,
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
-        let started = std::time::Instant::now();
-        let (symbols, imports) = self.extract_symbols_and_imports(content, file_path);
-        let (symbol_refs, call_edges) = self.extract_calls(content, file_path, &symbols);
-        if timeout_micros.is_some_and(|limit| started.elapsed().as_micros() as u64 > limit) {
-            return Err(cc_model::CcError::Parse {
+        let mut parser = tree_sitter::Parser::new();
+        parser
+            .set_language(&self.language)
+            .map_err(|e| cc_model::CcError::Parse {
                 file: file_path.to_string(),
-                message: "go parser timeout exceeded".to_string(),
-            });
+                message: e.to_string(),
+            })?;
+        if let Some(timeout) = timeout_micros {
+            parser.set_timeout_micros(timeout);
         }
 
-        let tier = ParserTier::Heuristic;
-        let confidence = 0.6;
-        let semantic_edges = self.extract_semantic_edges(content, file_path, &symbols, tier);
+        let tree = parser
+            .parse(content, None)
+            .ok_or_else(|| cc_model::CcError::Parse {
+                file: file_path.to_string(),
+                message: if timeout_micros.is_some() {
+                    "tree-sitter parse failed or timed out".to_string()
+                } else {
+                    "tree-sitter parse failed".to_string()
+                },
+            })?;
+
+        let symbols = self.extract_symbols(&tree, content.as_bytes(), file_path);
+        let imports = self.extract_imports(&tree, content.as_bytes(), file_path);
+        let (symbol_refs, call_edges) =
+            self.extract_calls(&tree, content.as_bytes(), file_path, &symbols);
+        let semantic_edges =
+            self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
+
+        let tier = ParserTier::TreeSitter;
+        let confidence = 0.7;
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
+
         let summary = format!(
             "{} (go, {} lines, {} symbols)",
             file_path,
@@ -634,13 +990,6 @@ impl FileParser for GoParser {
             symbols.len()
         );
         let is_test = file_path.ends_with("_test.go");
-
-        if timeout_micros.is_some_and(|limit| started.elapsed().as_micros() as u64 > limit) {
-            return Err(cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: "go parser timeout exceeded".to_string(),
-            });
-        }
 
         Ok(ParseOutcome {
             summary,
@@ -662,7 +1011,7 @@ impl FileParser for GoParser {
     }
 
     fn tier(&self) -> ParserTier {
-        ParserTier::Heuristic
+        ParserTier::TreeSitter
     }
 }
 
@@ -672,7 +1021,7 @@ mod tests {
 
     #[test]
     fn parse_simple_go() {
-        let p = GoParser::new();
+        let parser = GoParser::new();
         let code = r#"package main
 
 import (
@@ -699,7 +1048,7 @@ func main() {
     fmt.Println(g.Greet())
 }
 "#;
-        let outcome = p.parse("main.go", code, Language::Go).unwrap();
+        let outcome = parser.parse("main.go", code, Language::Go).unwrap();
         let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
         assert!(
             names.contains(&"Greeter"),
@@ -713,17 +1062,131 @@ func main() {
         );
         assert!(names.contains(&"Greet"), "missing Greet, got: {:?}", names);
         assert!(names.contains(&"main"), "missing main, got: {:?}", names);
+        assert!(names.contains(&"ID"), "missing ID, got: {:?}", names);
         assert!(!outcome.imports.is_empty(), "imports should not be empty");
         assert!(!outcome.chunks.is_empty(), "chunks should not be empty");
         assert!(
             !outcome.call_edges.is_empty(),
             "call edges should not be empty"
         );
-        assert_eq!(outcome.parser_tier, ParserTier::Heuristic);
+        assert_eq!(outcome.parser_tier, ParserTier::TreeSitter);
         assert!(!outcome.is_test_file);
 
         // Test file detection
-        let test_outcome = p.parse("main_test.go", code, Language::Go).unwrap();
+        let test_outcome = parser
+            .parse("main_test.go", code, Language::Go)
+            .unwrap();
         assert!(test_outcome.is_test_file);
+    }
+
+    #[test]
+    fn parse_method_receiver() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+type Server struct {}
+
+func (s *Server) Start(addr string, port int) error {
+    return nil
+}
+"#;
+        let outcome = parser.parse("server.go", code, Language::Go).unwrap();
+        let method = outcome.symbols.iter().find(|s| s.name == "Start").unwrap();
+        assert_eq!(method.kind, SymbolKind::Method);
+        assert_eq!(method.receiver_type.as_deref(), Some("Server"));
+        assert_eq!(method.container.as_deref(), Some("Server"));
+        assert_eq!(method.qname.as_deref(), Some("Server.Start"));
+        assert_eq!(method.param_types.as_deref(), Some("string, int"));
+        assert_eq!(method.param_count, Some(2));
+        assert_eq!(method.return_type.as_deref(), Some("error"));
+    }
+
+    #[test]
+    fn parse_imports() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "fmt"
+
+import (
+    "os"
+    myalias "encoding/json"
+)
+
+func main() {}
+"#;
+        let outcome = parser.parse("main.go", code, Language::Go).unwrap();
+        assert_eq!(outcome.imports.len(), 3);
+
+        let fmt_imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string == "fmt")
+            .unwrap();
+        assert_eq!(fmt_imp.imported_name.as_deref(), Some("fmt"));
+
+        let json_imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string == "encoding/json")
+            .unwrap();
+        assert_eq!(json_imp.imported_name.as_deref(), Some("json"));
+        assert_eq!(json_imp.alias.as_deref(), Some("myalias"));
+    }
+
+    #[test]
+    fn parse_struct_embedding() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+type Base struct {
+    ID int
+}
+
+type Derived struct {
+    Base
+    Name string
+}
+"#;
+        let outcome = parser.parse("embed.go", code, Language::Go).unwrap();
+        assert!(
+            !outcome.semantic_edges.is_empty(),
+            "should detect embedding"
+        );
+        let edge = &outcome.semantic_edges[0];
+        assert_eq!(edge.source_symbol, "Derived");
+        assert_eq!(edge.target_symbol, "Base");
+        assert_eq!(edge.relation_kind, SemanticRelation::Inherits);
+    }
+
+    #[test]
+    fn parse_call_dispatch_kinds() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "fmt"
+
+func helper() {}
+
+func main() {
+    helper()
+    fmt.Println("hi")
+}
+"#;
+        let outcome = parser.parse("calls.go", code, Language::Go).unwrap();
+        let direct = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "helper");
+        assert!(direct.is_some(), "should have direct call to helper");
+        assert_eq!(direct.unwrap().dispatch_kind, DispatchKind::Direct);
+
+        let dynamic = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "Println");
+        assert!(dynamic.is_some(), "should have dynamic call to Println");
+        assert_eq!(dynamic.unwrap().dispatch_kind, DispatchKind::Dynamic);
+        assert_eq!(dynamic.unwrap().receiver_expr.as_deref(), Some("fmt"));
     }
 }

@@ -132,3 +132,9 @@ pub fn summarize_file(
     let rt = runtime.lock().map_err(|e| e.to_string())?;
     rt.summarize_file(file_path).map_err(|e| e.to_string())
 }
+
+/// Show available node kinds, edge types, and their counts in the index.
+pub fn graph_schema(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    rt.graph_schema().map_err(|e| e.to_string())
+}

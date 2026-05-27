@@ -475,6 +475,7 @@ impl JsTsParser {
         match node.kind() {
             "function_declaration" | "generator_function_declaration" => {
                 let prev_uid = ctx.current_symbol_uid.take();
+                let mut func_name: Option<String> = None;
                 if let Some(mut sym) = self.extract_function(node, source, file_path, container) {
                     // Framework role
                     if sym.framework_role.is_none() {
@@ -485,17 +486,19 @@ impl JsTsParser {
                         sym.export_name = Some(sym.name.clone());
                         sym.is_default_export = is_default_export;
                     }
+                    func_name = Some(sym.name.clone());
                     ctx.current_symbol_uid = sym.symbol_uid.clone();
                     ctx.symbols.push(sym);
                 }
-                // Visit function body for calls/routes
+                // Visit function body for calls/routes — use function name as container
+                let body_container = func_name.as_deref().or(container);
                 if let Some(body) = node.child_by_field_name("body") {
-                    self.visit_expression_tree(&body, source, file_path, ctx, container);
+                    self.visit_expression_tree(&body, source, file_path, ctx, body_container);
                 }
                 // Children visited via generic walk below; uid restored after walk
                 let mut cursor = node.walk();
                 for child in node.children(&mut cursor) {
-                    self.visit_node(&child, source, file_path, ctx, container, false, false);
+                    self.visit_node(&child, source, file_path, ctx, body_container, false, false);
                 }
                 ctx.current_symbol_uid = prev_uid;
                 return;
@@ -519,22 +522,25 @@ impl JsTsParser {
             }
             "method_definition" => {
                 let prev_uid = ctx.current_symbol_uid.take();
+                let mut method_name: Option<String> = None;
                 if let Some(mut sym) = self.extract_method(node, source, file_path, container) {
                     if sym.framework_role.is_none() {
                         sym.framework_role =
                             classify_framework_role(&sym.name, sym.kind, container);
                     }
+                    method_name = Some(sym.name.clone());
                     ctx.current_symbol_uid = sym.symbol_uid.clone();
                     ctx.symbols.push(sym);
                 }
-                // Visit method body for calls/routes
+                // Visit method body for calls/routes — use method name as container
+                let body_container = method_name.as_deref().or(container);
                 if let Some(body) = child_by_kind(node, "statement_block") {
-                    self.visit_expression_tree(&body, source, file_path, ctx, container);
+                    self.visit_expression_tree(&body, source, file_path, ctx, body_container);
                 }
                 // Children visited via generic walk below; uid restored after walk
                 let mut cursor = node.walk();
                 for child in node.children(&mut cursor) {
-                    self.visit_node(&child, source, file_path, ctx, container, false, false);
+                    self.visit_node(&child, source, file_path, ctx, body_container, false, false);
                 }
                 ctx.current_symbol_uid = prev_uid;
                 return;
@@ -812,7 +818,7 @@ impl JsTsParser {
                     let tag_text = node_text(&tag_node, source).unwrap_or("");
                     // Only PascalCase = user components (not div, span, etc.)
                     if !tag_text.is_empty()
-                        && tag_text.chars().next().map_or(false, |c| c.is_uppercase())
+                        && tag_text.chars().next().is_some_and(|c| c.is_uppercase())
                     {
                         let line = node.start_position().row as u32 + 1;
                         let col = node.start_position().column as u32;
@@ -839,6 +845,76 @@ impl JsTsParser {
             }
             // JSX element containers: recurse into children to find nested JSX tags
             "jsx_element" => {
+                let mut cursor = node.walk();
+                for child in node.children(&mut cursor) {
+                    self.visit_expression_tree(&child, source, file_path, ctx, container);
+                }
+            }
+            // Named function expressions passed as callbacks: set up proper caller context
+            "function_expression" | "function" => {
+                let func_name = node
+                    .child_by_field_name("name")
+                    .and_then(|n| node_text(&n, source))
+                    .map(|s| s.to_string());
+                if let Some(ref fname) = func_name {
+                    if !fname.is_empty() {
+                        // Check if this symbol was already registered (e.g., by try_extract_route)
+                        let already_registered = ctx
+                            .symbols
+                            .iter()
+                            .any(|s| s.name == *fname && s.file_path == file_path);
+                        if !already_registered {
+                            let qname = fname.to_string();
+                            let sym = self.make_symbol(
+                                node,
+                                file_path,
+                                fname,
+                                SymbolKind::Function,
+                                &qname,
+                                container,
+                                None,
+                                source,
+                            );
+                            let prev_uid = ctx.current_symbol_uid.take();
+                            ctx.current_symbol_uid = sym.symbol_uid.clone();
+                            ctx.symbols.push(sym);
+                            // Visit body with the function as container
+                            if let Some(body) = node.child_by_field_name("body") {
+                                self.visit_expression_tree(
+                                    &body,
+                                    source,
+                                    file_path,
+                                    ctx,
+                                    Some(fname),
+                                );
+                            }
+                            ctx.current_symbol_uid = prev_uid;
+                            return; // Already handled children
+                        } else {
+                            // Already registered — just set the UID context and visit body
+                            let existing_uid = ctx
+                                .symbols
+                                .iter()
+                                .rev()
+                                .find(|s| s.name == *fname && s.file_path == file_path)
+                                .and_then(|s| s.symbol_uid.clone());
+                            let prev_uid = ctx.current_symbol_uid.take();
+                            ctx.current_symbol_uid = existing_uid;
+                            if let Some(body) = node.child_by_field_name("body") {
+                                self.visit_expression_tree(
+                                    &body,
+                                    source,
+                                    file_path,
+                                    ctx,
+                                    Some(fname),
+                                );
+                            }
+                            ctx.current_symbol_uid = prev_uid;
+                            return; // Already handled children
+                        }
+                    }
+                }
+                // Anonymous function: just recurse
                 let mut cursor = node.walk();
                 for child in node.children(&mut cursor) {
                     self.visit_expression_tree(&child, source, file_path, ctx, container);
@@ -911,38 +987,10 @@ impl JsTsParser {
                 }
                 // Broker detection: producer.send(), pubsub.publish(), etc.
                 // Try object-name match first, then fall back to import-based mapping.
-                else if {
-                    let broker_type_from_obj =
-                        crate::broker_patterns::match_broker_object(obj_text)
-                            .map(|m| m.broker_type.to_string());
-                    let broker_type_from_import = ctx.broker_imports.get(obj_text).cloned();
-                    let detected_broker = broker_type_from_obj.or(broker_type_from_import);
-                    if let Some(ref bt) = detected_broker {
-                        let mk = crate::broker_patterns::method_call_kind(prop_text);
-                        if mk == "async" {
-                            let line = node.start_position().row as u32 + 1;
-                            let col = node.start_position().column as u32;
-                            let url = self
-                                .extract_first_string_arg(node, source)
-                                .unwrap_or_default();
-                            ctx.http_call_edges.push(HttpCallEdgeRecord {
-                                edge_id: StableId::edge_id("http_call", file_path, line, col),
-                                file_path: file_path.to_string(),
-                                caller_symbol_uid: None,
-                                url_or_path: url,
-                                normalized_path: None,
-                                method: None,
-                                call_kind: "async".to_string(),
-                                line,
-                                confidence: 0.80,
-                                parser_tier: ParserTier::TreeSitter,
-                                broker_type: Some(bt.clone()),
-                            });
-                        }
-                    }
-                    detected_broker.is_some()
-                } {
-                    // Broker edge already emitted inside the condition block above.
+                else if self
+                    .try_emit_broker_edge(node, obj_text, prop_text, source, file_path, ctx)
+                {
+                    // Broker edge already emitted inside try_emit_broker_edge.
                 }
                 // HTTP client call detection: axios.get("/api/users"), client.post(url)
                 else if is_http_client_object(obj_text) && is_http_verb_method(prop_text) {
@@ -954,7 +1002,7 @@ impl JsTsParser {
                             ctx.http_call_edges.push(HttpCallEdgeRecord {
                                 edge_id: StableId::edge_id("http_call", file_path, line, col),
                                 file_path: file_path.to_string(),
-                                caller_symbol_uid: None,
+                                caller_symbol_uid: ctx.current_symbol_uid.clone(),
                                 url_or_path: url.to_string(),
                                 normalized_path: Some(
                                     cc_model::route_normalize::normalize_route_path(&normalized),
@@ -1056,7 +1104,7 @@ impl JsTsParser {
                     target_symbol_id: None,
                     target_file_path: None,
                     caller_symbol_id: None,
-                    caller_symbol_uid: None,
+                    caller_symbol_uid: ctx.current_symbol_uid.clone(),
                     callee_symbol_uid: None,
                     callee_ref_id: None,
                     dispatch_kind: dispatch,
@@ -1096,7 +1144,7 @@ impl JsTsParser {
                         ctx.http_call_edges.push(HttpCallEdgeRecord {
                             edge_id: StableId::edge_id("http_call", file_path, line, col),
                             file_path: file_path.to_string(),
-                            caller_symbol_uid: None,
+                            caller_symbol_uid: ctx.current_symbol_uid.clone(),
                             url_or_path: url.to_string(),
                             normalized_path: Some(cc_model::route_normalize::normalize_route_path(
                                 &normalized,
@@ -1157,7 +1205,7 @@ impl JsTsParser {
                 target_symbol_id: None,
                 target_file_path: None,
                 caller_symbol_id: None,
-                caller_symbol_uid: None,
+                caller_symbol_uid: ctx.current_symbol_uid.clone(),
                 callee_symbol_uid: None,
                 callee_ref_id: None,
                 dispatch_kind: DispatchKind::Direct,
@@ -1254,7 +1302,7 @@ impl JsTsParser {
                     target_symbol_id: None,
                     target_file_path: None,
                     caller_symbol_id: None,
-                    caller_symbol_uid: None,
+                    caller_symbol_uid: ctx.current_symbol_uid.clone(),
                     callee_symbol_uid: None,
                     callee_ref_id: None,
                     dispatch_kind: DispatchKind::Constructor,
@@ -1331,8 +1379,44 @@ impl JsTsParser {
                     .and_then(|f| node_text(&f, source))
                     .map(String::from)
             }
+            "function_expression" | "function" => {
+                // app.get("/path", function getUserRoute(req, res) { ... })
+                // Named function expression: extract the name
+                handler_node
+                    .child_by_field_name("name")
+                    .and_then(|n| node_text(&n, source))
+                    .map(String::from)
+            }
             _ => None,
         };
+
+        // If the handler is a named function expression, also register it as a symbol
+        if matches!(handler_node.kind(), "function_expression" | "function") {
+            if let Some(ref hname) = handler_name {
+                if !hname.is_empty() {
+                    let qname = hname.to_string();
+                    let mut sym = self.make_symbol(
+                        handler_node,
+                        file_path,
+                        hname,
+                        SymbolKind::Function,
+                        &qname,
+                        None,
+                        None,
+                        source,
+                    );
+                    sym.framework_role = Some("route_handler".to_string());
+                    let prev_uid = ctx.current_symbol_uid.take();
+                    ctx.current_symbol_uid = sym.symbol_uid.clone();
+                    ctx.symbols.push(sym);
+                    // Visit function body for call edges
+                    if let Some(body) = handler_node.child_by_field_name("body") {
+                        self.visit_expression_tree(&body, source, file_path, ctx, Some(hname));
+                    }
+                    ctx.current_symbol_uid = prev_uid;
+                }
+            }
+        }
 
         let framework = framework_for_router_object(obj_text);
         ctx.route_edges.push(RouteEdgeRecord {
@@ -1359,6 +1443,49 @@ impl JsTsParser {
             confidence: 0.90,
             parser_tier: ParserTier::Semantic,
         });
+    }
+
+    /// Detect broker calls (producer.send(), pubsub.publish(), etc.) and emit
+    /// an HTTP-call edge if a matching async broker method is found.
+    /// Returns `true` when a broker was detected (edge may or may not have been
+    /// emitted depending on the method kind).
+    fn try_emit_broker_edge(
+        &self,
+        node: &tree_sitter::Node,
+        obj_text: &str,
+        prop_text: &str,
+        source: &[u8],
+        file_path: &str,
+        ctx: &mut ExtractCtx,
+    ) -> bool {
+        let broker_type_from_obj = crate::broker_patterns::match_broker_object(obj_text)
+            .map(|m| m.broker_type.to_string());
+        let broker_type_from_import = ctx.broker_imports.get(obj_text).cloned();
+        let detected_broker = broker_type_from_obj.or(broker_type_from_import);
+        if let Some(ref bt) = detected_broker {
+            let mk = crate::broker_patterns::method_call_kind(prop_text);
+            if mk == "async" {
+                let line = node.start_position().row as u32 + 1;
+                let col = node.start_position().column as u32;
+                let url = self
+                    .extract_first_string_arg(node, source)
+                    .unwrap_or_default();
+                ctx.http_call_edges.push(HttpCallEdgeRecord {
+                    edge_id: StableId::edge_id("http_call", file_path, line, col),
+                    file_path: file_path.to_string(),
+                    caller_symbol_uid: ctx.current_symbol_uid.clone(),
+                    url_or_path: url,
+                    normalized_path: None,
+                    method: None,
+                    call_kind: "async".to_string(),
+                    line,
+                    confidence: 0.80,
+                    parser_tier: ParserTier::TreeSitter,
+                    broker_type: Some(bt.clone()),
+                });
+            }
+        }
+        detected_broker.is_some()
     }
 
     /// Extract middleware from `app.use([path], handler)` pattern.
@@ -1908,6 +2035,79 @@ impl JsTsParser {
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
             if child.kind() == "variable_declarator" {
+                // CommonJS require() import extraction:
+                // const X = require('mod')  or  const { A, B } = require('./mod')
+                if let Some(val_node) = child.child_by_field_name("value") {
+                    if val_node.kind() == "call_expression" {
+                        let callee = val_node.child(0).and_then(|c| node_text(&c, source));
+                        if callee == Some("require") {
+                            if let Some(src) = self.extract_first_string_arg(&val_node, source) {
+                                if let Some(name_node) = child.child_by_field_name("name") {
+                                    if name_node.kind() == "object_pattern" {
+                                        // const { A, B } = require('./mod')
+                                        let mut oc = name_node.walk();
+                                        for prop in name_node.named_children(&mut oc) {
+                                            if prop.kind()
+                                                == "shorthand_property_identifier_pattern"
+                                                || prop.kind() == "shorthand_property_identifier"
+                                            {
+                                                if let Some(iname) = node_text(&prop, source) {
+                                                    ctx.imports.push(ImportRecord {
+                                                        file_path: file_path.to_string(),
+                                                        import_string: src.clone(),
+                                                        resolved_path: None,
+                                                        imported_name: Some(iname.to_string()),
+                                                        alias: None,
+                                                        is_namespace: false,
+                                                        is_default: false,
+                                                        is_reexport: false,
+                                                    });
+                                                }
+                                            } else if prop.kind() == "pair_pattern"
+                                                || prop.kind() == "pair"
+                                            {
+                                                // const { A: alias } = require(...)
+                                                let key = prop
+                                                    .child_by_field_name("key")
+                                                    .and_then(|k| node_text(&k, source));
+                                                let value = prop
+                                                    .child_by_field_name("value")
+                                                    .and_then(|v| node_text(&v, source));
+                                                if let (Some(k), Some(v)) = (key, value) {
+                                                    ctx.imports.push(ImportRecord {
+                                                        file_path: file_path.to_string(),
+                                                        import_string: src.clone(),
+                                                        resolved_path: None,
+                                                        imported_name: Some(k.to_string()),
+                                                        alias: Some(v.to_string()),
+                                                        is_namespace: false,
+                                                        is_default: false,
+                                                        is_reexport: false,
+                                                    });
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        // const X = require('mod') — default/namespace import
+                                        if let Some(iname) = node_text(&name_node, source) {
+                                            ctx.imports.push(ImportRecord {
+                                                file_path: file_path.to_string(),
+                                                import_string: src.clone(),
+                                                resolved_path: None,
+                                                imported_name: Some(iname.to_string()),
+                                                alias: None,
+                                                is_namespace: true,
+                                                is_default: true,
+                                                is_reexport: false,
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 if let Some(name_node) = child.child_by_field_name("name") {
                     // useState setter detection: const [state, setState] = useState(...)
                     if name_node.kind() == "array_pattern" {
@@ -2638,6 +2838,7 @@ impl JsTsParser {
     }
 
     /// Find the type name from a `new_expression` (`new Foo(...)`).
+    #[allow(clippy::only_used_in_recursion)]
     fn find_new_expression_type(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         if node.kind() == "new_expression" {
             let constructor = node.child_by_field_name("constructor")?;

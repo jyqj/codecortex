@@ -181,7 +181,7 @@ impl FlowKind {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
+    pub fn parse_str(s: &str) -> Self {
         match s {
             "write" => Self::Write,
             "type_ref" => Self::TypeRef,

@@ -1088,7 +1088,7 @@ pub fn bind_infra_to_symbols(
     symbols: &[cc_model::symbol::SymbolRecord],
 ) {
     for node in infra_nodes.iter_mut() {
-        let normalized = node.name.to_lowercase().replace('-', "_").replace('.', "_");
+        let normalized = node.name.to_lowercase().replace(['-', '.'], "_");
         if normalized.is_empty() {
             continue;
         }
@@ -1449,10 +1449,10 @@ pub fn match_bindings_to_routes(
     let route_lookup: std::collections::HashMap<String, &str> = route_nodes
         .iter()
         .filter_map(|r| {
-            let norm = r.normalized_path.as_deref().unwrap_or_else(|| {
+            let norm = r.normalized_path.as_deref().unwrap_or(
                 // Should not happen — normalized_path is always set during indexing
-                ""
-            });
+                "",
+            );
             if norm.is_empty() {
                 None
             } else {

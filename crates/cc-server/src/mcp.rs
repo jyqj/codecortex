@@ -83,7 +83,7 @@ macro_rules! spawn_handler {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// 12 MCP Tools
+// 14 MCP Tools
 // ═══════════════════════════════════════════════════════════════════════
 
 #[tool_router]
@@ -723,27 +723,24 @@ index(path) → search(query) → context(task)
         info
     }
 
-    fn list_tools(
+    async fn list_tools(
         &self,
         _request: Option<PaginatedRequestParams>,
         _context: RequestContext<RoleServer>,
-    ) -> impl std::future::Future<Output = Result<ListToolsResult, rmcp::ErrorData>> + Send + '_
-    {
-        async move {
-            let index = self.index().await;
-            let tier = self.current_tier(&index);
-            let mut tools = self.tool_router.list_all();
-            for tool in &mut tools {
-                if let Some(ref desc) = tool.description {
-                    let enriched = self.enrich_tool_description(&tool.name, desc, tier);
-                    tool.description = Some(Cow::Owned(enriched));
-                }
+    ) -> Result<ListToolsResult, rmcp::ErrorData> {
+        let index = self.index().await;
+        let tier = self.current_tier(&index);
+        let mut tools = self.tool_router.list_all();
+        for tool in &mut tools {
+            if let Some(ref desc) = tool.description {
+                let enriched = self.enrich_tool_description(&tool.name, desc, tier);
+                tool.description = Some(Cow::Owned(enriched));
             }
-            Ok(ListToolsResult {
-                tools,
-                ..Default::default()
-            })
         }
+        Ok(ListToolsResult {
+            tools,
+            ..Default::default()
+        })
     }
 
     fn call_tool(

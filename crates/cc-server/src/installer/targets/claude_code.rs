@@ -76,8 +76,57 @@ exit 2
         Ok(vec!["PreToolUse (Grep|Glob|Search)".into()])
     }
 
-    fn uninstall(&self, _home: &Path) -> Result<(), String> {
-        // TODO: Remove codecortex entries from mcp.json and settings.json
+    fn uninstall(&self, home: &Path) -> Result<(), String> {
+        let claude_dir = home.join(".claude");
+
+        // 1. Remove MCP server entry
+        let mcp_config_path = claude_dir.join(".mcp.json");
+        helpers::remove_json_key(&mcp_config_path, "mcpServers", "codecortex")?;
+
+        // 2. Remove PreToolUse hook entries containing codecortex from settings.json
+        let settings_path = claude_dir.join("settings.json");
+        if settings_path.exists() {
+            let content = std::fs::read_to_string(&settings_path).map_err(|e| e.to_string())?;
+            let mut root: serde_json::Value =
+                serde_json::from_str(&content).unwrap_or(serde_json::json!({}));
+            if let Some(hooks) = root
+                .as_object_mut()
+                .and_then(|o| o.get_mut("hooks"))
+                .and_then(|h| h.as_object_mut())
+            {
+                for (_hook_type, entries) in hooks.iter_mut() {
+                    if let Some(arr) = entries.as_array_mut() {
+                        arr.retain(|entry| {
+                            let is_ours = entry
+                                .get("hooks")
+                                .and_then(|hs| hs.as_array())
+                                .map(|hs| {
+                                    hs.iter().any(|hh| {
+                                        hh.get("command")
+                                            .and_then(|c| c.as_str())
+                                            .map(|c| c.contains("codecortex"))
+                                            .unwrap_or(false)
+                                    })
+                                })
+                                .unwrap_or(false);
+                            !is_ours
+                        });
+                    }
+                }
+            }
+            std::fs::write(
+                &settings_path,
+                serde_json::to_string_pretty(&root).map_err(|e| e.to_string())?,
+            )
+            .map_err(|e| e.to_string())?;
+        }
+
+        // 3. Remove gate script
+        let gate_script_path = claude_dir.join("hooks/codecortex-discovery-gate");
+        if gate_script_path.exists() {
+            std::fs::remove_file(&gate_script_path).map_err(|e| e.to_string())?;
+        }
+
         Ok(())
     }
 

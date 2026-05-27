@@ -2,13 +2,13 @@
 
 ## Unit Tests
 
-558 tests across 7 crates. Run with `cargo test`.
+586 tests across 7 crates. Run with `cargo test`.
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
 | cc-db | 32 | Schema creation, migrations, SQL injection safety, edge queries |
-| cc-eval | 7 | Assertion types (incl. field_equals), corpus loading, fixture integration |
-| cc-index | 185 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection |
+| cc-eval | 8 | Assertion types (incl. field_equals), corpus loading, fixture integration |
+| cc-index | 212 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection |
 | cc-model | 26 | Route normalization, data structures |
 | cc-parsers | 135 | Tree-sitter parsing for 10 languages, symbol extraction |
 | cc-search | 130 | Cypher parser/executor, search engine, graph queries |
@@ -16,7 +16,7 @@
 
 ## Eval Suite (cc-eval)
 
-26 corpus cases covering all 14 MCP tools. Run with `cargo test -p cc-eval`.
+29 corpus cases covering all 14 MCP tools. Run with `cargo test -p cc-eval`.
 
 ### Corpus Cases
 
@@ -48,6 +48,9 @@
 | explore_flow_js | explore | JS symbol data flow exploration |
 | context_flask_routes | context | Flask route context building |
 | graph_query_callers | graph_query | Cypher query for callers |
+| context_golden_refactor | context | Golden test: context for refactoring formatName |
+| search_golden_js | search | Golden test: search for user processing functions |
+| search_golden_python | search | Golden test: search for user API functions |
 
 ### Assertion Types
 

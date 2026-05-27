@@ -29,7 +29,7 @@ impl DispatchSiteKind {
         }
     }
 
-    pub fn from_str(s: &str) -> Self {
+    pub fn parse_str(s: &str) -> Self {
         match s {
             "event_on" => Self::EventOn,
             "event_emit" => Self::EventEmit,

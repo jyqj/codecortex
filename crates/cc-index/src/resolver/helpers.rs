@@ -195,7 +195,7 @@ pub(in crate::resolver) fn is_type_like(kind: SymbolKind) -> bool {
 /// - Single-char type params (T, K, V, etc.)
 pub(in crate::resolver) fn type_atoms(raw: &str) -> Vec<String> {
     // Remove pointer/reference prefixes
-    let s = raw.trim_start_matches(|c: char| c == '*' || c == '&');
+    let s = raw.trim_start_matches(['*', '&']);
 
     // Split on delimiters: < > [ ] , | ( ) and whitespace
     let mut atoms = Vec::new();

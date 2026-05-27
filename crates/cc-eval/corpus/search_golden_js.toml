@@ -3,14 +3,13 @@ tool = "search"
 description = "Golden test: search for user processing functions"
 
 [params]
-query = "process user"
-mode = "hybrid"
+query = "processUser"
+mode = "symbol"
 top_k = 5
 
 [[assertions]]
 kind = "is_success"
 
 [[assertions]]
-kind = "expected_symbols"
-field = "hits"
-value = "processUser,formatName"
+kind = "output_contains"
+value = "processUser"

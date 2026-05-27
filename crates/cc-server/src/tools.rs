@@ -142,7 +142,7 @@ impl Default for StatusParams {
 
 /// Parameters for the `cc_index` tool.
 /// Triggers an incremental or full index build.
-#[derive(Deserialize, schemars::JsonSchema)]
+#[derive(Default, Deserialize, schemars::JsonSchema)]
 pub struct IndexParams {
     /// Absolute or relative path to the project root to index.
     pub path: String,
@@ -156,15 +156,6 @@ pub struct IndexParams {
 impl IndexParams {
     pub fn sanitize(&mut self) {
         clamp_str(&mut self.path, MAX_PATH_LEN);
-    }
-}
-
-impl Default for IndexParams {
-    fn default() -> Self {
-        Self {
-            path: String::new(),
-            full: false,
-        }
     }
 }
 
@@ -403,7 +394,7 @@ pub struct TraceParams {
     /// - `"snippet"` – first 3 lines of each function (default when include_source=true)
     /// - `"body"` – complete function body + outgoing calls list (one call = full understanding)
     /// - `"outline"` – signature only, no body
-    /// When omitted, falls back to include_source: true→snippet, false→none.
+    ///   When omitted, falls back to include_source: true→snippet, false→none.
     #[serde(default)]
     pub source_mode: Option<String>,
 
@@ -698,7 +689,7 @@ impl Default for FilesParams {
 
 /// Parameters for the `cc_graph_query` tool.
 /// Executes a raw Cypher-like query against the code graph.
-#[derive(Deserialize, schemars::JsonSchema)]
+#[derive(Default, Deserialize, schemars::JsonSchema)]
 pub struct GraphQueryParams {
     /// The graph query string (Cypher-like syntax).
     pub query: String,
@@ -712,15 +703,6 @@ impl GraphQueryParams {
     pub fn sanitize(&mut self) {
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
-    }
-}
-
-impl Default for GraphQueryParams {
-    fn default() -> Self {
-        Self {
-            query: String::new(),
-            project_path: None,
-        }
     }
 }
 

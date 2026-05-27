@@ -49,8 +49,8 @@ impl InstallerTarget for ZedTarget {
         Ok(vec![])
     }
 
-    fn uninstall(&self, _home: &Path) -> Result<(), String> {
-        Ok(())
+    fn uninstall(&self, home: &Path) -> Result<(), String> {
+        helpers::remove_json_key(&Self::settings_path(home), "context_servers", "codecortex")
     }
 
     fn config_location(&self, home: &Path) -> PathBuf {

@@ -319,6 +319,7 @@ impl CCppParser {
     }
 
     /// Iteratively search for a function_declarator node within nested declarator wrappers.
+    #[allow(clippy::only_used_in_recursion)]
     fn find_function_declarator<'a>(
         &self,
         node: &tree_sitter::Node<'a>,
@@ -959,6 +960,7 @@ impl CCppParser {
     }
 
     /// Walk AST to find class_specifier/struct_specifier with base_class_clause.
+    #[allow(clippy::only_used_in_recursion)]
     fn walk_for_inheritance(
         &self,
         node: &tree_sitter::Node,

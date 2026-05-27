@@ -39,7 +39,7 @@ pub fn handle_status(runtime: Arc<Mutex<CodeIndex>>, aspect: &str) -> Result<Val
         }
         "capabilities" => core::index_capabilities(runtime),
         "schema" => core::graph_schema(runtime),
-        "all" | _ => {
+        _ => {
             let index = core::index_status(runtime.clone())?;
             let capabilities = core::index_capabilities(runtime.clone())?;
             let schema = core::graph_schema(runtime.clone())?;
@@ -142,7 +142,7 @@ pub fn handle_node(
             None,
         ),
         "summary" => core::summarize_file(runtime, symbol),
-        "trail" | _ => {
+        _ => {
             let source = context::get_symbol_source(runtime.clone(), symbol, false, true, None)?;
             let callers_val = core::callers(runtime.clone(), symbol, relation_limit)?;
             let callees_val = core::callees(runtime, symbol, relation_limit)?;
@@ -175,7 +175,7 @@ pub fn handle_relations(
         "callees" => core::callees(runtime, symbol, limit),
         "refs" => graph::symbol_refs(runtime, symbol, limit),
         "hierarchy" => graph::type_hierarchy(runtime, symbol, None, None, direction, 5, true),
-        "both" | _ => {
+        _ => {
             let callers_val = core::callers(runtime.clone(), symbol, limit)?;
             let callees_val = core::callees(runtime, symbol, limit)?;
             Ok(json!({
@@ -217,7 +217,7 @@ pub fn handle_impact(
                 .ok_or_else(|| "file_path is required for 'dependents' scope".to_string())?;
             graph::get_dependents(runtime, json!({"file_path": fp}))
         }
-        "changes" | _ => core::analyze_impact(runtime, files, base_branch),
+        _ => core::analyze_impact(runtime, files, base_branch),
     }
 }
 
@@ -258,7 +258,7 @@ pub fn handle_architecture(
             }
         }
         "unresolved" => graph::list_unresolved_refs(runtime, limit, None, None),
-        "overview" | _ => graph::get_architecture(runtime, json!({"limit": limit})),
+        _ => graph::get_architecture(runtime, json!({"limit": limit})),
     }
 }
 
@@ -289,7 +289,7 @@ pub fn handle_files(
                 end_line.ok_or_else(|| "end_line is required for 'expand' action".to_string())?;
             context::expand_code_region(runtime, p, sl, el, context_lines)
         }
-        "list" | _ => {
+        _ => {
             let max_files = {
                 let rt = runtime.lock().map_err(|e| e.to_string())?;
                 rt.output_budget("files").max_items

@@ -341,6 +341,7 @@ impl SpecDrivenParser {
     }
 
     /// Generic helper: run function regex and class regex over content, produce SymbolRecords.
+    #[allow(clippy::too_many_arguments)]
     fn extract_with_regexes(
         &self,
         file_path: &str,
@@ -508,8 +509,7 @@ impl SpecDrivenParser {
         let start_indent = lines[start_idx].len() - lines[start_idx].trim_start().len();
         let max_scan = (start_idx + 200).min(lines.len());
 
-        for idx in (start_idx + 1)..max_scan {
-            let line = lines[idx];
+        for (idx, line) in lines.iter().enumerate().take(max_scan).skip(start_idx + 1) {
             let trimmed = line.trim();
 
             // Closing brace at same or lesser indent.
@@ -579,13 +579,10 @@ impl SpecDrivenParser {
             SymbolKind::Module
         } else if decl_text.contains("struct") || decl_text.contains("record") {
             SymbolKind::Class
-        } else if decl_text.contains("protocol") {
+        } else if decl_text.contains("protocol") || decl_text.contains("trait") {
             SymbolKind::Interface
-        } else if decl_text.contains("trait") {
-            SymbolKind::Interface
-        } else if decl_text.contains("object") {
-            SymbolKind::Class
         } else {
+            // covers "object" and all other class-like declarations
             SymbolKind::Class
         }
     }

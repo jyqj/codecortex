@@ -292,17 +292,19 @@ value = "formatName"
         assert_eq!(report.total_cases, cases.len());
         assert!(!report.per_tool.is_empty(), "should have per-tool results");
 
-        // Write to docs/benchmarks/latest.md if the directory exists
-        // (only meaningful when run explicitly, not in CI)
-        let bench_dir = crate_dir
-            .parent()
-            .and_then(|p| p.parent())
-            .map(|root| root.join("docs").join("benchmarks"));
-        if let Some(dir) = bench_dir {
-            if dir.exists() || std::fs::create_dir_all(&dir).is_ok() {
-                let path = dir.join("latest.md");
-                if std::fs::write(&path, &md).is_ok() {
-                    eprintln!("Benchmark report written to {}", path.display());
+        // Write to docs/benchmarks/latest.md only when explicitly requested
+        // via CODECORTEX_WRITE_BENCHMARK=1 to avoid side effects in CI.
+        if std::env::var("CODECORTEX_WRITE_BENCHMARK").is_ok() {
+            let bench_dir = crate_dir
+                .parent()
+                .and_then(|p| p.parent())
+                .map(|root| root.join("docs").join("benchmarks"));
+            if let Some(dir) = bench_dir {
+                if dir.exists() || std::fs::create_dir_all(&dir).is_ok() {
+                    let path = dir.join("latest.md");
+                    if std::fs::write(&path, &md).is_ok() {
+                        eprintln!("Benchmark report written to {}", path.display());
+                    }
                 }
             }
         }
@@ -340,24 +342,31 @@ value = "formatName"
         let md = report::generate_markdown(&eval_report);
         eprintln!("{}", md);
 
-        // At least some cases should pass (we don't require 100% since some
-        // tools like trace/graph_query may not find results in a tiny fixture)
-        assert!(
-            eval_report.summary.passed > 0,
-            "at least one eval case should pass"
-        );
-
-        // Status and files should always pass on any indexed project
-        for result in &eval_report.results {
-            if result.tool == "status"
-                || (result.tool == "files" && result.case_name.contains("list"))
-            {
-                assert!(
-                    result.passed,
-                    "tool={} case={} should pass but failed: {:?}",
-                    result.tool, result.case_name, result.assertions_failed
-                );
-            }
+        // All corpus cases must pass — zero tolerance for regressions.
+        if eval_report.summary.failed > 0 {
+            let failures: Vec<String> = eval_report
+                .results
+                .iter()
+                .filter(|r| !r.passed)
+                .map(|r| {
+                    format!(
+                        "  - {} (tool={}): {:?}{}",
+                        r.case_name,
+                        r.tool,
+                        r.assertions_failed,
+                        r.error
+                            .as_ref()
+                            .map(|e| format!(" [error: {}]", e))
+                            .unwrap_or_default()
+                    )
+                })
+                .collect();
+            panic!(
+                "eval: {}/{} cases failed:\n{}",
+                eval_report.summary.failed,
+                eval_report.summary.total_cases,
+                failures.join("\n")
+            );
         }
     }
 }

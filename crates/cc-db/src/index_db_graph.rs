@@ -391,10 +391,8 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         let mut candidates = Vec::new();
-        for row in rows {
-            if let Ok(v) = row {
-                candidates.push(v);
-            }
+        for v in rows.flatten() {
+            candidates.push(v);
         }
         Ok(serde_json::Value::Array(candidates))
     }
@@ -1193,7 +1191,7 @@ impl IndexDb {
                     col: row.get(3)?,
                     enclosing_symbol_uid: row.get(4)?,
                     receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::from_str(&kind_str),
+                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
                     key: row.get(7)?,
                     handler_expr: row.get(8)?,
                     handler_symbol_uid: row.get(9)?,

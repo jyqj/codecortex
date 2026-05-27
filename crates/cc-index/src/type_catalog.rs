@@ -158,13 +158,9 @@ impl TypeCatalog {
         let mut s = raw.trim().to_string();
 
         // Strip pointer/reference markers from start
-        s = s
-            .trim_start_matches(|c: char| c == '*' || c == '&')
-            .to_string();
+        s = s.trim_start_matches(['*', '&']).to_string();
         // Strip trailing optional/array markers
-        s = s
-            .trim_end_matches(|c: char| c == '?' || c == ']')
-            .to_string();
+        s = s.trim_end_matches(['?', ']']).to_string();
         s = s.trim_end_matches('[').to_string();
 
         // Strip generic params

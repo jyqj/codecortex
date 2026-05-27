@@ -183,7 +183,7 @@ pub fn run_event_emitter_synthesis(
                 skipped_generic += 1;
                 continue;
             } else {
-                matching_ons.iter().copied().collect()
+                matching_ons.to_vec()
             };
 
             // Skip unresolved handlers before fanout accounting; unresolved
@@ -678,7 +678,7 @@ pub fn run_field_observer_synthesis(db: &IndexDb, config: &SynthesisConfig) -> C
             store_by_key
                 .entry(store.key.as_str())
                 .or_default()
-                .push(&store);
+                .push(store);
         }
 
         for invoke in invokes {

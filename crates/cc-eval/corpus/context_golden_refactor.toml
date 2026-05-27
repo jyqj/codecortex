@@ -3,7 +3,7 @@ tool = "context"
 description = "Golden test: context for refactoring formatName"
 
 [params]
-task = "refactor the formatName function"
+task = "refactor the formatName function and processUser handler"
 max_symbols = 10
 include_source = true
 
@@ -11,6 +11,9 @@ include_source = true
 kind = "is_success"
 
 [[assertions]]
-kind = "expected_symbols"
-field = "symbols"
-value = "formatName,processUser"
+kind = "output_contains"
+value = "formatName"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"

@@ -505,7 +505,7 @@ impl IndexDb {
                     col: row.get(3)?,
                     enclosing_symbol_uid: row.get(4)?,
                     receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::from_str(&kind_str),
+                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
                     key: row.get(7)?,
                     handler_expr: row.get(8)?,
                     handler_symbol_uid: row.get(9)?,
@@ -543,7 +543,7 @@ impl IndexDb {
                     col: row.get(3)?,
                     enclosing_symbol_uid: row.get(4)?,
                     receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::from_str(&kind_str),
+                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
                     key: row.get(7)?,
                     handler_expr: row.get(8)?,
                     handler_symbol_uid: row.get(9)?,
@@ -593,7 +593,7 @@ impl IndexDb {
                     col: row.get(3)?,
                     enclosing_symbol_uid: row.get(4)?,
                     receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::from_str(&kind_str),
+                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
                     key: row.get(7)?,
                     handler_expr: row.get(8)?,
                     handler_symbol_uid: row.get(9)?,
@@ -800,10 +800,8 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         let mut result = std::collections::HashMap::new();
-        for row in rows {
-            if let Ok((norm_path, count, last_seen)) = row {
-                result.insert(norm_path, (count, last_seen));
-            }
+        for (norm_path, count, last_seen) in rows.flatten() {
+            result.insert(norm_path, (count, last_seen));
         }
         Ok(result)
     }
@@ -843,10 +841,8 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         let mut result = std::collections::HashMap::new();
-        for row in rows {
-            if let Ok((eid, count, last_seen)) = row {
-                result.insert(eid, (count, last_seen));
-            }
+        for (eid, count, last_seen) in rows.flatten() {
+            result.insert(eid, (count, last_seen));
         }
         Ok(result)
     }

@@ -309,7 +309,7 @@ impl Indexer {
 
                 // Parallel parse for this batch.
                 let batch_results: Vec<Result<FileWriteUnit, (String, String)>> =
-                    pool.install(|| batch.par_iter().map(|pf| parse_one(pf)).collect());
+                    pool.install(|| batch.par_iter().map(&parse_one).collect());
 
                 for result in batch_results {
                     match result {
@@ -1083,7 +1083,7 @@ impl Indexer {
                     if let Ok(entries) = std::fs::read_dir(&adr_path) {
                         for entry in entries.flatten() {
                             let path = entry.path();
-                            if path.extension().map_or(false, |e| e == "md") {
+                            if path.extension().is_some_and(|e| e == "md") {
                                 if let Ok(content) = std::fs::read_to_string(&path) {
                                     // Extract MADR-format header
                                     let mut title = None;

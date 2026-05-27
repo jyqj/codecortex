@@ -199,6 +199,7 @@ pub fn trace_path_names(
 /// `include_outgoing` – when true, populate `outgoing_calls` on each TraceNode.
 /// `from_uid_override` / `to_uid_override` – if `Some`, skip `find_symbol` for that
 /// endpoint and use the provided UID directly (must contain `":"`).
+#[allow(clippy::too_many_arguments)]
 pub fn trace_path_rich(
     db: &Arc<IndexDb>,
     project_root: Option<&Path>,

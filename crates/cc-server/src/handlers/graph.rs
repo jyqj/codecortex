@@ -26,6 +26,7 @@ pub fn graph_query(
 ///
 /// `source_mode`: `"none"` | `"snippet"` | `"body"` | `"outline"` | None.
 /// When None, falls back to `include_snippets`: true→snippet, false→none.
+#[allow(clippy::too_many_arguments)]
 pub fn trace_path(
     runtime: Arc<Mutex<CodeIndex>>,
     from: &str,
@@ -148,7 +149,7 @@ pub fn get_dependents(
         let rows2 = db
             .query_json(
                 "SELECT DISTINCT file_path FROM imports WHERE resolved_path = ?1 LIMIT 100",
-                &[dep.clone()],
+                std::slice::from_ref(dep),
             )
             .unwrap_or_default();
         for row in &rows2 {
@@ -211,11 +212,14 @@ pub fn find_dead_code(
         .map_err(|e| e.to_string())?
     };
 
-    // Fetch all call edges to build a set of UIDs that have callers
+    // Fetch all call edges to build a set of UIDs that have callers.
+    // Exclude self-edges (caller == callee) since they don't indicate real usage.
     let edge_rows = db
         .query_json(
             "SELECT DISTINCT callee_symbol_uid FROM call_edges \
-             WHERE callee_symbol_uid IS NOT NULL LIMIT 10000",
+             WHERE callee_symbol_uid IS NOT NULL \
+               AND (caller_symbol_uid IS NULL OR caller_symbol_uid != callee_symbol_uid) \
+             LIMIT 10000",
             &[],
         )
         .unwrap_or_default();
@@ -258,12 +262,19 @@ pub fn find_dead_code(
 
         // Check if symbol has callers
         if !has_callers.contains(uid) {
-            // Also check symbol_refs
-            let has_refs = rt
-                .symbol_refs(name, 1)
+            // Also check symbol_refs — exclude self-references where the
+            // container is the symbol itself (function body referencing its own name).
+            let has_external_refs = db
+                .query_json(
+                    "SELECT 1 FROM symbol_refs \
+                     WHERE target_symbol_uid = ?1 \
+                       AND (container IS NULL OR container != ?2) \
+                     LIMIT 1",
+                    &[uid.to_string(), name.to_string()],
+                )
                 .map(|r| !r.is_empty())
                 .unwrap_or(false);
-            if !has_refs {
+            if !has_external_refs {
                 dead_items.push(serde_json::json!({
                     "symbol_name": name,
                     "symbol_uid": uid,
@@ -470,7 +481,7 @@ pub fn find_service_bindings(
                     properties, bound_symbol_uid, binding_confidence \
              FROM infra_nodes \
              WHERE name LIKE ?1 OR bound_symbol_uid LIKE ?1",
-            &[pattern.clone()],
+            std::slice::from_ref(&pattern),
         )
         .map_err(|e| e.to_string())?;
 
@@ -574,6 +585,7 @@ pub fn list_package_boundaries(
 }
 
 /// Discover call flow paths connecting multiple symbols.
+#[allow(clippy::too_many_arguments)]
 pub fn explore_flow(
     runtime: Arc<Mutex<CodeIndex>>,
     symbols: &[String],

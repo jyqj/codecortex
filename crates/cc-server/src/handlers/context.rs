@@ -64,6 +64,7 @@ pub fn task_symbols(
         .map_err(|e| e.to_string())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn explore_symbols(
     runtime: Arc<Mutex<CodeIndex>>,
     symbols: &[String],

@@ -39,8 +39,9 @@ impl InstallerTarget for GeminiCliTarget {
         Ok(vec![])
     }
 
-    fn uninstall(&self, _home: &Path) -> Result<(), String> {
-        Ok(())
+    fn uninstall(&self, home: &Path) -> Result<(), String> {
+        let settings_path = home.join(".gemini/settings.json");
+        helpers::remove_json_key(&settings_path, "mcpServers", "codecortex")
     }
 
     fn config_location(&self, home: &Path) -> PathBuf {

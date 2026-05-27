@@ -886,7 +886,7 @@ mod tests {
             Some("Vec<Foo>"),
             Some("HashMap<Bar, Baz>"),
         );
-        catalog.add_symbols(&[func_sym.clone()]);
+        catalog.add_symbols(std::slice::from_ref(&func_sym));
 
         let mut outcome = cc_model::parse::ParseOutcome::default();
         outcome.symbols.push(func_sym);
@@ -920,7 +920,7 @@ mod tests {
             Some("User"),
             Some("User"),
         );
-        catalog.add_symbols(&[func_sym.clone()]);
+        catalog.add_symbols(std::slice::from_ref(&func_sym));
 
         let mut outcome = cc_model::parse::ParseOutcome::default();
         outcome.symbols.push(func_sym);
@@ -946,7 +946,7 @@ mod tests {
             None,
         );
         func_sym.symbol_uid = None; // remove UID
-        catalog.add_symbols(&[func_sym.clone()]);
+        catalog.add_symbols(std::slice::from_ref(&func_sym));
 
         let mut outcome = cc_model::parse::ParseOutcome::default();
         outcome.symbols.push(func_sym);
@@ -970,7 +970,7 @@ mod tests {
             Some("int, float, bool"),
             Some("f64"),
         );
-        catalog.add_symbols(&[func_sym.clone()]);
+        catalog.add_symbols(std::slice::from_ref(&func_sym));
 
         let mut outcome = cc_model::parse::ParseOutcome::default();
         outcome.symbols.push(func_sym);

@@ -58,11 +58,8 @@ pub fn tarjan_scc(adj: &HashMap<String, Vec<String>>) -> Vec<Vec<String>> {
         scc_stack.push(start_str);
 
         while let Some((v, ni)) = work.last_mut() {
-            let v_str: &str = *v;
-            let neighbors = adj
-                .get(v_str)
-                .map(|ns| ns.as_slice())
-                .unwrap_or(empty_vec.as_slice());
+            let v_str: &str = v;
+            let neighbors = adj.get(v_str).map(|ns| ns.as_slice()).unwrap_or(&empty_vec);
 
             if *ni < neighbors.len() {
                 let w: &str = neighbors[*ni].as_str();
@@ -117,7 +114,7 @@ pub fn tarjan_scc(adj: &HashMap<String, Vec<String>>) -> Vec<Vec<String>> {
 
                 // Propagate lowlink to parent.
                 if let Some((parent, _)) = work.last() {
-                    let parent_str: &str = *parent;
+                    let parent_str: &str = parent;
                     let child_lowlink = state[v_str_owned].lowlink;
                     let parent_state = state.get_mut(parent_str).unwrap();
                     if child_lowlink < parent_state.lowlink {
@@ -143,10 +140,8 @@ fn extract_package(file_path: &str) -> String {
 
     // Look for src/lib/app boundary
     for (i, part) in parts.iter().enumerate() {
-        if *part == "src" || *part == "lib" || *part == "app" {
-            if i > 0 {
-                return parts[..i].join("/");
-            }
+        if (*part == "src" || *part == "lib" || *part == "app") && i > 0 {
+            return parts[..i].join("/");
         }
     }
 
@@ -262,7 +257,7 @@ fn collect_file_witness_edges(db: &Arc<IndexDb>, scc: &[String]) -> CcResult<Vec
         // Find all imports from this node that land in another node in the same SCC
         let rows = db.query_json(
             "SELECT resolved_path, import_string FROM imports WHERE file_path = ?1 AND resolved_path IS NOT NULL",
-            &[node.clone()],
+            std::slice::from_ref(node),
         )?;
         for row in &rows {
             let rp = row.get("resolved_path").and_then(|v| v.as_str());

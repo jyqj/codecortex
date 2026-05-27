@@ -1,6 +1,7 @@
 //! Extract candidate symbol names from natural language task descriptions.
 
 use regex::Regex;
+use std::cmp::Reverse;
 use std::collections::HashSet;
 use std::sync::LazyLock;
 
@@ -20,6 +21,10 @@ static STOP_WORDS: LazyLock<HashSet<&'static str>> = LazyLock::new(|| {
 static RE_CAMEL: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"[A-Z][a-z]+(?:[A-Z][a-z0-9]+)+").unwrap());
 
+/// lowerCamelCase identifiers: formatName, processUser, getUserRoute, etc.
+static RE_LOWER_CAMEL: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"[a-z][a-z0-9]*(?:[A-Z][a-z0-9]*)+").unwrap());
+
 static RE_SNAKE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"[a-z][a-z0-9]*(?:_[a-z0-9]+)+").unwrap());
 
@@ -36,6 +41,13 @@ pub fn extract_candidate_symbols(text: &str) -> Vec<String> {
     let mut candidates = HashSet::new();
 
     for m in RE_CAMEL.find_iter(text) {
+        let s = m.as_str();
+        if !is_stop_word(s) {
+            candidates.insert(s.to_string());
+        }
+    }
+
+    for m in RE_LOWER_CAMEL.find_iter(text) {
         let s = m.as_str();
         if !is_stop_word(s) {
             candidates.insert(s.to_string());
@@ -64,7 +76,7 @@ pub fn extract_candidate_symbols(text: &str) -> Vec<String> {
     }
 
     let mut result: Vec<String> = candidates.into_iter().collect();
-    result.sort_by(|a, b| b.len().cmp(&a.len()));
+    result.sort_by_key(|s| Reverse(s.len()));
     result.truncate(20);
     result
 }

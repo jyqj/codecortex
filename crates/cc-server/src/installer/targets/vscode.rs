@@ -50,8 +50,8 @@ impl InstallerTarget for VsCodeTarget {
         Ok(vec![])
     }
 
-    fn uninstall(&self, _home: &Path) -> Result<(), String> {
-        Ok(())
+    fn uninstall(&self, home: &Path) -> Result<(), String> {
+        helpers::remove_json_key(&Self::mcp_path(home), "mcpServers", "codecortex")
     }
 
     fn config_location(&self, home: &Path) -> PathBuf {

@@ -703,10 +703,14 @@ fn build_projections(
             let projection = match item {
                 ReturnItem::Prop(pr, alias) => {
                     let col = prop_to_sql_col(pr);
-                    let source_key = alias.clone().unwrap_or_else(|| pr.prop.clone());
+                    // Use "var__prop" as source_key to avoid collisions when
+                    // multiple RETURN items share the same property name
+                    // (e.g. RETURN a.name, b.name).
+                    let default_key = format!("{}_{}", pr.var, pr.prop);
+                    let source_key = alias.clone().unwrap_or_else(|| default_key.clone());
                     let sql = match alias {
                         Some(a) => format!("{col} AS {a}"),
-                        None => col,
+                        None => format!("{col} AS {default_key}"),
                     };
                     SelectProjection {
                         sql,
@@ -1050,11 +1054,7 @@ pub(crate) fn translate_single_hop(
     let skip_dst_join = matches!(edge_info.dst_join_on, Some(""));
 
     let join_kw = if is_optional { "LEFT JOIN" } else { "JOIN" };
-    let distinct_kw = if query.return_clause.distinct {
-        "SELECT DISTINCT"
-    } else {
-        "SELECT DISTINCT"
-    };
+    let distinct_kw = "SELECT DISTINCT";
 
     let mut sql = format!(
         "{distinct_kw} {select_cols} FROM {} AS {edge_alias}",

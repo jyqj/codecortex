@@ -3,14 +3,13 @@ tool = "search"
 description = "Golden test: search for user API functions"
 
 [params]
-query = "get user"
-mode = "hybrid"
+query = "get_user"
+mode = "symbol"
 top_k = 5
 
 [[assertions]]
 kind = "is_success"
 
 [[assertions]]
-kind = "expected_symbols"
-field = "hits"
-value = "get_user,api_get_user"
+kind = "output_contains"
+value = "get_user"

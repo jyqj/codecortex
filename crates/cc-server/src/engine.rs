@@ -275,7 +275,7 @@ impl CodeIndex {
         let db = self.ensure_db()?;
         let rows = db.find_symbol(name, exact, top_k)?;
         if !include_metrics {
-            return Ok(serde_json::to_value(&rows).map_err(|e| CcError::Search(e.to_string()))?);
+            return serde_json::to_value(&rows).map_err(|e| CcError::Search(e.to_string()));
         }
         let mut results: Vec<serde_json::Value> = Vec::with_capacity(rows.len());
         for row in &rows {
@@ -413,7 +413,7 @@ impl CodeIndex {
         kind: Option<&str>,
     ) -> CcResult<serde_json::Value> {
         let db = self.ensure_db()?;
-        let rows = db.list_resolution_attempts(limit.max(1).min(500), file_path, kind)?;
+        let rows = db.list_resolution_attempts(limit.clamp(1, 500), file_path, kind)?;
         let mut by_kind: HashMap<String, usize> = HashMap::new();
         let mut with_candidates = 0usize;
         for row in &rows {
@@ -502,8 +502,7 @@ impl CodeIndex {
 
         let max_syms = max_symbols
             .unwrap_or_else(|| self.repo_size_tier().explore_max_symbols())
-            .max(1)
-            .min(20);
+            .clamp(1, 20);
         matched_symbols.truncate(max_syms);
         matched_uids.truncate(max_syms);
 
@@ -596,6 +595,7 @@ impl CodeIndex {
         self.repo_size_tier().output_budget(handler)
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub fn explore_symbols(
         &mut self,
         names: &[String],
@@ -761,31 +761,28 @@ impl CodeIndex {
                     if let (Some(project), Some(db)) =
                         (self.project_path.as_ref(), self.index_db.as_ref())
                     {
-                        match crate::path_guard::resolve_indexed_path_strict(
+                        if let Ok(full_path) = crate::path_guard::resolve_indexed_path_strict(
                             project,
                             &sym.file_path,
                             db,
                         ) {
-                            Ok(full_path) => {
-                                if let Ok(content) = std::fs::read_to_string(&full_path) {
-                                    let lines: Vec<&str> = content.lines().collect();
-                                    let start = (sym.start_line as usize).saturating_sub(1);
-                                    let end = (sym.end_line as usize).min(lines.len());
-                                    if start < end {
-                                        let mut source = lines[start..end].join("\n");
-                                        if source.len() > max_src_chars {
-                                            let mut truncate_at = max_src_chars.min(source.len());
-                                            while !source.is_char_boundary(truncate_at) {
-                                                truncate_at = truncate_at.saturating_sub(1);
-                                            }
-                                            source.truncate(truncate_at);
-                                            source.push_str("\n// ... truncated");
+                            if let Ok(content) = std::fs::read_to_string(&full_path) {
+                                let lines: Vec<&str> = content.lines().collect();
+                                let start = (sym.start_line as usize).saturating_sub(1);
+                                let end = (sym.end_line as usize).min(lines.len());
+                                if start < end {
+                                    let mut source = lines[start..end].join("\n");
+                                    if source.len() > max_src_chars {
+                                        let mut truncate_at = max_src_chars.min(source.len());
+                                        while !source.is_char_boundary(truncate_at) {
+                                            truncate_at = truncate_at.saturating_sub(1);
                                         }
-                                        entry["source"] = serde_json::json!(source);
+                                        source.truncate(truncate_at);
+                                        source.push_str("\n// ... truncated");
                                     }
+                                    entry["source"] = serde_json::json!(source);
                                 }
                             }
-                            Err(_) => {}
                         }
                     }
                 }

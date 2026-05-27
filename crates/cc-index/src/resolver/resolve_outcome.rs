@@ -53,8 +53,8 @@ impl SymbolCatalog {
                     raw,
                     file_path,
                     sref.line,
-                    &scopes,
-                    &imports,
+                    scopes,
+                    imports,
                     sref.container.as_deref(),
                 ) {
                     let e = &self.entries[result.catalog_index];
@@ -104,8 +104,8 @@ impl SymbolCatalog {
                     &edge.callee_symbol,
                     file_path,
                     edge.line,
-                    &scopes,
-                    &imports,
+                    scopes,
+                    imports,
                     edge.caller_symbol.as_deref(),
                 ) {
                     let e = &self.entries[result.catalog_index];
@@ -117,7 +117,7 @@ impl SymbolCatalog {
                     edge.resolution_strategy = result.resolution_kind.strategy_name().to_string();
                     edge.dispatch_kind = cc_model::edge::DispatchKind::Direct;
                     edge.call_kind =
-                        Self::classify_call_kind(&edge.callee_symbol, &imports).to_string();
+                        Self::classify_call_kind(&edge.callee_symbol, imports).to_string();
                     continue;
                 }
             }
@@ -264,8 +264,7 @@ impl SymbolCatalog {
 
             // Tier 1: Dotted handler resolution (e.g. "userCtrl.getUsers", "controllers.users.list")
             if handler.contains('.') {
-                if let Some(idx) =
-                    self.resolve_dotted_handler(&handler, file_path, &scopes, &imports)
+                if let Some(idx) = self.resolve_dotted_handler(&handler, file_path, scopes, imports)
                 {
                     let e = &self.entries[idx];
                     route.handler_symbol_id = Some(e.symbol_id.clone());
@@ -277,7 +276,7 @@ impl SymbolCatalog {
             // Tier 2: Rich context resolution (scopes + imports)
             if has_rich_context {
                 if let Some(result) =
-                    self.resolve_name(&handler, file_path, route.line, &scopes, &imports, None)
+                    self.resolve_name(&handler, file_path, route.line, scopes, imports, None)
                 {
                     let e = &self.entries[result.catalog_index];
                     route.handler_symbol_id = Some(e.symbol_id.clone());
@@ -287,7 +286,7 @@ impl SymbolCatalog {
             }
 
             // Tier 3: Global handler resolution (no same-file preference)
-            if let Some(idx) = self.resolve_handler_global(&handler, file_path, &imports) {
+            if let Some(idx) = self.resolve_handler_global(&handler, file_path, imports) {
                 let e = &self.entries[idx];
                 route.handler_symbol_id = Some(e.symbol_id.clone());
                 route.handler_symbol_uid = e.symbol_uid.clone();
@@ -339,7 +338,7 @@ impl SymbolCatalog {
             // Resolve target_symbol_uid (parent class/interface/trait — may be cross-file)
             if edge.target_symbol_uid.is_none() {
                 let resolved =
-                    self.resolve_semantic_target(&edge.target_symbol, &edge.file_path, &imports);
+                    self.resolve_semantic_target(&edge.target_symbol, &edge.file_path, imports);
                 if let Some(idx) = resolved {
                     edge.target_symbol_uid = self.entries[idx].symbol_uid.clone();
                     tracing::debug!(

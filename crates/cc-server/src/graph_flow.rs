@@ -16,6 +16,7 @@ use crate::graph_types::{
 ///
 /// `max_output_chars` – if `Some(n)`, truncate `flow_paths` so the serialized
 /// JSON result stays within `n` characters.
+#[allow(clippy::too_many_arguments)]
 pub fn explore_flow(
     db: &Arc<IndexDb>,
     project_root: Option<&Path>,
@@ -65,7 +66,7 @@ pub fn explore_flow(
                 let candidate_dir = dir_of(&r.file_path);
                 resolved.iter().any(|(_, resolved_uid)| {
                     // Look up the resolved symbol's file_path from the DB
-                    if let Ok(map) = db.symbol_rows_by_uids(&[resolved_uid.clone()]) {
+                    if let Ok(map) = db.symbol_rows_by_uids(std::slice::from_ref(resolved_uid)) {
                         if let Some(resolved_row) = map.get(resolved_uid) {
                             return dir_of(&resolved_row.file_path) == candidate_dir;
                         }
@@ -226,11 +227,11 @@ pub fn explore_flow(
         .iter()
         .filter(|(_, uid)| !connected_uids.contains(uid))
         .filter_map(|(name, uid)| {
-            let sym = sym_map.get(uid).or_else(|| {
+            let sym = sym_map.get(uid).or(
                 // Symbol may not be in sym_map if it wasn't in any path;
                 // we need to look it up individually.
-                None
-            });
+                None,
+            );
             if let Some(sym) = sym {
                 Some(DisconnectedSymbol {
                     name: name.clone(),
@@ -240,7 +241,7 @@ pub fn explore_flow(
                 })
             } else {
                 // Fetch from db for disconnected symbols not in any path
-                let rows = db.symbol_rows_by_uids(&[uid.clone()]).ok()?;
+                let rows = db.symbol_rows_by_uids(std::slice::from_ref(uid)).ok()?;
                 let sym = rows.get(uid)?;
                 Some(DisconnectedSymbol {
                     name: name.clone(),

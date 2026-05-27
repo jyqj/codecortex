@@ -372,7 +372,12 @@ mod tests {
         let sql = translated.sql;
         let params = translated.params;
 
-        assert!(sql.contains("SELECT f.name FROM symbols AS f"));
+        assert!(
+            sql.contains("SELECT f.name AS f_name FROM symbols AS f")
+                || sql.contains("SELECT DISTINCT f.name AS f_name FROM symbols AS f"),
+            "SQL was: {}",
+            sql,
+        );
         assert!(sql.contains("f.kind = ?1"));
         assert!(sql.contains("f.name = ?2"));
         assert!(sql.contains("LIMIT"));

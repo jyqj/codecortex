@@ -134,16 +134,16 @@ fn int_serial_type(value: i64) -> u8 {
     if value == 1 {
         return 9;
     }
-    if value >= -128 && value <= 127 {
+    if (-128..=127).contains(&value) {
         return 1;
     }
-    if value >= -32768 && value <= 32767 {
+    if (-32768..=32767).contains(&value) {
         return 2;
     }
-    if value >= -8388608 && value <= 8388607 {
+    if (-8388608..=8388607).contains(&value) {
         return 3;
     }
-    if value >= -2147483648 && value <= 2147483647 {
+    if (-2147483648..=2147483647).contains(&value) {
         return 4;
     }
     6 // 8-byte integer

@@ -120,8 +120,7 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
   returns them all.
 - Do not use `trace(include_source=true)` for deep understanding -- use
   `trace(source_mode="body")` instead for complete function bodies.
-- After file edits, wait ~500ms for the watcher to sync, or call `index(path)`
-  to force an update.
+- After file edits, call `index(path)` to update the index.
 
 ## Configuration
 

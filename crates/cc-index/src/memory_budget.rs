@@ -121,7 +121,7 @@ impl MemoryBudget {
                 let usage = unsafe { usage.assume_init() };
                 return usage.ru_maxrss as u64;
             }
-            return 0;
+            0
         }
 
         #[cfg(not(any(target_os = "linux", target_os = "macos")))]

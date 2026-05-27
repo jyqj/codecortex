@@ -473,6 +473,7 @@ impl JavaParser {
     }
 
     /// Recursively find the import path from an import_declaration's children.
+    #[allow(clippy::only_used_in_recursion)]
     fn find_import_path(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
@@ -856,7 +857,7 @@ impl JavaParser {
             "interface_declaration" => {
                 // Interface extends
                 if let Some(name_node) = node.child_by_field_name("name") {
-                    if let Some(name) = name_node.utf8_text(source).ok() {
+                    if let Ok(name) = name_node.utf8_text(source) {
                         let sym = symbols.iter().find(|s| s.name == name);
                         // extends_interfaces field for interface
                         if let Some(extends_node) = node.child_by_field_name("extends_interfaces") {
@@ -985,7 +986,7 @@ impl JavaParser {
                     if throws_child.kind() == "type_identifier"
                         || throws_child.kind() == "scoped_type_identifier"
                     {
-                        if let Some(exc_name) = throws_child.utf8_text(source).ok() {
+                        if let Ok(exc_name) = throws_child.utf8_text(source) {
                             let throws_line = throws_child.start_position().row as u32 + 1;
                             edges.push(SemanticEdgeRecord {
                                 edge_id: format!(
@@ -1025,7 +1026,7 @@ impl JavaParser {
         for child in node.children(&mut cursor) {
             if child.kind() == "object_creation_expression" {
                 if let Some(type_node) = child.child_by_field_name("type") {
-                    if let Some(type_name) = type_node.utf8_text(source).ok() {
+                    if let Ok(type_name) = type_node.utf8_text(source) {
                         let exc_name = type_name.split('<').next().unwrap_or(type_name);
 
                         let enclosing = self.find_enclosing_method(symbols, line);
@@ -1147,6 +1148,8 @@ impl JavaParser {
     }
 
     /// Extract type names from a type_list node (used for implements/extends lists).
+    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::only_used_in_recursion)]
     fn extract_type_list_edges(
         &self,
         list_node: &tree_sitter::Node,
@@ -1248,7 +1251,7 @@ impl JavaParser {
         for child in interfaces_node.children(&mut cursor) {
             match child.kind() {
                 "type_identifier" | "scoped_type_identifier" => {
-                    if let Some(name) = child.utf8_text(source).ok() {
+                    if let Ok(name) = child.utf8_text(source) {
                         names.push(name.to_string());
                     }
                 }
@@ -1263,7 +1266,7 @@ impl JavaParser {
                     for tl_child in child.children(&mut tl_cursor) {
                         match tl_child.kind() {
                             "type_identifier" | "scoped_type_identifier" => {
-                                if let Some(name) = tl_child.utf8_text(source).ok() {
+                                if let Ok(name) = tl_child.utf8_text(source) {
                                     names.push(name.to_string());
                                 }
                             }
@@ -1300,7 +1303,7 @@ impl JavaParser {
                     match mod_child.kind() {
                         "public" | "private" | "protected" | "static" | "final" | "abstract"
                         | "synchronized" | "native" | "strictfp" | "default" => {
-                            if let Some(text) = mod_child.utf8_text(source).ok() {
+                            if let Ok(text) = mod_child.utf8_text(source) {
                                 modifiers.push(text.to_string());
                             }
                         }
@@ -1518,6 +1521,7 @@ impl JavaParser {
     }
 
     /// Find the type name from an `object_creation_expression` (`new Foo(...)`).
+    #[allow(clippy::only_used_in_recursion)]
     fn find_object_creation_type(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         if node.kind() == "object_creation_expression" {
             let type_node = node.child_by_field_name("type")?;

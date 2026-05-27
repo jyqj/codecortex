@@ -662,3 +662,176 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::index_db::IndexDb;
+    use tempfile::TempDir;
+
+    fn setup() -> (IndexDb, TempDir) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
+        (db, tmp)
+    }
+
+    /// Helper: insert a file row so foreign-key constraints are satisfied.
+    fn insert_file(db: &IndexDb, file_path: &str) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR IGNORE INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at)
+             VALUES(?1,'Rust','hash1',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+            rusqlite::params![file_path],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_find_symbol_exact_and_like() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id1","src/main.rs","process_data","Function","",1,10,0,0,"fn process_data()","","tree_sitter",0.8,"process_data","uid_process"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id2","src/main.rs","process_request","Function","",20,30,0,0,"fn process_request()","","tree_sitter",0.8,"process_request","uid_request"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id3","src/main.rs","handle_event","Function","",40,50,0,0,"fn handle_event()","","tree_sitter",0.8,"handle_event","uid_handle"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        // Exact match
+        let exact = db.find_symbol("process_data", true, 10).unwrap();
+        assert_eq!(exact.len(), 1);
+        assert_eq!(exact[0].name, "process_data");
+
+        // LIKE match: "process" should match both process_data and process_request
+        let like = db.find_symbol("process", false, 10).unwrap();
+        assert_eq!(like.len(), 2);
+        let names: Vec<&str> = like.iter().map(|r| r.name.as_str()).collect();
+        assert!(names.contains(&"process_data"));
+        assert!(names.contains(&"process_request"));
+
+        // Exact match for non-existent returns empty
+        let none = db.find_symbol("process", true, 10).unwrap();
+        assert!(none.is_empty());
+    }
+
+    #[test]
+    fn test_file_symbols() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/lib.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id1","src/lib.rs","beta","Function","",20,30,0,0,"fn beta()","","tree_sitter",0.8,"beta","uid_beta"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id2","src/lib.rs","alpha","Function","",1,10,0,0,"fn alpha()","","tree_sitter",0.8,"alpha","uid_alpha"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id3","src/lib.rs","gamma","Function","",50,60,0,0,"fn gamma()","","tree_sitter",0.8,"gamma","uid_gamma"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let syms = db.file_symbols("src/lib.rs").unwrap();
+        assert_eq!(syms.len(), 3);
+        // Ordered by start_line
+        assert_eq!(syms[0].name, "alpha");
+        assert_eq!(syms[0].start_line, 1);
+        assert_eq!(syms[1].name, "beta");
+        assert_eq!(syms[1].start_line, 20);
+        assert_eq!(syms[2].name, "gamma");
+        assert_eq!(syms[2].start_line, 50);
+    }
+
+    #[test]
+    fn test_query_json() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id1","src/main.rs","main","Function","",1,10,0,0,"fn main()","","tree_sitter",0.8,"main","uid_main"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let results = db
+            .query_json(
+                "SELECT name, start_line, parser_confidence FROM symbols WHERE symbol_id = ?1",
+                &["id1".to_string()],
+            )
+            .unwrap();
+
+        assert_eq!(results.len(), 1);
+        let row = &results[0];
+        // String column
+        assert_eq!(row["name"], "main");
+        // Integer column: start_line = 1
+        assert_eq!(row["start_line"], 1);
+        // Float column: parser_confidence = 0.8
+        let confidence = row["parser_confidence"].as_f64().unwrap();
+        assert!((confidence - 0.8).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_file_summary() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            // Insert 2 symbols
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id1","src/main.rs","main","Function","",1,10,0,0,"fn main()","","tree_sitter",0.8,"main","uid_main"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id2","src/main.rs","helper","Function","",20,30,0,0,"fn helper()","","tree_sitter",0.8,"helper","uid_helper"],
+            ).unwrap();
+            // Insert 1 chunk
+            tx.execute(
+                "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,token_estimate,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+                rusqlite::params!["ch1","src/main.rs","rust",0,1,10,"main","main","Function","fn main() {}",5,"tree_sitter",0.8],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let summary = db.file_summary("src/main.rs").unwrap();
+        assert_eq!(summary["file_path"], "src/main.rs");
+        assert_eq!(summary["language"], "Rust");
+        assert_eq!(summary["symbols_count"], 2);
+        assert_eq!(summary["chunks_count"], 1);
+        assert_eq!(summary["parser_tier"], "tree_sitter");
+    }
+}

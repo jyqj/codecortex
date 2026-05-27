@@ -55,9 +55,7 @@ impl IndexDb {
             // Determine if this changed file is a test file or a code file.
             let is_test: bool = {
                 let mut stmt = tx
-                    .prepare_cached(
-                        "SELECT is_test_file FROM files WHERE file_path = ?1",
-                    )
+                    .prepare_cached("SELECT is_test_file FROM files WHERE file_path = ?1")
                     .map_err(|e| CcError::Database(e.to_string()))?;
                 stmt.query_row(rusqlite::params![fp], |row| row.get::<_, bool>(0))
                     .unwrap_or(false)
@@ -114,10 +112,9 @@ impl IndexDb {
                             "SELECT file_path FROM files WHERE is_test_file = 0 AND file_path LIKE ?1",
                         )
                         .map_err(|e| CcError::Database(e.to_string()))?;
-                    let rows = stmt.query_map(rusqlite::params![pat], |row| {
-                        row.get::<_, String>(0)
-                    })
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    let rows = stmt
+                        .query_map(rusqlite::params![pat], |row| row.get::<_, String>(0))
+                        .map_err(|e| CcError::Database(e.to_string()))?;
                     for r in rows.flatten() {
                         if seen.insert(r.clone()) {
                             candidates.push(r);
@@ -195,10 +192,9 @@ impl IndexDb {
                             "SELECT file_path FROM files WHERE is_test_file = 1 AND file_path LIKE ?1",
                         )
                         .map_err(|e| CcError::Database(e.to_string()))?;
-                    let rows = stmt.query_map(rusqlite::params![pat], |row| {
-                        row.get::<_, String>(0)
-                    })
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    let rows = stmt
+                        .query_map(rusqlite::params![pat], |row| row.get::<_, String>(0))
+                        .map_err(|e| CcError::Database(e.to_string()))?;
                     for r in rows.flatten() {
                         if seen.insert(r.clone()) {
                             candidates.push(r);
@@ -973,5 +969,303 @@ impl IndexDb {
             result.insert(eid, (count, last_seen));
         }
         Ok(result)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use tempfile::TempDir;
+
+    use crate::index_db::IndexDb;
+
+    fn setup() -> (IndexDb, TempDir) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
+        (db, tmp)
+    }
+
+    #[test]
+    fn test_stem_to_base_clean() {
+        // strip_prefix("test_") succeeds -> "user", but strip_suffix("_test")
+        // fails on "user" so unwrap_or falls back to original test_stem.
+        assert_eq!(super::test_stem_to_base_clean("test_user"), "test_user");
+        assert_eq!(super::test_stem_to_base_clean("user_test"), "user");
+        assert_eq!(super::test_stem_to_base_clean("user.test"), "user");
+        assert_eq!(super::test_stem_to_base_clean("user.spec"), "user");
+        // Both prefix and suffix match: "test_user_test" -> "user_test" -> "user"
+        assert_eq!(super::test_stem_to_base_clean("test_user_test"), "user");
+        assert_eq!(super::test_stem_to_base_clean("plain"), "plain");
+    }
+
+    #[test]
+    fn test_rebuild_test_edges_for_files() {
+        let (db, _tmp) = setup();
+
+        // Insert files table entries
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) \
+                 VALUES('src/user.py','Python','h1',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+                [],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) \
+                 VALUES('tests/test_user.py','Python','h2',1.0,200,'','','tree_sitter',1.0,1,'2024-01-01T00:00:00Z')",
+                [],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let changed = vec!["src/user.py".to_string(), "tests/test_user.py".to_string()];
+        db.rebuild_test_edges_for_files(&changed).unwrap();
+
+        // Verify test_edges are created
+        let conn = db.read_conn().unwrap();
+        let mut stmt = conn
+            .prepare("SELECT edge_id, test_file_path, code_file_path, reason, confidence FROM test_edges")
+            .unwrap();
+        let edges: Vec<(String, String, String, String, f64)> = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get(0)?,
+                    row.get(1)?,
+                    row.get(2)?,
+                    row.get(3)?,
+                    row.get(4)?,
+                ))
+            })
+            .unwrap()
+            .filter_map(|r| r.ok())
+            .collect();
+
+        assert!(!edges.is_empty(), "should create at least one test edge");
+        let edge = edges
+            .iter()
+            .find(|e| e.1 == "tests/test_user.py" && e.2 == "src/user.py")
+            .expect("should have edge between test_user.py and user.py");
+        // base_clean("test_user") = "test_user" (see function logic), code_stem = "user",
+        // so same-basename does not match; but "tests/test_user.py".contains("user") = true
+        // -> path-overlap with confidence 0.7
+        assert_eq!(edge.3, "path-overlap");
+        assert!((edge.4 - 0.7).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_co_change_edges_roundtrip() {
+        let (db, _tmp) = setup();
+
+        let edges = vec![
+            cc_model::edge::CoChangeEdgeRecord {
+                edge_id: "cc:a:b".to_string(),
+                file_a: "src/a.rs".to_string(),
+                file_b: "src/b.rs".to_string(),
+                co_change_count: 5,
+                total_commits_a: 10,
+                total_commits_b: 8,
+                confidence: 0.8,
+            },
+            cc_model::edge::CoChangeEdgeRecord {
+                edge_id: "cc:a:c".to_string(),
+                file_a: "src/a.rs".to_string(),
+                file_b: "src/c.rs".to_string(),
+                co_change_count: 2,
+                total_commits_a: 10,
+                total_commits_b: 12,
+                confidence: 0.3,
+            },
+        ];
+        db.insert_co_change_edges_batch(&edges).unwrap();
+
+        // Query all co-changes for file_a with min_confidence 0.0
+        let results = db.get_co_changes_for_file("src/a.rs", 0.0).unwrap();
+        assert_eq!(results.len(), 2);
+        assert_eq!(results[0].edge_id, "cc:a:b"); // highest confidence first
+        assert_eq!(results[1].edge_id, "cc:a:c");
+
+        // Query with min_confidence filtering
+        let filtered = db.get_co_changes_for_file("src/a.rs", 0.5).unwrap();
+        assert_eq!(filtered.len(), 1);
+        assert_eq!(filtered[0].edge_id, "cc:a:b");
+        assert_eq!(filtered[0].co_change_count, 5);
+    }
+
+    #[test]
+    fn test_semantic_edges_roundtrip() {
+        let (db, _tmp) = setup();
+
+        let edges = vec![
+            cc_model::edge::SemanticEdgeRecord {
+                edge_id: "sem:1".to_string(),
+                file_path: "src/animal.py".to_string(),
+                source_symbol: "Dog".to_string(),
+                source_symbol_uid: Some("uid:dog".to_string()),
+                target_symbol: "Animal".to_string(),
+                target_symbol_uid: Some("uid:animal".to_string()),
+                relation_kind: cc_model::edge::SemanticRelation::Inherits,
+                line: 10,
+                confidence: 0.9,
+                parser_tier: cc_model::ParserTier::TreeSitter,
+            },
+            cc_model::edge::SemanticEdgeRecord {
+                edge_id: "sem:2".to_string(),
+                file_path: "src/animal.py".to_string(),
+                source_symbol: "Cat".to_string(),
+                source_symbol_uid: Some("uid:cat".to_string()),
+                target_symbol: "Animal".to_string(),
+                target_symbol_uid: Some("uid:animal".to_string()),
+                relation_kind: cc_model::edge::SemanticRelation::Inherits,
+                line: 20,
+                confidence: 0.85,
+                parser_tier: cc_model::ParserTier::TreeSitter,
+            },
+        ];
+        db.insert_semantic_edges_batch(&edges).unwrap();
+
+        // Query by source_uid only
+        let by_source = db
+            .query_semantic_edges(Some("uid:dog"), None, None)
+            .unwrap();
+        assert_eq!(by_source.len(), 1);
+        assert_eq!(by_source[0].edge_id, "sem:1");
+
+        // Query by relation_kind only
+        let by_kind = db
+            .query_semantic_edges(None, None, Some("inherits"))
+            .unwrap();
+        assert_eq!(by_kind.len(), 2);
+
+        // Query all (no filters)
+        let all = db.query_semantic_edges(None, None, None).unwrap();
+        assert_eq!(all.len(), 2);
+
+        // Test removal
+        db.remove_semantic_edges_by_file("src/animal.py").unwrap();
+        let after_remove = db.query_semantic_edges(None, None, None).unwrap();
+        assert!(after_remove.is_empty());
+    }
+
+    #[test]
+    fn test_runtime_evidence_lifecycle() {
+        let (db, _tmp) = setup();
+
+        // Insert first evidence
+        db.upsert_runtime_evidence(
+            "ev1",
+            "svc-a",
+            Some("GET"),
+            "/api/users",
+            Some("200"),
+            "2024-01-01T00:00:00Z",
+        )
+        .unwrap();
+
+        let stats = db.runtime_evidence_stats().unwrap();
+        assert_eq!(stats["evidence_rows"], 1);
+        assert_eq!(stats["total_observations"], 1);
+
+        // Upsert again to increment observed_count
+        db.upsert_runtime_evidence(
+            "ev1",
+            "svc-a",
+            Some("GET"),
+            "/api/users",
+            Some("200"),
+            "2024-01-02T00:00:00Z",
+        )
+        .unwrap();
+
+        let stats = db.runtime_evidence_stats().unwrap();
+        assert_eq!(stats["evidence_rows"], 1);
+        assert_eq!(stats["total_observations"], 2);
+
+        // Update p95 — first call sets p95_ms directly
+        db.update_evidence_p95("ev1", 100.0).unwrap();
+        {
+            let conn = db.read_conn().unwrap();
+            let p95: f64 = conn
+                .query_row(
+                    "SELECT p95_ms FROM runtime_evidence WHERE evidence_id = 'ev1'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            assert!((p95 - 100.0).abs() < 1e-9, "first p95 should be 100.0");
+        }
+
+        // Update p95 again — EMA: 100.0 * 0.95 + 200.0 * 0.05 = 105.0
+        db.update_evidence_p95("ev1", 200.0).unwrap();
+        {
+            let conn = db.read_conn().unwrap();
+            let p95: f64 = conn
+                .query_row(
+                    "SELECT p95_ms FROM runtime_evidence WHERE evidence_id = 'ev1'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            assert!(
+                (p95 - 105.0).abs() < 1e-9,
+                "EMA p95 should be 105.0, got {}",
+                p95
+            );
+        }
+    }
+
+    #[test]
+    fn test_dispatch_sites_roundtrip() {
+        let (db, _tmp) = setup();
+
+        let sites = vec![
+            cc_model::DispatchSiteRecord {
+                site_id: "ds:1".to_string(),
+                file_path: "src/events.ts".to_string(),
+                line: 42,
+                col: 5,
+                enclosing_symbol_uid: Some("uid:handler".to_string()),
+                receiver_expr: Some("emitter".to_string()),
+                site_kind: cc_model::DispatchSiteKind::EventEmit,
+                key: "user:created".to_string(),
+                handler_expr: Some("onUserCreated".to_string()),
+                handler_symbol_uid: Some("uid:onUserCreated".to_string()),
+                confidence: 0.95,
+            },
+            cc_model::DispatchSiteRecord {
+                site_id: "ds:2".to_string(),
+                file_path: "src/events.ts".to_string(),
+                line: 50,
+                col: 5,
+                enclosing_symbol_uid: Some("uid:listener".to_string()),
+                receiver_expr: Some("emitter".to_string()),
+                site_kind: cc_model::DispatchSiteKind::EventOn,
+                key: "user:created".to_string(),
+                handler_expr: Some("handleUserCreated".to_string()),
+                handler_symbol_uid: Some("uid:handleUserCreated".to_string()),
+                confidence: 0.9,
+            },
+        ];
+        db.replace_dispatch_sites("src/events.ts", &sites).unwrap();
+
+        // Load all
+        let all = db.load_all_dispatch_sites().unwrap();
+        assert_eq!(all.len(), 2);
+
+        // Load by kind
+        let emits = db.load_dispatch_sites_by_kind("event_emit").unwrap();
+        assert_eq!(emits.len(), 1);
+        assert_eq!(emits[0].site_id, "ds:1");
+        assert_eq!(emits[0].site_kind, cc_model::DispatchSiteKind::EventEmit);
+        assert_eq!(emits[0].key, "user:created");
+
+        let ons = db.load_dispatch_sites_by_kind("event_on").unwrap();
+        assert_eq!(ons.len(), 1);
+        assert_eq!(ons[0].site_id, "ds:2");
+        assert_eq!(ons[0].site_kind, cc_model::DispatchSiteKind::EventOn);
+
+        // Replace should clear old data for that file
+        db.replace_dispatch_sites("src/events.ts", &[]).unwrap();
+        let after_clear = db.load_all_dispatch_sites().unwrap();
+        assert!(after_clear.is_empty());
     }
 }

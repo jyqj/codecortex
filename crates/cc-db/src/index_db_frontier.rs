@@ -534,3 +534,142 @@ impl IndexDb {
         self.routes_by_normalized_path(normalized_path)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::index_db::IndexDb;
+    use tempfile::TempDir;
+
+    fn setup() -> (IndexDb, TempDir) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
+        (db, tmp)
+    }
+
+    /// Helper: insert a file row so foreign-key constraints are satisfied.
+    fn insert_file(db: &IndexDb, file_path: &str) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR IGNORE INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at)
+             VALUES(?1,'Rust','hash1',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+            rusqlite::params![file_path],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_route_rows_by_path() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/routes.js");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
+                rusqlite::params!["re1","src/routes.js","/api/users","listUsers","GET",10,0.9,"tree_sitter"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
+                rusqlite::params!["re2","src/routes.js","/api/users","createUser","POST",20,0.7,"tree_sitter"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
+                rusqlite::params!["re3","src/routes.js","/api/posts","listPosts","GET",30,0.8,"tree_sitter"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let rows = db.route_rows_by_path("/api/users", 10).unwrap();
+        assert_eq!(rows.len(), 2);
+        // Sorted by confidence DESC: 0.9 first, then 0.7
+        assert_eq!(rows[0].edge_id, "re1");
+        assert!((rows[0].confidence - 0.9).abs() < 1e-9);
+        assert_eq!(rows[1].edge_id, "re2");
+        assert!((rows[1].confidence - 0.7).abs() < 1e-9);
+
+        // Different path returns only its own route
+        let posts = db.route_rows_by_path("/api/posts", 10).unwrap();
+        assert_eq!(posts.len(), 1);
+        assert_eq!(posts[0].edge_id, "re3");
+    }
+
+    #[test]
+    fn test_http_calls_by_caller_uid() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/client.ts");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,method,normalized_path,call_kind,line,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+                rusqlite::params!["hce1","src/client.ts","uid_fetch","/api/users","GET","/api/users","http",15,0.7,"tree_sitter"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,method,normalized_path,call_kind,line,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+                rusqlite::params!["hce2","src/client.ts","uid_fetch","/api/posts","GET","/api/posts","http",20,0.8,"tree_sitter"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,method,normalized_path,call_kind,line,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+                rusqlite::params!["hce3","src/client.ts","uid_other","/api/admin","POST","/api/admin","http",30,0.9,"tree_sitter"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let rows = db.http_calls_by_caller_uid("uid_fetch", 10).unwrap();
+        assert_eq!(rows.len(), 2);
+        // Sorted by confidence DESC: 0.8 first, then 0.7
+        assert_eq!(rows[0].edge_id, "hce2");
+        assert_eq!(rows[1].edge_id, "hce1");
+
+        // Different caller_uid
+        let other = db.http_calls_by_caller_uid("uid_other", 10).unwrap();
+        assert_eq!(other.len(), 1);
+        assert_eq!(other[0].edge_id, "hce3");
+    }
+
+    #[test]
+    fn test_route_nodes_by_normalized_path() {
+        let (db, _tmp) = setup();
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO route_nodes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["rn1","routes.js","/api/users","GET","uid_handler","listUsers","express",5,10,"/api/users",0.9,"tree_sitter"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO route_nodes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["rn2","routes.js","/api/users","POST","uid_create","createUser","express",15,20,"/api/users",0.8,"tree_sitter"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO route_nodes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["rn3","routes.js","/api/posts","GET","uid_posts","listPosts","express",25,30,"/api/posts",0.7,"tree_sitter"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let rows = db.route_nodes_by_normalized_path("/api/users", 10).unwrap();
+        assert_eq!(rows.len(), 2);
+        // Sorted by confidence DESC
+        assert_eq!(rows[0].route_id, "rn1");
+        assert_eq!(rows[0].handler_symbol_uid.as_deref(), Some("uid_handler"));
+        assert_eq!(rows[1].route_id, "rn2");
+
+        // Different path
+        let posts = db.route_nodes_by_normalized_path("/api/posts", 10).unwrap();
+        assert_eq!(posts.len(), 1);
+        assert_eq!(posts[0].route_id, "rn3");
+    }
+}

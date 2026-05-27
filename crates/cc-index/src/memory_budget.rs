@@ -65,22 +65,6 @@ impl MemoryBudget {
         self.current_rss.load(Ordering::Relaxed)
     }
 
-    /// Suggest parallelism level based on current memory pressure.
-    #[allow(dead_code)]
-    pub fn suggested_parallelism(&self, default_threads: usize) -> usize {
-        if self.is_over_budget() {
-            let reduced = (default_threads / 2).max(1);
-            tracing::debug!(
-                default_threads,
-                reduced,
-                "reducing parallelism due to memory pressure"
-            );
-            reduced
-        } else {
-            default_threads
-        }
-    }
-
     /// Calculate suggested batch size for streaming parse.
     pub fn suggested_batch_size(&self, total_files: usize, default_batch: usize) -> usize {
         if total_files <= default_batch {

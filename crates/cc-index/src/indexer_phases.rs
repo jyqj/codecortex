@@ -528,7 +528,10 @@ impl Indexer {
         Ok(())
     }
 
-    pub(crate) fn collect_route_nodes(&self, write_units: &[FileWriteUnit]) -> Vec<RouteNodeRecord> {
+    pub(crate) fn collect_route_nodes(
+        &self,
+        write_units: &[FileWriteUnit],
+    ) -> Vec<RouteNodeRecord> {
         let mut route_nodes = Vec::new();
         for unit in write_units {
             for route in &unit.outcome.route_edges {

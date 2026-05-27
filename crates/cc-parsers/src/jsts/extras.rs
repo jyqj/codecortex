@@ -2,9 +2,9 @@
 //! type assignments, and EventEmitter dispatch site helpers.
 
 use super::{
-    child_by_kind, js_find_enclosing_function, node_text, ExtractCtx, JsTsParser,
-    JS_CALL_RE, JS_DECORATOR_RE, JS_ENV_ACCESS_RE, JS_EXTENDS_RE, JS_IDENT_RE,
-    JS_IMPLEMENTS_RE, JS_KEYWORDS, JS_RETURN_TYPE_RE, JS_TYPE_ANNOT_RE,
+    child_by_kind, js_find_enclosing_function, node_text, ExtractCtx, JsTsParser, JS_CALL_RE,
+    JS_DECORATOR_RE, JS_ENV_ACCESS_RE, JS_EXTENDS_RE, JS_IDENT_RE, JS_IMPLEMENTS_RE, JS_KEYWORDS,
+    JS_RETURN_TYPE_RE, JS_TYPE_ANNOT_RE,
 };
 use cc_model::diagnostic::LiteralRecord;
 use cc_model::edge::{
@@ -13,10 +13,10 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
-use std::collections::{HashMap, HashSet};
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::ParserTier;
 use regex::Regex;
+use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
 // ---------------------------------------------------------------------------
@@ -126,10 +126,7 @@ pub(super) fn nth_arg_node<'a>(
 
 /// Extract handler expression text from the second (or last) argument of a
 /// `.on('event', handler)` style call. Returns `None` for inline closures.
-pub(super) fn extract_handler_expr(
-    call_node: &tree_sitter::Node,
-    source: &[u8],
-) -> Option<String> {
+pub(super) fn extract_handler_expr(call_node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
     // Try the second argument first; if it doesn't exist fall back to last.
     let handler_node = nth_arg_node(call_node, source, 1)?;
     match handler_node.kind() {

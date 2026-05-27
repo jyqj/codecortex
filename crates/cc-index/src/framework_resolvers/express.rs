@@ -38,16 +38,6 @@ static APP_USE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"(?m)app\.use\(\s*(?:["']([^"']+)["']\s*,\s*)?(\w+)"#).expect("express app.use re")
 });
 
-/// Router creation: const router = express.Router() or Router()
-/// Used for future cross-file sub-router prefix resolution.
-///
-/// Captures: (1) variable name
-#[allow(dead_code)]
-static ROUTER_CREATE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)(?:const|let|var)\s+(\w+)\s*=\s*(?:express\.)?Router\(\s*\)"#)
-        .expect("express router create re")
-});
-
 /// Valid Express HTTP method names.
 const EXPRESS_HTTP_METHODS: &[&str] = &[
     "get", "post", "put", "delete", "patch", "head", "options", "all",

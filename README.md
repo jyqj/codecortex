@@ -127,7 +127,8 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
   returns them all.
 - Do not use `trace(include_source=true)` for deep understanding -- use
   `trace(source_mode="body")` instead for complete function bodies.
-- After file edits, call `index(path)` to update the index.
+- After file edits, call `index(path)` to update the index — there is no
+  automatic file watcher.
 
 ## Configuration
 
@@ -236,8 +237,9 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 - **ImpactAnalyzer**: BFS reverse-caller expansion + community boundary
   detection + cross-service HTTP impact + historical co-change analysis.
   Git integration reads unstaged, staged, untracked, and base...HEAD diffs.
-- **FileWatcher**: `notify`-based file watcher with debounce, burst backoff,
-  and gitignore filtering. Auto-reindexes changed files.
+- **FileWatcher**: `notify`-based file watcher module (implemented but not yet
+  integrated into the MCP server lifecycle). Currently, call `index(path)`
+  after edits to refresh the index.
 
 ## Language Support
 

@@ -1288,3 +1288,222 @@ impl IndexDb {
         })
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+
+    use crate::index_db::IndexDb;
+    use tempfile::TempDir;
+
+    fn setup() -> (IndexDb, TempDir) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
+        (db, tmp)
+    }
+
+    /// Helper: insert a file row so foreign-key constraints are satisfied.
+    fn insert_file(db: &IndexDb, file_path: &str) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR IGNORE INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at)
+             VALUES(?1,'Rust','hash1',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+            rusqlite::params![file_path],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_symbols_covering() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            // Outer function: lines 1-50
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id1","src/main.rs","outer","Function","",1,50,0,0,"fn outer()","","tree_sitter",0.8,"outer","uid_outer"],
+            ).unwrap();
+            // Inner block: lines 10-30 (smaller span)
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id2","src/main.rs","inner","Function","outer",10,30,0,0,"fn inner()","","tree_sitter",0.8,"inner","uid_inner"],
+            ).unwrap();
+            // Unrelated symbol: lines 60-70 (does not cover line 15)
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id3","src/main.rs","unrelated","Function","",60,70,0,0,"fn unrelated()","","tree_sitter",0.8,"unrelated","uid_unrelated"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let rows = db.symbols_covering("src/main.rs", 15, 10).unwrap();
+        assert_eq!(rows.len(), 2);
+        // Smallest span first: inner (span 20) before outer (span 49)
+        assert_eq!(rows[0].name, "inner");
+        assert_eq!(rows[1].name, "outer");
+    }
+
+    #[test]
+    fn test_caller_callee_rows() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["ce1","src/main.rs","caller_a","callee_b",5,"uid_a","uid_b","direct","sync","exact","tree_sitter",0.8],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["ce2","src/main.rs","caller_c","callee_b",10,"uid_c","uid_b","direct","sync","exact","tree_sitter",0.8],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["ce3","src/main.rs","caller_a","callee_d",15,"uid_a","uid_d","direct","sync","exact","tree_sitter",0.8],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        // caller_rows_by_uid: who calls uid_b?
+        let callers = db.caller_rows_by_uid("uid_b", 10).unwrap();
+        assert_eq!(callers.len(), 2);
+        assert_eq!(callers[0].caller_symbol_uid.as_deref(), Some("uid_a"));
+        assert_eq!(callers[1].caller_symbol_uid.as_deref(), Some("uid_c"));
+
+        // callee_rows_by_uid: what does uid_a call?
+        let callees = db.callee_rows_by_uid("uid_a", 10).unwrap();
+        assert_eq!(callees.len(), 2);
+        assert_eq!(callees[0].callee_symbol_uid.as_deref(), Some("uid_b"));
+        assert_eq!(callees[1].callee_symbol_uid.as_deref(), Some("uid_d"));
+    }
+
+    #[test]
+    fn test_update_communities() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id1","src/main.rs","alpha","Function","",1,10,0,0,"fn alpha()","","tree_sitter",0.8,"alpha","uid_alpha"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id2","src/main.rs","beta","Function","",20,30,0,0,"fn beta()","","tree_sitter",0.8,"beta","uid_beta"],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let mut assignments = HashMap::new();
+        assignments.insert("uid_alpha".to_string(), 1u32);
+        assignments.insert("uid_beta".to_string(), 1u32);
+        let mut labels = HashMap::new();
+        labels.insert(1u32, "core-module".to_string());
+
+        db.update_communities(&assignments, &labels).unwrap();
+
+        // Verify symbols have correct community_id
+        let conn = db.read_conn().unwrap();
+        let cid: u32 = conn
+            .query_row(
+                "SELECT community_id FROM symbols WHERE symbol_uid = 'uid_alpha'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(cid, 1);
+
+        let cid2: u32 = conn
+            .query_row(
+                "SELECT community_id FROM symbols WHERE symbol_uid = 'uid_beta'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(cid2, 1);
+
+        // Verify communities table
+        let communities = db.list_communities().unwrap();
+        assert_eq!(communities.len(), 1);
+        assert_eq!(communities[0].community_id, 1);
+        assert_eq!(communities[0].label, "core-module");
+        assert_eq!(communities[0].member_count, 2);
+    }
+
+    #[test]
+    fn test_symbol_degree_details() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            // The target symbol
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                rusqlite::params!["id_target","src/main.rs","target_fn","Function","",1,10,0,0,"fn target_fn()","","tree_sitter",0.8,"target_fn","uid_target"],
+            ).unwrap();
+
+            // 2 incoming call edges (others call uid_target)
+            tx.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["ce_in1","src/main.rs","caller1","target_fn",5,"uid_c1","uid_target","direct","sync","exact","tree_sitter",0.8],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["ce_in2","src/main.rs","caller2","target_fn",10,"uid_c2","uid_target","direct","sync","exact","tree_sitter",0.8],
+            ).unwrap();
+
+            // 1 outgoing call edge (uid_target calls something)
+            tx.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
+                rusqlite::params!["ce_out1","src/main.rs","target_fn","helper",15,"uid_target","uid_helper","direct","sync","exact","tree_sitter",0.8],
+            ).unwrap();
+
+            // 3 symbol_refs pointing at uid_target
+            tx.execute(
+                "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,target_symbol_uid,resolution_kind,resolution_confidence,resolution_strategy,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,'usage',1,?5,?6,?7,?8,?9,?10)",
+                rusqlite::params!["sr1","src/main.rs","target_fn","","uid_target","exact",0.9,"import_map","tree_sitter",0.8],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,target_symbol_uid,resolution_kind,resolution_confidence,resolution_strategy,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,'usage',1,?5,?6,?7,?8,?9,?10)",
+                rusqlite::params!["sr2","src/main.rs","target_fn","other","uid_target","exact",0.9,"import_map","tree_sitter",0.8],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,target_symbol_uid,resolution_kind,resolution_confidence,resolution_strategy,parser_tier,parser_confidence)
+                 VALUES(?1,?2,?3,?4,'usage',1,?5,?6,?7,?8,?9,?10)",
+                rusqlite::params!["sr3","src/main.rs","target_fn","another","uid_target","exact",0.9,"import_map","tree_sitter",0.8],
+            ).unwrap();
+
+            tx.commit().unwrap();
+        }
+
+        let info = db.symbol_degree_details("uid_target").unwrap();
+        assert_eq!(info.in_degree, 2); // 2 incoming call edges
+        assert_eq!(info.out_degree, 1); // 1 outgoing call edge
+        assert_eq!(info.caller_count, 2); // 2 distinct callers
+        assert_eq!(info.callee_count, 1); // 1 distinct callee
+        assert_eq!(info.ref_count, 3); // 3 symbol refs
+    }
+}

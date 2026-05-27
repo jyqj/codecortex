@@ -168,13 +168,22 @@ impl Indexer {
         let mut write_units = parse_result.write_units;
 
         // Phase 3.5+3.6: Dirty propagation and reload
-        let mut actions = self.build_actions_map(&write_units, &scan_result.existing, &scan_result.scanned_paths);
+        let mut actions = self.build_actions_map(
+            &write_units,
+            &scan_result.existing,
+            &scan_result.scanned_paths,
+        );
         let dirty_count = if full {
             0
         } else {
             self.run_dirty_propagation(&mut actions, &write_units)?
         };
-        self.phase_dirty_reload(&mut write_units, &actions, &scan_result.existing, dirty_count)?;
+        self.phase_dirty_reload(
+            &mut write_units,
+            &actions,
+            &scan_result.existing,
+            dirty_count,
+        )?;
 
         // Phase 3.7+3.8: Framework enrichment and C/C++ include resolution
         let fw_context = self.phase_framework_enrichment(project_path, &mut write_units)?;
@@ -363,10 +372,26 @@ impl Indexer {
 
             let content = std::fs::read_to_string(&abs_path)
                 .map_err(|e| (rel_path.clone(), e.to_string()))?;
-            let mut outcome = self
-                .parsers
-                .parse_with_timeout(&rel_path, &content, language, self.parse_timeout_micros)
-                .map_err(|e| (rel_path.clone(), e.to_string()))?;
+            let mut outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                self.parsers.parse_with_timeout(
+                    &rel_path,
+                    &content,
+                    language,
+                    self.parse_timeout_micros,
+                )
+            }))
+            .unwrap_or_else(|panic_info| {
+                let msg = panic_info
+                    .downcast_ref::<String>()
+                    .map(|s| s.as_str())
+                    .or_else(|| panic_info.downcast_ref::<&str>().copied())
+                    .unwrap_or("unknown panic");
+                Err(CcError::Other(format!(
+                    "parser panic for {}: {}",
+                    rel_path, msg
+                )))
+            })
+            .map_err(|e| (rel_path.clone(), e.to_string()))?;
 
             for import in &mut outcome.imports {
                 import.resolved_path =

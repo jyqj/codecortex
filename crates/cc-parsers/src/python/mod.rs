@@ -10,8 +10,8 @@ use cc_model::diagnostic::DiagnosticRecord;
 use cc_model::dispatch_site::DispatchSiteKind;
 use cc_model::dispatch_site::DispatchSiteRecord;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, HttpCallEdgeRecord, ImportRecord,
-    ResolutionKind, RouteEdgeRecord, SemanticEdgeRecord, SemanticRelation,
+    CallEdgeRecord, DispatchKind, HttpCallEdgeRecord, ImportRecord, ResolutionKind,
+    RouteEdgeRecord, SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
@@ -19,7 +19,6 @@ use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
-
 
 static PY_CALL_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(").expect("python call regex"));
@@ -1129,7 +1128,6 @@ impl PythonParser {
             self.visit_node_recursive(&child, source, file_path, ctx, container);
         }
     }
-
 }
 
 /// Accumulator for single-pass DFS extraction results.
@@ -1912,8 +1910,8 @@ def divide(a: int, b: int) -> Tuple[int, int]:
         // because `send_notification` doesn't match any broker pattern — the parser
         // only resolves obj.method() where obj matches either OBJECT_PATTERNS or
         // broker_imports.
-        // TODO: python broker detection limited to obj.method() patterns where obj
-        // is a known broker import or has a broker-like name.
+        // Python broker detection: obj.method() patterns where obj is a known
+        // broker import or has a broker-like name.
         let code = r#"
 import celery
 

@@ -468,3 +468,249 @@ impl IndexDb {
         Ok(affected > 0)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use tempfile::TempDir;
+
+    use crate::index_db::IndexDb;
+
+    fn setup() -> (IndexDb, TempDir) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
+        (db, tmp)
+    }
+
+    #[test]
+    fn test_architecture_languages() {
+        let (db, _tmp) = setup();
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params![
+                    "src/main.rs",
+                    "Rust",
+                    "h1",
+                    1.0,
+                    100,
+                    "2024-01-01T00:00:00Z"
+                ],
+            )
+            .unwrap();
+            tx.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params!["src/lib.rs", "Rust", "h2", 1.0, 200, "2024-01-01T00:00:00Z"],
+            )
+            .unwrap();
+            tx.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params!["app.py", "Python", "h3", 1.0, 300, "2024-01-01T00:00:00Z"],
+            )
+            .unwrap();
+            tx.commit().unwrap();
+        }
+
+        let langs = db.architecture_languages().unwrap();
+        assert_eq!(langs.len(), 2);
+
+        // Sorted by count DESC, so Rust (2 files) first.
+        assert_eq!(langs[0].language, "Rust");
+        assert_eq!(langs[0].file_count, 2);
+        assert!((langs[0].percentage - 66.666).abs() < 1.0);
+
+        assert_eq!(langs[1].language, "Python");
+        assert_eq!(langs[1].file_count, 1);
+        assert!((langs[1].percentage - 33.333).abs() < 1.0);
+    }
+
+    #[test]
+    fn test_architecture_routes() {
+        let (db, _tmp) = setup();
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            // Insert the file first (foreign key).
+            tx.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params![
+                    "src/routes.rs",
+                    "Rust",
+                    "h1",
+                    1.0,
+                    100,
+                    "2024-01-01T00:00:00Z"
+                ],
+            )
+            .unwrap();
+            tx.execute(
+                "INSERT INTO route_edges(edge_id, file_path, route_path, handler_name, method, line)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params!["re1", "src/routes.rs", "/users", "list_users", "GET", 10],
+            )
+            .unwrap();
+            tx.execute(
+                "INSERT INTO route_edges(edge_id, file_path, route_path, handler_name, method, line)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params!["re2", "src/routes.rs", "/auth/login", "login", "POST", 20],
+            )
+            .unwrap();
+            tx.commit().unwrap();
+        }
+
+        let routes = db.architecture_routes(10).unwrap();
+        assert_eq!(routes.len(), 2);
+        // Sorted by route_path: /auth/login < /users
+        assert_eq!(routes[0].path, "/auth/login");
+        assert_eq!(routes[0].method, "POST");
+        assert_eq!(routes[0].handler, "login");
+        assert_eq!(routes[1].path, "/users");
+        assert_eq!(routes[1].method, "GET");
+        assert_eq!(routes[1].handler, "list_users");
+    }
+
+    #[test]
+    fn test_extract_package_from_path() {
+        // "services/auth/handler.rs" → first non-skip segment = "services"
+        assert_eq!(
+            IndexDb::extract_package_from_path("services/auth/handler.rs"),
+            "services"
+        );
+
+        // "src/main.py" → "src" is in skip list, but it's the only directory; fallback to first part = "src"
+        assert_eq!(IndexDb::extract_package_from_path("src/main.py"), "src");
+
+        // "lib/utils.js" → "lib" is in skip list; fallback to first part = "lib"
+        assert_eq!(IndexDb::extract_package_from_path("lib/utils.js"), "lib");
+
+        // "single.rs" → only one part, first part is also last (filename), no non-skip dir segment → fallback to "single.rs"
+        assert_eq!(IndexDb::extract_package_from_path("single.rs"), "single.rs");
+    }
+
+    #[test]
+    fn test_adr_crud() {
+        let (db, _tmp) = setup();
+        let now = "2024-06-01T12:00:00Z";
+
+        // Insert
+        db.adr_upsert(
+            "ADR-001",
+            "Use SQLite",
+            "accepted",
+            "Need embedded DB",
+            "Use SQLite for index",
+            now,
+        )
+        .unwrap();
+
+        // List
+        let list = db.adr_list().unwrap();
+        assert_eq!(list.len(), 1);
+        assert_eq!(list[0]["adr_id"].as_str().unwrap(), "ADR-001");
+        assert_eq!(list[0]["title"].as_str().unwrap(), "Use SQLite");
+
+        // Get
+        let item = db.adr_get("ADR-001").unwrap().unwrap();
+        assert_eq!(item["status"].as_str().unwrap(), "accepted");
+        assert_eq!(item["context"].as_str().unwrap(), "Need embedded DB");
+        assert_eq!(item["decision"].as_str().unwrap(), "Use SQLite for index");
+
+        // Get non-existent
+        assert!(db.adr_get("ADR-999").unwrap().is_none());
+
+        // Delete
+        let deleted = db.adr_delete("ADR-001").unwrap();
+        assert!(deleted);
+        assert!(db.adr_get("ADR-001").unwrap().is_none());
+
+        // Delete again returns false
+        let deleted_again = db.adr_delete("ADR-001").unwrap();
+        assert!(!deleted_again);
+    }
+
+    #[test]
+    fn test_adr_upsert_conflict() {
+        let (db, _tmp) = setup();
+        let t1 = "2024-06-01T12:00:00Z";
+        let t2 = "2024-06-02T12:00:00Z";
+
+        db.adr_upsert("ADR-001", "Original title", "proposed", "ctx1", "dec1", t1)
+            .unwrap();
+        db.adr_upsert("ADR-001", "Updated title", "accepted", "ctx2", "dec2", t2)
+            .unwrap();
+
+        // Should still be one record, not two.
+        let list = db.adr_list().unwrap();
+        assert_eq!(list.len(), 1);
+
+        let item = db.adr_get("ADR-001").unwrap().unwrap();
+        assert_eq!(item["title"].as_str().unwrap(), "Updated title");
+        assert_eq!(item["status"].as_str().unwrap(), "accepted");
+        assert_eq!(item["context"].as_str().unwrap(), "ctx2");
+        assert_eq!(item["decision"].as_str().unwrap(), "dec2");
+        // created_at stays from original insert; updated_at changes.
+        assert_eq!(item["created_at"].as_str().unwrap(), t1);
+        assert_eq!(item["updated_at"].as_str().unwrap(), t2);
+    }
+
+    #[test]
+    fn test_architecture_entry_points() {
+        let (db, _tmp) = setup();
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            tx.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
+                rusqlite::params![
+                    "src/main.rs",
+                    "Rust",
+                    "h1",
+                    1.0,
+                    100,
+                    "2024-01-01T00:00:00Z"
+                ],
+            )
+            .unwrap();
+            // Symbol named "main" — should match.
+            tx.execute(
+                "INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, start_col, end_col)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6, 0, 0)",
+                rusqlite::params!["sym1", "src/main.rs", "main", "function", 1, 10],
+            )
+            .unwrap();
+            // Symbol with framework_role containing "handler" — should match.
+            tx.execute(
+                "INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, start_col, end_col, framework_role)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6, 0, 0, ?7)",
+                rusqlite::params!["sym2", "src/main.rs", "handle_request", "function", 20, 30, "http_handler"],
+            )
+            .unwrap();
+            // Symbol that should NOT match.
+            tx.execute(
+                "INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, start_col, end_col)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6, 0, 0)",
+                rusqlite::params!["sym3", "src/main.rs", "helper_func", "function", 40, 50],
+            )
+            .unwrap();
+            tx.commit().unwrap();
+        }
+
+        let entries = db.architecture_entry_points(10).unwrap();
+        assert_eq!(entries.len(), 2);
+
+        // Ordered by start_line: main (line 1) first, handle_request (line 20) second.
+        assert_eq!(entries[0].name, "main");
+        assert_eq!(entries[0].kind, "main");
+        assert_eq!(entries[0].line, 1);
+
+        assert_eq!(entries[1].name, "handle_request");
+        assert_eq!(entries[1].kind, "handler");
+        assert_eq!(entries[1].line, 20);
+    }
+}

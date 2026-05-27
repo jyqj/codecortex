@@ -76,8 +76,8 @@ macro_rules! spawn_handler {
     ($index:expr, $body:expr) => {{
         let index = $index;
         tokio::task::spawn_blocking(move || {
-            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| $body(index)))
-                .unwrap_or_else(|panic_val| {
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| $body(index))).unwrap_or_else(
+                |panic_val| {
                     let msg = match panic_val.downcast_ref::<&str>() {
                         Some(s) => (*s).to_string(),
                         None => match panic_val.downcast_ref::<String>() {
@@ -87,7 +87,8 @@ macro_rules! spawn_handler {
                     };
                     tracing::error!("handler panic caught: {}", msg);
                     Err(format!("internal error: {}", msg))
-                })
+                },
+            )
         })
         .await
         .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?
@@ -720,7 +721,7 @@ index(path) → search(query) → context(task)
 - Do NOT chain search + node when you want context — context(task) is one round-trip.
 - Do NOT loop node() over many symbols — one explore(symbols) call returns them all grouped by file.
 - Do NOT use trace(include_source=true) for deep understanding — use trace(source_mode="body") instead for complete function bodies.
-- Do NOT query the index immediately after editing — the watcher needs ~500ms to sync.
+- After editing files, call index(path) to refresh — there is no automatic file watcher.
 
 ## Rules
 
@@ -731,7 +732,7 @@ index(path) → search(query) → context(task)
 5. Use node(symbol, include="outline") for large classes to get signatures without full source.
 6. Use status(aspect="schema") to discover node/edge types before writing Cypher queries.
 7. Edges with `synthesized_by` field are inferred dynamic dispatch — not direct source calls.
-8. After file edits, wait for watcher or call index(path) to update.
+8. After file edits, call index(path) to update — no automatic file watcher is active.
 9. For refactoring, always run impact(scope="changes") first to understand blast radius.
 10. Treat returned source as already read — do not re-open those files with Read/Grep."#
                 .into(),

@@ -445,8 +445,7 @@ value = "formatName"
             expect_error: true,
         };
 
-        let result: Result<serde_json::Value, String> =
-            Ok(serde_json::json!({"status": "ok"}));
+        let result: Result<serde_json::Value, String> = Ok(serde_json::json!({"status": "ok"}));
 
         let mut assertions_failed: Vec<String> = Vec::new();
 
@@ -459,10 +458,7 @@ value = "formatName"
         }
 
         assert_eq!(assertions_failed.len(), 1);
-        assert_eq!(
-            assertions_failed[0],
-            "expected tool error but got success"
-        );
+        assert_eq!(assertions_failed[0], "expected tool error but got success");
     }
 
     #[test]

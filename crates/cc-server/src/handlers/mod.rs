@@ -14,7 +14,9 @@ use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 /// poisoned. Rather than permanently failing all subsequent requests we recover
 /// the inner value — the `CodeIndex` itself is still in a consistent state
 /// because panics happen before any partial mutation is committed.
-pub fn lock_index(index: &Arc<RwLock<CodeIndex>>) -> Result<RwLockReadGuard<'_, CodeIndex>, String> {
+pub fn lock_index(
+    index: &Arc<RwLock<CodeIndex>>,
+) -> Result<RwLockReadGuard<'_, CodeIndex>, String> {
     match index.read() {
         Ok(guard) => Ok(guard),
         Err(poisoned) => {
@@ -25,7 +27,9 @@ pub fn lock_index(index: &Arc<RwLock<CodeIndex>>) -> Result<RwLockReadGuard<'_, 
 }
 
 /// Acquire a write lock on the CodeIndex, recovering from RwLock poisoning.
-pub fn lock_index_write(index: &Arc<RwLock<CodeIndex>>) -> Result<RwLockWriteGuard<'_, CodeIndex>, String> {
+pub fn lock_index_write(
+    index: &Arc<RwLock<CodeIndex>>,
+) -> Result<RwLockWriteGuard<'_, CodeIndex>, String> {
     match index.write() {
         Ok(guard) => Ok(guard),
         Err(poisoned) => {

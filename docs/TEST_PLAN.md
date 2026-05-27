@@ -2,12 +2,12 @@
 
 ## Unit Tests
 
-587 tests across 7 crates. Run with `cargo test`.
+617 tests across 7 crates. Run with `cargo test`.
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 32 | Schema creation, migrations, SQL injection safety, edge queries |
-| cc-eval | 8 | Assertion types (incl. field_equals), corpus loading, fixture integration |
+| cc-db | 56 | Schema, migrations, SQL injection, architecture, ADR, edges, frontier, graph, query |
+| cc-eval | 14 | Assertion types (incl. field_equals), corpus loading, fixture integration |
 | cc-index | 212 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection |
 | cc-model | 26 | Route normalization, data structures |
 | cc-parsers | 135 | Tree-sitter parsing for 10 languages, symbol extraction |
@@ -16,7 +16,7 @@
 
 ## Eval Suite (cc-eval)
 
-29 corpus cases covering all 14 MCP tools. Run with `cargo test -p cc-eval`.
+37 corpus cases covering all 14 MCP tools. Run with `cargo test -p cc-eval`.
 
 ### Corpus Cases
 
@@ -51,6 +51,14 @@
 | context_golden_refactor | context | Golden test: context for refactoring formatName |
 | search_golden_js | search | Golden test: search for user processing functions |
 | search_golden_python | search | Golden test: search for user API functions |
+| architecture_frameworks | architecture | Framework detection finds multiple frameworks |
+| error_invalid_cypher | graph_query | Invalid Cypher query returns error |
+| error_node_missing | node | Node lookup for nonexistent symbol returns error |
+| error_trace_missing_symbol | trace | Trace between nonexistent symbols returns error |
+| explore_models_hierarchy | explore | Explore Python model classes (User, AdminUser) |
+| relations_cross_file_python | relations | Cross-file callers of get_user in Python |
+| search_go_function | search | Search for Go handler function (handleGetUser) |
+| search_java_controller | search | Search for Spring controller (UserController) |
 
 ### Assertion Types
 
@@ -63,10 +71,10 @@
 
 ### Known Limitations
 
-- Fixture is 112 LOC (4 JS + 2 Python + 1 Rust) with Express + Flask routes
+- Fixture is 13 files (4 JS + 3 Python + 2 Rust + 1 Go + 1 Java + 1 TS + 1 JS middleware) across Express, Flask, Spring, and Go routers
 - p95/max latency and output size tracked via `bench::run_benchmark()`
 - Recall@5 and MRR implemented via `expected_symbols` assertions (4 corpus cases active)
-- Fixture covers 3 languages but only 2 framework resolvers
+- Fixture covers 7 languages and 4+ framework resolvers
 
 ## Integration Testing
 

@@ -170,10 +170,7 @@ impl LazyBfsAdj {
     /// Get outgoing edges for a node, loading from DB on first access.
     fn neighbors(&mut self, uid: &str) -> &[EdgeLite] {
         if !self.cache.contains_key(uid) {
-            let mut edges = self
-                .db
-                .call_edges_from_uid_lite(uid)
-                .unwrap_or_default();
+            let mut edges = self.db.call_edges_from_uid_lite(uid).unwrap_or_default();
             // Append HTTP bridge edges if any exist for this caller.
             if let Some(bridges) = self.http_bridges.get(uid) {
                 edges.extend(bridges.iter().cloned());
@@ -597,29 +594,6 @@ fn outgoing_call_names_lazy(
     names.sort();
     names.dedup();
     Some(names)
-}
-
-/// Collect outgoing call names for a symbol UID from the BFS adjacency.
-#[allow(dead_code)]
-fn outgoing_call_names(db: &Arc<IndexDb>, adj: &BfsAdj, uid: &str) -> Option<Vec<String>> {
-    let neighbors = adj.adj.get(uid)?;
-    if neighbors.is_empty() {
-        return None;
-    }
-    let uid_names = db.symbol_names_by_uid().ok()?;
-    let names: Vec<String> = neighbors
-        .iter()
-        .filter_map(|e| {
-            uid_names
-                .get(&e.callee_uid)
-                .cloned()
-                .or_else(|| Some(e.callee_uid.clone()))
-        })
-        .collect::<Vec<_>>();
-    let mut deduped = names;
-    deduped.sort();
-    deduped.dedup();
-    Some(deduped)
 }
 
 /// Read a source snippet for a symbol, identified by file_path + line range.

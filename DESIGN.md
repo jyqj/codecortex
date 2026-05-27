@@ -79,7 +79,7 @@ CLI + MCP server. Contains the `CodeIndex` engine struct.
 
 **ImpactAnalyzer**: BFS reverse-caller expansion + community boundary detection + cross-service HTTP impact + historical co-change analysis. Git integration: unstaged + staged + untracked + base...HEAD.
 
-**FileWatcher**: `notify`-based file watcher with debounce, burst backoff, and gitignore filtering.
+**FileWatcher**: `notify`-based file watcher module with debounce, burst backoff, and gitignore filtering. Implemented but not yet integrated into the MCP server lifecycle — call `index(path)` after edits to refresh.
 
 ## MCP Tools (14 tools, no domain system)
 

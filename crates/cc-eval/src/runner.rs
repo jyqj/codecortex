@@ -365,13 +365,11 @@ fn check_assertion_raw(output: &Value, assertion: &Assertion) -> bool {
                 Some(output)
             };
             match target {
-                Some(Value::Array(arr)) => arr.iter().any(|item| {
-                    match item.get(sub_field) {
-                        Some(Value::String(s)) => s == expected_val,
-                        Some(Value::Number(n)) => n.to_string() == expected_val,
-                        Some(Value::Bool(b)) => b.to_string() == expected_val,
-                        _ => false,
-                    }
+                Some(Value::Array(arr)) => arr.iter().any(|item| match item.get(sub_field) {
+                    Some(Value::String(s)) => s == expected_val,
+                    Some(Value::Number(n)) => n.to_string() == expected_val,
+                    Some(Value::Bool(b)) => b.to_string() == expected_val,
+                    _ => false,
                 }),
                 _ => false,
             }
@@ -553,8 +551,7 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
                 }
             }
             Ok(_) => {
-                assertions_failed
-                    .push("expected tool error but got success".to_string());
+                assertions_failed.push("expected tool error but got success".to_string());
             }
         }
     } else {
@@ -579,8 +576,7 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
             Err(err) => {
                 // If the tool errored, check if any assertion is "is_success".
                 // If there are no assertions, a tool error is still a failure.
-                let has_is_success =
-                    case.assertions.iter().any(|a| a.kind == "is_success");
+                let has_is_success = case.assertions.iter().any(|a| a.kind == "is_success");
                 if has_is_success || case.assertions.is_empty() {
                     assertions_failed.push(format!("tool error: {}", err));
                 } else {

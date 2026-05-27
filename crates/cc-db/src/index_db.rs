@@ -247,11 +247,14 @@ impl IndexDb {
             .build(manager)
             .map_err(|e| CcError::Database(e.to_string()))?;
 
-        Ok((Self {
-            db_path: path.to_path_buf(),
-            pool: RwLock::new(pool),
-            write_conn: Mutex::new(write_conn),
-        }, schema_status))
+        Ok((
+            Self {
+                db_path: path.to_path_buf(),
+                pool: RwLock::new(pool),
+                write_conn: Mutex::new(write_conn),
+            },
+            schema_status,
+        ))
     }
 
     /// Open the database, check schema version, and rebuild if mismatched.
@@ -263,9 +266,9 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
 
         match migrate_index_db(&conn)? {
-            status @ (SchemaStatus::UpToDate | SchemaStatus::Initialized | SchemaStatus::Migrated { .. }) => {
-                Ok((conn, status))
-            }
+            status @ (SchemaStatus::UpToDate
+            | SchemaStatus::Initialized
+            | SchemaStatus::Migrated { .. }) => Ok((conn, status)),
             SchemaStatus::Mismatch { stored } => {
                 tracing::warn!(
                     stored_version = stored,
@@ -1605,7 +1608,9 @@ mod tests {
     #[test]
     fn resolver_seed_symbols_excludes_requested_files() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("resolver_seed.db")).unwrap().0;
+        let db = IndexDb::open(&tmp.path().join("resolver_seed.db"))
+            .unwrap()
+            .0;
 
         {
             let mut conn = db.write_conn.lock().unwrap();
@@ -1724,7 +1729,9 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_injection_string() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_test.db")).unwrap().0;
+        let db = IndexDb::open(&tmp.path().join("injection_test.db"))
+            .unwrap()
+            .0;
         // Query with a classic SQL injection payload — should return empty, not panic or corrupt.
         let result = db.find_symbol("'; DROP TABLE symbols; --", true, 10);
         assert!(result.is_ok(), "injection string should not cause error");
@@ -1734,7 +1741,9 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_union_injection() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_union.db")).unwrap().0;
+        let db = IndexDb::open(&tmp.path().join("injection_union.db"))
+            .unwrap()
+            .0;
         let result = db.find_symbol("' UNION SELECT * FROM sqlite_master --", false, 10);
         assert!(result.is_ok(), "UNION injection should not cause error");
         assert!(result.unwrap().is_empty());
@@ -1743,7 +1752,9 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_null_byte() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_null.db")).unwrap().0;
+        let db = IndexDb::open(&tmp.path().join("injection_null.db"))
+            .unwrap()
+            .0;
         let result = db.find_symbol("test\0evil", true, 10);
         assert!(result.is_ok(), "null byte should not cause error");
         assert!(result.unwrap().is_empty());
@@ -1752,7 +1763,9 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_unicode_injection() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_unicode.db")).unwrap().0;
+        let db = IndexDb::open(&tmp.path().join("injection_unicode.db"))
+            .unwrap()
+            .0;
         let result = db.find_symbol("name\u{200B}; DROP TABLE symbols", true, 10);
         assert!(result.is_ok(), "unicode injection should not cause error");
         assert!(result.unwrap().is_empty());
@@ -1761,7 +1774,9 @@ mod tests {
     #[test]
     fn test_metadata_safe_with_injection_key() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_meta.db")).unwrap().0;
+        let db = IndexDb::open(&tmp.path().join("injection_meta.db"))
+            .unwrap()
+            .0;
         // Setting metadata with injection key — should work safely via parameterized queries.
         let set_result = db.set_metadata("'; DROP TABLE metadata; --", "value");
         assert!(

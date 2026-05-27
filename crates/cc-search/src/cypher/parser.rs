@@ -45,11 +45,6 @@ impl Parser {
         std::mem::discriminant(self.peek()) == std::mem::discriminant(expected)
     }
 
-    #[allow(dead_code)]
-    fn at_eof(&self) -> bool {
-        matches!(self.peek(), Token::Eof)
-    }
-
     // ── Top-level parse ────────────────────────────
 
     fn parse(mut self) -> CcResult<CypherQuery> {

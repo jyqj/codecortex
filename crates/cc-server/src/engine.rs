@@ -344,9 +344,12 @@ impl CodeIndex {
             Ok(t) => t,
             Err(_) => return cc_search::GraphQueryEngine::new(db.clone()).execute(query),
         };
-        let has_union = tokens
-            .iter()
-            .any(|t| matches!(t, cc_search::cypher::Token::Union | cc_search::cypher::Token::UnionAll));
+        let has_union = tokens.iter().any(|t| {
+            matches!(
+                t,
+                cc_search::cypher::Token::Union | cc_search::cypher::Token::UnionAll
+            )
+        });
         let parse_ok = if has_union {
             cc_search::cypher::parse_union(&tokens).is_ok()
         } else {
@@ -375,11 +378,6 @@ impl CodeIndex {
             })
             .collect();
         Ok(maps)
-    }
-
-    #[allow(dead_code)]
-    pub fn cypher_query(&self, query: &str) -> CcResult<cc_search::cypher::CypherResult> {
-        cc_search::cypher::cypher_query(query, self.ensure_db()?)
     }
 
     pub fn callers(
@@ -414,12 +412,6 @@ impl CodeIndex {
             .as_deref()
             .ok_or_else(|| CcError::Search("symbol has no uid".into()))?;
         db.callee_rows_by_uid(uid, limit)
-    }
-
-    #[allow(dead_code)]
-    pub fn trace_path(&self, from: &str, to: &str, max_depth: usize) -> CcResult<Vec<Vec<String>>> {
-        let db = self.ensure_db()?;
-        crate::graph_trace::trace_path_names(db, from, to, max_depth)
     }
 
     pub fn symbol_refs(
@@ -602,7 +594,6 @@ impl CodeIndex {
             "relevant_files": files_sorted,
         }))
     }
-
 }
 
 // ── Free functions kept in engine.rs ───────────────────────────────────
@@ -644,5 +635,5 @@ pub(crate) fn centrality_hint(info: &cc_db::index_db::SymbolDegreeInfo) -> &'sta
 // - compute_package_boundaries (free fn), compute_package_layers
 
 // Re-export types that were previously defined here
-pub use crate::engine_query::{PackageBoundary, PackageLayer};
 pub use crate::engine_query::{compute_package_boundaries, compute_package_layers};
+pub use crate::engine_query::{PackageBoundary, PackageLayer};

@@ -13,8 +13,7 @@ use crate::traits::FileParser;
 use cc_model::diagnostic::LiteralRecord;
 use cc_model::dispatch_site::{DispatchSiteKind, DispatchSiteRecord};
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, HttpCallEdgeRecord, ImportRecord,
-    ResolutionKind, RouteEdgeRecord,
+    CallEdgeRecord, DispatchKind, HttpCallEdgeRecord, ImportRecord, ResolutionKind, RouteEdgeRecord,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord};
@@ -228,15 +227,6 @@ fn child_by_kind<'a>(node: &tree_sitter::Node<'a>, kind: &str) -> Option<tree_si
         .children(&mut cursor)
         .find(|child| child.kind() == kind);
     result
-}
-
-/// Collect children of a given kind.
-#[allow(dead_code)]
-fn children_by_kind<'a>(node: &tree_sitter::Node<'a>, kind: &str) -> Vec<tree_sitter::Node<'a>> {
-    let mut cursor = node.walk();
-    node.children(&mut cursor)
-        .filter(|c| c.kind() == kind)
-        .collect()
 }
 
 /// Count non-punctuation arguments in an `arguments` node.
@@ -1745,7 +1735,10 @@ impl JsTsParser {
     }
 
     /// Find the innermost enclosing symbol for a given line number.
-    pub(crate) fn find_enclosing_symbol(symbols: &[SymbolRecord], line: u32) -> Option<&SymbolRecord> {
+    pub(crate) fn find_enclosing_symbol(
+        symbols: &[SymbolRecord],
+        line: u32,
+    ) -> Option<&SymbolRecord> {
         symbols
             .iter()
             .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
@@ -2479,9 +2472,7 @@ async function publishOrder(order) {
     fn extract_bullmq_broker_call() {
         // Object name "bullQueue" contains "bull" → matches OBJECT_PATTERNS → broker_type = "bullmq".
         // Method "dispatch" is in ASYNC_METHODS → call_kind = "async".
-        // NOTE: BullMQ's typical `queue.add()` is NOT detected because "add" is not in
-        // ASYNC_METHODS and "queue" doesn't match any OBJECT_PATTERN.
-        // TODO: consider adding "add" to ASYNC_METHODS for BullMQ support.
+        // BullMQ's `queue.add()` is detected because "add" is in ASYNC_METHODS.
         let code = r#"
 import { Queue } from 'bullmq';
 const bullQueue = new Queue('notifications');

@@ -84,8 +84,7 @@ impl PythonParser {
                                         start_col: child.start_position().column as u32,
                                         end_line: Some(child.end_position().row as u32 + 1),
                                         end_col: child.end_position().column as u32,
-                                        handler_symbol_id: handler_symbol_id
-                                            .map(|s| s.to_string()),
+                                        handler_symbol_id: handler_symbol_id.map(|s| s.to_string()),
                                         handler_symbol_uid: None,
                                         handler_expr: None,
                                         router_symbol_uid: None,

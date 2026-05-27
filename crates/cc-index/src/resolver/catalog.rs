@@ -19,7 +19,6 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) by_name: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_uid: HashMap<String, usize>,
     pub(in crate::resolver) by_qname: HashMap<String, Vec<usize>>,
-    pub(in crate::resolver) by_id: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_file: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_export: HashMap<(String, String), Vec<usize>>,
     /// Lightweight type catalog for method dispatch resolution.
@@ -39,7 +38,6 @@ impl SymbolCatalog {
             by_name: HashMap::new(),
             by_uid: HashMap::new(),
             by_qname: HashMap::new(),
-            by_id: HashMap::new(),
             by_file: HashMap::new(),
             by_export: HashMap::new(),
             type_catalog: None,
@@ -132,12 +130,6 @@ impl SymbolCatalog {
                     .push(idx);
             }
 
-            // by_id
-            self.by_id
-                .entry(sym.symbol_id.clone())
-                .or_default()
-                .push(idx);
-
             // by_file
             self.by_file
                 .entry(sym.file_path.clone())
@@ -220,11 +212,6 @@ impl SymbolCatalog {
             .get(&(file_path.to_string(), export_name.to_lowercase()))
             .cloned()
             .unwrap_or_default()
-    }
-
-    #[allow(dead_code)]
-    pub(in crate::resolver) fn find_by_id(&self, symbol_id: &str) -> Option<usize> {
-        self.by_id.get(symbol_id).and_then(|v| v.first().copied())
     }
 
     pub(in crate::resolver) fn find_by_uid(&self, uid: &str) -> Option<usize> {

@@ -1,0 +1,15 @@
+name = "search_java_controller"
+tool = "search"
+description = "Search for Spring controller method"
+
+[params]
+query = "UserController"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "UserController"

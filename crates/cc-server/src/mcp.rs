@@ -15,25 +15,26 @@ use std::borrow::Cow;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
-use tokio::sync::RwLock;
+// tokio::sync::RwLock is used via full path for ProjectServices wrapping (async),
+// while std::sync::RwLock is used for CodeIndex (sync handler access).
 
 #[derive(Clone)]
 pub struct ProjectServices {
-    index: Arc<Mutex<CodeIndex>>,
+    index: Arc<RwLock<CodeIndex>>,
 }
 
 impl ProjectServices {
     pub fn new(project_path: Option<&std::path::Path>) -> cc_model::CcResult<Self> {
         Ok(Self {
-            index: Arc::new(Mutex::new(CodeIndex::new(project_path)?)),
+            index: Arc::new(RwLock::new(CodeIndex::new(project_path)?)),
         })
     }
 }
 
 pub struct CodeCortexMcpServer {
-    project: Arc<RwLock<ProjectServices>>,
+    project: Arc<tokio::sync::RwLock<ProjectServices>>,
     project_cache: Arc<tokio::sync::Mutex<LruCache<PathBuf, ProjectServices>>>,
     tool_router: ToolRouter<Self>,
     last_activity: Arc<Mutex<Instant>>,
@@ -41,14 +42,14 @@ pub struct CodeCortexMcpServer {
 }
 
 impl CodeCortexMcpServer {
-    async fn index(&self) -> Arc<Mutex<CodeIndex>> {
+    async fn index(&self) -> Arc<RwLock<CodeIndex>> {
         self.project.read().await.index.clone()
     }
 
     async fn index_for_project_path(
         &self,
         project_path: Option<&str>,
-    ) -> Result<Arc<Mutex<CodeIndex>>, rmcp::ErrorData> {
+    ) -> Result<Arc<RwLock<CodeIndex>>, rmcp::ErrorData> {
         let Some(raw_path) = project_path.filter(|p| !p.trim().is_empty()) else {
             return Ok(self.index().await);
         };
@@ -74,11 +75,24 @@ fn normalize_project_path(raw_path: &str) -> PathBuf {
 macro_rules! spawn_handler {
     ($index:expr, $body:expr) => {{
         let index = $index;
-        tokio::task::spawn_blocking(move || $body(index))
-            .await
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?
-            .map(|v| Json(JsonResult { result: v }))
-            .map_err(|e| rmcp::ErrorData::internal_error(e, None))
+        tokio::task::spawn_blocking(move || {
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| $body(index)))
+                .unwrap_or_else(|panic_val| {
+                    let msg = match panic_val.downcast_ref::<&str>() {
+                        Some(s) => (*s).to_string(),
+                        None => match panic_val.downcast_ref::<String>() {
+                            Some(s) => s.clone(),
+                            None => "handler panicked".to_string(),
+                        },
+                    };
+                    tracing::error!("handler panic caught: {}", msg);
+                    Err(format!("internal error: {}", msg))
+                })
+        })
+        .await
+        .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?
+        .map(|v| Json(JsonResult { result: v }))
+        .map_err(|e| rmcp::ErrorData::internal_error(e, None))
     }};
 }
 
@@ -499,7 +513,7 @@ impl CodeCortexMcpServer {
             ProjectServices::new(None).unwrap_or_else(|e2| {
                 tracing::error!("fatal: cannot create empty CodeIndex either: {}", e2);
                 ProjectServices {
-                    index: Arc::new(Mutex::new(CodeIndex::empty())),
+                    index: Arc::new(RwLock::new(CodeIndex::empty())),
                 }
             })
         });
@@ -510,7 +524,7 @@ impl CodeCortexMcpServer {
                 services.clone(),
             );
         }
-        let project = Arc::new(RwLock::new(services));
+        let project = Arc::new(tokio::sync::RwLock::new(services));
         let project_cache = Arc::new(tokio::sync::Mutex::new(initial_cache));
         let tool_router = Self::tool_router();
         Self {
@@ -544,7 +558,7 @@ impl CodeCortexMcpServer {
             let should_index = tokio::task::spawn_blocking({
                 let index = index.clone();
                 move || {
-                    let rt = match index.lock() {
+                    let rt = match index.read() {
                         Ok(rt) => rt,
                         Err(_) => return false,
                     };
@@ -556,8 +570,10 @@ impl CodeCortexMcpServer {
                     if !config.auto_index.enabled {
                         return false;
                     }
-                    let paths = cc_model::config::IndexPaths::new(project_path);
-                    !paths.index_db.exists()
+                    // Check whether the DB was freshly created (empty) rather
+                    // than checking file existence — IndexDb::open already
+                    // creates the file before we get here.
+                    rt.needs_initial_index()
                 }
             })
             .await
@@ -574,7 +590,7 @@ impl CodeCortexMcpServer {
             }
 
             let result = tokio::task::spawn_blocking(move || {
-                if let Ok(mut rt) = index.lock() {
+                if let Ok(mut rt) = index.write() {
                     if let Err(e) = rt.build_auto_index(false) {
                         tracing::warn!("auto-index failed: {}", e);
                     }
@@ -590,9 +606,9 @@ impl CodeCortexMcpServer {
     }
 
     /// Get the current project's `RepoSizeTier`, falling back to `Tiny` on error.
-    fn current_tier(&self, index: &Arc<Mutex<CodeIndex>>) -> RepoSizeTier {
+    fn current_tier(&self, index: &Arc<RwLock<CodeIndex>>) -> RepoSizeTier {
         index
-            .lock()
+            .read()
             .ok()
             .map(|rt| rt.repo_size_tier())
             .unwrap_or(RepoSizeTier::Tiny)
@@ -753,12 +769,18 @@ index(path) → search(query) → context(task)
         async move {
             {
                 let index = self.project.read().await.index.clone();
-                let mut rt = index
-                    .lock()
-                    .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
-                if rt.is_closed() {
-                    if let Err(e) = rt.reopen() {
-                        tracing::warn!("failed to reopen index after idle eviction: {}", e);
+                let need_reopen = {
+                    let rt = handlers::lock_index(&index)
+                        .map_err(|e| rmcp::ErrorData::internal_error(e, None))?;
+                    rt.is_closed()
+                };
+                if need_reopen {
+                    let mut rt = handlers::lock_index_write(&index)
+                        .map_err(|e| rmcp::ErrorData::internal_error(e, None))?;
+                    if rt.is_closed() {
+                        if let Err(e) = rt.reopen() {
+                            tracing::warn!("failed to reopen index after idle eviction: {}", e);
+                        }
                     }
                 }
             }
@@ -781,7 +803,7 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
 
     let idle_timeout_secs = {
         let services = server.project.read().await;
-        let rt = services.index.lock().ok();
+        let rt = services.index.read().ok();
         rt.as_ref()
             .and_then(|rt| rt.project_path.as_deref())
             .map(|p| {
@@ -805,7 +827,7 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
                 .unwrap_or_default();
             if elapsed >= idle_timeout {
                 let index = project.read().await.index.clone();
-                let mut guard = match index.lock() {
+                let mut guard = match index.write() {
                     Ok(g) => g,
                     Err(_) => continue,
                 };

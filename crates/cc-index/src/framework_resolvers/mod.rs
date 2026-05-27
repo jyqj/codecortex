@@ -4,7 +4,7 @@
 //! - `enrich_file`: per-file, runs after parse, can read source text
 //! - `resolve_cross_file`: global, runs after SymbolCatalog is built
 //!
-//! Covers 15 frameworks: Actix, ASP.NET, Axum, Django, Express, FastAPI,
+//! Covers 16 frameworks: Actix, ASP.NET, Axum, Django, Express, FastAPI,
 //! Flask, Go router, Hono, Laravel, NestJS, Rails, React, Spring, Svelte, and Vue.
 
 pub mod actix;

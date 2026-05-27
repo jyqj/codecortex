@@ -1,0 +1,15 @@
+name = "explore_models_hierarchy"
+tool = "explore"
+description = "Explore Python model classes"
+
+[params]
+symbols = ["User", "AdminUser"]
+mode = "symbols"
+include_source = false
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "User"

@@ -54,6 +54,7 @@ value = "formatName"
             kind: "output_contains".to_string(),
             value: Some("formatName".to_string()),
             field: None,
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion));
 
@@ -61,6 +62,7 @@ value = "formatName"
             kind: "output_contains".to_string(),
             value: Some("nonexistent_symbol".to_string()),
             field: None,
+            negate: false,
         };
         assert!(!runner::check_assertion(&output, &assertion_miss));
     }
@@ -75,6 +77,7 @@ value = "formatName"
             kind: "field_exists".to_string(),
             value: None,
             field: Some("meta.count".to_string()),
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion));
 
@@ -82,6 +85,7 @@ value = "formatName"
             kind: "field_exists".to_string(),
             value: None,
             field: Some("meta.missing".to_string()),
+            negate: false,
         };
         assert!(!runner::check_assertion(&output, &assertion_miss));
     }
@@ -95,6 +99,7 @@ value = "formatName"
             kind: "min_results".to_string(),
             value: Some("2".to_string()),
             field: Some("hits".to_string()),
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion_pass));
 
@@ -102,6 +107,7 @@ value = "formatName"
             kind: "min_results".to_string(),
             value: Some("5".to_string()),
             field: Some("hits".to_string()),
+            negate: false,
         };
         assert!(!runner::check_assertion(&output, &assertion_fail));
     }
@@ -120,6 +126,7 @@ value = "formatName"
             kind: "field_equals".to_string(),
             value: Some("ok".to_string()),
             field: Some("status".to_string()),
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion_str));
 
@@ -128,6 +135,7 @@ value = "formatName"
             kind: "field_equals".to_string(),
             value: Some("42".to_string()),
             field: Some("count".to_string()),
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion_num));
 
@@ -136,6 +144,7 @@ value = "formatName"
             kind: "field_equals".to_string(),
             value: Some("true".to_string()),
             field: Some("active".to_string()),
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion_bool));
 
@@ -144,6 +153,7 @@ value = "formatName"
             kind: "field_equals".to_string(),
             value: Some("null".to_string()),
             field: Some("nothing".to_string()),
+            negate: false,
         };
         assert!(runner::check_assertion(&output, &assertion_null));
 
@@ -152,6 +162,7 @@ value = "formatName"
             kind: "field_equals".to_string(),
             value: Some("error".to_string()),
             field: Some("status".to_string()),
+            negate: false,
         };
         assert!(!runner::check_assertion(&output, &assertion_miss));
 
@@ -160,6 +171,7 @@ value = "formatName"
             kind: "field_equals".to_string(),
             value: Some("anything".to_string()),
             field: Some("nonexistent".to_string()),
+            negate: false,
         };
         assert!(!runner::check_assertion(&output, &assertion_missing));
     }
@@ -368,5 +380,243 @@ value = "formatName"
                 failures.join("\n")
             );
         }
+    }
+
+    // ── Negative testing / new assertion tests ─────────────────────
+
+    #[test]
+    fn assertion_expected_error_pass() {
+        // expect_error=true case should pass when tool returns Err.
+        let case = types::EvalCase {
+            name: "error_case".to_string(),
+            tool: "nonexistent_tool".to_string(),
+            description: "should error".to_string(),
+            params: serde_json::json!({}),
+            assertions: vec![types::Assertion {
+                kind: "is_success".to_string(),
+                value: None,
+                field: None,
+                negate: false,
+            }],
+            expect_error: true,
+        };
+
+        // Simulate what run_case does for expect_error + Err result.
+        let err_msg = "unknown tool: nonexistent_tool";
+        let result: Result<serde_json::Value, String> = Err(err_msg.to_string());
+
+        let mut assertions_passed = 0;
+        let mut assertions_failed: Vec<String> = Vec::new();
+
+        assert!(case.expect_error);
+        match &result {
+            Err(err) => {
+                let error_output = serde_json::Value::String(err.clone());
+                for assertion in &case.assertions {
+                    if assertion.kind == "is_success" {
+                        assertions_passed += 1;
+                        continue;
+                    }
+                    if runner::check_assertion(&error_output, assertion) {
+                        assertions_passed += 1;
+                    } else {
+                        assertions_failed.push(assertion.describe());
+                    }
+                }
+            }
+            Ok(_) => {
+                assertions_failed.push("expected tool error but got success".to_string());
+            }
+        }
+
+        assert_eq!(assertions_passed, 1);
+        assert!(assertions_failed.is_empty(), "should pass on Err");
+    }
+
+    #[test]
+    fn assertion_expected_error_fail() {
+        // expect_error=true case should fail when tool returns Ok.
+        let case = types::EvalCase {
+            name: "error_case_fail".to_string(),
+            tool: "status".to_string(),
+            description: "expected error but got ok".to_string(),
+            params: serde_json::json!({}),
+            assertions: vec![],
+            expect_error: true,
+        };
+
+        let result: Result<serde_json::Value, String> =
+            Ok(serde_json::json!({"status": "ok"}));
+
+        let mut assertions_failed: Vec<String> = Vec::new();
+
+        assert!(case.expect_error);
+        match &result {
+            Err(_) => {}
+            Ok(_) => {
+                assertions_failed.push("expected tool error but got success".to_string());
+            }
+        }
+
+        assert_eq!(assertions_failed.len(), 1);
+        assert_eq!(
+            assertions_failed[0],
+            "expected tool error but got success"
+        );
+    }
+
+    #[test]
+    fn assertion_negate() {
+        // negate=true should invert output_contains.
+        let output = serde_json::json!({"name": "hello"});
+
+        // "hello" IS in the output, so output_contains would pass.
+        // With negate=true, it should FAIL.
+        let assertion_negated_fail = types::Assertion {
+            kind: "output_contains".to_string(),
+            value: Some("hello".to_string()),
+            field: None,
+            negate: true,
+        };
+        assert!(
+            !runner::check_assertion(&output, &assertion_negated_fail),
+            "negated output_contains should fail when string is present"
+        );
+
+        // "missing" is NOT in the output, so output_contains would fail.
+        // With negate=true, it should PASS.
+        let assertion_negated_pass = types::Assertion {
+            kind: "output_contains".to_string(),
+            value: Some("missing".to_string()),
+            field: None,
+            negate: true,
+        };
+        assert!(
+            runner::check_assertion(&output, &assertion_negated_pass),
+            "negated output_contains should pass when string is absent"
+        );
+    }
+
+    #[test]
+    fn assertion_output_not_contains() {
+        let output = serde_json::json!({"status": "ok", "data": [1, 2, 3]});
+
+        // "error" is NOT in the output, so output_not_contains should pass.
+        let assertion_pass = types::Assertion {
+            kind: "output_not_contains".to_string(),
+            value: Some("error".to_string()),
+            field: None,
+            negate: false,
+        };
+        assert!(runner::check_assertion(&output, &assertion_pass));
+
+        // "ok" IS in the output, so output_not_contains should fail.
+        let assertion_fail = types::Assertion {
+            kind: "output_not_contains".to_string(),
+            value: Some("ok".to_string()),
+            field: None,
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &assertion_fail));
+    }
+
+    #[test]
+    fn assertion_field_matches_regex() {
+        let output = serde_json::json!({
+            "version": "1.2.3",
+            "count": 42,
+            "active": true,
+        });
+
+        // Regex matches version string.
+        let assertion_pass = types::Assertion {
+            kind: "field_matches_regex".to_string(),
+            value: Some(r"^\d+\.\d+\.\d+$".to_string()),
+            field: Some("version".to_string()),
+            negate: false,
+        };
+        assert!(runner::check_assertion(&output, &assertion_pass));
+
+        // Regex does NOT match.
+        let assertion_fail = types::Assertion {
+            kind: "field_matches_regex".to_string(),
+            value: Some(r"^v\d+".to_string()),
+            field: Some("version".to_string()),
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &assertion_fail));
+
+        // Regex on a number field.
+        let assertion_num = types::Assertion {
+            kind: "field_matches_regex".to_string(),
+            value: Some(r"^\d{2}$".to_string()),
+            field: Some("count".to_string()),
+            negate: false,
+        };
+        assert!(runner::check_assertion(&output, &assertion_num));
+
+        // Invalid regex should return false (not panic).
+        let assertion_bad_regex = types::Assertion {
+            kind: "field_matches_regex".to_string(),
+            value: Some(r"[invalid".to_string()),
+            field: Some("version".to_string()),
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &assertion_bad_regex));
+    }
+
+    #[test]
+    fn assertion_array_contains_item() {
+        let output = serde_json::json!({
+            "users": [
+                {"name": "processUser", "role": "admin"},
+                {"name": "guestUser", "role": "viewer"},
+            ]
+        });
+
+        // Should find processUser in the array.
+        let assertion_pass = types::Assertion {
+            kind: "array_contains_item".to_string(),
+            value: Some("name=processUser".to_string()),
+            field: Some("users".to_string()),
+            negate: false,
+        };
+        assert!(runner::check_assertion(&output, &assertion_pass));
+
+        // Should find by role.
+        let assertion_role = types::Assertion {
+            kind: "array_contains_item".to_string(),
+            value: Some("role=viewer".to_string()),
+            field: Some("users".to_string()),
+            negate: false,
+        };
+        assert!(runner::check_assertion(&output, &assertion_role));
+
+        // Should NOT find nonexistent user.
+        let assertion_fail = types::Assertion {
+            kind: "array_contains_item".to_string(),
+            value: Some("name=unknownUser".to_string()),
+            field: Some("users".to_string()),
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &assertion_fail));
+
+        // Missing field path should fail.
+        let assertion_missing = types::Assertion {
+            kind: "array_contains_item".to_string(),
+            value: Some("name=processUser".to_string()),
+            field: Some("nonexistent".to_string()),
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &assertion_missing));
+
+        // Invalid value format (no =) should fail.
+        let assertion_bad_fmt = types::Assertion {
+            kind: "array_contains_item".to_string(),
+            value: Some("no_equals_sign".to_string()),
+            field: Some("users".to_string()),
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &assertion_bad_fmt));
     }
 }

@@ -1,4 +1,4 @@
--- index.sqlite3 — Full Schema (version 14, rebuild-on-mismatch)
+-- index.sqlite3 — Full Schema (version 15, rebuild-on-mismatch)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -177,6 +177,10 @@ CREATE INDEX IF NOT EXISTS idx_ce_callee ON call_edges(callee_symbol);
 CREATE INDEX IF NOT EXISTS idx_ce_file ON call_edges(file_path);
 CREATE INDEX IF NOT EXISTS idx_ce_caller_uid ON call_edges(caller_symbol_uid);
 CREATE INDEX IF NOT EXISTS idx_ce_callee_uid ON call_edges(callee_symbol_uid);
+
+-- Composite covering indices for caller/callee UID queries with file_path and line
+CREATE INDEX IF NOT EXISTS idx_ce_caller_uid_file ON call_edges(caller_symbol_uid, file_path, line);
+CREATE INDEX IF NOT EXISTS idx_ce_callee_uid_file ON call_edges(callee_symbol_uid, file_path, line);
 
 CREATE TABLE IF NOT EXISTS test_edges (
     edge_id        TEXT PRIMARY KEY,

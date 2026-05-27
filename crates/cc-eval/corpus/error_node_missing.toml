@@ -1,0 +1,14 @@
+name = "error_node_missing"
+tool = "node"
+description = "Node lookup for nonexistent symbol should return error"
+expect_error = true
+
+[params]
+symbol = "completely_nonexistent_symbol_xyz"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "not found"

@@ -1059,7 +1059,7 @@ mod tests {
 
     fn make_db() -> Arc<IndexDb> {
         let tmp = TempDir::new().unwrap();
-        Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap())
+        Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0)
     }
 
     // --- Tokenizer tests ---

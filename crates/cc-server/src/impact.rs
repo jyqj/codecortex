@@ -507,8 +507,8 @@ impl ImpactAnalyzer {
         // Collect community IDs of seed symbols (hop 0)
         let seed_communities: HashSet<u32> = impacted
             .iter()
-            .filter(|s| s.hop_depth == 0 && s.community_id.is_some())
-            .map(|s| s.community_id.unwrap())
+            .filter(|s| s.hop_depth == 0)
+            .filter_map(|s| s.community_id)
             .collect();
 
         if seed_communities.is_empty() {
@@ -520,8 +520,9 @@ impl ImpactAnalyzer {
             if sym.hop_depth > 0 {
                 if let Some(cid) = sym.community_id {
                     if !seed_communities.contains(&cid) {
-                        // Pick any seed community as the "from" for reporting
-                        let from_community = *seed_communities.iter().next().unwrap();
+                        let Some(&from_community) = seed_communities.iter().next() else {
+                            continue;
+                        };
                         crossings.push(BoundaryCrossing {
                             from_community,
                             to_community: cid,

@@ -89,6 +89,145 @@ pub fn build_bfs_adj_full(db: &IndexDb) -> CcResult<BfsAdj> {
     Ok(bfs)
 }
 
+/// Lazy adjacency loader: loads outgoing edges per-node on demand during BFS.
+///
+/// HTTP bridge edges are pre-loaded once (they're bounded by route count, not code edges).
+/// Call edges are loaded lazily from the database when a node is first visited.
+struct LazyBfsAdj {
+    db: Arc<IndexDb>,
+    /// Cached call edges keyed by caller UID.
+    cache: HashMap<String, Vec<EdgeLite>>,
+    /// Pre-loaded HTTP/async bridge edges keyed by caller UID.
+    http_bridges: HashMap<String, Vec<EdgeLite>>,
+}
+
+impl LazyBfsAdj {
+    fn new(db: Arc<IndexDb>) -> CcResult<Self> {
+        // Pre-load HTTP bridge edges (bounded by route count).
+        let http_edges = db.all_http_call_edges_lite(5000)?;
+        let route_nodes = db.all_route_nodes_lite(5000)?;
+
+        let mut route_lookup: HashMap<String, Vec<(String, f64)>> = HashMap::new();
+        for rn in &route_nodes {
+            if let (Some(ref norm_path), Some(ref handler_uid)) =
+                (&rn.normalized_path, &rn.handler_symbol_uid)
+            {
+                route_lookup
+                    .entry(norm_path.clone())
+                    .or_default()
+                    .push((handler_uid.clone(), rn.confidence));
+            }
+        }
+
+        let mut http_bridges: HashMap<String, Vec<EdgeLite>> = HashMap::new();
+        for hce in &http_edges {
+            let caller_uid = match &hce.caller_symbol_uid {
+                Some(uid) => uid,
+                None => continue,
+            };
+            let norm_path = match &hce.normalized_path {
+                Some(p) => p,
+                None => continue,
+            };
+            if let Some(handlers) = route_lookup.get(norm_path) {
+                for (handler_uid, handler_confidence) in handlers {
+                    let dispatch_kind = if hce.call_kind == "http" {
+                        "http_bridge"
+                    } else {
+                        "async_bridge"
+                    };
+                    let bridge_edge = EdgeLite {
+                        caller_uid: caller_uid.clone(),
+                        callee_uid: handler_uid.clone(),
+                        dispatch_kind: dispatch_kind.to_string(),
+                        synthesized_by: Some("http_bridge".to_string()),
+                        synthesis_key: Some(norm_path.clone()),
+                        confidence: f64::min(hce.confidence, *handler_confidence),
+                        file_path: hce.file_path.clone(),
+                        line: hce.line,
+                        registered_file: None,
+                        registered_line: None,
+                        resolution_kind: Some("synthesized".to_string()),
+                        parser_tier: None,
+                        resolution_strategy: None,
+                        parser_confidence: None,
+                    };
+                    http_bridges
+                        .entry(caller_uid.clone())
+                        .or_default()
+                        .push(bridge_edge);
+                }
+            }
+        }
+
+        Ok(Self {
+            db,
+            cache: HashMap::new(),
+            http_bridges,
+        })
+    }
+
+    /// Get outgoing edges for a node, loading from DB on first access.
+    fn neighbors(&mut self, uid: &str) -> &[EdgeLite] {
+        if !self.cache.contains_key(uid) {
+            let mut edges = self
+                .db
+                .call_edges_from_uid_lite(uid)
+                .unwrap_or_default();
+            // Append HTTP bridge edges if any exist for this caller.
+            if let Some(bridges) = self.http_bridges.get(uid) {
+                edges.extend(bridges.iter().cloned());
+            }
+            self.cache.insert(uid.to_string(), edges);
+        }
+        self.cache.get(uid).map(|v| v.as_slice()).unwrap_or(&[])
+    }
+}
+
+/// BFS using lazy adjacency loading — only queries edges for visited nodes.
+fn bfs_paths_labeled_lazy(
+    lazy_adj: &mut LazyBfsAdj,
+    from_uid: &str,
+    to_uid: &str,
+    max_depth: usize,
+    max_paths: usize,
+) -> Vec<LabeledPath> {
+    let mut results = Vec::new();
+    let mut queue: VecDeque<(Vec<String>, Vec<EdgeLite>)> = VecDeque::new();
+    let mut visited = HashSet::new();
+    queue.push_back((vec![from_uid.to_string()], Vec::new()));
+    visited.insert(from_uid.to_string());
+
+    while let Some((nodes, edges)) = queue.pop_front() {
+        if results.len() >= max_paths {
+            break;
+        }
+        if nodes.len() > max_depth + 1 {
+            break;
+        }
+        let current = nodes.last().unwrap().clone();
+        if current == to_uid {
+            results.push(LabeledPath {
+                node_uids: nodes,
+                edge_lites: edges,
+            });
+            continue;
+        }
+        let neighbors = lazy_adj.neighbors(&current).to_vec();
+        for edge in &neighbors {
+            if !visited.contains(&edge.callee_uid) {
+                visited.insert(edge.callee_uid.clone());
+                let mut new_nodes = nodes.clone();
+                new_nodes.push(edge.callee_uid.clone());
+                let mut new_edges = edges.clone();
+                new_edges.push(edge.clone());
+                queue.push_back((new_nodes, new_edges));
+            }
+        }
+    }
+    results
+}
+
 /// BFS returning labeled paths (node UIDs + edge data).
 pub fn bfs_paths_labeled(
     adj: &BfsAdj,
@@ -278,9 +417,9 @@ pub fn trace_path_rich(
         chosen
     };
 
-    // 2. Build edge-labeled adjacency (with HTTP/async bridge edges) and run BFS.
-    let adj = build_bfs_adj_full(db)?;
-    let labeled_paths = bfs_paths_labeled(&adj, &from_uid, &to_uid, max_depth, 20);
+    // 2. Lazy BFS: load edges on demand instead of pre-loading the full graph.
+    let mut lazy_adj = LazyBfsAdj::new(Arc::clone(db))?;
+    let labeled_paths = bfs_paths_labeled_lazy(&mut lazy_adj, &from_uid, &to_uid, max_depth, 20);
 
     // 3. Collect all unique UIDs across all paths.
     let mut all_uids = HashSet::new();
@@ -318,7 +457,7 @@ pub fn trace_path_rich(
             };
 
             let outgoing_calls = if include_outgoing {
-                outgoing_call_names(db, &adj, uid)
+                outgoing_call_names_lazy(db, &mut lazy_adj, uid)
             } else {
                 None
             };
@@ -435,7 +574,33 @@ pub fn trace_path_rich(
     })
 }
 
+/// Collect outgoing call names from lazy adjacency (used by trace_path_rich).
+fn outgoing_call_names_lazy(
+    db: &Arc<IndexDb>,
+    lazy_adj: &mut LazyBfsAdj,
+    uid: &str,
+) -> Option<Vec<String>> {
+    let neighbors = lazy_adj.neighbors(uid);
+    if neighbors.is_empty() {
+        return None;
+    }
+    let uid_names = db.symbol_names_by_uid().ok()?;
+    let mut names: Vec<String> = neighbors
+        .iter()
+        .filter_map(|e| {
+            uid_names
+                .get(&e.callee_uid)
+                .cloned()
+                .or_else(|| Some(e.callee_uid.clone()))
+        })
+        .collect();
+    names.sort();
+    names.dedup();
+    Some(names)
+}
+
 /// Collect outgoing call names for a symbol UID from the BFS adjacency.
+#[allow(dead_code)]
 fn outgoing_call_names(db: &Arc<IndexDb>, adj: &BfsAdj, uid: &str) -> Option<Vec<String>> {
     let neighbors = adj.adj.get(uid)?;
     if neighbors.is_empty() {
@@ -531,7 +696,7 @@ mod tests {
     /// Helper: create an IndexDb and insert symbols + call_edges for A→B→C.
     fn setup_abc_graph() -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
-        let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap());
+        let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
 
         // Use the read pool connection for inserts (WAL mode allows this).
         let conn = db.read_conn().unwrap();

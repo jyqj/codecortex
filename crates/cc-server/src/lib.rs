@@ -1,6 +1,7 @@
 //! cc-server library re-exports for use by cc-eval and other crates.
 
 pub mod engine;
+pub mod engine_query;
 pub mod graph_cycles;
 pub mod graph_flow;
 pub mod graph_trace;

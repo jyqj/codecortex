@@ -2,7 +2,7 @@
 
 ## Unit Tests
 
-586 tests across 7 crates. Run with `cargo test`.
+587 tests across 7 crates. Run with `cargo test`.
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
@@ -59,11 +59,13 @@
 - `field_exists` — JSON path exists (supports dot-notation and array indices)
 - `field_equals` — exact value match at JSON path (String, Number, Bool, Null)
 - `min_results` — array at path has >= N items
+- `expected_symbols` — retrieval quality: checks that expected symbol names appear in results; computes Recall@5 and MRR metrics
 
 ### Known Limitations
 
 - Fixture is 112 LOC (4 JS + 2 Python + 1 Rust) with Express + Flask routes
-- p95/max latency and output size tracked; recall/MRR not yet implemented
+- p95/max latency and output size tracked via `bench::run_benchmark()`
+- Recall@5 and MRR implemented via `expected_symbols` assertions (4 corpus cases active)
 - Fixture covers 3 languages but only 2 framework resolvers
 
 ## Integration Testing

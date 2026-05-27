@@ -337,7 +337,7 @@ mod tests {
     /// Helper: create an IndexDb and insert symbols + call_edges for A→B→C, with D isolated.
     fn setup_abcd_graph() -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
-        let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap());
+        let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
 
         let conn = db.read_conn().unwrap();
 

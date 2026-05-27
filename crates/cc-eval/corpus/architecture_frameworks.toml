@@ -1,0 +1,13 @@
+name = "architecture_frameworks"
+tool = "architecture"
+description = "Framework detection should find multiple frameworks"
+
+[params]
+aspect = "frameworks"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "express"

@@ -5,13 +5,13 @@ use cc_server::engine::CodeIndex;
 use cc_server::handlers::{context, core, facade, graph};
 use serde_json::Value;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 use std::time::Instant;
 
 // ── CodeIndexBackend ────────────────────────────────────────────────
 
 pub struct CodeIndexBackend {
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
 }
 
 impl CodeIndexBackend {
@@ -39,7 +39,7 @@ impl CodeIndexBackend {
         let mut index = CodeIndex::new(Some(project_path)).map_err(|e| e.to_string())?;
         // Build index (full=false since DB is fresh — avoids any full-rebuild edge cases)
         index.build_index(false).map_err(|e| e.to_string())?;
-        let rt = Arc::new(Mutex::new(index));
+        let rt = Arc::new(RwLock::new(index));
         Ok(Self { runtime: rt })
     }
 
@@ -279,11 +279,30 @@ impl CodeIndexBackend {
 // ── Assertion checker ───────────────────────────────────────────────
 
 pub fn check_assertion(output: &Value, assertion: &Assertion) -> bool {
+    let raw_result = check_assertion_raw(output, assertion);
+    if assertion.negate {
+        !raw_result
+    } else {
+        raw_result
+    }
+}
+
+/// Inner check without negate inversion.
+fn check_assertion_raw(output: &Value, assertion: &Assertion) -> bool {
     match assertion.kind.as_str() {
         "output_contains" => {
             let needle = assertion.value.as_deref().unwrap_or("");
             let serialized = serde_json::to_string(output).unwrap_or_default();
             serialized.contains(needle)
+        }
+        "output_not_contains" => {
+            // Convenience: equivalent to output_contains with negate.
+            // Note: the negate field is applied on TOP of this, so if someone
+            // sets both output_not_contains + negate=true it double-inverts
+            // (i.e. becomes output_contains). That is intentional.
+            let needle = assertion.value.as_deref().unwrap_or("");
+            let serialized = serde_json::to_string(output).unwrap_or_default();
+            !serialized.contains(needle)
         }
         "field_exists" => {
             let field = assertion.field.as_deref().unwrap_or("");
@@ -315,6 +334,45 @@ pub fn check_assertion(output: &Value, assertion: &Assertion) -> bool {
                 Some(Value::Number(n)) => n.to_string() == expected,
                 Some(Value::Bool(b)) => b.to_string() == expected,
                 Some(Value::Null) => expected == "null",
+                _ => false,
+            }
+        }
+        "field_matches_regex" => {
+            let field = assertion.field.as_deref().unwrap_or("");
+            let pattern = assertion.value.as_deref().unwrap_or("");
+            let re = match regex::Regex::new(pattern) {
+                Ok(r) => r,
+                Err(_) => return false,
+            };
+            match resolve_json_path(output, field) {
+                Some(Value::String(s)) => re.is_match(s),
+                Some(Value::Number(n)) => re.is_match(&n.to_string()),
+                Some(Value::Bool(b)) => re.is_match(&b.to_string()),
+                Some(Value::Null) => re.is_match("null"),
+                _ => false,
+            }
+        }
+        "array_contains_item" => {
+            // value format: "sub_field=expected_value"
+            let spec = assertion.value.as_deref().unwrap_or("");
+            let (sub_field, expected_val) = match spec.split_once('=') {
+                Some(pair) => pair,
+                None => return false,
+            };
+            let target = if let Some(field) = assertion.field.as_deref() {
+                resolve_json_path(output, field)
+            } else {
+                Some(output)
+            };
+            match target {
+                Some(Value::Array(arr)) => arr.iter().any(|item| {
+                    match item.get(sub_field) {
+                        Some(Value::String(s)) => s == expected_val,
+                        Some(Value::Number(n)) => n.to_string() == expected_val,
+                        Some(Value::Bool(b)) => b.to_string() == expected_val,
+                        _ => false,
+                    }
+                }),
                 _ => false,
             }
         }
@@ -474,37 +532,66 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
         Err(_) => 0,
     };
 
-    match &result {
-        Ok(output) => {
-            for assertion in &case.assertions {
-                if check_assertion(output, assertion) {
-                    assertions_passed += 1;
-                } else {
-                    assertions_failed.push(assertion.describe());
-                }
-
-                // Compute retrieval metrics for expected_symbols assertions
-                if assertion.kind == "expected_symbols" {
-                    let (r, m) = compute_retrieval_metrics(output, assertion);
-                    recall_at_5 = Some(r);
-                    mrr = Some(m);
+    if case.expect_error {
+        // ── Negative testing: we EXPECT the tool to return Err ──
+        match &result {
+            Err(err) => {
+                // Tool errored as expected — check non-is_success assertions
+                // against the error message string (wrapped as a JSON string value).
+                let error_output = Value::String(err.clone());
+                for assertion in &case.assertions {
+                    if assertion.kind == "is_success" {
+                        // is_success is irrelevant for expect_error cases; skip it.
+                        assertions_passed += 1;
+                        continue;
+                    }
+                    if check_assertion(&error_output, assertion) {
+                        assertions_passed += 1;
+                    } else {
+                        assertions_failed.push(assertion.describe());
+                    }
                 }
             }
+            Ok(_) => {
+                assertions_failed
+                    .push("expected tool error but got success".to_string());
+            }
         }
-        Err(err) => {
-            // If the tool errored, check if any assertion is "is_success".
-            // If there are no assertions, a tool error is still a failure.
-            let has_is_success = case.assertions.iter().any(|a| a.kind == "is_success");
-            if has_is_success || case.assertions.is_empty() {
-                assertions_failed.push(format!("tool error: {}", err));
-            } else {
-                // All assertions automatically fail on tool error
+    } else {
+        // ── Normal (positive) testing ──
+        match &result {
+            Ok(output) => {
                 for assertion in &case.assertions {
-                    assertions_failed.push(format!(
-                        "{} (tool errored: {})",
-                        assertion.describe(),
-                        err
-                    ));
+                    if check_assertion(output, assertion) {
+                        assertions_passed += 1;
+                    } else {
+                        assertions_failed.push(assertion.describe());
+                    }
+
+                    // Compute retrieval metrics for expected_symbols assertions
+                    if assertion.kind == "expected_symbols" {
+                        let (r, m) = compute_retrieval_metrics(output, assertion);
+                        recall_at_5 = Some(r);
+                        mrr = Some(m);
+                    }
+                }
+            }
+            Err(err) => {
+                // If the tool errored, check if any assertion is "is_success".
+                // If there are no assertions, a tool error is still a failure.
+                let has_is_success =
+                    case.assertions.iter().any(|a| a.kind == "is_success");
+                if has_is_success || case.assertions.is_empty() {
+                    assertions_failed.push(format!("tool error: {}", err));
+                } else {
+                    // All assertions automatically fail on tool error
+                    for assertion in &case.assertions {
+                        assertions_failed.push(format!(
+                            "{} (tool errored: {})",
+                            assertion.describe(),
+                            err
+                        ));
+                    }
                 }
             }
         }

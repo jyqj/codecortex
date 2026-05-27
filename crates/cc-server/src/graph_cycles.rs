@@ -68,9 +68,10 @@ pub fn tarjan_scc(adj: &HashMap<String, Vec<String>>) -> Vec<Vec<String>> {
                 if let Some(w_state) = state.get(w) {
                     if w_state.on_stack {
                         let w_idx = w_state.index;
-                        let v_state = state.get_mut(v_str).unwrap();
-                        if w_idx < v_state.lowlink {
-                            v_state.lowlink = w_idx;
+                        if let Some(v_state) = state.get_mut(v_str) {
+                            if w_idx < v_state.lowlink {
+                                v_state.lowlink = w_idx;
+                            }
                         }
                     }
                 } else {
@@ -97,8 +98,10 @@ pub fn tarjan_scc(adj: &HashMap<String, Vec<String>>) -> Vec<Vec<String>> {
                     // v is an SCC root — pop the SCC.
                     let mut component: Vec<String> = Vec::new();
                     loop {
-                        let w = scc_stack.pop().unwrap();
-                        state.get_mut(w).unwrap().on_stack = false;
+                        let Some(w) = scc_stack.pop() else { break };
+                        if let Some(ws) = state.get_mut(w) {
+                            ws.on_stack = false;
+                        }
                         component.push(w.to_string());
                         if w == v_str_owned {
                             break;
@@ -115,10 +118,11 @@ pub fn tarjan_scc(adj: &HashMap<String, Vec<String>>) -> Vec<Vec<String>> {
                 // Propagate lowlink to parent.
                 if let Some((parent, _)) = work.last() {
                     let parent_str: &str = parent;
-                    let child_lowlink = state[v_str_owned].lowlink;
-                    let parent_state = state.get_mut(parent_str).unwrap();
-                    if child_lowlink < parent_state.lowlink {
-                        parent_state.lowlink = child_lowlink;
+                    let child_lowlink = state.get(v_str_owned).map(|s| s.lowlink).unwrap_or(0);
+                    if let Some(parent_state) = state.get_mut(parent_str) {
+                        if child_lowlink < parent_state.lowlink {
+                            parent_state.lowlink = child_lowlink;
+                        }
                     }
                 }
             }
@@ -578,7 +582,7 @@ mod tests {
     fn test_find_circular_deps_file_with_db() {
         let dir = tempfile::tempdir().unwrap();
         let db_path = dir.path().join("test.sqlite3");
-        let db = Arc::new(IndexDb::open(&db_path).unwrap());
+        let db = Arc::new(IndexDb::open(&db_path).unwrap().0);
 
         // Insert test data: files and imports forming a cycle
         {
@@ -616,7 +620,7 @@ mod tests {
     fn test_find_circular_deps_file_no_cycles() {
         let dir = tempfile::tempdir().unwrap();
         let db_path = dir.path().join("test.sqlite3");
-        let db = Arc::new(IndexDb::open(&db_path).unwrap());
+        let db = Arc::new(IndexDb::open(&db_path).unwrap().0);
 
         {
             let conn = db.read_conn().unwrap();
@@ -640,7 +644,7 @@ mod tests {
     fn test_find_circular_deps_invalid_granularity() {
         let dir = tempfile::tempdir().unwrap();
         let db_path = dir.path().join("test.sqlite3");
-        let db = Arc::new(IndexDb::open(&db_path).unwrap());
+        let db = Arc::new(IndexDb::open(&db_path).unwrap().0);
 
         let result = find_circular_deps(&db, "invalid", 10);
         assert!(result.is_err());

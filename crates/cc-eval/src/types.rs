@@ -26,8 +26,11 @@ pub const MCP_TOOLS: &[&str] = &[
 pub struct Assertion {
     /// Kind of assertion.
     /// - `output_contains` — serialized JSON output contains string
+    /// - `output_not_contains` — serialized JSON output must NOT contain string
     /// - `field_exists` — a specific JSON path exists in output
     /// - `min_results` — array at path has >= N items
+    /// - `field_matches_regex` — field value matches a regex pattern
+    /// - `array_contains_item` — array at field contains item with sub-field match
     /// - `is_success` — tool didn't error (always implicitly checked)
     pub kind: String,
 
@@ -38,14 +41,26 @@ pub struct Assertion {
     /// Optional field/path to inspect (e.g. "hits", "dead_code").
     #[serde(default)]
     pub field: Option<String>,
+
+    /// When true, the assertion result is inverted (passes when the check would
+    /// normally fail, fails when it would normally pass).
+    #[serde(default)]
+    pub negate: bool,
 }
 
 impl Assertion {
     pub fn describe(&self) -> String {
-        match self.kind.as_str() {
+        let prefix = if self.negate { "(negated) " } else { "" };
+        let desc = match self.kind.as_str() {
             "output_contains" => {
                 format!(
                     "output_contains: {:?}",
+                    self.value.as_deref().unwrap_or("(none)")
+                )
+            }
+            "output_not_contains" => {
+                format!(
+                    "output_not_contains: {:?}",
                     self.value.as_deref().unwrap_or("(none)")
                 )
             }
@@ -69,6 +84,20 @@ impl Assertion {
                     self.value.as_deref().unwrap_or("(none)")
                 )
             }
+            "field_matches_regex" => {
+                format!(
+                    "field_matches_regex: {:?} =~ {:?}",
+                    self.field.as_deref().unwrap_or("(none)"),
+                    self.value.as_deref().unwrap_or("(none)")
+                )
+            }
+            "array_contains_item" => {
+                format!(
+                    "array_contains_item(field={:?}, match={:?})",
+                    self.field.as_deref().unwrap_or("(root)"),
+                    self.value.as_deref().unwrap_or("(none)")
+                )
+            }
             "expected_symbols" => {
                 format!(
                     "expected_symbols(field={:?}, expected={:?})",
@@ -77,7 +106,8 @@ impl Assertion {
                 )
             }
             other => format!("{}: value={:?}", other, self.value),
-        }
+        };
+        format!("{}{}", prefix, desc)
     }
 }
 
@@ -102,6 +132,11 @@ pub struct EvalCase {
     /// Assertions to check against the tool output.
     #[serde(default)]
     pub assertions: Vec<Assertion>,
+
+    /// When true, the case PASSES if the tool returns Err, and FAILS if it
+    /// returns Ok. Useful for negative / error-path testing.
+    #[serde(default)]
+    pub expect_error: bool,
 }
 
 // ── Eval case result ────────────────────────────────────────────────

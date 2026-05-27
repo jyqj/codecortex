@@ -1,15 +1,15 @@
 //! Context domain handlers: code-index context preparation.
 
 use crate::engine::CodeIndex;
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 pub fn search_in_context(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     query: &str,
     top_k: usize,
     intent: Option<cc_model::Intent>,
 ) -> Result<serde_json::Value, String> {
-    let mut rt = runtime.lock().map_err(|e| e.to_string())?;
+    let mut rt = super::lock_index_write(&runtime)?;
     let env = rt
         .search_in_context(query, top_k, intent)
         .map_err(|e| e.to_string())?;
@@ -17,12 +17,12 @@ pub fn search_in_context(
 }
 
 pub fn prepare_edit_region(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     file_path: &str,
     start_line: u32,
     end_line: u32,
 ) -> Result<serde_json::Value, String> {
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let rt = super::lock_index(&runtime)?;
     let symbols = rt.file_symbols(file_path).map_err(|e| e.to_string())?;
     let lower_line = start_line.saturating_sub(5);
     let upper_line = end_line.saturating_add(5);
@@ -53,20 +53,20 @@ pub fn prepare_edit_region(
 }
 
 pub fn task_symbols(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     task: &str,
     max_symbols: Option<usize>,
     expand_depth: Option<usize>,
     intent: Option<&str>,
 ) -> Result<serde_json::Value, String> {
-    let mut rt = runtime.lock().map_err(|e| e.to_string())?;
+    let mut rt = super::lock_index_write(&runtime)?;
     rt.task_symbols(task, max_symbols, expand_depth, intent)
         .map_err(|e| e.to_string())
 }
 
 #[allow(clippy::too_many_arguments)]
 pub fn explore_symbols(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     symbols: &[String],
     max_callers: Option<usize>,
     max_callees: Option<usize>,
@@ -80,7 +80,7 @@ pub fn explore_symbols(
         return Err("missing or empty 'symbols' parameter".to_string());
     }
 
-    let mut rt = runtime.lock().map_err(|e| e.to_string())?;
+    let mut rt = super::lock_index_write(&runtime)?;
     let max_chars = rt.repo_size_tier().max_output_chars();
     let result = rt
         .explore_symbols(
@@ -98,7 +98,7 @@ pub fn explore_symbols(
 }
 
 pub fn get_symbol_source(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     symbol: &str,
     exact: bool,
     include_line_numbers: bool,
@@ -107,19 +107,19 @@ pub fn get_symbol_source(
     if symbol.trim().is_empty() {
         return Err("missing or empty 'symbol' parameter".to_string());
     }
-    let mut rt = runtime.lock().map_err(|e| e.to_string())?;
+    let mut rt = super::lock_index_write(&runtime)?;
     rt.get_symbol_source(symbol, exact, include_line_numbers, max_chars)
         .map_err(|e| e.to_string())
 }
 
 pub fn expand_code_region(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     file_path: &str,
     start_line: u32,
     end_line: u32,
     context_lines: u32,
 ) -> Result<serde_json::Value, String> {
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let rt = super::lock_index(&runtime)?;
     let project = rt.project_path.as_ref().ok_or("project not set")?;
     let db = rt.index_db().ok_or("no index database")?;
     let full_path = crate::path_guard::resolve_indexed_path_strict(project, file_path, db)?;

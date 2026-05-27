@@ -470,6 +470,45 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
+    /// Return BFS-friendly outgoing edges for a single caller UID.
+    ///
+    /// This is the per-node variant of `call_uid_edges_lite`, used by lazy BFS
+    /// to avoid loading the full edge set into memory.
+    pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
+        let conn = self.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT caller_symbol_uid, callee_symbol_uid, dispatch_kind, \
+                        synthesized_by, synthesis_key, resolution_confidence, \
+                        file_path, line, registered_file, registered_line, \
+                        resolution_kind, parser_tier, resolution_strategy, parser_confidence \
+                 FROM call_edges \
+                 WHERE caller_symbol_uid = ?1 AND callee_symbol_uid IS NOT NULL",
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(rusqlite::params![caller_uid], |row| {
+                Ok(EdgeLiteBfs {
+                    caller_uid: row.get(0)?,
+                    callee_uid: row.get(1)?,
+                    dispatch_kind: row.get::<_, String>(2).unwrap_or_default(),
+                    synthesized_by: row.get(3).ok(),
+                    synthesis_key: row.get(4).ok(),
+                    confidence: row.get::<_, f64>(5).unwrap_or(0.0),
+                    file_path: row.get::<_, String>(6).unwrap_or_default(),
+                    line: row.get::<_, u32>(7).unwrap_or(0),
+                    registered_file: row.get(8).ok(),
+                    registered_line: row.get(9).ok(),
+                    resolution_kind: row.get(10).ok(),
+                    parser_tier: row.get(11).ok(),
+                    resolution_strategy: row.get(12).ok(),
+                    parser_confidence: row.get(13).ok(),
+                })
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
     pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
         let conn = self.read_conn()?;
         let mut stmt = conn

@@ -1,0 +1,10 @@
+name = "error_invalid_cypher"
+tool = "graph_query"
+description = "Invalid Cypher query should return error"
+expect_error = true
+
+[params]
+query = "THIS IS NOT VALID CYPHER ;;; DROP TABLE"
+
+[[assertions]]
+kind = "is_success"

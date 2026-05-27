@@ -31,8 +31,35 @@ pub fn read_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<
         Err(_) => {
             let blob: Vec<u8> = row.get(col_idx)?;
             match zstd::decode_all(blob.as_slice()) {
-                Ok(decompressed) => Ok(String::from_utf8(decompressed).unwrap_or_default()),
-                Err(_) => Ok(String::from_utf8(blob).unwrap_or_default()),
+                Ok(decompressed) => match String::from_utf8(decompressed) {
+                    Ok(s) => Ok(s),
+                    Err(e) => {
+                        tracing::warn!(
+                            col_idx,
+                            error = %e,
+                            "read_chunk_text: UTF-8 conversion failed after zstd decompression, returning empty string"
+                        );
+                        Ok(String::new())
+                    }
+                },
+                Err(zstd_err) => {
+                    tracing::warn!(
+                        col_idx,
+                        error = %zstd_err,
+                        "read_chunk_text: zstd decompression failed, attempting raw UTF-8"
+                    );
+                    match String::from_utf8(blob) {
+                        Ok(s) => Ok(s),
+                        Err(e) => {
+                            tracing::warn!(
+                                col_idx,
+                                error = %e,
+                                "read_chunk_text: raw UTF-8 conversion also failed, returning empty string"
+                            );
+                            Ok(String::new())
+                        }
+                    }
+                }
             }
         }
     }
@@ -198,12 +225,17 @@ pub struct IndexDb {
 impl IndexDb {
     /// Open (or create) the index database at the given path.
     /// If the schema version doesn't match, the database file is deleted and recreated.
-    pub fn open(path: &Path) -> CcResult<Self> {
+    ///
+    /// Returns the database handle together with the [`SchemaStatus`] so callers
+    /// can tell whether the database was freshly initialized, migrated, or
+    /// already up-to-date. This is used by the auto-index logic to decide
+    /// whether a first-connect build is needed.
+    pub fn open(path: &Path) -> CcResult<(Self, SchemaStatus)> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
 
-        let write_conn = Self::open_and_ensure_schema(path)?;
+        let (write_conn, schema_status) = Self::open_and_ensure_schema(path)?;
 
         let manager = SqliteConnectionManager::file(path)
             .with_init(|conn| {
@@ -215,15 +247,15 @@ impl IndexDb {
             .build(manager)
             .map_err(|e| CcError::Database(e.to_string()))?;
 
-        Ok(Self {
+        Ok((Self {
             db_path: path.to_path_buf(),
             pool: RwLock::new(pool),
             write_conn: Mutex::new(write_conn),
-        })
+        }, schema_status))
     }
 
     /// Open the database, check schema version, and rebuild if mismatched.
-    fn open_and_ensure_schema(path: &Path) -> CcResult<Connection> {
+    fn open_and_ensure_schema(path: &Path) -> CcResult<(Connection, SchemaStatus)> {
         let pragmas = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
 
         let conn = Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
@@ -231,8 +263,8 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
 
         match migrate_index_db(&conn)? {
-            SchemaStatus::UpToDate | SchemaStatus::Initialized | SchemaStatus::Migrated { .. } => {
-                Ok(conn)
+            status @ (SchemaStatus::UpToDate | SchemaStatus::Initialized | SchemaStatus::Migrated { .. }) => {
+                Ok((conn, status))
             }
             SchemaStatus::Mismatch { stored } => {
                 tracing::warn!(
@@ -256,9 +288,11 @@ impl IndexDb {
 
                 // Re-import preserved assets into the fresh database.
                 if let Ok(assets) = preserved {
-                    Self::import_persistent_assets(&conn, &assets);
+                    Self::import_persistent_assets(&conn, &assets)?;
                 }
-                Ok(conn)
+                // After mismatch rebuild the DB is empty — report as Initialized
+                // so callers know an index build is needed.
+                Ok((conn, SchemaStatus::Initialized))
             }
         }
     }
@@ -336,10 +370,13 @@ impl IndexDb {
     }
 
     /// Re-import ADR and runtime_evidence rows after a schema rebuild.
-    fn import_persistent_assets(conn: &Connection, assets: &serde_json::Value) {
+    fn import_persistent_assets(conn: &Connection, assets: &serde_json::Value) -> CcResult<()> {
+        let mut adr_failed: usize = 0;
+        let mut adr_total: usize = 0;
         if let Some(adrs) = assets.get("adrs").and_then(|v| v.as_array()) {
+            adr_total = adrs.len();
             for adr in adrs {
-                let _ = conn.execute(
+                if let Err(err) = conn.execute(
                     "INSERT OR REPLACE INTO adr(adr_id, title, status, context, decision, created_at, updated_at)
                      VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7)",
                     rusqlite::params![
@@ -351,12 +388,23 @@ impl IndexDb {
                         adr["created_at"].as_str().unwrap_or_default(),
                         adr["updated_at"].as_str().unwrap_or_default(),
                     ],
-                );
+                ) {
+                    adr_failed += 1;
+                    tracing::warn!(
+                        adr_id = adr["adr_id"].as_str().unwrap_or("?"),
+                        error = %err,
+                        "failed to re-import ADR row"
+                    );
+                }
             }
         }
+
+        let mut ev_failed: usize = 0;
+        let mut ev_total: usize = 0;
         if let Some(evidence) = assets.get("runtime_evidence").and_then(|v| v.as_array()) {
+            ev_total = evidence.len();
             for ev in evidence {
-                let _ = conn.execute(
+                if let Err(err) = conn.execute(
                     "INSERT OR REPLACE INTO runtime_evidence(evidence_id, service_name, method, path, status_code, observed_count, first_seen, last_seen)
                      VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
                     rusqlite::params![
@@ -369,24 +417,37 @@ impl IndexDb {
                         ev["first_seen"].as_str().unwrap_or_default(),
                         ev["last_seen"].as_str().unwrap_or_default(),
                     ],
-                );
+                ) {
+                    ev_failed += 1;
+                    tracing::warn!(
+                        evidence_id = ev["evidence_id"].as_str().unwrap_or("?"),
+                        error = %err,
+                        "failed to re-import runtime_evidence row"
+                    );
+                }
             }
         }
-        let adr_count = assets
-            .get("adrs")
-            .and_then(|v| v.as_array())
-            .map_or(0, |a| a.len());
-        let ev_count = assets
-            .get("runtime_evidence")
-            .and_then(|v| v.as_array())
-            .map_or(0, |a| a.len());
-        if adr_count + ev_count > 0 {
+
+        let total_failed = adr_failed + ev_failed;
+        if total_failed > 0 {
+            tracing::warn!(
+                adr_failed,
+                adr_total,
+                ev_failed,
+                ev_total,
+                "partial failure during persistent asset re-import"
+            );
+        }
+        if adr_total + ev_total > 0 {
             tracing::info!(
-                adrs = adr_count,
-                evidence = ev_count,
+                adrs_ok = adr_total - adr_failed,
+                adrs_total = adr_total,
+                evidence_ok = ev_total - ev_failed,
+                evidence_total = ev_total,
                 "re-imported persistent assets after schema rebuild"
             );
         }
+        Ok(())
     }
 
     /// Get a read connection from the pool.
@@ -686,7 +747,7 @@ impl IndexDb {
         }
 
         // 8. Reopen write connection
-        let new_write_conn = Self::open_and_ensure_schema(&self.db_path)?;
+        let (new_write_conn, _status) = Self::open_and_ensure_schema(&self.db_path)?;
         {
             let mut guard = self
                 .write_conn
@@ -793,7 +854,7 @@ impl IndexDb {
         }
 
         // Reopen write connection
-        let new_write_conn = Self::open_and_ensure_schema(&self.db_path)?;
+        let (new_write_conn, _status) = Self::open_and_ensure_schema(&self.db_path)?;
         {
             let mut guard = self
                 .write_conn
@@ -1510,7 +1571,7 @@ mod tests {
     #[test]
     fn open_creates_schema() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
         let conn = db.read_conn().unwrap();
         let tables: Vec<String> = conn
             .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
@@ -1528,7 +1589,7 @@ mod tests {
     #[test]
     fn metadata_round_trip() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
         db.set_metadata("version", "1.0").unwrap();
         assert_eq!(db.get_metadata("version").unwrap(), Some("1.0".to_string()));
         assert_eq!(db.get_metadata("nonexistent").unwrap(), None);
@@ -1537,14 +1598,14 @@ mod tests {
     #[test]
     fn empty_file_state() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
         assert!(db.get_file_state().unwrap().is_empty());
     }
 
     #[test]
     fn resolver_seed_symbols_excludes_requested_files() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("resolver_seed.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("resolver_seed.db")).unwrap().0;
 
         {
             let mut conn = db.write_conn.lock().unwrap();
@@ -1591,7 +1652,7 @@ mod tests {
     #[test]
     fn http_call_cross_service_chain() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("http_chain.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("http_chain.db")).unwrap().0;
 
         // Insert test data via raw SQL
         {
@@ -1663,7 +1724,7 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_injection_string() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_test.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("injection_test.db")).unwrap().0;
         // Query with a classic SQL injection payload — should return empty, not panic or corrupt.
         let result = db.find_symbol("'; DROP TABLE symbols; --", true, 10);
         assert!(result.is_ok(), "injection string should not cause error");
@@ -1673,7 +1734,7 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_union_injection() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_union.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("injection_union.db")).unwrap().0;
         let result = db.find_symbol("' UNION SELECT * FROM sqlite_master --", false, 10);
         assert!(result.is_ok(), "UNION injection should not cause error");
         assert!(result.unwrap().is_empty());
@@ -1682,7 +1743,7 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_null_byte() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_null.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("injection_null.db")).unwrap().0;
         let result = db.find_symbol("test\0evil", true, 10);
         assert!(result.is_ok(), "null byte should not cause error");
         assert!(result.unwrap().is_empty());
@@ -1691,7 +1752,7 @@ mod tests {
     #[test]
     fn test_find_symbol_safe_with_unicode_injection() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_unicode.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("injection_unicode.db")).unwrap().0;
         let result = db.find_symbol("name\u{200B}; DROP TABLE symbols", true, 10);
         assert!(result.is_ok(), "unicode injection should not cause error");
         assert!(result.unwrap().is_empty());
@@ -1700,7 +1761,7 @@ mod tests {
     #[test]
     fn test_metadata_safe_with_injection_key() {
         let tmp = TempDir::new().unwrap();
-        let db = IndexDb::open(&tmp.path().join("injection_meta.db")).unwrap();
+        let db = IndexDb::open(&tmp.path().join("injection_meta.db")).unwrap().0;
         // Setting metadata with injection key — should work safely via parameterized queries.
         let set_result = db.set_metadata("'; DROP TABLE metadata; --", "value");
         assert!(

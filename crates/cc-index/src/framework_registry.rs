@@ -1195,7 +1195,7 @@ mod tests {
     fn setup_test_db() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
         let db_path = tmp.path().join("test_index.sqlite3");
-        let db = IndexDb::open(&db_path).unwrap();
+        let db = IndexDb::open(&db_path).unwrap().0;
         (tmp, db)
     }
 

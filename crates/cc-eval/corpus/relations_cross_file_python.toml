@@ -1,0 +1,15 @@
+name = "relations_cross_file_python"
+tool = "relations"
+description = "Check callers of get_user across Python files"
+
+[params]
+symbol = "get_user"
+kind = "callers"
+limit = 10
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "api_views.py"

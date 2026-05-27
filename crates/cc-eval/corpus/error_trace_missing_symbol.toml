@@ -1,0 +1,15 @@
+name = "error_trace_missing_symbol"
+tool = "trace"
+description = "Trace between nonexistent symbols should return error"
+expect_error = true
+
+[params]
+from = "nonexistent_function_xyz_123"
+to = "also_nonexistent_abc_456"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "not found"

@@ -38,7 +38,7 @@ SQLite persistence for the code index. Single database: `index.sqlite3`.
 - `IndexDb`: connection pool (r2d2, 4 readers + 1 writer), WAL mode
 - 26 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts, call_edges, test_edges, route_edges, route_nodes, diagnostics, literal_index, scopes, communities, repo_frameworks, file_frameworks, data_flow_edges, co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges, dispatch_sites, runtime_evidence, adr, metadata
 - FTS5 full-text search on chunks, diagnostics, literals, files
-- Schema versioning via `user_version` pragma (v14, incremental migration support)
+- Schema versioning via `user_version` pragma (v15, incremental migration support)
 
 ### cc-parsers
 Tree-sitter AST extraction for 32 language identifiers (9 with full tree-sitter, rest via generic/heuristic).
@@ -69,7 +69,7 @@ Hybrid search engine.
 ### cc-server
 CLI + MCP server. Contains the `CodeIndex` engine struct.
 
-**CodeIndex** (~600 lines) wraps cc-db + cc-index + cc-search:
+**CodeIndex** (~1500 lines) wraps cc-db + cc-index + cc-search:
 - `new(project_path)` / `set_project` / `close` / `reopen`
 - `build_index` / `build_auto_index` / `index_status`
 - `search_in_context(query, top_k, intent)` -> `ContextEnvelope`

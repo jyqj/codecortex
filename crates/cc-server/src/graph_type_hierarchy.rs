@@ -480,7 +480,7 @@ mod tests {
     ///   Class C extends B (uid_c), defines method "doWork" (uid_c_dowork)
     fn setup_hierarchy() -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
-        let db = Arc::new(IndexDb::open(&tmp.path().join("hierarchy.db")).unwrap());
+        let db = Arc::new(IndexDb::open(&tmp.path().join("hierarchy.db")).unwrap().0);
         let conn = db.read_conn().unwrap();
 
         // File record
@@ -653,7 +653,7 @@ mod tests {
     #[test]
     fn hierarchy_disambiguation_returns_candidates() {
         let tmp = TempDir::new().unwrap();
-        let db = Arc::new(IndexDb::open(&tmp.path().join("disamb.db")).unwrap());
+        let db = Arc::new(IndexDb::open(&tmp.path().join("disamb.db")).unwrap().0);
         let conn = db.read_conn().unwrap();
 
         conn.execute(
@@ -696,7 +696,7 @@ mod tests {
     #[test]
     fn hierarchy_empty_db_returns_error() {
         let tmp = TempDir::new().unwrap();
-        let db = Arc::new(IndexDb::open(&tmp.path().join("empty.db")).unwrap());
+        let db = Arc::new(IndexDb::open(&tmp.path().join("empty.db")).unwrap().0);
 
         let result = type_hierarchy(&db, "NonExistent", None, None, "both", 5, false);
         assert!(result.is_err());

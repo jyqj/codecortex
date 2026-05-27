@@ -510,9 +510,23 @@ pub fn load_project_config(project_path: &Path) -> ProjectConfig {
     let config_path = project_path.join(CONFIG_FILE_NAME);
     let mut config = ProjectConfig::default();
     if config_path.exists() {
-        if let Ok(content) = std::fs::read_to_string(&config_path) {
-            if let Ok(parsed) = serde_json::from_str::<ProjectConfig>(&content) {
-                config = parsed;
+        match std::fs::read_to_string(&config_path) {
+            Ok(content) => match serde_json::from_str::<ProjectConfig>(&content) {
+                Ok(parsed) => config = parsed,
+                Err(e) => {
+                    tracing::warn!(
+                        path = %config_path.display(),
+                        error = %e,
+                        "Failed to parse project config; falling back to defaults"
+                    );
+                }
+            },
+            Err(e) => {
+                tracing::warn!(
+                    path = %config_path.display(),
+                    error = %e,
+                    "Failed to read project config file; falling back to defaults"
+                );
             }
         }
     }

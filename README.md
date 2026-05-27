@@ -73,6 +73,13 @@ All 14 tools are always available. No activation or domain system.
 |------|-------------|------------|---------|
 | `files` | List indexed files or read a code region | `action`: list / region / expand, `path`, `start_line`, `end_line`, `context_lines` | File list, or source code for the requested line range |
 | `graph_query` | Run a Cypher-subset query against the code graph | `query` (Cypher string) | Query result rows (MATCH/WHERE/RETURN/ORDER BY/LIMIT) |
+
+> **Cypher subset limitations** (applies to `graph_query`):
+> - `=~` regex is approximated via SQL LIKE -- only `.*`, `.+`, `.` wildcards work; character classes, alternation, and anchors silently produce wrong results.
+> - `OPTIONAL MATCH` only works for single-hop patterns (one relationship).
+> - Variable-length paths (`*1..N`) cap at 5 hops by default and only support CALLS / DEFINES / DEFINES_METHOD / CONTAINS_FILE / CONTAINS_MODULE edges. Multi-hop chains with different edge types are not supported.
+> - `WITH`, `MERGE`, `CREATE`, `DELETE`, `SET`, `UNWIND` are not supported. `LIMIT` defaults to 50 when omitted.
+
 | `ingest_traces` | Feed OTLP runtime traces to validate HTTP edges | `traces[]` (service_name, method, path, status_code) | Validation summary with matched/boosted edge counts |
 | `adr` | Manage Architecture Decision Records | `action`: list / get / store / delete, `adr_id`, `title`, `status`, `context`, `decision` | ADR list or individual record |
 
@@ -130,7 +137,7 @@ All fields are optional -- defaults work for most projects.
 ```json
 {
   "indexing": {
-    "include": ["**/*.py", "**/*.ts", "**/*.go"],
+    "include": ["**/*.py", "**/*.ts", "**/*.go"],  // extends (not restricts) indexing: known-language files are always indexed; include rescues unknown-language files that match these patterns
     "ignore": ["**/generated/**"],
     "max_file_bytes": 512000,
     "dirty_propagation": true,
@@ -188,7 +195,7 @@ repos, `impact` up to 80 items).
 ```
 cc-model          Data types, config, error definitions (zero external deps beyond serde)
     |
-cc-db             SQLite index store (r2d2 pool, WAL mode, FTS5, 26 tables, schema v14)
+cc-db             SQLite index store (r2d2 pool, WAL mode, FTS5, 26 tables, schema v15)
     |
 cc-parsers        Tree-sitter AST extraction + framework detection
 cc-index          File scanning, incremental indexing, community detection (Louvain)

@@ -2,7 +2,7 @@
 //!
 //! - `enrich_file`: extracts route definitions from ASP.NET attribute routing,
 //!   Minimal API endpoints, and controller conventions
-//! - `resolve_cross_file`: TODO
+//! - `resolve_cross_file`: resolves handler UIDs for Minimal API routes
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;

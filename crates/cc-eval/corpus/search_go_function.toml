@@ -1,0 +1,15 @@
+name = "search_go_function"
+tool = "search"
+description = "Search for Go handler function"
+
+[params]
+query = "handleGetUser"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "main.go"

@@ -8,6 +8,23 @@ use cc_model::{CcError, CcResult, ParserTier};
 
 use crate::index_db::{CoChangeLite, IndexDb};
 
+/// Extract the "base clean" stem from a test file stem for matching against code files.
+///
+/// Mirrors the original logic: strip `test_` prefix, then `_test` suffix (with the same
+/// fallback-to-original-stem behaviour), then strip `.test` / `.spec` suffix.
+fn test_stem_to_base_clean(test_stem: &str) -> String {
+    let base_clean = test_stem
+        .strip_prefix("test_")
+        .unwrap_or(test_stem)
+        .strip_suffix("_test")
+        .unwrap_or(test_stem);
+    let base_clean = base_clean
+        .strip_suffix(".test")
+        .or_else(|| base_clean.strip_suffix(".spec"))
+        .unwrap_or(base_clean);
+    base_clean.to_string()
+}
+
 impl IndexDb {
     pub fn rebuild_test_edges_for_files(&self, changed: &[String]) -> CcResult<()> {
         if changed.is_empty() {
@@ -29,83 +46,194 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
         }
 
-        let all_tests: std::collections::HashSet<String> = {
-            let mut stmt = tx
-                .prepare("SELECT file_path FROM files WHERE is_test_file = 1")
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let collected: Vec<String> = stmt
-                .query_map([], |row| row.get::<_, String>(0))
-                .map_err(|e| CcError::Database(e.to_string()))?
-                .filter_map(|r| r.ok())
-                .collect();
-            collected.into_iter().collect()
-        };
-        let all_code: std::collections::HashSet<String> = {
-            let mut stmt = tx
-                .prepare("SELECT file_path FROM files WHERE is_test_file = 0")
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let collected: Vec<String> = stmt
-                .query_map([], |row| row.get::<_, String>(0))
-                .map_err(|e| CcError::Database(e.to_string()))?
-                .filter_map(|r| r.ok())
-                .collect();
-            collected.into_iter().collect()
-        };
-
+        // For each changed file, query only candidate matches via SQL LIKE
+        // instead of loading ALL test/code files and cross-joining.
         let changed_set: std::collections::HashSet<&str> =
             changed.iter().map(|s| s.as_str()).collect();
 
-        let mut pairs: Vec<(String, String)> = Vec::new();
-        for tf in &all_tests {
-            if changed_set.contains(tf.as_str()) {
-                for cf in &all_code {
-                    pairs.push((tf.clone(), cf.clone()));
-                }
-            }
-        }
-        for cf in &all_code {
-            if changed_set.contains(cf.as_str()) {
-                for tf in &all_tests {
-                    if !changed_set.contains(tf.as_str()) {
-                        pairs.push((tf.clone(), cf.clone()));
-                    }
-                }
-            }
-        }
-
-        for (test_file, code_file) in &pairs {
-            let test_stem = Path::new(test_file)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("");
-            let code_stem = Path::new(code_file)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("");
-
-            let base_clean = test_stem
-                .strip_prefix("test_")
-                .unwrap_or(test_stem)
-                .strip_suffix("_test")
-                .unwrap_or(test_stem);
-            let base_clean = base_clean
-                .strip_suffix(".test")
-                .or_else(|| base_clean.strip_suffix(".spec"))
-                .unwrap_or(base_clean);
-
-            let (confidence, reason) = if code_stem == base_clean {
-                (0.9, "same-basename")
-            } else if code_file.contains(base_clean) || test_file.contains(code_stem) {
-                (0.7, "path-overlap")
-            } else {
-                continue;
+        for fp in changed {
+            // Determine if this changed file is a test file or a code file.
+            let is_test: bool = {
+                let mut stmt = tx
+                    .prepare_cached(
+                        "SELECT is_test_file FROM files WHERE file_path = ?1",
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                stmt.query_row(rusqlite::params![fp], |row| row.get::<_, bool>(0))
+                    .unwrap_or(false)
             };
 
-            let edge_id = format!("test:{}:{}", test_file, code_file);
-            tx.execute(
-                "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
-                rusqlite::params![edge_id, test_file, code_file, reason, confidence],
-            ).map_err(|e| CcError::Database(e.to_string()))?;
+            let stem = Path::new(fp)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("");
+
+            if is_test {
+                // Changed file is a test file; find matching code files.
+                //
+                // A pair (test_file, code_file) matches when:
+                //   a) code_stem == base_clean          -> same-basename (0.9)
+                //   b) code_file.contains(base_clean)   -> path-overlap  (0.7)
+                //   c) test_file.contains(code_stem)    -> path-overlap  (0.7)
+                //
+                // Conditions (a)+(b) are covered by: LIKE '%base_clean%' on code files.
+                // Condition (c) requires finding code files whose stem is a substring
+                // of the test file path. We add LIKE patterns from the test file stem's
+                // sub-components to cover this.
+                let base_clean = test_stem_to_base_clean(stem);
+
+                let mut patterns: Vec<String> = Vec::new();
+                // Primary pattern: catches conditions (a)+(b)
+                if !base_clean.is_empty() {
+                    patterns.push(format!("%{}%", base_clean));
+                }
+                // Additional patterns from test stem sub-components: catches condition
+                // (c) where a code file stem is a sub-segment of the test file name.
+                for part in stem.split('_') {
+                    if part.len() >= 3 && part != "test" {
+                        let pat = format!("%{}%", part);
+                        if !patterns.contains(&pat) {
+                            patterns.push(pat);
+                        }
+                    }
+                }
+                for part in stem.split('-') {
+                    if part.len() >= 3 && part != "test" {
+                        let pat = format!("%{}%", part);
+                        if !patterns.contains(&pat) {
+                            patterns.push(pat);
+                        }
+                    }
+                }
+
+                let mut seen = std::collections::HashSet::new();
+                let mut candidates: Vec<String> = Vec::new();
+                for pat in &patterns {
+                    let mut stmt = tx
+                        .prepare_cached(
+                            "SELECT file_path FROM files WHERE is_test_file = 0 AND file_path LIKE ?1",
+                        )
+                        .map_err(|e| CcError::Database(e.to_string()))?;
+                    let rows = stmt.query_map(rusqlite::params![pat], |row| {
+                        row.get::<_, String>(0)
+                    })
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    for r in rows.flatten() {
+                        if seen.insert(r.clone()) {
+                            candidates.push(r);
+                        }
+                    }
+                }
+
+                for code_file in &candidates {
+                    let code_stem = Path::new(code_file)
+                        .file_stem()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("");
+
+                    let (confidence, reason) = if code_stem == base_clean {
+                        (0.9, "same-basename")
+                    } else if code_file.contains(&*base_clean) || fp.contains(code_stem) {
+                        (0.7, "path-overlap")
+                    } else {
+                        continue;
+                    };
+
+                    let edge_id = format!("test:{}:{}", fp, code_file);
+                    tx.execute(
+                        "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
+                        rusqlite::params![edge_id, fp, code_file, reason, confidence],
+                    ).map_err(|e| CcError::Database(e.to_string()))?;
+                }
+            } else {
+                // Changed file is a code file; find matching test files.
+                //
+                // A pair (test_file, code_file) matches when:
+                //   a) code_stem == base_clean(test_stem)     -> same-basename (0.9)
+                //   b) code_file.contains(base_clean)         -> path-overlap  (0.7)
+                //   c) test_file.contains(code_stem)          -> path-overlap  (0.7)
+                //
+                // Condition (c) is covered by: LIKE '%code_stem%' on test files.
+                // Conditions (a)+(b) require knowing base_clean, which depends on the
+                // test file stem. We collect unique stem fragments from the code file
+                // path to build additional LIKE patterns that cover (a)+(b).
+                let code_stem_owned = stem.to_string();
+
+                // Build a set of LIKE patterns that cover all three conditions.
+                let mut patterns: Vec<String> = Vec::new();
+                // Primary pattern: catches condition (c)
+                if !code_stem_owned.is_empty() {
+                    patterns.push(format!("%{}%", code_stem_owned));
+                }
+                // Additional patterns from stem sub-components: catches conditions
+                // (a)+(b) where base_clean is a sub-segment of the code stem.
+                // E.g. code_stem = "user_service" => also search "%user%" and "%service%".
+                for part in code_stem_owned.split('_') {
+                    if part.len() >= 3 {
+                        let pat = format!("%{}%", part);
+                        if !patterns.contains(&pat) {
+                            patterns.push(pat);
+                        }
+                    }
+                }
+                // Also add patterns from hyphen-split if present.
+                for part in code_stem_owned.split('-') {
+                    if part.len() >= 3 {
+                        let pat = format!("%{}%", part);
+                        if !patterns.contains(&pat) {
+                            patterns.push(pat);
+                        }
+                    }
+                }
+
+                // Collect candidate test files from all patterns, deduplicated.
+                let mut seen = std::collections::HashSet::new();
+                let mut candidates: Vec<String> = Vec::new();
+                for pat in &patterns {
+                    let mut stmt = tx
+                        .prepare_cached(
+                            "SELECT file_path FROM files WHERE is_test_file = 1 AND file_path LIKE ?1",
+                        )
+                        .map_err(|e| CcError::Database(e.to_string()))?;
+                    let rows = stmt.query_map(rusqlite::params![pat], |row| {
+                        row.get::<_, String>(0)
+                    })
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    for r in rows.flatten() {
+                        if seen.insert(r.clone()) {
+                            candidates.push(r);
+                        }
+                    }
+                }
+
+                for test_file in &candidates {
+                    // Skip test files that are also in the changed set
+                    // (they will be handled by their own iteration).
+                    if changed_set.contains(test_file.as_str()) {
+                        continue;
+                    }
+
+                    let test_file_stem = Path::new(test_file)
+                        .file_stem()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("");
+                    let base_clean = test_stem_to_base_clean(test_file_stem);
+
+                    let (confidence, reason) = if code_stem_owned == base_clean {
+                        (0.9, "same-basename")
+                    } else if fp.contains(&*base_clean) || test_file.contains(&*code_stem_owned) {
+                        (0.7, "path-overlap")
+                    } else {
+                        continue;
+                    };
+
+                    let edge_id = format!("test:{}:{}", test_file, fp);
+                    tx.execute(
+                        "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
+                        rusqlite::params![edge_id, test_file, fp, reason, confidence],
+                    ).map_err(|e| CcError::Database(e.to_string()))?;
+                }
+            }
         }
 
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;

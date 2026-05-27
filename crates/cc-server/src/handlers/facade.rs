@@ -3,7 +3,7 @@
 use super::{context, core, graph};
 use crate::engine::CodeIndex;
 use serde_json::{json, Value};
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, RwLock};
 
 pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
     let serialized = serde_json::to_string(&value).unwrap_or_default();
@@ -25,7 +25,7 @@ pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
 
 // ── 1. handle_status ────────────────────────────────────────────────
 
-pub fn handle_status(runtime: Arc<Mutex<CodeIndex>>, aspect: &str) -> Result<Value, String> {
+pub fn handle_status(runtime: Arc<RwLock<CodeIndex>>, aspect: &str) -> Result<Value, String> {
     match aspect {
         "index" => {
             let mut result = core::index_status(runtime.clone())?;
@@ -60,8 +60,8 @@ pub fn handle_status(runtime: Arc<Mutex<CodeIndex>>, aspect: &str) -> Result<Val
 }
 
 /// Query runtime_evidence stats from the database, returning None if unavailable.
-fn runtime_evidence_summary(runtime: &Arc<Mutex<CodeIndex>>) -> Option<Value> {
-    let rt = runtime.lock().ok()?;
+fn runtime_evidence_summary(runtime: &Arc<RwLock<CodeIndex>>) -> Option<Value> {
+    let rt = super::lock_index(runtime).ok()?;
     let db = rt.index_db()?;
     db.runtime_evidence_stats().ok()
 }
@@ -69,14 +69,14 @@ fn runtime_evidence_summary(runtime: &Arc<Mutex<CodeIndex>>) -> Option<Value> {
 // ── 2. handle_context ───────────────────────────────────────────────
 
 pub fn handle_context(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     task: &str,
     max_symbols: Option<usize>,
     include_source: bool,
     intent: Option<&str>,
 ) -> Result<Value, String> {
     let max_chars = {
-        let rt = runtime.lock().map_err(|e| e.to_string())?;
+        let rt = super::lock_index(&runtime)?;
         rt.repo_size_tier().max_output_chars()
     };
     let mut result = context::task_symbols(runtime.clone(), task, max_symbols, Some(1), intent)?;
@@ -119,12 +119,12 @@ pub fn handle_context(
 // ── 3. handle_node ──────────────────────────────────────────────────
 
 pub fn handle_node(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     symbol: &str,
     include: &str,
 ) -> Result<Value, String> {
     let (relation_limit, max_chars) = {
-        let rt = runtime.lock().map_err(|e| e.to_string())?;
+        let rt = super::lock_index(&runtime)?;
         let tier = rt.repo_size_tier();
         (tier.explore_max_symbols(), tier.max_output_chars())
     };
@@ -159,14 +159,14 @@ pub fn handle_node(
 // ── 4. handle_relations ─────────────────────────────────────────────
 
 pub fn handle_relations(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     symbol: &str,
     kind: &str,
     limit: usize,
     direction: &str,
 ) -> Result<Value, String> {
     let max_limit = {
-        let rt = runtime.lock().map_err(|e| e.to_string())?;
+        let rt = super::lock_index(&runtime)?;
         rt.output_budget("relations").max_items
     };
     let limit = limit.min(max_limit);
@@ -189,7 +189,7 @@ pub fn handle_relations(
 // ── 5. handle_impact ────────────────────────────────────────────────
 
 pub fn handle_impact(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     scope: &str,
     files: &[String],
     base_branch: Option<&str>,
@@ -198,7 +198,7 @@ pub fn handle_impact(
     limit: usize,
 ) -> Result<Value, String> {
     let max_limit = {
-        let rt = runtime.lock().map_err(|e| e.to_string())?;
+        let rt = super::lock_index(&runtime)?;
         rt.output_budget("impact").max_items
     };
     let limit = limit.min(max_limit);
@@ -224,13 +224,13 @@ pub fn handle_impact(
 // ── 6. handle_architecture ──────────────────────────────────────────
 
 pub fn handle_architecture(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     aspect: &str,
     filter: Option<&str>,
     limit: usize,
 ) -> Result<Value, String> {
     let max_limit = {
-        let rt = runtime.lock().map_err(|e| e.to_string())?;
+        let rt = super::lock_index(&runtime)?;
         rt.output_budget("architecture").max_items
     };
     let limit = limit.min(max_limit);
@@ -265,7 +265,7 @@ pub fn handle_architecture(
 // ── 7. handle_files ─────────────────────────────────────────────────
 
 pub fn handle_files(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     action: &str,
     path: Option<&str>,
     start_line: Option<u32>,
@@ -291,7 +291,7 @@ pub fn handle_files(
         }
         _ => {
             let max_files = {
-                let rt = runtime.lock().map_err(|e| e.to_string())?;
+                let rt = super::lock_index(&runtime)?;
                 rt.output_budget("files").max_items
             };
             let mut result = core::list_files(runtime)?;
@@ -310,10 +310,10 @@ pub fn handle_files(
 // ── ingest_traces ──────────────────────────────────────────────────
 
 pub fn handle_ingest_traces(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     traces: &[serde_json::Value],
 ) -> Result<Value, String> {
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
     let now = chrono::Utc::now().to_rfc3339();
     let mut accepted = 0u32;
@@ -530,7 +530,7 @@ pub fn handle_ingest_traces(
 // ── ADR ────────────────────────────────────────────────────────────
 
 pub fn handle_adr(
-    runtime: Arc<Mutex<CodeIndex>>,
+    runtime: Arc<RwLock<CodeIndex>>,
     action: &str,
     adr_id: Option<&str>,
     title: Option<&str>,
@@ -538,7 +538,7 @@ pub fn handle_adr(
     context: Option<&str>,
     decision: Option<&str>,
 ) -> Result<Value, String> {
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
 
     match action {

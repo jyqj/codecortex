@@ -7,7 +7,7 @@ use rusqlite::Connection;
 /// Bump this whenever the schema changes. Any stored version that differs
 /// from this value triggers a full database rebuild (delete + recreate),
 /// unless a complete migration chain exists in [`MIGRATIONS`].
-pub const CURRENT_SCHEMA_VERSION: u32 = 14;
+pub const CURRENT_SCHEMA_VERSION: u32 = 15;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -52,6 +52,13 @@ pub static MIGRATIONS: &[MigrationStep] = &[
               created_at TEXT NOT NULL, updated_at TEXT NOT NULL);\
               CREATE INDEX IF NOT EXISTS idx_adr_status ON adr(status);",
         description: "Add runtime_evidence and adr tables",
+    },
+    MigrationStep {
+        from_version: 14,
+        to_version: 15,
+        sql: "CREATE INDEX IF NOT EXISTS idx_ce_caller_uid_file ON call_edges(caller_symbol_uid, file_path, line);\
+              CREATE INDEX IF NOT EXISTS idx_ce_callee_uid_file ON call_edges(callee_symbol_uid, file_path, line);",
+        description: "Add composite covering indices on call_edges for UID+file+line",
     },
 ];
 
@@ -210,13 +217,23 @@ mod tests {
     }
 
     #[test]
-    fn migration_13_to_14_succeeds() {
+    fn migration_13_to_15_succeeds() {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
         conn.pragma_update(None, "user_version", 13u32).unwrap();
 
         let status = migrate_index_db(&conn).unwrap();
-        assert_eq!(status, SchemaStatus::Migrated { from: 13, to: 14 });
+        assert_eq!(status, SchemaStatus::Migrated { from: 13, to: 15 });
+    }
+
+    #[test]
+    fn migration_14_to_15_succeeds() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
+        conn.pragma_update(None, "user_version", 14u32).unwrap();
+
+        let status = migrate_index_db(&conn).unwrap();
+        assert_eq!(status, SchemaStatus::Migrated { from: 14, to: 15 });
     }
 
     #[test]

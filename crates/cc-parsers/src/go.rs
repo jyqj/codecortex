@@ -15,12 +15,64 @@ use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
 static GO_KEYWORDS: &[&str] = &[
-    "func", "var", "const", "type", "struct", "interface", "map", "chan", "go", "select", "case",
-    "switch", "if", "else", "for", "range", "return", "break", "continue", "defer", "import",
-    "package", "fallthrough", "goto", "default", "make", "new", "len", "cap", "append", "copy",
-    "delete", "close", "panic", "recover", "print", "println", "nil", "true", "false", "iota",
-    "string", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32",
-    "uint64", "float32", "float64", "bool", "byte", "rune", "error",
+    "func",
+    "var",
+    "const",
+    "type",
+    "struct",
+    "interface",
+    "map",
+    "chan",
+    "go",
+    "select",
+    "case",
+    "switch",
+    "if",
+    "else",
+    "for",
+    "range",
+    "return",
+    "break",
+    "continue",
+    "defer",
+    "import",
+    "package",
+    "fallthrough",
+    "goto",
+    "default",
+    "make",
+    "new",
+    "len",
+    "cap",
+    "append",
+    "copy",
+    "delete",
+    "close",
+    "panic",
+    "recover",
+    "print",
+    "println",
+    "nil",
+    "true",
+    "false",
+    "iota",
+    "string",
+    "int",
+    "int8",
+    "int16",
+    "int32",
+    "int64",
+    "uint",
+    "uint8",
+    "uint16",
+    "uint32",
+    "uint64",
+    "float32",
+    "float64",
+    "bool",
+    "byte",
+    "rune",
+    "error",
 ];
 
 /// Matches `os.Getenv("KEY")` and `os.LookupEnv("KEY")`.
@@ -108,8 +160,7 @@ impl GoParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid =
-            StableId::symbol_uid(file_path, &qname, "function", Some(&signature));
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, "function", Some(&signature));
 
         let end_line = node
             .child_by_field_name("body")
@@ -182,8 +233,7 @@ impl GoParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid =
-            StableId::symbol_uid(file_path, &qname, "method", Some(&signature));
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, "method", Some(&signature));
 
         let end_line = node
             .child_by_field_name("body")
@@ -462,7 +512,9 @@ impl GoParser {
             .trim_end_matches('`');
 
         let alias_node = node.child_by_field_name("name");
-        let alias = alias_node.and_then(|n| n.utf8_text(source).ok()).map(String::from);
+        let alias = alias_node
+            .and_then(|n| n.utf8_text(source).ok())
+            .map(String::from);
 
         // Last segment of path is the imported package name
         let imported_name = import_path.rsplit('/').next().map(String::from);
@@ -744,9 +796,7 @@ impl GoParser {
                 let mut decl_cursor = child.walk();
                 for spec in child.children(&mut decl_cursor) {
                     if spec.kind() == "type_spec" {
-                        self.extract_embedding_edges(
-                            &spec, source, file_path, symbols, &mut edges,
-                        );
+                        self.extract_embedding_edges(&spec, source, file_path, symbols, &mut edges);
                     }
                 }
             }
@@ -1087,11 +1137,7 @@ impl GoParser {
     }
 
     /// Get the text of the first `identifier` child in a node.
-    fn first_identifier_text(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn first_identifier_text(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
             if child.kind() == "identifier" {
@@ -1108,11 +1154,7 @@ impl GoParser {
     /// Get the first named child of a node (useful for expression_list).
     fn first_named_child<'a>(&self, node: &tree_sitter::Node<'a>) -> Option<tree_sitter::Node<'a>> {
         if node.kind() == "expression_list" {
-            let mut cursor = node.walk();
-            for child in node.named_children(&mut cursor) {
-                return Some(child);
-            }
-            None
+            node.named_child(0)
         } else {
             Some(*node)
         }
@@ -1270,8 +1312,17 @@ impl GoParser {
         let method_lower = method_name.to_lowercase();
         let is_lowercase_route = matches!(
             method_lower.as_str(),
-            "get" | "post" | "put" | "delete" | "patch" | "head" | "options"
-                | "handle" | "handlefunc" | "any" | "group"
+            "get"
+                | "post"
+                | "put"
+                | "delete"
+                | "patch"
+                | "head"
+                | "options"
+                | "handle"
+                | "handlefunc"
+                | "any"
+                | "group"
         );
 
         if !is_route_method && !is_lowercase_route {
@@ -1298,16 +1349,13 @@ impl GoParser {
         // Extract route path from first argument (must be a string literal)
         let route_path = match args[0].kind() {
             "interpreted_string_literal" | "raw_string_literal" => {
-                args[0]
-                    .utf8_text(source)
-                    .ok()
-                    .map(|s| {
-                        s.trim_start_matches('"')
-                            .trim_end_matches('"')
-                            .trim_start_matches('`')
-                            .trim_end_matches('`')
-                            .to_string()
-                    })
+                args[0].utf8_text(source).ok().map(|s| {
+                    s.trim_start_matches('"')
+                        .trim_end_matches('"')
+                        .trim_start_matches('`')
+                        .trim_end_matches('`')
+                        .to_string()
+                })
             }
             _ => None,
         };
@@ -1421,11 +1469,7 @@ impl GoParser {
     }
 
     /// Extract the result (return) type from a function/method declaration.
-    fn extract_result_type(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_result_type(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let result_node = node.child_by_field_name("result")?;
         let text = result_node.utf8_text(source).ok()?;
         let trimmed = text.trim();
@@ -1438,11 +1482,7 @@ impl GoParser {
 
     /// Extract doc comment immediately preceding a node.
     /// Go doc comments are `//` comments on consecutive lines right before the declaration.
-    fn extract_doc_comment(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_doc_comment(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut comments = Vec::new();
         let mut prev = node.prev_sibling();
         while let Some(sib) = prev {
@@ -1490,10 +1530,7 @@ impl GoParser {
         for cap in GO_ENV_ACCESS_RE.captures_iter(content) {
             let m = cap.get(0).unwrap();
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
-            let env_key = cap
-                .get(1)
-                .or(cap.get(2))
-                .map(|m| m.as_str().to_string());
+            let env_key = cap.get(1).or(cap.get(2)).map(|m| m.as_str().to_string());
 
             let source_uid = symbols
                 .iter()
@@ -1716,9 +1753,7 @@ func main() {
         assert!(!outcome.is_test_file);
 
         // Test file detection
-        let test_outcome = parser
-            .parse("main_test.go", code, Language::Go)
-            .unwrap();
+        let test_outcome = parser.parse("main_test.go", code, Language::Go).unwrap();
         assert!(test_outcome.is_test_file);
     }
 
@@ -1977,7 +2012,10 @@ func loadConfig() {
         assert_eq!(edge.env_key.as_deref(), Some("DATABASE_URL"));
         assert_eq!(edge.parser_tier, ParserTier::Heuristic);
         // The enclosing function is loadConfig
-        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing function");
+        assert!(
+            edge.source_symbol_uid.is_some(),
+            "should resolve enclosing function"
+        );
     }
 
     #[test]
@@ -2005,6 +2043,9 @@ func initAPI() {
         let edge = &outcome.data_flow_edges[0];
         assert_eq!(edge.flow_kind, "env_access");
         assert_eq!(edge.env_key.as_deref(), Some("API_KEY"));
-        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing function");
+        assert!(
+            edge.source_symbol_uid.is_some(),
+            "should resolve enclosing function"
+        );
     }
 }

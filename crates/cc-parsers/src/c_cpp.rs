@@ -19,17 +19,80 @@ static C_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 static C_KEYWORDS: &[&str] = &[
-    "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else",
-    "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long", "register",
-    "restrict", "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef",
-    "union", "unsigned", "void", "volatile", "while", "_Bool", "_Complex", "_Imaginary",
+    "auto",
+    "break",
+    "case",
+    "char",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "extern",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "inline",
+    "int",
+    "long",
+    "register",
+    "restrict",
+    "return",
+    "short",
+    "signed",
+    "sizeof",
+    "static",
+    "struct",
+    "switch",
+    "typedef",
+    "union",
+    "unsigned",
+    "void",
+    "volatile",
+    "while",
+    "_Bool",
+    "_Complex",
+    "_Imaginary",
     // C++ additional keywords
-    "class", "namespace", "template", "typename", "virtual", "override", "final", "public",
-    "private", "protected", "new", "delete", "this", "throw", "try", "catch", "operator",
-    "friend", "using", "constexpr", "nullptr", "true", "false", "bool", "dynamic_cast",
-    "static_cast", "reinterpret_cast", "const_cast", "typeid", "decltype", "noexcept",
+    "class",
+    "namespace",
+    "template",
+    "typename",
+    "virtual",
+    "override",
+    "final",
+    "public",
+    "private",
+    "protected",
+    "new",
+    "delete",
+    "this",
+    "throw",
+    "try",
+    "catch",
+    "operator",
+    "friend",
+    "using",
+    "constexpr",
+    "nullptr",
+    "true",
+    "false",
+    "bool",
+    "dynamic_cast",
+    "static_cast",
+    "reinterpret_cast",
+    "const_cast",
+    "typeid",
+    "decltype",
+    "noexcept",
     // Common builtins
-    "sizeof", "alignof", "offsetof", "NULL",
+    "sizeof",
+    "alignof",
+    "offsetof",
+    "NULL",
 ];
 
 pub struct CCppParser {
@@ -88,9 +151,13 @@ impl CCppParser {
                 }
                 "struct_specifier" => {
                     if child.child_by_field_name("body").is_some() {
-                        if let Some(sym) =
-                            self.extract_struct_or_class(&child, source, file_path, SymbolKind::Class, container)
-                        {
+                        if let Some(sym) = self.extract_struct_or_class(
+                            &child,
+                            source,
+                            file_path,
+                            SymbolKind::Class,
+                            container,
+                        ) {
                             let name = sym.name.clone();
                             symbols.push(sym);
                             // Walk body for nested declarations (methods in C++)
@@ -102,26 +169,26 @@ impl CCppParser {
                 }
                 "enum_specifier" => {
                     if child.child_by_field_name("body").is_some() {
-                        if let Some(sym) =
-                            self.extract_enum(&child, source, file_path, container)
-                        {
+                        if let Some(sym) = self.extract_enum(&child, source, file_path, container) {
                             symbols.push(sym);
                         }
                     }
                 }
                 "type_definition" => {
-                    if let Some(sym) =
-                        self.extract_typedef(&child, source, file_path, container)
-                    {
+                    if let Some(sym) = self.extract_typedef(&child, source, file_path, container) {
                         symbols.push(sym);
                     }
                 }
                 // C++ specific
                 "class_specifier" if self.is_cpp => {
                     if child.child_by_field_name("body").is_some() {
-                        if let Some(sym) =
-                            self.extract_struct_or_class(&child, source, file_path, SymbolKind::Class, container)
-                        {
+                        if let Some(sym) = self.extract_struct_or_class(
+                            &child,
+                            source,
+                            file_path,
+                            SymbolKind::Class,
+                            container,
+                        ) {
                             let name = sym.name.clone();
                             symbols.push(sym);
                             if let Some(body) = child.child_by_field_name("body") {
@@ -131,9 +198,7 @@ impl CCppParser {
                     }
                 }
                 "namespace_definition" if self.is_cpp => {
-                    if let Some(sym) =
-                        self.extract_namespace(&child, source, file_path)
-                    {
+                    if let Some(sym) = self.extract_namespace(&child, source, file_path) {
                         let name = sym.name.clone();
                         symbols.push(sym);
                         if let Some(body) = child.child_by_field_name("body") {
@@ -166,7 +231,9 @@ impl CCppParser {
 
         // Return type from the `type` field
         let type_node = node.child_by_field_name("type");
-        let return_type = type_node.and_then(|n| n.utf8_text(source).ok()).map(|s| s.to_string());
+        let return_type = type_node
+            .and_then(|n| n.utf8_text(source).ok())
+            .map(|s| s.to_string());
 
         let (param_types, param_count) = self.extract_param_types(&params_node, source);
 
@@ -196,8 +263,7 @@ impl CCppParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid =
-            StableId::symbol_uid(file_path, &qname, kind.as_str(), Some(&signature));
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), Some(&signature));
 
         let end_line = node
             .child_by_field_name("body")
@@ -289,11 +355,7 @@ impl CCppParser {
     }
 
     /// Extract the name from a declarator (identifier, qualified_identifier, etc.).
-    fn extract_declarator_name(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_declarator_name(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         match node.kind() {
             "identifier" | "field_identifier" | "type_identifier" | "destructor_name" => {
                 node.utf8_text(source).ok().map(String::from)
@@ -401,8 +463,7 @@ impl CCppParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid =
-            StableId::symbol_uid(file_path, &qname, SymbolKind::Enum.as_str(), None);
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, SymbolKind::Enum.as_str(), None);
 
         let doc = self.extract_doc_comment(node, source);
 
@@ -467,12 +528,8 @@ impl CCppParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid = StableId::symbol_uid(
-            file_path,
-            &qname,
-            SymbolKind::TypeAlias.as_str(),
-            None,
-        );
+        let symbol_uid =
+            StableId::symbol_uid(file_path, &qname, SymbolKind::TypeAlias.as_str(), None);
 
         Some(SymbolRecord {
             symbol_id,
@@ -523,12 +580,8 @@ impl CCppParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid = StableId::symbol_uid(
-            file_path,
-            &qname,
-            SymbolKind::Namespace.as_str(),
-            None,
-        );
+        let symbol_uid =
+            StableId::symbol_uid(file_path, &qname, SymbolKind::Namespace.as_str(), None);
 
         Some(SymbolRecord {
             symbol_id,
@@ -562,11 +615,7 @@ impl CCppParser {
 
     /// Extract C++ base classes from a class_specifier or struct_specifier.
     /// Returns a comma-separated string of base class names.
-    fn extract_base_classes(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_base_classes(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut bases = Vec::new();
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
@@ -638,10 +687,7 @@ impl CCppParser {
             .to_string();
 
         // Extract the file name as the imported name
-        let imported_name = import_path
-            .rsplit('/')
-            .next()
-            .map(String::from);
+        let imported_name = import_path.rsplit('/').next().map(String::from);
 
         Some(ImportRecord {
             file_path: file_path.to_string(),
@@ -682,15 +728,7 @@ impl CCppParser {
 
         let root = tree.root_node();
         self.walk_calls_recursive(
-            &root,
-            source,
-            file_path,
-            &keywords,
-            &by_name,
-            symbols,
-            &None,
-            &mut refs,
-            &mut calls,
+            &root, source, file_path, &keywords, &by_name, symbols, &None, &mut refs, &mut calls,
         );
 
         (refs, calls)
@@ -718,29 +756,14 @@ impl CCppParser {
 
         if node.kind() == "call_expression" {
             self.extract_single_call(
-                node,
-                source,
-                file_path,
-                keywords,
-                by_name,
-                &active_fn,
-                refs,
-                calls,
+                node, source, file_path, keywords, by_name, &active_fn, refs, calls,
             );
         }
 
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
             self.walk_calls_recursive(
-                &child,
-                source,
-                file_path,
-                keywords,
-                by_name,
-                symbols,
-                &active_fn,
-                refs,
-                calls,
+                &child, source, file_path, keywords, by_name, symbols, &active_fn, refs, calls,
             );
         }
     }
@@ -959,8 +982,7 @@ impl CCppParser {
                                         || bc_child.kind() == "qualified_identifier"
                                     {
                                         if let Ok(base_name) = bc_child.utf8_text(source) {
-                                            let line =
-                                                bc_child.start_position().row as u32 + 1;
+                                            let line = bc_child.start_position().row as u32 + 1;
                                             edges.push(SemanticEdgeRecord {
                                                 edge_id: format!(
                                                     "se-{}:{}:inherits:{}",
@@ -1035,11 +1057,7 @@ impl CCppParser {
     }
 
     /// Extract doc comment (C-style /** ... */ or consecutive // comments) before a node.
-    fn extract_doc_comment(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_doc_comment(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut prev = node.prev_sibling();
         // Check for block comment (/** ... */)
         if let Some(sib) = prev {
@@ -1270,7 +1288,11 @@ int main(int argc, char** argv) {
         let outcome = parser.parse("main.c", code, Language::C).unwrap();
         let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
 
-        assert!(names.contains(&"helper"), "missing helper, got: {:?}", names);
+        assert!(
+            names.contains(&"helper"),
+            "missing helper, got: {:?}",
+            names
+        );
         assert!(names.contains(&"main"), "missing main, got: {:?}", names);
         assert!(names.contains(&"Point"), "missing Point, got: {:?}", names);
         assert!(names.contains(&"Color"), "missing Color, got: {:?}", names);
@@ -1308,9 +1330,7 @@ int main(int argc, char** argv) {
         assert!(!outcome.is_test_file);
 
         // Test file detection
-        let test_outcome = parser
-            .parse("main_test.c", code, Language::C)
-            .unwrap();
+        let test_outcome = parser.parse("main_test.c", code, Language::C).unwrap();
         assert!(test_outcome.is_test_file);
     }
 
@@ -1353,13 +1373,24 @@ int main() {
         let outcome = parser.parse("main.cpp", code, Language::Cpp).unwrap();
         let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
 
-        assert!(names.contains(&"mylib"), "missing namespace mylib, got: {:?}", names);
+        assert!(
+            names.contains(&"mylib"),
+            "missing namespace mylib, got: {:?}",
+            names
+        );
         assert!(names.contains(&"Base"), "missing Base, got: {:?}", names);
-        assert!(names.contains(&"Derived"), "missing Derived, got: {:?}", names);
+        assert!(
+            names.contains(&"Derived"),
+            "missing Derived, got: {:?}",
+            names
+        );
         assert!(names.contains(&"main"), "missing main, got: {:?}", names);
 
         // Check includes
-        assert!(outcome.imports.len() >= 2, "should have at least 2 includes");
+        assert!(
+            outcome.imports.len() >= 2,
+            "should have at least 2 includes"
+        );
 
         // Check inheritance
         assert!(
@@ -1371,23 +1402,15 @@ int main() {
             .iter()
             .find(|e| e.source_symbol == "Derived" && e.target_symbol == "Base");
         assert!(inherits.is_some(), "Derived should inherit from Base");
-        assert_eq!(
-            inherits.unwrap().relation_kind,
-            SemanticRelation::Inherits
-        );
+        assert_eq!(inherits.unwrap().relation_kind, SemanticRelation::Inherits);
 
         // Check calls
-        assert!(
-            !outcome.call_edges.is_empty(),
-            "should have call edges"
-        );
+        assert!(!outcome.call_edges.is_empty(), "should have call edges");
 
         assert_eq!(outcome.parser_tier, ParserTier::TreeSitter);
 
         // Test file detection
-        let test_outcome = parser
-            .parse("main_test.cpp", code, Language::Cpp)
-            .unwrap();
+        let test_outcome = parser.parse("main_test.cpp", code, Language::Cpp).unwrap();
         assert!(test_outcome.is_test_file);
     }
 

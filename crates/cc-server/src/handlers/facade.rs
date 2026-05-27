@@ -25,10 +25,7 @@ pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
 
 // ── 1. handle_status ────────────────────────────────────────────────
 
-pub fn handle_status(
-    runtime: Arc<Mutex<CodeIndex>>,
-    aspect: &str,
-) -> Result<Value, String> {
+pub fn handle_status(runtime: Arc<Mutex<CodeIndex>>, aspect: &str) -> Result<Value, String> {
     match aspect {
         "index" => {
             let mut result = core::index_status(runtime.clone())?;
@@ -216,9 +213,8 @@ pub fn handle_impact(
         }
         "circular" => graph::find_circular_deps(runtime, granularity, Some(limit)),
         "dependents" => {
-            let fp = file_path.ok_or_else(|| {
-                "file_path is required for 'dependents' scope".to_string()
-            })?;
+            let fp = file_path
+                .ok_or_else(|| "file_path is required for 'dependents' scope".to_string())?;
             graph::get_dependents(runtime, json!({"file_path": fp}))
         }
         "changes" | _ => core::analyze_impact(runtime, files, base_branch),
@@ -279,14 +275,18 @@ pub fn handle_files(
     match action {
         "region" => {
             let p = path.ok_or_else(|| "path is required for 'region' action".to_string())?;
-            let sl = start_line.ok_or_else(|| "start_line is required for 'region' action".to_string())?;
-            let el = end_line.ok_or_else(|| "end_line is required for 'region' action".to_string())?;
+            let sl = start_line
+                .ok_or_else(|| "start_line is required for 'region' action".to_string())?;
+            let el =
+                end_line.ok_or_else(|| "end_line is required for 'region' action".to_string())?;
             context::prepare_edit_region(runtime, p, sl, el)
         }
         "expand" => {
             let p = path.ok_or_else(|| "path is required for 'expand' action".to_string())?;
-            let sl = start_line.ok_or_else(|| "start_line is required for 'expand' action".to_string())?;
-            let el = end_line.ok_or_else(|| "end_line is required for 'expand' action".to_string())?;
+            let sl = start_line
+                .ok_or_else(|| "start_line is required for 'expand' action".to_string())?;
+            let el =
+                end_line.ok_or_else(|| "end_line is required for 'expand' action".to_string())?;
             context::expand_code_region(runtime, p, sl, el, context_lines)
         }
         "list" | _ => {
@@ -320,19 +320,139 @@ pub fn handle_ingest_traces(
     let mut matched = 0u32;
     let mut ambiguous = 0u32;
     let mut unmatched = 0u32;
+    let mut routes_matched = 0u32;
+    let mut spans_processed = 0u32;
 
     for trace in traces {
-        let service = trace.get("service_name").and_then(|v| v.as_str()).unwrap_or("unknown");
+        // ── OTLP resource+spans format ──────────────────────────────
+        if let Some(spans) = trace.get("spans").and_then(|v| v.as_array()) {
+            // Resolve service_name: resource.service_name > top-level service_name > "unknown"
+            let service = trace
+                .get("resource")
+                .and_then(|r| r.get("service_name"))
+                .and_then(|v| v.as_str())
+                .or_else(|| trace.get("service_name").and_then(|v| v.as_str()))
+                .unwrap_or("unknown");
+
+            for span in spans {
+                let method = span.get("method").and_then(|v| v.as_str());
+                let path = match span.get("path").and_then(|v| v.as_str()) {
+                    Some(p) => p,
+                    None => continue,
+                };
+                let status = span.get("status_code").and_then(|v| v.as_str());
+                let duration_ms = span.get("duration_ms").and_then(|v| v.as_f64());
+                let span_kind = span.get("kind").and_then(|v| v.as_str());
+
+                // Build trace_source tag: "otlp:SERVER", "otlp:CLIENT", or "otlp"
+                let trace_source = match span_kind {
+                    Some(k) => format!("otlp:{}", k),
+                    None => "otlp".to_string(),
+                };
+
+                let eid = format!(
+                    "{}:{}:{}:{}",
+                    trace_source,
+                    service,
+                    method.unwrap_or("*"),
+                    path
+                );
+                if db
+                    .upsert_runtime_evidence(&eid, service, method, path, status, &now)
+                    .is_ok()
+                {
+                    accepted += 1;
+                }
+
+                if let Some(dur) = duration_ms {
+                    let _ = db.update_evidence_p95(&eid, dur);
+                }
+
+                // Joint matching: same logic as flat traces
+                let norm = cc_model::route_normalize::normalize_route_path(path);
+                let conn = db.read_conn().map_err(|e| e.to_string())?;
+
+                let edge_id: Option<String> = if let Some(m) = method {
+                    conn.query_row(
+                        "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
+                        rusqlite::params![&norm, m],
+                        |r| r.get(0),
+                    )
+                    .ok()
+                } else {
+                    None
+                };
+
+                let edge_id = edge_id.or_else(|| {
+                    conn.query_row(
+                        "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
+                        [&norm],
+                        |r| r.get(0),
+                    )
+                    .ok()
+                });
+
+                let candidate_count: u32 = conn
+                    .query_row(
+                        "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
+                        [&norm],
+                        |r| r.get(0),
+                    )
+                    .unwrap_or(0);
+
+                if let Some(ref eid_db) = edge_id {
+                    let _ = db.link_evidence_to_edge(&eid, eid_db);
+                    let _ = db.boost_http_edge_confidence(eid_db, 0.15);
+                    matched += 1;
+                    if candidate_count > 1 {
+                        ambiguous += 1;
+                    }
+                } else {
+                    unmatched += 1;
+                }
+
+                let route_id: Option<String> = conn
+                    .query_row(
+                        "SELECT route_id FROM route_nodes WHERE normalized_path = ?1 LIMIT 1",
+                        [&norm],
+                        |r| r.get(0),
+                    )
+                    .ok();
+
+                if let Some(ref rid) = route_id {
+                    let _ = db.update_evidence_route_id(&eid, rid);
+                    routes_matched += 1;
+                }
+
+                spans_processed += 1;
+            }
+            continue;
+        }
+
+        // ── Flat format (existing logic, unchanged) ─────────────────
+        let service = trace
+            .get("service_name")
+            .and_then(|v| v.as_str())
+            .unwrap_or("unknown");
         let method = trace.get("method").and_then(|v| v.as_str());
         let path = match trace.get("path").and_then(|v| v.as_str()) {
             Some(p) => p,
             None => continue,
         };
         let status = trace.get("status_code").and_then(|v| v.as_str());
+        let duration_ms = trace.get("duration_ms").and_then(|v| v.as_f64());
 
         let eid = format!("{}:{}:{}", service, method.unwrap_or("*"), path);
-        if db.upsert_runtime_evidence(&eid, service, method, path, status, &now).is_ok() {
+        if db
+            .upsert_runtime_evidence(&eid, service, method, path, status, &now)
+            .is_ok()
+        {
             accepted += 1;
+        }
+
+        // Update p95_ms with exponential moving average if duration provided
+        if let Some(dur) = duration_ms {
+            let _ = db.update_evidence_p95(&eid, dur);
         }
 
         // Joint matching: try method+path first, then fallback to path-only
@@ -380,13 +500,29 @@ pub fn handle_ingest_traces(
         } else {
             unmatched += 1;
         }
+
+        // Match to route_nodes by normalized_path
+        let route_id: Option<String> = conn
+            .query_row(
+                "SELECT route_id FROM route_nodes WHERE normalized_path = ?1 LIMIT 1",
+                [&norm],
+                |r| r.get(0),
+            )
+            .ok();
+
+        if let Some(ref rid) = route_id {
+            let _ = db.update_evidence_route_id(&eid, rid);
+            routes_matched += 1;
+        }
     }
 
     Ok(json!({
         "accepted": accepted,
         "matched_to_edges": matched,
+        "routes_matched": routes_matched,
         "ambiguous": ambiguous,
         "unmatched": unmatched,
+        "spans_processed": spans_processed,
         "total_submitted": traces.len(),
     }))
 }
@@ -425,7 +561,8 @@ pub fn handle_adr(
             let c = context.unwrap_or("");
             let d = decision.unwrap_or("");
             let now = chrono::Utc::now().to_rfc3339();
-            db.adr_upsert(id, t, s, c, d, &now).map_err(|e| e.to_string())?;
+            db.adr_upsert(id, t, s, c, d, &now)
+                .map_err(|e| e.to_string())?;
             Ok(json!({ "stored": id }))
         }
         "delete" => {

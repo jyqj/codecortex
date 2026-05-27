@@ -2559,8 +2559,8 @@ impl JsTsParser {
         };
 
         let line = node.start_position().row as u32 + 1;
-        let enclosing = Self::find_enclosing_symbol(symbols, line)
-            .and_then(|s| s.symbol_uid.clone());
+        let enclosing =
+            Self::find_enclosing_symbol(symbols, line).and_then(|s| s.symbol_uid.clone());
 
         // Check for TypeScript type annotation on the name node
         // e.g., `const x: Foo = ...`
@@ -2568,8 +2568,7 @@ impl JsTsParser {
 
         // Check for `new_expression` in the value
         let value_node = node.child_by_field_name("value");
-        let new_type = value_node
-            .and_then(|v| self.find_new_expression_type(&v, source));
+        let new_type = value_node.and_then(|v| self.find_new_expression_type(&v, source));
 
         if let Some(new_type_name) = new_type {
             assigns.push(TypeAssignRecord {
@@ -2596,11 +2595,7 @@ impl JsTsParser {
 
     /// Find TypeScript type annotation child of a node.
     /// Looks for `type_annotation` child containing `: TypeName`.
-    fn find_ts_type_annotation(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn find_ts_type_annotation(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut cursor = node.walk();
         // Check siblings — in TS, type_annotation is often a sibling or child
         // of the name node within the declarator
@@ -2643,11 +2638,7 @@ impl JsTsParser {
     }
 
     /// Find the type name from a `new_expression` (`new Foo(...)`).
-    fn find_new_expression_type(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn find_new_expression_type(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         if node.kind() == "new_expression" {
             let constructor = node.child_by_field_name("constructor")?;
             let text = constructor.utf8_text(source).ok()?;
@@ -2674,18 +2665,10 @@ impl JsTsParser {
     }
 
     /// Find the innermost enclosing symbol for a given line number.
-    fn find_enclosing_symbol(
-        symbols: &[SymbolRecord],
-        line: u32,
-    ) -> Option<&SymbolRecord> {
+    fn find_enclosing_symbol(symbols: &[SymbolRecord], line: u32) -> Option<&SymbolRecord> {
         symbols
             .iter()
-            .filter(|s| {
-                matches!(
-                    s.kind,
-                    SymbolKind::Function | SymbolKind::Method
-                )
-            })
+            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
             .filter(|s| s.start_line <= line && s.end_line >= line)
             .min_by_key(|s| s.end_line - s.start_line)
     }

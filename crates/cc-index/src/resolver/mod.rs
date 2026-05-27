@@ -5,16 +5,18 @@
 //! multi-layer strategy: scope bindings → same-file candidates → imports →
 //! global unique name fallback.
 
-pub(crate) mod types;
+pub mod cargo_workspace;
 pub(crate) mod catalog;
+pub(crate) mod helpers;
 pub(crate) mod resolve_core;
 pub(crate) mod resolve_outcome;
 pub(crate) mod route_resolve;
 pub(crate) mod type_edges;
-pub(crate) mod helpers;
+pub(crate) mod types;
 
-pub use types::{CatalogScope, ImportBinding, ResolutionContext, InternalResKind, ResolveResult};
+pub use cargo_workspace::{resolve_cargo_workspace, resolve_rust_workspace_import};
 pub use catalog::SymbolCatalog;
+pub use types::{CatalogScope, ImportBinding, InternalResKind, ResolutionContext, ResolveResult};
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -22,13 +24,13 @@ pub use catalog::SymbolCatalog;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::helpers::*;
+    use super::*;
+    use cc_model::edge::SemanticRelation;
+    use cc_model::scope::ScopeBinding;
     use cc_model::symbol::SymbolKind;
     use cc_model::ParserTier;
-    use cc_model::edge::{SemanticRelation};
     use std::collections::HashMap;
-    use cc_model::scope::ScopeBinding;
 
     #[allow(clippy::too_many_arguments)]
     fn make_symbol(
@@ -71,7 +73,11 @@ mod tests {
         }
     }
 
-    fn make_simple_symbol(name: &str, file: &str, uid: Option<&str>) -> cc_model::symbol::SymbolRecord {
+    fn make_simple_symbol(
+        name: &str,
+        file: &str,
+        uid: Option<&str>,
+    ) -> cc_model::symbol::SymbolRecord {
         make_symbol(
             name,
             file,

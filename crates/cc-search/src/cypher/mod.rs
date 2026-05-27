@@ -52,9 +52,8 @@ pub(crate) use executor::validate_query_identifiers;
 // re-export for tests
 #[cfg(test)]
 pub(crate) use executor::{
-    edge_table_map, expr_to_sql, label_kind_filter, label_table,
-    translate_single_hop, translate_single_node, translate_variable_length,
-    validate_sql_ident,
+    edge_table_map, expr_to_sql, label_kind_filter, label_table, translate_single_hop,
+    translate_single_node, translate_variable_length, validate_sql_ident,
 };
 
 use cc_db::index_db::IndexDb;
@@ -107,7 +106,11 @@ pub fn parse_union(tokens: &[Token]) -> CcResult<CypherUnionQuery> {
         let needs_eof = seg.last() != Some(&Token::Eof);
         let owned: Vec<Token>;
         let parse_slice: &[Token] = if needs_eof {
-            owned = seg.iter().cloned().chain(std::iter::once(Token::Eof)).collect();
+            owned = seg
+                .iter()
+                .cloned()
+                .chain(std::iter::once(Token::Eof))
+                .collect();
             &owned
         } else {
             seg
@@ -138,7 +141,9 @@ pub fn cypher_query(input: &str, db: &IndexDb) -> CcResult<CypherResult> {
     let tokens = tokenize(input)?;
 
     // Check if this is a UNION query.
-    let has_union = tokens.iter().any(|t| matches!(t, Token::Union | Token::UnionAll));
+    let has_union = tokens
+        .iter()
+        .any(|t| matches!(t, Token::Union | Token::UnionAll));
 
     if has_union {
         let uq = parse_union(&tokens)?;
@@ -1147,10 +1152,9 @@ mod tests {
 
     #[test]
     fn tokenize_union() {
-        let tokens = tokenize(
-            "MATCH (f:Function) RETURN f.name UNION MATCH (c:Class) RETURN c.name",
-        )
-        .unwrap();
+        let tokens =
+            tokenize("MATCH (f:Function) RETURN f.name UNION MATCH (c:Class) RETURN c.name")
+                .unwrap();
         assert!(tokens.contains(&Token::Union), "should contain Union token");
         assert!(
             !tokens.contains(&Token::UnionAll),
@@ -1160,10 +1164,9 @@ mod tests {
 
     #[test]
     fn tokenize_union_all() {
-        let tokens = tokenize(
-            "MATCH (f:Function) RETURN f.name UNION ALL MATCH (c:Class) RETURN c.name",
-        )
-        .unwrap();
+        let tokens =
+            tokenize("MATCH (f:Function) RETURN f.name UNION ALL MATCH (c:Class) RETURN c.name")
+                .unwrap();
         assert!(
             tokens.contains(&Token::UnionAll),
             "should contain UnionAll token"
@@ -1176,10 +1179,9 @@ mod tests {
 
     #[test]
     fn parse_union_two_queries() {
-        let tokens = tokenize(
-            "MATCH (f:Function) RETURN f.name UNION MATCH (c:Class) RETURN c.name",
-        )
-        .unwrap();
+        let tokens =
+            tokenize("MATCH (f:Function) RETURN f.name UNION MATCH (c:Class) RETURN c.name")
+                .unwrap();
         let uq = parse_union(&tokens).unwrap();
         assert_eq!(uq.queries.len(), 2);
         assert_eq!(uq.union_all.len(), 1);
@@ -1188,10 +1190,9 @@ mod tests {
 
     #[test]
     fn parse_union_all_two_queries() {
-        let tokens = tokenize(
-            "MATCH (f:Function) RETURN f.name UNION ALL MATCH (c:Class) RETURN c.name",
-        )
-        .unwrap();
+        let tokens =
+            tokenize("MATCH (f:Function) RETURN f.name UNION ALL MATCH (c:Class) RETURN c.name")
+                .unwrap();
         let uq = parse_union(&tokens).unwrap();
         assert_eq!(uq.queries.len(), 2);
         assert_eq!(uq.union_all.len(), 1);
@@ -1205,7 +1206,10 @@ mod tests {
         )
         .unwrap();
         let result = parse_union(&tokens);
-        assert!(result.is_err(), "column count mismatch should produce error");
+        assert!(
+            result.is_err(),
+            "column count mismatch should produce error"
+        );
         let err_msg = format!("{}", result.unwrap_err());
         assert!(
             err_msg.contains("columns"),
@@ -1357,9 +1361,23 @@ mod tests {
     #[test]
     fn test_validate_ident_rejects_special_chars() {
         let dangerous = vec![
-            "name;drop", "a'b", "a\"b", "a`b", "a\\b",
-            "a\nb", "a\tb", "a(b", "a)b", "a{b", "a}b",
-            "a[b", "a]b", "a=b", "a<b", "a>b", "a|b",
+            "name;drop",
+            "a'b",
+            "a\"b",
+            "a`b",
+            "a\\b",
+            "a\nb",
+            "a\tb",
+            "a(b",
+            "a)b",
+            "a{b",
+            "a}b",
+            "a[b",
+            "a]b",
+            "a=b",
+            "a<b",
+            "a>b",
+            "a|b",
         ];
         for input in dangerous {
             assert!(

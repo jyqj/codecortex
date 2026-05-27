@@ -34,6 +34,8 @@ pub fn trace_path(
     include_snippets: bool,
     max_snippet_lines: Option<usize>,
     source_mode: Option<&str>,
+    from_uid: Option<&str>,
+    to_uid: Option<&str>,
 ) -> Result<serde_json::Value, String> {
     let rt = runtime.lock().map_err(|e| e.to_string())?;
     let budget = rt.output_budget("trace_path");
@@ -44,7 +46,12 @@ pub fn trace_path(
     let (do_snippets, snippet_lines, snippet_budget, include_outgoing) = match effective_mode {
         "body" => (true, usize::MAX, 128 * 1024, true),
         "outline" => (false, 0, 0, false),
-        "snippet" => (true, max_snippet_lines.unwrap_or(3), budget.max_snippet_chars, false),
+        "snippet" => (
+            true,
+            max_snippet_lines.unwrap_or(3),
+            budget.max_snippet_chars,
+            false,
+        ),
         _ => (false, 0, 0, false),
     };
 
@@ -58,6 +65,8 @@ pub fn trace_path(
         snippet_lines,
         Some(snippet_budget),
         include_outgoing,
+        from_uid,
+        to_uid,
     )
     .map_err(|e| e.to_string())?;
     serde_json::to_value(result).map_err(|e| e.to_string())

@@ -6,7 +6,10 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::Path;
 use std::sync::Arc;
 
-use crate::graph_types::{BfsAdj, EdgeLite, LabeledPath, TraceEdge, TraceEdgeEvidence, TraceNode, TracePathResult};
+use crate::graph_types::{
+    BfsAdj, DisambiguationCandidate, DisambiguationInfo, EdgeLite, LabeledPath, TraceEdge,
+    TraceEdgeEvidence, TraceNode, TracePathResult,
+};
 
 /// Build edge-labeled adjacency from call_uid_edges_lite.
 pub fn build_bfs_adj(db: &IndexDb) -> CcResult<BfsAdj> {
@@ -194,6 +197,8 @@ pub fn trace_path_names(
 /// `snippet_budget_override` – if `Some(n)`, use `n` as the total snippet byte budget
 /// instead of the default 32 KiB.
 /// `include_outgoing` – when true, populate `outgoing_calls` on each TraceNode.
+/// `from_uid_override` / `to_uid_override` – if `Some`, skip `find_symbol` for that
+/// endpoint and use the provided UID directly (must contain `":"`).
 pub fn trace_path_rich(
     db: &Arc<IndexDb>,
     project_root: Option<&Path>,
@@ -204,18 +209,73 @@ pub fn trace_path_rich(
     max_snippet_lines: usize,
     snippet_budget_override: Option<usize>,
     include_outgoing: bool,
+    from_uid_override: Option<&str>,
+    to_uid_override: Option<&str>,
 ) -> CcResult<TracePathResult> {
-    // 1. Resolve from/to names to UIDs.
-    let from_uid = db
-        .find_symbol(from, true, 1)?
-        .first()
-        .and_then(|s| s.symbol_uid.clone())
-        .ok_or_else(|| CcError::Search(format!("symbol not found: {}", from)))?;
-    let to_uid = db
-        .find_symbol(to, true, 1)?
-        .first()
-        .and_then(|s| s.symbol_uid.clone())
-        .ok_or_else(|| CcError::Search(format!("symbol not found: {}", to)))?;
+    // 1. Resolve from/to names to UIDs, with disambiguation.
+    let mut disambiguation: Vec<DisambiguationInfo> = Vec::new();
+
+    let from_uid = if let Some(uid) = from_uid_override.filter(|u| u.contains(':')) {
+        uid.to_string()
+    } else {
+        let candidates = db.find_symbol(from, true, 5)?;
+        let chosen = candidates
+            .first()
+            .and_then(|s| s.symbol_uid.clone())
+            .ok_or_else(|| CcError::Search(format!("symbol not found: {}", from)))?;
+        if candidates.len() > 1 {
+            disambiguation.push(DisambiguationInfo {
+                role: "from".to_string(),
+                query: from.to_string(),
+                chosen_uid: chosen.clone(),
+                chosen_file: candidates[0].file_path.clone(),
+                candidates: candidates
+                    .iter()
+                    .filter_map(|s| {
+                        Some(DisambiguationCandidate {
+                            uid: s.symbol_uid.clone()?,
+                            name: s.name.clone(),
+                            file_path: s.file_path.clone(),
+                            kind: s.kind.clone(),
+                            start_line: s.start_line,
+                        })
+                    })
+                    .collect(),
+            });
+        }
+        chosen
+    };
+
+    let to_uid = if let Some(uid) = to_uid_override.filter(|u| u.contains(':')) {
+        uid.to_string()
+    } else {
+        let candidates = db.find_symbol(to, true, 5)?;
+        let chosen = candidates
+            .first()
+            .and_then(|s| s.symbol_uid.clone())
+            .ok_or_else(|| CcError::Search(format!("symbol not found: {}", to)))?;
+        if candidates.len() > 1 {
+            disambiguation.push(DisambiguationInfo {
+                role: "to".to_string(),
+                query: to.to_string(),
+                chosen_uid: chosen.clone(),
+                chosen_file: candidates[0].file_path.clone(),
+                candidates: candidates
+                    .iter()
+                    .filter_map(|s| {
+                        Some(DisambiguationCandidate {
+                            uid: s.symbol_uid.clone()?,
+                            name: s.name.clone(),
+                            file_path: s.file_path.clone(),
+                            kind: s.kind.clone(),
+                            start_line: s.start_line,
+                        })
+                    })
+                    .collect(),
+            });
+        }
+        chosen
+    };
 
     // 2. Build edge-labeled adjacency (with HTTP/async bridge edges) and run BFS.
     let adj = build_bfs_adj_full(db)?;
@@ -302,7 +362,8 @@ pub fn trace_path_rich(
 
     // Bulk-query evidence for all bridge normalized paths
     let evidence_map = if !bridge_norm_paths.is_empty() {
-        db.evidence_for_normalized_paths(&bridge_norm_paths).unwrap_or_default()
+        db.evidence_for_normalized_paths(&bridge_norm_paths)
+            .unwrap_or_default()
     } else {
         HashMap::new()
     };
@@ -353,11 +414,23 @@ pub fn trace_path_rich(
     }
 
     let path_count = paths.len();
+    let diagnostic = if path_count == 0 {
+        Some(format!(
+            "No call path found from '{}' to '{}'. The gap may be due to: dynamic dispatch, \
+             callback/closure, framework bridge, or async message passing. \
+             Try: relations(symbol='{}', kind='callees') to see outgoing calls from the source.",
+            from, to, from
+        ))
+    } else {
+        None
+    };
     Ok(TracePathResult {
         paths,
         nodes,
         edges,
         path_count,
+        disambiguation,
+        diagnostic,
     })
 }
 
@@ -396,8 +469,7 @@ pub(crate) fn read_symbol_snippet(
     max_chars: usize,
 ) -> Option<String> {
     let root = project_root?;
-    let full_path =
-        crate::path_guard::resolve_indexed_path_strict(root, file_path, db).ok()?;
+    let full_path = crate::path_guard::resolve_indexed_path_strict(root, file_path, db).ok()?;
     let content = std::fs::read_to_string(&full_path).ok()?;
     let lines: Vec<&str> = content.lines().collect();
     let start = start_line.saturating_sub(1) as usize;
@@ -405,7 +477,12 @@ pub(crate) fn read_symbol_snippet(
     if start >= lines.len() || start >= end {
         return None;
     }
-    let snippet = lines[start..end].join("\n");
+    let snippet: String = lines[start..end]
+        .iter()
+        .enumerate()
+        .map(|(i, line)| format!("{}| {}", start + i + 1, line))
+        .collect::<Vec<_>>()
+        .join("\n");
     if snippet.len() > max_chars {
         Some(snippet[..max_chars].to_string())
     } else {
@@ -423,8 +500,7 @@ fn read_snippet(
     budget: &mut usize,
 ) -> Option<String> {
     let root = project_root?;
-    let full_path =
-        crate::path_guard::resolve_indexed_path_strict(root, file_path, db).ok()?;
+    let full_path = crate::path_guard::resolve_indexed_path_strict(root, file_path, db).ok()?;
     let content = std::fs::read_to_string(&full_path).ok()?;
     let lines: Vec<&str> = content.lines().collect();
     let start = start_line.saturating_sub(1) as usize;
@@ -432,7 +508,12 @@ fn read_snippet(
     if start >= lines.len() {
         return None;
     }
-    let snippet = lines[start..end].join("\n");
+    let snippet: String = lines[start..end]
+        .iter()
+        .enumerate()
+        .map(|(i, line)| format!("{}| {}", start + i + 1, line))
+        .collect::<Vec<_>>()
+        .join("\n");
     let byte_len = snippet.len();
     if byte_len > *budget {
         return None;
@@ -522,8 +603,10 @@ mod tests {
     #[test]
     fn trace_path_rich_returns_full_result() {
         let (_tmp, db) = setup_abc_graph();
-        let result =
-            trace_path_rich(&db, None, "fn_a", "fn_c", 5, false, 10, None, false).unwrap();
+        let result = trace_path_rich(
+            &db, None, "fn_a", "fn_c", 5, false, 10, None, false, None, None,
+        )
+        .unwrap();
         assert_eq!(result.path_count, 1);
         assert_eq!(result.paths[0], vec!["fn_a", "fn_b", "fn_c"]);
         assert_eq!(result.nodes.len(), 3);

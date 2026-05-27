@@ -14,7 +14,11 @@ impl SymbolCatalog {
     // -----------------------------------------------------------------------
 
     /// Try to resolve a type atom name to a symbol UID via the catalog.
-    pub(in crate::resolver) fn resolve_type_atom(&self, atom: &str, file_path: &str) -> Option<String> {
+    pub(in crate::resolver) fn resolve_type_atom(
+        &self,
+        atom: &str,
+        file_path: &str,
+    ) -> Option<String> {
         // 1. Try same-file match (type-like kinds preferred)
         if let Some(idx) = self.find_by_name_in_file(atom, file_path, true) {
             return self.entries[idx].symbol_uid.clone();

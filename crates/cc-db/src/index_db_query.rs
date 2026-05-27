@@ -435,7 +435,7 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
             for l in literals {
                 tx.execute(
-                    "INSERT INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                    "INSERT OR REPLACE INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
                     rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind, l.line, l.container, l.confidence, l.enclosing_symbol_uid, l.key_path],
                 ).map_err(|e| CcError::Database(e.to_string()))?;
                 tx.execute(

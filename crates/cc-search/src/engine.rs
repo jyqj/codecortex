@@ -1904,8 +1904,14 @@ pub fn is_project_doc(file_path: &str) -> bool {
         let name = segments.last().unwrap_or(&"").to_uppercase();
         if matches!(
             name.trim_end_matches(".MD").trim_end_matches(".md"),
-            "README" | "DESIGN" | "ARCHITECTURE" | "CHANGELOG"
-                | "CONTRIBUTING" | "LICENSE" | "ADR" | "DECISIONS"
+            "README"
+                | "DESIGN"
+                | "ARCHITECTURE"
+                | "CHANGELOG"
+                | "CONTRIBUTING"
+                | "LICENSE"
+                | "ADR"
+                | "DECISIONS"
         ) {
             return true;
         }

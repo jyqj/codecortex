@@ -258,14 +258,13 @@ SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, OpenAPI, CMake
 
 ### Semantic Framework Resolvers (16)
 
-Full `FrameworkResolver` implementations that extract routes, handlers, and
-cross-file bindings:
+#### Full (15) — routes + handlers + cross-file resolution
 
-**JavaScript/TypeScript**: Express, React, NestJS, Vue, Svelte/SvelteKit, Hono
+**JavaScript/TypeScript**: Express, NestJS, Hono, React, Vue, Svelte/SvelteKit
 
 **Python**: Django, Flask, FastAPI
 
-**Go**: Gin / Echo / Fiber / Chi / Gorilla (unified Go router resolver)
+**Go**: Gin / Echo / Fiber / Chi / Gorilla (unified)
 
 **Java**: Spring / Spring Boot
 
@@ -274,6 +273,8 @@ cross-file bindings:
 **PHP**: Laravel
 
 **Ruby**: Rails
+
+#### Partial (1) — handler UID resolution only
 
 **C#**: ASP.NET
 

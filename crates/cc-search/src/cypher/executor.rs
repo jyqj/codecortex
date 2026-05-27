@@ -932,7 +932,10 @@ fn select_keyword(return_clause: &ReturnClause) -> &'static str {
     }
 }
 
-pub(crate) fn translate_single_node(query: &CypherQuery, pattern: &PathPattern) -> CcResult<TranslatedQuery> {
+pub(crate) fn translate_single_node(
+    query: &CypherQuery,
+    pattern: &PathPattern,
+) -> CcResult<TranslatedQuery> {
     let node = &pattern.nodes[0];
     let alias = node.var.as_deref().unwrap_or("n");
     let table = node.label.as_deref().map(label_table).unwrap_or("symbols");

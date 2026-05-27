@@ -407,6 +407,18 @@ pub struct TraceParams {
     #[serde(default)]
     pub source_mode: Option<String>,
 
+    /// Explicit symbol UID for the source endpoint. When provided (must contain ":"),
+    /// skips the `from` name lookup and uses this UID directly.
+    /// Use this after seeing disambiguation candidates to select the correct symbol.
+    #[serde(default)]
+    pub from_uid: Option<String>,
+
+    /// Explicit symbol UID for the target endpoint. When provided (must contain ":"),
+    /// skips the `to` name lookup and uses this UID directly.
+    /// Use this after seeing disambiguation candidates to select the correct symbol.
+    #[serde(default)]
+    pub to_uid: Option<String>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -417,6 +429,8 @@ impl TraceParams {
         clamp_str(&mut self.from, MAX_QUERY_LEN);
         clamp_str(&mut self.to, MAX_QUERY_LEN);
         self.max_depth = self.max_depth.clamp(1, MAX_DEPTH);
+        clamp_opt_str(&mut self.from_uid, MAX_QUERY_LEN);
+        clamp_opt_str(&mut self.to_uid, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
     }
 }
@@ -429,6 +443,8 @@ impl Default for TraceParams {
             max_depth: default_max_depth(),
             include_source: false,
             source_mode: None,
+            from_uid: None,
+            to_uid: None,
             project_path: None,
         }
     }

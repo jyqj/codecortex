@@ -150,8 +150,7 @@ pub fn parse_dockerfile(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
             let stage_name = alias
                 .clone()
                 .unwrap_or_else(|| format!("stage-{}", stage_count - 1));
-            let stage_node_id =
-                StableId::edge_id("infra_stage", rel_path, line_1based, 0);
+            let stage_node_id = StableId::edge_id("infra_stage", rel_path, line_1based, 0);
 
             let mut stage_props = serde_json::json!({
                 "stage_index": stage_count - 1,
@@ -204,12 +203,7 @@ pub fn parse_dockerfile(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
             if let Some(ref cur_stage_id) = current_stage {
                 if let Some(src_stage_id) = stage_node_ids.get(source_stage) {
                     edges.push(InfraEdge {
-                        edge_id: StableId::edge_id(
-                            "infra_e_copy",
-                            rel_path,
-                            line_1based,
-                            0,
-                        ),
+                        edge_id: StableId::edge_id("infra_e_copy", rel_path, line_1based, 0),
                         source_node_id: cur_stage_id.clone(),
                         target_node_id: src_stage_id.clone(),
                         kind: InfraEdgeKind::DependsOn,
@@ -278,11 +272,7 @@ pub fn parse_dockerfile(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
             let key = if let Some(eq_pos) = env_str.find('=') {
                 env_str[..eq_pos].trim().to_string()
             } else {
-                env_str
-                    .split_whitespace()
-                    .next()
-                    .unwrap_or("")
-                    .to_string()
+                env_str.split_whitespace().next().unwrap_or("").to_string()
             };
             if !key.is_empty() {
                 current_env_keys.push(key);
@@ -478,7 +468,11 @@ pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec
                 in_labels = false;
                 continue;
             }
-            if in_metadata && indent <= metadata_indent && !trimmed.is_empty() && trimmed != "metadata:" {
+            if in_metadata
+                && indent <= metadata_indent
+                && !trimmed.is_empty()
+                && trimmed != "metadata:"
+            {
                 in_metadata = false;
                 in_labels = false;
             }
@@ -499,7 +493,8 @@ pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec
                     name_str = Some(n.trim().trim_matches('"').trim_matches('\'').to_string());
                 }
                 if let Some(ns) = trimmed.strip_prefix("namespace:") {
-                    namespace_str = Some(ns.trim().trim_matches('"').trim_matches('\'').to_string());
+                    namespace_str =
+                        Some(ns.trim().trim_matches('"').trim_matches('\'').to_string());
                 }
             }
 
@@ -621,19 +616,18 @@ pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec
         // Service -> Deployment/StatefulSet by selector label matching
         if doc.kind == "Service" && !doc.selector_labels.is_empty() {
             for target in &docs {
-                if !matches!(target.kind.as_str(), "Deployment" | "StatefulSet" | "DaemonSet") {
+                if !matches!(
+                    target.kind.as_str(),
+                    "Deployment" | "StatefulSet" | "DaemonSet"
+                ) {
                     continue;
                 }
-                let all_match = doc.selector_labels.iter().all(|(sk, sv)| {
-                    target.labels.iter().any(|(tk, tv)| tk == sk && tv == sv)
-                });
+                let all_match = doc
+                    .selector_labels
+                    .iter()
+                    .all(|(sk, sv)| target.labels.iter().any(|(tk, tv)| tk == sk && tv == sv));
                 if all_match {
-                    let edge_id = StableId::edge_id(
-                        "infra_xref",
-                        rel_path,
-                        0,
-                        edges.len() as u32,
-                    );
+                    let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
                     edges.push(InfraEdge {
                         edge_id,
                         source_node_id: doc.node_id.clone(),
@@ -652,7 +646,10 @@ pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec
             "Deployment" | "StatefulSet" | "DaemonSet" | "Job" | "CronJob"
         ) {
             for cm_name in &doc.config_map_refs {
-                if let Some(target) = docs.iter().find(|d| d.kind == "ConfigMap" && d.name == *cm_name) {
+                if let Some(target) = docs
+                    .iter()
+                    .find(|d| d.kind == "ConfigMap" && d.name == *cm_name)
+                {
                     let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
                     edges.push(InfraEdge {
                         edge_id,
@@ -665,7 +662,10 @@ pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec
                 }
             }
             for sec_name in &doc.secret_refs {
-                if let Some(target) = docs.iter().find(|d| d.kind == "Secret" && d.name == *sec_name) {
+                if let Some(target) = docs
+                    .iter()
+                    .find(|d| d.kind == "Secret" && d.name == *sec_name)
+                {
                     let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
                     edges.push(InfraEdge {
                         edge_id,
@@ -678,8 +678,9 @@ pub fn parse_k8s_manifest(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec
                 }
             }
             for pvc_name in &doc.pvc_refs {
-                if let Some(target) =
-                    docs.iter().find(|d| d.kind == "PersistentVolumeClaim" && d.name == *pvc_name)
+                if let Some(target) = docs
+                    .iter()
+                    .find(|d| d.kind == "PersistentVolumeClaim" && d.name == *pvc_name)
                 {
                     let edge_id = StableId::edge_id("infra_xref", rel_path, 0, edges.len() as u32);
                     edges.push(InfraEdge {
@@ -748,7 +749,9 @@ pub fn parse_kustomize(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<In
         let indent = line.len() - line.trim_start().len();
 
         // Check if this line starts an import section
-        let is_import_key = import_keys.iter().any(|k| trimmed == *k || trimmed.starts_with(k));
+        let is_import_key = import_keys
+            .iter()
+            .any(|k| trimmed == *k || trimmed.starts_with(k));
 
         if is_import_key {
             in_import_section = true;
@@ -776,12 +779,8 @@ pub fn parse_kustomize(rel_path: &str, content: &str) -> (Vec<InfraNode>, Vec<In
             let base_dir = Path::new(rel_path).parent().unwrap_or(Path::new(""));
             let resolved = base_dir.join(&ref_clean).to_string_lossy().to_string();
 
-            let edge_id = StableId::edge_id(
-                "infra_kustomize_dep",
-                rel_path,
-                (line_num + 1) as u32,
-                0,
-            );
+            let edge_id =
+                StableId::edge_id("infra_kustomize_dep", rel_path, (line_num + 1) as u32, 0);
             edges.push(InfraEdge {
                 edge_id,
                 source_node_id: node_id.clone(),
@@ -807,8 +806,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
     let mut nodes = Vec::new();
     let mut edges = Vec::new();
 
-    let re_resource_data =
-        regex::Regex::new(r#"^(resource|data)\s+"(\w+)"\s+"(\w+)""#).unwrap();
+    let re_resource_data = regex::Regex::new(r#"^(resource|data)\s+"(\w+)"\s+"(\w+)""#).unwrap();
     let re_var_output = regex::Regex::new(r#"^(variable|output)\s+"(\w+)""#).unwrap();
     let re_module = regex::Regex::new(r#"^module\s+"(\w+)""#).unwrap();
     let re_source = regex::Regex::new(r#"source\s*=\s*"([^"]+)""#).unwrap();
@@ -928,8 +926,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
         if let Some((ref _mod_name, ref mod_node_id, mod_line)) = current_module {
             if let Some(caps) = re_source.captures(trimmed) {
                 let source_path = caps.get(1).unwrap().as_str();
-                let edge_id =
-                    StableId::edge_id("infra_tf_mod", file_path, mod_line, 0);
+                let edge_id = StableId::edge_id("infra_tf_mod", file_path, mod_line, 0);
                 edges.push(InfraEdge {
                     edge_id,
                     source_node_id: mod_node_id.clone(),
@@ -968,12 +965,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
     for block in &pending_blocks {
         for var_name in &block.var_refs {
             if let Some(var_node_id) = var_node_ids.get(var_name) {
-                let edge_id = StableId::edge_id(
-                    "infra_tf_ref",
-                    file_path,
-                    0,
-                    edges.len() as u32,
-                );
+                let edge_id = StableId::edge_id("infra_tf_ref", file_path, 0, edges.len() as u32);
                 edges.push(InfraEdge {
                     edge_id,
                     source_node_id: block.node_id.clone(),
@@ -993,10 +985,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
 ///
 /// Each compilation entry becomes a `CompileTarget` node with extracted
 /// include directories (`-I`) and defines (`-D`) stored in properties.
-pub fn parse_compile_commands(
-    file_path: &str,
-    content: &str,
-) -> (Vec<InfraNode>, Vec<InfraEdge>) {
+pub fn parse_compile_commands(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let mut nodes = Vec::new();
     let edges = Vec::new();
 
@@ -1022,12 +1011,15 @@ pub fn parse_compile_commands(
             .and_then(|v| v.as_str())
             .map(|s| s.to_string())
             .or_else(|| {
-                entry.get("arguments").and_then(|v| v.as_array()).map(|arr| {
-                    arr.iter()
-                        .filter_map(|a| a.as_str())
-                        .collect::<Vec<_>>()
-                        .join(" ")
-                })
+                entry
+                    .get("arguments")
+                    .and_then(|v| v.as_array())
+                    .map(|arr| {
+                        arr.iter()
+                            .filter_map(|a| a.as_str())
+                            .collect::<Vec<_>>()
+                            .join(" ")
+                    })
             })
             .unwrap_or_default();
 
@@ -1152,9 +1144,7 @@ pub fn run_infra_pass(project_path: &Path) -> (Vec<InfraNode>, Vec<InfraEdge>) {
             InfraFileType::K8sManifest => parse_k8s_manifest(&candidate.rel_path, &content),
             InfraFileType::Kustomize => parse_kustomize(&candidate.rel_path, &content),
             InfraFileType::Terraform => parse_terraform(&candidate.rel_path, &content),
-            InfraFileType::CompileCommands => {
-                parse_compile_commands(&candidate.rel_path, &content)
-            }
+            InfraFileType::CompileCommands => parse_compile_commands(&candidate.rel_path, &content),
         };
 
         all_nodes.extend(nodes);
@@ -1675,12 +1665,7 @@ ENV PORT=80
         // Verify COPY --from=builder creates edge from runtime → builder
         let copy_edge = edges
             .iter()
-            .find(|e| {
-                e.properties
-                    .get("copy_from")
-                    .and_then(|v| v.as_str())
-                    == Some("builder")
-            })
+            .find(|e| e.properties.get("copy_from").and_then(|v| v.as_str()) == Some("builder"))
             .expect("should have copy-from edge");
         assert_eq!(copy_edge.source_node_id, stage_nodes[1].node_id);
         assert_eq!(copy_edge.target_node_id, stage_nodes[0].node_id);
@@ -1732,7 +1717,10 @@ ENV PORT=80
         assert_eq!(stage_nodes.len(), 1);
         assert_eq!(stage_nodes[0].name, "stage-0");
         assert_eq!(
-            stage_nodes[0].properties.get("unnamed").and_then(|v| v.as_bool()),
+            stage_nodes[0]
+                .properties
+                .get("unnamed")
+                .and_then(|v| v.as_bool()),
             Some(true)
         );
 
@@ -1884,28 +1872,66 @@ metadata:
         let (nodes, edges) = parse_k8s_manifest("k8s/app.yaml", yaml);
 
         // Verify all resource types are extracted
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sDeployment && n.name == "web-app"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sService && n.name == "web-svc"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sConfigMap && n.name == "app-config"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sSecret && n.name == "db-credentials"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sPvc && n.name == "app-data"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sNamespace && n.name == "production"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sIngress && n.name == "web-ingress"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sServiceAccount && n.name == "web-sa"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sStatefulSet && n.name == "db"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sDaemonSet && n.name == "log-agent"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sJob && n.name == "db-migrate"));
-        assert!(nodes.iter().any(|n| n.kind == InfraKind::K8sCronJob && n.name == "cleanup"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sDeployment && n.name == "web-app"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sService && n.name == "web-svc"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sConfigMap && n.name == "app-config"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sSecret && n.name == "db-credentials"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sPvc && n.name == "app-data"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sNamespace && n.name == "production"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sIngress && n.name == "web-ingress"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sServiceAccount && n.name == "web-sa"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sStatefulSet && n.name == "db"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sDaemonSet && n.name == "log-agent"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sJob && n.name == "db-migrate"));
+        assert!(nodes
+            .iter()
+            .any(|n| n.kind == InfraKind::K8sCronJob && n.name == "cleanup"));
         assert_eq!(nodes.len(), 12);
 
         // Verify cross-reference edges
         // Service -> Deployment via selector match (app: web)
-        let routes_to: Vec<_> = edges.iter().filter(|e| e.kind == InfraEdgeKind::RoutesTo).collect();
-        assert_eq!(routes_to.len(), 1, "Service should route to Deployment by label match");
+        let routes_to: Vec<_> = edges
+            .iter()
+            .filter(|e| e.kind == InfraEdgeKind::RoutesTo)
+            .collect();
+        assert_eq!(
+            routes_to.len(),
+            1,
+            "Service should route to Deployment by label match"
+        );
 
         // Deployment -> ConfigMap, Secret, PVC via refs
-        let depends_on: Vec<_> = edges.iter().filter(|e| e.kind == InfraEdgeKind::DependsOn).collect();
-        assert_eq!(depends_on.len(), 3, "Deployment should depend on ConfigMap, Secret, and PVC");
+        let depends_on: Vec<_> = edges
+            .iter()
+            .filter(|e| e.kind == InfraEdgeKind::DependsOn)
+            .collect();
+        assert_eq!(
+            depends_on.len(),
+            3,
+            "Deployment should depend on ConfigMap, Secret, and PVC"
+        );
     }
 
     #[test]
@@ -1985,7 +2011,12 @@ namespace: production
         // Verify resolved paths
         let resolved_paths: Vec<String> = edges
             .iter()
-            .filter_map(|e| e.properties.get("resolved_path").and_then(|v| v.as_str()).map(String::from))
+            .filter_map(|e| {
+                e.properties
+                    .get("resolved_path")
+                    .and_then(|v| v.as_str())
+                    .map(String::from)
+            })
             .collect();
         assert!(resolved_paths.contains(&"overlays/prod/deployment.yaml".to_string()));
         assert!(resolved_paths.contains(&"overlays/prod/service.yaml".to_string()));
@@ -2038,23 +2069,38 @@ output "instance_ip" {
         assert_eq!(nodes.len(), 5);
 
         // Check resource
-        let resource = nodes.iter().find(|n| n.kind == InfraKind::TerraformResource).unwrap();
+        let resource = nodes
+            .iter()
+            .find(|n| n.kind == InfraKind::TerraformResource)
+            .unwrap();
         assert_eq!(resource.name, "aws_instance.main");
 
         // Check data source
-        let data = nodes.iter().find(|n| n.kind == InfraKind::TerraformDataSource).unwrap();
+        let data = nodes
+            .iter()
+            .find(|n| n.kind == InfraKind::TerraformDataSource)
+            .unwrap();
         assert_eq!(data.name, "aws_ami.ubuntu");
 
         // Check variables
-        let vars: Vec<_> = nodes.iter().filter(|n| n.kind == InfraKind::TerraformVariable).collect();
+        let vars: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::TerraformVariable)
+            .collect();
         assert_eq!(vars.len(), 2);
 
         // Check output
-        let output = nodes.iter().find(|n| n.kind == InfraKind::TerraformOutput).unwrap();
+        let output = nodes
+            .iter()
+            .find(|n| n.kind == InfraKind::TerraformOutput)
+            .unwrap();
         assert_eq!(output.name, "instance_ip");
 
         // The resource block references var.instance_type → References edge
-        let ref_edges: Vec<_> = edges.iter().filter(|e| e.kind == InfraEdgeKind::References).collect();
+        let ref_edges: Vec<_> = edges
+            .iter()
+            .filter(|e| e.kind == InfraEdgeKind::References)
+            .collect();
         assert!(
             ref_edges.iter().any(|e| {
                 e.properties.get("var_name").and_then(|v| v.as_str()) == Some("instance_type")
@@ -2079,13 +2125,19 @@ module "eks" {
         let (nodes, edges) = parse_terraform("infra/main.tf", tf);
 
         // 2 module nodes
-        let modules: Vec<_> = nodes.iter().filter(|n| n.kind == InfraKind::TerraformModule).collect();
+        let modules: Vec<_> = nodes
+            .iter()
+            .filter(|n| n.kind == InfraKind::TerraformModule)
+            .collect();
         assert_eq!(modules.len(), 2);
         assert_eq!(modules[0].name, "vpc");
         assert_eq!(modules[1].name, "eks");
 
         // 2 UsesModule edges
-        let mod_edges: Vec<_> = edges.iter().filter(|e| e.kind == InfraEdgeKind::UsesModule).collect();
+        let mod_edges: Vec<_> = edges
+            .iter()
+            .filter(|e| e.kind == InfraEdgeKind::UsesModule)
+            .collect();
         assert_eq!(mod_edges.len(), 2);
 
         // Check source paths
@@ -2157,7 +2209,10 @@ output "bucket_name" {
             .iter()
             .filter_map(|e| e.properties.get("var_name").and_then(|v| v.as_str()))
             .collect();
-        assert!(ref_var_names.contains(&"env"), "missing reference to var.env");
+        assert!(
+            ref_var_names.contains(&"env"),
+            "missing reference to var.env"
+        );
         assert!(
             ref_var_names.contains(&"region"),
             "missing reference to var.region"
@@ -2208,21 +2263,41 @@ output "bucket_name" {
         // First target: main.c
         assert_eq!(nodes[0].kind, InfraKind::CompileTarget);
         assert_eq!(nodes[0].name, "main.c");
-        let inc0 = nodes[0].properties.get("include_dirs").unwrap().as_array().unwrap();
+        let inc0 = nodes[0]
+            .properties
+            .get("include_dirs")
+            .unwrap()
+            .as_array()
+            .unwrap();
         assert_eq!(inc0.len(), 2);
         assert_eq!(inc0[0].as_str().unwrap(), "/usr/include");
         assert_eq!(inc0[1].as_str().unwrap(), "../include");
-        let def0 = nodes[0].properties.get("defines").unwrap().as_array().unwrap();
+        let def0 = nodes[0]
+            .properties
+            .get("defines")
+            .unwrap()
+            .as_array()
+            .unwrap();
         assert_eq!(def0.len(), 2);
         assert_eq!(def0[0].as_str().unwrap(), "DEBUG");
         assert_eq!(def0[1].as_str().unwrap(), "VERSION=2");
 
         // Second target: util.cpp (uses "arguments" form with -I <dir>)
         assert_eq!(nodes[1].name, "util.cpp");
-        let inc1 = nodes[1].properties.get("include_dirs").unwrap().as_array().unwrap();
+        let inc1 = nodes[1]
+            .properties
+            .get("include_dirs")
+            .unwrap()
+            .as_array()
+            .unwrap();
         assert_eq!(inc1.len(), 1);
         assert_eq!(inc1[0].as_str().unwrap(), "/usr/local/include");
-        let def1 = nodes[1].properties.get("defines").unwrap().as_array().unwrap();
+        let def1 = nodes[1]
+            .properties
+            .get("defines")
+            .unwrap()
+            .as_array()
+            .unwrap();
         assert_eq!(def1.len(), 1);
         assert_eq!(def1[0].as_str().unwrap(), "NDEBUG");
     }

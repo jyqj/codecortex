@@ -1,0 +1,15 @@
+name = "relations_callees_process"
+tool = "relations"
+description = "Check callees of processUser"
+
+[params]
+symbol = "processUser"
+kind = "callees"
+limit = 10
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"

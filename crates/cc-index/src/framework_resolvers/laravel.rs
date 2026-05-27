@@ -52,10 +52,8 @@ static ROUTE_STRING_RE: LazyLock<Regex> = LazyLock::new(|| {
 ///
 /// Captures: (1) resource path, (2) controller name
 static ROUTE_RESOURCE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)Route::resource\(\s*["']([^"']+)["']\s*,\s*(\w+)::class"#,
-    )
-    .expect("laravel route resource re")
+    Regex::new(r#"(?m)Route::resource\(\s*["']([^"']+)["']\s*,\s*(\w+)::class"#)
+        .expect("laravel route resource re")
 });
 
 /// Route::prefix("/api")->group(base_path("routes/api.php"))
@@ -84,10 +82,8 @@ static ROUTE_GROUP_ARRAY_FILE_RE: LazyLock<Regex> = LazyLock::new(|| {
 ///
 /// Captures: (1) prefix path, (2) variable name (without $)
 static ROUTE_PREFIX_GROUP_VAR_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)Route::prefix\(\s*["']([^"']+)["']\s*\)\s*->\s*group\(\s*\$(\w+)"#,
-    )
-    .expect("laravel route prefix group var re")
+    Regex::new(r#"(?m)Route::prefix\(\s*["']([^"']+)["']\s*\)\s*->\s*group\(\s*\$(\w+)"#)
+        .expect("laravel route prefix group var re")
 });
 
 pub struct LaravelResolver;
@@ -118,8 +114,16 @@ impl LaravelResolver {
         let member_path = format!("{}/{{id}}", base_path);
 
         let routes = [
-            ("GET", base_path.clone(), format!("{}::index", controller_name)),
-            ("POST", base_path.clone(), format!("{}::store", controller_name)),
+            (
+                "GET",
+                base_path.clone(),
+                format!("{}::index", controller_name),
+            ),
+            (
+                "POST",
+                base_path.clone(),
+                format!("{}::store", controller_name),
+            ),
             (
                 "GET",
                 format!("{}/create", base_path),
@@ -512,7 +516,9 @@ Route::delete("/users/{id}", [UserController::class, "destroy"]);
             && r.handler_name.as_deref() == Some("UserController::destroy")));
 
         // Verify framework annotation
-        assert!(routes.iter().all(|r| r.framework.as_deref() == Some("laravel")));
+        assert!(routes
+            .iter()
+            .all(|r| r.framework.as_deref() == Some("laravel")));
     }
 
     #[test]
@@ -569,7 +575,12 @@ Route::prefix("/admin")->group(base_path("routes/admin.php"));
             .iter()
             .filter(|r| r.route_kind.as_deref() == Some("group_file"))
             .collect();
-        assert_eq!(groups.len(), 2, "expected 2 group_file entries, got {}", groups.len());
+        assert_eq!(
+            groups.len(),
+            2,
+            "expected 2 group_file entries, got {}",
+            groups.len()
+        );
 
         assert!(groups.iter().any(|r| r.route_path == "/api"
             && r.handler_name.as_deref() == Some("routes/api.php")
@@ -589,7 +600,12 @@ Route::group(['prefix' => '/api'], base_path('routes/api.php'));
             .iter()
             .filter(|r| r.route_kind.as_deref() == Some("group_file"))
             .collect();
-        assert_eq!(groups.len(), 1, "expected 1 group_file entry, got {}", groups.len());
+        assert_eq!(
+            groups.len(),
+            1,
+            "expected 1 group_file entry, got {}",
+            groups.len()
+        );
 
         assert_eq!(groups[0].route_path, "/api");
         assert_eq!(groups[0].handler_name.as_deref(), Some("routes/api.php"));
@@ -605,7 +621,12 @@ Route::prefix('/api')->group($apiRoutes);
             .iter()
             .filter(|r| r.route_kind.as_deref() == Some("group_var"))
             .collect();
-        assert_eq!(groups.len(), 1, "expected 1 group_var entry, got {}", groups.len());
+        assert_eq!(
+            groups.len(),
+            1,
+            "expected 1 group_var entry, got {}",
+            groups.len()
+        );
 
         assert_eq!(groups[0].route_path, "/api");
         assert_eq!(groups[0].handler_name.as_deref(), Some("apiRoutes"));

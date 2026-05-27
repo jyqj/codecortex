@@ -321,31 +321,34 @@ impl IndexDb {
                 } else {
                     vec![]
                 };
-                pkgs.iter().map(|pkg| {
-                    let (layer, reason) = if pkg.fan_in == 0 && pkg.fan_out > 0 {
-                        ("entry", "no incoming calls, has outgoing calls")
-                    } else if pkg.fan_in > pkg.fan_out * 2 {
-                        ("api", "high fan-in relative to fan-out")
-                    } else if pkg.fan_out > pkg.fan_in * 2 {
-                        ("leaf", "high fan-out relative to fan-in")
-                    } else if pkg.fan_in > 0 && pkg.fan_out > 0 {
-                        ("core", "balanced fan-in and fan-out")
-                    } else {
-                        ("internal", "minimal external connections")
-                    };
-                    cc_model::architecture::LayerInfo {
-                        package: pkg.name.clone(),
-                        layer: layer.to_string(),
-                        reason: reason.to_string(),
-                    }
-                }).collect()
+                pkgs.iter()
+                    .map(|pkg| {
+                        let (layer, reason) = if pkg.fan_in == 0 && pkg.fan_out > 0 {
+                            ("entry", "no incoming calls, has outgoing calls")
+                        } else if pkg.fan_in > pkg.fan_out * 2 {
+                            ("api", "high fan-in relative to fan-out")
+                        } else if pkg.fan_out > pkg.fan_in * 2 {
+                            ("leaf", "high fan-out relative to fan-in")
+                        } else if pkg.fan_in > 0 && pkg.fan_out > 0 {
+                            ("core", "balanced fan-in and fan-out")
+                        } else {
+                            ("internal", "minimal external connections")
+                        };
+                        cc_model::architecture::LayerInfo {
+                            package: pkg.name.clone(),
+                            layer: layer.to_string(),
+                            reason: reason.to_string(),
+                        }
+                    })
+                    .collect()
             },
             adr_documents: if all || aspects.contains(&"adr") {
                 self.get_metadata("adr_documents")
                     .ok()
                     .flatten()
                     .and_then(|json_str| {
-                        serde_json::from_str::<Vec<cc_model::architecture::AdrDocInfo>>(&json_str).ok()
+                        serde_json::from_str::<Vec<cc_model::architecture::AdrDocInfo>>(&json_str)
+                            .ok()
                     })
                     .unwrap_or_default()
             } else {
@@ -360,27 +363,29 @@ impl IndexDb {
             "SELECT node_id, file_path, kind, name, namespace, line, end_line, properties, bound_symbol_uid, binding_confidence \
              FROM infra_nodes WHERE kind = ?1"
         ).map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt.query_map(rusqlite::params![kind], |row| {
-            let kind_str: String = row.get(2)?;
-            let props_str: String = row.get::<_, String>(7).unwrap_or_default();
-            let properties: serde_json::Value = serde_json::from_str(&props_str).unwrap_or_default();
-            let infra_kind: cc_model::infra::InfraKind = serde_json::from_value(
-                serde_json::Value::String(kind_str),
-            )
-            .unwrap_or(cc_model::infra::InfraKind::CompileTarget);
-            Ok(cc_model::infra::InfraNode {
-                node_id: row.get(0)?,
-                file_path: row.get(1)?,
-                kind: infra_kind,
-                name: row.get(3)?,
-                namespace: row.get(4)?,
-                line: row.get(5)?,
-                end_line: row.get(6)?,
-                properties,
-                bound_symbol_uid: row.get(8)?,
-                binding_confidence: row.get(9)?,
+        let rows = stmt
+            .query_map(rusqlite::params![kind], |row| {
+                let kind_str: String = row.get(2)?;
+                let props_str: String = row.get::<_, String>(7).unwrap_or_default();
+                let properties: serde_json::Value =
+                    serde_json::from_str(&props_str).unwrap_or_default();
+                let infra_kind: cc_model::infra::InfraKind =
+                    serde_json::from_value(serde_json::Value::String(kind_str))
+                        .unwrap_or(cc_model::infra::InfraKind::CompileTarget);
+                Ok(cc_model::infra::InfraNode {
+                    node_id: row.get(0)?,
+                    file_path: row.get(1)?,
+                    kind: infra_kind,
+                    name: row.get(3)?,
+                    namespace: row.get(4)?,
+                    line: row.get(5)?,
+                    end_line: row.get(6)?,
+                    properties,
+                    bound_symbol_uid: row.get(8)?,
+                    binding_confidence: row.get(9)?,
+                })
             })
-        }).map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(|e| CcError::Database(e.to_string()))?;
         rows.collect::<Result<Vec<_>, _>>()
             .map_err(|e| CcError::Database(e.to_string()))
     }
@@ -439,7 +444,10 @@ impl IndexDb {
         decision: &str,
         now: &str,
     ) -> CcResult<()> {
-        let conn = self.write_conn.lock().map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         conn.execute(
             "INSERT INTO adr(adr_id, title, status, context, decision, created_at, updated_at)
              VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?6)
@@ -450,7 +458,10 @@ impl IndexDb {
     }
 
     pub fn adr_delete(&self, adr_id: &str) -> CcResult<bool> {
-        let conn = self.write_conn.lock().map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         let affected = conn
             .execute("DELETE FROM adr WHERE adr_id = ?1", [adr_id])
             .map_err(|e| CcError::Database(e.to_string()))?;

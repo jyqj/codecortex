@@ -32,7 +32,10 @@ pub(in crate::resolver) fn candidate_count_penalty(base: f64, count: usize) -> f
 ///
 /// Uses prefix matching (not substring) to avoid false positives like
 /// `"a.b.cd"` matching `"a.b.c"`.
-pub(in crate::resolver) fn is_import_reachable(candidate_file: &str, imports: &[ImportBinding]) -> bool {
+pub(in crate::resolver) fn is_import_reachable(
+    candidate_file: &str,
+    imports: &[ImportBinding],
+) -> bool {
     if imports.is_empty() {
         return false;
     }
@@ -135,7 +138,10 @@ pub(in crate::resolver) fn is_handler_like(kind: SymbolKind) -> bool {
 }
 
 /// Pick unique entry from candidates (deduplicated by symbol_id).
-pub(in crate::resolver) fn pick_unique(entries: &[CatalogEntry], candidates: &[usize]) -> Option<usize> {
+pub(in crate::resolver) fn pick_unique(
+    entries: &[CatalogEntry],
+    candidates: &[usize],
+) -> Option<usize> {
     let mut seen = HashSet::new();
     let mut unique = Vec::new();
     for &idx in candidates {

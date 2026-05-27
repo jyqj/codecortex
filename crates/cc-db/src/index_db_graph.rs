@@ -186,21 +186,25 @@ impl IndexDb {
     /// Each tuple: `(env_key, count, comma_separated_file_paths)`.
     pub fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
         let conn = self.read_conn()?;
-        let mut stmt = conn.prepare(
-            "SELECT env_key, COUNT(*) as cnt, GROUP_CONCAT(DISTINCT file_path) \
+        let mut stmt = conn
+            .prepare(
+                "SELECT env_key, COUNT(*) as cnt, GROUP_CONCAT(DISTINCT file_path) \
              FROM data_flow_edges \
              WHERE flow_kind = 'env_access' AND env_key IS NOT NULL \
              GROUP BY env_key \
              ORDER BY cnt DESC \
-             LIMIT ?1"
-        ).map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt.query_map(rusqlite::params![limit as i64], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, i64>(1)?,
-                row.get::<_, String>(2)?,
-            ))
-        }).map_err(|e| CcError::Database(e.to_string()))?;
+             LIMIT ?1",
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(rusqlite::params![limit as i64], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, i64>(1)?,
+                    row.get::<_, String>(2)?,
+                ))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
         let mut result = Vec::new();
         for row in rows {
             result.push(row.map_err(|e| CcError::Database(e.to_string()))?);
@@ -536,8 +540,10 @@ impl IndexDb {
             let mut stmt = conn
                 .prepare(&sql)
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            let params: Vec<&dyn rusqlite::types::ToSql> =
-                chunk.iter().map(|s| s as &dyn rusqlite::types::ToSql).collect();
+            let params: Vec<&dyn rusqlite::types::ToSql> = chunk
+                .iter()
+                .map(|s| s as &dyn rusqlite::types::ToSql)
+                .collect();
             let rows = stmt
                 .query_map(params.as_slice(), |row| {
                     Ok(SymbolRow {
@@ -1154,6 +1160,7 @@ impl IndexDb {
                         "contains_file" => cc_model::SemanticRelation::ContainsFile,
                         "contains_module" => cc_model::SemanticRelation::ContainsModule,
                         "renders_component" => cc_model::SemanticRelation::RendersComponent,
+                        "injects" => cc_model::SemanticRelation::Injects,
                         other => {
                             tracing::warn!(kind = %other, "unknown semantic relation_kind in DB, mapping to Unknown");
                             cc_model::SemanticRelation::Unknown

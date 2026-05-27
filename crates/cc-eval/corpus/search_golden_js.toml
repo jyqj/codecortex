@@ -1,0 +1,16 @@
+name = "search_golden_js"
+tool = "search"
+description = "Golden test: search for user processing functions"
+
+[params]
+query = "process user"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "hits"
+value = "processUser,formatName"

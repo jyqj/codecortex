@@ -232,7 +232,11 @@ impl SymbolCatalog {
     }
 
     /// Walk upward from `container` qname to find the owning class.
-    pub(in crate::resolver) fn owner_class_qname(&self, file_path: &str, container: Option<&str>) -> Option<String> {
+    pub(in crate::resolver) fn owner_class_qname(
+        &self,
+        file_path: &str,
+        container: Option<&str>,
+    ) -> Option<String> {
         let mut qname = container?.to_string();
         loop {
             let direct = self.same_file_qname(file_path, &qname);

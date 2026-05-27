@@ -38,9 +38,8 @@ static ROUTE_METHOD_RE: LazyLock<Regex> = LazyLock::new(|| {
 ///   resources :posts
 ///
 /// Captures: (1) resource name
-static RESOURCES_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)resources\s+:(\w+)"#).expect("rails resources re")
-});
+static RESOURCES_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?m)resources\s+:(\w+)"#).expect("rails resources re"));
 
 /// root "controller#action" — maps GET / to a controller action
 ///
@@ -49,9 +48,8 @@ static RESOURCES_RE: LazyLock<Regex> = LazyLock::new(|| {
 ///   root 'welcome#index'
 ///
 /// Captures: (1) controller#action
-static ROOT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)root\s+["'](\w+#\w+)["']"#).expect("rails root re")
-});
+static ROOT_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?m)root\s+["'](\w+#\w+)["']"#).expect("rails root re"));
 
 /// mount Engine, at: "/path" — mounts a Rails engine at a prefix
 ///
@@ -74,11 +72,7 @@ impl RailsResolver {
     }
 
     /// Expand a `resources :name` into standard RESTful route edges.
-    fn expand_resources(
-        resource_name: &str,
-        file_path: &str,
-        line: u32,
-    ) -> Vec<RouteEdgeRecord> {
+    fn expand_resources(resource_name: &str, file_path: &str, line: u32) -> Vec<RouteEdgeRecord> {
         let base_path = format!("/{}", resource_name);
         let member_path = format!("/{}/:id", resource_name);
         let controller = resource_name.to_string();
@@ -96,16 +90,8 @@ impl RailsResolver {
                 format!("{}/edit", member_path),
                 format!("{}#edit", controller),
             ),
-            (
-                "GET",
-                member_path.clone(),
-                format!("{}#show", controller),
-            ),
-            (
-                "PUT",
-                member_path.clone(),
-                format!("{}#update", controller),
-            ),
+            ("GET", member_path.clone(), format!("{}#show", controller)),
+            ("PUT", member_path.clone(), format!("{}#update", controller)),
             (
                 "DELETE",
                 member_path.clone(),
@@ -305,11 +291,10 @@ impl FrameworkResolver for RailsResolver {
         // Step 2: for each mount, find the target file via catalog and prepend prefix
         for mount in &mounts {
             // Look up where the engine is defined
-            let target_file =
-                match catalog.lookup_symbol(&mount.engine_name, &mount.mount_file) {
-                    Some((_, file)) if file != mount.mount_file => file,
-                    _ => continue,
-                };
+            let target_file = match catalog.lookup_symbol(&mount.engine_name, &mount.mount_file) {
+                Some((_, file)) if file != mount.mount_file => file,
+                _ => continue,
+            };
 
             // Prepend the mount prefix to all http routes in the target file
             for (file_path, outcome) in outcomes.iter_mut() {
@@ -375,24 +360,20 @@ end
         let routes = run_rails("config/routes.rb", source);
         assert_eq!(routes.len(), 3, "expected 3 routes, got {}", routes.len());
 
-        assert!(routes
-            .iter()
-            .any(|r| r.route_path == "/users"
-                && r.method == Some("GET".into())
-                && r.handler_name.as_deref() == Some("users#index")));
-        assert!(routes
-            .iter()
-            .any(|r| r.route_path == "/users"
-                && r.method == Some("POST".into())
-                && r.handler_name.as_deref() == Some("users#create")));
-        assert!(routes
-            .iter()
-            .any(|r| r.route_path == "/users/:id"
-                && r.method == Some("DELETE".into())
-                && r.handler_name.as_deref() == Some("users#destroy")));
+        assert!(routes.iter().any(|r| r.route_path == "/users"
+            && r.method == Some("GET".into())
+            && r.handler_name.as_deref() == Some("users#index")));
+        assert!(routes.iter().any(|r| r.route_path == "/users"
+            && r.method == Some("POST".into())
+            && r.handler_name.as_deref() == Some("users#create")));
+        assert!(routes.iter().any(|r| r.route_path == "/users/:id"
+            && r.method == Some("DELETE".into())
+            && r.handler_name.as_deref() == Some("users#destroy")));
 
         // Verify framework annotation
-        assert!(routes.iter().all(|r| r.framework.as_deref() == Some("rails")));
+        assert!(routes
+            .iter()
+            .all(|r| r.framework.as_deref() == Some("rails")));
     }
 
     #[test]
@@ -431,7 +412,12 @@ Rails.application.routes.draw do
 end
 "#;
         let routes = run_rails("config/routes.rb", source);
-        assert_eq!(routes.len(), 1, "expected 1 root route, got {}", routes.len());
+        assert_eq!(
+            routes.len(),
+            1,
+            "expected 1 root route, got {}",
+            routes.len()
+        );
         assert_eq!(routes[0].route_path, "/");
         assert_eq!(routes[0].method, Some("GET".into()));
         assert_eq!(routes[0].handler_name.as_deref(), Some("pages#home"));
@@ -450,7 +436,12 @@ end
             .iter()
             .filter(|r| r.route_kind.as_deref() == Some("engine_mount"))
             .collect();
-        assert_eq!(mounts.len(), 2, "expected 2 engine mounts, got {}", mounts.len());
+        assert_eq!(
+            mounts.len(),
+            2,
+            "expected 2 engine mounts, got {}",
+            mounts.len()
+        );
 
         assert!(mounts.iter().any(|r| r.route_path == "/blog"
             && r.handler_name.as_deref() == Some("Blog::Engine")

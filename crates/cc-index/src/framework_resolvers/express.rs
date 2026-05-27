@@ -1,7 +1,7 @@
 //! Express.js framework resolver.
 //!
 //! - `enrich_file`: extracts route definitions from Express-style APIs
-//! - `resolve_cross_file`: resolves sub-router prefix mounting (TODO)
+//! - `resolve_cross_file`: resolves sub-router prefix mounting
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -35,10 +35,7 @@ static ROUTE_METHOD_RE: LazyLock<Regex> = LazyLock::new(|| {
 ///
 /// Captures: (1) optional path prefix, (2) handler/router identifier
 static APP_USE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)app\.use\(\s*(?:["']([^"']+)["']\s*,\s*)?(\w+)"#,
-    )
-    .expect("express app.use re")
+    Regex::new(r#"(?m)app\.use\(\s*(?:["']([^"']+)["']\s*,\s*)?(\w+)"#).expect("express app.use re")
 });
 
 /// Router creation: const router = express.Router() or Router()
@@ -52,7 +49,9 @@ static ROUTER_CREATE_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 /// Valid Express HTTP method names.
-const EXPRESS_HTTP_METHODS: &[&str] = &["get", "post", "put", "delete", "patch", "head", "options", "all"];
+const EXPRESS_HTTP_METHODS: &[&str] = &[
+    "get", "post", "put", "delete", "patch", "head", "options", "all",
+];
 
 pub struct ExpressResolver;
 
@@ -314,10 +313,7 @@ router.post("/items", createItem);
         );
         assert_eq!(http_routes[0].route_path, "/items");
         assert_eq!(http_routes[0].method, Some("POST".into()));
-        assert_eq!(
-            http_routes[0].handler_name.as_deref(),
-            Some("createItem")
-        );
+        assert_eq!(http_routes[0].handler_name.as_deref(), Some("createItem"));
     }
 
     #[test]
@@ -350,15 +346,15 @@ app.patch("/users/:id/status", patchStatus);
         assert!(http_routes
             .iter()
             .any(|r| r.route_path == "/users" && r.method == Some("POST".into())));
-        assert!(http_routes.iter().any(
-            |r| r.route_path == "/users/:id" && r.method == Some("DELETE".into())
-        ));
+        assert!(http_routes
+            .iter()
+            .any(|r| r.route_path == "/users/:id" && r.method == Some("DELETE".into())));
         assert!(http_routes
             .iter()
             .any(|r| r.route_path == "/users/:id" && r.method == Some("PUT".into())));
-        assert!(http_routes.iter().any(
-            |r| r.route_path == "/users/:id/status" && r.method == Some("PATCH".into())
-        ));
+        assert!(http_routes
+            .iter()
+            .any(|r| r.route_path == "/users/:id/status" && r.method == Some("PATCH".into())));
     }
 
     #[test]
@@ -382,10 +378,15 @@ app.use(cors);
             middleware_routes.len()
         );
 
-        assert!(middleware_routes.iter().any(|r| r.route_path == "/api"
-            && r.route_kind.as_deref() == Some("middleware_mount")));
-        assert!(middleware_routes.iter().any(|r| r.route_path == "/"
-            && r.route_kind.as_deref() == Some("middleware")));
+        assert!(
+            middleware_routes
+                .iter()
+                .any(|r| r.route_path == "/api"
+                    && r.route_kind.as_deref() == Some("middleware_mount"))
+        );
+        assert!(middleware_routes
+            .iter()
+            .any(|r| r.route_path == "/" && r.route_kind.as_deref() == Some("middleware")));
     }
 
     #[test]

@@ -1,7 +1,7 @@
 //! NestJS framework resolver.
 //!
 //! - `enrich_file`: extracts route definitions from NestJS decorators
-//! - `resolve_cross_file`: resolves module DI graph (future)
+//! - `resolve_cross_file`: resolves module DI graph
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -257,27 +257,18 @@ export class UsersController {
             .iter()
             .find(|r| r.method == Some("GET".into()) && r.route_path == "/users");
         assert!(get_all.is_some(), "should have GET /users");
-        assert_eq!(
-            get_all.unwrap().handler_name.as_deref(),
-            Some("findAll")
-        );
+        assert_eq!(get_all.unwrap().handler_name.as_deref(), Some("findAll"));
 
         let post_route = routes.iter().find(|r| r.method == Some("POST".into()));
         assert!(post_route.is_some(), "should have POST /users");
         assert_eq!(post_route.unwrap().route_path, "/users");
-        assert_eq!(
-            post_route.unwrap().handler_name.as_deref(),
-            Some("create")
-        );
+        assert_eq!(post_route.unwrap().handler_name.as_deref(), Some("create"));
 
         let get_one = routes
             .iter()
             .find(|r| r.method == Some("GET".into()) && r.route_path == "/users/:id");
         assert!(get_one.is_some(), "should have GET /users/:id");
-        assert_eq!(
-            get_one.unwrap().handler_name.as_deref(),
-            Some("findOne")
-        );
+        assert_eq!(get_one.unwrap().handler_name.as_deref(), Some("findOne"));
 
         assert!(routes
             .iter()
@@ -352,9 +343,9 @@ export class ItemsController {
         assert!(routes
             .iter()
             .any(|r| r.route_path == "/api/items" && r.method == Some("GET".into())));
-        assert!(routes.iter().any(
-            |r| r.route_path == "/api/items/:id" && r.method == Some("PUT".into())
-        ));
+        assert!(routes
+            .iter()
+            .any(|r| r.route_path == "/api/items/:id" && r.method == Some("PUT".into())));
     }
 
     #[test]

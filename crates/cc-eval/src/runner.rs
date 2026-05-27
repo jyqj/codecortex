@@ -28,7 +28,11 @@ impl CodeIndexBackend {
         let codecortex_dir = project_path.join(".codecortex");
         if codecortex_dir.exists() {
             std::fs::remove_dir_all(&codecortex_dir).map_err(|e| {
-                format!("failed to remove stale index at {}: {}", codecortex_dir.display(), e)
+                format!(
+                    "failed to remove stale index at {}: {}",
+                    codecortex_dir.display(),
+                    e
+                )
             })?;
         }
 
@@ -58,18 +62,12 @@ impl CodeIndexBackend {
                 core::build_index(rt, full)
             }
             "search" => {
-                let query = params
-                    .get("query")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("");
+                let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
                 let mode = params
                     .get("mode")
                     .and_then(|v| v.as_str())
                     .unwrap_or("hybrid");
-                let top_k = params
-                    .get("top_k")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(10) as usize;
+                let top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(10) as usize;
                 let exact = params
                     .get("exact")
                     .and_then(|v| v.as_bool())
@@ -80,10 +78,7 @@ impl CodeIndexBackend {
                 }
             }
             "context" => {
-                let task = params
-                    .get("task")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("");
+                let task = params.get("task").and_then(|v| v.as_str()).unwrap_or("");
                 let max_symbols = params
                     .get("max_symbols")
                     .and_then(|v| v.as_u64())
@@ -96,10 +91,7 @@ impl CodeIndexBackend {
                 facade::handle_context(rt, task, max_symbols, include_source, intent)
             }
             "node" => {
-                let symbol = params
-                    .get("symbol")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("");
+                let symbol = params.get("symbol").and_then(|v| v.as_str()).unwrap_or("");
                 let include = params
                     .get("include")
                     .and_then(|v| v.as_str())
@@ -157,10 +149,7 @@ impl CodeIndexBackend {
                 }
             }
             "trace" => {
-                let from = params
-                    .get("from")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("");
+                let from = params.get("from").and_then(|v| v.as_str()).unwrap_or("");
                 let to = params.get("to").and_then(|v| v.as_str()).unwrap_or("");
                 let max_depth = params
                     .get("max_depth")
@@ -171,21 +160,27 @@ impl CodeIndexBackend {
                     .and_then(|v| v.as_bool())
                     .unwrap_or(false);
                 let source_mode = params.get("source_mode").and_then(|v| v.as_str());
-                graph::trace_path(rt, from, to, max_depth, include_source, None, source_mode)
+                let from_uid = params.get("from_uid").and_then(|v| v.as_str());
+                let to_uid = params.get("to_uid").and_then(|v| v.as_str());
+                graph::trace_path(
+                    rt,
+                    from,
+                    to,
+                    max_depth,
+                    include_source,
+                    None,
+                    source_mode,
+                    from_uid,
+                    to_uid,
+                )
             }
             "relations" => {
-                let symbol = params
-                    .get("symbol")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("");
+                let symbol = params.get("symbol").and_then(|v| v.as_str()).unwrap_or("");
                 let kind = params
                     .get("kind")
                     .and_then(|v| v.as_str())
                     .unwrap_or("both");
-                let limit = params
-                    .get("limit")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(20) as usize;
+                let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
                 let direction = params
                     .get("direction")
                     .and_then(|v| v.as_str())
@@ -212,11 +207,16 @@ impl CodeIndexBackend {
                     .and_then(|v| v.as_str())
                     .unwrap_or("file");
                 let file_path = params.get("file_path").and_then(|v| v.as_str());
-                let limit = params
-                    .get("limit")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(20) as usize;
-                facade::handle_impact(rt, scope, &files, base_branch, granularity, file_path, limit)
+                let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
+                facade::handle_impact(
+                    rt,
+                    scope,
+                    &files,
+                    base_branch,
+                    granularity,
+                    file_path,
+                    limit,
+                )
             }
             "architecture" => {
                 let aspect = params
@@ -224,10 +224,7 @@ impl CodeIndexBackend {
                     .and_then(|v| v.as_str())
                     .unwrap_or("overview");
                 let filter = params.get("filter").and_then(|v| v.as_str());
-                let limit = params
-                    .get("limit")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(20) as usize;
+                let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
                 facade::handle_architecture(rt, aspect, filter, limit)
             }
             "files" => {
@@ -251,10 +248,7 @@ impl CodeIndexBackend {
                 facade::handle_files(rt, action, path, start_line, end_line, context_lines)
             }
             "graph_query" => {
-                let query = params
-                    .get("query")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("");
+                let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
                 graph::graph_query(rt, query)
             }
             "ingest_traces" => {
@@ -313,12 +307,132 @@ pub fn check_assertion(output: &Value, assertion: &Assertion) -> bool {
                 None => false,
             }
         }
+        "field_equals" => {
+            let field = assertion.field.as_deref().unwrap_or("");
+            let expected = assertion.value.as_deref().unwrap_or("");
+            match resolve_json_path(output, field) {
+                Some(Value::String(s)) => s == expected,
+                Some(Value::Number(n)) => n.to_string() == expected,
+                Some(Value::Bool(b)) => b.to_string() == expected,
+                Some(Value::Null) => expected == "null",
+                _ => false,
+            }
+        }
+        "expected_symbols" => {
+            // Parse expected names from comma-separated value
+            let expected_str = assertion.value.as_deref().unwrap_or("");
+            let expected_names: Vec<&str> = expected_str
+                .split(',')
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+                .collect();
+            if expected_names.is_empty() {
+                return false;
+            }
+
+            // Find the array at the given field path
+            let target = if let Some(field) = assertion.field.as_deref() {
+                resolve_json_path(output, field)
+            } else {
+                Some(output)
+            };
+
+            let arr = match target {
+                Some(Value::Array(arr)) => arr,
+                _ => return false,
+            };
+
+            // Extract symbol name from each item (try several field names)
+            let result_names: Vec<String> = arr
+                .iter()
+                .filter_map(|item| {
+                    for key in &["name", "symbol_name", "symbol"] {
+                        if let Some(Value::String(s)) = item.get(*key) {
+                            return Some(s.clone());
+                        }
+                    }
+                    None
+                })
+                .collect();
+
+            // Compute recall@5: count of expected names found in first 5 results
+            let top5: Vec<&str> = result_names.iter().take(5).map(|s| s.as_str()).collect();
+            let found_count = expected_names
+                .iter()
+                .filter(|name| top5.iter().any(|r| r == *name))
+                .count();
+            let recall = found_count as f64 / expected_names.len() as f64;
+
+            // Assertion passes if recall@5 > 0 (at least one expected symbol found)
+            recall > 0.0
+        }
         "is_success" => {
             // Always true if we got here (the tool didn't error).
             true
         }
         _ => false,
     }
+}
+
+/// Compute Recall@5 and MRR for an expected_symbols assertion.
+/// Returns (recall_at_5, mrr).
+fn compute_retrieval_metrics(output: &Value, assertion: &Assertion) -> (f64, f64) {
+    let expected_str = assertion.value.as_deref().unwrap_or("");
+    let expected_names: Vec<&str> = expected_str
+        .split(',')
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .collect();
+    if expected_names.is_empty() {
+        return (0.0, 0.0);
+    }
+
+    let target = if let Some(field) = assertion.field.as_deref() {
+        resolve_json_path(output, field)
+    } else {
+        Some(output)
+    };
+
+    let arr = match target {
+        Some(Value::Array(arr)) => arr,
+        _ => return (0.0, 0.0),
+    };
+
+    // Extract symbol name from each item
+    let result_names: Vec<String> = arr
+        .iter()
+        .filter_map(|item| {
+            for key in &["name", "symbol_name", "symbol"] {
+                if let Some(Value::String(s)) = item.get(*key) {
+                    return Some(s.clone());
+                }
+            }
+            None
+        })
+        .collect();
+
+    // Recall@5: fraction of expected names found in first 5 results
+    let top5: Vec<&str> = result_names.iter().take(5).map(|s| s.as_str()).collect();
+    let found_count = expected_names
+        .iter()
+        .filter(|name| top5.iter().any(|r| r == *name))
+        .count();
+    let recall_at_5 = found_count as f64 / expected_names.len() as f64;
+
+    // MRR: 1/rank of first expected name found (1-indexed), or 0 if none
+    let mrr = result_names
+        .iter()
+        .enumerate()
+        .find_map(|(idx, name)| {
+            if expected_names.contains(&name.as_str()) {
+                Some(1.0 / (idx as f64 + 1.0))
+            } else {
+                None
+            }
+        })
+        .unwrap_or(0.0);
+
+    (recall_at_5, mrr)
 }
 
 /// Simple dot-separated JSON path resolver.
@@ -352,6 +466,13 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
 
     let mut assertions_passed = 0;
     let mut assertions_failed = Vec::new();
+    let mut recall_at_5: Option<f64> = None;
+    let mut mrr: Option<f64> = None;
+
+    let output_size_bytes = match &result {
+        Ok(output) => serde_json::to_string(output).unwrap_or_default().len(),
+        Err(_) => 0,
+    };
 
     match &result {
         Ok(output) => {
@@ -361,15 +482,19 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
                 } else {
                     assertions_failed.push(assertion.describe());
                 }
+
+                // Compute retrieval metrics for expected_symbols assertions
+                if assertion.kind == "expected_symbols" {
+                    let (r, m) = compute_retrieval_metrics(output, assertion);
+                    recall_at_5 = Some(r);
+                    mrr = Some(m);
+                }
             }
         }
         Err(err) => {
             // If the tool errored, check if any assertion is "is_success".
             // If there are no assertions, a tool error is still a failure.
-            let has_is_success = case
-                .assertions
-                .iter()
-                .any(|a| a.kind == "is_success");
+            let has_is_success = case.assertions.iter().any(|a| a.kind == "is_success");
             if has_is_success || case.assertions.is_empty() {
                 assertions_failed.push(format!("tool error: {}", err));
             } else {
@@ -392,9 +517,12 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
         tool: case.tool.clone(),
         passed,
         duration_ms: elapsed.as_millis() as u64,
+        output_size_bytes,
         assertions_passed,
         assertions_failed,
         error: result.err(),
+        recall_at_5,
+        mrr,
     }
 }
 

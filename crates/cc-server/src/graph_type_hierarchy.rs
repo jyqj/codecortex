@@ -99,8 +99,9 @@ pub fn type_hierarchy(
         methods: Vec::new(),
     };
     let overrides = if include_methods {
-        let base_types: Vec<&HierarchyNode> =
-            std::iter::once(&root_as_node).chain(ancestors.iter()).collect();
+        let base_types: Vec<&HierarchyNode> = std::iter::once(&root_as_node)
+            .chain(ancestors.iter())
+            .collect();
         detect_overrides(db, &base_types, &descendants, &type_methods)?
     } else {
         Vec::new()
@@ -135,18 +136,12 @@ fn resolve_root_symbol(
         if let Some(row) = map.into_values().next() {
             return Ok(ResolveResult::Single(row));
         }
-        return Err(CcError::Other(format!(
-            "no symbol with uid '{}'",
-            uid
-        )));
+        return Err(CcError::Other(format!("no symbol with uid '{}'", uid)));
     }
 
     let rows = db.find_symbol(type_name, true, 10)?;
     if rows.is_empty() {
-        return Err(CcError::Other(format!(
-            "no symbol named '{}'",
-            type_name
-        )));
+        return Err(CcError::Other(format!("no symbol named '{}'", type_name)));
     }
 
     // 2. Filter by file_path
@@ -163,11 +158,17 @@ fn resolve_root_symbol(
     }
 
     // 3. Filter to class/interface/enum kinds
-    let type_kinds: HashSet<&str> =
-        ["class", "interface", "enum", "struct", "trait", "abstract_class"]
-            .iter()
-            .copied()
-            .collect();
+    let type_kinds: HashSet<&str> = [
+        "class",
+        "interface",
+        "enum",
+        "struct",
+        "trait",
+        "abstract_class",
+    ]
+    .iter()
+    .copied()
+    .collect();
     let filtered: Vec<_> = rows
         .into_iter()
         .filter(|r| type_kinds.contains(r.kind.as_str()))
@@ -219,8 +220,13 @@ fn bfs_ancestors(
             visited.insert(target_uid.clone());
 
             let relation_str = rel.as_str().to_string();
-            let (name, kind, file_path, methods) =
-                resolve_node_info(db, &target_uid, &edge.target_symbol, include_methods, type_methods)?;
+            let (name, kind, file_path, methods) = resolve_node_info(
+                db,
+                &target_uid,
+                &edge.target_symbol,
+                include_methods,
+                type_methods,
+            )?;
 
             result.push(HierarchyNode {
                 name,
@@ -276,8 +282,13 @@ fn bfs_descendants(
             visited.insert(source_uid.clone());
 
             let relation_str = rel.as_str().to_string();
-            let (name, kind, file_path, methods) =
-                resolve_node_info(db, &source_uid, &edge.source_symbol, include_methods, type_methods)?;
+            let (name, kind, file_path, methods) = resolve_node_info(
+                db,
+                &source_uid,
+                &edge.source_symbol,
+                include_methods,
+                type_methods,
+            )?;
 
             let node = HierarchyNode {
                 name,
@@ -314,13 +325,16 @@ fn resolve_node_info(
     let (name, kind, file_path) = if let Some(row) = map.get(uid) {
         (row.name.clone(), row.kind.clone(), row.file_path.clone())
     } else {
-        (fallback_name.to_string(), "unknown".to_string(), String::new())
+        (
+            fallback_name.to_string(),
+            "unknown".to_string(),
+            String::new(),
+        )
     };
 
     let mut methods = Vec::new();
     if include_methods {
-        let method_edges =
-            db.query_semantic_edges(Some(uid), None, Some("defines_method"))?;
+        let method_edges = db.query_semantic_edges(Some(uid), None, Some("defines_method"))?;
         let mut method_list = Vec::new();
         for me in &method_edges {
             methods.push(me.target_symbol.clone());
@@ -427,10 +441,7 @@ fn detect_overrides(
 }
 
 /// Lookup param_count for a set of symbol UIDs. Returns uid → Option<u32>.
-fn lookup_param_counts(
-    db: &IndexDb,
-    uids: &[String],
-) -> CcResult<HashMap<String, Option<u32>>> {
+fn lookup_param_counts(db: &IndexDb, uids: &[String]) -> CcResult<HashMap<String, Option<u32>>> {
     let mut result = HashMap::new();
     if uids.is_empty() {
         return Ok(result);
@@ -484,8 +495,24 @@ mod tests {
             ("s_a", "uid_a", "A", "interface", 1, 10, None),
             ("s_b", "uid_b", "B", "class", 12, 30, None),
             ("s_c", "uid_c", "C", "class", 32, 50, None),
-            ("s_b_dw", "uid_b_dowork", "doWork", "method", 15, 20, Some(2i64)),
-            ("s_c_dw", "uid_c_dowork", "doWork", "method", 35, 40, Some(2i64)),
+            (
+                "s_b_dw",
+                "uid_b_dowork",
+                "doWork",
+                "method",
+                15,
+                20,
+                Some(2i64),
+            ),
+            (
+                "s_c_dw",
+                "uid_c_dowork",
+                "doWork",
+                "method",
+                35,
+                40,
+                Some(2i64),
+            ),
         ];
         for (sid, uid, name, kind, start, end, param_count) in &symbols {
             conn.execute(
@@ -506,8 +533,22 @@ mod tests {
         let edges = [
             ("se_1", "uid_b", "B", "uid_a", "A", "implements"),
             ("se_2", "uid_c", "C", "uid_b", "B", "inherits"),
-            ("se_3", "uid_b", "B", "uid_b_dowork", "doWork", "defines_method"),
-            ("se_4", "uid_c", "C", "uid_c_dowork", "doWork", "defines_method"),
+            (
+                "se_3",
+                "uid_b",
+                "B",
+                "uid_b_dowork",
+                "doWork",
+                "defines_method",
+            ),
+            (
+                "se_4",
+                "uid_c",
+                "C",
+                "uid_c_dowork",
+                "doWork",
+                "defines_method",
+            ),
         ];
         for (eid, src_uid, src_name, tgt_uid, tgt_name, rel) in &edges {
             conn.execute(

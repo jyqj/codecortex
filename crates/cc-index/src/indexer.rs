@@ -222,6 +222,9 @@ impl Indexer {
             .collect();
         to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));
 
+        // Pre-compute Cargo workspace alias map for Rust crate import resolution
+        let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
+
         let parse_one = |pf: &PendingFile| -> Result<FileWriteUnit, (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
@@ -241,6 +244,17 @@ impl Indexer {
             for import in &mut outcome.imports {
                 import.resolved_path =
                     resolve_import(project_path, &rel_path, &import.import_string);
+
+                // Fallback: resolve Rust workspace crate imports
+                if import.resolved_path.is_none()
+                    && language == Language::Rust
+                    && !workspace_aliases.is_empty()
+                {
+                    import.resolved_path = crate::resolver::resolve_rust_workspace_import(
+                        &import.import_string,
+                        &workspace_aliases,
+                    );
+                }
             }
 
             let elapsed_ms = parse_started.elapsed().as_millis();
@@ -613,8 +627,7 @@ impl Indexer {
                                 continue;
                             }
                             for dir in dirs {
-                                let candidate =
-                                    project_path.join(dir).join(&imp.import_string);
+                                let candidate = project_path.join(dir).join(&imp.import_string);
                                 if candidate.exists() {
                                     imp.resolved_path = Some(
                                         candidate
@@ -942,24 +955,28 @@ impl Indexer {
                 crate::dispatch_synthesis::run_react_rerender_chain_synthesis(&self.db)?;
             stats.react_rerender_edges = rerender_count;
             if rerender_count > 0 {
-                tracing::info!(edges = rerender_count, "React re-render chain synthesis complete");
+                tracing::info!(
+                    edges = rerender_count,
+                    "React re-render chain synthesis complete"
+                );
             }
 
             // Phase 7g: Vue template synthesis (child components + event handlers)
-            let vue_count =
-                crate::dispatch_synthesis::run_vue_template_synthesis(&self.db)?;
+            let vue_count = crate::dispatch_synthesis::run_vue_template_synthesis(&self.db)?;
             if vue_count > 0 {
                 tracing::info!(edges = vue_count, "Vue template synthesis complete");
             }
 
             // Phase 7h: Interface/abstract method dispatch synthesis
-            let interface_count =
-                crate::dispatch_synthesis::run_interface_dispatch_synthesis(
-                    &self.db,
-                    &synthesis_config,
-                )?;
+            let interface_count = crate::dispatch_synthesis::run_interface_dispatch_synthesis(
+                &self.db,
+                &synthesis_config,
+            )?;
             if interface_count > 0 {
-                tracing::info!(edges = interface_count, "Interface dispatch synthesis complete");
+                tracing::info!(
+                    edges = interface_count,
+                    "Interface dispatch synthesis complete"
+                );
             }
         } else {
             // If synthesis was enabled in a previous run and is disabled now,
@@ -1074,9 +1091,7 @@ impl Indexer {
                                     let mut date = None;
                                     for line in content.lines().take(20) {
                                         if title.is_none() && line.starts_with("# ") {
-                                            title = Some(
-                                                line.trim_start_matches("# ").to_string(),
-                                            );
+                                            title = Some(line.trim_start_matches("# ").to_string());
                                         }
                                         if line.to_lowercase().starts_with("status:") {
                                             status = Some(

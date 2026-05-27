@@ -51,6 +51,31 @@ pub struct TraceEdgeEvidence {
     pub last_seen: String,
 }
 
+/// A candidate symbol surfaced during disambiguation.
+#[derive(Debug, Clone, Serialize)]
+pub struct DisambiguationCandidate {
+    pub uid: String,
+    pub name: String,
+    pub file_path: String,
+    pub kind: String,
+    pub start_line: u32,
+}
+
+/// Disambiguation information when a query matched multiple symbols.
+#[derive(Debug, Clone, Serialize)]
+pub struct DisambiguationInfo {
+    /// "from" or "to"
+    pub role: String,
+    /// Original query string
+    pub query: String,
+    /// The UID that was used
+    pub chosen_uid: String,
+    /// File path of chosen symbol
+    pub chosen_file: String,
+    /// All candidate symbols (including the chosen one)
+    pub candidates: Vec<DisambiguationCandidate>,
+}
+
 /// Rich trace_path result with backward-compatible paths + rich nodes/edges.
 #[derive(Debug, Clone, Serialize)]
 pub struct TracePathResult {
@@ -58,6 +83,13 @@ pub struct TracePathResult {
     pub nodes: Vec<TraceNode>,
     pub edges: Vec<TraceEdge>,
     pub path_count: usize,
+    /// Non-empty when a `from` or `to` query matched multiple symbols.
+    /// The first candidate was used; pass `from_uid` / `to_uid` to override.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    pub disambiguation: Vec<DisambiguationInfo>,
+    /// Diagnostic hint when no path is found (e.g. reasons + suggested next action).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub diagnostic: Option<String>,
 }
 
 /// A single labeled path from BFS, carrying both node UIDs and edge data.

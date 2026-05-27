@@ -220,31 +220,30 @@ impl FrameworkResolver for DjangoResolver {
         // Step 2: for each mount, find the target file via catalog and prepend prefix
         for mount in &mounts {
             // Try lookup by handler_name first (last segment or bare variable)
-            let target_file =
-                match catalog.lookup_symbol(&mount.handler_name, &mount.mount_file) {
-                    Some((_, file)) if file != mount.mount_file => Some(file),
-                    _ => {
-                        // For dotted module paths like "app.urls", also try the full expression
-                        // converted to a potential file path pattern
-                        if mount.handler_expr.contains('.') {
-                            // Try "urlpatterns" as a common Django convention in the target module
-                            catalog
-                                .lookup_symbol("urlpatterns", &mount.mount_file)
-                                .and_then(|(_, file)| {
-                                    // Check if the file path matches the module hint
-                                    // e.g. "app.urls" -> file should contain "app/urls"
-                                    let module_path = mount.handler_expr.replace('.', "/");
-                                    if file.contains(&module_path) {
-                                        Some(file)
-                                    } else {
-                                        None
-                                    }
-                                })
-                        } else {
-                            None
-                        }
+            let target_file = match catalog.lookup_symbol(&mount.handler_name, &mount.mount_file) {
+                Some((_, file)) if file != mount.mount_file => Some(file),
+                _ => {
+                    // For dotted module paths like "app.urls", also try the full expression
+                    // converted to a potential file path pattern
+                    if mount.handler_expr.contains('.') {
+                        // Try "urlpatterns" as a common Django convention in the target module
+                        catalog
+                            .lookup_symbol("urlpatterns", &mount.mount_file)
+                            .and_then(|(_, file)| {
+                                // Check if the file path matches the module hint
+                                // e.g. "app.urls" -> file should contain "app/urls"
+                                let module_path = mount.handler_expr.replace('.', "/");
+                                if file.contains(&module_path) {
+                                    Some(file)
+                                } else {
+                                    None
+                                }
+                            })
+                    } else {
+                        None
                     }
-                };
+                }
+            };
 
             let target_file = match target_file {
                 Some(f) => f,
@@ -267,7 +266,10 @@ impl FrameworkResolver for DjangoResolver {
                         } else {
                             // Django: "/api/" + "/users/" -> "/api/users/"
                             // Strip leading slash from the sub-route to avoid double slash
-                            let sub = edge.route_path.strip_prefix('/').unwrap_or(&edge.route_path);
+                            let sub = edge
+                                .route_path
+                                .strip_prefix('/')
+                                .unwrap_or(&edge.route_path);
                             format!("{}{}", mount.prefix, sub)
                         };
                         edge.route_path = combined;
@@ -320,13 +322,11 @@ urlpatterns = [
         let routes = run_django("myapp/urls.py", source);
         assert_eq!(routes.len(), 2, "expected 2 routes, got {}", routes.len());
 
-        assert!(routes
-            .iter()
-            .any(|r| r.route_path == "/api/users/" && r.handler_name.as_deref() == Some("user_list")));
         assert!(routes.iter().any(
-            |r| r.route_path == "/api/users/<int:pk>/"
-                && r.handler_name.as_deref() == Some("user_detail")
+            |r| r.route_path == "/api/users/" && r.handler_name.as_deref() == Some("user_list")
         ));
+        assert!(routes.iter().any(|r| r.route_path == "/api/users/<int:pk>/"
+            && r.handler_name.as_deref() == Some("user_detail")));
 
         assert!(routes
             .iter()
@@ -349,10 +349,7 @@ urlpatterns = [
         assert_eq!(routes.len(), 1, "expected 1 route, got {}", routes.len());
         assert!(routes[0].route_path.contains("api/"));
         assert_eq!(routes[0].handler_name.as_deref(), Some("detail"));
-        assert_eq!(
-            routes[0].handler_expr.as_deref(),
-            Some("views.detail")
-        );
+        assert_eq!(routes[0].handler_expr.as_deref(), Some("views.detail"));
     }
 
     #[test]
@@ -377,14 +374,10 @@ urlpatterns = [
         assert_eq!(routes.len(), 2, "expected 2 routes, got {}", routes.len());
 
         // Path starting with / should stay as-is
-        assert!(routes
-            .iter()
-            .any(|r| r.route_path == "/absolute/path/"
-                && r.handler_name.as_deref() == Some("absolute_handler")));
+        assert!(routes.iter().any(|r| r.route_path == "/absolute/path/"
+            && r.handler_name.as_deref() == Some("absolute_handler")));
         // Path without leading / should get one prepended
-        assert!(routes
-            .iter()
-            .any(|r| r.route_path == "/relative/path/"
-                && r.handler_name.as_deref() == Some("relative_handler")));
+        assert!(routes.iter().any(|r| r.route_path == "/relative/path/"
+            && r.handler_name.as_deref() == Some("relative_handler")));
     }
 }

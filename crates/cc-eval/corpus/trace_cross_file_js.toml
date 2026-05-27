@@ -1,0 +1,20 @@
+name = "trace_cross_file_js"
+tool = "trace"
+description = "Trace call path across JS files: getUserRoute -> processUser -> formatName"
+
+[params]
+from = "getUserRoute"
+to = "formatName"
+max_depth = 5
+source_mode = "snippet"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "paths"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"

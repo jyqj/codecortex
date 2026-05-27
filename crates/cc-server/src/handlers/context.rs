@@ -81,17 +81,18 @@ pub fn explore_symbols(
 
     let mut rt = runtime.lock().map_err(|e| e.to_string())?;
     let max_chars = rt.repo_size_tier().max_output_chars();
-    let result = rt.explore_symbols(
-        symbols,
-        max_callers,
-        max_callees,
-        include_source,
-        include_relations,
-        include_metrics,
-        outline,
-        max_source_per_file,
-    )
-    .map_err(|e| e.to_string())?;
+    let result = rt
+        .explore_symbols(
+            symbols,
+            max_callers,
+            max_callees,
+            include_source,
+            include_relations,
+            include_metrics,
+            outline,
+            max_source_per_file,
+        )
+        .map_err(|e| e.to_string())?;
     Ok(super::facade::enforce_output_limit(result, max_chars))
 }
 

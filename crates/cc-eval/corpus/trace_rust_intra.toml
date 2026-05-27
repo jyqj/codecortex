@@ -1,0 +1,15 @@
+name = "trace_rust_intra"
+tool = "trace"
+description = "Trace within Rust file: process_order -> calculate_total"
+
+[params]
+from = "process_order"
+to = "calculate_total"
+max_depth = 3
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "paths"

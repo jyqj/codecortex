@@ -160,12 +160,8 @@ impl SymbolCatalog {
                 // If receiver_expr is a variable name like "x", resolve x → Foo
                 // via type_assigns, then look up Foo.method_name.
                 if let Some(ref recv) = edge.receiver_expr {
-                    if let Some(resolved_type) =
-                        tc.resolve_var_type(&edge.file_path, recv)
-                    {
-                        if let Some(uid) =
-                            tc.resolve_method_by_receiver(leaf, resolved_type)
-                        {
+                    if let Some(resolved_type) = tc.resolve_var_type(&edge.file_path, recv) {
+                        if let Some(uid) = tc.resolve_method_by_receiver(leaf, resolved_type) {
                             if let Some(idx) = self.find_by_uid(uid) {
                                 let e = &self.entries[idx];
                                 edge.target_symbol_id = Some(e.symbol_id.clone());
@@ -173,8 +169,7 @@ impl SymbolCatalog {
                                 edge.callee_symbol_uid = Some(uid.to_string());
                                 edge.resolution_kind = ResolutionKind::ScopeResolved;
                                 edge.resolution_confidence = 0.90;
-                                edge.resolution_strategy =
-                                    "type_assign_receiver".to_string();
+                                edge.resolution_strategy = "type_assign_receiver".to_string();
                                 edge.parser_confidence = 0.90;
                                 continue;
                             }

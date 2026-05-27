@@ -254,12 +254,8 @@ fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circular
 }
 
 /// Collect witness edges for a file-level SCC by querying the imports table.
-fn collect_file_witness_edges(
-    db: &Arc<IndexDb>,
-    scc: &[String],
-) -> CcResult<Vec<InternalEdge>> {
-    let scc_set: std::collections::HashSet<&str> =
-        scc.iter().map(|s| s.as_str()).collect();
+fn collect_file_witness_edges(db: &Arc<IndexDb>, scc: &[String]) -> CcResult<Vec<InternalEdge>> {
+    let scc_set: std::collections::HashSet<&str> = scc.iter().map(|s| s.as_str()).collect();
     let mut edges = Vec::new();
 
     for node in scc {
@@ -343,10 +339,7 @@ fn find_circular_deps_package(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circu
 
 // ── Community-level circular deps ──────────────────────────────────
 
-fn find_circular_deps_community(
-    db: &Arc<IndexDb>,
-    limit: usize,
-) -> CcResult<CircularDepsResult> {
+fn find_circular_deps_community(db: &Arc<IndexDb>, limit: usize) -> CcResult<CircularDepsResult> {
     // Build uid → community map
     let sym_rows = db.query_json(
         "SELECT DISTINCT symbol_uid, community_id FROM symbols WHERE community_id IS NOT NULL AND symbol_uid IS NOT NULL",
@@ -416,12 +409,8 @@ fn find_circular_deps_community(
 
 // ── Utility: collect edges from adjacency map within an SCC ────────
 
-fn collect_adj_edges(
-    adj: &HashMap<String, Vec<String>>,
-    scc: &[String],
-) -> Vec<InternalEdge> {
-    let scc_set: std::collections::HashSet<&str> =
-        scc.iter().map(|s| s.as_str()).collect();
+fn collect_adj_edges(adj: &HashMap<String, Vec<String>>, scc: &[String]) -> Vec<InternalEdge> {
+    let scc_set: std::collections::HashSet<&str> = scc.iter().map(|s| s.as_str()).collect();
     let mut edges = Vec::new();
 
     for node in scc {
@@ -509,13 +498,19 @@ mod tests {
 
     #[test]
     fn test_extract_package_with_src_boundary() {
-        assert_eq!(extract_package("packages/core/src/utils/foo.ts"), "packages/core");
+        assert_eq!(
+            extract_package("packages/core/src/utils/foo.ts"),
+            "packages/core"
+        );
         assert_eq!(extract_package("my-lib/src/index.ts"), "my-lib");
     }
 
     #[test]
     fn test_extract_package_with_lib_boundary() {
-        assert_eq!(extract_package("packages/utils/lib/helpers.ts"), "packages/utils");
+        assert_eq!(
+            extract_package("packages/utils/lib/helpers.ts"),
+            "packages/utils"
+        );
     }
 
     #[test]
@@ -526,7 +521,10 @@ mod tests {
     #[test]
     fn test_extract_package_fallback_two_components() {
         // No src/lib/app boundary — take first 2 components
-        assert_eq!(extract_package("packages/core/utils/foo.ts"), "packages/core");
+        assert_eq!(
+            extract_package("packages/core/utils/foo.ts"),
+            "packages/core"
+        );
     }
 
     #[test]

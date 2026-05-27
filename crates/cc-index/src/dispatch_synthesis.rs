@@ -584,7 +584,14 @@ const REGISTRAR_PREFIXES: &[&str] = &[
 
 /// Well-known dispatcher method name prefixes.
 const DISPATCHER_PREFIXES: &[&str] = &[
-    "emit", "fire", "dispatch", "trigger", "notify", "publish", "broadcast", "send",
+    "emit",
+    "fire",
+    "dispatch",
+    "trigger",
+    "notify",
+    "publish",
+    "broadcast",
+    "send",
 ];
 
 /// Returns true if `name` starts with any of the given prefixes (case-insensitive check
@@ -619,10 +626,7 @@ fn matches_method_prefix(name: &str, prefixes: &[&str]) -> bool {
 /// This complements the event-emitter synthesis (which matches by event name string)
 /// by catching cases where the event bus pattern is used but event names aren't
 /// statically detectable.
-pub fn run_field_observer_synthesis(
-    db: &IndexDb,
-    config: &SynthesisConfig,
-) -> CcResult<usize> {
+pub fn run_field_observer_synthesis(db: &IndexDb, config: &SynthesisConfig) -> CcResult<usize> {
     if !config.enabled {
         return Ok(0);
     }
@@ -636,10 +640,8 @@ pub fn run_field_observer_synthesis(
     //    methods and filter in Rust.
 
     // First, find all classes that have CallbackStore or CallbackInvoke dispatch sites.
-    let store_sites =
-        db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackStore.as_str())?;
-    let invoke_sites =
-        db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackInvoke.as_str())?;
+    let store_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackStore.as_str())?;
+    let invoke_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackInvoke.as_str())?;
 
     // Build a map of (class_uid → store_sites) and (class_uid → invoke_sites).
     let mut class_stores: HashMap<String, Vec<&DispatchSiteRecord>> = HashMap::new();
@@ -753,10 +755,7 @@ pub fn run_field_observer_synthesis(
         .collect();
 
     // Deduplicate — we only need unique containers.
-    let unique_containers: HashSet<&str> = candidate_containers
-        .iter()
-        .map(|(c, _)| *c)
-        .collect();
+    let unique_containers: HashSet<&str> = candidate_containers.iter().map(|(c, _)| *c).collect();
 
     // Track edges we've already created (from Strategy A) to avoid duplicates.
     let existing_edge_ids: HashSet<String> =
@@ -858,9 +857,7 @@ pub fn run_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<usize> {
     // Collect class components with setState calls.
     let class_setter_sites: Vec<&DispatchSiteRecord> = all_sites
         .iter()
-        .filter(|s| {
-            s.site_kind == DispatchSiteKind::StateSetterCall && s.key == "setState"
-        })
+        .filter(|s| s.site_kind == DispatchSiteKind::StateSetterCall && s.key == "setState")
         .collect();
 
     // Collect functional component setter bindings.
@@ -926,14 +923,14 @@ pub fn run_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<usize> {
             let matches = db.find_symbols_by_name_and_kinds(child_name, component_kinds)?;
 
             // Same resolution logic as JSX synthesis: prefer same-file, then unique global.
-            let target = if let Some(m) = matches.iter().find(|s| s.file_path == child_jsx.file_path)
-            {
-                m.symbol_uid.clone()
-            } else if matches.len() == 1 {
-                matches[0].symbol_uid.clone()
-            } else {
-                None
-            };
+            let target =
+                if let Some(m) = matches.iter().find(|s| s.file_path == child_jsx.file_path) {
+                    m.symbol_uid.clone()
+                } else if matches.len() == 1 {
+                    matches[0].symbol_uid.clone()
+                } else {
+                    None
+                };
 
             let child_uid = match target {
                 Some(uid) => uid,
@@ -1037,15 +1034,14 @@ pub fn run_vue_template_synthesis(db: &IndexDb) -> CcResult<usize> {
             };
 
             // Prefer same-file match, then unique global match.
-            let target = if let Some(candidate) =
-                candidates.iter().find(|(_, fp)| *fp == site.file_path)
-            {
-                Some((candidate, 0.82))
-            } else if candidates.len() == 1 {
-                Some((&candidates[0], 0.75))
-            } else {
-                None
-            };
+            let target =
+                if let Some(candidate) = candidates.iter().find(|(_, fp)| *fp == site.file_path) {
+                    Some((candidate, 0.82))
+                } else if candidates.len() == 1 {
+                    Some((&candidates[0], 0.75))
+                } else {
+                    None
+                };
 
             if let Some(((target_uid, _), confidence)) = target {
                 if target_uid.as_str() == source_uid.as_str() {
@@ -1163,10 +1159,7 @@ pub fn run_vue_template_synthesis(db: &IndexDb) -> CcResult<usize> {
 ///    - (class_uid, method_name) → method_uid for quick lookup
 /// 4. For each call edge targeting an interface method, find implementor methods
 ///    with the same name and create synthetic edges.
-pub fn run_interface_dispatch_synthesis(
-    db: &IndexDb,
-    config: &SynthesisConfig,
-) -> CcResult<usize> {
+pub fn run_interface_dispatch_synthesis(db: &IndexDb, config: &SynthesisConfig) -> CcResult<usize> {
     if !config.enabled {
         return Ok(0);
     }
@@ -1508,7 +1501,11 @@ mod tests {
 
         // Verify the semantic edge.
         let edges = db
-            .query_semantic_edges(Some(component_uid), Some(child_uid), Some("renders_component"))
+            .query_semantic_edges(
+                Some(component_uid),
+                Some(child_uid),
+                Some("renders_component"),
+            )
             .unwrap();
         assert_eq!(edges.len(), 1);
         assert!(edges[0].edge_id.starts_with("synth:vue:"));
@@ -1524,13 +1521,7 @@ mod tests {
 
         // Insert component and handler symbols in the same file.
         insert_symbol(&db, "src/MyForm.vue", "MyForm", "component", component_uid);
-        insert_symbol(
-            &db,
-            "src/MyForm.vue",
-            "submitForm",
-            "function",
-            handler_uid,
-        );
+        insert_symbol(&db, "src/MyForm.vue", "submitForm", "function", handler_uid);
 
         // Insert a VueEventHandler dispatch site.
         let sites = vec![DispatchSiteRecord {

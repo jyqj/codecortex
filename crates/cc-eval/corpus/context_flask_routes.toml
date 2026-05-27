@@ -1,0 +1,15 @@
+name = "context_flask_routes"
+tool = "context"
+description = "Build context for understanding Flask API routes"
+
+[params]
+task = "understand the Flask API routes and their handlers"
+max_symbols = 10
+include_source = true
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "api_get_user"

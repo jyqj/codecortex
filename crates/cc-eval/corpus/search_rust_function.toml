@@ -1,0 +1,19 @@
+name = "search_rust_function"
+tool = "search"
+description = "Search for a Rust function by name"
+
+[params]
+query = "calculate_total"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "calculate_total"
+
+[[assertions]]
+kind = "output_contains"
+value = "lib.rs"

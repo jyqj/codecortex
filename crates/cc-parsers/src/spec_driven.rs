@@ -155,15 +155,14 @@ static DART_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 /// Dart: class/enum/mixin/extension declarations.
 static DART_CLASS_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"(?m)^[^\S\n]*(?:abstract\s+)?(?:class|enum|mixin|extension)\s+([A-Za-z_]\w*)",
-    )
-    .expect("dart class regex")
+    Regex::new(r"(?m)^[^\S\n]*(?:abstract\s+)?(?:class|enum|mixin|extension)\s+([A-Za-z_]\w*)")
+        .expect("dart class regex")
 });
 
 /// Dart: library declarations.
-static DART_LIBRARY_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?m)^[^\S\n]*library\s+([\w.]+)\s*;").expect("dart library regex"));
+static DART_LIBRARY_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?m)^[^\S\n]*library\s+([\w.]+)\s*;").expect("dart library regex")
+});
 
 /// Dart: import/export declarations.
 static DART_IMPORT_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -197,10 +196,8 @@ static SCALA_IMPORT_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 /// Lua: function declarations (both `function name()` and `local function name()`).
 static LUA_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"(?m)^[^\S\n]*(?:local\s+)?function\s+([A-Za-z_][\w.:]*)\s*\(",
-    )
-    .expect("lua func regex")
+    Regex::new(r"(?m)^[^\S\n]*(?:local\s+)?function\s+([A-Za-z_][\w.:]*)\s*\(")
+        .expect("lua func regex")
 });
 
 /// Lua: require() calls.
@@ -974,15 +971,9 @@ enum Status {
             .iter()
             .filter(|s| s.kind == SymbolKind::Function || s.kind == SymbolKind::Method)
             .count();
-        assert!(
-            func_count >= 2,
-            "should find getUser and deleteUser"
-        );
+        assert!(func_count >= 2, "should find getUser and deleteUser");
 
-        assert!(
-            outcome.imports.len() >= 2,
-            "should find import statements"
-        );
+        assert!(outcome.imports.len() >= 2, "should find import statements");
     }
 
     #[test]
@@ -1039,10 +1030,7 @@ trait Serializable {
             "should find getUser, deleteUser, and serialize"
         );
 
-        assert!(
-            outcome.imports.len() >= 2,
-            "should find import statements"
-        );
+        assert!(outcome.imports.len() >= 2, "should find import statements");
 
         // qname should include package
         let obj = class_syms.iter().find(|s| s.name == "UserService").unwrap();

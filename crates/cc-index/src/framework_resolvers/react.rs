@@ -1,8 +1,11 @@
 //! React framework resolver.
 //!
-//! - `enrich_file`: extracts React Router route definitions, Next.js file-based
-//!   routes, and component export patterns.
-//! - `resolve_cross_file`: no-op (JSX component references handled by dispatch_synthesis)
+//! - `enrich_file`: extracts React Router route definitions (JSX `<Route>`,
+//!   route config objects, `lazy()` imports), Next.js file-based routes,
+//!   and component export patterns.
+//! - `resolve_cross_file`: resolves route → component cross-file links by
+//!   looking up handler components in the symbol catalog and binding
+//!   `handler_symbol_uid`.
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -21,10 +24,8 @@ use super::{FrameworkResolver, ProjectFrameworkContext};
 ///
 /// Captures: (1) route path, (2) component name
 static ROUTE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"<Route\s+[^>]*path=["'{]"?([^"'\}>]+)"?[^>]*(?:element|component)=\{?<?(\w+)"#,
-    )
-    .expect("react route re")
+    Regex::new(r#"<Route\s+[^>]*path=["'{]"?([^"'\}>]+)"?[^>]*(?:element|component)=\{?<?(\w+)"#)
+        .expect("react route re")
 });
 
 /// `export default function ComponentName` — default function component export.
@@ -41,6 +42,23 @@ static EXPORT_DEFAULT_FN_RE: LazyLock<Regex> = LazyLock::new(|| {
 static EXPORT_CONST_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"(?m)^export\s+(?:const|let)\s+([A-Z][a-zA-Z0-9]*)\s*="#)
         .expect("react export const re")
+});
+
+/// Route config object: `{ path: '/...', component: ComponentName }`.
+///
+/// Captures: (1) route path, (2) component name
+static ROUTE_CONFIG_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"path:\s*["']([^"']+)["']\s*,\s*component:\s*(\w+)"#)
+        .expect("react route config re")
+});
+
+/// Route config with lazy component:
+/// `{ path: '/...', component: lazy(() => import('./path')) }`
+///
+/// Captures: (1) route path, (2) import path
+static ROUTE_LAZY_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"path:\s*["']([^"']+)["']\s*,\s*component:\s*lazy\s*\(\s*\(\)\s*=>\s*import\s*\(\s*["']([^"']+)["']\s*\)"#)
+        .expect("react route lazy re")
 });
 
 pub struct ReactComponentResolver;
@@ -188,6 +206,75 @@ impl FrameworkResolver for ReactComponentResolver {
             });
         }
 
+        // --- 1b. Route config objects: { path: '/...', component: Comp } ---
+        // First collect lazy routes so we can skip them in the non-lazy pass.
+        let mut lazy_route_paths: Vec<String> = Vec::new();
+        for cap in ROUTE_LAZY_RE.captures_iter(source) {
+            let route_path = cap.get(1).map(|m| m.as_str()).unwrap_or("/");
+            let import_path = cap.get(2).map(|m| m.as_str()).unwrap_or("");
+
+            lazy_route_paths.push(route_path.to_string());
+
+            let match_offset = cap.get(0).unwrap().start();
+            let line = Self::line_for_offset(source, match_offset);
+
+            // Derive a component name from the import path (last segment, PascalCase)
+            let component_name = import_path.rsplit('/').next().map(|s| s.to_string());
+
+            outcome.route_edges.push(RouteEdgeRecord {
+                edge_id: StableId::edge_id("route", file_path, line, 0),
+                file_path: file_path.to_string(),
+                route_path: route_path.to_string(),
+                handler_name: component_name,
+                method: Some("GET".to_string()),
+                line,
+                start_col: 0,
+                end_line: None,
+                end_col: 0,
+                handler_symbol_id: None,
+                handler_symbol_uid: None,
+                handler_expr: Some(format!("lazy(() => import('{}'))", import_path)),
+                router_symbol_uid: None,
+                framework: Some("react".to_string()),
+                route_kind: Some("react_lazy_route".to_string()),
+                confidence: 0.78,
+                parser_tier: ParserTier::Heuristic,
+            });
+        }
+
+        for cap in ROUTE_CONFIG_RE.captures_iter(source) {
+            let route_path = cap.get(1).map(|m| m.as_str()).unwrap_or("/");
+            let component_name = cap.get(2).map(|m| m.as_str().to_string());
+
+            // Skip if this route path was already captured as a lazy route
+            if lazy_route_paths.contains(&route_path.to_string()) {
+                continue;
+            }
+
+            let match_offset = cap.get(0).unwrap().start();
+            let line = Self::line_for_offset(source, match_offset);
+
+            outcome.route_edges.push(RouteEdgeRecord {
+                edge_id: StableId::edge_id("route", file_path, line, 0),
+                file_path: file_path.to_string(),
+                route_path: route_path.to_string(),
+                handler_name: component_name,
+                method: Some("GET".to_string()),
+                line,
+                start_col: 0,
+                end_line: None,
+                end_col: 0,
+                handler_symbol_id: None,
+                handler_symbol_uid: None,
+                handler_expr: None,
+                router_symbol_uid: None,
+                framework: Some("react".to_string()),
+                route_kind: Some("react_route_config".to_string()),
+                confidence: 0.78,
+                parser_tier: ParserTier::Heuristic,
+            });
+        }
+
         // --- 2. Next.js file-based routing ---
         if let Some((route, kind)) = Self::detect_nextjs_file_route(file_path) {
             // Find the first exported component or function as the handler
@@ -283,13 +370,47 @@ impl FrameworkResolver for ReactComponentResolver {
         }
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn resolve_cross_file(
         &self,
-        _catalog: &crate::resolver::SymbolCatalog,
-        _outcomes: &mut [(String, ParseOutcome)],
+        catalog: &crate::resolver::SymbolCatalog,
+        outcomes: &mut [(String, ParseOutcome)],
         _ctx: &ProjectFrameworkContext,
     ) {
-        // No-op: JSX component references are already handled by dispatch_synthesis.
+        // Resolve handler_symbol_uid for route edges that reference components
+        // in other files. Covers react_route, react_route_config, and
+        // react_lazy_route kinds.
+        //
+        // For lazy routes, the handler_name is derived from the import path
+        // (e.g. "./pages/UserDetail" → "UserDetail") which matches the
+        // default export name in the target file.
+
+        let route_kinds: &[&str] = &["react_route", "react_route_config", "react_lazy_route"];
+
+        for (file_path, outcome) in outcomes.iter_mut() {
+            let fp = file_path.clone();
+            for edge in &mut outcome.route_edges {
+                // Only process React route edges without a resolved UID
+                if edge.handler_symbol_uid.is_some() {
+                    continue;
+                }
+                let kind = edge.route_kind.as_deref().unwrap_or("");
+                if !route_kinds.contains(&kind) {
+                    continue;
+                }
+
+                if let Some(ref handler_name) = edge.handler_name {
+                    if let Some((uid, _target_file)) = catalog.lookup_symbol(handler_name, &fp) {
+                        if !uid.is_empty() {
+                            edge.handler_symbol_uid = Some(uid);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -353,10 +474,7 @@ export default function UsersPage() {
         assert_eq!(nextjs_routes.len(), 1);
         assert_eq!(nextjs_routes[0].route_path, "/users");
         assert_eq!(nextjs_routes[0].route_kind.as_deref(), Some("nextjs_page"));
-        assert_eq!(
-            nextjs_routes[0].handler_name.as_deref(),
-            Some("UsersPage")
-        );
+        assert_eq!(nextjs_routes[0].handler_name.as_deref(), Some("UsersPage"));
 
         // pages/api/ → API route
         let api_routes = run_react("pages/api/users.ts", "export default function handler() {}");
@@ -392,6 +510,173 @@ export default function UserPage() {
             .collect();
         assert_eq!(nextjs_api.len(), 1);
         assert_eq!(nextjs_api[0].route_path, "/users");
+    }
+
+    #[test]
+    fn test_route_config_objects() {
+        let source = r#"
+import UserList from './pages/UserList';
+import UserDetail from './pages/UserDetail';
+
+const routes = [
+    { path: '/users', component: UserList },
+    { path: '/users/:id', component: UserDetail },
+];
+"#;
+        let routes = run_react("src/routes.tsx", source);
+        let config_routes: Vec<_> = routes
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("react_route_config"))
+            .collect();
+        assert_eq!(
+            config_routes.len(),
+            2,
+            "expected 2 route config entries, got {}",
+            config_routes.len()
+        );
+        assert!(config_routes
+            .iter()
+            .any(|r| r.route_path == "/users" && r.handler_name.as_deref() == Some("UserList")));
+        assert!(config_routes.iter().any(
+            |r| r.route_path == "/users/:id" && r.handler_name.as_deref() == Some("UserDetail")
+        ));
+    }
+
+    #[test]
+    fn test_lazy_import_routes() {
+        let source = r#"
+import UserList from './pages/UserList';
+
+const routes = [
+    { path: '/users', component: UserList },
+    { path: '/users/:id', component: lazy(() => import('./pages/UserDetail')) },
+];
+"#;
+        let routes = run_react("src/routes.tsx", source);
+
+        // The lazy route should be detected as react_lazy_route
+        let lazy_routes: Vec<_> = routes
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("react_lazy_route"))
+            .collect();
+        assert_eq!(
+            lazy_routes.len(),
+            1,
+            "expected 1 lazy route, got {}",
+            lazy_routes.len()
+        );
+        assert_eq!(lazy_routes[0].route_path, "/users/:id");
+        assert_eq!(
+            lazy_routes[0].handler_name.as_deref(),
+            Some("UserDetail"),
+            "handler_name should be derived from import path"
+        );
+        assert!(
+            lazy_routes[0]
+                .handler_expr
+                .as_deref()
+                .unwrap()
+                .contains("./pages/UserDetail"),
+            "handler_expr should contain the import path"
+        );
+
+        // The non-lazy route should be detected as react_route_config
+        let config_routes: Vec<_> = routes
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("react_route_config"))
+            .collect();
+        assert_eq!(
+            config_routes.len(),
+            1,
+            "expected 1 non-lazy config route, got {}",
+            config_routes.len()
+        );
+        assert_eq!(config_routes[0].route_path, "/users");
+    }
+
+    #[test]
+    fn test_cross_file_resolution() {
+        use cc_model::symbol::{SymbolKind, SymbolRecord};
+
+        // Set up a catalog with a symbol in another file
+        let mut catalog = crate::resolver::SymbolCatalog::new();
+        catalog.add_symbols(&[SymbolRecord {
+            symbol_id: "sym_userlist".to_string(),
+            symbol_uid: Some("uid_userlist".to_string()),
+            name: "UserList".to_string(),
+            file_path: "src/pages/UserList.tsx".to_string(),
+            kind: SymbolKind::Function,
+            start_line: 1,
+            end_line: 10,
+            start_col: 0,
+            end_col: 0,
+            container: None,
+            qname: None,
+            export_name: Some("UserList".to_string()),
+            is_default_export: true,
+            scope_id: None,
+            signature: None,
+            doc: None,
+            parser_tier: ParserTier::Heuristic,
+            parser_confidence: 0.9,
+            parent_symbol_id: None,
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        }]);
+
+        // Build route edges in a different file referencing UserList
+        let mut outcome = ParseOutcome::default();
+        let ctx = ProjectFrameworkContext::new();
+        let source = r#"
+import { Route, Routes } from "react-router-dom";
+import UserList from './pages/UserList';
+
+function App() {
+    return (
+        <Routes>
+            <Route path="/users" element={<UserList/>} />
+        </Routes>
+    );
+}
+"#;
+        ReactComponentResolver.enrich_file(
+            "src/App.tsx",
+            source,
+            Language::Tsx,
+            &mut outcome,
+            &ctx,
+        );
+
+        // Verify the route was extracted
+        let react_routes: Vec<_> = outcome
+            .route_edges
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("react_route"))
+            .collect();
+        assert_eq!(react_routes.len(), 1);
+        assert!(react_routes[0].handler_symbol_uid.is_none());
+
+        // Run cross-file resolution
+        let mut file_outcomes = vec![("src/App.tsx".to_string(), outcome)];
+        ReactComponentResolver.resolve_cross_file(&catalog, &mut file_outcomes, &ctx);
+
+        // Verify UID was resolved
+        let resolved = &file_outcomes[0].1.route_edges;
+        let react_routes: Vec<_> = resolved
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("react_route"))
+            .collect();
+        assert_eq!(react_routes.len(), 1);
+        assert_eq!(
+            react_routes[0].handler_symbol_uid.as_deref(),
+            Some("uid_userlist"),
+            "handler_symbol_uid should be resolved from catalog"
+        );
     }
 
     #[test]

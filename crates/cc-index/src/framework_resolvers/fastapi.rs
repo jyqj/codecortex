@@ -1,7 +1,7 @@
 //! FastAPI framework resolver.
 //!
 //! - `enrich_file`: extracts route definitions from FastAPI decorators
-//! - `resolve_cross_file`: no-op (future: prefix from APIRouter)
+//! - `resolve_cross_file`: resolves APIRouter prefix mounting
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -32,18 +32,15 @@ static DECORATOR_ROUTE_RE: LazyLock<Regex> = LazyLock::new(|| {
 /// Function definition: `def handler_name(` or `async def handler_name(`
 ///
 /// Captures: (1) function name
-static DEF_NAME_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("fastapi def name re")
-});
+static DEF_NAME_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("fastapi def name re"));
 
 /// app.include_router(router_name, prefix="/prefix") or app.include_router(router_name)
 ///
 /// Captures: (1) router variable name, (2) optional prefix string
 static INCLUDE_ROUTER_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)\w+\.include_router\(\s*(\w+)(?:\s*,\s*prefix\s*=\s*["']([^"']+)["'])?"#,
-    )
-    .expect("fastapi include_router re")
+    Regex::new(r#"(?m)\w+\.include_router\(\s*(\w+)(?:\s*,\s*prefix\s*=\s*["']([^"']+)["'])?"#)
+        .expect("fastapi include_router re")
 });
 
 pub struct FastApiResolver;

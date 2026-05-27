@@ -115,7 +115,11 @@ impl SymbolCatalog {
     // -----------------------------------------------------------------------
 
     /// Resolve a dotted name like "foo.bar.baz" in the context of `file`.
-    pub(in crate::resolver) fn resolve_member_chain(&self, parts: &[&str], file: &str) -> Option<usize> {
+    pub(in crate::resolver) fn resolve_member_chain(
+        &self,
+        parts: &[&str],
+        file: &str,
+    ) -> Option<usize> {
         if parts.is_empty() {
             return None;
         }
@@ -277,7 +281,11 @@ impl SymbolCatalog {
     }
 
     /// Resolve an exported name from a module path.
-    pub(in crate::resolver) fn resolve_export(&self, module_path: &str, export_name: &str) -> Option<usize> {
+    pub(in crate::resolver) fn resolve_export(
+        &self,
+        module_path: &str,
+        export_name: &str,
+    ) -> Option<usize> {
         let exact = self.exported(module_path, export_name);
         if let Some(idx) = pick_unique(&self.entries, &exact) {
             return Some(idx);
@@ -527,7 +535,11 @@ impl SymbolCatalog {
         })
     }
 
-    pub(in crate::resolver) fn try_suffix_match(&self, name: &str, file: &str) -> Option<ResolveResult> {
+    pub(in crate::resolver) fn try_suffix_match(
+        &self,
+        name: &str,
+        file: &str,
+    ) -> Option<ResolveResult> {
         if !name.contains('.') {
             return None;
         }

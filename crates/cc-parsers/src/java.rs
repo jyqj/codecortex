@@ -15,13 +15,68 @@ use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
 static JAVA_KEYWORDS: &[&str] = &[
-    "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
-    "continue", "default", "do", "double", "else", "enum", "extends", "final", "finally", "float",
-    "for", "goto", "if", "implements", "import", "instanceof", "int", "interface", "long",
-    "native", "new", "package", "private", "protected", "public", "return", "short", "static",
-    "strictfp", "super", "switch", "synchronized", "this", "throw", "throws", "transient", "try",
-    "void", "volatile", "while", "true", "false", "null", "var", "yield", "record", "sealed",
-    "permits", "String", "Object", "System", "Override",
+    "abstract",
+    "assert",
+    "boolean",
+    "break",
+    "byte",
+    "case",
+    "catch",
+    "char",
+    "class",
+    "const",
+    "continue",
+    "default",
+    "do",
+    "double",
+    "else",
+    "enum",
+    "extends",
+    "final",
+    "finally",
+    "float",
+    "for",
+    "goto",
+    "if",
+    "implements",
+    "import",
+    "instanceof",
+    "int",
+    "interface",
+    "long",
+    "native",
+    "new",
+    "package",
+    "private",
+    "protected",
+    "public",
+    "return",
+    "short",
+    "static",
+    "strictfp",
+    "super",
+    "switch",
+    "synchronized",
+    "this",
+    "throw",
+    "throws",
+    "transient",
+    "try",
+    "void",
+    "volatile",
+    "while",
+    "true",
+    "false",
+    "null",
+    "var",
+    "yield",
+    "record",
+    "sealed",
+    "permits",
+    "String",
+    "Object",
+    "System",
+    "Override",
 ];
 
 /// Matches `System.getenv("KEY")` and `System.getProperty("KEY")`.
@@ -80,13 +135,7 @@ impl JavaParser {
                         symbols.push(sym);
                         // Recurse into class body
                         if let Some(body) = child.child_by_field_name("body") {
-                            self.walk_for_symbols(
-                                &body,
-                                source,
-                                file_path,
-                                Some(&name),
-                                symbols,
-                            );
+                            self.walk_for_symbols(&body, source, file_path, Some(&name), symbols);
                         }
                     }
                 }
@@ -97,13 +146,7 @@ impl JavaParser {
                         let name = sym.name.clone();
                         symbols.push(sym);
                         if let Some(body) = child.child_by_field_name("body") {
-                            self.walk_for_symbols(
-                                &body,
-                                source,
-                                file_path,
-                                Some(&name),
-                                symbols,
-                            );
+                            self.walk_for_symbols(&body, source, file_path, Some(&name), symbols);
                         }
                     }
                 }
@@ -114,20 +157,12 @@ impl JavaParser {
                         let name = sym.name.clone();
                         symbols.push(sym);
                         if let Some(body) = child.child_by_field_name("body") {
-                            self.walk_for_symbols(
-                                &body,
-                                source,
-                                file_path,
-                                Some(&name),
-                                symbols,
-                            );
+                            self.walk_for_symbols(&body, source, file_path, Some(&name), symbols);
                         }
                     }
                 }
                 "method_declaration" => {
-                    if let Some(sym) =
-                        self.extract_method(&child, source, file_path, container)
-                    {
+                    if let Some(sym) = self.extract_method(&child, source, file_path, container) {
                         symbols.push(sym);
                     }
                 }
@@ -269,8 +304,7 @@ impl JavaParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid =
-            StableId::symbol_uid(file_path, &qname, kind.as_str(), Some(&signature));
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), Some(&signature));
 
         let end_line = node
             .child_by_field_name("body")
@@ -340,8 +374,7 @@ impl JavaParser {
             node.start_position().row as u32 + 1,
             node.start_position().column as u32,
         );
-        let symbol_uid =
-            StableId::symbol_uid(file_path, &qname, "method", Some(&signature));
+        let symbol_uid = StableId::symbol_uid(file_path, &qname, "method", Some(&signature));
 
         let end_line = node
             .child_by_field_name("body")
@@ -490,14 +523,7 @@ impl JavaParser {
 
         let root = tree.root_node();
         self.walk_for_calls(
-            &root,
-            source,
-            file_path,
-            &keywords,
-            &by_name,
-            symbols,
-            &mut refs,
-            &mut calls,
+            &root, source, file_path, &keywords, &by_name, symbols, &mut refs, &mut calls,
         );
 
         (refs, calls)
@@ -566,7 +592,9 @@ impl JavaParser {
 
         // Check for receiver (object field)
         let object_node = node.child_by_field_name("object");
-        let receiver_expr = object_node.and_then(|n| n.utf8_text(source).ok()).map(String::from);
+        let receiver_expr = object_node
+            .and_then(|n| n.utf8_text(source).ok())
+            .map(String::from);
 
         let dispatch_kind = if receiver_expr.is_some() {
             DispatchKind::Dynamic
@@ -1008,10 +1036,7 @@ impl JavaParser {
                         let source_uid = enclosing.and_then(|s| s.symbol_uid.clone());
 
                         edges.push(SemanticEdgeRecord {
-                            edge_id: format!(
-                                "se-{}:{}:throws:{}",
-                                file_path, line, exc_name
-                            ),
+                            edge_id: format!("se-{}:{}:throws:{}", file_path, line, exc_name),
                             file_path: file_path.to_string(),
                             source_symbol: source_name,
                             source_symbol_uid: source_uid,
@@ -1068,13 +1093,7 @@ impl JavaParser {
                 "modifiers" => {
                     let mut mod_cursor = child.walk();
                     for mod_child in child.children(&mut mod_cursor) {
-                        self.process_annotation(
-                            &mod_child,
-                            source,
-                            file_path,
-                            &target_name,
-                            edges,
-                        );
+                        self.process_annotation(&mod_child, source, file_path, &target_name, edges);
                     }
                 }
                 "marker_annotation" | "annotation" => {
@@ -1209,28 +1228,20 @@ impl JavaParser {
             }
         }
         // Fallback: try the node itself
-        node.utf8_text(source).ok().map(|s| {
-            s.split('<').next().unwrap_or(s).trim().to_string()
-        })
+        node.utf8_text(source)
+            .ok()
+            .map(|s| s.split('<').next().unwrap_or(s).trim().to_string())
     }
 
     /// Extract superclass name from a class_declaration.
-    fn extract_superclass(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_superclass(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let superclass_node = node.child_by_field_name("superclass")?;
         let name = self.extract_type_name(&superclass_node, source)?;
         Some(name)
     }
 
     /// Extract interface names from a class_declaration's `interfaces` field.
-    fn extract_interfaces(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_interfaces(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let interfaces_node = node.child_by_field_name("interfaces")?;
         let mut names = Vec::new();
         let mut cursor = interfaces_node.walk();
@@ -1279,11 +1290,7 @@ impl JavaParser {
     }
 
     /// Collect modifier keywords from a declaration node.
-    fn collect_modifiers(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Vec<String> {
+    fn collect_modifiers(&self, node: &tree_sitter::Node, source: &[u8]) -> Vec<String> {
         let mut modifiers = Vec::new();
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
@@ -1345,11 +1352,7 @@ impl JavaParser {
 
     /// Extract doc comment (Javadoc) immediately preceding a node.
     /// Javadoc comments start with `/**` and are block_comment nodes.
-    fn extract_doc_comment(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn extract_doc_comment(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let prev = node.prev_sibling()?;
         // In tree-sitter-java, Javadoc comments may be block_comment or comment nodes
         if prev.kind() == "block_comment" || prev.kind() == "comment" {
@@ -1515,11 +1518,7 @@ impl JavaParser {
     }
 
     /// Find the type name from an `object_creation_expression` (`new Foo(...)`).
-    fn find_object_creation_type(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Option<String> {
+    fn find_object_creation_type(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         if node.kind() == "object_creation_expression" {
             let type_node = node.child_by_field_name("type")?;
             let type_text = type_node.utf8_text(source).ok()?;
@@ -1559,10 +1558,7 @@ impl JavaParser {
         for cap in JAVA_ENV_ACCESS_RE.captures_iter(content) {
             let m = cap.get(0).unwrap();
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
-            let env_key = cap
-                .get(1)
-                .or(cap.get(2))
-                .map(|m| m.as_str().to_string());
+            let env_key = cap.get(1).or(cap.get(2)).map(|m| m.as_str().to_string());
 
             let source_uid = self
                 .find_enclosing_method(symbols, line)
@@ -1817,7 +1813,11 @@ public class Dog extends Animal implements Runnable, Comparable<Dog> {
         // Check Dog symbol
         let dog = outcome.symbols.iter().find(|s| s.name == "Dog").unwrap();
         assert_eq!(dog.kind, SymbolKind::Class);
-        assert!(dog.base_types.as_deref() == Some("Animal"), "expected base_types = Animal, got: {:?}", dog.base_types);
+        assert!(
+            dog.base_types.as_deref() == Some("Animal"),
+            "expected base_types = Animal, got: {:?}",
+            dog.base_types
+        );
 
         // Check semantic edges
         let inherits: Vec<_> = outcome
@@ -1826,7 +1826,9 @@ public class Dog extends Animal implements Runnable, Comparable<Dog> {
             .filter(|e| e.relation_kind == SemanticRelation::Inherits)
             .collect();
         assert!(
-            inherits.iter().any(|e| e.source_symbol == "Dog" && e.target_symbol == "Animal"),
+            inherits
+                .iter()
+                .any(|e| e.source_symbol == "Dog" && e.target_symbol == "Animal"),
             "missing Dog -> Animal inherits, got: {:?}",
             inherits
         );
@@ -1837,12 +1839,16 @@ public class Dog extends Animal implements Runnable, Comparable<Dog> {
             .filter(|e| e.relation_kind == SemanticRelation::Implements)
             .collect();
         assert!(
-            implements.iter().any(|e| e.source_symbol == "Dog" && e.target_symbol == "Runnable"),
+            implements
+                .iter()
+                .any(|e| e.source_symbol == "Dog" && e.target_symbol == "Runnable"),
             "missing Dog -> Runnable implements, got: {:?}",
             implements
         );
         assert!(
-            implements.iter().any(|e| e.source_symbol == "Dog" && e.target_symbol == "Comparable"),
+            implements
+                .iter()
+                .any(|e| e.source_symbol == "Dog" && e.target_symbol == "Comparable"),
             "missing Dog -> Comparable implements, got: {:?}",
             implements
         );
@@ -1884,7 +1890,11 @@ import static java.lang.Math.PI;
 public class Foo {}
 "#;
         let outcome = p.parse("Foo.java", code, Language::Java).unwrap();
-        assert!(outcome.imports.len() >= 2, "expected at least 2 imports, got: {}", outcome.imports.len());
+        assert!(
+            outcome.imports.len() >= 2,
+            "expected at least 2 imports, got: {}",
+            outcome.imports.len()
+        );
 
         let list_imp = outcome
             .imports
@@ -2110,11 +2120,7 @@ public enum Status {
             .unwrap();
         assert_eq!(readable.kind, SymbolKind::Interface);
 
-        let status = outcome
-            .symbols
-            .iter()
-            .find(|s| s.name == "Status")
-            .unwrap();
+        let status = outcome.symbols.iter().find(|s| s.name == "Status").unwrap();
         assert_eq!(status.kind, SymbolKind::Enum);
 
         // Method inside enum
@@ -2152,7 +2158,10 @@ public class Config {
         assert_eq!(edge.flow_kind, "env_access");
         assert_eq!(edge.env_key.as_deref(), Some("DB_HOST"));
         assert_eq!(edge.parser_tier, ParserTier::Heuristic);
-        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing method");
+        assert!(
+            edge.source_symbol_uid.is_some(),
+            "should resolve enclosing method"
+        );
     }
 
     #[test]
@@ -2175,6 +2184,9 @@ public class AppConfig {
         let edge = &outcome.data_flow_edges[0];
         assert_eq!(edge.flow_kind, "env_access");
         assert_eq!(edge.env_key.as_deref(), Some("app_name"));
-        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing method");
+        assert!(
+            edge.source_symbol_uid.is_some(),
+            "should resolve enclosing method"
+        );
     }
 }

@@ -1,9 +1,12 @@
-//! actix-web framework resolver.
+//! actix-web framework resolver (full tier).
 //!
 //! Enrichment:
-//! - `enrich_file`: extract attribute macro routes (`#[get("/path")]`) and
-//!   `web::resource` patterns → route_edges
-//! - `resolve_cross_file`: no-op for v1
+//! - `enrich_file`: extract attribute macro routes (`#[get("/path")]`),
+//!   `web::resource` patterns, `web::scope("/prefix")` with nested
+//!   `.service(module::fn)` and `.configure(module::configure)` → route_edges
+//! - `resolve_cross_file`: resolve scope-mounted cross-file services and
+//!   configure delegates; prepend scope prefixes to referenced file routes;
+//!   bind handler_symbol_uid via catalog lookup
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -60,6 +63,29 @@ static ACTIX_WEB_METHOD_TO_RE: LazyLock<Regex> = LazyLock::new(|| {
     .expect("actix web method to re")
 });
 
+/// Matches `web::scope("/prefix")` patterns.
+///
+/// Captures: (1) scope prefix path
+static ACTIX_SCOPE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?m)web::scope\s*\(\s*"([^"]*)"\s*\)"#).expect("actix scope re")
+});
+
+/// Matches `.service(module::function)` — cross-module service reference.
+///
+/// Captures: (1) full qualified path including module, e.g. `users::list_users`
+static ACTIX_SERVICE_REF_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?m)\.service\s*\(\s*([A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)+)\s*\)")
+        .expect("actix service ref re")
+});
+
+/// Matches `.configure(module::configure)` — cross-module configure delegate.
+///
+/// Captures: (1) full qualified path, e.g. `admin::configure`
+static ACTIX_CONFIGURE_REF_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?m)\.configure\s*\(\s*([A-Za-z_][A-Za-z0-9_]*(?:::[A-Za-z_][A-Za-z0-9_]*)+)\s*\)")
+        .expect("actix configure ref re")
+});
+
 pub struct ActixResolver;
 
 impl ActixResolver {
@@ -81,6 +107,10 @@ impl ActixResolver {
 impl FrameworkResolver for ActixResolver {
     fn framework_key(&self) -> &str {
         "actix-web"
+    }
+
+    fn resolver_tier(&self) -> &'static str {
+        "full"
     }
 
     fn languages(&self) -> &[Language] {
@@ -168,15 +198,218 @@ impl FrameworkResolver for ActixResolver {
                 });
             }
         }
+
+        // --- web::scope("/prefix").service(module::fn) / .configure(module::configure) ---
+        for scope_cap in ACTIX_SCOPE_RE.captures_iter(source) {
+            let scope_prefix = scope_cap.get(1).map(|m| m.as_str()).unwrap_or("");
+            if scope_prefix.is_empty() {
+                continue;
+            }
+            let scope_match = scope_cap.get(0).unwrap();
+            let scope_offset = scope_match.start();
+            let line = Self::line_for_offset(source, scope_offset);
+
+            // Look ahead up to 1000 bytes for .service() and .configure() chains
+            let after = &source[scope_match.end()..];
+            let lookahead = &after[..after.len().min(1000)];
+
+            // .service(module::function) — cross-module service references
+            for svc_cap in ACTIX_SERVICE_REF_RE.captures_iter(lookahead) {
+                let qualified_ref = svc_cap.get(1).map(|m| m.as_str()).unwrap_or("");
+                if qualified_ref.is_empty() {
+                    continue;
+                }
+                // Extract handler name: last segment of `module::func`
+                let handler_name = qualified_ref.rsplit("::").next().map(|s| s.to_string());
+
+                outcome.route_edges.push(RouteEdgeRecord {
+                    edge_id: StableId::edge_id("route", file_path, line, 0),
+                    file_path: file_path.to_string(),
+                    route_path: scope_prefix.to_string(),
+                    handler_name,
+                    method: None,
+                    line,
+                    start_col: 0,
+                    end_line: None,
+                    end_col: 0,
+                    handler_symbol_id: None,
+                    handler_symbol_uid: None,
+                    handler_expr: Some(qualified_ref.to_string()),
+                    router_symbol_uid: None,
+                    framework: Some("actix-web".to_string()),
+                    route_kind: Some("scope_mount".to_string()),
+                    confidence: 0.80,
+                    parser_tier: ParserTier::Heuristic,
+                });
+            }
+
+            // .configure(module::configure) — cross-module configure delegates
+            for cfg_cap in ACTIX_CONFIGURE_REF_RE.captures_iter(lookahead) {
+                let qualified_ref = cfg_cap.get(1).map(|m| m.as_str()).unwrap_or("");
+                if qualified_ref.is_empty() {
+                    continue;
+                }
+                let handler_name = qualified_ref.rsplit("::").next().map(|s| s.to_string());
+
+                outcome.route_edges.push(RouteEdgeRecord {
+                    edge_id: StableId::edge_id("route", file_path, line, 0),
+                    file_path: file_path.to_string(),
+                    route_path: scope_prefix.to_string(),
+                    handler_name,
+                    method: None,
+                    line,
+                    start_col: 0,
+                    end_line: None,
+                    end_col: 0,
+                    handler_symbol_id: None,
+                    handler_symbol_uid: None,
+                    handler_expr: Some(qualified_ref.to_string()),
+                    router_symbol_uid: None,
+                    framework: Some("actix-web".to_string()),
+                    route_kind: Some("scope_mount".to_string()),
+                    confidence: 0.78,
+                    parser_tier: ParserTier::Heuristic,
+                });
+            }
+        }
     }
 
     fn resolve_cross_file(
         &self,
-        _catalog: &crate::resolver::SymbolCatalog,
-        _outcomes: &mut [(String, ParseOutcome)],
+        catalog: &crate::resolver::SymbolCatalog,
+        outcomes: &mut [(String, ParseOutcome)],
         _ctx: &ProjectFrameworkContext,
     ) {
-        // No-op for v1
+        // Resolve scope-mounted cross-file services and configure delegates.
+        //
+        // Pattern: web::scope("/api").service(users::list_users)
+        //   → find the file containing `list_users`
+        //   → the route attached to `list_users` gets "/api" prepended
+        //
+        // Pattern: web::scope("/api").configure(admin::configure)
+        //   → find the file containing `configure`
+        //   → all http route_edges in that file get "/api" prepended
+
+        // Step 1: collect scope mounts (prefix + handler_name + handler_expr)
+        struct ScopeMount {
+            prefix: String,
+            handler_name: String,
+            handler_expr: String,
+            mount_file: String,
+        }
+
+        let mut mounts: Vec<ScopeMount> = Vec::new();
+        for (file_path, outcome) in outcomes.iter() {
+            for edge in &outcome.route_edges {
+                if edge.framework.as_deref() != Some("actix-web") {
+                    continue;
+                }
+                if edge.route_kind.as_deref() != Some("scope_mount") {
+                    continue;
+                }
+                if let Some(ref handler) = edge.handler_name {
+                    let prefix = &edge.route_path;
+                    if !prefix.is_empty() {
+                        mounts.push(ScopeMount {
+                            prefix: prefix.clone(),
+                            handler_name: handler.clone(),
+                            handler_expr: edge
+                                .handler_expr
+                                .clone()
+                                .unwrap_or_else(|| handler.clone()),
+                            mount_file: file_path.clone(),
+                        });
+                    }
+                }
+            }
+        }
+
+        // Step 2: for each mount, find the target file via catalog and prepend prefix
+        for mount in &mounts {
+            // Try lookup by handler_name (last segment, e.g. "list_users" or "configure")
+            let target_file = match catalog.lookup_symbol(&mount.handler_name, &mount.mount_file) {
+                Some((_, file)) if file != mount.mount_file => Some(file),
+                _ => {
+                    // For qualified paths like "admin::configure", also try
+                    // searching by the module name to find any symbol in that file
+                    if mount.handler_expr.contains("::") {
+                        // Extract the module part: "admin::configure" → "admin"
+                        let module_part = mount.handler_expr.split("::").next().unwrap_or("");
+                        if !module_part.is_empty() {
+                            // Look for any symbol whose file path contains the module name
+                            let candidates = catalog.lookup_all_by_name(&mount.handler_name);
+                            candidates.into_iter().find_map(|(_, file, _)| {
+                                if file != mount.mount_file && file.contains(module_part) {
+                                    Some(file)
+                                } else {
+                                    None
+                                }
+                            })
+                        } else {
+                            None
+                        }
+                    } else {
+                        None
+                    }
+                }
+            };
+
+            let target_file = match target_file {
+                Some(f) => f,
+                None => continue,
+            };
+
+            // Prepend the scope prefix to all http routes in the target file
+            for (file_path, outcome) in outcomes.iter_mut() {
+                if *file_path != target_file {
+                    continue;
+                }
+                for edge in &mut outcome.route_edges {
+                    if edge.framework.as_deref() != Some("actix-web") {
+                        continue;
+                    }
+                    if edge.route_kind.as_deref() != Some("http") {
+                        continue;
+                    }
+                    // Only prepend once (avoid double-prefixing on repeated runs)
+                    if !edge.route_path.starts_with(&mount.prefix) {
+                        let combined = if edge.route_path == "/" {
+                            mount.prefix.clone()
+                        } else {
+                            // Actix: "/api" + "/users" -> "/api/users"
+                            // Strip leading slash from sub-route if prefix doesn't end with /
+                            let sub = edge
+                                .route_path
+                                .strip_prefix('/')
+                                .unwrap_or(&edge.route_path);
+                            let prefix = mount.prefix.trim_end_matches('/');
+                            format!("{}/{}", prefix, sub)
+                        };
+                        edge.route_path = combined;
+                    }
+                }
+            }
+        }
+
+        // Step 3: resolve handler_symbol_uid for http route_edges
+        for (file_path, outcome) in outcomes.iter_mut() {
+            let fp = file_path.clone();
+            for edge in &mut outcome.route_edges {
+                if edge.framework.as_deref() != Some("actix-web") {
+                    continue;
+                }
+                if edge.handler_symbol_uid.is_some() {
+                    continue;
+                }
+                if let Some(ref handler_name) = edge.handler_name {
+                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
+                        if !uid.is_empty() {
+                            edge.handler_symbol_uid = Some(uid);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -293,5 +526,93 @@ fn config(cfg: &mut web::ServiceConfig) {
         let source = r#"#[get("/test")] async fn test() {}"#;
         let routes = run_actix("test.py", source);
         assert!(routes.is_empty(), "should ignore non-.rs files");
+    }
+
+    #[test]
+    fn test_actix_scope_with_service_refs() {
+        let source = r#"
+use actix_web::{web, App, HttpServer};
+
+fn main() {
+    App::new()
+        .service(web::scope("/api")
+            .service(users::list_users)
+            .service(users::create_user))
+}
+"#;
+        let routes = run_actix("src/main.rs", source);
+        // Should detect 2 scope_mount entries for the service references
+        let scope_mounts: Vec<_> = routes
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("scope_mount"))
+            .collect();
+        assert_eq!(
+            scope_mounts.len(),
+            2,
+            "expected 2 scope_mount entries, got {}",
+            scope_mounts.len()
+        );
+
+        assert!(scope_mounts.iter().any(|r| r.route_path == "/api"
+            && r.handler_name.as_deref() == Some("list_users")
+            && r.handler_expr.as_deref() == Some("users::list_users")));
+        assert!(scope_mounts.iter().any(|r| r.route_path == "/api"
+            && r.handler_name.as_deref() == Some("create_user")
+            && r.handler_expr.as_deref() == Some("users::create_user")));
+    }
+
+    #[test]
+    fn test_actix_configure_ref() {
+        let source = r#"
+use actix_web::{web, App};
+
+fn main() {
+    App::new()
+        .service(web::scope("/admin")
+            .configure(admin::configure))
+}
+"#;
+        let routes = run_actix("src/main.rs", source);
+        let scope_mounts: Vec<_> = routes
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("scope_mount"))
+            .collect();
+        assert_eq!(
+            scope_mounts.len(),
+            1,
+            "expected 1 scope_mount for configure, got {}",
+            scope_mounts.len()
+        );
+
+        let mount = &scope_mounts[0];
+        assert_eq!(mount.route_path, "/admin");
+        assert_eq!(mount.handler_name.as_deref(), Some("configure"));
+        assert_eq!(mount.handler_expr.as_deref(), Some("admin::configure"));
+        // configure refs should have slightly lower confidence
+        assert!(mount.confidence < 0.80);
+    }
+
+    #[test]
+    fn test_actix_scope_ignores_local_service() {
+        // .service(local_fn) without :: should NOT produce scope_mount
+        let source = r#"
+App::new()
+    .service(web::scope("/api")
+        .service(local_handler))
+"#;
+        let routes = run_actix("src/main.rs", source);
+        let scope_mounts: Vec<_> = routes
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("scope_mount"))
+            .collect();
+        assert!(
+            scope_mounts.is_empty(),
+            "local (non-qualified) service should not produce scope_mount"
+        );
+    }
+
+    #[test]
+    fn test_actix_resolver_tier() {
+        assert_eq!(ActixResolver.resolver_tier(), "full");
     }
 }

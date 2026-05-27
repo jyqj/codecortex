@@ -1,0 +1,19 @@
+name = "explore_flow_js"
+tool = "explore"
+description = "Explore data flow from formatName"
+
+[params]
+symbols = ["formatName", "processUser"]
+mode = "symbols"
+include_source = true
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"

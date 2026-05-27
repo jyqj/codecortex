@@ -1,11 +1,11 @@
-//! Framework-specific semantic enrichment (Phase 2.1 infrastructure).
+//! Framework-specific semantic enrichment resolvers.
 //!
 //! Two-phase design:
 //! - `enrich_file`: per-file, runs after parse, can read source text
 //! - `resolve_cross_file`: global, runs after SymbolCatalog is built
 //!
-//! Currently only defines the trait and registry. Actual resolver
-//! implementations will be added in Phase 2.2+.
+//! Covers 15 frameworks: Actix, ASP.NET, Axum, Django, Express, FastAPI,
+//! Flask, Go router, Hono, Laravel, NestJS, Rails, React, Spring, Svelte, and Vue.
 
 pub mod actix;
 pub mod aspnet;

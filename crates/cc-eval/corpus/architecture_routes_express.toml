@@ -1,0 +1,14 @@
+name = "architecture_routes_express"
+tool = "architecture"
+description = "Check Express route extraction"
+
+[params]
+aspect = "routes"
+limit = 20
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "/users"

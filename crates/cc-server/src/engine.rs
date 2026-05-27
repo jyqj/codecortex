@@ -275,13 +275,11 @@ impl CodeIndex {
         let db = self.ensure_db()?;
         let rows = db.find_symbol(name, exact, top_k)?;
         if !include_metrics {
-            return Ok(serde_json::to_value(&rows)
-                .map_err(|e| CcError::Search(e.to_string()))?);
+            return Ok(serde_json::to_value(&rows).map_err(|e| CcError::Search(e.to_string()))?);
         }
         let mut results: Vec<serde_json::Value> = Vec::with_capacity(rows.len());
         for row in &rows {
-            let mut obj = serde_json::to_value(row)
-                .map_err(|e| CcError::Search(e.to_string()))?;
+            let mut obj = serde_json::to_value(row).map_err(|e| CcError::Search(e.to_string()))?;
             if let Some(uid) = row.symbol_uid.as_deref() {
                 if let Ok(info) = db.symbol_degree_details(uid) {
                     let hint = centrality_hint(&info);
@@ -743,9 +741,13 @@ impl CodeIndex {
                                     .unwrap_or_default();
                                 for (child_name, child_kind, child_sig) in &children {
                                     if let Some(sig) = child_sig {
-                                        outline_parts.push(format!("  {} {}: {}", child_kind, child_name, sig));
+                                        outline_parts.push(format!(
+                                            "  {} {}: {}",
+                                            child_kind, child_name, sig
+                                        ));
                                     } else {
-                                        outline_parts.push(format!("  {} {}", child_kind, child_name));
+                                        outline_parts
+                                            .push(format!("  {} {}", child_kind, child_name));
                                     }
                                 }
                             }
@@ -1083,6 +1085,43 @@ impl CodeIndex {
         // --- Runtime evidence coverage (from runtime_evidence table) ---
         let runtime_evidence = self.compute_runtime_evidence(db, &edge_counts);
 
+        // --- Edge properties: tell agents what they can filter on in queries ---
+        let edge_properties = serde_json::json!({
+            "CALLS": {
+                "filterable": ["dispatch_kind", "call_kind", "resolution_kind", "parser_tier", "synthesized_by"],
+                "informational": ["confidence", "parser_confidence", "synthesis_key", "registered_file"]
+            },
+            "HTTP_CALL": {
+                "filterable": ["method", "call_kind", "broker_type"],
+                "informational": ["confidence", "url_or_path", "normalized_path"]
+            },
+            "ROUTE": {
+                "filterable": ["method", "framework", "route_kind"],
+                "informational": ["confidence", "route_path", "handler_name"]
+            },
+            "DATA_FLOW": {
+                "filterable": ["flow_kind"],
+                "informational": ["confidence", "env_key"]
+            },
+            "SEMANTIC": {
+                "filterable": ["relation_kind"],
+                "informational": ["confidence"]
+            }
+        });
+
+        // --- Next-tool hints: recommend tools for exploring each edge/node type ---
+        let next_tool_hints = serde_json::json!({
+            "description": "Recommended tools for exploring specific graph relationships",
+            "hints": {
+                "CALLS": "trace(from, to, source_mode='body') for call paths; relations(symbol, kind='callers'|'callees') for direct edges",
+                "HTTP_CALL": "architecture(aspect='services') for service map; ingest_traces to validate with runtime data",
+                "ROUTE": "architecture(aspect='routes') for all routes; explore(symbols, mode='flow') for request flow",
+                "DATA_FLOW": "explore(symbols, mode='flow') for data dependencies; relations(symbol, kind='refs') for references",
+                "SEMANTIC": "relations(symbol, kind='hierarchy') for type hierarchy; node(symbol, include='trail') for overview",
+                "runtime_evidence": "ingest_traces(traces) to add observations; status(aspect='schema') to check current evidence counts"
+            }
+        });
+
         Ok(serde_json::json!({
             "node_kinds": node_kinds,
             "edge_counts": edge_counts,
@@ -1092,6 +1131,9 @@ impl CodeIndex {
             "example_queries": example_queries,
             "edge_provenance": edge_provenance,
             "runtime_evidence": runtime_evidence,
+            "edge_properties": edge_properties,
+            "runtime_evidence_edges": ["HTTP_CALL"],
+            "next_tool_hints": next_tool_hints,
         }))
     }
 

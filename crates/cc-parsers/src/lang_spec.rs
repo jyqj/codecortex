@@ -249,7 +249,10 @@ pub static SCALA_SPEC: LangSpec = LangSpec {
 pub static LUA_SPEC: LangSpec = LangSpec {
     language: Language::Lua,
     grammar_name: "lua",
-    function_types: &["function_declaration", "local_function_declaration_statement"],
+    function_types: &[
+        "function_declaration",
+        "local_function_declaration_statement",
+    ],
     class_types: &[],
     method_types: &["function_declaration"],
     field_types: &["assignment_statement", "local_declaration"],

@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 #[serde(rename_all = "snake_case")]
 pub enum InfraKind {
     DockerImage,
-    DockerStage,    // A named build stage (FROM ... AS name)
-    DockerExpose,   // EXPOSE port
+    DockerStage,  // A named build stage (FROM ... AS name)
+    DockerExpose, // EXPOSE port
     ComposeService,
     K8sDeployment,
     K8sService,

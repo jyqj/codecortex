@@ -2,7 +2,9 @@
 //!
 //! - `enrich_file`: extracts vue-router route definitions, Nuxt file-based
 //!   routes, and defineComponent / script-setup detection.
-//! - `resolve_cross_file`: no-op
+//! - `resolve_cross_file`: resolves route → component cross-file links by
+//!   looking up handler components in the symbol catalog and binding
+//!   `handler_symbol_uid`.
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -27,14 +29,12 @@ static VUE_ROUTE_RE: LazyLock<Regex> = LazyLock::new(|| {
 });
 
 /// `defineComponent({` — Vue Options API.
-static DEFINE_COMPONENT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)defineComponent\s*\("#).expect("vue defineComponent re")
-});
+static DEFINE_COMPONENT_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?m)defineComponent\s*\("#).expect("vue defineComponent re"));
 
 /// `<script setup>` — Vue Composition API with script setup.
-static SCRIPT_SETUP_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?i)<script\s+[^>]*setup[^>]*>"#).expect("vue script setup re")
-});
+static SCRIPT_SETUP_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?i)<script\s+[^>]*setup[^>]*>"#).expect("vue script setup re"));
 
 pub struct VueResolver;
 
@@ -97,6 +97,10 @@ impl VueResolver {
 impl FrameworkResolver for VueResolver {
     fn framework_key(&self) -> &str {
         "vue"
+    }
+
+    fn resolver_tier(&self) -> &'static str {
+        "full"
     }
 
     fn languages(&self) -> &[Language] {
@@ -217,11 +221,38 @@ impl FrameworkResolver for VueResolver {
 
     fn resolve_cross_file(
         &self,
-        _catalog: &crate::resolver::SymbolCatalog,
-        _outcomes: &mut [(String, ParseOutcome)],
+        catalog: &crate::resolver::SymbolCatalog,
+        outcomes: &mut [(String, ParseOutcome)],
         _ctx: &ProjectFrameworkContext,
     ) {
-        // No-op
+        // Resolve handler_symbol_uid for vue_route edges that reference
+        // component names defined in other files.
+        //
+        // Pattern: { path: '/users', component: UserList }
+        //   → lookup UserList in catalog → bind handler_symbol_uid
+
+        let route_kinds: &[&str] = &["vue_route"];
+
+        for (file_path, outcome) in outcomes.iter_mut() {
+            let fp = file_path.clone();
+            for edge in &mut outcome.route_edges {
+                if edge.handler_symbol_uid.is_some() {
+                    continue;
+                }
+                let kind = edge.route_kind.as_deref().unwrap_or("");
+                if !route_kinds.contains(&kind) {
+                    continue;
+                }
+
+                if let Some(ref handler_name) = edge.handler_name {
+                    if let Some((uid, _target_file)) = catalog.lookup_symbol(handler_name, &fp) {
+                        if !uid.is_empty() {
+                            edge.handler_symbol_uid = Some(uid);
+                        }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -304,6 +335,170 @@ const router = createRouter({
             .collect();
         assert_eq!(nuxt_routes.len(), 1);
         assert_eq!(nuxt_routes[0].route_path, "/");
+    }
+
+    #[test]
+    fn test_vue_cross_file_route_component_resolution() {
+        use cc_model::symbol::{SymbolKind, SymbolRecord};
+
+        // Set up a catalog with component symbols in other files
+        let mut catalog = crate::resolver::SymbolCatalog::new();
+        catalog.add_symbols(&[
+            SymbolRecord {
+                symbol_id: "sym_userlist".to_string(),
+                symbol_uid: Some("uid_userlist".to_string()),
+                name: "UserList".to_string(),
+                file_path: "src/views/UserList.vue".to_string(),
+                kind: SymbolKind::Function,
+                start_line: 1,
+                end_line: 20,
+                start_col: 0,
+                end_col: 0,
+                container: None,
+                qname: None,
+                export_name: Some("UserList".to_string()),
+                is_default_export: true,
+                scope_id: None,
+                signature: None,
+                doc: None,
+                parser_tier: ParserTier::Heuristic,
+                parser_confidence: 0.9,
+                parent_symbol_id: None,
+                framework_role: None,
+                receiver_type: None,
+                param_types: None,
+                return_type: None,
+                param_count: None,
+                base_types: None,
+                implements: None,
+            },
+            SymbolRecord {
+                symbol_id: "sym_userdetail".to_string(),
+                symbol_uid: Some("uid_userdetail".to_string()),
+                name: "UserDetail".to_string(),
+                file_path: "src/views/UserDetail.vue".to_string(),
+                kind: SymbolKind::Function,
+                start_line: 1,
+                end_line: 30,
+                start_col: 0,
+                end_col: 0,
+                container: None,
+                qname: None,
+                export_name: Some("UserDetail".to_string()),
+                is_default_export: true,
+                scope_id: None,
+                signature: None,
+                doc: None,
+                parser_tier: ParserTier::Heuristic,
+                parser_confidence: 0.9,
+                parent_symbol_id: None,
+                framework_role: None,
+                receiver_type: None,
+                param_types: None,
+                return_type: None,
+                param_count: None,
+                base_types: None,
+                implements: None,
+            },
+        ]);
+
+        // Build route edges in a router config file
+        let mut outcome = ParseOutcome::default();
+        let ctx = ProjectFrameworkContext::new();
+        let source = r#"
+import UserList from '@/views/UserList.vue'
+import UserDetail from '@/views/UserDetail.vue'
+
+const routes = [
+    { path: '/users', component: UserList },
+    { path: '/users/:id', component: UserDetail },
+]
+"#;
+        VueResolver.enrich_file(
+            "src/router/index.ts",
+            source,
+            Language::TypeScript,
+            &mut outcome,
+            &ctx,
+        );
+
+        // Verify routes extracted
+        let vue_routes: Vec<_> = outcome
+            .route_edges
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("vue_route"))
+            .collect();
+        assert_eq!(vue_routes.len(), 2);
+        assert!(vue_routes.iter().all(|r| r.handler_symbol_uid.is_none()));
+
+        // Run cross-file resolution
+        let mut file_outcomes = vec![("src/router/index.ts".to_string(), outcome)];
+        VueResolver.resolve_cross_file(&catalog, &mut file_outcomes, &ctx);
+
+        // Verify UIDs were resolved
+        let resolved = &file_outcomes[0].1.route_edges;
+        let vue_routes: Vec<_> = resolved
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("vue_route"))
+            .collect();
+        assert_eq!(vue_routes.len(), 2);
+        assert_eq!(
+            vue_routes
+                .iter()
+                .find(|r| r.route_path == "/users")
+                .unwrap()
+                .handler_symbol_uid
+                .as_deref(),
+            Some("uid_userlist"),
+        );
+        assert_eq!(
+            vue_routes
+                .iter()
+                .find(|r| r.route_path == "/users/:id")
+                .unwrap()
+                .handler_symbol_uid
+                .as_deref(),
+            Some("uid_userdetail"),
+        );
+    }
+
+    #[test]
+    fn test_vue_cross_file_unresolved_component() {
+        // When a component is not in the catalog, handler_symbol_uid stays None
+        let catalog = crate::resolver::SymbolCatalog::new();
+        let mut outcome = ParseOutcome::default();
+        let ctx = ProjectFrameworkContext::new();
+        let source = r#"
+const routes = [
+    { path: '/unknown', component: MissingComponent },
+]
+"#;
+        VueResolver.enrich_file(
+            "src/router/index.ts",
+            source,
+            Language::TypeScript,
+            &mut outcome,
+            &ctx,
+        );
+
+        let mut file_outcomes = vec![("src/router/index.ts".to_string(), outcome)];
+        VueResolver.resolve_cross_file(&catalog, &mut file_outcomes, &ctx);
+
+        let resolved = &file_outcomes[0].1.route_edges;
+        let vue_routes: Vec<_> = resolved
+            .iter()
+            .filter(|r| r.route_kind.as_deref() == Some("vue_route"))
+            .collect();
+        assert_eq!(vue_routes.len(), 1);
+        assert!(
+            vue_routes[0].handler_symbol_uid.is_none(),
+            "unresolved component should have no handler_symbol_uid"
+        );
+    }
+
+    #[test]
+    fn test_vue_resolver_tier() {
+        assert_eq!(VueResolver.resolver_tier(), "full");
     }
 
     #[test]

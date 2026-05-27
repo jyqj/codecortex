@@ -1,0 +1,13 @@
+name = "graph_query_callers"
+tool = "graph_query"
+description = "Cypher query to find callers of formatName"
+
+[params]
+query = "MATCH (a)-[:CALLS]->(b) WHERE b.name = 'formatName' RETURN a.name, b.name LIMIT 10"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"

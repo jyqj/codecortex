@@ -231,7 +231,9 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
 
         match migrate_index_db(&conn)? {
-            SchemaStatus::UpToDate | SchemaStatus::Initialized | SchemaStatus::Migrated { .. } => Ok(conn),
+            SchemaStatus::UpToDate | SchemaStatus::Initialized | SchemaStatus::Migrated { .. } => {
+                Ok(conn)
+            }
             SchemaStatus::Mismatch { stored } => {
                 tracing::warn!(
                     stored_version = stored,
@@ -293,7 +295,9 @@ impl IndexDb {
 
         let mut evidence = Vec::new();
         let has_evidence = conn
-            .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='runtime_evidence'")
+            .prepare(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name='runtime_evidence'",
+            )
             .and_then(|mut s| s.exists([]))
             .unwrap_or(false);
         if has_evidence {
@@ -322,7 +326,11 @@ impl IndexDb {
 
         let count = adrs.len() + evidence.len();
         if count > 0 {
-            tracing::info!(adrs = adrs.len(), evidence = evidence.len(), "exported persistent assets before schema rebuild");
+            tracing::info!(
+                adrs = adrs.len(),
+                evidence = evidence.len(),
+                "exported persistent assets before schema rebuild"
+            );
         }
         Ok(serde_json::json!({ "adrs": adrs, "runtime_evidence": evidence }))
     }
@@ -364,10 +372,20 @@ impl IndexDb {
                 );
             }
         }
-        let adr_count = assets.get("adrs").and_then(|v| v.as_array()).map_or(0, |a| a.len());
-        let ev_count = assets.get("runtime_evidence").and_then(|v| v.as_array()).map_or(0, |a| a.len());
+        let adr_count = assets
+            .get("adrs")
+            .and_then(|v| v.as_array())
+            .map_or(0, |a| a.len());
+        let ev_count = assets
+            .get("runtime_evidence")
+            .and_then(|v| v.as_array())
+            .map_or(0, |a| a.len());
         if adr_count + ev_count > 0 {
-            tracing::info!(adrs = adr_count, evidence = ev_count, "re-imported persistent assets after schema rebuild");
+            tracing::info!(
+                adrs = adr_count,
+                evidence = ev_count,
+                "re-imported persistent assets after schema rebuild"
+            );
         }
     }
 
@@ -986,7 +1004,7 @@ impl IndexDb {
             for ds in &outcome.dispatch_sites {
                 Self::execute_cached(
                     &tx,
-                    "INSERT INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+                    "INSERT OR REPLACE INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
                     rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
                 )?;
             }
@@ -1133,7 +1151,7 @@ impl IndexDb {
         for s in &outcome.symbols {
             Self::execute_cached(
                 conn,
-                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,scope_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26)",
+                "INSERT OR REPLACE INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,scope_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26)",
                 rusqlite::params![s.symbol_id, s.file_path, s.name, s.kind.as_str(), s.container, s.start_line, s.end_line, s.start_col, s.end_col, s.signature, s.doc, s.parser_tier.as_str(), s.parser_confidence, s.qname, s.parent_symbol_id, s.scope_id, s.export_name, s.is_default_export as i32, s.symbol_uid, s.framework_role, s.receiver_type, s.param_types, s.return_type, s.param_count, s.base_types, s.implements],
             )?;
         }
@@ -1147,7 +1165,7 @@ impl IndexDb {
 
         // symbol_refs
         for r in &outcome.symbol_refs {
-            Self::execute_cached(conn, "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,scope_id,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,scope_id,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
                 rusqlite::params![r.ref_id, r.file_path, r.symbol_name, r.container, r.ref_kind, r.line, r.column, r.target_symbol_id, r.target_file_path, r.target_symbol_uid, r.ref_name, r.scope_id, r.resolution_kind.as_str(), r.resolution_confidence, r.resolution_strategy, r.ref_end_line, r.ref_end_col, r.parser_tier.as_str(), r.parser_confidence],
             )?;
         }
@@ -1168,7 +1186,7 @@ impl IndexDb {
 
         // route_edges
         for r in &outcome.route_edges {
-            Self::execute_cached(conn, "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
                 rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str()],
             )?;
         }
@@ -1184,7 +1202,7 @@ impl IndexDb {
 
         // diagnostics + diagnostics_fts
         for d in &outcome.diagnostics {
-            Self::execute_cached(conn, "INSERT INTO diagnostics(diagnostic_id,file_path,severity,message,line,end_line,source,code,confidence,symbol_uid) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO diagnostics(diagnostic_id,file_path,severity,message,line,end_line,source,code,confidence,symbol_uid) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
                 rusqlite::params![d.diagnostic_id, d.file_path, d.severity, d.message, d.line, d.end_line, d.source, d.code, d.confidence, d.symbol_uid],
             )?;
             Self::execute_cached(
@@ -1196,7 +1214,7 @@ impl IndexDb {
 
         // literal_index + literal_fts
         for l in &outcome.literal_index {
-            Self::execute_cached(conn, "INSERT INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
                 rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind, l.line, l.container, l.confidence, l.enclosing_symbol_uid, l.key_path],
             )?;
             Self::execute_cached(conn, "INSERT INTO literal_fts(literal_id,file_path,literal,literal_kind) VALUES(?1,?2,?3,?4)", rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind])?;
@@ -1205,7 +1223,7 @@ impl IndexDb {
         // scopes
         for sc in &outcome.scopes {
             let bj = serde_json::to_string(&sc.bindings).unwrap_or_else(|_| "[]".into());
-            Self::execute_cached(conn, "INSERT INTO scopes(scope_id,file_path,kind,name,parent_scope_id,owner_symbol_uid,start_line,start_col,end_line,end_col,bindings_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO scopes(scope_id,file_path,kind,name,parent_scope_id,owner_symbol_uid,start_line,start_col,end_line,end_col,bindings_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
                 rusqlite::params![sc.scope_id, sc.file_path, sc.kind, sc.name, sc.parent_scope_id, sc.owner_symbol_uid, sc.start_line, sc.start_col, sc.end_line, sc.end_col, bj],
             )?;
         }
@@ -1232,7 +1250,7 @@ impl IndexDb {
         for ds in &outcome.dispatch_sites {
             Self::execute_cached(
                 conn,
-                "INSERT INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
+                "INSERT OR REPLACE INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
                 rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
             )?;
         }
@@ -1315,7 +1333,6 @@ impl IndexDb {
     // - index_db_frontier.rs: route, HTTP, diagnostic queries
     // - index_db_edges.rs: edge batch operations, dispatch sites, infra
     // - index_db_arch.rs: architecture analysis, ADR
-
 }
 
 /// Parse a parser_tier string back into the `ParserTier` enum.
@@ -1686,7 +1703,10 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("injection_meta.db")).unwrap();
         // Setting metadata with injection key — should work safely via parameterized queries.
         let set_result = db.set_metadata("'; DROP TABLE metadata; --", "value");
-        assert!(set_result.is_ok(), "injection in metadata key should be safe");
+        assert!(
+            set_result.is_ok(),
+            "injection in metadata key should be safe"
+        );
         let get_result = db.get_metadata("'; DROP TABLE metadata; --");
         assert!(get_result.is_ok());
         assert_eq!(get_result.unwrap(), Some("value".to_string()));

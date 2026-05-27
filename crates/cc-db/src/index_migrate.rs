@@ -116,8 +116,9 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
                 );
 
                 // Run all migration steps inside a single transaction.
-                conn.execute_batch("BEGIN;")
-                    .map_err(|e| cc_model::CcError::Database(format!("migration begin failed: {e}")))?;
+                conn.execute_batch("BEGIN;").map_err(|e| {
+                    cc_model::CcError::Database(format!("migration begin failed: {e}"))
+                })?;
 
                 for step in &chain {
                     tracing::debug!(
@@ -136,8 +137,9 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
                     }
                 }
 
-                conn.execute_batch("COMMIT;")
-                    .map_err(|e| cc_model::CcError::Database(format!("migration commit failed: {e}")))?;
+                conn.execute_batch("COMMIT;").map_err(|e| {
+                    cc_model::CcError::Database(format!("migration commit failed: {e}"))
+                })?;
 
                 conn.pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
                     .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
@@ -214,10 +216,7 @@ mod tests {
         conn.pragma_update(None, "user_version", 13u32).unwrap();
 
         let status = migrate_index_db(&conn).unwrap();
-        assert_eq!(
-            status,
-            SchemaStatus::Migrated { from: 13, to: 14 }
-        );
+        assert_eq!(status, SchemaStatus::Migrated { from: 13, to: 14 });
     }
 
     #[test]

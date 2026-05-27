@@ -93,12 +93,7 @@ fn import_marker_table() -> &'static [(&'static str, &'static [&'static str])] {
         // --- Rails (Ruby) ---
         (
             "rails",
-            &[
-                "rails",
-                "action_controller",
-                "active_record",
-                "action_view",
-            ],
+            &["rails", "action_controller", "active_record", "action_view"],
         ),
         // --- ASP.NET (C#) ---
         (
@@ -331,13 +326,7 @@ fn activation_literals_table() -> &'static [(&'static str, &'static [&'static st
         ),
         (
             "echo",
-            &[
-                "echo",
-                "echo.New",
-                "echo.Context",
-                "e.GET",
-                "e.POST",
-            ],
+            &["echo", "echo.New", "echo.Context", "e.GET", "e.POST"],
         ),
         (
             "axum",
@@ -424,25 +413,21 @@ fn activation_literals_table() -> &'static [(&'static str, &'static [&'static st
         ),
         (
             "remix",
+            &["remix", "@remix-run", "loader", "action", "useLoaderData"],
+        ),
+        (
+            "vue_router",
             &[
-                "remix",
-                "@remix-run",
-                "loader",
-                "action",
-                "useLoaderData",
+                "vue-router",
+                "router",
+                "useRoute",
+                "useRouter",
+                "createRouter",
             ],
         ),
-        ("vue_router", &["vue-router", "router", "useRoute", "useRouter", "createRouter"]),
         (
             "hono",
-            &[
-                "hono",
-                "Hono",
-                "app.get",
-                "app.post",
-                "c.json",
-                "c.text",
-            ],
+            &["hono", "Hono", "app.get", "app.post", "c.json", "c.text"],
         ),
     ]
 }
@@ -760,10 +745,8 @@ pub fn check_package_markers(project_path: &Path) -> HashMap<String, f64> {
     // --- composer.json (PHP / Laravel) ---
     if let Ok(content) = std::fs::read_to_string(project_path.join("composer.json")) {
         let lower = content.to_lowercase();
-        let checks: &[(&str, &str)] = &[
-            ("laravel", "laravel/framework"),
-            ("laravel", "illuminate/"),
-        ];
+        let checks: &[(&str, &str)] =
+            &[("laravel", "laravel/framework"), ("laravel", "illuminate/")];
         for &(fw_key, dep) in checks {
             if lower.contains(dep) {
                 let entry = results.entry(fw_key.to_string()).or_insert(0.0);
@@ -784,27 +767,20 @@ pub fn check_package_markers(project_path: &Path) -> HashMap<String, f64> {
     }
 
     // --- *.csproj (ASP.NET / C#) ---
-    for fname in &[
-        "*.csproj",
-    ] {
-        // Walk one level for .csproj files
-        let _ = fname; // placeholder for pattern
-        if let Ok(entries) = std::fs::read_dir(project_path) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.extension().and_then(|e| e.to_str()) == Some("csproj") {
-                    if let Ok(content) = std::fs::read_to_string(&path) {
-                        if content.contains("Microsoft.AspNetCore")
-                            || content.contains("Microsoft.NET.Sdk.Web")
-                        {
-                            let entry = results.entry("aspnet".to_string()).or_insert(0.0);
-                            *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-                        }
+    if let Ok(entries) = std::fs::read_dir(project_path) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("csproj") {
+                if let Ok(content) = std::fs::read_to_string(&path) {
+                    if content.contains("Microsoft.AspNetCore")
+                        || content.contains("Microsoft.NET.Sdk.Web")
+                    {
+                        let entry = results.entry("aspnet".to_string()).or_insert(0.0);
+                        *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
                     }
                 }
             }
         }
-        break; // only one iteration needed for this glob pattern
     }
 
     results
@@ -1497,13 +1473,7 @@ mod tests {
         assert_eq!(normalize_route_framework("nuxt"), Some("nuxt"));
         assert_eq!(normalize_route_framework("remix"), Some("remix"));
         assert_eq!(normalize_route_framework("hono"), Some("hono"));
-        assert_eq!(
-            normalize_route_framework("vue_router"),
-            Some("vue_router")
-        );
-        assert_eq!(
-            normalize_route_framework("vue-router"),
-            Some("vue_router")
-        );
+        assert_eq!(normalize_route_framework("vue_router"), Some("vue_router"));
+        assert_eq!(normalize_route_framework("vue-router"), Some("vue_router"));
     }
 }

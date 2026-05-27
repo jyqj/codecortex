@@ -1,0 +1,16 @@
+name = "search_golden_python"
+tool = "search"
+description = "Golden test: search for user API functions"
+
+[params]
+query = "get user"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "hits"
+value = "get_user,api_get_user"

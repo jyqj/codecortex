@@ -1,0 +1,16 @@
+name = "context_golden_refactor"
+tool = "context"
+description = "Golden test: context for refactoring formatName"
+
+[params]
+task = "refactor the formatName function"
+max_symbols = 10
+include_source = true
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "symbols"
+value = "formatName,processUser"

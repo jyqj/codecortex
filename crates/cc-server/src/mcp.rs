@@ -4,13 +4,13 @@ use crate::engine::CodeIndex;
 use crate::handlers;
 use crate::tools::JsonResult;
 use cc_model::config::RepoSizeTier;
+use lru::LruCache;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::tool::ToolCallContext;
 use rmcp::handler::server::wrapper::{Json, Parameters};
 use rmcp::model::*;
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::{tool, tool_router, ServerHandler};
-use lru::LruCache;
 use std::borrow::Cow;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
@@ -100,9 +100,13 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let aspect = p.aspect;
-        spawn_handler!(index, move |rt| handlers::facade::handle_status(rt, &aspect))
+        spawn_handler!(index, move |rt| handlers::facade::handle_status(
+            rt, &aspect
+        ))
     }
 
     // ── 2. index ─────────────────────────────────────────────────────
@@ -143,7 +147,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let query = p.query;
         let top_k = p.top_k;
         let mode = p.mode;
@@ -175,7 +181,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let task = p.task;
         let max_symbols = p.max_symbols;
         let include_source = p.include_source;
@@ -201,7 +209,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let symbol = p.symbol;
         let include = p.include;
         spawn_handler!(index, move |rt| handlers::facade::handle_node(
@@ -221,7 +231,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let symbols = p.symbols;
         let mode = p.mode;
         let include_source = p.include_source;
@@ -268,12 +280,16 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let from = p.from;
         let to = p.to;
         let max_depth = p.max_depth;
         let include_source = p.include_source;
         let source_mode = p.source_mode;
+        let from_uid = p.from_uid;
+        let to_uid = p.to_uid;
         spawn_handler!(index, move |rt| handlers::graph::trace_path(
             rt,
             &from,
@@ -282,6 +298,8 @@ impl CodeCortexMcpServer {
             include_source,
             None,
             source_mode.as_deref(),
+            from_uid.as_deref(),
+            to_uid.as_deref(),
         ))
     }
 
@@ -297,7 +315,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let symbol = p.symbol;
         let kind = p.kind;
         let limit = p.limit;
@@ -319,7 +339,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let scope = p.scope;
         let files = p.files;
         let base_branch = p.base_branch;
@@ -349,7 +371,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let aspect = p.aspect;
         let filter = p.filter;
         let limit = p.limit;
@@ -373,7 +397,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let action = p.action;
         let path = p.path;
         let start_line = p.start_line;
@@ -401,7 +427,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let query = p.query;
         spawn_handler!(index, move |rt| handlers::graph::graph_query(rt, &query))
     }
@@ -418,7 +446,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let traces = p.traces;
         spawn_handler!(index, move |rt| handlers::facade::handle_ingest_traces(
             rt, &traces
@@ -437,7 +467,9 @@ impl CodeCortexMcpServer {
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
-        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let index = self
+            .index_for_project_path(p.project_path.as_deref())
+            .await?;
         let action = p.action;
         let adr_id = p.adr_id;
         let title = p.title;
@@ -574,11 +606,7 @@ impl CodeCortexMcpServer {
         tier: RepoSizeTier,
     ) -> String {
         match tool_name {
-            "search" => format!(
-                "{} [budget: top_k={}]",
-                base_desc,
-                tier.search_top_k()
-            ),
+            "search" => format!("{} [budget: top_k={}]", base_desc, tier.search_top_k()),
             "context" => format!(
                 "{} [budget: max_symbols={}]",
                 base_desc,

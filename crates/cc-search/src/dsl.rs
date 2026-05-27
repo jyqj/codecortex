@@ -120,10 +120,7 @@ pub fn matches_language(file_path: &str, lang_filter: &str) -> bool {
     let filter_lang = cc_model::Language::from_name(lang_filter);
     if filter_lang == cc_model::Language::Unknown {
         // Fallback: direct substring match on file extension
-        let ext = file_path
-            .rsplit('.')
-            .next()
-            .unwrap_or("");
+        let ext = file_path.rsplit('.').next().unwrap_or("");
         return ext.eq_ignore_ascii_case(lang_filter);
     }
     // Match by file extension

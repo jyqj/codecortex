@@ -1,4 +1,4 @@
--- index.sqlite3 — Full Schema (version 12, rebuild-on-mismatch)
+-- index.sqlite3 — Full Schema (version 14, rebuild-on-mismatch)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,

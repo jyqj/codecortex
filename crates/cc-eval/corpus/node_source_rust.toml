@@ -1,0 +1,18 @@
+name = "node_source_rust"
+tool = "node"
+description = "Inspect Rust function with source code"
+
+[params]
+symbol = "process_order"
+include = "source"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "calculate_total"
+
+[[assertions]]
+kind = "output_contains"
+value = "format_price"

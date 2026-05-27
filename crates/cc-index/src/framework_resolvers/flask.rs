@@ -20,10 +20,8 @@ use super::{FrameworkResolver, ProjectFrameworkContext};
 ///
 /// Captures: (1) route path, (2) optional methods list content (e.g. "GET", "POST")
 static ROUTE_DECORATOR_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"@\w+\.route\(\s*["']([^"']+)["'](?:\s*,\s*methods\s*=\s*\[([^\]]+)\])?"#,
-    )
-    .expect("flask route decorator re")
+    Regex::new(r#"@\w+\.route\(\s*["']([^"']+)["'](?:\s*,\s*methods\s*=\s*\[([^\]]+)\])?"#)
+        .expect("flask route decorator re")
 });
 
 /// Flask 2.0+ shorthand: @app.get("/path"), @app.post("/path"), etc.
@@ -37,14 +35,12 @@ static METHOD_DECORATOR_RE: LazyLock<Regex> = LazyLock::new(|| {
 /// Function definition: `def handler_name(`
 ///
 /// Captures: (1) function name
-static DEF_NAME_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("flask def name re")
-});
+static DEF_NAME_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("flask def name re"));
 
 /// Extract individual method strings from a methods list: "GET", 'POST'
-static METHOD_STR_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"["'](\w+)["']"#).expect("flask method string re")
-});
+static METHOD_STR_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"["'](\w+)["']"#).expect("flask method string re"));
 
 /// app.register_blueprint(bp, url_prefix="/auth") or app.register_blueprint(bp)
 ///
@@ -384,8 +380,7 @@ def delete_item(item_id):
             .any(|r| r.route_path == "/items" && r.method == Some("POST".into())));
         assert!(routes
             .iter()
-            .any(|r| r.route_path == "/items/<int:item_id>"
-                && r.method == Some("DELETE".into())));
+            .any(|r| r.route_path == "/items/<int:item_id>" && r.method == Some("DELETE".into())));
     }
 
     #[test]

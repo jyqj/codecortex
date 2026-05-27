@@ -512,7 +512,8 @@ mod tests {
         assert!(flow.flow_paths.is_empty(), "expected no flow paths");
         assert_eq!(flow.disconnected.len(), 2);
 
-        let disc_names: HashSet<String> = flow.disconnected.iter().map(|d| d.name.clone()).collect();
+        let disc_names: HashSet<String> =
+            flow.disconnected.iter().map(|d| d.name.clone()).collect();
         assert!(disc_names.contains("fn_d"));
         assert!(disc_names.contains("fn_e"));
     }

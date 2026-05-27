@@ -131,4 +131,3 @@ pub fn graph_schema(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value,
     let rt = runtime.lock().map_err(|e| e.to_string())?;
     rt.graph_schema().map_err(|e| e.to_string())
 }
-

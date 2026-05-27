@@ -1693,8 +1693,7 @@ impl PythonParser {
         let right = node.child_by_field_name("right");
 
         let line = node.start_position().row as u32 + 1;
-        let enclosing = find_enclosing_function(symbols, line)
-            .and_then(|s| s.symbol_uid.clone());
+        let enclosing = find_enclosing_function(symbols, line).and_then(|s| s.symbol_uid.clone());
 
         // Get variable name — only handle simple identifiers
         let var_name = if left.kind() == "identifier" {

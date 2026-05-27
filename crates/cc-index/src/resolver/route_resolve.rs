@@ -228,10 +228,7 @@ impl SymbolCatalog {
 
     /// Look up all symbols with a given name (case-insensitive).
     /// Returns vec of (symbol_uid, file_path, kind).
-    pub fn lookup_all_by_name(
-        &self,
-        name: &str,
-    ) -> Vec<(String, String, cc_model::SymbolKind)> {
+    pub fn lookup_all_by_name(&self, name: &str) -> Vec<(String, String, cc_model::SymbolKind)> {
         let lower = name.to_lowercase();
         let indices = match self.by_name.get(&lower) {
             Some(v) => v,

@@ -1,7 +1,7 @@
 //! Hono framework resolver.
 //!
 //! - `enrich_file`: extracts route definitions from Hono-style APIs
-//! - `resolve_cross_file`: TODO
+//! - `resolve_cross_file`: resolves sub-router prefix mounting
 
 use cc_model::edge::RouteEdgeRecord;
 use cc_model::id::StableId;
@@ -25,30 +25,24 @@ use super::{FrameworkResolver, ProjectFrameworkContext};
 ///
 /// Captures: (1) method name, (2) route path
 static ROUTE_METHOD_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)(?:app|[a-zA-Z]\w*)\.(\w+)\(\s*["']([^"']+)["']\s*,"#,
-    )
-    .expect("hono route method re")
+    Regex::new(r#"(?m)(?:app|[a-zA-Z]\w*)\.(\w+)\(\s*["']([^"']+)["']\s*,"#)
+        .expect("hono route method re")
 });
 
 /// Sub-router mounting: app.route("/prefix", subApp)
 ///
 /// Captures: (1) prefix path, (2) sub-app identifier
 static ROUTE_MOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)(?:app|[a-zA-Z]\w*)\.route\(\s*["']([^"']+)["']\s*,\s*(\w+)"#,
-    )
-    .expect("hono route mount re")
+    Regex::new(r#"(?m)(?:app|[a-zA-Z]\w*)\.route\(\s*["']([^"']+)["']\s*,\s*(\w+)"#)
+        .expect("hono route mount re")
 });
 
 /// Middleware: app.use("/path", middleware) or app.use(middleware)
 ///
 /// Captures: (1) optional path, (2) handler
 static USE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)(?:app|[a-zA-Z]\w*)\.use\(\s*(?:["']([^"']+)["']\s*,\s*)?(\w+)"#,
-    )
-    .expect("hono use re")
+    Regex::new(r#"(?m)(?:app|[a-zA-Z]\w*)\.use\(\s*(?:["']([^"']+)["']\s*,\s*)?(\w+)"#)
+        .expect("hono use re")
 });
 
 /// Valid Hono HTTP method names.
@@ -363,8 +357,9 @@ app.use(cors);
             })
             .collect();
         assert_eq!(mw.len(), 2, "expected 2 middleware entries");
-        assert!(mw.iter().any(|r| r.route_path == "/api/*"
-            && r.route_kind.as_deref() == Some("middleware_mount")));
+        assert!(mw.iter().any(
+            |r| r.route_path == "/api/*" && r.route_kind.as_deref() == Some("middleware_mount")
+        ));
         assert!(mw
             .iter()
             .any(|r| r.route_path == "/" && r.route_kind.as_deref() == Some("middleware")));

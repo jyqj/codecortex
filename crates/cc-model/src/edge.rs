@@ -17,7 +17,6 @@
 /// - data_flow_edges: confidence + parser_tier only
 /// - test_edges: confidence only (no parser_tier!)
 /// - route_edges: confidence + parser_tier + framework
-
 use crate::ParserTier;
 use serde::{Deserialize, Serialize};
 
@@ -281,6 +280,8 @@ pub enum SemanticRelation {
     /// Module contains a submodule
     ContainsModule,
     RendersComponent,
+    /// Dependency injection wiring (e.g. Spring @Autowired, NestJS constructor injection)
+    Injects,
     /// Unrecognized relation kind from DB
     Unknown,
 }
@@ -298,6 +299,7 @@ impl SemanticRelation {
             Self::ContainsFile => "contains_file",
             Self::ContainsModule => "contains_module",
             Self::RendersComponent => "renders_component",
+            Self::Injects => "injects",
             Self::Unknown => "unknown",
         }
     }

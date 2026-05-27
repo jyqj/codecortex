@@ -26,18 +26,15 @@ use super::{FrameworkResolver, ProjectFrameworkContext};
 ///
 /// Captures: (1) HTTP method name (e.g. "HttpGet"), (2) optional route path
 static HTTP_ATTR_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)\[(Http(?:Get|Post|Put|Delete|Patch|Head|Options))(?:\("([^"]*)"\))?\]"#,
-    )
-    .expect("aspnet http attr re")
+    Regex::new(r#"(?m)\[(Http(?:Get|Post|Put|Delete|Patch|Head|Options))(?:\("([^"]*)"\))?\]"#)
+        .expect("aspnet http attr re")
 });
 
 /// Class-level route prefix: [Route("api/[controller]")]
 ///
 /// Captures: (1) route template
-static ROUTE_ATTR_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?m)\[Route\("([^"]+)"\)\]"#).expect("aspnet route attr re")
-});
+static ROUTE_ATTR_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"(?m)\[Route\("([^"]+)"\)\]"#).expect("aspnet route attr re"));
 
 /// Minimal API: app.MapGet("/path", handler) / app.MapPost("/path", handler)
 ///
@@ -47,10 +44,8 @@ static ROUTE_ATTR_RE: LazyLock<Regex> = LazyLock::new(|| {
 ///
 /// Captures: (1) HTTP method, (2) route path, (3) handler identifier (optional)
 static MINIMAL_API_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r#"(?m)app\.Map(Get|Post|Put|Delete|Patch)\("([^"]+)"\s*,\s*(\w+)"#,
-    )
-    .expect("aspnet minimal api re")
+    Regex::new(r#"(?m)app\.Map(Get|Post|Put|Delete|Patch)\("([^"]+)"\s*,\s*(\w+)"#)
+        .expect("aspnet minimal api re")
 });
 
 /// Controller class name: class FooController
@@ -62,9 +57,7 @@ static CONTROLLER_CLASS_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 /// Strip the "Http" prefix from method attribute name.
 fn attr_to_method(attr: &str) -> String {
-    attr.strip_prefix("Http")
-        .unwrap_or(attr)
-        .to_uppercase()
+    attr.strip_prefix("Http").unwrap_or(attr).to_uppercase()
 }
 
 pub struct AspNetResolver;
@@ -98,10 +91,8 @@ impl FrameworkResolver for AspNetResolver {
 
         // --- Detect class-level route prefix ---
         // Find the first [Route("...")] that appears before or near a Controller class
-        let class_route_prefix: Option<String> = ROUTE_ATTR_RE
-            .captures_iter(source)
-            .next()
-            .map(|cap| {
+        let class_route_prefix: Option<String> =
+            ROUTE_ATTR_RE.captures_iter(source).next().map(|cap| {
                 let template = cap.get(1).map(|m| m.as_str()).unwrap_or("");
                 // Replace [controller] placeholder with actual controller name if available
                 if let Some(ctrl_cap) = CONTROLLER_CLASS_RE.captures(source) {
@@ -253,15 +244,17 @@ public class UsersController : ControllerBase
         assert_eq!(routes.len(), 3, "expected 3 routes, got {}", routes.len());
 
         // [HttpGet("list")] with class prefix api/users
-        assert!(routes.iter().any(|r| r.route_path == "api/users/list"
-            && r.method == Some("GET".into())));
+        assert!(routes
+            .iter()
+            .any(|r| r.route_path == "api/users/list" && r.method == Some("GET".into())));
         // [HttpPost] with class prefix api/users (no action path)
         assert!(routes
             .iter()
             .any(|r| r.route_path == "api/users" && r.method == Some("POST".into())));
         // [HttpDelete("{id}")] with class prefix
-        assert!(routes.iter().any(|r| r.route_path == "api/users/{id}"
-            && r.method == Some("DELETE".into())));
+        assert!(routes
+            .iter()
+            .any(|r| r.route_path == "api/users/{id}" && r.method == Some("DELETE".into())));
 
         assert!(routes
             .iter()

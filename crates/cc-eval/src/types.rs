@@ -62,6 +62,20 @@ impl Assertion {
                     self.value.as_deref().unwrap_or("1")
                 )
             }
+            "field_equals" => {
+                format!(
+                    "field_equals: {:?} == {:?}",
+                    self.field.as_deref().unwrap_or("(none)"),
+                    self.value.as_deref().unwrap_or("(none)")
+                )
+            }
+            "expected_symbols" => {
+                format!(
+                    "expected_symbols(field={:?}, expected={:?})",
+                    self.field.as_deref().unwrap_or("(root)"),
+                    self.value.as_deref().unwrap_or("(none)")
+                )
+            }
             other => format!("{}: value={:?}", other, self.value),
         }
     }
@@ -98,9 +112,14 @@ pub struct EvalCaseResult {
     pub tool: String,
     pub passed: bool,
     pub duration_ms: u64,
+    pub output_size_bytes: usize,
     pub assertions_passed: usize,
     pub assertions_failed: Vec<String>,
     pub error: Option<String>,
+    /// Fraction of expected symbols found in top 5 results.
+    pub recall_at_5: Option<f64>,
+    /// 1/rank of first expected symbol found, or 0 if none found.
+    pub mrr: Option<f64>,
 }
 
 // ── Eval report ─────────────────────────────────────────────────────
@@ -118,7 +137,14 @@ pub struct EvalSummary {
     pub passed: usize,
     pub failed: usize,
     pub total_duration_ms: u64,
+    pub p95_duration_ms: u64,
+    pub max_duration_ms: u64,
+    pub total_output_bytes: usize,
     pub per_tool: HashMap<String, ToolSummary>,
+    /// Average Recall@5 across cases that have expected_symbols assertions.
+    pub avg_recall_at_5: Option<f64>,
+    /// Average MRR across cases that have expected_symbols assertions.
+    pub avg_mrr: Option<f64>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -127,4 +153,6 @@ pub struct ToolSummary {
     pub passed: usize,
     pub failed: usize,
     pub avg_duration_ms: u64,
+    pub p95_duration_ms: u64,
+    pub max_duration_ms: u64,
 }

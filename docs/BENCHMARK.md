@@ -1,0 +1,49 @@
+# Benchmark
+
+## Current State
+
+No formal benchmarks exist yet. This document tracks what should be measured and baseline targets.
+
+## Planned Metrics
+
+### Indexing Performance
+
+| Metric | Target | How to Measure |
+|--------|--------|----------------|
+| Index speed (files/sec) | >500 for tree-sitter languages | `time codecortex mcp --project_path <repo>` on first connect |
+| Incremental reindex | <2s for 10 changed files | Measure via file watcher trigger |
+| Memory (peak RSS) | <512 MB for 10K file repo | `time -l` or `/usr/bin/time -v` |
+
+### MCP Tool Latency
+
+| Tool | Target p95 | Notes |
+|------|-----------|-------|
+| status | <50ms | Reads cached metadata |
+| search | <200ms | Hybrid fusion with FTS5 + grep |
+| context | <500ms | Multi-symbol extraction + source |
+| node | <100ms | Single symbol lookup |
+| explore | <300ms | Batch symbol inspection |
+| trace | <500ms | BFS path finding + source bodies |
+| relations | <100ms | Direct edge query |
+| impact | <500ms | BFS reverse-caller expansion |
+| architecture | <300ms | Aspect-dependent aggregation |
+| graph_query | <200ms | Cypher subset execution |
+
+### Retrieval Quality
+
+| Metric | Definition | Target |
+|--------|------------|--------|
+| Recall@5 | Fraction of expected symbols in top-5 search results | >0.7 |
+| MRR | Mean reciprocal rank of first correct result | >0.6 |
+| Tool-call count | Average calls to answer a question (context vs search+node loop) | context: 1, manual: 3-5 |
+| One-call sufficiency | % of tasks answerable with a single context() or trace(source_mode=body) call | >60% |
+
+## Running Benchmarks
+
+Not yet automated. Future: `cargo bench` or dedicated `cc-bench` crate.
+
+## Comparison Baselines
+
+- grep/find loop: 5-10 tool calls per question
+- context(task): 1 call, should cover 70%+ of symbol needs
+- trace(source_mode=body): 1 call for full call-path with bodies

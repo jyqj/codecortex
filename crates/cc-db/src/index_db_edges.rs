@@ -299,6 +299,7 @@ impl IndexDb {
                         "contains_file" => cc_model::edge::SemanticRelation::ContainsFile,
                         "contains_module" => cc_model::edge::SemanticRelation::ContainsModule,
                         "renders_component" => cc_model::edge::SemanticRelation::RendersComponent,
+                        "injects" => cc_model::edge::SemanticRelation::Injects,
                         other => {
                             warn!(kind = %other, "unknown semantic relation_kind in DB, mapping to Unknown");
                             cc_model::edge::SemanticRelation::Unknown
@@ -664,7 +665,10 @@ impl IndexDb {
         status_code: Option<&str>,
         now: &str,
     ) -> CcResult<()> {
-        let conn = self.write_conn.lock().map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         conn.execute(
             "INSERT INTO runtime_evidence(evidence_id, service_name, method, path, status_code, observed_count, first_seen, last_seen)
              VALUES(?1, ?2, ?3, ?4, ?5, 1, ?6, ?6)
@@ -674,25 +678,58 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn link_evidence_to_edge(
-        &self,
-        evidence_id: &str,
-        http_edge_id: &str,
-    ) -> CcResult<()> {
-        let conn = self.write_conn.lock().map_err(|e| CcError::Database(e.to_string()))?;
+    pub fn link_evidence_to_edge(&self, evidence_id: &str, http_edge_id: &str) -> CcResult<()> {
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         conn.execute(
             "UPDATE runtime_evidence SET http_edge_id = ?2 WHERE evidence_id = ?1",
             rusqlite::params![evidence_id, http_edge_id],
-        ).map_err(|e| CcError::Database(e.to_string()))?;
+        )
+        .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    pub fn update_evidence_p95(&self, evidence_id: &str, duration_ms: f64) -> CcResult<()> {
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        conn.execute(
+            "UPDATE runtime_evidence SET p95_ms = CASE \
+               WHEN p95_ms IS NULL THEN ?1 \
+               ELSE p95_ms * 0.95 + ?1 * 0.05 \
+             END WHERE evidence_id = ?2",
+            rusqlite::params![duration_ms, evidence_id],
+        )
+        .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    pub fn update_evidence_route_id(&self, evidence_id: &str, route_id: &str) -> CcResult<()> {
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        conn.execute(
+            "UPDATE runtime_evidence SET route_id = ?1 WHERE evidence_id = ?2",
+            rusqlite::params![route_id, evidence_id],
+        )
+        .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
     pub fn boost_http_edge_confidence(&self, http_edge_id: &str, boost: f64) -> CcResult<()> {
-        let conn = self.write_conn.lock().map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         conn.execute(
             "UPDATE http_call_edges SET confidence = MIN(1.0, confidence + ?2) WHERE edge_id = ?1",
             rusqlite::params![http_edge_id, boost],
-        ).map_err(|e| CcError::Database(e.to_string()))?;
+        )
+        .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -702,10 +739,18 @@ impl IndexDb {
             .query_row("SELECT COUNT(*) FROM runtime_evidence", [], |r| r.get(0))
             .map_err(|e| CcError::Database(e.to_string()))?;
         let total_observations: u64 = conn
-            .query_row("SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence", [], |r| r.get(0))
+            .query_row(
+                "SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence",
+                [],
+                |r| r.get(0),
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let linked_rows: u32 = conn
-            .query_row("SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
+            .query_row(
+                "SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL",
+                [],
+                |r| r.get(0),
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let distinct_linked_edges: u32 = conn
             .query_row("SELECT COUNT(DISTINCT http_edge_id) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
@@ -739,7 +784,9 @@ impl IndexDb {
              GROUP BY hce.normalized_path",
             placeholders.join(",")
         );
-        let mut stmt = conn.prepare(&sql).map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare(&sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
         let params: Vec<&dyn rusqlite::types::ToSql> = paths
             .iter()
             .map(|s| s as &dyn rusqlite::types::ToSql)
@@ -780,7 +827,9 @@ impl IndexDb {
              GROUP BY http_edge_id",
             placeholders.join(",")
         );
-        let mut stmt = conn.prepare(&sql).map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn
+            .prepare(&sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
         let params: Vec<&dyn rusqlite::types::ToSql> = edge_ids
             .iter()
             .map(|s| s as &dyn rusqlite::types::ToSql)

@@ -94,6 +94,17 @@ pub trait FrameworkResolver: Send + Sync {
         file_outcomes: &mut [(String, ParseOutcome)],
         ctx: &ProjectFrameworkContext,
     );
+
+    /// Coverage tier of this resolver.
+    ///
+    /// - `"full"` — `resolve_cross_file` has real cross-file resolution logic
+    ///   (prefix propagation, handler UID binding, etc.)
+    /// - `"extraction"` — `enrich_file` works well, but `resolve_cross_file` is
+    ///   no-op or only does trivial UID lookups
+    /// - `"experimental"` — minimal / untested implementation
+    fn resolver_tier(&self) -> &'static str {
+        "extraction" // safe default
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -156,4 +167,18 @@ pub fn default_registry() -> FrameworkResolverRegistry {
     registry.register(Box::new(aspnet::AspNetResolver));
     registry.register(Box::new(hono::HonoResolver));
     registry
+}
+
+/// Look up the resolver tier for a given `framework_key`.
+///
+/// Returns `"full"`, `"extraction"`, or `"experimental"`.
+/// If the key is not found in the registry, returns `"unknown"`.
+pub fn resolver_tier_for_key(framework_key: &str) -> &'static str {
+    let registry = default_registry();
+    for resolver in registry.all_resolvers() {
+        if resolver.framework_key() == framework_key {
+            return resolver.resolver_tier();
+        }
+    }
+    "unknown"
 }

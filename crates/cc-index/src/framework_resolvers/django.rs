@@ -51,6 +51,10 @@ impl FrameworkResolver for DjangoResolver {
         "django"
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn languages(&self) -> &[Language] {
         &[Language::Python]
     }

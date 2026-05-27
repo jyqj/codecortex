@@ -237,22 +237,137 @@ impl IndexDb {
                     stored_version = stored,
                     "deleting index database for schema rebuild"
                 );
-                // Close the connection before deleting the file.
+                // Export persistent assets before destroying the database.
+                let preserved = Self::export_persistent_assets(&conn);
                 drop(conn);
-                // Remove the main db file and WAL/SHM sidecars.
+
                 let _ = std::fs::remove_file(path);
                 let wal = path.with_extension("sqlite3-wal");
                 let shm = path.with_extension("sqlite3-shm");
                 let _ = std::fs::remove_file(&wal);
                 let _ = std::fs::remove_file(&shm);
 
-                // Reopen and initialise fresh.
                 let conn = Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
                 conn.execute_batch(pragmas)
                     .map_err(|e| CcError::Database(e.to_string()))?;
                 migrate_index_db(&conn)?;
+
+                // Re-import preserved assets into the fresh database.
+                if let Ok(assets) = preserved {
+                    Self::import_persistent_assets(&conn, &assets);
+                }
                 Ok(conn)
             }
+        }
+    }
+
+    /// Export ADR and runtime_evidence rows as JSON before a schema rebuild.
+    fn export_persistent_assets(conn: &Connection) -> CcResult<serde_json::Value> {
+        let mut adrs = Vec::new();
+        let has_adr = conn
+            .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='adr'")
+            .and_then(|mut s| s.exists([]))
+            .unwrap_or(false);
+        if has_adr {
+            if let Ok(mut stmt) = conn.prepare(
+                "SELECT adr_id, title, status, context, decision, created_at, updated_at FROM adr",
+            ) {
+                let rows = stmt.query_map([], |row| {
+                    Ok(serde_json::json!({
+                        "adr_id": row.get::<_, String>(0)?,
+                        "title": row.get::<_, String>(1)?,
+                        "status": row.get::<_, String>(2)?,
+                        "context": row.get::<_, String>(3)?,
+                        "decision": row.get::<_, String>(4)?,
+                        "created_at": row.get::<_, String>(5)?,
+                        "updated_at": row.get::<_, String>(6)?,
+                    }))
+                });
+                if let Ok(rows) = rows {
+                    for row in rows.flatten() {
+                        adrs.push(row);
+                    }
+                }
+            }
+        }
+
+        let mut evidence = Vec::new();
+        let has_evidence = conn
+            .prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='runtime_evidence'")
+            .and_then(|mut s| s.exists([]))
+            .unwrap_or(false);
+        if has_evidence {
+            if let Ok(mut stmt) = conn.prepare(
+                "SELECT evidence_id, service_name, method, path, status_code, observed_count, first_seen, last_seen FROM runtime_evidence",
+            ) {
+                let rows = stmt.query_map([], |row| {
+                    Ok(serde_json::json!({
+                        "evidence_id": row.get::<_, String>(0)?,
+                        "service_name": row.get::<_, String>(1)?,
+                        "method": row.get::<_, Option<String>>(2)?,
+                        "path": row.get::<_, String>(3)?,
+                        "status_code": row.get::<_, Option<String>>(4)?,
+                        "observed_count": row.get::<_, u32>(5)?,
+                        "first_seen": row.get::<_, String>(6)?,
+                        "last_seen": row.get::<_, String>(7)?,
+                    }))
+                });
+                if let Ok(rows) = rows {
+                    for row in rows.flatten() {
+                        evidence.push(row);
+                    }
+                }
+            }
+        }
+
+        let count = adrs.len() + evidence.len();
+        if count > 0 {
+            tracing::info!(adrs = adrs.len(), evidence = evidence.len(), "exported persistent assets before schema rebuild");
+        }
+        Ok(serde_json::json!({ "adrs": adrs, "runtime_evidence": evidence }))
+    }
+
+    /// Re-import ADR and runtime_evidence rows after a schema rebuild.
+    fn import_persistent_assets(conn: &Connection, assets: &serde_json::Value) {
+        if let Some(adrs) = assets.get("adrs").and_then(|v| v.as_array()) {
+            for adr in adrs {
+                let _ = conn.execute(
+                    "INSERT OR REPLACE INTO adr(adr_id, title, status, context, decision, created_at, updated_at)
+                     VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+                    rusqlite::params![
+                        adr["adr_id"].as_str().unwrap_or_default(),
+                        adr["title"].as_str().unwrap_or_default(),
+                        adr["status"].as_str().unwrap_or_default(),
+                        adr["context"].as_str().unwrap_or_default(),
+                        adr["decision"].as_str().unwrap_or_default(),
+                        adr["created_at"].as_str().unwrap_or_default(),
+                        adr["updated_at"].as_str().unwrap_or_default(),
+                    ],
+                );
+            }
+        }
+        if let Some(evidence) = assets.get("runtime_evidence").and_then(|v| v.as_array()) {
+            for ev in evidence {
+                let _ = conn.execute(
+                    "INSERT OR REPLACE INTO runtime_evidence(evidence_id, service_name, method, path, status_code, observed_count, first_seen, last_seen)
+                     VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
+                    rusqlite::params![
+                        ev["evidence_id"].as_str().unwrap_or_default(),
+                        ev["service_name"].as_str().unwrap_or_default(),
+                        ev["method"].as_str(),
+                        ev["path"].as_str().unwrap_or_default(),
+                        ev["status_code"].as_str(),
+                        ev["observed_count"].as_u64().unwrap_or(1),
+                        ev["first_seen"].as_str().unwrap_or_default(),
+                        ev["last_seen"].as_str().unwrap_or_default(),
+                    ],
+                );
+            }
+        }
+        let adr_count = assets.get("adrs").and_then(|v| v.as_array()).map_or(0, |a| a.len());
+        let ev_count = assets.get("runtime_evidence").and_then(|v| v.as_array()).map_or(0, |a| a.len());
+        if adr_count + ev_count > 0 {
+            tracing::info!(adrs = adr_count, evidence = ev_count, "re-imported persistent assets after schema rebuild");
         }
     }
 
@@ -853,7 +968,7 @@ impl IndexDb {
             for e in &outcome.call_edges {
                 Self::execute_cached(
                     &tx,
-                    "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
+                    "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
                     rusqlite::params![e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol, e.line, e.start_col, e.end_line, e.end_col, e.target_symbol_id, e.target_file_path, e.caller_symbol_id, e.callee_ref_id, e.caller_symbol_uid, e.callee_symbol_uid, e.dispatch_kind.as_str(), e.call_kind, e.resolution_kind.as_str(), e.resolution_confidence, e.resolution_strategy, e.receiver_expr, e.arg_count.map(|v| v as i32), e.is_optional_chain as i32, e.is_awaited as i32, e.is_constructor as i32, e.parser_tier.as_str(), e.parser_confidence, e.synthesized_by, e.synthesis_key, e.registered_file, e.registered_line.map(|v| v as i32)],
                 )?;
             }
@@ -1039,7 +1154,7 @@ impl IndexDb {
 
         // call_edges
         for e in &outcome.call_edges {
-            Self::execute_cached(conn, "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
                 rusqlite::params![e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol, e.line, e.start_col, e.end_line, e.end_col, e.target_symbol_id, e.target_file_path, e.caller_symbol_id, e.callee_ref_id, e.caller_symbol_uid, e.callee_symbol_uid, e.dispatch_kind.as_str(), e.call_kind, e.resolution_kind.as_str(), e.resolution_confidence, e.resolution_strategy, e.receiver_expr, e.arg_count.map(|v| v as i32), e.is_optional_chain as i32, e.is_awaited as i32, e.is_constructor as i32, e.parser_tier.as_str(), e.parser_confidence, e.synthesized_by, e.synthesis_key, e.registered_file, e.registered_line.map(|v| v as i32)],
             )?;
         }

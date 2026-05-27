@@ -167,6 +167,7 @@ pub fn explore_flow(
                     parser_tier: el.parser_tier.clone(),
                     resolution_strategy: el.resolution_strategy.clone(),
                     parser_confidence: el.parser_confidence,
+                    evidence: None,
                 });
             }
         }

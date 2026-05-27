@@ -3,6 +3,7 @@
 use crate::engine::CodeIndex;
 use crate::handlers;
 use crate::tools::JsonResult;
+use cc_model::config::RepoSizeTier;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::tool::ToolCallContext;
 use rmcp::handler::server::wrapper::{Json, Parameters};
@@ -10,6 +11,7 @@ use rmcp::model::*;
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::{tool, tool_router, ServerHandler};
 use lru::LruCache;
+use std::borrow::Cow;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -554,6 +556,79 @@ impl CodeCortexMcpServer {
             auto_indexing.store(false, Ordering::SeqCst);
         });
     }
+
+    /// Get the current project's `RepoSizeTier`, falling back to `Tiny` on error.
+    fn current_tier(&self, index: &Arc<Mutex<CodeIndex>>) -> RepoSizeTier {
+        index
+            .lock()
+            .ok()
+            .map(|rt| rt.repo_size_tier())
+            .unwrap_or(RepoSizeTier::Tiny)
+    }
+
+    /// Append budget hints to a tool description based on the project's repo size tier.
+    fn enrich_tool_description(
+        &self,
+        tool_name: &str,
+        base_desc: &str,
+        tier: RepoSizeTier,
+    ) -> String {
+        match tool_name {
+            "search" => format!(
+                "{} [budget: top_k={}]",
+                base_desc,
+                tier.search_top_k()
+            ),
+            "context" => format!(
+                "{} [budget: max_symbols={}]",
+                base_desc,
+                tier.explore_max_symbols()
+            ),
+            "explore" => format!(
+                "{} [budget: max {} symbols, {} chars/symbol]",
+                base_desc,
+                tier.explore_max_symbols(),
+                tier.max_source_chars_per_symbol()
+            ),
+            "node" => format!(
+                "{} [budget: {} relations, {} chars/symbol]",
+                base_desc,
+                tier.explore_max_symbols(),
+                tier.max_source_chars_per_symbol()
+            ),
+            "trace" => format!(
+                "{} [budget: {} output chars]",
+                base_desc,
+                tier.max_output_chars()
+            ),
+            "graph_query" => format!(
+                "{} [budget: {} max items]",
+                base_desc,
+                tier.output_budget("graph_query").max_items
+            ),
+            "impact" => format!(
+                "{} [budget: {} max items]",
+                base_desc,
+                tier.output_budget("impact").max_items
+            ),
+            "relations" => format!(
+                "{} [budget: {} max items]",
+                base_desc,
+                tier.output_budget("relations").max_items
+            ),
+            "architecture" => format!(
+                "{} [budget: {} max items]",
+                base_desc,
+                tier.output_budget("architecture").max_items
+            ),
+            "files" => format!(
+                "{} [budget: {} max items]",
+                base_desc,
+                tier.output_budget("files").max_items
+            ),
+            _ => base_desc.to_string(),
+        }
+    }
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -626,10 +701,21 @@ index(path) → search(query) → context(task)
         _context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<ListToolsResult, rmcp::ErrorData>> + Send + '_
     {
-        std::future::ready(Ok(ListToolsResult {
-            tools: self.tool_router.list_all(),
-            ..Default::default()
-        }))
+        async move {
+            let index = self.index().await;
+            let tier = self.current_tier(&index);
+            let mut tools = self.tool_router.list_all();
+            for tool in &mut tools {
+                if let Some(ref desc) = tool.description {
+                    let enriched = self.enrich_tool_description(&tool.name, desc, tier);
+                    tool.description = Some(Cow::Owned(enriched));
+                }
+            }
+            Ok(ListToolsResult {
+                tools,
+                ..Default::default()
+            })
+        }
     }
 
     fn call_tool(

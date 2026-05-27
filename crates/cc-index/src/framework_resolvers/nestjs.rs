@@ -108,6 +108,10 @@ impl FrameworkResolver for NestJsResolver {
         "nestjs"
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn languages(&self) -> &[Language] {
         &[Language::TypeScript]
     }

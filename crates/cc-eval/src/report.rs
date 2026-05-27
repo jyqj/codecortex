@@ -1,177 +1,121 @@
-use crate::types::{
-    CategorySummary, EvalCaseReport, EvalDelta, EvalMetrics, EvalReport, EvalSummary,
-};
+use crate::types::{EvalCaseResult, EvalReport, EvalSummary, ToolSummary};
 use std::collections::HashMap;
 
-pub fn generate_markdown(report: &EvalReport) -> String {
-    let mut md = String::new();
-    md.push_str("# CodeCortex Evaluation Report\n\n");
-    md.push_str(&format!("Generated: {}\n\n", report.generated_at));
-
-    // Summary table
-    md.push_str("## Summary\n\n");
-    md.push_str("| Metric | Reduction |\n|--------|----------|\n");
-    md.push_str(&format!(
-        "| Wall-clock time | {:.1}% |\n",
-        report.summary.avg_wall_clock_reduction_pct
-    ));
-    md.push_str(&format!(
-        "| Tokens | {:.1}% |\n",
-        report.summary.avg_token_reduction_pct
-    ));
-    md.push_str(&format!(
-        "| Tool calls | {:.1}% |\n",
-        report.summary.avg_tool_call_reduction_pct
-    ));
-    md.push_str(&format!(
-        "| Cost | {:.1}% |\n",
-        report.summary.avg_cost_reduction_pct
-    ));
-
-    // Per-category breakdown
-    if !report.summary.per_category.is_empty() {
-        md.push_str("\n## Per-Category Results\n\n");
-        md.push_str(
-            "| Category | Cases | Avg Wall Clock Δ | Avg Token Δ | Success Rate |\n",
-        );
-        md.push_str(
-            "|----------|-------|-------------------|-------------|--------------|\n",
-        );
-        let mut cats: Vec<_> = report.summary.per_category.iter().collect();
-        cats.sort_by(|(a, _), (b, _)| a.cmp(b));
-        for (cat, summary) in cats {
-            md.push_str(&format!(
-                "| {} | {} | {:.1}% | {:.1}% | {:.0}% |\n",
-                cat,
-                summary.case_count,
-                summary.avg_wall_clock_reduction_pct,
-                summary.avg_token_reduction_pct,
-                summary.success_rate * 100.0,
-            ));
-        }
-    }
-
-    // Per-case details
-    md.push_str("\n## Cases\n\n");
-    for case in &report.cases {
-        md.push_str(&format!("### {}\n\n", case.case_name));
-        md.push_str("| | With CC | Without CC | Delta |\n|---|---------|------------|-------|\n");
-        md.push_str(&format!(
-            "| Time | {}ms | {}ms | {:.1}% |\n",
-            case.with_cc.metrics.wall_clock_ms,
-            case.without_cc.metrics.wall_clock_ms,
-            case.delta.wall_clock_reduction_pct
-        ));
-        md.push_str(&format!(
-            "| Tokens | {} | {} | {:.1}% |\n",
-            case.with_cc.metrics.token_count_input + case.with_cc.metrics.token_count_output,
-            case.without_cc.metrics.token_count_input + case.without_cc.metrics.token_count_output,
-            case.delta.token_reduction_pct
-        ));
-        md.push_str(&format!(
-            "| Tool calls | {} | {} | {:.1}% |\n",
-            case.with_cc.metrics.tool_call_count,
-            case.without_cc.metrics.tool_call_count,
-            case.delta.tool_call_reduction_pct
-        ));
-        md.push_str("\n");
-    }
-
-    md
-}
-
-pub fn compute_delta(with_cc: &EvalMetrics, without_cc: &EvalMetrics) -> EvalDelta {
-    let pct = |a: f64, b: f64| -> f64 {
-        if b == 0.0 {
-            0.0
-        } else {
-            (1.0 - a / b) * 100.0
-        }
-    };
-    EvalDelta {
-        wall_clock_reduction_pct: pct(
-            with_cc.wall_clock_ms as f64,
-            without_cc.wall_clock_ms as f64,
-        ),
-        token_reduction_pct: pct(
-            (with_cc.token_count_input + with_cc.token_count_output) as f64,
-            (without_cc.token_count_input + without_cc.token_count_output) as f64,
-        ),
-        tool_call_reduction_pct: pct(
-            with_cc.tool_call_count as f64,
-            without_cc.tool_call_count as f64,
-        ),
-        cost_reduction_pct: pct(with_cc.estimated_cost_usd, without_cc.estimated_cost_usd),
-        file_read_reduction_pct: pct(
-            with_cc.file_read_count as f64,
-            without_cc.file_read_count as f64,
-        ),
+/// Build an EvalReport from a set of case results.
+pub fn build_report(results: Vec<EvalCaseResult>) -> EvalReport {
+    let summary = compute_summary(&results);
+    let generated_at = chrono::Utc::now().to_rfc3339();
+    EvalReport {
+        results,
+        summary,
+        generated_at,
     }
 }
 
-pub fn compute_summary(cases: &[EvalCaseReport]) -> EvalSummary {
-    if cases.is_empty() {
+/// Compute summary statistics from case results.
+pub fn compute_summary(results: &[EvalCaseResult]) -> EvalSummary {
+    if results.is_empty() {
         return EvalSummary::default();
     }
-    let n = cases.len() as f64;
 
-    // Build per-category breakdown
-    let mut cat_groups: HashMap<String, Vec<&EvalCaseReport>> = HashMap::new();
-    for case in cases {
-        cat_groups
-            .entry(case.category.as_str().to_string())
+    let total_cases = results.len();
+    let passed = results.iter().filter(|r| r.passed).count();
+    let failed = total_cases - passed;
+    let total_duration_ms: u64 = results.iter().map(|r| r.duration_ms).sum();
+
+    let mut per_tool: HashMap<String, Vec<&EvalCaseResult>> = HashMap::new();
+    for result in results {
+        per_tool
+            .entry(result.tool.clone())
             .or_default()
-            .push(case);
+            .push(result);
     }
-    let per_category: HashMap<String, CategorySummary> = cat_groups
+
+    let per_tool: HashMap<String, ToolSummary> = per_tool
         .into_iter()
-        .map(|(cat, group)| {
-            let cnt = group.len() as f64;
-            let avg_wc = group
-                .iter()
-                .map(|c| c.delta.wall_clock_reduction_pct)
-                .sum::<f64>()
-                / cnt;
-            let avg_tok = group
-                .iter()
-                .map(|c| c.delta.token_reduction_pct)
-                .sum::<f64>()
-                / cnt;
-            let successes = group.iter().filter(|c| c.with_cc.success).count() as f64;
+        .map(|(tool, group)| {
+            let count = group.len();
+            let tool_passed = group.iter().filter(|r| r.passed).count();
+            let tool_failed = count - tool_passed;
+            let total_ms: u64 = group.iter().map(|r| r.duration_ms).sum();
+            let avg_ms = if count > 0 { total_ms / count as u64 } else { 0 };
             (
-                cat,
-                CategorySummary {
-                    case_count: group.len(),
-                    avg_wall_clock_reduction_pct: avg_wc,
-                    avg_token_reduction_pct: avg_tok,
-                    success_rate: successes / cnt,
+                tool,
+                ToolSummary {
+                    case_count: count,
+                    passed: tool_passed,
+                    failed: tool_failed,
+                    avg_duration_ms: avg_ms,
                 },
             )
         })
         .collect();
 
     EvalSummary {
-        total_cases: cases.len(),
-        avg_wall_clock_reduction_pct: cases
-            .iter()
-            .map(|c| c.delta.wall_clock_reduction_pct)
-            .sum::<f64>()
-            / n,
-        avg_token_reduction_pct: cases
-            .iter()
-            .map(|c| c.delta.token_reduction_pct)
-            .sum::<f64>()
-            / n,
-        avg_tool_call_reduction_pct: cases
-            .iter()
-            .map(|c| c.delta.tool_call_reduction_pct)
-            .sum::<f64>()
-            / n,
-        avg_cost_reduction_pct: cases
-            .iter()
-            .map(|c| c.delta.cost_reduction_pct)
-            .sum::<f64>()
-            / n,
-        per_category,
+        total_cases,
+        passed,
+        failed,
+        total_duration_ms,
+        per_tool,
     }
+}
+
+/// Generate a Markdown report from an EvalReport.
+pub fn generate_markdown(report: &EvalReport) -> String {
+    let mut md = String::new();
+    md.push_str("# CodeCortex Eval Report\n\n");
+    md.push_str(&format!("Generated: {}\n\n", report.generated_at));
+
+    // Summary
+    md.push_str("## Summary\n\n");
+    md.push_str(&format!(
+        "| Total | Passed | Failed | Duration |\n|-------|--------|--------|----------|\n| {} | {} | {} | {}ms |\n\n",
+        report.summary.total_cases,
+        report.summary.passed,
+        report.summary.failed,
+        report.summary.total_duration_ms,
+    ));
+
+    // Per-tool breakdown
+    if !report.summary.per_tool.is_empty() {
+        md.push_str("## Per-Tool Results\n\n");
+        md.push_str("| Tool | Cases | Passed | Failed | Avg Duration |\n");
+        md.push_str("|------|-------|--------|--------|-------------|\n");
+        let mut tools: Vec<_> = report.summary.per_tool.iter().collect();
+        tools.sort_by(|(a, _), (b, _)| a.cmp(b));
+        for (tool, summary) in tools {
+            md.push_str(&format!(
+                "| {} | {} | {} | {} | {}ms |\n",
+                tool, summary.case_count, summary.passed, summary.failed, summary.avg_duration_ms,
+            ));
+        }
+        md.push('\n');
+    }
+
+    // Per-case details
+    md.push_str("## Cases\n\n");
+    for result in &report.results {
+        let status = if result.passed { "PASS" } else { "FAIL" };
+        md.push_str(&format!(
+            "### {} [{}] ({}ms)\n\n",
+            result.case_name, status, result.duration_ms,
+        ));
+        md.push_str(&format!("- Tool: `{}`\n", result.tool));
+        md.push_str(&format!(
+            "- Assertions passed: {}\n",
+            result.assertions_passed,
+        ));
+        if !result.assertions_failed.is_empty() {
+            md.push_str("- Failed assertions:\n");
+            for fail in &result.assertions_failed {
+                md.push_str(&format!("  - {}\n", fail));
+            }
+        }
+        if let Some(ref err) = result.error {
+            md.push_str(&format!("- Error: {}\n", err));
+        }
+        md.push('\n');
+    }
+
+    md
 }

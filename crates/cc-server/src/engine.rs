@@ -974,7 +974,8 @@ impl CodeIndex {
     }
 
     /// Return a schema overview of the index: node kinds with counts,
-    /// edge table counts, total files and chunks.
+    /// edge table counts, relationship patterns, example queries,
+    /// edge provenance summary, and runtime evidence coverage.
     pub fn graph_schema(&self) -> CcResult<serde_json::Value> {
         let db = self.ensure_db()?;
 
@@ -1031,12 +1032,214 @@ impl CodeIndex {
             .and_then(|row| row.get("cnt").cloned())
             .unwrap_or(serde_json::json!(0));
 
+        // --- Relationship patterns (static, describes the graph schema) ---
+        let relationship_patterns = serde_json::json!([
+            {"from": "Function", "edge": "CALLS",             "to": "Function",  "table": "call_edges",      "description": "Direct or dynamic function call"},
+            {"from": "Function", "edge": "IMPORTS",           "to": "Module",    "table": "import_edges",    "description": "Import dependency between files/modules"},
+            {"from": "Class",    "edge": "INHERITS",          "to": "Class",     "table": "semantic_edges",  "description": "Class inheritance (extends)"},
+            {"from": "Class",    "edge": "IMPLEMENTS",        "to": "Interface", "table": "semantic_edges",  "description": "Interface implementation"},
+            {"from": "Function", "edge": "DECORATES",         "to": "Function",  "table": "semantic_edges",  "description": "Decorator / annotation application"},
+            {"from": "Function", "edge": "THROWS",            "to": "Class",     "table": "semantic_edges",  "description": "Exception / error throw relation"},
+            {"from": "Function", "edge": "USES_TYPE",         "to": "Class",     "table": "semantic_edges",  "description": "Type usage in parameters or return types"},
+            {"from": "File",     "edge": "DEFINES",           "to": "Function",  "table": "semantic_edges",  "description": "File defines a top-level symbol"},
+            {"from": "Class",    "edge": "DEFINES_METHOD",    "to": "Function",  "table": "semantic_edges",  "description": "Class/struct defines a method"},
+            {"from": "Module",   "edge": "CONTAINS_FILE",     "to": "File",      "table": "semantic_edges",  "description": "Folder/module contains a file"},
+            {"from": "Module",   "edge": "CONTAINS_MODULE",   "to": "Module",    "table": "semantic_edges",  "description": "Module contains a submodule"},
+            {"from": "Function", "edge": "RENDERS_COMPONENT", "to": "Function",  "table": "semantic_edges",  "description": "React/Vue component renders another component"},
+            {"from": "Route",    "edge": "HANDLES",           "to": "Function",  "table": "route_edges",     "description": "HTTP route mapped to handler function"},
+            {"from": "Function", "edge": "HTTP_CALL",         "to": "Route",     "table": "http_call_edges", "description": "Code makes an outbound HTTP request"},
+            {"from": "Function", "edge": "DATA_FLOW",         "to": "Function",  "table": "data_flow_edges", "description": "Data flows between functions"},
+            {"from": "File",     "edge": "CO_CHANGE",         "to": "File",      "table": "co_change_edges", "description": "Files frequently changed together in commits"},
+            {"from": "Function", "edge": "TESTS",             "to": "Function",  "table": "test_edges",      "description": "Test function covers a code function"},
+        ]);
+
+        // --- Example Cypher queries (static, the 5 most useful for agents) ---
+        let example_queries = serde_json::json!([
+            {
+                "description": "Find all functions in the index",
+                "cypher": "MATCH (f:Function) RETURN f.name, f.file_path LIMIT 20"
+            },
+            {
+                "description": "Find callers of a specific function",
+                "cypher": "MATCH (caller:Function)-[:CALLS]->(f:Function {name: 'TARGET_NAME'}) RETURN caller.name, caller.file_path"
+            },
+            {
+                "description": "Find HTTP routes and their handlers",
+                "cypher": "MATCH (r:Route)-[:HANDLES]->(f:Function) RETURN r.path, r.method, f.name, f.file_path"
+            },
+            {
+                "description": "Find potentially dead code (functions with zero in-degree)",
+                "cypher": "MATCH (f:Function) WHERE in_degree(f) = 0 RETURN f.name, f.file_path LIMIT 20"
+            },
+            {
+                "description": "Find type hierarchy (inheritance)",
+                "cypher": "MATCH (c:Class)-[:INHERITS]->(parent:Class) RETURN c.name, parent.name, c.file_path"
+            }
+        ]);
+
+        // --- Edge provenance summary (from call_edges dispatch_kind / synthesized_by) ---
+        let edge_provenance = self.compute_edge_provenance(db);
+
+        // --- Runtime evidence coverage (from runtime_evidence table) ---
+        let runtime_evidence = self.compute_runtime_evidence(db, &edge_counts);
+
         Ok(serde_json::json!({
             "node_kinds": node_kinds,
             "edge_counts": edge_counts,
             "total_files": file_count,
             "total_chunks": chunk_count,
+            "relationship_patterns": relationship_patterns,
+            "example_queries": example_queries,
+            "edge_provenance": edge_provenance,
+            "runtime_evidence": runtime_evidence,
         }))
+    }
+
+    /// Compute edge provenance breakdown from call_edges table.
+    /// Groups edges by their origin: tree-sitter parsed, heuristic inferred,
+    /// runtime-verified, or synthesized by post-processing.
+    fn compute_edge_provenance(&self, db: &Arc<IndexDb>) -> serde_json::Value {
+        // Count by dispatch_kind to distinguish tree-sitter vs heuristic
+        let dispatch_rows = db
+            .query_json(
+                "SELECT dispatch_kind, COUNT(*) AS cnt FROM call_edges GROUP BY dispatch_kind",
+                &[],
+            )
+            .unwrap_or_default();
+
+        // Count synthesized edges (synthesized_by IS NOT NULL)
+        let synthesized_count: i64 = db
+            .query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",
+                &[],
+            )
+            .ok()
+            .and_then(|rows| rows.into_iter().next())
+            .and_then(|row| row.get("cnt").and_then(|v| v.as_i64()))
+            .unwrap_or(0);
+
+        // Count synthesized by source
+        let synth_by_rows = db
+            .query_json(
+                "SELECT synthesized_by, COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL GROUP BY synthesized_by ORDER BY cnt DESC",
+                &[],
+            )
+            .unwrap_or_default();
+
+        // Count by resolution_kind to separate exact/heuristic
+        let resolution_rows = db
+            .query_json(
+                "SELECT resolution_kind, COUNT(*) AS cnt FROM call_edges GROUP BY resolution_kind",
+                &[],
+            )
+            .unwrap_or_default();
+
+        let total_call_edges: i64 = dispatch_rows
+            .iter()
+            .filter_map(|r| r.get("cnt").and_then(|v| v.as_i64()))
+            .sum();
+
+        // Classify: tree_sitter = exact + qualified + scope_resolved, heuristic = heuristic, unresolved = unresolved
+        let mut tree_sitter: i64 = 0;
+        let mut heuristic: i64 = 0;
+        let mut unresolved: i64 = 0;
+        for row in &resolution_rows {
+            let kind = row
+                .get("resolution_kind")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+            let cnt = row.get("cnt").and_then(|v| v.as_i64()).unwrap_or(0);
+            match kind {
+                "exact" | "qualified" | "scope_resolved" => tree_sitter += cnt,
+                "heuristic" => heuristic += cnt,
+                "unresolved" | "" => unresolved += cnt,
+                _ => heuristic += cnt,
+            }
+        }
+
+        // Dispatch kind breakdown
+        let mut dispatch_breakdown = serde_json::Map::new();
+        for row in &dispatch_rows {
+            let kind = row
+                .get("dispatch_kind")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let cnt = row.get("cnt").cloned().unwrap_or(serde_json::json!(0));
+            dispatch_breakdown.insert(kind, cnt);
+        }
+
+        // Synthesized-by breakdown
+        let mut synth_breakdown = serde_json::Map::new();
+        for row in &synth_by_rows {
+            let by = row
+                .get("synthesized_by")
+                .and_then(|v| v.as_str())
+                .unwrap_or("unknown")
+                .to_string();
+            let cnt = row.get("cnt").cloned().unwrap_or(serde_json::json!(0));
+            synth_breakdown.insert(by, cnt);
+        }
+
+        serde_json::json!({
+            "total_call_edges": total_call_edges,
+            "by_resolution": {
+                "tree_sitter": tree_sitter,
+                "heuristic": heuristic,
+                "unresolved": unresolved,
+            },
+            "synthesized": synthesized_count,
+            "by_dispatch_kind": dispatch_breakdown,
+            "by_synthesized_by": synth_breakdown,
+        })
+    }
+
+    /// Compute runtime evidence coverage from the runtime_evidence table.
+    fn compute_runtime_evidence(
+        &self,
+        db: &Arc<IndexDb>,
+        edge_counts: &serde_json::Map<String, serde_json::Value>,
+    ) -> serde_json::Value {
+        match db.runtime_evidence_stats() {
+            Ok(stats) => {
+                let total = stats
+                    .get("total_observations")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0);
+                let matched = stats
+                    .get("linked_to_edges")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0);
+                let unmatched = total.saturating_sub(matched);
+
+                // Coverage percentage: matched evidence / total http_call_edges
+                let http_edge_total = edge_counts
+                    .get("http_call_edges")
+                    .and_then(|v| v.as_u64())
+                    .unwrap_or(0);
+                let coverage_pct = if http_edge_total > 0 {
+                    (matched as f64 / http_edge_total as f64) * 100.0
+                } else {
+                    0.0
+                };
+
+                serde_json::json!({
+                    "total_evidence": total,
+                    "matched_to_edges": matched,
+                    "unmatched": unmatched,
+                    "http_edge_coverage_pct": (coverage_pct * 10.0).round() / 10.0,
+                })
+            }
+            Err(_) => {
+                serde_json::json!({
+                    "total_evidence": 0,
+                    "matched_to_edges": 0,
+                    "unmatched": 0,
+                    "http_edge_coverage_pct": 0.0,
+                    "note": "runtime_evidence table not available or empty"
+                })
+            }
+        }
     }
 }
 

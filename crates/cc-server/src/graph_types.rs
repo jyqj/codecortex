@@ -40,6 +40,15 @@ pub struct TraceEdge {
     pub resolution_strategy: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub parser_confidence: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub evidence: Option<TraceEdgeEvidence>,
+}
+
+/// Runtime evidence attached to a trace edge (from runtime_evidence table).
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TraceEdgeEvidence {
+    pub observed_count: u32,
+    pub last_seen: String,
 }
 
 /// Rich trace_path result with backward-compatible paths + rich nodes/edges.

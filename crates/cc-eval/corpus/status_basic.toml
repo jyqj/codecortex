@@ -1,0 +1,17 @@
+name = "status_basic"
+tool = "status"
+description = "Check that status returns index, capabilities, and schema"
+
+[params]
+aspect = "all"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "index"
+
+[[assertions]]
+kind = "field_exists"
+field = "capabilities"

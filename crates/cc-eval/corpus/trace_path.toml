@@ -1,0 +1,19 @@
+name = "trace_path"
+tool = "trace"
+description = "Trace call path between processUser and formatName"
+
+[params]
+from = "processUser"
+to = "formatName"
+max_depth = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"
+
+[[assertions]]
+kind = "field_exists"
+field = "paths"

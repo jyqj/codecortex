@@ -1,122 +1,113 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
-use std::time::Duration;
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-#[serde(rename_all = "snake_case")]
-pub enum EvalCategory {
-    RouteHandler,
-    ImpactRadius,
-    DynamicCallback,
-    TypeHierarchy,
-    CircularDeps,
-    DeadCode,
+// ── Tool enumeration (the 14 MCP tools) ─────────────────────────────
+
+pub const MCP_TOOLS: &[&str] = &[
+    "status",
+    "index",
+    "search",
+    "context",
+    "node",
+    "explore",
+    "trace",
+    "relations",
+    "impact",
+    "architecture",
+    "files",
+    "graph_query",
+    "ingest_traces",
+    "adr",
+];
+
+// ── Assertion types ─────────────────────────────────────────────────
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Assertion {
+    /// Kind of assertion.
+    /// - `output_contains` — serialized JSON output contains string
+    /// - `field_exists` — a specific JSON path exists in output
+    /// - `min_results` — array at path has >= N items
+    /// - `is_success` — tool didn't error (always implicitly checked)
+    pub kind: String,
+
+    /// Value to check against (string for contains, number-as-string for min_results).
+    #[serde(default)]
+    pub value: Option<String>,
+
+    /// Optional field/path to inspect (e.g. "hits", "dead_code").
+    #[serde(default)]
+    pub field: Option<String>,
 }
 
-impl EvalCategory {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::RouteHandler => "route_handler",
-            Self::ImpactRadius => "impact_radius",
-            Self::DynamicCallback => "dynamic_callback",
-            Self::TypeHierarchy => "type_hierarchy",
-            Self::CircularDeps => "circular_deps",
-            Self::DeadCode => "dead_code",
+impl Assertion {
+    pub fn describe(&self) -> String {
+        match self.kind.as_str() {
+            "output_contains" => {
+                format!(
+                    "output_contains: {:?}",
+                    self.value.as_deref().unwrap_or("(none)")
+                )
+            }
+            "field_exists" => {
+                format!(
+                    "field_exists: {:?}",
+                    self.field.as_deref().unwrap_or("(none)")
+                )
+            }
+            "min_results" => {
+                format!(
+                    "min_results(field={:?}, min={})",
+                    self.field.as_deref().unwrap_or("(root)"),
+                    self.value.as_deref().unwrap_or("1")
+                )
+            }
+            other => format!("{}: value={:?}", other, self.value),
         }
     }
 }
 
-impl Default for EvalCategory {
-    fn default() -> Self {
-        Self::RouteHandler
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum EvalDifficulty {
-    Easy,
-    Medium,
-    Hard,
-}
-
-impl Default for EvalDifficulty {
-    fn default() -> Self {
-        Self::Medium
-    }
-}
+// ── Eval case (from corpus TOML) ────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EvalCase {
+    /// Human-readable name for this test case.
     pub name: String,
+
+    /// One of the 14 MCP tool names.
+    pub tool: String,
+
+    /// Description of what this case tests.
     #[serde(default)]
-    pub category: EvalCategory,
+    pub description: String,
+
+    /// Parameters to pass to the tool (as a JSON-like TOML table).
     #[serde(default)]
-    pub difficulty: EvalDifficulty,
-    pub prompt: String,
-    pub repo_path: PathBuf,
-    pub expected_markers: Vec<String>,
+    pub params: serde_json::Value,
+
+    /// Assertions to check against the tool output.
     #[serde(default)]
-    pub mcp_tools: Vec<String>,
-    #[serde(with = "duration_secs")]
-    pub timeout: Duration,
+    pub assertions: Vec<Assertion>,
 }
 
+// ── Eval case result ────────────────────────────────────────────────
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalRun {
+pub struct EvalCaseResult {
     pub case_name: String,
-    pub with_codecortex: bool,
-    pub metrics: EvalMetrics,
-    pub tool_calls: Vec<ToolCallRecord>,
-    pub success: bool,
+    pub tool: String,
+    pub passed: bool,
+    pub duration_ms: u64,
+    pub assertions_passed: usize,
+    pub assertions_failed: Vec<String>,
     pub error: Option<String>,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct EvalMetrics {
-    pub wall_clock_ms: u64,
-    pub token_count_input: u64,
-    pub token_count_output: u64,
-    pub tool_call_count: u32,
-    pub file_read_count: u32,
-    pub grep_count: u32,
-    pub mcp_call_count: u32,
-    pub estimated_cost_usd: f64,
-    pub markers_found: u32,
-    pub markers_total: u32,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ToolCallRecord {
-    pub tool_name: String,
-    pub duration_ms: u64,
-    pub input_summary: String,
-    pub output_size_bytes: usize,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EvalCaseReport {
-    pub case_name: String,
-    #[serde(default)]
-    pub category: EvalCategory,
-    pub with_cc: EvalRun,
-    pub without_cc: EvalRun,
-    pub delta: EvalDelta,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct EvalDelta {
-    pub wall_clock_reduction_pct: f64,
-    pub token_reduction_pct: f64,
-    pub tool_call_reduction_pct: f64,
-    pub cost_reduction_pct: f64,
-    pub file_read_reduction_pct: f64,
-}
+// ── Eval report ─────────────────────────────────────────────────────
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EvalReport {
-    pub cases: Vec<EvalCaseReport>,
+    pub results: Vec<EvalCaseResult>,
     pub summary: EvalSummary,
     pub generated_at: String,
 }
@@ -124,32 +115,16 @@ pub struct EvalReport {
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct EvalSummary {
     pub total_cases: usize,
-    pub avg_wall_clock_reduction_pct: f64,
-    pub avg_token_reduction_pct: f64,
-    pub avg_tool_call_reduction_pct: f64,
-    pub avg_cost_reduction_pct: f64,
-    #[serde(default)]
-    pub per_category: HashMap<String, CategorySummary>,
+    pub passed: usize,
+    pub failed: usize,
+    pub total_duration_ms: u64,
+    pub per_tool: HashMap<String, ToolSummary>,
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct CategorySummary {
+pub struct ToolSummary {
     pub case_count: usize,
-    pub avg_wall_clock_reduction_pct: f64,
-    pub avg_token_reduction_pct: f64,
-    pub success_rate: f64,
-}
-
-mod duration_secs {
-    use serde::{Deserialize, Deserializer, Serialize, Serializer};
-    use std::time::Duration;
-
-    pub fn serialize<S: Serializer>(d: &Duration, s: S) -> Result<S::Ok, S::Error> {
-        d.as_secs().serialize(s)
-    }
-
-    pub fn deserialize<'de, D: Deserializer<'de>>(d: D) -> Result<Duration, D::Error> {
-        let secs = u64::deserialize(d)?;
-        Ok(Duration::from_secs(secs))
-    }
+    pub passed: usize,
+    pub failed: usize,
+    pub avg_duration_ms: u64,
 }

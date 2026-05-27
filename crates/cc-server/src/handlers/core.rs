@@ -43,9 +43,25 @@ pub fn list_communities(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Va
 }
 
 pub fn list_frameworks(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value, String> {
+    use cc_index::framework_resolvers::resolver_tier_for_key;
+
     let rt = runtime.lock().map_err(|e| e.to_string())?;
     let rows = rt.list_frameworks().map_err(|e| e.to_string())?;
-    serde_json::to_value(rows).map_err(|e| e.to_string())
+
+    // Enrich each framework entry with its resolver coverage tier.
+    let enriched: Vec<serde_json::Value> = rows
+        .into_iter()
+        .map(|(key, confidence)| {
+            let tier = resolver_tier_for_key(&key);
+            serde_json::json!({
+                "framework": key,
+                "confidence": confidence,
+                "resolver_tier": tier
+            })
+        })
+        .collect();
+
+    serde_json::to_value(enriched).map_err(|e| e.to_string())
 }
 
 pub fn index_capabilities(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value, String> {

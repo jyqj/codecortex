@@ -30,20 +30,43 @@ pub fn handle_status(
     aspect: &str,
 ) -> Result<Value, String> {
     match aspect {
-        "index" => core::index_status(runtime),
+        "index" => {
+            let mut result = core::index_status(runtime.clone())?;
+            // Attach runtime evidence stats if database is available
+            if let Some(evidence) = runtime_evidence_summary(&runtime) {
+                if let Some(obj) = result.as_object_mut() {
+                    obj.insert("runtime_evidence".to_string(), evidence);
+                }
+            }
+            Ok(result)
+        }
         "capabilities" => core::index_capabilities(runtime),
         "schema" => core::graph_schema(runtime),
         "all" | _ => {
             let index = core::index_status(runtime.clone())?;
             let capabilities = core::index_capabilities(runtime.clone())?;
-            let schema = core::graph_schema(runtime)?;
-            Ok(json!({
+            let schema = core::graph_schema(runtime.clone())?;
+            let mut result = json!({
                 "index": index,
                 "capabilities": capabilities,
                 "schema": schema,
-            }))
+            });
+            // Attach runtime evidence stats if database is available
+            if let Some(evidence) = runtime_evidence_summary(&runtime) {
+                if let Some(obj) = result.as_object_mut() {
+                    obj.insert("runtime_evidence".to_string(), evidence);
+                }
+            }
+            Ok(result)
         }
     }
+}
+
+/// Query runtime_evidence stats from the database, returning None if unavailable.
+fn runtime_evidence_summary(runtime: &Arc<Mutex<CodeIndex>>) -> Option<Value> {
+    let rt = runtime.lock().ok()?;
+    let db = rt.index_db()?;
+    db.runtime_evidence_stats().ok()
 }
 
 // ── 2. handle_context ───────────────────────────────────────────────
@@ -295,6 +318,8 @@ pub fn handle_ingest_traces(
     let now = chrono::Utc::now().to_rfc3339();
     let mut accepted = 0u32;
     let mut matched = 0u32;
+    let mut ambiguous = 0u32;
+    let mut unmatched = 0u32;
 
     for trace in traces {
         let service = trace.get("service_name").and_then(|v| v.as_str()).unwrap_or("unknown");
@@ -310,26 +335,58 @@ pub fn handle_ingest_traces(
             accepted += 1;
         }
 
-        // Try matching to existing http_call_edges by normalized_path
+        // Joint matching: try method+path first, then fallback to path-only
         let norm = cc_model::route_normalize::normalize_route_path(path);
         let conn = db.read_conn().map_err(|e| e.to_string())?;
-        let edge_id: Option<String> = conn
-            .query_row(
+
+        // Try exact match: method + normalized_path
+        let edge_id: Option<String> = if let Some(m) = method {
+            conn.query_row(
+                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
+                rusqlite::params![&norm, m],
+                |r| r.get(0),
+            )
+            .ok()
+        } else {
+            None
+        };
+
+        // Fallback: path-only match
+        let edge_id = edge_id.or_else(|| {
+            conn.query_row(
                 "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
                 [&norm],
                 |r| r.get(0),
             )
-            .ok();
+            .ok()
+        });
+
+        // Count total candidates for ambiguity detection
+        let candidate_count: u32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
+                [&norm],
+                |r| r.get(0),
+            )
+            .unwrap_or(0);
+
         if let Some(ref eid_db) = edge_id {
             let _ = db.link_evidence_to_edge(&eid, eid_db);
             let _ = db.boost_http_edge_confidence(eid_db, 0.15);
             matched += 1;
+            if candidate_count > 1 {
+                ambiguous += 1;
+            }
+        } else {
+            unmatched += 1;
         }
     }
 
     Ok(json!({
         "accepted": accepted,
         "matched_to_edges": matched,
+        "ambiguous": ambiguous,
+        "unmatched": unmatched,
         "total_submitted": traces.len(),
     }))
 }

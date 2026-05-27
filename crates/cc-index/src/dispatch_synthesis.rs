@@ -1653,7 +1653,7 @@ mod tests {
     ) {
         let conn = db.read_conn().unwrap();
         conn.execute(
-            "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, start_col, end_col, \
+            "INSERT OR REPLACE INTO call_edges(edge_id, file_path, callee_symbol, line, start_col, end_col, \
              caller_symbol_uid, callee_symbol_uid, dispatch_kind, call_kind, \
              resolution_kind, resolution_confidence, resolution_strategy, \
              is_optional_chain, is_awaited, is_constructor, parser_tier, parser_confidence) \

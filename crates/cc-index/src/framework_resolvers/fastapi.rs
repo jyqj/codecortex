@@ -60,6 +60,10 @@ impl FrameworkResolver for FastApiResolver {
         "fastapi"
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn languages(&self) -> &[Language] {
         &[Language::Python]
     }

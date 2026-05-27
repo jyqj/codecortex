@@ -73,6 +73,10 @@ impl FrameworkResolver for ExpressResolver {
         "express"
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn languages(&self) -> &[Language] {
         &[Language::JavaScript, Language::TypeScript]
     }

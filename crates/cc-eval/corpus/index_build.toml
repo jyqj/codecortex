@@ -1,0 +1,14 @@
+name = "index_build"
+tool = "index"
+description = "Build index for the sample project"
+
+[params]
+path = "."
+full = true
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "indexed_files"

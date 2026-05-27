@@ -635,7 +635,7 @@ impl IndexDb {
         for e in edges {
             Self::execute_cached(
                 &tx,
-                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
+                "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
                 rusqlite::params![
                     e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol,
                     e.line, e.start_col, e.end_line, e.end_col,
@@ -698,15 +698,107 @@ impl IndexDb {
 
     pub fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
         let conn = self.read_conn()?;
-        let count: u32 = conn
+        let evidence_rows: u32 = conn
             .query_row("SELECT COUNT(*) FROM runtime_evidence", [], |r| r.get(0))
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let linked: u32 = conn
+        let total_observations: u64 = conn
+            .query_row("SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence", [], |r| r.get(0))
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let linked_rows: u32 = conn
             .query_row("SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
             .map_err(|e| CcError::Database(e.to_string()))?;
+        let distinct_linked_edges: u32 = conn
+            .query_row("SELECT COUNT(DISTINCT http_edge_id) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
+            .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(serde_json::json!({
-            "total_observations": count,
-            "linked_to_edges": linked,
+            "evidence_rows": evidence_rows,
+            "total_observations": total_observations,
+            "linked_evidence_rows": linked_rows,
+            "distinct_linked_edges": distinct_linked_edges,
         }))
+    }
+
+    /// Query aggregated runtime evidence keyed by normalized path.
+    ///
+    /// For each normalized path, returns (total_observed_count, latest_last_seen).
+    /// Matches evidence whose linked http_edge_id has the given normalized_path.
+    pub fn evidence_for_normalized_paths(
+        &self,
+        paths: &[String],
+    ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
+        if paths.is_empty() {
+            return Ok(std::collections::HashMap::new());
+        }
+        let conn = self.read_conn()?;
+        let placeholders: Vec<String> = (1..=paths.len()).map(|i| format!("?{}", i)).collect();
+        let sql = format!(
+            "SELECT hce.normalized_path, SUM(re.observed_count) AS total_count, MAX(re.last_seen) AS latest_seen \
+             FROM runtime_evidence re \
+             JOIN http_call_edges hce ON re.http_edge_id = hce.edge_id \
+             WHERE hce.normalized_path IN ({}) \
+             GROUP BY hce.normalized_path",
+            placeholders.join(",")
+        );
+        let mut stmt = conn.prepare(&sql).map_err(|e| CcError::Database(e.to_string()))?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = paths
+            .iter()
+            .map(|s| s as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| {
+                let norm_path: String = row.get(0)?;
+                let count: u32 = row.get(1)?;
+                let last_seen: String = row.get(2)?;
+                Ok((norm_path, count, last_seen))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut result = std::collections::HashMap::new();
+        for row in rows {
+            if let Ok((norm_path, count, last_seen)) = row {
+                result.insert(norm_path, (count, last_seen));
+            }
+        }
+        Ok(result)
+    }
+
+    /// Query aggregated runtime evidence for a set of http_edge_ids.
+    ///
+    /// Returns a map of http_edge_id -> (total_observed_count, latest_last_seen).
+    pub fn evidence_for_http_edges(
+        &self,
+        edge_ids: &[String],
+    ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
+        if edge_ids.is_empty() {
+            return Ok(std::collections::HashMap::new());
+        }
+        let conn = self.read_conn()?;
+        let placeholders: Vec<String> = (1..=edge_ids.len()).map(|i| format!("?{}", i)).collect();
+        let sql = format!(
+            "SELECT http_edge_id, SUM(observed_count) AS total_count, MAX(last_seen) AS latest_seen \
+             FROM runtime_evidence \
+             WHERE http_edge_id IN ({}) \
+             GROUP BY http_edge_id",
+            placeholders.join(",")
+        );
+        let mut stmt = conn.prepare(&sql).map_err(|e| CcError::Database(e.to_string()))?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = edge_ids
+            .iter()
+            .map(|s| s as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| {
+                let eid: String = row.get(0)?;
+                let count: u32 = row.get(1)?;
+                let last_seen: String = row.get(2)?;
+                Ok((eid, count, last_seen))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut result = std::collections::HashMap::new();
+        for row in rows {
+            if let Ok((eid, count, last_seen)) = row {
+                result.insert(eid, (count, last_seen));
+            }
+        }
+        Ok(result)
     }
 }

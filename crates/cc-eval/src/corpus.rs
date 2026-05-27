@@ -1,6 +1,7 @@
 use crate::types::EvalCase;
 use std::path::Path;
 
+/// Load all `.toml` corpus files from a directory, sorted by name.
 pub fn load_corpus(dir: &Path) -> Result<Vec<EvalCase>, String> {
     let mut cases = Vec::new();
     if !dir.exists() {

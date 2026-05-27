@@ -1,0 +1,17 @@
+name = "impact_dead_code"
+tool = "impact"
+description = "Find dead code in the project"
+
+[params]
+scope = "dead_code"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "dead_code"
+
+[[assertions]]
+kind = "output_contains"
+value = "unused_helper"

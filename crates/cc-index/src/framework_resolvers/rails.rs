@@ -144,6 +144,10 @@ impl FrameworkResolver for RailsResolver {
         "rails"
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn languages(&self) -> &[Language] {
         &[Language::Ruby]
     }

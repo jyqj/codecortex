@@ -178,6 +178,10 @@ impl FrameworkResolver for LaravelResolver {
         "laravel"
     }
 
+    fn resolver_tier(&self) -> &'static str {
+        "full"
+    }
+
     fn languages(&self) -> &[Language] {
         &[Language::Php]
     }

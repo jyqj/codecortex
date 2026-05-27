@@ -1,20 +1,24 @@
 use clap::Parser;
 
+// Binary-only modules (not part of the library)
 mod cli;
-mod engine;
-pub mod graph_cycles;
-pub mod graph_flow;
-pub mod graph_trace;
-pub mod graph_type_hierarchy;
-pub mod graph_types;
-mod handlers;
-mod impact;
 mod installer;
 mod mcp;
-pub mod path_guard;
-pub mod symbol_extract;
-mod tools;
 mod watcher;
+
+// Re-export library modules so existing `use crate::` paths in binary-only
+// modules continue to work.
+pub use cc_server::engine;
+pub use cc_server::graph_cycles;
+pub use cc_server::graph_flow;
+pub use cc_server::graph_trace;
+pub use cc_server::graph_type_hierarchy;
+pub use cc_server::graph_types;
+pub use cc_server::handlers;
+pub use cc_server::impact;
+pub use cc_server::path_guard;
+pub use cc_server::symbol_extract;
+pub use cc_server::tools;
 
 fn main() {
     tracing_subscriber::fmt()

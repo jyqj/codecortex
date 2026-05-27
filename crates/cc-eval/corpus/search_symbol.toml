@@ -1,0 +1,15 @@
+name = "search_symbol"
+tool = "search"
+description = "Search for a function by symbol name"
+
+[params]
+query = "formatName"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"

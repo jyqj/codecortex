@@ -1,0 +1,13 @@
+name = "graph_query_basic"
+tool = "graph_query"
+description = "Run a basic Cypher query for functions"
+
+[params]
+query = "MATCH (f:Function) RETURN f.name LIMIT 5"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "rows"

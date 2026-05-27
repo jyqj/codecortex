@@ -1,0 +1,13 @@
+name = "adr_list"
+tool = "adr"
+description = "List ADRs (returns empty or existing list)"
+
+[params]
+action = "list"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "adrs"

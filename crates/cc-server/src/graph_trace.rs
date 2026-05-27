@@ -6,7 +6,7 @@ use std::collections::{HashMap, HashSet, VecDeque};
 use std::path::Path;
 use std::sync::Arc;
 
-use crate::graph_types::{BfsAdj, EdgeLite, LabeledPath, TraceEdge, TraceNode, TracePathResult};
+use crate::graph_types::{BfsAdj, EdgeLite, LabeledPath, TraceEdge, TraceEdgeEvidence, TraceNode, TracePathResult};
 
 /// Build edge-labeled adjacency from call_uid_edges_lite.
 pub fn build_bfs_adj(db: &IndexDb) -> CcResult<BfsAdj> {
@@ -286,6 +286,27 @@ pub fn trace_path_rich(
     let mut edge_seen: HashSet<(String, String, u32)> = HashSet::new();
     let mut paths: Vec<Vec<String>> = Vec::new();
 
+    // Collect all synthesis_keys from http_bridge edges for evidence lookup
+    let mut bridge_norm_paths: Vec<String> = Vec::new();
+    for lp in &labeled_paths {
+        for el in &lp.edge_lites {
+            if el.synthesized_by.as_deref() == Some("http_bridge") {
+                if let Some(ref sk) = el.synthesis_key {
+                    bridge_norm_paths.push(sk.clone());
+                }
+            }
+        }
+    }
+    bridge_norm_paths.sort();
+    bridge_norm_paths.dedup();
+
+    // Bulk-query evidence for all bridge normalized paths
+    let evidence_map = if !bridge_norm_paths.is_empty() {
+        db.evidence_for_normalized_paths(&bridge_norm_paths).unwrap_or_default()
+    } else {
+        HashMap::new()
+    };
+
     for lp in &labeled_paths {
         let named: Vec<String> = lp
             .node_uids
@@ -297,6 +318,19 @@ pub fn trace_path_rich(
         for el in &lp.edge_lites {
             let key = (el.caller_uid.clone(), el.callee_uid.clone(), el.line);
             if edge_seen.insert(key) {
+                // Attach runtime evidence for http_bridge edges
+                let evidence = if el.synthesized_by.as_deref() == Some("http_bridge") {
+                    el.synthesis_key
+                        .as_ref()
+                        .and_then(|sk| evidence_map.get(sk))
+                        .map(|(count, last_seen)| TraceEdgeEvidence {
+                            observed_count: *count,
+                            last_seen: last_seen.clone(),
+                        })
+                } else {
+                    None
+                };
+
                 edges.push(TraceEdge {
                     from_uid: el.caller_uid.clone(),
                     to_uid: el.callee_uid.clone(),
@@ -312,6 +346,7 @@ pub fn trace_path_rich(
                     parser_tier: el.parser_tier.clone(),
                     resolution_strategy: el.resolution_strategy.clone(),
                     parser_confidence: el.parser_confidence,
+                    evidence,
                 });
             }
         }

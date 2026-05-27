@@ -1,0 +1,15 @@
+name = "ingest_traces_basic"
+tool = "ingest_traces"
+description = "Ingest a single trace observation"
+
+[params]
+traces = [
+    { service_name = "test-svc", method = "GET", path = "/users/1", status_code = "200" }
+]
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "accepted"

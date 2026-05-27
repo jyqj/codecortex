@@ -73,7 +73,7 @@ pub struct IndexingConfig {
     #[serde(default)]
     pub max_concurrent_parse: Option<usize>,
     /// 实验性：全量重建时使用 direct SQLite writer（跳过 SQL 解析器）
-    /// 目前为骨架实现，生产环境请保持 false
+    /// 完整实现，默认关闭；可通过 use_direct_writer: true 启用
     #[serde(default)]
     pub use_direct_writer: bool,
     /// 是否启用 dispatch synthesis（event emitter → handler 合成边）
@@ -118,6 +118,22 @@ impl Default for IndexingConfig {
                 "**/*.go".into(),
                 "**/*.rs".into(),
                 "**/*.md".into(),
+                "**/*.cs".into(),
+                "**/*.php".into(),
+                "**/*.rb".into(),
+                "**/*.swift".into(),
+                "**/*.kt".into(),
+                "**/*.kts".into(),
+                "**/*.dart".into(),
+                "**/*.scala".into(),
+                "**/*.sc".into(),
+                "**/*.lua".into(),
+                "**/*.sql".into(),
+                "**/*.yaml".into(),
+                "**/*.yml".into(),
+                "**/*.toml".into(),
+                "**/Dockerfile".into(),
+                "**/Dockerfile.*".into(),
             ],
             ignore: default_ignore_patterns(),
             max_file_bytes: 512_000,
@@ -171,7 +187,10 @@ impl Default for SearchConfig {
     }
 }
 
+/// Legacy config section — kept for `.codecortex.json` backwards compatibility.
+/// Budget values are now driven by [`RepoSizeTier`]; these fields are not read at runtime.
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct PackConfig {
     pub default_token_budget: u32,
     pub neighbor_window: u32,
@@ -295,6 +314,131 @@ impl RepoSizeTier {
             Self::Small => 24000,
             Self::Medium => 32000,
             Self::Large => 38000,
+        }
+    }
+
+    /// Return an adaptive output budget for the given handler name.
+    pub fn output_budget(&self, handler: &str) -> OutputBudget {
+        let base_chars = self.max_output_chars();
+        let base_items = match handler {
+            "graph_query" => match self {
+                Self::Tiny => 15,
+                Self::Small => 30,
+                Self::Medium => 45,
+                Self::Large => 60,
+            },
+            "trace_path" => match self {
+                Self::Tiny => 10,
+                Self::Small => 15,
+                Self::Medium | Self::Large => 20,
+            },
+            "explore_flow" => match self {
+                Self::Tiny => 15,
+                Self::Small => 20,
+                Self::Medium => 25,
+                Self::Large => 30,
+            },
+            "dead_code" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 40,
+                Self::Large => 50,
+            },
+            "circular_deps" => match self {
+                Self::Tiny => 10,
+                Self::Small => 15,
+                Self::Medium | Self::Large => 20,
+            },
+            "relations" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 40,
+                Self::Large => 50,
+            },
+            "impact" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 50,
+                Self::Large => 80,
+            },
+            "architecture" => match self {
+                Self::Tiny => 20,
+                Self::Small => 30,
+                Self::Medium => 40,
+                Self::Large => 60,
+            },
+            "files" => match self {
+                Self::Tiny => 500,
+                Self::Small => 2000,
+                Self::Medium => 5000,
+                Self::Large => 10000,
+            },
+            _ => self.search_top_k(),
+        };
+        OutputBudget {
+            max_output_chars: base_chars,
+            max_items: base_items,
+            max_snippet_chars: base_chars / 3,
+            max_source_chars_per_symbol: self.max_source_chars_per_symbol(),
+        }
+    }
+}
+
+/// Adaptive output budget returned by [`RepoSizeTier::output_budget`].
+#[derive(Debug, Clone)]
+pub struct OutputBudget {
+    pub max_output_chars: usize,
+    pub max_items: usize,
+    pub max_snippet_chars: usize,
+    pub max_source_chars_per_symbol: usize,
+}
+
+/// Per-file explore output budget, scaled to project size.
+#[derive(Debug, Clone)]
+pub struct ExploreBudget {
+    pub max_output_chars: usize,
+    pub default_max_files: usize,
+    pub max_chars_per_file: usize,
+    pub gap_threshold: usize,
+    pub include_relationships: bool,
+    pub include_additional_files: bool,
+}
+
+impl RepoSizeTier {
+    pub fn explore_budget(&self) -> ExploreBudget {
+        match self {
+            Self::Tiny => ExploreBudget {
+                max_output_chars: 18000,
+                default_max_files: 5,
+                max_chars_per_file: 3800,
+                gap_threshold: 3,
+                include_relationships: false,
+                include_additional_files: false,
+            },
+            Self::Small => ExploreBudget {
+                max_output_chars: 28000,
+                default_max_files: 8,
+                max_chars_per_file: 6500,
+                gap_threshold: 5,
+                include_relationships: true,
+                include_additional_files: true,
+            },
+            Self::Medium => ExploreBudget {
+                max_output_chars: 35000,
+                default_max_files: 12,
+                max_chars_per_file: 7000,
+                gap_threshold: 8,
+                include_relationships: true,
+                include_additional_files: true,
+            },
+            Self::Large => ExploreBudget {
+                max_output_chars: 38000,
+                default_max_files: 15,
+                max_chars_per_file: 7000,
+                gap_threshold: 10,
+                include_relationships: true,
+                include_additional_files: true,
+            },
         }
     }
 }

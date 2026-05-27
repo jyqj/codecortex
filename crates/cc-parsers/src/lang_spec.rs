@@ -193,6 +193,79 @@ pub static KOTLIN_SPEC: LangSpec = LangSpec {
     qname_separator: ".",
 };
 
+/// Dart language spec
+pub static DART_SPEC: LangSpec = LangSpec {
+    language: Language::Dart,
+    grammar_name: "dart",
+    function_types: &["function_signature", "method_signature"],
+    class_types: &[
+        "class_definition",
+        "enum_declaration",
+        "mixin_declaration",
+        "extension_declaration",
+    ],
+    method_types: &["method_signature"],
+    field_types: &["declaration"],
+    module_types: &["library_name"],
+    call_types: &["function_expression_body"],
+    import_types: &["import_or_export"],
+    name_field: "name",
+    params_field: "formal_parameter_list",
+    body_field: "class_body",
+    return_type_field: Some("type_identifier"),
+    superclass_field: Some("superclass"),
+    extensions: &["dart"],
+    indent_sensitive: false,
+    qname_separator: ".",
+};
+
+/// Scala language spec
+pub static SCALA_SPEC: LangSpec = LangSpec {
+    language: Language::Scala,
+    grammar_name: "scala",
+    function_types: &["function_definition"],
+    class_types: &[
+        "class_definition",
+        "object_definition",
+        "trait_definition",
+        "enum_definition",
+    ],
+    method_types: &["function_definition"],
+    field_types: &["val_definition", "var_definition"],
+    module_types: &["package_clause"],
+    call_types: &["call_expression"],
+    import_types: &["import_declaration"],
+    name_field: "name",
+    params_field: "parameters",
+    body_field: "body",
+    return_type_field: Some("type_identifier"),
+    superclass_field: Some("extends_clause"),
+    extensions: &["scala", "sc"],
+    indent_sensitive: false,
+    qname_separator: ".",
+};
+
+/// Lua language spec
+pub static LUA_SPEC: LangSpec = LangSpec {
+    language: Language::Lua,
+    grammar_name: "lua",
+    function_types: &["function_declaration", "local_function_declaration_statement"],
+    class_types: &[],
+    method_types: &["function_declaration"],
+    field_types: &["assignment_statement", "local_declaration"],
+    module_types: &[],
+    call_types: &["function_call"],
+    import_types: &["function_call"], // require() calls
+    name_field: "name",
+    params_field: "parameters",
+    body_field: "body",
+    return_type_field: None,
+    superclass_field: None,
+    extensions: &["lua", "luau"],
+    indent_sensitive: false,
+    qname_separator: ".",
+};
+
 /// Get all predefined specs
 pub fn all_specs() -> Vec<&'static LangSpec> {
     vec![
@@ -201,6 +274,9 @@ pub fn all_specs() -> Vec<&'static LangSpec> {
         &RUBY_SPEC,
         &SWIFT_SPEC,
         &KOTLIN_SPEC,
+        &DART_SPEC,
+        &SCALA_SPEC,
+        &LUA_SPEC,
     ]
 }
 
@@ -225,6 +301,9 @@ mod tests {
         assert_eq!(CSHARP_SPEC.language, Language::CSharp);
         assert_eq!(PHP_SPEC.language, Language::Php);
         assert_eq!(RUBY_SPEC.language, Language::Ruby);
+        assert_eq!(DART_SPEC.language, Language::Dart);
+        assert_eq!(SCALA_SPEC.language, Language::Scala);
+        assert_eq!(LUA_SPEC.language, Language::Lua);
     }
 
     #[test]
@@ -236,7 +315,7 @@ mod tests {
 
     #[test]
     fn all_specs_returns_expected_count() {
-        assert_eq!(all_specs().len(), 5);
+        assert_eq!(all_specs().len(), 8);
     }
 
     #[test]

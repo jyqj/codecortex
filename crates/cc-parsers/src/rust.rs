@@ -3,8 +3,8 @@
 use crate::chunker::Chunker;
 use crate::traits::FileParser;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, ImportRecord, ResolutionKind, SemanticEdgeRecord,
-    SemanticRelation,
+    CallEdgeRecord, DataFlowEdgeRecord, DispatchKind, ImportRecord, ResolutionKind,
+    SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
@@ -37,6 +37,11 @@ static RS_KEYWORDS: &[&str] = &[
     "fn", "let", "mut", "pub", "impl", "struct", "enum", "trait", "use", "mod", "match", "if",
     "else", "loop", "while", "for", "return", "self", "Self", "crate", "super",
 ];
+
+/// Matches `env::var("KEY")`, `env::var_os("KEY")`, `std::env::var("KEY")`, etc.
+static RUST_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?:std::)?env::var(?:_os)?\("(\w+)"\)"#).expect("rust env access regex")
+});
 
 pub struct RustParser {
     language: tree_sitter::Language,
@@ -562,6 +567,49 @@ impl RustParser {
             implements: None,
         }
     }
+
+    // =========================================================================
+    // Environment variable access extraction
+    // =========================================================================
+
+    /// Extract environment variable accesses from Rust code.
+    ///
+    /// Matches `env::var("KEY")`, `env::var_os("KEY")`, `std::env::var("KEY")`, etc.
+    fn extract_env_accesses(
+        &self,
+        content: &str,
+        symbols: &[SymbolRecord],
+        file_path: &str,
+    ) -> Vec<DataFlowEdgeRecord> {
+        let mut edges = Vec::new();
+
+        for cap in RUST_ENV_ACCESS_RE.captures_iter(content) {
+            let m = cap.get(0).unwrap();
+            let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            let env_key = cap.get(1).map(|m| m.as_str().to_string());
+
+            let source_uid = symbols
+                .iter()
+                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
+                .filter(|s| s.start_line <= line && s.end_line >= line)
+                .min_by_key(|s| s.end_line - s.start_line)
+                .and_then(|s| s.symbol_uid.clone());
+
+            edges.push(DataFlowEdgeRecord {
+                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
+                file_path: file_path.to_string(),
+                source_symbol_uid: source_uid,
+                target_symbol_uid: None,
+                flow_kind: "env_access".to_string(),
+                line,
+                confidence: 0.80,
+                parser_tier: ParserTier::Heuristic,
+                env_key,
+            });
+        }
+
+        edges
+    }
 }
 
 impl Default for RustParser {
@@ -592,6 +640,7 @@ impl FileParser for RustParser {
         let tier = ParserTier::Semantic;
         let confidence = 0.8;
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
+        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
@@ -611,6 +660,7 @@ impl FileParser for RustParser {
             symbol_refs,
             call_edges,
             semantic_edges,
+            data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -652,6 +702,7 @@ impl FileParser for RustParser {
         let tier = ParserTier::Semantic;
         let confidence = 0.8;
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
+        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
@@ -671,6 +722,7 @@ impl FileParser for RustParser {
             symbol_refs,
             call_edges,
             semantic_edges,
+            data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,

@@ -18,45 +18,22 @@ pub fn index_status(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value,
     serde_json::to_value(stats).map_err(|e| e.to_string())
 }
 
-pub fn search(
-    runtime: Arc<Mutex<CodeIndex>>,
-    query: &str,
-    top_k: usize,
-    intent: Option<cc_model::Intent>,
-) -> Result<serde_json::Value, String> {
-    let mut rt = runtime.lock().map_err(|e| e.to_string())?;
-    let env = rt
-        .search_in_context(query, top_k, intent)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(env).map_err(|e| e.to_string())
-}
-
 pub fn find_symbol(
     runtime: Arc<Mutex<CodeIndex>>,
     name: &str,
     exact: bool,
     top_k: usize,
+    include_metrics: bool,
 ) -> Result<serde_json::Value, String> {
     let rt = runtime.lock().map_err(|e| e.to_string())?;
-    let rows = rt
-        .find_symbol(name, exact, top_k)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(rows).map_err(|e| e.to_string())
+    rt.find_symbol(name, exact, top_k, include_metrics)
+        .map_err(|e| e.to_string())
 }
 
 pub fn list_files(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value, String> {
     let rt = runtime.lock().map_err(|e| e.to_string())?;
     let files = rt.list_indexed_files().map_err(|e| e.to_string())?;
     serde_json::to_value(files).map_err(|e| e.to_string())
-}
-
-pub fn file_symbols(
-    runtime: Arc<Mutex<CodeIndex>>,
-    file_path: &str,
-) -> Result<serde_json::Value, String> {
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
-    let rows = rt.file_symbols(file_path).map_err(|e| e.to_string())?;
-    serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
 pub fn list_communities(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value, String> {
@@ -139,12 +116,3 @@ pub fn graph_schema(runtime: Arc<Mutex<CodeIndex>>) -> Result<serde_json::Value,
     rt.graph_schema().map_err(|e| e.to_string())
 }
 
-/// Ingest runtime HTTP trace observations.
-pub fn ingest_trace(
-    runtime: Arc<Mutex<CodeIndex>>,
-    traces: &[cc_model::TraceObservation],
-) -> Result<serde_json::Value, String> {
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
-    let result = rt.ingest_traces(traces).map_err(|e| e.to_string())?;
-    serde_json::to_value(result).map_err(|e| e.to_string())
-}

@@ -11,22 +11,56 @@ pub fn graph_query(
     query: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let budget = rt.output_budget("graph_query");
     let results = rt.graph_query(query).map_err(|e| e.to_string())?;
+    // Enforce adaptive item limit when the query itself has no explicit LIMIT.
+    let results = if !query.to_uppercase().contains("LIMIT") && results.len() > budget.max_items {
+        results.into_iter().take(budget.max_items).collect()
+    } else {
+        results
+    };
     serde_json::to_value(results).map_err(|e| e.to_string())
 }
 
-/// Trace call path between two symbols.
+/// Trace call path between two symbols (rich version with optional snippets).
+///
+/// `source_mode`: `"none"` | `"snippet"` | `"body"` | `"outline"` | None.
+/// When None, falls back to `include_snippets`: true→snippet, false→none.
 pub fn trace_path(
     runtime: Arc<Mutex<CodeIndex>>,
     from: &str,
     to: &str,
     max_depth: usize,
+    include_snippets: bool,
+    max_snippet_lines: Option<usize>,
+    source_mode: Option<&str>,
 ) -> Result<serde_json::Value, String> {
     let rt = runtime.lock().map_err(|e| e.to_string())?;
-    let paths = rt
-        .trace_path(from, to, max_depth)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(paths).map_err(|e| e.to_string())
+    let budget = rt.output_budget("trace_path");
+    let db = rt.index_db().ok_or("no index database")?;
+    let project_root = rt.project_path.as_deref();
+
+    let effective_mode = source_mode.unwrap_or(if include_snippets { "snippet" } else { "none" });
+    let (do_snippets, snippet_lines, snippet_budget, include_outgoing) = match effective_mode {
+        "body" => (true, usize::MAX, 128 * 1024, true),
+        "outline" => (false, 0, 0, false),
+        "snippet" => (true, max_snippet_lines.unwrap_or(3), budget.max_snippet_chars, false),
+        _ => (false, 0, 0, false),
+    };
+
+    let result = crate::graph_trace::trace_path_rich(
+        db,
+        project_root,
+        from,
+        to,
+        max_depth,
+        do_snippets,
+        snippet_lines,
+        Some(snippet_budget),
+        include_outgoing,
+    )
+    .map_err(|e| e.to_string())?;
+    serde_json::to_value(result).map_err(|e| e.to_string())
 }
 
 /// Find references to a symbol.
@@ -138,20 +172,31 @@ pub fn find_dead_code(
     let scope = params.get("scope").and_then(|v| v.as_str());
 
     let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let budget = rt.output_budget("dead_code");
     let db = rt.index_db().ok_or("no index database")?;
+
+    // Use an adaptive scan limit: 40x the desired dead_code item cap,
+    // capped at 5000 to bound query cost.
+    let scan_limit = (budget.max_items * 40).min(5000);
 
     // Fetch all symbols via parameterized SQL
     let all_symbols = if let Some(prefix) = scope {
         let pattern = format!("%{}%", prefix);
         db.query_json(
-            "SELECT name, symbol_uid, file_path, kind FROM symbols \
-             WHERE file_path LIKE ?1 LIMIT 2000",
+            &format!(
+                "SELECT name, symbol_uid, file_path, kind FROM symbols \
+                 WHERE file_path LIKE ?1 LIMIT {}",
+                scan_limit
+            ),
             &[pattern],
         )
         .map_err(|e| e.to_string())?
     } else {
         db.query_json(
-            "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT 2000",
+            &format!(
+                "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT {}",
+                scan_limit
+            ),
             &[],
         )
         .map_err(|e| e.to_string())?
@@ -221,61 +266,16 @@ pub fn find_dead_code(
         }
     }
 
+    // Cap output to the adaptive budget.
+    let truncated = dead_items.len() > budget.max_items;
+    if truncated {
+        dead_items.truncate(budget.max_items);
+    }
+
     Ok(serde_json::json!({
         "dead_code": dead_items,
         "count": dead_items.len(),
-    }))
-}
-
-/// Find all references to a symbol across the codebase.
-///
-/// Extracts: `symbol_name` (required), `include_unresolved` (default false).
-/// Delegates to `symbol_refs` on the runtime, with optional unresolved filtering.
-pub fn find_references(
-    runtime: Arc<Mutex<CodeIndex>>,
-    params: serde_json::Value,
-) -> Result<serde_json::Value, String> {
-    let symbol_name = params
-        .get("symbol_name")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| "missing required parameter: symbol_name".to_string())?;
-    let include_unresolved = params
-        .get("include_unresolved")
-        .and_then(|v| v.as_bool())
-        .unwrap_or(false);
-    let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(50) as usize;
-
-    let rt = runtime.lock().map_err(|e| e.to_string())?;
-    let refs = rt
-        .symbol_refs(symbol_name, limit)
-        .map_err(|e| e.to_string())?;
-
-    // Filter out unresolved references if requested
-    let filtered: Vec<serde_json::Value> = refs
-        .iter()
-        .filter(|r| {
-            if include_unresolved {
-                true
-            } else {
-                r.target_symbol_uid.is_some()
-            }
-        })
-        .map(|r| {
-            serde_json::json!({
-                "file_path": r.file_path,
-                "line": r.line,
-                "symbol_name": r.symbol_name,
-                "target_symbol_uid": r.target_symbol_uid,
-                "resolution_kind": r.resolution_kind,
-                "confidence": r.confidence,
-            })
-        })
-        .collect();
-
-    Ok(serde_json::json!({
-        "symbol": symbol_name,
-        "references": filtered,
-        "count": filtered.len(),
+        "truncated": truncated,
     }))
 }
 
@@ -562,4 +562,149 @@ pub fn list_package_boundaries(
         "package_boundaries": boundaries,
         "count": boundaries.len(),
     }))
+}
+
+/// Discover call flow paths connecting multiple symbols.
+pub fn explore_flow(
+    runtime: Arc<Mutex<CodeIndex>>,
+    symbols: &[String],
+    max_depth: usize,
+    include_source: bool,
+    max_paths: Option<usize>,
+    exact: Option<bool>,
+    file_path: Option<&str>,
+    max_candidates: Option<usize>,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let budget = rt.output_budget("explore_flow");
+    let db = rt.index_db().ok_or("no index database")?;
+    let project_root = rt.project_path.as_deref();
+    crate::graph_flow::explore_flow(
+        db,
+        project_root,
+        symbols,
+        max_depth,
+        include_source,
+        max_paths.unwrap_or(3),
+        exact.unwrap_or(true),
+        file_path,
+        max_candidates.unwrap_or(5),
+        Some(budget.max_output_chars),
+    )
+    .map_err(|e| e.to_string())
+}
+
+/// Find circular dependencies via Tarjan SCC.
+pub fn find_circular_deps(
+    runtime: Arc<Mutex<CodeIndex>>,
+    granularity: &str,
+    limit: Option<usize>,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let budget = rt.output_budget("circular_deps");
+    let db = rt.index_db().ok_or("no index database")?;
+    let effective_limit = limit.unwrap_or(budget.max_items);
+    let result = crate::graph_cycles::find_circular_deps(db, granularity, effective_limit)
+        .map_err(|e| e.to_string())?;
+    serde_json::to_value(result).map_err(|e| e.to_string())
+}
+
+/// List all environment variables referenced in the codebase with usage counts.
+pub fn list_env_vars(
+    runtime: Arc<Mutex<CodeIndex>>,
+    limit: usize,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+    let summary = db.env_var_summary(limit).map_err(|e| e.to_string())?;
+    let items: Vec<serde_json::Value> = summary
+        .iter()
+        .map(|(key, count, files)| {
+            serde_json::json!({
+                "env_key": key,
+                "usage_count": count,
+                "files": files.split(',').collect::<Vec<_>>(),
+            })
+        })
+        .collect();
+    let total = items.len();
+    Ok(serde_json::json!({
+        "env_vars": items,
+        "total": total,
+    }))
+}
+
+/// Search for environment variable usages by key pattern.
+pub fn search_env_vars(
+    runtime: Arc<Mutex<CodeIndex>>,
+    pattern: &str,
+    file_path: Option<&str>,
+    limit: usize,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+
+    let like_pattern = if pattern.contains('%') || pattern.contains('_') {
+        pattern.to_string()
+    } else {
+        format!("%{}%", pattern)
+    };
+
+    let (sql, params): (String, Vec<String>) = if let Some(fp) = file_path {
+        (
+            format!(
+                "SELECT env_key, file_path, line, source_symbol_uid \
+                 FROM data_flow_edges \
+                 WHERE flow_kind = 'env_access' AND env_key LIKE ?1 AND file_path LIKE ?2 \
+                 ORDER BY env_key, file_path \
+                 LIMIT {}",
+                limit
+            ),
+            vec![like_pattern, format!("%{}%", fp)],
+        )
+    } else {
+        (
+            format!(
+                "SELECT env_key, file_path, line, source_symbol_uid \
+                 FROM data_flow_edges \
+                 WHERE flow_kind = 'env_access' AND env_key LIKE ?1 \
+                 ORDER BY env_key, file_path \
+                 LIMIT {}",
+                limit
+            ),
+            vec![like_pattern],
+        )
+    };
+
+    let rows = db.query_json(&sql, &params).map_err(|e| e.to_string())?;
+    let total = rows.len();
+    Ok(serde_json::json!({
+        "pattern": pattern,
+        "results": rows,
+        "total": total,
+    }))
+}
+
+/// Show type hierarchy: ancestors, descendants, implementors, overrides.
+pub fn type_hierarchy(
+    runtime: Arc<Mutex<CodeIndex>>,
+    type_name: &str,
+    file_path: Option<&str>,
+    symbol_uid: Option<&str>,
+    direction: &str,
+    max_depth: usize,
+    include_methods: bool,
+) -> Result<serde_json::Value, String> {
+    let rt = runtime.lock().map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or("no index database")?;
+    crate::graph_type_hierarchy::type_hierarchy(
+        db,
+        type_name,
+        file_path,
+        symbol_uid,
+        direction,
+        max_depth,
+        include_methods,
+    )
+    .map_err(|e| e.to_string())
 }

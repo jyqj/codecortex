@@ -5,15 +5,15 @@
 use cc_db::index_db::IndexDb;
 use cc_index::{IndexReport, Indexer};
 use cc_model::config::{
-    load_project_config, IndexPaths, ProjectConfig, ProjectStats, RepoSizeTier,
+    load_project_config, IndexPaths, OutputBudget, ProjectConfig, ProjectStats, RepoSizeTier,
 };
 use cc_model::context::{ContextEnvelope, ContextNode, ContextSpan, NodeType, Role};
 use cc_model::impact::ImpactReport;
 use cc_model::search::SearchRequest;
-use cc_model::{CcError, CcResult, Intent, TraceIngestResult, TraceObservation};
+use cc_model::{CcError, CcResult, Intent};
 use cc_search::SearchEngine;
 use serde::Serialize;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -29,17 +29,21 @@ pub struct CodeIndex {
 
 impl CodeIndex {
     pub fn new(project_path: Option<&Path>) -> CcResult<Self> {
-        let mut index = Self {
+        let mut index = Self::empty();
+        if let Some(path) = project_path {
+            index.set_project(path, false)?;
+        }
+        Ok(index)
+    }
+
+    pub fn empty() -> Self {
+        Self {
             project_path: None,
             config: None,
             index_db: None,
             engine: None,
             repo_tier: None,
-        };
-        if let Some(path) = project_path {
-            index.set_project(path, false)?;
         }
-        Ok(index)
     }
 
     pub fn set_project(&mut self, path: &Path, auto_index: bool) -> CcResult<()> {
@@ -162,10 +166,15 @@ impl CodeIndex {
                 "{} {}:{}-{}",
                 hit.file_path, hit.breadcrumb, hit.start_line, hit.end_line
             );
+            let role = if hit.reasons.iter().any(|r| r == "doc-file") {
+                Role::DocContext
+            } else {
+                Role::Primary
+            };
             let mut node = ContextNode::new(
                 node_id.clone(),
                 NodeType::SearchHit,
-                Role::Primary,
+                role,
                 title.clone(),
                 hit.text.clone(),
             );
@@ -261,8 +270,34 @@ impl CodeIndex {
         name: &str,
         exact: bool,
         top_k: usize,
-    ) -> CcResult<Vec<cc_db::index_db::SymbolRow>> {
-        self.ensure_db()?.find_symbol(name, exact, top_k)
+        include_metrics: bool,
+    ) -> CcResult<serde_json::Value> {
+        let db = self.ensure_db()?;
+        let rows = db.find_symbol(name, exact, top_k)?;
+        if !include_metrics {
+            return Ok(serde_json::to_value(&rows)
+                .map_err(|e| CcError::Search(e.to_string()))?);
+        }
+        let mut results: Vec<serde_json::Value> = Vec::with_capacity(rows.len());
+        for row in &rows {
+            let mut obj = serde_json::to_value(row)
+                .map_err(|e| CcError::Search(e.to_string()))?;
+            if let Some(uid) = row.symbol_uid.as_deref() {
+                if let Ok(info) = db.symbol_degree_details(uid) {
+                    let hint = centrality_hint(&info);
+                    obj["metrics"] = serde_json::json!({
+                        "in_degree": info.in_degree,
+                        "out_degree": info.out_degree,
+                        "caller_count": info.caller_count,
+                        "callee_count": info.callee_count,
+                        "ref_count": info.ref_count,
+                        "centrality_hint": hint,
+                    });
+                }
+            }
+            results.push(obj);
+        }
+        Ok(serde_json::json!(results))
     }
 
     pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<cc_db::index_db::SymbolRow>> {
@@ -350,57 +385,10 @@ impl CodeIndex {
         db.callee_rows_by_uid(uid, limit)
     }
 
+    #[allow(dead_code)]
     pub fn trace_path(&self, from: &str, to: &str, max_depth: usize) -> CcResult<Vec<Vec<String>>> {
         let db = self.ensure_db()?;
-        let from_uid = db
-            .find_symbol(from, true, 1)?
-            .first()
-            .and_then(|s| s.symbol_uid.clone())
-            .ok_or_else(|| CcError::Search(format!("symbol not found: {}", from)))?;
-        let to_uid = db
-            .find_symbol(to, true, 1)?
-            .first()
-            .and_then(|s| s.symbol_uid.clone())
-            .ok_or_else(|| CcError::Search(format!("symbol not found: {}", to)))?;
-
-        let uid_names = db.symbol_names_by_uid()?;
-        let all_edges = db.call_uid_edges()?;
-        let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-        for (caller, callee) in &all_edges {
-            adj.entry(caller.clone()).or_default().push(callee.clone());
-        }
-
-        let mut queue = VecDeque::new();
-        let mut visited = HashSet::new();
-        queue.push_back(vec![from_uid.clone()]);
-        visited.insert(from_uid);
-        let mut paths = Vec::new();
-
-        while let Some(path) = queue.pop_front() {
-            if path.len() > max_depth + 1 {
-                break;
-            }
-            let current = path.last().expect("path has at least one uid");
-            if *current == to_uid {
-                let named: Vec<String> = path
-                    .iter()
-                    .map(|uid| uid_names.get(uid).cloned().unwrap_or_else(|| uid.clone()))
-                    .collect();
-                paths.push(named);
-                continue;
-            }
-            if let Some(neighbors) = adj.get(current) {
-                for next in neighbors {
-                    if !visited.contains(next) {
-                        visited.insert(next.clone());
-                        let mut new_path = path.clone();
-                        new_path.push(next.clone());
-                        queue.push_back(new_path);
-                    }
-                }
-            }
-        }
-        Ok(paths)
+        crate::graph_trace::trace_path_names(db, from, to, max_depth)
     }
 
     pub fn symbol_refs(
@@ -471,7 +459,7 @@ impl CodeIndex {
         let mut seen_uids: HashSet<String> = HashSet::new();
 
         for name in &candidates {
-            if let Ok(syms) = self.find_symbol(name, true, 1) {
+            if let Ok(syms) = self.ensure_db()?.find_symbol(name, true, 1) {
                 for sym in &syms {
                     let dedup_key = sym.symbol_uid.clone().unwrap_or_else(|| {
                         format!("{}:{}:{}", sym.file_path, sym.name, sym.start_line)
@@ -597,14 +585,17 @@ impl CodeIndex {
         analyzer.analyze(&changed, 3)
     }
 
-    pub fn repo_size_tier(&mut self) -> RepoSizeTier {
+    pub fn repo_size_tier(&self) -> RepoSizeTier {
         if let Some(tier) = self.repo_tier {
             return tier;
         }
         let count = self.index_status().map(|s| s.indexed_files).unwrap_or(0);
-        let tier = RepoSizeTier::from_file_count(count);
-        self.repo_tier = Some(tier);
-        tier
+        RepoSizeTier::from_file_count(count)
+    }
+
+    /// Return an adaptive output budget for the given handler name.
+    pub fn output_budget(&self, handler: &str) -> OutputBudget {
+        self.repo_size_tier().output_budget(handler)
     }
 
     pub fn explore_symbols(
@@ -614,6 +605,9 @@ impl CodeIndex {
         max_callees: Option<usize>,
         include_source: bool,
         include_relations: bool,
+        include_metrics: bool,
+        outline: bool,
+        max_source_per_file: Option<usize>,
     ) -> CcResult<serde_json::Value> {
         let capped = if names.len() > 10 {
             &names[..10]
@@ -623,7 +617,7 @@ impl CodeIndex {
         let tier = self.repo_size_tier();
         let caller_limit = max_callers.unwrap_or(tier.explore_max_symbols());
         let callee_limit = max_callees.unwrap_or(tier.explore_max_symbols());
-        let max_src_chars = tier.max_source_chars_per_symbol();
+        let max_src_chars = max_source_per_file.unwrap_or(tier.max_source_chars_per_symbol());
 
         let mut results = Vec::with_capacity(capped.len());
 
@@ -725,34 +719,72 @@ impl CodeIndex {
 
             // Source — use strict path guard to only read indexed files
             if include_source {
-                if let (Some(project), Some(db)) =
-                    (self.project_path.as_ref(), self.index_db.as_ref())
-                {
-                    match crate::path_guard::resolve_indexed_path_strict(
-                        project,
-                        &sym.file_path,
-                        db,
-                    ) {
-                        Ok(full_path) => {
-                            if let Ok(content) = std::fs::read_to_string(&full_path) {
-                                let lines: Vec<&str> = content.lines().collect();
-                                let start = (sym.start_line as usize).saturating_sub(1);
-                                let end = (sym.end_line as usize).min(lines.len());
-                                if start < end {
-                                    let mut source = lines[start..end].join("\n");
-                                    if source.len() > max_src_chars {
-                                        let mut truncate_at = max_src_chars.min(source.len());
-                                        while !source.is_char_boundary(truncate_at) {
-                                            truncate_at = truncate_at.saturating_sub(1);
-                                        }
-                                        source.truncate(truncate_at);
-                                        source.push_str("\n// ... truncated");
+                if outline {
+                    // Outline mode: return signature + child symbol names instead of full source
+                    let mut outline_parts = Vec::new();
+                    if let Some(ref sig) = sym.signature {
+                        outline_parts.push(sig.clone());
+                    }
+                    // Query child symbols via parent_symbol_id
+                    if let Ok(db) = self.ensure_db() {
+                        if let Ok(conn) = db.read_conn() {
+                            let child_sql = "SELECT name, kind, signature FROM symbols WHERE parent_symbol_id = ?1 ORDER BY start_line";
+                            if let Ok(mut stmt) = conn.prepare(child_sql) {
+                                let children: Vec<(String, String, Option<String>)> = stmt
+                                    .query_map(rusqlite::params![uid], |row| {
+                                        Ok((
+                                            row.get::<_, String>(0)?,
+                                            row.get::<_, String>(1)?,
+                                            row.get::<_, Option<String>>(2)?,
+                                        ))
+                                    })
+                                    .ok()
+                                    .map(|rows| rows.filter_map(|r| r.ok()).collect())
+                                    .unwrap_or_default();
+                                for (child_name, child_kind, child_sig) in &children {
+                                    if let Some(sig) = child_sig {
+                                        outline_parts.push(format!("  {} {}: {}", child_kind, child_name, sig));
+                                    } else {
+                                        outline_parts.push(format!("  {} {}", child_kind, child_name));
                                     }
-                                    entry["source"] = serde_json::json!(source);
                                 }
                             }
                         }
-                        Err(_) => {}
+                    }
+                    if !outline_parts.is_empty() {
+                        entry["outline"] = serde_json::json!(outline_parts.join("\n"));
+                    }
+                } else {
+                    // Full source mode
+                    if let (Some(project), Some(db)) =
+                        (self.project_path.as_ref(), self.index_db.as_ref())
+                    {
+                        match crate::path_guard::resolve_indexed_path_strict(
+                            project,
+                            &sym.file_path,
+                            db,
+                        ) {
+                            Ok(full_path) => {
+                                if let Ok(content) = std::fs::read_to_string(&full_path) {
+                                    let lines: Vec<&str> = content.lines().collect();
+                                    let start = (sym.start_line as usize).saturating_sub(1);
+                                    let end = (sym.end_line as usize).min(lines.len());
+                                    if start < end {
+                                        let mut source = lines[start..end].join("\n");
+                                        if source.len() > max_src_chars {
+                                            let mut truncate_at = max_src_chars.min(source.len());
+                                            while !source.is_char_boundary(truncate_at) {
+                                                truncate_at = truncate_at.saturating_sub(1);
+                                            }
+                                            source.truncate(truncate_at);
+                                            source.push_str("\n// ... truncated");
+                                        }
+                                        entry["source"] = serde_json::json!(source);
+                                    }
+                                }
+                            }
+                            Err(_) => {}
+                        }
                     }
                 }
             }
@@ -788,10 +820,64 @@ impl CodeIndex {
                 entry["relations"] = serde_json::json!(relations);
             }
 
+            // Metrics
+            if include_metrics {
+                if let Ok(info) = self.ensure_db()?.symbol_degree_details(uid) {
+                    let hint = centrality_hint(&info);
+                    entry["metrics"] = serde_json::json!({
+                        "in_degree": info.in_degree,
+                        "out_degree": info.out_degree,
+                        "caller_count": info.caller_count,
+                        "callee_count": info.callee_count,
+                        "ref_count": info.ref_count,
+                        "centrality_hint": hint,
+                    });
+                }
+            }
+
             results.push(entry);
         }
 
-        Ok(serde_json::json!(results))
+        // Group results by file for per-file clustering
+        let explore_budget = tier.explore_budget();
+        let mut by_file: std::collections::BTreeMap<String, Vec<&serde_json::Value>> =
+            std::collections::BTreeMap::new();
+        for r in &results {
+            if let Some(sym) = r.get("symbol") {
+                if let Some(fp) = sym.get("file_path").and_then(|v| v.as_str()) {
+                    by_file.entry(fp.to_string()).or_default().push(r);
+                }
+            }
+        }
+
+        let mut grouped = serde_json::json!({
+            "symbols": results,
+        });
+
+        if by_file.len() > 1 {
+            let file_summary: Vec<serde_json::Value> = by_file
+                .iter()
+                .take(explore_budget.default_max_files)
+                .map(|(file, syms)| {
+                    let names: Vec<&str> = syms
+                        .iter()
+                        .filter_map(|s| {
+                            s.get("symbol")
+                                .and_then(|sym| sym.get("name"))
+                                .and_then(|n| n.as_str())
+                        })
+                        .collect();
+                    serde_json::json!({
+                        "file": file,
+                        "symbols": names,
+                        "count": syms.len(),
+                    })
+                })
+                .collect();
+            grouped["by_file"] = serde_json::json!(file_summary);
+        }
+
+        Ok(grouped)
     }
 
     /// Read exact source for one symbol by short name or qualified name.
@@ -885,48 +971,6 @@ impl CodeIndex {
         all_edges: &[(String, String)],
     ) -> CcResult<Vec<PackageBoundary>> {
         compute_package_boundaries(self.ensure_db()?, all_edges)
-    }
-
-    /// Ingest runtime HTTP trace observations and match them against
-    /// statically-detected route handlers.
-    pub fn ingest_traces(&self, traces: &[TraceObservation]) -> CcResult<TraceIngestResult> {
-        let db = self.ensure_db()?;
-
-        let mut confirmed = 0usize;
-        let mut unmatched = 0usize;
-
-        for trace in traces {
-            let normalized = normalize_trace_path(&trace.path);
-            let method_upper = trace.method.to_uppercase();
-
-            // Exact match: normalized_path + method
-            let matched = db.route_nodes_by_normalized_path_and_method(
-                &normalized,
-                Some(&method_upper),
-                1,
-            );
-            if let Ok(rows) = &matched {
-                if !rows.is_empty() {
-                    confirmed += 1;
-                    continue;
-                }
-            }
-
-            // Fuzzy match: try prefix matching by progressively stripping
-            // trailing segments from the normalized path.
-            if fuzzy_match_trace(db, &method_upper, &normalized) {
-                confirmed += 1;
-            } else {
-                unmatched += 1;
-            }
-        }
-
-        Ok(TraceIngestResult {
-            traces_received: traces.len(),
-            edges_confirmed: confirmed,
-            edges_discovered: 0, // reserved for future confidence update pipeline
-            edges_unmatched: unmatched,
-        })
     }
 
     /// Return a schema overview of the index: node kinds with counts,
@@ -1029,66 +1073,6 @@ fn slice_lines(
         source.push_str("\n// ... truncated");
     }
     source
-}
-
-/// Normalize a concrete runtime path into a canonical form for matching.
-///
-/// Replaces numeric segments with `*` and UUID-like segments with `*`,
-/// then delegates to `normalize_route_path` for the remaining transforms.
-fn normalize_trace_path(path: &str) -> String {
-    let mut segments: Vec<String> = Vec::new();
-    for seg in path.split('/') {
-        if seg.is_empty() {
-            continue;
-        }
-        if is_numeric_id(seg) || is_uuid_like(seg) {
-            segments.push("*".to_string());
-        } else {
-            segments.push(seg.to_string());
-        }
-    }
-    if segments.is_empty() {
-        return "/".to_string();
-    }
-    let reassembled = format!("/{}", segments.join("/"));
-    cc_model::route_normalize::normalize_route_path(&reassembled)
-}
-
-/// Check if a segment looks like a numeric ID (all digits).
-fn is_numeric_id(seg: &str) -> bool {
-    !seg.is_empty() && seg.chars().all(|c| c.is_ascii_digit())
-}
-
-/// Check if a segment looks like a UUID (hex + dashes, 32-36 chars).
-fn is_uuid_like(seg: &str) -> bool {
-    let len = seg.len();
-    (32..=36).contains(&len) && seg.chars().all(|c| c.is_ascii_hexdigit() || c == '-')
-}
-
-/// Try fuzzy matching by progressively stripping trailing path segments.
-fn fuzzy_match_trace(
-    db: &std::sync::Arc<cc_db::index_db::IndexDb>,
-    method: &str,
-    normalized_path: &str,
-) -> bool {
-    // Try replacing the last non-wildcard segment with * and re-matching
-    let segments: Vec<&str> = normalized_path.split('/').filter(|s| !s.is_empty()).collect();
-    // Walk backwards, try replacing each non-* segment with *
-    for idx in (0..segments.len()).rev() {
-        if segments[idx] == "*" {
-            continue;
-        }
-        let mut trial = segments.clone();
-        trial[idx] = "*";
-        let trial_path = format!("/{}", trial.join("/"));
-        if let Ok(rows) = db.route_nodes_by_normalized_path_and_method(&trial_path, Some(method), 1)
-        {
-            if !rows.is_empty() {
-                return true;
-            }
-        }
-    }
-    false
 }
 
 fn detect_intent(query: &str) -> Intent {
@@ -1258,4 +1242,16 @@ pub fn compute_package_layers(
             .then_with(|| b.fan_out.cmp(&a.fan_out))
     });
     Ok(layers)
+}
+
+fn centrality_hint(info: &cc_db::index_db::SymbolDegreeInfo) -> &'static str {
+    if info.out_degree > 5 * info.in_degree.max(1) {
+        "hub"
+    } else if info.in_degree > 5 * info.out_degree.max(1) {
+        "authority"
+    } else if info.in_degree <= 1 && info.out_degree <= 1 {
+        "leaf"
+    } else {
+        "connector"
+    }
 }

@@ -7,7 +7,7 @@
 use crate::chunker::Chunker;
 use crate::lang_spec::LangSpec;
 use crate::traits::FileParser;
-use cc_model::edge::ImportRecord;
+use cc_model::edge::{DataFlowEdgeRecord, ImportRecord};
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
@@ -46,6 +46,12 @@ static CS_NAMESPACE_RE: LazyLock<Regex> =
 /// C#: using directives.
 static CS_USING_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?m)^[^\S\n]*using\s+(?:static\s+)?([\w.]+)\s*;").expect("cs using regex")
+});
+
+/// C#: Environment.GetEnvironmentVariable("KEY") calls.
+static CSHARP_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"Environment\.GetEnvironmentVariable\(\s*"(\w+)"\s*\)"#)
+        .expect("csharp env access regex")
 });
 
 /// PHP: function definitions.
@@ -139,6 +145,69 @@ static KT_IMPORT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?m)^[^\S\n]*import\s+([\w.]+(?:\.\*)?)").expect("kt import regex")
 });
 
+/// Dart: function/method declarations.
+static DART_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?m)^[^\S\n]*(?:(?:static|abstract|external|@\w+\s+)*\s*)(?:\w+(?:<[^>]+>)?(?:\?)?)\s+([A-Za-z_]\w*)\s*(?:<[^>]*>)?\s*\(",
+    )
+    .expect("dart func regex")
+});
+
+/// Dart: class/enum/mixin/extension declarations.
+static DART_CLASS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?m)^[^\S\n]*(?:abstract\s+)?(?:class|enum|mixin|extension)\s+([A-Za-z_]\w*)",
+    )
+    .expect("dart class regex")
+});
+
+/// Dart: library declarations.
+static DART_LIBRARY_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^[^\S\n]*library\s+([\w.]+)\s*;").expect("dart library regex"));
+
+/// Dart: import/export declarations.
+static DART_IMPORT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?m)^[^\S\n]*(?:import|export)\s+['"]([^'"]+)['"]"#).expect("dart import regex")
+});
+
+/// Scala: def declarations.
+static SCALA_DEF_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?m)^[^\S\n]*(?:(?:private|protected|override|abstract|final|implicit|lazy)\s+)*def\s+([A-Za-z_]\w*)",
+    )
+    .expect("scala def regex")
+});
+
+/// Scala: class/object/trait/enum declarations.
+static SCALA_CLASS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?m)^[^\S\n]*(?:(?:abstract|sealed|final|private|protected|case|implicit)\s+)*(?:class|object|trait|enum)\s+([A-Za-z_]\w*)",
+    )
+    .expect("scala class regex")
+});
+
+/// Scala: package declaration.
+static SCALA_PACKAGE_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r"(?m)^[^\S\n]*package\s+([\w.]+)").expect("scala package regex"));
+
+/// Scala: import declarations.
+static SCALA_IMPORT_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?m)^[^\S\n]*import\s+([\w.]+(?:\.\{[^}]+\}|\.\_)?)").expect("scala import regex")
+});
+
+/// Lua: function declarations (both `function name()` and `local function name()`).
+static LUA_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r"(?m)^[^\S\n]*(?:local\s+)?function\s+([A-Za-z_][\w.:]*)\s*\(",
+    )
+    .expect("lua func regex")
+});
+
+/// Lua: require() calls.
+static LUA_REQUIRE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?m)(?:require)\s*\(?['"]([^'"]+)['"]\)?"#).expect("lua require regex")
+});
+
 impl SpecDrivenParser {
     pub fn new(spec: &'static LangSpec) -> Self {
         Self {
@@ -199,6 +268,77 @@ impl SpecDrivenParser {
                 &KT_CLASS_RE,
                 Some(&KT_PACKAGE_RE),
             ),
+            Language::Dart => self.extract_with_regexes(
+                file_path,
+                &lines,
+                tier,
+                confidence,
+                &DART_FUNC_RE,
+                &DART_CLASS_RE,
+                Some(&DART_LIBRARY_RE),
+            ),
+            Language::Scala => self.extract_with_regexes(
+                file_path,
+                &lines,
+                tier,
+                confidence,
+                &SCALA_DEF_RE,
+                &SCALA_CLASS_RE,
+                Some(&SCALA_PACKAGE_RE),
+            ),
+            Language::Lua => {
+                // Lua has no class declarations; extract only functions.
+                let content_str = lines.join("\n");
+                let mut symbols = Vec::new();
+                for cap in LUA_FUNC_RE.captures_iter(&content_str) {
+                    let name = cap[1].to_string();
+                    let match_start = cap.get(0).unwrap().start();
+                    let line_num = content_str[..match_start].matches('\n').count() as u32 + 1;
+                    let end_line = Self::estimate_end_line(&lines, line_num);
+
+                    let line_text = lines.get((line_num - 1) as usize).unwrap_or(&"");
+                    let indent = line_text.len() - line_text.trim_start().len();
+                    let kind = if name.contains(':') || name.contains('.') || indent > 0 {
+                        SymbolKind::Method
+                    } else {
+                        SymbolKind::Function
+                    };
+
+                    let qname = name.clone();
+                    let symbol_id = format!("spec:{}:{}:{}", file_path, kind.as_str(), name);
+                    let symbol_uid = StableId::symbol_uid(file_path, &qname, kind.as_str(), None);
+
+                    symbols.push(SymbolRecord {
+                        symbol_id,
+                        file_path: file_path.to_string(),
+                        name,
+                        kind,
+                        container: None,
+                        start_line: line_num,
+                        end_line,
+                        start_col: 0,
+                        end_col: 0,
+                        signature: None,
+                        doc: None,
+                        parser_tier: tier,
+                        parser_confidence: confidence,
+                        qname: Some(qname),
+                        parent_symbol_id: None,
+                        scope_id: None,
+                        export_name: None,
+                        is_default_export: false,
+                        symbol_uid: Some(symbol_uid),
+                        framework_role: None,
+                        receiver_type: None,
+                        param_types: None,
+                        return_type: None,
+                        param_count: None,
+                        base_types: None,
+                        implements: None,
+                    });
+                }
+                symbols
+            }
             _ => Vec::new(),
         }
     }
@@ -325,6 +465,9 @@ impl SpecDrivenParser {
             Language::Ruby => Self::extract_imports_re(content, file_path, &RB_REQUIRE_RE),
             Language::Swift => Self::extract_imports_re(content, file_path, &SWIFT_IMPORT_RE),
             Language::Kotlin => Self::extract_imports_re(content, file_path, &KT_IMPORT_RE),
+            Language::Dart => Self::extract_imports_re(content, file_path, &DART_IMPORT_RE),
+            Language::Scala => Self::extract_imports_re(content, file_path, &SCALA_IMPORT_RE),
+            Language::Lua => Self::extract_imports_re(content, file_path, &LUA_REQUIRE_RE),
             _ => Vec::new(),
         }
     }
@@ -385,6 +528,50 @@ impl SpecDrivenParser {
         ((start_idx + 30).min(lines.len())) as u32
     }
 
+    /// Extract environment variable accesses for languages that support it.
+    ///
+    /// Currently supports C# (`Environment.GetEnvironmentVariable("KEY")`).
+    fn extract_env_accesses(
+        &self,
+        content: &str,
+        symbols: &[SymbolRecord],
+        file_path: &str,
+    ) -> Vec<DataFlowEdgeRecord> {
+        let re = match self.spec.language {
+            Language::CSharp => &*CSHARP_ENV_ACCESS_RE,
+            _ => return Vec::new(),
+        };
+
+        let mut edges = Vec::new();
+
+        for cap in re.captures_iter(content) {
+            let m = cap.get(0).unwrap();
+            let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            let env_key = cap.get(1).map(|m| m.as_str().to_string());
+
+            let source_uid = symbols
+                .iter()
+                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
+                .filter(|s| s.start_line <= line && s.end_line >= line)
+                .min_by_key(|s| s.end_line - s.start_line)
+                .and_then(|s| s.symbol_uid.clone());
+
+            edges.push(DataFlowEdgeRecord {
+                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
+                file_path: file_path.to_string(),
+                source_symbol_uid: source_uid,
+                target_symbol_uid: None,
+                flow_kind: "env_access".to_string(),
+                line,
+                confidence: 0.80,
+                parser_tier: ParserTier::Heuristic,
+                env_key,
+            });
+        }
+
+        edges
+    }
+
     /// Classify a class-like declaration into the appropriate SymbolKind.
     fn classify_class_kind(decl_text: &str) -> SymbolKind {
         if decl_text.contains("interface") {
@@ -414,6 +601,7 @@ impl FileParser for SpecDrivenParser {
 
         let symbols = self.extract_symbols(content, file_path);
         let imports = self.extract_imports(content, file_path);
+        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
 
         let chunks = if symbols.is_empty() {
             self.chunker
@@ -437,6 +625,7 @@ impl FileParser for SpecDrivenParser {
             symbols,
             imports,
             chunks,
+            data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             ..Default::default()
@@ -739,5 +928,171 @@ class UserService {
         let outcome = parser.parse("empty.cs", "", Language::CSharp).unwrap();
         assert!(outcome.symbols.is_empty());
         assert!(outcome.chunks.is_empty());
+    }
+
+    #[test]
+    fn dart_extracts_class_and_function() {
+        let spec = lang_spec::spec_for_language(Language::Dart).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        let content = r#"
+import 'package:flutter/material.dart';
+import 'dart:async';
+
+class UserService {
+    Future<User> getUser(int id) {
+        return _repo.find(id);
+    }
+
+    void deleteUser(int id) {
+        _repo.delete(id);
+    }
+}
+
+enum Status {
+    active,
+    inactive,
+}
+"#;
+        let outcome = parser
+            .parse("user_service.dart", content, Language::Dart)
+            .unwrap();
+        assert_eq!(outcome.parser_tier, ParserTier::Heuristic);
+
+        let class_syms: Vec<_> = outcome
+            .symbols
+            .iter()
+            .filter(|s| s.kind == SymbolKind::Class || s.kind == SymbolKind::Enum)
+            .collect();
+        assert!(
+            class_syms.len() >= 2,
+            "should find UserService class and Status enum, got {:?}",
+            class_syms.iter().map(|s| &s.name).collect::<Vec<_>>()
+        );
+
+        let func_count = outcome
+            .symbols
+            .iter()
+            .filter(|s| s.kind == SymbolKind::Function || s.kind == SymbolKind::Method)
+            .count();
+        assert!(
+            func_count >= 2,
+            "should find getUser and deleteUser"
+        );
+
+        assert!(
+            outcome.imports.len() >= 2,
+            "should find import statements"
+        );
+    }
+
+    #[test]
+    fn scala_extracts_object_and_def() {
+        let spec = lang_spec::spec_for_language(Language::Scala).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        let content = r#"
+package com.example.service
+
+import com.example.model.User
+import com.example.repo.UserRepo
+
+object UserService {
+    def getUser(id: Int): User = {
+        UserRepo.find(id)
+    }
+
+    def deleteUser(id: Int): Unit = {
+        UserRepo.delete(id)
+    }
+}
+
+trait Serializable {
+    def serialize(): String
+}
+"#;
+        let outcome = parser
+            .parse("UserService.scala", content, Language::Scala)
+            .unwrap();
+        assert_eq!(outcome.parser_tier, ParserTier::Heuristic);
+
+        let class_syms: Vec<_> = outcome
+            .symbols
+            .iter()
+            .filter(|s| {
+                s.kind == SymbolKind::Class
+                    || s.kind == SymbolKind::Interface
+                    || s.kind == SymbolKind::Module
+            })
+            .collect();
+        assert!(
+            class_syms.len() >= 2,
+            "should find UserService object and Serializable trait, got {:?}",
+            class_syms.iter().map(|s| &s.name).collect::<Vec<_>>()
+        );
+
+        let func_count = outcome
+            .symbols
+            .iter()
+            .filter(|s| s.kind == SymbolKind::Function || s.kind == SymbolKind::Method)
+            .count();
+        assert!(
+            func_count >= 2,
+            "should find getUser, deleteUser, and serialize"
+        );
+
+        assert!(
+            outcome.imports.len() >= 2,
+            "should find import statements"
+        );
+
+        // qname should include package
+        let obj = class_syms.iter().find(|s| s.name == "UserService").unwrap();
+        let qname = obj.qname.as_deref().unwrap();
+        assert!(
+            qname.contains("com.example.service."),
+            "qname should include package, got: {}",
+            qname
+        );
+    }
+
+    #[test]
+    fn lua_extracts_functions() {
+        let spec = lang_spec::spec_for_language(Language::Lua).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        let content = r#"
+local json = require('cjson')
+local utils = require 'utils'
+
+function greet(name)
+    print("Hello, " .. name)
+end
+
+local function helper(x)
+    return x * 2
+end
+
+function MyModule.doStuff(a, b)
+    return a + b
+end
+"#;
+        let outcome = parser.parse("main.lua", content, Language::Lua).unwrap();
+        assert_eq!(outcome.parser_tier, ParserTier::Heuristic);
+
+        let func_names: Vec<_> = outcome
+            .symbols
+            .iter()
+            .filter(|s| s.kind == SymbolKind::Function || s.kind == SymbolKind::Method)
+            .map(|s| s.name.as_str())
+            .collect();
+        assert!(
+            func_names.len() >= 3,
+            "should find greet, helper, and MyModule.doStuff, got {:?}",
+            func_names
+        );
+
+        assert!(
+            outcome.imports.len() >= 2,
+            "should find require calls, got {}",
+            outcome.imports.len()
+        );
     }
 }

@@ -1,98 +1,101 @@
 use crate::types::{EvalCase, EvalMetrics, EvalRun, ToolCallRecord};
-use std::process::Command;
 use std::time::Instant;
 
+/// Trait for an indexing+search backend that the eval runner can call.
+/// Implement this against CodeIndex (in cc-server) or a mock.
+pub trait EvalBackend {
+    fn index_project(&mut self, project_path: &std::path::Path) -> Result<String, String>;
+    fn search(&self, query: &str) -> Result<String, String>;
+    fn graph_query(&self, query: &str) -> Result<String, String>;
+    fn callers(&self, symbol: &str) -> Result<String, String>;
+}
+
 pub struct EvalRunner {
-    pub codecortex_binary: std::path::PathBuf,
-    pub agent_command: String,
+    pub backend: Option<Box<dyn EvalBackend>>,
 }
 
 impl EvalRunner {
-    pub fn new(
-        codecortex_binary: impl Into<std::path::PathBuf>,
-        agent_command: impl Into<String>,
-    ) -> Self {
-        Self {
-            codecortex_binary: codecortex_binary.into(),
-            agent_command: agent_command.into(),
-        }
+    pub fn new(backend: Option<Box<dyn EvalBackend>>) -> Self {
+        Self { backend }
     }
 
-    /// Run a deterministic code-index quality case.
-    ///
-    /// This intentionally does not spawn an LLM agent.  It is the minimal closed
-    /// loop needed for regression tests: every expected marker must be discoverable
-    /// either through CodeCortex search (`with_codecortex=true`) or a filesystem
-    /// baseline grep (`with_codecortex=false`).  Agent subprocess benchmarking can
-    /// be layered on top later without losing these stable quality assertions.
-    pub fn run_case(&self, case: &EvalCase, with_codecortex: bool) -> Result<EvalRun, String> {
+    pub fn run_case(&mut self, case: &EvalCase, with_codecortex: bool) -> Result<EvalRun, String> {
         let started = Instant::now();
         let mut metrics = EvalMetrics::default();
         let mut tool_calls = Vec::new();
         let mut missing = Vec::new();
 
-        if with_codecortex && self.codecortex_binary.exists() {
+        metrics.markers_total = case.expected_markers.len() as u32;
+
+        if with_codecortex {
+            let backend = self
+                .backend
+                .as_mut()
+                .ok_or("no eval backend configured")?;
+
+            // Phase 1: index
             let idx_start = Instant::now();
-            let output = Command::new(&self.codecortex_binary)
-                .arg("index")
-                .arg("--project-path")
-                .arg(&case.repo_path)
-                .output()
-                .map_err(|e| format!("run codecortex index: {e}"))?;
+            let output = backend.index_project(&case.repo_path)?;
             tool_calls.push(ToolCallRecord {
-                tool_name: "codecortex index".to_string(),
+                tool_name: "index".to_string(),
                 duration_ms: idx_start.elapsed().as_millis() as u64,
                 input_summary: case.repo_path.display().to_string(),
-                output_size_bytes: output.stdout.len() + output.stderr.len(),
+                output_size_bytes: output.len(),
             });
             metrics.tool_call_count += 1;
             metrics.mcp_call_count += 1;
-            if !output.status.success() {
-                return Ok(failed_run(
-                    case,
-                    with_codecortex,
-                    started,
-                    metrics,
-                    tool_calls,
-                    format!(
-                        "codecortex index failed: {}",
-                        String::from_utf8_lossy(&output.stderr)
-                    ),
-                ));
+
+            // Phase 2: run category-specific tool calls
+            for tool_name in &case.mcp_tools {
+                let tool_start = Instant::now();
+                let result = match tool_name.as_str() {
+                    "search" => backend.search(&case.prompt),
+                    "find_route_handlers" => {
+                        backend.graph_query("MATCH (r:Route) RETURN r")
+                    }
+                    "find_dead_code" => {
+                        backend.graph_query("MATCH (f:Function) WHERE degree(f) = 0 RETURN f.name")
+                    }
+                    "callers" => backend.callers(&case.prompt),
+                    _ => backend.search(&case.prompt),
+                };
+                if let Ok(output) = result {
+                    tool_calls.push(ToolCallRecord {
+                        tool_name: format!("codecortex {}", tool_name),
+                        duration_ms: tool_start.elapsed().as_millis() as u64,
+                        input_summary: case.prompt.clone(),
+                        output_size_bytes: output.len(),
+                    });
+                    metrics.tool_call_count += 1;
+                    metrics.mcp_call_count += 1;
+                    metrics.token_count_input += case.prompt.len() as u64 / 4 + 1;
+                    metrics.token_count_output += output.len() as u64 / 4 + 1;
+                }
             }
 
+            // Phase 3: verify expected markers via search
             for marker in &case.expected_markers {
                 let search_start = Instant::now();
-                let output = Command::new(&self.codecortex_binary)
-                    .arg("search")
-                    .arg(marker)
-                    .arg("--project-path")
-                    .arg(&case.repo_path)
-                    .arg("--json")
-                    .output()
-                    .map_err(|e| format!("run codecortex search: {e}"))?;
-                let combined = format!(
-                    "{}\n{}",
-                    String::from_utf8_lossy(&output.stdout),
-                    String::from_utf8_lossy(&output.stderr)
-                );
-                tool_calls.push(ToolCallRecord {
-                    tool_name: "codecortex search".to_string(),
-                    duration_ms: search_start.elapsed().as_millis() as u64,
-                    input_summary: marker.clone(),
-                    output_size_bytes: combined.len(),
-                });
+                let result = backend.search(marker);
                 metrics.tool_call_count += 1;
                 metrics.mcp_call_count += 1;
-                metrics.token_count_input += marker.len() as u64 / 4 + 1;
-                metrics.token_count_output += combined.len() as u64 / 4 + 1;
-                if !output.status.success() || !combined.contains(marker) {
-                    missing.push(marker.clone());
+                match result {
+                    Ok(output) if output.contains(marker) => {
+                        metrics.markers_found += 1;
+                        tool_calls.push(ToolCallRecord {
+                            tool_name: "search".to_string(),
+                            duration_ms: search_start.elapsed().as_millis() as u64,
+                            input_summary: marker.clone(),
+                            output_size_bytes: output.len(),
+                        });
+                    }
+                    _ => {
+                        missing.push(marker.clone());
+                    }
                 }
             }
         } else {
-            // Baseline: repository-wide literal grep implemented in Rust so evals
-            // do not depend on external grep/ripgrep availability.
+            // Baseline: grep
             let files = collect_files(&case.repo_path)?;
             for marker in &case.expected_markers {
                 metrics.grep_count += 1;
@@ -107,7 +110,9 @@ impl EvalRunner {
                         }
                     }
                 }
-                if !found {
+                if found {
+                    metrics.markers_found += 1;
+                } else {
                     missing.push(marker.clone());
                 }
             }
@@ -126,25 +131,6 @@ impl EvalRunner {
                 Some(format!("missing expected markers: {}", missing.join(", ")))
             },
         })
-    }
-}
-
-fn failed_run(
-    case: &EvalCase,
-    with_codecortex: bool,
-    started: Instant,
-    mut metrics: EvalMetrics,
-    tool_calls: Vec<ToolCallRecord>,
-    error: String,
-) -> EvalRun {
-    metrics.wall_clock_ms = started.elapsed().as_millis() as u64;
-    EvalRun {
-        case_name: case.name.clone(),
-        with_codecortex,
-        metrics,
-        tool_calls,
-        success: false,
-        error: Some(error),
     }
 }
 

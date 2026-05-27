@@ -343,6 +343,12 @@ static ASYNC_METHODS: &[&str] = &[
     "apply_async",
     "delay",
     "send_task",
+    "send_event",
+    "publish_message",
+    // BullMQ-specific
+    "add",
+    "addbulk",
+    "process",
 ];
 
 /// Method names that indicate a plain HTTP call (used to disambiguate
@@ -476,6 +482,19 @@ mod tests {
         assert_eq!(method_call_kind("get"), "http");
         assert_eq!(method_call_kind("post"), "http");
         assert_eq!(method_call_kind("someMethod"), "unknown");
+    }
+
+    #[test]
+    fn method_kind_bullmq() {
+        assert_eq!(method_call_kind("add"), "async");
+        assert_eq!(method_call_kind("addBulk"), "async");
+        assert_eq!(method_call_kind("process"), "async");
+    }
+
+    #[test]
+    fn method_kind_python_broker() {
+        assert_eq!(method_call_kind("send_event"), "async");
+        assert_eq!(method_call_kind("publish_message"), "async");
     }
 
     // --- rq false-positive regression tests ---

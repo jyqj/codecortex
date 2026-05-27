@@ -71,20 +71,28 @@ pub fn explore_symbols(
     max_callees: Option<usize>,
     include_source: bool,
     include_relations: bool,
+    include_metrics: bool,
+    outline: bool,
+    max_source_per_file: Option<usize>,
 ) -> Result<serde_json::Value, String> {
     if symbols.is_empty() {
         return Err("missing or empty 'symbols' parameter".to_string());
     }
 
     let mut rt = runtime.lock().map_err(|e| e.to_string())?;
-    rt.explore_symbols(
+    let max_chars = rt.repo_size_tier().max_output_chars();
+    let result = rt.explore_symbols(
         symbols,
         max_callers,
         max_callees,
         include_source,
         include_relations,
+        include_metrics,
+        outline,
+        max_source_per_file,
     )
-    .map_err(|e| e.to_string())
+    .map_err(|e| e.to_string())?;
+    Ok(super::facade::enforce_output_limit(result, max_chars))
 }
 
 pub fn get_symbol_source(

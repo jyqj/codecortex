@@ -3,14 +3,16 @@
 use crate::chunker::Chunker;
 use crate::traits::FileParser;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, ImportRecord, ResolutionKind, RouteEdgeRecord,
-    SemanticEdgeRecord, SemanticRelation,
+    CallEdgeRecord, DataFlowEdgeRecord, DispatchKind, ImportRecord, ResolutionKind,
+    RouteEdgeRecord, SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
+use std::sync::LazyLock;
 
 static GO_KEYWORDS: &[&str] = &[
     "func", "var", "const", "type", "struct", "interface", "map", "chan", "go", "select", "case",
@@ -20,6 +22,11 @@ static GO_KEYWORDS: &[&str] = &[
     "string", "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32",
     "uint64", "float32", "float64", "bool", "byte", "rune", "error",
 ];
+
+/// Matches `os.Getenv("KEY")` and `os.LookupEnv("KEY")`.
+static GO_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"os\.Getenv\("(\w+)"\)|os\.LookupEnv\("(\w+)"\)"#).expect("go env access regex")
+});
 
 pub struct GoParser {
     language: tree_sitter::Language,
@@ -1464,6 +1471,52 @@ impl GoParser {
             Some(comments.join("\n"))
         }
     }
+
+    // =========================================================================
+    // Environment variable access extraction
+    // =========================================================================
+
+    /// Extract environment variable accesses from Go code.
+    ///
+    /// Matches `os.Getenv("KEY")` and `os.LookupEnv("KEY")`.
+    fn extract_env_accesses(
+        &self,
+        content: &str,
+        symbols: &[SymbolRecord],
+        file_path: &str,
+    ) -> Vec<DataFlowEdgeRecord> {
+        let mut edges = Vec::new();
+
+        for cap in GO_ENV_ACCESS_RE.captures_iter(content) {
+            let m = cap.get(0).unwrap();
+            let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            let env_key = cap
+                .get(1)
+                .or(cap.get(2))
+                .map(|m| m.as_str().to_string());
+
+            let source_uid = symbols
+                .iter()
+                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
+                .filter(|s| s.start_line <= line && s.end_line >= line)
+                .min_by_key(|s| s.end_line - s.start_line)
+                .and_then(|s| s.symbol_uid.clone());
+
+            edges.push(DataFlowEdgeRecord {
+                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
+                file_path: file_path.to_string(),
+                source_symbol_uid: source_uid,
+                target_symbol_uid: None,
+                flow_kind: "env_access".to_string(),
+                line,
+                confidence: 0.80,
+                parser_tier: ParserTier::Heuristic,
+                env_key,
+            });
+        }
+
+        edges
+    }
 }
 
 impl Default for GoParser {
@@ -1516,6 +1569,8 @@ impl FileParser for GoParser {
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
         let route_edges =
             self.extract_route_edges(&tree, content.as_bytes(), file_path, &imports, &symbols);
+        let mut data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
+        data_flow_edges.extend(extract_param_return_flow(&call_edges, file_path));
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1541,6 +1596,7 @@ impl FileParser for GoParser {
             semantic_edges,
             type_assigns,
             route_edges,
+            data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -1555,6 +1611,51 @@ impl FileParser for GoParser {
     fn tier(&self) -> ParserTier {
         ParserTier::TreeSitter
     }
+}
+
+fn extract_param_return_flow(
+    call_edges: &[CallEdgeRecord],
+    file_path: &str,
+) -> Vec<DataFlowEdgeRecord> {
+    let mut edges = Vec::new();
+    for ce in call_edges {
+        let caller_uid = match &ce.caller_symbol_uid {
+            Some(uid) if !uid.is_empty() => uid,
+            _ => continue,
+        };
+        let callee_uid = match &ce.callee_symbol_uid {
+            Some(uid) if !uid.is_empty() => uid,
+            _ => continue,
+        };
+        if ce.resolution_kind == ResolutionKind::Unresolved {
+            continue;
+        }
+        if ce.arg_count.unwrap_or(0) > 0 {
+            edges.push(DataFlowEdgeRecord {
+                edge_id: cc_model::StableId::edge_id("dfp", file_path, ce.line, ce.start_col),
+                file_path: file_path.to_string(),
+                source_symbol_uid: Some(caller_uid.clone()),
+                target_symbol_uid: Some(callee_uid.clone()),
+                flow_kind: "param_pass".to_string(),
+                line: ce.line,
+                confidence: ce.resolution_confidence * 0.9,
+                parser_tier: ce.parser_tier,
+                env_key: None,
+            });
+        }
+        edges.push(DataFlowEdgeRecord {
+            edge_id: cc_model::StableId::edge_id("dfr", file_path, ce.line, ce.start_col),
+            file_path: file_path.to_string(),
+            source_symbol_uid: Some(callee_uid.clone()),
+            target_symbol_uid: Some(caller_uid.clone()),
+            flow_kind: "return_flow".to_string(),
+            line: ce.line,
+            confidence: ce.resolution_confidence * 0.8,
+            parser_tier: ce.parser_tier,
+            env_key: None,
+        });
+    }
+    edges
 }
 
 #[cfg(test)]
@@ -1850,5 +1951,60 @@ func updateUser(c echo.Context) error { return nil }
         assert!(put_route.is_some(), "should detect PUT /users/:id route");
         assert_eq!(put_route.unwrap().method.as_deref(), Some("PUT"));
         assert_eq!(put_route.unwrap().framework.as_deref(), Some("echo"));
+    }
+
+    #[test]
+    fn test_go_env_access_getenv() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "os"
+
+func loadConfig() {
+    dbUrl := os.Getenv("DATABASE_URL")
+    _ = dbUrl
+}
+"#;
+        let outcome = parser.parse("config.go", code, Language::Go).unwrap();
+        assert_eq!(
+            outcome.data_flow_edges.len(),
+            1,
+            "expected 1 data_flow_edge for Getenv, got {}",
+            outcome.data_flow_edges.len()
+        );
+        let edge = &outcome.data_flow_edges[0];
+        assert_eq!(edge.flow_kind, "env_access");
+        assert_eq!(edge.env_key.as_deref(), Some("DATABASE_URL"));
+        assert_eq!(edge.parser_tier, ParserTier::Heuristic);
+        // The enclosing function is loadConfig
+        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing function");
+    }
+
+    #[test]
+    fn test_go_env_access_lookupenv() {
+        let parser = GoParser::new();
+        let code = r#"package main
+
+import "os"
+
+func initAPI() {
+    key, ok := os.LookupEnv("API_KEY")
+    if !ok {
+        panic("missing API_KEY")
+    }
+    _ = key
+}
+"#;
+        let outcome = parser.parse("api.go", code, Language::Go).unwrap();
+        assert_eq!(
+            outcome.data_flow_edges.len(),
+            1,
+            "expected 1 data_flow_edge for LookupEnv, got {}",
+            outcome.data_flow_edges.len()
+        );
+        let edge = &outcome.data_flow_edges[0];
+        assert_eq!(edge.flow_kind, "env_access");
+        assert_eq!(edge.env_key.as_deref(), Some("API_KEY"));
+        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing function");
     }
 }

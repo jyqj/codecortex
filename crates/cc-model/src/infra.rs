@@ -29,6 +29,18 @@ pub enum InfraKind {
     MessageTopic,
     /// SQS queue, RabbitMQ queue, Cloud Tasks queue
     MessageQueue,
+    /// Terraform resource block (e.g., aws_instance.main)
+    TerraformResource,
+    /// Terraform data source block (e.g., data.aws_ami.ubuntu)
+    TerraformDataSource,
+    /// Terraform variable block
+    TerraformVariable,
+    /// Terraform output block
+    TerraformOutput,
+    /// Terraform module block
+    TerraformModule,
+    /// C/C++ compile target from compile_commands.json
+    CompileTarget,
 }
 
 impl InfraKind {
@@ -53,6 +65,12 @@ impl InfraKind {
             Self::KustomizeOverlay => "kustomize_overlay",
             Self::MessageTopic => "message_topic",
             Self::MessageQueue => "message_queue",
+            Self::TerraformResource => "terraform_resource",
+            Self::TerraformDataSource => "terraform_data_source",
+            Self::TerraformVariable => "terraform_variable",
+            Self::TerraformOutput => "terraform_output",
+            Self::TerraformModule => "terraform_module",
+            Self::CompileTarget => "compile_target",
         }
     }
 }
@@ -69,6 +87,10 @@ pub enum InfraEdgeKind {
     BindsTopic,
     /// Service consumes from a queue
     ConsumesQueue,
+    /// Generic reference (e.g., var.X in Terraform)
+    References,
+    /// Module usage (e.g., Terraform module source)
+    UsesModule,
 }
 
 impl InfraEdgeKind {
@@ -80,6 +102,8 @@ impl InfraEdgeKind {
             Self::RoutesTo => "routes_to",
             Self::BindsTopic => "binds_topic",
             Self::ConsumesQueue => "consumes_queue",
+            Self::References => "references",
+            Self::UsesModule => "uses_module",
         }
     }
 }

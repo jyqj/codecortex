@@ -53,7 +53,7 @@ if [ -f "$GATE" ]; then
     exit 0
 fi
 touch "$GATE"
-echo 'BLOCKED: For code discovery, prefer CodeCortex MCP tools first: search(query) to find functions/classes, callers()/callees() for call chains, graph_query() for Cypher queries. If the project is not indexed yet, call set_project first. Fall back to Grep/Glob/Read only for non-structural searches. If you need Grep, retry.' >&2
+echo 'BLOCKED: For code discovery, prefer CodeCortex MCP tools first: search(query) to locate code, context(task) to build full task context, relations(symbol) for callers/callees, trace(from,to) for call paths, explore(symbols) for batch inspection. If the project is not indexed yet, call index(path) first. Fall back to Grep/Glob/Read only for non-structural searches. If you need Grep, retry.' >&2
 exit 2
 "#;
         std::fs::write(&gate_script_path, gate_script).map_err(|e| e.to_string())?;

@@ -6,6 +6,7 @@
 
 use crate::jsts::JsTsParser;
 use crate::traits::FileParser;
+use cc_model::dispatch_site::{DispatchSiteKind, DispatchSiteRecord};
 use cc_model::edge::{CallEdgeRecord, DispatchKind, ResolutionKind};
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
@@ -27,6 +28,11 @@ static COMPONENT_TAG_RE: LazyLock<Regex> =
 static VUE_HANDLER_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"(?:@|v-on:)[A-Za-z0-9_:-]+\s*=\s*["']([A-Za-z_$][A-Za-z0-9_$]*)"#)
         .expect("vue handler regex")
+});
+/// Captures both event name (group 1) and handler name (group 2) for dispatch sites.
+static VUE_HANDLER_FULL_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?:@|v-on:)([A-Za-z0-9_:-]+)\s*=\s*["']([A-Za-z_$][A-Za-z0-9_$]*)"#)
+        .expect("vue handler full regex")
 });
 static SVELTE_HANDLER_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"on:[A-Za-z0-9_:-]+\s*=\s*\{\s*([A-Za-z_$][A-Za-z0-9_$]*)"#)
@@ -207,6 +213,21 @@ fn add_template_refs(
             parser_tier: ParserTier::Heuristic,
             parser_confidence: 0.75,
         });
+
+        // Emit VueChildComponent dispatch site for synthesis pass
+        outcome.dispatch_sites.push(DispatchSiteRecord {
+            site_id: StableId::edge_id("ds_vue_child", file_path, line, col),
+            file_path: file_path.to_string(),
+            line,
+            col,
+            enclosing_symbol_uid: Some(component_uid.to_string()),
+            receiver_expr: None,
+            site_kind: DispatchSiteKind::VueChildComponent,
+            key: name.as_str().to_string(),
+            handler_expr: None,
+            handler_symbol_uid: None,
+            confidence: 0.78,
+        });
     }
 
     let handler_re = match language {
@@ -249,5 +270,31 @@ fn add_template_refs(
             registered_file: Some(file_path.to_string()),
             registered_line: Some(line),
         });
+    }
+
+    // Emit VueEventHandler dispatch sites (Vue only, with event name + handler name)
+    if language == Language::Vue {
+        for cap in VUE_HANDLER_FULL_RE.captures_iter(content) {
+            let Some(event_name) = cap.get(1) else {
+                continue;
+            };
+            let Some(handler_name) = cap.get(2) else {
+                continue;
+            };
+            let (line, col) = line_col_at(content, handler_name.start());
+            outcome.dispatch_sites.push(DispatchSiteRecord {
+                site_id: StableId::edge_id("ds_vue_evt", file_path, line, col),
+                file_path: file_path.to_string(),
+                line,
+                col,
+                enclosing_symbol_uid: Some(component_uid.to_string()),
+                receiver_expr: Some(event_name.as_str().to_string()),
+                site_kind: DispatchSiteKind::VueEventHandler,
+                key: handler_name.as_str().to_string(),
+                handler_expr: Some(handler_name.as_str().to_string()),
+                handler_symbol_uid: None,
+                confidence: 0.78,
+            });
+        }
     }
 }

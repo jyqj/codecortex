@@ -14,7 +14,6 @@ pub mod route_normalize;
 pub mod scope;
 pub mod search;
 pub mod symbol;
-pub mod trace;
 pub mod type_assign;
 pub mod working_set;
 
@@ -41,7 +40,6 @@ pub use scope::ScopeInfo;
 pub use search::SearchHit;
 /// Core enums used across the codebase
 pub use symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
-pub use trace::{TraceIngestResult, TraceObservation};
 pub use type_assign::{TypeAssignRecord, TypeAssignSource};
 pub use working_set::{WorkingSetEntry, WorkspaceSelection, WorkspaceState};
 
@@ -67,6 +65,19 @@ pub enum Language {
     Kotlin,
     C,
     Cpp,
+    Dart,
+    Scala,
+    Lua,
+    Sql,
+    Yaml,
+    Toml,
+    Hcl,
+    Dockerfile,
+    Bash,
+    Protobuf,
+    GraphQL,
+    OpenApi,
+    CMake,
     Unknown,
 }
 
@@ -91,6 +102,17 @@ impl Language {
             "kt" | "kts" => Self::Kotlin,
             "c" => Self::C,
             "cpp" | "cc" | "cxx" | "h" | "hpp" | "hxx" => Self::Cpp,
+            "dart" => Self::Dart,
+            "scala" | "sc" => Self::Scala,
+            "lua" | "luau" => Self::Lua,
+            "sql" => Self::Sql,
+            "yaml" | "yml" => Self::Yaml,
+            "toml" => Self::Toml,
+            "tf" | "tfvars" => Self::Hcl,
+            "sh" | "bash" | "zsh" => Self::Bash,
+            "proto" => Self::Protobuf,
+            "graphql" | "gql" => Self::GraphQL,
+            "cmake" => Self::CMake,
             _ => Self::Unknown,
         }
     }
@@ -115,6 +137,19 @@ impl Language {
             Self::Kotlin => "kotlin",
             Self::C => "c",
             Self::Cpp => "cpp",
+            Self::Dart => "dart",
+            Self::Scala => "scala",
+            Self::Lua => "lua",
+            Self::Sql => "sql",
+            Self::Yaml => "yaml",
+            Self::Toml => "toml",
+            Self::Hcl => "hcl",
+            Self::Dockerfile => "dockerfile",
+            Self::Bash => "bash",
+            Self::Protobuf => "protobuf",
+            Self::GraphQL => "graphql",
+            Self::OpenApi => "openapi",
+            Self::CMake => "cmake",
             Self::Unknown => "unknown",
         }
     }
@@ -142,6 +177,19 @@ impl Language {
             "kotlin" | "kt" => Self::Kotlin,
             "c" => Self::C,
             "cpp" | "c++" | "cxx" => Self::Cpp,
+            "dart" => Self::Dart,
+            "scala" | "sc" => Self::Scala,
+            "lua" | "luau" => Self::Lua,
+            "sql" => Self::Sql,
+            "yaml" | "yml" => Self::Yaml,
+            "toml" => Self::Toml,
+            "hcl" | "terraform" | "tf" => Self::Hcl,
+            "dockerfile" | "docker" => Self::Dockerfile,
+            "bash" | "sh" | "shell" | "zsh" => Self::Bash,
+            "protobuf" | "proto" => Self::Protobuf,
+            "graphql" | "gql" => Self::GraphQL,
+            "openapi" | "swagger" => Self::OpenApi,
+            "cmake" => Self::CMake,
             _ => Self::Unknown,
         }
     }
@@ -270,6 +318,48 @@ pub fn first_sentence(text: &str) -> &str {
 pub fn chunked<T>(items: &[T], chunk_size: usize) -> impl Iterator<Item = &[T]> {
     assert!(chunk_size > 0, "chunk_size must be > 0");
     items.chunks(chunk_size)
+}
+
+#[cfg(test)]
+mod language_tests {
+    use super::*;
+
+    #[test]
+    fn from_extension_new_languages() {
+        assert_eq!(Language::from_extension("dart"), Language::Dart);
+        assert_eq!(Language::from_extension("scala"), Language::Scala);
+        assert_eq!(Language::from_extension("sc"), Language::Scala);
+        assert_eq!(Language::from_extension("lua"), Language::Lua);
+        assert_eq!(Language::from_extension("luau"), Language::Lua);
+        assert_eq!(Language::from_extension("sql"), Language::Sql);
+        assert_eq!(Language::from_extension("yaml"), Language::Yaml);
+        assert_eq!(Language::from_extension("yml"), Language::Yaml);
+        assert_eq!(Language::from_extension("toml"), Language::Toml);
+    }
+
+    #[test]
+    fn from_name_new_languages() {
+        assert_eq!(Language::from_name("dart"), Language::Dart);
+        assert_eq!(Language::from_name("scala"), Language::Scala);
+        assert_eq!(Language::from_name("lua"), Language::Lua);
+        assert_eq!(Language::from_name("sql"), Language::Sql);
+        assert_eq!(Language::from_name("yaml"), Language::Yaml);
+        assert_eq!(Language::from_name("yml"), Language::Yaml);
+        assert_eq!(Language::from_name("toml"), Language::Toml);
+        assert_eq!(Language::from_name("dockerfile"), Language::Dockerfile);
+        assert_eq!(Language::from_name("docker"), Language::Dockerfile);
+    }
+
+    #[test]
+    fn as_str_new_languages() {
+        assert_eq!(Language::Dart.as_str(), "dart");
+        assert_eq!(Language::Scala.as_str(), "scala");
+        assert_eq!(Language::Lua.as_str(), "lua");
+        assert_eq!(Language::Sql.as_str(), "sql");
+        assert_eq!(Language::Yaml.as_str(), "yaml");
+        assert_eq!(Language::Toml.as_str(), "toml");
+        assert_eq!(Language::Dockerfile.as_str(), "dockerfile");
+    }
 }
 
 #[cfg(test)]

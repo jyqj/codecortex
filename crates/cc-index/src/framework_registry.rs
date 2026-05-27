@@ -433,6 +433,17 @@ fn activation_literals_table() -> &'static [(&'static str, &'static [&'static st
             ],
         ),
         ("vue_router", &["vue-router", "router", "useRoute", "useRouter", "createRouter"]),
+        (
+            "hono",
+            &[
+                "hono",
+                "Hono",
+                "app.get",
+                "app.post",
+                "c.json",
+                "c.text",
+            ],
+        ),
     ]
 }
 

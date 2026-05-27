@@ -1,13 +1,64 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::PathBuf;
 use std::time::Duration;
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+#[serde(rename_all = "snake_case")]
+pub enum EvalCategory {
+    RouteHandler,
+    ImpactRadius,
+    DynamicCallback,
+    TypeHierarchy,
+    CircularDeps,
+    DeadCode,
+}
+
+impl EvalCategory {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Self::RouteHandler => "route_handler",
+            Self::ImpactRadius => "impact_radius",
+            Self::DynamicCallback => "dynamic_callback",
+            Self::TypeHierarchy => "type_hierarchy",
+            Self::CircularDeps => "circular_deps",
+            Self::DeadCode => "dead_code",
+        }
+    }
+}
+
+impl Default for EvalCategory {
+    fn default() -> Self {
+        Self::RouteHandler
+    }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EvalDifficulty {
+    Easy,
+    Medium,
+    Hard,
+}
+
+impl Default for EvalDifficulty {
+    fn default() -> Self {
+        Self::Medium
+    }
+}
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EvalCase {
     pub name: String,
+    #[serde(default)]
+    pub category: EvalCategory,
+    #[serde(default)]
+    pub difficulty: EvalDifficulty,
     pub prompt: String,
     pub repo_path: PathBuf,
     pub expected_markers: Vec<String>,
+    #[serde(default)]
+    pub mcp_tools: Vec<String>,
     #[serde(with = "duration_secs")]
     pub timeout: Duration,
 }
@@ -32,6 +83,8 @@ pub struct EvalMetrics {
     pub grep_count: u32,
     pub mcp_call_count: u32,
     pub estimated_cost_usd: f64,
+    pub markers_found: u32,
+    pub markers_total: u32,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -45,6 +98,8 @@ pub struct ToolCallRecord {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EvalCaseReport {
     pub case_name: String,
+    #[serde(default)]
+    pub category: EvalCategory,
     pub with_cc: EvalRun,
     pub without_cc: EvalRun,
     pub delta: EvalDelta,
@@ -73,6 +128,16 @@ pub struct EvalSummary {
     pub avg_token_reduction_pct: f64,
     pub avg_tool_call_reduction_pct: f64,
     pub avg_cost_reduction_pct: f64,
+    #[serde(default)]
+    pub per_category: HashMap<String, CategorySummary>,
+}
+
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+pub struct CategorySummary {
+    pub case_count: usize,
+    pub avg_wall_clock_reduction_pct: f64,
+    pub avg_token_reduction_pct: f64,
+    pub success_rate: f64,
 }
 
 mod duration_secs {

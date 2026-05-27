@@ -324,11 +324,13 @@ CREATE TABLE IF NOT EXISTS data_flow_edges (
     flow_kind         TEXT NOT NULL DEFAULT 'read',
     line              INTEGER NOT NULL DEFAULT 0,
     confidence        REAL NOT NULL DEFAULT 0.5,
-    parser_tier       TEXT NOT NULL DEFAULT 'tree_sitter'
+    parser_tier       TEXT NOT NULL DEFAULT 'tree_sitter',
+    env_key           TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_dfe_file ON data_flow_edges(file_path);
 CREATE INDEX IF NOT EXISTS idx_dfe_source ON data_flow_edges(source_symbol_uid);
 CREATE INDEX IF NOT EXISTS idx_dfe_target ON data_flow_edges(target_symbol_uid);
+CREATE INDEX IF NOT EXISTS idx_dfe_env_key ON data_flow_edges(env_key);
 
 -- co-change edges
 CREATE TABLE IF NOT EXISTS co_change_edges (
@@ -428,3 +430,33 @@ CREATE TABLE IF NOT EXISTS dispatch_sites (
 );
 CREATE INDEX IF NOT EXISTS idx_dispatch_sites_file ON dispatch_sites(file_path);
 CREATE INDEX IF NOT EXISTS idx_dispatch_sites_kind_key ON dispatch_sites(site_kind, key);
+
+-- runtime evidence: OTLP trace observations that validate HTTP/async edges
+CREATE TABLE IF NOT EXISTS runtime_evidence (
+    evidence_id     TEXT PRIMARY KEY,
+    http_edge_id    TEXT,
+    route_id        TEXT,
+    service_name    TEXT NOT NULL,
+    method          TEXT,
+    path            TEXT NOT NULL,
+    status_code     TEXT,
+    observed_count  INTEGER NOT NULL DEFAULT 1,
+    p95_ms          REAL,
+    first_seen      TEXT NOT NULL,
+    last_seen       TEXT NOT NULL,
+    trace_source    TEXT NOT NULL DEFAULT 'otlp'
+);
+CREATE INDEX IF NOT EXISTS idx_runtime_evidence_path ON runtime_evidence(path);
+CREATE INDEX IF NOT EXISTS idx_runtime_evidence_edge ON runtime_evidence(http_edge_id);
+
+-- architecture decision records (repo metadata, not agent memory)
+CREATE TABLE IF NOT EXISTS adr (
+    adr_id      TEXT PRIMARY KEY,
+    title       TEXT NOT NULL,
+    status      TEXT NOT NULL DEFAULT 'accepted',
+    context     TEXT NOT NULL DEFAULT '',
+    decision    TEXT NOT NULL DEFAULT '',
+    created_at  TEXT NOT NULL,
+    updated_at  TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_adr_status ON adr(status);

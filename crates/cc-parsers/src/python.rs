@@ -1206,6 +1206,7 @@ impl PythonParser {
                 line,
                 confidence: 0.85,
                 parser_tier: ParserTier::Semantic,
+                env_key: None,
             });
         }
 
@@ -1226,6 +1227,7 @@ impl PythonParser {
                 line,
                 confidence: 0.85,
                 parser_tier: ParserTier::Semantic,
+                env_key: None,
             });
         }
 
@@ -1248,6 +1250,11 @@ impl PythonParser {
         for cap in PY_ENV_ACCESS_RE.captures_iter(content) {
             let m = cap.get(0).unwrap();
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            let env_key = cap
+                .get(1)
+                .or(cap.get(2))
+                .or(cap.get(3))
+                .map(|m| m.as_str().to_string());
 
             let source_uid =
                 find_enclosing_function(symbols, line).and_then(|s| s.symbol_uid.clone());
@@ -1261,9 +1268,56 @@ impl PythonParser {
                 line,
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                env_key,
             });
         }
 
+        edges
+    }
+
+    fn extract_param_return_flow(
+        &self,
+        call_edges: &[CallEdgeRecord],
+        file_path: &str,
+    ) -> Vec<DataFlowEdgeRecord> {
+        let mut edges = Vec::new();
+        for ce in call_edges {
+            let caller_uid = match &ce.caller_symbol_uid {
+                Some(uid) if !uid.is_empty() => uid,
+                _ => continue,
+            };
+            let callee_uid = match &ce.callee_symbol_uid {
+                Some(uid) if !uid.is_empty() => uid,
+                _ => continue,
+            };
+            if ce.resolution_kind == cc_model::edge::ResolutionKind::Unresolved {
+                continue;
+            }
+            if ce.arg_count.unwrap_or(0) > 0 {
+                edges.push(DataFlowEdgeRecord {
+                    edge_id: cc_model::StableId::edge_id("dfp", file_path, ce.line, ce.start_col),
+                    file_path: file_path.to_string(),
+                    source_symbol_uid: Some(caller_uid.clone()),
+                    target_symbol_uid: Some(callee_uid.clone()),
+                    flow_kind: "param_pass".to_string(),
+                    line: ce.line,
+                    confidence: ce.resolution_confidence * 0.9,
+                    parser_tier: ce.parser_tier,
+                    env_key: None,
+                });
+            }
+            edges.push(DataFlowEdgeRecord {
+                edge_id: cc_model::StableId::edge_id("dfr", file_path, ce.line, ce.start_col),
+                file_path: file_path.to_string(),
+                source_symbol_uid: Some(callee_uid.clone()),
+                target_symbol_uid: Some(caller_uid.clone()),
+                flow_kind: "return_flow".to_string(),
+                line: ce.line,
+                confidence: ce.resolution_confidence * 0.8,
+                parser_tier: ce.parser_tier,
+                env_key: None,
+            });
+        }
         edges
     }
 
@@ -2243,9 +2297,10 @@ impl FileParser for PythonParser {
             ParserTier::Heuristic,
         ));
 
-        // ── Regex-based data flow edges (type refs + env accesses) ─────
+        // ── Regex-based data flow edges (type refs + env accesses + param/return) ──
         let mut data_flow_edges = self.extract_type_refs(content, &symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &symbols, file_path));
+        data_flow_edges.extend(self.extract_param_return_flow(&call_edges, file_path));
 
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);

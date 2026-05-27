@@ -2,14 +2,15 @@
 
 use crate::engine::CodeIndex;
 use crate::handlers;
-use crate::tools::{self, JsonResult};
+use crate::tools::JsonResult;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::tool::ToolCallContext;
 use rmcp::handler::server::wrapper::{Json, Parameters};
 use rmcp::model::*;
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::{tool, tool_router, ServerHandler};
-use std::collections::{HashMap, HashSet};
+use lru::LruCache;
+use std::num::NonZeroUsize;
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -31,8 +32,7 @@ impl ProjectServices {
 
 pub struct CodeCortexMcpServer {
     project: Arc<RwLock<ProjectServices>>,
-    project_cache: Arc<RwLock<HashMap<PathBuf, ProjectServices>>>,
-    active_domains: Arc<Mutex<HashSet<&'static str>>>,
+    project_cache: Arc<tokio::sync::Mutex<LruCache<PathBuf, ProjectServices>>>,
     tool_router: ToolRouter<Self>,
     last_activity: Arc<Mutex<Instant>>,
     auto_indexing: Arc<AtomicBool>,
@@ -52,18 +52,14 @@ impl CodeCortexMcpServer {
         };
         let path = normalize_project_path(raw_path);
 
-        if let Some(svc) = self.project_cache.read().await.get(&path).cloned() {
-            return Ok(svc.index);
-        }
-
-        let mut cache = self.project_cache.write().await;
+        let mut cache = self.project_cache.lock().await;
         if let Some(svc) = cache.get(&path).cloned() {
             return Ok(svc.index);
         }
         let services = ProjectServices::new(Some(path.as_path()))
             .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
         let index = services.index.clone();
-        cache.insert(path, services);
+        cache.put(path, services);
         Ok(index)
     }
 }
@@ -71,14 +67,6 @@ impl CodeCortexMcpServer {
 fn normalize_project_path(raw_path: &str) -> PathBuf {
     let path = PathBuf::from(raw_path);
     std::fs::canonicalize(&path).unwrap_or(path)
-}
-
-fn project_path_from_value(value: &serde_json::Value) -> Option<String> {
-    value
-        .get("project_path")
-        .or_else(|| value.get("projectPath"))
-        .and_then(|v| v.as_str())
-        .map(|s| s.to_string())
 }
 
 macro_rules! spawn_handler {
@@ -92,609 +80,408 @@ macro_rules! spawn_handler {
     }};
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// 12 MCP Tools
+// ═══════════════════════════════════════════════════════════════════════
+
 #[tool_router]
 impl CodeCortexMcpServer {
-    #[tool(
-        name = "list_tool_domains",
-        description = "List tool domains and activation status"
-    )]
-    async fn tool_list_tool_domains(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let active = self
-            .active_domains
-            .lock()
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
-        let domains = tools::domain_listing(&active);
-        Ok(Json(JsonResult {
-            result: serde_json::json!({
-                "active_domains": active.iter().copied().collect::<Vec<_>>(),
-                "domains": domains,
-            }),
-        }))
-    }
+    // ── 1. status ────────────────────────────────────────────────────
 
     #[tool(
-        name = "activate_domain",
-        description = "Activate or deactivate a tool domain"
+        name = "status",
+        description = "Project status, index health, capabilities, and graph schema"
     )]
-    async fn tool_activate_domain(
+    async fn tool_status(
         &self,
-        Parameters(p): Parameters<tools::ActivateDomainParams>,
+        Parameters(p): Parameters<crate::tools::StatusParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let mut active = self
-            .active_domains
-            .lock()
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
-        let domain = tools::resolve_domain(&p.domain).ok_or_else(|| {
-            rmcp::ErrorData::invalid_params(format!("unknown domain: {}", p.domain), None)
-        })?;
-        if domain != tools::DOMAIN_META {
-            if p.active {
-                active.insert(domain);
-            } else {
-                active.remove(domain);
-            }
-        }
-        Ok(Json(JsonResult {
-            result: serde_json::json!({
-                "domain": p.domain,
-                "active": p.active,
-                "active_domains": active.iter().copied().collect::<Vec<_>>(),
-            }),
-        }))
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let aspect = p.aspect;
+        spawn_handler!(index, move |rt| handlers::facade::handle_status(rt, &aspect))
     }
 
-    // ── core ──────────────────────────────────────────────────
+    // ── 2. index ─────────────────────────────────────────────────────
 
-    #[tool(name = "set_project", description = "Set the project directory")]
-    async fn tool_set_project(
+    #[tool(
+        name = "index",
+        description = "Set project directory and build or update the code index"
+    )]
+    async fn tool_index(
         &self,
-        Parameters(p): Parameters<tools::SetProjectParams>,
+        Parameters(p): Parameters<crate::tools::IndexParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
         let path = normalize_project_path(&p.path);
         let new_services = ProjectServices::new(Some(path.as_path()))
             .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
         self.project_cache
-            .write()
+            .lock()
             .await
-            .insert(path, new_services.clone());
+            .put(path, new_services.clone());
         *self.project.write().await = new_services;
         self.maybe_auto_index();
-        Ok(Json(JsonResult {
-            result: serde_json::json!({"status": "ok"}),
-        }))
-    }
-
-    #[tool(name = "build_index", description = "Build or update the code index")]
-    async fn tool_build_index(
-        &self,
-        Parameters(p): Parameters<tools::BuildIndexParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let full = p.full;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
+        let index = self.index().await;
         spawn_handler!(index, move |rt| handlers::core::build_index(rt, full))
     }
 
-    #[tool(name = "index_status", description = "Get index statistics")]
-    async fn tool_index_status(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::index_status)
-    }
+    // ── 3. search ────────────────────────────────────────────────────
 
     #[tool(
         name = "search",
-        description = "Search code with a context envelope. Accepts optional intent: fix, refactor, trace, locate, explain"
+        description = "Search code by hybrid vector+FTS+grep fusion (default) or symbol name lookup"
     )]
     async fn tool_search(
         &self,
-        Parameters(p): Parameters<tools::SearchParams>,
+        Parameters(p): Parameters<crate::tools::SearchParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let intent = parse_intent_opt(p.intent.as_deref());
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
         let query = p.query;
         let top_k = p.top_k;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::core::search(
-            rt, &query, top_k, intent
-        ))
-    }
-
-    #[tool(name = "find_symbol", description = "Find symbols by name")]
-    async fn tool_find_symbol(
-        &self,
-        Parameters(p): Parameters<tools::FindSymbolParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let name = p.name;
+        let mode = p.mode;
         let exact = p.exact;
-        let top_k = p.top_k;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::core::find_symbol(
-            rt, &name, exact, top_k
-        ))
-    }
-
-    #[tool(name = "list_files", description = "List all indexed files")]
-    async fn tool_list_files(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::list_files)
-    }
-
-    #[tool(name = "file_symbols", description = "List symbols in a specific file")]
-    async fn tool_file_symbols(
-        &self,
-        Parameters(p): Parameters<tools::FileSymbolsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let file_path = p.file_path;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::core::file_symbols(
-            rt, &file_path
-        ))
-    }
-
-    #[tool(name = "callers", description = "Find callers of a symbol")]
-    async fn tool_callers(
-        &self,
-        Parameters(p): Parameters<tools::CallersCalleesParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let symbol = p.symbol;
-        let limit = p.limit;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::core::callers(rt, &symbol, limit))
-    }
-
-    #[tool(name = "callees", description = "Find callees of a symbol")]
-    async fn tool_callees(
-        &self,
-        Parameters(p): Parameters<tools::CallersCalleesParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let symbol = p.symbol;
-        let limit = p.limit;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::core::callees(rt, &symbol, limit))
-    }
-
-    #[tool(
-        name = "analyze_impact",
-        description = "Impact analysis from changed files or git diff"
-    )]
-    async fn tool_analyze_impact(
-        &self,
-        Parameters(p): Parameters<tools::ImpactParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let files = p.files;
-        let base_branch = p.base_branch;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::core::analyze_impact(rt, &files, base_branch.as_deref())
-        })
-    }
-
-    #[tool(
-        name = "summarize_file",
-        description = "Get a summary of a single file"
-    )]
-    async fn tool_summarize_file(
-        &self,
-        Parameters(p): Parameters<tools::SummarizeFileParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let file_path = p.file_path;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::core::summarize_file(
-            rt, &file_path
-        ))
-    }
-
-    #[tool(
-        name = "search_in_context",
-        description = "Search code with context envelope, accepting explicit intent"
-    )]
-    async fn tool_search_in_context(
-        &self,
-        Parameters(p): Parameters<tools::SearchParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let intent = parse_intent_opt(p.intent.as_deref());
-        let query = p.query;
-        let top_k = p.top_k;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::context::search_in_context(
-            rt, &query, top_k, intent
-        ))
+        match mode.as_str() {
+            "symbol" => {
+                spawn_handler!(index, move |rt| handlers::core::find_symbol(
+                    rt, &query, exact, top_k, false
+                ))
+            }
+            _ => {
+                spawn_handler!(index, move |rt| handlers::context::search_in_context(
+                    rt, &query, top_k, intent
+                ))
+            }
+        }
     }
 
-    #[tool(
-        name = "explore_symbols",
-        description = "Batch explore symbols: returns source code, callers, callees, and semantic relations in one call"
-    )]
-    async fn tool_explore_symbols(
-        &self,
-        Parameters(p): Parameters<tools::ExploreSymbolsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let project_path = p.project_path.clone();
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::explore_symbols(
-                rt,
-                &p.symbols,
-                p.max_callers,
-                p.max_callees,
-                p.include_source,
-                p.include_relations,
-            )
-        })
-    }
+    // ── 4. context ───────────────────────────────────────────────────
 
     #[tool(
-        name = "get_symbol_source",
-        description = "Read exact symbol source by name or qualified name with line numbers and ambiguity candidates"
+        name = "context",
+        description = "Build complete context for a task: extracts relevant symbols, relationships, and source in one call"
     )]
-    async fn tool_get_symbol_source(
+    async fn tool_context(
         &self,
-        Parameters(p): Parameters<tools::GetSymbolSourceParams>,
+        Parameters(p): Parameters<crate::tools::ContextParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let symbol = p.symbol;
-        let exact = p.exact;
-        let include_line_numbers = p.include_line_numbers;
-        let max_chars = p.max_chars;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::get_symbol_source(
-                rt,
-                &symbol,
-                exact,
-                include_line_numbers,
-                max_chars,
-            )
-        })
-    }
-
-    #[tool(
-        name = "graph_schema",
-        description = "Show available node kinds, edge types, and their counts in the index. Use before writing Cypher queries."
-    )]
-    async fn tool_graph_schema(
-        &self,
-        Parameters(p): Parameters<tools::GraphSchemaParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, handlers::core::graph_schema)
-    }
-
-    #[tool(
-        name = "ingest_trace",
-        description = "Ingest runtime HTTP trace data to confirm or discover API call edges. Accepts observed HTTP requests and matches them against statically-detected route handlers."
-    )]
-    async fn tool_ingest_trace(
-        &self,
-        Parameters(p): Parameters<tools::IngestTraceParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let observations: Vec<cc_model::TraceObservation> = p
-            .traces
-            .iter()
-            .map(|t| cc_model::TraceObservation {
-                method: t.method.clone(),
-                path: t.path.clone(),
-                source_service: t.source_service.clone(),
-                target_service: t.target_service.clone(),
-                status_code: t.status_code,
-                duration_ms: t.duration_ms,
-                timestamp: None,
-            })
-            .collect();
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::core::ingest_trace(rt, &observations)
-        })
-    }
-
-    // ── context ───────────────────────────────────────────────
-
-    #[tool(
-        name = "prepare_edit_region",
-        description = "Read a code region with surrounding symbol context"
-    )]
-    async fn tool_prepare_edit_region(
-        &self,
-        Parameters(p): Parameters<tools::EditRegionParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let file_path = p.file_path;
-        let start_line = p.start_line;
-        let end_line = p.end_line;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::prepare_edit_region(rt, &file_path, start_line, end_line)
-        })
-    }
-
-    #[tool(
-        name = "expand_code_region",
-        description = "Expand a code region by context lines"
-    )]
-    async fn tool_expand_code_region(
-        &self,
-        Parameters(p): Parameters<tools::ExpandRegionParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let file_path = p.file_path;
-        let start_line = p.start_line;
-        let end_line = p.end_line;
-        let context_lines = p.context_lines;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::expand_code_region(
-                rt,
-                &file_path,
-                start_line,
-                end_line,
-                context_lines,
-            )
-        })
-    }
-
-    #[tool(
-        name = "task_symbols",
-        description = "Build context from a natural language task description — extracts relevant symbols and their relationships"
-    )]
-    async fn tool_task_symbols(
-        &self,
-        Parameters(p): Parameters<tools::TaskSymbolsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
         let task = p.task;
         let max_symbols = p.max_symbols;
-        let expand_depth = p.expand_depth;
+        let include_source = p.include_source;
         let intent = p.intent;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::context::task_symbols(rt, &task, max_symbols, expand_depth, intent.as_deref())
-        })
+        spawn_handler!(index, move |rt| handlers::facade::handle_context(
+            rt,
+            &task,
+            max_symbols,
+            include_source,
+            intent.as_deref(),
+        ))
     }
 
-    // ── graph ─────────────────────────────────────────────────
+    // ── 5. node ──────────────────────────────────────────────────────
 
     #[tool(
-        name = "graph_query",
-        description = "Execute a graph query (Cypher subset)"
+        name = "node",
+        description = "Inspect a single symbol: source code, callers+callees trail, outline, or file summary"
     )]
-    async fn tool_graph_query(
+    async fn tool_node(
         &self,
-        Parameters(p): Parameters<tools::GraphQueryParams>,
+        Parameters(p): Parameters<crate::tools::NodeParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let query = p.query;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::graph_query(rt, &query))
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let symbol = p.symbol;
+        let include = p.include;
+        spawn_handler!(index, move |rt| handlers::facade::handle_node(
+            rt, &symbol, &include
+        ))
     }
 
+    // ── 6. explore ───────────────────────────────────────────────────
+
     #[tool(
-        name = "trace_path",
-        description = "Trace call path between two symbols"
+        name = "explore",
+        description = "Batch explore multiple symbols with source, relations, and flow paths"
     )]
-    async fn tool_trace_path(
+    async fn tool_explore(
         &self,
-        Parameters(p): Parameters<tools::TracePathParams>,
+        Parameters(p): Parameters<crate::tools::ExploreParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let symbols = p.symbols;
+        let mode = p.mode;
+        let include_source = p.include_source;
+        let outline = p.outline;
+        let max_depth = p.max_depth;
+        match mode.as_str() {
+            "flow" => {
+                spawn_handler!(index, move |rt| handlers::graph::explore_flow(
+                    rt,
+                    &symbols,
+                    max_depth,
+                    include_source,
+                    None,
+                    None,
+                    None,
+                    None,
+                ))
+            }
+            _ => {
+                spawn_handler!(index, move |rt| handlers::context::explore_symbols(
+                    rt,
+                    &symbols,
+                    None,
+                    None,
+                    include_source,
+                    true,
+                    false,
+                    outline,
+                    None,
+                ))
+            }
+        }
+    }
+
+    // ── 7. trace ─────────────────────────────────────────────────────
+
+    #[tool(
+        name = "trace",
+        description = "Find call-graph path between two symbols. Use source_mode='body' for complete function bodies + outgoing calls in one call."
+    )]
+    async fn tool_trace(
+        &self,
+        Parameters(p): Parameters<crate::tools::TraceParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
         let from = p.from;
         let to = p.to;
         let max_depth = p.max_depth;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
+        let include_source = p.include_source;
+        let source_mode = p.source_mode;
         spawn_handler!(index, move |rt| handlers::graph::trace_path(
-            rt, &from, &to, max_depth
+            rt,
+            &from,
+            &to,
+            max_depth,
+            include_source,
+            None,
+            source_mode.as_deref(),
         ))
     }
 
-    #[tool(name = "symbol_refs", description = "Find references to a symbol")]
-    async fn tool_symbol_refs(
+    // ── 8. relations ─────────────────────────────────────────────────
+
+    #[tool(
+        name = "relations",
+        description = "Symbol relationships: callers, callees, references, or type hierarchy"
+    )]
+    async fn tool_relations(
         &self,
-        Parameters(p): Parameters<tools::SymbolRefsParams>,
+        Parameters(p): Parameters<crate::tools::RelationsParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
         let symbol = p.symbol;
-        let limit = p.limit;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::symbol_refs(
-            rt, &symbol, limit
-        ))
-    }
-
-    #[tool(
-        name = "find_impacted_tests",
-        description = "Find tests impacted by files"
-    )]
-    async fn tool_find_impacted_tests(
-        &self,
-        Parameters(p): Parameters<tools::ImpactedTestsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let files = p.files;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::find_impacted_tests(
-            rt, &files
-        ))
-    }
-
-    #[tool(
-        name = "find_async_consumers",
-        description = "Find consumers of a topic or queue"
-    )]
-    async fn tool_find_async_consumers(
-        &self,
-        Parameters(p): Parameters<tools::FindAsyncConsumersParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let topic = p.topic_or_queue;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::find_async_consumers(
-            rt, &topic
-        ))
-    }
-
-    #[tool(
-        name = "find_service_bindings",
-        description = "Find infrastructure bindings for a service or route"
-    )]
-    async fn tool_find_service_bindings(
-        &self,
-        Parameters(p): Parameters<tools::FindServiceBindingsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let svc = p.service_or_route;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::find_service_bindings(
-            rt, &svc
-        ))
-    }
-
-    #[tool(
-        name = "list_package_boundaries",
-        description = "List cross-package call boundaries"
-    )]
-    async fn tool_list_package_boundaries(
-        &self,
-        Parameters(p): Parameters<tools::ListPackageBoundariesParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let limit = p.limit;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::list_package_boundaries(
-            rt, limit
-        ))
-    }
-
-    #[tool(
-        name = "list_unresolved_refs",
-        description = "List unresolved symbol/call references with resolver candidates"
-    )]
-    async fn tool_list_unresolved_refs(
-        &self,
-        Parameters(p): Parameters<tools::ListUnresolvedRefsParams>,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let limit = p.limit;
-        let file_path = p.file_path;
         let kind = p.kind;
-        let project_path = p.project_path;
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| {
-            handlers::graph::list_unresolved_refs(rt, limit, file_path.as_deref(), kind.as_deref())
-        })
+        let limit = p.limit;
+        let direction = p.direction;
+        spawn_handler!(index, move |rt| handlers::facade::handle_relations(
+            rt, &symbol, &kind, limit, &direction
+        ))
     }
+
+    // ── 9. impact ────────────────────────────────────────────────────
 
     #[tool(
-        name = "get_dependents",
-        description = "Find all files that depend on a given file"
+        name = "impact",
+        description = "Impact analysis: change blast radius, affected tests, dead code, circular deps, or file dependents"
     )]
-    async fn tool_get_dependents(
+    async fn tool_impact(
         &self,
-        args: JsonObject,
+        Parameters(p): Parameters<crate::tools::ImpactParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let p = serde_json::Value::Object(args);
-        let project_path = project_path_from_value(&p);
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::get_dependents(rt, p))
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let scope = p.scope;
+        let files = p.files;
+        let base_branch = p.base_branch;
+        let granularity = p.granularity;
+        let file_path = p.file_path;
+        let limit = p.limit;
+        spawn_handler!(index, move |rt| handlers::facade::handle_impact(
+            rt,
+            &scope,
+            &files,
+            base_branch.as_deref(),
+            &granularity,
+            file_path.as_deref(),
+            limit,
+        ))
     }
 
-    #[tool(name = "find_dead_code", description = "Find unused/dead code symbols")]
-    async fn tool_find_dead_code(
-        &self,
-        args: JsonObject,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let p = serde_json::Value::Object(args);
-        let project_path = project_path_from_value(&p);
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::find_dead_code(rt, p))
-    }
+    // ── 10. architecture ─────────────────────────────────────────────
 
     #[tool(
-        name = "find_references",
-        description = "Find references to a symbol across the codebase"
+        name = "architecture",
+        description = "Project architecture: overview, communities, frameworks, routes, services, async consumers, boundaries, env vars, unresolved refs"
     )]
-    async fn tool_find_references(
+    async fn tool_architecture(
         &self,
-        args: JsonObject,
+        Parameters(p): Parameters<crate::tools::ArchitectureParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let p = serde_json::Value::Object(args);
-        let project_path = project_path_from_value(&p);
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::find_references(rt, p))
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let aspect = p.aspect;
+        let filter = p.filter;
+        let limit = p.limit;
+        spawn_handler!(index, move |rt| handlers::facade::handle_architecture(
+            rt,
+            &aspect,
+            filter.as_deref(),
+            limit,
+        ))
     }
+
+    // ── 11. files ────────────────────────────────────────────────────
 
     #[tool(
-        name = "get_architecture",
-        description = "Get project architecture from the code index"
+        name = "files",
+        description = "File operations: list indexed files, read code region, or expand region with context"
     )]
-    async fn tool_get_architecture(
+    async fn tool_files(
         &self,
-        args: JsonObject,
+        Parameters(p): Parameters<crate::tools::FilesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let p = serde_json::Value::Object(args);
-        let project_path = project_path_from_value(&p);
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::get_architecture(rt, p))
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let action = p.action;
+        let path = p.path;
+        let start_line = p.start_line;
+        let end_line = p.end_line;
+        let context_lines = p.context_lines;
+        spawn_handler!(index, move |rt| handlers::facade::handle_files(
+            rt,
+            &action,
+            path.as_deref(),
+            start_line,
+            end_line,
+            context_lines,
+        ))
     }
 
-    #[tool(name = "find_route_handlers", description = "Find HTTP route handlers")]
-    async fn tool_find_route_handlers(
-        &self,
-        args: JsonObject,
-    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        let p = serde_json::Value::Object(args);
-        let project_path = project_path_from_value(&p);
-        let index = self.index_for_project_path(project_path.as_deref()).await?;
-        spawn_handler!(index, move |rt| handlers::graph::find_route_handlers(rt, p))
-    }
+    // ── 12. graph_query ──────────────────────────────────────────────
 
     #[tool(
-        name = "list_communities",
-        description = "List detected code communities"
+        name = "graph_query",
+        description = "Execute a Cypher subset query against the code graph. Use status(aspect='schema') to discover available types first."
     )]
-    async fn tool_list_communities(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::list_communities)
+    async fn tool_graph_query(
+        &self,
+        Parameters(p): Parameters<crate::tools::GraphQueryParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let query = p.query;
+        spawn_handler!(index, move |rt| handlers::graph::graph_query(rt, &query))
     }
 
-    #[tool(name = "list_frameworks", description = "List detected frameworks")]
-    async fn tool_list_frameworks(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::list_frameworks)
-    }
+    // ── 13. ingest_traces ───────────────────────────────────────────
 
     #[tool(
-        name = "index_capabilities",
-        description = "Report available index capabilities"
+        name = "ingest_traces",
+        description = "Ingest runtime trace observations (OTLP spans) to validate HTTP/async call edges and boost their confidence"
     )]
-    async fn tool_index_capabilities(&self) -> Result<Json<JsonResult>, rmcp::ErrorData> {
-        spawn_handler!(self.index().await, handlers::core::index_capabilities)
+    async fn tool_ingest_traces(
+        &self,
+        Parameters(p): Parameters<crate::tools::IngestTracesParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let traces = p.traces;
+        spawn_handler!(index, move |rt| handlers::facade::handle_ingest_traces(
+            rt, &traces
+        ))
+    }
+
+    // ── 14. adr ─────────────────────────────────────────────────────
+
+    #[tool(
+        name = "adr",
+        description = "Manage Architecture Decision Records: list, get, store, or delete architectural decisions persisted in the index"
+    )]
+    async fn tool_adr(
+        &self,
+        Parameters(p): Parameters<crate::tools::AdrParams>,
+    ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+        let mut p = p;
+        p.sanitize();
+        let index = self.index_for_project_path(p.project_path.as_deref()).await?;
+        let action = p.action;
+        let adr_id = p.adr_id;
+        let title = p.title;
+        let status = p.status;
+        let context = p.context;
+        let decision = p.decision;
+        spawn_handler!(index, move |rt| handlers::facade::handle_adr(
+            rt,
+            &action,
+            adr_id.as_deref(),
+            title.as_deref(),
+            status.as_deref(),
+            context.as_deref(),
+            decision.as_deref(),
+        ))
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Server construction and lifecycle
+// ═══════════════════════════════════════════════════════════════════════
 
 impl CodeCortexMcpServer {
     pub fn new(project_path: Option<&std::path::Path>) -> Self {
         let services = ProjectServices::new(project_path).unwrap_or_else(|e| {
             tracing::warn!("failed to initialize project: {}", e);
-            ProjectServices::new(None).expect("empty CodeIndex should not fail")
+            ProjectServices::new(None).unwrap_or_else(|e2| {
+                tracing::error!("fatal: cannot create empty CodeIndex either: {}", e2);
+                ProjectServices {
+                    index: Arc::new(Mutex::new(CodeIndex::empty())),
+                }
+            })
         });
-        let mut initial_cache = HashMap::new();
+        let mut initial_cache = LruCache::new(NonZeroUsize::new(16).unwrap());
         if let Some(path) = project_path {
-            initial_cache.insert(
+            initial_cache.put(
                 normalize_project_path(&path.to_string_lossy()),
                 services.clone(),
             );
         }
         let project = Arc::new(RwLock::new(services));
-        let project_cache = Arc::new(RwLock::new(initial_cache));
-        let active_domains = Arc::new(Mutex::new(tools::default_active_domains()));
+        let project_cache = Arc::new(tokio::sync::Mutex::new(initial_cache));
         let tool_router = Self::tool_router();
         Self {
             project,
             project_cache,
-            active_domains,
             tool_router,
             last_activity: Arc::new(Mutex::new(Instant::now())),
             auto_indexing: Arc::new(AtomicBool::new(false)),
@@ -769,30 +556,65 @@ impl CodeCortexMcpServer {
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// ServerHandler impl
+// ═══════════════════════════════════════════════════════════════════════
+
 impl ServerHandler for CodeCortexMcpServer {
     fn get_info(&self) -> ServerInfo {
         let mut info = ServerInfo::default();
         info.server_info = Implementation::new("codecortex", env!("CARGO_PKG_VERSION"));
         info.instructions = Some(
-            r#"CodeCortex code index server — 35+ tools across 4 domains.
+            r#"CodeCortex — code index server with 14 tools.
 
 ## Quick Start
-set_project(path) → build_index() → search(query)
-Activate "context" or "graph" domains with activate_domain for advanced tools.
+index(path) → search(query) → context(task)
 
-## Recommended Workflows
-- Architecture overview: get_architecture()
-- Locate implementation: search(name) → explore_symbols([name]) or get_symbol_source(symbol)
-- Call chain: callers(sym) / callees(sym) / trace_path(from, to)
-- Impact analysis: analyze_impact(files) → find_impacted_tests(files)
-- Task planning: task_symbols(task="what you want to do")
-- Resolver quality: list_unresolved_refs(limit) shows unresolved refs with candidate targets
+## Tool Selection by Intent
 
-## Tips
-- explore_symbols returns source + callers + callees in one call — prefer over sequential lookups
-- Most parameterized tools accept optional project_path for cross-repository comparisons
-- Edges with synthesized_by field are dynamic dispatch inferences (EventEmitter, etc.)
-- Use find_symbol for exact lookup, search for fuzzy/semantic matching"#
+| Intent                | Primary Tool                           | Secondary                             |
+|-----------------------|----------------------------------------|---------------------------------------|
+| Locate code           | search(query)                          | search(query, mode="symbol")          |
+| Understand code       | context(task)                          | node(symbol)                          |
+| Read source           | node(symbol, include="source")         | node(symbol, include="trail")         |
+| Trace call chain      | trace(from, to, source_mode="body")    | relations(symbol, kind="callers")     |
+| Multi-symbol flow     | explore(symbols)                       | explore(symbols, mode="flow")         |
+| Impact of changes     | impact(scope="changes")                | impact(scope="tests")                 |
+| Architecture          | architecture()                         | architecture(aspect="routes")         |
+| Type hierarchy        | relations(symbol, kind="hierarchy")    |                                       |
+| Env variables         | architecture(aspect="env")             |                                       |
+| Dead code             | impact(scope="dead_code")              |                                       |
+| Validate HTTP edges   | ingest_traces(traces)                  |                                       |
+| Architecture decisions| adr(action="list")                     | adr(action="store", ...)              |
+
+## Common Chains
+
+- **Flow / "how does X reach Y"**: trace(from, to, source_mode="body") FIRST — one call returns the complete path with full function bodies + outgoing calls for each hop. Do NOT reconstruct with search + callers.
+- **Onboarding**: context(task) first. If unclear, explore(symbols) for breadth, then node(symbol) on specifics.
+- **Refactor planning**: search → relations(kind="callers") → impact(scope="changes"). The blast-radius answer comes from impact, not from walking callers manually.
+- **Before editing**: impact(scope="changes") to understand what breaks. impact(scope="tests") to find affected test files.
+- **Record decisions**: adr(action="store", adr_id="ADR-001", title="...", decision="...") to persist architectural decisions across sessions.
+
+## Anti-patterns
+
+- Do NOT grep/find when search() is available — it uses hybrid vector+FTS+grep fusion with ranking.
+- Do NOT chain search + node when you want context — context(task) is one round-trip.
+- Do NOT loop node() over many symbols — one explore(symbols) call returns them all grouped by file.
+- Do NOT use trace(include_source=true) for deep understanding — use trace(source_mode="body") instead for complete function bodies.
+- Do NOT query the index immediately after editing — the watcher needs ~500ms to sync.
+
+## Rules
+
+1. PREFER context(task) as primary entry point — returns symbols, callers/callees, and source in ONE call.
+2. PREFER explore(symbols) over sequential node() calls for multiple symbols.
+3. PREFER search() over grep/find.
+4. Use trace(source_mode="body") for complete flow understanding in one call.
+5. Use node(symbol, include="outline") for large classes to get signatures without full source.
+6. Use status(aspect="schema") to discover node/edge types before writing Cypher queries.
+7. Edges with `synthesized_by` field are inferred dynamic dispatch — not direct source calls.
+8. After file edits, wait for watcher or call index(path) to update.
+9. For refactoring, always run impact(scope="changes") first to understand blast radius.
+10. Treat returned source as already read — do not re-open those files with Read/Grep."#
                 .into(),
         );
         info
@@ -804,22 +626,8 @@ Activate "context" or "graph" domains with activate_domain for advanced tools.
         _context: RequestContext<RoleServer>,
     ) -> impl std::future::Future<Output = Result<ListToolsResult, rmcp::ErrorData>> + Send + '_
     {
-        let active = self
-            .active_domains
-            .lock()
-            .map(|g| g.clone())
-            .unwrap_or_default();
-        let tools_list = self
-            .tool_router
-            .list_all()
-            .into_iter()
-            .filter(|tool| {
-                let domain = tools::tool_domain(&tool.name);
-                domain == tools::DOMAIN_META || active.contains(domain)
-            })
-            .collect();
         std::future::ready(Ok(ListToolsResult {
-            tools: tools_list,
+            tools: self.tool_router.list_all(),
             ..Default::default()
         }))
     }
@@ -831,20 +639,7 @@ Activate "context" or "graph" domains with activate_domain for advanced tools.
     ) -> impl std::future::Future<Output = Result<CallToolResult, rmcp::ErrorData>> + Send + '_
     {
         self.touch_activity();
-        let active = self
-            .active_domains
-            .lock()
-            .map(|g| g.clone())
-            .unwrap_or_default();
-        let tool_name = request.name.to_string();
         async move {
-            let domain = tools::tool_domain(&tool_name);
-            if domain != tools::DOMAIN_META && !active.contains(domain) {
-                return Err(rmcp::ErrorData::invalid_request(
-                    format!("tool domain '{}' is inactive for '{}'", domain, tool_name),
-                    None,
-                ));
-            }
             {
                 let index = self.project.read().await.index.clone();
                 let mut rt = index
@@ -861,6 +656,10 @@ Activate "context" or "graph" domains with activate_domain for advanced tools.
         }
     }
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Server entry point and infrastructure
+// ═══════════════════════════════════════════════════════════════════════
 
 pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_model::CcResult<()> {
     let server = CodeCortexMcpServer::new(project_path.as_deref());
@@ -906,6 +705,36 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
             }
         }
     });
+
+    // PPID watchdog: detect parent process death to prevent zombie MCP servers
+    {
+        let ppid_poll_ms: u64 = std::env::var("CODECORTEX_PPID_POLL_MS")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(5000);
+
+        if ppid_poll_ms > 0 {
+            #[cfg(unix)]
+            {
+                let initial_ppid = std::os::unix::process::parent_id();
+                tokio::spawn(async move {
+                    let interval = tokio::time::Duration::from_millis(ppid_poll_ms);
+                    loop {
+                        tokio::time::sleep(interval).await;
+                        let current_ppid = std::os::unix::process::parent_id();
+                        if current_ppid != initial_ppid || current_ppid == 1 {
+                            tracing::info!(
+                                initial_ppid,
+                                current_ppid,
+                                "parent process died, initiating graceful shutdown"
+                            );
+                            std::process::exit(0);
+                        }
+                    }
+                });
+            }
+        }
+    }
 
     let transport = rmcp::transport::io::stdio();
     let service = rmcp::serve_server(server, transport)

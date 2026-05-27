@@ -50,13 +50,14 @@ pub enum Role {
     EditTarget,
     RiskRegion,
     WorkingSet,
+    DocContext,
 }
 
 impl Role {
     /// Map role to budget bucket name.
     pub fn bucket(&self) -> &'static str {
         match self {
-            Self::DirtyBuffer | Self::Primary | Self::EditTarget => "primary",
+            Self::DirtyBuffer | Self::Primary | Self::EditTarget | Self::DocContext => "primary",
             Self::Neighbor => "neighbors",
             Self::Import
             | Self::ReverseImport
@@ -99,6 +100,7 @@ impl Role {
             Self::RiskRegion,
             Self::WhyIncluded,
             Self::WorkingSet,
+            Self::DocContext,
         ]
     }
 }

@@ -273,6 +273,12 @@ impl SearchEngine {
                 }
             }
 
+            // Doc file boost (+0.08 for README/DESIGN/CHANGELOG/docs/)
+            if is_project_doc(&fp) {
+                rerank += 0.08;
+                reasons.push("doc-file".into());
+            }
+
             // Working-set / recent / pinned / overlay boosts
             if boost_set.contains(fp.as_str()) {
                 rerank += 0.22;
@@ -1880,6 +1886,41 @@ fn parse_language_name(value: &str) -> Language {
     Language::from_name(value)
 }
 
+/// Return true if the file path looks like a project documentation file.
+///
+/// Public so other crates can reuse the heuristic (e.g. for role tagging).
+///
+/// Matches: README.md, DESIGN.md, CHANGELOG.md, CONTRIBUTING.md, docs/*.md,
+/// and similar top-level or docs-directory markdown files commonly used for
+/// project documentation.
+pub fn is_project_doc(file_path: &str) -> bool {
+    let lower = file_path.to_lowercase();
+    if !lower.ends_with(".md") {
+        return false;
+    }
+    // Top-level doc files (no directory separator or single-level path)
+    let segments: Vec<&str> = file_path.split('/').collect();
+    if segments.len() <= 2 {
+        let name = segments.last().unwrap_or(&"").to_uppercase();
+        if matches!(
+            name.trim_end_matches(".MD").trim_end_matches(".md"),
+            "README" | "DESIGN" | "ARCHITECTURE" | "CHANGELOG"
+                | "CONTRIBUTING" | "LICENSE" | "ADR" | "DECISIONS"
+        ) {
+            return true;
+        }
+    }
+    // Files under docs/ or doc/ directory
+    if lower.starts_with("docs/") || lower.starts_with("doc/") {
+        return true;
+    }
+    // ADR directory pattern
+    if lower.contains("/adr/") || lower.contains("/adrs/") {
+        return true;
+    }
+    false
+}
+
 fn passes_filters(file_path: &str, language: Language, request: &SearchRequest) -> bool {
     if let Some(prefix) = &request.path_prefix {
         if !file_path.starts_with(prefix) {
@@ -2054,5 +2095,41 @@ mod tests {
         let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].0, "c3");
+    }
+
+    #[test]
+    fn test_is_project_doc_top_level_files() {
+        assert!(is_project_doc("README.md"));
+        assert!(is_project_doc("DESIGN.md"));
+        assert!(is_project_doc("CHANGELOG.md"));
+        assert!(is_project_doc("CONTRIBUTING.md"));
+        assert!(is_project_doc("ARCHITECTURE.md"));
+        // Case-insensitive file name matching
+        assert!(is_project_doc("readme.md"));
+        assert!(is_project_doc("Readme.md"));
+    }
+
+    #[test]
+    fn test_is_project_doc_docs_directory() {
+        assert!(is_project_doc("docs/getting-started.md"));
+        assert!(is_project_doc("docs/adr/0001-use-sqlite.md"));
+        assert!(is_project_doc("doc/api.md"));
+    }
+
+    #[test]
+    fn test_is_project_doc_adr_directory() {
+        assert!(is_project_doc("architecture/adr/0002-rrf-fusion.md"));
+        assert!(is_project_doc("decisions/adrs/0003-embedding.md"));
+    }
+
+    #[test]
+    fn test_is_project_doc_non_doc_files() {
+        assert!(!is_project_doc("src/main.rs"));
+        assert!(!is_project_doc("src/lib.rs"));
+        assert!(!is_project_doc("tests/test_main.rs"));
+        // Non-doc markdown in src
+        assert!(!is_project_doc("src/deep/nested/notes.md"));
+        // Non-md files
+        assert!(!is_project_doc("README.txt"));
     }
 }

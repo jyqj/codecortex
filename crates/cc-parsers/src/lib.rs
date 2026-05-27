@@ -36,6 +36,9 @@ pub struct ParserRegistry {
     spec_ruby: SpecDrivenParser,
     spec_swift: SpecDrivenParser,
     spec_kotlin: SpecDrivenParser,
+    spec_dart: SpecDrivenParser,
+    spec_scala: SpecDrivenParser,
+    spec_lua: SpecDrivenParser,
 }
 
 impl ParserRegistry {
@@ -55,6 +58,9 @@ impl ParserRegistry {
             spec_ruby: SpecDrivenParser::new(&lang_spec::RUBY_SPEC),
             spec_swift: SpecDrivenParser::new(&lang_spec::SWIFT_SPEC),
             spec_kotlin: SpecDrivenParser::new(&lang_spec::KOTLIN_SPEC),
+            spec_dart: SpecDrivenParser::new(&lang_spec::DART_SPEC),
+            spec_scala: SpecDrivenParser::new(&lang_spec::SCALA_SPEC),
+            spec_lua: SpecDrivenParser::new(&lang_spec::LUA_SPEC),
         }
     }
 
@@ -139,6 +145,22 @@ impl ParserRegistry {
                 self.spec_kotlin
                     .parse_with_timeout(file_path, content, language, timeout_micros)
             }
+            Language::Dart => {
+                self.spec_dart
+                    .parse_with_timeout(file_path, content, language, timeout_micros)
+            }
+            Language::Scala => {
+                self.spec_scala
+                    .parse_with_timeout(file_path, content, language, timeout_micros)
+            }
+            Language::Lua => {
+                self.spec_lua
+                    .parse_with_timeout(file_path, content, language, timeout_micros)
+            }
+            // SQL, YAML, TOML, Dockerfile — use generic line-based chunking.
+            Language::Sql | Language::Yaml | Language::Toml | Language::Dockerfile => self
+                .generic
+                .parse_with_timeout(file_path, content, language, timeout_micros),
             // Generic fallback for everything else.
             _ => self
                 .generic
@@ -153,8 +175,17 @@ impl Default for ParserRegistry {
     }
 }
 
-/// Detect language from file extension.
+/// Detect language from file extension or filename.
 pub fn detect_language(path: &str) -> Language {
+    // Check filename-based detection first (for files like Dockerfile).
+    let file_name = path.rsplit('/').next().unwrap_or(path);
+    if file_name == "Dockerfile"
+        || file_name.starts_with("Dockerfile.")
+        || file_name == "dockerfile"
+    {
+        return Language::Dockerfile;
+    }
+
     let ext = path.rsplit('.').next().unwrap_or("");
     Language::from_extension(ext)
 }

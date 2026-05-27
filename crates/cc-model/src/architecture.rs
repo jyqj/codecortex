@@ -10,6 +10,8 @@ pub struct ArchitectureInfo {
     pub hotspots: Vec<HotspotInfo>,
     pub boundaries: Vec<BoundaryInfo>,
     pub communities: Vec<CommunityInfo>,
+    pub layers: Vec<LayerInfo>,
+    pub adr_documents: Vec<AdrDocInfo>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -111,6 +113,36 @@ impl ArchitectureInfo {
             }
         }
 
+        if !self.layers.is_empty() {
+            lines.push("\n## Architecture Layers".to_string());
+            for l in &self.layers {
+                lines.push(format!("- {} [{}]: {}", l.package, l.layer, l.reason));
+            }
+        }
+
+        if !self.adr_documents.is_empty() {
+            lines.push("\n## Architecture Decision Records".to_string());
+            for adr in &self.adr_documents {
+                let status = adr.status.as_deref().unwrap_or("unknown");
+                lines.push(format!("- [{}] {} ({})", status, adr.title, adr.file));
+            }
+        }
+
         lines.join("\n")
     }
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct LayerInfo {
+    pub package: String,
+    pub layer: String,
+    pub reason: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AdrDocInfo {
+    pub file: String,
+    pub title: String,
+    pub status: Option<String>,
+    pub date: Option<String>,
 }

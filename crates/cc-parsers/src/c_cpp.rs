@@ -3,13 +3,20 @@
 use crate::chunker::Chunker;
 use crate::traits::FileParser;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, ImportRecord, ResolutionKind, SemanticEdgeRecord,
-    SemanticRelation,
+    CallEdgeRecord, DataFlowEdgeRecord, DispatchKind, ImportRecord, ResolutionKind,
+    SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
+use std::sync::LazyLock;
+
+/// Matches `getenv("KEY")` and `std::getenv("KEY")` in C/C++ code.
+static C_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?:std::)?getenv\(\s*"(\w+)"\s*\)"#).expect("c env access regex")
+});
 
 static C_KEYWORDS: &[&str] = &[
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else",
@@ -1075,6 +1082,49 @@ impl CCppParser {
         }
     }
 
+    // =========================================================================
+    // Environment variable access extraction
+    // =========================================================================
+
+    /// Extract environment variable accesses from C/C++ code.
+    ///
+    /// Matches `getenv("KEY")` and `std::getenv("KEY")`.
+    fn extract_env_accesses(
+        &self,
+        content: &str,
+        symbols: &[SymbolRecord],
+        file_path: &str,
+    ) -> Vec<DataFlowEdgeRecord> {
+        let mut edges = Vec::new();
+
+        for cap in C_ENV_ACCESS_RE.captures_iter(content) {
+            let m = cap.get(0).unwrap();
+            let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            let env_key = cap.get(1).map(|m| m.as_str().to_string());
+
+            let source_uid = symbols
+                .iter()
+                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
+                .filter(|s| s.start_line <= line && s.end_line >= line)
+                .min_by_key(|s| s.end_line - s.start_line)
+                .and_then(|s| s.symbol_uid.clone());
+
+            edges.push(DataFlowEdgeRecord {
+                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
+                file_path: file_path.to_string(),
+                source_symbol_uid: source_uid,
+                target_symbol_uid: None,
+                flow_kind: "env_access".to_string(),
+                line,
+                confidence: 0.80,
+                parser_tier: ParserTier::Heuristic,
+                env_key,
+            });
+        }
+
+        edges
+    }
+
     /// Check if a file path looks like a test file.
     fn is_test_file(file_path: &str) -> bool {
         let lower = file_path.to_lowercase();
@@ -1135,6 +1185,7 @@ impl FileParser for CCppParser {
             self.extract_calls(&tree, content.as_bytes(), file_path, &symbols);
         let semantic_edges =
             self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
+        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1160,6 +1211,7 @@ impl FileParser for CCppParser {
             symbol_refs,
             call_edges,
             semantic_edges,
+            data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,

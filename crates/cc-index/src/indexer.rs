@@ -433,7 +433,9 @@ impl Indexer {
         // flow through Phase 4c resolution and collect_route_nodes.
         // Build ProjectFrameworkContext from package markers + write_unit imports
         // (DB has not been written yet, so we cannot query it).
-        {
+        //
+        // fw_context is declared at this scope so Phase 4d can reuse it.
+        let fw_context = {
             let pkg_markers = framework_registry::check_package_markers(project_path);
             // Also scan write_unit imports for framework signals
             let mut repo_fws: HashMap<String, f64> = HashMap::new();
@@ -514,19 +516,19 @@ impl Indexer {
                 }
             }
 
-            let fw_context = crate::framework_resolvers::ProjectFrameworkContext {
+            let ctx = crate::framework_resolvers::ProjectFrameworkContext {
                 repo_frameworks: repo_fws.iter().map(|(k, v)| (k.clone(), *v)).collect(),
                 file_frameworks: file_fw_map,
             };
 
             let registry = crate::framework_resolvers::default_registry();
             let go_router_keys = ["gin", "echo", "fiber", "chi", "gorilla", "net_http"];
-            let has_go_router = fw_context
+            let has_go_router = ctx
                 .repo_frameworks
                 .iter()
                 .any(|(k, _)| go_router_keys.contains(&k.as_str()));
 
-            let active = registry.active_resolvers(&fw_context);
+            let active = registry.active_resolvers(&ctx);
             if !active.is_empty() || has_go_router {
                 let keys: Vec<&str> = active.iter().map(|r| r.framework_key()).collect();
                 tracing::info!(resolvers = ?keys, has_go_router, "pre-resolve framework enrichment active");
@@ -539,7 +541,7 @@ impl Indexer {
                             .iter()
                             .filter(|r| {
                                 r.languages().contains(&lang)
-                                    && (fw_context.has_framework(r.framework_key())
+                                    && (ctx.has_framework(r.framework_key())
                                         || (r.framework_key() == "gin" && has_go_router))
                             })
                             .map(|r| r.as_ref())
@@ -561,7 +563,76 @@ impl Indexer {
                             &source,
                             lang,
                             &mut unit.outcome,
-                            &fw_context,
+                            &ctx,
+                        );
+                    }
+                }
+            }
+
+            ctx
+        };
+
+        // Phase 3.8: Resolve C/C++ includes using compile_commands.json include_dirs
+        {
+            if let Ok(compile_targets) = self.db.infra_nodes_by_kind("compile_target") {
+                let include_map: HashMap<String, Vec<String>> = compile_targets
+                    .iter()
+                    .filter_map(|node| {
+                        let dirs = node
+                            .properties
+                            .get("include_dirs")?
+                            .as_array()?
+                            .iter()
+                            .filter_map(|v| v.as_str().map(String::from))
+                            .collect::<Vec<_>>();
+                        if dirs.is_empty() {
+                            return None;
+                        }
+                        Some((node.name.clone(), dirs))
+                    })
+                    .collect();
+
+                if !include_map.is_empty() {
+                    let mut resolved_count = 0usize;
+                    for unit in &mut write_units {
+                        if !matches!(
+                            unit.language,
+                            cc_model::Language::C | cc_model::Language::Cpp
+                        ) {
+                            continue;
+                        }
+                        let dirs = match include_map.get(&unit.rel_path) {
+                            Some(d) => d,
+                            None => continue,
+                        };
+                        for imp in &mut unit.outcome.imports {
+                            if imp.resolved_path.is_some() {
+                                continue;
+                            }
+                            if imp.is_namespace {
+                                continue;
+                            }
+                            for dir in dirs {
+                                let candidate =
+                                    project_path.join(dir).join(&imp.import_string);
+                                if candidate.exists() {
+                                    imp.resolved_path = Some(
+                                        candidate
+                                            .strip_prefix(project_path)
+                                            .unwrap_or(&candidate)
+                                            .to_string_lossy()
+                                            .to_string(),
+                                    );
+                                    resolved_count += 1;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    if resolved_count > 0 {
+                        tracing::info!(
+                            resolved_count,
+                            "resolved C/C++ includes via compile_commands.json"
                         );
                     }
                 }
@@ -668,6 +739,36 @@ impl Indexer {
             for (unit, context) in write_units.iter_mut().zip(resolution_contexts.iter()) {
                 let file_path = unit.rel_path.clone();
                 catalog.resolve_outcome_with_context(&file_path, &mut unit.outcome, context);
+            }
+        }
+
+        // Phase 4d: Cross-file framework resolution (post-catalog)
+        // Now that the SymbolCatalog is fully built, resolvers can look up
+        // handler symbols across files (e.g. Express sub-router mounting,
+        // FastAPI include_router prefixes, NestJS handler UID binding).
+        {
+            let registry = crate::framework_resolvers::default_registry();
+            let active = registry.active_resolvers(&fw_context);
+            if !active.is_empty() {
+                let mut owned_pairs: Vec<(String, ParseOutcome)> = write_units
+                    .iter()
+                    .map(|u| (u.rel_path.clone(), u.outcome.clone()))
+                    .collect();
+                for resolver in &active {
+                    resolver.resolve_cross_file(&catalog, &mut owned_pairs, &fw_context);
+                }
+                // Merge back any changes from cross-file resolution
+                for (i, (_, outcome)) in owned_pairs.into_iter().enumerate() {
+                    if i < write_units.len() {
+                        let unit = &mut write_units[i];
+                        if outcome.route_edges.len() > unit.outcome.route_edges.len() {
+                            unit.outcome.route_edges = outcome.route_edges;
+                        }
+                        if outcome.call_edges.len() > unit.outcome.call_edges.len() {
+                            unit.outcome.call_edges = outcome.call_edges;
+                        }
+                    }
+                }
             }
         }
 
@@ -799,7 +900,7 @@ impl Indexer {
                     self.event_denylist.iter().cloned().collect()
                 },
             };
-            let stats = crate::dispatch_synthesis::run_event_emitter_synthesis(
+            let mut stats = crate::dispatch_synthesis::run_event_emitter_synthesis(
                 &self.db,
                 &synthesis_config,
             )?;
@@ -814,12 +915,14 @@ impl Indexer {
 
             // Phase 7c: JSX component synthesis
             let jsx_count = crate::dispatch_synthesis::run_jsx_synthesis(&self.db)?;
+            stats.jsx_edges = jsx_count;
             if jsx_count > 0 {
                 tracing::info!(edges = jsx_count, "JSX component synthesis complete");
             }
 
             // Phase 7d: State setter synthesis
             let setter_count = crate::dispatch_synthesis::run_state_setter_synthesis(&self.db)?;
+            stats.setter_edges = setter_count;
             if setter_count > 0 {
                 tracing::info!(edges = setter_count, "state setter synthesis complete");
             }
@@ -829,6 +932,7 @@ impl Indexer {
                 &self.db,
                 &synthesis_config,
             )?;
+            stats.field_observer_edges = observer_count;
             if observer_count > 0 {
                 tracing::info!(edges = observer_count, "field observer synthesis complete");
             }
@@ -836,8 +940,26 @@ impl Indexer {
             // Phase 7f: React re-render chain synthesis
             let rerender_count =
                 crate::dispatch_synthesis::run_react_rerender_chain_synthesis(&self.db)?;
+            stats.react_rerender_edges = rerender_count;
             if rerender_count > 0 {
                 tracing::info!(edges = rerender_count, "React re-render chain synthesis complete");
+            }
+
+            // Phase 7g: Vue template synthesis (child components + event handlers)
+            let vue_count =
+                crate::dispatch_synthesis::run_vue_template_synthesis(&self.db)?;
+            if vue_count > 0 {
+                tracing::info!(edges = vue_count, "Vue template synthesis complete");
+            }
+
+            // Phase 7h: Interface/abstract method dispatch synthesis
+            let interface_count =
+                crate::dispatch_synthesis::run_interface_dispatch_synthesis(
+                    &self.db,
+                    &synthesis_config,
+                )?;
+            if interface_count > 0 {
+                tracing::info!(edges = interface_count, "Interface dispatch synthesis complete");
             }
         } else {
             // If synthesis was enabled in a previous run and is disabled now,
@@ -849,11 +971,17 @@ impl Indexer {
             let removed_jsx = self.db.delete_synthetic_semantic_edges("synth:jsx:")?;
             let removed_observer = self.db.delete_synthetic_call_edges("field_observer")?;
             let removed_rerender = self.db.delete_synthetic_call_edges("react_rerender")?;
+            let removed_vue_semantic = self.db.delete_synthetic_semantic_edges("synth:vue:")?;
+            let removed_vue_handler = self.db.delete_synthetic_call_edges("vue_event_handler")?;
+            let removed_interface = self.db.delete_synthetic_call_edges("interface_dispatch")?;
             if removed_event > 0
                 || removed_setter > 0
                 || removed_jsx > 0
                 || removed_observer > 0
                 || removed_rerender > 0
+                || removed_vue_semantic > 0
+                || removed_vue_handler > 0
+                || removed_interface > 0
             {
                 tracing::info!(
                     event_edges = removed_event,
@@ -861,6 +989,9 @@ impl Indexer {
                     jsx_edges = removed_jsx,
                     observer_edges = removed_observer,
                     rerender_edges = removed_rerender,
+                    vue_semantic_edges = removed_vue_semantic,
+                    vue_handler_edges = removed_vue_handler,
+                    interface_edges = removed_interface,
                     "dispatch synthesis disabled; removed stale synthetic edges"
                 );
             }
@@ -917,6 +1048,82 @@ impl Indexer {
                 count = unresolved_count,
                 "rebuilt unresolved reference backlog"
             );
+        }
+
+        // Phase 11: Architecture Decision Records (ADR) indexing
+        {
+            let adr_dirs = [
+                "docs/adr",
+                "docs/decisions",
+                "doc/architecture/decisions",
+                "doc/adr",
+            ];
+            let mut adr_docs = Vec::new();
+
+            for dir in &adr_dirs {
+                let adr_path = project_path.join(dir);
+                if adr_path.is_dir() {
+                    if let Ok(entries) = std::fs::read_dir(&adr_path) {
+                        for entry in entries.flatten() {
+                            let path = entry.path();
+                            if path.extension().map_or(false, |e| e == "md") {
+                                if let Ok(content) = std::fs::read_to_string(&path) {
+                                    // Extract MADR-format header
+                                    let mut title = None;
+                                    let mut status = None;
+                                    let mut date = None;
+                                    for line in content.lines().take(20) {
+                                        if title.is_none() && line.starts_with("# ") {
+                                            title = Some(
+                                                line.trim_start_matches("# ").to_string(),
+                                            );
+                                        }
+                                        if line.to_lowercase().starts_with("status:") {
+                                            status = Some(
+                                                line.split(':')
+                                                    .nth(1)
+                                                    .unwrap_or("")
+                                                    .trim()
+                                                    .to_string(),
+                                            );
+                                        }
+                                        if line.to_lowercase().starts_with("date:") {
+                                            date = Some(
+                                                line.split(':')
+                                                    .nth(1)
+                                                    .unwrap_or("")
+                                                    .trim()
+                                                    .to_string(),
+                                            );
+                                        }
+                                    }
+                                    if let Some(t) = title {
+                                        let rel = path
+                                            .strip_prefix(project_path)
+                                            .unwrap_or(&path)
+                                            .to_string_lossy()
+                                            .to_string();
+                                        adr_docs.push(serde_json::json!({
+                                            "file": rel,
+                                            "title": t,
+                                            "status": status,
+                                            "date": date,
+                                        }));
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if !adr_docs.is_empty() {
+                tracing::info!(count = adr_docs.len(), "indexed ADR documents");
+                let _ = self.db.set_metadata(
+                    "adr_documents",
+                    &serde_json::to_string(&adr_docs).unwrap_or_default(),
+                );
+            }
         }
 
         let elapsed = start.elapsed().as_millis() as u64;

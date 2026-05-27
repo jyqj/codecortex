@@ -10,6 +10,8 @@ pub enum DispatchSiteKind {
     JsxTag,
     StateSetterBinding,
     StateSetterCall,
+    VueChildComponent,
+    VueEventHandler,
 }
 
 impl DispatchSiteKind {
@@ -22,6 +24,8 @@ impl DispatchSiteKind {
             Self::JsxTag => "jsx_tag",
             Self::StateSetterBinding => "state_setter_binding",
             Self::StateSetterCall => "state_setter_call",
+            Self::VueChildComponent => "vue_child_component",
+            Self::VueEventHandler => "vue_event_handler",
         }
     }
 
@@ -34,6 +38,8 @@ impl DispatchSiteKind {
             "jsx_tag" => Self::JsxTag,
             "state_setter_binding" => Self::StateSetterBinding,
             "state_setter_call" => Self::StateSetterCall,
+            "vue_child_component" => Self::VueChildComponent,
+            "vue_event_handler" => Self::VueEventHandler,
             _ => Self::EventOn,
         }
     }

@@ -1,4 +1,7 @@
-use crate::types::{EvalCaseReport, EvalDelta, EvalMetrics, EvalReport, EvalSummary};
+use crate::types::{
+    CategorySummary, EvalCaseReport, EvalDelta, EvalMetrics, EvalReport, EvalSummary,
+};
+use std::collections::HashMap;
 
 pub fn generate_markdown(report: &EvalReport) -> String {
     let mut md = String::new();
@@ -24,6 +27,29 @@ pub fn generate_markdown(report: &EvalReport) -> String {
         "| Cost | {:.1}% |\n",
         report.summary.avg_cost_reduction_pct
     ));
+
+    // Per-category breakdown
+    if !report.summary.per_category.is_empty() {
+        md.push_str("\n## Per-Category Results\n\n");
+        md.push_str(
+            "| Category | Cases | Avg Wall Clock Δ | Avg Token Δ | Success Rate |\n",
+        );
+        md.push_str(
+            "|----------|-------|-------------------|-------------|--------------|\n",
+        );
+        let mut cats: Vec<_> = report.summary.per_category.iter().collect();
+        cats.sort_by(|(a, _), (b, _)| a.cmp(b));
+        for (cat, summary) in cats {
+            md.push_str(&format!(
+                "| {} | {} | {:.1}% | {:.1}% | {:.0}% |\n",
+                cat,
+                summary.case_count,
+                summary.avg_wall_clock_reduction_pct,
+                summary.avg_token_reduction_pct,
+                summary.success_rate * 100.0,
+            ));
+        }
+    }
 
     // Per-case details
     md.push_str("\n## Cases\n\n");
@@ -88,6 +114,42 @@ pub fn compute_summary(cases: &[EvalCaseReport]) -> EvalSummary {
         return EvalSummary::default();
     }
     let n = cases.len() as f64;
+
+    // Build per-category breakdown
+    let mut cat_groups: HashMap<String, Vec<&EvalCaseReport>> = HashMap::new();
+    for case in cases {
+        cat_groups
+            .entry(case.category.as_str().to_string())
+            .or_default()
+            .push(case);
+    }
+    let per_category: HashMap<String, CategorySummary> = cat_groups
+        .into_iter()
+        .map(|(cat, group)| {
+            let cnt = group.len() as f64;
+            let avg_wc = group
+                .iter()
+                .map(|c| c.delta.wall_clock_reduction_pct)
+                .sum::<f64>()
+                / cnt;
+            let avg_tok = group
+                .iter()
+                .map(|c| c.delta.token_reduction_pct)
+                .sum::<f64>()
+                / cnt;
+            let successes = group.iter().filter(|c| c.with_cc.success).count() as f64;
+            (
+                cat,
+                CategorySummary {
+                    case_count: group.len(),
+                    avg_wall_clock_reduction_pct: avg_wc,
+                    avg_token_reduction_pct: avg_tok,
+                    success_rate: successes / cnt,
+                },
+            )
+        })
+        .collect();
+
     EvalSummary {
         total_cases: cases.len(),
         avg_wall_clock_reduction_pct: cases
@@ -110,5 +172,6 @@ pub fn compute_summary(cases: &[EvalCaseReport]) -> EvalSummary {
             .map(|c| c.delta.cost_reduction_pct)
             .sum::<f64>()
             / n,
+        per_category,
     }
 }

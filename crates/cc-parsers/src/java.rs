@@ -3,14 +3,16 @@
 use crate::chunker::Chunker;
 use crate::traits::FileParser;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, ImportRecord, ResolutionKind, SemanticEdgeRecord,
-    SemanticRelation,
+    CallEdgeRecord, DataFlowEdgeRecord, DispatchKind, ImportRecord, ResolutionKind,
+    SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use regex::Regex;
 use std::collections::{HashMap, HashSet};
+use std::sync::LazyLock;
 
 static JAVA_KEYWORDS: &[&str] = &[
     "abstract", "assert", "boolean", "break", "byte", "case", "catch", "char", "class", "const",
@@ -21,6 +23,12 @@ static JAVA_KEYWORDS: &[&str] = &[
     "void", "volatile", "while", "true", "false", "null", "var", "yield", "record", "sealed",
     "permits", "String", "Object", "System", "Override",
 ];
+
+/// Matches `System.getenv("KEY")` and `System.getProperty("KEY")`.
+static JAVA_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"System\.getenv\("(\w+)"\)|System\.getProperty\("(\w+)"\)"#)
+        .expect("java env access regex")
+});
 
 pub struct JavaParser {
     language: tree_sitter::Language,
@@ -1532,6 +1540,49 @@ impl JavaParser {
         }
         None
     }
+
+    // =========================================================================
+    // Environment variable access extraction
+    // =========================================================================
+
+    /// Extract environment variable accesses from Java code.
+    ///
+    /// Matches `System.getenv("KEY")` and `System.getProperty("KEY")`.
+    fn extract_env_accesses(
+        &self,
+        content: &str,
+        symbols: &[SymbolRecord],
+        file_path: &str,
+    ) -> Vec<DataFlowEdgeRecord> {
+        let mut edges = Vec::new();
+
+        for cap in JAVA_ENV_ACCESS_RE.captures_iter(content) {
+            let m = cap.get(0).unwrap();
+            let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            let env_key = cap
+                .get(1)
+                .or(cap.get(2))
+                .map(|m| m.as_str().to_string());
+
+            let source_uid = self
+                .find_enclosing_method(symbols, line)
+                .and_then(|s| s.symbol_uid.clone());
+
+            edges.push(DataFlowEdgeRecord {
+                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
+                file_path: file_path.to_string(),
+                source_symbol_uid: source_uid,
+                target_symbol_uid: None,
+                flow_kind: "env_access".to_string(),
+                line,
+                confidence: 0.80,
+                parser_tier: ParserTier::Heuristic,
+                env_key,
+            });
+        }
+
+        edges
+    }
 }
 
 impl Default for JavaParser {
@@ -1582,6 +1633,8 @@ impl FileParser for JavaParser {
             self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
+        let mut data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
+        data_flow_edges.extend(extract_param_return_flow(&call_edges, file_path));
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1608,6 +1661,7 @@ impl FileParser for JavaParser {
             call_edges,
             semantic_edges,
             type_assigns,
+            data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -1622,6 +1676,51 @@ impl FileParser for JavaParser {
     fn tier(&self) -> ParserTier {
         ParserTier::TreeSitter
     }
+}
+
+fn extract_param_return_flow(
+    call_edges: &[CallEdgeRecord],
+    file_path: &str,
+) -> Vec<DataFlowEdgeRecord> {
+    let mut edges = Vec::new();
+    for ce in call_edges {
+        let caller_uid = match &ce.caller_symbol_uid {
+            Some(uid) if !uid.is_empty() => uid,
+            _ => continue,
+        };
+        let callee_uid = match &ce.callee_symbol_uid {
+            Some(uid) if !uid.is_empty() => uid,
+            _ => continue,
+        };
+        if ce.resolution_kind == ResolutionKind::Unresolved {
+            continue;
+        }
+        if ce.arg_count.unwrap_or(0) > 0 {
+            edges.push(DataFlowEdgeRecord {
+                edge_id: cc_model::StableId::edge_id("dfp", file_path, ce.line, ce.start_col),
+                file_path: file_path.to_string(),
+                source_symbol_uid: Some(caller_uid.clone()),
+                target_symbol_uid: Some(callee_uid.clone()),
+                flow_kind: "param_pass".to_string(),
+                line: ce.line,
+                confidence: ce.resolution_confidence * 0.9,
+                parser_tier: ce.parser_tier,
+                env_key: None,
+            });
+        }
+        edges.push(DataFlowEdgeRecord {
+            edge_id: cc_model::StableId::edge_id("dfr", file_path, ce.line, ce.start_col),
+            file_path: file_path.to_string(),
+            source_symbol_uid: Some(callee_uid.clone()),
+            target_symbol_uid: Some(caller_uid.clone()),
+            flow_kind: "return_flow".to_string(),
+            line: ce.line,
+            confidence: ce.resolution_confidence * 0.8,
+            parser_tier: ce.parser_tier,
+            env_key: None,
+        });
+    }
+    edges
 }
 
 #[cfg(test)]
@@ -2030,5 +2129,52 @@ public enum Status {
     fn parser_tier_is_tree_sitter() {
         let p = JavaParser::new();
         assert_eq!(p.tier(), ParserTier::TreeSitter);
+    }
+
+    #[test]
+    fn test_java_env_access_getenv() {
+        let p = JavaParser::new();
+        let code = r#"
+public class Config {
+    public String getDbHost() {
+        return System.getenv("DB_HOST");
+    }
+}
+"#;
+        let outcome = p.parse("Config.java", code, Language::Java).unwrap();
+        assert_eq!(
+            outcome.data_flow_edges.len(),
+            1,
+            "expected 1 data_flow_edge for getenv, got {}",
+            outcome.data_flow_edges.len()
+        );
+        let edge = &outcome.data_flow_edges[0];
+        assert_eq!(edge.flow_kind, "env_access");
+        assert_eq!(edge.env_key.as_deref(), Some("DB_HOST"));
+        assert_eq!(edge.parser_tier, ParserTier::Heuristic);
+        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing method");
+    }
+
+    #[test]
+    fn test_java_env_access_getproperty() {
+        let p = JavaParser::new();
+        let code = r#"
+public class AppConfig {
+    public String getAppName() {
+        return System.getProperty("app_name");
+    }
+}
+"#;
+        let outcome = p.parse("AppConfig.java", code, Language::Java).unwrap();
+        assert_eq!(
+            outcome.data_flow_edges.len(),
+            1,
+            "expected 1 data_flow_edge for getProperty, got {}",
+            outcome.data_flow_edges.len()
+        );
+        let edge = &outcome.data_flow_edges[0];
+        assert_eq!(edge.flow_kind, "env_access");
+        assert_eq!(edge.env_key.as_deref(), Some("app_name"));
+        assert!(edge.source_symbol_uid.is_some(), "should resolve enclosing method");
     }
 }

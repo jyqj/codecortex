@@ -1,6 +1,6 @@
 # CodeCortex — Code Index Engine
 
-> Version: 2.0 | Date: 2026-05-25
+> Version: 2.1 | Date: 2026-05-27
 > Pure code indexing engine. No runtime/session/workflow/memory/skill/knowledge.
 
 ---
@@ -36,15 +36,16 @@ Data types, config, error definitions. Zero external dependencies beyond serde.
 ### cc-db
 SQLite persistence for the code index. Single database: `index.sqlite3`.
 - `IndexDb`: connection pool (r2d2, 4 readers + 1 writer), WAL mode
-- 25 tables: files, chunks, symbols, imports, call_edges, test_edges, route_edges, route_nodes, infra_nodes, infra_edges, etc.
+- 26 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts, call_edges, test_edges, route_edges, route_nodes, diagnostics, literal_index, scopes, communities, repo_frameworks, file_frameworks, data_flow_edges, co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges, dispatch_sites, runtime_evidence, adr, metadata
 - FTS5 full-text search on chunks, diagnostics, literals, files
-- Schema versioning via `user_version` pragma (rebuild on mismatch)
+- Schema versioning via `user_version` pragma (v14, incremental migration support)
 
 ### cc-parsers
-Tree-sitter AST extraction for 9 language families.
-- Python, JavaScript, TypeScript/TSX/JSX, Java, Go, Rust, Markdown
-- Extracts: symbols, call edges, imports, test edges, route edges
-- Confidence tiers: Generic (0.3), Heuristic (0.5), TreeSitter (0.7)
+Tree-sitter AST extraction for 32 language identifiers (9 with full tree-sitter, rest via generic/heuristic).
+- Full tree-sitter: Python, JavaScript, TypeScript/TSX/JSX, Java, Go, Rust, C, C++
+- Heuristic/generic fallback: C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown, SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, OpenAPI, CMake
+- Extracts: symbols, call edges, imports, test edges, route edges, data flow edges (type_ref, env_access, param_pass, return_flow), HTTP call edges, semantic edges, dispatch sites
+- Confidence tiers: Generic (0.3), Heuristic (0.5), TreeSitter (0.7), Semantic (0.85), Verified (1.0)
 
 ### cc-index
 File scanning and incremental indexing.
@@ -80,29 +81,38 @@ CLI + MCP server. Contains the `CodeIndex` engine struct.
 
 **FileWatcher**: `notify`-based file watcher with debounce, burst backoff, and gitignore filtering.
 
-## MCP Tool Domains (4 domains, 31 tools)
+## MCP Tools (14 tools, no domain system)
 
-### meta (always active)
-`list_tool_domains`, `activate_domain`
+All tools are always available. No activation required.
 
-### core (active by default)
-`set_project`, `build_index`, `index_status`, `search`, `find_symbol`, `list_files`, `file_symbols`, `list_communities`, `list_frameworks`, `index_capabilities`, `callers`, `callees`, `analyze_impact`, `summarize_file`
+| Tool | Description | Key Parameters |
+|------|-------------|----------------|
+| `status` | Index health, capabilities, graph schema | `aspect`: index/capabilities/schema/all |
+| `index` | Set project and build/update code index | `path`, `full` |
+| `search` | Hybrid search or symbol lookup | `query`, `mode`: hybrid/symbol |
+| `context` | Build complete task context in one call | `task`, `include_source` |
+| `node` | Inspect single symbol with trail | `symbol`, `include`: trail/source/outline/summary |
+| `explore` | Batch explore symbols or flow paths | `symbols[]`, `mode`: symbols/flow |
+| `trace` | Call path between two symbols | `from`, `to`, `source_mode`: none/snippet/body/outline |
+| `relations` | Callers, callees, refs, type hierarchy | `symbol`, `kind`: callers/callees/both/refs/hierarchy |
+| `impact` | Change impact, tests, dead code, cycles | `scope`: changes/tests/dead_code/circular/dependents |
+| `architecture` | Project architecture insights | `aspect`: overview/communities/frameworks/routes/services/async/boundaries/env/unresolved |
+| `files` | List files, read/expand code regions | `action`: list/region/expand |
+| `graph_query` | Cypher escape hatch | `query` |
+| `ingest_traces` | Ingest OTLP runtime traces to validate HTTP edges | `traces[]` |
+| `adr` | Manage Architecture Decision Records | `action`: list/get/store/delete |
 
-### context (activate on demand)
-`search_in_context`, `prepare_edit_region`, `expand_code_region`
+## CLI Commands (3)
 
-### graph (activate on demand)
-`graph_query`, `trace_path`, `symbol_refs`, `find_impacted_tests`, `get_dependents`, `find_dead_code`, `find_references`, `get_architecture`, `find_route_handlers`, `find_async_consumers`, `find_service_bindings`, `list_package_boundaries`
-
-## CLI Commands (22)
-
-`init-project`, `index`, `status`, `search`, `search-in-context`, `analyze-impact`, `mcp`, `index-capabilities`, `find-symbol`, `graph-query`, `callers`, `callees`, `trace-path`, `watch`, `list-files`, `file-symbols`, `list-communities`, `list-frameworks`, `clean`, `summarize-file`, `symbol-refs`, `install`
+`mcp` — start MCP stdio server
+`install` — install MCP configuration for detected AI agents
+`uninstall` — remove MCP configuration from all detected AI agents
 
 ## What is NOT in this project
 
 - No session/task management
 - No workflow/replay engine
-- No memory/knowledge/skill system
+- No memory/knowledge/skill system (ADR is repo metadata, not agent memory)
 - No pin/working-set/overlay
 - No learning/policy optimization
 - No telemetry persistence

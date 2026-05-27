@@ -56,3 +56,26 @@ pub fn install_all(binary_path: &Path, force: bool) -> InstallReport {
 
     report
 }
+
+/// Remove CodeCortex MCP configuration from all detected agents.
+pub fn uninstall_all() -> InstallReport {
+    let home = dirs::home_dir().unwrap_or_default();
+    let reg = registry::InstallerRegistry::default_registry();
+    let mut report = InstallReport::default();
+
+    for target in reg.targets() {
+        if !target.detect(&home) {
+            continue;
+        }
+        match target.uninstall(&home) {
+            Ok(()) => {
+                report.agents_configured.push(target.name().to_string());
+            }
+            Err(e) => {
+                report.errors.push(format!("{}: {}", target.name(), e));
+            }
+        }
+    }
+
+    report
+}

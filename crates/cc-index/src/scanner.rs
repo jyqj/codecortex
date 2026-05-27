@@ -68,11 +68,12 @@ impl Scanner {
             if language == Language::Unknown {
                 // Check if extension matches any include pattern
                 let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-                let glob_match = self
-                    .config
-                    .include
-                    .iter()
-                    .any(|p| p.ends_with(&format!("*.{}", ext)));
+                let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                let glob_match = self.config.include.iter().any(|p| {
+                    p.ends_with(&format!("*.{}", ext))
+                        || p.ends_with(&format!("/{}", file_name))
+                        || p.ends_with(file_name)
+                });
                 if !glob_match {
                     continue;
                 }

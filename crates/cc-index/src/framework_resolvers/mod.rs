@@ -7,9 +7,22 @@
 //! Currently only defines the trait and registry. Actual resolver
 //! implementations will be added in Phase 2.2+.
 
+pub mod actix;
+pub mod aspnet;
+pub mod axum;
+pub mod django;
+pub mod express;
+pub mod fastapi;
+pub mod flask;
 pub mod go_router;
+pub mod hono;
+pub mod laravel;
+pub mod nestjs;
+pub mod rails;
 pub mod react;
 pub mod spring;
+pub mod svelte;
+pub mod vue;
 
 use cc_model::parse::ParseOutcome;
 use cc_model::Language;
@@ -129,5 +142,18 @@ pub fn default_registry() -> FrameworkResolverRegistry {
     registry.register(Box::new(spring::SpringResolver));
     registry.register(Box::new(go_router::GoRouterResolver));
     registry.register(Box::new(react::ReactComponentResolver));
+    registry.register(Box::new(axum::AxumResolver));
+    registry.register(Box::new(actix::ActixResolver));
+    registry.register(Box::new(express::ExpressResolver));
+    registry.register(Box::new(nestjs::NestJsResolver));
+    registry.register(Box::new(fastapi::FastApiResolver));
+    registry.register(Box::new(django::DjangoResolver));
+    registry.register(Box::new(flask::FlaskResolver));
+    registry.register(Box::new(rails::RailsResolver));
+    registry.register(Box::new(laravel::LaravelResolver));
+    registry.register(Box::new(vue::VueResolver));
+    registry.register(Box::new(svelte::SvelteResolver));
+    registry.register(Box::new(aspnet::AspNetResolver));
+    registry.register(Box::new(hono::HonoResolver));
     registry
 }

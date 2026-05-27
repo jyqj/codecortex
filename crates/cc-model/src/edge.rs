@@ -1,3 +1,23 @@
+/// # Edge Provenance Standard
+///
+/// All edge types should carry these provenance fields:
+/// - `confidence: f64` — overall confidence (0.0–1.0)
+/// - `parser_tier: String` — extraction method (generic/heuristic/tree_sitter/semantic/verified)
+/// - `parser_confidence: f64` — parser's confidence in extraction correctness
+/// - `resolution_kind: Option<String>` — resolution result (exact/qualified/heuristic/unresolved/synthesized)
+/// - `resolution_strategy: Option<String>` — resolution method (import_map/global_unique/scope_resolved)
+/// - `synthesized_by: Option<String>` — synthesis source for non-AST edges
+/// - `synthesis_key: Option<String>` — synthesis identifier
+///
+/// Current coverage by edge table:
+/// - call_edges: ALL fields ✓
+/// - symbol_refs: resolution_* + parser_* ✓, no synthesized_*
+/// - http_call_edges: confidence + parser_tier only
+/// - semantic_edges: confidence + parser_tier only
+/// - data_flow_edges: confidence + parser_tier only
+/// - test_edges: confidence only (no parser_tier!)
+/// - route_edges: confidence + parser_tier + framework
+
 use crate::ParserTier;
 use serde::{Deserialize, Serialize};
 
@@ -185,6 +205,7 @@ pub struct DataFlowEdgeRecord {
     pub line: u32,
     pub confidence: f64,
     pub parser_tier: ParserTier,
+    pub env_key: Option<String>,
 }
 
 /// A git co-change correlation edge (files that frequently change together).

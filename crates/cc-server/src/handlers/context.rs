@@ -9,7 +9,7 @@ pub fn search_in_context(
     top_k: usize,
     intent: Option<cc_model::Intent>,
 ) -> Result<serde_json::Value, String> {
-    let mut rt = super::lock_index_write(&runtime)?;
+    let rt = super::lock_index(&runtime)?;
     let env = rt
         .search_in_context(query, top_k, intent)
         .map_err(|e| e.to_string())?;
@@ -23,7 +23,7 @@ pub fn search_in_context_with(
     intent: Option<cc_model::Intent>,
     overrides: cc_model::search::SearchRequest,
 ) -> Result<serde_json::Value, String> {
-    let mut rt = super::lock_index_write(&runtime)?;
+    let rt = super::lock_index(&runtime)?;
     let env = rt
         .search_in_context_with(query, top_k, intent, overrides)
         .map_err(|e| e.to_string())?;
@@ -73,7 +73,7 @@ pub fn task_symbols(
     expand_depth: Option<usize>,
     intent: Option<&str>,
 ) -> Result<serde_json::Value, String> {
-    let mut rt = super::lock_index_write(&runtime)?;
+    let rt = super::lock_index(&runtime)?;
     rt.task_symbols(task, max_symbols, expand_depth, intent)
         .map_err(|e| e.to_string())
 }
@@ -94,7 +94,7 @@ pub fn explore_symbols(
         return Err("missing or empty 'symbols' parameter".to_string());
     }
 
-    let mut rt = super::lock_index_write(&runtime)?;
+    let rt = super::lock_index(&runtime)?;
     let max_chars = rt.repo_size_tier().max_output_chars();
     let result = rt
         .explore_symbols(
@@ -121,7 +121,7 @@ pub fn get_symbol_source(
     if symbol.trim().is_empty() {
         return Err("missing or empty 'symbol' parameter".to_string());
     }
-    let mut rt = super::lock_index_write(&runtime)?;
+    let rt = super::lock_index(&runtime)?;
     rt.get_symbol_source(symbol, exact, include_line_numbers, max_chars)
         .map_err(|e| e.to_string())
 }

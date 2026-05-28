@@ -10,7 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -75,11 +75,6 @@ impl NestJsResolver {
             .map(|m| m.as_str().to_string())
     }
 
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Combine controller prefix with method path.
     fn combine_paths(prefix: &str, method_path: &str) -> String {
         if method_path.is_empty() {
@@ -138,7 +133,7 @@ impl FrameworkResolver for NestJsResolver {
 
             let decorator_offset = cap.get(0).unwrap().start();
             let decorator_end = cap.get(0).unwrap().end();
-            let line = Self::line_for_offset(source, decorator_offset);
+            let line = line_for_offset(source, decorator_offset);
 
             let handler_name = Self::find_next_method_name(source, decorator_end);
 

@@ -11,7 +11,7 @@ use std::time::Duration;
 
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
-use rusqlite::Connection;
+use rusqlite::{types::Type, Connection};
 
 use cc_model::config::ProjectStats;
 use cc_model::edge::RouteNodeRecord;
@@ -38,9 +38,13 @@ pub fn read_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<
                         tracing::warn!(
                             col_idx,
                             error = %e,
-                            "read_chunk_text: UTF-8 conversion failed after zstd decompression, returning empty string"
+                            "read_chunk_text: UTF-8 conversion failed after zstd decompression"
                         );
-                        Ok(String::new())
+                        Err(rusqlite::Error::FromSqlConversionFailure(
+                            col_idx,
+                            Type::Blob,
+                            Box::new(e),
+                        ))
                     }
                 },
                 Err(zstd_err) => {
@@ -55,9 +59,13 @@ pub fn read_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<
                             tracing::warn!(
                                 col_idx,
                                 error = %e,
-                                "read_chunk_text: raw UTF-8 conversion also failed, returning empty string"
+                                "read_chunk_text: raw UTF-8 conversion also failed"
                             );
-                            Ok(String::new())
+                            Err(rusqlite::Error::FromSqlConversionFailure(
+                                col_idx,
+                                Type::Blob,
+                                Box::new(e),
+                            ))
                         }
                     }
                 }
@@ -205,17 +213,6 @@ pub struct ResolutionAttemptRow {
     pub language: Option<String>,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct DataFlowEdgeLite {
-    pub file_path: String,
-    pub line: u32,
-    pub flow_kind: String,
-    pub source_symbol_uid: Option<String>,
-    pub target_symbol_uid: Option<String>,
-    pub confidence: f64,
-    pub env_key: Option<String>,
-}
-
 /// The index database handle.
 pub struct IndexDb {
     pub(crate) db_path: PathBuf,
@@ -224,7 +221,8 @@ pub struct IndexDb {
 }
 
 impl IndexDb {
-    /// Open (or create) the index database at the given path.
+    /// Open (or create) the index database at the given path using the default
+    /// read pool size.
     /// If the schema version doesn't match, the database file is deleted and recreated.
     ///
     /// Returns the database handle together with the [`SchemaStatus`] so callers
@@ -232,6 +230,14 @@ impl IndexDb {
     /// already up-to-date. This is used by the auto-index logic to decide
     /// whether a first-connect build is needed.
     pub fn open(path: &Path) -> CcResult<(Self, SchemaStatus)> {
+        Self::open_with_read_pool_size(path, 4)
+    }
+
+    /// Open (or create) the index database with an explicit SQLite reader pool size.
+    pub fn open_with_read_pool_size(
+        path: &Path,
+        read_pool_size: u32,
+    ) -> CcResult<(Self, SchemaStatus)> {
         if let Some(parent) = path.parent() {
             std::fs::create_dir_all(parent)?;
         }
@@ -243,12 +249,14 @@ impl IndexDb {
                 conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;")?;
                 Ok(())
             });
+        let read_pool_size = read_pool_size.clamp(1, 64);
         let pool = Pool::builder()
-            .max_size(4)
-            .min_idle(Some(1))
+            .max_size(read_pool_size)
+            .min_idle(Some(read_pool_size.min(2)))
             .idle_timeout(Some(Duration::from_secs(300)))
             .build(manager)
             .map_err(|e| CcError::Database(e.to_string()))?;
+        tracing::debug!(read_pool_size, "index db read pool initialized");
 
         Ok((
             Self {
@@ -443,6 +451,10 @@ impl IndexDb {
                 ev_total,
                 "partial failure during persistent asset re-import"
             );
+            return Err(CcError::Database(format!(
+                "persistent asset re-import failed for {total_failed}/{} rows",
+                adr_total + ev_total
+            )));
         }
         if adr_total + ev_total > 0 {
             tracing::info!(
@@ -917,60 +929,6 @@ impl IndexDb {
         }
 
         tracing::info!("direct writer: swap complete");
-        Ok(())
-    }
-
-    /// Full rebuild using `replace_files_batch` semantics but with bulk
-    /// optimizations applied (pragmas + index drop/recreate).
-    ///
-    /// This is a simpler alternative to `rebuild_with_temp_db` that operates
-    /// in-place on the existing database. Suitable when you don't need
-    /// atomic swap semantics.
-    pub fn replace_files_batch_bulk(&self, files: &[FileWriteUnit]) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-
-        tracing::info!(
-            file_count = files.len(),
-            "bulk rebuild: applying aggressive pragmas"
-        );
-
-        // Apply bulk pragmas
-        Self::set_bulk_rebuild_pragmas(&conn)?;
-
-        // Drop indexes for faster bulk insert
-        conn.execute_batch(Self::DROP_INDEXES_SQL)
-            .map_err(|e| CcError::Database(format!("drop indexes: {}", e)))?;
-
-        // Write all data in a single transaction
-        let write_result = (|| -> CcResult<()> {
-            let tx = conn
-                .transaction()
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            for file in files {
-                Self::delete_file_data(&tx, &file.rel_path)?;
-                Self::insert_file_data(&tx, file)?;
-            }
-            tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
-            Ok(())
-        })();
-
-        // Always recreate indexes and restore pragmas, even on error
-        let idx_result = conn
-            .execute_batch(Self::CREATE_INDEXES_SQL)
-            .map_err(|e| CcError::Database(format!("recreate indexes: {}", e)));
-
-        let pragma_result = Self::restore_normal_pragmas(&conn);
-
-        tracing::info!("bulk rebuild: pragmas restored, indexes recreated");
-
-        // Return the first error if any
-        write_result?;
-        idx_result?;
-        pragma_result?;
-
         Ok(())
     }
 
@@ -1486,18 +1444,6 @@ pub(crate) fn is_actionable_reference_name(name: &str) -> bool {
     !BUILTINS.contains(&name)
 }
 
-/// Lightweight literal row for search results.
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct LiteralLite {
-    pub literal_id: String,
-    pub file_path: String,
-    pub literal: String,
-    pub literal_kind: String,
-    pub line: u32,
-    pub container: Option<String>,
-    pub confidence: f64,
-}
-
 /// Lightweight route edge row for frontier expansion.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct RouteEdgeLite {
@@ -1511,21 +1457,6 @@ pub struct RouteEdgeLite {
     pub handler_symbol_uid: Option<String>,
     pub framework: Option<String>,
     pub confidence: f64,
-}
-
-/// Lightweight diagnostic row for frontier expansion.
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct DiagnosticLite {
-    pub diagnostic_id: String,
-    pub file_path: String,
-    pub severity: String,
-    pub message: String,
-    pub line: u32,
-    pub end_line: Option<u32>,
-    pub source: String,
-    pub code: Option<String>,
-    pub confidence: f64,
-    pub symbol_uid: Option<String>,
 }
 
 /// Lightweight route node row.
@@ -1571,18 +1502,6 @@ pub struct HttpCallEdgeLite {
     pub call_kind: String,
     pub line: u32,
     pub confidence: f64,
-}
-
-/// Neighbor chunk row for frontier expansion.
-#[derive(Debug, Clone)]
-pub struct NeighborChunkRow {
-    pub chunk_id: String,
-    pub file_path: String,
-    pub chunk_index: u32,
-    pub start_line: u32,
-    pub end_line: u32,
-    pub text: String,
-    pub breadcrumb: String,
 }
 
 /// 增量重解析场景的文件边数据载体。

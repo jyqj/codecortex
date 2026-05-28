@@ -41,8 +41,8 @@ SQLite persistence for the code index. Single database: `index.sqlite3`.
 - Schema versioning via `user_version` pragma (v15, incremental migration support)
 
 ### cc-parsers
-Tree-sitter AST extraction for 32 language identifiers (9 with full tree-sitter, rest via generic/heuristic).
-- Full tree-sitter: Python, JavaScript, TypeScript/TSX/JSX, Java, Go, Rust, C, C++
+Tree-sitter AST extraction for 31 concrete language identifiers (+ `Unknown` enum fallback; 10 identifiers with full tree-sitter, rest via generic/heuristic).
+- Full tree-sitter: Python, JavaScript, TypeScript, TSX, JSX, Java, Go, Rust, C, C++
 - Heuristic/generic fallback: C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown, SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, OpenAPI, CMake
 - Extracts: symbols, call edges, imports, test edges, route edges, data flow edges (type_ref, env_access, param_pass, return_flow), HTTP call edges, semantic edges, dispatch sites
 - Confidence tiers: Generic (0.3), Heuristic (0.5), TreeSitter (0.7), Semantic (0.85), Verified (1.0)

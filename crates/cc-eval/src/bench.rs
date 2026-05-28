@@ -15,6 +15,7 @@ use std::time::Instant;
 #[derive(Debug, Clone, Serialize)]
 pub struct BenchmarkReport {
     pub generated_at: String,
+    pub dataset_name: String,
     pub fixture_files: usize,
     pub total_cases: usize,
     pub per_tool: Vec<ToolBenchmark>,
@@ -93,6 +94,16 @@ pub fn run_benchmark(
     cases: &[EvalCase],
     fixture_files: usize,
 ) -> BenchmarkReport {
+    run_benchmark_named(backend, cases, fixture_files, "fixture")
+}
+
+/// Run benchmarks with a dataset label for the generated report.
+pub fn run_benchmark_named(
+    backend: &CodeIndexBackend,
+    cases: &[EvalCase],
+    fixture_files: usize,
+    dataset_name: &str,
+) -> BenchmarkReport {
     // Measure each case
     let measurements: Vec<CaseMeasurement> =
         cases.iter().map(|c| measure_case(backend, c)).collect();
@@ -136,6 +147,7 @@ pub fn run_benchmark(
 
     BenchmarkReport {
         generated_at: chrono::Utc::now().to_rfc3339(),
+        dataset_name: dataset_name.to_string(),
         fixture_files,
         total_cases: cases.len(),
         per_tool,
@@ -161,7 +173,8 @@ pub fn generate_benchmark_markdown(report: &BenchmarkReport) -> String {
 
     md.push_str("# Benchmark Results\n\n");
     md.push_str(&format!("Generated: {}\n", report.generated_at));
-    md.push_str(&format!("Fixture: {} files\n\n", report.fixture_files));
+    md.push_str(&format!("Dataset: {}\n", report.dataset_name));
+    md.push_str(&format!("Files: {}\n\n", report.fixture_files));
 
     // Per-tool latency table
     md.push_str("## Per-Tool Latency\n\n");

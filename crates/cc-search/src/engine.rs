@@ -1,6 +1,6 @@
 //! SearchEngine — hybrid vector + lexical + grep retrieval with RRF fusion.
 //!
-//! Extended with multi-lane hit generators and graph/navigation queries.
+//! Extended with graph/navigation queries.
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -50,6 +50,18 @@ fn augmented_query_text(request: &SearchRequest) -> String {
         }
     }
     parts.join("\n")
+}
+
+fn vector_similarity(qvec: &[f32], row: &[f32], query_norm: f32, query_normalised: bool) -> f64 {
+    let dot: f32 = qvec.iter().zip(row.iter()).map(|(a, b)| a * b).sum();
+    if query_normalised {
+        dot as f64
+    } else if query_norm > 0.0 {
+        // Rows are L2-normalised at index time, so cosine = dot / query_norm.
+        (dot / query_norm) as f64
+    } else {
+        0.0
+    }
 }
 
 impl SearchEngine {
@@ -650,6 +662,86 @@ impl SearchEngine {
         Ok(serde_json::Value::Object(meta))
     }
 
+    /// Vector search scoped to explicit file paths.
+    ///
+    /// This path intentionally streams only matching embedding rows from SQLite
+    /// instead of loading the full in-memory vector cache. It keeps task-scoped
+    /// searches cheap on large repositories and acts as a lightweight sharded
+    /// loading strategy keyed by the candidate file set.
+    fn vector_search_filtered_files(
+        &self,
+        conn: &rusqlite::Connection,
+        qvec: &[f32],
+        limit: usize,
+        request: &SearchRequest,
+        file_paths: &[String],
+    ) -> CcResult<Vec<(String, f64)>> {
+        if file_paths.is_empty() || qvec.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut unique_paths: Vec<String> = Vec::new();
+        for path in file_paths {
+            if !path.is_empty() && !unique_paths.iter().any(|p| p == path) {
+                unique_paths.push(path.clone());
+            }
+        }
+        if unique_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let placeholders = (1..=unique_paths.len())
+            .map(|idx| format!("?{}", idx))
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT chunk_id, file_path, language, embedding \
+             FROM chunks \
+             WHERE embedding IS NOT NULL AND file_path IN ({})",
+            placeholders
+        );
+
+        let query_norm_sq: f32 = qvec.iter().map(|x| x * x).sum();
+        let query_norm = query_norm_sq.sqrt();
+        let query_normalised = query_norm > 0.0 && (query_norm - 1.0).abs() < 1e-4;
+
+        let mut stmt = conn
+            .prepare(&sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(unique_paths.iter()), |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, Vec<u8>>(3)?,
+                ))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+
+        let mut scored: Vec<(String, f64)> = Vec::with_capacity(limit);
+        for row in rows {
+            let (cid, file_path, language_name, blob) =
+                row.map_err(|e| CcError::Database(e.to_string()))?;
+            let language = parse_language_name(&language_name);
+            if !passes_filters(&file_path, language, request) {
+                continue;
+            }
+            let vec = unpack_vector(&blob);
+            if vec.len() != qvec.len() {
+                continue;
+            }
+            let sim = vector_similarity(qvec, &vec, query_norm, query_normalised);
+            if sim > 0.0 {
+                scored.push((cid, sim));
+            }
+        }
+
+        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        scored.truncate(limit);
+        Ok(scored)
+    }
+
     /// Vector search using the in-memory `VectorIndex`.
     ///
     /// On first call the cache is populated from DB. Subsequent calls reuse
@@ -658,11 +750,46 @@ impl SearchEngine {
     /// the search is skipped with a warning to avoid latency spikes.
     fn vector_search(
         &self,
-        _conn: &rusqlite::Connection,
+        conn: &rusqlite::Connection,
         qvec: &[f32],
         limit: usize,
         request: &SearchRequest,
     ) -> CcResult<Vec<(String, f64)>> {
+        // Explicit file scopes use a filtered DB stream instead of the global
+        // cache. This avoids loading/scoring the entire embedding matrix when a
+        // caller already narrowed the candidate file set.
+        if let Some(paths) = request.file_paths.as_ref().filter(|v| !v.is_empty()) {
+            return self.vector_search_filtered_files(conn, qvec, limit, request, paths);
+        }
+
+        // For unfiltered vector search, check the DB count before loading the
+        // full embedding matrix into memory.
+        let cached_len = self
+            .vector_cache
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .as_ref()
+            .map(|idx| idx.chunk_ids.len());
+        let chunk_count = match cached_len {
+            Some(n) => n,
+            None => conn
+                .query_row(
+                    "SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL",
+                    [],
+                    |row| row.get::<_, i64>(0),
+                )
+                .map(|n| n.max(0) as usize)
+                .map_err(|e| CcError::Database(e.to_string()))?,
+        };
+        if chunk_count > VECTOR_UNFILTERED_LIMIT {
+            tracing::warn!(
+                chunk_count,
+                limit = VECTOR_UNFILTERED_LIMIT,
+                "vector search skipped: chunk count exceeds unfiltered limit"
+            );
+            return Ok(Vec::new());
+        }
+
         // Ensure cache is populated.
         {
             let guard = self.vector_cache.lock().unwrap_or_else(|e| e.into_inner());
@@ -677,18 +804,6 @@ impl SearchEngine {
             Some(idx) if idx.dimensions > 0 && !idx.chunk_ids.is_empty() => idx,
             _ => return Ok(Vec::new()),
         };
-
-        // Determine which rows to score.
-        let has_file_filter = request.file_paths.as_ref().is_some_and(|v| !v.is_empty());
-
-        if !has_file_filter && index.chunk_ids.len() > VECTOR_UNFILTERED_LIMIT {
-            tracing::warn!(
-                chunk_count = index.chunk_ids.len(),
-                limit = VECTOR_UNFILTERED_LIMIT,
-                "vector search skipped: chunk count exceeds unfiltered limit"
-            );
-            return Ok(Vec::new());
-        }
 
         // Build a fast lookup set for file_paths filter.
         let file_set: Option<std::collections::HashSet<&str>> = request
@@ -727,15 +842,7 @@ impl SearchEngine {
             }
 
             let row = &index.matrix[row_start..row_start + dim];
-            let dot: f32 = qvec.iter().zip(row.iter()).map(|(a, b)| a * b).sum();
-            let sim = if query_normalised {
-                dot as f64
-            } else if query_norm > 0.0 {
-                // row is already L2-normalised, so cosine = dot / query_norm.
-                (dot / query_norm) as f64
-            } else {
-                0.0
-            };
+            let sim = vector_similarity(qvec, row, query_norm, query_normalised);
 
             if sim > 0.0 {
                 scored.push((index.chunk_ids[i].clone(), sim));
@@ -973,7 +1080,7 @@ mod tests {
         )
         .unwrap();
 
-        // Insert imports for import_graph test
+        // Insert imports used by search-engine test fixtures
         conn.execute_batch(
             "INSERT INTO imports(file_path, import_string, resolved_path, imported_name, alias, \
                  is_namespace, is_default, is_reexport) \
@@ -985,71 +1092,6 @@ mod tests {
         .unwrap();
 
         (tmp, db)
-    }
-
-    #[test]
-    fn test_hits_for_paths_creates_hits_with_correct_lane() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        let hits = engine.hits_for_paths(&["src/main.rs", "src/lib.rs"], 10);
-        assert!(!hits.is_empty(), "should return hits for known paths");
-        for hit in &hits {
-            assert_eq!(hit.lane.as_deref(), Some("path"), "lane should be 'path'");
-            assert!(
-                hit.reasons.iter().any(|r| r == "path-exact"),
-                "reasons should contain 'path-exact'"
-            );
-            assert_eq!(hit.source, "index");
-        }
-        // Verify file_paths are correct
-        let file_paths: Vec<&str> = hits.iter().map(|h| h.file_path.as_str()).collect();
-        assert!(
-            file_paths.contains(&"src/main.rs") || file_paths.contains(&"src/lib.rs"),
-            "should return chunks from requested files"
-        );
-    }
-
-    #[test]
-    fn test_test_related_chunks_finds_test_files() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        let hits = engine.test_related_chunks("src/main.rs");
-        assert!(
-            !hits.is_empty(),
-            "should find test_main.rs as related test file"
-        );
-        assert!(
-            hits.iter().any(|h| h.file_path.contains("test_main")),
-            "should include test_main.rs"
-        );
-        for hit in &hits {
-            assert_eq!(hit.lane.as_deref(), Some("test"), "lane should be 'test'");
-        }
-    }
-
-    #[test]
-    fn test_import_graph_returns_both_directions() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        let (imports, reverse_imports) = engine.import_graph("src/main.rs");
-        // src/main.rs imports src/lib.rs
-        assert!(
-            imports.iter().any(|p| p == "src/lib.rs"),
-            "should list src/lib.rs as an import, got: {:?}",
-            imports
-        );
-        // tests/test_main.rs imports src/main.rs, so src/main.rs has a reverse import
-        assert!(
-            reverse_imports.iter().any(|p| p == "tests/test_main.rs"),
-            "should list tests/test_main.rs as reverse import, got: {:?}",
-            reverse_imports
-        );
     }
 
     #[test]
@@ -1173,7 +1215,7 @@ mod tests {
     }
 
     #[test]
-    fn test_vector_search_file_filter_in_cache() {
+    fn test_vector_search_file_filter_streams_db_without_global_cache() {
         let (_tmp, db) = make_test_db();
         let config = cc_model::ProjectConfig::default();
         let engine = SearchEngine::new(db, &config);
@@ -1191,6 +1233,10 @@ mod tests {
         // Only c3 should match (it's in src/lib.rs). c1 and c2 are filtered out.
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].0, "c3");
+        assert!(
+            engine.vector_cache.lock().unwrap().is_none(),
+            "file-scoped vector search should not populate global cache"
+        );
     }
 
     #[test]
@@ -1230,8 +1276,9 @@ mod tests {
     }
 
     #[test]
-    fn test_vector_search_with_file_filter_bypasses_limit() {
-        // Even with a huge index, file_paths filter should still work.
+    fn test_vector_search_with_file_filter_bypasses_oversized_global_cache() {
+        // Even with a huge global cache present, file_paths filter should stream
+        // only matching DB rows and avoid the unfiltered-limit skip path.
         let (_tmp, db) = make_test_db();
         let config = cc_model::ProjectConfig::default();
         let engine = SearchEngine::new(db, &config);
@@ -1240,38 +1287,24 @@ mod tests {
             let mut guard = engine.vector_cache.lock().unwrap();
             let count = VECTOR_UNFILTERED_LIMIT + 100;
             let dim = 4;
-            let mut chunk_ids: Vec<String> = (0..count).map(|i| format!("c{}", i)).collect();
-            let mut file_paths: Vec<String> =
-                (0..count).map(|_| "big/file.rs".to_string()).collect();
-            let mut languages: Vec<String> = (0..count).map(|_| "Rust".to_string()).collect();
-            let mut matrix = vec![0.0f32; count * dim];
-
-            // Plant a known vector in a specific file.
-            let target_idx = count - 1;
-            chunk_ids[target_idx] = "target".to_string();
-            file_paths[target_idx] = "src/target.rs".to_string();
-            languages[target_idx] = "Rust".to_string();
-            let start = target_idx * dim;
-            matrix[start] = 1.0; // [1,0,0,0]
-
             *guard = Some(VectorIndex {
-                chunk_ids,
-                file_paths,
-                languages,
-                matrix,
+                chunk_ids: (0..count).map(|i| format!("big-c{}", i)).collect(),
+                file_paths: (0..count).map(|_| "big/file.rs".to_string()).collect(),
+                languages: (0..count).map(|_| "Rust".to_string()).collect(),
+                matrix: vec![0.25f32; count * dim],
                 dimensions: dim,
             });
         }
 
-        let qvec = vec![1.0, 0.0, 0.0, 0.0];
+        let qvec = vec![0.0, 0.0, 1.0, 0.0];
         let request = SearchRequest {
             query: "test".into(),
-            file_paths: Some(vec!["src/target.rs".into()]),
+            file_paths: Some(vec!["src/lib.rs".into()]),
             ..Default::default()
         };
         let conn = engine.db.read_conn().unwrap();
         let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
         assert_eq!(hits.len(), 1);
-        assert_eq!(hits[0].0, "target");
+        assert_eq!(hits[0].0, "c3");
     }
 }

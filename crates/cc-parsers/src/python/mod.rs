@@ -72,69 +72,6 @@ impl PythonParser {
         }
     }
 
-    /// Legacy: superseded by `extract_all()` single-pass DFS. Retained for rollback.
-    #[allow(dead_code)]
-    fn extract_symbols(
-        &self,
-        tree: &tree_sitter::Tree,
-        source: &[u8],
-        file_path: &str,
-    ) -> (Vec<SymbolRecord>, Vec<ImportRecord>) {
-        let mut symbols = Vec::new();
-        let mut imports = Vec::new();
-        let root = tree.root_node();
-        let mut cursor = root.walk();
-
-        for child in root.children(&mut cursor) {
-            match child.kind() {
-                "function_definition" | "decorated_definition" => {
-                    if let Some(sym) = self.extract_function(&child, source, file_path, None) {
-                        symbols.push(sym);
-                    }
-                }
-                "class_definition" => {
-                    if let Some(sym) = self.extract_class(&child, source, file_path) {
-                        let class_name = sym.name.clone();
-                        let class_id = sym.symbol_id.clone();
-                        symbols.push(sym);
-                        // Extract methods
-                        if let Some(body) = child.child_by_field_name("body") {
-                            let mut body_cursor = body.walk();
-                            for member in body.children(&mut body_cursor) {
-                                if member.kind() == "function_definition"
-                                    || member.kind() == "decorated_definition"
-                                {
-                                    if let Some(method) = self.extract_function(
-                                        &member,
-                                        source,
-                                        file_path,
-                                        Some(&class_name),
-                                    ) {
-                                        let mut m = method;
-                                        m.parent_symbol_id = Some(class_id.clone());
-                                        m.kind = SymbolKind::Method;
-                                        symbols.push(m);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                "import_statement" => {
-                    let extracted = self.extract_import_statement(&child, source, file_path);
-                    imports.extend(extracted);
-                }
-                "import_from_statement" => {
-                    let extracted = self.extract_import_from_statement(&child, source, file_path);
-                    imports.extend(extracted);
-                }
-                _ => {}
-            }
-        }
-
-        (symbols, imports)
-    }
-
     fn extract_function(
         &self,
         node: &tree_sitter::Node,
@@ -607,31 +544,6 @@ impl PythonParser {
             content
         };
         Some(unquoted.to_string())
-    }
-
-    /// Legacy: superseded by `extract_all()` single-pass DFS. Retained for rollback.
-    #[allow(dead_code)]
-    fn extract_diagnostics(
-        &self,
-        tree: &tree_sitter::Tree,
-        source: &[u8],
-        file_path: &str,
-    ) -> Vec<DiagnosticRecord> {
-        let mut diagnostics = Vec::new();
-        let mut stack = vec![tree.root_node()];
-        while let Some(node) = stack.pop() {
-            if node.kind() == "raise_statement" {
-                if let Some(diag) = self.extract_raise_diagnostic(&node, source, file_path) {
-                    diagnostics.push(diag);
-                }
-            }
-            // Push children in reverse to maintain order
-            let mut cursor = node.walk();
-            for child in node.children(&mut cursor) {
-                stack.push(child);
-            }
-        }
-        diagnostics
     }
 
     /// Extract a DiagnosticRecord from a `raise_statement` node.

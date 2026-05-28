@@ -284,30 +284,6 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn insert_data_flow_edges_batch(
-        &self,
-        edges: &[cc_model::edge::DataFlowEdgeRecord],
-    ) -> CcResult<()> {
-        if edges.is_empty() {
-            return Ok(());
-        }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        for e in edges {
-            tx.execute(
-                "INSERT OR REPLACE INTO data_flow_edges(edge_id,file_path,source_symbol_uid,target_symbol_uid,flow_kind,line,confidence,parser_tier,env_key) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
-                rusqlite::params![e.edge_id, e.file_path, e.source_symbol_uid, e.target_symbol_uid, e.flow_kind, e.line, e.confidence, e.parser_tier.as_str(), e.env_key],
-            ).map_err(|e| CcError::Database(e.to_string()))?;
-        }
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(())
-    }
-
     pub fn insert_semantic_edges_batch(
         &self,
         edges: &[cc_model::edge::SemanticEdgeRecord],
@@ -326,30 +302,6 @@ impl IndexDb {
             tx.execute(
                 "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
                 rusqlite::params![e.edge_id, e.file_path, e.source_symbol, e.source_symbol_uid, e.target_symbol, e.target_symbol_uid, e.relation_kind.as_str(), e.line, e.confidence, e.parser_tier.as_str()],
-            ).map_err(|e| CcError::Database(e.to_string()))?;
-        }
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(())
-    }
-
-    pub fn insert_route_edges_batch(
-        &self,
-        edges: &[cc_model::edge::RouteEdgeRecord],
-    ) -> CcResult<()> {
-        if edges.is_empty() {
-            return Ok(());
-        }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        for r in edges {
-            tx.execute(
-                "INSERT OR REPLACE INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
-                rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str()],
             ).map_err(|e| CcError::Database(e.to_string()))?;
         }
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
@@ -501,17 +453,6 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn co_change_neighbors(
-        &self,
-        file_path: &str,
-        min_confidence: f64,
-        limit: usize,
-    ) -> CcResult<Vec<CoChangeLite>> {
-        let mut rows = self.get_co_changes_for_file(file_path, min_confidence)?;
-        rows.truncate(limit);
-        Ok(rows)
-    }
-
     pub fn replace_infra_data(
         &self,
         nodes: &[cc_model::infra::InfraNode],
@@ -556,28 +497,6 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         }
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(())
-    }
-
-    pub fn delete_infra_by_file(&self, file_path: &str) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        tx.execute(
-            "DELETE FROM infra_edges WHERE source_node_id IN (SELECT node_id FROM infra_nodes WHERE file_path = ?1) OR target_node_id IN (SELECT node_id FROM infra_nodes WHERE file_path = ?1)",
-            rusqlite::params![file_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
-        tx.execute(
-            "DELETE FROM infra_nodes WHERE file_path = ?1",
-            rusqlite::params![file_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -642,57 +561,6 @@ impl IndexDb {
             result.push(r.map_err(|e| CcError::Database(e.to_string()))?);
         }
         Ok(result)
-    }
-
-    pub fn load_dispatch_sites_by_kind_key(
-        &self,
-        kind: &str,
-        key: &str,
-    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
-                 site_kind,key,handler_expr,handler_symbol_uid,confidence \
-                 FROM dispatch_sites WHERE site_kind = ?1 AND key = ?2",
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params![kind, key], |row| {
-                let kind_str: String = row.get(6)?;
-                Ok(cc_model::DispatchSiteRecord {
-                    site_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    line: row.get(2)?,
-                    col: row.get(3)?,
-                    enclosing_symbol_uid: row.get(4)?,
-                    receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
-                    key: row.get(7)?,
-                    handler_expr: row.get(8)?,
-                    handler_symbol_uid: row.get(9)?,
-                    confidence: row.get(10)?,
-                })
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let mut result = Vec::new();
-        for r in rows {
-            result.push(r.map_err(|e| CcError::Database(e.to_string()))?);
-        }
-        Ok(result)
-    }
-
-    pub fn delete_dispatch_sites_for_file(&self, file_path: &str) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
-            "DELETE FROM dispatch_sites WHERE file_path = ?1",
-            rusqlite::params![file_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(())
     }
 
     pub fn load_dispatch_sites_by_kind(
@@ -926,47 +794,6 @@ impl IndexDb {
         let mut result = std::collections::HashMap::new();
         for (norm_path, count, last_seen) in rows.flatten() {
             result.insert(norm_path, (count, last_seen));
-        }
-        Ok(result)
-    }
-
-    /// Query aggregated runtime evidence for a set of http_edge_ids.
-    ///
-    /// Returns a map of http_edge_id -> (total_observed_count, latest_last_seen).
-    pub fn evidence_for_http_edges(
-        &self,
-        edge_ids: &[String],
-    ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
-        if edge_ids.is_empty() {
-            return Ok(std::collections::HashMap::new());
-        }
-        let conn = self.read_conn()?;
-        let placeholders: Vec<String> = (1..=edge_ids.len()).map(|i| format!("?{}", i)).collect();
-        let sql = format!(
-            "SELECT http_edge_id, SUM(observed_count) AS total_count, MAX(last_seen) AS latest_seen \
-             FROM runtime_evidence \
-             WHERE http_edge_id IN ({}) \
-             GROUP BY http_edge_id",
-            placeholders.join(",")
-        );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let params: Vec<&dyn rusqlite::types::ToSql> = edge_ids
-            .iter()
-            .map(|s| s as &dyn rusqlite::types::ToSql)
-            .collect();
-        let rows = stmt
-            .query_map(params.as_slice(), |row| {
-                let eid: String = row.get(0)?;
-                let count: u32 = row.get(1)?;
-                let last_seen: String = row.get(2)?;
-                Ok((eid, count, last_seen))
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let mut result = std::collections::HashMap::new();
-        for (eid, count, last_seen) in rows.flatten() {
-            result.insert(eid, (count, last_seen));
         }
         Ok(result)
     }

@@ -307,7 +307,7 @@ pub fn handle_files(
         other => Err(format!(
             "unknown files action {:?}; expected \"list\", \"region\", or \"expand\"",
             other
-        ))
+        )),
     }
 }
 
@@ -687,7 +687,10 @@ mod tests {
 
     // ── Handler dispatch integration tests ─────────────────────────
 
-    fn build_test_index() -> (tempfile::TempDir, Arc<std::sync::RwLock<crate::engine::CodeIndex>>) {
+    fn build_test_index() -> (
+        tempfile::TempDir,
+        Arc<std::sync::RwLock<crate::engine::CodeIndex>>,
+    ) {
         let fixture_src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../cc-eval/fixtures/sample-project");
         let tmp = tempfile::TempDir::new().unwrap();

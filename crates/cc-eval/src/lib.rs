@@ -241,6 +241,201 @@ value = "formatName"
         assert_eq!(status.p95_duration_ms, 50);
     }
 
+    fn copy_real_workspace_fixture(src: &std::path::Path, dst: &std::path::Path) -> usize {
+        const EXCLUDED_DIRS: &[&str] = &[
+            ".git",
+            ".codecortex",
+            "target",
+            "node_modules",
+            ".next",
+            "dist",
+            "build",
+        ];
+        const INCLUDED_EXTS: &[&str] = &["rs", "toml", "md", "json", "yaml", "yml", "sql", "lock"];
+        const INCLUDED_NAMES: &[&str] = &["Dockerfile", "LICENSE", "README", "Makefile"];
+
+        fn should_copy(path: &std::path::Path) -> bool {
+            let name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
+            if INCLUDED_NAMES
+                .iter()
+                .any(|n| name == *n || name.starts_with(&format!("{}.", n)))
+            {
+                return true;
+            }
+            path.extension()
+                .and_then(|s| s.to_str())
+                .is_some_and(|ext| INCLUDED_EXTS.contains(&ext))
+        }
+
+        fn walk(src: &std::path::Path, dst: &std::path::Path, count: &mut usize) {
+            let Ok(entries) = std::fs::read_dir(src) else {
+                return;
+            };
+            for entry in entries.flatten() {
+                let path = entry.path();
+                let target = dst.join(entry.file_name());
+                let Ok(ft) = entry.file_type() else {
+                    continue;
+                };
+                if ft.is_dir() {
+                    let name = entry.file_name();
+                    let name = name.to_string_lossy();
+                    if EXCLUDED_DIRS.contains(&name.as_ref()) {
+                        continue;
+                    }
+                    let _ = std::fs::create_dir_all(&target);
+                    walk(&path, &target, count);
+                } else if ft.is_file() && should_copy(&path) {
+                    if let Some(parent) = target.parent() {
+                        let _ = std::fs::create_dir_all(parent);
+                    }
+                    std::fs::copy(&path, &target).expect("copy real workspace file");
+                    *count += 1;
+                }
+            }
+        }
+
+        let mut count = 0;
+        walk(src, dst, &mut count);
+        count
+    }
+
+    fn real_workspace_benchmark_cases() -> Vec<types::EvalCase> {
+        use serde_json::json;
+        vec![
+            types::EvalCase {
+                name: "real_status".into(),
+                tool: "status".into(),
+                description: "Status on the real CodeCortex workspace".into(),
+                params: json!({ "aspect": "all" }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_files_list".into(),
+                tool: "files".into(),
+                description: "List indexed files in real workspace".into(),
+                params: json!({ "action": "list", "limit": 50 }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_search_codeindex".into(),
+                tool: "search".into(),
+                description: "Symbol search for CodeIndex".into(),
+                params: json!({ "query": "CodeIndex", "mode": "symbol", "top_k": 10 }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_search_vector_cache".into(),
+                tool: "search".into(),
+                description: "Hybrid search over vector cache implementation".into(),
+                params: json!({ "query": "vector cache invalidation SearchEngine", "mode": "hybrid", "top_k": 10 }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_context_index_flow".into(),
+                tool: "context".into(),
+                description: "Context for index build and search flow".into(),
+                params: json!({ "task": "understand CodeIndex build_index and SearchEngine vector_search flow", "max_symbols": 8, "include_source": false }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_node_searchengine".into(),
+                tool: "node".into(),
+                description: "Inspect SearchEngine outline".into(),
+                params: json!({ "symbol": "SearchEngine", "include": "outline" }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_relations_build_index".into(),
+                tool: "relations".into(),
+                description: "Relations for build_index".into(),
+                params: json!({ "symbol": "build_index", "kind": "both", "limit": 20 }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_graph_query_functions".into(),
+                tool: "graph_query".into(),
+                description: "Cypher function query on real workspace".into(),
+                params: json!({ "query": "MATCH (f:Function) RETURN f.name, f.file_path LIMIT 20" }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_architecture_overview".into(),
+                tool: "architecture".into(),
+                description: "Architecture overview on real workspace".into(),
+                params: json!({ "aspect": "overview" }),
+                assertions: vec![],
+                expect_error: false,
+            },
+            types::EvalCase {
+                name: "real_impact_dead_code".into(),
+                tool: "impact".into(),
+                description: "Dead code scan on real workspace".into(),
+                params: json!({ "scope": "dead_code", "limit": 50 }),
+                assertions: vec![],
+                expect_error: false,
+            },
+        ]
+    }
+
+    /// Ignored by default: builds and benchmarks a sanitized copy of the real
+    /// CodeCortex workspace instead of the 15-file fixture.
+    #[test]
+    #[ignore = "benchmarks the real workspace copy; run explicitly"]
+    fn benchmark_real_workspace() {
+        let crate_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let workspace_root = crate_dir
+            .parent()
+            .and_then(|p| p.parent())
+            .expect("cc-eval should live under crates/cc-eval");
+
+        let tmp = tempfile::tempdir().expect("create tempdir for real workspace benchmark");
+        let bench_root = tmp.path().join("codecortex-rust");
+        std::fs::create_dir_all(&bench_root).expect("create benchmark workspace copy");
+        let file_count = copy_real_workspace_fixture(workspace_root, &bench_root);
+        assert!(
+            file_count >= 100,
+            "real workspace benchmark should copy substantially more than fixture files, got {}",
+            file_count
+        );
+
+        let backend = runner::CodeIndexBackend::new(&bench_root)
+            .expect("backend should build real workspace index copy");
+        let cases = real_workspace_benchmark_cases();
+        let report = bench::run_benchmark_named(
+            &backend,
+            &cases,
+            file_count,
+            "codecortex-rust workspace copy",
+        );
+        let md = bench::generate_benchmark_markdown(&report);
+        eprintln!("{}", md);
+
+        assert_eq!(report.total_cases, cases.len());
+        assert!(!report.per_tool.is_empty(), "should have per-tool results");
+
+        if std::env::var("CODECORTEX_WRITE_REAL_BENCHMARK").is_ok()
+            || std::env::var("CODECORTEX_WRITE_BENCHMARK").is_ok()
+        {
+            let bench_dir = workspace_root.join("docs").join("benchmarks");
+            std::fs::create_dir_all(&bench_dir).expect("create docs/benchmarks");
+            let path = bench_dir.join("real_workspace_latest.md");
+            std::fs::write(&path, &md).expect("write real workspace benchmark report");
+            eprintln!(
+                "Real workspace benchmark report written to {}",
+                path.display()
+            );
+        }
+    }
+
     /// Benchmark test: load fixtures, run benchmark, optionally write report.
     /// This test requires the fixture files to exist.
     ///

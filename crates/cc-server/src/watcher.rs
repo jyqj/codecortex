@@ -96,32 +96,6 @@ impl Default for WatcherConfig {
     }
 }
 
-impl WatcherConfig {
-    #[allow(dead_code)]
-    pub fn with_file_count(mut self, count: usize) -> Self {
-        self.file_count = Some(count);
-        self
-    }
-
-    #[allow(dead_code)]
-    pub fn with_debounce_ms(mut self, ms: u64) -> Self {
-        self.debounce_ms = Some(ms);
-        self
-    }
-
-    #[allow(dead_code)]
-    pub fn with_burst_backoff(mut self, enabled: bool) -> Self {
-        self.burst_backoff = enabled;
-        self
-    }
-
-    #[allow(dead_code)]
-    pub fn with_git_sanity_poll(mut self, enabled: bool) -> Self {
-        self.git_sanity_poll = enabled;
-        self
-    }
-}
-
 // ---------------------------------------------------------------------------
 // Adaptive debounce calculation
 // ---------------------------------------------------------------------------
@@ -192,11 +166,6 @@ impl WatcherDrain {
     pub fn is_empty(&self) -> bool {
         self.changed.is_empty() && self.removed.is_empty()
     }
-
-    #[allow(dead_code)]
-    pub fn total(&self) -> usize {
-        self.changed.len() + self.removed.len()
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -258,18 +227,6 @@ impl FileWatcher {
     /// (adaptive debounce, burst backoff, git sanity poll all enabled).
     pub fn start(project_path: &Path) -> CcResult<Self> {
         Self::start_with_config(project_path, WatcherConfig::default())
-    }
-
-    /// Start with a custom debounce interval (backward-compatible entry point).
-    #[allow(dead_code)]
-    pub fn start_with_debounce(project_path: &Path, debounce_ms: u64) -> CcResult<Self> {
-        let config = WatcherConfig {
-            debounce_ms: Some(debounce_ms),
-            burst_backoff: false,
-            git_sanity_poll: false,
-            ..Default::default()
-        };
-        Self::start_with_config(project_path, config)
     }
 
     /// Start with full configuration control.

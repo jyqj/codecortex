@@ -12,7 +12,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -68,12 +68,7 @@ static AXUM_MERGE_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 pub struct AxumResolver;
 
-impl AxumResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-}
+impl AxumResolver {}
 
 impl FrameworkResolver for AxumResolver {
     fn framework_key(&self) -> &str {
@@ -107,7 +102,7 @@ impl FrameworkResolver for AxumResolver {
             let extractors_str = cap.get(2).map(|m| m.as_str()).unwrap_or("");
 
             let route_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, route_offset);
+            let line = line_for_offset(source, route_offset);
 
             // Parse each method extractor within the route call
             for ext_cap in AXUM_METHOD_EXTRACTOR_RE.captures_iter(extractors_str) {
@@ -146,7 +141,7 @@ impl FrameworkResolver for AxumResolver {
             }
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -178,7 +173,7 @@ impl FrameworkResolver for AxumResolver {
             }
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),

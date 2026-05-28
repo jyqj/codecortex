@@ -103,7 +103,6 @@ impl SymbolCatalog {
                 kind: sym.kind,
                 container: sym.container.clone(),
                 qname: sym.qname.clone(),
-                export_name: sym.export_name.clone(),
                 is_default_export: sym.is_default_export,
                 start_line: sym.start_line,
                 end_line: sym.end_line,
@@ -158,7 +157,7 @@ impl SymbolCatalog {
     // Lookup helpers
     // -----------------------------------------------------------------------
 
-    #[allow(dead_code)]
+    #[cfg(test)]
     pub(in crate::resolver) fn entry(&self, idx: usize) -> &CatalogEntry {
         &self.entries[idx]
     }

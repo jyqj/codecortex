@@ -10,7 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -66,11 +66,6 @@ static MOUNT_RE: LazyLock<Regex> = LazyLock::new(|| {
 pub struct RailsResolver;
 
 impl RailsResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Expand a `resources :name` into standard RESTful route edges.
     fn expand_resources(resource_name: &str, file_path: &str, line: u32) -> Vec<RouteEdgeRecord> {
         let base_path = format!("/{}", resource_name);
@@ -158,7 +153,7 @@ impl FrameworkResolver for RailsResolver {
             let handler = cap.get(3).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -185,7 +180,7 @@ impl FrameworkResolver for RailsResolver {
         for cap in RESOURCES_RE.captures_iter(source) {
             let resource_name = cap.get(1).map(|m| m.as_str()).unwrap_or("");
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             let expanded = Self::expand_resources(resource_name, file_path, line);
             outcome.route_edges.extend(expanded);
@@ -195,7 +190,7 @@ impl FrameworkResolver for RailsResolver {
         for cap in ROOT_RE.captures_iter(source) {
             let handler = cap.get(1).map(|m| m.as_str().to_string());
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -224,7 +219,7 @@ impl FrameworkResolver for RailsResolver {
             let mount_path = cap.get(2).map(|m| m.as_str()).unwrap_or("/");
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),

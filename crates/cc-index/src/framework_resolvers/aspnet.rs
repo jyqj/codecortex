@@ -11,7 +11,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -62,11 +62,7 @@ fn attr_to_method(attr: &str) -> String {
 
 pub struct AspNetResolver;
 
-impl AspNetResolver {
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-}
+impl AspNetResolver {}
 
 impl FrameworkResolver for AspNetResolver {
     fn framework_key(&self) -> &str {
@@ -124,7 +120,7 @@ impl FrameworkResolver for AspNetResolver {
             };
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -154,7 +150,7 @@ impl FrameworkResolver for AspNetResolver {
             let handler_name = cap.get(3).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),

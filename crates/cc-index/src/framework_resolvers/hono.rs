@@ -10,7 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -53,10 +53,6 @@ const HONO_HTTP_METHODS: &[&str] = &[
 pub struct HonoResolver;
 
 impl HonoResolver {
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     fn is_http_method(method: &str) -> bool {
         HONO_HTTP_METHODS.contains(&method.to_lowercase().as_str())
     }
@@ -103,7 +99,7 @@ impl FrameworkResolver for HonoResolver {
             let route_path = cap.get(2).map(|m| m.as_str()).unwrap_or("/");
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -132,7 +128,7 @@ impl FrameworkResolver for HonoResolver {
             let sub_app = cap.get(2).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -161,7 +157,7 @@ impl FrameworkResolver for HonoResolver {
             let handler_name = cap.get(2).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             let route_path = prefix.unwrap_or("/").to_string();
             let route_kind = if prefix.is_some() {

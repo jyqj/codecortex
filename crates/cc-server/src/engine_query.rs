@@ -43,7 +43,7 @@ impl CodeIndex {
 
     #[allow(clippy::too_many_arguments)]
     pub fn explore_symbols(
-        &mut self,
+        &self,
         names: &[String],
         max_callers: Option<usize>,
         max_callees: Option<usize>,
@@ -331,7 +331,7 @@ impl CodeIndex {
     /// find_symbol -> read_file -> slice dance and preserves indexed path
     /// boundaries via `path_guard`.
     pub fn get_symbol_source(
-        &mut self,
+        &self,
         symbol: &str,
         exact: bool,
         include_line_numbers: bool,
@@ -408,14 +408,6 @@ impl CodeIndex {
             "line_numbered": include_line_numbers,
             "truncated": source.contains("... truncated"),
         }))
-    }
-
-    #[allow(dead_code)]
-    pub fn compute_package_boundaries(
-        &self,
-        all_edges: &[(String, String)],
-    ) -> CcResult<Vec<PackageBoundary>> {
-        compute_package_boundaries(self.ensure_db()?, all_edges)
     }
 
     /// Return a schema overview of the index: node kinds with counts,
@@ -833,4 +825,3 @@ pub fn compute_package_boundaries(
     boundaries.truncate(10);
     Ok(boundaries)
 }
-

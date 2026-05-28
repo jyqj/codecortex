@@ -140,7 +140,6 @@ pub(in crate::resolver) fn default_resolution_strategy(kind: ResolutionKind) -> 
 
 /// A single entry in the symbol catalog (extended from original).
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
 pub(in crate::resolver) struct CatalogEntry {
     pub(in crate::resolver) symbol_id: String,
     pub(in crate::resolver) symbol_uid: Option<String>,
@@ -149,7 +148,6 @@ pub(in crate::resolver) struct CatalogEntry {
     pub(in crate::resolver) kind: SymbolKind,
     pub(in crate::resolver) container: Option<String>,
     pub(in crate::resolver) qname: Option<String>,
-    pub(in crate::resolver) export_name: Option<String>,
     pub(in crate::resolver) is_default_export: bool,
     pub(in crate::resolver) start_line: u32,
     pub(in crate::resolver) end_line: u32,

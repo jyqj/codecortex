@@ -253,44 +253,4 @@ impl PythonParser {
             }
         }
     }
-
-    /// Legacy: superseded by `extract_all()` single-pass DFS. Retained for rollback.
-    #[allow(dead_code)]
-    pub(super) fn collect_route_edges(
-        &self,
-        tree: &tree_sitter::Tree,
-        source: &[u8],
-        file_path: &str,
-        symbols: &[cc_model::symbol::SymbolRecord],
-    ) -> Vec<RouteEdgeRecord> {
-        use std::collections::HashMap;
-        let mut routes = Vec::new();
-        let sym_by_name: HashMap<&str, &cc_model::symbol::SymbolRecord> =
-            symbols.iter().map(|s| (s.name.as_str(), s)).collect();
-
-        let mut stack = vec![tree.root_node()];
-        while let Some(node) = stack.pop() {
-            if node.kind() == "decorated_definition" {
-                // Get the function name from the definition child
-                let func_node = node.child_by_field_name("definition");
-                if let Some(func_node) = func_node {
-                    let name = func_node
-                        .child_by_field_name("name")
-                        .and_then(|n| n.utf8_text(source).ok());
-                    if let Some(name) = name {
-                        let sym = sym_by_name.get(name);
-                        let qname = sym.and_then(|s| s.qname.as_deref()).unwrap_or(name);
-                        let sid = sym.map(|s| s.symbol_id.as_str());
-                        routes
-                            .extend(self.extract_route_edges(&node, source, file_path, qname, sid));
-                    }
-                }
-            }
-            let mut cursor = node.walk();
-            for child in node.children(&mut cursor) {
-                stack.push(child);
-            }
-        }
-        routes
-    }
 }

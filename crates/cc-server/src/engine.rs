@@ -15,6 +15,43 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+fn estimate_project_file_count(project: &Path) -> usize {
+    const EXCLUDED_DIRS: &[&str] = &[
+        ".git",
+        ".codecortex",
+        "target",
+        "node_modules",
+        ".next",
+        "dist",
+        "build",
+        "vendor",
+    ];
+
+    let mut count = 0usize;
+    let mut stack = vec![project.to_path_buf()];
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = std::fs::read_dir(&dir) else {
+            continue;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            let Ok(file_type) = entry.file_type() else {
+                continue;
+            };
+            if file_type.is_dir() {
+                let name = entry.file_name();
+                let name = name.to_string_lossy();
+                if !EXCLUDED_DIRS.contains(&name.as_ref()) {
+                    stack.push(path);
+                }
+            } else if file_type.is_file() {
+                count += 1;
+            }
+        }
+    }
+    count
+}
+
 pub struct CodeIndex {
     pub project_path: Option<PathBuf>,
     config: Option<ProjectConfig>,
@@ -53,7 +90,13 @@ impl CodeIndex {
         std::fs::create_dir_all(&paths.workdir)?;
         std::fs::create_dir_all(&paths.logs_dir)?;
 
-        let (db, schema_status) = IndexDb::open(&paths.index_db)?;
+        let estimated_files = estimate_project_file_count(&project);
+        let read_pool_size = config
+            .indexing
+            .db_read_pool_size
+            .unwrap_or_else(|| RepoSizeTier::from_file_count(estimated_files).db_read_pool_size());
+        let (db, schema_status) =
+            IndexDb::open_with_read_pool_size(&paths.index_db, read_pool_size)?;
         let db = Arc::new(db);
         let engine = SearchEngine::new(db.clone(), &config);
 
@@ -122,8 +165,7 @@ impl CodeIndex {
         let db = self.ensure_db()?;
         let indexer = Indexer::new(db.clone(), project, &config.indexing);
         let report = indexer.build_index(project, full)?;
-        self.repo_tier = None;
-        self.needs_initial_index = false;
+        self.after_successful_index_build();
         Ok(report)
     }
 
@@ -133,9 +175,16 @@ impl CodeIndex {
         let db = self.ensure_db()?;
         let indexer = Indexer::new(db.clone(), project, &config.indexing);
         let report = indexer.build_auto_index(project, full, config.auto_index.file_limit)?;
+        self.after_successful_index_build();
+        Ok(report)
+    }
+
+    fn after_successful_index_build(&mut self) {
         self.repo_tier = None;
         self.needs_initial_index = false;
-        Ok(report)
+        if let Some(engine) = &self.engine {
+            engine.invalidate_vector_cache();
+        }
     }
 
     pub fn index_status(&self) -> CcResult<ProjectStats> {
@@ -144,7 +193,7 @@ impl CodeIndex {
     }
 
     pub fn search_in_context(
-        &mut self,
+        &self,
         query: &str,
         top_k: usize,
         intent: Option<Intent>,
@@ -153,7 +202,7 @@ impl CodeIndex {
     }
 
     pub fn search_in_context_with(
-        &mut self,
+        &self,
         query: &str,
         top_k: usize,
         intent: Option<Intent>,
@@ -483,7 +532,7 @@ impl CodeIndex {
     }
 
     pub fn task_symbols(
-        &mut self,
+        &self,
         task: &str,
         max_symbols: Option<usize>,
         expand_depth: Option<usize>,

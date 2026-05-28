@@ -35,7 +35,6 @@ pub(crate) fn upsert_json_key(
 }
 
 /// Remove a key under a top-level object in a JSON file. Missing files/keys are OK.
-#[allow(dead_code)]
 pub(crate) fn remove_json_key(path: &Path, section: &str, key: &str) -> Result<(), String> {
     if !path.exists() {
         return Ok(());

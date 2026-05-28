@@ -60,6 +60,9 @@ pub struct IndexingConfig {
     pub chunk_line_budget: u32,
     pub parse_timeout_micros: Option<u64>,
     pub parallelism: Parallelism,
+    /// SQLite read connection pool size. `None` means derive from repo size tier.
+    #[serde(default)]
+    pub db_read_pool_size: Option<u32>,
     /// 是否启用增量脏传播（检测导出变化后重新解析引用方）
     #[serde(default = "default_dirty_propagation")]
     pub dirty_propagation: bool,
@@ -140,6 +143,7 @@ impl Default for IndexingConfig {
             chunk_line_budget: 80,
             parse_timeout_micros: None,
             parallelism: Parallelism::Auto,
+            db_read_pool_size: None,
             dirty_propagation: true,
             dirty_propagation_max_files: 200,
             memory_budget_fraction: 0.5,
@@ -190,7 +194,6 @@ impl Default for SearchConfig {
 /// Legacy config section — kept for `.codecortex.json` backwards compatibility.
 /// Budget values are now driven by [`RepoSizeTier`]; these fields are not read at runtime.
 #[derive(Debug, Clone, Serialize, Deserialize)]
-#[allow(dead_code)]
 pub struct PackConfig {
     pub default_token_budget: u32,
     pub neighbor_window: u32,
@@ -314,6 +317,16 @@ impl RepoSizeTier {
             Self::Small => 24000,
             Self::Medium => 32000,
             Self::Large => 38000,
+        }
+    }
+
+    /// Suggested SQLite read pool size for this repository tier.
+    pub fn db_read_pool_size(&self) -> u32 {
+        match self {
+            Self::Tiny => 4,
+            Self::Small => 6,
+            Self::Medium => 8,
+            Self::Large => 12,
         }
     }
 

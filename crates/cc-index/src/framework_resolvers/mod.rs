@@ -24,8 +24,67 @@ pub mod spring;
 pub mod svelte;
 pub mod vue;
 
+use cc_model::edge::RouteEdgeRecord;
+use cc_model::id::StableId;
 use cc_model::parse::ParseOutcome;
-use cc_model::Language;
+use cc_model::{Language, ParserTier};
+
+/// Compute a 1-based line number for a byte offset in source text.
+pub(crate) fn line_for_offset(source: &str, offset: usize) -> u32 {
+    source[..offset].matches('\n').count() as u32 + 1
+}
+
+/// Common route-edge fields used by framework resolvers.
+pub(crate) struct RouteEdgeSpec {
+    pub route_path: String,
+    pub handler_name: Option<String>,
+    pub method: Option<String>,
+    pub framework: &'static str,
+    pub route_kind: &'static str,
+    pub confidence: f64,
+    pub parser_tier: ParserTier,
+}
+
+/// Build a framework route edge with the common default metadata shape.
+pub(crate) fn make_route_edge(
+    file_path: &str,
+    line: u32,
+    ordinal: u32,
+    spec: RouteEdgeSpec,
+) -> RouteEdgeRecord {
+    RouteEdgeRecord {
+        edge_id: StableId::edge_id("route", file_path, line, ordinal),
+        file_path: file_path.to_string(),
+        route_path: spec.route_path,
+        handler_name: spec.handler_name,
+        method: spec.method,
+        line,
+        start_col: 0,
+        end_line: None,
+        end_col: 0,
+        handler_symbol_id: None,
+        handler_symbol_uid: None,
+        handler_expr: None,
+        router_symbol_uid: None,
+        framework: Some(spec.framework.to_string()),
+        route_kind: Some(spec.route_kind.to_string()),
+        confidence: spec.confidence,
+        parser_tier: spec.parser_tier,
+    }
+}
+
+/// Push a common route edge into a parse outcome.
+pub(crate) fn push_route_edge(
+    outcome: &mut ParseOutcome,
+    file_path: &str,
+    line: u32,
+    ordinal: u32,
+    spec: RouteEdgeSpec,
+) {
+    outcome
+        .route_edges
+        .push(make_route_edge(file_path, line, ordinal, spec));
+}
 
 // ---------------------------------------------------------------------------
 // ProjectFrameworkContext
@@ -49,7 +108,17 @@ impl ProjectFrameworkContext {
     }
 
     pub fn has_framework(&self, key: &str) -> bool {
-        self.repo_frameworks.iter().any(|(k, _)| k == key)
+        self.repo_frameworks.iter().any(|(k, _)| {
+            k == key
+                || matches!(
+                    (key, k.as_str()),
+                    // Detection stores the normalized key `actix`, while the
+                    // resolver emits/handles actix-web route metadata.
+                    ("actix-web", "actix")
+                        // The Go resolver handles the common router family.
+                        | ("gin", "echo" | "fiber" | "chi" | "gorilla" | "net_http")
+                )
+        })
     }
 }
 
@@ -174,11 +243,37 @@ pub fn default_registry() -> FrameworkResolverRegistry {
 /// Returns `"full"`, `"extraction"`, or `"experimental"`.
 /// If the key is not found in the registry, returns `"unknown"`.
 pub fn resolver_tier_for_key(framework_key: &str) -> &'static str {
-    let registry = default_registry();
-    for resolver in registry.all_resolvers() {
-        if resolver.framework_key() == framework_key {
-            return resolver.resolver_tier();
-        }
+    match framework_key {
+        "actix" | "actix-web" | "axum" | "django" | "express" | "fastapi" | "flask" | "gin"
+        | "echo" | "fiber" | "chi" | "gorilla" | "net_http" | "hono" | "laravel" | "nestjs"
+        | "rails" | "react" | "spring" | "sveltekit" | "vue" => "full",
+        "aspnet" => "extraction",
+        _ => "unknown",
     }
-    "unknown"
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn resolver_tier_lookup_uses_static_aliases() {
+        assert_eq!(resolver_tier_for_key("express"), "full");
+        assert_eq!(resolver_tier_for_key("actix"), "full");
+        assert_eq!(resolver_tier_for_key("actix-web"), "full");
+        assert_eq!(resolver_tier_for_key("echo"), "full");
+        assert_eq!(resolver_tier_for_key("aspnet"), "extraction");
+        assert_eq!(resolver_tier_for_key("unknown-fw"), "unknown");
+    }
+
+    #[test]
+    fn project_context_recognizes_resolver_aliases() {
+        let ctx = ProjectFrameworkContext {
+            repo_frameworks: vec![("actix".to_string(), 0.9), ("echo".to_string(), 0.8)],
+            file_frameworks: Default::default(),
+        };
+        assert!(ctx.has_framework("actix-web"));
+        assert!(ctx.has_framework("gin"));
+        assert!(!ctx.has_framework("express"));
+    }
 }

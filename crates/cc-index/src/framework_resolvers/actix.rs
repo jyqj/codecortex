@@ -15,7 +15,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -89,11 +89,6 @@ static ACTIX_CONFIGURE_REF_RE: LazyLock<Regex> = LazyLock::new(|| {
 pub struct ActixResolver;
 
 impl ActixResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Find the next Rust function name after a given byte offset.
     fn find_next_fn_name(source: &str, after_offset: usize) -> Option<String> {
         let remaining = &source[after_offset..];
@@ -136,7 +131,7 @@ impl FrameworkResolver for ActixResolver {
             let route_path = cap.get(2).map(|m| m.as_str()).unwrap_or("/");
 
             let attr_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, attr_offset);
+            let line = line_for_offset(source, attr_offset);
 
             let handler_name = Self::find_next_fn_name(source, attr_offset);
 
@@ -166,7 +161,7 @@ impl FrameworkResolver for ActixResolver {
             let resource_path = res_cap.get(1).map(|m| m.as_str()).unwrap_or("/");
             let res_match = res_cap.get(0).unwrap();
             let res_offset = res_match.start();
-            let line = Self::line_for_offset(source, res_offset);
+            let line = line_for_offset(source, res_offset);
 
             // Scan the region after web::resource(...) for .route(web::METHOD().to(handler))
             // Look ahead up to 500 bytes to find chained .route() calls
@@ -207,7 +202,7 @@ impl FrameworkResolver for ActixResolver {
             }
             let scope_match = scope_cap.get(0).unwrap();
             let scope_offset = scope_match.start();
-            let line = Self::line_for_offset(source, scope_offset);
+            let line = line_for_offset(source, scope_offset);
 
             // Look ahead up to 1000 bytes for .service() and .configure() chains
             let after = &source[scope_match.end()..];

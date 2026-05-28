@@ -7,9 +7,9 @@ use rusqlite::Connection;
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::{
-    is_actionable_reference_name, CallEdgeLite, DataFlowEdgeLite, EdgeLiteBfs,
-    FileEdgesForReresolve, FileFrameworkRecord, IndexDb, RepoFrameworkRecord, ResolutionAttemptRow,
-    SymbolCoverRow, SymbolDegreeInfo, SymbolRefLite, SymbolRow,
+    is_actionable_reference_name, CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve,
+    FileFrameworkRecord, IndexDb, RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow,
+    SymbolDegreeInfo, SymbolRefLite, SymbolRow,
 };
 
 impl IndexDb {
@@ -144,37 +144,6 @@ impl IndexDb {
                     target_symbol_uid: row.get(3)?,
                     resolution_kind: row.get(4)?,
                     confidence: row.get(5)?,
-                })
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
-    }
-
-    pub fn data_flow_edges_by_uid(
-        &self,
-        uid: &str,
-        limit: usize,
-    ) -> CcResult<Vec<DataFlowEdgeLite>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT file_path, line, flow_kind, source_symbol_uid, target_symbol_uid, confidence, env_key
-                 FROM data_flow_edges
-                 WHERE source_symbol_uid = ?1 OR target_symbol_uid = ?1
-                 ORDER BY confidence DESC, line ASC
-                 LIMIT ?2",
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params![uid, limit as i64], |row| {
-                Ok(DataFlowEdgeLite {
-                    file_path: row.get(0)?,
-                    line: row.get(1)?,
-                    flow_kind: row.get(2)?,
-                    source_symbol_uid: row.get(3)?,
-                    target_symbol_uid: row.get(4)?,
-                    confidence: row.get(5)?,
-                    env_key: row.get(6)?,
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;

@@ -3,14 +3,16 @@
 //! - `enrich_file`: extracts route definitions from FastAPI decorators
 //! - `resolve_cross_file`: resolves APIRouter prefix mounting
 
+#[cfg(test)]
 use cc_model::edge::RouteEdgeRecord;
-use cc_model::id::StableId;
 use cc_model::parse::ParseOutcome;
 use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{
+    line_for_offset, push_route_edge, FrameworkResolver, ProjectFrameworkContext, RouteEdgeSpec,
+};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -45,12 +47,7 @@ static INCLUDE_ROUTER_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 pub struct FastApiResolver;
 
-impl FastApiResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-}
+impl FastApiResolver {}
 
 impl FrameworkResolver for FastApiResolver {
     fn framework_key(&self) -> &str {
@@ -85,7 +82,7 @@ impl FrameworkResolver for FastApiResolver {
 
             let decorator_offset = cap.get(0).unwrap().start();
             let decorator_end = cap.get(0).unwrap().end();
-            let line = Self::line_for_offset(source, decorator_offset);
+            let line = line_for_offset(source, decorator_offset);
 
             // Look for the function definition after the decorator
             let handler_name = DEF_NAME_RE
@@ -93,25 +90,21 @@ impl FrameworkResolver for FastApiResolver {
                 .and_then(|c| c.get(1))
                 .map(|m| m.as_str().to_string());
 
-            outcome.route_edges.push(RouteEdgeRecord {
-                edge_id: StableId::edge_id("route", file_path, line, 0),
-                file_path: file_path.to_string(),
-                route_path: route_path.to_string(),
-                handler_name,
-                method: Some(http_method.to_uppercase()),
+            push_route_edge(
+                outcome,
+                file_path,
                 line,
-                start_col: 0,
-                end_line: None,
-                end_col: 0,
-                handler_symbol_id: None,
-                handler_symbol_uid: None,
-                handler_expr: None,
-                router_symbol_uid: None,
-                framework: Some("fastapi".to_string()),
-                route_kind: Some("http".to_string()),
-                confidence: 0.88,
-                parser_tier: ParserTier::Heuristic,
-            });
+                0,
+                RouteEdgeSpec {
+                    route_path: route_path.to_string(),
+                    handler_name,
+                    method: Some(http_method.to_uppercase()),
+                    framework: "fastapi",
+                    route_kind: "http",
+                    confidence: 0.88,
+                    parser_tier: ParserTier::Heuristic,
+                },
+            );
         }
 
         // --- include_router mounting: app.include_router(router, prefix="/api") ---
@@ -120,27 +113,23 @@ impl FrameworkResolver for FastApiResolver {
             let prefix = cap.get(2).map(|m| m.as_str()).unwrap_or("/");
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
-            outcome.route_edges.push(RouteEdgeRecord {
-                edge_id: StableId::edge_id("route", file_path, line, 0),
-                file_path: file_path.to_string(),
-                route_path: prefix.to_string(),
-                handler_name: router_name,
-                method: Some("USE".to_string()),
+            push_route_edge(
+                outcome,
+                file_path,
                 line,
-                start_col: 0,
-                end_line: None,
-                end_col: 0,
-                handler_symbol_id: None,
-                handler_symbol_uid: None,
-                handler_expr: None,
-                router_symbol_uid: None,
-                framework: Some("fastapi".to_string()),
-                route_kind: Some("router_mount".to_string()),
-                confidence: 0.80,
-                parser_tier: ParserTier::Heuristic,
-            });
+                0,
+                RouteEdgeSpec {
+                    route_path: prefix.to_string(),
+                    handler_name: router_name,
+                    method: Some("USE".to_string()),
+                    framework: "fastapi",
+                    route_kind: "router_mount",
+                    confidence: 0.80,
+                    parser_tier: ParserTier::Heuristic,
+                },
+            );
         }
     }
 

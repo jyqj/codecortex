@@ -2,16 +2,16 @@
 
 ## Unit Tests
 
-725 tests across 7 crates (+ 1 doctest, 1 ignored). Run with `cargo test`.
+725 tests across 7 crates (724 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace --all-targets`).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
 | cc-db | 53 | Schema, migrations, SQL injection, architecture, ADR, edges, frontier, graph, query |
-| cc-eval | 14 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expect_error), corpus loading, fixture integration |
-| cc-index | 212 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection |
+| cc-eval | 15 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
+| cc-index | 214 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection, resolver tier aliases |
 | cc-model | 29 | Route normalization, data structures, enum round-trip |
 | cc-parsers | 160 | Tree-sitter parsing for 10 languages, symbol extraction, Rust parser coverage |
-| cc-search | 160 | Cypher parser/executor, regex validation, vector cache, search engine, graph queries, parity tests |
+| cc-search | 157 | Cypher parser/executor, regex validation, vector cache, file-scoped vector streaming, search engine, parity tests |
 | cc-server | 97 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, output limits, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
@@ -68,7 +68,7 @@
 | error_invalid_cypher | graph_query | Invalid Cypher query returns error |
 | error_node_missing | node | Node lookup for nonexistent symbol returns error |
 | error_trace_missing_symbol | trace | Trace between nonexistent symbols returns error |
-| error_files_invalid_action | files | Invalid action falls through to default list behavior |
+| error_files_invalid_action | files | Invalid files action returns an explicit error contract |
 | error_impact_no_index | impact | Impact with no changed files returns valid response |
 | error_search_empty_query | search | Empty query returns empty or valid response |
 
@@ -97,7 +97,8 @@
   - Server/framework (1): server.py
 - Frameworks covered: Express, Flask, Spring, Go routers (Gin/Echo/Fiber/Chi/Gorilla)
 - p95/max latency and output size tracked via `bench::run_benchmark()`
-- Recall@5 and MRR implemented via `expected_symbols` assertions (4 corpus cases active)
+- Real workspace benchmark: `benchmark_real_workspace` copies the CodeCortex workspace (212 files in latest run) into a temp dir and writes `docs/benchmarks/real_workspace_latest.md` when requested
+- Recall@5 and MRR implemented via `expected_symbols` assertions (5 corpus cases active)
 
 ## Integration Testing
 
@@ -105,4 +106,4 @@ MCP server integration is tested via the eval harness, which creates a `CodeInde
 
 ## Pre-commit
 
-No pre-commit hooks configured. Run `cargo test && cargo clippy` before committing.
+No pre-commit hooks configured. Run `cargo fmt --all -- --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace --all-targets && cargo test -p cc-eval -- integration_fixtures_and_corpus`. For real-workspace performance, run `CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture`.

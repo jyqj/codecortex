@@ -8,8 +8,7 @@ use super::{
 use crate::http_call_helpers::*;
 use cc_model::dispatch_site::{DispatchSiteKind, DispatchSiteRecord};
 use cc_model::edge::{
-    CallEdgeRecord, DataFlowEdgeRecord, HttpCallEdgeRecord, ImportRecord, SemanticEdgeRecord,
-    SemanticRelation,
+    CallEdgeRecord, DataFlowEdgeRecord, HttpCallEdgeRecord, SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
 use cc_model::symbol::SymbolRecord;
@@ -32,54 +31,6 @@ fn is_http_client_name_heuristic(name: &str) -> bool {
         || lower.ends_with("http_client")
         || (lower.ends_with("_client") && lower.contains("http"))
         || (lower.ends_with("_client") && lower.contains("api"))
-}
-
-/// Legacy: superseded by `PythonParser::extract_all()` single-pass DFS. Retained for rollback.
-#[allow(dead_code)]
-pub(super) fn extract_http_calls(
-    root: tree_sitter::Node,
-    source: &str,
-    file_path: &str,
-    imports: &[ImportRecord],
-) -> Vec<HttpCallEdgeRecord> {
-    let mut results = Vec::new();
-    let bytes = source.as_bytes();
-
-    // Build import-based broker mapping: local name -> broker_type
-    let mut broker_imports: HashMap<String, String> = HashMap::new();
-    for imp in imports {
-        if let Some(broker_match) = crate::broker_patterns::match_broker(&imp.import_string) {
-            if let Some(ref name) = imp.imported_name {
-                if name != "*" {
-                    broker_imports.insert(name.clone(), broker_match.broker_type.to_string());
-                }
-            }
-            if let Some(ref alias) = imp.alias {
-                broker_imports.insert(alias.clone(), broker_match.broker_type.to_string());
-            }
-        }
-    }
-
-    let mut stack = vec![root];
-
-    while let Some(node) = stack.pop() {
-        if node.kind() == "call" {
-            if let Some(edge) = try_extract_http_call(&node, bytes, file_path) {
-                results.push(edge);
-            } else if let Some(edge) =
-                try_extract_broker_call(&node, bytes, file_path, &broker_imports)
-            {
-                results.push(edge);
-            }
-        }
-        // Push children in reverse to maintain order
-        let mut cursor = node.walk();
-        for child in node.children(&mut cursor) {
-            stack.push(child);
-        }
-    }
-
-    results
 }
 
 /// Try to extract an HttpCallEdgeRecord from a single `call` node.

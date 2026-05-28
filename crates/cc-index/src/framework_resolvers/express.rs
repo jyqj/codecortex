@@ -3,14 +3,16 @@
 //! - `enrich_file`: extracts route definitions from Express-style APIs
 //! - `resolve_cross_file`: resolves sub-router prefix mounting
 
+#[cfg(test)]
 use cc_model::edge::RouteEdgeRecord;
-use cc_model::id::StableId;
 use cc_model::parse::ParseOutcome;
 use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{
+    line_for_offset, push_route_edge, FrameworkResolver, ProjectFrameworkContext, RouteEdgeSpec,
+};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -46,11 +48,6 @@ const EXPRESS_HTTP_METHODS: &[&str] = &[
 pub struct ExpressResolver;
 
 impl ExpressResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Check if a captured method name is a valid HTTP method.
     fn is_http_method(method: &str) -> bool {
         EXPRESS_HTTP_METHODS.contains(&method.to_lowercase().as_str())
@@ -98,27 +95,23 @@ impl FrameworkResolver for ExpressResolver {
             let handler_name = cap.get(3).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
-            outcome.route_edges.push(RouteEdgeRecord {
-                edge_id: StableId::edge_id("route", file_path, line, 0),
-                file_path: file_path.to_string(),
-                route_path: route_path.to_string(),
-                handler_name,
-                method: Some(method_name.to_uppercase()),
+            push_route_edge(
+                outcome,
+                file_path,
                 line,
-                start_col: 0,
-                end_line: None,
-                end_col: 0,
-                handler_symbol_id: None,
-                handler_symbol_uid: None,
-                handler_expr: None,
-                router_symbol_uid: None,
-                framework: Some("express".to_string()),
-                route_kind: Some("http".to_string()),
-                confidence: 0.85,
-                parser_tier: ParserTier::Heuristic,
-            });
+                0,
+                RouteEdgeSpec {
+                    route_path: route_path.to_string(),
+                    handler_name,
+                    method: Some(method_name.to_uppercase()),
+                    framework: "express",
+                    route_kind: "http",
+                    confidence: 0.85,
+                    parser_tier: ParserTier::Heuristic,
+                },
+            );
         }
 
         // --- app.use middleware mounting ---
@@ -127,7 +120,7 @@ impl FrameworkResolver for ExpressResolver {
             let handler_name = cap.get(2).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             let route_path = prefix.unwrap_or("/").to_string();
             let route_kind = if prefix.is_some() {
@@ -136,25 +129,21 @@ impl FrameworkResolver for ExpressResolver {
                 "middleware"
             };
 
-            outcome.route_edges.push(RouteEdgeRecord {
-                edge_id: StableId::edge_id("route", file_path, line, 0),
-                file_path: file_path.to_string(),
-                route_path,
-                handler_name,
-                method: Some("USE".to_string()),
+            push_route_edge(
+                outcome,
+                file_path,
                 line,
-                start_col: 0,
-                end_line: None,
-                end_col: 0,
-                handler_symbol_id: None,
-                handler_symbol_uid: None,
-                handler_expr: None,
-                router_symbol_uid: None,
-                framework: Some("express".to_string()),
-                route_kind: Some(route_kind.to_string()),
-                confidence: 0.75,
-                parser_tier: ParserTier::Heuristic,
-            });
+                0,
+                RouteEdgeSpec {
+                    route_path,
+                    handler_name,
+                    method: Some("USE".to_string()),
+                    framework: "express",
+                    route_kind,
+                    confidence: 0.75,
+                    parser_tier: ParserTier::Heuristic,
+                },
+            );
         }
     }
 

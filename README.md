@@ -244,7 +244,7 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 
 ## Language Support
 
-32 language identifiers recognized across three confidence tiers:
+31 concrete language identifiers (+ `Unknown` fallback) recognized across three confidence tiers:
 
 ### Full tree-sitter parsing (confidence 0.7+)
 

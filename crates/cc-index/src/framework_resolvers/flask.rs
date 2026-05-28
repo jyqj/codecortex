@@ -10,7 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -55,11 +55,6 @@ static REGISTER_BLUEPRINT_RE: LazyLock<Regex> = LazyLock::new(|| {
 pub struct FlaskResolver;
 
 impl FlaskResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Parse a methods=["GET", "POST"] string into a list of uppercase method names.
     fn parse_methods(methods_str: &str) -> Vec<String> {
         METHOD_STR_RE
@@ -102,7 +97,7 @@ impl FrameworkResolver for FlaskResolver {
 
             let decorator_offset = cap.get(0).unwrap().start();
             let decorator_end = cap.get(0).unwrap().end();
-            let line = Self::line_for_offset(source, decorator_offset);
+            let line = line_for_offset(source, decorator_offset);
 
             let handler_name = DEF_NAME_RE
                 .captures(&source[decorator_end..])
@@ -151,7 +146,7 @@ impl FrameworkResolver for FlaskResolver {
 
             let decorator_offset = cap.get(0).unwrap().start();
             let decorator_end = cap.get(0).unwrap().end();
-            let line = Self::line_for_offset(source, decorator_offset);
+            let line = line_for_offset(source, decorator_offset);
 
             // Skip if this was already captured by ROUTE_DECORATOR_RE
             // (route decorator regex won't match @app.get style, so no overlap)
@@ -192,7 +187,7 @@ impl FrameworkResolver for FlaskResolver {
             }
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),

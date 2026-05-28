@@ -13,7 +13,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -50,11 +50,6 @@ const SVELTEKIT_ROUTE_FILES: &[(&str, &str)] = &[
 pub struct SvelteResolver;
 
 impl SvelteResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Detect SvelteKit file-based routing from the file path.
     ///
     /// Patterns:
@@ -179,7 +174,7 @@ impl FrameworkResolver for SvelteResolver {
                 for cap in HTTP_METHOD_EXPORT_RE.captures_iter(source) {
                     let method = cap.get(1).map(|m| m.as_str()).unwrap_or("GET");
                     let offset = cap.get(0).unwrap().start();
-                    let line = Self::line_for_offset(source, offset);
+                    let line = line_for_offset(source, offset);
 
                     outcome.route_edges.push(RouteEdgeRecord {
                         edge_id: StableId::edge_id("route", file_path, line, 0),

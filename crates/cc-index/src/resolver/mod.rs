@@ -16,7 +16,7 @@ pub(crate) mod types;
 
 pub(crate) use cargo_workspace::{resolve_cargo_workspace, resolve_rust_workspace_import};
 pub(crate) use catalog::SymbolCatalog;
-pub(crate) use types::{ResolutionContext};
+pub(crate) use types::ResolutionContext;
 #[cfg(test)]
 pub(crate) use types::{CatalogScope, ImportBinding, InternalResKind};
 

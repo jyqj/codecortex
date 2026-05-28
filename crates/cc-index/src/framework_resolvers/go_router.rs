@@ -14,7 +14,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -125,11 +125,6 @@ impl GoRouterResolver {
         .to_string()
     }
 
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Detect which Go router framework this source likely uses.
     fn detect_framework(source: &str) -> &'static str {
         if source.contains("gin-gonic/gin") || source.contains("gin.") {
@@ -185,7 +180,7 @@ impl FrameworkResolver for GoRouterResolver {
             let handler_name = cap.get(3).map(|m| m.as_str().to_string());
 
             let offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -219,7 +214,7 @@ impl FrameworkResolver for GoRouterResolver {
 
             let full_match = cap.get(0).unwrap();
             let offset = full_match.start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             // Try to find chained .Methods("GET") after the HandleFunc
             let after = &source[full_match.end()..];
@@ -257,7 +252,7 @@ impl FrameworkResolver for GoRouterResolver {
             let handler_name = cap.get(2).map(|m| m.as_str().to_string());
 
             let offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -290,7 +285,7 @@ impl FrameworkResolver for GoRouterResolver {
                 .trim_end_matches('(');
 
             let offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -331,7 +326,7 @@ impl FrameworkResolver for GoRouterResolver {
             let arg_name = cap.get(3).map(|m| m.as_str()).unwrap_or("");
 
             let offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             // Find the group prefix for the argument variable
             let prefix = group_prefixes
@@ -380,7 +375,7 @@ impl FrameworkResolver for GoRouterResolver {
             }
 
             let offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),

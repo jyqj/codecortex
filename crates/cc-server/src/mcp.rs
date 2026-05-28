@@ -1,10 +1,10 @@
 //! MCP Server — code indexing, search and graph tools only.
 
+use crate::watcher::FileWatcher;
+use cc_model::config::RepoSizeTier;
 use cc_server::engine::CodeIndex;
 use cc_server::handlers;
 use cc_server::tools::JsonResult;
-use crate::watcher::FileWatcher;
-use cc_model::config::RepoSizeTier;
 use lru::LruCache;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::tool::ToolCallContext;

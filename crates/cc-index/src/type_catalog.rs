@@ -17,23 +17,17 @@ use cc_model::type_assign::TypeAssignRecord;
 
 /// A method entry in the type catalog.
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
 struct MethodEntry {
     symbol_uid: String,
     receiver_type: Option<String>,
     param_count: Option<u32>,
-    file_path: String,
 }
 
 /// Type hierarchy information for a named type.
 #[derive(Clone, Debug)]
-#[allow(dead_code)]
 struct TypeInfo {
-    symbol_uid: String,
     base_types: Vec<String>,
     implements: Vec<String>,
-    #[allow(dead_code)]
-    file_path: String,
 }
 
 /// A lightweight type catalog for method dispatch resolution.
@@ -76,7 +70,6 @@ impl TypeCatalog {
                         symbol_uid: uid,
                         receiver_type: sym.receiver_type.clone(),
                         param_count: sym.param_count,
-                        file_path: sym.file_path.clone(),
                     };
                     method_index
                         .entry(sym.name.to_lowercase())
@@ -113,10 +106,8 @@ impl TypeCatalog {
                     type_index_by_qname.insert(
                         canonical_key.clone(),
                         TypeInfo {
-                            symbol_uid: uid,
                             base_types: base,
                             implements: impls,
-                            file_path: sym.file_path.clone(),
                         },
                     );
 

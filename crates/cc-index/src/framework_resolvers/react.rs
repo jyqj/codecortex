@@ -14,7 +14,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -64,11 +64,6 @@ static ROUTE_LAZY_RE: LazyLock<Regex> = LazyLock::new(|| {
 pub struct ReactComponentResolver;
 
 impl ReactComponentResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Detect Next.js file-based routing from the file path.
     ///
     /// Patterns:
@@ -183,7 +178,7 @@ impl FrameworkResolver for ReactComponentResolver {
             let component_name = cap.get(2).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -216,7 +211,7 @@ impl FrameworkResolver for ReactComponentResolver {
             lazy_route_paths.push(route_path.to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             // Derive a component name from the import path (last segment, PascalCase)
             let component_name = import_path.rsplit('/').next().map(|s| s.to_string());
@@ -252,7 +247,7 @@ impl FrameworkResolver for ReactComponentResolver {
             }
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -319,7 +314,7 @@ impl FrameworkResolver for ReactComponentResolver {
             for cap in EXPORT_DEFAULT_FN_RE.captures_iter(source) {
                 let name = cap.get(1).map(|m| m.as_str().to_string());
                 let offset = cap.get(0).unwrap().start();
-                let line = Self::line_for_offset(source, offset);
+                let line = line_for_offset(source, offset);
 
                 outcome.route_edges.push(RouteEdgeRecord {
                     edge_id: StableId::edge_id("component", file_path, line, 0),
@@ -345,7 +340,7 @@ impl FrameworkResolver for ReactComponentResolver {
             for cap in EXPORT_CONST_RE.captures_iter(source) {
                 let name = cap.get(1).map(|m| m.as_str().to_string());
                 let offset = cap.get(0).unwrap().start();
-                let line = Self::line_for_offset(source, offset);
+                let line = line_for_offset(source, offset);
 
                 outcome.route_edges.push(RouteEdgeRecord {
                     edge_id: StableId::edge_id("component", file_path, line, 0),

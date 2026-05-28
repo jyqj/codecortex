@@ -9,7 +9,6 @@ pub mod targets;
 use std::path::{Path, PathBuf};
 
 /// Trait implemented by each agent installer target.
-#[allow(dead_code)]
 pub trait InstallerTarget: Send + Sync {
     /// Human-readable name (e.g. "Claude Code").
     fn name(&self) -> &str;
@@ -43,6 +42,11 @@ pub fn install_all(binary_path: &Path, force: bool) -> InstallReport {
         if !force && !target.detect(&home) {
             continue;
         }
+        tracing::debug!(
+            agent_id = target.id(),
+            config_location = %target.config_location(&home).display(),
+            "installer: applying target"
+        );
         match target.install(&home, binary_path, force) {
             Ok(hooks) => {
                 report.agents_configured.push(target.name().to_string());
@@ -67,6 +71,11 @@ pub fn uninstall_all() -> InstallReport {
         if !target.detect(&home) {
             continue;
         }
+        tracing::debug!(
+            agent_id = target.id(),
+            config_location = %target.config_location(&home).display(),
+            "installer: removing target"
+        );
         match target.uninstall(&home) {
             Ok(()) => {
                 report.agents_configured.push(target.name().to_string());

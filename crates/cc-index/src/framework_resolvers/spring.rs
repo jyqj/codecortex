@@ -13,7 +13,7 @@ use cc_model::{Language, ParserTier, SymbolKind};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -124,11 +124,6 @@ impl SpringResolver {
             .map(|m| m.as_str().to_string())
     }
 
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Extract injected dependency type names from source.
     /// Returns vec of (type_name, line) tuples.
     fn extract_injected_types(source: &str) -> Vec<(String, u32)> {
@@ -138,7 +133,7 @@ impl SpringResolver {
         for cap in AUTOWIRED_FIELD_RE.captures_iter(source) {
             if let Some(type_match) = cap.get(1) {
                 let type_name = strip_generics(type_match.as_str()).to_string();
-                let line = Self::line_for_offset(source, type_match.start());
+                let line = line_for_offset(source, type_match.start());
                 results.push((type_name, line));
             }
         }
@@ -154,7 +149,7 @@ impl SpringResolver {
             let ctor_name = cap.get(1).map(|m| m.as_str());
             let params = cap.get(2).map(|m| m.as_str()).unwrap_or("");
             let ctor_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, ctor_offset);
+            let line = line_for_offset(source, ctor_offset);
 
             // Only treat as constructor if the method name matches the class name
             let is_constructor = match (&class_name, ctor_name) {
@@ -252,7 +247,7 @@ impl FrameworkResolver for SpringResolver {
             let method_path = cap.get(2).map(|m| m.as_str()).unwrap_or("");
 
             let annotation_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, annotation_offset);
+            let line = line_for_offset(source, annotation_offset);
 
             let handler_name = Self::find_next_method_name(source, annotation_offset);
 
@@ -293,7 +288,7 @@ impl FrameworkResolver for SpringResolver {
             let http_verb = cap.get(2).map(|m| m.as_str()).unwrap_or("GET");
 
             let annotation_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, annotation_offset);
+            let line = line_for_offset(source, annotation_offset);
 
             let handler_name = Self::find_next_method_name(source, annotation_offset);
 

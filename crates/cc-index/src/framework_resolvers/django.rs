@@ -10,7 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -39,12 +39,7 @@ static INCLUDE_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 pub struct DjangoResolver;
 
-impl DjangoResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-}
+impl DjangoResolver {}
 
 impl FrameworkResolver for DjangoResolver {
     fn framework_key(&self) -> &str {
@@ -82,7 +77,7 @@ impl FrameworkResolver for DjangoResolver {
             }
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             // Normalize the route path: ensure leading /
             let route_path = if route_pattern.starts_with('/') || route_pattern.starts_with('^') {
@@ -130,7 +125,7 @@ impl FrameworkResolver for DjangoResolver {
             }
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             // Normalize the prefix path: ensure leading /
             let route_path = if prefix_pattern.is_empty() {

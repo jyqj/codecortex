@@ -13,7 +13,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -39,11 +39,6 @@ static SCRIPT_SETUP_RE: LazyLock<Regex> =
 pub struct VueResolver;
 
 impl VueResolver {
-    /// Compute 1-based line number for a byte offset.
-    fn line_for_offset(source: &str, offset: usize) -> u32 {
-        source[..offset].matches('\n').count() as u32 + 1
-    }
-
     /// Detect Nuxt file-based routing from the file path.
     ///
     /// Patterns:
@@ -121,7 +116,7 @@ impl FrameworkResolver for VueResolver {
             let handler_name = cap.get(2).map(|m| m.as_str().to_string());
 
             let match_offset = cap.get(0).unwrap().start();
-            let line = Self::line_for_offset(source, match_offset);
+            let line = line_for_offset(source, match_offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("route", file_path, line, 0),
@@ -170,7 +165,7 @@ impl FrameworkResolver for VueResolver {
         // --- 3. defineComponent / script setup detection ---
         if DEFINE_COMPONENT_RE.is_match(source) {
             let offset = DEFINE_COMPONENT_RE.find(source).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("component", file_path, line, 0),
@@ -195,7 +190,7 @@ impl FrameworkResolver for VueResolver {
 
         if SCRIPT_SETUP_RE.is_match(source) {
             let offset = SCRIPT_SETUP_RE.find(source).unwrap().start();
-            let line = Self::line_for_offset(source, offset);
+            let line = line_for_offset(source, offset);
 
             outcome.route_edges.push(RouteEdgeRecord {
                 edge_id: StableId::edge_id("component", file_path, line, 0),

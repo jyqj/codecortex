@@ -2,6 +2,25 @@
 
 use cc_model::infra::{InfraEdge, InfraEdgeKind, InfraKind, InfraNode};
 use cc_model::StableId;
+use std::sync::LazyLock;
+
+static RE_RESOURCE_DATA: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"^(resource|data)\s+"(\w+)"\s+"(\w+)""#)
+        .expect("valid Terraform resource/data regex")
+});
+static RE_VAR_OUTPUT: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"^(variable|output)\s+"(\w+)""#)
+        .expect("valid Terraform variable/output regex")
+});
+static RE_MODULE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"^module\s+"(\w+)""#).expect("valid Terraform module regex")
+});
+static RE_SOURCE: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"source\s*=\s*"([^"]+)""#).expect("valid Terraform source regex")
+});
+static RE_VAR_REF: LazyLock<regex::Regex> = LazyLock::new(|| {
+    regex::Regex::new(r#"var\.(\w+)"#).expect("valid Terraform variable reference regex")
+});
 
 /// Parse Terraform `.tf` files into InfraNodes + InfraEdges.
 ///
@@ -10,12 +29,6 @@ use cc_model::StableId;
 pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let mut nodes = Vec::new();
     let mut edges = Vec::new();
-
-    let re_resource_data = regex::Regex::new(r#"^(resource|data)\s+"(\w+)"\s+"(\w+)""#).unwrap();
-    let re_var_output = regex::Regex::new(r#"^(variable|output)\s+"(\w+)""#).unwrap();
-    let re_module = regex::Regex::new(r#"^module\s+"(\w+)""#).unwrap();
-    let re_source = regex::Regex::new(r#"source\s*=\s*"([^"]+)""#).unwrap();
-    let re_var_ref = regex::Regex::new(r#"var\.(\w+)"#).unwrap();
 
     // Track variable node IDs for var.X reference edges
     let mut var_node_ids: std::collections::HashMap<String, String> =
@@ -35,7 +48,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
         let line_1based = (line_num + 1) as u32;
 
         // resource "type" "name" {
-        if let Some(caps) = re_resource_data.captures(trimmed) {
+        if let Some(caps) = RE_RESOURCE_DATA.captures(trimmed) {
             let block_type = caps.get(1).unwrap().as_str();
             let type_name = caps.get(2).unwrap().as_str();
             let local_name = caps.get(3).unwrap().as_str();
@@ -70,7 +83,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
         }
 
         // variable "name" { / output "name" {
-        if let Some(caps) = re_var_output.captures(trimmed) {
+        if let Some(caps) = RE_VAR_OUTPUT.captures(trimmed) {
             let block_type = caps.get(1).unwrap().as_str();
             let var_name = caps.get(2).unwrap().as_str();
             let kind = if block_type == "variable" {
@@ -104,7 +117,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
         }
 
         // module "name" {
-        if let Some(caps) = re_module.captures(trimmed) {
+        if let Some(caps) = RE_MODULE.captures(trimmed) {
             let mod_name = caps.get(1).unwrap().as_str();
             let node_id = StableId::edge_id("infra_tf", file_path, line_1based, 0);
             nodes.push(InfraNode {
@@ -129,7 +142,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
 
         // source = "..." inside a module block
         if let Some((ref _mod_name, ref mod_node_id, mod_line)) = current_module {
-            if let Some(caps) = re_source.captures(trimmed) {
+            if let Some(caps) = RE_SOURCE.captures(trimmed) {
                 let source_path = caps.get(1).unwrap().as_str();
                 let edge_id = StableId::edge_id("infra_tf_mod", file_path, mod_line, 0);
                 edges.push(InfraEdge {
@@ -157,7 +170,7 @@ pub fn parse_terraform(file_path: &str, content: &str) -> (Vec<InfraNode>, Vec<I
 
         // Collect var.X references in the current block
         if let Some(block) = pending_blocks.last_mut() {
-            for caps in re_var_ref.captures_iter(trimmed) {
+            for caps in RE_VAR_REF.captures_iter(trimmed) {
                 let var_name = caps.get(1).unwrap().as_str().to_string();
                 if !block.var_refs.contains(&var_name) {
                     block.var_refs.push(var_name);

@@ -767,4 +767,894 @@ fn top_level() {}
         assert!(!outcome.imports.is_empty());
         assert!(!outcome.chunks.is_empty());
     }
+
+    #[test]
+    fn parse_impl_block_and_trait_definition() {
+        let p = RustParser::new();
+        let code = r#"
+trait MyTrait {
+    fn do_something(&self);
+    fn with_default(&self) {}
+}
+
+struct Foo;
+
+impl Foo {
+    fn bar(&self) {}
+    fn baz(x: u32) -> u32 { x }
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+
+        // trait is extracted as Interface
+        assert!(
+            names.contains(&"MyTrait"),
+            "missing MyTrait, got: {:?}",
+            names
+        );
+        let trait_sym = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "MyTrait")
+            .unwrap();
+        assert_eq!(trait_sym.kind, SymbolKind::Interface);
+
+        // struct
+        assert!(names.contains(&"Foo"), "missing Foo, got: {:?}", names);
+        let foo_sym = outcome.symbols.iter().find(|s| s.name == "Foo").unwrap();
+        assert_eq!(foo_sym.kind, SymbolKind::Class);
+
+        // methods inside impl Foo are Methods with container = Foo
+        let bar = outcome.symbols.iter().find(|s| s.name == "bar").unwrap();
+        assert_eq!(bar.kind, SymbolKind::Method);
+        assert_eq!(bar.container.as_deref(), Some("Foo"));
+        assert_eq!(bar.qname.as_deref(), Some("Foo.bar"));
+
+        let baz = outcome.symbols.iter().find(|s| s.name == "baz").unwrap();
+        assert_eq!(baz.kind, SymbolKind::Method);
+        assert_eq!(baz.container.as_deref(), Some("Foo"));
+    }
+
+    #[test]
+    fn parse_async_fn() {
+        let p = RustParser::new();
+        let code = r#"
+async fn fetch_data(url: &str) -> Result<String, Error> {
+    let resp = reqwest::get(url).await?;
+    resp.text().await
+}
+
+fn sync_fn() {}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(
+            names.contains(&"fetch_data"),
+            "missing fetch_data, got: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"sync_fn"),
+            "missing sync_fn, got: {:?}",
+            names
+        );
+        let fetch = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "fetch_data")
+            .unwrap();
+        assert_eq!(fetch.kind, SymbolKind::Function);
+        // Return type should be captured
+        assert!(
+            fetch.return_type.is_some(),
+            "async fn should have return_type"
+        );
+    }
+
+    #[test]
+    fn parse_macro_call_edges() {
+        let p = RustParser::new();
+        let code = r#"
+fn main() {
+    println!("hello");
+    let v = vec![1, 2, 3];
+    my_macro!(v);
+}
+"#;
+        let outcome = p.parse("src/main.rs", code, Language::Rust).unwrap();
+        // Macro calls like println! are matched by the call regex as "println!"
+        // but the regex captures identifiers before '(' — so println! with '(' triggers it
+        // The regex `([A-Za-z_][A-Za-z0-9_:]*)\s*\(` does not see `!` before `(`
+        // so `println!("hello")` won't match as a call, but `my_macro!(v)` also won't.
+        // However, call edges should still be found for non-macro calls in other tests.
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"main"), "missing main, got: {:?}", names);
+    }
+
+    #[test]
+    fn parse_module_and_use_statements() {
+        let p = RustParser::new();
+        let code = r#"
+use std::collections::HashMap;
+use crate::bar::*;
+use super::baz::Quux;
+
+fn process() {}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        assert_eq!(
+            outcome.imports.len(),
+            3,
+            "expected 3 imports, got: {:?}",
+            outcome
+                .imports
+                .iter()
+                .map(|i| &i.import_string)
+                .collect::<Vec<_>>()
+        );
+
+        let hashmap_imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string.contains("HashMap"))
+            .expect("missing HashMap import");
+        assert_eq!(hashmap_imp.import_string, "std::collections::HashMap");
+
+        let glob_imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string.contains("bar"))
+            .expect("missing bar glob import");
+        assert_eq!(glob_imp.import_string, "crate::bar::*");
+
+        let super_imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string.contains("Quux"))
+            .expect("missing super import");
+        assert_eq!(super_imp.import_string, "super::baz::Quux");
+    }
+
+    #[test]
+    fn parse_method_receiver_types() {
+        let p = RustParser::new();
+        let code = r#"
+struct Widget;
+
+impl Widget {
+    fn by_ref(&self) {}
+    fn by_mut_ref(&mut self) {}
+    fn by_value(self) {}
+    fn static_method(x: i32) -> i32 { x }
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+
+        // All methods inside impl Widget should have container/receiver_type = Widget
+        for name in &["by_ref", "by_mut_ref", "by_value", "static_method"] {
+            let sym = outcome
+                .symbols
+                .iter()
+                .find(|s| s.name == *name)
+                .unwrap_or_else(|| panic!("missing method {}", name));
+            assert_eq!(sym.kind, SymbolKind::Method, "{} should be Method", name);
+            assert_eq!(
+                sym.container.as_deref(),
+                Some("Widget"),
+                "{} container",
+                name
+            );
+            assert_eq!(
+                sym.receiver_type.as_deref(),
+                Some("Widget"),
+                "{} receiver_type",
+                name
+            );
+        }
+
+        // self parameters should NOT count toward param_count
+        let by_ref = outcome.symbols.iter().find(|s| s.name == "by_ref").unwrap();
+        assert_eq!(
+            by_ref.param_count,
+            Some(0),
+            "&self should not count as a parameter"
+        );
+
+        let static_m = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "static_method")
+            .unwrap();
+        assert_eq!(
+            static_m.param_count,
+            Some(1),
+            "static_method should have 1 param"
+        );
+        assert_eq!(static_m.param_types.as_deref(), Some("i32"));
+    }
+
+    #[test]
+    fn parse_test_file_detection() {
+        let p = RustParser::new();
+        let code = "fn dummy() {}\n";
+
+        // Regular files
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        assert!(!outcome.is_test_file);
+
+        let outcome = p.parse("src/parser.rs", code, Language::Rust).unwrap();
+        assert!(!outcome.is_test_file);
+
+        // Test files
+        let outcome = p.parse("src/parser_test.rs", code, Language::Rust).unwrap();
+        assert!(outcome.is_test_file);
+
+        // The parser checks for "/tests/" (with slashes) in the path
+        let outcome = p
+            .parse("project/tests/integration.rs", code, Language::Rust)
+            .unwrap();
+        assert!(outcome.is_test_file);
+    }
+
+    #[test]
+    fn parse_call_edges() {
+        let p = RustParser::new();
+        let code = r#"
+fn helper(x: i32) -> i32 {
+    x + 1
+}
+
+fn caller() {
+    let a = helper(42);
+    let b = helper(a);
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        assert!(
+            !outcome.call_edges.is_empty(),
+            "call edges should not be empty"
+        );
+
+        // Calls to helper from caller
+        let caller_to_helper: Vec<_> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.callee_symbol == "helper" && e.caller_symbol.as_deref() == Some("caller"))
+            .collect();
+        assert!(
+            caller_to_helper.len() >= 2,
+            "expected at least 2 calls from caller to helper, got: {}",
+            caller_to_helper.len()
+        );
+
+        // Symbol refs should also include call refs
+        let call_refs: Vec<_> = outcome
+            .symbol_refs
+            .iter()
+            .filter(|r| r.symbol_name == "helper" && r.ref_kind == "call")
+            .collect();
+        assert!(
+            call_refs.len() >= 2,
+            "expected at least 2 call refs to helper"
+        );
+    }
+
+    #[test]
+    fn parse_semantic_edges_impl_trait() {
+        let p = RustParser::new();
+        let code = r#"
+trait Drawable {
+    fn draw(&self);
+}
+
+struct Circle;
+
+impl Drawable for Circle {
+    fn draw(&self) {}
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let impl_edges: Vec<_> = outcome
+            .semantic_edges
+            .iter()
+            .filter(|e| e.relation_kind == SemanticRelation::Implements)
+            .collect();
+        assert!(
+            !impl_edges.is_empty(),
+            "should detect impl Trait for Struct"
+        );
+        assert!(
+            impl_edges
+                .iter()
+                .any(|e| e.source_symbol == "Circle" && e.target_symbol == "Drawable"),
+            "missing Circle -> Drawable implements, got: {:?}",
+            impl_edges
+        );
+    }
+
+    #[test]
+    fn parse_semantic_edges_impl_trait_with_generics() {
+        let p = RustParser::new();
+        let code = r#"
+struct MyVec<T>(Vec<T>);
+
+impl<T: Clone> std::fmt::Display for MyVec<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "MyVec")
+    }
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let impl_edges: Vec<_> = outcome
+            .semantic_edges
+            .iter()
+            .filter(|e| e.relation_kind == SemanticRelation::Implements)
+            .collect();
+        assert!(
+            impl_edges
+                .iter()
+                .any(|e| e.source_symbol == "MyVec" && e.target_symbol == "std::fmt::Display"),
+            "missing MyVec -> std::fmt::Display implements, got: {:?}",
+            impl_edges
+        );
+    }
+
+    #[test]
+    fn parse_env_var_access() {
+        let p = RustParser::new();
+        let code = r#"
+fn load_config() {
+    let db_url = std::env::var("DATABASE_URL").unwrap();
+    let api_key = env::var("API_KEY").expect("missing");
+    let opt = env::var_os("OPTIONAL_VAR");
+}
+"#;
+        let outcome = p.parse("src/config.rs", code, Language::Rust).unwrap();
+        assert!(
+            !outcome.data_flow_edges.is_empty(),
+            "should detect env var accesses"
+        );
+
+        let env_keys: Vec<&str> = outcome
+            .data_flow_edges
+            .iter()
+            .filter_map(|e| e.env_key.as_deref())
+            .collect();
+        assert!(
+            env_keys.contains(&"DATABASE_URL"),
+            "missing DATABASE_URL, got: {:?}",
+            env_keys
+        );
+        assert!(
+            env_keys.contains(&"API_KEY"),
+            "missing API_KEY, got: {:?}",
+            env_keys
+        );
+        assert!(
+            env_keys.contains(&"OPTIONAL_VAR"),
+            "missing OPTIONAL_VAR, got: {:?}",
+            env_keys
+        );
+
+        // Each env access should have a source_symbol_uid since load_config is parsed
+        for edge in &outcome.data_flow_edges {
+            assert_eq!(edge.flow_kind, "env_access");
+            assert!(
+                edge.source_symbol_uid.is_some(),
+                "env access should have source_symbol_uid"
+            );
+        }
+    }
+
+    #[test]
+    fn parse_derive_macros() {
+        let p = RustParser::new();
+        let code = r#"
+#[derive(Debug, Clone, Serialize)]
+struct Config {
+    name: String,
+}
+
+#[derive(PartialEq)]
+enum Status {
+    Active,
+    Inactive,
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let derive_edges: Vec<_> = outcome
+            .semantic_edges
+            .iter()
+            .filter(|e| e.relation_kind == SemanticRelation::Decorates)
+            .collect();
+
+        // Config should have Debug, Clone, Serialize
+        let config_derives: Vec<&str> = derive_edges
+            .iter()
+            .filter(|e| e.target_symbol == "Config")
+            .map(|e| e.source_symbol.as_str())
+            .collect();
+        assert!(
+            config_derives.contains(&"Debug"),
+            "missing Debug for Config, got: {:?}",
+            config_derives
+        );
+        assert!(
+            config_derives.contains(&"Clone"),
+            "missing Clone for Config, got: {:?}",
+            config_derives
+        );
+        assert!(
+            config_derives.contains(&"Serialize"),
+            "missing Serialize for Config, got: {:?}",
+            config_derives
+        );
+
+        // Status should have PartialEq
+        let status_derives: Vec<&str> = derive_edges
+            .iter()
+            .filter(|e| e.target_symbol == "Status")
+            .map(|e| e.source_symbol.as_str())
+            .collect();
+        assert!(
+            status_derives.contains(&"PartialEq"),
+            "missing PartialEq for Status, got: {:?}",
+            status_derives
+        );
+    }
+
+    #[test]
+    fn parse_enum_definition() {
+        let p = RustParser::new();
+        let code = r#"
+enum Color {
+    Red,
+    Green,
+    Blue,
+}
+
+enum Option<T> {
+    Some(T),
+    None,
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"Color"), "missing Color, got: {:?}", names);
+        assert!(
+            names.contains(&"Option"),
+            "missing Option, got: {:?}",
+            names
+        );
+
+        let color = outcome.symbols.iter().find(|s| s.name == "Color").unwrap();
+        assert_eq!(color.kind, SymbolKind::Enum);
+        assert!(
+            color
+                .signature
+                .as_deref()
+                .unwrap_or("")
+                .contains("enum Color"),
+            "enum signature should contain 'enum Color'"
+        );
+    }
+
+    #[test]
+    fn parse_generic_function() {
+        let p = RustParser::new();
+        let code = r#"
+fn process<T: Display>(item: T) -> String {
+    item.to_string()
+}
+
+fn multi_generic<T, U>(a: T, b: U) -> (T, U) {
+    (a, b)
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(
+            names.contains(&"process"),
+            "missing process, got: {:?}",
+            names
+        );
+        assert!(
+            names.contains(&"multi_generic"),
+            "missing multi_generic, got: {:?}",
+            names
+        );
+
+        let process = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "process")
+            .unwrap();
+        assert_eq!(process.kind, SymbolKind::Function);
+        assert_eq!(process.param_count, Some(1));
+        assert_eq!(process.param_types.as_deref(), Some("T"));
+
+        let multi = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "multi_generic")
+            .unwrap();
+        assert_eq!(multi.param_count, Some(2));
+        assert_eq!(multi.param_types.as_deref(), Some("T, U"));
+    }
+
+    #[test]
+    fn parse_const_and_static() {
+        let p = RustParser::new();
+        // Note: the current parser does not extract const/static as symbols.
+        // This test documents that behavior and verifies no crash occurs.
+        let code = r#"
+const MAX: u32 = 100;
+static COUNTER: u32 = 0;
+
+fn use_them() -> u32 {
+    MAX + COUNTER
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        // Function should still be extracted
+        assert!(
+            names.contains(&"use_them"),
+            "missing use_them, got: {:?}",
+            names
+        );
+        // Parser currently does not extract const/static — this is expected behavior
+        // The test ensures parsing doesn't crash on these constructs
+    }
+
+    #[test]
+    fn parse_return_type_extraction() {
+        let p = RustParser::new();
+        let code = r#"
+fn no_return() {}
+
+fn returns_u32() -> u32 {
+    42
+}
+
+fn returns_result() -> Result<String, Error> {
+    Ok("ok".to_string())
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+
+        let no_ret = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "no_return")
+            .unwrap();
+        assert_eq!(
+            no_ret.return_type, None,
+            "no_return should have no return type"
+        );
+
+        let ret_u32 = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "returns_u32")
+            .unwrap();
+        assert!(
+            ret_u32.return_type.as_deref().unwrap_or("").contains("u32"),
+            "returns_u32 should have u32 return type, got: {:?}",
+            ret_u32.return_type
+        );
+
+        let ret_result = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "returns_result")
+            .unwrap();
+        assert!(
+            ret_result
+                .return_type
+                .as_deref()
+                .unwrap_or("")
+                .contains("Result"),
+            "returns_result should have Result return type, got: {:?}",
+            ret_result.return_type
+        );
+    }
+
+    #[test]
+    fn parse_nested_impl_methods() {
+        let p = RustParser::new();
+        let code = r#"
+struct Server {
+    port: u16,
+}
+
+impl Server {
+    fn new(port: u16) -> Self {
+        Server { port }
+    }
+
+    fn start(&self) {
+        self.listen();
+    }
+
+    fn listen(&self) {}
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+
+        // All methods should be extracted
+        let method_names: Vec<&str> = outcome
+            .symbols
+            .iter()
+            .filter(|s| s.kind == SymbolKind::Method)
+            .map(|s| s.name.as_str())
+            .collect();
+        assert!(
+            method_names.contains(&"new"),
+            "missing new, got: {:?}",
+            method_names
+        );
+        assert!(
+            method_names.contains(&"start"),
+            "missing start, got: {:?}",
+            method_names
+        );
+        assert!(
+            method_names.contains(&"listen"),
+            "missing listen, got: {:?}",
+            method_names
+        );
+
+        // new() should have return type Self
+        let new_method = outcome.symbols.iter().find(|s| s.name == "new").unwrap();
+        assert!(
+            new_method
+                .return_type
+                .as_deref()
+                .unwrap_or("")
+                .contains("Self"),
+            "new should return Self, got: {:?}",
+            new_method.return_type
+        );
+        assert_eq!(new_method.param_count, Some(1));
+
+        // Call from start -> listen should be detected
+        let listen_calls: Vec<_> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.callee_symbol == "listen")
+            .collect();
+        assert!(
+            !listen_calls.is_empty(),
+            "should detect call from start to listen"
+        );
+    }
+
+    #[test]
+    fn parse_multiple_impls_for_same_struct() {
+        let p = RustParser::new();
+        let code = r#"
+struct Point {
+    x: f64,
+    y: f64,
+}
+
+impl Point {
+    fn new(x: f64, y: f64) -> Self {
+        Point { x, y }
+    }
+}
+
+impl std::fmt::Display for Point {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {})", self.x, self.y)
+    }
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"Point"), "missing Point, got: {:?}", names);
+        assert!(names.contains(&"new"), "missing new, got: {:?}", names);
+        assert!(names.contains(&"fmt"), "missing fmt, got: {:?}", names);
+
+        // Both methods should belong to Point
+        let new_sym = outcome.symbols.iter().find(|s| s.name == "new").unwrap();
+        assert_eq!(new_sym.container.as_deref(), Some("Point"));
+
+        let fmt_sym = outcome.symbols.iter().find(|s| s.name == "fmt").unwrap();
+        assert_eq!(fmt_sym.container.as_deref(), Some("Point"));
+
+        // Should have semantic edge: Point implements Display
+        let impl_edges: Vec<_> = outcome
+            .semantic_edges
+            .iter()
+            .filter(|e| e.relation_kind == SemanticRelation::Implements)
+            .collect();
+        assert!(
+            impl_edges
+                .iter()
+                .any(|e| e.source_symbol == "Point" && e.target_symbol == "std::fmt::Display"),
+            "missing Point -> Display implements, got: {:?}",
+            impl_edges
+        );
+    }
+
+    #[test]
+    fn parse_parser_tier_and_confidence() {
+        let p = RustParser::new();
+        let code = "fn foo() {}\n";
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        assert_eq!(outcome.parser_tier, ParserTier::Semantic);
+        assert!((outcome.parser_confidence - 0.8).abs() < f64::EPSILON);
+    }
+
+    #[test]
+    fn parse_with_timeout_works() {
+        let p = RustParser::new();
+        let code = r#"
+fn hello() -> &'static str {
+    "world"
+}
+"#;
+        // Large timeout should succeed
+        let outcome = p
+            .parse_with_timeout("src/lib.rs", code, Language::Rust, Some(5_000_000))
+            .unwrap();
+        let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"hello"), "missing hello, got: {:?}", names);
+    }
+
+    #[test]
+    fn parse_complex_use_tree() {
+        let p = RustParser::new();
+        let code = r#"
+use std::collections::{HashMap, HashSet};
+use std::io::{self, Read, Write};
+
+fn process() {}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        // Grouped use statements should be captured
+        assert!(
+            outcome.imports.len() >= 2,
+            "expected at least 2 imports, got: {}",
+            outcome.imports.len()
+        );
+
+        // The import strings should contain the full tree syntax
+        let import_strings: Vec<&str> = outcome
+            .imports
+            .iter()
+            .map(|i| i.import_string.as_str())
+            .collect();
+        assert!(
+            import_strings
+                .iter()
+                .any(|s| s.contains("HashMap") || s.contains("collections")),
+            "missing collections import, got: {:?}",
+            import_strings
+        );
+    }
+
+    #[test]
+    fn parse_call_edges_cross_function() {
+        let p = RustParser::new();
+        let code = r#"
+fn alpha() -> i32 {
+    beta() + gamma()
+}
+
+fn beta() -> i32 {
+    gamma()
+}
+
+fn gamma() -> i32 {
+    42
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+
+        // alpha calls beta and gamma
+        let alpha_to_beta: Vec<_> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.caller_symbol.as_deref() == Some("alpha") && e.callee_symbol == "beta")
+            .collect();
+        assert!(!alpha_to_beta.is_empty(), "missing call edge alpha -> beta");
+
+        let alpha_to_gamma: Vec<_> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.caller_symbol.as_deref() == Some("alpha") && e.callee_symbol == "gamma")
+            .collect();
+        assert!(
+            !alpha_to_gamma.is_empty(),
+            "missing call edge alpha -> gamma"
+        );
+
+        // beta calls gamma
+        let beta_to_gamma: Vec<_> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.caller_symbol.as_deref() == Some("beta") && e.callee_symbol == "gamma")
+            .collect();
+        assert!(!beta_to_gamma.is_empty(), "missing call edge beta -> gamma");
+
+        // Calls to known symbols should be resolved
+        for call in &alpha_to_beta {
+            assert_eq!(call.resolution_kind, ResolutionKind::Exact);
+            assert!((call.resolution_confidence - 1.0).abs() < f64::EPSILON);
+        }
+    }
+
+    #[test]
+    fn parse_unresolved_call_edges() {
+        let p = RustParser::new();
+        let code = r#"
+fn my_fn() {
+    external_call(42);
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let ext_calls: Vec<_> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.callee_symbol == "external_call")
+            .collect();
+        assert!(!ext_calls.is_empty(), "should detect call to external_call");
+        for call in &ext_calls {
+            assert_eq!(
+                call.resolution_kind,
+                ResolutionKind::Unresolved,
+                "external call should be unresolved"
+            );
+            assert!(
+                call.target_symbol_id.is_none(),
+                "unresolved call should have no target_symbol_id"
+            );
+        }
+    }
+
+    #[test]
+    fn parse_summary_format() {
+        let p = RustParser::new();
+        let code = r#"
+struct A;
+struct B;
+fn foo() {}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        assert!(
+            outcome.summary.contains("src/lib.rs"),
+            "summary should contain file path"
+        );
+        assert!(
+            outcome.summary.contains("rust"),
+            "summary should contain 'rust'"
+        );
+        assert!(
+            outcome.summary.contains("3 symbols"),
+            "summary should contain '3 symbols', got: {}",
+            outcome.summary
+        );
+    }
+
+    #[test]
+    fn parse_supported_languages() {
+        let p = RustParser::new();
+        assert_eq!(p.supported_languages(), &[Language::Rust]);
+        assert_eq!(p.tier(), ParserTier::Semantic);
+    }
+
+    #[test]
+    fn parse_empty_file() {
+        let p = RustParser::new();
+        let outcome = p.parse("src/empty.rs", "", Language::Rust).unwrap();
+        assert!(outcome.symbols.is_empty());
+        assert!(outcome.imports.is_empty());
+        assert!(outcome.call_edges.is_empty());
+        assert!(outcome.semantic_edges.is_empty());
+        assert!(outcome.data_flow_edges.is_empty());
+    }
 }

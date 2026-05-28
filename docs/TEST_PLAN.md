@@ -2,21 +2,21 @@
 
 ## Unit Tests
 
-617 tests across 7 crates. Run with `cargo test`.
+720 tests across 7 crates (+ 1 doctest). Run with `cargo test`.
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
 | cc-db | 56 | Schema, migrations, SQL injection, architecture, ADR, edges, frontier, graph, query |
 | cc-eval | 14 | Assertion types (incl. field_equals), corpus loading, fixture integration |
 | cc-index | 212 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection |
-| cc-model | 26 | Route normalization, data structures |
-| cc-parsers | 135 | Tree-sitter parsing for 10 languages, symbol extraction |
-| cc-search | 130 | Cypher parser/executor, search engine, graph queries |
-| cc-server | 42 | MCP tool dispatch, handler logic, budget tiers |
+| cc-model | 29 | Route normalization, data structures, enum round-trip |
+| cc-parsers | 160 | Tree-sitter parsing for 10 languages, symbol extraction, Rust parser coverage |
+| cc-search | 160 | Cypher parser/executor, regex validation, vector cache, search engine, graph queries, parity tests |
+| cc-server | 88 | Engine lifecycle, impact analyzer BFS, handler output limits, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 
-37 corpus cases covering all 14 MCP tools. Run with `cargo test -p cc-eval`.
+49 corpus cases covering all 14 MCP tools + error paths + boundary conditions. Run with `cargo test -p cc-eval`.
 
 ### Corpus Cases
 

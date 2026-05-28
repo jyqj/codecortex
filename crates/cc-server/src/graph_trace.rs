@@ -351,89 +351,122 @@ pub fn trace_path_rich(
 ) -> CcResult<TracePathResult> {
     // 1. Resolve from/to names to UIDs, with disambiguation.
     let mut disambiguation: Vec<DisambiguationInfo> = Vec::new();
-
-    let from_uid = if let Some(uid) = from_uid_override.filter(|u| u.contains(':')) {
-        uid.to_string()
-    } else {
-        let candidates = db.find_symbol(from, true, 5)?;
-        let chosen = candidates
-            .first()
-            .and_then(|s| s.symbol_uid.clone())
-            .ok_or_else(|| CcError::Search(format!("symbol not found: {}", from)))?;
-        if candidates.len() > 1 {
-            disambiguation.push(DisambiguationInfo {
-                role: "from".to_string(),
-                query: from.to_string(),
-                chosen_uid: chosen.clone(),
-                chosen_file: candidates[0].file_path.clone(),
-                candidates: candidates
-                    .iter()
-                    .filter_map(|s| {
-                        Some(DisambiguationCandidate {
-                            uid: s.symbol_uid.clone()?,
-                            name: s.name.clone(),
-                            file_path: s.file_path.clone(),
-                            kind: s.kind.clone(),
-                            start_line: s.start_line,
-                        })
-                    })
-                    .collect(),
-            });
-        }
-        chosen
-    };
-
-    let to_uid = if let Some(uid) = to_uid_override.filter(|u| u.contains(':')) {
-        uid.to_string()
-    } else {
-        let candidates = db.find_symbol(to, true, 5)?;
-        let chosen = candidates
-            .first()
-            .and_then(|s| s.symbol_uid.clone())
-            .ok_or_else(|| CcError::Search(format!("symbol not found: {}", to)))?;
-        if candidates.len() > 1 {
-            disambiguation.push(DisambiguationInfo {
-                role: "to".to_string(),
-                query: to.to_string(),
-                chosen_uid: chosen.clone(),
-                chosen_file: candidates[0].file_path.clone(),
-                candidates: candidates
-                    .iter()
-                    .filter_map(|s| {
-                        Some(DisambiguationCandidate {
-                            uid: s.symbol_uid.clone()?,
-                            name: s.name.clone(),
-                            file_path: s.file_path.clone(),
-                            kind: s.kind.clone(),
-                            start_line: s.start_line,
-                        })
-                    })
-                    .collect(),
-            });
-        }
-        chosen
-    };
+    let from_uid = resolve_symbol_uid(db, from, from_uid_override, "from", &mut disambiguation)?;
+    let to_uid = resolve_symbol_uid(db, to, to_uid_override, "to", &mut disambiguation)?;
 
     // 2. Lazy BFS: load edges on demand instead of pre-loading the full graph.
     let mut lazy_adj = LazyBfsAdj::new(Arc::clone(db))?;
     let labeled_paths = bfs_paths_labeled_lazy(&mut lazy_adj, &from_uid, &to_uid, max_depth, 20);
 
     // 3. Collect all unique UIDs across all paths.
-    let mut all_uids = HashSet::new();
-    for lp in &labeled_paths {
-        for uid in &lp.node_uids {
-            all_uids.insert(uid.clone());
-        }
-    }
-    let uid_vec: Vec<String> = all_uids.into_iter().collect();
+    let uid_vec = collect_unique_uids(&labeled_paths);
 
     // 4. Bulk lookup symbol metadata.
     let sym_map = db.symbol_rows_by_uids(&uid_vec)?;
 
     // 5. Build TraceNode for each unique symbol, with optional snippet.
+    let nodes = build_trace_nodes(
+        &uid_vec,
+        &sym_map,
+        db,
+        &mut lazy_adj,
+        project_root,
+        include_snippets,
+        max_snippet_lines,
+        snippet_budget_override,
+        include_outgoing,
+    );
+
+    // 6. Build TraceEdge list and backward-compat name paths.
+    let (paths, edges) = build_paths_and_edges(db, &labeled_paths, &sym_map);
+
+    let path_count = paths.len();
+    let diagnostic = if path_count == 0 {
+        Some(format!(
+            "No call path found from '{}' to '{}'. The gap may be due to: dynamic dispatch, \
+             callback/closure, framework bridge, or async message passing. \
+             Try: relations(symbol='{}', kind='callees') to see outgoing calls from the source.",
+            from, to, from
+        ))
+    } else {
+        None
+    };
+    Ok(TracePathResult {
+        paths,
+        nodes,
+        edges,
+        path_count,
+        disambiguation,
+        diagnostic,
+    })
+}
+
+/// Resolve a symbol name (or UID override) to a UID, collecting disambiguation info.
+fn resolve_symbol_uid(
+    db: &Arc<IndexDb>,
+    name: &str,
+    uid_override: Option<&str>,
+    role: &str,
+    disambiguation: &mut Vec<DisambiguationInfo>,
+) -> CcResult<String> {
+    if let Some(uid) = uid_override.filter(|u| u.contains(':')) {
+        return Ok(uid.to_string());
+    }
+    let candidates = db.find_symbol(name, true, 5)?;
+    let chosen = candidates
+        .first()
+        .and_then(|s| s.symbol_uid.clone())
+        .ok_or_else(|| CcError::Search(format!("symbol not found: {}", name)))?;
+    if candidates.len() > 1 {
+        disambiguation.push(DisambiguationInfo {
+            role: role.to_string(),
+            query: name.to_string(),
+            chosen_uid: chosen.clone(),
+            chosen_file: candidates[0].file_path.clone(),
+            candidates: candidates
+                .iter()
+                .filter_map(|s| {
+                    Some(DisambiguationCandidate {
+                        uid: s.symbol_uid.clone()?,
+                        name: s.name.clone(),
+                        file_path: s.file_path.clone(),
+                        kind: s.kind.clone(),
+                        start_line: s.start_line,
+                    })
+                })
+                .collect(),
+        });
+    }
+    Ok(chosen)
+}
+
+/// Collect all unique UIDs across labeled BFS paths.
+fn collect_unique_uids(labeled_paths: &[LabeledPath]) -> Vec<String> {
+    let mut all_uids = HashSet::new();
+    for lp in labeled_paths {
+        for uid in &lp.node_uids {
+            all_uids.insert(uid.clone());
+        }
+    }
+    all_uids.into_iter().collect()
+}
+
+/// Build TraceNode list for each unique symbol, with optional snippets and outgoing calls.
+#[allow(clippy::too_many_arguments)]
+fn build_trace_nodes(
+    uid_vec: &[String],
+    sym_map: &HashMap<String, cc_db::index_db::SymbolRow>,
+    db: &Arc<IndexDb>,
+    lazy_adj: &mut LazyBfsAdj,
+    project_root: Option<&Path>,
+    include_snippets: bool,
+    max_snippet_lines: usize,
+    snippet_budget_override: Option<usize>,
+    include_outgoing: bool,
+) -> Vec<TraceNode> {
     let mut snippet_budget: usize = snippet_budget_override.unwrap_or(32 * 1024);
     let mut nodes: Vec<TraceNode> = Vec::new();
-    for uid in &uid_vec {
+    for uid in uid_vec {
         if let Some(row) = sym_map.get(uid) {
             let snippet = if include_snippets && snippet_budget > 0 {
                 let effective_max_lines = if max_snippet_lines == usize::MAX {
@@ -454,7 +487,7 @@ pub fn trace_path_rich(
             };
 
             let outgoing_calls = if include_outgoing {
-                outgoing_call_names_lazy(db, &mut lazy_adj, uid)
+                outgoing_call_names_lazy(db, lazy_adj, uid)
             } else {
                 None
             };
@@ -472,20 +505,23 @@ pub fn trace_path_rich(
             });
         }
     }
+    nodes
+}
 
-    // 6. Build TraceEdge list and backward-compat name paths.
+/// Build backward-compat name paths and deduplicated TraceEdge list from BFS results.
+fn build_paths_and_edges(
+    db: &IndexDb,
+    labeled_paths: &[LabeledPath],
+    sym_map: &HashMap<String, cc_db::index_db::SymbolRow>,
+) -> (Vec<Vec<String>>, Vec<TraceEdge>) {
     let uid_names: HashMap<String, String> = sym_map
         .iter()
         .map(|(uid, row)| (uid.clone(), row.name.clone()))
         .collect();
 
-    let mut edges: Vec<TraceEdge> = Vec::new();
-    let mut edge_seen: HashSet<(String, String, u32)> = HashSet::new();
-    let mut paths: Vec<Vec<String>> = Vec::new();
-
-    // Collect all synthesis_keys from http_bridge edges for evidence lookup
+    // Collect all synthesis_keys from http_bridge edges for evidence lookup.
     let mut bridge_norm_paths: Vec<String> = Vec::new();
-    for lp in &labeled_paths {
+    for lp in labeled_paths {
         for el in &lp.edge_lites {
             if el.synthesized_by.as_deref() == Some("http_bridge") {
                 if let Some(ref sk) = el.synthesis_key {
@@ -497,7 +533,7 @@ pub fn trace_path_rich(
     bridge_norm_paths.sort();
     bridge_norm_paths.dedup();
 
-    // Bulk-query evidence for all bridge normalized paths
+    // Bulk-query evidence for all bridge normalized paths.
     let evidence_map = if !bridge_norm_paths.is_empty() {
         db.evidence_for_normalized_paths(&bridge_norm_paths)
             .unwrap_or_default()
@@ -505,7 +541,11 @@ pub fn trace_path_rich(
         HashMap::new()
     };
 
-    for lp in &labeled_paths {
+    let mut edges: Vec<TraceEdge> = Vec::new();
+    let mut edge_seen: HashSet<(String, String, u32)> = HashSet::new();
+    let mut paths: Vec<Vec<String>> = Vec::new();
+
+    for lp in labeled_paths {
         let named: Vec<String> = lp
             .node_uids
             .iter()
@@ -550,25 +590,7 @@ pub fn trace_path_rich(
         }
     }
 
-    let path_count = paths.len();
-    let diagnostic = if path_count == 0 {
-        Some(format!(
-            "No call path found from '{}' to '{}'. The gap may be due to: dynamic dispatch, \
-             callback/closure, framework bridge, or async message passing. \
-             Try: relations(symbol='{}', kind='callees') to see outgoing calls from the source.",
-            from, to, from
-        ))
-    } else {
-        None
-    };
-    Ok(TracePathResult {
-        paths,
-        nodes,
-        edges,
-        path_count,
-        disambiguation,
-        diagnostic,
-    })
+    (paths, edges)
 }
 
 /// Collect outgoing call names from lazy adjacency (used by trace_path_rich).

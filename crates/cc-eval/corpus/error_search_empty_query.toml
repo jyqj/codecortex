@@ -1,0 +1,11 @@
+name = "error_search_empty_query"
+tool = "search"
+description = "Empty query should not crash, returns empty or valid response"
+
+[params]
+query = ""
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"

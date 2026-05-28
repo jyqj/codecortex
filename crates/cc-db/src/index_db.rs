@@ -7,6 +7,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, RwLock};
+use std::time::Duration;
 
 use r2d2::Pool;
 use r2d2_sqlite::SqliteConnectionManager;
@@ -244,6 +245,8 @@ impl IndexDb {
             });
         let pool = Pool::builder()
             .max_size(4)
+            .min_idle(Some(1))
+            .idle_timeout(Some(Duration::from_secs(300)))
             .build(manager)
             .map_err(|e| CcError::Database(e.to_string()))?;
 
@@ -461,6 +464,20 @@ impl IndexDb {
             .map_err(|e| CcError::Database(format!("read pool lock: {}", e)))?;
         pool.get()
             .map_err(|e| CcError::Database(format!("pool get: {}", e)))
+    }
+
+    /// Force a WAL checkpoint, truncating the WAL file.
+    ///
+    /// Call after large writes (e.g. full rebuild) to reclaim WAL disk space
+    /// and ensure all data is flushed to the main database file.
+    pub fn checkpoint_wal(&self) -> CcResult<()> {
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")
+            .map_err(|e| CcError::Database(format!("wal_checkpoint: {}", e)))?;
+        Ok(())
     }
 
     // ── Bulk rebuild pragmas ────────────────────────────────────
@@ -768,6 +785,8 @@ impl IndexDb {
         });
         let new_pool = Pool::builder()
             .max_size(4)
+            .min_idle(Some(1))
+            .idle_timeout(Some(Duration::from_secs(300)))
             .build(manager)
             .map_err(|e| CcError::Database(e.to_string()))?;
         {
@@ -776,6 +795,11 @@ impl IndexDb {
                 .write()
                 .map_err(|e| CcError::Database(format!("write pool lock: {}", e)))?;
             *pool_guard = new_pool;
+        }
+
+        // Checkpoint WAL to reclaim space after full rebuild
+        if let Err(e) = self.checkpoint_wal() {
+            tracing::warn!(err = %e, "full rebuild: WAL checkpoint failed (non-fatal)");
         }
 
         tracing::info!("full rebuild: temp-db swap complete");
@@ -875,6 +899,8 @@ impl IndexDb {
         });
         let new_pool = Pool::builder()
             .max_size(4)
+            .min_idle(Some(1))
+            .idle_timeout(Some(Duration::from_secs(300)))
             .build(manager)
             .map_err(|e| CcError::Database(e.to_string()))?;
         {
@@ -883,6 +909,11 @@ impl IndexDb {
                 .write()
                 .map_err(|e| CcError::Database(format!("write pool lock: {}", e)))?;
             *pool_guard = new_pool;
+        }
+
+        // Checkpoint WAL to reclaim space after full rebuild
+        if let Err(e) = self.checkpoint_wal() {
+            tracing::warn!(err = %e, "direct writer: WAL checkpoint failed (non-fatal)");
         }
 
         tracing::info!("direct writer: swap complete");

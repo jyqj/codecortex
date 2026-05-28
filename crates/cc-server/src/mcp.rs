@@ -3,6 +3,7 @@
 use crate::engine::CodeIndex;
 use crate::handlers;
 use crate::tools::JsonResult;
+use crate::watcher::FileWatcher;
 use cc_model::config::RepoSizeTier;
 use lru::LruCache;
 use rmcp::handler::server::router::tool::ToolRouter;
@@ -39,6 +40,9 @@ pub struct CodeCortexMcpServer {
     tool_router: ToolRouter<Self>,
     last_activity: Arc<Mutex<Instant>>,
     auto_indexing: Arc<AtomicBool>,
+    /// Handle for the active file-watcher background task. When the project
+    /// changes this is replaced so the old watcher is stopped.
+    watcher_handle: Arc<tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>>,
 }
 
 impl CodeCortexMcpServer {
@@ -142,9 +146,10 @@ impl CodeCortexMcpServer {
         self.project_cache
             .lock()
             .await
-            .put(path, new_services.clone());
+            .put(path.clone(), new_services.clone());
         *self.project.write().await = new_services;
         self.maybe_auto_index();
+        self.start_watcher(path);
         let full = p.full;
         let index = self.index().await;
         spawn_handler!(index, move |rt| handlers::core::build_index(rt, full))
@@ -534,6 +539,7 @@ impl CodeCortexMcpServer {
             tool_router,
             last_activity: Arc::new(Mutex::new(Instant::now())),
             auto_indexing: Arc::new(AtomicBool::new(false)),
+            watcher_handle: Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
 
@@ -603,6 +609,143 @@ impl CodeCortexMcpServer {
                 tracing::warn!("auto-index task panicked: {}", e);
             }
             auto_indexing.store(false, Ordering::SeqCst);
+        });
+    }
+
+    /// Start a file watcher for the given project path. Stops any previously
+    /// running watcher first. The watcher periodically drains pending events
+    /// and triggers an incremental index rebuild.
+    ///
+    /// The watcher is only started when `auto_index.enabled` is `true` in the
+    /// project configuration (`.codecortex.json`). This method is intentionally
+    /// fire-and-forget — errors in the watcher never propagate to callers.
+    fn start_watcher(&self, project_path: PathBuf) {
+        let watcher_handle = self.watcher_handle.clone();
+        let project = self.project.clone();
+        let auto_indexing = self.auto_indexing.clone();
+
+        tokio::spawn(async move {
+            // Stop previous watcher if any.
+            {
+                let mut guard = watcher_handle.lock().await;
+                if let Some(handle) = guard.take() {
+                    handle.abort();
+                }
+            }
+
+            // Check config: only start watcher when auto_index is enabled.
+            let enabled = {
+                let services = project.read().await;
+                let index = services.index.clone();
+                tokio::task::spawn_blocking(move || {
+                    let rt = match index.read() {
+                        Ok(rt) => rt,
+                        Err(_) => return false,
+                    };
+                    let pp = match rt.project_path.as_deref() {
+                        Some(p) => p,
+                        None => return false,
+                    };
+                    cc_model::config::load_project_config(pp).auto_index.enabled
+                })
+                .await
+                .unwrap_or(false)
+            };
+
+            if !enabled {
+                tracing::info!("watcher: auto_index disabled, skipping file watcher");
+                return;
+            }
+
+            // Create the FileWatcher on a blocking thread (it uses `notify` internally).
+            let path_for_watcher = project_path.clone();
+            let watcher_result =
+                tokio::task::spawn_blocking(move || FileWatcher::start(&path_for_watcher)).await;
+
+            let watcher = match watcher_result {
+                Ok(Ok(w)) => w,
+                Ok(Err(e)) => {
+                    tracing::warn!("watcher: failed to start file watcher: {}", e);
+                    return;
+                }
+                Err(e) => {
+                    tracing::warn!("watcher: spawn_blocking failed: {}", e);
+                    return;
+                }
+            };
+
+            tracing::info!(path = %project_path.display(), "watcher: started file watcher");
+
+            // Wrap watcher in Arc<Mutex> so it can be shared with the poll task
+            // and cleaned up on Drop.
+            let watcher = Arc::new(std::sync::Mutex::new(Some(watcher)));
+            let watcher_for_task = watcher.clone();
+
+            let poll_handle = tokio::spawn({
+                let project = project.clone();
+                let auto_indexing = auto_indexing.clone();
+                async move {
+                    let poll_interval = tokio::time::Duration::from_secs(2);
+                    loop {
+                        tokio::time::sleep(poll_interval).await;
+
+                        // Drain pending events from the watcher.
+                        let drain = {
+                            let guard = match watcher_for_task.lock() {
+                                Ok(g) => g,
+                                Err(e) => e.into_inner(),
+                            };
+                            match guard.as_ref() {
+                                Some(w) => w.drain_pending(),
+                                None => break,
+                            }
+                        };
+
+                        if drain.is_empty() {
+                            continue;
+                        }
+
+                        tracing::info!(
+                            changed = drain.changed.len(),
+                            removed = drain.removed.len(),
+                            "watcher: file changes detected, triggering incremental index"
+                        );
+
+                        // Skip if another auto-index is already running.
+                        if auto_indexing
+                            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                            .is_err()
+                        {
+                            tracing::debug!(
+                                "watcher: skipping incremental index — already in progress"
+                            );
+                            continue;
+                        }
+
+                        let index = project.read().await.index.clone();
+                        let result = tokio::task::spawn_blocking(move || {
+                            if let Ok(mut rt) = index.write() {
+                                if let Err(e) = rt.build_index(false) {
+                                    tracing::warn!("watcher: incremental index failed: {}", e);
+                                }
+                            }
+                        })
+                        .await;
+
+                        if let Err(e) = result {
+                            tracing::warn!("watcher: incremental index task panicked: {}", e);
+                        }
+                        auto_indexing.store(false, Ordering::SeqCst);
+                    }
+                }
+            });
+
+            // Store the poll task handle so it can be aborted when the watcher
+            // is replaced or the server shuts down.
+            {
+                let mut guard = watcher_handle.lock().await;
+                *guard = Some(poll_handle);
+            }
         });
     }
 
@@ -721,7 +864,7 @@ index(path) → search(query) → context(task)
 - Do NOT chain search + node when you want context — context(task) is one round-trip.
 - Do NOT loop node() over many symbols — one explore(symbols) call returns them all grouped by file.
 - Do NOT use trace(include_source=true) for deep understanding — use trace(source_mode="body") instead for complete function bodies.
-- After editing files, call index(path) to refresh — there is no automatic file watcher.
+- File changes are automatically detected and trigger incremental re-indexing (configurable via `.codecortex.json`).
 
 ## Rules
 
@@ -732,7 +875,7 @@ index(path) → search(query) → context(task)
 5. Use node(symbol, include="outline") for large classes to get signatures without full source.
 6. Use status(aspect="schema") to discover node/edge types before writing Cypher queries.
 7. Edges with `synthesized_by` field are inferred dynamic dispatch — not direct source calls.
-8. After file edits, call index(path) to update — no automatic file watcher is active.
+8. File changes are detected automatically — manual index(path) is only needed to force a full rebuild.
 9. For refactoring, always run impact(scope="changes") first to understand blast radius.
 10. Treat returned source as already read — do not re-open those files with Read/Grep."#
                 .into(),
@@ -798,8 +941,9 @@ index(path) → search(query) → context(task)
 pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_model::CcResult<()> {
     let server = CodeCortexMcpServer::new(project_path.as_deref());
 
-    if project_path.is_some() {
+    if let Some(ref path) = project_path {
         server.maybe_auto_index();
+        server.start_watcher(path.clone());
     }
 
     let idle_timeout_secs = {

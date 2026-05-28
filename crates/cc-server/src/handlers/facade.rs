@@ -573,3 +573,111 @@ pub fn handle_adr(
         _ => Err(format!("unknown adr action: {}", action)),
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use serde_json::json;
+
+    // ── enforce_output_limit: passthrough when under limit ──────────
+
+    #[test]
+    fn enforce_output_limit_passthrough_when_small() {
+        let input = json!({"key": "value"});
+        let result = enforce_output_limit(input.clone(), 10000);
+        assert_eq!(result, input);
+    }
+
+    // ── enforce_output_limit: truncation when over limit ────────────
+
+    #[test]
+    fn enforce_output_limit_truncates_when_over() {
+        let large = json!({"data": "x".repeat(500)});
+        let result = enforce_output_limit(large.clone(), 50);
+
+        assert!(result.get("_truncated").is_some());
+        assert_eq!(result["_truncated"], true);
+        assert!(result["_original_chars"].as_u64().unwrap() > 50);
+        assert_eq!(result["_max_chars"], 50);
+        assert!(result.get("partial").is_some());
+    }
+
+    // ── enforce_output_limit: zero max_chars ────────────────────────
+
+    #[test]
+    fn enforce_output_limit_zero_max() {
+        let input = json!({"a": 1});
+        let result = enforce_output_limit(input.clone(), 0);
+        // Should produce a truncated wrapper (since serialized len > 0)
+        assert!(result.get("_truncated").is_some());
+    }
+
+    // ── enforce_output_limit: exact boundary ────────────────────────
+
+    #[test]
+    fn enforce_output_limit_at_exact_boundary() {
+        let input = json!({"k": "v"});
+        let serialized_len = serde_json::to_string(&input).unwrap().len();
+        // At exact length, should pass through
+        let result = enforce_output_limit(input.clone(), serialized_len);
+        assert_eq!(result, input);
+    }
+
+    // ── enforce_output_limit: one less than serialized len ──────────
+
+    #[test]
+    fn enforce_output_limit_one_less_than_len() {
+        let input = json!({"k": "v"});
+        let serialized_len = serde_json::to_string(&input).unwrap().len();
+        let result = enforce_output_limit(input, serialized_len - 1);
+        assert!(result.get("_truncated").is_some());
+    }
+
+    // ── enforce_output_limit: nested structure ──────────────────────
+
+    #[test]
+    fn enforce_output_limit_nested_json() {
+        let input = json!({
+            "outer": {
+                "inner": [1, 2, 3],
+                "deep": {"value": "hello"}
+            }
+        });
+        let serialized_len = serde_json::to_string(&input).unwrap().len();
+
+        // Under limit: passthrough
+        let result = enforce_output_limit(input.clone(), serialized_len + 100);
+        assert_eq!(result, input);
+
+        // Over limit: truncated
+        let result = enforce_output_limit(input, 30);
+        assert!(result.get("_truncated").is_some());
+    }
+
+    // ── enforce_output_limit: array value ───────────────────────────
+
+    #[test]
+    fn enforce_output_limit_with_array() {
+        let input = json!([1, 2, 3, 4, 5]);
+        let result = enforce_output_limit(input.clone(), 100000);
+        assert_eq!(result, input);
+    }
+
+    // ── enforce_output_limit: string value ──────────────────────────
+
+    #[test]
+    fn enforce_output_limit_with_string() {
+        let input = json!("hello world");
+        let result = enforce_output_limit(input.clone(), 100000);
+        assert_eq!(result, input);
+    }
+
+    // ── enforce_output_limit: null value ────────────────────────────
+
+    #[test]
+    fn enforce_output_limit_with_null() {
+        let input = json!(null);
+        let result = enforce_output_limit(input.clone(), 100);
+        assert_eq!(result, input);
+    }
+}

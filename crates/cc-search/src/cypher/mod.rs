@@ -29,7 +29,7 @@
 //! Limitations:
 //!   - `=~` regex is approximated via SQL LIKE: only `.*`, `.+`, and `.` are converted.
 //!     Complex regex patterns (character classes, alternation, anchors) are NOT supported
-//!     and will produce incorrect results silently.
+//!     and will return an explicit error.
 //!   - LIMIT defaults to 50 when omitted (standard Cypher returns all rows).
 //!   - AND / OR follow standard precedence (AND binds tighter than OR).
 //!   - OPTIONAL MATCH only applies to the first pattern (single-hop).
@@ -53,7 +53,7 @@ pub(crate) use executor::validate_query_identifiers;
 #[cfg(test)]
 pub(crate) use executor::{
     edge_table_map, expr_to_sql, label_kind_filter, label_table, translate_single_hop,
-    translate_single_node, translate_variable_length, validate_sql_ident,
+    translate_single_node, translate_variable_length, validate_regex_for_like, validate_sql_ident,
 };
 
 use cc_db::index_db::IndexDb;
@@ -580,7 +580,7 @@ mod tests {
             value: Value::Int(5),
         };
         let mut params = Vec::new();
-        let sql = expr_to_sql(&expr, &mut params);
+        let sql = expr_to_sql(&expr, &mut params).unwrap();
         assert!(sql.contains("call_edges"));
         assert!(sql.contains("n.symbol_uid"));
         assert!(sql.contains("> ?1"));
@@ -1485,6 +1485,190 @@ mod tests {
         assert!(
             validate_query_identifiers(&query).is_err(),
             "malicious label should be rejected"
+        );
+    }
+
+    // ── Regex validation tests ────────────────────────────────
+
+    #[test]
+    fn validate_regex_accepts_simple_patterns() {
+        assert!(validate_regex_for_like(".*Handler").is_ok());
+        assert!(validate_regex_for_like("get.+").is_ok());
+        assert!(validate_regex_for_like("foo").is_ok());
+        assert!(validate_regex_for_like(".*main.*").is_ok());
+        assert!(validate_regex_for_like("a.b").is_ok());
+    }
+
+    #[test]
+    fn validate_regex_rejects_character_class() {
+        let err = validate_regex_for_like("[a-z].*").unwrap_err();
+        assert!(
+            err.contains("character class"),
+            "should mention character class: {err}"
+        );
+    }
+
+    #[test]
+    fn validate_regex_rejects_anchors() {
+        assert!(validate_regex_for_like("^start").is_err());
+        assert!(validate_regex_for_like("end$").is_err());
+    }
+
+    #[test]
+    fn validate_regex_rejects_alternation() {
+        let err = validate_regex_for_like("foo|bar").unwrap_err();
+        assert!(
+            err.contains("alternation"),
+            "should mention alternation: {err}"
+        );
+    }
+
+    #[test]
+    fn validate_regex_rejects_quantifier() {
+        assert!(validate_regex_for_like("a{2,3}").is_err());
+    }
+
+    #[test]
+    fn validate_regex_rejects_shorthand_classes() {
+        assert!(validate_regex_for_like("\\d+").is_err());
+        assert!(validate_regex_for_like("\\w+").is_err());
+        assert!(validate_regex_for_like("\\s+").is_err());
+    }
+
+    #[test]
+    fn validate_regex_rejects_lookahead() {
+        assert!(validate_regex_for_like("(?=foo)bar").is_err());
+    }
+
+    #[test]
+    fn validate_regex_rejects_lazy_quantifiers() {
+        assert!(validate_regex_for_like(".*?foo").is_err());
+        assert!(validate_regex_for_like(".+?bar").is_err());
+    }
+
+    #[test]
+    fn validate_regex_rejects_backreference() {
+        assert!(validate_regex_for_like("(foo)\\1").is_err());
+    }
+
+    #[test]
+    fn regex_error_propagates_through_cypher_query() {
+        // A Cypher query with =~ using unsupported regex should return Err,
+        // not silently produce wrong results.
+        let input = "MATCH (f:Function) WHERE f.name =~ '[A-Z].*Handler' RETURN f.name";
+        let tokens = tokenize(input).unwrap();
+        let ast = parse(&tokens).unwrap();
+        let pattern = &ast.match_clause().patterns[0];
+        let result = translate_single_node(&ast, pattern);
+        assert!(
+            result.is_err(),
+            "unsupported regex should produce error, not silent wrong results"
+        );
+        let err_msg = format!("{}", result.unwrap_err());
+        assert!(
+            err_msg.contains("character class"),
+            "error should mention unsupported feature: {err_msg}"
+        );
+    }
+
+    // ── Parity tests: new Cypher engine vs legacy GraphQueryEngine ──────
+
+    #[test]
+    fn parity_single_node_query() {
+        // Both engines should produce the same results on an empty database
+        // for a simple single-node query.
+        use cc_db::index_db::IndexDb;
+        use std::sync::Arc;
+        use tempfile::TempDir;
+
+        let tmp = TempDir::new().unwrap();
+        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
+        let db = Arc::new(db);
+
+        let query = "MATCH (f:Function) WHERE f.name = 'main' RETURN f.name LIMIT 10";
+
+        // New Cypher engine
+        let new_result = cypher_query(query, &db).unwrap();
+
+        // Legacy engine
+        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        // Both should return empty results on an empty DB.
+        assert_eq!(
+            new_result.rows.len(),
+            legacy_result.len(),
+            "parity: single-node query row count should match"
+        );
+    }
+
+    #[test]
+    fn parity_relationship_query() {
+        use cc_db::index_db::IndexDb;
+        use std::sync::Arc;
+        use tempfile::TempDir;
+
+        let tmp = TempDir::new().unwrap();
+        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
+        let db = Arc::new(db);
+
+        let query = "MATCH (f:Function)-[:CALLS]->(g) WHERE f.name = 'main' RETURN g.name LIMIT 5";
+
+        let new_result = cypher_query(query, &db).unwrap();
+        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        assert_eq!(
+            new_result.rows.len(),
+            legacy_result.len(),
+            "parity: relationship query row count should match"
+        );
+    }
+
+    #[test]
+    fn parity_contains_query() {
+        use cc_db::index_db::IndexDb;
+        use std::sync::Arc;
+        use tempfile::TempDir;
+
+        let tmp = TempDir::new().unwrap();
+        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
+        let db = Arc::new(db);
+
+        let query =
+            "MATCH (f:File) WHERE f.file_path CONTAINS 'controller' RETURN f.file_path LIMIT 10";
+
+        let new_result = cypher_query(query, &db).unwrap();
+        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        assert_eq!(
+            new_result.rows.len(),
+            legacy_result.len(),
+            "parity: CONTAINS query row count should match"
+        );
+    }
+
+    #[test]
+    fn parity_regex_simple_query() {
+        use cc_db::index_db::IndexDb;
+        use std::sync::Arc;
+        use tempfile::TempDir;
+
+        let tmp = TempDir::new().unwrap();
+        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
+        let db = Arc::new(db);
+
+        let query = "MATCH (f:Function) WHERE f.name =~ '.*Handler' RETURN f.name LIMIT 10";
+
+        let new_result = cypher_query(query, &db).unwrap();
+        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        assert_eq!(
+            new_result.rows.len(),
+            legacy_result.len(),
+            "parity: simple regex query row count should match"
         );
     }
 }

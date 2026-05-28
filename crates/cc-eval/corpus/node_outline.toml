@@ -1,0 +1,14 @@
+name = "node_outline"
+tool = "node"
+description = "Get file outline using include=outline for utils.js symbols"
+
+[params]
+symbol = "formatName"
+include = "outline"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"

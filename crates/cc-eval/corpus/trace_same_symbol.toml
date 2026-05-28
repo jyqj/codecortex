@@ -1,0 +1,11 @@
+name = "trace_same_symbol"
+tool = "trace"
+description = "Trace from a symbol to itself should succeed with trivial path"
+
+[params]
+from = "formatName"
+to = "formatName"
+max_depth = 3
+
+[[assertions]]
+kind = "is_success"

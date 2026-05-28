@@ -691,7 +691,7 @@ fn translate_single_node(
 
     let mut sql = format!("SELECT {select_cols} FROM {table} AS {alias}");
 
-    let mut where_parts = build_where(&ast.where_clauses, params);
+    let mut where_parts = build_where(&ast.where_clauses, params)?;
     // Kind filter from label.
     if let Some(label) = ast.node.label.as_deref() {
         if let Some(kind) = label_kind_filter(label) {
@@ -790,7 +790,7 @@ fn translate_single_hop(
         edge_info.table
     );
 
-    let mut where_parts = build_where(&ast.where_clauses, params);
+    let mut where_parts = build_where(&ast.where_clauses, params)?;
 
     // Kind filters from labels.
     for (alias, label_opt) in [
@@ -843,7 +843,7 @@ fn translate_variable_length(
         }
     }
 
-    let src_filter_parts = build_where(&src_where_clauses, params);
+    let src_filter_parts = build_where(&src_where_clauses, params)?;
     let cte_where = if src_filter_parts.is_empty() {
         "1=1".to_string()
     } else {
@@ -878,7 +878,7 @@ fn translate_variable_length(
         WHERE path_cte.depth >= ?{min_param_idx}"
     );
 
-    let dst_filter_parts = build_where(&dst_where_clauses, params);
+    let dst_filter_parts = build_where(&dst_where_clauses, params)?;
     for part in &dst_filter_parts {
         sql.push_str(" AND ");
         sql.push_str(part);
@@ -922,12 +922,14 @@ fn resolve_return_fields(fields: &[ReturnField], _default_alias: &str) -> String
         .join(", ")
 }
 
-fn build_where(clauses: &[WhereClause], params: &mut Vec<String>) -> Vec<String> {
+fn build_where(clauses: &[WhereClause], params: &mut Vec<String>) -> CcResult<Vec<String>> {
     let mut parts = Vec::new();
     for wc in clauses {
         let idx = params.len() + 1;
         match wc.op {
             WhereOp::Regex => {
+                // Validate that the regex only uses features we can convert to LIKE.
+                validate_regex_for_like(&wc.right).map_err(CcError::Search)?;
                 // Without the rusqlite "functions" feature, REGEXP is not available.
                 // Fall back to LIKE with pattern conversion.
                 parts.push(format!("{} LIKE ?{idx}", wc.left));
@@ -967,7 +969,7 @@ fn build_where(clauses: &[WhereClause], params: &mut Vec<String>) -> Vec<String>
             }
         }
     }
-    parts
+    Ok(parts)
 }
 
 // ---------------------------------------------------------------------------
@@ -997,6 +999,47 @@ fn register_regexp_function(conn: &rusqlite::Connection) -> Result<(), rusqlite:
             }
         },
     )
+}
+
+/// Validate that a regex pattern only uses features that can be faithfully
+/// converted to SQL LIKE.  Returns `Ok(())` for simple patterns (only `.*`,
+/// `.+`, `.`, literal chars) and `Err(description)` when unsupported regex
+/// features are detected.
+fn validate_regex_for_like(pattern: &str) -> Result<(), String> {
+    let unsupported: &[(&str, &str)] = &[
+        ("[", "character class [...]"),
+        ("]", "character class [...]"),
+        ("^", "anchor ^"),
+        ("$", "anchor $"),
+        ("|", "alternation |"),
+        ("{", "quantifier {n,m}"),
+        ("}", "quantifier {n,m}"),
+        ("(?", "non-capturing/lookahead group (?...)"),
+        ("+?", "lazy quantifier +?"),
+        ("*?", "lazy quantifier *?"),
+        ("\\d", "shorthand class \\d"),
+        ("\\D", "shorthand class \\D"),
+        ("\\w", "shorthand class \\w"),
+        ("\\W", "shorthand class \\W"),
+        ("\\s", "shorthand class \\s"),
+        ("\\S", "shorthand class \\S"),
+        ("\\b", "word boundary \\b"),
+        ("\\B", "word boundary \\B"),
+        ("\\1", "back-reference \\1"),
+        ("\\2", "back-reference \\2"),
+        ("\\3", "back-reference \\3"),
+    ];
+
+    for (token, description) in unsupported {
+        if pattern.contains(token) {
+            return Err(format!(
+                "regex pattern contains unsupported feature for LIKE conversion: {description}. \
+                 Only `.*`, `.+`, `.` (single char), and literal characters are supported in =~ patterns."
+            ));
+        }
+    }
+
+    Ok(())
 }
 
 /// Convert a basic regex pattern to a LIKE pattern for SQLite.
@@ -1313,5 +1356,137 @@ mod tests {
             )
             .unwrap();
         assert!(results.is_empty());
+    }
+
+    // ── Regex validation tests ────────────────────────────────
+
+    #[test]
+    fn test_validate_regex_accepts_simple_patterns() {
+        assert!(validate_regex_for_like(".*Handler").is_ok());
+        assert!(validate_regex_for_like("get.+").is_ok());
+        assert!(validate_regex_for_like("foo").is_ok());
+        assert!(validate_regex_for_like(".*main.*").is_ok());
+    }
+
+    #[test]
+    fn test_validate_regex_rejects_character_class() {
+        let err = validate_regex_for_like("[a-z].*").unwrap_err();
+        assert!(
+            err.contains("character class"),
+            "should mention character class: {err}"
+        );
+    }
+
+    #[test]
+    fn test_validate_regex_rejects_anchors() {
+        assert!(validate_regex_for_like("^start").is_err());
+        assert!(validate_regex_for_like("end$").is_err());
+    }
+
+    #[test]
+    fn test_validate_regex_rejects_alternation() {
+        assert!(validate_regex_for_like("foo|bar").is_err());
+    }
+
+    #[test]
+    fn test_validate_regex_rejects_quantifier_braces() {
+        assert!(validate_regex_for_like("a{2,3}").is_err());
+    }
+
+    #[test]
+    fn test_validate_regex_rejects_shorthand_classes() {
+        assert!(validate_regex_for_like("\\d+").is_err());
+        assert!(validate_regex_for_like("\\w+").is_err());
+        assert!(validate_regex_for_like("\\s+").is_err());
+    }
+
+    #[test]
+    fn test_regex_error_propagates_through_legacy_engine() {
+        // A query with unsupported regex should return Err via the legacy engine.
+        let db = make_db();
+        let engine = GraphQueryEngine::new(db);
+        let result = engine
+            .execute("MATCH (f:Function) WHERE f.name =~ '[A-Z].*Handler' RETURN f.name LIMIT 10");
+        assert!(
+            result.is_err(),
+            "unsupported regex should produce error, not silent wrong results"
+        );
+    }
+
+    // ── Parity tests: legacy GraphQueryEngine vs new Cypher engine ──────
+
+    #[test]
+    fn parity_single_node_query() {
+        let db = make_db();
+
+        let query = "MATCH (f:Function) WHERE f.name = 'main' RETURN f.name LIMIT 10";
+
+        // Legacy engine
+        let legacy = GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        // New Cypher engine
+        let new_result = crate::cypher::cypher_query(query, &db).unwrap();
+
+        assert_eq!(
+            legacy_result.len(),
+            new_result.rows.len(),
+            "parity: single-node query row count should match"
+        );
+    }
+
+    #[test]
+    fn parity_relationship_query() {
+        let db = make_db();
+
+        let query = "MATCH (f:Function)-[:CALLS]->(g) WHERE f.name = 'main' RETURN g.name LIMIT 5";
+
+        let legacy = GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        let new_result = crate::cypher::cypher_query(query, &db).unwrap();
+
+        assert_eq!(
+            legacy_result.len(),
+            new_result.rows.len(),
+            "parity: relationship query row count should match"
+        );
+    }
+
+    #[test]
+    fn parity_contains_query() {
+        let db = make_db();
+
+        let query =
+            "MATCH (f:File) WHERE f.file_path CONTAINS 'controller' RETURN f.file_path LIMIT 10";
+
+        let legacy = GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        let new_result = crate::cypher::cypher_query(query, &db).unwrap();
+
+        assert_eq!(
+            legacy_result.len(),
+            new_result.rows.len(),
+            "parity: CONTAINS query row count should match"
+        );
+    }
+
+    #[test]
+    fn parity_regex_simple_query() {
+        let db = make_db();
+
+        let query = "MATCH (f:Function) WHERE f.name =~ '.*Handler' RETURN f.name LIMIT 10";
+
+        let legacy = GraphQueryEngine::new(db.clone());
+        let legacy_result = legacy.execute(query).unwrap();
+
+        let new_result = crate::cypher::cypher_query(query, &db).unwrap();
+
+        assert_eq!(
+            legacy_result.len(),
+            new_result.rows.len(),
+            "parity: simple regex query row count should match"
+        );
     }
 }

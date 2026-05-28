@@ -108,7 +108,31 @@ impl MemoryBudget {
             0
         }
 
-        #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+        #[cfg(target_os = "windows")]
+        {
+            // Use GetProcessMemoryInfo via PowerShell to read WorkingSetSize.
+            // This avoids adding windows-sys / winapi as a build dependency.
+            match std::process::Command::new("powershell")
+                .args([
+                    "-NoProfile",
+                    "-Command",
+                    "(Get-Process -Id $PID).WorkingSet64",
+                ])
+                .output()
+            {
+                Ok(output) if output.status.success() => {
+                    let text = String::from_utf8_lossy(&output.stdout);
+                    if let Ok(bytes) = text.trim().parse::<u64>() {
+                        return bytes;
+                    }
+                }
+                _ => {}
+            }
+            tracing::warn!("Windows RSS detection failed; memory budget may be inaccurate");
+            0
+        }
+
+        #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
         {
             0
         }
@@ -151,7 +175,32 @@ impl MemoryBudget {
             8 * 1024 * 1024 * 1024
         }
 
-        #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+        #[cfg(target_os = "windows")]
+        {
+            // Query total physical RAM via PowerShell (avoids winapi dependency).
+            match std::process::Command::new("powershell")
+                .args([
+                    "-NoProfile",
+                    "-Command",
+                    "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory",
+                ])
+                .output()
+            {
+                Ok(output) if output.status.success() => {
+                    let text = String::from_utf8_lossy(&output.stdout);
+                    if let Ok(bytes) = text.trim().parse::<u64>() {
+                        if bytes > 0 {
+                            return bytes;
+                        }
+                    }
+                }
+                _ => {}
+            }
+            tracing::warn!("Windows total RAM detection failed; using 8 GiB fallback");
+            8 * 1024 * 1024 * 1024
+        }
+
+        #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
         {
             8 * 1024 * 1024 * 1024
         }

@@ -637,3 +637,232 @@ pub(crate) fn centrality_hint(info: &cc_db::index_db::SymbolDegreeInfo) -> &'sta
 // Re-export types that were previously defined here
 pub use crate::engine_query::{compute_package_boundaries, compute_package_layers};
 pub use crate::engine_query::{PackageBoundary, PackageLayer};
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cc_db::index_db::SymbolDegreeInfo;
+    use tempfile::TempDir;
+
+    // ── CodeIndex::new(None) → empty index ──────────────────────────
+
+    #[test]
+    fn new_with_none_creates_empty_index() {
+        let idx = CodeIndex::new(None).unwrap();
+        assert!(idx.project_path.is_none());
+        assert!(idx.index_db.is_none());
+        assert!(!idx.needs_initial_index());
+    }
+
+    // ── CodeIndex::empty() ──────────────────────────────────────────
+
+    #[test]
+    fn empty_has_no_project_or_db() {
+        let idx = CodeIndex::empty();
+        assert!(idx.project_path.is_none());
+        assert!(idx.index_db.is_none());
+        assert!(idx.index_db().is_none());
+    }
+
+    // ── ensure_db returns ProjectNotSet when no project ─────────────
+
+    #[test]
+    fn ensure_db_returns_project_not_set() {
+        let idx = CodeIndex::empty();
+        match idx.ensure_db() {
+            Err(CcError::ProjectNotSet) => {}
+            Err(other) => panic!("expected ProjectNotSet, got {:?}", other),
+            Ok(_) => panic!("expected error but got Ok"),
+        }
+    }
+
+    // ── ensure_project returns ProjectNotSet when no project ────────
+
+    #[test]
+    fn ensure_project_returns_project_not_set() {
+        let idx = CodeIndex::empty();
+        let err = idx.ensure_project().unwrap_err();
+        assert!(matches!(err, CcError::ProjectNotSet));
+    }
+
+    // ── set_project on a valid temp directory ───────────────────────
+
+    #[test]
+    fn set_project_initializes_db_and_path() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+
+        assert!(idx.project_path.is_some());
+        assert!(idx.index_db.is_some());
+        assert!(idx.ensure_db().is_ok());
+        assert!(idx.ensure_project().is_ok());
+    }
+
+    // ── close / is_closed / reopen cycle ────────────────────────────
+
+    #[test]
+    fn close_marks_index_closed_and_reopen_restores() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+
+        assert!(!idx.is_closed());
+
+        idx.close();
+        assert!(idx.is_closed());
+        assert!(idx.index_db.is_none());
+
+        idx.reopen().unwrap();
+        assert!(!idx.is_closed());
+        assert!(idx.index_db.is_some());
+    }
+
+    // ── is_closed is false when no project set ──────────────────────
+
+    #[test]
+    fn is_closed_false_when_no_project() {
+        let idx = CodeIndex::empty();
+        assert!(
+            !idx.is_closed(),
+            "empty index (no project) should not be considered 'closed'"
+        );
+    }
+
+    // ── reopen is no-op when not closed ─────────────────────────────
+
+    #[test]
+    fn reopen_noop_when_not_closed() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+
+        // reopen on an already-open index should succeed without error
+        idx.reopen().unwrap();
+        assert!(idx.index_db.is_some());
+    }
+
+    // ── reopen fails when no project path ───────────────────────────
+
+    #[test]
+    fn reopen_fails_with_project_not_set_on_empty() {
+        let mut idx = CodeIndex::empty();
+        // Not closed (project_path is None), so reopen returns Ok immediately
+        assert!(idx.reopen().is_ok());
+    }
+
+    // ── needs_initial_index after fresh set_project ─────────────────
+
+    #[test]
+    fn needs_initial_index_true_on_fresh_db() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+
+        // A freshly created DB should have SchemaStatus::Initialized
+        assert!(idx.needs_initial_index());
+    }
+
+    // ── detect_intent free function ─────────────────────────────────
+
+    #[test]
+    fn detect_intent_fix_keywords() {
+        assert_eq!(detect_intent("fix the bug"), Intent::Fix);
+        assert_eq!(detect_intent("error in login"), Intent::Fix);
+        assert_eq!(detect_intent("报错了"), Intent::Fix);
+    }
+
+    #[test]
+    fn detect_intent_refactor() {
+        assert_eq!(detect_intent("refactor this module"), Intent::Refactor);
+        assert_eq!(detect_intent("需要重构"), Intent::Refactor);
+    }
+
+    #[test]
+    fn detect_intent_trace() {
+        assert_eq!(detect_intent("trace the call path"), Intent::Trace);
+        assert_eq!(detect_intent("follow the 链路"), Intent::Trace);
+    }
+
+    #[test]
+    fn detect_intent_test() {
+        assert_eq!(detect_intent("add a test for this"), Intent::Test);
+        assert_eq!(detect_intent("测试覆盖"), Intent::Test);
+    }
+
+    #[test]
+    fn detect_intent_explain() {
+        assert_eq!(detect_intent("explain how it works"), Intent::Explain);
+        assert_eq!(detect_intent("解释一下"), Intent::Explain);
+    }
+
+    #[test]
+    fn detect_intent_default_locate() {
+        assert_eq!(detect_intent("find the symbol"), Intent::Locate);
+        assert_eq!(detect_intent("where is this defined"), Intent::Locate);
+    }
+
+    // ── centrality_hint ─────────────────────────────────────────────
+
+    #[test]
+    fn centrality_hint_hub() {
+        let info = SymbolDegreeInfo {
+            in_degree: 1,
+            out_degree: 10,
+            caller_count: 0,
+            callee_count: 0,
+            ref_count: 0,
+        };
+        assert_eq!(centrality_hint(&info), "hub");
+    }
+
+    #[test]
+    fn centrality_hint_authority() {
+        let info = SymbolDegreeInfo {
+            in_degree: 10,
+            out_degree: 1,
+            caller_count: 0,
+            callee_count: 0,
+            ref_count: 0,
+        };
+        assert_eq!(centrality_hint(&info), "authority");
+    }
+
+    #[test]
+    fn centrality_hint_leaf() {
+        let info = SymbolDegreeInfo {
+            in_degree: 0,
+            out_degree: 1,
+            caller_count: 0,
+            callee_count: 0,
+            ref_count: 0,
+        };
+        assert_eq!(centrality_hint(&info), "leaf");
+    }
+
+    #[test]
+    fn centrality_hint_connector() {
+        let info = SymbolDegreeInfo {
+            in_degree: 3,
+            out_degree: 3,
+            caller_count: 0,
+            callee_count: 0,
+            ref_count: 0,
+        };
+        assert_eq!(centrality_hint(&info), "connector");
+    }
+
+    // ── centrality_hint edge cases ──────────────────────────────────
+
+    #[test]
+    fn centrality_hint_zero_zero_is_leaf() {
+        let info = SymbolDegreeInfo {
+            in_degree: 0,
+            out_degree: 0,
+            caller_count: 0,
+            callee_count: 0,
+            ref_count: 0,
+        };
+        assert_eq!(centrality_hint(&info), "leaf");
+    }
+}

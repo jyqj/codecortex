@@ -50,6 +50,21 @@ impl DispatchKind {
             Self::FieldObserver => "field_observer",
         }
     }
+
+    pub fn parse_str(s: &str) -> Option<Self> {
+        match s {
+            "direct" => Some(Self::Direct),
+            "dynamic" => Some(Self::Dynamic),
+            "virtual_dispatch" => Some(Self::VirtualDispatch),
+            "optional_chain" => Some(Self::OptionalChain),
+            "constructor" => Some(Self::Constructor),
+            "event_emitter" => Some(Self::EventEmitter),
+            "callback_relay" => Some(Self::CallbackRelay),
+            "reactive_binding" => Some(Self::ReactiveBinding),
+            "field_observer" => Some(Self::FieldObserver),
+            _ => None,
+        }
+    }
 }
 
 /// Resolution status of a symbol reference or call edge.
@@ -72,6 +87,17 @@ impl ResolutionKind {
             Self::Qualified => "qualified",
             Self::ScopeResolved => "scope_resolved",
             Self::Heuristic => "heuristic",
+        }
+    }
+
+    pub fn parse_str(s: &str) -> Option<Self> {
+        match s {
+            "unresolved" => Some(Self::Unresolved),
+            "exact" => Some(Self::Exact),
+            "qualified" => Some(Self::Qualified),
+            "scope_resolved" => Some(Self::ScopeResolved),
+            "heuristic" => Some(Self::Heuristic),
+            _ => None,
         }
     }
 }
@@ -303,6 +329,24 @@ impl SemanticRelation {
             Self::Unknown => "unknown",
         }
     }
+
+    pub fn parse_str(s: &str) -> Option<Self> {
+        match s {
+            "inherits" => Some(Self::Inherits),
+            "implements" => Some(Self::Implements),
+            "decorates" => Some(Self::Decorates),
+            "throws" => Some(Self::Throws),
+            "uses_type" => Some(Self::UsesType),
+            "defines" => Some(Self::Defines),
+            "defines_method" => Some(Self::DefinesMethod),
+            "contains_file" => Some(Self::ContainsFile),
+            "contains_module" => Some(Self::ContainsModule),
+            "renders_component" => Some(Self::RendersComponent),
+            "injects" => Some(Self::Injects),
+            "unknown" => Some(Self::Unknown),
+            _ => None,
+        }
+    }
 }
 
 /// A route→handler edge.
@@ -325,4 +369,65 @@ pub struct RouteEdgeRecord {
     pub route_kind: Option<String>,
     pub confidence: f64,
     pub parser_tier: ParserTier,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn dispatch_kind_roundtrip() {
+        let variants = [
+            DispatchKind::Direct,
+            DispatchKind::Dynamic,
+            DispatchKind::VirtualDispatch,
+            DispatchKind::OptionalChain,
+            DispatchKind::Constructor,
+            DispatchKind::EventEmitter,
+            DispatchKind::CallbackRelay,
+            DispatchKind::ReactiveBinding,
+            DispatchKind::FieldObserver,
+        ];
+        for v in variants {
+            assert_eq!(DispatchKind::parse_str(v.as_str()), Some(v));
+        }
+        assert_eq!(DispatchKind::parse_str("nonexistent"), None);
+    }
+
+    #[test]
+    fn resolution_kind_roundtrip() {
+        let variants = [
+            ResolutionKind::Unresolved,
+            ResolutionKind::Exact,
+            ResolutionKind::Qualified,
+            ResolutionKind::ScopeResolved,
+            ResolutionKind::Heuristic,
+        ];
+        for v in variants {
+            assert_eq!(ResolutionKind::parse_str(v.as_str()), Some(v));
+        }
+        assert_eq!(ResolutionKind::parse_str("nonexistent"), None);
+    }
+
+    #[test]
+    fn semantic_relation_roundtrip() {
+        let variants = [
+            SemanticRelation::Inherits,
+            SemanticRelation::Implements,
+            SemanticRelation::Decorates,
+            SemanticRelation::Throws,
+            SemanticRelation::UsesType,
+            SemanticRelation::Defines,
+            SemanticRelation::DefinesMethod,
+            SemanticRelation::ContainsFile,
+            SemanticRelation::ContainsModule,
+            SemanticRelation::RendersComponent,
+            SemanticRelation::Injects,
+            SemanticRelation::Unknown,
+        ];
+        for v in variants {
+            assert_eq!(SemanticRelation::parse_str(v.as_str()), Some(v));
+        }
+        assert_eq!(SemanticRelation::parse_str("nonexistent"), None);
+    }
 }

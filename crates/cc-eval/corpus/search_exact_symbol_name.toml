@@ -1,0 +1,20 @@
+name = "search_exact_symbol_name"
+tool = "search"
+description = "Exact symbol search for calculate_total"
+
+[params]
+query = "calculate_total"
+mode = "symbol"
+exact = true
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "calculate_total"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "calculate_total"

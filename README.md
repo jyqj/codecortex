@@ -127,8 +127,8 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
   returns them all.
 - Do not use `trace(include_source=true)` for deep understanding -- use
   `trace(source_mode="body")` instead for complete function bodies.
-- After file edits, call `index(path)` to update the index — there is no
-  automatic file watcher.
+- File changes are automatically detected and trigger incremental re-indexing
+  (configurable via `auto_index.enabled` in `.codecortex.json`).
 
 ## Configuration
 
@@ -194,7 +194,7 @@ repos, `impact` up to 80 items).
 7-crate workspace with strictly downward dependencies:
 
 ```
-cc-model          Data types, config, error definitions (zero external deps beyond serde)
+cc-model          Data types, config, error definitions (serde, thiserror, blake3, chrono)
     |
 cc-db             SQLite index store (r2d2 pool, WAL mode, FTS5, 26 tables, schema v15)
     |
@@ -237,9 +237,10 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 - **ImpactAnalyzer**: BFS reverse-caller expansion + community boundary
   detection + cross-service HTTP impact + historical co-change analysis.
   Git integration reads unstaged, staged, untracked, and base...HEAD diffs.
-- **FileWatcher**: `notify`-based file watcher module (implemented but not yet
-  integrated into the MCP server lifecycle). Currently, call `index(path)`
-  after edits to refresh the index.
+- **FileWatcher**: `notify`-based file watcher with adaptive debounce, burst
+  backoff, and git dirty sanity poll. Automatically triggers incremental
+  re-indexing on file changes. Controlled by `auto_index.enabled` in
+  `.codecortex.json` (default: `true`).
 
 ## Language Support
 

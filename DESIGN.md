@@ -8,7 +8,7 @@
 ## Architecture
 
 ```
-cc-model          zero-dep data types, config, error
+cc-model          data types, config, error (serde, thiserror, blake3, chrono)
     |
 cc-db             SQLite index store (IndexDb, FTS5, WAL)
     |
@@ -25,7 +25,7 @@ All crate dependencies flow downward. No cycles.
 ## Crates
 
 ### cc-model
-Data types, config, error definitions. Zero external dependencies beyond serde.
+Data types, config, error definitions. Minimal dependencies: serde, serde_json, thiserror, tracing, blake3, chrono.
 - `ProjectConfig` (loaded from `.codecortex.json`)
 - `IndexPaths` (project_path, workdir, index_db, logs_dir)
 - `ContextEnvelope`, `ContextNode`, `ContextSpan` (search result packaging)
@@ -113,7 +113,7 @@ All tools are always available. No activation required.
 - No session/task management
 - No workflow/replay engine
 - No memory/knowledge/skill system (ADR is repo metadata, not agent memory)
-- No pin/working-set/overlay
+- No UI pin/working-set/overlay commands (cc-model defines data types for pinned/overlay file paths and workspace selection, used internally by cc-search for search boosting)
 - No learning/policy optimization
 - No telemetry persistence
 - No runtime.sqlite3 (only index.sqlite3)

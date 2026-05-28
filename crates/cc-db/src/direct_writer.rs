@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! High-speed SQLite writer for full index rebuilds.
 //!
 //! Uses a **hybrid strategy**: rusqlite for correctness + aggressive PRAGMAs
@@ -20,19 +19,25 @@ use std::path::Path;
 
 use rusqlite::Connection;
 
+// Low-level SQLite constants retained for future direct page-writing path.
+#[allow(dead_code)]
 /// SQLite page size for direct writer (64KB, larger than default 4KB)
 const PAGE_SIZE: u32 = 65536;
 
+#[allow(dead_code)]
 /// SQLite file format header size
 const HEADER_SIZE: usize = 100;
 
+#[allow(dead_code)]
 /// B-tree leaf table page type
 const BTREE_LEAF_TABLE: u8 = 0x0D;
 
+#[allow(dead_code)]
 /// B-tree interior table page type
 const BTREE_INTERIOR_TABLE: u8 = 0x05;
 
 /// A single database page being constructed (retained for future low-level use)
+#[allow(dead_code)]
 struct PageBuilder {
     /// Page data buffer (PAGE_SIZE bytes)
     data: Vec<u8>,
@@ -46,6 +51,7 @@ struct PageBuilder {
     cell_pointers: Vec<u16>,
 }
 
+#[allow(dead_code)]
 impl PageBuilder {
     fn new(page_type: u8) -> Self {
         let mut data = vec![0u8; PAGE_SIZE as usize];
@@ -107,6 +113,7 @@ impl PageBuilder {
 }
 
 /// SQLite varint encoding (1-9 bytes, big-endian with MSB continuation)
+#[allow(dead_code)]
 fn encode_varint(value: u64) -> Vec<u8> {
     if value <= 0x7F {
         return vec![value as u8];
@@ -127,6 +134,7 @@ fn encode_varint(value: u64) -> Vec<u8> {
 }
 
 /// Determine the SQLite serial type for an integer value
+#[allow(dead_code)]
 fn int_serial_type(value: i64) -> u8 {
     if value == 0 {
         return 8;
@@ -150,11 +158,13 @@ fn int_serial_type(value: i64) -> u8 {
 }
 
 /// Serial type for a text value
+#[allow(dead_code)]
 fn text_serial_type(len: usize) -> u64 {
     (len as u64) * 2 + 13
 }
 
 /// Serial type for a blob value
+#[allow(dead_code)]
 fn blob_serial_type(len: usize) -> u64 {
     (len as u64) * 2 + 12
 }
@@ -165,6 +175,8 @@ fn blob_serial_type(len: usize) -> u64 {
 /// with aggressive PRAGMAs, writes all data via a caller-supplied closure,
 /// then validates the result with `PRAGMA integrity_check`.
 pub struct DirectWriter {
+    /// Retained for future low-level page-writing path.
+    #[allow(dead_code)]
     pages: Vec<Vec<u8>>,
 }
 
@@ -174,6 +186,7 @@ impl DirectWriter {
     }
 
     /// Write the 100-byte SQLite database header (retained for future low-level use)
+    #[allow(dead_code)]
     fn write_header(&self, page1: &mut [u8], total_pages: u32) {
         // Magic string
         page1[0..16].copy_from_slice(b"SQLite format 3\0");

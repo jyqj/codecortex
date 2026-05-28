@@ -1,0 +1,13 @@
+name = "error_files_invalid_action"
+tool = "files"
+description = "Invalid action falls through to default list behavior"
+
+[params]
+action = "nonexistent_action"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+value = "1"

@@ -414,6 +414,48 @@ pub(crate) fn label_kind_filter(label: &str) -> Option<&'static str> {
     }
 }
 
+/// Validate that a regex pattern only uses features that can be faithfully
+/// converted to SQL LIKE.  Returns `Ok(())` for simple patterns (only `.*`,
+/// `.+`, `.`, literal chars) and `Err(description)` when unsupported regex
+/// features are detected.
+pub(crate) fn validate_regex_for_like(pattern: &str) -> Result<(), String> {
+    // Unsupported character-class / group / anchor tokens.
+    let unsupported: &[(&str, &str)] = &[
+        ("[", "character class [...]"),
+        ("]", "character class [...]"),
+        ("^", "anchor ^"),
+        ("$", "anchor $"),
+        ("|", "alternation |"),
+        ("{", "quantifier {n,m}"),
+        ("}", "quantifier {n,m}"),
+        ("(?", "non-capturing/lookahead group (?...)"),
+        ("+?", "lazy quantifier +?"),
+        ("*?", "lazy quantifier *?"),
+        ("\\d", "shorthand class \\d"),
+        ("\\D", "shorthand class \\D"),
+        ("\\w", "shorthand class \\w"),
+        ("\\W", "shorthand class \\W"),
+        ("\\s", "shorthand class \\s"),
+        ("\\S", "shorthand class \\S"),
+        ("\\b", "word boundary \\b"),
+        ("\\B", "word boundary \\B"),
+        ("\\1", "back-reference \\1"),
+        ("\\2", "back-reference \\2"),
+        ("\\3", "back-reference \\3"),
+    ];
+
+    for (token, description) in unsupported {
+        if pattern.contains(token) {
+            return Err(format!(
+                "regex pattern contains unsupported feature for LIKE conversion: {description}. \
+                 Only `.*`, `.+`, `.` (single char), and literal characters are supported in =~ patterns."
+            ));
+        }
+    }
+
+    Ok(())
+}
+
 /// Convert a basic regex pattern to a LIKE pattern for SQLite.
 fn regex_to_like(pattern: &str) -> String {
     pattern
@@ -441,7 +483,7 @@ fn prop_to_sql_col(prop: &PropRef) -> String {
 }
 
 /// Build a SQL WHERE fragment and collect params from a single Expr node.
-pub(crate) fn expr_to_sql(expr: &Expr, params: &mut Vec<String>) -> String {
+pub(crate) fn expr_to_sql(expr: &Expr, params: &mut Vec<String>) -> CcResult<String> {
     match expr {
         Expr::Comparison { left, op, right } => {
             let col = prop_to_sql_col(left);
@@ -457,66 +499,67 @@ pub(crate) fn expr_to_sql(expr: &Expr, params: &mut Vec<String>) -> String {
             match right {
                 Value::String(s) => {
                     params.push(s.clone());
-                    format!("{col} {sql_op} ?{idx}")
+                    Ok(format!("{col} {sql_op} ?{idx}"))
                 }
                 Value::Int(n) => {
                     params.push(n.to_string());
-                    format!("{col} {sql_op} ?{idx}")
+                    Ok(format!("{col} {sql_op} ?{idx}"))
                 }
                 Value::Float(f) => {
                     params.push(f.to_string());
-                    format!("{col} {sql_op} ?{idx}")
+                    Ok(format!("{col} {sql_op} ?{idx}"))
                 }
                 Value::Bool(b) => {
                     params.push(if *b { "1".into() } else { "0".into() });
-                    format!("{col} {sql_op} ?{idx}")
+                    Ok(format!("{col} {sql_op} ?{idx}"))
                 }
                 Value::Null => {
                     if matches!(op, CmpOp::Eq) {
-                        format!("{col} IS NULL")
+                        Ok(format!("{col} IS NULL"))
                     } else {
-                        format!("{col} IS NOT NULL")
+                        Ok(format!("{col} IS NOT NULL"))
                     }
                 }
             }
         }
         Expr::Regex { left, pattern } => {
+            validate_regex_for_like(pattern).map_err(CcError::Search)?;
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
             params.push(regex_to_like(pattern));
-            format!("{col} LIKE ?{idx}")
+            Ok(format!("{col} LIKE ?{idx}"))
         }
         Expr::Contains { left, value } => {
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
             params.push(format!("%{value}%"));
-            format!("{col} LIKE ?{idx}")
+            Ok(format!("{col} LIKE ?{idx}"))
         }
         Expr::StartsWith { left, value } => {
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
             params.push(format!("{value}%"));
-            format!("{col} LIKE ?{idx}")
+            Ok(format!("{col} LIKE ?{idx}"))
         }
         Expr::EndsWith { left, value } => {
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
             params.push(format!("%{value}"));
-            format!("{col} LIKE ?{idx}")
+            Ok(format!("{col} LIKE ?{idx}"))
         }
         Expr::And(l, r) => {
-            let ls = expr_to_sql(l, params);
-            let rs = expr_to_sql(r, params);
-            format!("({ls} AND {rs})")
+            let ls = expr_to_sql(l, params)?;
+            let rs = expr_to_sql(r, params)?;
+            Ok(format!("({ls} AND {rs})"))
         }
         Expr::Or(l, r) => {
-            let ls = expr_to_sql(l, params);
-            let rs = expr_to_sql(r, params);
-            format!("({ls} OR {rs})")
+            let ls = expr_to_sql(l, params)?;
+            let rs = expr_to_sql(r, params)?;
+            Ok(format!("({ls} OR {rs})"))
         }
         Expr::Not(inner) => {
-            let s = expr_to_sql(inner, params);
-            format!("NOT ({s})")
+            let s = expr_to_sql(inner, params)?;
+            Ok(format!("NOT ({s})"))
         }
         Expr::Degree {
             var,
@@ -547,9 +590,9 @@ pub(crate) fn expr_to_sql(expr: &Expr, params: &mut Vec<String>) -> String {
                 "(SELECT COUNT(*) FROM call_edges WHERE caller_symbol_uid = {var}.symbol_uid)"
             );
             match kind {
-                DegreeKind::In => format!("{in_sub} {sql_op} ?{idx}"),
-                DegreeKind::Out => format!("{out_sub} {sql_op} ?{idx}"),
-                DegreeKind::Total => format!("({in_sub} + {out_sub}) {sql_op} ?{idx}"),
+                DegreeKind::In => Ok(format!("{in_sub} {sql_op} ?{idx}")),
+                DegreeKind::Out => Ok(format!("{out_sub} {sql_op} ?{idx}")),
+                DegreeKind::Total => Ok(format!("({in_sub} + {out_sub}) {sql_op} ?{idx}")),
             }
         }
     }
@@ -974,7 +1017,7 @@ pub(crate) fn translate_single_node(
 
     // WHERE clause.
     if let Some(wc) = &query.where_clause {
-        where_parts.push(expr_to_sql(&wc.expr, &mut params));
+        where_parts.push(expr_to_sql(&wc.expr, &mut params)?);
     }
 
     if !where_parts.is_empty() {
@@ -1142,7 +1185,7 @@ pub(crate) fn translate_single_hop(
 
     // WHERE clause.
     if let Some(wc) = &query.where_clause {
-        where_parts.push(expr_to_sql(&wc.expr, &mut params));
+        where_parts.push(expr_to_sql(&wc.expr, &mut params)?);
     }
 
     if !where_parts.is_empty() {
@@ -1257,7 +1300,7 @@ pub(crate) fn translate_variable_length(
 
     // Separate WHERE conditions for source vs target variables.
     let (src_where, dst_where) = if let Some(wc) = &query.where_clause {
-        split_where_by_var(&wc.expr, src_alias, dst_alias, &mut params)
+        split_where_by_var(&wc.expr, src_alias, dst_alias, &mut params)?
     } else {
         ("1=1".to_string(), None)
     };
@@ -1384,13 +1427,13 @@ fn split_where_by_var(
     src_var: &str,
     dst_var: &str,
     params: &mut Vec<String>,
-) -> (String, Option<String>) {
+) -> CcResult<(String, Option<String>)> {
     // Simple approach: convert the whole expression to SQL, then check which var it references.
     // For AND expressions, we can split the two sides.
     match expr {
         Expr::And(left, right) => {
-            let (ls, ld) = split_where_by_var(left, src_var, dst_var, params);
-            let (rs, rd) = split_where_by_var(right, src_var, dst_var, params);
+            let (ls, ld) = split_where_by_var(left, src_var, dst_var, params)?;
+            let (rs, rd) = split_where_by_var(right, src_var, dst_var, params)?;
 
             let src_parts: Vec<&str> = [&ls, &rs]
                 .iter()
@@ -1416,14 +1459,14 @@ fn split_where_by_var(
                 )
             };
 
-            (src, dst)
+            Ok((src, dst))
         }
         _ => {
-            let sql = expr_to_sql(expr, params);
+            let sql = expr_to_sql(expr, params)?;
             if sql.contains(&format!("{dst_var}.")) {
-                ("1=1".to_string(), Some(sql))
+                Ok(("1=1".to_string(), Some(sql)))
             } else {
-                (sql, None)
+                Ok((sql, None))
             }
         }
     }

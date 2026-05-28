@@ -1,6 +1,6 @@
 # CodeCortex — Code Index Engine
 
-> Version: 2.1 | Date: 2026-05-27
+> Version: 2.2 | Date: 2026-05-28
 > Pure code indexing engine. No runtime/session/workflow/memory/skill/knowledge.
 
 ---
@@ -12,7 +12,7 @@ cc-model          data types, config, error (serde, thiserror, blake3, chrono)
     |
 cc-db             SQLite index store (IndexDb, FTS5, WAL)
     |
-cc-parsers        tree-sitter AST extraction (Python/JS/TS/Java/Go/Rust)
+cc-parsers        tree-sitter AST extraction (Python/JS/TS/Java/Go/Rust/C/C++)
 cc-index          file scan, incremental index, community detection
     |
 cc-search         hybrid search (vector + FTS + grep + RRF), Cypher subset, graph queries
@@ -79,7 +79,7 @@ CLI + MCP server. Contains the `CodeIndex` engine struct.
 
 **ImpactAnalyzer**: BFS reverse-caller expansion + community boundary detection + cross-service HTTP impact + historical co-change analysis. Git integration: unstaged + staged + untracked + base...HEAD.
 
-**FileWatcher**: `notify`-based file watcher module with debounce, burst backoff, and gitignore filtering. Implemented but not yet integrated into the MCP server lifecycle — call `index(path)` after edits to refresh.
+**FileWatcher**: `notify`-based file watcher with adaptive debounce, burst backoff, and gitignore filtering. Integrated into the MCP server lifecycle: `run_mcp_server()` starts the watcher on connect, and `tool_index()` restarts it when the project path changes. Controlled by `auto_index.enabled` in `.codecortex.json` (default: `true`).
 
 ## MCP Tools (14 tools, no domain system)
 

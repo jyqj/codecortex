@@ -2,17 +2,17 @@
 
 ## Unit Tests
 
-719 tests across 7 crates (+ 1 doctest, 1 ignored). Run with `cargo test`.
+725 tests across 7 crates (+ 1 doctest, 1 ignored). Run with `cargo test`.
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 56 | Schema, migrations, SQL injection, architecture, ADR, edges, frontier, graph, query |
+| cc-db | 53 | Schema, migrations, SQL injection, architecture, ADR, edges, frontier, graph, query |
 | cc-eval | 14 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expect_error), corpus loading, fixture integration |
 | cc-index | 212 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection |
 | cc-model | 29 | Route normalization, data structures, enum round-trip |
 | cc-parsers | 160 | Tree-sitter parsing for 10 languages, symbol extraction, Rust parser coverage |
 | cc-search | 160 | Cypher parser/executor, regex validation, vector cache, search engine, graph queries, parity tests |
-| cc-server | 88 | Engine lifecycle, impact analyzer BFS, handler output limits, graph trace, cycles, flow |
+| cc-server | 97 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, output limits, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 

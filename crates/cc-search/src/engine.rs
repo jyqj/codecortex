@@ -53,15 +53,50 @@ fn augmented_query_text(request: &SearchRequest) -> String {
 }
 
 fn vector_similarity(qvec: &[f32], row: &[f32], query_norm: f32, query_normalised: bool) -> f64 {
-    let dot: f32 = qvec.iter().zip(row.iter()).map(|(a, b)| a * b).sum();
+    let dot = dot_product_fast(qvec, row);
     if query_normalised {
         dot as f64
     } else if query_norm > 0.0 {
-        // Rows are L2-normalised at index time, so cosine = dot / query_norm.
         (dot / query_norm) as f64
     } else {
         0.0
     }
+}
+
+/// 4-lane accumulator dot product — auto-vectorizes to SIMD on x86_64 (SSE/AVX)
+/// and aarch64 (NEON) at -O2. Falls back to scalar for the tail elements.
+#[inline]
+fn dot_product_fast(a: &[f32], b: &[f32]) -> f32 {
+    let len = a.len().min(b.len());
+    let chunks = len / 4;
+    let remainder = len % 4;
+
+    let mut acc0: f32 = 0.0;
+    let mut acc1: f32 = 0.0;
+    let mut acc2: f32 = 0.0;
+    let mut acc3: f32 = 0.0;
+
+    let a_ptr = a.as_ptr();
+    let b_ptr = b.as_ptr();
+
+    for i in 0..chunks {
+        let base = i * 4;
+        unsafe {
+            acc0 += *a_ptr.add(base) * *b_ptr.add(base);
+            acc1 += *a_ptr.add(base + 1) * *b_ptr.add(base + 1);
+            acc2 += *a_ptr.add(base + 2) * *b_ptr.add(base + 2);
+            acc3 += *a_ptr.add(base + 3) * *b_ptr.add(base + 3);
+        }
+    }
+
+    let tail_start = chunks * 4;
+    for i in 0..remainder {
+        unsafe {
+            acc0 += *a_ptr.add(tail_start + i) * *b_ptr.add(tail_start + i);
+        }
+    }
+
+    (acc0 + acc1) + (acc2 + acc3)
 }
 
 impl SearchEngine {
@@ -232,19 +267,22 @@ impl SearchEngine {
         let k = self.config.rrf_k;
         rrf_accumulate(
             &mut fused,
-            &vector_hits.iter().map(|h| h.0.clone()).collect::<Vec<_>>(),
+            &vector_hits.iter().map(|h| h.0.as_str()).collect::<Vec<_>>(),
             self.config.vector_weight,
             k,
         );
         rrf_accumulate(
             &mut fused,
-            &lexical_hits.iter().map(|h| h.0.clone()).collect::<Vec<_>>(),
+            &lexical_hits
+                .iter()
+                .map(|h| h.0.as_str())
+                .collect::<Vec<_>>(),
             self.config.lexical_weight,
             k,
         );
         rrf_accumulate(
             &mut fused,
-            &grep_hits.iter().map(|h| h.0.clone()).collect::<Vec<_>>(),
+            &grep_hits.iter().map(|h| h.0.as_str()).collect::<Vec<_>>(),
             self.config.grep_weight,
             k,
         );
@@ -298,13 +336,36 @@ impl SearchEngine {
             .map(|(i, (id, _))| (id.as_str(), i + 1))
             .collect();
 
-        let mut results = Vec::new();
-        // Fetch each chunk and build SearchHit
-        for (chunk_id, fused_score) in &candidates {
-            let row = conn.query_row(
-                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, symbol_name, symbol_kind, text, text_encoding FROM chunks WHERE chunk_id = ?1",
-                rusqlite::params![chunk_id],
-                |row| {
+        // ── Batch-fetch all candidate chunks in one query ─────
+        type ChunkData = (
+            String,
+            String,
+            String,
+            u32,
+            u32,
+            String,
+            Option<String>,
+            Option<String>,
+            String,
+        );
+        let mut chunk_map: HashMap<String, ChunkData> = {
+            let placeholders = (1..=candidates.len())
+                .map(|i| format!("?{}", i))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql = format!(
+                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, \
+                 symbol_name, symbol_kind, text, text_encoding \
+                 FROM chunks WHERE chunk_id IN ({})",
+                placeholders,
+            );
+            let chunk_ids_refs: Vec<&str> =
+                candidates.iter().map(|(cid, _)| cid.as_str()).collect();
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(chunk_ids_refs.iter()), |row| {
                     Ok((
                         row.get::<_, String>(0)?,
                         row.get::<_, String>(1)?,
@@ -316,14 +377,22 @@ impl SearchEngine {
                         row.get::<_, Option<String>>(7)?,
                         read_chunk_text_with_encoding(row, 8, 9)?,
                     ))
-                },
-            );
-            let row = match row {
-                Ok(r) => r,
-                Err(_) => continue,
-            };
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut map = HashMap::with_capacity(candidates.len());
+            for data in rows.flatten() {
+                map.insert(data.0.clone(), data);
+            }
+            map
+        };
 
-            let (cid, fp, lang, sl, el, bc, sn, sk, text) = row;
+        let mut results = Vec::new();
+        // Iterate candidates in fused-score order, looking up from batch result
+        for (chunk_id, fused_score) in &candidates {
+            let (cid, fp, lang, sl, el, bc, sn, sk, text) = match chunk_map.remove(chunk_id) {
+                Some(data) => data,
+                None => continue,
+            };
             let language = parse_language_name(&lang);
             if !passes_filters(&fp, language, request) {
                 continue;
@@ -479,76 +548,6 @@ impl SearchEngine {
         });
         results.truncate(top_k);
         Ok(results)
-    }
-
-    /// Batch query symbol in/out degrees from call_edges.
-    ///
-    /// Returns `{symbol_uid: (degree_in, degree_out)}`.
-    pub fn batch_symbol_degrees(
-        &self,
-        symbol_uids: &[String],
-    ) -> CcResult<HashMap<String, (u32, u32)>> {
-        if symbol_uids.is_empty() {
-            return Ok(HashMap::new());
-        }
-        let conn = self.db.read_conn()?;
-        let mut result: HashMap<String, (u32, u32)> =
-            symbol_uids.iter().map(|s| (s.clone(), (0, 0))).collect();
-
-        let batch_size = 200;
-        for batch in symbol_uids.chunks(batch_size) {
-            let placeholders: String = batch.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-
-            // Incoming edges (callers -> this symbol)
-            let sql_in = format!(
-                "SELECT callee_symbol_uid, COUNT(*) AS cnt FROM call_edges \
-                 WHERE callee_symbol_uid IN ({}) GROUP BY callee_symbol_uid",
-                placeholders
-            );
-            let mut stmt_in = conn
-                .prepare(&sql_in)
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let params_in: Vec<&dyn rusqlite::types::ToSql> = batch
-                .iter()
-                .map(|s| s as &dyn rusqlite::types::ToSql)
-                .collect();
-            let rows_in = stmt_in
-                .query_map(params_in.as_slice(), |row| {
-                    Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?))
-                })
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows_in.flatten() {
-                if let Some(entry) = result.get_mut(&row.0) {
-                    entry.0 = row.1;
-                }
-            }
-
-            // Outgoing edges (this symbol -> callees)
-            let sql_out = format!(
-                "SELECT caller_symbol_uid, COUNT(*) AS cnt FROM call_edges \
-                 WHERE caller_symbol_uid IN ({}) GROUP BY caller_symbol_uid",
-                placeholders
-            );
-            let mut stmt_out = conn
-                .prepare(&sql_out)
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let params_out: Vec<&dyn rusqlite::types::ToSql> = batch
-                .iter()
-                .map(|s| s as &dyn rusqlite::types::ToSql)
-                .collect();
-            let rows_out = stmt_out
-                .query_map(params_out.as_slice(), |row| {
-                    Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?))
-                })
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows_out.flatten() {
-                if let Some(entry) = result.get_mut(&row.0) {
-                    entry.1 = row.1;
-                }
-            }
-        }
-
-        Ok(result)
     }
 
     /// Vector search scoped to explicit file paths.

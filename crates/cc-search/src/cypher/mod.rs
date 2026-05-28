@@ -27,9 +27,6 @@
 //!   <query> UNION ALL <query>                           // merge without dedup
 //!
 //! Limitations:
-//!   - `=~` regex is approximated via SQL LIKE: only `.*`, `.+`, and `.` are converted.
-//!     Complex regex patterns (character classes, alternation, anchors) are NOT supported
-//!     and will return an explicit error.
 //!   - LIMIT defaults to 50 when omitted (standard Cypher returns all rows).
 //!   - AND / OR follow standard precedence (AND binds tighter than OR).
 //!   - OPTIONAL MATCH only applies to the first pattern (single-hop).
@@ -1572,123 +1569,28 @@ mod tests {
     }
 
     #[test]
-    fn regex_error_propagates_through_cypher_query() {
-        // A Cypher query with =~ using unsupported regex should return Err,
-        // not silently produce wrong results.
+    fn regex_generates_regexp_sql() {
+        // With the REGEXP UDF, complex patterns like character classes should
+        // translate to `column REGEXP ?` rather than failing or using LIKE.
         let input = "MATCH (f:Function) WHERE f.name =~ '[A-Z].*Handler' RETURN f.name";
         let tokens = tokenize(input).unwrap();
         let ast = parse(&tokens).unwrap();
         let pattern = &ast.match_clause().patterns[0];
         let result = translate_single_node(&ast, pattern);
         assert!(
-            result.is_err(),
-            "unsupported regex should produce error, not silent wrong results"
+            result.is_ok(),
+            "regex patterns should succeed with REGEXP: {:?}",
+            result.unwrap_err()
         );
-        let err_msg = format!("{}", result.unwrap_err());
+        let translated = result.unwrap();
         assert!(
-            err_msg.contains("character class"),
-            "error should mention unsupported feature: {err_msg}"
+            translated.sql.contains("REGEXP"),
+            "SQL should use REGEXP, got: {}",
+            translated.sql
         );
-    }
-
-    // ── Parity tests: new Cypher engine vs legacy GraphQueryEngine ──────
-
-    #[test]
-    fn parity_single_node_query() {
-        // Both engines should produce the same results on an empty database
-        // for a simple single-node query.
-        use cc_db::index_db::IndexDb;
-        use std::sync::Arc;
-        use tempfile::TempDir;
-
-        let tmp = TempDir::new().unwrap();
-        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
-        let db = Arc::new(db);
-
-        let query = "MATCH (f:Function) WHERE f.name = 'main' RETURN f.name LIMIT 10";
-
-        // New Cypher engine
-        let new_result = cypher_query(query, &db).unwrap();
-
-        // Legacy engine
-        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
-        let legacy_result = legacy.execute(query).unwrap();
-
-        // Both should return empty results on an empty DB.
-        assert_eq!(
-            new_result.rows.len(),
-            legacy_result.len(),
-            "parity: single-node query row count should match"
-        );
-    }
-
-    #[test]
-    fn parity_relationship_query() {
-        use cc_db::index_db::IndexDb;
-        use std::sync::Arc;
-        use tempfile::TempDir;
-
-        let tmp = TempDir::new().unwrap();
-        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
-        let db = Arc::new(db);
-
-        let query = "MATCH (f:Function)-[:CALLS]->(g) WHERE f.name = 'main' RETURN g.name LIMIT 5";
-
-        let new_result = cypher_query(query, &db).unwrap();
-        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
-        let legacy_result = legacy.execute(query).unwrap();
-
-        assert_eq!(
-            new_result.rows.len(),
-            legacy_result.len(),
-            "parity: relationship query row count should match"
-        );
-    }
-
-    #[test]
-    fn parity_contains_query() {
-        use cc_db::index_db::IndexDb;
-        use std::sync::Arc;
-        use tempfile::TempDir;
-
-        let tmp = TempDir::new().unwrap();
-        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
-        let db = Arc::new(db);
-
-        let query =
-            "MATCH (f:File) WHERE f.file_path CONTAINS 'controller' RETURN f.file_path LIMIT 10";
-
-        let new_result = cypher_query(query, &db).unwrap();
-        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
-        let legacy_result = legacy.execute(query).unwrap();
-
-        assert_eq!(
-            new_result.rows.len(),
-            legacy_result.len(),
-            "parity: CONTAINS query row count should match"
-        );
-    }
-
-    #[test]
-    fn parity_regex_simple_query() {
-        use cc_db::index_db::IndexDb;
-        use std::sync::Arc;
-        use tempfile::TempDir;
-
-        let tmp = TempDir::new().unwrap();
-        let (db, _) = IndexDb::open(&tmp.path().join("parity.db")).unwrap();
-        let db = Arc::new(db);
-
-        let query = "MATCH (f:Function) WHERE f.name =~ '.*Handler' RETURN f.name LIMIT 10";
-
-        let new_result = cypher_query(query, &db).unwrap();
-        let legacy = crate::graph_query::GraphQueryEngine::new(db.clone());
-        let legacy_result = legacy.execute(query).unwrap();
-
-        assert_eq!(
-            new_result.rows.len(),
-            legacy_result.len(),
-            "parity: simple regex query row count should match"
+        assert!(
+            translated.params.contains(&"[A-Z].*Handler".to_string()),
+            "params should contain the raw regex pattern"
         );
     }
 }

@@ -9,6 +9,7 @@
 
 use cc_model::CcResult;
 use notify::{Event, EventKind, RecursiveMode, Watcher};
+use std::collections::HashSet;
 use std::path::Path;
 use std::sync::{
     atomic::{AtomicBool, AtomicU64, Ordering},
@@ -149,10 +150,11 @@ fn count_project_files(project_path: &Path) -> usize {
 // ---------------------------------------------------------------------------
 
 /// Pending file-system events, separated into changed and removed sets.
+/// Uses `HashSet` for O(1) membership checks instead of linear `Vec::contains`.
 #[derive(Debug, Default, Clone)]
 struct PendingEvents {
-    changed: Vec<String>,
-    removed: Vec<String>,
+    changed: HashSet<String>,
+    removed: HashSet<String>,
 }
 
 /// Result returned by [`FileWatcher::drain_pending`].
@@ -289,16 +291,12 @@ impl FileWatcher {
 
                     match event.kind {
                         EventKind::Create(_) | EventKind::Modify(_) => {
-                            staging.removed.retain(|p| p != &rel_str);
-                            if !staging.changed.contains(&rel_str) {
-                                staging.changed.push(rel_str.clone());
-                            }
+                            staging.removed.remove(&rel_str);
+                            staging.changed.insert(rel_str);
                         }
                         EventKind::Remove(_) => {
-                            staging.changed.retain(|p| p != &rel_str);
-                            if !staging.removed.contains(&rel_str) {
-                                staging.removed.push(rel_str.clone());
-                            }
+                            staging.changed.remove(&rel_str);
+                            staging.removed.insert(rel_str);
                         }
                         _ => {}
                     }
@@ -390,16 +388,12 @@ impl FileWatcher {
 
                         let mut pending = pending_flush.lock().unwrap_or_else(|e| e.into_inner());
                         for path in flushed.changed {
-                            pending.removed.retain(|p| p != &path);
-                            if !pending.changed.contains(&path) {
-                                pending.changed.push(path);
-                            }
+                            pending.removed.remove(&path);
+                            pending.changed.insert(path);
                         }
                         for path in flushed.removed {
-                            pending.changed.retain(|p| p != &path);
-                            if !pending.removed.contains(&path) {
-                                pending.removed.push(path);
-                            }
+                            pending.changed.remove(&path);
+                            pending.removed.insert(path);
                         }
                     }
                 }
@@ -440,8 +434,8 @@ impl FileWatcher {
         let mut pending = self.pending.lock().unwrap_or_else(|e| e.into_inner());
         let events = std::mem::take(&mut *pending);
         WatcherDrain {
-            changed: events.changed,
-            removed: events.removed,
+            changed: events.changed.into_iter().collect(),
+            removed: events.removed.into_iter().collect(),
         }
     }
 
@@ -499,14 +493,12 @@ fn git_sanity_poll_loop(
 
         let mut pending = pending.lock().unwrap_or_else(|e| e.into_inner());
         let mut backfilled = 0usize;
-        for file in &dirty_files {
-            if !should_track(file) {
+        for file in dirty_files {
+            if !should_track(&file) {
                 continue;
             }
-            // Only add if not already present in either set.
-            let already_tracked = pending.changed.contains(file) || pending.removed.contains(file);
-            if !already_tracked {
-                pending.changed.push(file.clone());
+            if !pending.changed.contains(&file) && !pending.removed.contains(&file) {
+                pending.changed.insert(file);
                 backfilled += 1;
             }
         }

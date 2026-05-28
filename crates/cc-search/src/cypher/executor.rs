@@ -415,9 +415,9 @@ pub(crate) fn label_kind_filter(label: &str) -> Option<&'static str> {
 }
 
 /// Validate that a regex pattern only uses features that can be faithfully
-/// converted to SQL LIKE.  Returns `Ok(())` for simple patterns (only `.*`,
-/// `.+`, `.`, literal chars) and `Err(description)` when unsupported regex
-/// features are detected.
+/// converted to SQL LIKE.  Legacy helper retained for test coverage of the
+/// old LIKE-based path. Production `=~` now uses SQLite REGEXP directly.
+#[cfg(test)]
 pub(crate) fn validate_regex_for_like(pattern: &str) -> Result<(), String> {
     // Unsupported character-class / group / anchor tokens.
     let unsupported: &[(&str, &str)] = &[
@@ -454,14 +454,6 @@ pub(crate) fn validate_regex_for_like(pattern: &str) -> Result<(), String> {
     }
 
     Ok(())
-}
-
-/// Convert a basic regex pattern to a LIKE pattern for SQLite.
-fn regex_to_like(pattern: &str) -> String {
-    pattern
-        .replace(".*", "%")
-        .replace(".+", "_%")
-        .replace('.', "_")
 }
 
 /// Map a property reference to its SQL column, given the variable's alias and table.
@@ -523,11 +515,10 @@ pub(crate) fn expr_to_sql(expr: &Expr, params: &mut Vec<String>) -> CcResult<Str
             }
         }
         Expr::Regex { left, pattern } => {
-            validate_regex_for_like(pattern).map_err(CcError::Search)?;
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
-            params.push(regex_to_like(pattern));
-            Ok(format!("{col} LIKE ?{idx}"))
+            params.push(pattern.clone());
+            Ok(format!("{col} REGEXP ?{idx}"))
         }
         Expr::Contains { left, value } => {
             let col = prop_to_sql_col(left);

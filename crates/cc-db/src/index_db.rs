@@ -22,21 +22,12 @@ use crate::index_migrate::{
     migrate_index_db, SchemaStatus, CURRENT_SCHEMA_VERSION, FULL_SCHEMA_SQL,
 };
 
-/// Read a chunk text column that may be stored as zstd-compressed BLOB or plain TEXT.
-///
-/// Prefer [`read_chunk_text_with_encoding`] for v16+ queries that also select
-/// `chunks.text_encoding`. This legacy helper remains for old query sites and
-/// migrated rows whose encoding is unknown.
-pub fn read_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<String> {
-    read_chunk_text_auto(row, col_idx)
-}
-
 /// Read a chunk text column using the explicit `chunks.text_encoding` marker.
 ///
 /// Supported values:
 /// - `plain`: `text` is stored as normal UTF-8 TEXT.
 /// - `zstd`: `text` is stored as a zstd-compressed BLOB.
-/// - `legacy_auto` / unknown / missing: auto-detect for pre-v16 rows.
+/// - `legacy_auto` / unknown / missing: auto-detect for migrated pre-v16 rows.
 pub fn read_chunk_text_with_encoding(
     row: &rusqlite::Row,
     text_col_idx: usize,
@@ -295,6 +286,31 @@ pub struct ResolutionAttemptRow {
     pub language: Option<String>,
 }
 
+/// Register a `REGEXP(pattern, text)` scalar function on a SQLite connection.
+///
+/// This enables `column REGEXP ?` syntax in SQL (used by Cypher `=~` expressions).
+/// The function compiles the pattern once per invocation via `regex::Regex`.
+fn register_regexp_function(conn: &Connection) -> rusqlite::Result<()> {
+    use rusqlite::functions::FunctionFlags;
+
+    conn.create_scalar_function(
+        "regexp",
+        2,
+        FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
+        |ctx| {
+            let pattern: String = ctx.get(0)?;
+            let text: String = ctx.get(1)?;
+            let re = regex::Regex::new(&pattern).map_err(|e| {
+                rusqlite::Error::UserFunctionError(Box::new(std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    format!("invalid regex: {e}"),
+                )))
+            })?;
+            Ok(re.is_match(&text))
+        },
+    )
+}
+
 /// The index database handle.
 pub struct IndexDb {
     pub(crate) db_path: PathBuf,
@@ -350,6 +366,7 @@ impl IndexDb {
             conn.execute_batch(
                 "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
             )?;
+            register_regexp_function(conn)?;
             Ok(())
         });
         Pool::builder()

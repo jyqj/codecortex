@@ -641,16 +641,7 @@ pub(crate) fn centrality_hint(info: &cc_db::index_db::SymbolDegreeInfo) -> &'sta
     }
 }
 
-// NOTE: The following items have been moved to engine_query.rs:
-// - detect_impact, analyze_impact, repo_size_tier, output_budget
-// - explore_symbols, get_symbol_source, compute_package_boundaries (method)
-// - graph_schema, compute_edge_provenance, compute_runtime_evidence
-// - slice_lines, PackageBoundary, PackageLayer, extract_package
-// - compute_package_boundaries (free fn), compute_package_layers
-
-// Re-export types that were previously defined here
-pub use crate::engine_query::{compute_package_boundaries, compute_package_layers};
-pub use crate::engine_query::{PackageBoundary, PackageLayer};
+pub use crate::engine_query::{compute_package_boundaries, PackageBoundary};
 
 #[cfg(test)]
 mod tests {

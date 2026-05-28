@@ -1,7 +1,7 @@
 //! Installer registry — collects all known targets.
 
-use crate::installer::targets;
-use crate::installer::InstallerTarget;
+use super::targets;
+use super::InstallerTarget;
 
 pub struct InstallerRegistry {
     targets: Vec<Box<dyn InstallerTarget>>,

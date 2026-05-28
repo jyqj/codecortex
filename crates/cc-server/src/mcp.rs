@@ -1,8 +1,8 @@
 //! MCP Server — code indexing, search and graph tools only.
 
-use crate::engine::CodeIndex;
-use crate::handlers;
-use crate::tools::JsonResult;
+use cc_server::engine::CodeIndex;
+use cc_server::handlers;
+use cc_server::tools::JsonResult;
 use crate::watcher::FileWatcher;
 use cc_model::config::RepoSizeTier;
 use lru::LruCache;
@@ -115,7 +115,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_status(
         &self,
-        Parameters(p): Parameters<crate::tools::StatusParams>,
+        Parameters(p): Parameters<cc_server::tools::StatusParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -136,7 +136,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_index(
         &self,
-        Parameters(p): Parameters<crate::tools::IndexParams>,
+        Parameters(p): Parameters<cc_server::tools::IndexParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -163,7 +163,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_search(
         &self,
-        Parameters(p): Parameters<crate::tools::SearchParams>,
+        Parameters(p): Parameters<cc_server::tools::SearchParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -220,7 +220,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_context(
         &self,
-        Parameters(p): Parameters<crate::tools::ContextParams>,
+        Parameters(p): Parameters<cc_server::tools::ContextParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -248,7 +248,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_node(
         &self,
-        Parameters(p): Parameters<crate::tools::NodeParams>,
+        Parameters(p): Parameters<cc_server::tools::NodeParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -270,7 +270,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_explore(
         &self,
-        Parameters(p): Parameters<crate::tools::ExploreParams>,
+        Parameters(p): Parameters<cc_server::tools::ExploreParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -319,7 +319,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_trace(
         &self,
-        Parameters(p): Parameters<crate::tools::TraceParams>,
+        Parameters(p): Parameters<cc_server::tools::TraceParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -354,7 +354,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_relations(
         &self,
-        Parameters(p): Parameters<crate::tools::RelationsParams>,
+        Parameters(p): Parameters<cc_server::tools::RelationsParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -378,7 +378,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_impact(
         &self,
-        Parameters(p): Parameters<crate::tools::ImpactParams>,
+        Parameters(p): Parameters<cc_server::tools::ImpactParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -410,7 +410,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_architecture(
         &self,
-        Parameters(p): Parameters<crate::tools::ArchitectureParams>,
+        Parameters(p): Parameters<cc_server::tools::ArchitectureParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -436,7 +436,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_files(
         &self,
-        Parameters(p): Parameters<crate::tools::FilesParams>,
+        Parameters(p): Parameters<cc_server::tools::FilesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -466,7 +466,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_graph_query(
         &self,
-        Parameters(p): Parameters<crate::tools::GraphQueryParams>,
+        Parameters(p): Parameters<cc_server::tools::GraphQueryParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -485,7 +485,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_ingest_traces(
         &self,
-        Parameters(p): Parameters<crate::tools::IngestTracesParams>,
+        Parameters(p): Parameters<cc_server::tools::IngestTracesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();
@@ -506,7 +506,7 @@ impl CodeCortexMcpServer {
     )]
     async fn tool_adr(
         &self,
-        Parameters(p): Parameters<crate::tools::AdrParams>,
+        Parameters(p): Parameters<cc_server::tools::AdrParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize();

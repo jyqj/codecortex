@@ -8,7 +8,7 @@ use cc_model::config::{OutputBudget, RepoSizeTier};
 use cc_model::impact::ImpactReport;
 use cc_model::{CcError, CcResult};
 use serde::Serialize;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::impact::ImpactAnalyzer;
@@ -772,15 +772,6 @@ pub struct PackageBoundary {
     pub call_count: u32,
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct PackageLayer {
-    pub package: String,
-    pub layer: String,
-    pub reason: String,
-    pub fan_in: u32,
-    pub fan_out: u32,
-}
-
 fn extract_package(file_path: &str) -> String {
     let skip = ["src", "lib", "app", "internal", "pkg", "cmd"];
     let parts: Vec<&str> = file_path.split('/').collect();
@@ -843,76 +834,3 @@ pub fn compute_package_boundaries(
     Ok(boundaries)
 }
 
-#[allow(dead_code)]
-pub fn compute_package_layers(
-    db: &IndexDb,
-    boundaries: &[PackageBoundary],
-) -> CcResult<Vec<PackageLayer>> {
-    let mut fan_in_map: HashMap<String, u32> = HashMap::new();
-    let mut fan_out_map: HashMap<String, u32> = HashMap::new();
-    let mut all_packages: HashSet<String> = HashSet::new();
-
-    for boundary in boundaries {
-        *fan_out_map
-            .entry(boundary.from_package.clone())
-            .or_insert(0) += boundary.call_count;
-        *fan_in_map.entry(boundary.to_package.clone()).or_insert(0) += boundary.call_count;
-        all_packages.insert(boundary.from_package.clone());
-        all_packages.insert(boundary.to_package.clone());
-    }
-
-    let route_rows = db.query_json("SELECT DISTINCT file_path FROM route_nodes", &[])?;
-    let mut pkgs_with_routes: HashSet<String> = HashSet::new();
-    for row in &route_rows {
-        if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
-            pkgs_with_routes.insert(extract_package(fp));
-        }
-    }
-
-    let entry_rows = db.query_json(
-        "SELECT DISTINCT file_path FROM symbols WHERE name = 'main' AND kind IN ('function', 'method')",
-        &[],
-    )?;
-    let mut pkgs_with_entry: HashSet<String> = HashSet::new();
-    for row in &entry_rows {
-        if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
-            pkgs_with_entry.insert(extract_package(fp));
-        }
-    }
-
-    let mut layers = Vec::new();
-    for pkg in &all_packages {
-        let fan_in = *fan_in_map.get(pkg).unwrap_or(&0);
-        let fan_out = *fan_out_map.get(pkg).unwrap_or(&0);
-        let has_routes = pkgs_with_routes.contains(pkg);
-        let has_entry = pkgs_with_entry.contains(pkg);
-
-        let (layer, reason) = if has_entry && fan_out > 0 && fan_in == 0 {
-            ("entry", "has entry point, outbound-only")
-        } else if has_routes {
-            ("api", "contains route definitions")
-        } else if fan_in > fan_out && fan_in > 3 {
-            ("core", "high fan-in, depended upon by many packages")
-        } else if fan_out == 0 && fan_in > 0 {
-            ("leaf", "no outbound cross-package calls")
-        } else if fan_in == 0 && fan_out > 0 {
-            ("entry", "outbound-only, no inbound cross-package calls")
-        } else {
-            ("internal", "mixed or balanced fan-in/fan-out")
-        };
-
-        layers.push(PackageLayer {
-            package: pkg.clone(),
-            layer: layer.to_string(),
-            reason: reason.to_string(),
-            fan_in,
-            fan_out,
-        });
-    }
-    layers.sort_by(|a, b| {
-        b.fan_in
-            .cmp(&a.fan_in)
-            .then_with(|| b.fan_out.cmp(&a.fan_out))
-    });
-    Ok(layers)
-}

@@ -14,9 +14,11 @@ pub(crate) mod route_resolve;
 pub(crate) mod type_edges;
 pub(crate) mod types;
 
-pub use cargo_workspace::{resolve_cargo_workspace, resolve_rust_workspace_import};
-pub use catalog::SymbolCatalog;
-pub use types::{CatalogScope, ImportBinding, InternalResKind, ResolutionContext, ResolveResult};
+pub(crate) use cargo_workspace::{resolve_cargo_workspace, resolve_rust_workspace_import};
+pub(crate) use catalog::SymbolCatalog;
+pub(crate) use types::{ResolutionContext};
+#[cfg(test)]
+pub(crate) use types::{CatalogScope, ImportBinding, InternalResKind};
 
 // ---------------------------------------------------------------------------
 // Tests

@@ -8,6 +8,8 @@ use std::path::Path;
 use std::sync::{Arc, RwLock};
 use std::time::Instant;
 
+const DEFAULT_EXPECTED_SYMBOLS_RECALL_AT_5: f64 = 0.7;
+
 // ── CodeIndexBackend ────────────────────────────────────────────────
 
 pub struct CodeIndexBackend {
@@ -375,52 +377,8 @@ fn check_assertion_raw(output: &Value, assertion: &Assertion) -> bool {
             }
         }
         "expected_symbols" => {
-            // Parse expected names from comma-separated value
-            let expected_str = assertion.value.as_deref().unwrap_or("");
-            let expected_names: Vec<&str> = expected_str
-                .split(',')
-                .map(|s| s.trim())
-                .filter(|s| !s.is_empty())
-                .collect();
-            if expected_names.is_empty() {
-                return false;
-            }
-
-            // Find the array at the given field path
-            let target = if let Some(field) = assertion.field.as_deref() {
-                resolve_json_path(output, field)
-            } else {
-                Some(output)
-            };
-
-            let arr = match target {
-                Some(Value::Array(arr)) => arr,
-                _ => return false,
-            };
-
-            // Extract symbol name from each item (try several field names)
-            let result_names: Vec<String> = arr
-                .iter()
-                .filter_map(|item| {
-                    for key in &["name", "symbol_name", "symbol"] {
-                        if let Some(Value::String(s)) = item.get(*key) {
-                            return Some(s.clone());
-                        }
-                    }
-                    None
-                })
-                .collect();
-
-            // Compute recall@5: count of expected names found in first 5 results
-            let top5: Vec<&str> = result_names.iter().take(5).map(|s| s.as_str()).collect();
-            let found_count = expected_names
-                .iter()
-                .filter(|name| top5.iter().any(|r| r == *name))
-                .count();
-            let recall = found_count as f64 / expected_names.len() as f64;
-
-            // Assertion passes if recall@5 > 0 (at least one expected symbol found)
-            recall > 0.0
+            let (recall_at_5, _mrr) = compute_retrieval_metrics(output, assertion);
+            recall_at_5 >= DEFAULT_EXPECTED_SYMBOLS_RECALL_AT_5
         }
         "is_success" => {
             // Always true if we got here (the tool didn't error).

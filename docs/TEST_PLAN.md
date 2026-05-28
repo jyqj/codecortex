@@ -2,17 +2,17 @@
 
 ## Unit Tests
 
-725 tests across 7 crates (724 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace --all-targets`).
+736 tests across 7 crates (735 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace --all-targets`).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 53 | Schema, migrations, SQL injection, architecture, ADR, edges, frontier, graph, query |
-| cc-eval | 15 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
+| cc-db | 55 | Schema, migrations, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query |
+| cc-eval | 16 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
 | cc-index | 214 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection, resolver tier aliases |
-| cc-model | 29 | Route normalization, data structures, enum round-trip |
+| cc-model | 31 | Route normalization, data structures, enum round-trip, project root discovery |
 | cc-parsers | 160 | Tree-sitter parsing for 10 languages, symbol extraction, Rust parser coverage |
-| cc-search | 157 | Cypher parser/executor, regex validation, vector cache, file-scoped vector streaming, search engine, parity tests |
-| cc-server | 97 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, output limits, graph trace, cycles, flow |
+| cc-search | 158 | Cypher parser/executor, regex validation, vector cache, file-scoped vector streaming, grep SQL scoping, search engine, parity tests |
+| cc-server | 102 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 
@@ -102,7 +102,9 @@
 
 ## Integration Testing
 
-MCP server integration is tested via the eval harness, which creates a `CodeIndex`, builds the fixture index, and runs all corpus cases through the actual handler dispatch path.
+MCP server integration has two layers:
+- Eval harness: creates a `CodeIndex`, builds the fixture index, and runs all corpus cases through the actual handler dispatch path.
+- Stdio E2E: launches the `codecortex mcp` binary via rmcp `TokioChildProcess`, lists the 14 tools, then calls `index`, `status`, and `search` over the real MCP stdio protocol.
 
 ## Pre-commit
 

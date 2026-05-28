@@ -1,25 +1,21 @@
 //! Core domain handlers: project setup, indexing, search, symbol queries, impact.
 
-use crate::engine::CodeIndex;
-use std::sync::{Arc, RwLock};
+use super::SharedCodeIndex;
 
-pub fn build_index(
-    runtime: Arc<RwLock<CodeIndex>>,
-    full: bool,
-) -> Result<serde_json::Value, String> {
+pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::Value, String> {
     let mut rt = super::lock_index_write(&runtime)?;
     let report = rt.build_index(full).map_err(|e| e.to_string())?;
     serde_json::to_value(report).map_err(|e| e.to_string())
 }
 
-pub fn index_status(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Value, String> {
+pub fn index_status(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let stats = rt.index_status().map_err(|e| e.to_string())?;
     serde_json::to_value(stats).map_err(|e| e.to_string())
 }
 
 pub fn find_symbol(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     name: &str,
     exact: bool,
     top_k: usize,
@@ -30,19 +26,19 @@ pub fn find_symbol(
         .map_err(|e| e.to_string())
 }
 
-pub fn list_files(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Value, String> {
+pub fn list_files(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let files = rt.list_indexed_files().map_err(|e| e.to_string())?;
     serde_json::to_value(files).map_err(|e| e.to_string())
 }
 
-pub fn list_communities(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Value, String> {
+pub fn list_communities(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let rows = rt.list_communities().map_err(|e| e.to_string())?;
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
-pub fn list_frameworks(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Value, String> {
+pub fn list_frameworks(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     use cc_index::framework_resolvers::resolver_tier_for_key;
 
     let rt = super::lock_index(&runtime)?;
@@ -64,7 +60,7 @@ pub fn list_frameworks(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Va
     serde_json::to_value(enriched).map_err(|e| e.to_string())
 }
 
-pub fn index_capabilities(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Value, String> {
+pub fn index_capabilities(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let status = rt.index_status();
     let has_index = status.is_ok();
@@ -83,7 +79,7 @@ pub fn index_capabilities(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json:
 }
 
 pub fn callers(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbol: &str,
     limit: usize,
 ) -> Result<serde_json::Value, String> {
@@ -93,7 +89,7 @@ pub fn callers(
 }
 
 pub fn callees(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbol: &str,
     limit: usize,
 ) -> Result<serde_json::Value, String> {
@@ -103,7 +99,7 @@ pub fn callees(
 }
 
 pub fn analyze_impact(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     files: &[String],
     base_branch: Option<&str>,
 ) -> Result<serde_json::Value, String> {
@@ -119,7 +115,7 @@ pub fn analyze_impact(
 
 /// Get a summary of a single file.
 pub fn summarize_file(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     file_path: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
@@ -127,7 +123,7 @@ pub fn summarize_file(
 }
 
 /// Show available node kinds, edge types, and their counts in the index.
-pub fn graph_schema(runtime: Arc<RwLock<CodeIndex>>) -> Result<serde_json::Value, String> {
+pub fn graph_schema(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     rt.graph_schema().map_err(|e| e.to_string())
 }

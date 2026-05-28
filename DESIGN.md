@@ -38,7 +38,7 @@ SQLite persistence for the code index. Single database: `index.sqlite3`.
 - `IndexDb`: connection pool (r2d2, 4 readers + 1 writer), WAL mode
 - 26 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts, call_edges, test_edges, route_edges, route_nodes, diagnostics, literal_index, scopes, communities, repo_frameworks, file_frameworks, data_flow_edges, co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges, dispatch_sites, runtime_evidence, adr, metadata
 - FTS5 full-text search on chunks, diagnostics, literals, files
-- Schema versioning via `user_version` pragma (v15, incremental migration support)
+- Schema versioning via `user_version` pragma (v16, incremental migration support)
 
 ### cc-parsers
 Tree-sitter AST extraction for 31 concrete language identifiers (+ `Unknown` enum fallback; 10 identifiers with full tree-sitter, rest via generic/heuristic).
@@ -50,7 +50,7 @@ Tree-sitter AST extraction for 31 concrete language identifiers (+ `Unknown` enu
 ### cc-index
 File scanning and incremental indexing.
 - Gitignore-aware file discovery (via `ignore` crate)
-- Incremental: mtime + hash change detection
+- Incremental: mtime+size fast path with hash confirmation; `CODECORTEX_STRICT_HASH=1` disables the fast path for strict scans
 - Dirty propagation: re-parse dependents when exports change
 - Community detection (Louvain algorithm)
 - Framework detection
@@ -79,7 +79,7 @@ CLI + MCP server. Contains the `CodeIndex` engine struct.
 
 **ImpactAnalyzer**: BFS reverse-caller expansion + community boundary detection + cross-service HTTP impact + historical co-change analysis. Git integration: unstaged + staged + untracked + base...HEAD.
 
-**FileWatcher**: `notify`-based file watcher with adaptive debounce, burst backoff, and gitignore filtering. Integrated into the MCP server lifecycle: `run_mcp_server()` starts the watcher on connect, and `tool_index()` restarts it when the project path changes. Controlled by `auto_index.enabled` in `.codecortex.json` (default: `true`).
+**FileWatcher**: `notify`-based file watcher with adaptive debounce, burst backoff, and gitignore filtering. Integrated into the MCP server lifecycle: when a project path is supplied or discovered, `run_mcp_server()` starts the watcher on connect, and `tool_index()` restarts it when the project path changes. Controlled by `auto_index.enabled` in `.codecortex.json` (default: `true`).
 
 ## MCP Tools (14 tools, no domain system)
 

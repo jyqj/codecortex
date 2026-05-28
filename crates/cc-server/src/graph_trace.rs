@@ -646,7 +646,7 @@ pub(crate) fn read_symbol_snippet(
         .collect::<Vec<_>>()
         .join("\n");
     if snippet.len() > max_chars {
-        Some(snippet[..max_chars].to_string())
+        Some(crate::tools::utf8_prefix(&snippet, max_chars).to_string())
     } else {
         Some(snippet)
     }

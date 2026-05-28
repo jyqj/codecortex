@@ -15,6 +15,7 @@ use rmcp::{tool, tool_router, ServerHandler};
 use std::borrow::Cow;
 use std::num::NonZeroUsize;
 use std::path::PathBuf;
+use std::str::FromStr;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 use std::time::Instant;
@@ -148,7 +149,6 @@ impl CodeCortexMcpServer {
             .await
             .put(path.clone(), new_services.clone());
         *self.project.write().await = new_services;
-        self.maybe_auto_index();
         self.start_watcher(path);
         let full = p.full;
         let index = self.index().await;
@@ -898,7 +898,7 @@ index(path) → search(query) → context(task)
 5. Use node(symbol, include="outline") for large classes to get signatures without full source.
 6. Use status(aspect="schema") to discover node/edge types before writing Cypher queries.
 7. Edges with `synthesized_by` field are inferred dynamic dispatch — not direct source calls.
-8. File changes are detected automatically — manual index(path) is only needed to force a full rebuild.
+8. If no project was discovered at startup, call index(path) once. After a project is set, file changes are detected automatically; use index(path, full=true) to force a full rebuild.
 9. For refactoring, always run impact(scope="changes") first to understand blast radius.
 10. Treat returned source as already read — do not re-open those files with Read/Grep."#
                 .into(),
@@ -1050,15 +1050,5 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
 }
 
 fn parse_intent_opt(value: Option<&str>) -> Option<cc_model::Intent> {
-    value.and_then(|i| match i {
-        "fix" => Some(cc_model::Intent::Fix),
-        "refactor" => Some(cc_model::Intent::Refactor),
-        "trace" => Some(cc_model::Intent::Trace),
-        "locate" => Some(cc_model::Intent::Locate),
-        "test" => Some(cc_model::Intent::Test),
-        "patch" => Some(cc_model::Intent::Patch),
-        "explain" => Some(cc_model::Intent::Explain),
-        "default" => Some(cc_model::Intent::Default),
-        _ => None,
-    })
+    value.and_then(|i| cc_model::Intent::from_str(i).ok())
 }

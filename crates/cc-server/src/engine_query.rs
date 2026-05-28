@@ -8,12 +8,96 @@ use cc_model::config::{OutputBudget, RepoSizeTier};
 use cc_model::impact::ImpactReport;
 use cc_model::{CcError, CcResult};
 use serde::Serialize;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use crate::impact::ImpactAnalyzer;
 
 use super::engine::{centrality_hint, CodeIndex};
+
+#[derive(Debug, Serialize)]
+struct GraphSchemaResponse {
+    node_kinds: Vec<NodeKindCount>,
+    edge_counts: serde_json::Map<String, serde_json::Value>,
+    total_files: serde_json::Value,
+    total_chunks: serde_json::Value,
+    relationship_patterns: Vec<RelationshipPattern>,
+    example_queries: Vec<ExampleQuery>,
+    edge_provenance: EdgeProvenanceSummary,
+    runtime_evidence: RuntimeEvidenceSummary,
+    edge_properties: BTreeMap<&'static str, EdgePropertyInfo>,
+    runtime_evidence_edges: [&'static str; 1],
+    next_tool_hints: NextToolHints,
+}
+
+#[derive(Debug, Serialize)]
+struct NodeKindCount {
+    kind: serde_json::Value,
+    count: serde_json::Value,
+}
+
+#[derive(Debug, Serialize)]
+struct RelationshipPattern {
+    from: &'static str,
+    edge: &'static str,
+    to: &'static str,
+    table: &'static str,
+    description: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct ExampleQuery {
+    description: &'static str,
+    cypher: &'static str,
+}
+
+#[derive(Debug, Serialize)]
+struct EdgePropertyInfo {
+    filterable: Vec<&'static str>,
+    informational: Vec<&'static str>,
+}
+
+#[derive(Debug, Serialize)]
+struct NextToolHints {
+    description: &'static str,
+    hints: BTreeMap<&'static str, &'static str>,
+}
+
+#[derive(Debug, Serialize)]
+struct EdgeProvenanceSummary {
+    total_call_edges: i64,
+    by_resolution: ResolutionBreakdown,
+    synthesized: i64,
+    by_dispatch_kind: serde_json::Map<String, serde_json::Value>,
+    by_synthesized_by: serde_json::Map<String, serde_json::Value>,
+}
+
+#[derive(Debug, Serialize)]
+struct ResolutionBreakdown {
+    tree_sitter: i64,
+    heuristic: i64,
+    unresolved: i64,
+}
+
+#[derive(Debug, Serialize)]
+struct RuntimeEvidenceSummary {
+    total_evidence: u64,
+    matched_to_edges: u64,
+    unmatched: u64,
+    http_edge_coverage_pct: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    note: Option<&'static str>,
+}
+
+fn edge_property_info(
+    filterable: Vec<&'static str>,
+    informational: Vec<&'static str>,
+) -> EdgePropertyInfo {
+    EdgePropertyInfo {
+        filterable,
+        informational,
+    }
+}
 
 impl CodeIndex {
     pub fn detect_impact(&self, changed_files: &[String]) -> CcResult<ImpactReport> {
@@ -62,11 +146,11 @@ impl CodeIndex {
         let caller_limit = max_callers.unwrap_or(tier.explore_max_symbols());
         let callee_limit = max_callees.unwrap_or(tier.explore_max_symbols());
         let max_src_chars = max_source_per_file.unwrap_or(tier.max_source_chars_per_symbol());
+        let db = self.ensure_db()?.clone();
 
         let mut results = Vec::with_capacity(capped.len());
 
         for name in capped {
-            let db = self.ensure_db()?;
             // Exact match first, fuzzy fallback
             let mut syms = db.find_symbol(name, true, 3)?;
             if syms.is_empty() {
@@ -124,7 +208,7 @@ impl CodeIndex {
             });
 
             // Callers
-            let callers = self.ensure_db()?.caller_rows_by_uid(uid, caller_limit)?;
+            let callers = db.caller_rows_by_uid(uid, caller_limit)?;
             let callers_json: Vec<serde_json::Value> = callers
                 .iter()
                 .map(|c| {
@@ -143,7 +227,7 @@ impl CodeIndex {
             entry["callers"] = serde_json::json!(callers_json);
 
             // Callees
-            let callees = self.ensure_db()?.callee_rows_by_uid(uid, callee_limit)?;
+            let callees = db.callee_rows_by_uid(uid, callee_limit)?;
             let callees_json: Vec<serde_json::Value> = callees
                 .iter()
                 .map(|c| {
@@ -170,31 +254,26 @@ impl CodeIndex {
                         outline_parts.push(sig.clone());
                     }
                     // Query child symbols via parent_symbol_id
-                    if let Ok(db) = self.ensure_db() {
-                        if let Ok(conn) = db.read_conn() {
-                            let child_sql = "SELECT name, kind, signature FROM symbols WHERE parent_symbol_id = ?1 ORDER BY start_line";
-                            if let Ok(mut stmt) = conn.prepare(child_sql) {
-                                let children: Vec<(String, String, Option<String>)> = stmt
-                                    .query_map(rusqlite::params![uid], |row| {
-                                        Ok((
-                                            row.get::<_, String>(0)?,
-                                            row.get::<_, String>(1)?,
-                                            row.get::<_, Option<String>>(2)?,
-                                        ))
-                                    })
-                                    .ok()
-                                    .map(|rows| rows.filter_map(|r| r.ok()).collect())
-                                    .unwrap_or_default();
-                                for (child_name, child_kind, child_sig) in &children {
-                                    if let Some(sig) = child_sig {
-                                        outline_parts.push(format!(
-                                            "  {} {}: {}",
-                                            child_kind, child_name, sig
-                                        ));
-                                    } else {
-                                        outline_parts
-                                            .push(format!("  {} {}", child_kind, child_name));
-                                    }
+                    if let Ok(conn) = db.read_conn() {
+                        let child_sql = "SELECT name, kind, signature FROM symbols WHERE parent_symbol_id = ?1 ORDER BY start_line";
+                        if let Ok(mut stmt) = conn.prepare(child_sql) {
+                            let children: Vec<(String, String, Option<String>)> = stmt
+                                .query_map(rusqlite::params![uid], |row| {
+                                    Ok((
+                                        row.get::<_, String>(0)?,
+                                        row.get::<_, String>(1)?,
+                                        row.get::<_, Option<String>>(2)?,
+                                    ))
+                                })
+                                .ok()
+                                .map(|rows| rows.filter_map(|r| r.ok()).collect())
+                                .unwrap_or_default();
+                            for (child_name, child_kind, child_sig) in &children {
+                                if let Some(sig) = child_sig {
+                                    outline_parts
+                                        .push(format!("  {} {}: {}", child_kind, child_name, sig));
+                                } else {
+                                    outline_parts.push(format!("  {} {}", child_kind, child_name));
                                 }
                             }
                         }
@@ -236,7 +315,6 @@ impl CodeIndex {
 
             // Semantic relations
             if include_relations {
-                let db = self.ensure_db()?;
                 let mut relations = Vec::new();
                 if let Ok(edges) = db.query_semantic_edges(Some(uid), None, None) {
                     for edge in &edges {
@@ -267,7 +345,7 @@ impl CodeIndex {
 
             // Metrics
             if include_metrics {
-                if let Ok(info) = self.ensure_db()?.symbol_degree_details(uid) {
+                if let Ok(info) = db.symbol_degree_details(uid) {
                     let hint = centrality_hint(&info);
                     entry["metrics"] = serde_json::json!({
                         "in_degree": info.in_degree,
@@ -421,13 +499,11 @@ impl CodeIndex {
             "SELECT kind, COUNT(*) AS cnt FROM symbols GROUP BY kind ORDER BY cnt DESC",
             &[],
         )?;
-        let node_kinds: Vec<serde_json::Value> = kind_rows
+        let node_kinds: Vec<NodeKindCount> = kind_rows
             .into_iter()
-            .map(|row| {
-                serde_json::json!({
-                    "kind": row.get("kind").cloned().unwrap_or(serde_json::Value::Null),
-                    "count": row.get("cnt").cloned().unwrap_or(serde_json::json!(0)),
-                })
+            .map(|row| NodeKindCount {
+                kind: row.get("kind").cloned().unwrap_or(serde_json::Value::Null),
+                count: row.get("cnt").cloned().unwrap_or(serde_json::json!(0)),
             })
             .collect();
 
@@ -470,49 +546,151 @@ impl CodeIndex {
             .unwrap_or(serde_json::json!(0));
 
         // --- Relationship patterns (static, describes the graph schema) ---
-        let relationship_patterns = serde_json::json!([
-            {"from": "Function", "edge": "CALLS",             "to": "Function",  "table": "call_edges",      "description": "Direct or dynamic function call"},
-            {"from": "Function", "edge": "IMPORTS",           "to": "Module",    "table": "import_edges",    "description": "Import dependency between files/modules"},
-            {"from": "Class",    "edge": "INHERITS",          "to": "Class",     "table": "semantic_edges",  "description": "Class inheritance (extends)"},
-            {"from": "Class",    "edge": "IMPLEMENTS",        "to": "Interface", "table": "semantic_edges",  "description": "Interface implementation"},
-            {"from": "Function", "edge": "DECORATES",         "to": "Function",  "table": "semantic_edges",  "description": "Decorator / annotation application"},
-            {"from": "Function", "edge": "THROWS",            "to": "Class",     "table": "semantic_edges",  "description": "Exception / error throw relation"},
-            {"from": "Function", "edge": "USES_TYPE",         "to": "Class",     "table": "semantic_edges",  "description": "Type usage in parameters or return types"},
-            {"from": "File",     "edge": "DEFINES",           "to": "Function",  "table": "semantic_edges",  "description": "File defines a top-level symbol"},
-            {"from": "Class",    "edge": "DEFINES_METHOD",    "to": "Function",  "table": "semantic_edges",  "description": "Class/struct defines a method"},
-            {"from": "Module",   "edge": "CONTAINS_FILE",     "to": "File",      "table": "semantic_edges",  "description": "Folder/module contains a file"},
-            {"from": "Module",   "edge": "CONTAINS_MODULE",   "to": "Module",    "table": "semantic_edges",  "description": "Module contains a submodule"},
-            {"from": "Function", "edge": "RENDERS_COMPONENT", "to": "Function",  "table": "semantic_edges",  "description": "React/Vue component renders another component"},
-            {"from": "Route",    "edge": "HANDLES",           "to": "Function",  "table": "route_edges",     "description": "HTTP route mapped to handler function"},
-            {"from": "Function", "edge": "HTTP_CALL",         "to": "Route",     "table": "http_call_edges", "description": "Code makes an outbound HTTP request"},
-            {"from": "Function", "edge": "DATA_FLOW",         "to": "Function",  "table": "data_flow_edges", "description": "Data flows between functions"},
-            {"from": "File",     "edge": "CO_CHANGE",         "to": "File",      "table": "co_change_edges", "description": "Files frequently changed together in commits"},
-            {"from": "Function", "edge": "TESTS",             "to": "Function",  "table": "test_edges",      "description": "Test function covers a code function"},
-        ]);
+        let relationship_patterns = vec![
+            RelationshipPattern {
+                from: "Function",
+                edge: "CALLS",
+                to: "Function",
+                table: "call_edges",
+                description: "Direct or dynamic function call",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "IMPORTS",
+                to: "Module",
+                table: "import_edges",
+                description: "Import dependency between files/modules",
+            },
+            RelationshipPattern {
+                from: "Class",
+                edge: "INHERITS",
+                to: "Class",
+                table: "semantic_edges",
+                description: "Class inheritance (extends)",
+            },
+            RelationshipPattern {
+                from: "Class",
+                edge: "IMPLEMENTS",
+                to: "Interface",
+                table: "semantic_edges",
+                description: "Interface implementation",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "DECORATES",
+                to: "Function",
+                table: "semantic_edges",
+                description: "Decorator / annotation application",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "THROWS",
+                to: "Class",
+                table: "semantic_edges",
+                description: "Exception / error throw relation",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "USES_TYPE",
+                to: "Class",
+                table: "semantic_edges",
+                description: "Type usage in parameters or return types",
+            },
+            RelationshipPattern {
+                from: "File",
+                edge: "DEFINES",
+                to: "Function",
+                table: "semantic_edges",
+                description: "File defines a top-level symbol",
+            },
+            RelationshipPattern {
+                from: "Class",
+                edge: "DEFINES_METHOD",
+                to: "Function",
+                table: "semantic_edges",
+                description: "Class/struct defines a method",
+            },
+            RelationshipPattern {
+                from: "Module",
+                edge: "CONTAINS_FILE",
+                to: "File",
+                table: "semantic_edges",
+                description: "Folder/module contains a file",
+            },
+            RelationshipPattern {
+                from: "Module",
+                edge: "CONTAINS_MODULE",
+                to: "Module",
+                table: "semantic_edges",
+                description: "Module contains a submodule",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "RENDERS_COMPONENT",
+                to: "Function",
+                table: "semantic_edges",
+                description: "React/Vue component renders another component",
+            },
+            RelationshipPattern {
+                from: "Route",
+                edge: "HANDLES",
+                to: "Function",
+                table: "route_edges",
+                description: "HTTP route mapped to handler function",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "HTTP_CALL",
+                to: "Route",
+                table: "http_call_edges",
+                description: "Code makes an outbound HTTP request",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "DATA_FLOW",
+                to: "Function",
+                table: "data_flow_edges",
+                description: "Data flows between functions",
+            },
+            RelationshipPattern {
+                from: "File",
+                edge: "CO_CHANGE",
+                to: "File",
+                table: "co_change_edges",
+                description: "Files frequently changed together in commits",
+            },
+            RelationshipPattern {
+                from: "Function",
+                edge: "TESTS",
+                to: "Function",
+                table: "test_edges",
+                description: "Test function covers a code function",
+            },
+        ];
 
         // --- Example Cypher queries (static, the 5 most useful for agents) ---
-        let example_queries = serde_json::json!([
-            {
-                "description": "Find all functions in the index",
-                "cypher": "MATCH (f:Function) RETURN f.name, f.file_path LIMIT 20"
+        let example_queries = vec![
+            ExampleQuery {
+                description: "Find all functions in the index",
+                cypher: "MATCH (f:Function) RETURN f.name, f.file_path LIMIT 20",
             },
-            {
-                "description": "Find callers of a specific function",
-                "cypher": "MATCH (caller:Function)-[:CALLS]->(f:Function {name: 'TARGET_NAME'}) RETURN caller.name, caller.file_path"
+            ExampleQuery {
+                description: "Find callers of a specific function",
+                cypher: "MATCH (caller:Function)-[:CALLS]->(f:Function {name: 'TARGET_NAME'}) RETURN caller.name, caller.file_path",
             },
-            {
-                "description": "Find HTTP routes and their handlers",
-                "cypher": "MATCH (r:Route)-[:HANDLES]->(f:Function) RETURN r.path, r.method, f.name, f.file_path"
+            ExampleQuery {
+                description: "Find HTTP routes and their handlers",
+                cypher: "MATCH (r:Route)-[:HANDLES]->(f:Function) RETURN r.path, r.method, f.name, f.file_path",
             },
-            {
-                "description": "Find potentially dead code (functions with zero in-degree)",
-                "cypher": "MATCH (f:Function) WHERE in_degree(f) = 0 RETURN f.name, f.file_path LIMIT 20"
+            ExampleQuery {
+                description: "Find potentially dead code (functions with zero in-degree)",
+                cypher: "MATCH (f:Function) WHERE in_degree(f) = 0 RETURN f.name, f.file_path LIMIT 20",
             },
-            {
-                "description": "Find type hierarchy (inheritance)",
-                "cypher": "MATCH (c:Class)-[:INHERITS]->(parent:Class) RETURN c.name, parent.name, c.file_path"
-            }
-        ]);
+            ExampleQuery {
+                description: "Find type hierarchy (inheritance)",
+                cypher: "MATCH (c:Class)-[:INHERITS]->(parent:Class) RETURN c.name, parent.name, c.file_path",
+            },
+        ];
 
         // --- Edge provenance summary (from call_edges dispatch_kind / synthesized_by) ---
         let edge_provenance = self.compute_edge_provenance(db);
@@ -521,61 +699,81 @@ impl CodeIndex {
         let runtime_evidence = self.compute_runtime_evidence(db, &edge_counts);
 
         // --- Edge properties: tell agents what they can filter on in queries ---
-        let edge_properties = serde_json::json!({
-            "CALLS": {
-                "filterable": ["dispatch_kind", "call_kind", "resolution_kind", "parser_tier", "synthesized_by"],
-                "informational": ["confidence", "parser_confidence", "synthesis_key", "registered_file"]
-            },
-            "HTTP_CALL": {
-                "filterable": ["method", "call_kind", "broker_type"],
-                "informational": ["confidence", "url_or_path", "normalized_path"]
-            },
-            "ROUTE": {
-                "filterable": ["method", "framework", "route_kind"],
-                "informational": ["confidence", "route_path", "handler_name"]
-            },
-            "DATA_FLOW": {
-                "filterable": ["flow_kind"],
-                "informational": ["confidence", "env_key"]
-            },
-            "SEMANTIC": {
-                "filterable": ["relation_kind"],
-                "informational": ["confidence"]
-            }
-        });
+        let mut edge_properties = BTreeMap::new();
+        edge_properties.insert(
+            "CALLS",
+            edge_property_info(
+                vec![
+                    "dispatch_kind",
+                    "call_kind",
+                    "resolution_kind",
+                    "parser_tier",
+                    "synthesized_by",
+                ],
+                vec![
+                    "confidence",
+                    "parser_confidence",
+                    "synthesis_key",
+                    "registered_file",
+                ],
+            ),
+        );
+        edge_properties.insert(
+            "HTTP_CALL",
+            edge_property_info(
+                vec!["method", "call_kind", "broker_type"],
+                vec!["confidence", "url_or_path", "normalized_path"],
+            ),
+        );
+        edge_properties.insert(
+            "ROUTE",
+            edge_property_info(
+                vec!["method", "framework", "route_kind"],
+                vec!["confidence", "route_path", "handler_name"],
+            ),
+        );
+        edge_properties.insert(
+            "DATA_FLOW",
+            edge_property_info(vec!["flow_kind"], vec!["confidence", "env_key"]),
+        );
+        edge_properties.insert(
+            "SEMANTIC",
+            edge_property_info(vec!["relation_kind"], vec!["confidence"]),
+        );
 
         // --- Next-tool hints: recommend tools for exploring each edge/node type ---
-        let next_tool_hints = serde_json::json!({
-            "description": "Recommended tools for exploring specific graph relationships",
-            "hints": {
-                "CALLS": "trace(from, to, source_mode='body') for call paths; relations(symbol, kind='callers'|'callees') for direct edges",
-                "HTTP_CALL": "architecture(aspect='services') for service map; ingest_traces to validate with runtime data",
-                "ROUTE": "architecture(aspect='routes') for all routes; explore(symbols, mode='flow') for request flow",
-                "DATA_FLOW": "explore(symbols, mode='flow') for data dependencies; relations(symbol, kind='refs') for references",
-                "SEMANTIC": "relations(symbol, kind='hierarchy') for type hierarchy; node(symbol, include='trail') for overview",
-                "runtime_evidence": "ingest_traces(traces) to add observations; status(aspect='schema') to check current evidence counts"
-            }
-        });
+        let next_tool_hints = NextToolHints {
+            description: "Recommended tools for exploring specific graph relationships",
+            hints: BTreeMap::from([
+                ("CALLS", "trace(from, to, source_mode='body') for call paths; relations(symbol, kind='callers'|'callees') for direct edges"),
+                ("HTTP_CALL", "architecture(aspect='services') for service map; ingest_traces to validate with runtime data"),
+                ("ROUTE", "architecture(aspect='routes') for all routes; explore(symbols, mode='flow') for request flow"),
+                ("DATA_FLOW", "explore(symbols, mode='flow') for data dependencies; relations(symbol, kind='refs') for references"),
+                ("SEMANTIC", "relations(symbol, kind='hierarchy') for type hierarchy; node(symbol, include='trail') for overview"),
+                ("runtime_evidence", "ingest_traces(traces) to add observations; status(aspect='schema') to check current evidence counts"),
+            ]),
+        };
 
-        Ok(serde_json::json!({
-            "node_kinds": node_kinds,
-            "edge_counts": edge_counts,
-            "total_files": file_count,
-            "total_chunks": chunk_count,
-            "relationship_patterns": relationship_patterns,
-            "example_queries": example_queries,
-            "edge_provenance": edge_provenance,
-            "runtime_evidence": runtime_evidence,
-            "edge_properties": edge_properties,
-            "runtime_evidence_edges": ["HTTP_CALL"],
-            "next_tool_hints": next_tool_hints,
-        }))
+        serde_json::to_value(GraphSchemaResponse {
+            node_kinds,
+            edge_counts,
+            total_files: file_count,
+            total_chunks: chunk_count,
+            relationship_patterns,
+            example_queries,
+            edge_provenance,
+            runtime_evidence,
+            edge_properties,
+            runtime_evidence_edges: ["HTTP_CALL"],
+            next_tool_hints,
+        })
+        .map_err(|e| CcError::Other(e.to_string()))
     }
 
     /// Compute edge provenance breakdown from call_edges table.
     /// Groups edges by their origin: tree-sitter parsed, heuristic inferred,
     /// runtime-verified, or synthesized by post-processing.
-    fn compute_edge_provenance(&self, db: &Arc<IndexDb>) -> serde_json::Value {
+    fn compute_edge_provenance(&self, db: &Arc<IndexDb>) -> EdgeProvenanceSummary {
         // Count by dispatch_kind to distinguish tree-sitter vs heuristic
         let dispatch_rows = db
             .query_json(
@@ -658,17 +856,17 @@ impl CodeIndex {
             synth_breakdown.insert(by, cnt);
         }
 
-        serde_json::json!({
-            "total_call_edges": total_call_edges,
-            "by_resolution": {
-                "tree_sitter": tree_sitter,
-                "heuristic": heuristic,
-                "unresolved": unresolved,
+        EdgeProvenanceSummary {
+            total_call_edges,
+            by_resolution: ResolutionBreakdown {
+                tree_sitter,
+                heuristic,
+                unresolved,
             },
-            "synthesized": synthesized_count,
-            "by_dispatch_kind": dispatch_breakdown,
-            "by_synthesized_by": synth_breakdown,
-        })
+            synthesized: synthesized_count,
+            by_dispatch_kind: dispatch_breakdown,
+            by_synthesized_by: synth_breakdown,
+        }
     }
 
     /// Compute runtime evidence coverage from the runtime_evidence table.
@@ -676,7 +874,7 @@ impl CodeIndex {
         &self,
         db: &Arc<IndexDb>,
         edge_counts: &serde_json::Map<String, serde_json::Value>,
-    ) -> serde_json::Value {
+    ) -> RuntimeEvidenceSummary {
         match db.runtime_evidence_stats() {
             Ok(stats) => {
                 let total = stats
@@ -700,22 +898,21 @@ impl CodeIndex {
                     0.0
                 };
 
-                serde_json::json!({
-                    "total_evidence": total,
-                    "matched_to_edges": matched,
-                    "unmatched": unmatched,
-                    "http_edge_coverage_pct": (coverage_pct * 10.0).round() / 10.0,
-                })
+                RuntimeEvidenceSummary {
+                    total_evidence: total,
+                    matched_to_edges: matched,
+                    unmatched,
+                    http_edge_coverage_pct: (coverage_pct * 10.0).round() / 10.0,
+                    note: None,
+                }
             }
-            Err(_) => {
-                serde_json::json!({
-                    "total_evidence": 0,
-                    "matched_to_edges": 0,
-                    "unmatched": 0,
-                    "http_edge_coverage_pct": 0.0,
-                    "note": "runtime_evidence table not available or empty"
-                })
-            }
+            Err(_) => RuntimeEvidenceSummary {
+                total_evidence: 0,
+                matched_to_edges: 0,
+                unmatched: 0,
+                http_edge_coverage_pct: 0.0,
+                note: Some("runtime_evidence table not available or empty"),
+            },
         }
     }
 }

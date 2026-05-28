@@ -294,16 +294,6 @@ impl SymbolCatalog {
         }
     }
 
-    /// Resolve semantic edge UIDs and backfill symbol base_types/implements.
-    ///
-    /// This should be called **before** building the TypeCatalog so that
-    /// `base_types` / `implements` are populated when `TypeCatalog::build_from_symbols`
-    /// reads them.
-    pub fn resolve_semantic_edges_and_backfill(&self, file_path: &str, outcome: &mut ParseOutcome) {
-        let context = Self::build_resolution_context(outcome, file_path);
-        self.resolve_semantic_edges_and_backfill_with_context(file_path, outcome, &context);
-    }
-
     /// Resolve semantic edge UIDs and backfill using a pre-built context.
     pub fn resolve_semantic_edges_and_backfill_with_context(
         &self,

@@ -7,7 +7,7 @@ use rusqlite::Connection;
 /// Bump this whenever the schema changes. Any stored version that differs
 /// from this value triggers a full database rebuild (delete + recreate),
 /// unless a complete migration chain exists in [`MIGRATIONS`].
-pub const CURRENT_SCHEMA_VERSION: u32 = 15;
+pub const CURRENT_SCHEMA_VERSION: u32 = 16;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -59,6 +59,12 @@ pub static MIGRATIONS: &[MigrationStep] = &[
         sql: "CREATE INDEX IF NOT EXISTS idx_ce_caller_uid_file ON call_edges(caller_symbol_uid, file_path, line);\
               CREATE INDEX IF NOT EXISTS idx_ce_callee_uid_file ON call_edges(callee_symbol_uid, file_path, line);",
         description: "Add composite covering indices on call_edges for UID+file+line",
+    },
+    MigrationStep {
+        from_version: 15,
+        to_version: 16,
+        sql: "ALTER TABLE chunks ADD COLUMN text_encoding TEXT NOT NULL DEFAULT 'legacy_auto';",
+        description: "Add explicit chunk text encoding marker",
     },
 ];
 
@@ -194,11 +200,6 @@ pub enum SchemaStatus {
 }
 
 /// Get the current schema version.
-pub fn index_schema_version(conn: &Connection) -> u32 {
-    conn.pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
-        .unwrap_or(0)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -217,23 +218,54 @@ mod tests {
     }
 
     #[test]
-    fn migration_13_to_15_succeeds() {
+    fn migration_13_to_current_succeeds() {
         let conn = Connection::open_in_memory().unwrap();
-        conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
+        create_legacy_schema_without_text_encoding(&conn);
         conn.pragma_update(None, "user_version", 13u32).unwrap();
 
         let status = migrate_index_db(&conn).unwrap();
-        assert_eq!(status, SchemaStatus::Migrated { from: 13, to: 15 });
+        assert_eq!(
+            status,
+            SchemaStatus::Migrated {
+                from: 13,
+                to: CURRENT_SCHEMA_VERSION
+            }
+        );
+        assert!(column_exists(&conn, "chunks", "text_encoding"));
     }
 
     #[test]
-    fn migration_14_to_15_succeeds() {
+    fn migration_14_to_current_succeeds() {
         let conn = Connection::open_in_memory().unwrap();
-        conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
+        create_legacy_schema_without_text_encoding(&conn);
         conn.pragma_update(None, "user_version", 14u32).unwrap();
 
         let status = migrate_index_db(&conn).unwrap();
-        assert_eq!(status, SchemaStatus::Migrated { from: 14, to: 15 });
+        assert_eq!(
+            status,
+            SchemaStatus::Migrated {
+                from: 14,
+                to: CURRENT_SCHEMA_VERSION
+            }
+        );
+        assert!(column_exists(&conn, "chunks", "text_encoding"));
+    }
+
+    #[test]
+    fn migration_15_to_current_adds_chunk_encoding() {
+        let conn = Connection::open_in_memory().unwrap();
+        create_legacy_schema_without_text_encoding(&conn);
+        conn.pragma_update(None, "user_version", 15u32).unwrap();
+
+        let status = migrate_index_db(&conn).unwrap();
+        assert_eq!(
+            status,
+            SchemaStatus::Migrated {
+                from: 15,
+                to: CURRENT_SCHEMA_VERSION
+            }
+        );
+        assert!(column_exists(&conn, "chunks", "text_encoding"));
     }
 
     #[test]
@@ -305,6 +337,27 @@ mod tests {
         let c = SchemaStatus::Migrated { from: 11, to: 13 };
         assert_eq!(a, b);
         assert_ne!(a, c);
+    }
+
+    fn create_legacy_schema_without_text_encoding(conn: &Connection) {
+        let legacy_sql =
+            FULL_SCHEMA_SQL.replace("    text_encoding     TEXT NOT NULL DEFAULT 'plain',\n", "");
+        conn.execute_batch(&legacy_sql).unwrap();
+    }
+
+    fn column_exists(conn: &Connection, table: &str, column: &str) -> bool {
+        let mut stmt = conn
+            .prepare(&format!("PRAGMA table_info({})", table))
+            .unwrap();
+        let rows = stmt.query_map([], |row| row.get::<_, String>(1)).unwrap();
+        let mut exists = false;
+        for name in rows.filter_map(Result::ok) {
+            if name == column {
+                exists = true;
+                break;
+            }
+        }
+        exists
     }
 
     /// Helper that mirrors `find_migration_chain` but operates on an

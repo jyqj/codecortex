@@ -1,7 +1,7 @@
 //! Incremental indexer pipeline.
 //!
 //! Phase 1: Scan → Vec<ScannedFile>
-//! Phase 2: Diff (mtime fast-skip → hash confirm) → Vec<PendingFile>
+//! Phase 2: Diff (mtime+size fast-skip → hash confirm) → Vec<PendingFile>
 //! Phase 3: Parallel parse (rayon) → Vec<IndexedFile>
 //! Phase 4: Symbol resolution (cross-file)
 //! Phase 5: Embedding
@@ -17,7 +17,7 @@ use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
 use crate::memory_budget::MemoryBudget;
-use cc_db::index_db::{FileWriteUnit, IndexDb};
+use cc_db::index_db::{FileState, FileWriteUnit, IndexDb};
 use cc_model::edge::ResolutionKind;
 use cc_model::parse::ParseOutcome;
 use cc_model::{CcError, CcResult, Language};
@@ -91,7 +91,7 @@ struct ScanDiffResult {
     files_added: usize,
     files_updated: usize,
     files_skipped: usize,
-    existing: HashMap<String, (String, f64)>,
+    existing: HashMap<String, FileState>,
     scanned_paths: HashSet<String>,
     to_remove: Vec<String>,
     to_parse: Vec<PendingFile>,
@@ -275,32 +275,36 @@ impl Indexer {
         };
         let scanned_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
+        let strict_hash = std::env::var("CODECORTEX_STRICT_HASH")
+            .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+            .unwrap_or(false);
 
         let pending: Vec<PendingFile> = scanned
             .into_par_iter()
             .filter_map(|file| {
-                let content = std::fs::read(&file.abs_path).ok()?;
-                let hash = format!("{:x}", Sha256::digest(&content));
-
-                let action = match existing.get(&file.rel_path) {
-                    None => FileAction::Add,
-                    Some((old_hash, old_mtime)) => {
-                        // Fast mtime check
-                        if (file.mtime - old_mtime).abs() < 0.001 {
-                            return Some(PendingFile {
-                                scanned: file,
-                                content_hash: hash,
-                                action: FileAction::Skip,
-                            });
+                let (hash, action) = match existing.get(&file.rel_path) {
+                    Some(old)
+                        if !strict_hash
+                            && (file.mtime - old.mtime).abs() < 0.001
+                            && file.size == old.size =>
+                    {
+                        // Fast path: unchanged mtime + size means we can avoid reading and
+                        // hashing the file during incremental scans. The size guard catches
+                        // common same-mtime edits on coarse-grained filesystems.
+                        (old.content_hash.clone(), FileAction::Skip)
+                    }
+                    Some(old) => {
+                        let content = std::fs::read(&file.abs_path).ok()?;
+                        let hash = format!("{:x}", Sha256::digest(&content));
+                        if hash == old.content_hash {
+                            (hash, FileAction::Skip)
+                        } else {
+                            (hash, FileAction::Update)
                         }
-                        if &hash == old_hash {
-                            return Some(PendingFile {
-                                scanned: file,
-                                content_hash: hash,
-                                action: FileAction::Skip,
-                            });
-                        }
-                        FileAction::Update
+                    }
+                    None => {
+                        let content = std::fs::read(&file.abs_path).ok()?;
+                        (format!("{:x}", Sha256::digest(&content)), FileAction::Add)
                     }
                 };
                 Some(PendingFile {
@@ -519,7 +523,7 @@ impl Indexer {
     fn build_actions_map(
         &self,
         write_units: &[FileWriteUnit],
-        existing: &HashMap<String, (String, f64)>,
+        existing: &HashMap<String, FileState>,
         scanned_paths: &HashSet<String>,
     ) -> HashMap<String, FileAction> {
         let mut actions: HashMap<String, FileAction> = HashMap::new();
@@ -545,7 +549,7 @@ impl Indexer {
         &self,
         write_units: &mut Vec<FileWriteUnit>,
         actions: &HashMap<String, FileAction>,
-        existing: &HashMap<String, (String, f64)>,
+        existing: &HashMap<String, FileState>,
         dirty_count: usize,
     ) -> CcResult<()> {
         let dirty_files: Vec<String> = actions
@@ -575,8 +579,8 @@ impl Indexer {
             }
 
             // Retrieve file metadata from existing state for mtime/hash
-            let (content_hash, mtime, size) = if let Some((hash, mt)) = existing.get(dirty_path) {
-                (hash.clone(), *mt, 0u64)
+            let (content_hash, mtime, size) = if let Some(state) = existing.get(dirty_path) {
+                (state.content_hash.clone(), state.mtime, state.size)
             } else {
                 (String::new(), 0.0, 0u64)
             };

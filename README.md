@@ -29,9 +29,11 @@ launch it manually:
 codecortex mcp --project_path /path/to/project
 ```
 
-On first connect the server auto-indexes the project (up to 50,000 files by
-default). No manual `index()` call is needed unless you want to force a
-rebuild.
+When launched from inside a directory tree containing `.git` or
+`.codecortex.json`, the server discovers that project and auto-indexes it on
+first connect (up to 50,000 files by default). If your MCP client starts
+servers from another working directory, call `index(path)` once or launch
+manually with `--project_path`.
 
 ## MCP Tools
 
@@ -75,10 +77,12 @@ All 14 tools are always available. No activation or domain system.
 | `graph_query` | Run a Cypher-subset query against the code graph | `query` (Cypher string) | Query result rows (MATCH/WHERE/RETURN/ORDER BY/LIMIT) |
 
 > **Cypher subset limitations** (applies to `graph_query`):
-> - `=~` regex is approximated via SQL LIKE -- only `.*`, `.+`, `.` wildcards work; character classes, alternation, and anchors silently produce wrong results.
+> - `=~` regex is approximated via SQL LIKE -- only `.*`, `.+`, `.` wildcards work; character classes, alternation, and anchors return an explicit error.
 > - `OPTIONAL MATCH` only works for single-hop patterns (one relationship).
 > - Variable-length paths (`*1..N`) cap at 5 hops by default and only support CALLS / DEFINES / DEFINES_METHOD / CONTAINS_FILE / CONTAINS_MODULE edges. Multi-hop chains with different edge types are not supported.
 > - `WITH`, `MERGE`, `CREATE`, `DELETE`, `SET`, `UNWIND` are not supported. `LIMIT` defaults to 50 when omitted.
+>
+> See [`docs/CYPHER.md`](docs/CYPHER.md) for the maintained subset reference.
 
 | `ingest_traces` | Feed OTLP runtime traces to validate HTTP edges | `traces[]` (service_name, method, path, status_code) | Validation summary with matched/boosted edge counts |
 | `adr` | Manage Architecture Decision Records | `action`: list / get / store / delete, `adr_id`, `title`, `status`, `context`, `decision` | ADR list or individual record |
@@ -184,10 +188,14 @@ repos, `impact` up to 80 items).
 | `CODECORTEX_EMBEDDINGS_API_KEY` | API key for the embeddings endpoint |
 | `CODECORTEX_EMBEDDINGS_MODEL` | Model name for the embeddings endpoint |
 | `CODECORTEX_EMBEDDINGS_DIMENSIONS` | Embedding vector dimensions |
+| `CODECORTEX_EMBEDDINGS_TIMEOUT_SECONDS` | Embedding API timeout in seconds |
 | `CODECORTEX_MEMORY_BUDGET_FRACTION` | RSS memory cap as fraction (0.1 - 0.95) |
 | `CODECORTEX_DIRTY_PROPAGATION` | Enable/disable incremental dirty propagation |
+| `CODECORTEX_DIRTY_PROPAGATION_MAX_FILES` | Maximum files reloaded by dirty propagation |
+| `CODECORTEX_MAX_CONCURRENT_PARSE` | Cap parser worker threads |
 | `CODECORTEX_USE_DIRECT_WRITER` | Enable experimental direct SQLite writer |
 | `CODECORTEX_PPID_POLL_MS` | Parent-process death detection interval (0 to disable) |
+| `CODECORTEX_STRICT_HASH` | Set to `1`/`true` to hash every file during incremental scans instead of using the mtime+size fast path |
 
 ## Architecture
 
@@ -196,7 +204,7 @@ repos, `impact` up to 80 items).
 ```
 cc-model          Data types, config, error definitions (serde, thiserror, blake3, chrono)
     |
-cc-db             SQLite index store (r2d2 pool, WAL mode, FTS5, 26 tables, schema v15)
+cc-db             SQLite index store (r2d2 pool, WAL mode, FTS5, 26 tables, schema v16)
     |
 cc-parsers        Tree-sitter AST extraction + framework detection
 cc-index          File scanning, incremental indexing, community detection (Louvain)
@@ -212,7 +220,7 @@ cc-eval           Evaluation suite for retrieval quality benchmarking
 
 ```
 Source files
-    |  (gitignore-aware scan, mtime+hash change detection)
+    |  (gitignore-aware scan, mtime+size fast path + hash confirmation)
     v
 Tree-sitter parsers  -->  symbols, call edges, imports, test edges,
                           route edges, data flow edges, HTTP call edges,
@@ -321,7 +329,8 @@ codecortex uninstall                   Remove MCP config from all AI agents
 
 ### Minimum Rust Version
 
-1.75 (2021 edition)
+1.88 (2021 edition). This matches the current dependency floor and is enforced
+by CI.
 
 ## License
 

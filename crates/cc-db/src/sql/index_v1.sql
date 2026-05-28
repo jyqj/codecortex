@@ -1,4 +1,4 @@
--- index.sqlite3 — Full Schema (version 15, rebuild-on-mismatch)
+-- index.sqlite3 — Full Schema (version 16, rebuild-on-mismatch)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS chunks (
     symbol_name       TEXT,
     symbol_kind       TEXT,
     text              TEXT NOT NULL,
+    text_encoding     TEXT NOT NULL DEFAULT 'plain',
     embedding         BLOB,
     token_estimate    INTEGER NOT NULL DEFAULT 0,
     parser_tier       TEXT NOT NULL DEFAULT 'generic',

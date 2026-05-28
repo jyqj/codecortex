@@ -13,6 +13,7 @@ use cc_model::{CcError, CcResult, Intent};
 use cc_search::SearchEngine;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use std::sync::Arc;
 
 fn estimate_project_file_count(project: &Path) -> usize {
@@ -413,17 +414,17 @@ impl CodeIndex {
                 cc_search::cypher::Token::Union | cc_search::cypher::Token::UnionAll
             )
         });
-        let parse_ok = if has_union {
-            cc_search::cypher::parse_union(&tokens).is_ok()
+        let parsed = match if has_union {
+            cc_search::cypher::parse_union(&tokens).map(cc_search::cypher::ParsedCypher::Union)
         } else {
-            cc_search::cypher::parse(&tokens).is_ok()
+            cc_search::cypher::parse(&tokens).map(cc_search::cypher::ParsedCypher::Single)
+        } {
+            Ok(parsed) => parsed,
+            Err(_) => return cc_search::GraphQueryEngine::new(db.clone()).execute(query),
         };
-        if !parse_ok {
-            return cc_search::GraphQueryEngine::new(db.clone()).execute(query);
-        }
 
         // Parse succeeded — execute with the new engine and propagate errors.
-        let result = cc_search::cypher::cypher_query(query, db)?;
+        let result = cc_search::cypher::execute_parsed(&parsed, db)?;
         let maps = result
             .rows
             .into_iter()
@@ -574,15 +575,7 @@ impl CodeIndex {
 
         // Fallback: if too few symbols matched, use search_in_context
         if matched_symbols.len() < 3 {
-            let detected = intent.and_then(|i| match i {
-                "fix" => Some(Intent::Fix),
-                "refactor" => Some(Intent::Refactor),
-                "trace" => Some(Intent::Trace),
-                "locate" => Some(Intent::Locate),
-                "test" => Some(Intent::Test),
-                "explain" => Some(Intent::Explain),
-                _ => None,
-            });
+            let detected = intent.and_then(|i| Intent::from_str(i).ok());
             let env = self.search_in_context(task, 10, detected)?;
             return Ok(serde_json::to_value(env)
                 .unwrap_or_else(|_| serde_json::json!({"error": "serialize failed"})));

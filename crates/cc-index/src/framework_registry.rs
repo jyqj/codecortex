@@ -18,7 +18,8 @@ use std::collections::HashMap;
 use std::path::Path;
 
 use cc_db::index_db::{
-    read_chunk_text, FileFrameworkRecord, FileFrameworkSignal, IndexDb, RepoFrameworkRecord,
+    read_chunk_text_with_encoding, FileFrameworkRecord, FileFrameworkSignal, IndexDb,
+    RepoFrameworkRecord,
 };
 use cc_model::{CcError, CcResult};
 
@@ -517,10 +518,14 @@ pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFramewor
     // --- 1b. CommonJS require() fallback: scan first 3 chunks for require('pkg') ---
     let already_detected: Vec<String> = detections.keys().cloned().collect();
     let chunk_text: String = conn
-        .prepare("SELECT text FROM chunks WHERE file_path = ?1 ORDER BY chunk_index LIMIT 3")
+        .prepare(
+            "SELECT text, text_encoding FROM chunks WHERE file_path = ?1 ORDER BY chunk_index LIMIT 3",
+        )
         .ok()
         .and_then(|mut stmt| {
-            stmt.query_map(rusqlite::params![file_path], |row| read_chunk_text(row, 0))
+            stmt.query_map(rusqlite::params![file_path], |row| {
+                read_chunk_text_with_encoding(row, 0, 1)
+            })
                 .ok()
                 .map(|rows| {
                     rows.filter_map(|r| r.ok())
@@ -922,15 +927,20 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
     db.replace_file_frameworks(&file_records)?;
 
     // 4. Repo-level aggregation (depends on file_frameworks being written)
+    refresh_repo_frameworks(db, project_path)?;
+
+    Ok(())
+}
+
+/// Recompute repo-level frameworks from persisted file detections and package markers.
+pub fn refresh_repo_frameworks(db: &IndexDb, project_path: &Path) -> CcResult<()> {
     let repo_detections = detect_repo_frameworks(db, project_path);
     let repo_records: Vec<RepoFrameworkRecord> = repo_detections
         .into_iter()
         .map(|d| (d.framework_key, d.confidence, d.signals))
         .collect();
 
-    db.replace_repo_frameworks(&repo_records)?;
-
-    Ok(())
+    db.replace_repo_frameworks(&repo_records)
 }
 
 /// Incremental framework detection: only re-scan changed files.
@@ -981,10 +991,11 @@ pub fn detect_and_persist_frameworks_incremental(
 
     db.replace_file_frameworks(&file_records)?;
 
-    // Note: we don't re-run repo-level aggregation for small changesets,
-    // since individual file changes rarely shift the repo-level picture.
-
-    Ok(())
+    // Repo-level aggregation is cheap because it reads the persisted
+    // file_frameworks table plus package markers. Keep it current even for
+    // small increments; otherwise a fresh incremental build can leave
+    // repo_frameworks empty.
+    refresh_repo_frameworks(db, project_path)
 }
 
 // ---------------------------------------------------------------------------
@@ -994,26 +1005,6 @@ pub fn detect_and_persist_frameworks_incremental(
 /// Return all detected repo-level frameworks as `(framework_key, confidence)`.
 pub fn get_repo_frameworks(db: &IndexDb) -> Vec<(String, f64)> {
     db.list_repo_frameworks().unwrap_or_default()
-}
-
-/// Return frameworks detected for a specific file as `(framework_key, confidence)`.
-pub fn get_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<(String, f64)> {
-    let conn = match db.read_conn() {
-        Ok(c) => c,
-        Err(_) => return Vec::new(),
-    };
-    let mut stmt = match conn.prepare(
-        "SELECT framework_key, confidence FROM file_frameworks \
-         WHERE file_path = ?1 ORDER BY confidence DESC",
-    ) {
-        Ok(s) => s,
-        Err(_) => return Vec::new(),
-    };
-    stmt.query_map(rusqlite::params![file_path], |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
-    })
-    .map(|rows| rows.filter_map(|r| r.ok()).collect())
-    .unwrap_or_default()
 }
 
 /// Return `{file_path: [(framework_key, confidence), ...]}` for a set of files.
@@ -1067,26 +1058,6 @@ pub fn get_repo_framework_keys(db: &IndexDb) -> Vec<String> {
         .into_iter()
         .map(|(k, _)| k)
         .collect()
-}
-
-/// Return file paths associated with a framework, ordered by confidence.
-pub fn framework_files(db: &IndexDb, framework_key: &str) -> Vec<String> {
-    let conn = match db.read_conn() {
-        Ok(c) => c,
-        Err(_) => return Vec::new(),
-    };
-    let mut stmt = match conn.prepare(
-        "SELECT file_path FROM file_frameworks \
-         WHERE framework_key = ?1 ORDER BY confidence DESC",
-    ) {
-        Ok(s) => s,
-        Err(_) => return Vec::new(),
-    };
-    stmt.query_map(rusqlite::params![framework_key], |row| {
-        row.get::<_, String>(0)
-    })
-    .map(|rows| rows.filter_map(|r| r.ok()).collect())
-    .unwrap_or_default()
 }
 
 // ---------------------------------------------------------------------------

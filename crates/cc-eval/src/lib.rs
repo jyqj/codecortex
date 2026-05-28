@@ -113,6 +113,29 @@ value = "formatName"
     }
 
     #[test]
+    fn assertion_expected_symbols_enforces_recall_threshold() {
+        let output = serde_json::json!({
+            "hits": [{"name": "a"}, {"name": "b"}],
+        });
+
+        let pass = types::Assertion {
+            kind: "expected_symbols".to_string(),
+            value: Some("a,b".to_string()),
+            field: Some("hits".to_string()),
+            negate: false,
+        };
+        assert!(runner::check_assertion(&output, &pass));
+
+        let fail = types::Assertion {
+            kind: "expected_symbols".to_string(),
+            value: Some("a,b,c".to_string()),
+            field: Some("hits".to_string()),
+            negate: false,
+        };
+        assert!(!runner::check_assertion(&output, &fail));
+    }
+
+    #[test]
     fn assertion_check_field_equals() {
         let output = serde_json::json!({
             "status": "ok",

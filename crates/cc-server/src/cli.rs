@@ -41,6 +41,8 @@ pub fn run(cli: Cli) -> CcResult<()> {
 }
 
 fn cmd_serve(project_path: Option<PathBuf>) -> CcResult<()> {
+    let project_path =
+        project_path.or_else(|| cc_model::config::find_project_root_with_marker(None));
     let rt = tokio::runtime::Runtime::new()
         .map_err(|e| CcError::Other(format!("tokio runtime: {}", e)))?;
     rt.block_on(crate::mcp::run_mcp_server(project_path))

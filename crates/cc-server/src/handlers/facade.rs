@@ -1,31 +1,36 @@
-//! Facade handlers: composite dispatch for the 12 MCP tools.
+//! Facade handlers: composite dispatch for the 14 MCP tools.
 
-use super::{context, core, graph};
-use crate::engine::CodeIndex;
+use super::{context, core, graph, SharedCodeIndex};
+use crate::tools::utf8_prefix;
+use cc_db::index_db::IndexDb;
 use serde_json::{json, Value};
-use std::sync::{Arc, RwLock};
 
 pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
     let serialized = serde_json::to_string(&value).unwrap_or_default();
     if serialized.len() <= max_chars {
         return value;
     }
-    let truncated = &serialized[..max_chars.min(serialized.len())];
-    let safe_end = truncated
-        .rfind('}')
-        .or_else(|| truncated.rfind(']'))
-        .unwrap_or(truncated.len());
+
+    // Keep only a bounded UTF-8-safe preview. The old fallback inserted the
+    // original `value` when the preview was not valid JSON, which defeated the
+    // output budget for large strings/objects.
+    let preview_budget = max_chars.saturating_sub(256);
+    let preview = utf8_prefix(&serialized, preview_budget).to_string();
+    let partial = serde_json::from_str::<Value>(&preview)
+        .ok()
+        .unwrap_or(Value::String(preview));
+
     json!({
         "_truncated": true,
         "_original_chars": serialized.len(),
         "_max_chars": max_chars,
-        "partial": serde_json::from_str::<Value>(&serialized[..=safe_end]).unwrap_or(value),
+        "partial": partial,
     })
 }
 
 // ── 1. handle_status ────────────────────────────────────────────────
 
-pub fn handle_status(runtime: Arc<RwLock<CodeIndex>>, aspect: &str) -> Result<Value, String> {
+pub fn handle_status(runtime: SharedCodeIndex, aspect: &str) -> Result<Value, String> {
     match aspect {
         "index" => {
             let mut result = core::index_status(runtime.clone())?;
@@ -60,7 +65,7 @@ pub fn handle_status(runtime: Arc<RwLock<CodeIndex>>, aspect: &str) -> Result<Va
 }
 
 /// Query runtime_evidence stats from the database, returning None if unavailable.
-fn runtime_evidence_summary(runtime: &Arc<RwLock<CodeIndex>>) -> Option<Value> {
+fn runtime_evidence_summary(runtime: &SharedCodeIndex) -> Option<Value> {
     let rt = super::lock_index(runtime).ok()?;
     let db = rt.index_db()?;
     db.runtime_evidence_stats().ok()
@@ -69,7 +74,7 @@ fn runtime_evidence_summary(runtime: &Arc<RwLock<CodeIndex>>) -> Option<Value> {
 // ── 2. handle_context ───────────────────────────────────────────────
 
 pub fn handle_context(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     task: &str,
     max_symbols: Option<usize>,
     include_source: bool,
@@ -118,11 +123,7 @@ pub fn handle_context(
 
 // ── 3. handle_node ──────────────────────────────────────────────────
 
-pub fn handle_node(
-    runtime: Arc<RwLock<CodeIndex>>,
-    symbol: &str,
-    include: &str,
-) -> Result<Value, String> {
+pub fn handle_node(runtime: SharedCodeIndex, symbol: &str, include: &str) -> Result<Value, String> {
     let (relation_limit, max_chars) = {
         let rt = super::lock_index(&runtime)?;
         let tier = rt.repo_size_tier();
@@ -159,7 +160,7 @@ pub fn handle_node(
 // ── 4. handle_relations ─────────────────────────────────────────────
 
 pub fn handle_relations(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbol: &str,
     kind: &str,
     limit: usize,
@@ -189,7 +190,7 @@ pub fn handle_relations(
 // ── 5. handle_impact ────────────────────────────────────────────────
 
 pub fn handle_impact(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     scope: &str,
     files: &[String],
     base_branch: Option<&str>,
@@ -224,7 +225,7 @@ pub fn handle_impact(
 // ── 6. handle_architecture ──────────────────────────────────────────
 
 pub fn handle_architecture(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     aspect: &str,
     filter: Option<&str>,
     limit: usize,
@@ -265,7 +266,7 @@ pub fn handle_architecture(
 // ── 7. handle_files ─────────────────────────────────────────────────
 
 pub fn handle_files(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     action: &str,
     path: Option<&str>,
     start_line: Option<u32>,
@@ -313,24 +314,124 @@ pub fn handle_files(
 
 // ── ingest_traces ──────────────────────────────────────────────────
 
+#[derive(Default)]
+struct IngestTraceStats {
+    accepted: u32,
+    matched: u32,
+    ambiguous: u32,
+    unmatched: u32,
+    routes_matched: u32,
+    spans_processed: u32,
+}
+
+struct TraceObservation<'a> {
+    service: &'a str,
+    method: Option<&'a str>,
+    path: &'a str,
+    status: Option<&'a str>,
+    duration_ms: Option<f64>,
+    source: Option<&'a str>,
+}
+
+fn ingest_observation(
+    db: &IndexDb,
+    obs: TraceObservation<'_>,
+    now: &str,
+    stats: &mut IngestTraceStats,
+) -> Result<(), String> {
+    let eid = match obs.source {
+        Some(source) => format!(
+            "{}:{}:{}:{}",
+            source,
+            obs.service,
+            obs.method.unwrap_or("*"),
+            obs.path
+        ),
+        None => format!("{}:{}:{}", obs.service, obs.method.unwrap_or("*"), obs.path),
+    };
+
+    if db
+        .upsert_runtime_evidence(&eid, obs.service, obs.method, obs.path, obs.status, now)
+        .is_ok()
+    {
+        stats.accepted += 1;
+    }
+
+    if let Some(dur) = obs.duration_ms {
+        let _ = db.update_evidence_p95(&eid, dur);
+    }
+
+    let norm = cc_model::route_normalize::normalize_route_path(obs.path);
+    let conn = db.read_conn().map_err(|e| e.to_string())?;
+
+    let edge_id: Option<String> = if let Some(method) = obs.method {
+        conn.query_row(
+            "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
+            rusqlite::params![&norm, method],
+            |r| r.get(0),
+        )
+        .ok()
+    } else {
+        None
+    };
+
+    let edge_id = edge_id.or_else(|| {
+        conn.query_row(
+            "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
+            [&norm],
+            |r| r.get(0),
+        )
+        .ok()
+    });
+
+    let candidate_count: u32 = conn
+        .query_row(
+            "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
+            [&norm],
+            |r| r.get(0),
+        )
+        .unwrap_or(0);
+
+    if let Some(ref eid_db) = edge_id {
+        let _ = db.link_evidence_to_edge(&eid, eid_db);
+        let _ = db.boost_http_edge_confidence(eid_db, 0.15);
+        stats.matched += 1;
+        if candidate_count > 1 {
+            stats.ambiguous += 1;
+        }
+    } else {
+        stats.unmatched += 1;
+    }
+
+    let route_id: Option<String> = conn
+        .query_row(
+            "SELECT route_id FROM route_nodes WHERE normalized_path = ?1 LIMIT 1",
+            [&norm],
+            |r| r.get(0),
+        )
+        .ok();
+
+    if let Some(ref rid) = route_id {
+        let _ = db.update_evidence_route_id(&eid, rid);
+        stats.routes_matched += 1;
+    }
+
+    stats.spans_processed += 1;
+    Ok(())
+}
+
 pub fn handle_ingest_traces(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     traces: &[serde_json::Value],
 ) -> Result<Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().cloned().ok_or("no index database")?;
+    drop(rt);
     let now = chrono::Utc::now().to_rfc3339();
-    let mut accepted = 0u32;
-    let mut matched = 0u32;
-    let mut ambiguous = 0u32;
-    let mut unmatched = 0u32;
-    let mut routes_matched = 0u32;
-    let mut spans_processed = 0u32;
+    let mut stats = IngestTraceStats::default();
 
     for trace in traces {
-        // ── OTLP resource+spans format ──────────────────────────────
         if let Some(spans) = trace.get("spans").and_then(|v| v.as_array()) {
-            // Resolve service_name: resource.service_name > top-level service_name > "unknown"
             let service = trace
                 .get("resource")
                 .and_then(|r| r.get("service_name"))
@@ -339,194 +440,62 @@ pub fn handle_ingest_traces(
                 .unwrap_or("unknown");
 
             for span in spans {
-                let method = span.get("method").and_then(|v| v.as_str());
-                let path = match span.get("path").and_then(|v| v.as_str()) {
-                    Some(p) => p,
-                    None => continue,
+                let Some(path) = span.get("path").and_then(|v| v.as_str()) else {
+                    continue;
                 };
-                let status = span.get("status_code").and_then(|v| v.as_str());
-                let duration_ms = span.get("duration_ms").and_then(|v| v.as_f64());
-                let span_kind = span.get("kind").and_then(|v| v.as_str());
-
-                // Build trace_source tag: "otlp:SERVER", "otlp:CLIENT", or "otlp"
-                let trace_source = match span_kind {
-                    Some(k) => format!("otlp:{}", k),
-                    None => "otlp".to_string(),
-                };
-
-                let eid = format!(
-                    "{}:{}:{}:{}",
-                    trace_source,
-                    service,
-                    method.unwrap_or("*"),
-                    path
-                );
-                if db
-                    .upsert_runtime_evidence(&eid, service, method, path, status, &now)
-                    .is_ok()
-                {
-                    accepted += 1;
-                }
-
-                if let Some(dur) = duration_ms {
-                    let _ = db.update_evidence_p95(&eid, dur);
-                }
-
-                // Joint matching: same logic as flat traces
-                let norm = cc_model::route_normalize::normalize_route_path(path);
-                let conn = db.read_conn().map_err(|e| e.to_string())?;
-
-                let edge_id: Option<String> = if let Some(m) = method {
-                    conn.query_row(
-                        "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
-                        rusqlite::params![&norm, m],
-                        |r| r.get(0),
-                    )
-                    .ok()
-                } else {
-                    None
-                };
-
-                let edge_id = edge_id.or_else(|| {
-                    conn.query_row(
-                        "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
-                        [&norm],
-                        |r| r.get(0),
-                    )
-                    .ok()
-                });
-
-                let candidate_count: u32 = conn
-                    .query_row(
-                        "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
-                        [&norm],
-                        |r| r.get(0),
-                    )
-                    .unwrap_or(0);
-
-                if let Some(ref eid_db) = edge_id {
-                    let _ = db.link_evidence_to_edge(&eid, eid_db);
-                    let _ = db.boost_http_edge_confidence(eid_db, 0.15);
-                    matched += 1;
-                    if candidate_count > 1 {
-                        ambiguous += 1;
+                let trace_source;
+                let source = match span.get("kind").and_then(|v| v.as_str()) {
+                    Some(kind) => {
+                        trace_source = format!("otlp:{}", kind);
+                        Some(trace_source.as_str())
                     }
-                } else {
-                    unmatched += 1;
-                }
-
-                let route_id: Option<String> = conn
-                    .query_row(
-                        "SELECT route_id FROM route_nodes WHERE normalized_path = ?1 LIMIT 1",
-                        [&norm],
-                        |r| r.get(0),
-                    )
-                    .ok();
-
-                if let Some(ref rid) = route_id {
-                    let _ = db.update_evidence_route_id(&eid, rid);
-                    routes_matched += 1;
-                }
-
-                spans_processed += 1;
+                    None => Some("otlp"),
+                };
+                ingest_observation(
+                    &db,
+                    TraceObservation {
+                        service,
+                        method: span.get("method").and_then(|v| v.as_str()),
+                        path,
+                        status: span.get("status_code").and_then(|v| v.as_str()),
+                        duration_ms: span.get("duration_ms").and_then(|v| v.as_f64()),
+                        source,
+                    },
+                    &now,
+                    &mut stats,
+                )?;
             }
             continue;
         }
 
-        // ── Flat format (existing logic, unchanged) ─────────────────
-        let service = trace
-            .get("service_name")
-            .and_then(|v| v.as_str())
-            .unwrap_or("unknown");
-        let method = trace.get("method").and_then(|v| v.as_str());
-        let path = match trace.get("path").and_then(|v| v.as_str()) {
-            Some(p) => p,
-            None => continue,
+        let Some(path) = trace.get("path").and_then(|v| v.as_str()) else {
+            continue;
         };
-        let status = trace.get("status_code").and_then(|v| v.as_str());
-        let duration_ms = trace.get("duration_ms").and_then(|v| v.as_f64());
-
-        let eid = format!("{}:{}:{}", service, method.unwrap_or("*"), path);
-        if db
-            .upsert_runtime_evidence(&eid, service, method, path, status, &now)
-            .is_ok()
-        {
-            accepted += 1;
-        }
-
-        // Update p95_ms with exponential moving average if duration provided
-        if let Some(dur) = duration_ms {
-            let _ = db.update_evidence_p95(&eid, dur);
-        }
-
-        // Joint matching: try method+path first, then fallback to path-only
-        let norm = cc_model::route_normalize::normalize_route_path(path);
-        let conn = db.read_conn().map_err(|e| e.to_string())?;
-
-        // Try exact match: method + normalized_path
-        let edge_id: Option<String> = if let Some(m) = method {
-            conn.query_row(
-                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
-                rusqlite::params![&norm, m],
-                |r| r.get(0),
-            )
-            .ok()
-        } else {
-            None
-        };
-
-        // Fallback: path-only match
-        let edge_id = edge_id.or_else(|| {
-            conn.query_row(
-                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
-                [&norm],
-                |r| r.get(0),
-            )
-            .ok()
-        });
-
-        // Count total candidates for ambiguity detection
-        let candidate_count: u32 = conn
-            .query_row(
-                "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
-                [&norm],
-                |r| r.get(0),
-            )
-            .unwrap_or(0);
-
-        if let Some(ref eid_db) = edge_id {
-            let _ = db.link_evidence_to_edge(&eid, eid_db);
-            let _ = db.boost_http_edge_confidence(eid_db, 0.15);
-            matched += 1;
-            if candidate_count > 1 {
-                ambiguous += 1;
-            }
-        } else {
-            unmatched += 1;
-        }
-
-        // Match to route_nodes by normalized_path
-        let route_id: Option<String> = conn
-            .query_row(
-                "SELECT route_id FROM route_nodes WHERE normalized_path = ?1 LIMIT 1",
-                [&norm],
-                |r| r.get(0),
-            )
-            .ok();
-
-        if let Some(ref rid) = route_id {
-            let _ = db.update_evidence_route_id(&eid, rid);
-            routes_matched += 1;
-        }
+        ingest_observation(
+            &db,
+            TraceObservation {
+                service: trace
+                    .get("service_name")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("unknown"),
+                method: trace.get("method").and_then(|v| v.as_str()),
+                path,
+                status: trace.get("status_code").and_then(|v| v.as_str()),
+                duration_ms: trace.get("duration_ms").and_then(|v| v.as_f64()),
+                source: None,
+            },
+            &now,
+            &mut stats,
+        )?;
     }
 
     Ok(json!({
-        "accepted": accepted,
-        "matched_to_edges": matched,
-        "routes_matched": routes_matched,
-        "ambiguous": ambiguous,
-        "unmatched": unmatched,
-        "spans_processed": spans_processed,
+        "accepted": stats.accepted,
+        "matched_to_edges": stats.matched,
+        "routes_matched": stats.routes_matched,
+        "ambiguous": stats.ambiguous,
+        "unmatched": stats.unmatched,
+        "spans_processed": stats.spans_processed,
         "total_submitted": traces.len(),
     }))
 }
@@ -534,7 +503,7 @@ pub fn handle_ingest_traces(
 // ── ADR ────────────────────────────────────────────────────────────
 
 pub fn handle_adr(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     action: &str,
     adr_id: Option<&str>,
     title: Option<&str>,
@@ -604,6 +573,26 @@ mod tests {
         assert!(result["_original_chars"].as_u64().unwrap() > 50);
         assert_eq!(result["_max_chars"], 50);
         assert!(result.get("partial").is_some());
+    }
+
+    #[test]
+    fn enforce_output_limit_does_not_embed_original_on_invalid_prefix() {
+        let large = json!({"data": "x".repeat(10_000)});
+        let result = enforce_output_limit(large, 1_000);
+        let rendered = serde_json::to_string(&result).unwrap();
+
+        assert_eq!(result["_truncated"], true);
+        assert!(rendered.len() < 2_000);
+        assert!(!rendered.contains(&"x".repeat(5_000)));
+    }
+
+    #[test]
+    fn enforce_output_limit_handles_multibyte_boundaries() {
+        let large = json!({"data": "测".repeat(2_000)});
+        let result = enforce_output_limit(large, 300);
+
+        assert_eq!(result["_truncated"], true);
+        serde_json::to_string(&result).unwrap();
     }
 
     // ── enforce_output_limit: zero max_chars ────────────────────────
@@ -687,10 +676,7 @@ mod tests {
 
     // ── Handler dispatch integration tests ─────────────────────────
 
-    fn build_test_index() -> (
-        tempfile::TempDir,
-        Arc<std::sync::RwLock<crate::engine::CodeIndex>>,
-    ) {
+    fn build_test_index() -> (tempfile::TempDir, SharedCodeIndex) {
         let fixture_src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
             .join("../cc-eval/fixtures/sample-project");
         let tmp = tempfile::TempDir::new().unwrap();
@@ -702,7 +688,7 @@ mod tests {
         }
         let mut idx = crate::engine::CodeIndex::new(Some(tmp.path())).unwrap();
         idx.build_index(true).unwrap();
-        (tmp, Arc::new(std::sync::RwLock::new(idx)))
+        (tmp, std::sync::Arc::new(std::sync::RwLock::new(idx)))
     }
 
     #[test]

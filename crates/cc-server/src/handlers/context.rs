@@ -1,10 +1,9 @@
 //! Context domain handlers: code-index context preparation.
 
-use crate::engine::CodeIndex;
-use std::sync::{Arc, RwLock};
+use super::SharedCodeIndex;
 
 pub fn search_in_context(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     query: &str,
     top_k: usize,
     intent: Option<cc_model::Intent>,
@@ -17,7 +16,7 @@ pub fn search_in_context(
 }
 
 pub fn search_in_context_with(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     query: &str,
     top_k: usize,
     intent: Option<cc_model::Intent>,
@@ -31,7 +30,7 @@ pub fn search_in_context_with(
 }
 
 pub fn prepare_edit_region(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     file_path: &str,
     start_line: u32,
     end_line: u32,
@@ -67,7 +66,7 @@ pub fn prepare_edit_region(
 }
 
 pub fn task_symbols(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     task: &str,
     max_symbols: Option<usize>,
     expand_depth: Option<usize>,
@@ -80,7 +79,7 @@ pub fn task_symbols(
 
 #[allow(clippy::too_many_arguments)]
 pub fn explore_symbols(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbols: &[String],
     max_callers: Option<usize>,
     max_callees: Option<usize>,
@@ -112,7 +111,7 @@ pub fn explore_symbols(
 }
 
 pub fn get_symbol_source(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbol: &str,
     exact: bool,
     include_line_numbers: bool,
@@ -127,7 +126,7 @@ pub fn get_symbol_source(
 }
 
 pub fn expand_code_region(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     file_path: &str,
     start_line: u32,
     end_line: u32,

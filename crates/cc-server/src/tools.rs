@@ -24,9 +24,27 @@ const MAX_ADR_TEXT_LEN: usize = 65536;
 // Sanitization helpers
 // ---------------------------------------------------------------------------
 
+/// Return a prefix that never splits a UTF-8 code point.
+///
+/// The MCP surface accepts arbitrary user text, paths, and JSON payloads. Rust
+/// string slicing/truncation by raw byte length panics when the boundary falls
+/// inside a multibyte character, so all byte-budget truncation must pass
+/// through this helper.
+pub(crate) fn utf8_prefix(s: &str, max: usize) -> &str {
+    if s.len() <= max {
+        return s;
+    }
+    let mut end = max.min(s.len());
+    while end > 0 && !s.is_char_boundary(end) {
+        end -= 1;
+    }
+    &s[..end]
+}
+
 fn clamp_str(s: &mut String, max: usize) {
     if s.len() > max {
-        s.truncate(max);
+        let end = utf8_prefix(s, max).len();
+        s.truncate(end);
     }
 }
 
@@ -110,10 +128,10 @@ fn default_action_list() -> String {
 }
 
 // ---------------------------------------------------------------------------
-// 1. StatusParams — cc_status
+// 1. StatusParams — status
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_status` tool.
+/// Parameters for the `status` tool.
 /// Returns index readiness, capability list, graph schema, or all combined.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct StatusParams {
@@ -146,10 +164,10 @@ impl Default for StatusParams {
 }
 
 // ---------------------------------------------------------------------------
-// 2. IndexParams — cc_index
+// 2. IndexParams — index
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_index` tool.
+/// Parameters for the `index` tool.
 /// Triggers an incremental or full index build.
 #[derive(Default, Deserialize, schemars::JsonSchema)]
 pub struct IndexParams {
@@ -169,10 +187,10 @@ impl IndexParams {
 }
 
 // ---------------------------------------------------------------------------
-// 3. SearchParams — cc_search
+// 3. SearchParams — search
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_search` tool.
+/// Parameters for the `search` tool.
 /// Performs hybrid or symbol-only search across the indexed codebase.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct SearchParams {
@@ -256,10 +274,10 @@ impl Default for SearchParams {
 }
 
 // ---------------------------------------------------------------------------
-// 4. ContextParams — cc_context
+// 4. ContextParams — context
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_context` tool.
+/// Parameters for the `context` tool.
 /// Given a task description, returns the most relevant symbols and source
 /// snippets needed to understand or implement the task.
 #[derive(Deserialize, schemars::JsonSchema)]
@@ -308,10 +326,10 @@ impl Default for ContextParams {
 }
 
 // ---------------------------------------------------------------------------
-// 5. NodeParams — cc_node
+// 5. NodeParams — node
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_node` tool.
+/// Parameters for the `node` tool.
 /// Retrieves detailed information about a single symbol node.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct NodeParams {
@@ -349,10 +367,10 @@ impl Default for NodeParams {
 }
 
 // ---------------------------------------------------------------------------
-// 6. ExploreParams — cc_explore
+// 6. ExploreParams — explore
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_explore` tool.
+/// Parameters for the `explore` tool.
 /// Batch-explores one or more symbols, returning relations, source, and flow paths.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct ExploreParams {
@@ -407,10 +425,10 @@ impl Default for ExploreParams {
 }
 
 // ---------------------------------------------------------------------------
-// 7. TraceParams — cc_trace
+// 7. TraceParams — trace
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_trace` tool.
+/// Parameters for the `trace` tool.
 /// Finds the shortest call-graph path between two symbols.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct TraceParams {
@@ -482,10 +500,10 @@ impl Default for TraceParams {
 }
 
 // ---------------------------------------------------------------------------
-// 8. RelationsParams — cc_relations
+// 8. RelationsParams — relations
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_relations` tool.
+/// Parameters for the `relations` tool.
 /// Returns callers, callees, references, or type-hierarchy edges for a symbol.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct RelationsParams {
@@ -538,10 +556,10 @@ impl Default for RelationsParams {
 }
 
 // ---------------------------------------------------------------------------
-// 9. ImpactParams — cc_impact
+// 9. ImpactParams — impact
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_impact` tool.
+/// Parameters for the `impact` tool.
 /// Analyses change impact: affected symbols, tests, dead code, circular deps, or dependents.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct ImpactParams {
@@ -613,10 +631,10 @@ impl Default for ImpactParams {
 }
 
 // ---------------------------------------------------------------------------
-// 10. ArchitectureParams — cc_architecture
+// 10. ArchitectureParams — architecture
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_architecture` tool.
+/// Parameters for the `architecture` tool.
 /// Returns high-level architectural views of the project.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct ArchitectureParams {
@@ -666,10 +684,10 @@ impl Default for ArchitectureParams {
 }
 
 // ---------------------------------------------------------------------------
-// 11. FilesParams — cc_files
+// 11. FilesParams — files
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_files` tool.
+/// Parameters for the `files` tool.
 /// Lists project files, retrieves a code region, or expands a region with context.
 #[derive(Deserialize, schemars::JsonSchema)]
 pub struct FilesParams {
@@ -724,10 +742,10 @@ impl Default for FilesParams {
 }
 
 // ---------------------------------------------------------------------------
-// 12. GraphQueryParams — cc_graph_query
+// 12. GraphQueryParams — graph_query
 // ---------------------------------------------------------------------------
 
-/// Parameters for the `cc_graph_query` tool.
+/// Parameters for the `graph_query` tool.
 /// Executes a raw Cypher-like query against the code graph.
 #[derive(Default, Deserialize, schemars::JsonSchema)]
 pub struct GraphQueryParams {
@@ -815,5 +833,32 @@ impl AdrParams {
         clamp_opt_str(&mut self.context, MAX_ADR_TEXT_LEN);
         clamp_opt_str(&mut self.decision, MAX_ADR_TEXT_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn utf8_prefix_never_splits_multibyte_chars() {
+        let s = "a你好🙂";
+        for max in 0..s.len() {
+            let prefix = utf8_prefix(s, max);
+            assert!(s.starts_with(prefix));
+            assert!(prefix.len() <= max);
+        }
+    }
+
+    #[test]
+    fn sanitize_long_multibyte_query_does_not_panic() {
+        let mut params = SearchParams {
+            query: "测".repeat(MAX_QUERY_LEN),
+            ..Default::default()
+        };
+        params.query.push('试');
+        params.sanitize();
+        assert!(params.query.len() <= MAX_QUERY_LEN);
+        assert!(params.query.is_char_boundary(params.query.len()));
     }
 }

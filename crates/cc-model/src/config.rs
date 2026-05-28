@@ -498,22 +498,29 @@ pub struct ProjectStats {
 
 const CONFIG_FILE_NAME: &str = ".codecortex.json";
 
-/// Find the project root by walking up from `start` looking for .git or .codecortex.json.
-pub fn find_project_root(start: Option<&Path>) -> PathBuf {
-    let current = start
+fn canonical_start(start: Option<&Path>) -> PathBuf {
+    start
         .map(|p| p.to_path_buf())
         .unwrap_or_else(|| std::env::current_dir().unwrap_or_default())
         .canonicalize()
-        .unwrap_or_default();
+        .unwrap_or_default()
+}
 
+/// Find the project root by walking up from `start` looking for .git or .codecortex.json.
+///
+/// Returns `None` when no explicit project marker is found. This is safer for
+/// MCP startup than blindly indexing the process working directory, which may
+/// be the user's home directory depending on the client.
+pub fn find_project_root_with_marker(start: Option<&Path>) -> Option<PathBuf> {
+    let current = canonical_start(start);
     let mut candidate = current.as_path();
     loop {
         if candidate.join(".git").exists() || candidate.join(CONFIG_FILE_NAME).exists() {
-            return candidate.to_path_buf();
+            return Some(candidate.to_path_buf());
         }
         match candidate.parent() {
             Some(parent) => candidate = parent,
-            None => return current,
+            None => return None,
         }
     }
 }
@@ -723,5 +730,36 @@ mod tests {
         }
         let _ = std::fs::remove_file(project_dir.join(CONFIG_FILE_NAME));
         let _ = std::fs::remove_dir(&project_dir);
+    }
+
+    #[test]
+    fn find_project_root_with_marker_returns_marker_dir() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-root-test-{}", unique));
+        let nested = project_dir.join("src/nested");
+        std::fs::create_dir_all(&nested).unwrap();
+        std::fs::create_dir_all(project_dir.join(".git")).unwrap();
+
+        let found = find_project_root_with_marker(Some(&nested)).unwrap();
+        assert_eq!(found, project_dir.canonicalize().unwrap());
+
+        let _ = std::fs::remove_dir_all(&project_dir);
+    }
+
+    #[test]
+    fn find_project_root_with_marker_returns_none_without_marker() {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-no-root-test-{}", unique));
+        std::fs::create_dir_all(&project_dir).unwrap();
+
+        assert!(find_project_root_with_marker(Some(&project_dir)).is_none());
+
+        let _ = std::fs::remove_dir_all(&project_dir);
     }
 }

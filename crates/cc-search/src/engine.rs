@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
 
 use cc_db::fts::{expand_query_text, sanitize_fts_query, tokenize_codeish};
-use cc_db::index_db::{read_chunk_text, IndexDb};
+use cc_db::index_db::{read_chunk_text_with_encoding, IndexDb};
 use cc_model::config::{ProjectStats, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcError, CcResult, Language};
@@ -302,7 +302,7 @@ impl SearchEngine {
         // Fetch each chunk and build SearchHit
         for (chunk_id, fused_score) in &candidates {
             let row = conn.query_row(
-                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, symbol_name, symbol_kind, text FROM chunks WHERE chunk_id = ?1",
+                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, symbol_name, symbol_kind, text, text_encoding FROM chunks WHERE chunk_id = ?1",
                 rusqlite::params![chunk_id],
                 |row| {
                     Ok((
@@ -314,7 +314,7 @@ impl SearchEngine {
                         row.get::<_, String>(5)?,
                         row.get::<_, Option<String>>(6)?,
                         row.get::<_, Option<String>>(7)?,
-                        read_chunk_text(row, 8)?,
+                        read_chunk_text_with_encoding(row, 8, 9)?,
                     ))
                 },
             );
@@ -549,117 +549,6 @@ impl SearchEngine {
         }
 
         Ok(result)
-    }
-
-    /// Generate compact metadata for a search hit (for summary mode).
-    ///
-    /// Includes symbol_uid, signature, community_id, degree_in, degree_out,
-    /// connected symbols (top 3).
-    pub fn compact_hit_metadata(&self, hit: &SearchHit) -> CcResult<serde_json::Value> {
-        let conn = self.db.read_conn()?;
-        let mut meta = serde_json::Map::new();
-
-        // Find the symbol for this hit
-        let symbol_row: Option<(String, Option<String>, Option<i64>)> =
-            if let Some(ref sname) = hit.symbol_name {
-                conn.query_row(
-                    "SELECT symbol_uid, signature, community_id FROM symbols \
-                     WHERE file_path = ?1 AND name = ?2 LIMIT 1",
-                    rusqlite::params![hit.file_path, sname],
-                    |row| {
-                        Ok((
-                            row.get::<_, String>(0)?,
-                            row.get::<_, Option<String>>(1)?,
-                            row.get::<_, Option<i64>>(2)?,
-                        ))
-                    },
-                )
-                .ok()
-            } else {
-                conn.query_row(
-                    "SELECT symbol_uid, signature, community_id FROM symbols \
-                     WHERE file_path = ?1 AND start_line <= ?2 AND end_line >= ?2 LIMIT 1",
-                    rusqlite::params![hit.file_path, hit.start_line],
-                    |row| {
-                        Ok((
-                            row.get::<_, String>(0)?,
-                            row.get::<_, Option<String>>(1)?,
-                            row.get::<_, Option<i64>>(2)?,
-                        ))
-                    },
-                )
-                .ok()
-            };
-
-        if let Some((symbol_uid, signature, community_id)) = symbol_row {
-            meta.insert(
-                "symbol_uid".into(),
-                serde_json::Value::String(symbol_uid.clone()),
-            );
-            if let Some(sig) = signature {
-                meta.insert("signature".into(), serde_json::Value::String(sig));
-            }
-            if let Some(cid) = community_id {
-                meta.insert(
-                    "community_id".into(),
-                    serde_json::Value::Number(serde_json::Number::from(cid)),
-                );
-            }
-
-            // Degrees
-            let degrees = self.batch_symbol_degrees(std::slice::from_ref(&symbol_uid))?;
-            if let Some(&(d_in, d_out)) = degrees.get(&symbol_uid) {
-                meta.insert(
-                    "degree_in".into(),
-                    serde_json::Value::Number(serde_json::Number::from(d_in)),
-                );
-                meta.insert(
-                    "degree_out".into(),
-                    serde_json::Value::Number(serde_json::Number::from(d_out)),
-                );
-            }
-
-            // Connected symbols (top 3 callers + top 3 callees, deduped to 5)
-            let mut connected: Vec<String> = Vec::new();
-            // Callers
-            if let Ok(mut stmt) = conn.prepare(
-                "SELECT s.name FROM call_edges ce JOIN symbols s ON s.symbol_uid = ce.caller_symbol_uid \
-                 WHERE ce.callee_symbol_uid = ?1 LIMIT 3",
-            ) {
-                if let Ok(rows) =
-                    stmt.query_map(rusqlite::params![symbol_uid], |row| row.get::<_, String>(0))
-                {
-                    for row in rows.flatten() {
-                        connected.push(row);
-                    }
-                }
-            }
-            // Callees
-            if let Ok(mut stmt) = conn.prepare(
-                "SELECT s.name FROM call_edges ce JOIN symbols s ON s.symbol_uid = ce.callee_symbol_uid \
-                 WHERE ce.caller_symbol_uid = ?1 LIMIT 3",
-            ) {
-                if let Ok(rows) =
-                    stmt.query_map(rusqlite::params![symbol_uid], |row| row.get::<_, String>(0))
-                {
-                    for row in rows.flatten() {
-                        connected.push(row);
-                    }
-                }
-            }
-            connected.truncate(5);
-            meta.insert(
-                "connected_symbols".into(),
-                serde_json::Value::Array(
-                    connected
-                        .into_iter()
-                        .map(serde_json::Value::String)
-                        .collect(),
-                ),
-            );
-        }
-
-        Ok(serde_json::Value::Object(meta))
     }
 
     /// Vector search scoped to explicit file paths.
@@ -919,16 +808,17 @@ impl SearchEngine {
             Err(_) => return Ok(Vec::new()),
         };
 
+        let (sql, params) = grep_chunk_scope_sql(request);
         let mut stmt = conn
-            .prepare("SELECT chunk_id, file_path, language, text FROM chunks")
+            .prepare(&sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map([], |row| {
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
                 Ok((
                     row.get::<_, String>(0)?,
                     row.get::<_, String>(1)?,
                     row.get::<_, String>(2)?,
-                    read_chunk_text(row, 3)?,
+                    read_chunk_text_with_encoding(row, 3, 4)?,
                 ))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -955,6 +845,48 @@ impl SearchEngine {
             .map(|(i, id)| (id, 1.0 / (i + 1) as f64))
             .collect())
     }
+}
+
+fn grep_chunk_scope_sql(request: &SearchRequest) -> (String, Vec<String>) {
+    let mut sql =
+        "SELECT chunk_id, file_path, language, text, text_encoding FROM chunks".to_string();
+    let mut clauses: Vec<String> = Vec::new();
+    let mut params = Vec::new();
+
+    if let Some(prefix) = request.path_prefix.as_ref().filter(|p| !p.is_empty()) {
+        clauses.push("file_path LIKE ? ESCAPE '\\'".to_string());
+        params.push(format!("{}%", escape_like(prefix)));
+    }
+
+    if let Some(languages) = request.languages.as_ref().filter(|v| !v.is_empty()) {
+        let placeholders = sql_placeholders(languages.len());
+        clauses.push(format!("language IN ({})", placeholders));
+        params.extend(languages.iter().map(|lang| lang.as_str().to_string()));
+    }
+
+    if let Some(files) = request.file_paths.as_ref().filter(|v| !v.is_empty()) {
+        let placeholders = sql_placeholders(files.len());
+        clauses.push(format!("file_path IN ({})", placeholders));
+        params.extend(files.iter().cloned());
+    }
+
+    if !clauses.is_empty() {
+        sql.push_str(" WHERE ");
+        sql.push_str(&clauses.join(" AND "));
+    }
+
+    (sql, params)
+}
+
+fn sql_placeholders(count: usize) -> String {
+    vec!["?"; count].join(",")
+}
+
+fn escape_like(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_")
 }
 
 pub(crate) fn parse_language_name(value: &str) -> Language {
@@ -1306,5 +1238,31 @@ mod tests {
         let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].0, "c3");
+    }
+
+    #[test]
+    fn grep_chunk_scope_sql_pushes_filters_into_db_query() {
+        let request = SearchRequest {
+            path_prefix: Some("src/%special".into()),
+            languages: Some(vec![Language::Rust, Language::Python]),
+            file_paths: Some(vec!["src/lib.rs".into(), "src/main.py".into()]),
+            ..Default::default()
+        };
+
+        let (sql, params) = grep_chunk_scope_sql(&request);
+
+        assert!(sql.contains("file_path LIKE ? ESCAPE '\\'"));
+        assert!(sql.contains("language IN (?,?)"));
+        assert!(sql.contains("file_path IN (?,?)"));
+        assert_eq!(
+            params,
+            vec![
+                "src/\\%special%".to_string(),
+                "rust".to_string(),
+                "python".to_string(),
+                "src/lib.rs".to_string(),
+                "src/main.py".to_string()
+            ]
+        );
     }
 }

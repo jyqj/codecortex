@@ -291,6 +291,24 @@ impl std::fmt::Display for Intent {
     }
 }
 
+impl std::str::FromStr for Intent {
+    type Err = ();
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value.trim().to_ascii_lowercase().as_str() {
+            "fix" => Ok(Self::Fix),
+            "refactor" => Ok(Self::Refactor),
+            "locate" => Ok(Self::Locate),
+            "trace" => Ok(Self::Trace),
+            "test" => Ok(Self::Test),
+            "patch" => Ok(Self::Patch),
+            "explain" => Ok(Self::Explain),
+            "default" => Ok(Self::Default),
+            _ => Err(()),
+        }
+    }
+}
+
 /// Approximate token count (1 token ~ 4 bytes)
 pub fn approx_tokens(text: &str) -> u32 {
     (text.len() as u32).div_ceil(4)
@@ -309,9 +327,12 @@ pub fn first_sentence(text: &str) -> &str {
         .or_else(|| trimmed.find(".\n"))
         .map(|pos| pos + 1) // include the period
         .unwrap_or(trimmed.len());
-    let limit = end.min(240);
+    let mut limit = end.min(240);
     // Ensure we don't split a multi-byte character
-    &trimmed[..trimmed.floor_char_boundary(limit)]
+    while !trimmed.is_char_boundary(limit) {
+        limit = limit.saturating_sub(1);
+    }
+    &trimmed[..limit]
 }
 
 /// Yield chunks of `items` with at most `chunk_size` elements each.

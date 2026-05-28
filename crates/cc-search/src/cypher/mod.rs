@@ -59,6 +59,11 @@ pub(crate) use executor::{
 use cc_db::index_db::IndexDb;
 use cc_model::{CcError, CcResult};
 
+pub enum ParsedCypher {
+    Single(CypherQuery),
+    Union(CypherUnionQuery),
+}
+
 /// Count the number of columns a query will return.
 fn return_column_count(query: &CypherQuery) -> usize {
     query.return_clause.items.len()
@@ -136,26 +141,41 @@ pub fn parse_union(tokens: &[Token]) -> CcResult<CypherUnionQuery> {
     Ok(CypherUnionQuery { queries, union_all })
 }
 
-/// Parse and execute a Cypher query against the index database.
-pub fn cypher_query(input: &str, db: &IndexDb) -> CcResult<CypherResult> {
-    let tokens = tokenize(input)?;
-
+/// Parse a token stream into either a single query or a UNION query.
+pub fn parse_tokens(tokens: &[Token]) -> CcResult<ParsedCypher> {
     // Check if this is a UNION query.
     let has_union = tokens
         .iter()
         .any(|t| matches!(t, Token::Union | Token::UnionAll));
 
     if has_union {
-        let uq = parse_union(&tokens)?;
-        for q in &uq.queries {
-            validate_query_identifiers(q)?;
-        }
-        execute_union(&uq, db)
+        parse_union(tokens).map(ParsedCypher::Union)
     } else {
-        let query = parse(&tokens)?;
-        validate_query_identifiers(&query)?;
-        execute(&query, db)
+        parse(tokens).map(ParsedCypher::Single)
     }
+}
+
+/// Execute an already-parsed Cypher query against the index database.
+pub fn execute_parsed(parsed: &ParsedCypher, db: &IndexDb) -> CcResult<CypherResult> {
+    match parsed {
+        ParsedCypher::Single(query) => {
+            validate_query_identifiers(query)?;
+            execute(query, db)
+        }
+        ParsedCypher::Union(uq) => {
+            for query in &uq.queries {
+                validate_query_identifiers(query)?;
+            }
+            execute_union(uq, db)
+        }
+    }
+}
+
+/// Parse and execute a Cypher query against the index database.
+pub fn cypher_query(input: &str, db: &IndexDb) -> CcResult<CypherResult> {
+    let tokens = tokenize(input)?;
+    let parsed = parse_tokens(&tokens)?;
+    execute_parsed(&parsed, db)
 }
 
 // ── Tests ──────────────────────────────────────────

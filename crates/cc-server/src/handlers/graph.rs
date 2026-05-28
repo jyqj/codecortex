@@ -1,15 +1,10 @@
 //! Graph domain handlers: graph queries, trace paths, symbol refs, caller/callee graphs,
 //! dependents, dead code, references, and route handlers.
 
-use crate::engine::CodeIndex;
-use std::sync::Arc;
-use std::sync::RwLock;
+use super::SharedCodeIndex;
 
 /// Execute a graph query (Cypher with fallback to legacy GraphQueryEngine).
-pub fn graph_query(
-    runtime: Arc<RwLock<CodeIndex>>,
-    query: &str,
-) -> Result<serde_json::Value, String> {
+pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("graph_query");
     let results = rt.graph_query(query).map_err(|e| e.to_string())?;
@@ -28,7 +23,7 @@ pub fn graph_query(
 /// When None, falls back to `include_snippets`: true→snippet, false→none.
 #[allow(clippy::too_many_arguments)]
 pub fn trace_path(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     from: &str,
     to: &str,
     max_depth: usize,
@@ -75,7 +70,7 @@ pub fn trace_path(
 
 /// Find references to a symbol.
 pub fn symbol_refs(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbol: &str,
     limit: usize,
 ) -> Result<serde_json::Value, String> {
@@ -85,7 +80,7 @@ pub fn symbol_refs(
 }
 
 pub fn list_unresolved_refs(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     limit: usize,
     file_path: Option<&str>,
     kind: Option<&str>,
@@ -97,7 +92,7 @@ pub fn list_unresolved_refs(
 
 /// Find tests impacted by the given set of files.
 pub fn find_impacted_tests(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     files: &[String],
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
@@ -113,7 +108,7 @@ pub fn find_impacted_tests(
 /// Uses a reverse-imports Cypher query to find direct importers, then a second
 /// pass for 2-hop transitive dependents.
 pub fn get_dependents(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     params: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
     let file_path = params
@@ -176,7 +171,7 @@ pub fn get_dependents(
 /// Extracts: `scope` (optional file_path prefix filter).
 /// Queries all symbols, then checks for incoming call edges and references.
 pub fn find_dead_code(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     params: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
     let scope = params.get("scope").and_then(|v| v.as_str());
@@ -305,7 +300,7 @@ pub fn find_dead_code(
 /// hotspots, boundaries, communities) and `limit` (default 10) parameters.
 /// When aspects is empty/absent, all aspects are returned.
 pub fn get_architecture(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     params: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
     let aspects_str = params
@@ -338,7 +333,7 @@ pub fn get_architecture(
 /// Extracts: `route_path` (optional pattern to match).
 /// Queries the route_edges table via Cypher ROUTES relationship.
 pub fn find_route_handlers(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     params: serde_json::Value,
 ) -> Result<serde_json::Value, String> {
     let route_path = params.get("route_path").and_then(|v| v.as_str());
@@ -414,7 +409,7 @@ pub fn find_route_handlers(
 /// Queries infra_edges with kind IN ('binds_topic', 'consumes_queue') and joins
 /// infra_nodes to resolve source/target names. Filters by topic_or_queue name.
 pub fn find_async_consumers(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     topic_or_queue: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
@@ -466,7 +461,7 @@ pub fn find_async_consumers(
 /// Then fetches associated infra_edges connected to any matched infra node_ids
 /// or route_ids.
 pub fn find_service_bindings(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     service_or_route: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
@@ -565,7 +560,7 @@ pub fn find_service_bindings(
 /// Delegates to GraphOps::compute_package_boundaries, truncated to the
 /// requested limit.
 pub fn list_package_boundaries(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     limit: u32,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
@@ -587,7 +582,7 @@ pub fn list_package_boundaries(
 /// Discover call flow paths connecting multiple symbols.
 #[allow(clippy::too_many_arguments)]
 pub fn explore_flow(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     symbols: &[String],
     max_depth: usize,
     include_source: bool,
@@ -617,7 +612,7 @@ pub fn explore_flow(
 
 /// Find circular dependencies via Tarjan SCC.
 pub fn find_circular_deps(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     granularity: &str,
     limit: Option<usize>,
 ) -> Result<serde_json::Value, String> {
@@ -631,10 +626,7 @@ pub fn find_circular_deps(
 }
 
 /// List all environment variables referenced in the codebase with usage counts.
-pub fn list_env_vars(
-    runtime: Arc<RwLock<CodeIndex>>,
-    limit: usize,
-) -> Result<serde_json::Value, String> {
+pub fn list_env_vars(runtime: SharedCodeIndex, limit: usize) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
     let summary = db.env_var_summary(limit).map_err(|e| e.to_string())?;
@@ -657,7 +649,7 @@ pub fn list_env_vars(
 
 /// Search for environment variable usages by key pattern.
 pub fn search_env_vars(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     pattern: &str,
     file_path: Option<&str>,
     limit: usize,
@@ -708,7 +700,7 @@ pub fn search_env_vars(
 
 /// Show type hierarchy: ancestors, descendants, implementors, overrides.
 pub fn type_hierarchy(
-    runtime: Arc<RwLock<CodeIndex>>,
+    runtime: SharedCodeIndex,
     type_name: &str,
     file_path: Option<&str>,
     symbol_uid: Option<&str>,

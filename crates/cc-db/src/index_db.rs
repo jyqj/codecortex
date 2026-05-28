@@ -24,9 +24,82 @@ use crate::index_migrate::{
 
 /// Read a chunk text column that may be stored as zstd-compressed BLOB or plain TEXT.
 ///
-/// Tries String first (uncompressed); on failure reads as BLOB and attempts
-/// zstd decompression, falling back to raw UTF-8 interpretation.
+/// Prefer [`read_chunk_text_with_encoding`] for v16+ queries that also select
+/// `chunks.text_encoding`. This legacy helper remains for old query sites and
+/// migrated rows whose encoding is unknown.
 pub fn read_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<String> {
+    read_chunk_text_auto(row, col_idx)
+}
+
+/// Read a chunk text column using the explicit `chunks.text_encoding` marker.
+///
+/// Supported values:
+/// - `plain`: `text` is stored as normal UTF-8 TEXT.
+/// - `zstd`: `text` is stored as a zstd-compressed BLOB.
+/// - `legacy_auto` / unknown / missing: auto-detect for pre-v16 rows.
+pub fn read_chunk_text_with_encoding(
+    row: &rusqlite::Row,
+    text_col_idx: usize,
+    encoding_col_idx: usize,
+) -> rusqlite::Result<String> {
+    let encoding = row
+        .get::<_, Option<String>>(encoding_col_idx)
+        .ok()
+        .flatten()
+        .unwrap_or_else(|| "legacy_auto".to_string());
+    match encoding.as_str() {
+        "plain" => read_plain_chunk_text(row, text_col_idx),
+        "zstd" => read_zstd_chunk_text(row, text_col_idx),
+        _ => read_chunk_text_auto(row, text_col_idx),
+    }
+}
+
+fn read_plain_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<String> {
+    row.get::<_, String>(col_idx).or_else(|text_err| {
+        // Some old SQLite files may still report a BLOB storage class even when
+        // the marker says plain. Fall back to raw UTF-8 before surfacing an
+        // error so migrated databases remain readable.
+        let blob: Vec<u8> = row.get(col_idx)?;
+        String::from_utf8(blob).map_err(|utf8_err| {
+            rusqlite::Error::FromSqlConversionFailure(
+                col_idx,
+                Type::Text,
+                Box::new(std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    format!(
+                        "plain chunk text is not valid UTF-8: {utf8_err}; sqlite error: {text_err}"
+                    ),
+                )),
+            )
+        })
+    })
+}
+
+fn read_zstd_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<String> {
+    let blob: Vec<u8> = row.get(col_idx)?;
+    let decoded = zstd::decode_all(blob.as_slice()).map_err(|zstd_err| {
+        rusqlite::Error::FromSqlConversionFailure(
+            col_idx,
+            Type::Blob,
+            Box::new(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("zstd chunk text decompression failed: {zstd_err}"),
+            )),
+        )
+    })?;
+    String::from_utf8(decoded).map_err(|utf8_err| {
+        rusqlite::Error::FromSqlConversionFailure(
+            col_idx,
+            Type::Text,
+            Box::new(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("zstd chunk text is not valid UTF-8: {utf8_err}"),
+            )),
+        )
+    })
+}
+
+fn read_chunk_text_auto(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<String> {
     match row.get::<_, String>(col_idx) {
         Ok(s) => Ok(s),
         Err(_) => {
@@ -72,6 +145,15 @@ pub fn read_chunk_text(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result<
             }
         }
     }
+}
+
+/// Persisted file metadata used to decide whether an incremental scan can skip
+/// reading and hashing a file.
+#[derive(Debug, Clone, PartialEq)]
+pub struct FileState {
+    pub content_hash: String,
+    pub mtime: f64,
+    pub size: u64,
 }
 
 /// A single file's worth of data to write into the index.
@@ -218,6 +300,7 @@ pub struct IndexDb {
     pub(crate) db_path: PathBuf,
     pub(crate) pool: RwLock<Pool<SqliteConnectionManager>>,
     pub(crate) write_conn: Mutex<Connection>,
+    read_pool_size: u32,
 }
 
 impl IndexDb {
@@ -244,18 +327,8 @@ impl IndexDb {
 
         let (write_conn, schema_status) = Self::open_and_ensure_schema(path)?;
 
-        let manager = SqliteConnectionManager::file(path)
-            .with_init(|conn| {
-                conn.execute_batch("PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;")?;
-                Ok(())
-            });
         let read_pool_size = read_pool_size.clamp(1, 64);
-        let pool = Pool::builder()
-            .max_size(read_pool_size)
-            .min_idle(Some(read_pool_size.min(2)))
-            .idle_timeout(Some(Duration::from_secs(300)))
-            .build(manager)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let pool = Self::build_read_pool(path, read_pool_size)?;
         tracing::debug!(read_pool_size, "index db read pool initialized");
 
         Ok((
@@ -263,9 +336,28 @@ impl IndexDb {
                 db_path: path.to_path_buf(),
                 pool: RwLock::new(pool),
                 write_conn: Mutex::new(write_conn),
+                read_pool_size,
             },
             schema_status,
         ))
+    }
+
+    fn build_read_pool(
+        path: &Path,
+        read_pool_size: u32,
+    ) -> CcResult<Pool<SqliteConnectionManager>> {
+        let manager = SqliteConnectionManager::file(path).with_init(|conn| {
+            conn.execute_batch(
+                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
+            )?;
+            Ok(())
+        });
+        Pool::builder()
+            .max_size(read_pool_size)
+            .min_idle(Some(read_pool_size.min(2)))
+            .idle_timeout(Some(Duration::from_secs(300)))
+            .build(manager)
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Open the database, check schema version, and rebuild if mismatched.
@@ -788,19 +880,8 @@ impl IndexDb {
             *guard = new_write_conn;
         }
 
-        // 9. Rebuild the read pool
-        let manager = SqliteConnectionManager::file(&self.db_path).with_init(|conn| {
-            conn.execute_batch(
-                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
-            )?;
-            Ok(())
-        });
-        let new_pool = Pool::builder()
-            .max_size(4)
-            .min_idle(Some(1))
-            .idle_timeout(Some(Duration::from_secs(300)))
-            .build(manager)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        // 9. Rebuild the read pool using the configured/adaptive pool size.
+        let new_pool = Self::build_read_pool(&self.db_path, self.read_pool_size)?;
         {
             let mut pool_guard = self
                 .pool
@@ -902,19 +983,8 @@ impl IndexDb {
             *guard = new_write_conn;
         }
 
-        // Rebuild the read pool
-        let manager = SqliteConnectionManager::file(&self.db_path).with_init(|conn| {
-            conn.execute_batch(
-                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
-            )?;
-            Ok(())
-        });
-        let new_pool = Pool::builder()
-            .max_size(4)
-            .min_idle(Some(1))
-            .idle_timeout(Some(Duration::from_secs(300)))
-            .build(manager)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        // Rebuild the read pool using the configured/adaptive pool size.
+        let new_pool = Self::build_read_pool(&self.db_path, self.read_pool_size)?;
         {
             let mut pool_guard = self
                 .pool
@@ -934,16 +1004,20 @@ impl IndexDb {
 
     // ── File state ───────────────────────────────────────────────
 
-    pub fn get_file_state(&self) -> CcResult<HashMap<String, (String, f64)>> {
+    pub fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare("SELECT file_path, content_hash, mtime FROM files")
+            .prepare("SELECT file_path, content_hash, mtime, size FROM files")
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
             .query_map([], |row| {
                 Ok((
                     row.get::<_, String>(0)?,
-                    (row.get::<_, String>(1)?, row.get::<_, f64>(2)?),
+                    FileState {
+                        content_hash: row.get::<_, String>(1)?,
+                        mtime: row.get::<_, f64>(2)?,
+                        size: row.get::<_, i64>(3)?.max(0) as u64,
+                    },
                 ))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -1182,14 +1256,14 @@ impl IndexDb {
             if let Some(ref blob) = use_compressed {
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,embedding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob.as_slice(), emb, c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,embedding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob.as_slice(), "zstd", emb, c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
                 )?;
             } else {
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,embedding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, emb, c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,embedding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", emb, c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
                 )?;
             }
             // FTS always receives uncompressed text
@@ -1553,6 +1627,44 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
         assert!(db.get_file_state().unwrap().is_empty());
+    }
+
+    #[test]
+    fn chunk_text_encoding_reads_plain_and_zstd() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(
+            "CREATE TABLE chunks (chunk_id TEXT PRIMARY KEY, text TEXT NOT NULL, text_encoding TEXT NOT NULL);",
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO chunks(chunk_id, text, text_encoding) VALUES('plain', ?1, 'plain')",
+            ["hello plain"],
+        )
+        .unwrap();
+        let compressed = zstd::encode_all(std::io::Cursor::new("hello compressed"), 3).unwrap();
+        conn.execute(
+            "INSERT INTO chunks(chunk_id, text, text_encoding) VALUES('zstd', ?1, 'zstd')",
+            rusqlite::params![compressed],
+        )
+        .unwrap();
+
+        let plain = conn
+            .query_row(
+                "SELECT text, text_encoding FROM chunks WHERE chunk_id='plain'",
+                [],
+                |row| read_chunk_text_with_encoding(row, 0, 1),
+            )
+            .unwrap();
+        let zstd = conn
+            .query_row(
+                "SELECT text, text_encoding FROM chunks WHERE chunk_id='zstd'",
+                [],
+                |row| read_chunk_text_with_encoding(row, 0, 1),
+            )
+            .unwrap();
+
+        assert_eq!(plain, "hello plain");
+        assert_eq!(zstd, "hello compressed");
     }
 
     #[test]

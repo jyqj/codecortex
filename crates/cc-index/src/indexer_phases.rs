@@ -239,6 +239,11 @@ impl Indexer {
             config_units
         };
 
+        let framework_file_paths: Vec<String> = normal_write_units
+            .iter()
+            .map(|u| u.rel_path.clone())
+            .collect();
+
         // Reassemble write_units for downstream phases that need the full list
         let write_units: Vec<FileWriteUnit> = normal_write_units
             .into_iter()
@@ -251,8 +256,10 @@ impl Indexer {
             tracing::info!(count = hierarchy_edges.len(), "generated hierarchy edges");
         }
 
-        // Post-processing passes run on the live DB after both paths
-        self.persist_frameworks(project_path, &write_units)?;
+        // Post-processing passes run on the live DB after both paths.
+        // Framework detection only needs the files that were actually parsed on
+        // incremental builds; full rebuilds still rescan the whole project.
+        self.persist_frameworks(project_path, full, &framework_file_paths, to_remove)?;
 
         Ok(WriteResult {
             write_units,
@@ -976,9 +983,22 @@ impl Indexer {
     fn persist_frameworks(
         &self,
         project_path: &Path,
-        _write_units: &[FileWriteUnit],
+        full: bool,
+        changed_files: &[String],
+        removed_files: &[String],
     ) -> CcResult<()> {
-        framework_registry::detect_and_persist_frameworks(&self.db, project_path)
+        if full {
+            return framework_registry::detect_and_persist_frameworks(&self.db, project_path);
+        }
+        if changed_files.is_empty() && !removed_files.is_empty() {
+            return framework_registry::refresh_repo_frameworks(&self.db, project_path);
+        }
+        let changed_files: Vec<&str> = changed_files.iter().map(String::as_str).collect();
+        framework_registry::detect_and_persist_frameworks_incremental(
+            &self.db,
+            project_path,
+            &changed_files,
+        )
     }
 
     fn analyze_git_cochanges(&self, project_path: &Path) -> CcResult<()> {

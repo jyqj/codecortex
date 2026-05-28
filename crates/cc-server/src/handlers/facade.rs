@@ -34,12 +34,7 @@ pub fn handle_status(runtime: SharedCodeIndex, aspect: &str) -> Result<Value, St
     match aspect {
         "index" => {
             let mut result = core::index_status(runtime.clone())?;
-            // Attach runtime evidence stats if database is available
-            if let Some(evidence) = runtime_evidence_summary(&runtime) {
-                if let Some(obj) = result.as_object_mut() {
-                    obj.insert("runtime_evidence".to_string(), evidence);
-                }
-            }
+            attach_status_extras(&runtime, &mut result);
             Ok(result)
         }
         "capabilities" => core::index_capabilities(runtime),
@@ -48,18 +43,36 @@ pub fn handle_status(runtime: SharedCodeIndex, aspect: &str) -> Result<Value, St
             let index = core::index_status(runtime.clone())?;
             let capabilities = core::index_capabilities(runtime.clone())?;
             let schema = core::graph_schema(runtime.clone())?;
+            let diagnostics = {
+                let rt = super::lock_index(&runtime)?;
+                rt.diagnostics_info()
+            };
             let mut result = json!({
                 "index": index,
                 "capabilities": capabilities,
                 "schema": schema,
+                "diagnostics": diagnostics,
             });
-            // Attach runtime evidence stats if database is available
             if let Some(evidence) = runtime_evidence_summary(&runtime) {
                 if let Some(obj) = result.as_object_mut() {
                     obj.insert("runtime_evidence".to_string(), evidence);
                 }
             }
             Ok(result)
+        }
+    }
+}
+
+fn attach_status_extras(runtime: &SharedCodeIndex, result: &mut Value) {
+    if let Some(evidence) = runtime_evidence_summary(runtime) {
+        if let Some(obj) = result.as_object_mut() {
+            obj.insert("runtime_evidence".to_string(), evidence);
+        }
+    }
+    if let Ok(rt) = super::lock_index(runtime) {
+        let diag = rt.diagnostics_info();
+        if let Some(obj) = result.as_object_mut() {
+            obj.insert("diagnostics".to_string(), diag);
         }
     }
 }
@@ -204,11 +217,18 @@ pub fn handle_impact(
     };
     let limit = limit.min(max_limit);
     match scope {
-        "tests" => graph::find_impacted_tests(runtime, files),
+        "tests" => {
+            if files.is_empty() {
+                let auto_files = core::git_changed_files(runtime.clone(), base_branch)?;
+                graph::find_impacted_tests(runtime, &auto_files)
+            } else {
+                graph::find_impacted_tests(runtime, files)
+            }
+        }
         "dead_code" => {
             let params = match file_path {
-                Some(fp) => json!({"scope": fp}),
-                None => json!({}),
+                Some(fp) => json!({"scope": fp, "limit": limit}),
+                None => json!({"limit": limit}),
             };
             graph::find_dead_code(runtime, params)
         }

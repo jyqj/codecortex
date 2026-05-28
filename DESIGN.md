@@ -41,11 +41,11 @@ SQLite persistence for the code index. Single database: `index.sqlite3`.
 - Schema versioning via `user_version` pragma (v16, incremental migration support)
 
 ### cc-parsers
-Tree-sitter AST extraction for 31 concrete language identifiers (+ `Unknown` enum fallback; 10 identifiers with full tree-sitter, rest via generic/heuristic).
+Tree-sitter AST extraction for 30 auto-detected language identifiers (+ `Unknown` enum fallback; 10 identifiers with full tree-sitter, rest via generic/heuristic).
 - Full tree-sitter: Python, JavaScript, TypeScript, TSX, JSX, Java, Go, Rust, C, C++
-- Heuristic/generic fallback: C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown, SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, OpenAPI, CMake
+- Heuristic/generic fallback: C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown, SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, CMake
 - Extracts: symbols, call edges, imports, test edges, route edges, data flow edges (type_ref, env_access, param_pass, return_flow), HTTP call edges, semantic edges, dispatch sites
-- Confidence tiers: Generic (0.3), Heuristic (0.5), TreeSitter (0.7), Semantic (0.85), Verified (1.0)
+- Confidence tiers: Generic (0.3), Heuristic (0.5), TreeSitter (0.7), Semantic (0.85), Verified (0.95)
 
 ### cc-index
 File scanning and incremental indexing.
@@ -63,13 +63,12 @@ Hybrid search engine.
 - Grep search (regex on symbols)
 - Reciprocal Rank Fusion (RRF) combining all three lanes
 - Reranking with file-path / breadcrumb / recency boosts
-- Cypher subset query engine (MATCH/WHERE/RETURN/ORDER BY/LIMIT)
-- Legacy `GraphQueryEngine` fallback for non-Cypher queries
+- Cypher-only read-only query engine (MATCH/WHERE/RETURN/ORDER BY/LIMIT/UNION)
 
 ### cc-server
 CLI + MCP server. Contains the `CodeIndex` engine struct.
 
-**CodeIndex** (~1500 lines) wraps cc-db + cc-index + cc-search:
+**CodeIndex** (~1900 lines across engine.rs + engine_query.rs) wraps cc-db + cc-index + cc-search:
 - `new(project_path)` / `set_project` / `close` / `reopen`
 - `build_index` / `build_auto_index` / `index_status`
 - `search_in_context(query, top_k, intent)` -> `ContextEnvelope`
@@ -113,7 +112,7 @@ All tools are always available. No activation required.
 - No session/task management
 - No workflow/replay engine
 - No memory/knowledge/skill system (ADR is repo metadata, not agent memory)
-- No UI pin/working-set/overlay commands (cc-model defines data types for pinned/overlay file paths and workspace selection, used internally by cc-search for search boosting)
+- No UI pin/working-set/overlay commands
 - No learning/policy optimization
 - No telemetry persistence
 - No runtime.sqlite3 (only index.sqlite3)

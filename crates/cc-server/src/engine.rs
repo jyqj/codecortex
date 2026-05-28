@@ -193,6 +193,69 @@ impl CodeIndex {
         self.ensure_db()?.stats(project)
     }
 
+    pub fn diagnostics_info(&self) -> serde_json::Value {
+        let embedding_provider = self
+            .config
+            .as_ref()
+            .map(|c| match c.embeddings.provider {
+                cc_model::config::EmbeddingProvider::Hash => "hash",
+                cc_model::config::EmbeddingProvider::OpenAICompatible => "openai_compatible",
+            })
+            .unwrap_or("unknown");
+
+        let embedding_dimensions = self
+            .config
+            .as_ref()
+            .map(|c| c.embeddings.dimensions)
+            .unwrap_or(0);
+
+        let using_hash_fallback = matches!(
+            self.config.as_ref().map(|c| &c.embeddings.provider),
+            Some(cc_model::config::EmbeddingProvider::Hash) | None
+        );
+
+        let schema_version = cc_db::index_migrate::CURRENT_SCHEMA_VERSION;
+
+        let db_schema_version = self.index_db.as_ref().and_then(|db| {
+            let conn = db.read_conn().ok()?;
+            conn.pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
+                .ok()
+        });
+
+        let last_indexed = self
+            .index_db
+            .as_ref()
+            .and_then(|db| db.get_metadata("last_indexed_at").ok().flatten());
+
+        let auto_index_enabled = self
+            .config
+            .as_ref()
+            .map(|c| c.auto_index.enabled)
+            .unwrap_or(true);
+
+        let mut info = serde_json::json!({
+            "embedding_provider": embedding_provider,
+            "embedding_dimensions": embedding_dimensions,
+            "schema_version": schema_version,
+            "db_schema_version": db_schema_version,
+            "last_indexed_at": last_indexed,
+            "auto_index_enabled": auto_index_enabled,
+        });
+
+        if using_hash_fallback {
+            info.as_object_mut().unwrap().insert(
+                "embedding_warning".to_string(),
+                serde_json::json!(
+                    "Using hash-based embeddings (zero-dependency, fast, but not semantic). \
+                     Configure embeddings.provider = 'openai_compatible' in .codecortex.json \
+                     for higher quality vector search."
+                ),
+            );
+        }
+
+        info
+    }
+
     pub fn search_in_context(
         &self,
         query: &str,
@@ -398,32 +461,8 @@ impl CodeIndex {
     pub fn graph_query(&self, query: &str) -> CcResult<Vec<serde_json::Value>> {
         let db = self.ensure_db()?;
 
-        // Try the new Cypher parser first. Only fall back to the legacy
-        // GraphQueryEngine when the *parser* cannot handle the syntax
-        // (tokenize or parse failure). Execution errors (SQL translation,
-        // runtime, validation) are propagated directly — falling back on
-        // those would silently hide real bugs and bypass safety checks in
-        // the new engine.
-        let tokens = match cc_search::cypher::tokenize(query) {
-            Ok(t) => t,
-            Err(_) => return cc_search::GraphQueryEngine::new(db.clone()).execute(query),
-        };
-        let has_union = tokens.iter().any(|t| {
-            matches!(
-                t,
-                cc_search::cypher::Token::Union | cc_search::cypher::Token::UnionAll
-            )
-        });
-        let parsed = match if has_union {
-            cc_search::cypher::parse_union(&tokens).map(cc_search::cypher::ParsedCypher::Union)
-        } else {
-            cc_search::cypher::parse(&tokens).map(cc_search::cypher::ParsedCypher::Single)
-        } {
-            Ok(parsed) => parsed,
-            Err(_) => return cc_search::GraphQueryEngine::new(db.clone()).execute(query),
-        };
-
-        // Parse succeeded — execute with the new engine and propagate errors.
+        let tokens = cc_search::cypher::tokenize(query)?;
+        let parsed = cc_search::cypher::parse_tokens(&tokens)?;
         let result = cc_search::cypher::execute_parsed(&parsed, db)?;
         let maps = result
             .rows

@@ -1,7 +1,5 @@
 //! Framework detection — identifies frameworks from package files and imports.
 
-use cc_model::edge::ImportRecord;
-use cc_model::symbol::SymbolRecord;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -126,48 +124,6 @@ pub fn detect_repo_frameworks(project_path: &Path) -> Vec<FrameworkSignal> {
         }
     }
 
-    signals
-}
-
-/// Detect frameworks from a file's imports and symbols.
-pub fn detect_file_frameworks(
-    _file_path: &str,
-    imports: &[ImportRecord],
-    _symbols: &[SymbolRecord],
-) -> Vec<FrameworkSignal> {
-    let mut signals = Vec::new();
-    for imp in imports {
-        let src = imp.import_string.to_lowercase();
-        let checks: &[(&str, &str, f64)] = &[
-            ("express", "express", 0.8),
-            ("react", "react", 0.8),
-            ("next", "next/", 0.8),
-            ("vue", "vue", 0.8),
-            ("koa", "koa", 0.8),
-            ("fastify", "fastify", 0.8),
-            ("django", "django", 0.8),
-            ("flask", "flask", 0.8),
-            ("fastapi", "fastapi", 0.8),
-            ("spring", "org.springframework", 0.8),
-            ("spring", "spring-boot", 0.8),
-            ("chi", "github.com/go-chi/chi", 0.8),
-            ("gorilla", "github.com/gorilla/mux", 0.8),
-            ("gin", "github.com/gin-gonic/gin", 0.8),
-            ("echo", "github.com/labstack/echo", 0.8),
-            ("fiber", "github.com/gofiber/fiber", 0.8),
-            ("net_http", "net/http", 0.8),
-        ];
-        for (key, pattern, conf) in checks {
-            if src.contains(pattern) {
-                signals.push(FrameworkSignal {
-                    framework_key: key.to_string(),
-                    confidence: *conf,
-                    evidence: format!("import: {}", imp.import_string),
-                });
-                break;
-            }
-        }
-    }
     signals
 }
 

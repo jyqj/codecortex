@@ -49,7 +49,6 @@ pub enum Role {
     WhyIncluded,
     EditTarget,
     RiskRegion,
-    WorkingSet,
     DocContext,
 }
 
@@ -73,7 +72,6 @@ impl Role {
             Self::Diagnostic | Self::IndexDiagnostic | Self::RiskRegion | Self::WhyIncluded => {
                 "diagnostics"
             }
-            Self::WorkingSet => "working",
         }
     }
 
@@ -99,7 +97,6 @@ impl Role {
             Self::EditTarget,
             Self::RiskRegion,
             Self::WhyIncluded,
-            Self::WorkingSet,
             Self::DocContext,
         ]
     }

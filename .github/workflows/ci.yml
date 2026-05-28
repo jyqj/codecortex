@@ -40,3 +40,11 @@ jobs:
 
       - name: MSRV check
         run: cargo check --workspace --all-targets --locked
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: rustsec/audit-check@v2.0.0
+        with:
+          token: ${{ github.token }}

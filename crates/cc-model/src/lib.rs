@@ -15,7 +15,6 @@ pub mod scope;
 pub mod search;
 pub mod symbol;
 pub mod type_assign;
-pub mod working_set;
 
 // Re-export top-level types for convenience
 pub use config::ProjectConfig;
@@ -41,7 +40,6 @@ pub use search::SearchHit;
 /// Core enums used across the codebase
 pub use symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 pub use type_assign::{TypeAssignRecord, TypeAssignSource};
-pub use working_set::{WorkingSetEntry, WorkspaceSelection, WorkspaceState};
 
 /// Language and parser tier enums
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
@@ -76,7 +74,6 @@ pub enum Language {
     Bash,
     Protobuf,
     GraphQL,
-    OpenApi,
     CMake,
     Unknown,
 }
@@ -148,7 +145,6 @@ impl Language {
             Self::Bash => "bash",
             Self::Protobuf => "protobuf",
             Self::GraphQL => "graphql",
-            Self::OpenApi => "openapi",
             Self::CMake => "cmake",
             Self::Unknown => "unknown",
         }
@@ -188,7 +184,6 @@ impl Language {
             "bash" | "sh" | "shell" | "zsh" => Self::Bash,
             "protobuf" | "proto" => Self::Protobuf,
             "graphql" | "gql" => Self::GraphQL,
-            "openapi" | "swagger" => Self::OpenApi,
             "cmake" => Self::CMake,
             _ => Self::Unknown,
         }
@@ -314,9 +309,8 @@ pub fn approx_tokens(text: &str) -> u32 {
     (text.len() as u32).div_ceil(4)
 }
 
-/// Return the first sentence of `text` (up to ". " or ".\n"), or the full text if no period.
-/// Truncated to 240 chars max.
-pub fn first_sentence(text: &str) -> &str {
+#[cfg(test)]
+fn first_sentence(text: &str) -> &str {
     let trimmed = text.trim();
     if trimmed.is_empty() {
         return trimmed;
@@ -335,8 +329,8 @@ pub fn first_sentence(text: &str) -> &str {
     &trimmed[..limit]
 }
 
-/// Yield chunks of `items` with at most `chunk_size` elements each.
-pub fn chunked<T>(items: &[T], chunk_size: usize) -> impl Iterator<Item = &[T]> {
+#[cfg(test)]
+fn chunked<T>(items: &[T], chunk_size: usize) -> impl Iterator<Item = &[T]> {
     assert!(chunk_size > 0, "chunk_size must be > 0");
     items.chunks(chunk_size)
 }

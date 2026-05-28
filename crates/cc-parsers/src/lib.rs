@@ -2,7 +2,8 @@ pub mod alloc_stats;
 pub mod broker_patterns;
 pub mod c_cpp;
 pub mod chunker;
-pub mod framework;
+#[cfg(test)]
+mod framework;
 pub mod generic;
 pub mod go;
 pub mod http_call_helpers;

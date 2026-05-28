@@ -170,8 +170,8 @@ impl Embedder for ApiEmbedder {
     }
 }
 
-/// Cosine similarity between two vectors.
-pub fn cosine_similarity(a: &[f32], b: &[f32]) -> f64 {
+#[cfg(test)]
+fn cosine_similarity(a: &[f32], b: &[f32]) -> f64 {
     if a.len() != b.len() || a.is_empty() {
         return 0.0;
     }

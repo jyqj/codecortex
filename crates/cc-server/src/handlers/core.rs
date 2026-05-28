@@ -113,6 +113,14 @@ pub fn analyze_impact(
     serde_json::to_value(report).map_err(|e| e.to_string())
 }
 
+pub fn git_changed_files(
+    runtime: SharedCodeIndex,
+    base_branch: Option<&str>,
+) -> Result<Vec<String>, String> {
+    let rt = super::lock_index(&runtime)?;
+    rt.git_changed_files(base_branch).map_err(|e| e.to_string())
+}
+
 /// Get a summary of a single file.
 pub fn summarize_file(
     runtime: SharedCodeIndex,

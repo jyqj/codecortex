@@ -3,7 +3,7 @@
 
 use super::SharedCodeIndex;
 
-/// Execute a graph query (Cypher with fallback to legacy GraphQueryEngine).
+/// Execute a graph query (read-only Cypher subset).
 pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("graph_query");
@@ -176,13 +176,19 @@ pub fn find_dead_code(
 ) -> Result<serde_json::Value, String> {
     let scope = params.get("scope").and_then(|v| v.as_str());
 
+    let user_limit = params
+        .get("limit")
+        .and_then(|v| v.as_u64())
+        .map(|v| v as usize);
+
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("dead_code");
+    let effective_limit = user_limit.unwrap_or(budget.max_items).min(budget.max_items);
     let db = rt.index_db().ok_or("no index database")?;
 
     // Use an adaptive scan limit: 40x the desired dead_code item cap,
     // capped at 5000 to bound query cost.
-    let scan_limit = (budget.max_items * 40).min(5000);
+    let scan_limit = (effective_limit * 40).min(5000);
 
     // Fetch all symbols via parameterized SQL
     let all_symbols = if let Some(prefix) = scope {
@@ -281,16 +287,18 @@ pub fn find_dead_code(
         }
     }
 
-    // Cap output to the adaptive budget.
-    let truncated = dead_items.len() > budget.max_items;
+    let total_found = dead_items.len();
+    let truncated = total_found > effective_limit;
     if truncated {
-        dead_items.truncate(budget.max_items);
+        dead_items.truncate(effective_limit);
     }
 
     Ok(serde_json::json!({
         "dead_code": dead_items,
         "count": dead_items.len(),
+        "total_found": total_found,
         "truncated": truncated,
+        "scan_limit": scan_limit,
     }))
 }
 

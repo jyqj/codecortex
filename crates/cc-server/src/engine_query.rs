@@ -105,11 +105,15 @@ impl CodeIndex {
     }
 
     pub fn analyze_impact(&self, base_ref: Option<&str>) -> CcResult<ImpactReport> {
+        let changed = self.git_changed_files(base_ref)?;
+        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze(&changed, 3)
+    }
+
+    pub fn git_changed_files(&self, base_ref: Option<&str>) -> CcResult<Vec<String>> {
         let project = self.ensure_project()?;
         let analyzer = ImpactAnalyzer::new(self.ensure_db()?.clone())
             .with_project_root(project.display().to_string());
-        let changed = analyzer.git_changed_files(base_ref);
-        analyzer.analyze(&changed, 3)
+        Ok(analyzer.git_changed_files(base_ref))
     }
 
     pub fn repo_size_tier(&self) -> RepoSizeTier {

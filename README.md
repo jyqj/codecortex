@@ -154,7 +154,7 @@ All fields are optional -- defaults work for most projects.
     "grep_weight": 0.8
   },
   "embeddings": {
-    "provider": "hash",
+    "provider": "hash",        // or "openai_compatible" — see below
     "dimensions": 256
   },
   "auto_index": {
@@ -164,6 +164,32 @@ All fields are optional -- defaults work for most projects.
   }
 }
 ```
+
+### Embedding Providers
+
+The default `hash` provider uses a blake3-based sparse vector (zero network
+dependency, deterministic, fast). It works well for symbol-name and
+lexical-heavy queries but has a quality ceiling for semantic / natural-language
+search.
+
+For higher-quality vector search, configure an OpenAI-compatible endpoint:
+
+```json
+{
+  "embeddings": {
+    "provider": "openai_compatible",
+    "base_url": "http://localhost:11434/v1",
+    "model": "nomic-embed-text",
+    "dimensions": 768
+  }
+}
+```
+
+Any endpoint that accepts `POST /embeddings` with `{ "input": [...], "model": "..." }`
+works: OpenAI, Ollama (`ollama serve`), LiteLLM, vLLM, LocalAI, etc.
+
+Run `status()` after connecting — the `diagnostics.embedding_provider` field
+confirms which provider is active and warns when hash fallback is in effect.
 
 ### Repo Size Tiers
 
@@ -252,7 +278,7 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 
 ## Language Support
 
-31 concrete language identifiers (+ `Unknown` fallback) recognized across three confidence tiers:
+30 auto-detected language identifiers (+ `Unknown` fallback) recognized across three confidence tiers:
 
 ### Full tree-sitter parsing (confidence 0.7+)
 
@@ -261,7 +287,7 @@ Python, JavaScript, TypeScript, TSX, JSX, Java, Go, Rust, C, C++
 ### Heuristic / generic fallback (confidence 0.3 - 0.5)
 
 C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown,
-SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, OpenAPI, CMake
+SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, CMake
 
 ### Confidence tiers
 
@@ -271,7 +297,7 @@ SQL, YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, OpenAPI, CMake
 | Heuristic | 0.5 | Pattern matching with language awareness |
 | TreeSitter | 0.7 | Full AST parsing |
 | Semantic | 0.85 | Cross-reference resolved |
-| Verified | 1.0 | Runtime-validated (via `ingest_traces`) |
+| Verified | 0.95 | Runtime-validated (via `ingest_traces`) |
 
 ### Semantic Framework Resolvers (16)
 

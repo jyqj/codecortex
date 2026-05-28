@@ -2,7 +2,7 @@
 
 ## Unit Tests
 
-736 tests across 7 crates (735 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace --all-targets`).
+706 tests across 7 crates (705 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace --all-targets`).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
@@ -11,8 +11,8 @@
 | cc-index | 214 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection, resolver tier aliases |
 | cc-model | 31 | Route normalization, data structures, enum round-trip, project root discovery |
 | cc-parsers | 160 | Tree-sitter parsing for 10 languages, symbol extraction, Rust parser coverage |
-| cc-search | 158 | Cypher parser/executor, regex validation, vector cache, file-scoped vector streaming, grep SQL scoping, search engine, parity tests |
-| cc-server | 102 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
+| cc-search | 128 | Cypher parser/executor, regex validation, vector cache, file-scoped vector streaming, grep SQL scoping, search engine |
+| cc-server | 101 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 

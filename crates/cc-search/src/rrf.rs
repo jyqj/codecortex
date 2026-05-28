@@ -4,14 +4,22 @@ use std::collections::HashMap;
 
 /// Accumulate RRF scores from a ranked list.
 /// score(d) += weight / (k + rank)
+///
+/// Accepts `&[&str]` to avoid cloning every id on each call.
+/// Only allocates a new `String` when inserting a previously-unseen id.
 pub fn rrf_accumulate(
     scores: &mut HashMap<String, f64>,
-    ranked_ids: &[String],
+    ranked_ids: &[&str],
     weight: f64,
     k: usize,
 ) {
     for (rank, id) in ranked_ids.iter().enumerate() {
-        *scores.entry(id.clone()).or_insert(0.0) += weight / (k + rank + 1) as f64;
+        let score = weight / (k + rank + 1) as f64;
+        if let Some(existing) = scores.get_mut(*id) {
+            *existing += score;
+        } else {
+            scores.insert(id.to_string(), score);
+        }
     }
 }
 
@@ -36,7 +44,7 @@ mod tests {
     #[test]
     fn rrf_basic() {
         let mut scores = HashMap::new();
-        rrf_accumulate(&mut scores, &["a".into(), "b".into(), "c".into()], 1.0, 50);
+        rrf_accumulate(&mut scores, &["a", "b", "c"], 1.0, 50);
         assert!(scores["a"] > scores["b"]);
         assert!(scores["b"] > scores["c"]);
     }
@@ -44,8 +52,8 @@ mod tests {
     #[test]
     fn rrf_merge_two_lists() {
         let mut scores = HashMap::new();
-        rrf_accumulate(&mut scores, &["a".into(), "b".into()], 1.0, 50);
-        rrf_accumulate(&mut scores, &["b".into(), "a".into()], 1.0, 50);
+        rrf_accumulate(&mut scores, &["a", "b"], 1.0, 50);
+        rrf_accumulate(&mut scores, &["b", "a"], 1.0, 50);
         // b appears at rank 1 in list 2, a at rank 1 in list 1 => equal
         assert!((scores["a"] - scores["b"]).abs() < 1e-10);
     }

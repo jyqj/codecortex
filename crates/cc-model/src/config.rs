@@ -8,12 +8,8 @@ pub struct ProjectConfig {
     pub indexing: IndexingConfig,
     #[serde(default = "SearchConfig::default")]
     pub search: SearchConfig,
-    #[serde(default = "PackConfig::default")]
-    pub pack: PackConfig,
     #[serde(default = "EmbeddingsConfig::default")]
     pub embeddings: EmbeddingsConfig,
-    #[serde(default)]
-    pub parsers: ParsersConfig,
     #[serde(default)]
     pub auto_index: AutoIndexConfig,
 }
@@ -191,25 +187,6 @@ impl Default for SearchConfig {
     }
 }
 
-/// Legacy config section — kept for `.codecortex.json` backwards compatibility.
-/// Budget values are now driven by [`RepoSizeTier`]; these fields are not read at runtime.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct PackConfig {
-    pub default_token_budget: u32,
-    pub neighbor_window: u32,
-    pub import_fanout: u32,
-}
-
-impl Default for PackConfig {
-    fn default() -> Self {
-        Self {
-            default_token_budget: 6000,
-            neighbor_window: 1,
-            import_fanout: 2,
-        }
-    }
-}
-
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingsConfig {
     pub provider: EmbeddingProvider,
@@ -240,17 +217,6 @@ pub enum EmbeddingProvider {
     Hash,
     #[serde(rename = "openai_compatible")]
     OpenAICompatible,
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-pub struct ParsersConfig {
-    pub javascript: Option<ParserBackendConfig>,
-    pub typescript: Option<ParserBackendConfig>,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ParserBackendConfig {
-    pub backend: String,
 }
 
 /// Repo size tier — drives adaptive limits for explore, search, and budget.

@@ -48,7 +48,7 @@ All 14 tools are always available. No activation or domain system.
 
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
-| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact` | Ranked search hits with file paths, line ranges, snippets |
+| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files` | Ranked search hits with file paths, line ranges, snippets |
 | `context` | Build complete context for a task in one call | `task`, `max_symbols`, `include_source`, `intent` | Relevant symbols, relationships, and source grouped by file |
 
 ### Deep Dive

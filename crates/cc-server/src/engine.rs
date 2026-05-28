@@ -149,6 +149,16 @@ impl CodeIndex {
         top_k: usize,
         intent: Option<Intent>,
     ) -> CcResult<ContextEnvelope> {
+        self.search_in_context_with(query, top_k, intent, SearchRequest::default())
+    }
+
+    pub fn search_in_context_with(
+        &mut self,
+        query: &str,
+        top_k: usize,
+        intent: Option<Intent>,
+        overrides: SearchRequest,
+    ) -> CcResult<ContextEnvelope> {
         let tier = self.repo_size_tier();
         let token_budget = tier.default_token_budget();
         let max_output_chars = tier.max_output_chars();
@@ -163,6 +173,10 @@ impl CodeIndex {
             query: query.to_string(),
             top_k,
             include_grep: true,
+            boost_file_paths: overrides.boost_file_paths,
+            recent_file_paths: overrides.recent_file_paths,
+            pinned_file_paths: overrides.pinned_file_paths,
+            file_preselect_limit: overrides.file_preselect_limit,
             ..Default::default()
         };
         let hits = engine.search(&request)?;

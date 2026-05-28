@@ -16,6 +16,20 @@ pub fn search_in_context(
     serde_json::to_value(env).map_err(|e| e.to_string())
 }
 
+pub fn search_in_context_with(
+    runtime: Arc<RwLock<CodeIndex>>,
+    query: &str,
+    top_k: usize,
+    intent: Option<cc_model::Intent>,
+    overrides: cc_model::search::SearchRequest,
+) -> Result<serde_json::Value, String> {
+    let mut rt = super::lock_index_write(&runtime)?;
+    let env = rt
+        .search_in_context_with(query, top_k, intent, overrides)
+        .map_err(|e| e.to_string())?;
+    serde_json::to_value(env).map_err(|e| e.to_string())
+}
+
 pub fn prepare_edit_region(
     runtime: Arc<RwLock<CodeIndex>>,
     file_path: &str,

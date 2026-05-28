@@ -175,6 +175,10 @@ impl CodeCortexMcpServer {
         let mode = p.mode;
         let exact = p.exact;
         let intent = parse_intent_opt(p.intent.as_deref());
+        let boost_files = p.boost_files;
+        let recent_files = p.recent_files;
+        let pinned_files = p.pinned_files;
+        let file_preselect_limit = p.file_preselect_limit;
         match mode.as_str() {
             "symbol" => {
                 spawn_handler!(index, move |rt| handlers::core::find_symbol(
@@ -182,9 +186,28 @@ impl CodeCortexMcpServer {
                 ))
             }
             _ => {
-                spawn_handler!(index, move |rt| handlers::context::search_in_context(
-                    rt, &query, top_k, intent
-                ))
+                let has_overrides = boost_files.is_some()
+                    || recent_files.is_some()
+                    || pinned_files.is_some()
+                    || file_preselect_limit.is_some();
+                if has_overrides {
+                    let overrides = cc_model::search::SearchRequest {
+                        boost_file_paths: boost_files,
+                        recent_file_paths: recent_files,
+                        pinned_file_paths: pinned_files,
+                        file_preselect_limit,
+                        ..Default::default()
+                    };
+                    spawn_handler!(index, move |rt| {
+                        handlers::context::search_in_context_with(
+                            rt, &query, top_k, intent, overrides,
+                        )
+                    })
+                } else {
+                    spawn_handler!(index, move |rt| handlers::context::search_in_context(
+                        rt, &query, top_k, intent
+                    ))
+                }
             }
         }
     }

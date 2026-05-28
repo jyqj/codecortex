@@ -36,6 +36,15 @@ fn clamp_opt_str(s: &mut Option<String>, max: usize) {
     }
 }
 
+fn clamp_path_list(list: &mut Option<Vec<String>>) {
+    if let Some(ref mut v) = list {
+        v.truncate(MAX_FILE_ITEMS);
+        for p in v.iter_mut() {
+            clamp_str(p, MAX_PATH_LEN);
+        }
+    }
+}
+
 fn is_valid_branch_name(s: &str) -> bool {
     s.bytes()
         .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'.' || b == b'/' || b == b'-')
@@ -188,6 +197,27 @@ pub struct SearchParams {
     #[serde(default)]
     pub exact: bool,
 
+    /// File paths the agent is currently focused on. These files receive a
+    /// ranking boost in search results (they are not used as an exclusive filter).
+    #[serde(default)]
+    pub boost_files: Option<Vec<String>>,
+
+    /// Recently viewed / edited file paths. Receives a smaller ranking boost
+    /// than `boost_files`.
+    #[serde(default)]
+    pub recent_files: Option<Vec<String>>,
+
+    /// Pinned / bookmarked file paths that should always rank highly when they
+    /// match the query.
+    #[serde(default)]
+    pub pinned_files: Option<Vec<String>>,
+
+    /// Maximum number of candidate files to consider during the preselection
+    /// stage. Higher values trade latency for recall on large repos. Default
+    /// is auto-tuned based on `top_k`.
+    #[serde(default)]
+    pub file_preselect_limit: Option<usize>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -199,6 +229,12 @@ impl SearchParams {
         self.top_k = self.top_k.clamp(1, MAX_TOP_K);
         clamp_opt_str(&mut self.intent, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        clamp_path_list(&mut self.boost_files);
+        clamp_path_list(&mut self.recent_files);
+        clamp_path_list(&mut self.pinned_files);
+        if let Some(ref mut limit) = self.file_preselect_limit {
+            *limit = (*limit).clamp(1, 10_000);
+        }
     }
 }
 
@@ -210,6 +246,10 @@ impl Default for SearchParams {
             top_k: default_top_k(),
             intent: None,
             exact: false,
+            boost_files: None,
+            recent_files: None,
+            pinned_files: None,
+            file_preselect_limit: None,
             project_path: None,
         }
     }

@@ -289,7 +289,7 @@ pub fn handle_files(
                 end_line.ok_or_else(|| "end_line is required for 'expand' action".to_string())?;
             context::expand_code_region(runtime, p, sl, el, context_lines)
         }
-        _ => {
+        "list" => {
             let max_files = {
                 let rt = super::lock_index(&runtime)?;
                 rt.output_budget("files").max_items
@@ -304,6 +304,10 @@ pub fn handle_files(
             }
             Ok(result)
         }
+        other => Err(format!(
+            "unknown files action {:?}; expected \"list\", \"region\", or \"expand\"",
+            other
+        ))
     }
 }
 
@@ -679,5 +683,89 @@ mod tests {
         let input = json!(null);
         let result = enforce_output_limit(input.clone(), 100);
         assert_eq!(result, input);
+    }
+
+    // ── Handler dispatch integration tests ─────────────────────────
+
+    fn build_test_index() -> (tempfile::TempDir, Arc<std::sync::RwLock<crate::engine::CodeIndex>>) {
+        let fixture_src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../cc-eval/fixtures/sample-project");
+        let tmp = tempfile::TempDir::new().unwrap();
+        for entry in std::fs::read_dir(&fixture_src).unwrap() {
+            let entry = entry.unwrap();
+            if entry.file_type().unwrap().is_file() {
+                std::fs::copy(entry.path(), tmp.path().join(entry.file_name())).unwrap();
+            }
+        }
+        let mut idx = crate::engine::CodeIndex::new(Some(tmp.path())).unwrap();
+        idx.build_index(true).unwrap();
+        (tmp, Arc::new(std::sync::RwLock::new(idx)))
+    }
+
+    #[test]
+    fn handle_status_returns_index_info() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_status(rt, "index").unwrap();
+        assert!(result.get("indexed_files").is_some());
+    }
+
+    #[test]
+    fn handle_status_all_includes_capabilities_and_schema() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_status(rt, "all").unwrap();
+        assert!(result.get("capabilities").is_some());
+        assert!(result.get("schema").is_some());
+    }
+
+    #[test]
+    fn handle_files_list_returns_array() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_files(rt, "list", None, None, None, 20).unwrap();
+        assert!(result.is_array());
+        assert!(!result.as_array().unwrap().is_empty());
+    }
+
+    #[test]
+    fn handle_files_invalid_action_returns_error() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_files(rt, "bogus_action", None, None, None, 20);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("unknown files action"));
+    }
+
+    #[test]
+    fn handle_files_region_without_path_returns_error() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_files(rt, "region", None, Some(1), Some(5), 20);
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("path is required"));
+    }
+
+    #[test]
+    fn handle_architecture_overview_returns_result() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_architecture(rt, "overview", None, 20).unwrap();
+        assert!(result.is_object() || result.is_array());
+    }
+
+    #[test]
+    fn handle_impact_dead_code_returns_result() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_impact(rt, "dead_code", &[], None, "file", None, 20).unwrap();
+        assert!(result.is_object() || result.is_array());
+    }
+
+    #[test]
+    fn handle_adr_list_empty() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_adr(rt, "list", None, None, None, None, None).unwrap();
+        assert!(result.get("adrs").is_some());
+    }
+
+    #[test]
+    fn handle_adr_unknown_action_errors() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_adr(rt, "drop_all", None, None, None, None, None);
+        assert!(result.is_err());
     }
 }

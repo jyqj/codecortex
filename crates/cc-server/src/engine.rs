@@ -198,6 +198,7 @@ impl CodeIndex {
             .config
             .as_ref()
             .map(|c| match c.embeddings.provider {
+                cc_model::config::EmbeddingProvider::None => "none",
                 cc_model::config::EmbeddingProvider::Hash => "hash",
                 cc_model::config::EmbeddingProvider::OpenAICompatible => "openai_compatible",
             })
@@ -209,9 +210,9 @@ impl CodeIndex {
             .map(|c| c.embeddings.dimensions)
             .unwrap_or(0);
 
-        let using_hash_fallback = matches!(
+        let vector_search_disabled = matches!(
             self.config.as_ref().map(|c| &c.embeddings.provider),
-            Some(cc_model::config::EmbeddingProvider::Hash) | None
+            Some(cc_model::config::EmbeddingProvider::None) | None
         );
 
         let schema_version = cc_db::index_migrate::CURRENT_SCHEMA_VERSION;
@@ -242,13 +243,13 @@ impl CodeIndex {
             "auto_index_enabled": auto_index_enabled,
         });
 
-        if using_hash_fallback {
+        if vector_search_disabled {
             info.as_object_mut().unwrap().insert(
-                "embedding_warning".to_string(),
+                "embedding_notice".to_string(),
                 serde_json::json!(
-                    "Using hash-based embeddings (zero-dependency, fast, but not semantic). \
-                     Configure embeddings.provider = 'openai_compatible' in .codecortex.json \
-                     for higher quality vector search."
+                    "Vector search is disabled (no embedding provider configured). \
+                     Search uses FTS + grep fusion only. To enable vector search, set \
+                     embeddings.provider to 'hash' or 'openai_compatible' in .codecortex.json."
                 ),
             );
         }

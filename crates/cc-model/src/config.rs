@@ -200,7 +200,7 @@ pub struct EmbeddingsConfig {
 impl Default for EmbeddingsConfig {
     fn default() -> Self {
         Self {
-            provider: EmbeddingProvider::Hash,
+            provider: EmbeddingProvider::None,
             dimensions: 256,
             base_url: None,
             api_key: None,
@@ -210,10 +210,11 @@ impl Default for EmbeddingsConfig {
     }
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum EmbeddingProvider {
     #[default]
+    None,
     Hash,
     #[serde(rename = "openai_compatible")]
     OpenAICompatible,
@@ -524,6 +525,7 @@ pub fn load_project_config(project_path: &Path) -> ProjectConfig {
 fn apply_env_overrides(config: &mut ProjectConfig) {
     if let Ok(provider) = std::env::var("CODECORTEX_EMBEDDINGS_PROVIDER") {
         match provider.trim() {
+            "none" | "disabled" => config.embeddings.provider = EmbeddingProvider::None,
             "hash" => config.embeddings.provider = EmbeddingProvider::Hash,
             "openai_compatible" => {
                 config.embeddings.provider = EmbeddingProvider::OpenAICompatible;

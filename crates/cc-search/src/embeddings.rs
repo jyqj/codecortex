@@ -283,9 +283,22 @@ struct EmbeddingResponseItem {
     embedding: Vec<f32>,
 }
 
-/// Create an embedder from config.
+/// Null embedder — returns empty vectors. Used when no provider is configured.
+pub struct NullEmbedder;
+
+impl Embedder for NullEmbedder {
+    fn embed(&self, _text: &str) -> Vec<f32> {
+        Vec::new()
+    }
+    fn dimensions(&self) -> usize {
+        0
+    }
+}
+
+/// Create an embedder from config. Returns `NullEmbedder` when provider is `None`.
 pub fn get_embedder(config: &cc_model::config::EmbeddingsConfig) -> Box<dyn Embedder> {
     match config.provider {
+        cc_model::config::EmbeddingProvider::None => Box::new(NullEmbedder),
         cc_model::config::EmbeddingProvider::Hash => {
             Box::new(HashingEmbedder::new(config.dimensions))
         }

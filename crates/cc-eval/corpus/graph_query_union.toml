@@ -1,0 +1,17 @@
+name = "graph_query_union"
+tool = "graph_query"
+description = "UNION combines results from two sub-queries"
+
+[params]
+query = "MATCH (f:Function) WHERE f.name = 'formatName' RETURN f.name UNION MATCH (f:Function) WHERE f.name = 'processUser' RETURN f.name"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"

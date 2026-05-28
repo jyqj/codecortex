@@ -1,0 +1,13 @@
+name = "graph_query_optional_match"
+tool = "graph_query"
+description = "OPTIONAL MATCH returns null columns when no match exists"
+
+[params]
+query = "MATCH (f:Function) OPTIONAL MATCH (f)-[:CALLS]->(g:Function) WHERE f.name = 'validateEmail' RETURN f.name, g.name LIMIT 5"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "validateEmail"

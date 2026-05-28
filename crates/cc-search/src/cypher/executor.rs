@@ -882,7 +882,22 @@ pub fn execute(query: &CypherQuery, db: &IndexDb) -> CcResult<CypherResult> {
     let first_match = &query.match_clauses[0];
     let pattern = &first_match.patterns[0];
 
-    let translated = if pattern.rels.is_empty() {
+    // Special case: `MATCH (f:Label) OPTIONAL MATCH (f)-[:R]->(g) ...` — anchor on
+    // the required source node so it survives even with no matching edge/target.
+    let two_clause_optional = (query.match_clauses.len() == 2
+        && !first_match.is_optional
+        && pattern.rels.is_empty()
+        && first_match.patterns.len() == 1)
+        .then(|| &query.match_clauses[1])
+        .filter(|m1| m1.is_optional && m1.patterns.len() == 1 && m1.patterns[0].rels.len() == 1)
+        .filter(|m1| {
+            let anchor_var = pattern.nodes[0].var.as_deref();
+            anchor_var.is_some() && m1.patterns[0].nodes[0].var.as_deref() == anchor_var
+        });
+
+    let translated = if let Some(m1) = two_clause_optional {
+        translate_optional_match(query, pattern.nodes[0].label.as_deref(), &m1.patterns[0])?
+    } else if pattern.rels.is_empty() {
         // Single-node query.
         translate_single_node(query, pattern)?
     } else if pattern.rels.len() == 1 {
@@ -1206,6 +1221,160 @@ pub(crate) fn translate_single_hop(
     })
 }
 
+/// Translate `MATCH (f:Label) OPTIONAL MATCH (f)-[:R]->(g) ...` with the source
+/// node as the anchor, so `f` rows are preserved even when no edge/target exists.
+///
+/// `anchor_label` carries the label from the required MATCH clause (the optional
+/// clause may repeat the source variable without its label). The target-side kind
+/// filter and any target-referencing WHERE predicates are placed in the LEFT JOIN
+/// `ON` clause rather than the outer WHERE, otherwise NULL target rows would be
+/// discarded and the OPTIONAL semantics lost.
+pub(crate) fn translate_optional_match(
+    query: &CypherQuery,
+    anchor_label: Option<&str>,
+    pattern: &PathPattern,
+) -> CcResult<TranslatedQuery> {
+    let src_node = &pattern.nodes[0];
+    let dst_node = &pattern.nodes[1];
+    let rel = &pattern.rels[0];
+
+    let edge_type_str = rel.rel_type.as_deref().unwrap_or("CALLS");
+    let etm = edge_table_map();
+    let edge_info = etm
+        .get(edge_type_str)
+        .ok_or_else(|| CcError::Search(format!("unknown edge type: {edge_type_str}")))?;
+
+    // Anchored form needs real node tables on both sides; pseudo-UID endpoints
+    // (custom or skipped joins) fall back to the edge-anchored single hop.
+    if edge_info.src_join_on.is_some() || edge_info.dst_join_on.is_some() {
+        return translate_single_hop(query, pattern, true);
+    }
+
+    let src_alias = src_node.var.as_deref().unwrap_or("src");
+    let dst_alias = dst_node.var.as_deref().unwrap_or("dst");
+    let edge_alias = "e";
+
+    let src_label = src_node.label.as_deref().or(anchor_label);
+    let src_table = src_label.map(label_table).unwrap_or("symbols");
+    let dst_table = dst_node
+        .label
+        .as_deref()
+        .map(label_table)
+        .unwrap_or("symbols");
+
+    let alias_tables = HashMap::from([
+        (src_alias.to_string(), src_table.to_string()),
+        (dst_alias.to_string(), dst_table.to_string()),
+        (edge_alias.to_string(), edge_info.table.to_string()),
+    ]);
+    let projections = build_projections(&query.return_clause.items, &alias_tables)?;
+    let select_cols = projections
+        .iter()
+        .map(|p| p.sql.as_str())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let mut params: Vec<String> = Vec::new();
+
+    let src_join_col = edge_info
+        .src_join_key
+        .unwrap_or(if edge_info.src_is_symbol {
+            "symbol_uid"
+        } else {
+            "file_path"
+        });
+    let dst_join_col = edge_info
+        .dst_join_key
+        .unwrap_or(if edge_info.dst_is_symbol {
+            "symbol_uid"
+        } else {
+            "file_path"
+        });
+
+    // Edge LEFT JOIN ON (source link + edge-level filter).
+    let mut edge_on = format!(
+        "{edge_alias}.{} = {src_alias}.{src_join_col}",
+        edge_info.src_col
+    );
+    if let Some(filter) = edge_info.extra_filter {
+        edge_on.push_str(&format!(" AND {edge_alias}.{filter}"));
+    }
+
+    // Target LEFT JOIN ON (target link + target kind filter — kept out of WHERE).
+    let mut dst_on = format!(
+        "{dst_alias}.{dst_join_col} = {edge_alias}.{}",
+        edge_info.dst_col
+    );
+    if let Some(label) = dst_node.label.as_deref() {
+        if let Some(kind) = label_kind_filter(label) {
+            dst_on.push_str(&format!(" AND {dst_alias}.kind = ?{}", params.len() + 1));
+            params.push(kind.to_string());
+        }
+    }
+
+    // Source-side filters go to the outer WHERE.
+    let mut where_parts: Vec<String> = Vec::new();
+    if let Some(label) = src_label {
+        if let Some(kind) = label_kind_filter(label) {
+            where_parts.push(format!("{src_alias}.kind = ?{}", params.len() + 1));
+            params.push(kind.to_string());
+        }
+    }
+    for (key, val) in &src_node.props {
+        where_parts.push(format!("{src_alias}.{key} = ?{}", params.len() + 1));
+        params.push(val.clone());
+    }
+
+    // Split the query WHERE: source predicates → WHERE, target predicates → JOIN ON.
+    if let Some(wc) = &query.where_clause {
+        let (src_where, dst_where) =
+            split_where_by_var(&wc.expr, src_alias, dst_alias, &mut params)?;
+        if !src_where.is_empty() && src_where != "1=1" {
+            where_parts.push(src_where);
+        }
+        if let Some(dw) = dst_where {
+            dst_on.push_str(&format!(" AND {dw}"));
+        }
+    }
+
+    // Target inline props also belong in the JOIN ON to preserve OPTIONAL semantics.
+    for (key, val) in &dst_node.props {
+        dst_on.push_str(&format!(" AND {dst_alias}.{key} = ?{}", params.len() + 1));
+        params.push(val.clone());
+    }
+
+    let mut sql = format!("SELECT DISTINCT {select_cols} FROM {src_table} AS {src_alias}");
+    sql.push_str(&format!(
+        " LEFT JOIN {} AS {edge_alias} ON {edge_on}",
+        edge_info.table
+    ));
+    sql.push_str(&format!(
+        " LEFT JOIN {dst_table} AS {dst_alias} ON {dst_on}"
+    ));
+
+    if !where_parts.is_empty() {
+        sql.push_str(" WHERE ");
+        sql.push_str(&where_parts.join(" AND "));
+    }
+
+    sql.push_str(&build_group_by_clause(&projections));
+
+    if let Some(order_items) = &query.order_by {
+        let parts: Vec<String> = order_items.iter().map(order_item_to_sql).collect();
+        sql.push_str(" ORDER BY ");
+        sql.push_str(&parts.join(", "));
+    }
+
+    let limit = query.limit.unwrap_or(50);
+    sql.push_str(&format!(" LIMIT ?{}", params.len() + 1));
+    params.push(limit.to_string());
+
+    Ok(TranslatedQuery {
+        sql,
+        params,
+        projections,
+    })
+}
+
 pub(crate) fn translate_variable_length(
     query: &CypherQuery,
     pattern: &PathPattern,
@@ -1363,13 +1532,13 @@ pub(crate) fn translate_variable_length(
             SELECT pc.root_uid, ce.{vl_dst_col}, pc.depth + 1 \
             FROM path_cte pc \
             JOIN {vl_table} ce ON ce.{vl_src_col} = pc.uid \
-            WHERE pc.depth < ?{max_param_idx}{extra_and}\
+            WHERE pc.depth < CAST(?{max_param_idx} AS INTEGER){extra_and}\
         ) \
         SELECT DISTINCT {select_cols} \
         FROM path_cte\
         {src_final_join}\
         {dst_final_join} \
-        WHERE path_cte.depth >= ?{min_param_idx}"
+        WHERE path_cte.depth >= CAST(?{min_param_idx} AS INTEGER)"
     );
 
     // Target-side WHERE.

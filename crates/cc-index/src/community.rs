@@ -74,6 +74,13 @@ pub fn louvain_communities(
         *state >> 33
     };
 
+    // Sum of node degrees per community, maintained incrementally across moves
+    // (rebuilding this O(n) map inside the per-node loop made the algorithm O(n²)).
+    let mut comm_degree_sum: HashMap<u32, f64> = HashMap::new();
+    for i in 0..n {
+        *comm_degree_sum.entry(community[i]).or_insert(0.0) += degree[i];
+    }
+
     for _iteration in 0..max_iterations {
         let mut improved = false;
 
@@ -91,12 +98,6 @@ pub fn louvain_communities(
             let mut comm_weights: HashMap<u32, f64> = HashMap::new();
             for &(neighbor, weight) in &adj[node] {
                 *comm_weights.entry(community[neighbor]).or_insert(0.0) += weight;
-            }
-
-            // Sum of degrees in each community
-            let mut comm_degree_sum: HashMap<u32, f64> = HashMap::new();
-            for i in 0..n {
-                *comm_degree_sum.entry(community[i]).or_insert(0.0) += degree[i];
             }
 
             // Find best community (modularity gain)
@@ -126,6 +127,9 @@ pub fn louvain_communities(
 
             if best_comm != current_comm {
                 community[node] = best_comm;
+                // Keep comm_degree_sum consistent with the move.
+                *comm_degree_sum.entry(current_comm).or_insert(0.0) -= ki;
+                *comm_degree_sum.entry(best_comm).or_insert(0.0) += ki;
                 improved = true;
             }
         }

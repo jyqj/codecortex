@@ -1,0 +1,13 @@
+name = "graph_query_regex_regexp"
+tool = "graph_query"
+description = "Cypher =~ regex uses SQLite REGEXP with full regex syntax"
+
+[params]
+query = "MATCH (f:Function) WHERE f.name =~ 'format.*' RETURN f.name LIMIT 10"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"

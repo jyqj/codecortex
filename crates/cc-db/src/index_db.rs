@@ -289,7 +289,9 @@ pub struct ResolutionAttemptRow {
 /// Register a `REGEXP(pattern, text)` scalar function on a SQLite connection.
 ///
 /// This enables `column REGEXP ?` syntax in SQL (used by Cypher `=~` expressions).
-/// The function compiles the pattern once per invocation via `regex::Regex`.
+/// The compiled `Regex` is cached as SQLite auxiliary data keyed on the pattern
+/// argument, so a constant pattern is compiled once per statement rather than once
+/// per row.
 fn register_regexp_function(conn: &Connection) -> rusqlite::Result<()> {
     use rusqlite::functions::FunctionFlags;
 
@@ -298,14 +300,13 @@ fn register_regexp_function(conn: &Connection) -> rusqlite::Result<()> {
         2,
         FunctionFlags::SQLITE_UTF8 | FunctionFlags::SQLITE_DETERMINISTIC,
         |ctx| {
-            let pattern: String = ctx.get(0)?;
+            let re: std::sync::Arc<regex::Regex> = ctx.get_or_create_aux(
+                0,
+                |vr| -> Result<_, Box<dyn std::error::Error + Send + Sync + 'static>> {
+                    Ok(regex::Regex::new(vr.as_str()?)?)
+                },
+            )?;
             let text: String = ctx.get(1)?;
-            let re = regex::Regex::new(&pattern).map_err(|e| {
-                rusqlite::Error::UserFunctionError(Box::new(std::io::Error::new(
-                    std::io::ErrorKind::InvalidInput,
-                    format!("invalid regex: {e}"),
-                )))
-            })?;
             Ok(re.is_match(&text))
         },
     )

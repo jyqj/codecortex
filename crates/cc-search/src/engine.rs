@@ -643,6 +643,10 @@ impl SearchEngine {
         limit: usize,
         request: &SearchRequest,
     ) -> CcResult<Vec<(String, f64)>> {
+        if qvec.is_empty() {
+            return Ok(Vec::new());
+        }
+
         // Explicit file scopes use a filtered DB stream instead of the global
         // cache. This avoids loading/scoring the entire embedding matrix when a
         // caller already narrowed the candidate file set.

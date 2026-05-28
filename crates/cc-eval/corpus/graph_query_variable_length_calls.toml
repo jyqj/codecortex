@@ -1,0 +1,13 @@
+name = "graph_query_variable_length_calls"
+tool = "graph_query"
+description = "Variable-length path traversal through CALLS edges"
+
+[params]
+query = "MATCH (a:Function)-[:CALLS*1..3]->(b:Function) WHERE a.name = 'processUser' RETURN DISTINCT b.name LIMIT 10"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"

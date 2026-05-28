@@ -364,12 +364,21 @@ pub fn trace_path_rich(
     // 4. Bulk lookup symbol metadata.
     let sym_map = db.symbol_rows_by_uids(&uid_vec)?;
 
+    // Preload the uid→name map once (only needed for outgoing-call labels); doing
+    // this per node re-scanned the entire symbols table on every BFS node.
+    let uid_names = if include_outgoing {
+        db.symbol_names_by_uid()?
+    } else {
+        HashMap::new()
+    };
+
     // 5. Build TraceNode for each unique symbol, with optional snippet.
     let nodes = build_trace_nodes(
         &uid_vec,
         &sym_map,
         db,
         &mut lazy_adj,
+        &uid_names,
         project_root,
         include_snippets,
         max_snippet_lines,
@@ -458,6 +467,7 @@ fn build_trace_nodes(
     sym_map: &HashMap<String, cc_db::index_db::SymbolRow>,
     db: &Arc<IndexDb>,
     lazy_adj: &mut LazyBfsAdj,
+    uid_names: &HashMap<String, String>,
     project_root: Option<&Path>,
     include_snippets: bool,
     max_snippet_lines: usize,
@@ -487,7 +497,7 @@ fn build_trace_nodes(
             };
 
             let outgoing_calls = if include_outgoing {
-                outgoing_call_names_lazy(db, lazy_adj, uid)
+                outgoing_call_names_lazy(uid_names, lazy_adj, uid)
             } else {
                 None
             };
@@ -594,8 +604,11 @@ fn build_paths_and_edges(
 }
 
 /// Collect outgoing call names from lazy adjacency (used by trace_path_rich).
+///
+/// `uid_names` is the project-wide uid→name map, loaded once by the caller; doing
+/// the lookup per node here previously re-scanned the whole symbols table each time.
 fn outgoing_call_names_lazy(
-    db: &Arc<IndexDb>,
+    uid_names: &HashMap<String, String>,
     lazy_adj: &mut LazyBfsAdj,
     uid: &str,
 ) -> Option<Vec<String>> {
@@ -603,7 +616,6 @@ fn outgoing_call_names_lazy(
     if neighbors.is_empty() {
         return None;
     }
-    let uid_names = db.symbol_names_by_uid().ok()?;
     let mut names: Vec<String> = neighbors
         .iter()
         .filter_map(|e| {

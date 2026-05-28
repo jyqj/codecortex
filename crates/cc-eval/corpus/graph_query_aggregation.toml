@@ -1,0 +1,13 @@
+name = "graph_query_aggregation"
+tool = "graph_query"
+description = "Aggregate functions COUNT and COLLECT in RETURN"
+
+[params]
+query = "MATCH (f:Function) RETURN COUNT(f) AS total LIMIT 1"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "0.total"

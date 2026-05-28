@@ -72,42 +72,6 @@ pub fn tokenize_codeish(text: &str) -> Vec<String> {
         .collect()
 }
 
-/// Replace non-alphanumeric characters with `_`, lowercase, and collapse runs of `_`.
-pub fn slugify_path(path: &str) -> String {
-    let mut result = String::with_capacity(path.len());
-    for ch in path.chars() {
-        if ch.is_ascii_alphanumeric() {
-            result.push(ch.to_ascii_lowercase());
-        } else {
-            // Collapse consecutive underscores
-            if !result.ends_with('_') {
-                result.push('_');
-            }
-        }
-    }
-    // Trim leading/trailing underscores
-    result.trim_matches('_').to_string()
-}
-
-/// Blake3 hash, returning the first 8 bytes.
-pub fn blake_hash(data: &[u8]) -> [u8; 8] {
-    let hash = blake3::hash(data);
-    hash.as_bytes()[..8].try_into().unwrap()
-}
-
-/// Read an environment variable and return true for "1", "true", or "yes" (case-insensitive).
-pub fn env_bool(key: &str) -> bool {
-    match std::env::var(key) {
-        Ok(val) => matches!(val.to_ascii_lowercase().as_str(), "1" | "true" | "yes"),
-        Err(_) => false,
-    }
-}
-
-/// Normalize a function signature: collapse whitespace variations, trim.
-pub fn normalize_signature(sig: &str) -> String {
-    sig.split_whitespace().collect::<Vec<_>>().join(" ")
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -133,32 +97,10 @@ mod tests {
     }
 
     #[test]
-    fn slugify_path_basic() {
-        assert_eq!(slugify_path("src/main.rs"), "src_main_rs");
-        assert_eq!(slugify_path("/foo/bar/baz.py"), "foo_bar_baz_py");
-        assert_eq!(slugify_path("hello---world"), "hello_world");
-    }
-
-    #[test]
     fn expand_query_snake_case() {
         let expanded = expand_query_text("get_user_name");
         assert!(expanded.contains("get"));
         assert!(expanded.contains("user"));
         assert!(expanded.contains("name"));
-    }
-
-    #[test]
-    fn env_bool_values() {
-        std::env::set_var("_TEST_ENV_BOOL_TRUE", "true");
-        std::env::set_var("_TEST_ENV_BOOL_ONE", "1");
-        std::env::set_var("_TEST_ENV_BOOL_YES", "YES");
-        std::env::set_var("_TEST_ENV_BOOL_NO", "no");
-        std::env::remove_var("_TEST_ENV_BOOL_MISSING");
-
-        assert!(env_bool("_TEST_ENV_BOOL_TRUE"));
-        assert!(env_bool("_TEST_ENV_BOOL_ONE"));
-        assert!(env_bool("_TEST_ENV_BOOL_YES"));
-        assert!(!env_bool("_TEST_ENV_BOOL_NO"));
-        assert!(!env_bool("_TEST_ENV_BOOL_MISSING"));
     }
 }

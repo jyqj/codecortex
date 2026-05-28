@@ -23,13 +23,13 @@ jobs:
         run: cargo fmt --all -- --check
 
       - name: Clippy
-        run: cargo clippy --workspace --all-targets
+        run: cargo clippy --workspace --all-targets -- -D warnings
 
       - name: Test
-        run: cargo test --workspace
+        run: cargo test --workspace --all-targets
 
       - name: Eval suite
-        run: cargo test -p cc-eval -- --include-ignored
+        run: cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture
 
   msrv:
     runs-on: ubuntu-latest

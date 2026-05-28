@@ -183,42 +183,6 @@ pub struct RouteNodeRecord {
     pub parser_tier: ParserTier,
 }
 
-/// 数据流边类型分类
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum FlowKind {
-    Read,
-    Write,
-    TypeRef,
-    EnvAccess,
-    ParamPass,
-    ReturnFlow,
-}
-
-impl FlowKind {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            Self::Read => "read",
-            Self::Write => "write",
-            Self::TypeRef => "type_ref",
-            Self::EnvAccess => "env_access",
-            Self::ParamPass => "param_pass",
-            Self::ReturnFlow => "return_flow",
-        }
-    }
-
-    pub fn parse_str(s: &str) -> Self {
-        match s {
-            "write" => Self::Write,
-            "type_ref" => Self::TypeRef,
-            "env_access" => Self::EnvAccess,
-            "param_pass" => Self::ParamPass,
-            "return_flow" => Self::ReturnFlow,
-            _ => Self::Read,
-        }
-    }
-}
-
 /// A data-flow dependency edge (variable/type usage across functions).
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DataFlowEdgeRecord {

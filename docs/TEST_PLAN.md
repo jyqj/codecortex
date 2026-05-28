@@ -2,11 +2,11 @@
 
 ## Unit Tests
 
-706 tests across 7 crates (705 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace --all-targets`).
+703 tests across 7 crates (702 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace`), plus the `mcp_stdio` integration test.
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 55 | Schema, migrations, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query |
+| cc-db | 53 | Schema, migrations, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query |
 | cc-eval | 16 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
 | cc-index | 214 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection, resolver tier aliases |
 | cc-model | 31 | Route normalization, data structures, enum round-trip, project root discovery |
@@ -16,7 +16,7 @@
 
 ## Eval Suite (cc-eval)
 
-49 corpus cases covering all 14 MCP tools + error paths + boundary conditions. Run with `cargo test -p cc-eval`.
+54 corpus cases covering all 14 MCP tools + error paths + boundary conditions. Run with `cargo test -p cc-eval`.
 
 ### Corpus Cases
 
@@ -63,6 +63,11 @@
 | files_list | files | File listing from index |
 | graph_query_basic | graph_query | Cypher subset query execution |
 | graph_query_callers | graph_query | Cypher query for callers |
+| graph_query_aggregation | graph_query | COUNT aggregate with AS alias |
+| graph_query_optional_match | graph_query | Anchored OPTIONAL MATCH preserves source on no target |
+| graph_query_regex_regexp | graph_query | `=~` regex via SQLite REGEXP UDF |
+| graph_query_union | graph_query | UNION combines two sub-queries |
+| graph_query_variable_length_calls | graph_query | Variable-length `[:CALLS*1..3]` path traversal |
 | ingest_traces_basic | ingest_traces | Runtime evidence ingestion |
 | adr_list | adr | ADR listing |
 | error_invalid_cypher | graph_query | Invalid Cypher query returns error |

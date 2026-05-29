@@ -1,0 +1,19 @@
+name = "relations_callers_c"
+tool = "relations"
+description = "Check callers of the C function multiply"
+
+[params]
+symbol = "multiply"
+kind = "callers"
+limit = 10
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "compute_area"
+
+[[assertions]]
+kind = "output_contains"
+value = "geometry.c"

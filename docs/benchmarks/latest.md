@@ -2,7 +2,7 @@
 
 Generated: 2026-05-28T12:18:00+00:00
 Dataset: fixture
-Files: 15
+Files: 18
 
 ## Per-Tool Latency
 
@@ -17,13 +17,13 @@ Files: 15
 | impact | 4 | 0ms | 36ms | 36ms | 859 B |
 | index | 1 | 161ms | 161ms | 161ms | 211 B |
 | ingest_traces | 1 | 0ms | 0ms | 0ms | 122 B |
-| node | 4 | 0ms | 0ms | 0ms | 711 B |
-| relations | 4 | 0ms | 0ms | 0ms | 1.1 KB |
-| search | 9 | 0ms | 4ms | 4ms | 1.7 KB |
+| node | 5 | 0ms | 0ms | 0ms | 711 B |
+| relations | 5 | 0ms | 0ms | 0ms | 1.1 KB |
+| search | 11 | 0ms | 4ms | 4ms | 1.7 KB |
 | status | 1 | 0ms | 0ms | 0ms | 5.6 KB |
-| trace | 5 | 0ms | 0ms | 0ms | 723 B |
+| trace | 7 | 0ms | 0ms | 0ms | 723 B |
 
 ## Summary
 
-- Total cases: 49
+- Total cases: 62
 - All tools under 500ms p95: YES

@@ -1,9 +1,7 @@
-pub mod alloc_stats;
 pub mod broker_patterns;
 pub mod c_cpp;
 pub mod chunker;
-#[cfg(test)]
-mod framework;
+mod dataflow_common;
 pub mod generic;
 pub mod go;
 pub mod http_call_helpers;
@@ -11,6 +9,7 @@ pub mod import_resolver;
 pub mod java;
 pub mod jsts;
 pub mod lang_spec;
+mod parse_common;
 pub mod python;
 pub mod rust;
 pub mod sfc;
@@ -44,7 +43,6 @@ pub struct ParserRegistry {
 
 impl ParserRegistry {
     pub fn new() -> Self {
-        alloc_stats::enable_tracking();
         Self {
             generic: generic::GenericParser::new(),
             python: python::PythonParser::new(),
@@ -63,17 +61,6 @@ impl ParserRegistry {
             spec_scala: SpecDrivenParser::new(&lang_spec::SCALA_SPEC),
             spec_lua: SpecDrivenParser::new(&lang_spec::LUA_SPEC),
         }
-    }
-
-    /// Call after each file parse to reclaim tree-sitter memory.
-    /// Should be called by the indexer in the parse loop.
-    pub fn per_file_reclaim(&self) {
-        alloc_stats::per_file_reclaim();
-    }
-
-    /// Get session-level allocation summary
-    pub fn alloc_summary(&self) -> alloc_stats::AllocStats {
-        alloc_stats::session_summary()
     }
 
     /// Parse a file, dispatching to the best available parser for its language.

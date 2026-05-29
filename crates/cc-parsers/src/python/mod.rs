@@ -1168,27 +1168,8 @@ impl FileParser for PythonParser {
         language: Language,
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&self.language)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-        if let Some(timeout) = timeout_micros {
-            parser.set_timeout_micros(timeout);
-        }
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: if timeout_micros.is_some() {
-                    "tree-sitter parse failed or timed out".to_string()
-                } else {
-                    "tree-sitter parse failed".to_string()
-                },
-            })?;
+        let tree =
+            crate::parse_common::parse_tree(&self.language, content, file_path, timeout_micros)?;
 
         // ── Pass 1: Single DFS traversal ───────────────────────────────
         // Collects symbols, imports, route_edges, http_call_edges, diagnostics.
@@ -1224,7 +1205,10 @@ impl FileParser for PythonParser {
         // ── Regex-based data flow edges (type refs + env accesses + param/return) ──
         let mut data_flow_edges = self.extract_type_refs(content, &symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &symbols, file_path));
-        data_flow_edges.extend(self.extract_param_return_flow(&call_edges, file_path));
+        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
+            &call_edges,
+            file_path,
+        ));
 
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);

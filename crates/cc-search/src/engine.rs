@@ -99,6 +99,110 @@ fn dot_product_fast(a: &[f32], b: &[f32]) -> f32 {
     (acc0 + acc1) + (acc2 + acc3)
 }
 
+/// A scored candidate used by the top-k `BinaryHeap` selector.
+///
+/// `order` is the original insertion index, used to reproduce the *stable*
+/// tie-break of `slice::sort_by` (equal similarities keep their original
+/// encounter order). The `Ord` impl is deliberately oriented so that the
+/// `BinaryHeap` max-root holds the element that should be evicted first, i.e.
+/// the one that would rank *last* in the final descending order:
+///   - smaller similarity ranks later  → treated as "greater" (evict first);
+///   - on equal similarity, larger `order` ranks later (stable sort keeps the
+///     earlier-inserted element ahead) → treated as "greater".
+struct HeapCandidate {
+    sim: f64,
+    order: usize,
+    chunk_id: String,
+}
+
+impl PartialEq for HeapCandidate {
+    fn eq(&self, other: &Self) -> bool {
+        self.cmp(other) == std::cmp::Ordering::Equal
+    }
+}
+impl Eq for HeapCandidate {}
+
+impl PartialOrd for HeapCandidate {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for HeapCandidate {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        // "Greater" == should be evicted first == ranks last in final order.
+        // Final order is: similarity DESC, then original `order` ASC.
+        // So eviction priority is: similarity ASC (smaller first), then
+        // `order` DESC (larger first). We mirror the original comparator's use
+        // of `partial_cmp(...).unwrap_or(Equal)` on the similarity, preserving
+        // byte-for-byte behaviour for any (non-NaN here) f64 inputs.
+        match other
+            .sim
+            .partial_cmp(&self.sim)
+            .unwrap_or(std::cmp::Ordering::Equal)
+        {
+            std::cmp::Ordering::Equal => self.order.cmp(&other.order),
+            non_eq => non_eq,
+        }
+    }
+}
+
+/// Select the top-`limit` scored candidates in O(n log k) using a bounded
+/// `BinaryHeap`, returning them in the exact same order a stable
+/// `sort_by(|a, b| b.sim.partial_cmp(&a.sim).unwrap_or(Equal))` followed by
+/// `truncate(limit)` would produce.
+///
+/// Equivalence argument:
+///   - The heap keeps at most `limit` elements; for each incoming candidate we
+///     compare against the current max-root (the "weakest" kept element). An
+///     element is kept iff it ranks ahead of the weakest kept one under the
+///     *final* total order (similarity DESC, original-order ASC). This selects
+///     exactly the same multiset the full stable sort would keep in its first
+///     `limit` positions.
+///   - `into_sorted_vec()` then yields ascending `Ord`, i.e. eviction priority
+///     ascending == final rank ascending == similarity DESC / order ASC, which
+///     is precisely the stable-sort output.
+fn top_k_by_similarity(scored: Vec<(String, f64)>, limit: usize) -> Vec<(String, f64)> {
+    if limit == 0 {
+        return Vec::new();
+    }
+    // Fast path: nothing to prune, fall back to the original stable sort to keep
+    // identical output without heap overhead.
+    if scored.len() <= limit {
+        let mut out = scored;
+        out.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        return out;
+    }
+
+    let mut heap: std::collections::BinaryHeap<HeapCandidate> =
+        std::collections::BinaryHeap::with_capacity(limit + 1);
+    for (order, (chunk_id, sim)) in scored.into_iter().enumerate() {
+        let cand = HeapCandidate {
+            sim,
+            order,
+            chunk_id,
+        };
+        if heap.len() < limit {
+            heap.push(cand);
+        } else if let Some(weakest) = heap.peek() {
+            // Keep `cand` only if it ranks strictly ahead of the weakest kept
+            // element (i.e. `cand` is "less" under the eviction Ord). Ties keep
+            // the existing (earlier-`order`) element, matching stable sort.
+            if cand < *weakest {
+                heap.pop();
+                heap.push(cand);
+            }
+        }
+    }
+
+    // `into_sorted_vec` returns ascending by `Ord` (eviction priority), which
+    // equals final rank ascending: similarity DESC, then original order ASC.
+    heap.into_sorted_vec()
+        .into_iter()
+        .map(|c| (c.chunk_id, c.sim))
+        .collect()
+}
+
 impl SearchEngine {
     pub fn new(db: Arc<IndexDb>, config: &cc_model::ProjectConfig) -> Self {
         let embedder = get_embedder(&config.embeddings);
@@ -625,8 +729,10 @@ impl SearchEngine {
             }
         }
 
-        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-        scored.truncate(limit);
+        // Top-k selection via bounded BinaryHeap (O(n log k)). Output order is
+        // identical to the previous stable `sort_by(... DESC) + truncate(limit)`,
+        // including the implicit stable tie-break on equal similarities.
+        let scored = top_k_by_similarity(scored, limit);
         Ok(scored)
     }
 
@@ -741,8 +847,10 @@ impl SearchEngine {
             }
         }
 
-        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-        scored.truncate(limit);
+        // Top-k selection via bounded BinaryHeap (O(n log k)). Output order is
+        // identical to the previous stable `sort_by(... DESC) + truncate(limit)`,
+        // including the implicit stable tie-break on equal similarities.
+        let scored = top_k_by_similarity(scored, limit);
         Ok(scored)
     }
 

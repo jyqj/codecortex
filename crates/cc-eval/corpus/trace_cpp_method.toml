@@ -1,0 +1,19 @@
+name = "trace_cpp_method"
+tool = "trace"
+description = "Trace call path within C++ class: withdraw -> has_funds"
+
+[params]
+from = "withdraw"
+to = "has_funds"
+max_depth = 3
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "paths"
+
+[[assertions]]
+kind = "output_contains"
+value = "has_funds"

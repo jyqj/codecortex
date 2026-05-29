@@ -29,10 +29,8 @@ static RS_IMPL_TRAIT_RE: LazyLock<Regex> = LazyLock::new(|| {
 /// Matches `#[derive(Trait1, Trait2)]` — captures the list inside parens.
 static RS_DERIVE_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?m)^\s*#\[derive\(([^)]+)\)\]").expect("rust derive re"));
-static RS_CALL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"([A-Za-z_][A-Za-z0-9_:]*)\s*\(").expect("rust call regex"));
-static RS_IDENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"\b[A-Za-z_][A-Za-z0-9_]*\b").expect("rust ident regex"));
+/// Rust keywords / built-in pseudo-identifiers filtered out of call and
+/// identifier ref extraction so they are never treated as callees or symbol refs.
 static RS_KEYWORDS: &[&str] = &[
     "fn", "let", "mut", "pub", "impl", "struct", "enum", "trait", "use", "mod", "match", "if",
     "else", "loop", "while", "for", "return", "self", "Self", "crate", "super",
@@ -274,17 +272,41 @@ impl RustParser {
             .and_then(|cap| cap.get(1).map(|m| m.as_str().to_string()))
     }
 
+    /// Extract call edges and symbol refs by walking the tree-sitter AST.
+    ///
+    /// This traverses function/method bodies on the parsed tree (the same AST
+    /// already built for symbol extraction) rather than scanning text lines, so
+    /// it is immune to strings/comments, can recover the call receiver, and
+    /// handles multi-line calls. Three call shapes are recognized inside a
+    /// `call_expression` `function` field:
+    ///
+    ///   - `identifier` / `scoped_identifier` → direct call (`foo()`,
+    ///     `path::to::foo()`, `Type::method()`); callee is the trailing name.
+    ///   - `field_expression` → method call (`receiver.method()`); callee is the
+    ///     `field` name and the receiver expression text is captured.
+    ///   - `generic_function` → turbofish call (`foo::<T>()`,
+    ///     `obj.method::<T>()`); the inner `function` node is resolved with the
+    ///     same rules so the callee drops the type-argument suffix.
+    ///
+    /// `macro_invocation` nodes (`println!`, `vec!`, `path::mac!`) are also
+    /// emitted as calls — these were entirely invisible to the previous regex,
+    /// which required a `(` directly after the name. Every other identifier in a
+    /// body becomes a lower-confidence `identifier` ref (de-duplicated against
+    /// call/macro callee positions), preserving the previous behavior.
     fn extract_refs_and_calls(
         &self,
-        content: &str,
+        tree: &tree_sitter::Tree,
+        source: &[u8],
         file_path: &str,
         symbols: &[SymbolRecord],
     ) -> (Vec<SymbolRefRecord>, Vec<CallEdgeRecord>) {
-        let lines: Vec<&str> = content.lines().collect();
         let keywords: HashSet<&str> = RS_KEYWORDS.iter().copied().collect();
         let mut refs = Vec::new();
         let mut calls = Vec::new();
 
+        // Local name -> (symbol_id, symbol_uid) map for in-file callee binding,
+        // mirroring the previous regex resolution. Cross-file resolution is left
+        // to the cc-index resolver (callees stay Unresolved here).
         let mut by_name: HashMap<String, (&str, &str)> = HashMap::new();
         for sym in symbols {
             if let Some(uid) = &sym.symbol_uid {
@@ -294,140 +316,428 @@ impl RustParser {
             }
         }
 
-        for sym in symbols
-            .iter()
-            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-        {
-            let start = sym.start_line.saturating_sub(1) as usize;
-            let end = (sym.end_line as usize).min(lines.len());
-            for (offset, line) in lines[start..end].iter().enumerate() {
-                let line_no = (start + offset + 1) as u32;
-                let mut call_starts = HashSet::new();
-                for cap in RS_CALL_RE.captures_iter(line) {
-                    let Some(m) = cap.get(1) else { continue };
-                    let raw = m.as_str();
-                    let callee = raw.split("::").last().unwrap_or(raw);
-                    if keywords.contains(callee) {
-                        continue;
-                    }
-                    let start_col = m.start() as u32;
-                    call_starts.insert(start_col);
-                    let target = by_name.get(callee);
-                    let ref_id = StableId::ref_id(file_path, callee, line_no, start_col);
-                    refs.push(SymbolRefRecord {
-                        ref_id: ref_id.clone(),
-                        file_path: file_path.to_string(),
-                        symbol_name: callee.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "call".into(),
-                        line: line_no,
-                        column: start_col,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(callee.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.7,
-                    });
-                    calls.push(CallEdgeRecord {
-                        edge_id: StableId::edge_id("call", file_path, line_no, start_col),
-                        file_path: file_path.to_string(),
-                        caller_symbol: Some(sym.name.clone()),
-                        callee_symbol: callee.to_string(),
-                        line: line_no,
-                        start_col,
-                        end_line: Some(line_no),
-                        end_col: m.end() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        caller_symbol_id: Some(sym.symbol_id.clone()),
-                        caller_symbol_uid: sym.symbol_uid.clone(),
-                        callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        callee_ref_id: Some(ref_id),
-                        dispatch_kind: DispatchKind::Direct,
-                        call_kind: "direct".into(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        receiver_expr: None,
-                        arg_count: None,
-                        is_optional_chain: false,
-                        is_awaited: false,
-                        is_constructor: false,
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.7,
-                        synthesized_by: None,
-                        synthesis_key: None,
-                        registered_file: None,
-                        registered_line: None,
-                    });
-                }
+        let root = tree.root_node();
+        self.walk_refs_and_calls(
+            &root, source, file_path, &keywords, &by_name, symbols, &None, &mut refs, &mut calls,
+        );
 
-                for m in RS_IDENT_RE.find_iter(line) {
-                    let ident = m.as_str();
-                    if keywords.contains(ident)
-                        || (line_no == sym.start_line && ident == sym.name)
-                        || call_starts.contains(&(m.start() as u32))
-                    {
-                        continue;
-                    }
-                    let target = by_name.get(ident);
-                    refs.push(SymbolRefRecord {
-                        ref_id: StableId::ref_id(file_path, ident, line_no, m.start() as u32),
-                        file_path: file_path.to_string(),
-                        symbol_name: ident.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "identifier".into(),
-                        line: line_no,
-                        column: m.start() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(ident.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.6,
-                    });
-                }
+        (refs, calls)
+    }
+
+    /// Recursively walk the AST, tracking the enclosing function/method so call
+    /// edges and identifier refs can be attributed to the correct caller.
+    #[allow(clippy::too_many_arguments)]
+    fn walk_refs_and_calls(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        symbols: &[SymbolRecord],
+        current_fn: &Option<&SymbolRecord>,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        // Entering a function body: bind the enclosing symbol so refs/calls in
+        // this subtree are attributed to it (only items we extracted as
+        // Function/Method symbols qualify, matching the regex pass).
+        let mut active_fn = *current_fn;
+        if node.kind() == "function_item" {
+            if let Some(sym) = self.find_symbol_for_fn(node, source, symbols) {
+                active_fn = Some(sym);
             }
         }
 
-        (refs, calls)
+        // Only emit refs/calls once we are inside a known function/method body.
+        if let Some(sym) = active_fn {
+            match node.kind() {
+                "call_expression" => {
+                    self.extract_call(node, source, file_path, keywords, by_name, sym, refs, calls);
+                }
+                "macro_invocation" => {
+                    self.extract_macro_call(
+                        node, source, file_path, keywords, by_name, sym, refs, calls,
+                    );
+                }
+                "identifier" => {
+                    self.maybe_push_identifier_ref(
+                        node, source, file_path, keywords, by_name, sym, refs,
+                    );
+                }
+                _ => {}
+            }
+        }
+
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            self.walk_refs_and_calls(
+                &child, source, file_path, keywords, by_name, symbols, &active_fn, refs, calls,
+            );
+        }
+    }
+
+    /// Find the Function/Method SymbolRecord that corresponds to a
+    /// `function_item` node (matched by name + start line, as in go.rs).
+    fn find_symbol_for_fn<'a>(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        symbols: &'a [SymbolRecord],
+    ) -> Option<&'a SymbolRecord> {
+        let name = node.child_by_field_name("name")?.utf8_text(source).ok()?;
+        let line = node.start_position().row as u32 + 1;
+        symbols.iter().find(|s| {
+            s.name == name
+                && s.start_line == line
+                && matches!(s.kind, SymbolKind::Function | SymbolKind::Method)
+        })
+    }
+
+    /// Resolve the bare callee name from a `call_expression` `function` node,
+    /// returning `(callee, dispatch_kind, receiver_expr)`. Returns `None` for
+    /// shapes we deliberately skip (e.g. a parenthesized/computed callee).
+    #[allow(clippy::only_used_in_recursion)]
+    fn resolve_callee(
+        &self,
+        func_node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<(String, DispatchKind, Option<String>)> {
+        match func_node.kind() {
+            "identifier" => func_node
+                .utf8_text(source)
+                .ok()
+                .map(|t| (t.to_string(), DispatchKind::Direct, None)),
+            "scoped_identifier" => {
+                // `path::to::foo` / `Type::method` — callee is the final name.
+                let name = func_node.child_by_field_name("name")?;
+                name.utf8_text(source)
+                    .ok()
+                    .map(|t| (t.to_string(), DispatchKind::Direct, None))
+            }
+            "field_expression" => {
+                // `receiver.method` — method call; capture the receiver text.
+                let field = func_node.child_by_field_name("field")?;
+                let callee = field.utf8_text(source).ok()?.to_string();
+                let receiver = func_node
+                    .child_by_field_name("value")
+                    .and_then(|n| n.utf8_text(source).ok())
+                    .map(String::from);
+                Some((callee, DispatchKind::Dynamic, receiver))
+            }
+            "generic_function" => {
+                // Turbofish call `foo::<T>()` / `obj.m::<T>()`: recurse on the
+                // inner `function` node so the type-argument suffix is dropped.
+                let inner = func_node.child_by_field_name("function")?;
+                self.resolve_callee(&inner, source)
+            }
+            _ => None,
+        }
+    }
+
+    /// Emit a call edge + call ref for a single `call_expression` node.
+    #[allow(clippy::too_many_arguments)]
+    fn extract_call(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        caller: &SymbolRecord,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        let func_node = match node.child_by_field_name("function") {
+            Some(n) => n,
+            None => return,
+        };
+        let (callee, dispatch_kind, receiver_expr) = match self.resolve_callee(&func_node, source) {
+            Some(t) => t,
+            None => return,
+        };
+        if keywords.contains(callee.as_str()) {
+            return;
+        }
+
+        let arg_count = node.child_by_field_name("arguments").map(|args| {
+            let mut cursor = args.walk();
+            args.named_children(&mut cursor).count() as u32
+        });
+
+        let line_no = func_node.start_position().row as u32 + 1;
+        let start_col = func_node.start_position().column as u32;
+        let end_col = func_node.end_position().column as u32;
+        let call_kind = match dispatch_kind {
+            DispatchKind::Dynamic => "dynamic",
+            _ => "direct",
+        };
+
+        self.push_call(
+            file_path,
+            &callee,
+            caller,
+            by_name,
+            line_no,
+            start_col,
+            end_col,
+            dispatch_kind,
+            call_kind,
+            receiver_expr,
+            arg_count,
+            refs,
+            calls,
+        );
+    }
+
+    /// Emit a call edge + call ref for a `macro_invocation` node (`name!(...)`).
+    /// The regex pass could not see these because a `!` separates the name from
+    /// the delimiter; treating them as calls is strictly additive coverage.
+    #[allow(clippy::too_many_arguments)]
+    fn extract_macro_call(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        caller: &SymbolRecord,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        let macro_node = match node.child_by_field_name("macro") {
+            Some(n) => n,
+            None => return,
+        };
+        let callee = match macro_node.kind() {
+            "identifier" => macro_node.utf8_text(source).ok().map(String::from),
+            "scoped_identifier" => macro_node
+                .child_by_field_name("name")
+                .and_then(|n| n.utf8_text(source).ok())
+                .map(String::from),
+            _ => None,
+        };
+        let callee = match callee {
+            Some(c) if !c.is_empty() && !keywords.contains(c.as_str()) => c,
+            _ => return,
+        };
+
+        let line_no = macro_node.start_position().row as u32 + 1;
+        let start_col = macro_node.start_position().column as u32;
+        let end_col = macro_node.end_position().column as u32;
+
+        self.push_call(
+            file_path,
+            &callee,
+            caller,
+            by_name,
+            line_no,
+            start_col,
+            end_col,
+            DispatchKind::Direct,
+            "macro",
+            None,
+            None,
+            refs,
+            calls,
+        );
+    }
+
+    /// Shared constructor for a call ref + call edge pair, keeping field
+    /// semantics identical to the previous regex implementation (caller
+    /// container/id/uid, in-file resolution via `by_name`, Semantic tier).
+    #[allow(clippy::too_many_arguments)]
+    fn push_call(
+        &self,
+        file_path: &str,
+        callee: &str,
+        caller: &SymbolRecord,
+        by_name: &HashMap<String, (&str, &str)>,
+        line_no: u32,
+        start_col: u32,
+        end_col: u32,
+        dispatch_kind: DispatchKind,
+        call_kind: &str,
+        receiver_expr: Option<String>,
+        arg_count: Option<u32>,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        let target = by_name.get(callee);
+        let ref_id = StableId::ref_id(file_path, callee, line_no, start_col);
+
+        refs.push(SymbolRefRecord {
+            ref_id: ref_id.clone(),
+            file_path: file_path.to_string(),
+            symbol_name: callee.to_string(),
+            container: caller.qname.clone(),
+            ref_kind: "call".into(),
+            line: line_no,
+            column: start_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            ref_name: Some(callee.to_string()),
+            scope_id: caller.scope_id.clone(),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            ref_end_line: Some(line_no),
+            ref_end_col: Some(end_col),
+            parser_tier: ParserTier::Semantic,
+            parser_confidence: 0.7,
+        });
+
+        calls.push(CallEdgeRecord {
+            edge_id: StableId::edge_id("call", file_path, line_no, start_col),
+            file_path: file_path.to_string(),
+            caller_symbol: Some(caller.name.clone()),
+            callee_symbol: callee.to_string(),
+            line: line_no,
+            start_col,
+            end_line: Some(line_no),
+            end_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            caller_symbol_id: Some(caller.symbol_id.clone()),
+            caller_symbol_uid: caller.symbol_uid.clone(),
+            callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            callee_ref_id: Some(ref_id),
+            dispatch_kind,
+            call_kind: call_kind.into(),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            receiver_expr,
+            arg_count,
+            is_optional_chain: false,
+            is_awaited: false,
+            is_constructor: false,
+            parser_tier: ParserTier::Semantic,
+            parser_confidence: 0.7,
+            synthesized_by: None,
+            synthesis_key: None,
+            registered_file: None,
+            registered_line: None,
+        });
+    }
+
+    /// Emit a lower-confidence `identifier` ref for a bare `identifier` node,
+    /// unless it is a keyword, the enclosing function's own name at its
+    /// declaration site, or a position already consumed as a call/macro callee.
+    ///
+    /// Callee identifiers (e.g. the `function` of a `call_expression`, the
+    /// `name` of a `scoped_identifier`, the `field` of a method call, or a
+    /// macro name) are skipped here because their parent already produced a
+    /// `call` ref — this reproduces the regex pass's `call_starts`
+    /// de-duplication via AST structure instead of column bookkeeping.
+    #[allow(clippy::too_many_arguments)]
+    fn maybe_push_identifier_ref(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        caller: &SymbolRecord,
+        refs: &mut Vec<SymbolRefRecord>,
+    ) {
+        if Self::is_callee_identifier(node) {
+            return;
+        }
+        let ident = match node.utf8_text(source).ok() {
+            Some(t) => t,
+            None => return,
+        };
+        if keywords.contains(ident) {
+            return;
+        }
+        let line_no = node.start_position().row as u32 + 1;
+        let start_col = node.start_position().column as u32;
+        // Skip the function's own name at its declaration line (matches regex).
+        if line_no == caller.start_line && ident == caller.name {
+            return;
+        }
+        let end_col = node.end_position().column as u32;
+        let target = by_name.get(ident);
+        refs.push(SymbolRefRecord {
+            ref_id: StableId::ref_id(file_path, ident, line_no, start_col),
+            file_path: file_path.to_string(),
+            symbol_name: ident.to_string(),
+            container: caller.qname.clone(),
+            ref_kind: "identifier".into(),
+            line: line_no,
+            column: start_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            ref_name: Some(ident.to_string()),
+            scope_id: caller.scope_id.clone(),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            ref_end_line: Some(line_no),
+            ref_end_col: Some(end_col),
+            parser_tier: ParserTier::Semantic,
+            parser_confidence: 0.6,
+        });
+    }
+
+    /// Whether an `identifier` node is the callee position of a call/macro and
+    /// therefore already emitted as a `call` ref by its parent.
+    fn is_callee_identifier(node: &tree_sitter::Node) -> bool {
+        let parent = match node.parent() {
+            Some(p) => p,
+            None => return false,
+        };
+        match parent.kind() {
+            // `call_expression`'s `function` is a bare-identifier callee.
+            "call_expression" => parent
+                .child_by_field_name("function")
+                .map(|f| f.id() == node.id())
+                .unwrap_or(false),
+            // The trailing `name` of `path::to::foo` is the callee/leaf; the
+            // leading `path` segments are still real identifier refs.
+            "scoped_identifier" => parent
+                .child_by_field_name("name")
+                .map(|n| n.id() == node.id())
+                .unwrap_or(false),
+            // `generic_function`'s `function` (turbofish callee).
+            "generic_function" => parent
+                .child_by_field_name("function")
+                .map(|f| f.id() == node.id())
+                .unwrap_or(false),
+            // Macro name in `name!(...)`.
+            "macro_invocation" => parent
+                .child_by_field_name("macro")
+                .map(|m| m.id() == node.id())
+                .unwrap_or(false),
+            _ => false,
+        }
     }
 
     fn extract_semantic_edges(
@@ -620,23 +930,11 @@ impl Default for RustParser {
 
 impl FileParser for RustParser {
     fn parse(&self, file_path: &str, content: &str, language: Language) -> CcResult<ParseOutcome> {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&self.language)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: "tree-sitter parse failed".to_string(),
-            })?;
+        let tree = crate::parse_common::parse_tree(&self.language, content, file_path, None)?;
 
         let (symbols, imports) = self.extract_symbols(&tree, content.as_bytes(), file_path);
-        let (symbol_refs, call_edges) = self.extract_refs_and_calls(content, file_path, &symbols);
+        let (symbol_refs, call_edges) =
+            self.extract_refs_and_calls(&tree, content.as_bytes(), file_path, &symbols);
         let tier = ParserTier::Semantic;
         let confidence = 0.8;
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
@@ -675,30 +973,12 @@ impl FileParser for RustParser {
         language: Language,
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&self.language)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-        if let Some(timeout) = timeout_micros {
-            parser.set_timeout_micros(timeout);
-        }
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: if timeout_micros.is_some() {
-                    "tree-sitter parse failed or timed out".to_string()
-                } else {
-                    "tree-sitter parse failed".to_string()
-                },
-            })?;
+        let tree =
+            crate::parse_common::parse_tree(&self.language, content, file_path, timeout_micros)?;
 
         let (symbols, imports) = self.extract_symbols(&tree, content.as_bytes(), file_path);
-        let (symbol_refs, call_edges) = self.extract_refs_and_calls(content, file_path, &symbols);
+        let (symbol_refs, call_edges) =
+            self.extract_refs_and_calls(&tree, content.as_bytes(), file_path, &symbols);
         let tier = ParserTier::Semantic;
         let confidence = 0.8;
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
@@ -863,13 +1143,161 @@ fn main() {
 }
 "#;
         let outcome = p.parse("src/main.rs", code, Language::Rust).unwrap();
-        // Macro calls like println! are matched by the call regex as "println!"
-        // but the regex captures identifiers before '(' — so println! with '(' triggers it
-        // The regex `([A-Za-z_][A-Za-z0-9_:]*)\s*\(` does not see `!` before `(`
-        // so `println!("hello")` won't match as a call, but `my_macro!(v)` also won't.
-        // However, call edges should still be found for non-macro calls in other tests.
         let names: Vec<&str> = outcome.symbols.iter().map(|s| s.name.as_str()).collect();
         assert!(names.contains(&"main"), "missing main, got: {:?}", names);
+
+        // The AST pass recovers macro invocations as call edges, which the old
+        // regex could never see (a `!` separates the name from `(`/`[`).
+        let macro_calls: Vec<&str> = outcome
+            .call_edges
+            .iter()
+            .filter(|e| e.call_kind == "macro")
+            .map(|e| e.callee_symbol.as_str())
+            .collect();
+        for expected in &["println", "vec", "my_macro"] {
+            assert!(
+                macro_calls.contains(expected),
+                "missing macro call {}, got: {:?}",
+                expected,
+                macro_calls
+            );
+        }
+        // Macro callees are attributed to the enclosing function.
+        assert!(
+            outcome
+                .call_edges
+                .iter()
+                .filter(|e| e.call_kind == "macro")
+                .all(|e| e.caller_symbol.as_deref() == Some("main")),
+            "macro calls should be attributed to main"
+        );
+    }
+
+    #[test]
+    fn parse_method_call_receiver() {
+        let p = RustParser::new();
+        let code = r#"
+struct Server;
+
+impl Server {
+    fn handle(&self, conn: Conn) {
+        conn.process();
+        self.log_request();
+    }
+
+    fn log_request(&self) {}
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+
+        // `conn.process()` is a method call: callee = process, receiver = conn,
+        // dispatch = Dynamic. The regex could not recover the receiver.
+        let process = outcome
+            .call_edges
+            .iter()
+            .find(|e| e.callee_symbol == "process")
+            .expect("should detect conn.process() method call");
+        assert_eq!(process.dispatch_kind, DispatchKind::Dynamic);
+        assert_eq!(process.call_kind, "dynamic");
+        assert_eq!(process.receiver_expr.as_deref(), Some("conn"));
+        assert_eq!(process.caller_symbol.as_deref(), Some("handle"));
+
+        // `self.log_request()` resolves to the in-file method.
+        let log = outcome
+            .call_edges
+            .iter()
+            .find(|e| e.callee_symbol == "log_request")
+            .expect("should detect self.log_request() call");
+        assert_eq!(log.receiver_expr.as_deref(), Some("self"));
+        assert!(
+            log.callee_symbol_uid.is_some(),
+            "log_request should resolve to in-file method"
+        );
+    }
+
+    #[test]
+    fn parse_path_and_turbofish_calls() {
+        let p = RustParser::new();
+        let code = r#"
+fn caller() {
+    std::mem::swap(&mut a, &mut b);
+    Vec::new();
+    parse::<u32>("3");
+    obj.collect::<Vec<_>>();
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let callees: Vec<&str> = outcome
+            .call_edges
+            .iter()
+            .map(|e| e.callee_symbol.as_str())
+            .collect();
+
+        // Scoped paths collapse to the trailing name.
+        assert!(
+            callees.contains(&"swap"),
+            "std::mem::swap should yield callee `swap`, got {:?}",
+            callees
+        );
+        assert!(
+            callees.contains(&"new"),
+            "Vec::new should yield callee `new`, got {:?}",
+            callees
+        );
+        // Turbofish calls were invisible to the regex (name followed by `::<`).
+        assert!(
+            callees.contains(&"parse"),
+            "parse::<u32>() should yield callee `parse`, got {:?}",
+            callees
+        );
+        let collect = outcome
+            .call_edges
+            .iter()
+            .find(|e| e.callee_symbol == "collect")
+            .expect("obj.collect::<Vec<_>>() should be detected");
+        assert_eq!(collect.dispatch_kind, DispatchKind::Dynamic);
+        assert_eq!(collect.receiver_expr.as_deref(), Some("obj"));
+        // No callee should retain a turbofish suffix.
+        assert!(
+            !callees.iter().any(|c| c.contains('<') || c.contains(':')),
+            "callees should be bare names, got {:?}",
+            callees
+        );
+    }
+
+    #[test]
+    fn parse_calls_ignore_strings_and_comments() {
+        let p = RustParser::new();
+        let code = r#"
+fn caller() {
+    // not_a_call(1);
+    let s = "also_not_a_call(2)";
+    real_call(3);
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let callees: Vec<&str> = outcome
+            .call_edges
+            .iter()
+            .map(|e| e.callee_symbol.as_str())
+            .collect();
+        assert!(
+            callees.contains(&"real_call"),
+            "should detect real_call, got {:?}",
+            callees
+        );
+        // AST extraction is immune to call-like text inside comments/strings,
+        // unlike the previous line-based regex scan.
+        assert!(
+            !callees.contains(&"not_a_call"),
+            "must not extract call from a comment, got {:?}",
+            callees
+        );
+        assert!(
+            !callees.contains(&"also_not_a_call"),
+            "must not extract call from a string literal, got {:?}",
+            callees
+        );
     }
 
     #[test]

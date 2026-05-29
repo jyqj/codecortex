@@ -120,6 +120,10 @@ impl CodeIndex {
         if let Some(tier) = self.repo_tier {
             return tier;
         }
+        self.compute_repo_tier()
+    }
+
+    pub(crate) fn compute_repo_tier(&self) -> RepoSizeTier {
         let count = self.index_status().map(|s| s.indexed_files).unwrap_or(0);
         RepoSizeTier::from_file_count(count)
     }

@@ -1574,27 +1574,8 @@ impl FileParser for GoParser {
         language: Language,
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&self.language)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-        if let Some(timeout) = timeout_micros {
-            parser.set_timeout_micros(timeout);
-        }
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: if timeout_micros.is_some() {
-                    "tree-sitter parse failed or timed out".to_string()
-                } else {
-                    "tree-sitter parse failed".to_string()
-                },
-            })?;
+        let tree =
+            crate::parse_common::parse_tree(&self.language, content, file_path, timeout_micros)?;
 
         let symbols = self.extract_symbols(&tree, content.as_bytes(), file_path);
         let imports = self.extract_imports(&tree, content.as_bytes(), file_path);
@@ -1607,7 +1588,10 @@ impl FileParser for GoParser {
         let route_edges =
             self.extract_route_edges(&tree, content.as_bytes(), file_path, &imports, &symbols);
         let mut data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
-        data_flow_edges.extend(extract_param_return_flow(&call_edges, file_path));
+        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
+            &call_edges,
+            file_path,
+        ));
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1648,51 +1632,6 @@ impl FileParser for GoParser {
     fn tier(&self) -> ParserTier {
         ParserTier::TreeSitter
     }
-}
-
-fn extract_param_return_flow(
-    call_edges: &[CallEdgeRecord],
-    file_path: &str,
-) -> Vec<DataFlowEdgeRecord> {
-    let mut edges = Vec::new();
-    for ce in call_edges {
-        let caller_uid = match &ce.caller_symbol_uid {
-            Some(uid) if !uid.is_empty() => uid,
-            _ => continue,
-        };
-        let callee_uid = match &ce.callee_symbol_uid {
-            Some(uid) if !uid.is_empty() => uid,
-            _ => continue,
-        };
-        if ce.resolution_kind == ResolutionKind::Unresolved {
-            continue;
-        }
-        if ce.arg_count.unwrap_or(0) > 0 {
-            edges.push(DataFlowEdgeRecord {
-                edge_id: cc_model::StableId::edge_id("dfp", file_path, ce.line, ce.start_col),
-                file_path: file_path.to_string(),
-                source_symbol_uid: Some(caller_uid.clone()),
-                target_symbol_uid: Some(callee_uid.clone()),
-                flow_kind: "param_pass".to_string(),
-                line: ce.line,
-                confidence: ce.resolution_confidence * 0.9,
-                parser_tier: ce.parser_tier,
-                env_key: None,
-            });
-        }
-        edges.push(DataFlowEdgeRecord {
-            edge_id: cc_model::StableId::edge_id("dfr", file_path, ce.line, ce.start_col),
-            file_path: file_path.to_string(),
-            source_symbol_uid: Some(callee_uid.clone()),
-            target_symbol_uid: Some(caller_uid.clone()),
-            flow_kind: "return_flow".to_string(),
-            line: ce.line,
-            confidence: ce.resolution_confidence * 0.8,
-            parser_tier: ce.parser_tier,
-            env_key: None,
-        });
-    }
-    edges
 }
 
 #[cfg(test)]

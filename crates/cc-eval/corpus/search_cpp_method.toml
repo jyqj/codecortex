@@ -1,0 +1,23 @@
+name = "search_cpp_method"
+tool = "search"
+description = "Search for a C++ class method by name"
+
+[params]
+query = "has_funds"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "has_funds"
+
+[[assertions]]
+kind = "output_contains"
+value = "account.cpp"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "has_funds"

@@ -135,6 +135,7 @@ Environment variables take precedence over `.codecortex.json`.
 | `CODECORTEX_DIRTY_PROPAGATION` | Enable/disable incremental dirty propagation |
 | `CODECORTEX_DIRTY_PROPAGATION_MAX_FILES` | Maximum files reloaded by dirty propagation |
 | `CODECORTEX_MAX_CONCURRENT_PARSE` | Cap parser worker threads |
+| `CODECORTEX_RESOLVER_CACHE_SIZE` | Resolver catalog `resolve_name` LRU cache capacity (default `8192`) |
 | `CODECORTEX_USE_DIRECT_WRITER` | Enable the experimental direct SQLite writer |
 | `CODECORTEX_PPID_POLL_MS` | Parent-process death detection interval (0 to disable) |
 | `CODECORTEX_STRICT_HASH` | `1`/`true` hashes every file during incremental scans instead of using the mtime+size fast path |

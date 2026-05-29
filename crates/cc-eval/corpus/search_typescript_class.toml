@@ -1,0 +1,23 @@
+name = "search_typescript_class"
+tool = "search"
+description = "Search for a TypeScript NestJS service class by name"
+
+[params]
+query = "ItemsService"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "ItemsService"
+
+[[assertions]]
+kind = "output_contains"
+value = "app_controller.ts"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "ItemsService"

@@ -1,0 +1,19 @@
+name = "trace_c_intra"
+tool = "trace"
+description = "Trace call path within C file: compute_area -> multiply"
+
+[params]
+from = "compute_area"
+to = "multiply"
+max_depth = 3
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "paths"
+
+[[assertions]]
+kind = "output_contains"
+value = "multiply"

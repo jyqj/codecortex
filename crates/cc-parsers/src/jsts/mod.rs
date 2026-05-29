@@ -1903,7 +1903,10 @@ impl FileParser for JsTsParser {
         // Extract data flow edges (type refs + env accesses + param/return flow)
         let mut data_flow_edges = self.extract_type_refs(content, &ast_ctx.symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &ast_ctx.symbols, file_path));
-        data_flow_edges.extend(self.extract_param_return_flow(&all_call_edges, file_path));
+        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
+            &all_call_edges,
+            file_path,
+        ));
 
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &ast_ctx.symbols);
@@ -2010,7 +2013,10 @@ impl FileParser for JsTsParser {
         // Extract data flow edges (type refs + env accesses + param/return flow)
         let mut data_flow_edges = self.extract_type_refs(content, &ast_ctx.symbols, file_path);
         data_flow_edges.extend(self.extract_env_accesses(content, &ast_ctx.symbols, file_path));
-        data_flow_edges.extend(self.extract_param_return_flow(&all_call_edges, file_path));
+        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
+            &all_call_edges,
+            file_path,
+        ));
 
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &ast_ctx.symbols);

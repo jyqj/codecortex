@@ -105,7 +105,7 @@ impl CodeIndex {
         self.config = Some(config);
         self.index_db = Some(db);
         self.engine = Some(engine);
-        self.repo_tier = None;
+        self.repo_tier = Some(self.compute_repo_tier());
         self.needs_initial_index = matches!(
             schema_status,
             cc_db::index_migrate::SchemaStatus::Initialized
@@ -181,7 +181,7 @@ impl CodeIndex {
     }
 
     fn after_successful_index_build(&mut self) {
-        self.repo_tier = None;
+        self.repo_tier = Some(self.compute_repo_tier());
         self.needs_initial_index = false;
         if let Some(engine) = &self.engine {
             engine.invalidate_vector_cache();
@@ -290,6 +290,8 @@ impl CodeIndex {
             boost_file_paths: overrides.boost_file_paths,
             recent_file_paths: overrides.recent_file_paths,
             pinned_file_paths: overrides.pinned_file_paths,
+            conversation_queries: overrides.conversation_queries,
+            overlay_file_paths: overrides.overlay_file_paths,
             file_preselect_limit: overrides.file_preselect_limit,
             ..Default::default()
         };

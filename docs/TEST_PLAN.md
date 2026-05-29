@@ -2,7 +2,7 @@
 
 ## Unit Tests
 
-703 tests across 7 crates (702 passed + 1 ignored real-workspace benchmark in the latest `cargo test --workspace`), plus the `mcp_stdio` integration test.
+711 passed + 2 ignored in the latest `cargo test --workspace` — 705 crate unit tests + 5 `mcp_stdio` integration tests + 1 doctest (the 2 ignored are the real-workspace benchmark and an ignored doctest).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
@@ -10,13 +10,13 @@
 | cc-eval | 16 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
 | cc-index | 214 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection, resolver tier aliases |
 | cc-model | 31 | Route normalization, data structures, enum round-trip, project root discovery |
-| cc-parsers | 160 | Tree-sitter parsing for 10 languages, symbol extraction, Rust parser coverage |
-| cc-search | 128 | Cypher parser/executor, regex validation, vector cache, file-scoped vector streaming, grep SQL scoping, search engine |
+| cc-parsers | 162 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs |
+| cc-search | 129 | Cypher parser/executor, variable-length path cap, regex validation, vector cache + top-k heap, file-scoped vector streaming, grep SQL scoping, search engine |
 | cc-server | 101 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 
-54 corpus cases covering all 14 MCP tools + error paths + boundary conditions. Run with `cargo test -p cc-eval`.
+62 corpus cases covering all 14 MCP tools + error paths + boundary conditions, across Python/JS/TS/Rust/Go/Java/C/C++. Run with `cargo test -p cc-eval`.
 
 ### Corpus Cases
 
@@ -70,6 +70,14 @@
 | graph_query_variable_length_calls | graph_query | Variable-length `[:CALLS*1..3]` path traversal |
 | ingest_traces_basic | ingest_traces | Runtime evidence ingestion |
 | adr_list | adr | ADR listing |
+| search_typescript_class | search | TypeScript class search (ItemsService) |
+| node_outline_typescript | node | TypeScript file outline (ItemsController) |
+| search_c_function | search | C function search (compute_area) |
+| trace_c_intra | trace | C intra-file call chain (compute_area → multiply) |
+| relations_callers_c | relations | C callers of multiply |
+| search_cpp_method | search | C++ method search (has_funds) |
+| trace_cpp_method | trace | C++ method call chain (withdraw → has_funds) |
+| relations_callees_cpp | relations | C++ callees of withdraw |
 | error_invalid_cypher | graph_query | Invalid Cypher query returns error |
 | error_node_missing | node | Node lookup for nonexistent symbol returns error |
 | error_trace_missing_symbol | trace | Trace between nonexistent symbols returns error |
@@ -92,13 +100,15 @@
 
 ### Fixture Project
 
-- 15 source files across 7 languages and 4+ framework resolvers:
+- 18 source files across 9 languages and 4+ framework resolvers:
   - JavaScript (4): routes.js, handler.js, middleware.js, utils.js
   - Python (4): app.py, api_views.py, models.py, config.py
   - Rust (2): lib.rs, api_handler.rs
   - Go (1): main.go
   - Java (1): UserController.java
   - TypeScript (2): app_controller.ts, types.ts
+  - C (2): geometry.c, geometry.h
+  - C++ (1): account.cpp
   - Server/framework (1): server.py
 - Frameworks covered: Express, Flask, Spring, Go routers (Gin/Echo/Fiber/Chi/Gorilla)
 - p95/max latency and output size tracked via `bench::run_benchmark()`
@@ -109,7 +119,7 @@
 
 MCP server integration has two layers:
 - Eval harness: creates a `CodeIndex`, builds the fixture index, and runs all corpus cases through the actual handler dispatch path.
-- Stdio E2E: launches the `codecortex mcp` binary via rmcp `TokioChildProcess`, lists the 14 tools, then calls `index`, `status`, and `search` over the real MCP stdio protocol.
+- Stdio E2E (5 tests): launches the `codecortex mcp` binary via rmcp `TokioChildProcess`, lists the 14 tools, then exercises `index`/`status`/`search`, the graph tools (`context`/`node`/`explore`/`trace`/`relations`), the analysis tools (`impact`/`architecture`/`files`/`graph_query`/`adr`), and project-switch cache isolation over the real MCP stdio protocol.
 
 ## Pre-commit
 

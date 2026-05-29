@@ -1,0 +1,23 @@
+name = "search_c_function"
+tool = "search"
+description = "Search for a C function by name"
+
+[params]
+query = "compute_area"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "compute_area"
+
+[[assertions]]
+kind = "output_contains"
+value = "geometry.c"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "compute_area"

@@ -260,23 +260,6 @@ CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     tokenize = 'unicode61 remove_diacritics 2'
 );
 
-CREATE TABLE IF NOT EXISTS scopes (
-    scope_id         TEXT PRIMARY KEY,
-    file_path        TEXT NOT NULL REFERENCES files(file_path) ON DELETE CASCADE,
-    kind             TEXT NOT NULL,
-    name             TEXT,
-    parent_scope_id  TEXT,
-    owner_symbol_uid TEXT,
-    start_line       INTEGER NOT NULL,
-    start_col        INTEGER NOT NULL DEFAULT 0,
-    end_line         INTEGER NOT NULL,
-    end_col          INTEGER NOT NULL DEFAULT 0,
-    bindings_json    TEXT NOT NULL DEFAULT '[]'
-);
-CREATE INDEX IF NOT EXISTS idx_scopes_file ON scopes(file_path);
-CREATE INDEX IF NOT EXISTS idx_scopes_parent ON scopes(parent_scope_id);
-CREATE INDEX IF NOT EXISTS idx_scopes_owner ON scopes(owner_symbol_uid);
-
 CREATE TABLE IF NOT EXISTS communities (
     community_id        INTEGER PRIMARY KEY,
     label               TEXT NOT NULL,

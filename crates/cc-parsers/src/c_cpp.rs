@@ -755,10 +755,18 @@ impl CCppParser {
             active_fn = self.find_symbol_for_node(node, source, symbols);
         }
 
-        if node.kind() == "call_expression" {
-            self.extract_single_call(
-                node, source, file_path, keywords, by_name, &active_fn, refs, calls,
-            );
+        match node.kind() {
+            "call_expression" => {
+                self.extract_single_call(
+                    node, source, file_path, keywords, by_name, &active_fn, refs, calls,
+                );
+            }
+            "new_expression" if self.is_cpp => {
+                self.extract_new_expression(
+                    node, source, file_path, keywords, by_name, &active_fn, refs, calls,
+                );
+            }
+            _ => {}
         }
 
         let mut cursor = node.walk();
@@ -816,17 +824,19 @@ impl CCppParser {
 
         let (callee, dispatch_kind, receiver_expr) = match func_node.kind() {
             "field_expression" => {
-                // obj.method() or obj->method()
+                // obj.method() / obj->method() / obj.method<T>() / obj->method<T>()
                 let argument = func_node.child_by_field_name("argument");
-                let field = func_node.child_by_field_name("field");
+                let field = match func_node.child_by_field_name("field") {
+                    Some(n) => n,
+                    None => return,
+                };
                 let argument_text = argument.and_then(|n| n.utf8_text(source).ok());
-                let field_text = field.and_then(|n| n.utf8_text(source).ok());
-                match field_text {
-                    Some(f) => (
-                        f.to_string(),
-                        DispatchKind::Dynamic,
-                        argument_text.map(String::from),
-                    ),
+                // A `template_method` field carries the bare name plus a
+                // `template_argument_list`; take only the leading identifier so
+                // the callee is `method`, not `method<T>`.
+                let field_name = self.callee_name_from_field(&field, source);
+                match field_name {
+                    Some(f) => (f, DispatchKind::Dynamic, argument_text.map(String::from)),
                     None => return,
                 }
             }
@@ -838,14 +848,32 @@ impl CCppParser {
                 (text, DispatchKind::Direct, None)
             }
             "qualified_identifier" if self.is_cpp => {
-                // Namespace::func()
-                let text = match func_node.utf8_text(source).ok() {
-                    Some(t) => t.to_string(),
+                // Namespace::func() / Class::staticMethod() / ns::func<T>()
+                match self.callee_name_from_qualified(&func_node, source) {
+                    Some(name) => (name, DispatchKind::Direct, None),
+                    None => return,
+                }
+            }
+            "template_function" if self.is_cpp => {
+                // Bare generic call: foo<T>(). The `name` field holds the callee,
+                // which may itself be an identifier or a qualified_identifier.
+                let name_node = match func_node.child_by_field_name("name") {
+                    Some(n) => n,
                     None => return,
                 };
-                // Use the last component as callee name
-                let short_name = text.rsplit("::").next().unwrap_or(&text).to_string();
-                (short_name, DispatchKind::Direct, None)
+                match name_node.kind() {
+                    "identifier" | "field_identifier" => match name_node.utf8_text(source).ok() {
+                        Some(t) => (t.to_string(), DispatchKind::Direct, None),
+                        None => return,
+                    },
+                    "qualified_identifier" => {
+                        match self.callee_name_from_qualified(&name_node, source) {
+                            Some(name) => (name, DispatchKind::Direct, None),
+                            None => return,
+                        }
+                    }
+                    _ => return,
+                }
             }
             _ => return,
         };
@@ -929,6 +957,197 @@ impl CCppParser {
             is_optional_chain: false,
             is_awaited: false,
             is_constructor: false,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+            synthesized_by: None,
+            synthesis_key: None,
+            registered_file: None,
+            registered_line: None,
+        });
+    }
+
+    /// Resolve the bare callee name from a `field_expression` field node.
+    ///
+    /// For a plain `field_identifier` this is the text itself. For a
+    /// `template_method` (`method<T>`) it is the inner `field_identifier`,
+    /// dropping the template argument suffix.
+    fn callee_name_from_field(&self, field: &tree_sitter::Node, source: &[u8]) -> Option<String> {
+        match field.kind() {
+            "field_identifier" | "identifier" => field.utf8_text(source).ok().map(String::from),
+            "template_method" => {
+                let name = field
+                    .child_by_field_name("name")
+                    .or_else(|| field.named_child(0))?;
+                name.utf8_text(source).ok().map(String::from)
+            }
+            _ => field.utf8_text(source).ok().map(String::from),
+        }
+    }
+
+    /// Resolve the bare callee name from a `qualified_identifier` node, taking the
+    /// final name component and stripping any template argument suffix.
+    ///
+    /// Handles `ns::func`, `Class::method`, and `ns::func<T>` (where the trailing
+    /// component is a `template_function`).
+    #[allow(clippy::only_used_in_recursion)]
+    fn callee_name_from_qualified(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+    ) -> Option<String> {
+        // The `name` field holds the last component; recurse for nested qualifiers.
+        if let Some(name) = node.child_by_field_name("name") {
+            match name.kind() {
+                "identifier" | "field_identifier" => {
+                    return name.utf8_text(source).ok().map(String::from);
+                }
+                "qualified_identifier" => {
+                    return self.callee_name_from_qualified(&name, source);
+                }
+                "template_function" | "template_method" => {
+                    let inner = name
+                        .child_by_field_name("name")
+                        .or_else(|| name.named_child(0))?;
+                    return inner.utf8_text(source).ok().map(String::from);
+                }
+                _ => {}
+            }
+        }
+        // Fallback: split the raw text and strip a trailing template suffix.
+        let text = node.utf8_text(source).ok()?;
+        let last = text.rsplit("::").next().unwrap_or(text);
+        let stripped = last.split('<').next().unwrap_or(last).trim();
+        if stripped.is_empty() {
+            None
+        } else {
+            Some(stripped.to_string())
+        }
+    }
+
+    /// Extract C++ constructor calls from `new_expression` nodes (`new Foo(...)`).
+    ///
+    /// Mirrors the Java parser: produces a call edge with
+    /// `dispatch_kind = Constructor` and `is_constructor = true`, callee being the
+    /// constructed type name (template/qualifier suffix stripped).
+    #[allow(clippy::too_many_arguments)]
+    fn extract_new_expression(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        keywords: &HashSet<&str>,
+        by_name: &HashMap<String, (&str, &str)>,
+        caller_sym: &Option<&SymbolRecord>,
+        refs: &mut Vec<SymbolRefRecord>,
+        calls: &mut Vec<CallEdgeRecord>,
+    ) {
+        // The constructed type lives in the `type` field (type_identifier,
+        // qualified_identifier, or template_type for `new Foo<T>()`).
+        let type_node = match node.child_by_field_name("type") {
+            Some(n) => n,
+            None => return,
+        };
+        let type_name = match type_node.kind() {
+            "type_identifier" => type_node.utf8_text(source).ok().map(String::from),
+            "qualified_identifier" => self.callee_name_from_qualified(&type_node, source),
+            "template_type" => type_node
+                .child_by_field_name("name")
+                .or_else(|| type_node.named_child(0))
+                .and_then(|n| n.utf8_text(source).ok())
+                .map(String::from),
+            _ => type_node
+                .utf8_text(source)
+                .ok()
+                .map(|t| t.split('<').next().unwrap_or(t).trim().to_string()),
+        };
+        let type_name = match type_name {
+            Some(t) if !t.is_empty() && !keywords.contains(t.as_str()) => t,
+            _ => return,
+        };
+
+        // Argument count comes from the `arguments` field (argument_list); a `new`
+        // without parentheses (e.g. `new Foo`) has no arguments node.
+        let arg_count = node.child_by_field_name("arguments").map(|args| {
+            let mut cnt = 0u32;
+            let mut arg_cursor = args.walk();
+            for arg_child in args.named_children(&mut arg_cursor) {
+                if arg_child.is_named() {
+                    cnt += 1;
+                }
+            }
+            cnt
+        });
+
+        let line_no = node.start_position().row as u32 + 1;
+        let start_col = node.start_position().column as u32;
+        let end_col = type_node.end_position().column as u32;
+
+        let target = by_name.get(&type_name);
+        let ref_id = StableId::ref_id(file_path, &type_name, line_no, start_col);
+
+        refs.push(SymbolRefRecord {
+            ref_id: ref_id.clone(),
+            file_path: file_path.to_string(),
+            symbol_name: type_name.clone(),
+            container: caller_sym.and_then(|s| s.qname.clone()),
+            ref_kind: "call".into(),
+            line: line_no,
+            column: start_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            ref_name: Some(type_name.clone()),
+            scope_id: caller_sym.and_then(|s| s.scope_id.clone()),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            ref_end_line: Some(line_no),
+            ref_end_col: Some(end_col),
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.7,
+        });
+
+        calls.push(CallEdgeRecord {
+            edge_id: StableId::edge_id("call", file_path, line_no, start_col),
+            file_path: file_path.to_string(),
+            caller_symbol: caller_sym.map(|s| s.name.clone()),
+            callee_symbol: type_name,
+            line: line_no,
+            start_col,
+            end_line: Some(line_no),
+            end_col,
+            target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
+            target_file_path: target.map(|_| file_path.to_string()),
+            caller_symbol_id: caller_sym.map(|s| s.symbol_id.clone()),
+            caller_symbol_uid: caller_sym.and_then(|s| s.symbol_uid.clone()),
+            callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
+            callee_ref_id: Some(ref_id),
+            dispatch_kind: DispatchKind::Constructor,
+            call_kind: "constructor".into(),
+            resolution_kind: if target.is_some() {
+                ResolutionKind::Exact
+            } else {
+                ResolutionKind::Unresolved
+            },
+            resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
+            resolution_strategy: if target.is_some() {
+                "parser_exact".into()
+            } else {
+                "unresolved".into()
+            },
+            receiver_expr: None,
+            arg_count,
+            is_optional_chain: false,
+            is_awaited: false,
+            is_constructor: true,
             parser_tier: ParserTier::TreeSitter,
             parser_confidence: 0.7,
             synthesized_by: None,
@@ -1177,27 +1396,8 @@ impl FileParser for CCppParser {
         language: Language,
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(&self.language)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-        if let Some(timeout) = timeout_micros {
-            parser.set_timeout_micros(timeout);
-        }
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: if timeout_micros.is_some() {
-                    "tree-sitter parse failed or timed out".to_string()
-                } else {
-                    "tree-sitter parse failed".to_string()
-                },
-            })?;
+        let tree =
+            crate::parse_common::parse_tree(&self.language, content, file_path, timeout_micros)?;
 
         let symbols = self.extract_symbols(&tree, content.as_bytes(), file_path);
         let imports = self.extract_imports(&tree, content.as_bytes(), file_path);
@@ -1472,5 +1672,167 @@ int main() {
             .find(|c| c.callee_symbol == "helper");
         assert!(direct.is_some(), "should have direct call to helper");
         assert_eq!(direct.unwrap().dispatch_kind, DispatchKind::Direct);
+    }
+
+    #[test]
+    fn parse_cpp_new_expression_constructor() {
+        let parser = CCppParser::new(Language::Cpp);
+        let code = r#"
+class Widget {
+public:
+    Widget(int n) {}
+};
+
+void factory() {
+    Widget* w = new Widget(5);
+    Widget* d = new Widget();
+}
+"#;
+        let outcome = parser.parse("widget.cpp", code, Language::Cpp).unwrap();
+        let ctors: Vec<&CallEdgeRecord> = outcome
+            .call_edges
+            .iter()
+            .filter(|c| c.callee_symbol == "Widget" && c.is_constructor)
+            .collect();
+        assert_eq!(
+            ctors.len(),
+            2,
+            "should detect two new Widget() constructor calls, got {}",
+            ctors.len()
+        );
+        let with_arg = ctors.iter().find(|c| c.arg_count == Some(1)).unwrap();
+        assert_eq!(with_arg.dispatch_kind, DispatchKind::Constructor);
+        assert_eq!(with_arg.call_kind, "constructor");
+        // The constructor call sits inside `factory`.
+        assert_eq!(with_arg.caller_symbol.as_deref(), Some("factory"));
+        // `new Widget(5)` should resolve to the class symbol in the same file.
+        assert!(
+            with_arg.callee_symbol_uid.is_some(),
+            "constructor should resolve to in-file Widget symbol"
+        );
+    }
+
+    #[test]
+    fn parse_cpp_template_call_strips_args() {
+        let parser = CCppParser::new(Language::Cpp);
+        let code = r#"
+template<typename T> T identity(T x) { return x; }
+
+struct Box {
+    template<typename T> T peek() { return T(); }
+};
+
+void use() {
+    identity<int>(3);
+    Box b;
+    b.peek<int>();
+}
+"#;
+        let outcome = parser.parse("tmpl.cpp", code, Language::Cpp).unwrap();
+        // Bare generic call: callee must be `identity`, not `identity<int>`.
+        let bare = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "identity");
+        assert!(
+            bare.is_some(),
+            "template_function call should yield callee `identity`, got {:?}",
+            outcome
+                .call_edges
+                .iter()
+                .map(|c| c.callee_symbol.as_str())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(bare.unwrap().dispatch_kind, DispatchKind::Direct);
+        assert!(
+            !outcome
+                .call_edges
+                .iter()
+                .any(|c| c.callee_symbol.contains('<')),
+            "no callee should retain a template argument suffix"
+        );
+        // Member generic call: callee must be `peek`, not `peek<int>`.
+        let member = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "peek");
+        assert!(member.is_some(), "template_method call should yield `peek`");
+        assert_eq!(member.unwrap().dispatch_kind, DispatchKind::Dynamic);
+    }
+
+    #[test]
+    fn parse_cpp_qualified_call_name() {
+        let parser = CCppParser::new(Language::Cpp);
+        let code = r#"
+namespace util {
+    int compute(int x) { return x; }
+}
+
+void run() {
+    util::compute(7);
+}
+"#;
+        let outcome = parser.parse("ns.cpp", code, Language::Cpp).unwrap();
+        // Qualified call `util::compute` should yield callee `compute` and resolve
+        // to the in-file definition.
+        let call = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "compute");
+        assert!(call.is_some(), "should detect util::compute call");
+        let call = call.unwrap();
+        assert_eq!(call.dispatch_kind, DispatchKind::Direct);
+        assert_eq!(call.caller_symbol.as_deref(), Some("run"));
+        assert!(
+            call.callee_symbol_uid.is_some(),
+            "qualified call should resolve to in-file compute symbol"
+        );
+    }
+
+    #[test]
+    fn parse_cpp_arrow_method_call() {
+        let parser = CCppParser::new(Language::Cpp);
+        let code = r#"
+struct Account {
+    bool has_funds(int amount) { return true; }
+    void withdraw(int amount) {
+        this->has_funds(amount);
+    }
+};
+"#;
+        let outcome = parser.parse("acct.cpp", code, Language::Cpp).unwrap();
+        // `this->has_funds(...)` is a field_expression call via `->`.
+        let call = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "has_funds")
+            .expect("should detect this->has_funds call");
+        assert_eq!(call.dispatch_kind, DispatchKind::Dynamic);
+        assert_eq!(call.caller_symbol.as_deref(), Some("withdraw"));
+        assert_eq!(call.receiver_expr.as_deref(), Some("this"));
+    }
+
+    #[test]
+    fn parse_c_function_pointer_member_call() {
+        let parser = CCppParser::new(Language::C);
+        let code = r#"
+struct Ops {
+    int (*run)(int);
+};
+
+int driver(struct Ops o) {
+    return o.run(1);
+}
+"#;
+        let outcome = parser.parse("ops.c", code, Language::C).unwrap();
+        // `o.run(1)` is a field_expression call; callee is the field name `run`.
+        let call = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "run")
+            .expect("should detect o.run() function-pointer call");
+        assert_eq!(call.dispatch_kind, DispatchKind::Dynamic);
+        assert_eq!(call.receiver_expr.as_deref(), Some("o"));
+        assert_eq!(call.caller_symbol.as_deref(), Some("driver"));
     }
 }

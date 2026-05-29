@@ -423,9 +423,6 @@ impl Indexer {
                 );
             }
 
-            // Per-file memory reclaim — bound peak RSS during parallel parsing
-            self.parsers.per_file_reclaim();
-
             Ok(FileWriteUnit {
                 rel_path,
                 language,
@@ -498,17 +495,6 @@ impl Indexer {
                     }
                 }
             }
-        }
-
-        // Log session-level allocation summary
-        let alloc_summary = self.parsers.alloc_summary();
-        if alloc_summary.peak_bytes > 0 {
-            tracing::info!(
-                peak_mb = alloc_summary.peak_bytes / 1_048_576,
-                total_allocs = alloc_summary.alloc_count,
-                total_frees = alloc_summary.free_count,
-                "tree-sitter allocation summary"
-            );
         }
 
         Ok(ParseResult {

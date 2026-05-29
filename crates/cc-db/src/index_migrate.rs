@@ -7,7 +7,7 @@ use rusqlite::Connection;
 /// Bump this whenever the schema changes. Any stored version that differs
 /// from this value triggers a full database rebuild (delete + recreate),
 /// unless a complete migration chain exists in [`MIGRATIONS`].
-pub const CURRENT_SCHEMA_VERSION: u32 = 16;
+pub const CURRENT_SCHEMA_VERSION: u32 = 17;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -65,6 +65,12 @@ pub static MIGRATIONS: &[MigrationStep] = &[
         to_version: 16,
         sql: "ALTER TABLE chunks ADD COLUMN text_encoding TEXT NOT NULL DEFAULT 'legacy_auto';",
         description: "Add explicit chunk text encoding marker",
+    },
+    MigrationStep {
+        from_version: 16,
+        to_version: 17,
+        sql: "DROP TABLE IF EXISTS scopes;",
+        description: "Drop unused scopes table (write-only dead table)",
     },
 ];
 

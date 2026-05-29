@@ -673,9 +673,6 @@ impl IndexDb {
         DROP INDEX IF EXISTS idx_literal_kind;
         DROP INDEX IF EXISTS idx_literal_file;
         DROP INDEX IF EXISTS idx_literal_symbol;
-        DROP INDEX IF EXISTS idx_scopes_file;
-        DROP INDEX IF EXISTS idx_scopes_parent;
-        DROP INDEX IF EXISTS idx_scopes_owner;
         DROP INDEX IF EXISTS idx_rn_file;
         DROP INDEX IF EXISTS idx_rn_path;
         DROP INDEX IF EXISTS idx_rn_handler;
@@ -737,9 +734,6 @@ impl IndexDb {
         CREATE INDEX IF NOT EXISTS idx_literal_kind ON literal_index(literal_kind);
         CREATE INDEX IF NOT EXISTS idx_literal_file ON literal_index(file_path);
         CREATE INDEX IF NOT EXISTS idx_literal_symbol ON literal_index(enclosing_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_scopes_file ON scopes(file_path);
-        CREATE INDEX IF NOT EXISTS idx_scopes_parent ON scopes(parent_scope_id);
-        CREATE INDEX IF NOT EXISTS idx_scopes_owner ON scopes(owner_symbol_uid);
         CREATE INDEX IF NOT EXISTS idx_rn_file ON route_nodes(file_path);
         CREATE INDEX IF NOT EXISTS idx_rn_path ON route_nodes(route_path);
         CREATE INDEX IF NOT EXISTS idx_rn_handler ON route_nodes(handler_symbol_uid);
@@ -1067,7 +1061,7 @@ impl IndexDb {
 
     /// Update only the edge/resolution data for dirty (DirtyResolveOnly) files.
     /// Does NOT delete or modify: files row, chunks, FTS, route_nodes,
-    /// http_call_edges, data_flow_edges, literals, scopes, file_frameworks,
+    /// http_call_edges, data_flow_edges, literals, file_frameworks,
     /// co_change_edges, test_edges.
     /// Only replaces: symbols, imports, call_edges, symbol_refs, semantic_edges,
     /// dispatch_sites, route_edges.
@@ -1363,14 +1357,6 @@ impl IndexDb {
                 rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind, l.line, l.container, l.confidence, l.enclosing_symbol_uid, l.key_path],
             )?;
             Self::execute_cached(conn, "INSERT INTO literal_fts(literal_id,file_path,literal,literal_kind) VALUES(?1,?2,?3,?4)", rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind])?;
-        }
-
-        // scopes
-        for sc in &outcome.scopes {
-            let bj = serde_json::to_string(&sc.bindings).unwrap_or_else(|_| "[]".into());
-            Self::execute_cached(conn, "INSERT OR REPLACE INTO scopes(scope_id,file_path,kind,name,parent_scope_id,owner_symbol_uid,start_line,start_col,end_line,end_col,bindings_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
-                rusqlite::params![sc.scope_id, sc.file_path, sc.kind, sc.name, sc.parent_scope_id, sc.owner_symbol_uid, sc.start_line, sc.start_col, sc.end_line, sc.end_col, bj],
-            )?;
         }
 
         // semantic_edges

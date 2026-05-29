@@ -3,6 +3,10 @@ use cc_model::{CcError, CcResult};
 
 const DEFAULT_VARLEN_MAX_HOPS: usize = 5;
 
+// Hard upper bound on variable-length hops, clamping any user-supplied value
+// to prevent constructing pathologically deep recursive CTEs.
+pub(crate) const GLOBAL_VARLEN_CAP: usize = 32;
+
 // ── Parser ─────────────────────────────────────────
 
 struct Parser {
@@ -403,6 +407,8 @@ impl Parser {
                         rp.min_hops, rp.max_hops
                     )));
                 }
+                rp.max_hops = rp.max_hops.min(GLOBAL_VARLEN_CAP);
+                rp.min_hops = rp.min_hops.min(rp.max_hops);
             }
 
             self.expect(&Token::RBracket)?;
@@ -889,4 +895,20 @@ impl Parser {
 pub fn parse(tokens: &[Token]) -> CcResult<CypherQuery> {
     let parser = Parser::new(tokens.to_vec());
     parser.parse()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse;
+    use crate::cypher::tokenize;
+
+    #[test]
+    fn parse_varlen_clamps_to_global_cap() {
+        let tokens = tokenize("MATCH (f)-[:CALLS*1..1000]->(g) RETURN f.name").unwrap();
+        let ast = parse(&tokens).unwrap();
+
+        let rel = &ast.match_clause().patterns[0].rels[0];
+        assert_eq!(rel.max_hops, super::GLOBAL_VARLEN_CAP);
+        assert!(rel.min_hops <= rel.max_hops);
+    }
 }

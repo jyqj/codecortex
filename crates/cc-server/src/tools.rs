@@ -63,6 +63,15 @@ fn clamp_path_list(list: &mut Option<Vec<String>>) {
     }
 }
 
+fn clamp_query_list(list: &mut Option<Vec<String>>) {
+    if let Some(ref mut v) = list {
+        v.truncate(MAX_FILE_ITEMS);
+        for q in v.iter_mut() {
+            clamp_str(q, MAX_QUERY_LEN);
+        }
+    }
+}
+
 fn is_valid_branch_name(s: &str) -> bool {
     s.bytes()
         .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'.' || b == b'/' || b == b'-')
@@ -230,6 +239,16 @@ pub struct SearchParams {
     #[serde(default)]
     pub pinned_files: Option<Vec<String>>,
 
+    /// Prior conversational queries that bias lexical / semantic retrieval
+    /// toward the ongoing discussion.
+    #[serde(default)]
+    pub conversation_queries: Option<Vec<String>>,
+
+    /// In-memory / unsaved file paths (editor overlays) that should be treated
+    /// as part of the working set when ranking results.
+    #[serde(default)]
+    pub overlay_files: Option<Vec<String>>,
+
     /// Maximum number of candidate files to consider during the preselection
     /// stage. Higher values trade latency for recall on large repos. Default
     /// is auto-tuned based on `top_k`.
@@ -250,6 +269,8 @@ impl SearchParams {
         clamp_path_list(&mut self.boost_files);
         clamp_path_list(&mut self.recent_files);
         clamp_path_list(&mut self.pinned_files);
+        clamp_query_list(&mut self.conversation_queries);
+        clamp_path_list(&mut self.overlay_files);
         if let Some(ref mut limit) = self.file_preselect_limit {
             *limit = (*limit).clamp(1, 10_000);
         }
@@ -267,6 +288,8 @@ impl Default for SearchParams {
             boost_files: None,
             recent_files: None,
             pinned_files: None,
+            conversation_queries: None,
+            overlay_files: None,
             file_preselect_limit: None,
             project_path: None,
         }

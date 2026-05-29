@@ -178,6 +178,8 @@ impl CodeCortexMcpServer {
         let boost_files = p.boost_files;
         let recent_files = p.recent_files;
         let pinned_files = p.pinned_files;
+        let conversation_queries = p.conversation_queries;
+        let overlay_files = p.overlay_files;
         let file_preselect_limit = p.file_preselect_limit;
         match mode.as_str() {
             "symbol" => {
@@ -189,12 +191,16 @@ impl CodeCortexMcpServer {
                 let has_overrides = boost_files.is_some()
                     || recent_files.is_some()
                     || pinned_files.is_some()
+                    || conversation_queries.is_some()
+                    || overlay_files.is_some()
                     || file_preselect_limit.is_some();
                 if has_overrides {
                     let overrides = cc_model::search::SearchRequest {
                         boost_file_paths: boost_files,
                         recent_file_paths: recent_files,
                         pinned_file_paths: pinned_files,
+                        conversation_queries,
+                        overlay_file_paths: overlay_files,
                         file_preselect_limit,
                         ..Default::default()
                     };

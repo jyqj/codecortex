@@ -1,0 +1,19 @@
+name = "relations_callees_cpp"
+tool = "relations"
+description = "Check callees of the C++ method withdraw"
+
+[params]
+symbol = "withdraw"
+kind = "callees"
+limit = 10
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "has_funds"
+
+[[assertions]]
+kind = "output_contains"
+value = "account.cpp"

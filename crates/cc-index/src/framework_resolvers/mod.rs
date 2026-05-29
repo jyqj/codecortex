@@ -34,6 +34,13 @@ pub(crate) fn line_for_offset(source: &str, offset: usize) -> u32 {
     source[..offset].matches('\n').count() as u32 + 1
 }
 
+/// Python `def` / `async def` handler name. Shared by the FastAPI and Flask
+/// resolvers, which pull the decorated handler name identically.
+pub(crate) static PY_DEF_NAME_RE: std::sync::LazyLock<regex::Regex> =
+    std::sync::LazyLock::new(|| {
+        regex::Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("python def name re")
+    });
+
 /// Common route-edge fields used by framework resolvers.
 pub(crate) struct RouteEdgeSpec {
     pub route_path: String,

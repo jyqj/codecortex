@@ -181,9 +181,12 @@ pub fn preselect_files(
     }
 
     // ── Layer 6: per-token symbol name match + path token hit ───
+    // Require >= 3 chars: trigram acceleration needs 3 literal chars, and 2-char
+    // substrings are too low-signal (they match almost everything) to be worth a
+    // scan.
     let candidate_tokens: Vec<&str> = query_tokens
         .iter()
-        .filter(|t| t.len() >= 2)
+        .filter(|t| t.len() >= 3)
         .take(8)
         .map(|s| s.as_str())
         .collect();
@@ -230,17 +233,17 @@ pub fn preselect_files(
 
         // 6b. Symbol name match
         {
-            let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) = if let Some(
-                prefix,
-            ) =
-                path_prefix
-            {
-                (
-                        "SELECT DISTINCT symbols.file_path, symbols.name \
-                         FROM symbols \
-                         JOIN files ON files.file_path = symbols.file_path \
-                         WHERE lower(symbols.name) LIKE lower(?1) AND symbols.file_path LIKE ?2 \
-                         ORDER BY CASE WHEN lower(symbols.name) = lower(?3) THEN 0 ELSE 1 END, symbols.file_path \
+            let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) =
+                if let Some(prefix) = path_prefix {
+                    (
+                        // symbols_fts is a trigram FTS5 mirror of symbols.name; a
+                        // leading-wildcard LIKE here is index-accelerated and
+                        // case-insensitive, preserving the substring recall that a
+                        // plain B-tree on symbols(name) cannot serve.
+                        "SELECT DISTINCT file_path, name \
+                         FROM symbols_fts \
+                         WHERE name LIKE ?1 AND file_path LIKE ?2 \
+                         ORDER BY CASE WHEN lower(name) = lower(?3) THEN 0 ELSE 1 END, file_path \
                          LIMIT 24"
                             .into(),
                         vec![
@@ -249,12 +252,12 @@ pub fn preselect_files(
                             Box::new(token.to_string()),
                         ],
                     )
-            } else {
-                (
-                        "SELECT DISTINCT symbols.file_path, symbols.name \
-                         FROM symbols \
-                         WHERE lower(symbols.name) LIKE lower(?1) \
-                         ORDER BY CASE WHEN lower(symbols.name) = lower(?2) THEN 0 ELSE 1 END, symbols.file_path \
+                } else {
+                    (
+                        "SELECT DISTINCT file_path, name \
+                         FROM symbols_fts \
+                         WHERE name LIKE ?1 \
+                         ORDER BY CASE WHEN lower(name) = lower(?2) THEN 0 ELSE 1 END, file_path \
                          LIMIT 24"
                             .into(),
                         vec![
@@ -262,7 +265,7 @@ pub fn preselect_files(
                             Box::new(token.to_string()),
                         ],
                     )
-            };
+                };
             if let Ok(mut stmt) = conn.prepare(&sql) {
                 let param_refs: Vec<&dyn rusqlite::types::ToSql> =
                     params_vec.iter().map(|p| p.as_ref()).collect();
@@ -335,4 +338,60 @@ pub fn preselect_files(
         scores: final_scores,
         reasons: final_reasons,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cc_db::index_db::IndexDb;
+    use tempfile::TempDir;
+
+    /// Build an IndexDb whose file paths deliberately do NOT contain the search
+    /// token, so a hit can only come from the symbol-name (Layer 6b) path —
+    /// isolating the trigram `symbols_fts` substring lookup.
+    fn db_with_symbols() -> (TempDir, IndexDb) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("preselect_test.db"))
+            .unwrap()
+            .0;
+        let conn = db.read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/a.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');\
+             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/b.rs', 'Rust', 'h2', 1.0, 100, '2024-01-01');\
+             INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line) \
+                 VALUES('s1', 'src/a.rs', 'getUserById', 'function', 1, 5);\
+             INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line) \
+                 VALUES('s2', 'src/b.rs', 'createOrder', 'function', 1, 5);",
+        )
+        .unwrap();
+        (tmp, db)
+    }
+
+    /// A token that appears only mid-identifier (camelCase) must still recall the
+    /// symbol — the property that forbids degrading `%token%` to a prefix match.
+    #[test]
+    fn preselect_recalls_substring_symbol_match() {
+        let (_tmp, db) = db_with_symbols();
+
+        let result = preselect_files(&db, "user", None, None, None, None, None, None, 10).unwrap();
+        assert!(
+            result.files.contains(&"src/a.rs".to_string()),
+            "substring token 'user' must recall 'getUserById' in src/a.rs (no path-token hit possible); got {:?}",
+            result.files
+        );
+        assert!(
+            !result.files.contains(&"src/b.rs".to_string()),
+            "'user' must not recall 'createOrder'; got {:?}",
+            result.files
+        );
+
+        let result = preselect_files(&db, "order", None, None, None, None, None, None, 10).unwrap();
+        assert!(
+            result.files.contains(&"src/b.rs".to_string()),
+            "substring token 'order' must recall 'createOrder' in src/b.rs; got {:?}",
+            result.files
+        );
+    }
 }

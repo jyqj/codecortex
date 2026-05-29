@@ -1,4 +1,4 @@
--- index.sqlite3 — Full Schema (version 17, rebuild-on-mismatch)
+-- index.sqlite3 — Full Schema (version 18, rebuild-on-mismatch)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -78,6 +78,31 @@ CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
 CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file_path);
 CREATE INDEX IF NOT EXISTS idx_symbols_qname ON symbols(qname);
 CREATE INDEX IF NOT EXISTS idx_symbols_uid ON symbols(symbol_uid);
+
+-- Trigram FTS over symbol names: accelerates substring (`%token%`) name lookups
+-- used by file preselection. The plain `idx_symbols_name` B-tree cannot serve a
+-- leading-wildcard LIKE, so without this every preselect token did a full
+-- `symbols` scan. Kept in sync with `symbols` via triggers below, so no Rust
+-- write path needs to populate it. `case_sensitive` defaults to 0, so LIKE here
+-- is case-insensitive and index-accelerated for patterns of >= 3 literal chars.
+CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
+    name,
+    symbol_id UNINDEXED,
+    file_path UNINDEXED,
+    tokenize = 'trigram'
+);
+CREATE TRIGGER IF NOT EXISTS symbols_fts_ai AFTER INSERT ON symbols BEGIN
+    INSERT INTO symbols_fts(rowid, name, symbol_id, file_path)
+    VALUES (new.rowid, new.name, new.symbol_id, new.file_path);
+END;
+CREATE TRIGGER IF NOT EXISTS symbols_fts_ad AFTER DELETE ON symbols BEGIN
+    DELETE FROM symbols_fts WHERE rowid = old.rowid;
+END;
+CREATE TRIGGER IF NOT EXISTS symbols_fts_au AFTER UPDATE OF name ON symbols BEGIN
+    DELETE FROM symbols_fts WHERE rowid = old.rowid;
+    INSERT INTO symbols_fts(rowid, name, symbol_id, file_path)
+    VALUES (new.rowid, new.name, new.symbol_id, new.file_path);
+END;
 
 CREATE TABLE IF NOT EXISTS imports (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,

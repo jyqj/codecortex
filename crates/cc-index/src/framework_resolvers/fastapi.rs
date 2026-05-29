@@ -12,6 +12,7 @@ use std::sync::LazyLock;
 
 use super::{
     line_for_offset, push_route_edge, FrameworkResolver, ProjectFrameworkContext, RouteEdgeSpec,
+    PY_DEF_NAME_RE,
 };
 
 // ---------------------------------------------------------------------------
@@ -30,12 +31,6 @@ static DECORATOR_ROUTE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"@\w+\.(get|post|put|delete|patch|head|options)\(\s*["']([^"']+)["']"#)
         .expect("fastapi decorator route re")
 });
-
-/// Function definition: `def handler_name(` or `async def handler_name(`
-///
-/// Captures: (1) function name
-static DEF_NAME_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("fastapi def name re"));
 
 /// app.include_router(router_name, prefix="/prefix") or app.include_router(router_name)
 ///
@@ -85,7 +80,7 @@ impl FrameworkResolver for FastApiResolver {
             let line = line_for_offset(source, decorator_offset);
 
             // Look for the function definition after the decorator
-            let handler_name = DEF_NAME_RE
+            let handler_name = PY_DEF_NAME_RE
                 .captures(&source[decorator_end..])
                 .and_then(|c| c.get(1))
                 .map(|m| m.as_str().to_string());

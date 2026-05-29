@@ -761,15 +761,20 @@ pub fn run_field_observer_synthesis(db: &IndexDb, config: &SynthesisConfig) -> C
     let existing_edge_ids: HashSet<String> =
         synthetic_edges.iter().map(|e| e.edge_id.clone()).collect();
 
+    // Fetch methods for all candidate containers in one batched query instead
+    // of a per-container round-trip.
+    let container_list: Vec<&str> = unique_containers.iter().copied().collect();
+    let methods_by_container = db.find_methods_by_containers(&container_list)?;
+
     for container in unique_containers {
-        let methods = db.find_methods_by_container(container)?;
-        if methods.is_empty() {
-            continue;
-        }
+        let methods = match methods_by_container.get(container) {
+            Some(m) if !m.is_empty() => m,
+            _ => continue,
+        };
 
         let mut registrars: Vec<(&str, &str, &str, u32)> = Vec::new(); // (uid, name, file, line)
         let mut dispatchers: Vec<(&str, &str, &str, u32)> = Vec::new();
-        for (uid, name, file_path, line) in &methods {
+        for (uid, name, file_path, line) in methods {
             if matches_method_prefix(name, REGISTRAR_PREFIXES) {
                 registrars.push((uid.as_str(), name.as_str(), file_path.as_str(), *line));
             }

@@ -10,7 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
+use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext, PY_DEF_NAME_RE};
 
 // ---------------------------------------------------------------------------
 // Regex patterns
@@ -31,12 +31,6 @@ static METHOD_DECORATOR_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"@\w+\.(get|post|put|delete|patch)\(\s*["']([^"']+)["']"#)
         .expect("flask method decorator re")
 });
-
-/// Function definition: `def handler_name(`
-///
-/// Captures: (1) function name
-static DEF_NAME_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r#"(?:async\s+)?def\s+(\w+)\s*\("#).expect("flask def name re"));
 
 /// Extract individual method strings from a methods list: "GET", 'POST'
 static METHOD_STR_RE: LazyLock<Regex> =
@@ -99,7 +93,7 @@ impl FrameworkResolver for FlaskResolver {
             let decorator_end = cap.get(0).unwrap().end();
             let line = line_for_offset(source, decorator_offset);
 
-            let handler_name = DEF_NAME_RE
+            let handler_name = PY_DEF_NAME_RE
                 .captures(&source[decorator_end..])
                 .and_then(|c| c.get(1))
                 .map(|m| m.as_str().to_string());
@@ -151,7 +145,7 @@ impl FrameworkResolver for FlaskResolver {
             // Skip if this was already captured by ROUTE_DECORATOR_RE
             // (route decorator regex won't match @app.get style, so no overlap)
 
-            let handler_name = DEF_NAME_RE
+            let handler_name = PY_DEF_NAME_RE
                 .captures(&source[decorator_end..])
                 .and_then(|c| c.get(1))
                 .map(|m| m.as_str().to_string());

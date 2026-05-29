@@ -174,6 +174,15 @@ impl CodeIndex {
 
         let mut results = Vec::with_capacity(capped.len());
 
+        // Outline mode queries child symbols per symbol; reuse one read
+        // connection + a cached statement across the loop instead of acquiring a
+        // connection and recompiling the SQL for every symbol.
+        let outline_conn = if include_source && outline {
+            Some(db.read_conn()?)
+        } else {
+            None
+        };
+
         for name in capped {
             // Exact match first, fuzzy fallback
             let mut syms = db.find_symbol(name, true, 3)?;
@@ -277,10 +286,11 @@ impl CodeIndex {
                     if let Some(ref sig) = sym.signature {
                         outline_parts.push(sig.clone());
                     }
-                    // Query child symbols via parent_symbol_id
-                    if let Ok(conn) = db.read_conn() {
+                    // Query child symbols via parent_symbol_id, reusing the
+                    // hoisted connection + cached statement.
+                    if let Some(conn) = &outline_conn {
                         let child_sql = "SELECT name, kind, signature FROM symbols WHERE parent_symbol_id = ?1 ORDER BY start_line";
-                        if let Ok(mut stmt) = conn.prepare(child_sql) {
+                        if let Ok(mut stmt) = conn.prepare_cached(child_sql) {
                             let children: Vec<(String, String, Option<String>)> = stmt
                                 .query_map(rusqlite::params![uid], |row| {
                                     Ok((

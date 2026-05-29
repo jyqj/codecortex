@@ -7,7 +7,7 @@ use rusqlite::Connection;
 /// Bump this whenever the schema changes. Any stored version that differs
 /// from this value triggers a full database rebuild (delete + recreate),
 /// unless a complete migration chain exists in [`MIGRATIONS`].
-pub const CURRENT_SCHEMA_VERSION: u32 = 17;
+pub const CURRENT_SCHEMA_VERSION: u32 = 18;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -71,6 +71,24 @@ pub static MIGRATIONS: &[MigrationStep] = &[
         to_version: 17,
         sql: "DROP TABLE IF EXISTS scopes;",
         description: "Drop unused scopes table (write-only dead table)",
+    },
+    MigrationStep {
+        from_version: 17,
+        to_version: 18,
+        sql: "CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(\
+              name, symbol_id UNINDEXED, file_path UNINDEXED, tokenize = 'trigram');\
+              CREATE TRIGGER IF NOT EXISTS symbols_fts_ai AFTER INSERT ON symbols BEGIN \
+              INSERT INTO symbols_fts(rowid, name, symbol_id, file_path) \
+              VALUES (new.rowid, new.name, new.symbol_id, new.file_path); END;\
+              CREATE TRIGGER IF NOT EXISTS symbols_fts_ad AFTER DELETE ON symbols BEGIN \
+              DELETE FROM symbols_fts WHERE rowid = old.rowid; END;\
+              CREATE TRIGGER IF NOT EXISTS symbols_fts_au AFTER UPDATE OF name ON symbols BEGIN \
+              DELETE FROM symbols_fts WHERE rowid = old.rowid; \
+              INSERT INTO symbols_fts(rowid, name, symbol_id, file_path) \
+              VALUES (new.rowid, new.name, new.symbol_id, new.file_path); END;\
+              INSERT INTO symbols_fts(rowid, name, symbol_id, file_path) \
+              SELECT rowid, name, symbol_id, file_path FROM symbols;",
+        description: "Add trigram symbols_fts for substring symbol search",
     },
 ];
 
@@ -272,6 +290,66 @@ mod tests {
             }
         );
         assert!(column_exists(&conn, "chunks", "text_encoding"));
+    }
+
+    #[test]
+    fn migration_17_to_18_creates_and_backfills_symbols_fts() {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
+        // Simulate a real v17 database: drop the v18 trigram artifacts so the
+        // migration has to recreate and backfill them.
+        conn.execute_batch(
+            "DROP TRIGGER IF EXISTS symbols_fts_ai;\
+             DROP TRIGGER IF EXISTS symbols_fts_ad;\
+             DROP TRIGGER IF EXISTS symbols_fts_au;\
+             DROP TABLE IF EXISTS symbols_fts;",
+        )
+        .unwrap();
+        // A pre-existing symbol must be carried into symbols_fts by the backfill.
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+             VALUES ('src/users.rs', 'rust', 'h1', 0.0, 1, '');\
+             INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line) \
+             VALUES ('s1', 'src/users.rs', 'getUserById', 'function', 1, 5);",
+        )
+        .unwrap();
+        conn.pragma_update(None, "user_version", 17u32).unwrap();
+
+        let status = migrate_index_db(&conn).unwrap();
+        assert_eq!(
+            status,
+            SchemaStatus::Migrated {
+                from: 17,
+                to: CURRENT_SCHEMA_VERSION
+            }
+        );
+
+        // Backfill copied the existing symbol; substring LIKE finds it.
+        let hits: i64 = conn
+            .query_row(
+                "SELECT count(*) FROM symbols_fts WHERE name LIKE '%User%'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(hits, 1, "backfill should carry existing symbol into FTS");
+
+        // The AFTER INSERT trigger keeps new symbols in sync post-migration.
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+             VALUES ('src/orders.rs', 'rust', 'h2', 0.0, 1, '');\
+             INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line) \
+             VALUES ('s2', 'src/orders.rs', 'createOrder', 'function', 1, 5);",
+        )
+        .unwrap();
+        let order_hits: i64 = conn
+            .query_row(
+                "SELECT count(*) FROM symbols_fts WHERE name LIKE '%Order%'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(order_hits, 1, "insert trigger should sync new symbols");
     }
 
     #[test]

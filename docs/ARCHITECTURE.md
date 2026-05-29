@@ -12,7 +12,7 @@ A 7-crate Cargo workspace with strictly downward dependencies (no cycles):
 ```
 cc-model      Data types, config, error definitions (serde, thiserror, blake3)
     |
-cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 25 tables + 4 FTS5, schema v17)
+cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 25 tables + 5 FTS5, schema v18)
     |
 cc-parsers    Tree-sitter AST extraction + framework detection
 cc-index      File scanning, incremental indexing, community detection (Louvain)
@@ -45,12 +45,16 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
   communities, repo_frameworks, file_frameworks, data_flow_edges,
   co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges,
   dispatch_sites, runtime_evidence, adr, metadata
-- FTS5 full-text search on chunks, diagnostics, literals, files
+- 5 FTS5 virtual tables: full-text search on chunks, diagnostics, literals,
+  files, plus a trigram `symbols_fts` (name) that accelerates the substring
+  symbol lookups in file preselection; it is kept in sync with `symbols` by
+  insert/delete/update triggers, so no write path populates it directly
 - A `REGEXP(pattern, text)` scalar UDF backs Cypher `=~`; the compiled pattern is
   cached as SQLite auxiliary data so a constant pattern compiles once per
   statement, not once per row
-- Schema versioning via the `user_version` pragma (v17, incremental migration
-  chain; the v16→v17 step drops the unused `scopes` table)
+- Schema versioning via the `user_version` pragma (v18, incremental migration
+  chain; v16→v17 drops the unused `scopes` table, v17→v18 adds trigram
+  `symbols_fts`)
 
 ### cc-parsers
 Tree-sitter AST extraction across 30 auto-detected language identifiers (+ an

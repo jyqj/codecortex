@@ -264,17 +264,28 @@ impl ImpactAnalyzer {
 
         let mut suggested_tests: Vec<String> = Vec::new();
         let mut seen_tests: HashSet<String> = HashSet::new();
-        for file in &all_files {
-            let tests = conn
-                .prepare("SELECT DISTINCT test_file_path FROM test_edges WHERE code_file_path=?1")
-                .and_then(|mut s| {
-                    s.query_map(rusqlite::params![file], |r| r.get::<_, String>(0))
-                        .map(|rows| rows.filter_map(|r| r.ok()).collect::<Vec<_>>())
-                });
-            if let Ok(test_files) = tests {
-                for tf in test_files {
-                    if seen_tests.insert(tf.clone()) {
-                        suggested_tests.push(tf);
+        if !all_files.is_empty() {
+            // Single batched query over all changed+impacted files rather than a
+            // per-file round-trip.
+            let placeholders: String = (1..=all_files.len())
+                .map(|i| format!("?{}", i))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql = format!(
+                "SELECT DISTINCT test_file_path FROM test_edges \
+                 WHERE code_file_path IN ({}) ORDER BY test_file_path",
+                placeholders
+            );
+            let params: Vec<&dyn rusqlite::types::ToSql> = all_files
+                .iter()
+                .map(|f| f as &dyn rusqlite::types::ToSql)
+                .collect();
+            if let Ok(mut stmt) = conn.prepare(&sql) {
+                if let Ok(rows) = stmt.query_map(params.as_slice(), |r| r.get::<_, String>(0)) {
+                    for tf in rows.filter_map(|r| r.ok()) {
+                        if seen_tests.insert(tf.clone()) {
+                            suggested_tests.push(tf);
+                        }
                     }
                 }
             }

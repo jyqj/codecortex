@@ -12,6 +12,9 @@ use crate::index_db::{
     SymbolDegreeInfo, SymbolRefLite, SymbolRow,
 };
 
+/// Methods grouped by container name: container -> [(symbol_uid, name, file_path, start_line)].
+type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
+
 impl IndexDb {
     pub fn symbols_covering(
         &self,
@@ -808,30 +811,54 @@ impl IndexDb {
         Ok(result)
     }
 
-    /// Find all methods belonging to a given container (class/struct name).
-    pub fn find_methods_by_container(
-        &self,
-        container: &str,
-    ) -> CcResult<Vec<(String, String, String, u32)>> {
+    /// Fetch methods for many containers (class/struct names) in a single
+    /// `IN (...)` query, grouped by container name. Avoids the per-container
+    /// N+1 round-trips in dispatch synthesis.
+    pub fn find_methods_by_containers(&self, containers: &[&str]) -> CcResult<MethodsByContainer> {
+        let mut grouped: MethodsByContainer = HashMap::new();
+        if containers.is_empty() {
+            return Ok(grouped);
+        }
         let conn = self.read_conn()?;
+        let placeholders: String = containers
+            .iter()
+            .enumerate()
+            .map(|(i, _)| format!("?{}", i + 1))
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT container, symbol_uid, name, file_path, start_line \
+             FROM symbols WHERE container IN ({}) AND kind = 'method' AND symbol_uid IS NOT NULL \
+             ORDER BY file_path, start_line",
+            placeholders
+        );
         let mut stmt = conn
-            .prepare(
-                "SELECT symbol_uid, name, file_path, start_line \
-                 FROM symbols WHERE container = ?1 AND kind = 'method' AND symbol_uid IS NOT NULL \
-                 ORDER BY file_path, start_line",
-            )
+            .prepare(&sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
+        let params: Vec<Box<dyn rusqlite::types::ToSql>> = containers
+            .iter()
+            .map(|c| Box::new(c.to_string()) as Box<dyn rusqlite::types::ToSql>)
+            .collect();
+        let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+            params.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
-            .query_map(rusqlite::params![container], |row| {
+            .query_map(param_refs.as_slice(), |row| {
                 Ok((
                     row.get::<_, String>(0)?,
                     row.get::<_, String>(1)?,
                     row.get::<_, String>(2)?,
-                    row.get::<_, u32>(3)?,
+                    row.get::<_, String>(3)?,
+                    row.get::<_, u32>(4)?,
                 ))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        for (container, uid, name, file_path, line) in rows.filter_map(|r| r.ok()) {
+            grouped
+                .entry(container)
+                .or_default()
+                .push((uid, name, file_path, line));
+        }
+        Ok(grouped)
     }
 
     /// Find all classes that have methods matching any of the given name patterns.

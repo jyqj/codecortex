@@ -15,7 +15,7 @@ for the authoritative runtime surface.
 
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
-| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files` | Ranked search hits with file paths, line ranges, snippets |
+| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files`, `path_prefix` | Ranked search hits with file paths, line ranges, snippets |
 | `context` | Build complete context for a task in one call | `task`, `max_symbols`, `include_source`, `intent` | Relevant symbols, relationships, and source grouped by file |
 
 ## Deep dive
@@ -23,15 +23,15 @@ for the authoritative runtime surface.
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
 | `node` | Inspect a single symbol in detail | `symbol`, `include`: trail / source / outline / summary | Symbol metadata, caller/callee trail, source code, or outline |
-| `explore` | Batch-inspect multiple symbols or trace data flow | `symbols[]`, `mode`: symbols / flow, `include_source`, `outline`, `max_depth` | Per-symbol relations and source, or flow paths between symbols |
-| `trace` | Find the call-graph path between two symbols | `from`, `to`, `source_mode`: none / snippet / body / outline, `max_depth` | Shortest call path with optional function bodies at each hop |
+| `explore` | Batch-inspect multiple symbols or trace data flow | `symbols[]`, `mode`: symbols / flow, `include_source`, `outline`, `max_depth`; symbols mode adds `max_callers`, `max_callees`, `max_source_per_file`; flow mode adds `max_paths`, `exact`, `file_path`, `max_candidates` | Per-symbol relations and source, or flow paths between symbols |
+| `trace` | Find the call-graph path between two symbols | `from`, `to`, `source_mode`: none / snippet / body / outline, `max_depth`, `max_snippet_lines` | Shortest call path with optional function bodies at each hop |
 
 ## Analysis
 
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
 | `relations` | Get callers, callees, refs, or type hierarchy | `symbol`, `kind`: callers / callees / both / refs / hierarchy, `limit`, `direction` | List of related symbols with edge metadata |
-| `impact` | Understand change blast radius | `scope`: changes / tests / dead_code / circular / dependents, `files`, `base_branch`, `granularity` | Impacted symbols, affected tests, dead code list, or dependency cycles |
+| `impact` | Understand change blast radius | `scope`: changes / tests / dead_code / circular / dependents, `files`, `base_branch`, `granularity`, `confidence_threshold` | Impacted symbols, affected tests, dead code list, or dependency cycles |
 | `architecture` | Get high-level project structure | `aspect`: overview / communities / frameworks / routes / services / async / boundaries / env / unresolved, `filter`, `limit` | Architectural view matching the requested aspect |
 
 ## Utilities

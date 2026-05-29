@@ -391,4 +391,119 @@ app.set("view engine", pug);
             "should not extract non-HTTP methods like listen/set"
         );
     }
+
+    /// Guard for the Phase 4d optimization: `resolve_cross_file` mutates route
+    /// edges *in place* (e.g. prepending a mount prefix) without changing the
+    /// edge count. The new move-based merge in `phase_resolve` preserves these
+    /// mutations; the previous length-only merge would have dropped them. This
+    /// test pins the cross-file prefix-propagation behaviour so any regression
+    /// in the merge path is caught.
+    #[test]
+    fn cross_file_prefix_propagation_mutates_in_place() {
+        use crate::resolver::SymbolCatalog;
+        use cc_model::symbol::{SymbolKind, SymbolRecord};
+        use cc_model::ParserTier as Tier;
+
+        let router_symbol = SymbolRecord {
+            symbol_id: "sub#apiRouter".into(),
+            file_path: "src/routes/api.js".into(),
+            name: "apiRouter".into(),
+            kind: SymbolKind::Variable,
+            container: None,
+            start_line: 1,
+            end_line: 1,
+            start_col: 0,
+            end_col: 0,
+            signature: None,
+            doc: None,
+            parser_tier: Tier::TreeSitter,
+            parser_confidence: 0.9,
+            qname: Some("apiRouter".into()),
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: Some("apiRouter".into()),
+            is_default_export: false,
+            symbol_uid: Some("uid_api_router".into()),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        };
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(std::slice::from_ref(&router_symbol));
+
+        // Mount file: app.use("/api", apiRouter) → middleware_mount edge.
+        let mount_edge = RouteEdgeRecord {
+            edge_id: "mount#1".into(),
+            file_path: "src/app.js".into(),
+            route_path: "/api".into(),
+            handler_name: Some("apiRouter".into()),
+            method: None,
+            line: 1,
+            start_col: 0,
+            end_line: None,
+            end_col: 0,
+            handler_symbol_id: None,
+            handler_symbol_uid: None,
+            handler_expr: None,
+            router_symbol_uid: None,
+            framework: Some("express".into()),
+            route_kind: Some("middleware_mount".into()),
+            confidence: 0.9,
+            parser_tier: ParserTier::TreeSitter,
+        };
+        // Sub-router file: router.get("/users", ...) → http edge with bare path.
+        let sub_edge = RouteEdgeRecord {
+            edge_id: "sub#1".into(),
+            file_path: "src/routes/api.js".into(),
+            route_path: "/users".into(),
+            handler_name: Some("getUsers".into()),
+            method: Some("GET".into()),
+            line: 2,
+            start_col: 0,
+            end_line: None,
+            end_col: 0,
+            handler_symbol_id: None,
+            handler_symbol_uid: None,
+            handler_expr: None,
+            router_symbol_uid: None,
+            framework: Some("express".into()),
+            route_kind: Some("http".into()),
+            confidence: 0.9,
+            parser_tier: ParserTier::TreeSitter,
+        };
+
+        let mount_outcome = ParseOutcome {
+            route_edges: vec![mount_edge],
+            ..Default::default()
+        };
+        let sub_outcome = ParseOutcome {
+            route_edges: vec![sub_edge],
+            ..Default::default()
+        };
+
+        let mut outcomes = vec![
+            ("src/app.js".to_string(), mount_outcome),
+            ("src/routes/api.js".to_string(), sub_outcome),
+        ];
+
+        let edge_count_before = outcomes[1].1.route_edges.len();
+
+        ExpressResolver.resolve_cross_file(
+            &catalog,
+            &mut outcomes,
+            &ProjectFrameworkContext::new(),
+        );
+
+        // Edge count is unchanged (the mutation is in place, not additive).
+        assert_eq!(outcomes[1].1.route_edges.len(), edge_count_before);
+        // The sub-router's http route now carries the mounted prefix.
+        assert_eq!(
+            outcomes[1].1.route_edges[0].route_path, "/api/users",
+            "mount prefix must be prepended in place to the sub-router route"
+        );
+    }
 }

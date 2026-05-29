@@ -210,6 +210,10 @@ impl CodeIndexBackend {
                     .unwrap_or("file");
                 let file_path = params.get("file_path").and_then(|v| v.as_str());
                 let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
+                let confidence_threshold = params
+                    .get("confidence_threshold")
+                    .and_then(|v| v.as_f64())
+                    .map(|v| v as f32);
                 facade::handle_impact(
                     rt,
                     scope,
@@ -218,6 +222,7 @@ impl CodeIndexBackend {
                     granularity,
                     file_path,
                     limit,
+                    confidence_threshold,
                 )
             }
             "architecture" => {

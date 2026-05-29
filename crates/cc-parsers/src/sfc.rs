@@ -14,12 +14,10 @@ use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
-static VUE_SCRIPT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?is)<script(?P<attrs>[^>]*)>(?P<body>.*?)</script>"#).expect("vue script regex")
-});
-static SVELTE_SCRIPT_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"(?is)<script(?P<attrs>[^>]*)>(?P<body>.*?)</script>"#)
-        .expect("svelte script regex")
+/// Matches the `<script>` block of a Vue or Svelte single-file component.
+/// Both languages use the identical extraction pattern.
+static SCRIPT_BLOCK_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"(?is)<script(?P<attrs>[^>]*)>(?P<body>.*?)</script>"#).expect("sfc script regex")
 });
 static LANG_TS_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r#"(?i)\blang\s*=\s*["']ts["']"#).expect("lang ts regex"));
@@ -46,11 +44,11 @@ pub fn parse_sfc(
     language: Language,
     timeout_micros: Option<u64>,
 ) -> CcResult<ParseOutcome> {
-    let script_re = match language {
-        Language::Vue => &*VUE_SCRIPT_RE,
-        Language::Svelte => &*SVELTE_SCRIPT_RE,
+    match language {
+        Language::Vue | Language::Svelte => {}
         _ => unreachable!("parse_sfc called for non-SFC language"),
-    };
+    }
+    let script_re = &*SCRIPT_BLOCK_RE;
 
     let mut combined_script = String::new();
     let mut script_language = Language::JavaScript;

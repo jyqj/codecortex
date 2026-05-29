@@ -1341,11 +1341,7 @@ impl CCppParser {
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
             let env_key = cap.get(1).map(|m| m.as_str().to_string());
 
-            let source_uid = symbols
-                .iter()
-                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-                .filter(|s| s.start_line <= line && s.end_line >= line)
-                .min_by_key(|s| s.end_line - s.start_line)
+            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
                 .and_then(|s| s.symbol_uid.clone());
 
             edges.push(DataFlowEdgeRecord {
@@ -1405,7 +1401,11 @@ impl FileParser for CCppParser {
             self.extract_calls(&tree, content.as_bytes(), file_path, &symbols);
         let semantic_edges =
             self.extract_semantic_edges(&tree, content.as_bytes(), file_path, &symbols);
-        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
+        let mut data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
+        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
+            &call_edges,
+            file_path,
+        ));
 
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
@@ -1672,6 +1672,43 @@ int main() {
             .find(|c| c.callee_symbol == "helper");
         assert!(direct.is_some(), "should have direct call to helper");
         assert_eq!(direct.unwrap().dispatch_kind, DispatchKind::Direct);
+    }
+
+    #[test]
+    fn parse_emits_param_pass_and_return_flow() {
+        let parser = CCppParser::new(Language::C);
+        // `caller` passes its param into `callee(x)` (param_pass) and the call
+        // result flows back (return_flow). Both functions are in-file/resolved.
+        let code = r#"
+int callee(int v) {
+    return v + 1;
+}
+
+int caller(int x) {
+    return callee(x);
+}
+"#;
+        let outcome = parser.parse("flow.c", code, Language::C).unwrap();
+
+        let param_pass: Vec<_> = outcome
+            .data_flow_edges
+            .iter()
+            .filter(|e| e.flow_kind == "param_pass")
+            .collect();
+        assert!(
+            !param_pass.is_empty(),
+            "expected a param_pass data flow edge for callee(x)"
+        );
+
+        let return_flow: Vec<_> = outcome
+            .data_flow_edges
+            .iter()
+            .filter(|e| e.flow_kind == "return_flow")
+            .collect();
+        assert!(
+            !return_flow.is_empty(),
+            "expected a return_flow data flow edge from callee back to caller"
+        );
     }
 
     #[test]

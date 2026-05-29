@@ -1691,6 +1691,33 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
     })
 }
 
+/// Recursively validate all identifiers referenced in a WHERE expression.
+/// Covers PropRef.var/prop (used in Comparison, Regex, Contains, StartsWith, EndsWith)
+/// and Degree.var — both of which get interpolated directly into SQL strings.
+fn validate_expr_identifiers(expr: &Expr) -> CcResult<()> {
+    match expr {
+        Expr::Comparison { left, .. }
+        | Expr::Regex { left, .. }
+        | Expr::Contains { left, .. }
+        | Expr::StartsWith { left, .. }
+        | Expr::EndsWith { left, .. } => {
+            validate_sql_ident(&left.var)?;
+            validate_sql_ident(&left.prop)?;
+        }
+        Expr::Degree { var, .. } => {
+            validate_sql_ident(var)?;
+        }
+        Expr::And(lhs, rhs) | Expr::Or(lhs, rhs) => {
+            validate_expr_identifiers(lhs)?;
+            validate_expr_identifiers(rhs)?;
+        }
+        Expr::Not(inner) => {
+            validate_expr_identifiers(inner)?;
+        }
+    }
+    Ok(())
+}
+
 /// Validate all identifiers in a parsed query to ensure they are safe for SQL interpolation.
 /// This is a defense-in-depth check: the lexer already constrains identifiers, but we
 /// verify here in case identifiers are constructed outside the lexer.
@@ -1777,6 +1804,9 @@ pub(crate) fn validate_query_identifiers(query: &CypherQuery) -> CcResult<()> {
                 OrderExpr::Alias(a) => validate_sql_ident(a)?,
             }
         }
+    }
+    if let Some(where_clause) = &query.where_clause {
+        validate_expr_identifiers(&where_clause.expr)?;
     }
     Ok(())
 }

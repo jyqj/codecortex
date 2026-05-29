@@ -55,7 +55,7 @@ pub struct FileFrameworkDetection {
 // Import marker table  (framework_key -> list of import strings)
 // ---------------------------------------------------------------------------
 
-fn import_marker_table() -> &'static [(&'static str, &'static [&'static str])] {
+pub(crate) fn import_marker_table() -> &'static [(&'static str, &'static [&'static str])] {
     &[
         ("express", &["express"]),
         ("fastify", &["fastify"]),

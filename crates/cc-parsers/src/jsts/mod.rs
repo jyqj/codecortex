@@ -1779,21 +1779,13 @@ impl JsTsParser {
         symbols: &[SymbolRecord],
         line: u32,
     ) -> Option<&SymbolRecord> {
-        symbols
-            .iter()
-            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-            .filter(|s| s.start_line <= line && s.end_line >= line)
-            .min_by_key(|s| s.end_line - s.start_line)
+        crate::dataflow_common::find_enclosing_symbol(symbols, line)
     }
 }
 
 /// Find the innermost enclosing function/method for a given line number.
 fn js_find_enclosing_function(symbols: &[SymbolRecord], line: u32) -> Option<&SymbolRecord> {
-    symbols
-        .iter()
-        .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-        .filter(|s| s.start_line <= line && s.end_line >= line)
-        .min_by_key(|s| s.end_line - s.start_line)
+    crate::dataflow_common::find_enclosing_symbol(symbols, line)
 }
 
 // ---------------------------------------------------------------------------
@@ -1854,106 +1846,7 @@ impl Default for JsTsParser {
 
 impl FileParser for JsTsParser {
     fn parse(&self, file_path: &str, content: &str, language: Language) -> CcResult<ParseOutcome> {
-        let ts_lang = self.ts_language_for(language);
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(ts_lang)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: "parse failed".to_string(),
-            })?;
-
-        // Phase 1: AST-based extraction (symbols, routes, calls from AST, literals)
-        let ast_ctx = self.extract_all(&tree, content.as_bytes(), file_path);
-
-        // Phase 2: Regex-based ref/call extraction (for intra-file resolution)
-        let (symbol_refs, regex_call_edges) =
-            self.extract_refs_and_calls(content, file_path, &ast_ctx.symbols);
-
-        // Merge call edges: AST-based calls first, then regex-based
-        let mut all_call_edges = ast_ctx.call_edges;
-        // Deduplicate by (line, start_col) — prefer AST-based
-        let existing: HashSet<(u32, u32)> = all_call_edges
-            .iter()
-            .map(|c| (c.line, c.start_col))
-            .collect();
-        for ce in regex_call_edges {
-            if !existing.contains(&(ce.line, ce.start_col)) {
-                all_call_edges.push(ce);
-            }
-        }
-
-        // Next.js file route detection
-        let mut route_edges = ast_ctx.route_edges;
-        if let Some(nextjs_route) = detect_nextjs_file_route(file_path, &ast_ctx.symbols) {
-            route_edges.push(nextjs_route);
-        }
-
-        let tier = ParserTier::Semantic;
-        let confidence = 0.85;
-        let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
-
-        // Extract data flow edges (type refs + env accesses + param/return flow)
-        let mut data_flow_edges = self.extract_type_refs(content, &ast_ctx.symbols, file_path);
-        data_flow_edges.extend(self.extract_env_accesses(content, &ast_ctx.symbols, file_path));
-        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
-            &all_call_edges,
-            file_path,
-        ));
-
-        let type_assigns =
-            self.extract_type_assigns(&tree, content.as_bytes(), file_path, &ast_ctx.symbols);
-
-        let chunks = self.chunker.chunk_with_symbols(
-            file_path,
-            content,
-            language,
-            &ast_ctx.symbols,
-            tier,
-            confidence,
-        );
-
-        let line_count = content.lines().count();
-        let lang_str = language.as_str();
-        let summary = format!(
-            "{} ({}, {} lines, {} symbols, {} routes)",
-            file_path,
-            lang_str,
-            line_count,
-            ast_ctx.symbols.len(),
-            route_edges.len(),
-        );
-
-        let is_test = file_path.contains(".test.")
-            || file_path.contains(".spec.")
-            || file_path.contains("__tests__");
-
-        Ok(ParseOutcome {
-            summary,
-            chunks,
-            symbols: ast_ctx.symbols,
-            imports: ast_ctx.imports,
-            symbol_refs,
-            call_edges: all_call_edges,
-            route_edges,
-            literal_index: ast_ctx.literals,
-            semantic_edges,
-            data_flow_edges,
-            dispatch_sites: ast_ctx.dispatch_sites,
-            type_assigns,
-            parser_tier: tier,
-            parser_confidence: confidence,
-            http_call_edges: ast_ctx.http_call_edges,
-            is_test_file: is_test,
-            ..Default::default()
-        })
+        self.parse_with_timeout(file_path, content, language, None)
     }
 
     fn parse_with_timeout(
@@ -1964,27 +1857,7 @@ impl FileParser for JsTsParser {
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
         let ts_lang = self.ts_language_for(language);
-        let mut parser = tree_sitter::Parser::new();
-        parser
-            .set_language(ts_lang)
-            .map_err(|e| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: e.to_string(),
-            })?;
-        if let Some(timeout) = timeout_micros {
-            parser.set_timeout_micros(timeout);
-        }
-
-        let tree = parser
-            .parse(content, None)
-            .ok_or_else(|| cc_model::CcError::Parse {
-                file: file_path.to_string(),
-                message: if timeout_micros.is_some() {
-                    "parse failed or timed out".to_string()
-                } else {
-                    "parse failed".to_string()
-                },
-            })?;
+        let tree = crate::parse_common::parse_tree(ts_lang, content, file_path, timeout_micros)?;
 
         let ast_ctx = self.extract_all(&tree, content.as_bytes(), file_path);
         let (symbol_refs, regex_call_edges) =

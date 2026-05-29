@@ -18,8 +18,9 @@ data-flow edges, HTTP call edges, semantic edges, and dispatch sites.
 C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown, SQL,
 YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, CMake
 
-Heuristic extraction captures symbols and imports via pattern matching; it does
-not produce full call edges or type-hierarchy resolution.
+Heuristic extraction captures symbols, imports, and best-effort intra-file call
+edges via pattern matching; it does not resolve cross-file calls or type
+hierarchies.
 
 ### Confidence tiers
 

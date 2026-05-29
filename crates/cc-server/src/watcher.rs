@@ -513,13 +513,24 @@ fn git_sanity_poll_loop(
 
 /// Run `git status --porcelain` and return the list of dirty relative paths.
 fn git_status_porcelain(project_path: &Path) -> Option<Vec<String>> {
-    let output = std::process::Command::new("git")
+    let output = match std::process::Command::new("git")
         .args(["status", "--porcelain"])
         .current_dir(project_path)
         .output()
-        .ok()?;
+    {
+        Ok(o) => o,
+        Err(e) => {
+            tracing::debug!(error = %e, "git status --porcelain failed to spawn; skipping dirty poll");
+            return None;
+        }
+    };
 
     if !output.status.success() {
+        tracing::debug!(
+            code = output.status.code(),
+            stderr = %String::from_utf8_lossy(&output.stderr).trim(),
+            "git status --porcelain returned non-zero; skipping dirty poll (not a git repo?)"
+        );
         return None;
     }
 

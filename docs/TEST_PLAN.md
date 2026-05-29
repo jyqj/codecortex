@@ -2,17 +2,17 @@
 
 ## Unit Tests
 
-711 passed + 2 ignored in the latest `cargo test --workspace` — 705 crate unit tests + 5 `mcp_stdio` integration tests + 1 doctest (the 2 ignored are the real-workspace benchmark and an ignored doctest).
+743 passed + 2 ignored in the latest `cargo test --workspace` — 737 crate unit tests + 5 `mcp_stdio` integration tests + 1 doctest (the 2 ignored are the real-workspace benchmark and an ignored doctest).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 53 | Schema, migrations, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query |
+| cc-db | 55 | Schema, migrations, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
 | cc-eval | 16 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
-| cc-index | 214 | Framework resolvers (16, incl. cross-file), dispatch synthesis, community detection, resolver tier aliases |
+| cc-index | 223 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, export-fingerprint contract, adaptive memory budget |
 | cc-model | 31 | Route normalization, data structures, enum round-trip, project root discovery |
-| cc-parsers | 162 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs |
-| cc-search | 129 | Cypher parser/executor, variable-length path cap, regex validation, vector cache + top-k heap, file-scoped vector streaming, grep SQL scoping, search engine |
-| cc-server | 101 | Engine lifecycle, impact analyzer BFS, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
+| cc-parsers | 170 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs, spec-driven heuristic intra-file call edges, C/C++/Rust param/return data-flow |
+| cc-search | 133 | Cypher parser/executor, variable-length path cap, regex validation, WHERE/Degree identifier validation, vector cache + top-k heap, file-scoped vector streaming, grep SQL scoping, search engine |
+| cc-server | 110 | Engine lifecycle, impact analyzer BFS, confidence-threshold filtering, exposed explore/trace params, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 

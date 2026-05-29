@@ -898,11 +898,7 @@ impl RustParser {
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
             let env_key = cap.get(1).map(|m| m.as_str().to_string());
 
-            let source_uid = symbols
-                .iter()
-                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-                .filter(|s| s.start_line <= line && s.end_line >= line)
-                .min_by_key(|s| s.end_line - s.start_line)
+            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
                 .and_then(|s| s.symbol_uid.clone());
 
             edges.push(DataFlowEdgeRecord {
@@ -930,40 +926,7 @@ impl Default for RustParser {
 
 impl FileParser for RustParser {
     fn parse(&self, file_path: &str, content: &str, language: Language) -> CcResult<ParseOutcome> {
-        let tree = crate::parse_common::parse_tree(&self.language, content, file_path, None)?;
-
-        let (symbols, imports) = self.extract_symbols(&tree, content.as_bytes(), file_path);
-        let (symbol_refs, call_edges) =
-            self.extract_refs_and_calls(&tree, content.as_bytes(), file_path, &symbols);
-        let tier = ParserTier::Semantic;
-        let confidence = 0.8;
-        let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
-        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
-        let chunks = self
-            .chunker
-            .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
-        let summary = format!(
-            "{} (rust, {} lines, {} symbols)",
-            file_path,
-            content.lines().count(),
-            symbols.len()
-        );
-        let is_test = file_path.contains("/tests/") || file_path.ends_with("_test.rs");
-
-        Ok(ParseOutcome {
-            summary,
-            chunks,
-            symbols,
-            imports,
-            symbol_refs,
-            call_edges,
-            semantic_edges,
-            data_flow_edges,
-            parser_tier: tier,
-            parser_confidence: confidence,
-            is_test_file: is_test,
-            ..Default::default()
-        })
+        self.parse_with_timeout(file_path, content, language, None)
     }
 
     fn parse_with_timeout(
@@ -982,7 +945,11 @@ impl FileParser for RustParser {
         let tier = ParserTier::Semantic;
         let confidence = 0.8;
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
-        let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
+        let mut data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
+        data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
+            &call_edges,
+            file_path,
+        ));
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
@@ -2084,5 +2051,42 @@ fn foo() {}
         assert!(outcome.call_edges.is_empty());
         assert!(outcome.semantic_edges.is_empty());
         assert!(outcome.data_flow_edges.is_empty());
+    }
+
+    #[test]
+    fn parse_emits_param_pass_and_return_flow() {
+        let p = RustParser::new();
+        // `caller` passes its param into `callee(x)` (param_pass) and returns
+        // the call result (return_flow). Both functions are in-file/resolved.
+        let code = r#"
+fn callee(v: i32) -> i32 {
+    v + 1
+}
+
+fn caller(x: i32) -> i32 {
+    callee(x)
+}
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+
+        let param_pass: Vec<_> = outcome
+            .data_flow_edges
+            .iter()
+            .filter(|e| e.flow_kind == "param_pass")
+            .collect();
+        assert!(
+            !param_pass.is_empty(),
+            "expected a param_pass data flow edge for callee(x)"
+        );
+
+        let return_flow: Vec<_> = outcome
+            .data_flow_edges
+            .iter()
+            .filter(|e| e.flow_kind == "return_flow")
+            .collect();
+        assert!(
+            !return_flow.is_empty(),
+            "expected a return_flow data flow edge from callee back to caller"
+        );
     }
 }

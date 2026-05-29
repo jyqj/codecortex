@@ -138,15 +138,19 @@ pub fn get_dependents(
         }
     }
 
-    // 2-hop: find importers of the direct dependents
+    // 2-hop: find importers of the direct dependents in a single batched query
+    // (WHERE resolved_path IN (...)) instead of one SQL round-trip per dependent.
     let mut transitive: Vec<String> = Vec::new();
-    for dep in &dependents {
-        let rows2 = db
-            .query_json(
-                "SELECT DISTINCT file_path FROM imports WHERE resolved_path = ?1 LIMIT 100",
-                std::slice::from_ref(dep),
-            )
-            .unwrap_or_default();
+    if !dependents.is_empty() {
+        let placeholders: String = (0..dependents.len())
+            .map(|i| format!("?{}", i + 1))
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT DISTINCT file_path FROM imports WHERE resolved_path IN ({}) LIMIT 10000",
+            placeholders
+        );
+        let rows2 = db.query_json(&sql, &dependents).unwrap_or_default();
         for row in &rows2 {
             if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
                 if fp != file_path && seen.insert(fp.to_string()) {
@@ -234,8 +238,16 @@ pub fn find_dead_code(
     let excluded_names = ["main", "__init__", "__main__", "setup", "configure"];
     let excluded_prefixes = ["test_", "Test"];
 
-    let mut dead_items: Vec<serde_json::Value> = Vec::new();
-
+    // Phase 1: collect candidates that pass the scope / exclusion / no-caller
+    // filters. Their reference status is resolved in a batched second pass to
+    // avoid one symbol_refs query per candidate.
+    struct DeadCandidate<'a> {
+        name: &'a str,
+        uid: &'a str,
+        file_path: &'a str,
+        kind: &'a str,
+    }
+    let mut candidates: Vec<DeadCandidate> = Vec::new();
     for row in &all_symbols {
         let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
         let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
@@ -261,29 +273,70 @@ pub fn find_dead_code(
             continue;
         }
 
-        // Check if symbol has callers
+        // Only symbols without callers can be dead code.
         if !has_callers.contains(uid) {
-            // Also check symbol_refs — exclude self-references where the
-            // container is the symbol itself (function body referencing its own name).
-            let has_external_refs = db
-                .query_json(
-                    "SELECT 1 FROM symbol_refs \
-                     WHERE target_symbol_uid = ?1 \
-                       AND (container IS NULL OR container != ?2) \
-                     LIMIT 1",
-                    &[uid.to_string(), name.to_string()],
-                )
-                .map(|r| !r.is_empty())
-                .unwrap_or(false);
-            if !has_external_refs {
-                dead_items.push(serde_json::json!({
-                    "symbol_name": name,
-                    "symbol_uid": uid,
-                    "file_path": file_path,
-                    "kind": kind,
-                    "reason": "no-callers",
-                }));
+            candidates.push(DeadCandidate {
+                name,
+                uid,
+                file_path,
+                kind,
+            });
+        }
+    }
+
+    // Phase 2: batch-load references for all candidate UIDs at once, then
+    // determine which have an *external* reference (container differs from the
+    // symbol's own name, i.e. not a self-reference inside its own body).
+    let mut uids_with_external_refs: std::collections::HashSet<String> =
+        std::collections::HashSet::new();
+    let candidate_uids: Vec<String> = candidates.iter().map(|c| c.uid.to_string()).collect();
+    // Map each candidate uid -> its own name for the self-reference check.
+    let name_by_uid: std::collections::HashMap<&str, &str> =
+        candidates.iter().map(|c| (c.uid, c.name)).collect();
+    let batch_size = 200;
+    for batch in candidate_uids.chunks(batch_size) {
+        let placeholders: String = (0..batch.len())
+            .map(|i| format!("?{}", i + 1))
+            .collect::<Vec<_>>()
+            .join(",");
+        let sql = format!(
+            "SELECT target_symbol_uid, container FROM symbol_refs \
+             WHERE target_symbol_uid IN ({})",
+            placeholders
+        );
+        let ref_rows = db.query_json(&sql, batch).unwrap_or_default();
+        for row in &ref_rows {
+            let target_uid = row
+                .get("target_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+            if target_uid.is_empty() {
+                continue;
             }
+            let container = row.get("container").and_then(|v| v.as_str());
+            let own_name = name_by_uid.get(target_uid).copied();
+            // External reference iff container is NULL or differs from own name.
+            let is_external = match (container, own_name) {
+                (None, _) => true,
+                (Some(c), Some(n)) => c != n,
+                (Some(_), None) => true,
+            };
+            if is_external {
+                uids_with_external_refs.insert(target_uid.to_string());
+            }
+        }
+    }
+
+    let mut dead_items: Vec<serde_json::Value> = Vec::new();
+    for cand in &candidates {
+        if !uids_with_external_refs.contains(cand.uid) {
+            dead_items.push(serde_json::json!({
+                "symbol_name": cand.name,
+                "symbol_uid": cand.uid,
+                "file_path": cand.file_path,
+                "kind": cand.kind,
+                "reason": "no-callers",
+            }));
         }
     }
 

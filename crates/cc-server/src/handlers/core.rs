@@ -102,12 +102,13 @@ pub fn analyze_impact(
     runtime: SharedCodeIndex,
     files: &[String],
     base_branch: Option<&str>,
+    confidence_threshold: Option<f32>,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let report = if files.is_empty() {
-        rt.analyze_impact(base_branch)
+        rt.analyze_impact(base_branch, confidence_threshold)
     } else {
-        rt.detect_impact(files)
+        rt.detect_impact(files, confidence_threshold)
     }
     .map_err(|e| e.to_string())?;
     serde_json::to_value(report).map_err(|e| e.to_string())

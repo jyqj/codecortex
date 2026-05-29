@@ -100,13 +100,29 @@ fn edge_property_info(
 }
 
 impl CodeIndex {
-    pub fn detect_impact(&self, changed_files: &[String]) -> CcResult<ImpactReport> {
-        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze(changed_files, 3)
+    pub fn detect_impact(
+        &self,
+        changed_files: &[String],
+        confidence_threshold: Option<f32>,
+    ) -> CcResult<ImpactReport> {
+        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with_options(
+            changed_files,
+            3,
+            confidence_threshold.map(|v| v as f64),
+        )
     }
 
-    pub fn analyze_impact(&self, base_ref: Option<&str>) -> CcResult<ImpactReport> {
+    pub fn analyze_impact(
+        &self,
+        base_ref: Option<&str>,
+        confidence_threshold: Option<f32>,
+    ) -> CcResult<ImpactReport> {
         let changed = self.git_changed_files(base_ref)?;
-        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze(&changed, 3)
+        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with_options(
+            &changed,
+            3,
+            confidence_threshold.map(|v| v as f64),
+        )
     }
 
     pub fn git_changed_files(&self, base_ref: Option<&str>) -> CcResult<Vec<String>> {
@@ -1029,4 +1045,79 @@ pub fn compute_package_boundaries(
     boundaries.sort_by(|a, b| b.call_count.cmp(&a.call_count));
     boundaries.truncate(10);
     Ok(boundaries)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    /// Build a `CodeIndex` over a temp project and seed a single low-confidence
+    /// call edge: `B` (src/b.rs) calls `A` (src/a.rs). Returns the index.
+    fn index_with_low_confidence_edge() -> (TempDir, CodeIndex) {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        let db = idx.index_db().expect("db initialized");
+        let conn = db.read_conn().unwrap();
+        for fp in ["src/a.rs", "src/b.rs"] {
+            conn.execute(
+                "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES(?1, 'rust', 'hash', 0.0, 100, '2025-01-01')",
+                rusqlite::params![fp],
+            )
+            .unwrap();
+        }
+        for (uid, name, fp) in [("uid_a", "A", "src/a.rs"), ("uid_b", "B", "src/b.rs")] {
+            conn.execute(
+                "INSERT OR REPLACE INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, symbol_uid) \
+                 VALUES(?1, ?2, ?3, 'function', 1, 10, ?4)",
+                rusqlite::params![format!("sid_{}", uid), fp, name, uid],
+            )
+            .unwrap();
+        }
+        // Edge with default parser_confidence (0.5) from B -> A.
+        conn.execute(
+            "INSERT OR REPLACE INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid) \
+             VALUES('edge_ba', 'src/b.rs', 'A', 1, 'uid_b', 'uid_a')",
+            [],
+        )
+        .unwrap();
+        drop(conn);
+        (dir, idx)
+    }
+
+    #[test]
+    fn detect_impact_high_confidence_threshold_filters_callers() {
+        let (_dir, idx) = index_with_low_confidence_edge();
+        let report = idx
+            .detect_impact(&["src/a.rs".to_string()], Some(0.9))
+            .unwrap();
+        let hop1: Vec<_> = report
+            .impacted_symbols
+            .iter()
+            .filter(|s| s.hop_depth > 0)
+            .collect();
+        assert!(
+            hop1.is_empty(),
+            "confidence_threshold=0.9 should filter the 0.5-confidence caller"
+        );
+    }
+
+    #[test]
+    fn detect_impact_without_threshold_keeps_callers() {
+        let (_dir, idx) = index_with_low_confidence_edge();
+        let report = idx.detect_impact(&["src/a.rs".to_string()], None).unwrap();
+        let hop1: Vec<_> = report
+            .impacted_symbols
+            .iter()
+            .filter(|s| s.hop_depth > 0)
+            .collect();
+        assert_eq!(
+            hop1.len(),
+            1,
+            "without a threshold the low-confidence caller must remain"
+        );
+        assert_eq!(hop1[0].name, "B");
+    }
 }

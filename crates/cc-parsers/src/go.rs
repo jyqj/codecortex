@@ -1532,11 +1532,7 @@ impl GoParser {
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
             let env_key = cap.get(1).or(cap.get(2)).map(|m| m.as_str().to_string());
 
-            let source_uid = symbols
-                .iter()
-                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-                .filter(|s| s.start_line <= line && s.end_line >= line)
-                .min_by_key(|s| s.end_line - s.start_line)
+            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
                 .and_then(|s| s.symbol_uid.clone());
 
             edges.push(DataFlowEdgeRecord {

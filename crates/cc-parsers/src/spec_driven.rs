@@ -7,11 +7,14 @@
 use crate::chunker::Chunker;
 use crate::lang_spec::LangSpec;
 use crate::traits::FileParser;
-use cc_model::edge::{DataFlowEdgeRecord, ImportRecord};
+use cc_model::edge::{
+    CallEdgeRecord, DataFlowEdgeRecord, DispatchKind, ImportRecord, ResolutionKind,
+};
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord};
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 use regex::Regex;
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
 /// A parser driven by a static `LangSpec` table, using regex-based heuristics
@@ -204,6 +207,88 @@ static LUA_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
 static LUA_REQUIRE_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"(?m)(?:require)\s*\(?['"]([^'"]+)['"]\)?"#).expect("lua require regex")
 });
+
+/// Generic call-site detector: an identifier (optionally dotted/`::`-qualified
+/// receiver) immediately followed by `(`. Captures group 1 = full callee path,
+/// group 2 = bare final segment used for intra-file symbol matching.
+static CALL_SITE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r"(?:([A-Za-z_][A-Za-z0-9_]*(?:\s*(?:\.|::|->)\s*[A-Za-z_][A-Za-z0-9_]*)*)\s*(?:\.|::|->)\s*)?([A-Za-z_][A-Za-z0-9_]*)\s*\(")
+        .expect("spec-driven call site regex")
+});
+
+/// Keywords that look like calls (`if (`, `while (`, …) across the supported
+/// languages but are control-flow / declarations, never function calls.
+/// Used to suppress false-positive call edges.
+static CALL_KEYWORD_BLOCKLIST: &[&str] = &[
+    "if",
+    "else",
+    "elif",
+    "while",
+    "for",
+    "foreach",
+    "switch",
+    "match",
+    "case",
+    "when",
+    "catch",
+    "do",
+    "return",
+    "yield",
+    "throw",
+    "throws",
+    "await",
+    "using",
+    "lock",
+    "with",
+    "in",
+    "and",
+    "or",
+    "not",
+    "is",
+    "as",
+    "new",
+    "delete",
+    "sizeof",
+    "typeof",
+    "defined",
+    "func",
+    "fun",
+    "def",
+    "function",
+    "class",
+    "struct",
+    "interface",
+    "enum",
+    "trait",
+    "object",
+    "module",
+    "namespace",
+    "package",
+    "import",
+    "require",
+    "include",
+    "let",
+    "var",
+    "val",
+    "const",
+    "static",
+    "public",
+    "private",
+    "protected",
+    "internal",
+    "override",
+    "virtual",
+    "abstract",
+    "final",
+    "sealed",
+    "super",
+    "base",
+    "this",
+    "self",
+    "print",
+    "puts",
+    "echo",
+];
 
 impl SpecDrivenParser {
     pub fn new(spec: &'static LangSpec) -> Self {
@@ -546,11 +631,7 @@ impl SpecDrivenParser {
             let line = content[..m.start()].matches('\n').count() as u32 + 1;
             let env_key = cap.get(1).map(|m| m.as_str().to_string());
 
-            let source_uid = symbols
-                .iter()
-                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-                .filter(|s| s.start_line <= line && s.end_line >= line)
-                .min_by_key(|s| s.end_line - s.start_line)
+            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
                 .and_then(|s| s.symbol_uid.clone());
 
             edges.push(DataFlowEdgeRecord {
@@ -563,6 +644,111 @@ impl SpecDrivenParser {
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
                 env_key,
+            });
+        }
+
+        edges
+    }
+
+    /// Lightweight same-file call-edge heuristic.
+    ///
+    /// Scans for `name(` call sites and connects each to an in-file
+    /// function/method symbol of the same name. Only intra-file resolved edges
+    /// are emitted (callee matched to a local symbol) — unresolved/external
+    /// calls are dropped, because for a regex-only parser an unresolved guess is
+    /// more likely a false positive than a useful edge.
+    ///
+    /// Conservative guards:
+    /// - control-flow keywords (`if`, `while`, …) are skipped via a blocklist;
+    /// - the matched site must not be the symbol's own declaration line;
+    /// - ambiguous names with multiple same-name definitions resolve to the
+    ///   nearest enclosing-or-first definition (one edge per call site).
+    fn extract_call_edges(
+        &self,
+        content: &str,
+        file_path: &str,
+        symbols: &[SymbolRecord],
+    ) -> Vec<CallEdgeRecord> {
+        // Index callable symbols by name for intra-file resolution.
+        let mut by_name: HashMap<&str, &SymbolRecord> = HashMap::new();
+        for sym in symbols
+            .iter()
+            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
+        {
+            // First definition wins on duplicate names (keeps resolution stable).
+            by_name.entry(sym.name.as_str()).or_insert(sym);
+        }
+        if by_name.is_empty() {
+            return Vec::new();
+        }
+
+        let tier = ParserTier::Heuristic;
+        let confidence = tier.default_confidence();
+        let mut edges = Vec::new();
+
+        for cap in CALL_SITE_RE.captures_iter(content) {
+            let callee_m = cap.get(2).unwrap();
+            let callee_name = callee_m.as_str();
+
+            if CALL_KEYWORD_BLOCKLIST.contains(&callee_name) {
+                continue;
+            }
+
+            let Some(callee_sym) = by_name.get(callee_name).copied() else {
+                continue;
+            };
+
+            let line = content[..callee_m.start()].matches('\n').count() as u32 + 1;
+            let start_col = callee_m.start() as u32;
+
+            // Skip the declaration site itself (the `name(` of its own def).
+            if callee_sym.start_line == line {
+                continue;
+            }
+
+            // Determine the enclosing caller symbol (innermost containing fn/method).
+            // Exclude symbols that *start* on the call line: the regex symbol
+            // extractor can misparse a call site such as `return Helper(x)` as a
+            // method definition, and that phantom symbol would otherwise be
+            // picked as the innermost enclosing scope.
+            let caller_sym = symbols
+                .iter()
+                .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
+                .filter(|s| s.start_line < line && s.end_line >= line)
+                .min_by_key(|s| s.end_line - s.start_line);
+            // Don't emit self-loops (recursion is fine to record, but a phantom
+            // self-loop from the misparse above is noise).
+            let is_self = caller_sym
+                .and_then(|c| c.symbol_uid.as_deref())
+                .zip(callee_sym.symbol_uid.as_deref())
+                .map(|(a, b)| a == b)
+                .unwrap_or(false);
+            if is_self {
+                continue;
+            }
+
+            edges.push(CallEdgeRecord {
+                edge_id: StableId::edge_id("call", file_path, line, start_col),
+                file_path: file_path.to_string(),
+                caller_symbol: caller_sym.map(|c| c.name.clone()),
+                callee_symbol: callee_name.to_string(),
+                line,
+                start_col,
+                end_line: Some(line),
+                end_col: callee_m.end() as u32,
+                target_symbol_id: Some(callee_sym.symbol_id.clone()),
+                target_file_path: Some(file_path.to_string()),
+                caller_symbol_id: caller_sym.map(|c| c.symbol_id.clone()),
+                caller_symbol_uid: caller_sym.and_then(|c| c.symbol_uid.clone()),
+                callee_symbol_uid: callee_sym.symbol_uid.clone(),
+                dispatch_kind: DispatchKind::Direct,
+                call_kind: "call".into(),
+                resolution_kind: ResolutionKind::Exact,
+                resolution_confidence: confidence,
+                resolution_strategy: "spec_intra_file".into(),
+                parser_tier: tier,
+                parser_confidence: confidence,
+                ..Default::default()
             });
         }
 
@@ -595,6 +781,7 @@ impl FileParser for SpecDrivenParser {
 
         let symbols = self.extract_symbols(content, file_path);
         let imports = self.extract_imports(content, file_path);
+        let call_edges = self.extract_call_edges(content, file_path, &symbols);
         let data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
 
         let chunks = if symbols.is_empty() {
@@ -619,6 +806,7 @@ impl FileParser for SpecDrivenParser {
             symbols,
             imports,
             chunks,
+            call_edges,
             data_flow_edges,
             parser_tier: tier,
             parser_confidence: confidence,
@@ -1037,6 +1225,139 @@ trait Serializable {
             "qname should include package, got: {}",
             qname
         );
+    }
+
+    #[test]
+    fn csharp_emits_intra_file_call_edge() {
+        let spec = lang_spec::spec_for_language(Language::CSharp).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        let content = r#"
+public class Calc
+{
+    public int Helper(int n)
+    {
+        return n * 2;
+    }
+
+    public int Run(int x)
+    {
+        return Helper(x);
+    }
+}
+"#;
+        let outcome = parser.parse("Calc.cs", content, Language::CSharp).unwrap();
+
+        let edge = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "Helper");
+        assert!(
+            edge.is_some(),
+            "expected an intra-file call edge to Helper, got {:?}",
+            outcome
+                .call_edges
+                .iter()
+                .map(|c| &c.callee_symbol)
+                .collect::<Vec<_>>()
+        );
+        let edge = edge.unwrap();
+        assert_eq!(edge.parser_tier, ParserTier::Heuristic);
+        assert!(
+            edge.callee_symbol_uid.is_some(),
+            "intra-file callee should resolve to the in-file Helper symbol"
+        );
+    }
+
+    #[test]
+    fn ruby_emits_intra_file_call_edge() {
+        let spec = lang_spec::spec_for_language(Language::Ruby).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        let content = r#"
+def helper(n)
+  n * 2
+end
+
+def run(x)
+  helper(x)
+end
+"#;
+        let outcome = parser.parse("calc.rb", content, Language::Ruby).unwrap();
+        let edge = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "helper");
+        assert!(
+            edge.is_some(),
+            "expected an intra-file call edge to helper, got {:?}",
+            outcome
+                .call_edges
+                .iter()
+                .map(|c| &c.callee_symbol)
+                .collect::<Vec<_>>()
+        );
+        assert!(edge.unwrap().callee_symbol_uid.is_some());
+    }
+
+    #[test]
+    fn lua_emits_intra_file_call_edge() {
+        let spec = lang_spec::spec_for_language(Language::Lua).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        let content = r#"
+function helper(n)
+    return n * 2
+end
+
+function run(x)
+    return helper(x)
+end
+"#;
+        let outcome = parser.parse("calc.lua", content, Language::Lua).unwrap();
+        let edge = outcome
+            .call_edges
+            .iter()
+            .find(|c| c.callee_symbol == "helper");
+        assert!(
+            edge.is_some(),
+            "expected an intra-file call edge to helper, got {:?}",
+            outcome
+                .call_edges
+                .iter()
+                .map(|c| &c.callee_symbol)
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn no_call_edge_for_control_flow_keywords() {
+        let spec = lang_spec::spec_for_language(Language::CSharp).unwrap();
+        let parser = SpecDrivenParser::new(spec);
+        // `if (...)`, `while (...)`, `for (...)` look like calls but must never
+        // produce call edges; and a call to an undefined symbol must not connect.
+        let content = r#"
+public class Loop
+{
+    public void Run(int x)
+    {
+        if (x > 0)
+        {
+            while (x > 1)
+            {
+                x = x - 1;
+            }
+        }
+        Undefined(x);
+    }
+}
+"#;
+        let outcome = parser.parse("Loop.cs", content, Language::CSharp).unwrap();
+        for c in &outcome.call_edges {
+            assert_ne!(c.callee_symbol, "if");
+            assert_ne!(c.callee_symbol, "while");
+            assert_ne!(c.callee_symbol, "for");
+            // Only intra-file resolved edges are emitted, so `Undefined` (not a
+            // symbol in this file) must not appear.
+            assert_ne!(c.callee_symbol, "Undefined");
+        }
     }
 
     #[test]

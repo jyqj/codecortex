@@ -202,6 +202,7 @@ pub fn handle_relations(
 
 // ── 5. handle_impact ────────────────────────────────────────────────
 
+#[allow(clippy::too_many_arguments)]
 pub fn handle_impact(
     runtime: SharedCodeIndex,
     scope: &str,
@@ -210,6 +211,7 @@ pub fn handle_impact(
     granularity: &str,
     file_path: Option<&str>,
     limit: usize,
+    confidence_threshold: Option<f32>,
 ) -> Result<Value, String> {
     let max_limit = {
         let rt = super::lock_index(&runtime)?;
@@ -238,7 +240,7 @@ pub fn handle_impact(
                 .ok_or_else(|| "file_path is required for 'dependents' scope".to_string())?;
             graph::get_dependents(runtime, json!({"file_path": fp}))
         }
-        _ => core::analyze_impact(runtime, files, base_branch),
+        _ => core::analyze_impact(runtime, files, base_branch, confidence_threshold),
     }
 }
 
@@ -760,7 +762,7 @@ mod tests {
     #[test]
     fn handle_impact_dead_code_returns_result() {
         let (_tmp, rt) = build_test_index();
-        let result = handle_impact(rt, "dead_code", &[], None, "file", None, 20).unwrap();
+        let result = handle_impact(rt, "dead_code", &[], None, "file", None, 20, None).unwrap();
         assert!(result.is_object() || result.is_array());
     }
 

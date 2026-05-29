@@ -1593,4 +1593,168 @@ mod tests {
             "params should contain the raw regex pattern"
         );
     }
+
+    // ── WHERE clause identifier validation tests ─────────────────────────────
+
+    #[test]
+    fn test_validate_query_identifiers_rejects_malicious_prop_ref_in_where() {
+        // Directly construct an AST with an illegal PropRef.var in WHERE clause.
+        // This simulates a bypass of the normal lexer path.
+        let bad_var = "x; DROP TABLE symbols".to_string();
+        let query = CypherQuery {
+            match_clauses: vec![MatchClause {
+                is_optional: false,
+                patterns: vec![PathPattern {
+                    nodes: vec![NodePattern {
+                        var: Some("n".to_string()),
+                        label: Some("Function".to_string()),
+                        props: vec![],
+                    }],
+                    rels: vec![],
+                }],
+            }],
+            where_clause: Some(WhereClause {
+                expr: Expr::Comparison {
+                    left: PropRef {
+                        var: bad_var,
+                        prop: "name".to_string(),
+                    },
+                    op: CmpOp::Eq,
+                    right: Value::String("foo".to_string()),
+                },
+            }),
+            return_clause: ReturnClause {
+                items: vec![ReturnItem::Var("n".to_string(), None)],
+                distinct: false,
+            },
+            order_by: None,
+            limit: None,
+        };
+        assert!(
+            validate_query_identifiers(&query).is_err(),
+            "malicious PropRef.var in WHERE clause should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_validate_query_identifiers_rejects_malicious_prop_name_in_where() {
+        // Illegal PropRef.prop in WHERE clause.
+        let bad_prop = "name; DROP TABLE symbols".to_string();
+        let query = CypherQuery {
+            match_clauses: vec![MatchClause {
+                is_optional: false,
+                patterns: vec![PathPattern {
+                    nodes: vec![NodePattern {
+                        var: Some("n".to_string()),
+                        label: Some("Function".to_string()),
+                        props: vec![],
+                    }],
+                    rels: vec![],
+                }],
+            }],
+            where_clause: Some(WhereClause {
+                expr: Expr::Comparison {
+                    left: PropRef {
+                        var: "n".to_string(),
+                        prop: bad_prop,
+                    },
+                    op: CmpOp::Eq,
+                    right: Value::String("foo".to_string()),
+                },
+            }),
+            return_clause: ReturnClause {
+                items: vec![ReturnItem::Var("n".to_string(), None)],
+                distinct: false,
+            },
+            order_by: None,
+            limit: None,
+        };
+        assert!(
+            validate_query_identifiers(&query).is_err(),
+            "malicious PropRef.prop in WHERE clause should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_validate_query_identifiers_rejects_malicious_degree_var_in_where() {
+        // Illegal Expr::Degree.var in WHERE clause.
+        let bad_var = "n; DROP TABLE symbols".to_string();
+        let query = CypherQuery {
+            match_clauses: vec![MatchClause {
+                is_optional: false,
+                patterns: vec![PathPattern {
+                    nodes: vec![NodePattern {
+                        var: Some("n".to_string()),
+                        label: Some("Function".to_string()),
+                        props: vec![],
+                    }],
+                    rels: vec![],
+                }],
+            }],
+            where_clause: Some(WhereClause {
+                expr: Expr::Degree {
+                    var: bad_var,
+                    kind: DegreeKind::Out,
+                    op: CmpOp::Gt,
+                    value: Value::Int(0),
+                },
+            }),
+            return_clause: ReturnClause {
+                items: vec![ReturnItem::Var("n".to_string(), None)],
+                distinct: false,
+            },
+            order_by: None,
+            limit: None,
+        };
+        assert!(
+            validate_query_identifiers(&query).is_err(),
+            "malicious Degree.var in WHERE clause should be rejected"
+        );
+    }
+
+    #[test]
+    fn test_validate_query_identifiers_accepts_valid_where_clause() {
+        // Legal WHERE with valid identifiers should still pass.
+        let query = CypherQuery {
+            match_clauses: vec![MatchClause {
+                is_optional: false,
+                patterns: vec![PathPattern {
+                    nodes: vec![NodePattern {
+                        var: Some("n".to_string()),
+                        label: Some("Function".to_string()),
+                        props: vec![],
+                    }],
+                    rels: vec![],
+                }],
+            }],
+            where_clause: Some(WhereClause {
+                expr: Expr::And(
+                    Box::new(Expr::Comparison {
+                        left: PropRef {
+                            var: "n".to_string(),
+                            prop: "name".to_string(),
+                        },
+                        op: CmpOp::Eq,
+                        right: Value::String("foo".to_string()),
+                    }),
+                    Box::new(Expr::Degree {
+                        var: "n".to_string(),
+                        kind: DegreeKind::In,
+                        op: CmpOp::Gt,
+                        value: Value::Int(0),
+                    }),
+                ),
+            }),
+            return_clause: ReturnClause {
+                items: vec![ReturnItem::Var("n".to_string(), None)],
+                distinct: false,
+            },
+            order_by: None,
+            limit: None,
+        };
+        assert!(
+            validate_query_identifiers(&query).is_ok(),
+            "valid WHERE clause should pass identifier validation"
+        );
+    }
 }

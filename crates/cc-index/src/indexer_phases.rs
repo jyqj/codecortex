@@ -128,29 +128,31 @@ impl Indexer {
             }
         }
 
-        // Phase 4d: Cross-file framework resolution (post-catalog)
+        // Phase 4d: Cross-file framework resolution (post-catalog).
+        //
+        // Resolvers need `&mut [(String, ParseOutcome)]`. Previously every
+        // outcome was deep-cloned (symbols/edges/refs/chunks) just to hand the
+        // resolvers a mutable view, then a partial subset of edges was merged
+        // back. Instead we *move* each outcome out of its write_unit (leaving a
+        // cheap default in place), let resolvers mutate it in place, and move it
+        // straight back. This eliminates the full-graph deep copy and also
+        // faithfully preserves in-place edge mutations (e.g. route prefix
+        // propagation / handler UID binding) that the old length-only merge
+        // silently dropped.
         {
             let registry = crate::framework_resolvers::default_registry();
             let active = registry.active_resolvers(fw_context);
             if !active.is_empty() {
                 let mut owned_pairs: Vec<(String, ParseOutcome)> = write_units
-                    .iter()
-                    .map(|u| (u.rel_path.clone(), u.outcome.clone()))
+                    .iter_mut()
+                    .map(|u| (u.rel_path.clone(), std::mem::take(&mut u.outcome)))
                     .collect();
                 for resolver in &active {
                     resolver.resolve_cross_file(&catalog, &mut owned_pairs, fw_context);
                 }
-                // Merge back any changes from cross-file resolution
-                for (i, (_, outcome)) in owned_pairs.into_iter().enumerate() {
-                    if i < write_units.len() {
-                        let unit = &mut write_units[i];
-                        if outcome.route_edges.len() > unit.outcome.route_edges.len() {
-                            unit.outcome.route_edges = outcome.route_edges;
-                        }
-                        if outcome.call_edges.len() > unit.outcome.call_edges.len() {
-                            unit.outcome.call_edges = outcome.call_edges;
-                        }
-                    }
+                // Move the (possibly mutated) outcomes back into their units.
+                for (unit, (_, outcome)) in write_units.iter_mut().zip(owned_pairs) {
+                    unit.outcome = outcome;
                 }
             }
         }
@@ -525,10 +527,10 @@ impl Indexer {
 
             if !adr_docs.is_empty() {
                 tracing::info!(count = adr_docs.len(), "indexed ADR documents");
-                let _ = self.db.set_metadata(
+                self.db.set_metadata(
                     "adr_documents",
                     &serde_json::to_string(&adr_docs).unwrap_or_default(),
-                );
+                )?;
             }
         }
 
@@ -1049,10 +1051,14 @@ impl Indexer {
         }
 
         // Step 2: Compare old vs new export fingerprints to find files whose
-        //         public API surface actually changed.
+        //         public API surface actually changed. Fetch all old
+        //         fingerprints in one batched query to avoid N+1 round trips.
+        let old_fingerprints = self.db.get_export_fingerprints(&changed_files)?;
         let mut export_changed_files = Vec::new();
         for file_path in &changed_files {
-            let old_fp = self.db.get_export_fingerprint(file_path)?;
+            // Files with no exported symbols are absent from the map (== None),
+            // matching the single-file query's None return.
+            let old_fp = old_fingerprints.get(file_path).cloned();
             let new_fp = Self::compute_new_export_fingerprint(write_units, file_path);
             if old_fp != new_fp {
                 export_changed_files.push(file_path.clone());
@@ -1142,5 +1148,147 @@ impl Indexer {
 
         let combined = parts.join("\n");
         Some(blake3::hash(combined.as_bytes()).to_hex().to_string())
+    }
+}
+
+#[cfg(test)]
+mod export_fingerprint_contract_tests {
+    use super::*;
+    use cc_model::symbol::SymbolKind;
+    use cc_model::symbol::SymbolRecord;
+    use cc_model::{Language, ParserTier};
+
+    fn symbol(
+        uid: &str,
+        name: &str,
+        signature: Option<&str>,
+        export_name: Option<&str>,
+        is_default_export: bool,
+    ) -> SymbolRecord {
+        SymbolRecord {
+            symbol_id: uid.to_string(),
+            file_path: "src/lib.rs".to_string(),
+            name: name.to_string(),
+            kind: SymbolKind::Function,
+            container: None,
+            start_line: 1,
+            end_line: 2,
+            start_col: 0,
+            end_col: 0,
+            signature: signature.map(String::from),
+            doc: None,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.9,
+            qname: Some(name.to_string()),
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: export_name.map(String::from),
+            is_default_export,
+            symbol_uid: Some(uid.to_string()),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        }
+    }
+
+    fn write_unit(symbols: Vec<SymbolRecord>) -> FileWriteUnit {
+        let outcome = ParseOutcome {
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.9,
+            symbols,
+            ..Default::default()
+        };
+        FileWriteUnit {
+            rel_path: "src/lib.rs".to_string(),
+            language: Language::Rust,
+            content_hash: "hash-contract".to_string(),
+            mtime: 1.0,
+            size: 100,
+            outcome,
+        }
+    }
+
+    /// Contract: `compute_new_export_fingerprint` (cc-index, in-memory) and
+    /// `IndexDb::get_export_fingerprint` (cc-db, SQL) are two independent blake3
+    /// implementations whose hashes MUST be byte-for-byte identical for the same
+    /// symbols. This test locks that contract so the two can never silently drift.
+    #[test]
+    fn in_memory_and_db_fingerprints_match() {
+        let symbols = vec![
+            // Out-of-order uids to exercise the sort/ORDER BY contract.
+            symbol(
+                "uid_zeta",
+                "zeta",
+                Some("fn zeta() -> u8"),
+                Some("zeta"),
+                false,
+            ),
+            symbol(
+                "uid_alpha",
+                "alpha",
+                Some("fn alpha()"),
+                Some("alpha"),
+                false,
+            ),
+            // Default export with no explicit export_name.
+            symbol("uid_default", "Widget", Some("struct Widget"), None, true),
+            // A non-exported symbol must be ignored by BOTH implementations.
+            symbol(
+                "uid_priv",
+                "private_fn",
+                Some("fn private_fn()"),
+                None,
+                false,
+            ),
+        ];
+
+        let unit = write_unit(symbols);
+
+        // Persist into a real IndexDb and read the DB-side fingerprint.
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("contract.db")).unwrap().0;
+        db.replace_files_batch(std::slice::from_ref(&unit)).unwrap();
+        let db_fp = db.get_export_fingerprint("src/lib.rs").unwrap();
+
+        // Compute the in-memory fingerprint from the same write_unit.
+        let mem_fp =
+            Indexer::compute_new_export_fingerprint(std::slice::from_ref(&unit), "src/lib.rs");
+
+        assert!(db_fp.is_some(), "expected a non-empty DB fingerprint");
+        assert_eq!(
+            mem_fp, db_fp,
+            "in-memory and DB export fingerprints must be identical"
+        );
+    }
+
+    /// Contract for the no-exports case: both implementations must return None
+    /// when a file has zero exported symbols.
+    #[test]
+    fn both_return_none_without_exports() {
+        let symbols = vec![symbol(
+            "uid_priv",
+            "helper",
+            Some("fn helper()"),
+            None,
+            false,
+        )];
+        let unit = write_unit(symbols);
+
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("contract_none.db"))
+            .unwrap()
+            .0;
+        db.replace_files_batch(std::slice::from_ref(&unit)).unwrap();
+        let db_fp = db.get_export_fingerprint("src/lib.rs").unwrap();
+
+        let mem_fp =
+            Indexer::compute_new_export_fingerprint(std::slice::from_ref(&unit), "src/lib.rs");
+
+        assert_eq!(db_fp, None);
+        assert_eq!(mem_fp, None);
     }
 }

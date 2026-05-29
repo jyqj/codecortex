@@ -19,6 +19,8 @@ const MAX_TRACE_ITEMS: usize = 1000;
 const MAX_FILE_ITEMS: usize = 200;
 const MAX_SYMBOL_ITEMS: usize = 10;
 const MAX_ADR_TEXT_LEN: usize = 65536;
+const MAX_SOURCE_CHARS: usize = 1_000_000;
+const MAX_SNIPPET_LINES: usize = 1000;
 
 // ---------------------------------------------------------------------------
 // Sanitization helpers
@@ -255,6 +257,11 @@ pub struct SearchParams {
     #[serde(default)]
     pub file_preselect_limit: Option<usize>,
 
+    /// Restrict results to files whose path begins with this prefix
+    /// (e.g. `"src/api/"`). Applied as an exclusive filter.
+    #[serde(default)]
+    pub path_prefix: Option<String>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -265,6 +272,7 @@ impl SearchParams {
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         self.top_k = self.top_k.clamp(1, MAX_TOP_K);
         clamp_opt_str(&mut self.intent, MAX_QUERY_LEN);
+        clamp_opt_str(&mut self.path_prefix, MAX_PATH_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
         clamp_path_list(&mut self.boost_files);
         clamp_path_list(&mut self.recent_files);
@@ -291,6 +299,7 @@ impl Default for SearchParams {
             conversation_queries: None,
             overlay_files: None,
             file_preselect_limit: None,
+            path_prefix: None,
             project_path: None,
         }
     }
@@ -418,6 +427,39 @@ pub struct ExploreParams {
     #[serde(default = "default_max_depth")]
     pub max_depth: usize,
 
+    /// `flow` mode: maximum number of distinct flow paths to return. Default 3.
+    #[serde(default)]
+    pub max_paths: Option<usize>,
+
+    /// `flow` mode: require exact symbol-name matches for the endpoints
+    /// instead of fuzzy lookup. Default `true`.
+    #[serde(default)]
+    pub exact: Option<bool>,
+
+    /// `flow` mode: restrict candidate symbols to this file path.
+    #[serde(default)]
+    pub file_path: Option<String>,
+
+    /// `flow` mode: maximum number of candidate symbols considered per endpoint
+    /// name when resolving ambiguous symbols. Default 5.
+    #[serde(default)]
+    pub max_candidates: Option<usize>,
+
+    /// `symbols` mode: maximum number of callers to list per symbol.
+    /// Defaults to a repo-size-adaptive value.
+    #[serde(default)]
+    pub max_callers: Option<usize>,
+
+    /// `symbols` mode: maximum number of callees to list per symbol.
+    /// Defaults to a repo-size-adaptive value.
+    #[serde(default)]
+    pub max_callees: Option<usize>,
+
+    /// `symbols` mode: maximum source characters returned per symbol.
+    /// Defaults to a repo-size-adaptive value.
+    #[serde(default)]
+    pub max_source_per_file: Option<usize>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -430,6 +472,22 @@ impl ExploreParams {
             clamp_str(s, MAX_QUERY_LEN);
         }
         self.max_depth = self.max_depth.clamp(1, MAX_DEPTH);
+        if let Some(ref mut n) = self.max_paths {
+            *n = (*n).clamp(1, MAX_LIMIT);
+        }
+        if let Some(ref mut n) = self.max_candidates {
+            *n = (*n).clamp(1, MAX_LIMIT);
+        }
+        if let Some(ref mut n) = self.max_callers {
+            *n = (*n).clamp(1, MAX_LIMIT);
+        }
+        if let Some(ref mut n) = self.max_callees {
+            *n = (*n).clamp(1, MAX_LIMIT);
+        }
+        if let Some(ref mut n) = self.max_source_per_file {
+            *n = (*n).clamp(1, MAX_SOURCE_CHARS);
+        }
+        clamp_opt_str(&mut self.file_path, MAX_PATH_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
     }
 }
@@ -442,6 +500,13 @@ impl Default for ExploreParams {
             include_source: default_true(),
             outline: false,
             max_depth: default_max_depth(),
+            max_paths: None,
+            exact: None,
+            file_path: None,
+            max_candidates: None,
+            max_callers: None,
+            max_callees: None,
+            max_source_per_file: None,
             project_path: None,
         }
     }
@@ -491,6 +556,11 @@ pub struct TraceParams {
     #[serde(default)]
     pub to_uid: Option<String>,
 
+    /// Maximum source lines per hop node when `source_mode="snippet"`
+    /// (or `include_source=true`). Default 3.
+    #[serde(default)]
+    pub max_snippet_lines: Option<usize>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -503,6 +573,9 @@ impl TraceParams {
         self.max_depth = self.max_depth.clamp(1, MAX_DEPTH);
         clamp_opt_str(&mut self.from_uid, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.to_uid, MAX_QUERY_LEN);
+        if let Some(ref mut n) = self.max_snippet_lines {
+            *n = (*n).clamp(1, MAX_SNIPPET_LINES);
+        }
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
     }
 }
@@ -517,6 +590,7 @@ impl Default for TraceParams {
             source_mode: None,
             from_uid: None,
             to_uid: None,
+            max_snippet_lines: None,
             project_path: None,
         }
     }
@@ -616,6 +690,12 @@ pub struct ImpactParams {
     #[serde(default = "default_limit")]
     pub limit: usize,
 
+    /// Minimum parser confidence (0.0–1.0) for call edges traversed during
+    /// blast-radius BFS. Edges below this threshold are skipped, filtering out
+    /// low-confidence impacted symbols. Applies to `changes` / `tests` scopes.
+    #[serde(default)]
+    pub confidence_threshold: Option<f32>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -635,6 +715,9 @@ impl ImpactParams {
         }
         clamp_opt_str(&mut self.file_path, MAX_PATH_LEN);
         self.limit = self.limit.clamp(1, MAX_LIMIT);
+        if let Some(ref mut t) = self.confidence_threshold {
+            *t = t.clamp(0.0, 1.0);
+        }
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
     }
 }
@@ -648,6 +731,7 @@ impl Default for ImpactParams {
             granularity: default_granularity(),
             file_path: None,
             limit: default_limit(),
+            confidence_threshold: None,
             project_path: None,
         }
     }
@@ -883,5 +967,68 @@ mod tests {
         params.sanitize();
         assert!(params.query.len() <= MAX_QUERY_LEN);
         assert!(params.query.is_char_boundary(params.query.len()));
+    }
+
+    #[test]
+    fn explore_params_sanitize_clamps_new_optionals() {
+        let mut params = ExploreParams {
+            symbols: vec!["A".into()],
+            max_paths: Some(99_999),
+            max_candidates: Some(99_999),
+            max_callers: Some(99_999),
+            max_callees: Some(99_999),
+            max_source_per_file: Some(usize::MAX),
+            file_path: Some("x".repeat(MAX_PATH_LEN + 100)),
+            exact: Some(true),
+            ..Default::default()
+        };
+        params.sanitize();
+        assert!(params.max_paths.unwrap() <= MAX_LIMIT);
+        assert!(params.max_candidates.unwrap() <= MAX_LIMIT);
+        assert!(params.max_callers.unwrap() <= MAX_LIMIT);
+        assert!(params.max_callees.unwrap() <= MAX_LIMIT);
+        assert!(params.max_source_per_file.unwrap() <= MAX_SOURCE_CHARS);
+        assert!(params.file_path.as_ref().unwrap().len() <= MAX_PATH_LEN);
+        assert_eq!(params.exact, Some(true));
+    }
+
+    #[test]
+    fn trace_params_sanitize_clamps_max_snippet_lines() {
+        let mut params = TraceParams {
+            from: "A".into(),
+            to: "B".into(),
+            max_snippet_lines: Some(usize::MAX),
+            ..Default::default()
+        };
+        params.sanitize();
+        assert!(params.max_snippet_lines.unwrap() <= MAX_SNIPPET_LINES);
+    }
+
+    #[test]
+    fn search_params_sanitize_clamps_path_prefix() {
+        let mut params = SearchParams {
+            query: "q".into(),
+            path_prefix: Some("p".repeat(MAX_PATH_LEN + 50)),
+            ..Default::default()
+        };
+        params.sanitize();
+        assert!(params.path_prefix.as_ref().unwrap().len() <= MAX_PATH_LEN);
+    }
+
+    #[test]
+    fn impact_params_sanitize_clamps_confidence_threshold() {
+        let mut high = ImpactParams {
+            confidence_threshold: Some(5.0),
+            ..Default::default()
+        };
+        high.sanitize();
+        assert_eq!(high.confidence_threshold, Some(1.0));
+
+        let mut low = ImpactParams {
+            confidence_threshold: Some(-1.0),
+            ..Default::default()
+        };
+        low.sanitize();
+        assert_eq!(low.confidence_threshold, Some(0.0));
     }
 }

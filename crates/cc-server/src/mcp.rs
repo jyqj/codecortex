@@ -181,6 +181,7 @@ impl CodeCortexMcpServer {
         let conversation_queries = p.conversation_queries;
         let overlay_files = p.overlay_files;
         let file_preselect_limit = p.file_preselect_limit;
+        let path_prefix = p.path_prefix;
         match mode.as_str() {
             "symbol" => {
                 spawn_handler!(index, move |rt| handlers::core::find_symbol(
@@ -193,7 +194,8 @@ impl CodeCortexMcpServer {
                     || pinned_files.is_some()
                     || conversation_queries.is_some()
                     || overlay_files.is_some()
-                    || file_preselect_limit.is_some();
+                    || file_preselect_limit.is_some()
+                    || path_prefix.is_some();
                 if has_overrides {
                     let overrides = cc_model::search::SearchRequest {
                         boost_file_paths: boost_files,
@@ -202,6 +204,7 @@ impl CodeCortexMcpServer {
                         conversation_queries,
                         overlay_file_paths: overlay_files,
                         file_preselect_limit,
+                        path_prefix,
                         ..Default::default()
                     };
                     spawn_handler!(index, move |rt| {
@@ -288,6 +291,13 @@ impl CodeCortexMcpServer {
         let include_source = p.include_source;
         let outline = p.outline;
         let max_depth = p.max_depth;
+        let max_paths = p.max_paths;
+        let exact = p.exact;
+        let flow_file_path = p.file_path;
+        let max_candidates = p.max_candidates;
+        let max_callers = p.max_callers;
+        let max_callees = p.max_callees;
+        let max_source_per_file = p.max_source_per_file;
         match mode.as_str() {
             "flow" => {
                 spawn_handler!(index, move |rt| handlers::graph::explore_flow(
@@ -295,23 +305,23 @@ impl CodeCortexMcpServer {
                     &symbols,
                     max_depth,
                     include_source,
-                    None,
-                    None,
-                    None,
-                    None,
+                    max_paths,
+                    exact,
+                    flow_file_path.as_deref(),
+                    max_candidates,
                 ))
             }
             _ => {
                 spawn_handler!(index, move |rt| handlers::context::explore_symbols(
                     rt,
                     &symbols,
-                    None,
-                    None,
+                    max_callers,
+                    max_callees,
                     include_source,
                     true,
                     false,
                     outline,
-                    None,
+                    max_source_per_file,
                 ))
             }
         }
@@ -339,13 +349,14 @@ impl CodeCortexMcpServer {
         let source_mode = p.source_mode;
         let from_uid = p.from_uid;
         let to_uid = p.to_uid;
+        let max_snippet_lines = p.max_snippet_lines;
         spawn_handler!(index, move |rt| handlers::graph::trace_path(
             rt,
             &from,
             &to,
             max_depth,
             include_source,
-            None,
+            max_snippet_lines,
             source_mode.as_deref(),
             from_uid.as_deref(),
             to_uid.as_deref(),
@@ -397,6 +408,7 @@ impl CodeCortexMcpServer {
         let granularity = p.granularity;
         let file_path = p.file_path;
         let limit = p.limit;
+        let confidence_threshold = p.confidence_threshold;
         spawn_handler!(index, move |rt| handlers::facade::handle_impact(
             rt,
             &scope,
@@ -405,6 +417,7 @@ impl CodeCortexMcpServer {
             &granularity,
             file_path.as_deref(),
             limit,
+            confidence_threshold,
         ))
     }
 

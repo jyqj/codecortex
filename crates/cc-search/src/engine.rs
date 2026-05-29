@@ -63,8 +63,10 @@ fn vector_similarity(qvec: &[f32], row: &[f32], query_norm: f32, query_normalise
     }
 }
 
-/// 4-lane accumulator dot product — auto-vectorizes to SIMD on x86_64 (SSE/AVX)
-/// and aarch64 (NEON) at -O2. Falls back to scalar for the tail elements.
+/// 4-lane scalar accumulator dot product; no explicit SIMD intrinsics or
+/// target_feature gates. Under release (-O2) the compiler typically
+/// auto-vectorizes the inner loop, but this is not guaranteed and there is no
+/// runtime dispatch. Tail elements (len % 4) are handled in a separate loop.
 #[inline]
 fn dot_product_fast(a: &[f32], b: &[f32]) -> f32 {
     let len = a.len().min(b.len());

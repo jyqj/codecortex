@@ -103,6 +103,9 @@ struct ParseResult {
     parse_errors: Vec<String>,
     files_to_parse: usize,
     used_parallel: bool,
+    /// rel_path -> source content read during parsing. Reused by Phase 3.7
+    /// framework enrichment to avoid re-reading the same files from disk.
+    source_cache: HashMap<String, String>,
 }
 
 /// Intermediate result for Phase 4 (resolve).
@@ -166,6 +169,7 @@ impl Indexer {
         let parse_result = self.phase_parse(project_path, scan_result.to_parse)?;
 
         let mut write_units = parse_result.write_units;
+        let source_cache = parse_result.source_cache;
 
         // Phase 3.5+3.6: Dirty propagation and reload
         let mut actions = self.build_actions_map(
@@ -186,7 +190,8 @@ impl Indexer {
         )?;
 
         // Phase 3.7+3.8: Framework enrichment and C/C++ include resolution
-        let fw_context = self.phase_framework_enrichment(project_path, &mut write_units)?;
+        let fw_context =
+            self.phase_framework_enrichment(project_path, &mut write_units, &source_cache)?;
 
         // Phase 4: Symbol resolution (all sub-phases)
         let resolve_result = self.phase_resolve(
@@ -365,7 +370,7 @@ impl Indexer {
         // Pre-compute Cargo workspace alias map for Rust crate import resolution
         let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
 
-        let parse_one = |pf: &PendingFile| -> Result<FileWriteUnit, (String, String)> {
+        let parse_one = |pf: &PendingFile| -> Result<(FileWriteUnit, String), (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
             let language = pf.scanned.language;
@@ -423,14 +428,17 @@ impl Indexer {
                 );
             }
 
-            Ok(FileWriteUnit {
-                rel_path,
-                language,
-                content_hash,
-                mtime,
-                size,
-                outcome,
-            })
+            Ok((
+                FileWriteUnit {
+                    rel_path,
+                    language,
+                    content_hash,
+                    mtime,
+                    size,
+                    outcome,
+                },
+                content,
+            ))
         };
 
         const DEFAULT_BATCH_SIZE: usize = 200;
@@ -439,6 +447,7 @@ impl Indexer {
         let used_parallel = files_to_parse >= MIN_FILES_FOR_PARALLEL;
 
         let mut write_units: Vec<FileWriteUnit> = Vec::with_capacity(files_to_parse);
+        let mut source_cache: HashMap<String, String> = HashMap::with_capacity(files_to_parse);
 
         if used_parallel {
             // Build a controlled thread pool capped by max_concurrent_parse config.
@@ -461,12 +470,15 @@ impl Indexer {
                 let batch = &to_parse[offset..end];
 
                 // Parallel parse for this batch.
-                let batch_results: Vec<Result<FileWriteUnit, (String, String)>> =
+                let batch_results: Vec<Result<(FileWriteUnit, String), (String, String)>> =
                     pool.install(|| batch.par_iter().map(&parse_one).collect());
 
                 for result in batch_results {
                     match result {
-                        Ok(unit) => write_units.push(unit),
+                        Ok((unit, source)) => {
+                            source_cache.insert(unit.rel_path.clone(), source);
+                            write_units.push(unit);
+                        }
                         Err((file, error)) => {
                             tracing::warn!(file = %file, error = %error, "parse error");
                             parse_errors.push(format!("{}: {}", file, error));
@@ -488,7 +500,10 @@ impl Indexer {
             // Small file count: sequential processing.
             for pf in &to_parse {
                 match parse_one(pf) {
-                    Ok(unit) => write_units.push(unit),
+                    Ok((unit, source)) => {
+                        source_cache.insert(unit.rel_path.clone(), source);
+                        write_units.push(unit);
+                    }
                     Err((file, error)) => {
                         tracing::warn!(file = %file, error = %error, "parse error");
                         parse_errors.push(format!("{}: {}", file, error));
@@ -502,6 +517,7 @@ impl Indexer {
             parse_errors,
             files_to_parse,
             used_parallel,
+            source_cache,
         })
     }
 
@@ -607,6 +623,7 @@ impl Indexer {
         &self,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        source_cache: &HashMap<String, String>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
         // Phase 3.7: Framework resolver enrichment (before resolution)
         let fw_context = {
@@ -617,35 +634,7 @@ impl Indexer {
             }
             for unit in write_units.iter() {
                 for imp in &unit.outcome.imports {
-                    let src = imp.import_string.to_lowercase();
-                    let import_checks: &[(&str, &str)] = &[
-                        ("express", "express"),
-                        ("fastify", "fastify"),
-                        ("react", "react"),
-                        ("nestjs", "@nestjs/common"),
-                        ("nestjs", "@nestjs/core"),
-                        ("django", "django"),
-                        ("flask", "flask"),
-                        ("fastapi", "fastapi"),
-                        ("gin", "github.com/gin-gonic/gin"),
-                        ("echo", "github.com/labstack/echo"),
-                        ("fiber", "github.com/gofiber/fiber"),
-                        ("chi", "github.com/go-chi/chi"),
-                        ("gorilla", "github.com/gorilla/mux"),
-                        ("net_http", "net/http"),
-                        ("spring", "org.springframework"),
-                        ("koa", "koa"),
-                        ("axum", "axum"),
-                        ("actix", "actix-web"),
-                        ("actix", "actix_web"),
-                        ("rocket", "rocket"),
-                    ];
-                    for &(fw_key, marker) in import_checks {
-                        if src.contains(marker) {
-                            let entry = repo_fws.entry(fw_key.to_string()).or_insert(0.0);
-                            *entry = (*entry + 0.4).min(0.95);
-                        }
-                    }
+                    score_import_markers(&imp.import_string, &mut repo_fws);
                 }
             }
 
@@ -654,35 +643,7 @@ impl Indexer {
             for unit in write_units.iter() {
                 let mut file_fws: HashMap<String, f64> = HashMap::new();
                 for imp in &unit.outcome.imports {
-                    let src = imp.import_string.to_lowercase();
-                    let import_checks: &[(&str, &str)] = &[
-                        ("express", "express"),
-                        ("fastify", "fastify"),
-                        ("react", "react"),
-                        ("nestjs", "@nestjs/common"),
-                        ("nestjs", "@nestjs/core"),
-                        ("django", "django"),
-                        ("flask", "flask"),
-                        ("fastapi", "fastapi"),
-                        ("gin", "github.com/gin-gonic/gin"),
-                        ("echo", "github.com/labstack/echo"),
-                        ("fiber", "github.com/gofiber/fiber"),
-                        ("chi", "github.com/go-chi/chi"),
-                        ("gorilla", "github.com/gorilla/mux"),
-                        ("net_http", "net/http"),
-                        ("spring", "org.springframework"),
-                        ("koa", "koa"),
-                        ("axum", "axum"),
-                        ("actix", "actix-web"),
-                        ("actix", "actix_web"),
-                        ("rocket", "rocket"),
-                    ];
-                    for &(fw_key, marker) in import_checks {
-                        if src.contains(marker) {
-                            let entry = file_fws.entry(fw_key.to_string()).or_insert(0.0);
-                            *entry = (*entry + 0.4).min(0.95);
-                        }
-                    }
+                    score_import_markers(&imp.import_string, &mut file_fws);
                 }
                 if !file_fws.is_empty() {
                     file_fw_map.insert(unit.rel_path.clone(), file_fws.into_iter().collect());
@@ -724,20 +685,28 @@ impl Indexer {
                         continue;
                     }
 
-                    let full_path = project_path.join(&unit.rel_path);
-                    let source = match std::fs::read_to_string(&full_path) {
-                        Ok(s) => s,
-                        Err(_) => continue,
+                    // Reuse the source already read during Phase 3 parsing to
+                    // avoid a redundant disk read. Only files not present in the
+                    // cache (e.g. dirty-reloaded files sourced from the DB) fall
+                    // back to reading from disk.
+                    let cached = source_cache.get(&unit.rel_path);
+                    let owned_fallback;
+                    let source: &str = match cached {
+                        Some(s) => s.as_str(),
+                        None => {
+                            let full_path = project_path.join(&unit.rel_path);
+                            match std::fs::read_to_string(&full_path) {
+                                Ok(s) => {
+                                    owned_fallback = s;
+                                    owned_fallback.as_str()
+                                }
+                                Err(_) => continue,
+                            }
+                        }
                     };
 
                     for resolver in &applicable {
-                        resolver.enrich_file(
-                            &unit.rel_path,
-                            &source,
-                            lang,
-                            &mut unit.outcome,
-                            &ctx,
-                        );
+                        resolver.enrich_file(&unit.rel_path, source, lang, &mut unit.outcome, &ctx);
                     }
                 }
             }
@@ -812,5 +781,67 @@ impl Indexer {
         }
 
         Ok(fw_context)
+    }
+}
+
+/// Accumulate framework confidence scores from a single import string using the
+/// authoritative [`framework_registry::import_marker_table`]. Each framework
+/// whose marker substring is present gains +0.4 (capped at 0.95). This is the
+/// single source of truth for import-based framework detection during Phase 3.7
+/// enrichment — it replaces two previously-inlined copies of the marker table
+/// that had drifted out of sync with the registry.
+fn score_import_markers(import_string: &str, scores: &mut HashMap<String, f64>) {
+    let src = import_string.to_lowercase();
+    for &(fw_key, markers) in framework_registry::import_marker_table() {
+        if markers
+            .iter()
+            .any(|marker| src.contains(&marker.to_lowercase()))
+        {
+            let entry = scores.entry(fw_key.to_string()).or_insert(0.0);
+            *entry = (*entry + 0.4).min(0.95);
+        }
+    }
+}
+
+#[cfg(test)]
+mod import_marker_dedup_tests {
+    use super::*;
+
+    /// Guard: the Phase 3.7 enrichment path (`score_import_markers`) and the
+    /// framework-registry detection path must consult the *same* authoritative
+    /// marker table, so a framework added/edited in one place is honoured by the
+    /// other. We assert this by checking that every framework key in the
+    /// registry table is detectable by `score_import_markers` using that same
+    /// table's own markers — proving there is no second, divergent copy.
+    #[test]
+    fn enrichment_uses_authoritative_marker_table() {
+        let table = framework_registry::import_marker_table();
+        assert!(!table.is_empty());
+
+        for &(fw_key, markers) in table {
+            // Use the first marker as a representative import string.
+            let import = markers[0];
+            let mut scores: HashMap<String, f64> = HashMap::new();
+            score_import_markers(import, &mut scores);
+            assert!(
+                scores.contains_key(fw_key),
+                "framework `{fw_key}` (marker `{import}`) must be detected via the \
+                 shared import_marker_table()"
+            );
+        }
+    }
+
+    /// Sanity: a framework that exists only in the authoritative table (e.g.
+    /// `nextjs`, added after the old inline copies) is now detected by the
+    /// enrichment path, confirming the inline copies are truly gone.
+    #[test]
+    fn detects_framework_absent_from_old_inline_table() {
+        let mut scores: HashMap<String, f64> = HashMap::new();
+        score_import_markers("next/server", &mut scores);
+        assert!(
+            scores.contains_key("nextjs"),
+            "nextjs was missing from the removed inline tables; it must now be \
+             detected via the authoritative table"
+        );
     }
 }

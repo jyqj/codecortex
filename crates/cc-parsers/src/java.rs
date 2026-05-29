@@ -1388,11 +1388,7 @@ impl JavaParser {
         symbols: &'a [SymbolRecord],
         line: u32,
     ) -> Option<&'a SymbolRecord> {
-        symbols
-            .iter()
-            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-            .filter(|s| s.start_line <= line && s.end_line >= line)
-            .min_by_key(|s| s.end_line - s.start_line)
+        crate::dataflow_common::find_enclosing_symbol(symbols, line)
     }
 
     // =========================================================================

@@ -283,18 +283,7 @@ impl CodeIndex {
         };
         let engine = self.ensure_engine()?;
         let detected_intent = intent.unwrap_or_else(|| detect_intent(query));
-        let request = SearchRequest {
-            query: query.to_string(),
-            top_k,
-            include_grep: true,
-            boost_file_paths: overrides.boost_file_paths,
-            recent_file_paths: overrides.recent_file_paths,
-            pinned_file_paths: overrides.pinned_file_paths,
-            conversation_queries: overrides.conversation_queries,
-            overlay_file_paths: overrides.overlay_file_paths,
-            file_preselect_limit: overrides.file_preselect_limit,
-            ..Default::default()
-        };
+        let request = build_context_search_request(query, top_k, overrides);
         let hits = engine.search(&request)?;
 
         let mut nodes = Vec::with_capacity(hits.len());
@@ -696,6 +685,29 @@ impl CodeIndex {
 
 // ── Free functions kept in engine.rs ───────────────────────────────────
 
+/// Build the `SearchRequest` for `search_in_context_with`, merging the caller
+/// supplied override fields (boost/recent/pinned/overlay files, conversation
+/// queries, preselect limit, and `path_prefix`) onto the base query.
+pub(crate) fn build_context_search_request(
+    query: &str,
+    top_k: usize,
+    overrides: SearchRequest,
+) -> SearchRequest {
+    SearchRequest {
+        query: query.to_string(),
+        top_k,
+        include_grep: true,
+        boost_file_paths: overrides.boost_file_paths,
+        recent_file_paths: overrides.recent_file_paths,
+        pinned_file_paths: overrides.pinned_file_paths,
+        conversation_queries: overrides.conversation_queries,
+        overlay_file_paths: overrides.overlay_file_paths,
+        file_preselect_limit: overrides.file_preselect_limit,
+        path_prefix: overrides.path_prefix,
+        ..Default::default()
+    }
+}
+
 fn detect_intent(query: &str) -> Intent {
     let q = query.to_lowercase();
     if q.contains("fix") || q.contains("bug") || q.contains("error") || q.contains("报错") {
@@ -850,6 +862,27 @@ mod tests {
 
         // A freshly created DB should have SchemaStatus::Initialized
         assert!(idx.needs_initial_index());
+    }
+
+    // ── build_context_search_request propagates overrides ──────────
+
+    #[test]
+    fn build_context_search_request_propagates_path_prefix() {
+        let overrides = SearchRequest {
+            path_prefix: Some("src/api/".to_string()),
+            boost_file_paths: Some(vec!["src/main.rs".to_string()]),
+            file_preselect_limit: Some(42),
+            ..Default::default()
+        };
+        let request = build_context_search_request("login", 7, overrides);
+        assert_eq!(request.query, "login");
+        assert_eq!(request.top_k, 7);
+        assert_eq!(request.path_prefix.as_deref(), Some("src/api/"));
+        assert_eq!(
+            request.boost_file_paths.as_deref(),
+            Some(["src/main.rs".to_string()].as_slice())
+        );
+        assert_eq!(request.file_preselect_limit, Some(42));
     }
 
     // ── detect_intent free function ─────────────────────────────────

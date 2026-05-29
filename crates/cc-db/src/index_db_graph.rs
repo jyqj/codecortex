@@ -910,6 +910,82 @@ impl IndexDb {
         Ok(Some(hash.to_hex().to_string()))
     }
 
+    /// Batch variant of [`Self::get_export_fingerprint`]: compute the export
+    /// fingerprint for many files in a single query, avoiding N+1 round trips
+    /// during dirty propagation.
+    ///
+    /// Returns a map of `file_path -> fingerprint` containing only files that
+    /// have at least one exported symbol (matching the single-file method,
+    /// which returns `None` for files with no exports). The per-file hash is
+    /// byte-for-byte identical to `get_export_fingerprint(path)`.
+    pub fn get_export_fingerprints(
+        &self,
+        file_paths: &[String],
+    ) -> CcResult<HashMap<String, String>> {
+        let mut result: HashMap<String, String> = HashMap::new();
+        if file_paths.is_empty() {
+            return Ok(result);
+        }
+
+        const BATCH_SIZE: usize = 500;
+        let conn = self.read_conn()?;
+
+        for chunk in file_paths.chunks(BATCH_SIZE) {
+            let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
+            // Order by file_path first so each file's rows are contiguous, then
+            // by symbol_uid to match the single-file query's ORDER BY.
+            let sql = format!(
+                "SELECT file_path, symbol_uid, name, COALESCE(signature, '') as sig, \
+                        COALESCE(export_name, '') as exp
+                 FROM symbols
+                 WHERE file_path IN ({})
+                   AND (export_name IS NOT NULL OR is_default_export = 1)
+                 ORDER BY file_path, symbol_uid",
+                placeholders.join(",")
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let params: Vec<&dyn rusqlite::types::ToSql> = chunk
+                .iter()
+                .map(|p| p as &dyn rusqlite::types::ToSql)
+                .collect();
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                        row.get::<_, String>(2)?,
+                        row.get::<_, String>(3)?,
+                        row.get::<_, String>(4)?,
+                    ))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+
+            // Group rows per file (rows are contiguous thanks to ORDER BY).
+            let mut grouped: HashMap<String, Vec<String>> = HashMap::new();
+            for row in rows {
+                let (file_path, uid, name, sig, exp) =
+                    row.map_err(|e| CcError::Database(e.to_string()))?;
+                grouped
+                    .entry(file_path)
+                    .or_default()
+                    .push(format!("{}|{}|{}|{}", uid, name, sig, exp));
+            }
+
+            for (file_path, parts) in grouped {
+                if parts.is_empty() {
+                    continue;
+                }
+                let combined = parts.join("\n");
+                let hash = blake3::hash(combined.as_bytes());
+                result.insert(file_path, hash.to_hex().to_string());
+            }
+        }
+
+        Ok(result)
+    }
+
     /// Find all files that import the given resolved paths.
     pub fn find_importers_of(&self, resolved_paths: &[String]) -> CcResult<Vec<String>> {
         if resolved_paths.is_empty() {
@@ -1316,6 +1392,82 @@ mod tests {
         // Smallest span first: inner (span 20) before outer (span 49)
         assert_eq!(rows[0].name, "inner");
         assert_eq!(rows[1].name, "outer");
+    }
+
+    #[test]
+    fn test_get_export_fingerprints_batch_matches_single() {
+        let (db, _tmp) = setup();
+        for f in ["src/a.rs", "src/b.rs", "src/c_no_exports.rs"] {
+            insert_file(&db, f);
+        }
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            // src/a.rs: two exported symbols (intentionally out of uid order to
+            // exercise the ORDER BY contract).
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid,export_name,is_default_export)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
+                rusqlite::params!["a2","src/a.rs","beta","Function","",1,5,0,0,"fn beta()","","tree_sitter",0.9,"beta","uid_a_beta","beta",0],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid,export_name,is_default_export)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
+                rusqlite::params!["a1","src/a.rs","alpha","Function","",6,9,0,0,"fn alpha()","","tree_sitter",0.9,"alpha","uid_a_alpha","alpha",0],
+            ).unwrap();
+            // A non-exported symbol in a.rs must be ignored by both paths.
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid,export_name,is_default_export)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
+                rusqlite::params!["a3","src/a.rs","private_fn","Function","",10,12,0,0,"fn private_fn()","","tree_sitter",0.9,"priv","uid_a_priv",Option::<String>::None,0],
+            ).unwrap();
+            // src/b.rs: one default-export symbol.
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid,export_name,is_default_export)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
+                rusqlite::params!["b1","src/b.rs","Widget","Class","",1,20,0,0,"class Widget","","tree_sitter",0.9,"Widget","uid_b_widget",Option::<String>::None,1],
+            ).unwrap();
+            // src/c_no_exports.rs: only private symbols (no fingerprint).
+            tx.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid,export_name,is_default_export)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
+                rusqlite::params!["c1","src/c_no_exports.rs","helper","Function","",1,3,0,0,"fn helper()","","tree_sitter",0.9,"helper","uid_c_helper",Option::<String>::None,0],
+            ).unwrap();
+            tx.commit().unwrap();
+        }
+
+        let paths = vec![
+            "src/a.rs".to_string(),
+            "src/b.rs".to_string(),
+            "src/c_no_exports.rs".to_string(),
+            "src/missing.rs".to_string(),
+        ];
+
+        let batch = db.get_export_fingerprints(&paths).unwrap();
+
+        // Batch result must equal the per-file query for every path.
+        for path in &paths {
+            let single = db.get_export_fingerprint(path).unwrap();
+            assert_eq!(
+                batch.get(path).cloned(),
+                single,
+                "batch fingerprint for {path} must match single-file result"
+            );
+        }
+
+        // Files with exports are present; files without exports / missing are absent.
+        assert!(batch.contains_key("src/a.rs"));
+        assert!(batch.contains_key("src/b.rs"));
+        assert!(!batch.contains_key("src/c_no_exports.rs"));
+        assert!(!batch.contains_key("src/missing.rs"));
+    }
+
+    #[test]
+    fn test_get_export_fingerprints_empty_input() {
+        let (db, _tmp) = setup();
+        let batch = db.get_export_fingerprints(&[]).unwrap();
+        assert!(batch.is_empty());
     }
 
     #[test]

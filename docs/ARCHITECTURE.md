@@ -12,7 +12,7 @@ A 7-crate Cargo workspace with strictly downward dependencies (no cycles):
 ```
 cc-model      Data types, config, error definitions (serde, thiserror, blake3)
     |
-cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 26 tables, schema v16)
+cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 25 tables + 4 FTS5, schema v17)
     |
 cc-parsers    Tree-sitter AST extraction + framework detection
 cc-index      File scanning, incremental indexing, community detection (Louvain)
@@ -38,18 +38,19 @@ Data types, config, and error definitions. Minimal dependencies: `serde`,
 ### cc-db
 SQLite persistence for the code index. Single database file: `index.sqlite3`.
 
-- `IndexDb` — connection pool (r2d2: 4 readers + 1 writer), WAL mode
-- 26 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts,
+- `IndexDb` — r2d2 read pool (default 4 readers) + a dedicated Mutex-guarded
+  writer connection, WAL mode
+- 25 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts,
   call_edges, test_edges, route_edges, route_nodes, diagnostics, literal_index,
-  scopes, communities, repo_frameworks, file_frameworks, data_flow_edges,
+  communities, repo_frameworks, file_frameworks, data_flow_edges,
   co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges,
   dispatch_sites, runtime_evidence, adr, metadata
 - FTS5 full-text search on chunks, diagnostics, literals, files
 - A `REGEXP(pattern, text)` scalar UDF backs Cypher `=~`; the compiled pattern is
   cached as SQLite auxiliary data so a constant pattern compiles once per
   statement, not once per row
-- Schema versioning via the `user_version` pragma (v16, incremental migration
-  chain)
+- Schema versioning via the `user_version` pragma (v17, incremental migration
+  chain; the v16→v17 step drops the unused `scopes` table)
 
 ### cc-parsers
 Tree-sitter AST extraction across 30 auto-detected language identifiers (+ an

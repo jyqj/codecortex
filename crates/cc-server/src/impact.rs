@@ -73,8 +73,8 @@ impl ImpactAnalyzer {
                 .args(&cmd_parts[1..])
                 .current_dir(&cwd)
                 .output();
-            if let Ok(output) = result {
-                if output.status.success() {
+            match result {
+                Ok(output) if output.status.success() => {
                     let stdout = String::from_utf8_lossy(&output.stdout);
                     for line in stdout.trim().lines() {
                         let line = line.trim();
@@ -82,6 +82,17 @@ impl ImpactAnalyzer {
                             files.push(line.to_string());
                         }
                     }
+                }
+                Ok(output) => {
+                    tracing::debug!(
+                        cmd = ?cmd_parts,
+                        code = output.status.code(),
+                        stderr = %String::from_utf8_lossy(&output.stderr).trim(),
+                        "git command returned non-zero exit; skipping (not a git repo or unknown ref?)"
+                    );
+                }
+                Err(e) => {
+                    tracing::debug!(cmd = ?cmd_parts, error = %e, "failed to spawn git; skipping");
                 }
             }
         }
@@ -369,7 +380,20 @@ impl ImpactAnalyzer {
         &self,
         impacted_symbols: &[ImpactedSymbol],
     ) -> Vec<CrossServiceImpact> {
-        let mut results = Vec::new();
+        // Phase 1: gather every (seed, route, caller) tuple and the full set of
+        // caller symbol UIDs that need a name lookup.
+        struct PendingImpact {
+            seed_uid: String,
+            seed_name: String,
+            seed_file: String,
+            route_path: String,
+            method: Option<String>,
+            caller_uid: Option<String>,
+            caller_file: String,
+        }
+        let mut pending: Vec<PendingImpact> = Vec::new();
+        let mut caller_uids: Vec<String> = Vec::new();
+        let mut seen_uids: HashSet<String> = HashSet::new();
 
         for seed in impacted_symbols.iter().filter(|s| s.hop_depth == 0) {
             // 1. Check if this symbol is a route handler
@@ -393,46 +417,100 @@ impl ImpactAnalyzer {
                 };
 
                 for caller in &callers {
-                    // 4. Resolve caller name: try symbol table lookup, fallback to file_path
-                    let (caller_uid, caller_name) = if let Some(ref uid) = caller.caller_symbol_uid
-                    {
-                        // Try to look up the symbol name from the DB
-                        let name = self
-                            .db
-                            .read_conn()
-                            .ok()
-                            .and_then(|conn| {
-                                conn.prepare("SELECT name FROM symbols WHERE symbol_uid = ?1")
-                                    .ok()
-                                    .and_then(|mut stmt| {
-                                        stmt.query_row(rusqlite::params![uid], |r| {
-                                            r.get::<_, String>(0)
-                                        })
-                                        .ok()
-                                    })
-                            })
-                            .unwrap_or_else(|| caller.file_path.clone());
-                        (uid.clone(), name)
-                    } else {
-                        (String::new(), caller.file_path.clone())
-                    };
-
-                    results.push(CrossServiceImpact {
-                        caller_symbol_uid: caller_uid,
-                        caller_name,
-                        caller_file: caller.file_path.clone(),
+                    if let Some(ref uid) = caller.caller_symbol_uid {
+                        if seen_uids.insert(uid.clone()) {
+                            caller_uids.push(uid.clone());
+                        }
+                    }
+                    pending.push(PendingImpact {
+                        seed_uid: seed.symbol_uid.clone(),
+                        seed_name: seed.name.clone(),
+                        seed_file: seed.file_path.clone(),
                         route_path: route.route_path.clone(),
                         method: route.method.clone(),
-                        handler_symbol_uid: Some(seed.symbol_uid.clone()),
-                        handler_name: Some(seed.name.clone()),
-                        handler_file: Some(seed.file_path.clone()),
-                        confidence: 0.65,
-                        source: "http_call_reverse".to_string(),
+                        caller_uid: caller.caller_symbol_uid.clone(),
+                        caller_file: caller.file_path.clone(),
                     });
                 }
             }
         }
-        results
+
+        // Phase 2: resolve all caller UIDs to names in one batched pass instead
+        // of opening a read connection + single-row query per caller.
+        let name_by_uid = self.symbol_names_by_uid(&caller_uids);
+
+        // Phase 3: assemble results, falling back to caller_file when the UID is
+        // absent or unresolved.
+        pending
+            .into_iter()
+            .map(|p| {
+                let (caller_symbol_uid, caller_name) = match p.caller_uid {
+                    Some(uid) => {
+                        let name = name_by_uid
+                            .get(&uid)
+                            .cloned()
+                            .unwrap_or_else(|| p.caller_file.clone());
+                        (uid, name)
+                    }
+                    None => (String::new(), p.caller_file.clone()),
+                };
+                CrossServiceImpact {
+                    caller_symbol_uid,
+                    caller_name,
+                    caller_file: p.caller_file,
+                    route_path: p.route_path,
+                    method: p.method,
+                    handler_symbol_uid: Some(p.seed_uid),
+                    handler_name: Some(p.seed_name),
+                    handler_file: Some(p.seed_file),
+                    confidence: 0.65,
+                    source: "http_call_reverse".to_string(),
+                }
+            })
+            .collect()
+    }
+
+    /// Resolve a batch of symbol UIDs to their names with a single connection
+    /// and `WHERE symbol_uid IN (...)` query (chunked to bound placeholder count).
+    /// UIDs without a matching symbol row are simply absent from the map.
+    fn symbol_names_by_uid(&self, uids: &[String]) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        if uids.is_empty() {
+            return map;
+        }
+        let conn = match self.db.read_conn() {
+            Ok(c) => c,
+            Err(_) => return map,
+        };
+        let batch_size = 200;
+        for batch in uids.chunks(batch_size) {
+            let placeholders: String = (0..batch.len())
+                .map(|i| format!("?{}", i + 1))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql = format!(
+                "SELECT symbol_uid, name FROM symbols WHERE symbol_uid IN ({})",
+                placeholders
+            );
+            let mut stmt = match conn.prepare(&sql) {
+                Ok(s) => s,
+                Err(_) => continue,
+            };
+            let param_refs: Vec<&dyn rusqlite::types::ToSql> = batch
+                .iter()
+                .map(|u| u as &dyn rusqlite::types::ToSql)
+                .collect();
+            let rows: Vec<(String, String)> = match stmt.query_map(param_refs.as_slice(), |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            }) {
+                Ok(mapped) => mapped.flatten().collect(),
+                Err(_) => continue,
+            };
+            for (uid, name) in rows {
+                map.insert(uid, name);
+            }
+        }
+        map
     }
 
     // ── Advisory Pass B: historical co-change impact ─────────────
@@ -879,6 +957,33 @@ mod tests {
 
         assert_eq!(report.suggested_tests, vec!["tests/test_a.rs"]);
         assert_eq!(report.risk_summary.suggested_test_count, 1);
+    }
+
+    // ── symbol_names_by_uid: batched name resolution ────────────────
+
+    #[test]
+    fn symbol_names_by_uid_resolves_batch_and_skips_missing() {
+        let (_dir, db) = temp_db();
+        insert_file(&db, "src/a.rs");
+        insert_symbol(&db, "uid_a", "Alpha", "src/a.rs", "function", None);
+        insert_symbol(&db, "uid_b", "Beta", "src/a.rs", "function", None);
+
+        let analyzer = ImpactAnalyzer::new(db);
+        let map = analyzer.symbol_names_by_uid(&[
+            "uid_a".to_string(),
+            "uid_b".to_string(),
+            "uid_missing".to_string(),
+        ]);
+        assert_eq!(map.get("uid_a").map(String::as_str), Some("Alpha"));
+        assert_eq!(map.get("uid_b").map(String::as_str), Some("Beta"));
+        assert!(!map.contains_key("uid_missing"));
+    }
+
+    #[test]
+    fn symbol_names_by_uid_empty_returns_empty() {
+        let (_dir, db) = temp_db();
+        let analyzer = ImpactAnalyzer::new(db);
+        assert!(analyzer.symbol_names_by_uid(&[]).is_empty());
     }
 
     // ── Helper: create an ImpactedSymbol for boundary tests ─────────

@@ -18,7 +18,19 @@ impl IndexDb {
                  FROM symbols WHERE name = ?1 ORDER BY file_path LIMIT ?2",
                 name.to_string(),
             )
+        } else if name.len() >= 3 {
+            // Trigram-accelerated substring match: symbols_fts is an FTS5 trigram
+            // mirror of symbols(name), so a leading-wildcard LIKE is index-served
+            // instead of forcing a full table scan. Join back for full columns.
+            (
+                "SELECT s.symbol_id, s.symbol_uid, s.name, s.kind, s.file_path, s.container, s.start_line, s.end_line, s.qname, s.signature
+                 FROM symbols_fts f JOIN symbols s ON s.symbol_id = f.symbol_id
+                 WHERE f.name LIKE ?1 ORDER BY s.file_path LIMIT ?2",
+                format!("%{}%", name),
+            )
         } else {
+            // Patterns shorter than 3 chars cannot use trigram acceleration; fall
+            // back to a bounded LIKE scan on symbols(name).
             (
                 "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature
                  FROM symbols WHERE name LIKE ?1 ORDER BY file_path LIMIT ?2",

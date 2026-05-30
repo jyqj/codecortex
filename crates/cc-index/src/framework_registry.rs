@@ -478,12 +478,23 @@ pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFramewor
         Ok(c) => c,
         Err(_) => return Vec::new(),
     };
+    detect_file_frameworks_conn(&conn, file_path)
+}
 
+/// Detect frameworks for a single file using an existing read connection.
+///
+/// Split out from [`detect_file_frameworks`] so the full-repo scan can reuse one
+/// pooled connection and `prepare_cached` statements across all files, instead
+/// of re-acquiring a connection and recompiling 4 queries per file.
+fn detect_file_frameworks_conn(
+    conn: &rusqlite::Connection,
+    file_path: &str,
+) -> Vec<FileFrameworkDetection> {
     let mut detections: HashMap<String, FileFrameworkDetection> = HashMap::new();
 
     // --- 1. Import markers ---
     let import_strings: Vec<String> = conn
-        .prepare("SELECT import_string FROM imports WHERE file_path = ?1")
+        .prepare_cached("SELECT import_string FROM imports WHERE file_path = ?1")
         .ok()
         .and_then(|mut stmt| {
             stmt.query_map(rusqlite::params![file_path], |row| row.get::<_, String>(0))
@@ -518,7 +529,7 @@ pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFramewor
     // --- 1b. CommonJS require() fallback: scan first 3 chunks for require('pkg') ---
     let already_detected: Vec<String> = detections.keys().cloned().collect();
     let chunk_text: String = conn
-        .prepare(
+        .prepare_cached(
             "SELECT text, text_encoding FROM chunks WHERE file_path = ?1 ORDER BY chunk_index LIMIT 3",
         )
         .ok()
@@ -583,7 +594,7 @@ pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFramewor
     }
 
     // --- 3. Route framework signal from route_edges ---
-    if let Ok(mut stmt) = conn.prepare(
+    if let Ok(mut stmt) = conn.prepare_cached(
         "SELECT DISTINCT framework FROM route_edges WHERE file_path = ?1 AND framework IS NOT NULL AND framework != ''",
     ) {
         if let Ok(rows) = stmt.query_map(rusqlite::params![file_path], |row| row.get::<_, String>(0))
@@ -608,7 +619,7 @@ pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFramewor
     }
 
     // --- 4. Symbol pattern detection (framework_role from parser) ---
-    if let Ok(mut stmt) = conn.prepare(
+    if let Ok(mut stmt) = conn.prepare_cached(
         "SELECT framework_role FROM symbols WHERE file_path = ?1 AND framework_role IS NOT NULL",
     ) {
         if let Ok(rows) =
@@ -907,19 +918,25 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
         rows.filter_map(|r| r.ok()).collect()
     };
 
-    // 2. Per-file detection
+    // 2. Per-file detection — reuse one read connection across all files so each
+    //    query is prepared once (cached) rather than re-acquiring a connection
+    //    and recompiling 4 statements per file. Scoped so the connection is
+    //    released before the write below.
     let mut file_records: Vec<FileFrameworkRecord> = Vec::new();
-    for fp in &file_paths {
-        let detections = detect_file_frameworks(db, fp);
-        if !detections.is_empty() {
-            let signals: Vec<FileFrameworkSignal> = detections
-                .into_iter()
-                .map(|d| {
-                    let evidence = d.signals.join(", ");
-                    (d.framework_key, d.confidence, evidence)
-                })
-                .collect();
-            file_records.push((fp.clone(), signals));
+    {
+        let conn = db.read_conn()?;
+        for fp in &file_paths {
+            let detections = detect_file_frameworks_conn(&conn, fp);
+            if !detections.is_empty() {
+                let signals: Vec<FileFrameworkSignal> = detections
+                    .into_iter()
+                    .map(|d| {
+                        let evidence = d.signals.join(", ");
+                        (d.framework_key, d.confidence, evidence)
+                    })
+                    .collect();
+                file_records.push((fp.clone(), signals));
+            }
         }
     }
 

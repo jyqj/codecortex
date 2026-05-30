@@ -50,11 +50,17 @@ impl Default for AutoIndexConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct IndexingConfig {
+    #[serde(default = "default_include_patterns")]
     pub include: Vec<String>,
+    #[serde(default = "default_ignore_patterns")]
     pub ignore: Vec<String>,
+    #[serde(default = "default_max_file_bytes")]
     pub max_file_bytes: u64,
+    #[serde(default = "default_chunk_line_budget")]
     pub chunk_line_budget: u32,
+    #[serde(default)]
     pub parse_timeout_micros: Option<u64>,
+    #[serde(default)]
     pub parallelism: Parallelism,
     /// SQLite read connection pool size. `None` means derive from repo size tier.
     #[serde(default)]
@@ -102,41 +108,53 @@ fn default_memory_budget_fraction() -> f64 {
     0.5
 }
 
+fn default_include_patterns() -> Vec<String> {
+    vec![
+        "**/*.py".into(),
+        "**/*.js".into(),
+        "**/*.jsx".into(),
+        "**/*.ts".into(),
+        "**/*.tsx".into(),
+        "**/*.vue".into(),
+        "**/*.svelte".into(),
+        "**/*.java".into(),
+        "**/*.go".into(),
+        "**/*.rs".into(),
+        "**/*.md".into(),
+        "**/*.cs".into(),
+        "**/*.php".into(),
+        "**/*.rb".into(),
+        "**/*.swift".into(),
+        "**/*.kt".into(),
+        "**/*.kts".into(),
+        "**/*.dart".into(),
+        "**/*.scala".into(),
+        "**/*.sc".into(),
+        "**/*.lua".into(),
+        "**/*.sql".into(),
+        "**/*.yaml".into(),
+        "**/*.yml".into(),
+        "**/*.toml".into(),
+        "**/Dockerfile".into(),
+        "**/Dockerfile.*".into(),
+    ]
+}
+
+fn default_max_file_bytes() -> u64 {
+    512_000
+}
+
+fn default_chunk_line_budget() -> u32 {
+    80
+}
+
 impl Default for IndexingConfig {
     fn default() -> Self {
         Self {
-            include: vec![
-                "**/*.py".into(),
-                "**/*.js".into(),
-                "**/*.jsx".into(),
-                "**/*.ts".into(),
-                "**/*.tsx".into(),
-                "**/*.vue".into(),
-                "**/*.svelte".into(),
-                "**/*.java".into(),
-                "**/*.go".into(),
-                "**/*.rs".into(),
-                "**/*.md".into(),
-                "**/*.cs".into(),
-                "**/*.php".into(),
-                "**/*.rb".into(),
-                "**/*.swift".into(),
-                "**/*.kt".into(),
-                "**/*.kts".into(),
-                "**/*.dart".into(),
-                "**/*.scala".into(),
-                "**/*.sc".into(),
-                "**/*.lua".into(),
-                "**/*.sql".into(),
-                "**/*.yaml".into(),
-                "**/*.yml".into(),
-                "**/*.toml".into(),
-                "**/Dockerfile".into(),
-                "**/Dockerfile.*".into(),
-            ],
+            include: default_include_patterns(),
             ignore: default_ignore_patterns(),
-            max_file_bytes: 512_000,
-            chunk_line_budget: 80,
+            max_file_bytes: default_max_file_bytes(),
+            chunk_line_budget: default_chunk_line_budget(),
             parse_timeout_micros: None,
             parallelism: Parallelism::Auto,
             db_read_pool_size: None,
@@ -162,50 +180,96 @@ pub enum Parallelism {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchConfig {
+    #[serde(default = "default_vector_top_k")]
     pub vector_top_k: usize,
+    #[serde(default = "default_lexical_top_k")]
     pub lexical_top_k: usize,
+    #[serde(default = "default_grep_top_k")]
     pub grep_top_k: usize,
+    #[serde(default = "default_rrf_k")]
     pub rrf_k: usize,
+    #[serde(default = "default_vector_weight")]
     pub vector_weight: f64,
+    #[serde(default = "default_lexical_weight")]
     pub lexical_weight: f64,
+    #[serde(default = "default_grep_weight")]
     pub grep_weight: f64,
+    #[serde(default = "default_rerank_window")]
     pub rerank_window: usize,
+}
+
+fn default_vector_top_k() -> usize {
+    24
+}
+fn default_lexical_top_k() -> usize {
+    24
+}
+fn default_grep_top_k() -> usize {
+    12
+}
+fn default_rrf_k() -> usize {
+    50
+}
+fn default_vector_weight() -> f64 {
+    1.0
+}
+fn default_lexical_weight() -> f64 {
+    1.1
+}
+fn default_grep_weight() -> f64 {
+    0.8
+}
+fn default_rerank_window() -> usize {
+    40
 }
 
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
-            vector_top_k: 24,
-            lexical_top_k: 24,
-            grep_top_k: 12,
-            rrf_k: 50,
-            vector_weight: 1.0,
-            lexical_weight: 1.1,
-            grep_weight: 0.8,
-            rerank_window: 40,
+            vector_top_k: default_vector_top_k(),
+            lexical_top_k: default_lexical_top_k(),
+            grep_top_k: default_grep_top_k(),
+            rrf_k: default_rrf_k(),
+            vector_weight: default_vector_weight(),
+            lexical_weight: default_lexical_weight(),
+            grep_weight: default_grep_weight(),
+            rerank_window: default_rerank_window(),
         }
     }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EmbeddingsConfig {
+    #[serde(default)]
     pub provider: EmbeddingProvider,
+    #[serde(default = "default_embedding_dimensions")]
     pub dimensions: usize,
+    #[serde(default)]
     pub base_url: Option<String>,
+    #[serde(default)]
     pub api_key: Option<String>,
+    #[serde(default)]
     pub model: Option<String>,
+    #[serde(default = "default_embedding_timeout_seconds")]
     pub timeout_seconds: u64,
+}
+
+fn default_embedding_dimensions() -> usize {
+    256
+}
+fn default_embedding_timeout_seconds() -> u64 {
+    30
 }
 
 impl Default for EmbeddingsConfig {
     fn default() -> Self {
         Self {
             provider: EmbeddingProvider::None,
-            dimensions: 256,
+            dimensions: default_embedding_dimensions(),
             base_url: None,
             api_key: None,
             model: None,
-            timeout_seconds: 30,
+            timeout_seconds: default_embedding_timeout_seconds(),
         }
     }
 }
@@ -698,6 +762,33 @@ mod tests {
         }
         let _ = std::fs::remove_file(project_dir.join(CONFIG_FILE_NAME));
         let _ = std::fs::remove_dir(&project_dir);
+    }
+
+    #[test]
+    fn partial_config_fills_missing_fields_with_defaults() {
+        // Contract: every config field is optional. A partial .codecortex.json
+        // that overrides one field must deserialize and fall back to defaults
+        // for the rest (previously failed with `missing field chunk_line_budget`).
+        let json = r#"{
+            "indexing": { "max_file_bytes": 1024 },
+            "search": { "vector_top_k": 8 },
+            "embeddings": { "provider": "hash" }
+        }"#;
+        let config: ProjectConfig = serde_json::from_str(json).expect("partial config must parse");
+
+        assert_eq!(config.indexing.max_file_bytes, 1024);
+        assert_eq!(
+            config.indexing.chunk_line_budget,
+            default_chunk_line_budget()
+        );
+        assert_eq!(config.indexing.include, default_include_patterns());
+        assert_eq!(config.search.vector_top_k, 8);
+        assert_eq!(config.search.rrf_k, default_rrf_k());
+        assert!(matches!(
+            config.embeddings.provider,
+            EmbeddingProvider::Hash
+        ));
+        assert_eq!(config.embeddings.dimensions, default_embedding_dimensions());
     }
 
     #[test]

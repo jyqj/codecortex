@@ -1334,30 +1334,16 @@ impl CCppParser {
         symbols: &[SymbolRecord],
         file_path: &str,
     ) -> Vec<DataFlowEdgeRecord> {
-        let mut edges = Vec::new();
-
-        for cap in C_ENV_ACCESS_RE.captures_iter(content) {
-            let m = cap.get(0).unwrap();
-            let line = content[..m.start()].matches('\n').count() as u32 + 1;
-            let env_key = cap.get(1).map(|m| m.as_str().to_string());
-
-            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
-                .and_then(|s| s.symbol_uid.clone());
-
-            edges.push(DataFlowEdgeRecord {
-                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
-                file_path: file_path.to_string(),
-                source_symbol_uid: source_uid,
-                target_symbol_uid: None,
-                flow_kind: "env_access".to_string(),
-                line,
-                confidence: 0.80,
-                parser_tier: ParserTier::Heuristic,
-                env_key,
-            });
-        }
-
-        edges
+        crate::dataflow_common::extract_env_accesses_with(
+            content,
+            file_path,
+            &C_ENV_ACCESS_RE,
+            &[1],
+            |line| {
+                crate::dataflow_common::find_enclosing_symbol(symbols, line)
+                    .and_then(|s| s.symbol_uid.clone())
+            },
+        )
     }
 
     /// Check if a file path looks like a test file.

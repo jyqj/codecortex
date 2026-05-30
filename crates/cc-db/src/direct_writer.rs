@@ -118,7 +118,7 @@ fn extract_table_statements(sql: &str) -> String {
     result
 }
 
-fn extract_index_statements(sql: &str) -> String {
+pub(crate) fn extract_index_statements(sql: &str) -> String {
     let mut result = String::new();
     for stmt in split_sql_statements(sql) {
         let kind = classify_statement(stmt);
@@ -128,6 +128,41 @@ fn extract_index_statements(sql: &str) -> String {
         }
     }
     result
+}
+
+/// Emit `DROP INDEX IF EXISTS <name>;` for every index defined in `sql`.
+///
+/// Derived from the same schema as [`extract_index_statements`] so the bulk-
+/// rebuild drop/recreate pair shares one source of truth and can never drift
+/// from the canonical index set in `index_v1.sql`.
+pub(crate) fn drop_index_statements(sql: &str) -> String {
+    let mut result = String::new();
+    for stmt in split_sql_statements(sql) {
+        let kind = classify_statement(stmt);
+        if matches!(kind, StmtKind::CreateIndex | StmtKind::CreateUniqueIndex) {
+            if let Some(name) = index_name(stmt) {
+                result.push_str("DROP INDEX IF EXISTS ");
+                result.push_str(name);
+                result.push_str(";\n");
+            }
+        }
+    }
+    result
+}
+
+/// Extract the index name from `CREATE [UNIQUE] INDEX [IF NOT EXISTS] <name> ON ...`.
+///
+/// The name is the token immediately preceding `ON`.
+fn index_name(stmt: &str) -> Option<&str> {
+    let mut s = stmt.trim_start();
+    while s.starts_with("--") {
+        let nl = s.find('\n')?;
+        s = s[nl + 1..].trim_start();
+    }
+    let words: Vec<&str> = s.split_whitespace().collect();
+    let on_pos = words.iter().position(|w| w.eq_ignore_ascii_case("ON"))?;
+    let name_tok = words.get(on_pos.checked_sub(1)?)?;
+    Some(name_tok.split('(').next().unwrap_or(name_tok))
 }
 
 #[derive(Debug, PartialEq)]
@@ -251,6 +286,25 @@ mod tests {
         assert!(result.contains("CREATE UNIQUE INDEX"));
         assert!(!result.contains("CREATE TABLE"));
         assert!(!result.contains("INSERT"));
+    }
+
+    #[test]
+    fn drop_index_stmts_match_create_set() {
+        let sql = "CREATE TABLE t1 (id INTEGER PRIMARY KEY);\n\
+                   CREATE INDEX IF NOT EXISTS idx_a ON t1(id);\n\
+                   CREATE UNIQUE INDEX idx_b ON t1(id, name);\n\
+                   INSERT INTO t1 VALUES(1);";
+        let drops = drop_index_statements(sql);
+        // One DROP per index name; tables/inserts are ignored.
+        assert!(drops.contains("DROP INDEX IF EXISTS idx_a;"));
+        assert!(drops.contains("DROP INDEX IF EXISTS idx_b;"));
+        assert!(!drops.contains("CREATE"));
+        // Drop and create are derived from the same source, so the index sets match.
+        let creates = extract_index_statements(sql);
+        for name in ["idx_a", "idx_b"] {
+            assert!(creates.contains(name), "create missing {name}");
+            assert!(drops.contains(name), "drop missing {name}");
+        }
     }
 
     #[test]

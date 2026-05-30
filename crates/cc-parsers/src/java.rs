@@ -85,6 +85,27 @@ static JAVA_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("java env access regex")
 });
 
+/// Spring RestTemplate GET helpers: `getForObject`/`getForEntity("url", ...)`.
+static JAVA_HTTP_GET_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\.(?:getForObject|getForEntity)\s*\(\s*"([^"]+)""#).expect("java http get regex")
+});
+
+/// Spring RestTemplate POST helpers: `postForObject`/`postForEntity("url", ...)`.
+static JAVA_HTTP_POST_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\.(?:postForObject|postForEntity)\s*\(\s*"([^"]+)""#)
+        .expect("java http post regex")
+});
+
+/// Spring RestTemplate `exchange("url", HttpMethod.GET, ...)`.
+static JAVA_HTTP_EXCHANGE_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\.exchange\s*\(\s*"([^"]+)"\s*,\s*HttpMethod\.([A-Z]+)"#)
+        .expect("java http exchange regex")
+});
+
+/// WebClient / UriBuilder `.uri("url")` (method not statically known).
+static JAVA_HTTP_URI_RE: LazyLock<Regex> =
+    LazyLock::new(|| Regex::new(r#"\.uri\s*\(\s*"([^"]+)""#).expect("java http uri regex"));
+
 pub struct JavaParser {
     language: tree_sitter::Language,
     chunker: Chunker,
@@ -1553,31 +1574,16 @@ impl JavaParser {
         symbols: &[SymbolRecord],
         file_path: &str,
     ) -> Vec<DataFlowEdgeRecord> {
-        let mut edges = Vec::new();
-
-        for cap in JAVA_ENV_ACCESS_RE.captures_iter(content) {
-            let m = cap.get(0).unwrap();
-            let line = content[..m.start()].matches('\n').count() as u32 + 1;
-            let env_key = cap.get(1).or(cap.get(2)).map(|m| m.as_str().to_string());
-
-            let source_uid = self
-                .find_enclosing_method(symbols, line)
-                .and_then(|s| s.symbol_uid.clone());
-
-            edges.push(DataFlowEdgeRecord {
-                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
-                file_path: file_path.to_string(),
-                source_symbol_uid: source_uid,
-                target_symbol_uid: None,
-                flow_kind: "env_access".to_string(),
-                line,
-                confidence: 0.80,
-                parser_tier: ParserTier::Heuristic,
-                env_key,
-            });
-        }
-
-        edges
+        crate::dataflow_common::extract_env_accesses_with(
+            content,
+            file_path,
+            &JAVA_ENV_ACCESS_RE,
+            &[1, 2],
+            |line| {
+                self.find_enclosing_method(symbols, line)
+                    .and_then(|s| s.symbol_uid.clone())
+            },
+        )
     }
 }
 
@@ -1616,6 +1622,37 @@ impl FileParser for JavaParser {
             file_path,
         ));
 
+        let http_call_edges = crate::http_call_helpers::extract_http_calls_with(
+            content,
+            file_path,
+            &[
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &JAVA_HTTP_GET_RE,
+                    url_group: 1,
+                    method_group: None,
+                    fixed_method: Some("GET"),
+                },
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &JAVA_HTTP_POST_RE,
+                    url_group: 1,
+                    method_group: None,
+                    fixed_method: Some("POST"),
+                },
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &JAVA_HTTP_EXCHANGE_RE,
+                    url_group: 1,
+                    method_group: Some(2),
+                    fixed_method: None,
+                },
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &JAVA_HTTP_URI_RE,
+                    url_group: 1,
+                    method_group: None,
+                    fixed_method: None,
+                },
+            ],
+        );
+
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
         let chunks = self
@@ -1642,6 +1679,7 @@ impl FileParser for JavaParser {
             semantic_edges,
             type_assigns,
             data_flow_edges,
+            http_call_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -2126,6 +2164,51 @@ public class AppConfig {
         assert!(
             edge.source_symbol_uid.is_some(),
             "should resolve enclosing method"
+        );
+    }
+
+    #[test]
+    fn extract_outbound_http_calls() {
+        let p = JavaParser::new();
+        let code = r#"
+class ApiClient {
+    void run() {
+        restTemplate.getForObject("https://svc/api/users", String.class);
+        restTemplate.exchange("/api/orders/1", HttpMethod.DELETE, null, String.class);
+        webClient.get().uri("/api/items").retrieve();
+        cache.getForObject("notaurl", String.class);
+    }
+}
+"#;
+        let outcome = p.parse("ApiClient.java", code, Language::Java).unwrap();
+        // getForObject(url) + exchange(url) + uri(url); the "notaurl" arg is
+        // rejected by the URL guard.
+        assert!(
+            outcome.http_call_edges.len() >= 3,
+            "expected getForObject + exchange + uri edges, got {}",
+            outcome.http_call_edges.len()
+        );
+        let methods: Vec<_> = outcome
+            .http_call_edges
+            .iter()
+            .filter_map(|e| e.method.clone())
+            .collect();
+        assert!(
+            methods.contains(&"GET".to_string()),
+            "methods: {:?}",
+            methods
+        );
+        assert!(
+            methods.contains(&"DELETE".to_string()),
+            "methods: {:?}",
+            methods
+        );
+        assert!(
+            !outcome
+                .http_call_edges
+                .iter()
+                .any(|e| e.url_or_path == "notaurl"),
+            "non-URL arg must not become an http edge"
         );
     }
 }

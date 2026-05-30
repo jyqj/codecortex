@@ -35,7 +35,9 @@ impl Scanner {
         let mut overrides = ignore::overrides::OverrideBuilder::new(&self.project_path);
         for pattern in &self.config.ignore {
             let neg = format!("!{}", pattern);
-            let _ = overrides.add(&neg);
+            if let Err(e) = overrides.add(&neg) {
+                tracing::warn!(pattern = %pattern, err = %e, "skipping invalid ignore pattern");
+            }
         }
         if let Ok(ovr) = overrides.build() {
             builder.overrides(ovr);

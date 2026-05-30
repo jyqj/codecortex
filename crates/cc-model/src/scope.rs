@@ -1,22 +1,11 @@
 use serde::{Deserialize, Serialize};
 
-/// A lexical scope extracted from source code.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct ScopeInfo {
-    pub scope_id: String,
-    pub file_path: String,
-    pub kind: String,
-    pub name: Option<String>,
-    pub parent_scope_id: Option<String>,
-    pub owner_symbol_uid: Option<String>,
-    pub start_line: u32,
-    pub start_col: u32,
-    pub end_line: u32,
-    pub end_col: u32,
-    pub bindings: Vec<ScopeBinding>,
-}
-
 /// A name binding within a scope.
+///
+/// Experimental / inactive: no parser currently emits lexical scopes, so the
+/// resolver's scope map is always empty and scope-aware resolution (closures,
+/// block-level shadowing, import-alias + local shadowing) does not yet engage.
+/// This type is retained as the contract for a future parser scope producer.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ScopeBinding {
     pub name: String,

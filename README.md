@@ -26,14 +26,14 @@ The MCP server starts automatically when the agent connects. You can also launch
 it manually:
 
 ```bash
-codecortex mcp --project_path /path/to/project
+codecortex mcp --project-path /path/to/project
 ```
 
 When launched from inside a directory tree containing `.git` or
 `.codecortex.json`, the server discovers that project and auto-indexes it on
 first connect (up to 50,000 files by default). If your MCP client starts servers
 from another working directory, call `index(path)` once or launch manually with
-`--project_path`.
+`--project-path`.
 
 ## The 14 tools at a glance
 

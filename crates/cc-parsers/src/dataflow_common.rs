@@ -1,7 +1,8 @@
 //! Shared data-flow extraction helpers used across language parsers.
 
 use cc_model::symbol::{SymbolKind, SymbolRecord};
-use cc_model::{CallEdgeRecord, DataFlowEdgeRecord, ResolutionKind, StableId};
+use cc_model::{CallEdgeRecord, DataFlowEdgeRecord, ParserTier, ResolutionKind, StableId};
+use regex::Regex;
 
 /// Find the innermost enclosing function/method symbol for a given line.
 ///
@@ -58,6 +59,43 @@ pub(crate) fn extract_param_return_flow(
             confidence: ce.resolution_confidence * 0.8,
             parser_tier: ce.parser_tier,
             env_key: None,
+        });
+    }
+    edges
+}
+
+/// Extract `env_access` data-flow edges by scanning `content` with `re`.
+///
+/// Shared by every language's `extract_env_accesses`: the only per-language
+/// differences are the regex, which capture group holds the env-var name, and
+/// how the enclosing symbol is resolved. `env_key_groups` lists capture-group
+/// indices to try in order (first match wins); `enclosing(line)` returns the
+/// source symbol UID for the line where the access occurs.
+pub(crate) fn extract_env_accesses_with(
+    content: &str,
+    file_path: &str,
+    re: &Regex,
+    env_key_groups: &[usize],
+    enclosing: impl Fn(u32) -> Option<String>,
+) -> Vec<DataFlowEdgeRecord> {
+    let mut edges = Vec::new();
+    for cap in re.captures_iter(content) {
+        let m = cap.get(0).unwrap();
+        let line = content[..m.start()].matches('\n').count() as u32 + 1;
+        let env_key = env_key_groups
+            .iter()
+            .find_map(|&g| cap.get(g))
+            .map(|mat| mat.as_str().to_string());
+        edges.push(DataFlowEdgeRecord {
+            edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
+            file_path: file_path.to_string(),
+            source_symbol_uid: enclosing(line),
+            target_symbol_uid: None,
+            flow_kind: "env_access".to_string(),
+            line,
+            confidence: 0.80,
+            parser_tier: ParserTier::Heuristic,
+            env_key,
         });
     }
     edges

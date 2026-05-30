@@ -10,8 +10,17 @@ resolvers.
 
 Python, JavaScript, TypeScript, TSX, JSX, Java, Go, Rust, C, C++
 
-Full AST parsing extracts symbols, call edges, imports, test edges, route edges,
-data-flow edges, HTTP call edges, semantic edges, and dispatch sites.
+All of these extract symbols, call edges, imports, data-flow edges (env access +
+param/return flow), and semantic edges. The remaining edge kinds are
+language-specific:
+
+- **Route edges:** Python, JS/TS, Go at the parser level; Java (Spring) and Rust
+  (Actix / Axum) via framework resolvers.
+- **Outbound HTTP call edges:** Python and JS/TS at the AST level; Go
+  (`net/http`), Java (RestTemplate / WebClient), and Rust (reqwest) via
+  conservative pattern matching guarded by a URL-shape check.
+- **Test edges, dispatch sites, type assignments:** most complete for Python and
+  JS/TS; partial for the other languages.
 
 ### Heuristic / generic fallback (confidence 0.3 – 0.5)
 

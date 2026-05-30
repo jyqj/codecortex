@@ -3,7 +3,6 @@ pub mod dsl;
 pub mod embeddings;
 pub mod engine;
 pub mod preselect;
-pub mod route_match;
 pub mod rrf;
 
 pub use embeddings::{get_embedder, ApiEmbedder, Embedder, HashingEmbedder};

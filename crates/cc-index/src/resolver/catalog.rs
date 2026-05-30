@@ -282,28 +282,6 @@ impl SymbolCatalog {
     // Build helpers from ParseOutcome (static methods)
     // -----------------------------------------------------------------------
 
-    /// Build CatalogScope map from ParseOutcome scopes.
-    pub fn build_scopes(outcome: &ParseOutcome) -> HashMap<String, CatalogScope> {
-        outcome
-            .scopes
-            .iter()
-            .map(|s| {
-                (
-                    s.scope_id.clone(),
-                    CatalogScope {
-                        scope_id: s.scope_id.clone(),
-                        parent_id: s.parent_scope_id.clone(),
-                        name: s.name.clone().unwrap_or_default(),
-                        file_path: s.file_path.clone(),
-                        start_line: s.start_line,
-                        end_line: s.end_line,
-                        bindings: s.bindings.clone(),
-                    },
-                )
-            })
-            .collect()
-    }
-
     /// Build ImportBinding list from ParseOutcome imports.
     pub fn build_import_bindings(outcome: &ParseOutcome, file_path: &str) -> Vec<ImportBinding> {
         outcome
@@ -344,7 +322,9 @@ impl SymbolCatalog {
     /// Build the reusable derived context for a single file.
     pub fn build_resolution_context(outcome: &ParseOutcome, file_path: &str) -> ResolutionContext {
         ResolutionContext {
-            scopes: Self::build_scopes(outcome),
+            // No parser currently emits lexical scopes, so the scope map is empty;
+            // scope-chain resolution stays dormant until a producer is wired up.
+            scopes: HashMap::new(),
             imports: Self::build_import_bindings(outcome, file_path),
         }
     }

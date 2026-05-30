@@ -35,7 +35,6 @@ pub use impact::{
 };
 pub use infra::{InfraEdge, InfraEdgeKind, InfraKind, InfraNode};
 pub use parse::ParseOutcome;
-pub use scope::ScopeInfo;
 pub use search::SearchHit;
 /// Core enums used across the codebase
 pub use symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};

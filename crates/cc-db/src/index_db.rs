@@ -640,128 +640,6 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    /// SQL statements to drop non-PK indexes (for bulk rebuild performance).
-    /// FTS virtual tables are excluded — their indexes are managed internally.
-    const DROP_INDEXES_SQL: &str = "\
-        DROP INDEX IF EXISTS idx_chunks_file;
-        DROP INDEX IF EXISTS idx_chunks_symbol;
-        DROP INDEX IF EXISTS idx_symbols_name;
-        DROP INDEX IF EXISTS idx_symbols_file;
-        DROP INDEX IF EXISTS idx_symbols_qname;
-        DROP INDEX IF EXISTS idx_symbols_uid;
-        DROP INDEX IF EXISTS idx_imports_file;
-        DROP INDEX IF EXISTS idx_imports_resolved;
-        DROP INDEX IF EXISTS idx_refs_symbol;
-        DROP INDEX IF EXISTS idx_refs_file;
-        DROP INDEX IF EXISTS idx_refs_target;
-        DROP INDEX IF EXISTS idx_refs_target_uid;
-        DROP INDEX IF EXISTS idx_resolution_attempts_file;
-        DROP INDEX IF EXISTS idx_resolution_attempts_name;
-        DROP INDEX IF EXISTS idx_resolution_attempts_kind;
-        DROP INDEX IF EXISTS idx_ce_caller;
-        DROP INDEX IF EXISTS idx_ce_callee;
-        DROP INDEX IF EXISTS idx_ce_file;
-        DROP INDEX IF EXISTS idx_ce_caller_uid;
-        DROP INDEX IF EXISTS idx_ce_callee_uid;
-        DROP INDEX IF EXISTS idx_te_test;
-        DROP INDEX IF EXISTS idx_te_code;
-        DROP INDEX IF EXISTS idx_re_path;
-        DROP INDEX IF EXISTS idx_re_handler;
-        DROP INDEX IF EXISTS idx_re_file;
-        DROP INDEX IF EXISTS idx_re_handler_uid;
-        DROP INDEX IF EXISTS idx_diag_file;
-        DROP INDEX IF EXISTS idx_literal_kind;
-        DROP INDEX IF EXISTS idx_literal_file;
-        DROP INDEX IF EXISTS idx_literal_symbol;
-        DROP INDEX IF EXISTS idx_rn_file;
-        DROP INDEX IF EXISTS idx_rn_path;
-        DROP INDEX IF EXISTS idx_rn_handler;
-        DROP INDEX IF EXISTS idx_rn_norm_path;
-        DROP INDEX IF EXISTS idx_dfe_file;
-        DROP INDEX IF EXISTS idx_dfe_source;
-        DROP INDEX IF EXISTS idx_dfe_target;
-        DROP INDEX IF EXISTS idx_cce_file_a;
-        DROP INDEX IF EXISTS idx_cce_file_b;
-        DROP INDEX IF EXISTS idx_cce_confidence;
-        DROP INDEX IF EXISTS idx_hce_file;
-        DROP INDEX IF EXISTS idx_hce_caller;
-        DROP INDEX IF EXISTS idx_hce_norm_path;
-        DROP INDEX IF EXISTS idx_hce_kind;
-        DROP INDEX IF EXISTS idx_infra_node_file;
-        DROP INDEX IF EXISTS idx_infra_node_kind;
-        DROP INDEX IF EXISTS idx_infra_node_name;
-        DROP INDEX IF EXISTS idx_infra_edge_src;
-        DROP INDEX IF EXISTS idx_infra_edge_dst;
-        DROP INDEX IF EXISTS idx_infra_edge_kind;
-        DROP INDEX IF EXISTS idx_se_file;
-        DROP INDEX IF EXISTS idx_se_source;
-        DROP INDEX IF EXISTS idx_se_target;
-        DROP INDEX IF EXISTS idx_se_kind;
-        DROP INDEX IF EXISTS idx_dispatch_sites_file;
-        DROP INDEX IF EXISTS idx_dispatch_sites_kind_key;
-    ";
-
-    /// SQL statements to recreate non-PK indexes.
-    /// Must match the index definitions in `index_v1.sql`.
-    const CREATE_INDEXES_SQL: &str = "\
-        CREATE INDEX IF NOT EXISTS idx_chunks_file ON chunks(file_path, chunk_index);
-        CREATE INDEX IF NOT EXISTS idx_chunks_symbol ON chunks(symbol_name);
-        CREATE INDEX IF NOT EXISTS idx_symbols_name ON symbols(name);
-        CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file_path);
-        CREATE INDEX IF NOT EXISTS idx_symbols_qname ON symbols(qname);
-        CREATE INDEX IF NOT EXISTS idx_symbols_uid ON symbols(symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_imports_file ON imports(file_path);
-        CREATE INDEX IF NOT EXISTS idx_imports_resolved ON imports(resolved_path);
-        CREATE INDEX IF NOT EXISTS idx_refs_symbol ON symbol_refs(symbol_name);
-        CREATE INDEX IF NOT EXISTS idx_refs_file ON symbol_refs(file_path);
-        CREATE INDEX IF NOT EXISTS idx_refs_target ON symbol_refs(target_file_path, target_symbol_id);
-        CREATE INDEX IF NOT EXISTS idx_refs_target_uid ON symbol_refs(target_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_resolution_attempts_file ON resolution_attempts(file_path);
-        CREATE INDEX IF NOT EXISTS idx_resolution_attempts_name ON resolution_attempts(reference_name);
-        CREATE INDEX IF NOT EXISTS idx_resolution_attempts_kind ON resolution_attempts(reference_kind);
-        CREATE INDEX IF NOT EXISTS idx_ce_caller ON call_edges(caller_symbol);
-        CREATE INDEX IF NOT EXISTS idx_ce_callee ON call_edges(callee_symbol);
-        CREATE INDEX IF NOT EXISTS idx_ce_file ON call_edges(file_path);
-        CREATE INDEX IF NOT EXISTS idx_ce_caller_uid ON call_edges(caller_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_ce_callee_uid ON call_edges(callee_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_te_test ON test_edges(test_file_path);
-        CREATE INDEX IF NOT EXISTS idx_te_code ON test_edges(code_file_path);
-        CREATE INDEX IF NOT EXISTS idx_re_path ON route_edges(route_path);
-        CREATE INDEX IF NOT EXISTS idx_re_handler ON route_edges(handler_name);
-        CREATE INDEX IF NOT EXISTS idx_re_file ON route_edges(file_path);
-        CREATE INDEX IF NOT EXISTS idx_re_handler_uid ON route_edges(handler_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_diag_file ON diagnostics(file_path);
-        CREATE INDEX IF NOT EXISTS idx_literal_kind ON literal_index(literal_kind);
-        CREATE INDEX IF NOT EXISTS idx_literal_file ON literal_index(file_path);
-        CREATE INDEX IF NOT EXISTS idx_literal_symbol ON literal_index(enclosing_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_rn_file ON route_nodes(file_path);
-        CREATE INDEX IF NOT EXISTS idx_rn_path ON route_nodes(route_path);
-        CREATE INDEX IF NOT EXISTS idx_rn_handler ON route_nodes(handler_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_rn_norm_path ON route_nodes(normalized_path);
-        CREATE INDEX IF NOT EXISTS idx_dfe_file ON data_flow_edges(file_path);
-        CREATE INDEX IF NOT EXISTS idx_dfe_source ON data_flow_edges(source_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_dfe_target ON data_flow_edges(target_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_cce_file_a ON co_change_edges(file_a);
-        CREATE INDEX IF NOT EXISTS idx_cce_file_b ON co_change_edges(file_b);
-        CREATE INDEX IF NOT EXISTS idx_cce_confidence ON co_change_edges(confidence);
-        CREATE INDEX IF NOT EXISTS idx_hce_file ON http_call_edges(file_path);
-        CREATE INDEX IF NOT EXISTS idx_hce_caller ON http_call_edges(caller_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_hce_norm_path ON http_call_edges(normalized_path);
-        CREATE INDEX IF NOT EXISTS idx_hce_kind ON http_call_edges(call_kind);
-        CREATE INDEX IF NOT EXISTS idx_infra_node_file ON infra_nodes(file_path);
-        CREATE INDEX IF NOT EXISTS idx_infra_node_kind ON infra_nodes(kind);
-        CREATE INDEX IF NOT EXISTS idx_infra_node_name ON infra_nodes(name);
-        CREATE INDEX IF NOT EXISTS idx_infra_edge_src ON infra_edges(source_node_id);
-        CREATE INDEX IF NOT EXISTS idx_infra_edge_dst ON infra_edges(target_node_id);
-        CREATE INDEX IF NOT EXISTS idx_infra_edge_kind ON infra_edges(kind);
-        CREATE INDEX IF NOT EXISTS idx_se_file ON semantic_edges(file_path);
-        CREATE INDEX IF NOT EXISTS idx_se_source ON semantic_edges(source_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_se_target ON semantic_edges(target_symbol_uid);
-        CREATE INDEX IF NOT EXISTS idx_se_kind ON semantic_edges(relation_kind);
-        CREATE INDEX IF NOT EXISTS idx_dispatch_sites_file ON dispatch_sites(file_path);
-        CREATE INDEX IF NOT EXISTS idx_dispatch_sites_kind_key ON dispatch_sites(site_kind, key);
-    ";
-
     // ── Full rebuild with temp-db + atomic swap ─────────────────
 
     /// Perform a full rebuild using a temporary database file, then atomically
@@ -809,9 +687,12 @@ impl IndexDb {
         // 2. Apply bulk pragmas
         Self::set_bulk_rebuild_pragmas(&tmp_conn)?;
 
-        // 3. Drop non-PK indexes for faster bulk insert
+        // 3. Drop non-PK indexes for faster bulk insert (derived from the schema
+        //    so the set always matches index_v1.sql)
         tmp_conn
-            .execute_batch(Self::DROP_INDEXES_SQL)
+            .execute_batch(&crate::direct_writer::drop_index_statements(
+                FULL_SCHEMA_SQL,
+            ))
             .map_err(|e| CcError::Database(format!("temp db drop indexes: {}", e)))?;
 
         tracing::info!("full rebuild: writing data to temp database");
@@ -836,10 +717,12 @@ impl IndexDb {
             }
         }
 
-        // 5. Recreate indexes
+        // 5. Recreate indexes (same schema-derived set as the drop above)
         tracing::info!("full rebuild: recreating indexes");
         tmp_conn
-            .execute_batch(Self::CREATE_INDEXES_SQL)
+            .execute_batch(&crate::direct_writer::extract_index_statements(
+                FULL_SCHEMA_SQL,
+            ))
             .map_err(|e| CcError::Database(format!("temp db recreate indexes: {}", e)))?;
 
         // Restore normal pragmas before closing

@@ -624,13 +624,15 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
 
         let mut member_counts: HashMap<u32, usize> = HashMap::new();
-        for (uid, community_id) in assignments {
-            tx.execute(
-                "UPDATE symbols SET community_id = ?1 WHERE symbol_uid = ?2",
-                rusqlite::params![community_id, uid],
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-            *member_counts.entry(*community_id).or_insert(0) += 1;
+        {
+            let mut stmt = tx
+                .prepare_cached("UPDATE symbols SET community_id = ?1 WHERE symbol_uid = ?2")
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for (uid, community_id) in assignments {
+                stmt.execute(rusqlite::params![community_id, uid])
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                *member_counts.entry(*community_id).or_insert(0) += 1;
+            }
         }
 
         for (community_id, label) in labels {

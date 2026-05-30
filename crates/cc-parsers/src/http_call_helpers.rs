@@ -1,5 +1,72 @@
 //! Shared helpers for detecting outbound HTTP client calls across languages.
 
+use cc_model::{HttpCallEdgeRecord, ParserTier, StableId};
+use regex::Regex;
+
+/// A regex-driven outbound-HTTP-call extraction pattern.
+///
+/// Used by the regex-based extractors (Go/Java/Rust), where matching call nodes
+/// in the AST would be far more code than a precise pattern plus the
+/// [`looks_like_url_or_path`] guard.
+pub struct HttpCallSpec<'a> {
+    /// Pattern whose overall match identifies one outbound HTTP call.
+    pub re: &'a Regex,
+    /// Capture group holding the URL/path literal.
+    pub url_group: usize,
+    /// Capture group holding the HTTP method verb (upper-cased on use), if any.
+    pub method_group: Option<usize>,
+    /// Fixed method when `method_group` is `None` (e.g. `reqwest::get` -> GET).
+    pub fixed_method: Option<&'static str>,
+}
+
+/// Extract outbound HTTP-call edges by scanning `content` with `specs`.
+///
+/// Each match's URL literal must pass [`looks_like_url_or_path`]; this is the
+/// primary false-positive guard for languages whose verb method names
+/// (`.get()`, `.post()`, `.put()`) collide with non-HTTP APIs such as map/cache
+/// accessors — a non-URL argument like `"key"` is rejected.
+pub fn extract_http_calls_with(
+    content: &str,
+    file_path: &str,
+    specs: &[HttpCallSpec],
+) -> Vec<HttpCallEdgeRecord> {
+    let mut edges = Vec::new();
+    for spec in specs {
+        for cap in spec.re.captures_iter(content) {
+            let Some(m) = cap.get(0) else { continue };
+            let Some(url_match) = cap.get(spec.url_group) else {
+                continue;
+            };
+            let raw_url = url_match.as_str().to_string();
+            if !looks_like_url_or_path(&raw_url) {
+                continue;
+            }
+            let method = spec
+                .method_group
+                .and_then(|g| cap.get(g))
+                .map(|mm| mm.as_str().to_uppercase())
+                .or_else(|| spec.fixed_method.map(|s| s.to_string()));
+            let line = content[..m.start()].matches('\n').count() as u32 + 1;
+            edges.push(HttpCallEdgeRecord {
+                edge_id: StableId::edge_id("http_call", file_path, line, m.start() as u32),
+                file_path: file_path.to_string(),
+                caller_symbol_uid: None,
+                url_or_path: raw_url.clone(),
+                normalized_path: Some(cc_model::route_normalize::normalize_route_path(
+                    &normalize_template_to_path(&raw_url),
+                )),
+                method,
+                call_kind: "http".to_string(),
+                line,
+                confidence: 0.70,
+                parser_tier: ParserTier::Heuristic,
+                broker_type: None,
+            });
+        }
+    }
+    edges
+}
+
 /// Known HTTP client receiver objects / module names.
 const HTTP_CLIENT_OBJECTS: &[&str] = &[
     "axios",

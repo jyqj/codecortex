@@ -544,7 +544,7 @@ impl CodeIndex {
         // Edge table counts — query each table; tolerate missing tables
         let edge_tables = [
             "call_edges",
-            "import_edges",
+            "imports",
             "semantic_edges",
             "test_edges",
             "route_edges",
@@ -592,7 +592,7 @@ impl CodeIndex {
                 from: "Function",
                 edge: "IMPORTS",
                 to: "Module",
-                table: "import_edges",
+                table: "imports",
                 description: "Import dependency between files/modules",
             },
             RelationshipPattern {

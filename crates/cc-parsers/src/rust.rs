@@ -18,6 +18,20 @@ static IMPL_TYPE_RE: LazyLock<Regex> = LazyLock::new(|| {
         .expect("valid impl regex")
 });
 
+/// reqwest free functions: `reqwest::get/post/...("url")`.
+static RUST_HTTP_REQWEST_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\breqwest::(get|post|put|delete|patch|head)\s*\(\s*"([^"]+)""#)
+        .expect("rust reqwest http regex")
+});
+
+/// HTTP client builder verbs with a sole URL string arg: `client.get("url")`,
+/// `.post("url")`. The single-arg shape plus the URL guard separates these from
+/// non-HTTP `.get("key")` accessors.
+static RUST_HTTP_VERB_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\.(get|post|put|delete|patch|head)\s*\(\s*"([^"]+)"\s*\)"#)
+        .expect("rust http verb regex")
+});
+
 /// Matches `impl Trait for Struct` — captures trait name and struct name.
 static RS_IMPL_TRAIT_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(
@@ -891,30 +905,16 @@ impl RustParser {
         symbols: &[SymbolRecord],
         file_path: &str,
     ) -> Vec<DataFlowEdgeRecord> {
-        let mut edges = Vec::new();
-
-        for cap in RUST_ENV_ACCESS_RE.captures_iter(content) {
-            let m = cap.get(0).unwrap();
-            let line = content[..m.start()].matches('\n').count() as u32 + 1;
-            let env_key = cap.get(1).map(|m| m.as_str().to_string());
-
-            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
-                .and_then(|s| s.symbol_uid.clone());
-
-            edges.push(DataFlowEdgeRecord {
-                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
-                file_path: file_path.to_string(),
-                source_symbol_uid: source_uid,
-                target_symbol_uid: None,
-                flow_kind: "env_access".to_string(),
-                line,
-                confidence: 0.80,
-                parser_tier: ParserTier::Heuristic,
-                env_key,
-            });
-        }
-
-        edges
+        crate::dataflow_common::extract_env_accesses_with(
+            content,
+            file_path,
+            &RUST_ENV_ACCESS_RE,
+            &[1],
+            |line| {
+                crate::dataflow_common::find_enclosing_symbol(symbols, line)
+                    .and_then(|s| s.symbol_uid.clone())
+            },
+        )
     }
 }
 
@@ -950,6 +950,26 @@ impl FileParser for RustParser {
             &call_edges,
             file_path,
         ));
+
+        let http_call_edges = crate::http_call_helpers::extract_http_calls_with(
+            content,
+            file_path,
+            &[
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &RUST_HTTP_REQWEST_RE,
+                    url_group: 2,
+                    method_group: Some(1),
+                    fixed_method: None,
+                },
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &RUST_HTTP_VERB_RE,
+                    url_group: 2,
+                    method_group: Some(1),
+                    fixed_method: None,
+                },
+            ],
+        );
+
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
@@ -970,6 +990,7 @@ impl FileParser for RustParser {
             call_edges,
             semantic_edges,
             data_flow_edges,
+            http_call_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -2087,6 +2108,42 @@ fn caller(x: i32) -> i32 {
         assert!(
             !return_flow.is_empty(),
             "expected a return_flow data flow edge from callee back to caller"
+        );
+    }
+
+    #[test]
+    fn extract_outbound_http_calls() {
+        let p = RustParser::new();
+        let code = r#"
+async fn fetch() {
+    let _ = reqwest::get("https://api.example.com/users").await;
+    let client = reqwest::Client::new();
+    let _ = client.post("/api/orders").send().await;
+    let map = std::collections::HashMap::new();
+    let _ = map.get("some_key");
+}
+"#;
+        let outcome = p.parse("src/client.rs", code, Language::Rust).unwrap();
+        assert!(
+            outcome.http_call_edges.len() >= 2,
+            "expected reqwest::get + client.post edges, got {}",
+            outcome.http_call_edges.len()
+        );
+        let urls: Vec<_> = outcome
+            .http_call_edges
+            .iter()
+            .map(|e| e.url_or_path.clone())
+            .collect();
+        assert!(
+            urls.iter().any(|u| u.contains("api.example.com")),
+            "urls: {:?}",
+            urls
+        );
+        assert!(urls.iter().any(|u| u == "/api/orders"), "urls: {:?}", urls);
+        // map.get("some_key") must NOT be treated as an HTTP call (URL guard).
+        assert!(
+            !urls.iter().any(|u| u == "some_key"),
+            "non-URL .get arg must be rejected"
         );
     }
 }

@@ -1,6 +1,6 @@
 # Benchmark Results
 
-Generated: 2026-05-28T12:18:00+00:00
+Generated: 2026-05-30T09:25:11.322641+00:00
 Dataset: fixture
 Files: 18
 
@@ -12,16 +12,16 @@ Files: 18
 | architecture | 6 | 0ms | 2ms | 2ms | 4.0 KB |
 | context | 4 | 7ms | 8ms | 8ms | 19.2 KB |
 | explore | 4 | 0ms | 0ms | 0ms | 1.2 KB |
-| files | 2 | 0ms | 0ms | 0ms | 999 B |
-| graph_query | 3 | 0ms | 0ms | 0ms | 80 B |
-| impact | 4 | 0ms | 36ms | 36ms | 859 B |
-| index | 1 | 161ms | 161ms | 161ms | 211 B |
+| files | 2 | 0ms | 0ms | 0ms | 1.2 KB |
+| graph_query | 8 | 0ms | 0ms | 0ms | 69 B |
+| impact | 4 | 0ms | 33ms | 33ms | 864 B |
+| index | 1 | 168ms | 168ms | 168ms | 211 B |
 | ingest_traces | 1 | 0ms | 0ms | 0ms | 122 B |
-| node | 5 | 0ms | 0ms | 0ms | 711 B |
-| relations | 5 | 0ms | 0ms | 0ms | 1.1 KB |
-| search | 11 | 0ms | 4ms | 4ms | 1.7 KB |
-| status | 1 | 0ms | 0ms | 0ms | 5.6 KB |
-| trace | 7 | 0ms | 0ms | 0ms | 723 B |
+| node | 5 | 0ms | 0ms | 0ms | 624 B |
+| relations | 6 | 0ms | 0ms | 0ms | 907 B |
+| search | 12 | 0ms | 5ms | 5ms | 1.3 KB |
+| status | 1 | 0ms | 0ms | 0ms | 6.0 KB |
+| trace | 7 | 0ms | 0ms | 0ms | 750 B |
 
 ## Summary
 

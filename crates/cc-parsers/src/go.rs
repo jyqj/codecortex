@@ -80,6 +80,19 @@ static GO_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"os\.Getenv\("(\w+)"\)|os\.LookupEnv\("(\w+)"\)"#).expect("go env access regex")
 });
 
+/// Outbound HTTP via net/http convenience funcs: `http.Get/Head/Post("url")`.
+static GO_HTTP_FUNC_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(r#"\bhttp\.(Get|Head|Post)\s*\(\s*"([^"]+)""#).expect("go http func regex")
+});
+
+/// Outbound HTTP via `http.NewRequest[WithContext](..., "METHOD", "url", ...)`.
+static GO_HTTP_NEWREQ_RE: LazyLock<Regex> = LazyLock::new(|| {
+    Regex::new(
+        r#"\bhttp\.NewRequest(?:WithContext)?\s*\([^"]*"(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)"\s*,\s*"([^"]+)""#,
+    )
+    .expect("go http newrequest regex")
+});
+
 pub struct GoParser {
     language: tree_sitter::Language,
     chunker: Chunker,
@@ -1525,30 +1538,16 @@ impl GoParser {
         symbols: &[SymbolRecord],
         file_path: &str,
     ) -> Vec<DataFlowEdgeRecord> {
-        let mut edges = Vec::new();
-
-        for cap in GO_ENV_ACCESS_RE.captures_iter(content) {
-            let m = cap.get(0).unwrap();
-            let line = content[..m.start()].matches('\n').count() as u32 + 1;
-            let env_key = cap.get(1).or(cap.get(2)).map(|m| m.as_str().to_string());
-
-            let source_uid = crate::dataflow_common::find_enclosing_symbol(symbols, line)
-                .and_then(|s| s.symbol_uid.clone());
-
-            edges.push(DataFlowEdgeRecord {
-                edge_id: StableId::edge_id("dfe", file_path, line, m.start() as u32),
-                file_path: file_path.to_string(),
-                source_symbol_uid: source_uid,
-                target_symbol_uid: None,
-                flow_kind: "env_access".to_string(),
-                line,
-                confidence: 0.80,
-                parser_tier: ParserTier::Heuristic,
-                env_key,
-            });
-        }
-
-        edges
+        crate::dataflow_common::extract_env_accesses_with(
+            content,
+            file_path,
+            &GO_ENV_ACCESS_RE,
+            &[1, 2],
+            |line| {
+                crate::dataflow_common::find_enclosing_symbol(symbols, line)
+                    .and_then(|s| s.symbol_uid.clone())
+            },
+        )
     }
 }
 
@@ -1589,6 +1588,25 @@ impl FileParser for GoParser {
             file_path,
         ));
 
+        let http_call_edges = crate::http_call_helpers::extract_http_calls_with(
+            content,
+            file_path,
+            &[
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &GO_HTTP_FUNC_RE,
+                    url_group: 2,
+                    method_group: Some(1),
+                    fixed_method: None,
+                },
+                crate::http_call_helpers::HttpCallSpec {
+                    re: &GO_HTTP_NEWREQ_RE,
+                    url_group: 2,
+                    method_group: Some(1),
+                    fixed_method: None,
+                },
+            ],
+        );
+
         let tier = ParserTier::TreeSitter;
         let confidence = 0.7;
         let chunks = self
@@ -1614,6 +1632,7 @@ impl FileParser for GoParser {
             type_assigns,
             route_edges,
             data_flow_edges,
+            http_call_edges,
             parser_tier: tier,
             parser_confidence: confidence,
             is_test_file: is_test,
@@ -1981,6 +2000,45 @@ func initAPI() {
         assert!(
             edge.source_symbol_uid.is_some(),
             "should resolve enclosing function"
+        );
+    }
+
+    #[test]
+    fn extract_outbound_http_calls() {
+        let parser = GoParser::new();
+        let code = r#"
+package main
+
+import "net/http"
+
+func fetchUsers() {
+    http.Get("https://api.example.com/users")
+    req, _ := http.NewRequest("POST", "/api/orders/123", nil)
+    _ = req
+    m := map[string]int{}
+    _ = m["x"]
+}
+"#;
+        let outcome = parser.parse("client.go", code, Language::Go).unwrap();
+        assert!(
+            outcome.http_call_edges.len() >= 2,
+            "expected http.Get + http.NewRequest edges, got {}",
+            outcome.http_call_edges.len()
+        );
+        let methods: Vec<_> = outcome
+            .http_call_edges
+            .iter()
+            .filter_map(|e| e.method.clone())
+            .collect();
+        assert!(
+            methods.contains(&"GET".to_string()),
+            "methods: {:?}",
+            methods
+        );
+        assert!(
+            methods.contains(&"POST".to_string()),
+            "methods: {:?}",
+            methods
         );
     }
 }

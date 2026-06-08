@@ -183,9 +183,6 @@ impl CodeIndex {
     fn after_successful_index_build(&mut self) {
         self.repo_tier = Some(self.compute_repo_tier());
         self.needs_initial_index = false;
-        if let Some(engine) = &self.engine {
-            engine.invalidate_vector_cache();
-        }
     }
 
     pub fn index_status(&self) -> CcResult<ProjectStats> {
@@ -194,27 +191,6 @@ impl CodeIndex {
     }
 
     pub fn diagnostics_info(&self) -> serde_json::Value {
-        let embedding_provider = self
-            .config
-            .as_ref()
-            .map(|c| match c.embeddings.provider {
-                cc_model::config::EmbeddingProvider::None => "none",
-                cc_model::config::EmbeddingProvider::Hash => "hash",
-                cc_model::config::EmbeddingProvider::OpenAICompatible => "openai_compatible",
-            })
-            .unwrap_or("unknown");
-
-        let embedding_dimensions = self
-            .config
-            .as_ref()
-            .map(|c| c.embeddings.dimensions)
-            .unwrap_or(0);
-
-        let vector_search_disabled = matches!(
-            self.config.as_ref().map(|c| &c.embeddings.provider),
-            Some(cc_model::config::EmbeddingProvider::None) | None
-        );
-
         let schema_version = cc_db::index_migrate::CURRENT_SCHEMA_VERSION;
 
         let db_schema_version = self.index_db.as_ref().and_then(|db| {
@@ -234,27 +210,12 @@ impl CodeIndex {
             .map(|c| c.auto_index.enabled)
             .unwrap_or(true);
 
-        let mut info = serde_json::json!({
-            "embedding_provider": embedding_provider,
-            "embedding_dimensions": embedding_dimensions,
+        serde_json::json!({
             "schema_version": schema_version,
             "db_schema_version": db_schema_version,
             "last_indexed_at": last_indexed,
             "auto_index_enabled": auto_index_enabled,
-        });
-
-        if vector_search_disabled {
-            info.as_object_mut().unwrap().insert(
-                "embedding_notice".to_string(),
-                serde_json::json!(
-                    "Vector search is disabled (no embedding provider configured). \
-                     Search uses FTS + grep fusion only. To enable vector search, set \
-                     embeddings.provider to 'hash' or 'openai_compatible' in .codecortex.json."
-                ),
-            );
-        }
-
-        info
+        })
     }
 
     pub fn search_in_context(

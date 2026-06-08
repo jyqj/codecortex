@@ -26,10 +26,10 @@ cc-model -> cc-db -> cc-parsers / cc-index -> cc-search -> cc-server
 | Crate | Responsibility |
 |-------|----------------|
 | cc-model | Data types, config, errors (serde, thiserror, blake3) |
-| cc-db | SQLite index store: r2d2 pool, WAL, FTS5, 25 tables (+5 FTS5), schema v19 |
+| cc-db | SQLite index store: r2d2 pool, WAL, FTS5, 21 tables (+4 FTS5), schema v2 |
 | cc-parsers | Tree-sitter AST extraction + framework detection |
 | cc-index | File scan, incremental index, Louvain community detection |
-| cc-search | Hybrid search (vector + FTS + grep + RRF) + Cypher subset |
+| cc-search | Ranked local search (FTS5 + grep + preselect/RRF) + Cypher subset |
 | cc-server | MCP server (rmcp), CLI (clap), CodeIndex, ImpactAnalyzer, FileWatcher |
 | cc-eval | Retrieval-quality and latency evaluation harness |
 
@@ -41,10 +41,8 @@ cc-model -> cc-db -> cc-parsers / cc-index -> cc-search -> cc-server
 - **One database.** All state lives in `index.sqlite3`. There is no
   `runtime.sqlite3`, no session store, no telemetry sink.
 - **Deterministic and offline by default.** First-class behavior requires no
-  network: parsing, FTS, grep, and Louvain are all local. Vector search is
-  *optional* and **circuit-breaks** when no embedding provider is configured —
-  search degrades cleanly to FTS + grep fusion rather than failing or returning
-  empty results. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md#embedding-providers).
+  network: parsing, FTS5, grep, preselection, and Louvain are all local. Search
+  uses lexical/ranked local signals only; there is no external model dependency.
 - **Read-only graph queries.** The Cypher subset (`graph_query`) supports
   MATCH / OPTIONAL MATCH / WHERE / RETURN / ORDER BY / LIMIT / UNION and never
   mutates the index.

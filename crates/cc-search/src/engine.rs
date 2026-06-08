@@ -1,9 +1,9 @@
-//! SearchEngine — hybrid vector + lexical + grep retrieval with RRF fusion.
+//! SearchEngine — lexical + grep retrieval with RRF fusion.
 //!
 //! Extended with graph/navigation queries.
 
 use std::collections::HashMap;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 
 use cc_db::fts::{expand_query_text, sanitize_fts_query, tokenize_codeish};
 use cc_db::index_db::{read_chunk_text_with_encoding, IndexDb};
@@ -11,28 +11,11 @@ use cc_model::config::{ProjectStats, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcError, CcResult, Language};
 
-use crate::embeddings::{get_embedder, unpack_vector, Embedder};
 use crate::rrf::rrf_accumulate;
-
-/// In-memory vector index for fast cosine search without per-query DB I/O.
-struct VectorIndex {
-    chunk_ids: Vec<String>,
-    file_paths: Vec<String>,
-    languages: Vec<String>,
-    /// Contiguous f32 matrix: `chunk_count * dimensions` elements, row-major.
-    matrix: Vec<f32>,
-    dimensions: usize,
-}
-
-/// Maximum chunk count for in-memory vector search without file-path filtering.
-/// Above this threshold, unfiltered vector search is skipped with a warning.
-const VECTOR_UNFILTERED_LIMIT: usize = 50_000;
 
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
-    embedder: Box<dyn Embedder>,
     pub(crate) config: SearchConfig,
-    vector_cache: Mutex<Option<VectorIndex>>,
 }
 
 fn augmented_query_text(request: &SearchRequest) -> String {
@@ -52,252 +35,19 @@ fn augmented_query_text(request: &SearchRequest) -> String {
     parts.join("\n")
 }
 
-fn vector_similarity(qvec: &[f32], row: &[f32], query_norm: f32, query_normalised: bool) -> f64 {
-    let dot = dot_product_fast(qvec, row);
-    if query_normalised {
-        dot as f64
-    } else if query_norm > 0.0 {
-        (dot / query_norm) as f64
-    } else {
-        0.0
-    }
-}
-
-/// 4-lane scalar accumulator dot product; no explicit SIMD intrinsics or
-/// target_feature gates. Under release (-O2) the compiler typically
-/// auto-vectorizes the inner loop, but this is not guaranteed and there is no
-/// runtime dispatch. Tail elements (len % 4) are handled in a separate loop.
-#[inline]
-fn dot_product_fast(a: &[f32], b: &[f32]) -> f32 {
-    let len = a.len().min(b.len());
-    let chunks = len / 4;
-    let remainder = len % 4;
-
-    let mut acc0: f32 = 0.0;
-    let mut acc1: f32 = 0.0;
-    let mut acc2: f32 = 0.0;
-    let mut acc3: f32 = 0.0;
-
-    let a_ptr = a.as_ptr();
-    let b_ptr = b.as_ptr();
-
-    for i in 0..chunks {
-        let base = i * 4;
-        unsafe {
-            acc0 += *a_ptr.add(base) * *b_ptr.add(base);
-            acc1 += *a_ptr.add(base + 1) * *b_ptr.add(base + 1);
-            acc2 += *a_ptr.add(base + 2) * *b_ptr.add(base + 2);
-            acc3 += *a_ptr.add(base + 3) * *b_ptr.add(base + 3);
-        }
-    }
-
-    let tail_start = chunks * 4;
-    for i in 0..remainder {
-        unsafe {
-            acc0 += *a_ptr.add(tail_start + i) * *b_ptr.add(tail_start + i);
-        }
-    }
-
-    (acc0 + acc1) + (acc2 + acc3)
-}
-
-/// A scored candidate used by the top-k `BinaryHeap` selector.
-///
-/// `order` is the original insertion index, used to reproduce the *stable*
-/// tie-break of `slice::sort_by` (equal similarities keep their original
-/// encounter order). The `Ord` impl is deliberately oriented so that the
-/// `BinaryHeap` max-root holds the element that should be evicted first, i.e.
-/// the one that would rank *last* in the final descending order:
-///   - smaller similarity ranks later  → treated as "greater" (evict first);
-///   - on equal similarity, larger `order` ranks later (stable sort keeps the
-///     earlier-inserted element ahead) → treated as "greater".
-struct HeapCandidate {
-    sim: f64,
-    order: usize,
-    chunk_id: String,
-}
-
-impl PartialEq for HeapCandidate {
-    fn eq(&self, other: &Self) -> bool {
-        self.cmp(other) == std::cmp::Ordering::Equal
-    }
-}
-impl Eq for HeapCandidate {}
-
-impl PartialOrd for HeapCandidate {
-    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for HeapCandidate {
-    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        // "Greater" == should be evicted first == ranks last in final order.
-        // Final order is: similarity DESC, then original `order` ASC.
-        // So eviction priority is: similarity ASC (smaller first), then
-        // `order` DESC (larger first). We mirror the original comparator's use
-        // of `partial_cmp(...).unwrap_or(Equal)` on the similarity, preserving
-        // byte-for-byte behaviour for any (non-NaN here) f64 inputs.
-        match other
-            .sim
-            .partial_cmp(&self.sim)
-            .unwrap_or(std::cmp::Ordering::Equal)
-        {
-            std::cmp::Ordering::Equal => self.order.cmp(&other.order),
-            non_eq => non_eq,
-        }
-    }
-}
-
-/// Select the top-`limit` scored candidates in O(n log k) using a bounded
-/// `BinaryHeap`, returning them in the exact same order a stable
-/// `sort_by(|a, b| b.sim.partial_cmp(&a.sim).unwrap_or(Equal))` followed by
-/// `truncate(limit)` would produce.
-///
-/// Equivalence argument:
-///   - The heap keeps at most `limit` elements; for each incoming candidate we
-///     compare against the current max-root (the "weakest" kept element). An
-///     element is kept iff it ranks ahead of the weakest kept one under the
-///     *final* total order (similarity DESC, original-order ASC). This selects
-///     exactly the same multiset the full stable sort would keep in its first
-///     `limit` positions.
-///   - `into_sorted_vec()` then yields ascending `Ord`, i.e. eviction priority
-///     ascending == final rank ascending == similarity DESC / order ASC, which
-///     is precisely the stable-sort output.
-fn top_k_by_similarity(scored: Vec<(String, f64)>, limit: usize) -> Vec<(String, f64)> {
-    if limit == 0 {
-        return Vec::new();
-    }
-    // Fast path: nothing to prune, fall back to the original stable sort to keep
-    // identical output without heap overhead.
-    if scored.len() <= limit {
-        let mut out = scored;
-        out.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-        return out;
-    }
-
-    let mut heap: std::collections::BinaryHeap<HeapCandidate> =
-        std::collections::BinaryHeap::with_capacity(limit + 1);
-    for (order, (chunk_id, sim)) in scored.into_iter().enumerate() {
-        let cand = HeapCandidate {
-            sim,
-            order,
-            chunk_id,
-        };
-        if heap.len() < limit {
-            heap.push(cand);
-        } else if let Some(weakest) = heap.peek() {
-            // Keep `cand` only if it ranks strictly ahead of the weakest kept
-            // element (i.e. `cand` is "less" under the eviction Ord). Ties keep
-            // the existing (earlier-`order`) element, matching stable sort.
-            if cand < *weakest {
-                heap.pop();
-                heap.push(cand);
-            }
-        }
-    }
-
-    // `into_sorted_vec` returns ascending by `Ord` (eviction priority), which
-    // equals final rank ascending: similarity DESC, then original order ASC.
-    heap.into_sorted_vec()
-        .into_iter()
-        .map(|c| (c.chunk_id, c.sim))
-        .collect()
-}
-
 impl SearchEngine {
     pub fn new(db: Arc<IndexDb>, config: &cc_model::ProjectConfig) -> Self {
-        let embedder = get_embedder(&config.embeddings);
         Self {
             db,
-            embedder,
             config: config.search.clone(),
-            vector_cache: Mutex::new(None),
         }
-    }
-
-    /// Load all embedding rows from the DB into the in-memory `VectorIndex`.
-    ///
-    /// Called lazily on first `vector_search` invocation. Subsequent calls
-    /// reuse the cached index until `invalidate_vector_cache()` is called.
-    fn load_vector_index(&self) -> CcResult<()> {
-        let conn = self.db.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT chunk_id, file_path, language, embedding \
-                 FROM chunks WHERE embedding IS NOT NULL",
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, Vec<u8>>(3)?,
-                ))
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-
-        let mut chunk_ids = Vec::new();
-        let mut file_paths = Vec::new();
-        let mut languages = Vec::new();
-        let mut matrix = Vec::new();
-        let mut dimensions: Option<usize> = None;
-
-        for row in rows {
-            let (cid, fp, lang, blob) = row.map_err(|e| CcError::Database(e.to_string()))?;
-            let vec = unpack_vector(&blob);
-            if vec.is_empty() {
-                continue;
-            }
-            let dim = vec.len();
-            if let Some(d) = dimensions {
-                if dim != d {
-                    continue; // skip mismatched dimensions
-                }
-            } else {
-                dimensions = Some(dim);
-            }
-            chunk_ids.push(cid);
-            file_paths.push(fp);
-            languages.push(lang);
-            matrix.extend_from_slice(&vec);
-        }
-
-        let dim = dimensions.unwrap_or(0);
-        let index = VectorIndex {
-            chunk_ids,
-            file_paths,
-            languages,
-            matrix,
-            dimensions: dim,
-        };
-        tracing::info!(
-            chunks = index.chunk_ids.len(),
-            dimensions = dim,
-            "vector index loaded into memory"
-        );
-
-        let mut guard = self.vector_cache.lock().unwrap_or_else(|e| e.into_inner());
-        *guard = Some(index);
-        Ok(())
-    }
-
-    /// Invalidate the in-memory vector cache.
-    ///
-    /// Call after index rebuild / incremental updates so the next
-    /// `vector_search` reloads from DB.
-    pub fn invalidate_vector_cache(&self) {
-        let mut guard = self.vector_cache.lock().unwrap_or_else(|e| e.into_inner());
-        *guard = None;
     }
 
     pub fn status(&self) -> CcResult<ProjectStats> {
         self.db.stats(std::path::Path::new(""))
     }
 
-    /// Core search — hybrid vector + lexical + grep with RRF fusion and reranking.
+    /// Core search — FTS5 + grep with RRF fusion and reranking.
     pub fn search(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
         let conn = self.db.read_conn()?;
 
@@ -324,8 +74,6 @@ impl SearchEngine {
         if !parsed.text.is_empty() {
             request.query = parsed.text.clone();
         }
-        // If only filters were given with no free text, keep original query for embedding.
-
         let query_text = augmented_query_text(&request);
         let expanded = expand_query_text(&query_text);
         let top_k = if request.top_k == 0 {
@@ -354,16 +102,15 @@ impl SearchEngine {
         }
         let request = &request;
 
-        // Vector search
-        let qvec = self.embedder.embed(&expanded);
-        let vector_hits = self.vector_search(&conn, &qvec, top_k * 4, request)?;
+        let lexical_limit = self.config.lexical_top_k.max(top_k);
+        let grep_limit = self.config.grep_top_k.max(top_k);
 
         // Lexical search (FTS5)
-        let lexical_hits = self.lexical_search(&conn, &expanded, top_k * 4, request)?;
+        let lexical_hits = self.lexical_search(&conn, &expanded, lexical_limit, request)?;
 
         // Grep search
         let grep_hits = if request.include_grep {
-            self.grep_search(&conn, &request.query, top_k * 2, request)?
+            self.grep_search(&conn, &request.query, grep_limit, request)?
         } else {
             Vec::new()
         };
@@ -371,12 +118,6 @@ impl SearchEngine {
         // RRF fusion
         let mut fused: HashMap<String, f64> = HashMap::new();
         let k = self.config.rrf_k;
-        rrf_accumulate(
-            &mut fused,
-            &vector_hits.iter().map(|h| h.0.as_str()).collect::<Vec<_>>(),
-            self.config.vector_weight,
-            k,
-        );
         rrf_accumulate(
             &mut fused,
             &lexical_hits
@@ -426,11 +167,6 @@ impl SearchEngine {
             .map(|v| v.iter().map(|s| s.as_str()).collect())
             .unwrap_or_default();
 
-        let vector_rank: HashMap<&str, usize> = vector_hits
-            .iter()
-            .enumerate()
-            .map(|(i, (id, _))| (id.as_str(), i + 1))
-            .collect();
         let lexical_rank: HashMap<&str, usize> = lexical_hits
             .iter()
             .enumerate()
@@ -509,10 +245,6 @@ impl SearchEngine {
             let mut rerank = fused_score + overlap * 0.35;
 
             let mut reasons = Vec::new();
-            let vector_score = vector_rank
-                .get(cid.as_str())
-                .map(|rank| 1.0 / *rank as f64)
-                .unwrap_or(0.0);
             let lexical_score = lexical_rank
                 .get(cid.as_str())
                 .map(|rank| 1.0 / *rank as f64)
@@ -522,10 +254,7 @@ impl SearchEngine {
                 .map(|rank| 1.0 / *rank as f64)
                 .unwrap_or(0.0);
 
-            // Reasons with rank info: "vector@3", "lexical@5"
-            if let Some(&rank) = vector_rank.get(cid.as_str()) {
-                reasons.push(format!("vector@{}", rank));
-            }
+            // Reasons with rank info: "lexical@5", "grep@3"
             if let Some(&rank) = lexical_rank.get(cid.as_str()) {
                 reasons.push(format!("lexical@{}", rank));
             }
@@ -606,7 +335,6 @@ impl SearchEngine {
                 symbol_kind: sk.and_then(|s| cc_model::symbol::SymbolKind::from_str_lenient(&s)),
                 text,
                 fused_score: *fused_score,
-                vector_score,
                 lexical_score,
                 grep_score,
                 graph_score: 0.0,
@@ -654,206 +382,6 @@ impl SearchEngine {
         });
         results.truncate(top_k);
         Ok(results)
-    }
-
-    /// Vector search scoped to explicit file paths.
-    ///
-    /// This path intentionally streams only matching embedding rows from SQLite
-    /// instead of loading the full in-memory vector cache. It keeps task-scoped
-    /// searches cheap on large repositories and acts as a lightweight sharded
-    /// loading strategy keyed by the candidate file set.
-    fn vector_search_filtered_files(
-        &self,
-        conn: &rusqlite::Connection,
-        qvec: &[f32],
-        limit: usize,
-        request: &SearchRequest,
-        file_paths: &[String],
-    ) -> CcResult<Vec<(String, f64)>> {
-        if file_paths.is_empty() || qvec.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        let mut unique_paths: Vec<String> = Vec::new();
-        for path in file_paths {
-            if !path.is_empty() && !unique_paths.iter().any(|p| p == path) {
-                unique_paths.push(path.clone());
-            }
-        }
-        if unique_paths.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        let placeholders = (1..=unique_paths.len())
-            .map(|idx| format!("?{}", idx))
-            .collect::<Vec<_>>()
-            .join(",");
-        let sql = format!(
-            "SELECT chunk_id, file_path, language, embedding \
-             FROM chunks \
-             WHERE embedding IS NOT NULL AND file_path IN ({})",
-            placeholders
-        );
-
-        let query_norm_sq: f32 = qvec.iter().map(|x| x * x).sum();
-        let query_norm = query_norm_sq.sqrt();
-        let query_normalised = query_norm > 0.0 && (query_norm - 1.0).abs() < 1e-4;
-
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params_from_iter(unique_paths.iter()), |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, Vec<u8>>(3)?,
-                ))
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-
-        let mut scored: Vec<(String, f64)> = Vec::with_capacity(limit);
-        for row in rows {
-            let (cid, file_path, language_name, blob) =
-                row.map_err(|e| CcError::Database(e.to_string()))?;
-            let language = parse_language_name(&language_name);
-            if !passes_filters(&file_path, language, request) {
-                continue;
-            }
-            let vec = unpack_vector(&blob);
-            if vec.len() != qvec.len() {
-                continue;
-            }
-            let sim = vector_similarity(qvec, &vec, query_norm, query_normalised);
-            if sim > 0.0 {
-                scored.push((cid, sim));
-            }
-        }
-
-        // Top-k selection via bounded BinaryHeap (O(n log k)). Output order is
-        // identical to the previous stable `sort_by(... DESC) + truncate(limit)`,
-        // including the implicit stable tie-break on equal similarities.
-        let scored = top_k_by_similarity(scored, limit);
-        Ok(scored)
-    }
-
-    /// Vector search using the in-memory `VectorIndex`.
-    ///
-    /// On first call the cache is populated from DB. Subsequent calls reuse
-    /// the cache. When `file_paths` filter is present, only matching rows are
-    /// scored. For unfiltered searches on very large indices (>50K chunks)
-    /// the search is skipped with a warning to avoid latency spikes.
-    fn vector_search(
-        &self,
-        conn: &rusqlite::Connection,
-        qvec: &[f32],
-        limit: usize,
-        request: &SearchRequest,
-    ) -> CcResult<Vec<(String, f64)>> {
-        if qvec.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        // Explicit file scopes use a filtered DB stream instead of the global
-        // cache. This avoids loading/scoring the entire embedding matrix when a
-        // caller already narrowed the candidate file set.
-        if let Some(paths) = request.file_paths.as_ref().filter(|v| !v.is_empty()) {
-            return self.vector_search_filtered_files(conn, qvec, limit, request, paths);
-        }
-
-        // For unfiltered vector search, check the DB count before loading the
-        // full embedding matrix into memory.
-        let cached_len = self
-            .vector_cache
-            .lock()
-            .unwrap_or_else(|e| e.into_inner())
-            .as_ref()
-            .map(|idx| idx.chunk_ids.len());
-        let chunk_count = match cached_len {
-            Some(n) => n,
-            None => conn
-                .query_row(
-                    "SELECT COUNT(*) FROM chunks WHERE embedding IS NOT NULL",
-                    [],
-                    |row| row.get::<_, i64>(0),
-                )
-                .map(|n| n.max(0) as usize)
-                .map_err(|e| CcError::Database(e.to_string()))?,
-        };
-        if chunk_count > VECTOR_UNFILTERED_LIMIT {
-            tracing::warn!(
-                chunk_count,
-                limit = VECTOR_UNFILTERED_LIMIT,
-                "vector search skipped: chunk count exceeds unfiltered limit"
-            );
-            return Ok(Vec::new());
-        }
-
-        // Ensure cache is populated.
-        {
-            let guard = self.vector_cache.lock().unwrap_or_else(|e| e.into_inner());
-            if guard.is_none() {
-                drop(guard);
-                self.load_vector_index()?;
-            }
-        }
-
-        let guard = self.vector_cache.lock().unwrap_or_else(|e| e.into_inner());
-        let index = match guard.as_ref() {
-            Some(idx) if idx.dimensions > 0 && !idx.chunk_ids.is_empty() => idx,
-            _ => return Ok(Vec::new()),
-        };
-
-        // Build a fast lookup set for file_paths filter.
-        let file_set: Option<std::collections::HashSet<&str>> = request
-            .file_paths
-            .as_ref()
-            .filter(|v| !v.is_empty())
-            .map(|v| v.iter().map(|s| s.as_str()).collect());
-
-        // Precompute query norm for dot→cosine conversion.
-        // Embeddings are L2-normalised at index time, so cosine = dot / query_norm.
-        // If the query vector is also normalised, cosine = dot.
-        let query_norm_sq: f32 = qvec.iter().map(|x| x * x).sum();
-        let query_norm = query_norm_sq.sqrt();
-        let query_normalised = query_norm > 0.0 && (query_norm - 1.0).abs() < 1e-4;
-
-        let dim = index.dimensions;
-        if qvec.len() != dim {
-            return Ok(Vec::new());
-        }
-
-        let mut scored: Vec<(String, f64)> = Vec::with_capacity(index.chunk_ids.len().min(limit));
-
-        for (i, row_start) in (0..index.matrix.len()).step_by(dim).enumerate() {
-            // File-level filter (fast path, before computing dot product).
-            let fp = &index.file_paths[i];
-            if let Some(ref fs) = file_set {
-                if !fs.contains(fp.as_str()) {
-                    continue;
-                }
-            }
-
-            // Language / path_prefix filters.
-            let language = parse_language_name(&index.languages[i]);
-            if !passes_filters(fp, language, request) {
-                continue;
-            }
-
-            let row = &index.matrix[row_start..row_start + dim];
-            let sim = vector_similarity(qvec, row, query_norm, query_normalised);
-
-            if sim > 0.0 {
-                scored.push((index.chunk_ids[i].clone(), sim));
-            }
-        }
-
-        // Top-k selection via bounded BinaryHeap (O(n log k)). Output order is
-        // identical to the previous stable `sort_by(... DESC) + truncate(limit)`,
-        // including the implicit stable tie-break on equal similarities.
-        let scored = top_k_by_similarity(scored, limit);
-        Ok(scored)
     }
 
     /// Lexical search via FTS5.
@@ -1069,95 +597,6 @@ fn passes_filters(file_path: &str, language: Language, request: &SearchRequest) 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use cc_db::index_db::IndexDb;
-    use std::sync::Arc;
-    use tempfile::TempDir;
-
-    /// Helper: create an IndexDb with some seed data for testing.
-    fn make_test_db() -> (TempDir, Arc<IndexDb>) {
-        let tmp = TempDir::new().unwrap();
-        let db = Arc::new(IndexDb::open(&tmp.path().join("test_engine.db")).unwrap().0);
-        let conn = db.read_conn().unwrap();
-
-        // Insert files
-        conn.execute_batch(
-            "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, \
-                 content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at) \
-             VALUES('src/main.rs', 'Rust', 'hash1', 1.0, 100, '', '', 'full', 1.0, 0, '2024-01-01');
-             INSERT INTO files(file_path, language, content_hash, mtime, size, summary, \
-                 content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at) \
-             VALUES('tests/test_main.rs', 'Rust', 'hash2', 1.0, 80, '', '', 'full', 1.0, 1, '2024-01-01');
-             INSERT INTO files(file_path, language, content_hash, mtime, size, summary, \
-                 content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at) \
-             VALUES('src/lib.rs', 'Rust', 'hash3', 1.0, 200, '', '', 'full', 1.0, 0, '2024-01-01');",
-        )
-        .unwrap();
-
-        // Insert chunks
-        conn.execute_batch(
-            "INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, \
-                 breadcrumb, symbol_name, symbol_kind, text, token_estimate, parser_tier, parser_confidence) \
-             VALUES('c1', 'src/main.rs', 'Rust', 0, 1, 20, 'main', 'main', 'function', \
-                    'fn main() { println!(\"hello\"); }', 10, 'full', 1.0);
-             INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, \
-                 breadcrumb, symbol_name, symbol_kind, text, token_estimate, parser_tier, parser_confidence) \
-             VALUES('c2', 'tests/test_main.rs', 'Rust', 0, 1, 10, 'test', 'test_main', 'function', \
-                    '#[test] fn test_main() { assert!(true); }', 8, 'full', 1.0);
-             INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, \
-                 breadcrumb, symbol_name, symbol_kind, text, token_estimate, parser_tier, parser_confidence) \
-             VALUES('c3', 'src/lib.rs', 'Rust', 0, 1, 30, 'lib', 'process', 'function', \
-                    'pub fn process() -> Result<()> { Ok(()) }', 12, 'full', 1.0);",
-        )
-        .unwrap();
-        conn.execute(
-            "UPDATE chunks SET embedding = ?1 WHERE chunk_id = 'c1'",
-            rusqlite::params![crate::embeddings::pack_vector(&[1.0, 0.0, 0.0, 0.0])],
-        )
-        .unwrap();
-        conn.execute(
-            "UPDATE chunks SET embedding = ?1 WHERE chunk_id = 'c2'",
-            rusqlite::params![crate::embeddings::pack_vector(&[0.0, 1.0, 0.0, 0.0])],
-        )
-        .unwrap();
-        conn.execute(
-            "UPDATE chunks SET embedding = ?1 WHERE chunk_id = 'c3'",
-            rusqlite::params![crate::embeddings::pack_vector(&[0.0, 0.0, 1.0, 0.0])],
-        )
-        .unwrap();
-
-        // Insert imports used by search-engine test fixtures
-        conn.execute_batch(
-            "INSERT INTO imports(file_path, import_string, resolved_path, imported_name, alias, \
-                 is_namespace, is_default, is_reexport) \
-             VALUES('src/main.rs', 'crate::lib', 'src/lib.rs', 'process', NULL, 0, 0, 0);
-             INSERT INTO imports(file_path, import_string, resolved_path, imported_name, alias, \
-                 is_namespace, is_default, is_reexport) \
-             VALUES('tests/test_main.rs', 'crate::main', 'src/main.rs', 'main', NULL, 0, 0, 0);",
-        )
-        .unwrap();
-
-        (tmp, db)
-    }
-
-    #[test]
-    fn test_vector_search_respects_candidate_file_scope() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        let qvec = vec![0.0, 0.0, 1.0, 0.0];
-        let request = SearchRequest {
-            query: "main".into(),
-            file_paths: Some(vec!["src/lib.rs".into()]),
-            ..Default::default()
-        };
-
-        let conn = engine.db.read_conn().unwrap();
-        let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert_eq!(hits.len(), 1);
-        assert_eq!(hits[0].0, "c3");
-    }
-
     #[test]
     fn test_is_project_doc_top_level_files() {
         assert!(is_project_doc("README.md"));
@@ -1180,7 +619,7 @@ mod tests {
     #[test]
     fn test_is_project_doc_adr_directory() {
         assert!(is_project_doc("architecture/adr/0002-rrf-fusion.md"));
-        assert!(is_project_doc("decisions/adrs/0003-embedding.md"));
+        assert!(is_project_doc("decisions/adrs/0003-index-cache.md"));
     }
 
     #[test]
@@ -1192,165 +631,6 @@ mod tests {
         assert!(!is_project_doc("src/deep/nested/notes.md"));
         // Non-md files
         assert!(!is_project_doc("README.txt"));
-    }
-
-    #[test]
-    fn test_vector_cache_loads_and_reuses() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        // Cache should be empty initially.
-        assert!(
-            engine.vector_cache.lock().unwrap().is_none(),
-            "cache should be None before first search"
-        );
-
-        // First search triggers cache load.
-        let qvec = vec![1.0, 0.0, 0.0, 0.0];
-        let request = SearchRequest {
-            query: "test".into(),
-            ..Default::default()
-        };
-        let conn = engine.db.read_conn().unwrap();
-        let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert!(!hits.is_empty(), "should return hits from cached index");
-        assert_eq!(hits[0].0, "c1", "closest to [1,0,0,0] should be c1");
-
-        // Cache should now be populated.
-        {
-            let guard = engine.vector_cache.lock().unwrap();
-            let idx = guard.as_ref().unwrap();
-            assert_eq!(idx.chunk_ids.len(), 3);
-            assert_eq!(idx.dimensions, 4);
-        }
-
-        // Second search reuses cache (no DB I/O).
-        let hits2 = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert_eq!(hits, hits2, "cached results should be identical");
-    }
-
-    #[test]
-    fn test_invalidate_vector_cache() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        // Populate cache.
-        let qvec = vec![0.0, 1.0, 0.0, 0.0];
-        let request = SearchRequest {
-            query: "test".into(),
-            ..Default::default()
-        };
-        let conn = engine.db.read_conn().unwrap();
-        let _ = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert!(engine.vector_cache.lock().unwrap().is_some());
-
-        // Invalidate.
-        engine.invalidate_vector_cache();
-        assert!(
-            engine.vector_cache.lock().unwrap().is_none(),
-            "cache should be None after invalidation"
-        );
-
-        // Next search re-populates cache.
-        let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert!(!hits.is_empty());
-        assert!(engine.vector_cache.lock().unwrap().is_some());
-    }
-
-    #[test]
-    fn test_vector_search_file_filter_streams_db_without_global_cache() {
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        // c3 embedding is [0,0,1,0]. Use a query with non-zero component
-        // along that axis so c3 has positive similarity.
-        let qvec = vec![0.5, 0.5, 0.5, 0.0];
-        let request = SearchRequest {
-            query: "test".into(),
-            file_paths: Some(vec!["src/lib.rs".into()]),
-            ..Default::default()
-        };
-        let conn = engine.db.read_conn().unwrap();
-        let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        // Only c3 should match (it's in src/lib.rs). c1 and c2 are filtered out.
-        assert_eq!(hits.len(), 1);
-        assert_eq!(hits[0].0, "c3");
-        assert!(
-            engine.vector_cache.lock().unwrap().is_none(),
-            "file-scoped vector search should not populate global cache"
-        );
-    }
-
-    #[test]
-    fn test_vector_search_unfiltered_large_index_skipped() {
-        // This test verifies the degradation path: when chunk count exceeds the
-        // unfiltered limit, vector search returns empty without scoring.
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        // Manually build a cache that exceeds the limit.
-        {
-            let mut guard = engine.vector_cache.lock().unwrap();
-            let count = VECTOR_UNFILTERED_LIMIT + 1;
-            let dim = 4;
-            *guard = Some(VectorIndex {
-                chunk_ids: (0..count).map(|i| format!("c{}", i)).collect(),
-                file_paths: (0..count).map(|_| "big/file.rs".to_string()).collect(),
-                languages: (0..count).map(|_| "Rust".to_string()).collect(),
-                matrix: vec![0.25f32; count * dim],
-                dimensions: dim,
-            });
-        }
-
-        let qvec = vec![1.0, 0.0, 0.0, 0.0];
-        let request = SearchRequest {
-            query: "test".into(),
-            // No file_paths filter — unfiltered search on huge index.
-            ..Default::default()
-        };
-        let conn = engine.db.read_conn().unwrap();
-        let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert!(
-            hits.is_empty(),
-            "unfiltered search on oversized index should be skipped"
-        );
-    }
-
-    #[test]
-    fn test_vector_search_with_file_filter_bypasses_oversized_global_cache() {
-        // Even with a huge global cache present, file_paths filter should stream
-        // only matching DB rows and avoid the unfiltered-limit skip path.
-        let (_tmp, db) = make_test_db();
-        let config = cc_model::ProjectConfig::default();
-        let engine = SearchEngine::new(db, &config);
-
-        {
-            let mut guard = engine.vector_cache.lock().unwrap();
-            let count = VECTOR_UNFILTERED_LIMIT + 100;
-            let dim = 4;
-            *guard = Some(VectorIndex {
-                chunk_ids: (0..count).map(|i| format!("big-c{}", i)).collect(),
-                file_paths: (0..count).map(|_| "big/file.rs".to_string()).collect(),
-                languages: (0..count).map(|_| "Rust".to_string()).collect(),
-                matrix: vec![0.25f32; count * dim],
-                dimensions: dim,
-            });
-        }
-
-        let qvec = vec![0.0, 0.0, 1.0, 0.0];
-        let request = SearchRequest {
-            query: "test".into(),
-            file_paths: Some(vec!["src/lib.rs".into()]),
-            ..Default::default()
-        };
-        let conn = engine.db.read_conn().unwrap();
-        let hits = engine.vector_search(&conn, &qvec, 10, &request).unwrap();
-        assert_eq!(hits.len(), 1);
-        assert_eq!(hits[0].0, "c3");
     }
 
     #[test]

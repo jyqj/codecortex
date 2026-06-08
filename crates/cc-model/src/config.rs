@@ -8,8 +8,6 @@ pub struct ProjectConfig {
     pub indexing: IndexingConfig,
     #[serde(default = "SearchConfig::default")]
     pub search: SearchConfig,
-    #[serde(default = "EmbeddingsConfig::default")]
-    pub embeddings: EmbeddingsConfig,
     #[serde(default)]
     pub auto_index: AutoIndexConfig,
 }
@@ -180,16 +178,12 @@ pub enum Parallelism {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchConfig {
-    #[serde(default = "default_vector_top_k")]
-    pub vector_top_k: usize,
     #[serde(default = "default_lexical_top_k")]
     pub lexical_top_k: usize,
     #[serde(default = "default_grep_top_k")]
     pub grep_top_k: usize,
     #[serde(default = "default_rrf_k")]
     pub rrf_k: usize,
-    #[serde(default = "default_vector_weight")]
-    pub vector_weight: f64,
     #[serde(default = "default_lexical_weight")]
     pub lexical_weight: f64,
     #[serde(default = "default_grep_weight")]
@@ -198,9 +192,6 @@ pub struct SearchConfig {
     pub rerank_window: usize,
 }
 
-fn default_vector_top_k() -> usize {
-    24
-}
 fn default_lexical_top_k() -> usize {
     24
 }
@@ -209,9 +200,6 @@ fn default_grep_top_k() -> usize {
 }
 fn default_rrf_k() -> usize {
     50
-}
-fn default_vector_weight() -> f64 {
-    1.0
 }
 fn default_lexical_weight() -> f64 {
     1.1
@@ -226,62 +214,14 @@ fn default_rerank_window() -> usize {
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
-            vector_top_k: default_vector_top_k(),
             lexical_top_k: default_lexical_top_k(),
             grep_top_k: default_grep_top_k(),
             rrf_k: default_rrf_k(),
-            vector_weight: default_vector_weight(),
             lexical_weight: default_lexical_weight(),
             grep_weight: default_grep_weight(),
             rerank_window: default_rerank_window(),
         }
     }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct EmbeddingsConfig {
-    #[serde(default)]
-    pub provider: EmbeddingProvider,
-    #[serde(default = "default_embedding_dimensions")]
-    pub dimensions: usize,
-    #[serde(default)]
-    pub base_url: Option<String>,
-    #[serde(default)]
-    pub api_key: Option<String>,
-    #[serde(default)]
-    pub model: Option<String>,
-    #[serde(default = "default_embedding_timeout_seconds")]
-    pub timeout_seconds: u64,
-}
-
-fn default_embedding_dimensions() -> usize {
-    256
-}
-fn default_embedding_timeout_seconds() -> u64 {
-    30
-}
-
-impl Default for EmbeddingsConfig {
-    fn default() -> Self {
-        Self {
-            provider: EmbeddingProvider::None,
-            dimensions: default_embedding_dimensions(),
-            base_url: None,
-            api_key: None,
-            model: None,
-            timeout_seconds: default_embedding_timeout_seconds(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum EmbeddingProvider {
-    #[default]
-    None,
-    Hash,
-    #[serde(rename = "openai_compatible")]
-    OpenAICompatible,
 }
 
 /// Repo size tier — drives adaptive limits for explore, search, and budget.
@@ -498,7 +438,12 @@ pub struct IndexPaths {
 
 impl IndexPaths {
     pub fn new(project_path: &Path) -> Self {
-        let workdir = project_path.join(".codecortex");
+        let workdir = std::env::var("CODECORTEX_CACHE_DIR")
+            .ok()
+            .map(|v| v.trim().to_string())
+            .filter(|v| !v.is_empty())
+            .map(|base| PathBuf::from(base).join(project_cache_key(project_path)))
+            .unwrap_or_else(|| project_path.join(".codecortex"));
         Self {
             project_path: project_path.to_path_buf(),
             workdir: workdir.clone(),
@@ -506,6 +451,25 @@ impl IndexPaths {
             logs_dir: workdir.join("logs"),
         }
     }
+}
+
+fn project_cache_key(project_path: &Path) -> String {
+    let raw = project_path.to_string_lossy();
+    let hash = blake3::hash(raw.as_bytes()).to_hex().to_string();
+    let name = project_path
+        .file_name()
+        .and_then(|s| s.to_str())
+        .unwrap_or("project")
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '-' || c == '_' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect::<String>();
+    format!("{}-{}", name, &hash[..16])
 }
 
 /// Project statistics from the index.
@@ -587,48 +551,6 @@ pub fn load_project_config(project_path: &Path) -> ProjectConfig {
 }
 
 fn apply_env_overrides(config: &mut ProjectConfig) {
-    if let Ok(provider) = std::env::var("CODECORTEX_EMBEDDINGS_PROVIDER") {
-        match provider.trim() {
-            "none" | "disabled" => config.embeddings.provider = EmbeddingProvider::None,
-            "hash" => config.embeddings.provider = EmbeddingProvider::Hash,
-            "openai_compatible" => {
-                config.embeddings.provider = EmbeddingProvider::OpenAICompatible;
-            }
-            _ => {}
-        }
-    }
-    if let Ok(dimensions) = std::env::var("CODECORTEX_EMBEDDINGS_DIMENSIONS") {
-        if let Ok(parsed) = dimensions.trim().parse::<usize>() {
-            if parsed > 0 {
-                config.embeddings.dimensions = parsed;
-            }
-        }
-    }
-    if let Ok(timeout_seconds) = std::env::var("CODECORTEX_EMBEDDINGS_TIMEOUT_SECONDS") {
-        if let Ok(parsed) = timeout_seconds.trim().parse::<u64>() {
-            if parsed > 0 {
-                config.embeddings.timeout_seconds = parsed;
-            }
-        }
-    }
-    if let Ok(url) = std::env::var("CODECORTEX_EMBEDDINGS_BASE_URL") {
-        let trimmed = url.trim();
-        if !trimmed.is_empty() {
-            config.embeddings.base_url = Some(trimmed.to_string());
-        }
-    }
-    if let Ok(key) = std::env::var("CODECORTEX_EMBEDDINGS_API_KEY") {
-        let trimmed = key.trim();
-        if !trimmed.is_empty() {
-            config.embeddings.api_key = Some(trimmed.to_string());
-        }
-    }
-    if let Ok(model) = std::env::var("CODECORTEX_EMBEDDINGS_MODEL") {
-        let trimmed = model.trim();
-        if !trimmed.is_empty() {
-            config.embeddings.model = Some(trimmed.to_string());
-        }
-    }
     if let Ok(val) = std::env::var("CODECORTEX_DIRTY_PROPAGATION") {
         match val.trim().to_lowercase().as_str() {
             "0" | "false" | "off" | "no" => config.indexing.dirty_propagation = false,
@@ -708,50 +630,36 @@ mod tests {
         std::fs::create_dir_all(&project_dir).unwrap();
 
         let config_json = r#"{
-            "embeddings": {
-                "provider": "hash",
-                "dimensions": 64,
-                "base_url": "http://file.example/v1",
-                "api_key": "file-key",
-                "model": "file-model",
-                "timeout_seconds": 10
+            "indexing": {
+                "dirty_propagation": true,
+                "dirty_propagation_max_files": 50,
+                "memory_budget_fraction": 0.25,
+                "use_direct_writer": false
             }
         }"#;
         std::fs::write(project_dir.join(CONFIG_FILE_NAME), config_json).unwrap();
 
         let keys = [
-            "CODECORTEX_EMBEDDINGS_PROVIDER",
-            "CODECORTEX_EMBEDDINGS_DIMENSIONS",
-            "CODECORTEX_EMBEDDINGS_TIMEOUT_SECONDS",
-            "CODECORTEX_EMBEDDINGS_BASE_URL",
-            "CODECORTEX_EMBEDDINGS_API_KEY",
-            "CODECORTEX_EMBEDDINGS_MODEL",
+            "CODECORTEX_DIRTY_PROPAGATION",
+            "CODECORTEX_DIRTY_PROPAGATION_MAX_FILES",
+            "CODECORTEX_MEMORY_BUDGET_FRACTION",
+            "CODECORTEX_USE_DIRECT_WRITER",
         ];
         let originals: Vec<(String, Option<String>)> = keys
             .iter()
             .map(|key| ((*key).to_string(), std::env::var(key).ok()))
             .collect();
 
-        std::env::set_var("CODECORTEX_EMBEDDINGS_PROVIDER", "openai_compatible");
-        std::env::set_var("CODECORTEX_EMBEDDINGS_DIMENSIONS", "384");
-        std::env::set_var("CODECORTEX_EMBEDDINGS_TIMEOUT_SECONDS", "45");
-        std::env::set_var("CODECORTEX_EMBEDDINGS_BASE_URL", "http://env.example/v1");
-        std::env::set_var("CODECORTEX_EMBEDDINGS_API_KEY", "env-key");
-        std::env::set_var("CODECORTEX_EMBEDDINGS_MODEL", "env-model");
+        std::env::set_var("CODECORTEX_DIRTY_PROPAGATION", "false");
+        std::env::set_var("CODECORTEX_DIRTY_PROPAGATION_MAX_FILES", "125");
+        std::env::set_var("CODECORTEX_MEMORY_BUDGET_FRACTION", "0.75");
+        std::env::set_var("CODECORTEX_USE_DIRECT_WRITER", "true");
 
         let config = load_project_config(&project_dir);
-        assert!(matches!(
-            config.embeddings.provider,
-            EmbeddingProvider::OpenAICompatible
-        ));
-        assert_eq!(config.embeddings.dimensions, 384);
-        assert_eq!(config.embeddings.timeout_seconds, 45);
-        assert_eq!(
-            config.embeddings.base_url.as_deref(),
-            Some("http://env.example/v1")
-        );
-        assert_eq!(config.embeddings.api_key.as_deref(), Some("env-key"));
-        assert_eq!(config.embeddings.model.as_deref(), Some("env-model"));
+        assert!(!config.indexing.dirty_propagation);
+        assert_eq!(config.indexing.dirty_propagation_max_files, 125);
+        assert_eq!(config.indexing.memory_budget_fraction, 0.75);
+        assert!(config.indexing.use_direct_writer);
 
         for (key, value) in originals {
             if let Some(value) = value {
@@ -771,8 +679,7 @@ mod tests {
         // for the rest (previously failed with `missing field chunk_line_budget`).
         let json = r#"{
             "indexing": { "max_file_bytes": 1024 },
-            "search": { "vector_top_k": 8 },
-            "embeddings": { "provider": "hash" }
+            "search": { "lexical_top_k": 8 }
         }"#;
         let config: ProjectConfig = serde_json::from_str(json).expect("partial config must parse");
 
@@ -782,13 +689,36 @@ mod tests {
             default_chunk_line_budget()
         );
         assert_eq!(config.indexing.include, default_include_patterns());
-        assert_eq!(config.search.vector_top_k, 8);
+        assert_eq!(config.search.lexical_top_k, 8);
+        assert_eq!(config.search.grep_top_k, default_grep_top_k());
         assert_eq!(config.search.rrf_k, default_rrf_k());
-        assert!(matches!(
-            config.embeddings.provider,
-            EmbeddingProvider::Hash
-        ));
-        assert_eq!(config.embeddings.dimensions, default_embedding_dimensions());
+    }
+
+    #[test]
+    fn index_paths_can_use_external_cache_dir() {
+        let _guard = ENV_LOCK.lock().unwrap();
+        let original = std::env::var("CODECORTEX_CACHE_DIR").ok();
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let project_dir = std::env::temp_dir().join(format!("codecortex-path-test-{}", unique));
+        let cache_dir = std::env::temp_dir().join(format!("codecortex-cache-test-{}", unique));
+        std::fs::create_dir_all(&project_dir).unwrap();
+
+        std::env::set_var("CODECORTEX_CACHE_DIR", &cache_dir);
+        let paths = IndexPaths::new(&project_dir);
+        assert!(paths.workdir.starts_with(&cache_dir));
+        assert_eq!(paths.index_db, paths.workdir.join("index.sqlite3"));
+        assert_eq!(paths.logs_dir, paths.workdir.join("logs"));
+
+        if let Some(value) = original {
+            std::env::set_var("CODECORTEX_CACHE_DIR", value);
+        } else {
+            std::env::remove_var("CODECORTEX_CACHE_DIR");
+        }
+        let _ = std::fs::remove_dir_all(&project_dir);
+        let _ = std::fs::remove_dir_all(&cache_dir);
     }
 
     #[test]

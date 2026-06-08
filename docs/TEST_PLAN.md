@@ -2,16 +2,18 @@
 
 ## Unit Tests
 
-740 passed + 2 ignored in the latest `cargo test --workspace` — 734 crate unit tests + 5 `mcp_stdio` integration tests + 1 doctest (the 2 ignored are the real-workspace benchmark in cc-eval and an ignored cc-db doctest).
+722 passed + 1 ignored in the latest `cargo test -q --workspace --all-targets` —
+717 crate/unit-target tests + 5 `mcp_stdio` integration tests (the ignored case
+is the real-workspace benchmark in cc-eval).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 57 | Schema, migrations (incl. v17→v18 trigram symbols_fts backfill), chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
-| cc-eval | 15 | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
-| cc-index | 223 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, export-fingerprint contract, adaptive memory budget |
-| cc-model | 32 | Route normalization, data structures, enum round-trip, project root discovery, partial config defaults |
+| cc-db | 57 | Schema v2 rebuild-on-mismatch, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
+| cc-eval | 15 passed + 1 ignored | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
+| cc-index | 33 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, export-fingerprint contract, adaptive memory budget |
+| cc-model | 51 | Route normalization, data structures, enum round-trip, project root discovery, partial config defaults, external cache-dir paths |
 | cc-parsers | 173 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs, spec-driven heuristic intra-file call edges, C/C++/Rust param/return data-flow |
-| cc-search | 124 | Cypher parser/executor, variable-length path cap, regex validation, WHERE/Degree identifier validation, vector cache + top-k heap, file-scoped vector streaming, grep SQL scoping, search engine, preselect substring recall via trigram |
+| cc-search | 112 | Cypher parser/executor, variable-length path cap, regex validation, WHERE/Degree identifier validation, FTS5/RRF search, grep SQL scoping, search engine, preselect substring recall via trigram |
 | cc-server | 110 | Engine lifecycle, impact analyzer BFS, confidence-threshold filtering, exposed explore/trace params, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
@@ -24,7 +26,7 @@
 |------|------|-------------------|
 | status_basic | status | Index health, capabilities, schema output |
 | index_build | index | Full index build on fixture project |
-| search_hybrid | search | Hybrid fusion search returns relevant hits |
+| search_hybrid | search | Ranked local fusion search returns relevant hits |
 | search_symbol | search | Symbol-mode exact name lookup |
 | search_rust_function | search | Rust function symbol search |
 | search_go_function | search | Search for Go handler function (handleGetUser) |

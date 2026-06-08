@@ -5,9 +5,9 @@ use std::collections::HashMap;
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::{
-    CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve,
-    FileFrameworkRecord, IndexDb, RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow,
-    SymbolDegreeInfo, SymbolRefLite, SymbolRow,
+    CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve, FileFrameworkRecord, IndexDb,
+    RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow, SymbolDegreeInfo, SymbolRefLite,
+    SymbolRow,
 };
 
 /// Methods grouped by container name: container -> [(symbol_uid, name, file_path, start_line)].

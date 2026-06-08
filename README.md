@@ -2,7 +2,7 @@
 
 A Rust MCP server for code-graph indexing and analysis. CodeCortex builds a
 semantic index of your codebase and exposes it through 14 MCP tools that AI
-agents call for hybrid search, impact analysis, architecture introspection, and
+agents call for ranked search, impact analysis, architecture introspection, and
 graph queries.
 
 Pure code intelligence — no UI, no CLI product, MCP-first.
@@ -63,7 +63,7 @@ usage path, and anti-patterns.
 | [DESIGN.md](DESIGN.md) | Design charter, principles, non-goals |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Crates, data flow, schema, internal components |
 | [docs/MCP_TOOLS.md](docs/MCP_TOOLS.md) | The 14 MCP tools, usage path, anti-patterns |
-| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | `.codecortex.json`, embedding providers, env overrides |
+| [docs/CONFIGURATION.md](docs/CONFIGURATION.md) | `.codecortex.json`, search/indexing settings, env overrides |
 | [docs/LANGUAGES.md](docs/LANGUAGES.md) | Language tiers and framework resolvers |
 | [docs/CYPHER.md](docs/CYPHER.md) | The read-only Cypher subset (`graph_query`) |
 | [docs/TEST_PLAN.md](docs/TEST_PLAN.md) | Test suite and eval corpus |
@@ -75,9 +75,9 @@ usage path, and anti-patterns.
 - **30 language identifiers**, 10 with full tree-sitter parsing; 16 semantic
   framework resolvers (Express, Flask, Spring, Gin, Axum, Rails, …). See
   [docs/LANGUAGES.md](docs/LANGUAGES.md).
-- **Hybrid search** — FTS5 + regex grep + optional vector, fused with Reciprocal
-  Rank Fusion. Vector search circuit-breaks cleanly when no embedding provider is
-  configured. See [docs/CONFIGURATION.md](docs/CONFIGURATION.md#embedding-providers).
+- **Ranked local search** — FTS5 + regex grep + preselection, fused with Reciprocal
+  Rank Fusion and reranked with file-path / breadcrumb / recency boosts. See
+  [docs/CONFIGURATION.md](docs/CONFIGURATION.md#search).
 - **Impact analysis** — BFS reverse-caller expansion, community boundaries,
   cross-service HTTP impact, and git co-change analysis.
 - **Incremental indexing** — mtime+size fast path with hash confirmation, dirty

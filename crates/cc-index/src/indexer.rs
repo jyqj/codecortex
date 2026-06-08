@@ -4,10 +4,9 @@
 //! Phase 2: Diff (mtime+size fast-skip → hash confirm) → Vec<PendingFile>
 //! Phase 3: Parallel parse (rayon) → Vec<IndexedFile>
 //! Phase 4: Symbol resolution (cross-file)
-//! Phase 5: Embedding
-//! Phase 6: Batch write to SQLite
-//! Phase 7: Post-processing (test edges, communities, frameworks)
-//! Phase 8: Git co-change analysis
+//! Phase 5: Batch write to SQLite
+//! Phase 6: Post-processing (test edges, communities, frameworks)
+//! Phase 7: Git co-change analysis
 
 use std::collections::{HashMap, HashSet};
 use std::path::Path;

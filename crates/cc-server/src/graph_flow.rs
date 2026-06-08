@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
 
-use crate::graph_trace::{bfs_paths_labeled, build_bfs_adj_full, read_symbol_snippet};
+use crate::graph_trace::{read_symbol_snippet, GraphNeighborhood};
 use crate::graph_types::{
     AmbiguousSymbol, DisconnectedSymbol, FlowPath, FlowResult, SymbolBrief, TraceEdge, TraceNode,
     UnresolvedSymbol,
@@ -111,8 +111,8 @@ pub fn explore_flow(
         }
     }
 
-    // 3. Build BFS adjacency once.
-    let adj = build_bfs_adj_full(db)?;
+    // 3. Build shared lazy graph neighborhood once.
+    let mut neighborhood = GraphNeighborhood::new(Arc::clone(db))?;
 
     // 4. Pairwise path finding.
     let uid_names = db.symbol_names_by_uid()?;
@@ -126,14 +126,14 @@ pub fn explore_flow(
             let uid_j = &resolved[j].1;
 
             // Forward: i → j
-            let fwd = bfs_paths_labeled(&adj, uid_i, uid_j, max_depth, max_paths_per_pair);
+            let fwd = neighborhood.paths_between(uid_i, uid_j, max_depth, max_paths_per_pair);
             for lp in fwd {
                 path_endpoints.push((i, j));
                 all_labeled_paths.push(lp);
             }
 
             // Reverse: j → i
-            let rev = bfs_paths_labeled(&adj, uid_j, uid_i, max_depth, max_paths_per_pair);
+            let rev = neighborhood.paths_between(uid_j, uid_i, max_depth, max_paths_per_pair);
             for lp in rev {
                 path_endpoints.push((j, i));
                 all_labeled_paths.push(lp);

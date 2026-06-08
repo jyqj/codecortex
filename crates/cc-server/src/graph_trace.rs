@@ -25,75 +25,20 @@ pub fn build_bfs_adj(db: &IndexDb) -> CcResult<BfsAdj> {
 ///
 /// Starts from the base call_edges adjacency, then loads http_call_edges and route_nodes
 /// to synthesize edges that connect HTTP callers to route handler symbols.
+#[allow(dead_code)]
 pub fn build_bfs_adj_full(db: &IndexDb) -> CcResult<BfsAdj> {
     let mut bfs = build_bfs_adj(db)?;
-
-    // Load HTTP call edges and route nodes for bridge synthesis.
-    let http_edges = db.all_http_call_edges_lite(5000)?;
-    let route_nodes = db.all_route_nodes_lite(5000)?;
-
-    // Build lookup: normalized_path → Vec<(handler_symbol_uid, confidence)>
-    let mut route_lookup: HashMap<String, Vec<(String, f64)>> = HashMap::new();
-    for rn in &route_nodes {
-        if let (Some(ref norm_path), Some(ref handler_uid)) =
-            (&rn.normalized_path, &rn.handler_symbol_uid)
-        {
-            route_lookup
-                .entry(norm_path.clone())
-                .or_default()
-                .push((handler_uid.clone(), rn.confidence));
-        }
+    for (caller_uid, bridge_edges) in GraphNeighborhood::bridge_edges_by_caller(db)? {
+        bfs.adj.entry(caller_uid).or_default().extend(bridge_edges);
     }
-
-    // For each HTTP call edge, synthesize bridge edges to matching route handlers.
-    for hce in &http_edges {
-        let caller_uid = match &hce.caller_symbol_uid {
-            Some(uid) => uid,
-            None => continue,
-        };
-        let norm_path = match &hce.normalized_path {
-            Some(p) => p,
-            None => continue,
-        };
-        if let Some(handlers) = route_lookup.get(norm_path) {
-            for (handler_uid, handler_confidence) in handlers {
-                let dispatch_kind = if hce.call_kind == "http" {
-                    "http_bridge"
-                } else {
-                    "async_bridge"
-                };
-                let bridge_edge = EdgeLite {
-                    caller_uid: caller_uid.clone(),
-                    callee_uid: handler_uid.clone(),
-                    dispatch_kind: dispatch_kind.to_string(),
-                    synthesized_by: Some("http_bridge".to_string()),
-                    synthesis_key: Some(norm_path.clone()),
-                    confidence: f64::min(hce.confidence, *handler_confidence),
-                    file_path: hce.file_path.clone(),
-                    line: hce.line,
-                    registered_file: None,
-                    registered_line: None,
-                    resolution_kind: Some("synthesized".to_string()),
-                    parser_tier: None,
-                    resolution_strategy: None,
-                    parser_confidence: None,
-                };
-                bfs.adj
-                    .entry(caller_uid.clone())
-                    .or_default()
-                    .push(bridge_edge);
-            }
-        }
-    }
-
     Ok(bfs)
 }
 
-/// Lazy adjacency loader: loads outgoing edges per-node on demand during BFS.
+/// Deep graph adjacency seam shared by trace and flow traversals.
 ///
-/// HTTP bridge edges are pre-loaded once (they're bounded by route count, not code edges).
-/// Call edges are loaded lazily from the database when a node is first visited.
-struct LazyBfsAdj {
+/// HTTP/async bridge edges are pre-loaded once because they are bounded by
+/// route count, while ordinary call edges are fetched per visited caller UID.
+pub(crate) struct GraphNeighborhood {
     db: Arc<IndexDb>,
     /// Cached call edges keyed by caller UID.
     cache: HashMap<String, Vec<EdgeLite>>,
@@ -101,9 +46,17 @@ struct LazyBfsAdj {
     http_bridges: HashMap<String, Vec<EdgeLite>>,
 }
 
-impl LazyBfsAdj {
-    fn new(db: Arc<IndexDb>) -> CcResult<Self> {
-        // Pre-load HTTP bridge edges (bounded by route count).
+impl GraphNeighborhood {
+    pub(crate) fn new(db: Arc<IndexDb>) -> CcResult<Self> {
+        let http_bridges = Self::bridge_edges_by_caller(&db)?;
+        Ok(Self {
+            db,
+            cache: HashMap::new(),
+            http_bridges,
+        })
+    }
+
+    fn bridge_edges_by_caller(db: &IndexDb) -> CcResult<HashMap<String, Vec<EdgeLite>>> {
         let http_edges = db.all_http_call_edges_lite(5000)?;
         let route_nodes = db.all_route_nodes_lite(5000)?;
 
@@ -160,15 +113,11 @@ impl LazyBfsAdj {
             }
         }
 
-        Ok(Self {
-            db,
-            cache: HashMap::new(),
-            http_bridges,
-        })
+        Ok(http_bridges)
     }
 
     /// Get outgoing edges for a node, loading from DB on first access.
-    fn neighbors(&mut self, uid: &str) -> &[EdgeLite] {
+    pub(crate) fn neighbors(&mut self, uid: &str) -> &[EdgeLite] {
         if !self.cache.contains_key(uid) {
             let mut edges = self.db.call_edges_from_uid_lite(uid).unwrap_or_default();
             // Append HTTP bridge edges if any exist for this caller.
@@ -179,11 +128,22 @@ impl LazyBfsAdj {
         }
         self.cache.get(uid).map(|v| v.as_slice()).unwrap_or(&[])
     }
+
+    /// Find labeled paths using the cached lazy neighborhood.
+    pub(crate) fn paths_between(
+        &mut self,
+        from_uid: &str,
+        to_uid: &str,
+        max_depth: usize,
+        max_paths: usize,
+    ) -> Vec<LabeledPath> {
+        bfs_paths_labeled_lazy(self, from_uid, to_uid, max_depth, max_paths)
+    }
 }
 
 /// BFS using lazy adjacency loading — only queries edges for visited nodes.
 fn bfs_paths_labeled_lazy(
-    lazy_adj: &mut LazyBfsAdj,
+    neighborhood: &mut GraphNeighborhood,
     from_uid: &str,
     to_uid: &str,
     max_depth: usize,
@@ -210,7 +170,7 @@ fn bfs_paths_labeled_lazy(
             });
             continue;
         }
-        let neighbors = lazy_adj.neighbors(&current).to_vec();
+        let neighbors = neighborhood.neighbors(&current).to_vec();
         for edge in &neighbors {
             if !visited.contains(&edge.callee_uid) {
                 visited.insert(edge.callee_uid.clone());
@@ -226,6 +186,7 @@ fn bfs_paths_labeled_lazy(
 }
 
 /// BFS returning labeled paths (node UIDs + edge data).
+#[cfg(test)]
 pub fn bfs_paths_labeled(
     adj: &BfsAdj,
     from_uid: &str,
@@ -271,6 +232,7 @@ pub fn bfs_paths_labeled(
 }
 
 /// Legacy trace_path returning just symbol name arrays.
+#[cfg(test)]
 pub fn trace_path_names(
     db: &Arc<IndexDb>,
     from: &str,
@@ -355,8 +317,8 @@ pub fn trace_path_rich(
     let to_uid = resolve_symbol_uid(db, to, to_uid_override, "to", &mut disambiguation)?;
 
     // 2. Lazy BFS: load edges on demand instead of pre-loading the full graph.
-    let mut lazy_adj = LazyBfsAdj::new(Arc::clone(db))?;
-    let labeled_paths = bfs_paths_labeled_lazy(&mut lazy_adj, &from_uid, &to_uid, max_depth, 20);
+    let mut neighborhood = GraphNeighborhood::new(Arc::clone(db))?;
+    let labeled_paths = neighborhood.paths_between(&from_uid, &to_uid, max_depth, 20);
 
     // 3. Collect all unique UIDs across all paths.
     let uid_vec = collect_unique_uids(&labeled_paths);
@@ -377,7 +339,7 @@ pub fn trace_path_rich(
         &uid_vec,
         &sym_map,
         db,
-        &mut lazy_adj,
+        &mut neighborhood,
         &uid_names,
         project_root,
         include_snippets,
@@ -466,7 +428,7 @@ fn build_trace_nodes(
     uid_vec: &[String],
     sym_map: &HashMap<String, cc_db::index_db::SymbolRow>,
     db: &Arc<IndexDb>,
-    lazy_adj: &mut LazyBfsAdj,
+    neighborhood: &mut GraphNeighborhood,
     uid_names: &HashMap<String, String>,
     project_root: Option<&Path>,
     include_snippets: bool,
@@ -497,7 +459,7 @@ fn build_trace_nodes(
             };
 
             let outgoing_calls = if include_outgoing {
-                outgoing_call_names_lazy(uid_names, lazy_adj, uid)
+                outgoing_call_names_lazy(uid_names, neighborhood, uid)
             } else {
                 None
             };
@@ -609,10 +571,10 @@ fn build_paths_and_edges(
 /// the lookup per node here previously re-scanned the whole symbols table each time.
 fn outgoing_call_names_lazy(
     uid_names: &HashMap<String, String>,
-    lazy_adj: &mut LazyBfsAdj,
+    neighborhood: &mut GraphNeighborhood,
     uid: &str,
 ) -> Option<Vec<String>> {
-    let neighbors = lazy_adj.neighbors(uid);
+    let neighbors = neighborhood.neighbors(uid);
     if neighbors.is_empty() {
         return None;
     }

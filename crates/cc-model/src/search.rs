@@ -1,7 +1,7 @@
 use crate::{symbol::SymbolKind, Language};
 use serde::{Deserialize, Serialize};
 
-/// A search result from the hybrid retrieval engine.
+/// A search result from the lexical retrieval engine.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchHit {
     pub chunk_id: String,
@@ -14,7 +14,6 @@ pub struct SearchHit {
     pub symbol_kind: Option<SymbolKind>,
     pub text: String,
     pub fused_score: f64,
-    pub vector_score: f64,
     pub lexical_score: f64,
     pub grep_score: f64,
     pub graph_score: f64,

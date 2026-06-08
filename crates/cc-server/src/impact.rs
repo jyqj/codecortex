@@ -101,6 +101,7 @@ impl ImpactAnalyzer {
 
     // ── Main analysis ────────────────────────────────────────────
 
+    #[cfg(test)]
     pub fn analyze(&self, changed_files: &[String], max_depth: usize) -> CcResult<ImpactReport> {
         self.analyze_with_options(changed_files, max_depth, None)
     }

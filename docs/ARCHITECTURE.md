@@ -12,12 +12,12 @@ A 7-crate Cargo workspace with strictly downward dependencies (no cycles):
 ```
 cc-model      Data types, config, error definitions (serde, thiserror, blake3)
     |
-cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 25 tables + 5 FTS5, schema v19)
+cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 21 tables + 4 FTS5, schema v2)
     |
 cc-parsers    Tree-sitter AST extraction + framework detection
 cc-index      File scanning, incremental indexing, community detection (Louvain)
     |
-cc-search     Hybrid search (vector + FTS + grep + RRF), Cypher subset engine
+cc-search     Ranked local search (FTS5 + grep + preselect/RRF), Cypher subset engine
     |
 cc-server     MCP server (rmcp), CLI (clap), CodeIndex engine, ImpactAnalyzer, FileWatcher
     |
@@ -29,7 +29,8 @@ Data types, config, and error definitions. Minimal dependencies: `serde`,
 `serde_json`, `thiserror`, `tracing`, `blake3`.
 
 - `ProjectConfig` — loaded from `.codecortex.json` (see [CONFIGURATION.md](CONFIGURATION.md))
-- `IndexPaths` — project_path, workdir, index_db, logs_dir
+- `IndexPaths` — project_path, workdir, index_db, logs_dir; `CODECORTEX_CACHE_DIR`
+  can move per-project caches out of the repo into a stable hashed subdirectory
 - `ContextEnvelope`, `ContextNode`, `ContextSpan` — search-result packaging
 - `Intent`, `Language`, `SymbolKind` — enums
 - `ImpactReport`, `ImpactedSymbol`, `RiskLevel` — impact analysis
@@ -40,21 +41,20 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
 
 - `IndexDb` — r2d2 read pool (default 4 readers) + a dedicated Mutex-guarded
   writer connection, WAL mode
-- 25 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts,
+- 21 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts,
   call_edges, test_edges, route_edges, route_nodes, diagnostics, literal_index,
   communities, repo_frameworks, file_frameworks, data_flow_edges,
   co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges,
   dispatch_sites, runtime_evidence, adr, metadata
-- 5 FTS5 virtual tables: full-text search on chunks, diagnostics, literals,
+- 4 FTS5 virtual tables: full-text search on chunks, literals,
   files, plus a trigram `symbols_fts` (name) that accelerates the substring
   symbol lookups in file preselection; it is kept in sync with `symbols` by
   insert/delete/update triggers, so no write path populates it directly
 - A `REGEXP(pattern, text)` scalar UDF backs Cypher `=~`; the compiled pattern is
   cached as SQLite auxiliary data so a constant pattern compiles once per
   statement, not once per row
-- Schema versioning via the `user_version` pragma (v19, incremental migration
-  chain; v16→v17 drops the unused `scopes` table, v17→v18 adds trigram
-  `symbols_fts`, v18→v19 drops `scope_id` columns)
+- Schema versioning via the `user_version` pragma (v2). The current strategy is
+  rebuild-on-mismatch for on-disk indexes.
 
 ### cc-parsers
 Tree-sitter AST extraction across 30 auto-detected language identifiers (+ an
@@ -80,12 +80,10 @@ File scanning and incremental indexing.
 ### cc-search
 Hybrid search engine.
 
-- **Vector** search — pluggable embedder (none / hash / OpenAI-compatible). When
-  no provider is configured the lane short-circuits and contributes nothing; see
-  [CONFIGURATION.md](CONFIGURATION.md#embedding-providers).
-- **Lexical** search — FTS5
-- **Grep** search — regex over symbols
-- **RRF** (Reciprocal Rank Fusion) combines the three lanes, followed by
+- **Lexical** search — FTS5 over chunks.
+- **Grep** search — regex over symbols.
+- **Preselection** — trigram-backed symbol substring recall narrows candidates.
+- **RRF** (Reciprocal Rank Fusion) combines local retrieval lanes, followed by
   reranking with file-path / breadcrumb / recency boosts
 - **Cypher** read-only query engine (MATCH / OPTIONAL MATCH / WHERE / RETURN /
   ORDER BY / LIMIT / UNION); see [CYPHER.md](CYPHER.md)
@@ -112,8 +110,8 @@ Tree-sitter parsers  -->  symbols, call edges, imports, test edges,
 SQLite index (index.sqlite3)
     |
     +---> FTS5 full-text search
-    +---> Vector embeddings (optional; disabled when no provider configured)
     +---> Regex symbol grep
+    +---> Trigram-backed symbol preselection
     |
     v
 RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses

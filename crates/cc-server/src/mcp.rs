@@ -159,7 +159,7 @@ impl CodeCortexMcpServer {
 
     #[tool(
         name = "search",
-        description = "Search code by hybrid vector+FTS+grep fusion (default) or symbol name lookup"
+        description = "Search code by FTS5+grep fusion (default) or symbol name lookup"
     )]
     async fn tool_search(
         &self,
@@ -902,7 +902,7 @@ index(path) → search(query) → context(task)
 
 ## Anti-patterns
 
-- Do NOT grep/find when search() is available — it uses hybrid vector+FTS+grep fusion with ranking.
+- Do NOT grep/find when search() is available — it uses FTS5+grep fusion with ranking.
 - Do NOT chain search + node when you want context — context(task) is one round-trip.
 - Do NOT loop node() over many symbols — one explore(symbols) call returns them all grouped by file.
 - Do NOT use trace(include_source=true) for deep understanding — use trace(source_mode="body") instead for complete function bodies.

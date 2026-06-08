@@ -1,4 +1,4 @@
--- index.sqlite3 — Schema v1 (20 tables + 4 FTS5)
+-- index.sqlite3 — Schema v2 (21 tables + 4 FTS5)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -31,7 +31,6 @@ CREATE TABLE IF NOT EXISTS chunks (
     symbol_kind       TEXT,
     text              TEXT NOT NULL,
     text_encoding     TEXT NOT NULL DEFAULT 'plain',
-    embedding         BLOB,
     token_estimate    INTEGER NOT NULL DEFAULT 0,
     parser_tier       TEXT NOT NULL DEFAULT 'generic',
     parser_confidence REAL NOT NULL DEFAULT 0.5

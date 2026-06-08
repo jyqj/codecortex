@@ -15,7 +15,7 @@ for the authoritative runtime surface.
 
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
-| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files`, `path_prefix` | Ranked search hits with file paths, line ranges, snippets |
+| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files`, `path_prefix` | Ranked local search hits with file paths, line ranges, snippets |
 | `context` | Build complete context for a task in one call | `task`, `max_symbols`, `include_source`, `intent` | Relevant symbols, relationships, and source grouped by file |
 
 ## Deep dive
@@ -72,8 +72,8 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
 
 ## Anti-patterns to avoid
 
-- Don't grep/find when `search()` is available — it uses hybrid FTS + grep (and
-  vector, when configured) fusion with ranking.
+- Don't grep/find when `search()` is available — it uses ranked FTS5 + grep +
+  preselection fusion with ranking.
 - Don't chain `search` + `node` when you want context — `context(task)` is one
   round-trip.
 - Don't loop `node()` over many symbols — one `explore(symbols)` call returns

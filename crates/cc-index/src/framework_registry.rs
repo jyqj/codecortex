@@ -864,13 +864,13 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
         if let Ok(rows) = stmt.query_map([], |row| row.get::<_, String>(0)) {
             for fw in rows.flatten() {
                 if let Some(fw_key) = normalize_route_framework(&fw) {
-                    let det = repo_scores
-                        .entry(fw_key.to_string())
-                        .or_insert_with(|| FileFrameworkDetection {
+                    let det = repo_scores.entry(fw_key.to_string()).or_insert_with(|| {
+                        FileFrameworkDetection {
                             framework_key: fw_key.to_string(),
                             confidence: 0.0,
                             signals: Vec::new(),
-                        });
+                        }
+                    });
                     det.confidence = (det.confidence + WEIGHT_ROUTE_FRAMEWORK).min(0.95);
                     det.signals.push(format!("route_framework:{}", fw));
                 }

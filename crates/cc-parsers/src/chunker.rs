@@ -215,7 +215,6 @@ impl Chunker {
             text: text.to_string(),
             symbol_name: symbol_name.map(String::from),
             symbol_kind,
-            embedding: Vec::new(),
             token_estimate: approx_tokens(text),
             parser_tier,
             parser_confidence,

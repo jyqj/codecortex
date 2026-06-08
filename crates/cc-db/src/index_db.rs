@@ -1136,11 +1136,6 @@ impl IndexDb {
 
         // chunks + chunks_fts
         for c in &outcome.chunks {
-            let emb: Option<Vec<u8>> = if c.embedding.is_empty() {
-                None
-            } else {
-                Some(c.embedding.iter().flat_map(|f| f.to_le_bytes()).collect())
-            };
             // Compress chunk text with zstd when it saves space
             let text_bytes = c.text.as_bytes();
             let use_compressed = if text_bytes.len() > 128 {
@@ -1154,14 +1149,14 @@ impl IndexDb {
             if let Some(ref blob) = use_compressed {
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,embedding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob.as_slice(), "zstd", emb, c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob.as_slice(), "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
                 )?;
             } else {
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,embedding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", emb, c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
                 )?;
             }
             // FTS always receives uncompressed text

@@ -789,10 +789,10 @@ impl GoParser {
     }
 
     // =========================================================================
-    // Semantic edge extraction (struct embeddings)
+    // Semantic edge extraction (embedded struct fields)
     // =========================================================================
 
-    /// Extract struct embedding relationships from `struct_type` bodies.
+    /// Extract embedded struct field relationships from `struct_type` bodies.
     fn extract_semantic_edges(
         &self,
         tree: &tree_sitter::Tree,
@@ -809,7 +809,9 @@ impl GoParser {
                 let mut decl_cursor = child.walk();
                 for spec in child.children(&mut decl_cursor) {
                     if spec.kind() == "type_spec" {
-                        self.extract_embedding_edges(&spec, source, file_path, symbols, &mut edges);
+                        self.extract_embedded_field_edges(
+                            &spec, source, file_path, symbols, &mut edges,
+                        );
                     }
                 }
             }
@@ -819,7 +821,7 @@ impl GoParser {
     }
 
     /// For a given `type_spec` node, if it's a struct, find embedded types.
-    fn extract_embedding_edges(
+    fn extract_embedded_field_edges(
         &self,
         node: &tree_sitter::Node,
         source: &[u8],
@@ -1767,7 +1769,7 @@ func main() {}
     }
 
     #[test]
-    fn parse_struct_embedding() {
+    fn parse_struct_embedded_field() {
         let parser = GoParser::new();
         let code = r#"package main
 
@@ -1783,7 +1785,7 @@ type Derived struct {
         let outcome = parser.parse("embed.go", code, Language::Go).unwrap();
         assert!(
             !outcome.semantic_edges.is_empty(),
-            "should detect embedding"
+            "should detect embedded field"
         );
         let edge = &outcome.semantic_edges[0];
         assert_eq!(edge.source_symbol, "Derived");

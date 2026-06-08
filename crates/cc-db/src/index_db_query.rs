@@ -115,7 +115,7 @@ impl IndexDb {
     ) -> CcResult<Vec<SymbolRecord>> {
         let conn = self.read_conn()?;
         let sql = if excluded_files.is_empty() {
-            "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,scope_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols ORDER BY file_path,start_line".to_string()
+            "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols ORDER BY file_path,start_line".to_string()
         } else {
             let placeholders = excluded_files
                 .iter()
@@ -123,7 +123,7 @@ impl IndexDb {
                 .collect::<Vec<_>>()
                 .join(",");
             format!(
-                "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,scope_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols WHERE file_path NOT IN ({}) ORDER BY file_path,start_line",
+                "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols WHERE file_path NOT IN ({}) ORDER BY file_path,start_line",
                 placeholders
             )
         };
@@ -139,7 +139,7 @@ impl IndexDb {
             .query_map(params.as_slice(), |row| {
                 let kind: String = row.get(3)?;
                 let parser_tier: String = row.get(11)?;
-                let param_count: Option<i64> = row.get(23)?;
+                let param_count: Option<i64> = row.get(22)?;
                 Ok(SymbolRecord {
                     symbol_id: row.get(0)?,
                     file_path: row.get(1)?,
@@ -156,17 +156,17 @@ impl IndexDb {
                     parser_confidence: row.get(12)?,
                     qname: row.get(13)?,
                     parent_symbol_id: row.get(14)?,
-                    scope_id: row.get(15)?,
-                    export_name: row.get(16)?,
-                    is_default_export: row.get::<_, i64>(17)? != 0,
-                    symbol_uid: row.get(18)?,
-                    framework_role: row.get(19)?,
-                    receiver_type: row.get(20)?,
-                    param_types: row.get(21)?,
-                    return_type: row.get(22)?,
+                    scope_id: None,
+                    export_name: row.get(15)?,
+                    is_default_export: row.get::<_, i64>(16)? != 0,
+                    symbol_uid: row.get(17)?,
+                    framework_role: row.get(18)?,
+                    receiver_type: row.get(19)?,
+                    param_types: row.get(20)?,
+                    return_type: row.get(21)?,
                     param_count: param_count.map(|v| v as u32),
-                    base_types: row.get(24)?,
-                    implements: row.get(25)?,
+                    base_types: row.get(23)?,
+                    implements: row.get(24)?,
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -237,7 +237,7 @@ impl IndexDb {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
-                "SELECT framework_key, confidence FROM repo_frameworks ORDER BY confidence DESC",
+                "SELECT framework_key, confidence FROM frameworks WHERE scope='repo' ORDER BY confidence DESC",
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
@@ -365,7 +365,7 @@ impl IndexDb {
         obj.insert("chunks_count".into(), serde_json::json!(chunk_count));
 
         let mut fw_stmt = conn.prepare(
-            "SELECT framework_key, confidence FROM file_frameworks WHERE file_path=?1 ORDER BY confidence DESC"
+            "SELECT framework_key, confidence FROM frameworks WHERE scope='file' AND scope_id=?1 ORDER BY confidence DESC"
         ).map_err(|e| CcError::Database(e.to_string()))?;
         let fw_rows = fw_stmt
             .query_map(rusqlite::params![file_path], |row| {

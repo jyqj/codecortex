@@ -15,7 +15,7 @@ impl IndexDb {
             .prepare(
                 "SELECT edge_id, file_path, route_path, handler_name, method, line,
                         end_line, handler_symbol_uid, framework, confidence
-                 FROM route_edges
+                 FROM routes
                  WHERE route_path = ?1
                  ORDER BY confidence DESC
                  LIMIT ?2",
@@ -50,7 +50,7 @@ impl IndexDb {
             .prepare(
                 "SELECT edge_id, file_path, route_path, handler_name, method, line,
                         end_line, handler_symbol_uid, framework, confidence
-                 FROM route_edges
+                 FROM routes
                  WHERE handler_symbol_uid = ?1
                  ORDER BY confidence DESC
                  LIMIT ?2",
@@ -194,7 +194,7 @@ impl IndexDb {
             .prepare(
                 "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
                         handler_name, framework, line, end_line, confidence
-                 FROM route_nodes
+                 FROM routes
                  WHERE normalized_path = ?1
                  ORDER BY confidence DESC
                  LIMIT ?2",
@@ -232,7 +232,7 @@ impl IndexDb {
                 .prepare(
                     "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
                             handler_name, framework, line, end_line, confidence
-                     FROM route_nodes
+                     FROM routes
                      WHERE normalized_path = ?1 AND UPPER(method) = UPPER(?2)
                      ORDER BY confidence DESC
                      LIMIT ?3",
@@ -299,7 +299,7 @@ impl IndexDb {
             .prepare(
                 "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
                         handler_name, framework, line, end_line, confidence, normalized_path
-                 FROM route_nodes
+                 FROM routes
                  WHERE handler_symbol_uid IS NOT NULL AND normalized_path IS NOT NULL
                  ORDER BY confidence DESC
                  LIMIT ?1",
@@ -357,17 +357,17 @@ mod tests {
             let mut conn = db.write_conn.lock().unwrap();
             let tx = conn.transaction().unwrap();
             tx.execute(
-                "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
+                "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
                  VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
                 rusqlite::params!["re1","src/routes.js","/api/users","listUsers","GET",10,0.9,"tree_sitter"],
             ).unwrap();
             tx.execute(
-                "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
+                "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
                  VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
                 rusqlite::params!["re2","src/routes.js","/api/users","createUser","POST",20,0.7,"tree_sitter"],
             ).unwrap();
             tx.execute(
-                "INSERT INTO route_edges(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
+                "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,confidence,parser_tier)
                  VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
                 rusqlite::params!["re3","src/routes.js","/api/posts","listPosts","GET",30,0.8,"tree_sitter"],
             ).unwrap();
@@ -434,19 +434,23 @@ mod tests {
             let mut conn = db.write_conn.lock().unwrap();
             let tx = conn.transaction().unwrap();
             tx.execute(
-                "INSERT INTO route_nodes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier)
-                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
-                rusqlite::params!["rn1","routes.js","/api/users","GET","uid_handler","listUsers","express",5,10,"/api/users",0.9,"tree_sitter"],
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) VALUES('routes.js', 'javascript', 'hash1', 1000, 100, '2024-01-01T00:00:00Z')",
+                [],
             ).unwrap();
             tx.execute(
-                "INSERT INTO route_nodes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier)
-                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
-                rusqlite::params!["rn2","routes.js","/api/users","POST","uid_create","createUser","express",15,20,"/api/users",0.8,"tree_sitter"],
+                "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+                rusqlite::params!["e_rn1","routes.js","/api/users","GET","uid_handler","listUsers","express",5,10,"/api/users",0.9,"tree_sitter","rn1"],
             ).unwrap();
             tx.execute(
-                "INSERT INTO route_nodes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier)
-                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
-                rusqlite::params!["rn3","routes.js","/api/posts","GET","uid_posts","listPosts","express",25,30,"/api/posts",0.7,"tree_sitter"],
+                "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+                rusqlite::params!["e_rn2","routes.js","/api/users","POST","uid_create","createUser","express",15,20,"/api/users",0.8,"tree_sitter","rn2"],
+            ).unwrap();
+            tx.execute(
+                "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
+                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+                rusqlite::params!["e_rn3","routes.js","/api/posts","GET","uid_posts","listPosts","express",25,30,"/api/posts",0.7,"tree_sitter","rn3"],
             ).unwrap();
             tx.commit().unwrap();
         }

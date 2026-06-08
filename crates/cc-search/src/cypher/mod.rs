@@ -652,7 +652,7 @@ mod tests {
         );
         // Destination table should be route_nodes.
         assert!(
-            sql.contains("route_nodes AS route"),
+            sql.contains("routes AS route"),
             "dst table should be route_nodes, got: {sql}"
         );
         // HTTP_CALLS must filter by call_kind = 'http'.

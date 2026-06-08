@@ -168,7 +168,7 @@ impl IndexDb {
         let mut stmt = conn
             .prepare(
                 "SELECT COALESCE(method, 'GET'), route_path, COALESCE(handler_name, ''), file_path
-                 FROM route_edges
+                 FROM routes
                  ORDER BY route_path
                  LIMIT ?1",
             )
@@ -549,13 +549,13 @@ mod tests {
             )
             .unwrap();
             tx.execute(
-                "INSERT INTO route_edges(edge_id, file_path, route_path, handler_name, method, line)
+                "INSERT INTO routes(edge_id, file_path, route_path, handler_name, method, line)
                  VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
                 rusqlite::params!["re1", "src/routes.rs", "/users", "list_users", "GET", 10],
             )
             .unwrap();
             tx.execute(
-                "INSERT INTO route_edges(edge_id, file_path, route_path, handler_name, method, line)
+                "INSERT INTO routes(edge_id, file_path, route_path, handler_name, method, line)
                  VALUES(?1, ?2, ?3, ?4, ?5, ?6)",
                 rusqlite::params!["re2", "src/routes.rs", "/auth/login", "login", "POST", 20],
             )

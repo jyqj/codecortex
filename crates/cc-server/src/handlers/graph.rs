@@ -411,7 +411,7 @@ pub fn find_route_handlers(
         db.query_json(
             &format!(
                 "SELECT route_path, method, handler_name, file_path, framework, line \
-                 FROM route_edges WHERE route_path LIKE ?1 LIMIT {}",
+                 FROM routes WHERE route_path LIKE ?1 LIMIT {}",
                 limit
             ),
             &[like_pattern],
@@ -421,7 +421,7 @@ pub fn find_route_handlers(
         db.query_json(
             &format!(
                 "SELECT route_path, method, handler_name, file_path, framework, line \
-                 FROM route_edges LIMIT {}",
+                 FROM routes LIMIT {}",
                 limit
             ),
             &[],
@@ -499,7 +499,7 @@ pub fn find_async_consumers(
              FROM infra_edges ie \
              LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
              LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
-             LEFT JOIN route_nodes tgt_route ON ie.target_node_id = tgt_route.route_id \
+             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
              WHERE ie.kind IN ('binds_topic', 'consumes_queue') \
                AND (src.name LIKE ?1 OR ie.properties LIKE ?1)",
             &[pattern],
@@ -555,7 +555,7 @@ pub fn find_service_bindings(
         .query_json(
             "SELECT route_id, file_path, route_path, method, handler_symbol_uid, \
                     handler_name, framework, line, end_line, normalized_path, confidence \
-             FROM route_nodes \
+             FROM routes \
              WHERE route_path LIKE ?1 \
                 OR normalized_path LIKE ?1 \
                 OR handler_name LIKE ?1 \
@@ -601,7 +601,7 @@ pub fn find_service_bindings(
              FROM infra_edges ie \
              LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
              LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
-             LEFT JOIN route_nodes tgt_route ON ie.target_node_id = tgt_route.route_id \
+             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
              WHERE ie.source_node_id IN ({ph}) OR ie.target_node_id IN ({ph})",
             ph = ph_str,
         );

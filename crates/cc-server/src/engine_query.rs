@@ -547,7 +547,7 @@ impl CodeIndex {
             "imports",
             "semantic_edges",
             "test_edges",
-            "route_edges",
+            "routes",
             "http_call_edges",
             "data_flow_edges",
             "co_change_edges",
@@ -669,7 +669,7 @@ impl CodeIndex {
                 from: "Route",
                 edge: "HANDLES",
                 to: "Function",
-                table: "route_edges",
+                table: "routes",
                 description: "HTTP route mapped to handler function",
             },
             RelationshipPattern {

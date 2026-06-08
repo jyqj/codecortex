@@ -1,4 +1,4 @@
--- index.sqlite3 — Full Schema (version 18, rebuild-on-mismatch)
+-- index.sqlite3 — Schema v1 (20 tables + 4 FTS5)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -61,7 +61,6 @@ CREATE TABLE IF NOT EXISTS symbols (
     parser_confidence REAL NOT NULL DEFAULT 0.5,
     qname             TEXT,
     parent_symbol_id  TEXT,
-    scope_id          TEXT,
     export_name       TEXT,
     is_default_export INTEGER NOT NULL DEFAULT 0,
     symbol_uid        TEXT UNIQUE,
@@ -79,12 +78,6 @@ CREATE INDEX IF NOT EXISTS idx_symbols_file ON symbols(file_path);
 CREATE INDEX IF NOT EXISTS idx_symbols_qname ON symbols(qname);
 CREATE INDEX IF NOT EXISTS idx_symbols_uid ON symbols(symbol_uid);
 
--- Trigram FTS over symbol names: accelerates substring (`%token%`) name lookups
--- used by file preselection. The plain `idx_symbols_name` B-tree cannot serve a
--- leading-wildcard LIKE, so without this every preselect token did a full
--- `symbols` scan. Kept in sync with `symbols` via triggers below, so no Rust
--- write path needs to populate it. `case_sensitive` defaults to 0, so LIKE here
--- is case-insensitive and index-accelerated for patterns of >= 3 literal chars.
 CREATE VIRTUAL TABLE IF NOT EXISTS symbols_fts USING fts5(
     name,
     symbol_id UNINDEXED,
@@ -130,7 +123,6 @@ CREATE TABLE IF NOT EXISTS symbol_refs (
     target_file_path   TEXT,
     target_symbol_uid  TEXT,
     ref_name           TEXT,
-    scope_id           TEXT,
     resolution_kind    TEXT NOT NULL DEFAULT 'unresolved',
     resolution_confidence REAL NOT NULL DEFAULT 0.0,
     resolution_strategy   TEXT NOT NULL DEFAULT 'unresolved',
@@ -143,28 +135,6 @@ CREATE INDEX IF NOT EXISTS idx_refs_symbol ON symbol_refs(symbol_name);
 CREATE INDEX IF NOT EXISTS idx_refs_file ON symbol_refs(file_path);
 CREATE INDEX IF NOT EXISTS idx_refs_target ON symbol_refs(target_file_path, target_symbol_id);
 CREATE INDEX IF NOT EXISTS idx_refs_target_uid ON symbol_refs(target_symbol_uid);
-
-CREATE TABLE IF NOT EXISTS resolution_attempts (
-    attempt_id           TEXT PRIMARY KEY,
-    source_table         TEXT NOT NULL,
-    source_id            TEXT NOT NULL,
-    file_path            TEXT NOT NULL REFERENCES files(file_path) ON DELETE CASCADE,
-    reference_name       TEXT NOT NULL,
-    reference_kind       TEXT NOT NULL,
-    line                 INTEGER NOT NULL,
-    column_no            INTEGER NOT NULL DEFAULT 0,
-    container            TEXT,
-    candidates_json      TEXT NOT NULL DEFAULT '[]',
-    failure_reason       TEXT NOT NULL DEFAULT 'unresolved',
-    resolution_strategy  TEXT NOT NULL DEFAULT 'unresolved',
-    parser_tier          TEXT NOT NULL DEFAULT 'generic',
-    parser_confidence    REAL NOT NULL DEFAULT 0.5,
-    language             TEXT,
-    updated_at           TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
-CREATE INDEX IF NOT EXISTS idx_resolution_attempts_file ON resolution_attempts(file_path);
-CREATE INDEX IF NOT EXISTS idx_resolution_attempts_name ON resolution_attempts(reference_name);
-CREATE INDEX IF NOT EXISTS idx_resolution_attempts_kind ON resolution_attempts(reference_kind);
 
 CREATE TABLE IF NOT EXISTS call_edges (
     edge_id            TEXT PRIMARY KEY,
@@ -203,8 +173,6 @@ CREATE INDEX IF NOT EXISTS idx_ce_callee ON call_edges(callee_symbol);
 CREATE INDEX IF NOT EXISTS idx_ce_file ON call_edges(file_path);
 CREATE INDEX IF NOT EXISTS idx_ce_caller_uid ON call_edges(caller_symbol_uid);
 CREATE INDEX IF NOT EXISTS idx_ce_callee_uid ON call_edges(callee_symbol_uid);
-
--- Composite covering indices for caller/callee UID queries with file_path and line
 CREATE INDEX IF NOT EXISTS idx_ce_caller_uid_file ON call_edges(caller_symbol_uid, file_path, line);
 CREATE INDEX IF NOT EXISTS idx_ce_callee_uid_file ON call_edges(callee_symbol_uid, file_path, line);
 
@@ -218,7 +186,8 @@ CREATE TABLE IF NOT EXISTS test_edges (
 CREATE INDEX IF NOT EXISTS idx_te_test ON test_edges(test_file_path);
 CREATE INDEX IF NOT EXISTS idx_te_code ON test_edges(code_file_path);
 
-CREATE TABLE IF NOT EXISTS route_edges (
+-- routes: merged route_edges + route_nodes (normalized_path computed at index time)
+CREATE TABLE IF NOT EXISTS routes (
     edge_id             TEXT PRIMARY KEY,
     file_path           TEXT NOT NULL REFERENCES files(file_path) ON DELETE CASCADE,
     route_path          TEXT NOT NULL,
@@ -235,30 +204,16 @@ CREATE TABLE IF NOT EXISTS route_edges (
     framework           TEXT,
     route_kind          TEXT,
     confidence          REAL NOT NULL DEFAULT 0.5,
-    parser_tier         TEXT NOT NULL DEFAULT 'generic'
+    parser_tier         TEXT NOT NULL DEFAULT 'generic',
+    normalized_path     TEXT,
+    route_id            TEXT
 );
-CREATE INDEX IF NOT EXISTS idx_re_path ON route_edges(route_path);
-CREATE INDEX IF NOT EXISTS idx_re_handler ON route_edges(handler_name);
-CREATE INDEX IF NOT EXISTS idx_re_file ON route_edges(file_path);
-CREATE INDEX IF NOT EXISTS idx_re_handler_uid ON route_edges(handler_symbol_uid);
-
-CREATE TABLE IF NOT EXISTS diagnostics (
-    diagnostic_id TEXT PRIMARY KEY,
-    file_path     TEXT NOT NULL REFERENCES files(file_path) ON DELETE CASCADE,
-    severity      TEXT NOT NULL,
-    message       TEXT NOT NULL,
-    line          INTEGER NOT NULL,
-    end_line      INTEGER,
-    source        TEXT NOT NULL DEFAULT 'index',
-    code          TEXT,
-    confidence    REAL NOT NULL DEFAULT 0.5,
-    symbol_uid    TEXT
-);
-CREATE INDEX IF NOT EXISTS idx_diag_file ON diagnostics(file_path);
-CREATE VIRTUAL TABLE IF NOT EXISTS diagnostics_fts USING fts5(
-    diagnostic_id UNINDEXED, file_path UNINDEXED,
-    message, tokenize = 'unicode61 remove_diacritics 2'
-);
+CREATE INDEX IF NOT EXISTS idx_routes_path ON routes(route_path);
+CREATE INDEX IF NOT EXISTS idx_routes_handler ON routes(handler_name);
+CREATE INDEX IF NOT EXISTS idx_routes_file ON routes(file_path);
+CREATE INDEX IF NOT EXISTS idx_routes_handler_uid ON routes(handler_symbol_uid);
+CREATE INDEX IF NOT EXISTS idx_routes_norm_path ON routes(normalized_path);
+CREATE INDEX IF NOT EXISTS idx_routes_route_id ON routes(route_id);
 
 CREATE TABLE IF NOT EXISTS literal_index (
     literal_id           TEXT PRIMARY KEY,
@@ -293,40 +248,18 @@ CREATE TABLE IF NOT EXISTS communities (
     top_symbols_json    TEXT NOT NULL DEFAULT '[]'
 );
 
-CREATE TABLE IF NOT EXISTS repo_frameworks (
-    framework_key TEXT PRIMARY KEY,
-    confidence    REAL NOT NULL DEFAULT 0.0,
-    signals_json  TEXT NOT NULL DEFAULT '[]',
-    updated_at    TEXT NOT NULL DEFAULT ''
-);
-
-CREATE TABLE IF NOT EXISTS file_frameworks (
-    file_path     TEXT NOT NULL,
+-- frameworks: merged repo_frameworks + file_frameworks
+CREATE TABLE IF NOT EXISTS frameworks (
     framework_key TEXT NOT NULL,
+    scope         TEXT NOT NULL DEFAULT 'repo',
+    scope_id      TEXT NOT NULL DEFAULT '',
     confidence    REAL NOT NULL DEFAULT 0.0,
     signals_json  TEXT NOT NULL DEFAULT '[]',
-    PRIMARY KEY (file_path, framework_key)
+    updated_at    TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (framework_key, scope, scope_id)
 );
-
--- route nodes (includes normalized_path from the start)
-CREATE TABLE IF NOT EXISTS route_nodes (
-    route_id           TEXT PRIMARY KEY,
-    file_path          TEXT NOT NULL,
-    route_path         TEXT NOT NULL,
-    method             TEXT,
-    handler_symbol_uid TEXT,
-    handler_name       TEXT,
-    framework          TEXT,
-    line               INTEGER NOT NULL DEFAULT 0,
-    end_line           INTEGER,
-    normalized_path    TEXT,
-    confidence         REAL NOT NULL DEFAULT 0.7,
-    parser_tier        TEXT NOT NULL DEFAULT 'tree_sitter'
-);
-CREATE INDEX IF NOT EXISTS idx_rn_file ON route_nodes(file_path);
-CREATE INDEX IF NOT EXISTS idx_rn_path ON route_nodes(route_path);
-CREATE INDEX IF NOT EXISTS idx_rn_handler ON route_nodes(handler_symbol_uid);
-CREATE INDEX IF NOT EXISTS idx_rn_norm_path ON route_nodes(normalized_path);
+CREATE INDEX IF NOT EXISTS idx_frameworks_scope ON frameworks(scope);
+CREATE INDEX IF NOT EXISTS idx_frameworks_scope_id ON frameworks(scope_id);
 
 -- data-flow edges
 CREATE TABLE IF NOT EXISTS data_flow_edges (
@@ -367,7 +300,7 @@ CREATE TABLE IF NOT EXISTS http_call_edges (
     url_or_path          TEXT NOT NULL,
     normalized_path      TEXT,
     method               TEXT,
-    call_kind            TEXT NOT NULL DEFAULT 'http',  -- 'http' | 'async' | 'grpc'
+    call_kind            TEXT NOT NULL DEFAULT 'http',
     line                 INTEGER NOT NULL DEFAULT 0,
     confidence           REAL NOT NULL DEFAULT 0.5,
     parser_tier          TEXT NOT NULL DEFAULT 'tree_sitter',
@@ -462,7 +395,7 @@ CREATE TABLE IF NOT EXISTS runtime_evidence (
 CREATE INDEX IF NOT EXISTS idx_runtime_evidence_path ON runtime_evidence(path);
 CREATE INDEX IF NOT EXISTS idx_runtime_evidence_edge ON runtime_evidence(http_edge_id);
 
--- architecture decision records (repo metadata, not agent memory)
+-- architecture decision records
 CREATE TABLE IF NOT EXISTS adr (
     adr_id      TEXT PRIMARY KEY,
     title       TEXT NOT NULL,

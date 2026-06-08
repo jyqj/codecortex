@@ -595,7 +595,7 @@ fn detect_file_frameworks_conn(
 
     // --- 3. Route framework signal from route_edges ---
     if let Ok(mut stmt) = conn.prepare_cached(
-        "SELECT DISTINCT framework FROM route_edges WHERE file_path = ?1 AND framework IS NOT NULL AND framework != ''",
+        "SELECT DISTINCT framework FROM routes WHERE file_path = ?1 AND framework IS NOT NULL AND framework != ''",
     ) {
         if let Ok(rows) = stmt.query_map(rusqlite::params![file_path], |row| row.get::<_, String>(0))
         {
@@ -825,10 +825,10 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
 
     let mut repo_scores: HashMap<String, FileFrameworkDetection> = HashMap::new();
 
-    // 1. Aggregate from file_frameworks already persisted
+    // 1. Aggregate from frameworks (file scope) already persisted
     if let Ok(mut stmt) = conn.prepare(
         "SELECT framework_key, COUNT(*) as cnt, MAX(confidence) as max_conf \
-         FROM file_frameworks GROUP BY framework_key",
+         FROM frameworks WHERE scope='file' GROUP BY framework_key",
     ) {
         if let Ok(rows) = stmt.query_map([], |row| {
             Ok((
@@ -859,7 +859,7 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
 
     // 2. Route-edge framework signal
     if let Ok(mut stmt) = conn.prepare(
-        "SELECT DISTINCT framework FROM route_edges WHERE framework IS NOT NULL AND framework != ''",
+        "SELECT DISTINCT framework FROM routes WHERE framework IS NOT NULL AND framework != ''",
     ) {
         if let Ok(rows) = stmt.query_map([], |row| row.get::<_, String>(0)) {
             for fw in rows.flatten() {
@@ -1038,8 +1038,8 @@ pub fn get_frameworks_for_files(
     };
     let placeholders: String = file_paths.iter().map(|_| "?").collect::<Vec<_>>().join(",");
     let sql = format!(
-        "SELECT file_path, framework_key, confidence FROM file_frameworks \
-         WHERE file_path IN ({}) ORDER BY confidence DESC",
+        "SELECT scope_id, framework_key, confidence FROM frameworks \
+         WHERE scope='file' AND scope_id IN ({}) ORDER BY confidence DESC",
         placeholders
     );
     let mut stmt = match conn.prepare(&sql) {

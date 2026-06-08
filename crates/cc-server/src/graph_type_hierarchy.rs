@@ -518,9 +518,9 @@ mod tests {
             conn.execute(
                 "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
                   start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,
-                  parent_symbol_id, scope_id, export_name, is_default_export,
+                  parent_symbol_id, export_name, is_default_export,
                   framework_role, receiver_type, param_types, return_type, param_count, base_types, implements)
-                 VALUES(?1,?2,?3,?4,'src/types.ts',NULL,?5,?6,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,?7,NULL,NULL)",
+                 VALUES(?1,?2,?3,?4,'src/types.ts',NULL,?5,?6,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,?7,NULL,NULL)",
                 rusqlite::params![sid, uid, name, kind, start, end, param_count],
             ).unwrap();
         }
@@ -671,17 +671,17 @@ mod tests {
         conn.execute(
             "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
               start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,
-              parent_symbol_id, scope_id, export_name, is_default_export,
+              parent_symbol_id, export_name, is_default_export,
               framework_role, receiver_type, param_types, return_type, param_count, base_types, implements)
-             VALUES('s1','uid_c1','Client','class','src/a.ts',NULL,1,10,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
+             VALUES('s1','uid_c1','Client','class','src/a.ts',NULL,1,10,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
             [],
         ).unwrap();
         conn.execute(
             "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
               start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,
-              parent_symbol_id, scope_id, export_name, is_default_export,
+              parent_symbol_id, export_name, is_default_export,
               framework_role, receiver_type, param_types, return_type, param_count, base_types, implements)
-             VALUES('s2','uid_c2','Client','class','src/b.ts',NULL,1,10,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
+             VALUES('s2','uid_c2','Client','class','src/b.ts',NULL,1,10,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
             [],
         ).unwrap();
 

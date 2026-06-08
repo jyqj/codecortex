@@ -12,7 +12,7 @@ A 7-crate Cargo workspace with strictly downward dependencies (no cycles):
 ```
 cc-model      Data types, config, error definitions (serde, thiserror, blake3)
     |
-cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 25 tables + 5 FTS5, schema v18)
+cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 25 tables + 5 FTS5, schema v19)
     |
 cc-parsers    Tree-sitter AST extraction + framework detection
 cc-index      File scanning, incremental indexing, community detection (Louvain)
@@ -52,9 +52,9 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
 - A `REGEXP(pattern, text)` scalar UDF backs Cypher `=~`; the compiled pattern is
   cached as SQLite auxiliary data so a constant pattern compiles once per
   statement, not once per row
-- Schema versioning via the `user_version` pragma (v18, incremental migration
+- Schema versioning via the `user_version` pragma (v19, incremental migration
   chain; v16→v17 drops the unused `scopes` table, v17→v18 adds trigram
-  `symbols_fts`)
+  `symbols_fts`, v18→v19 drops `scope_id` columns)
 
 ### cc-parsers
 Tree-sitter AST extraction across 30 auto-detected language identifiers (+ an

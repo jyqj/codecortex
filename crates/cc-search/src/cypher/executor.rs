@@ -78,7 +78,7 @@ pub(crate) fn edge_table_map() -> HashMap<&'static str, EdgeTableInfo> {
     m.insert(
         "HANDLES",
         EdgeTableInfo {
-            table: "route_edges",
+            table: "routes",
             src_col: "file_path",
             dst_col: "route_path",
             src_is_symbol: false,
@@ -93,7 +93,7 @@ pub(crate) fn edge_table_map() -> HashMap<&'static str, EdgeTableInfo> {
     m.insert(
         "ROUTES",
         EdgeTableInfo {
-            table: "route_edges",
+            table: "routes",
             src_col: "file_path",
             dst_col: "route_path",
             src_is_symbol: false,
@@ -392,7 +392,7 @@ pub(crate) fn label_table(label: &str) -> &'static str {
         | "Symbol" => "symbols",
         "File" => "files",
         "Chunk" => "chunks",
-        "Route" => "route_nodes",
+        "Route" => "routes",
         _ => "symbols",
     }
 }
@@ -668,28 +668,19 @@ fn table_json_expr(table: &str, alias: &str) -> CcResult<String> {
             ("reason", "reason"),
             ("confidence", "confidence"),
         ],
-        "route_edges" => &[
+        "routes" => &[
             ("edge_id", "edge_id"),
-            ("file_path", "file_path"),
-            ("route_path", "route_path"),
-            ("handler_name", "handler_name"),
-            ("method", "method"),
-            ("line", "line"),
-            ("handler_symbol_uid", "handler_symbol_uid"),
-            ("framework", "framework"),
-            ("route_kind", "route_kind"),
-            ("confidence", "confidence"),
-        ],
-        "route_nodes" => &[
             ("route_id", "route_id"),
             ("file_path", "file_path"),
             ("route_path", "route_path"),
-            ("method", "method"),
-            ("handler_symbol_uid", "handler_symbol_uid"),
             ("handler_name", "handler_name"),
-            ("framework", "framework"),
+            ("method", "method"),
             ("line", "line"),
             ("end_line", "end_line"),
+            ("handler_symbol_uid", "handler_symbol_uid"),
+            ("framework", "framework"),
+            ("route_kind", "route_kind"),
+            ("normalized_path", "normalized_path"),
             ("confidence", "confidence"),
         ],
         "data_flow_edges" => &[

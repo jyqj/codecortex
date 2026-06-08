@@ -2,12 +2,10 @@
 
 use std::collections::HashMap;
 
-use rusqlite::Connection;
-
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::{
-    is_actionable_reference_name, CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve,
+    CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve,
     FileFrameworkRecord, IndexDb, RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow,
     SymbolDegreeInfo, SymbolRefLite, SymbolRow,
 };
@@ -184,243 +182,20 @@ impl IndexDb {
         Ok(result)
     }
 
-    /// Rebuild the unresolved-reference feedback table from current refs/calls.
+    /// No-op: resolution_attempts table removed in schema consolidation.
+    /// Kept as API stub so callers don't need immediate refactoring.
     pub fn rebuild_resolution_attempts(&self) -> CcResult<usize> {
-        #[derive(Debug)]
-        struct Seed {
-            source_table: String,
-            source_id: String,
-            file_path: String,
-            reference_name: String,
-            reference_kind: String,
-            line: u32,
-            column_no: u32,
-            container: Option<String>,
-            resolution_strategy: String,
-            parser_tier: String,
-            parser_confidence: f64,
-            language: Option<String>,
-        }
-
-        let read = self.read_conn()?;
-        let mut seeds = Vec::new();
-
-        {
-            let mut stmt = read
-                .prepare(
-                    "SELECT sr.ref_id, sr.file_path, sr.symbol_name, sr.ref_kind, sr.line, sr.column_no, sr.container, sr.resolution_strategy, sr.parser_tier, sr.parser_confidence, f.language
-                     FROM symbol_refs sr
-                     LEFT JOIN files f ON f.file_path = sr.file_path
-                     WHERE sr.resolution_kind = 'unresolved' OR sr.target_symbol_uid IS NULL
-                     LIMIT 20000",
-                )
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let rows = stmt
-                .query_map([], |row| {
-                    Ok(Seed {
-                        source_table: "symbol_refs".to_string(),
-                        source_id: row.get(0)?,
-                        file_path: row.get(1)?,
-                        reference_name: row.get(2)?,
-                        reference_kind: row.get(3)?,
-                        line: row.get(4)?,
-                        column_no: row.get(5)?,
-                        container: row.get(6)?,
-                        resolution_strategy: row.get(7)?,
-                        parser_tier: row.get(8)?,
-                        parser_confidence: row.get(9)?,
-                        language: row.get(10)?,
-                    })
-                })
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            seeds.extend(rows.filter_map(|r| r.ok()));
-        }
-
-        {
-            let mut stmt = read
-                .prepare(
-                    "SELECT ce.edge_id, ce.file_path, ce.callee_symbol, 'call', ce.line, ce.start_col, ce.caller_symbol, ce.resolution_strategy, ce.parser_tier, ce.parser_confidence, f.language
-                     FROM call_edges ce
-                     LEFT JOIN files f ON f.file_path = ce.file_path
-                     WHERE ce.resolution_kind = 'unresolved' OR ce.callee_symbol_uid IS NULL
-                     LIMIT 20000",
-                )
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let rows = stmt
-                .query_map([], |row| {
-                    Ok(Seed {
-                        source_table: "call_edges".to_string(),
-                        source_id: row.get(0)?,
-                        file_path: row.get(1)?,
-                        reference_name: row.get(2)?,
-                        reference_kind: row.get(3)?,
-                        line: row.get(4)?,
-                        column_no: row.get(5)?,
-                        container: row.get(6)?,
-                        resolution_strategy: row.get(7)?,
-                        parser_tier: row.get(8)?,
-                        parser_confidence: row.get(9)?,
-                        language: row.get(10)?,
-                    })
-                })
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            seeds.extend(rows.filter_map(|r| r.ok()));
-        }
-
-        let mut prepared = Vec::with_capacity(seeds.len());
-        for seed in seeds {
-            if !is_actionable_reference_name(&seed.reference_name) {
-                continue;
-            }
-            let candidates = Self::candidate_json_for_reference(&read, &seed.reference_name)?;
-            let candidate_count = candidates.as_array().map(|a| a.len()).unwrap_or(0);
-            if candidate_count == 0 {
-                continue;
-            }
-            let failure_reason = if candidate_count == 1 {
-                "single_candidate_not_selected"
-            } else {
-                "ambiguous_candidates"
-            };
-            prepared.push((seed, candidates.to_string(), failure_reason.to_string()));
-        }
-        drop(read);
-
-        let mut write = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = write
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        tx.execute("DELETE FROM resolution_attempts", [])
-            .map_err(|e| CcError::Database(e.to_string()))?;
-
-        let mut count = 0usize;
-        for (seed, candidates_json, failure_reason) in prepared {
-            let attempt_id = format!("{}:{}", seed.source_table, seed.source_id);
-            tx.execute(
-                "INSERT OR REPLACE INTO resolution_attempts(attempt_id,source_table,source_id,file_path,reference_name,reference_kind,line,column_no,container,candidates_json,failure_reason,resolution_strategy,parser_tier,parser_confidence,language,updated_at)
-                 VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16)",
-                rusqlite::params![
-                    attempt_id,
-                    seed.source_table,
-                    seed.source_id,
-                    seed.file_path,
-                    seed.reference_name,
-                    seed.reference_kind,
-                    seed.line,
-                    seed.column_no,
-                    seed.container,
-                    candidates_json,
-                    failure_reason,
-                    seed.resolution_strategy,
-                    seed.parser_tier,
-                    seed.parser_confidence,
-                    seed.language,
-                    chrono::Utc::now().to_rfc3339(),
-                ],
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-            count += 1;
-        }
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(count)
+        Ok(0)
     }
 
-    fn candidate_json_for_reference(
-        conn: &Connection,
-        reference_name: &str,
-    ) -> CcResult<serde_json::Value> {
-        let suffix_like = format!("%.{}", reference_name);
-        let mut stmt = conn
-            .prepare(
-                "SELECT name, qname, file_path, kind, symbol_uid, start_line, end_line,
-                        CASE
-                          WHEN qname = ?1 THEN 0
-                          WHEN name = ?1 THEN 1
-                          WHEN qname LIKE ?2 THEN 2
-                          ELSE 4
-                        END AS rank
-                 FROM symbols
-                 WHERE qname = ?1 OR name = ?1 OR qname LIKE ?2
-                 ORDER BY rank ASC, file_path ASC, start_line ASC
-                 LIMIT 8",
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params![reference_name, suffix_like], |row| {
-                Ok(serde_json::json!({
-                    "name": row.get::<_, String>(0)?,
-                    "qname": row.get::<_, Option<String>>(1)?,
-                    "file_path": row.get::<_, String>(2)?,
-                    "kind": row.get::<_, String>(3)?,
-                    "symbol_uid": row.get::<_, Option<String>>(4)?,
-                    "start_line": row.get::<_, u32>(5)?,
-                    "end_line": row.get::<_, u32>(6)?,
-                    "rank": row.get::<_, i64>(7)?,
-                }))
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let mut candidates = Vec::new();
-        for v in rows.flatten() {
-            candidates.push(v);
-        }
-        Ok(serde_json::Value::Array(candidates))
-    }
-
+    /// No-op: resolution_attempts table removed in schema consolidation.
     pub fn list_resolution_attempts(
         &self,
-        limit: usize,
-        file_path: Option<&str>,
-        kind: Option<&str>,
+        _limit: usize,
+        _file_path: Option<&str>,
+        _kind: Option<&str>,
     ) -> CcResult<Vec<ResolutionAttemptRow>> {
-        let conn = self.read_conn()?;
-        let mut sql = "SELECT attempt_id, source_table, source_id, file_path, reference_name, reference_kind, line, column_no, container, candidates_json, failure_reason, resolution_strategy, parser_tier, parser_confidence, language FROM resolution_attempts".to_string();
-        let mut where_parts = Vec::new();
-        let mut params = Vec::new();
-        if let Some(fp) = file_path {
-            where_parts.push("file_path = ?".to_string());
-            params.push(fp.to_string());
-        }
-        if let Some(k) = kind {
-            where_parts.push("reference_kind = ?".to_string());
-            params.push(k.to_string());
-        }
-        if !where_parts.is_empty() {
-            sql.push_str(" WHERE ");
-            sql.push_str(&where_parts.join(" AND "));
-        }
-        sql.push_str(" ORDER BY file_path ASC, line ASC LIMIT ?");
-        params.push(limit.to_string());
-
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                let candidates_json: String = row.get(9)?;
-                Ok(ResolutionAttemptRow {
-                    attempt_id: row.get(0)?,
-                    source_table: row.get(1)?,
-                    source_id: row.get(2)?,
-                    file_path: row.get(3)?,
-                    reference_name: row.get(4)?,
-                    reference_kind: row.get(5)?,
-                    line: row.get(6)?,
-                    column_no: row.get(7)?,
-                    container: row.get(8)?,
-                    candidates: serde_json::from_str(&candidates_json)
-                        .unwrap_or_else(|_| serde_json::json!([])),
-                    failure_reason: row.get(10)?,
-                    resolution_strategy: row.get(11)?,
-                    parser_tier: row.get(12)?,
-                    parser_confidence: row.get(13)?,
-                    language: row.get(14)?,
-                })
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        Ok(Vec::new())
     }
 
     // ── Graph / framework post-processing ───────────────────────
@@ -657,14 +432,14 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        tx.execute("DELETE FROM repo_frameworks", [])
+        tx.execute("DELETE FROM frameworks WHERE scope='repo'", [])
             .map_err(|e| CcError::Database(e.to_string()))?;
         let now = chrono::Utc::now().to_rfc3339();
         for (framework_key, confidence, evidences) in signals {
             let signals_json = serde_json::to_string(evidences).unwrap_or_else(|_| "[]".into());
             tx.execute(
-                "INSERT INTO repo_frameworks(framework_key,confidence,signals_json,updated_at)
-                 VALUES(?1,?2,?3,?4)",
+                "INSERT INTO frameworks(framework_key,scope,scope_id,confidence,signals_json,updated_at)
+                 VALUES(?1,'repo','',?2,?3,?4)",
                 rusqlite::params![framework_key, confidence, signals_json, now],
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -686,7 +461,7 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
         for (file_path, signals) in by_file {
             tx.execute(
-                "DELETE FROM file_frameworks WHERE file_path = ?1",
+                "DELETE FROM frameworks WHERE scope='file' AND scope_id = ?1",
                 rusqlite::params![file_path],
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -694,9 +469,9 @@ impl IndexDb {
                 let signals_json =
                     serde_json::to_string(&vec![evidence.clone()]).unwrap_or_else(|_| "[]".into());
                 tx.execute(
-                    "INSERT INTO file_frameworks(file_path,framework_key,confidence,signals_json)
-                     VALUES(?1,?2,?3,?4)",
-                    rusqlite::params![file_path, framework_key, confidence, signals_json],
+                    "INSERT INTO frameworks(framework_key,scope,scope_id,confidence,signals_json)
+                     VALUES(?1,'file',?2,?3,?4)",
+                    rusqlite::params![framework_key, file_path, confidence, signals_json],
                 )
                 .map_err(|e| CcError::Database(e.to_string()))?;
             }
@@ -1059,7 +834,7 @@ impl IndexDb {
         let mut sym_stmt = conn
             .prepare(
                 "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,\
-                 signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,scope_id,\
+                 signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,\
                  export_name,is_default_export,symbol_uid,framework_role,receiver_type,\
                  param_types,return_type,param_count,base_types,implements \
                  FROM symbols WHERE file_path = ?1 ORDER BY start_line",
@@ -1069,7 +844,7 @@ impl IndexDb {
             .query_map(rusqlite::params![file_path], |row| {
                 let kind: String = row.get(3)?;
                 let parser_tier_str: String = row.get(11)?;
-                let param_count: Option<i64> = row.get(23)?;
+                let param_count: Option<i64> = row.get(22)?;
                 Ok(cc_model::SymbolRecord {
                     symbol_id: row.get(0)?,
                     file_path: row.get(1)?,
@@ -1087,17 +862,17 @@ impl IndexDb {
                     parser_confidence: row.get(12)?,
                     qname: row.get(13)?,
                     parent_symbol_id: row.get(14)?,
-                    scope_id: row.get(15)?,
-                    export_name: row.get(16)?,
-                    is_default_export: row.get::<_, i64>(17)? != 0,
-                    symbol_uid: row.get(18)?,
-                    framework_role: row.get(19)?,
-                    receiver_type: row.get(20)?,
-                    param_types: row.get(21)?,
-                    return_type: row.get(22)?,
+                    scope_id: None,
+                    export_name: row.get(15)?,
+                    is_default_export: row.get::<_, i64>(16)? != 0,
+                    symbol_uid: row.get(17)?,
+                    framework_role: row.get(18)?,
+                    receiver_type: row.get(19)?,
+                    param_types: row.get(20)?,
+                    return_type: row.get(21)?,
                     param_count: param_count.map(|v| v as u32),
-                    base_types: row.get(24)?,
-                    implements: row.get(25)?,
+                    base_types: row.get(23)?,
+                    implements: row.get(24)?,
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -1201,15 +976,15 @@ impl IndexDb {
         let mut sr_stmt = conn
             .prepare(
                 "SELECT ref_id,file_path,symbol_name,container,ref_kind,line,column_no,\
-                 target_symbol_id,target_file_path,target_symbol_uid,ref_name,scope_id,\
+                 target_symbol_id,target_file_path,target_symbol_uid,ref_name,\
                  resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence \
                  FROM symbol_refs WHERE file_path = ?1",
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let sr_rows = sr_stmt
             .query_map(rusqlite::params![file_path], |row| {
-                let resolution_str: String = row.get(12)?;
-                let tier_str: String = row.get(17)?;
+                let resolution_str: String = row.get(11)?;
+                let tier_str: String = row.get(16)?;
                 Ok(cc_model::SymbolRefRecord {
                     ref_id: row.get(0)?,
                     file_path: row.get(1)?,
@@ -1222,7 +997,7 @@ impl IndexDb {
                     target_file_path: row.get(8)?,
                     target_symbol_uid: row.get(9)?,
                     ref_name: row.get(10)?,
-                    scope_id: row.get(11)?,
+                    scope_id: None,
                     resolution_kind: match resolution_str.as_str() {
                         "exact" => cc_model::ResolutionKind::Exact,
                         "qualified" => cc_model::ResolutionKind::Qualified,
@@ -1230,12 +1005,12 @@ impl IndexDb {
                         "heuristic" => cc_model::ResolutionKind::Heuristic,
                         _ => cc_model::ResolutionKind::Unresolved,
                     },
-                    resolution_confidence: row.get(13)?,
-                    resolution_strategy: row.get(14)?,
-                    ref_end_line: row.get(15)?,
-                    ref_end_col: row.get(16)?,
+                    resolution_confidence: row.get(12)?,
+                    resolution_strategy: row.get(13)?,
+                    ref_end_line: row.get(14)?,
+                    ref_end_col: row.get(15)?,
                     parser_tier: crate::index_db::parse_parser_tier(&tier_str),
-                    parser_confidence: row.get(18)?,
+                    parser_confidence: row.get(17)?,
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -1321,7 +1096,7 @@ impl IndexDb {
                 "SELECT edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,\
                  handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,\
                  route_kind,confidence,parser_tier \
-                 FROM route_edges WHERE file_path = ?1",
+                 FROM routes WHERE file_path = ?1",
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let re_rows = re_stmt

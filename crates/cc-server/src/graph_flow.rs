@@ -357,9 +357,9 @@ mod tests {
             conn.execute(
                 "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
                   start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,
-                  parent_symbol_id, scope_id, export_name, is_default_export,
+                  parent_symbol_id, export_name, is_default_export,
                   framework_role, receiver_type, param_types, return_type, param_count, base_types, implements)
-                 VALUES(?1,?2,?3,'function','src/lib.rs',NULL,?4,?5,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
+                 VALUES(?1,?2,?3,'function','src/lib.rs',NULL,?4,?5,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
                 rusqlite::params![sid, uid, name, start, end],
             ).unwrap();
         }
@@ -454,9 +454,9 @@ mod tests {
         conn.execute(
             "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
               start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,
-              parent_symbol_id, scope_id, export_name, is_default_export,
+              parent_symbol_id, export_name, is_default_export,
               framework_role, receiver_type, param_types, return_type, param_count, base_types, implements)
-             VALUES('s5','uid_a2','fn_a','function','src/other.rs',NULL,1,5,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
+             VALUES('s5','uid_a2','fn_a','function','src/other.rs',NULL,1,5,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
             rusqlite::params![],
         ).unwrap();
 
@@ -489,9 +489,9 @@ mod tests {
         conn.execute(
             "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
               start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,
-              parent_symbol_id, scope_id, export_name, is_default_export,
+              parent_symbol_id, export_name, is_default_export,
               framework_role, receiver_type, param_types, return_type, param_count, base_types, implements)
-             VALUES('s5','uid_e','fn_e','function','src/lib.rs',NULL,40,45,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
+             VALUES('s5','uid_e','fn_e','function','src/lib.rs',NULL,40,45,0,0,NULL,NULL,'tree_sitter',1.0,NULL,NULL,NULL,0,NULL,NULL,NULL,NULL,NULL,NULL,NULL)",
             rusqlite::params![],
         ).unwrap();
 

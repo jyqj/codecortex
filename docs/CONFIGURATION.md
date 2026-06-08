@@ -9,13 +9,25 @@ field is optional — the defaults work for most projects.
     "include": ["**/*.py", "**/*.ts", "**/*.go"],
     "ignore": ["**/generated/**"],
     "max_file_bytes": 512000,
+    "chunk_line_budget": 80,
     "dirty_propagation": true,
-    "memory_budget_fraction": 0.5
+    "dirty_propagation_max_files": 200,
+    "memory_budget_fraction": 0.5,
+    "max_concurrent_parse": null,
+    "use_direct_writer": false,
+    "dispatch_synthesis": true,
+    "event_fanout_cap": 6,
+    "event_denylist": []
   },
   "search": {
+    "vector_top_k": 24,
+    "lexical_top_k": 24,
+    "grep_top_k": 12,
+    "rrf_k": 50,
     "vector_weight": 1.0,
     "lexical_weight": 1.1,
-    "grep_weight": 0.8
+    "grep_weight": 0.8,
+    "rerank_window": 40
   },
   "embeddings": {
     "provider": "none",
@@ -36,19 +48,33 @@ field is optional — the defaults work for most projects.
 | `include` | `[]` | **Extends** (does not restrict) indexing. Known-language files are always indexed; `include` rescues unknown-language files that match these glob patterns. |
 | `ignore` | `[]` | Glob patterns to exclude, on top of gitignore-aware discovery. |
 | `max_file_bytes` | `512000` | Files larger than this are skipped. |
+| `chunk_line_budget` | `80` | Maximum lines per code chunk for symbol extraction. |
+| `parse_timeout_micros` | `null` | Per-file parse timeout in microseconds. `null` means no timeout. |
+| `db_read_pool_size` | `null` | SQLite read connection pool size. `null` derives from repo size tier (4–12). |
 | `dirty_propagation` | `true` | Re-parse dependents when a file's exports change. |
-| `memory_budget_fraction` | `0.5` | RSS cap as a fraction of system memory for parallel parsing. |
+| `dirty_propagation_max_files` | `200` | Max files a dirty propagation may touch; beyond this, suggests a full rebuild. |
+| `memory_budget_fraction` | `0.5` | RSS cap as a fraction of system memory (0.1–0.95) for parallel parsing. |
+| `max_concurrent_parse` | `null` | Max parallel parse threads. `null` uses the rayon default. |
+| `use_direct_writer` | `false` | Experimental: bypass the SQL parser with a direct SQLite writer on full rebuild. |
+| `dispatch_synthesis` | `true` | Synthesize event emitter-to-handler edges during indexing. |
+| `event_fanout_cap` | `6` | Cap on handlers matched per emit site (narrowed by receiver/same-file first). |
+| `event_denylist` | `[]` | Custom event names to exclude from dispatch synthesis. Empty uses built-in defaults. |
 
 ## Search
 
 The three retrieval lanes are fused with Reciprocal Rank Fusion (RRF). The
 weights bias the fusion toward one lane or another.
 
-| Field | Default | Lane |
-|-------|---------|------|
-| `vector_weight` | `1.0` | Semantic vector similarity (no-op when vector search is disabled). |
-| `lexical_weight` | `1.1` | FTS5 full-text match. |
-| `grep_weight` | `0.8` | Regex symbol grep. |
+| Field | Default | Meaning |
+|-------|---------|---------|
+| `vector_top_k` | `24` | Max candidates retrieved from the vector lane per query. |
+| `lexical_top_k` | `24` | Max candidates retrieved from the FTS5 lexical lane per query. |
+| `grep_top_k` | `12` | Max candidates retrieved from the regex symbol grep lane per query. |
+| `rrf_k` | `50` | RRF smoothing constant `k` in `1 / (k + rank)`. Higher values flatten rank differences. |
+| `vector_weight` | `1.0` | RRF weight for the semantic vector lane (no-op when vector search is disabled). |
+| `lexical_weight` | `1.1` | RRF weight for the FTS5 full-text lane. |
+| `grep_weight` | `0.8` | RRF weight for the regex symbol grep lane. |
+| `rerank_window` | `40` | Number of fused candidates passed to the reranker. |
 
 ## Embedding Providers
 

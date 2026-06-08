@@ -206,7 +206,7 @@ dependencies = [
 
 [[package]]
 name = "cc-db"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "blake3",
  "cc-model",
@@ -240,7 +240,7 @@ dependencies = [
 
 [[package]]
 name = "cc-index"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "blake3",
  "cc-db",
@@ -262,7 +262,7 @@ dependencies = [
 
 [[package]]
 name = "cc-model"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "blake3",
  "serde",
@@ -273,7 +273,7 @@ dependencies = [
 
 [[package]]
 name = "cc-parsers"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cc-model",
  "regex",
@@ -294,7 +294,7 @@ dependencies = [
 
 [[package]]
 name = "cc-search"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "blake3",
  "cc-db",
@@ -310,7 +310,7 @@ dependencies = [
 
 [[package]]
 name = "cc-server"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "cc-db",
  "cc-index",
@@ -1359,6 +1359,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "234cf4f4a04dc1f57e24b96cc0cd600cf2af460d4161ac5ecdd0af8e1f3b2a38"
 dependencies = [
  "hashbrown 0.15.5",
+]
+
+[[package]]
+name = "matchers"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d1525a2a28c7f4fa0fc98bb91ae755d1e2d1505079e05539e35bc876b5d65ae9"
+dependencies = [
+ "regex-automata",
 ]
 
 [[package]]
@@ -2517,10 +2526,14 @@ version = "0.3.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cb7f578e5945fb242538965c2d0b04418d38ec25c79d160cd279bf0731c8d319"
 dependencies = [
+ "matchers",
  "nu-ansi-term",
+ "once_cell",
+ "regex-automata",
  "sharded-slab",
  "smallvec",
  "thread_local",
+ "tracing",
  "tracing-core",
  "tracing-log",
 ]
@@ -2632,9 +2645,9 @@ checksum = "e421abadd41a4225275504ea4d6566923418b7f05506fbc9c0fe86ba7396114b"
 
 [[package]]
 name = "typenum"
-version = "1.19.0"
+version = "1.20.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
+checksum = "b6f5e870be6c3b371b77fe0ee0bafb859fa4964b4404c27de1d380043c4dda20"
 
 [[package]]
 name = "unicode-ident"

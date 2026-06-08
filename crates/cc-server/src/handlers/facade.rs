@@ -427,7 +427,7 @@ fn ingest_observation(
 
     let route_id: Option<String> = conn
         .query_row(
-            "SELECT route_id FROM route_nodes WHERE normalized_path = ?1 LIMIT 1",
+            "SELECT route_id FROM routes WHERE normalized_path = ?1 LIMIT 1",
             [&norm],
             |r| r.get(0),
         )

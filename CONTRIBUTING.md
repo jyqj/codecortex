@@ -56,7 +56,7 @@ See [docs/BENCHMARK.md](docs/BENCHMARK.md) for benchmark details.
 ## CLI commands
 
 ```
-codecortex mcp [--project_path PATH]   Start MCP stdio server
+codecortex mcp [--project-path PATH]   Start MCP stdio server
 codecortex install [--force]           Install MCP config for detected AI agents
 codecortex uninstall                   Remove MCP config from all AI agents
 ```

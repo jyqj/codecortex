@@ -165,7 +165,7 @@ pub fn preselect_files(
                     ],
                 )
             };
-        if let Ok(mut stmt) = conn.prepare(&sql) {
+        if let Ok(mut stmt) = conn.prepare_cached(&sql) {
             let param_refs: Vec<&dyn rusqlite::types::ToSql> =
                 params_vec.iter().map(|p| p.as_ref()).collect();
             if let Ok(rows) = stmt.query_map(param_refs.as_slice(), |row| {
@@ -212,7 +212,7 @@ pub fn preselect_files(
                         vec![Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>],
                     )
             };
-            if let Ok(mut stmt) = conn.prepare(&sql) {
+            if let Ok(mut stmt) = conn.prepare_cached(&sql) {
                 let param_refs: Vec<&dyn rusqlite::types::ToSql> =
                     params_vec.iter().map(|p| p.as_ref()).collect();
                 if let Ok(rows) =
@@ -266,7 +266,7 @@ pub fn preselect_files(
                         ],
                     )
                 };
-            if let Ok(mut stmt) = conn.prepare(&sql) {
+            if let Ok(mut stmt) = conn.prepare_cached(&sql) {
                 let param_refs: Vec<&dyn rusqlite::types::ToSql> =
                     params_vec.iter().map(|p| p.as_ref()).collect();
                 if let Ok(rows) = stmt.query_map(param_refs.as_slice(), |row| {
@@ -289,7 +289,7 @@ pub fn preselect_files(
     // ── Fallback: recently-indexed files if nothing scored ───────
     if scores.is_empty() {
         if let Ok(mut stmt) =
-            conn.prepare("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
+            conn.prepare_cached("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
         {
             if let Ok(rows) = stmt.query_map(rusqlite::params![limit as i64], |row| {
                 row.get::<_, String>(0)

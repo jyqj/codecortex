@@ -1153,6 +1153,7 @@ impl Indexer {
     /// Note: For hot-path usage (e.g. looping over many files), prefer building
     /// a HashMap index over `write_units` and calling `compute_fingerprint_for_unit`
     /// directly to avoid O(n) linear scan per call.
+    #[cfg(test)]
     pub(crate) fn compute_new_export_fingerprint(
         write_units: &[FileWriteUnit],
         file_path: &str,

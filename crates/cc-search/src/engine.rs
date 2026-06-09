@@ -19,15 +19,27 @@ pub use crate::plan::is_project_doc;
 use crate::plan::{parse_language_name, CandidateChunk, SearchPlan};
 use crate::rrf::rrf_accumulate;
 
-/// LRU cache capacity for search results.
+/// Default LRU capacity for search results.
+/// Override with `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`.
 const RESULT_CACHE_CAPACITY: usize = 32;
 
-/// LRU cache capacity for decompressed chunk text.
+/// Default LRU capacity for decompressed chunk text.
+/// Override with `CODECORTEX_SEARCH_CHUNK_CACHE_SIZE`.
 ///
 /// Eliminates double-decompression: `grep_search` scans all in-scope chunks
 /// (decompressing each), and matching chunks are fetched again in the
 /// batch-fetch step.  Caching the text avoids the second `zstd::decode_all`.
 const CHUNK_TEXT_CACHE_CAPACITY: usize = 512;
+
+/// Read an LRU capacity from `var`, falling back to `default` when unset,
+/// unparseable, or zero.
+fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize {
+    std::env::var(var)
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .and_then(NonZeroUsize::new)
+        .unwrap_or_else(|| NonZeroUsize::new(default).unwrap())
+}
 
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
@@ -46,12 +58,14 @@ impl SearchEngine {
             db,
             config: config.search.clone(),
             cache_generation: 0,
-            result_cache: Mutex::new(LruCache::new(
-                NonZeroUsize::new(RESULT_CACHE_CAPACITY).unwrap(),
-            )),
-            chunk_text_cache: Mutex::new(LruCache::new(
-                NonZeroUsize::new(CHUNK_TEXT_CACHE_CAPACITY).unwrap(),
-            )),
+            result_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
+                "CODECORTEX_SEARCH_RESULT_CACHE_SIZE",
+                RESULT_CACHE_CAPACITY,
+            ))),
+            chunk_text_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
+                "CODECORTEX_SEARCH_CHUNK_CACHE_SIZE",
+                CHUNK_TEXT_CACHE_CAPACITY,
+            ))),
         }
     }
 

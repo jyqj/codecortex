@@ -17,6 +17,7 @@ pub(crate) mod resolver;
 pub mod scanner;
 pub(crate) mod type_catalog;
 
+pub use build_plan::PreparedBuild;
 pub use framework_registry::FileFrameworkDetection;
 pub use indexer::{IndexReport, Indexer};
 pub use scanner::{ScannedFile, Scanner};

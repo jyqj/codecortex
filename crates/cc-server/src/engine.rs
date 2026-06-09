@@ -3,9 +3,9 @@
 //! Thin wrapper around cc-db, cc-index and cc-search.
 
 use cc_db::index_db::IndexDb;
-use cc_index::{IndexReport, Indexer};
+use cc_index::{IndexReport, Indexer, PreparedBuild};
 use cc_model::config::{
-    load_project_config, IndexPaths, ProjectConfig, ProjectStats, RepoSizeTier,
+    load_project_config, IndexingConfig, IndexPaths, ProjectConfig, ProjectStats, RepoSizeTier,
 };
 use cc_model::context::{ContextEnvelope, ContextNode, ContextSpan, NodeType, Role};
 use cc_model::search::SearchRequest;
@@ -35,6 +35,16 @@ impl IndexSnapshot {
     pub fn generation(&self) -> u64 {
         self.generation
     }
+}
+
+/// Owned inputs cloned from a `CodeIndex` under a brief read lock so that the
+/// heavy, read-only `prepare_build` phase can run with no `CodeIndex` lock held.
+/// The DB handle is shared (`Arc`); writes are still serialized by the caller's
+/// write lock during `commit_build`.
+pub struct BuildInputs {
+    db: Arc<IndexDb>,
+    project: PathBuf,
+    indexing: IndexingConfig,
 }
 
 /// Result of `CodeIndex::graph_query`, carrying the flattened rows plus
@@ -223,6 +233,50 @@ impl CodeIndex {
         let db = self.ensure_db()?;
         let indexer = Indexer::new(db.clone(), project, &config.indexing);
         let report = indexer.build_auto_index(project, full, config.auto_index.file_limit)?;
+        self.after_successful_index_build();
+        Ok(report)
+    }
+
+    /// Clone the owned inputs needed to drive a split build. Call this under a
+    /// brief read lock, then release the lock before running `prepare_build`.
+    pub fn build_inputs(&self) -> CcResult<BuildInputs> {
+        let project = self.ensure_project()?;
+        let config = self.ensure_config()?;
+        let db = self.ensure_db()?;
+        Ok(BuildInputs {
+            db: db.clone(),
+            project: project.to_path_buf(),
+            indexing: config.indexing.clone(),
+        })
+    }
+
+    /// Run the read-only prepare phase with no `CodeIndex` lock held. This is an
+    /// associated function (no `self`) by design: the caller holds the inputs
+    /// across the unlocked window and passes the resulting `PreparedBuild` to
+    /// [`CodeIndex::commit_build`]. `full`/`auto_file_limit` must match the
+    /// paired `commit_build` call.
+    pub fn prepare_build(
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+    ) -> CcResult<PreparedBuild> {
+        let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
+        indexer.prepare_build(&inputs.project, full, auto_file_limit)
+    }
+
+    /// Commit a previously prepared build under the caller's write lock. Runs
+    /// `phase_write` plus postprocess/analysis, then performs the post-build
+    /// bookkeeping (`after_successful_index_build`). `full`/`auto_file_limit`
+    /// must match the values passed to the paired `prepare_build`.
+    pub fn commit_build(
+        &mut self,
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        prepared: PreparedBuild,
+    ) -> CcResult<IndexReport> {
+        let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
+        let report = indexer.commit_build(&inputs.project, full, auto_file_limit, prepared)?;
         self.after_successful_index_build();
         Ok(report)
     }

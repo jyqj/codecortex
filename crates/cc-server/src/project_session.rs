@@ -321,9 +321,38 @@ impl ProjectSession {
 
                         let index = active.read().await.index();
                         let result = tokio::task::spawn_blocking(move || {
+                            // Brief read lock: clone the owned build inputs.
+                            let inputs = match index.read() {
+                                Ok(rt) => match rt.build_inputs() {
+                                    Ok(i) => i,
+                                    Err(e) => {
+                                        tracing::warn!(
+                                            "watcher: incremental build_inputs failed: {}",
+                                            e
+                                        );
+                                        return;
+                                    }
+                                },
+                                Err(_) => return,
+                            };
+                            // Heavy prepare: no CodeIndex lock held, so read
+                            // queries are not blocked during scan/parse/resolve.
+                            let prepared = match CodeIndex::prepare_build(&inputs, false, None) {
+                                Ok(p) => p,
+                                Err(e) => {
+                                    tracing::warn!(
+                                        "watcher: incremental prepare failed: {}",
+                                        e
+                                    );
+                                    return;
+                                }
+                            };
+                            // Brief write lock: commit (phase_write + postprocess
+                            // + bookkeeping) under the lock so readers never see
+                            // the non-transactional intermediate write state.
                             if let Ok(mut rt) = index.write() {
-                                if let Err(e) = rt.build_index(false) {
-                                    tracing::warn!("watcher: incremental index failed: {}", e);
+                                if let Err(e) = rt.commit_build(&inputs, false, None, prepared) {
+                                    tracing::warn!("watcher: incremental commit failed: {}", e);
                                 }
                             }
                         })

@@ -162,6 +162,35 @@ impl Indexer {
         crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).execute(self, project_path)
     }
 
+    /// Read-only half of a build (scan/diff → parse → resolve → snapshot).
+    ///
+    /// Performs no index writes, so callers may run it without holding an index
+    /// write lock and then hand the result to [`Indexer::commit_build`] under a
+    /// brief write lock. `full`/`auto_file_limit` must match the values passed to
+    /// the paired `commit_build` call so both halves share the same build mode.
+    pub fn prepare_build(
+        &self,
+        project_path: &Path,
+        full: bool,
+        auto_file_limit: Option<usize>,
+    ) -> CcResult<crate::build_plan::PreparedBuild> {
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare(self, project_path)
+    }
+
+    /// Write half of a build, consuming the [`PreparedBuild`] produced by
+    /// [`Indexer::prepare_build`]. Must be called with the same `full`/
+    /// `auto_file_limit` used for the matching `prepare_build`.
+    pub fn commit_build(
+        &self,
+        project_path: &Path,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        prepared: crate::build_plan::PreparedBuild,
+    ) -> CcResult<IndexReport> {
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
+            .commit(self, project_path, prepared)
+    }
+
     // ── Phase helper structs ────────────────────────────────────────────
 
     /// Phase 1+2: Scan files and compute diff against existing DB state.

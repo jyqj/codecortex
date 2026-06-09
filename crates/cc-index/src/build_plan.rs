@@ -8,13 +8,30 @@
 
 use std::collections::HashMap;
 use std::path::Path;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use cc_db::index_db::FileWriteUnit;
-use cc_model::edge::RouteNodeRecord;
+use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
 use cc_model::CcResult;
 
 use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, ScanDiffResult, WriteResult};
+
+/// Owned, read-only output of the prepare phase.
+///
+/// `prepare` runs scan/diff → parse → dirty closure → enrichment → resolution
+/// → snapshot without touching the index, producing this owned bundle. `commit`
+/// then consumes it to perform `phase_write` → `run_after_write` under the
+/// caller's write lock. Fields stay private so callers only transport the
+/// bundle, never inspect it.
+pub struct PreparedBuild {
+    scan_result: ScanDiffResult,
+    write_units: Vec<FileWriteUnit>,
+    actions: HashMap<String, FileAction>,
+    output_snapshot: OutputSnapshot,
+    hierarchy_edges: Vec<SemanticEdgeRecord>,
+    parse_report: ParseReport,
+    start: Instant,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum IndexBuildMode {
@@ -55,7 +72,20 @@ impl IndexBuildPlan {
     }
 
     pub(crate) fn execute(&self, indexer: &Indexer, project_path: &Path) -> CcResult<IndexReport> {
-        let start = std::time::Instant::now();
+        let prepared = self.prepare(indexer, project_path)?;
+        self.commit(indexer, project_path, prepared)
+    }
+
+    /// Read-only half of a build: scan/diff → parse → dirty closure →
+    /// enrichment → resolution → snapshot. Touches the file system and reads
+    /// the DB but never writes the index, so it is safe to run without holding
+    /// the index write lock.
+    pub(crate) fn prepare(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+    ) -> CcResult<PreparedBuild> {
+        let start = Instant::now();
 
         let mut scan_result =
             indexer.phase_scan_and_diff(project_path, self.mode.is_full(), self.auto_file_limit)?;
@@ -75,6 +105,9 @@ impl IndexBuildPlan {
         // can bind framework-specific edges.
         let fw_context =
             indexer.phase_framework_enrichment(project_path, &mut write_units, &source_cache)?;
+        // `source_cache` is only needed for enrichment; drop it here rather than
+        // carrying it into the owned `PreparedBuild`.
+        drop(source_cache);
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -89,14 +122,46 @@ impl IndexBuildPlan {
         // same snapshot used by both DB write and infra route matching.
         let output_snapshot = OutputSnapshot::from_resolved_units(indexer, &write_units);
 
+        Ok(PreparedBuild {
+            scan_result,
+            write_units,
+            actions: dirty_closure.into_actions(),
+            output_snapshot,
+            hierarchy_edges: resolve_result.hierarchy_edges,
+            parse_report,
+            start,
+        })
+    }
+
+    /// Write half of a build: `phase_write` → `run_after_write` → report.
+    /// Postprocess/analysis stay here, alongside `phase_write`, because the
+    /// incremental write path is a sequence of independent batch writes rather
+    /// than a single transaction; the caller's write lock is what keeps readers
+    /// from observing the intermediate state.
+    pub(crate) fn commit(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+        prepared: PreparedBuild,
+    ) -> CcResult<IndexReport> {
+        let PreparedBuild {
+            scan_result,
+            write_units,
+            actions,
+            output_snapshot,
+            hierarchy_edges,
+            parse_report,
+            start,
+        } = prepared;
+
         let write_result = indexer.phase_write(
             project_path,
             self.mode.is_full(),
             write_units,
-            dirty_closure.actions(),
+            &actions,
             &scan_result.to_remove,
             &output_snapshot.route_nodes,
-            &resolve_result.hierarchy_edges,
+            &hierarchy_edges,
         )?;
 
         self.run_after_write(
@@ -194,8 +259,8 @@ impl DirtyClosure {
         Ok(Self { actions })
     }
 
-    fn actions(&self) -> &HashMap<String, FileAction> {
-        &self.actions
+    fn into_actions(self) -> HashMap<String, FileAction> {
+        self.actions
     }
 }
 
@@ -245,5 +310,105 @@ impl OutputSnapshot {
             chunks_total,
             route_nodes: indexer.collect_route_nodes(write_units),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+    use std::sync::Arc;
+
+    use cc_db::index_db::IndexDb;
+    use cc_model::config::IndexingConfig;
+
+    use super::IndexBuildPlan;
+    use crate::indexer::Indexer;
+
+    const FIXTURE_FILE: &str = "lib.py";
+    const FIXTURE_SOURCE: &str = r#"
+def helper(value):
+    return value + 1
+
+
+def main():
+    total = 0
+    for n in range(10):
+        total = helper(total)
+    return total
+
+
+class Accumulator:
+    def __init__(self):
+        self.total = 0
+
+    def add(self, value):
+        self.total = helper(value)
+        return self.total
+"#;
+
+    /// Write the fixture project into `dir` and return the project path.
+    fn write_fixture(dir: &Path) {
+        std::fs::write(dir.join(FIXTURE_FILE), FIXTURE_SOURCE).expect("write fixture source");
+    }
+
+    fn open_db(dir: &Path) -> Arc<IndexDb> {
+        let (db, _) = IndexDb::open(&dir.join("index.sqlite3")).expect("open index db");
+        Arc::new(db)
+    }
+
+    /// `prepare` + `commit` must produce the same `IndexReport` and persisted DB
+    /// state as the single-shot `execute` path, proving the split introduces no
+    /// behavioral drift.
+    #[test]
+    fn prepare_commit_matches_execute() {
+        let config = IndexingConfig::default();
+
+        // Path A: single-shot execute (== build_index).
+        let dir_a = tempfile::tempdir().expect("tempdir a");
+        write_fixture(dir_a.path());
+        let db_a = open_db(dir_a.path());
+        let indexer_a = Indexer::new(db_a.clone(), dir_a.path(), &config);
+        let report_a = IndexBuildPlan::new(false, None)
+            .execute(&indexer_a, dir_a.path())
+            .expect("execute build");
+
+        // Path B: prepare (read-only) then commit (write).
+        let dir_b = tempfile::tempdir().expect("tempdir b");
+        write_fixture(dir_b.path());
+        let db_b = open_db(dir_b.path());
+        let indexer_b = Indexer::new(db_b.clone(), dir_b.path(), &config);
+        let plan_b = IndexBuildPlan::new(false, None);
+        let prepared = plan_b.prepare(&indexer_b, dir_b.path()).expect("prepare build");
+        let report_b = plan_b
+            .commit(&indexer_b, dir_b.path(), prepared)
+            .expect("commit build");
+
+        // Key report fields must be identical across both paths.
+        assert_eq!(report_a.files_added, report_b.files_added, "files_added");
+        assert_eq!(report_a.files_updated, report_b.files_updated, "files_updated");
+        assert_eq!(report_a.files_parsed, report_b.files_parsed, "files_parsed");
+        assert_eq!(report_a.symbols_total, report_b.symbols_total, "symbols_total");
+        assert_eq!(report_a.chunks_total, report_b.chunks_total, "chunks_total");
+        assert!(report_a.symbols_total > 0, "fixture should yield symbols");
+
+        // Persisted DB state must match: symbol, file, and chunk counts.
+        let stats_a = db_a.stats(dir_a.path()).expect("stats a");
+        let stats_b = db_b.stats(dir_b.path()).expect("stats b");
+        assert_eq!(
+            stats_a.indexed_symbols, stats_b.indexed_symbols,
+            "db indexed_symbols"
+        );
+        assert_eq!(
+            stats_a.indexed_files, stats_b.indexed_files,
+            "db indexed_files"
+        );
+        assert_eq!(
+            stats_a.indexed_chunks, stats_b.indexed_chunks,
+            "db indexed_chunks"
+        );
+        assert_eq!(
+            stats_a.indexed_symbols, report_b.symbols_total,
+            "report vs db symbol count"
+        );
     }
 }

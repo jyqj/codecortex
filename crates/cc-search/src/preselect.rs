@@ -194,13 +194,16 @@ pub fn preselect_files(
     for token in &candidate_tokens {
         // 6a. Path token match
         {
+            // file_paths_fts is a trigram FTS5 mirror of files.file_path; the
+            // leading-wildcard LIKE here is index-accelerated, removing the
+            // per-token full-table scan a plain `files` substring scan incurs.
             let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) = if let Some(
                 prefix,
             ) =
                 path_prefix
             {
                 (
-                        "SELECT file_path FROM files WHERE file_path LIKE ?1 AND file_path LIKE ?2 ORDER BY file_path LIMIT 20".into(),
+                        "SELECT file_path FROM file_paths_fts WHERE file_path LIKE ?1 AND file_path LIKE ?2 ORDER BY file_path LIMIT 20".into(),
                         vec![
                             Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
                             Box::new(format!("{}%", prefix)),
@@ -208,7 +211,7 @@ pub fn preselect_files(
                     )
             } else {
                 (
-                        "SELECT file_path FROM files WHERE file_path LIKE ?1 ORDER BY file_path LIMIT 20".into(),
+                        "SELECT file_path FROM file_paths_fts WHERE file_path LIKE ?1 ORDER BY file_path LIMIT 20".into(),
                         vec![Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>],
                     )
             };
@@ -391,6 +394,44 @@ mod tests {
         assert!(
             result.files.contains(&"src/b.rs".to_string()),
             "substring token 'order' must recall 'createOrder' in src/b.rs; got {:?}",
+            result.files
+        );
+    }
+
+    /// A token that appears only inside a file *path* (not in any symbol name or
+    /// file summary) must still be recalled via Layer 6a — exercising the
+    /// trigram `file_paths_fts` mirror that replaced the `files` full scan.
+    #[test]
+    fn preselect_recalls_path_token_match() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("preselect_path_test.db"))
+            .unwrap()
+            .0;
+        let conn = db.read_conn().unwrap();
+        // Path contains "widget"; symbol names deliberately do not, so the only
+        // possible hit is the path-token (file_paths_fts) lookup.
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/widgetstore/a.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');\
+             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/b.rs', 'Rust', 'h2', 1.0, 100, '2024-01-01');\
+             INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line) \
+                 VALUES('s1', 'src/widgetstore/a.rs', 'alpha', 'function', 1, 5);\
+             INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line) \
+                 VALUES('s2', 'src/b.rs', 'beta', 'function', 1, 5);",
+        )
+        .unwrap();
+
+        let result =
+            preselect_files(&db, "widget", None, None, None, None, None, None, 10).unwrap();
+        assert!(
+            result.files.contains(&"src/widgetstore/a.rs".to_string()),
+            "path-substring token 'widget' must recall 'src/widgetstore/a.rs' via file_paths_fts; got {:?}",
+            result.files
+        );
+        assert!(
+            !result.files.contains(&"src/b.rs".to_string()),
+            "'widget' must not recall unrelated 'src/b.rs'; got {:?}",
             result.files
         );
     }

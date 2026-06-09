@@ -8,7 +8,7 @@ is the real-workspace benchmark in cc-eval).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 57 | Schema v2 rebuild-on-mismatch, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
+| cc-db | 57 | Schema v3 rebuild-on-mismatch, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
 | cc-eval | 15 passed + 1 ignored | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace benchmark |
 | cc-index | 33 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, export-fingerprint contract, adaptive memory budget |
 | cc-model | 51 | Route normalization, data structures, enum round-trip, project root discovery, partial config defaults, external cache-dir paths |

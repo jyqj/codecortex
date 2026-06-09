@@ -12,7 +12,7 @@ A 7-crate Cargo workspace with strictly downward dependencies (no cycles):
 ```
 cc-model      Data types, config, error definitions (serde, thiserror, blake3)
     |
-cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 21 tables + 4 FTS5, schema v2)
+cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 21 tables + 5 FTS5, schema v3)
     |
 cc-parsers    Tree-sitter AST extraction + framework detection
 cc-index      File scanning, incremental indexing, community detection (Louvain)
@@ -46,14 +46,15 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
   communities, repo_frameworks, file_frameworks, data_flow_edges,
   co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges,
   dispatch_sites, runtime_evidence, adr, metadata
-- 4 FTS5 virtual tables: full-text search on chunks, literals,
-  files, plus a trigram `symbols_fts` (name) that accelerates the substring
-  symbol lookups in file preselection; it is kept in sync with `symbols` by
-  insert/delete/update triggers, so no write path populates it directly
+- 5 FTS5 virtual tables: full-text search on chunks, literals,
+  files, plus two trigram mirrors — `symbols_fts` (name) and `file_paths_fts`
+  (file_path) — that accelerate the substring symbol and path-token lookups in
+  file preselection; each is kept in sync with its base table (`symbols` /
+  `files`) by insert/delete/update triggers, so no write path populates it directly
 - A `REGEXP(pattern, text)` scalar UDF backs Cypher `=~`; the compiled pattern is
   cached as SQLite auxiliary data so a constant pattern compiles once per
   statement, not once per row
-- Schema versioning via the `user_version` pragma (v2). The current strategy is
+- Schema versioning via the `user_version` pragma (v3). The current strategy is
   rebuild-on-mismatch for on-disk indexes.
 
 ### cc-parsers

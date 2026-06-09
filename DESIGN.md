@@ -26,7 +26,7 @@ cc-model -> cc-db -> cc-parsers / cc-index -> cc-search -> cc-server
 | Crate | Responsibility |
 |-------|----------------|
 | cc-model | Data types, config, errors (serde, thiserror, blake3) |
-| cc-db | SQLite index store: r2d2 pool, WAL, FTS5, 21 tables (+4 FTS5), schema v2 |
+| cc-db | SQLite index store: r2d2 pool, WAL, FTS5, 21 tables (+5 FTS5), schema v3 |
 | cc-parsers | Tree-sitter AST extraction + framework detection |
 | cc-index | File scan, incremental index, Louvain community detection |
 | cc-search | Ranked local search (FTS5 + grep + preselect/RRF) + Cypher subset |

@@ -1,4 +1,4 @@
--- index.sqlite3 — Schema v2 (21 tables + 4 FTS5)
+-- index.sqlite3 — Schema v3 (21 tables + 5 FTS5)
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -238,6 +238,21 @@ CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_path UNINDEXED, summary, content_excerpt,
     tokenize = 'unicode61 remove_diacritics 2'
 );
+
+CREATE VIRTUAL TABLE IF NOT EXISTS file_paths_fts USING fts5(
+    file_path,
+    tokenize = 'trigram'
+);
+CREATE TRIGGER IF NOT EXISTS file_paths_fts_ai AFTER INSERT ON files BEGIN
+    INSERT INTO file_paths_fts(rowid, file_path) VALUES (new.rowid, new.file_path);
+END;
+CREATE TRIGGER IF NOT EXISTS file_paths_fts_ad AFTER DELETE ON files BEGIN
+    DELETE FROM file_paths_fts WHERE rowid = old.rowid;
+END;
+CREATE TRIGGER IF NOT EXISTS file_paths_fts_au AFTER UPDATE OF file_path ON files BEGIN
+    DELETE FROM file_paths_fts WHERE rowid = old.rowid;
+    INSERT INTO file_paths_fts(rowid, file_path) VALUES (new.rowid, new.file_path);
+END;
 
 CREATE TABLE IF NOT EXISTS communities (
     community_id        INTEGER PRIMARY KEY,

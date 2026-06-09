@@ -459,6 +459,111 @@ value = "formatName"
         }
     }
 
+    fn copy_sample_fixture_sources(src: &std::path::Path, dst: &std::path::Path) -> usize {
+        let mut count = 0;
+        for entry in std::fs::read_dir(src).expect("read fixture sources") {
+            let entry = entry.expect("read fixture entry");
+            let path = entry.path();
+            if path.is_file() {
+                let dest = dst.join(entry.file_name());
+                std::fs::copy(&path, &dest).expect("copy fixture source file");
+                count += 1;
+            }
+        }
+        count
+    }
+
+    fn report_usize(report: &serde_json::Value, field: &str) -> usize {
+        report
+            .get(field)
+            .and_then(|v| v.as_u64())
+            .unwrap_or_else(|| panic!("IndexReport field `{}` should be a u64", field))
+            as usize
+    }
+
+    fn assert_no_parse_errors(report: &serde_json::Value, phase: &str) {
+        let parse_errors = report
+            .get("parse_errors")
+            .and_then(|v| v.as_array())
+            .unwrap_or_else(|| panic!("IndexReport parse_errors missing for {}", phase));
+        assert!(
+            parse_errors.is_empty(),
+            "{} build should not produce parse errors: {:?}",
+            phase,
+            parse_errors
+        );
+    }
+
+    /// Ignored by default: exercises IndexReport counters across a full build,
+    /// a no-op incremental build, and a one-file incremental update.
+    #[test]
+    #[ignore = "benchmarks incremental indexing report counters; run explicitly"]
+    fn benchmark_incremental_index_report_correctness() {
+        let crate_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let fixtures_dir = crate_dir.join("fixtures").join("sample-project");
+        assert!(
+            fixtures_dir.exists(),
+            "sample project fixtures should exist at {}",
+            fixtures_dir.display()
+        );
+
+        let tmp = tempfile::tempdir().expect("create tempdir for incremental benchmark");
+        let fixture_files = copy_sample_fixture_sources(&fixtures_dir, tmp.path());
+        assert!(
+            fixture_files >= 10,
+            "incremental benchmark should copy a representative fixture set, got {}",
+            fixture_files
+        );
+
+        let backend = runner::CodeIndexBackend::new_unindexed(tmp.path())
+            .expect("backend should initialize without building");
+
+        let full = backend
+            .build_index_report(true)
+            .expect("full index build should succeed");
+        assert_eq!(report_usize(&full, "files_scanned"), fixture_files);
+        assert_eq!(report_usize(&full, "files_added"), fixture_files);
+        assert_eq!(report_usize(&full, "files_updated"), 0);
+        assert_eq!(report_usize(&full, "files_removed"), 0);
+        assert_eq!(report_usize(&full, "files_skipped"), 0);
+        assert_eq!(report_usize(&full, "files_parsed"), fixture_files);
+        assert!(
+            report_usize(&full, "symbols_total") > 0,
+            "full build should parse fixture symbols"
+        );
+        assert_no_parse_errors(&full, "full");
+
+        let noop = backend
+            .build_index_report(false)
+            .expect("no-op incremental index build should succeed");
+        assert_eq!(report_usize(&noop, "files_scanned"), fixture_files);
+        assert_eq!(report_usize(&noop, "files_added"), 0);
+        assert_eq!(report_usize(&noop, "files_updated"), 0);
+        assert_eq!(report_usize(&noop, "files_removed"), 0);
+        assert_eq!(report_usize(&noop, "files_skipped"), fixture_files);
+        assert_eq!(report_usize(&noop, "files_parsed"), 0);
+        assert_no_parse_errors(&noop, "no-op incremental");
+
+        let modified = tmp.path().join("main.go");
+        let mut source = std::fs::read_to_string(&modified).expect("read file to modify");
+        source.push_str("\n// incremental index report marker\n");
+        std::fs::write(&modified, source).expect("write incremental file modification");
+
+        let incremental = backend
+            .build_index_report(false)
+            .expect("single-file incremental index build should succeed");
+        assert_eq!(report_usize(&incremental, "files_scanned"), fixture_files);
+        assert_eq!(report_usize(&incremental, "files_added"), 0);
+        assert_eq!(report_usize(&incremental, "files_updated"), 1);
+        assert_eq!(report_usize(&incremental, "files_removed"), 0);
+        assert_eq!(
+            report_usize(&incremental, "files_skipped"),
+            fixture_files - 1
+        );
+        assert_eq!(report_usize(&incremental, "files_parsed"), 1);
+        assert_no_parse_errors(&incremental, "single-file incremental");
+    }
+
     /// Benchmark test: load fixtures, run benchmark, optionally write report.
     /// This test requires the fixture files to exist.
     ///

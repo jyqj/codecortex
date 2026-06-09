@@ -627,11 +627,8 @@ pub fn list_package_boundaries(
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
 
-    // Fetch all call edges (same as get_architecture does)
-    let all_edges = db.call_uid_edges().map_err(|e| e.to_string())?;
-
     let mut boundaries =
-        crate::engine::compute_package_boundaries(db, &all_edges).map_err(|e| e.to_string())?;
+        crate::engine::compute_package_boundaries(db).map_err(|e| e.to_string())?;
     boundaries.truncate(limit as usize);
 
     Ok(serde_json::json!({

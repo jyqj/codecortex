@@ -114,7 +114,8 @@ is the real-workspace benchmark in cc-eval).
   - Server/framework (1): server.py
 - Frameworks covered: Express, Flask, Spring, Go routers (Gin/Echo/Fiber/Chi/Gorilla)
 - p95/max latency and output size tracked via `bench::run_benchmark()`
-- Real workspace benchmark: `benchmark_real_workspace` copies the CodeCortex workspace (212 files in latest run) into a temp dir and writes `docs/benchmarks/real_workspace_latest.md` when requested
+- Real workspace benchmark: `benchmark_real_workspace` copies the CodeCortex workspace (234 files in latest run) into a temp dir and writes `docs/benchmarks/real_workspace_latest.md` when requested
+- Incremental index report benchmark: `benchmark_incremental_index_report_correctness` is ignored by default and covers full build -> no-op incremental -> one-file incremental update without writing benchmark artifacts
 - Recall@5 and MRR implemented via `expected_symbols` assertions (5 corpus cases active)
 
 ## Integration Testing

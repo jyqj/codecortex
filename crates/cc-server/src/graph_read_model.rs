@@ -111,15 +111,29 @@ impl GraphReadModel {
         let http_edges = db.all_http_call_edges_lite(5000)?;
         let route_nodes = db.all_route_nodes_lite(5000)?;
 
-        let mut route_lookup: HashMap<String, Vec<(String, f64)>> = HashMap::new();
+        let mut route_lookup: HashMap<(String, String), Vec<(String, f64)>> = HashMap::new();
+        let mut route_any_method_lookup: HashMap<String, Vec<(String, f64)>> = HashMap::new();
+        let mut route_path_lookup: HashMap<String, Vec<(String, f64)>> = HashMap::new();
         for rn in &route_nodes {
             if let (Some(norm_path), Some(handler_uid)) =
                 (&rn.normalized_path, &rn.handler_symbol_uid)
             {
-                route_lookup
+                let handler = (handler_uid.clone(), rn.confidence);
+                route_path_lookup
                     .entry(norm_path.clone())
                     .or_default()
-                    .push((handler_uid.clone(), rn.confidence));
+                    .push(handler.clone());
+                if let Some(method) = normalize_bridge_method(rn.method.as_deref()) {
+                    route_lookup
+                        .entry((norm_path.clone(), method))
+                        .or_default()
+                        .push(handler);
+                } else {
+                    route_any_method_lookup
+                        .entry(norm_path.clone())
+                        .or_default()
+                        .push(handler);
+                }
             }
         }
 
@@ -133,34 +147,43 @@ impl GraphReadModel {
                 Some(path) => path,
                 None => continue,
             };
-            if let Some(handlers) = route_lookup.get(norm_path) {
-                for (handler_uid, handler_confidence) in handlers {
-                    let dispatch_kind = if hce.call_kind == "http" {
-                        "http_bridge"
-                    } else {
-                        "async_bridge"
-                    };
-                    let bridge_edge = EdgeLite {
-                        caller_uid: caller_uid.clone(),
-                        callee_uid: handler_uid.clone(),
-                        dispatch_kind: dispatch_kind.to_string(),
-                        synthesized_by: Some("http_bridge".to_string()),
-                        synthesis_key: Some(norm_path.clone()),
-                        confidence: f64::min(hce.confidence, *handler_confidence),
-                        file_path: hce.file_path.clone(),
-                        line: hce.line,
-                        registered_file: None,
-                        registered_line: None,
-                        resolution_kind: Some("synthesized".to_string()),
-                        parser_tier: None,
-                        resolution_strategy: None,
-                        parser_confidence: None,
-                    };
-                    http_bridges
-                        .entry(caller_uid.clone())
-                        .or_default()
-                        .push(bridge_edge);
+            let mut matched_handlers: Vec<&(String, f64)> = Vec::new();
+            if let Some(method) = normalize_bridge_method(hce.method.as_deref()) {
+                if let Some(handlers) = route_lookup.get(&(norm_path.clone(), method)) {
+                    matched_handlers.extend(handlers);
                 }
+                if let Some(handlers) = route_any_method_lookup.get(norm_path) {
+                    matched_handlers.extend(handlers);
+                }
+            } else {
+                matched_handlers.extend(route_path_lookup.get(norm_path).into_iter().flatten());
+            }
+            for (handler_uid, handler_confidence) in matched_handlers {
+                let dispatch_kind = if hce.call_kind.eq_ignore_ascii_case("http") {
+                    "http_bridge"
+                } else {
+                    "async_bridge"
+                };
+                let bridge_edge = EdgeLite {
+                    caller_uid: caller_uid.clone(),
+                    callee_uid: handler_uid.clone(),
+                    dispatch_kind: dispatch_kind.to_string(),
+                    synthesized_by: Some(dispatch_kind.to_string()),
+                    synthesis_key: Some(norm_path.clone()),
+                    confidence: f64::min(hce.confidence, *handler_confidence),
+                    file_path: hce.file_path.clone(),
+                    line: hce.line,
+                    registered_file: None,
+                    registered_line: None,
+                    resolution_kind: Some("synthesized".to_string()),
+                    parser_tier: None,
+                    resolution_strategy: None,
+                    parser_confidence: None,
+                };
+                http_bridges
+                    .entry(caller_uid.clone())
+                    .or_default()
+                    .push(bridge_edge);
             }
         }
 
@@ -395,37 +418,37 @@ impl GraphReadModel {
     }
 
     pub(crate) fn community_call_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        let sym_rows = self.db.query_json(
-            "SELECT DISTINCT symbol_uid, community_id FROM symbols WHERE community_id IS NOT NULL AND symbol_uid IS NOT NULL",
+        let rows = self.db.query_json(
+            "SELECT DISTINCT s1.community_id AS from_community, s2.community_id AS to_community \
+             FROM call_edges ce \
+             JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
+             JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
+             WHERE s1.community_id IS NOT NULL \
+               AND s2.community_id IS NOT NULL \
+               AND s1.community_id != s2.community_id",
             &[],
         )?;
 
-        let mut uid_to_community: HashMap<String, String> = HashMap::new();
-        for row in &sym_rows {
-            let uid = row.get("symbol_uid").and_then(|value| value.as_str());
-            let community_id = row.get("community_id");
-            if let (Some(uid), Some(community_id)) = (uid, community_id) {
-                let community = match community_id {
-                    serde_json::Value::Number(number) => number.to_string(),
-                    serde_json::Value::String(value) => value.clone(),
+        let mut adj: HashMap<String, Vec<String>> = HashMap::new();
+        for row in &rows {
+            let from = row.get("from_community");
+            let to = row.get("to_community");
+            if let (Some(from_val), Some(to_val)) = (from, to) {
+                let from_str = match from_val {
+                    serde_json::Value::Number(n) => n.to_string(),
+                    serde_json::Value::String(s) => s.clone(),
                     _ => continue,
                 };
-                uid_to_community.insert(uid.to_string(), community);
+                let to_str = match to_val {
+                    serde_json::Value::Number(n) => n.to_string(),
+                    serde_json::Value::String(s) => s.clone(),
+                    _ => continue,
+                };
+                adj.entry(from_str).or_default().push(to_str);
             }
         }
 
-        let call_edges = self.db.call_uid_edges()?;
-        let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-        for (caller_uid, callee_uid) in &call_edges {
-            let from = uid_to_community.get(caller_uid);
-            let to = uid_to_community.get(callee_uid);
-            if let (Some(from), Some(to)) = (from, to) {
-                if from != to {
-                    adj.entry(from.clone()).or_default().push(to.clone());
-                }
-            }
-        }
-
+        // Results are already DISTINCT per row, but multiple rows can share the same from_community
         for targets in adj.values_mut() {
             targets.sort();
             targets.dedup();
@@ -621,6 +644,13 @@ impl GraphReadModel {
     }
 }
 
+fn normalize_bridge_method(method: Option<&str>) -> Option<String> {
+    method
+        .map(str::trim)
+        .filter(|method| !method.is_empty())
+        .map(|method| method.to_ascii_uppercase())
+}
+
 fn bfs_paths_labeled_with<F>(
     from_uid: &str,
     to_uid: &str,
@@ -632,17 +662,24 @@ where
     F: FnMut(&str) -> Vec<EdgeLite>,
 {
     let mut results = Vec::new();
-    let mut queue: VecDeque<(Vec<String>, Vec<EdgeLite>)> = VecDeque::new();
-    let mut visited = HashSet::new();
-    queue.push_back((vec![from_uid.to_string()], Vec::new()));
-    visited.insert(from_uid.to_string());
+    // Each queue entry carries its own visited set so distinct paths through
+    // shared intermediate nodes are all discovered (simple-path constraint:
+    // no node appears twice within the *same* path).
+    let mut queue: VecDeque<(Vec<String>, Vec<EdgeLite>, HashSet<String>)> = VecDeque::new();
+    let mut initial_visited = HashSet::new();
+    initial_visited.insert(from_uid.to_string());
+    queue.push_back((vec![from_uid.to_string()], Vec::new(), initial_visited));
 
-    while let Some((nodes, edges)) = queue.pop_front() {
+    // Safety valve: cap total queue pushes to prevent runaway exploration.
+    let explore_budget = max_paths.saturating_mul(500).max(1);
+    let mut explored: usize = 0;
+
+    while let Some((nodes, edges, visited)) = queue.pop_front() {
         if results.len() >= max_paths {
             break;
         }
         if nodes.len() > max_depth + 1 {
-            break;
+            continue;
         }
         let current = nodes.last().expect("path has at least one uid").clone();
         if current == to_uid {
@@ -655,15 +692,244 @@ where
 
         for edge in neighbors(&current) {
             if !visited.contains(&edge.callee_uid) {
-                visited.insert(edge.callee_uid.clone());
+                if explored >= explore_budget {
+                    tracing::debug!(
+                        explore_budget,
+                        results = results.len(),
+                        max_paths,
+                        "BFS explore budget exhausted, truncating path enumeration"
+                    );
+                    break;
+                }
+                explored += 1;
+                let mut new_visited = visited.clone();
+                new_visited.insert(edge.callee_uid.clone());
                 let mut new_nodes = nodes.clone();
                 new_nodes.push(edge.callee_uid.clone());
                 let mut new_edges = edges.clone();
                 new_edges.push(edge);
-                queue.push_back((new_nodes, new_edges));
+                queue.push_back((new_nodes, new_edges, new_visited));
             }
         }
     }
 
     results
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn setup_bridge_db() -> (TempDir, IndexDb) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
+        let conn = db.read_conn().unwrap();
+
+        for file_path in ["src/client.ts", "src/routes.ts"] {
+            conn.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
+                 VALUES(?1,'TypeScript',?2,1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+                rusqlite::params![file_path, format!("hash:{file_path}")],
+            )
+            .unwrap();
+        }
+
+        for (edge_id, method, handler_uid, handler_name, confidence) in [
+            (
+                "route_get_users",
+                "GET",
+                "handler_get_users",
+                "get_users",
+                0.91,
+            ),
+            (
+                "route_post_users",
+                "POST",
+                "handler_post_users",
+                "post_users",
+                0.97,
+            ),
+        ] {
+            conn.execute(
+                "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
+                 VALUES(?1,'src/routes.ts','/api/users',?2,?3,?4,'express',10,12,'/api/users',?5,'tree_sitter',?1)",
+                rusqlite::params![edge_id, method, handler_uid, handler_name, confidence],
+            )
+            .unwrap();
+        }
+
+        (tmp, db)
+    }
+
+    fn insert_http_call(
+        db: &IndexDb,
+        edge_id: &str,
+        caller_uid: &str,
+        method: Option<&str>,
+        call_kind: &str,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,normalized_path,method,call_kind,line,confidence,parser_tier)
+                 VALUES(?1,'src/client.ts',?2,'/api/users','/api/users',?3,?4,20,0.88,'tree_sitter')",
+                rusqlite::params![edge_id, caller_uid, method, call_kind],
+            )
+            .unwrap();
+    }
+
+    fn insert_methodless_route(db: &IndexDb, edge_id: &str, handler_uid: &str) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
+                 VALUES(?1,'src/routes.ts','/api/users',NULL,?2,?2,'express',30,32,'/api/users',0.83,'tree_sitter',?1)",
+                rusqlite::params![edge_id, handler_uid],
+            )
+            .unwrap();
+    }
+
+    fn sorted_callees(edges: &[EdgeLite]) -> Vec<String> {
+        let mut callees: Vec<String> = edges.iter().map(|edge| edge.callee_uid.clone()).collect();
+        callees.sort();
+        callees
+    }
+
+    #[test]
+    fn bridge_edges_match_http_method_and_normalized_path() {
+        let (_tmp, db) = setup_bridge_db();
+        insert_http_call(
+            &db,
+            "http_get_users",
+            "caller_get_users",
+            Some("GET"),
+            "http",
+        );
+
+        let bridges = GraphReadModel::bridge_edges_by_caller(&db).unwrap();
+        let caller_edges = bridges
+            .get("caller_get_users")
+            .expect("GET caller should get bridge edges");
+
+        assert_eq!(sorted_callees(caller_edges), vec!["handler_get_users"]);
+        assert!(caller_edges
+            .iter()
+            .all(|edge| edge.synthesis_key.as_deref() == Some("/api/users")));
+    }
+
+    #[test]
+    fn bridge_edges_keep_methodless_routes_as_method_specific_fallback() {
+        let (_tmp, db) = setup_bridge_db();
+        insert_methodless_route(&db, "route_any_users", "handler_any_users");
+        insert_http_call(
+            &db,
+            "http_get_users",
+            "caller_get_users",
+            Some("GET"),
+            "http",
+        );
+
+        let bridges = GraphReadModel::bridge_edges_by_caller(&db).unwrap();
+        let caller_edges = bridges
+            .get("caller_get_users")
+            .expect("GET caller should get exact and methodless bridge edges");
+
+        assert_eq!(
+            sorted_callees(caller_edges),
+            vec!["handler_any_users", "handler_get_users"]
+        );
+    }
+
+    #[test]
+    fn bridge_edges_without_http_method_fall_back_to_normalized_path() {
+        let (_tmp, db) = setup_bridge_db();
+        insert_http_call(
+            &db,
+            "http_unknown_users",
+            "caller_unknown_users",
+            None,
+            "http",
+        );
+
+        let bridges = GraphReadModel::bridge_edges_by_caller(&db).unwrap();
+        let caller_edges = bridges
+            .get("caller_unknown_users")
+            .expect("method-less caller should get path fallback bridge edges");
+
+        assert_eq!(
+            sorted_callees(caller_edges),
+            vec!["handler_get_users", "handler_post_users"]
+        );
+        assert!(caller_edges.iter().all(|edge| {
+            edge.dispatch_kind == "http_bridge"
+                && edge.synthesized_by.as_deref() == Some("http_bridge")
+        }));
+    }
+
+    #[test]
+    fn bridge_edges_keep_non_http_synthesis_metadata_consistent() {
+        let (_tmp, db) = setup_bridge_db();
+        insert_http_call(
+            &db,
+            "async_get_users",
+            "caller_async_users",
+            Some("GET"),
+            "message",
+        );
+
+        let bridges = GraphReadModel::bridge_edges_by_caller(&db).unwrap();
+        let edge = bridges
+            .get("caller_async_users")
+            .and_then(|edges| edges.first())
+            .expect("async caller should get a bridge edge");
+
+        assert_eq!(edge.dispatch_kind, "async_bridge");
+        assert_eq!(edge.synthesized_by.as_deref(), Some("async_bridge"));
+        assert_eq!(edge.callee_uid, "handler_get_users");
+    }
+
+    #[test]
+    fn bfs_finds_multiple_paths_through_shared_node() {
+        // Graph: A→B, A→C, B→D, C→D
+        // Expected: two distinct paths A→B→D and A→C→D.
+        fn make_edge(caller: &str, callee: &str) -> EdgeLite {
+            EdgeLite {
+                caller_uid: caller.to_string(),
+                callee_uid: callee.to_string(),
+                dispatch_kind: "call".to_string(),
+                synthesized_by: None,
+                synthesis_key: None,
+                confidence: 1.0,
+                file_path: String::new(),
+                line: 0,
+                registered_file: None,
+                registered_line: None,
+                resolution_kind: None,
+                parser_tier: None,
+                resolution_strategy: None,
+                parser_confidence: None,
+            }
+        }
+
+        let mut adj_map: HashMap<String, Vec<EdgeLite>> = HashMap::new();
+        adj_map.insert(
+            "A".to_string(),
+            vec![make_edge("A", "B"), make_edge("A", "C")],
+        );
+        adj_map.insert("B".to_string(), vec![make_edge("B", "D")]);
+        adj_map.insert("C".to_string(), vec![make_edge("C", "D")]);
+
+        let adj = BfsAdj { adj: adj_map };
+        let paths = GraphReadModel::paths_between_adj(&adj, "A", "D", 5, 10);
+
+        assert_eq!(paths.len(), 2, "should find 2 paths through shared node D");
+
+        let mut path_strs: Vec<String> = paths
+            .iter()
+            .map(|p| p.node_uids.join("→"))
+            .collect();
+        path_strs.sort();
+        assert_eq!(path_strs, vec!["A→B→D", "A→C→D"]);
+    }
 }

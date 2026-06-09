@@ -54,7 +54,7 @@ For a non-fixture benchmark against this real workspace copy, run:
 CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture
 ```
 
-Latest real-workspace run: 212 files, 10 representative MCP cases, all tools under 500ms p95; see `docs/benchmarks/real_workspace_latest.md`. Treat the fixture benchmark as a smoke baseline and the real-workspace benchmark as the current larger-repo regression baseline.
+Latest real-workspace run: 234 files, 10 representative MCP cases, all tools under 500ms p95; see `docs/benchmarks/real_workspace_latest.md`. Treat the fixture benchmark as a smoke baseline and the real-workspace benchmark as the current larger-repo regression baseline.
 
 ## Comparison Baselines
 

@@ -1020,6 +1020,27 @@ impl Indexer {
     }
 
     fn rebuild_communities(&self) -> CcResult<()> {
+        // Guard: check edge count before loading full graph to prevent OOM
+        let edge_count = self
+            .db
+            .query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges \
+                 WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL",
+                &[],
+            )?
+            .first()
+            .and_then(|r| r.get("cnt"))
+            .and_then(|v| v.as_i64())
+            .unwrap_or(0);
+
+        if edge_count > 2_000_000 {
+            tracing::warn!(
+                edge_count,
+                "skipping community detection: too many call edges (>2M), would risk OOM"
+            );
+            return Ok(());
+        }
+
         let edges = self.db.call_uid_edges()?;
         let assignments = louvain_communities(&edges, 20);
         let symbol_names = self.db.symbol_names_by_uid()?;
@@ -1054,12 +1075,22 @@ impl Indexer {
         //         public API surface actually changed. Fetch all old
         //         fingerprints in one batched query to avoid N+1 round trips.
         let old_fingerprints = self.db.get_export_fingerprints(&changed_files)?;
+
+        // Build a HashMap index over write_units for O(1) lookup per file,
+        // avoiding the previous O(changed_files × write_units) linear scan.
+        let write_unit_index: HashMap<&str, &FileWriteUnit> = write_units
+            .iter()
+            .map(|u| (u.rel_path.as_str(), u))
+            .collect();
+
         let mut export_changed_files = Vec::new();
         for file_path in &changed_files {
             // Files with no exported symbols are absent from the map (== None),
             // matching the single-file query's None return.
             let old_fp = old_fingerprints.get(file_path).cloned();
-            let new_fp = Self::compute_new_export_fingerprint(write_units, file_path);
+            let new_fp = write_unit_index
+                .get(file_path.as_str())
+                .and_then(|unit| Self::compute_fingerprint_for_unit(unit));
             if old_fp != new_fp {
                 export_changed_files.push(file_path.clone());
             }
@@ -1118,11 +1149,24 @@ impl Indexer {
     ///   2. Format each as "uid|name|signature|export_name"
     ///   3. Sort by uid (first field)
     ///   4. Join with "\n" and hash with blake3
+    ///
+    /// Note: For hot-path usage (e.g. looping over many files), prefer building
+    /// a HashMap index over `write_units` and calling `compute_fingerprint_for_unit`
+    /// directly to avoid O(n) linear scan per call.
     pub(crate) fn compute_new_export_fingerprint(
         write_units: &[FileWriteUnit],
         file_path: &str,
     ) -> Option<String> {
         let unit = write_units.iter().find(|u| u.rel_path == file_path)?;
+        Self::compute_fingerprint_for_unit(unit)
+    }
+
+    /// Compute the export fingerprint for a single pre-found `FileWriteUnit`.
+    ///
+    /// This is the inner computation extracted from `compute_new_export_fingerprint`
+    /// so callers that already have a reference to the unit (e.g. via a HashMap
+    /// index) can skip the linear search.
+    fn compute_fingerprint_for_unit(unit: &FileWriteUnit) -> Option<String> {
         let mut parts: Vec<String> = unit
             .outcome
             .symbols

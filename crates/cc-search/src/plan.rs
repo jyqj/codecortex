@@ -152,6 +152,10 @@ impl SearchPlan {
         self.filters.grep_chunk_scope_sql()
     }
 
+    pub(crate) fn lexical_scope_sql(&self, limit: usize) -> (String, Vec<String>) {
+        self.filters.fts_chunk_scope_sql(limit)
+    }
+
     pub(crate) fn lane_ranks<'a>(
         &self,
         lexical_hits: &'a [(String, f64)],
@@ -368,22 +372,7 @@ impl MaterializedFilters {
         let mut clauses: Vec<String> = Vec::new();
         let mut params = Vec::new();
 
-        if let Some(prefix) = self.path_prefix.as_ref().filter(|p| !p.is_empty()) {
-            clauses.push("file_path LIKE ? ESCAPE '\\'".to_string());
-            params.push(format!("{}%", escape_like(prefix)));
-        }
-
-        if let Some(languages) = self.languages.as_ref().filter(|v| !v.is_empty()) {
-            let placeholders = sql_placeholders(languages.len());
-            clauses.push(format!("language IN ({})", placeholders));
-            params.extend(languages.iter().map(|lang| lang.as_str().to_string()));
-        }
-
-        if let Some(files) = self.file_paths.as_ref().filter(|v| !v.is_empty()) {
-            let placeholders = sql_placeholders(files.len());
-            clauses.push(format!("file_path IN ({})", placeholders));
-            params.extend(files.iter().cloned());
-        }
+        self.push_chunk_scope_clauses(&mut clauses, &mut params, "file_path", "language");
 
         if !clauses.is_empty() {
             sql.push_str(" WHERE ");
@@ -391,6 +380,58 @@ impl MaterializedFilters {
         }
 
         (sql, params)
+    }
+
+    pub(crate) fn fts_chunk_scope_sql(&self, limit: usize) -> (String, Vec<String>) {
+        let mut sql =
+            "SELECT chunks_fts.chunk_id, chunks.file_path, chunks.language, bm25(chunks_fts, 1.0, 1.0, 2.0) AS score
+             FROM chunks_fts
+             JOIN chunks ON chunks.chunk_id = chunks_fts.chunk_id
+             WHERE chunks_fts MATCH ?"
+                .to_string();
+        let mut clauses: Vec<String> = Vec::new();
+        let mut params = Vec::new();
+
+        self.push_chunk_scope_clauses(
+            &mut clauses,
+            &mut params,
+            "chunks.file_path",
+            "chunks.language",
+        );
+
+        if !clauses.is_empty() {
+            sql.push_str(" AND ");
+            sql.push_str(&clauses.join(" AND "));
+        }
+        sql.push_str(" ORDER BY score LIMIT ");
+        sql.push_str(&limit.to_string());
+
+        (sql, params)
+    }
+
+    fn push_chunk_scope_clauses(
+        &self,
+        clauses: &mut Vec<String>,
+        params: &mut Vec<String>,
+        file_path_column: &str,
+        language_column: &str,
+    ) {
+        if let Some(prefix) = self.path_prefix.as_ref().filter(|p| !p.is_empty()) {
+            clauses.push(format!("{file_path_column} LIKE ? ESCAPE '\\'"));
+            params.push(format!("{}%", escape_like(prefix)));
+        }
+
+        if let Some(languages) = self.languages.as_ref().filter(|v| !v.is_empty()) {
+            let placeholders = sql_placeholders(languages.len());
+            clauses.push(format!("{language_column} IN ({placeholders})"));
+            params.extend(languages.iter().map(|lang| lang.as_str().to_string()));
+        }
+
+        if let Some(files) = self.file_paths.as_ref().filter(|v| !v.is_empty()) {
+            let placeholders = sql_placeholders(files.len());
+            clauses.push(format!("{file_path_column} IN ({placeholders})"));
+            params.extend(files.iter().cloned());
+        }
     }
 
     fn path_prefix(&self) -> Option<&str> {
@@ -571,6 +612,34 @@ mod tests {
         assert!(sql.contains("file_path LIKE ? ESCAPE '\\'"));
         assert!(sql.contains("language IN (?,?)"));
         assert!(sql.contains("file_path IN (?,?)"));
+        assert_eq!(
+            params,
+            vec![
+                "src/\\%special%".to_string(),
+                "rust".to_string(),
+                "python".to_string(),
+                "src/lib.rs".to_string(),
+                "src/main.py".to_string()
+            ]
+        );
+    }
+
+    #[test]
+    fn materialized_fts_scope_sql_pushes_filters_before_limit() {
+        let request = SearchRequest {
+            path_prefix: Some("src/%special".into()),
+            languages: Some(vec![Language::Rust, Language::Python]),
+            file_paths: Some(vec!["src/lib.rs".into(), "src/main.py".into()]),
+            ..Default::default()
+        };
+
+        let (sql, params) = MaterializedFilters::from_request(&request).fts_chunk_scope_sql(7);
+
+        assert!(sql.contains("WHERE chunks_fts MATCH ? AND"));
+        assert!(sql.contains("chunks.file_path LIKE ? ESCAPE '\\'"));
+        assert!(sql.contains("chunks.language IN (?,?)"));
+        assert!(sql.contains("chunks.file_path IN (?,?)"));
+        assert!(sql.ends_with("ORDER BY score LIMIT 7"));
         assert_eq!(
             params,
             vec![

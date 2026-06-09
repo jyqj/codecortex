@@ -872,33 +872,23 @@ fn extract_package(file_path: &str) -> String {
         .to_string()
 }
 
-pub fn compute_package_boundaries(
-    db: &IndexDb,
-    all_edges: &[(String, String)],
-) -> CcResult<Vec<PackageBoundary>> {
-    let uid_rows = db.query_json(
-        "SELECT symbol_uid, file_path FROM symbols WHERE symbol_uid IS NOT NULL",
+pub fn compute_package_boundaries(db: &IndexDb) -> CcResult<Vec<PackageBoundary>> {
+    // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
+    let cross_file_rows = db.query_json(
+        "SELECT s1.file_path AS caller_file, s2.file_path AS callee_file \
+         FROM call_edges ce \
+         JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
+         JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
+         WHERE ce.caller_symbol_uid IS NOT NULL \
+           AND ce.callee_symbol_uid IS NOT NULL \
+           AND s1.file_path != s2.file_path",
         &[],
     )?;
-    let mut uid_to_file: HashMap<String, String> = HashMap::new();
-    for row in &uid_rows {
-        let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
-        let fp = row.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
-        if !uid.is_empty() && !fp.is_empty() {
-            uid_to_file.insert(uid.to_string(), fp.to_string());
-        }
-    }
 
     let mut pkg_counts: HashMap<(String, String), u32> = HashMap::new();
-    for (caller_uid, callee_uid) in all_edges {
-        let from_fp = match uid_to_file.get(caller_uid) {
-            Some(fp) => fp.as_str(),
-            None => continue,
-        };
-        let to_fp = match uid_to_file.get(callee_uid) {
-            Some(fp) => fp.as_str(),
-            None => continue,
-        };
+    for row in &cross_file_rows {
+        let from_fp = row.get("caller_file").and_then(|v| v.as_str()).unwrap_or("");
+        let to_fp = row.get("callee_file").and_then(|v| v.as_str()).unwrap_or("");
         let from_pkg = extract_package(from_fp);
         let to_pkg = extract_package(to_fp);
         if from_pkg != to_pkg {

@@ -63,30 +63,28 @@ impl IndexDb {
             *pkg_symbols.entry(pkg).or_insert(0) += 1;
         }
 
-        let uid_rows = self.query_json(
-            "SELECT symbol_uid, file_path FROM symbols WHERE symbol_uid IS NOT NULL",
+        // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
+        let cross_file_rows = self.query_json(
+            "SELECT s1.file_path AS caller_file, s2.file_path AS callee_file \
+             FROM call_edges ce \
+             JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
+             JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
+             WHERE ce.caller_symbol_uid IS NOT NULL \
+               AND ce.callee_symbol_uid IS NOT NULL \
+               AND s1.file_path != s2.file_path",
             &[],
         )?;
-        let mut uid_to_pkg: HashMap<String, String> = HashMap::new();
-        for row in &uid_rows {
-            let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
-            let fp = row.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
-            if !uid.is_empty() {
-                uid_to_pkg.insert(uid.to_string(), Self::extract_package_from_path(fp));
-            }
-        }
 
-        let all_edges = self.call_uid_edges()?;
         let mut pkg_fan_in: HashMap<String, usize> = HashMap::new();
         let mut pkg_fan_out: HashMap<String, usize> = HashMap::new();
-        for (caller_uid, callee_uid) in &all_edges {
-            let from_pkg = uid_to_pkg.get(caller_uid.as_str());
-            let to_pkg = uid_to_pkg.get(callee_uid.as_str());
-            if let (Some(from), Some(to)) = (from_pkg, to_pkg) {
-                if from != to {
-                    *pkg_fan_out.entry(from.clone()).or_insert(0) += 1;
-                    *pkg_fan_in.entry(to.clone()).or_insert(0) += 1;
-                }
+        for row in &cross_file_rows {
+            let from_fp = row.get("caller_file").and_then(|v| v.as_str()).unwrap_or("");
+            let to_fp = row.get("callee_file").and_then(|v| v.as_str()).unwrap_or("");
+            let from_pkg = Self::extract_package_from_path(from_fp);
+            let to_pkg = Self::extract_package_from_path(to_fp);
+            if from_pkg != to_pkg {
+                *pkg_fan_out.entry(from_pkg).or_insert(0) += 1;
+                *pkg_fan_in.entry(to_pkg).or_insert(0) += 1;
             }
         }
 
@@ -219,30 +217,26 @@ impl IndexDb {
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::BoundaryInfo>> {
-        let uid_rows = self.query_json(
-            "SELECT symbol_uid, file_path FROM symbols WHERE symbol_uid IS NOT NULL",
+        // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
+        let cross_file_rows = self.query_json(
+            "SELECT s1.file_path AS caller_file, s2.file_path AS callee_file \
+             FROM call_edges ce \
+             JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
+             JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
+             WHERE ce.caller_symbol_uid IS NOT NULL \
+               AND ce.callee_symbol_uid IS NOT NULL \
+               AND s1.file_path != s2.file_path",
             &[],
         )?;
-        let mut uid_to_pkg: HashMap<String, String> = HashMap::new();
-        for row in &uid_rows {
-            let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
-            let fp = row.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
-            if !uid.is_empty() {
-                uid_to_pkg.insert(uid.to_string(), Self::extract_package_from_path(fp));
-            }
-        }
 
-        let all_edges = self.call_uid_edges()?;
         let mut counts: HashMap<(String, String), usize> = HashMap::new();
-        for (caller_uid, callee_uid) in &all_edges {
-            let from = uid_to_pkg.get(caller_uid.as_str());
-            let to = uid_to_pkg.get(callee_uid.as_str());
-            if let (Some(from_pkg), Some(to_pkg)) = (from, to) {
-                if from_pkg != to_pkg {
-                    *counts
-                        .entry((from_pkg.clone(), to_pkg.clone()))
-                        .or_insert(0) += 1;
-                }
+        for row in &cross_file_rows {
+            let from_fp = row.get("caller_file").and_then(|v| v.as_str()).unwrap_or("");
+            let to_fp = row.get("callee_file").and_then(|v| v.as_str()).unwrap_or("");
+            let from_pkg = Self::extract_package_from_path(from_fp);
+            let to_pkg = Self::extract_package_from_path(to_fp);
+            if from_pkg != to_pkg {
+                *counts.entry((from_pkg, to_pkg)).or_insert(0) += 1;
             }
         }
 

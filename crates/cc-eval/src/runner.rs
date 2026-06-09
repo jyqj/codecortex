@@ -25,6 +25,16 @@ impl CodeIndexBackend {
     /// eval mode where we always want a clean index. Do NOT use this constructor
     /// against a user's real project directory — it will destroy their cached index.
     pub fn new(project_path: &Path) -> Result<Self, String> {
+        let backend = Self::new_unindexed(project_path)?;
+        backend.build_index_report(false)?;
+        Ok(backend)
+    }
+
+    /// Create a new backend without building the index yet.
+    ///
+    /// This is intended for eval tests that need to inspect the `IndexReport`
+    /// from the first explicit full/incremental build.
+    pub fn new_unindexed(project_path: &Path) -> Result<Self, String> {
         // Clean up any existing index to avoid UNIQUE constraint errors on rebuild.
         // Must remove before CodeIndex::new() which creates the DB.
         let codecortex_dir = project_path.join(".codecortex");
@@ -38,11 +48,14 @@ impl CodeIndexBackend {
             })?;
         }
 
-        let mut index = CodeIndex::new(Some(project_path)).map_err(|e| e.to_string())?;
-        // Build index (full=false since DB is fresh — avoids any full-rebuild edge cases)
-        index.build_index(false).map_err(|e| e.to_string())?;
+        let index = CodeIndex::new(Some(project_path)).map_err(|e| e.to_string())?;
         let rt = Arc::new(RwLock::new(index));
         Ok(Self { runtime: rt })
+    }
+
+    /// Build the index and return the serialized `IndexReport`.
+    pub fn build_index_report(&self, full: bool) -> Result<Value, String> {
+        core::build_index(self.runtime.clone(), full)
     }
 
     /// Dispatch a tool call by name, with JSON params.

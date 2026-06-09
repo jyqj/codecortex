@@ -20,15 +20,15 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) by_uid: HashMap<String, usize>,
     pub(in crate::resolver) by_qname: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_file: HashMap<String, Vec<usize>>,
-    pub(in crate::resolver) by_export: HashMap<(String, String), Vec<usize>>,
-    /// (file_path, name_lowercase) -> Vec<usize>: composite index for same-file name lookup.
-    pub(in crate::resolver) by_file_name: HashMap<(String, String), Vec<usize>>,
-    /// (file_path, qname_lowercase) -> Vec<usize>: composite index for same-file qname lookup.
-    pub(in crate::resolver) by_file_qname: HashMap<(String, String), Vec<usize>>,
+    pub(in crate::resolver) by_export: HashMap<String, HashMap<String, Vec<usize>>>,
+    /// file_path -> name_lowercase -> Vec<usize>: nested index for same-file name lookup.
+    pub(in crate::resolver) by_file_name: HashMap<String, HashMap<String, Vec<usize>>>,
+    /// file_path -> qname_lowercase -> Vec<usize>: nested index for same-file qname lookup.
+    pub(in crate::resolver) by_file_qname: HashMap<String, HashMap<String, Vec<usize>>>,
     /// Lightweight type catalog for method dispatch resolution.
     pub(in crate::resolver) type_catalog: Option<TypeCatalog>,
     /// LRU cache for `resolve_name` results to avoid redundant resolution.
-    pub(in crate::resolver) resolve_cache: Mutex<LruCache<ResolveKey, Option<ResolveResult>>>,
+    pub(in crate::resolver) resolve_cache: Mutex<LruCache<u64, Option<ResolveResult>>>,
 }
 
 impl SymbolCatalog {
@@ -140,16 +140,20 @@ impl SymbolCatalog {
                 .or_default()
                 .push(idx);
 
-            // by_file_name (composite: file_path + name_lowercase)
+            // by_file_name (nested: file_path -> name_lowercase -> indices)
             self.by_file_name
-                .entry((sym.file_path.clone(), name_lower.clone()))
+                .entry(sym.file_path.clone())
+                .or_default()
+                .entry(name_lower.clone())
                 .or_default()
                 .push(idx);
 
-            // by_file_qname (composite: file_path + qname_lowercase)
+            // by_file_qname (nested: file_path -> qname_lowercase -> indices)
             if let Some(ref ql) = qname_lower {
                 self.by_file_qname
-                    .entry((sym.file_path.clone(), ql.clone()))
+                    .entry(sym.file_path.clone())
+                    .or_default()
+                    .entry(ql.clone())
                     .or_default()
                     .push(idx);
             }
@@ -165,7 +169,9 @@ impl SymbolCatalog {
             }
             for en in export_names {
                 self.by_export
-                    .entry((sym.file_path.clone(), en))
+                    .entry(sym.file_path.clone())
+                    .or_default()
+                    .entry(en)
                     .or_default()
                     .push(idx);
             }
@@ -187,12 +193,10 @@ impl SymbolCatalog {
     /// but uses composite HashMap indices instead of O(n) linear scan.
     pub(in crate::resolver) fn same_file_named(&self, file_path: &str, name: &str) -> Vec<usize> {
         let needle = name.to_lowercase();
-        let key = (file_path.to_string(), needle.clone());
 
-        // Collect from by_file_name (name matches)
-        let name_hits = self.by_file_name.get(&key);
-        // Collect from by_file_qname (qname matches)
-        let qname_hits = self.by_file_qname.get(&key);
+        // Two-level lookup without allocating a tuple key
+        let name_hits = self.by_file_name.get(file_path).and_then(|m| m.get(&needle));
+        let qname_hits = self.by_file_qname.get(file_path).and_then(|m| m.get(&needle));
 
         match (name_hits, qname_hits) {
             (None, None) => Vec::new(),
@@ -215,14 +219,18 @@ impl SymbolCatalog {
     ///
     /// Uses composite HashMap index instead of O(n) linear scan.
     pub(in crate::resolver) fn same_file_qname(&self, file_path: &str, qname: &str) -> Vec<usize> {
-        let key = (file_path.to_string(), qname.to_lowercase());
-        self.by_file_qname.get(&key).cloned().unwrap_or_default()
+        self.by_file_qname
+            .get(file_path)
+            .and_then(|m| m.get(&qname.to_lowercase()))
+            .cloned()
+            .unwrap_or_default()
     }
 
     /// Find exported symbols by file + export name.
     pub(in crate::resolver) fn exported(&self, file_path: &str, export_name: &str) -> Vec<usize> {
         self.by_export
-            .get(&(file_path.to_string(), export_name.to_lowercase()))
+            .get(file_path)
+            .and_then(|m| m.get(&export_name.to_lowercase()))
             .cloned()
             .unwrap_or_default()
     }

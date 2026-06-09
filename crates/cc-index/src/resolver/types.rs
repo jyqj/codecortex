@@ -158,11 +158,19 @@ pub(in crate::resolver) struct CatalogEntry {
 // Resolve cache key
 // ---------------------------------------------------------------------------
 
-/// Cache key for `resolve_name` results, combining the lookup parameters.
-#[derive(Hash, Eq, PartialEq, Clone)]
-pub(in crate::resolver) struct ResolveKey {
-    pub(in crate::resolver) name: String,
-    pub(in crate::resolver) file_path: String,
-    pub(in crate::resolver) line: u32,
-    pub(in crate::resolver) container: Option<String>,
+/// Compute a u64 hash from borrowed references for resolve_name cache lookup,
+/// avoiding per-call String allocations.
+pub(in crate::resolver) fn resolve_key_hash(
+    name: &str,
+    file_path: &str,
+    line: u32,
+    container: Option<&str>,
+) -> u64 {
+    use std::hash::{Hash, Hasher};
+    let mut hasher = std::collections::hash_map::DefaultHasher::new();
+    name.hash(&mut hasher);
+    file_path.hash(&mut hasher);
+    line.hash(&mut hasher);
+    container.hash(&mut hasher);
+    hasher.finish()
 }

@@ -8,6 +8,7 @@ use cc_model::edge::SemanticRelation;
 use cc_model::{CcError, CcResult};
 use serde_json::json;
 
+use crate::graph_read_model::GraphReadModel;
 use crate::graph_types::{HierarchyNode, OverrideInfo, TypeHierarchyResult, TypeNodeInfo};
 
 /// Query the type hierarchy (ancestors, descendants, overrides) for a given type.
@@ -20,6 +21,7 @@ use crate::graph_types::{HierarchyNode, OverrideInfo, TypeHierarchyResult, TypeN
 /// 5. If none found, return an error.
 pub fn type_hierarchy(
     db: &Arc<IndexDb>,
+    grm: &GraphReadModel,
     type_name: &str,
     file_path: Option<&str>,
     symbol_uid: Option<&str>,
@@ -68,21 +70,29 @@ pub fn type_hierarchy(
 
     // Collect root type's methods so override detection can compare root vs descendants.
     if include_methods {
-        let root_method_edges =
-            db.query_semantic_edges(Some(&root_uid), None, Some("defines_method"))?;
-        let root_methods: Vec<(String, Option<String>)> = root_method_edges
-            .iter()
-            .map(|e| (e.target_symbol.clone(), e.target_symbol_uid.clone()))
+        let root_methods: Vec<(String, Option<String>)> = grm
+            .semantic_edges_from(&root_uid)
+            .into_iter()
+            .filter(|e| e.relation_kind == SemanticRelation::DefinesMethod)
+            .map(|e| {
+                let uid = if e.target_symbol_uid.is_empty() {
+                    None
+                } else {
+                    Some(e.target_symbol_uid)
+                };
+                (e.target_symbol, uid)
+            })
             .collect();
         type_methods.insert(root_uid.clone(), root_methods);
     }
 
     if direction == "ancestors" || direction == "up" || direction == "both" {
-        ancestors = bfs_ancestors(db, &root_uid, max_depth, include_methods, &mut type_methods)?;
+        ancestors =
+            bfs_ancestors(db, grm, &root_uid, max_depth, include_methods, &mut type_methods)?;
     }
     if direction == "descendants" || direction == "down" || direction == "both" {
         let (desc, impls) =
-            bfs_descendants(db, &root_uid, max_depth, include_methods, &mut type_methods)?;
+            bfs_descendants(db, grm, &root_uid, max_depth, include_methods, &mut type_methods)?;
         descendants = desc;
         implementors = impls;
     }
@@ -186,6 +196,7 @@ fn resolve_root_symbol(
 /// BFS upward: follow `inherits` / `implements` edges from source to target.
 fn bfs_ancestors(
     db: &IndexDb,
+    grm: &GraphReadModel,
     root_uid: &str,
     max_depth: usize,
     include_methods: bool,
@@ -204,16 +215,16 @@ fn bfs_ancestors(
             continue;
         }
         // Query outgoing edges from current_uid (source → target = parent)
-        let edges = db.query_semantic_edges(Some(&current_uid), None, None)?;
+        let edges = grm.semantic_edges_from(&current_uid);
         for edge in &edges {
             let rel = &edge.relation_kind;
             if *rel != SemanticRelation::Inherits && *rel != SemanticRelation::Implements {
                 continue;
             }
-            let target_uid = match &edge.target_symbol_uid {
-                Some(uid) => uid.clone(),
-                None => continue,
-            };
+            if edge.target_symbol_uid.is_empty() {
+                continue;
+            }
+            let target_uid = edge.target_symbol_uid.clone();
             if visited.contains(&target_uid) {
                 continue;
             }
@@ -222,6 +233,7 @@ fn bfs_ancestors(
             let relation_str = rel.as_str().to_string();
             let (name, kind, file_path, methods) = resolve_node_info(
                 db,
+                grm,
                 &target_uid,
                 &edge.target_symbol,
                 include_methods,
@@ -248,6 +260,7 @@ fn bfs_ancestors(
 /// Returns (descendants, implementors) split by relation kind.
 fn bfs_descendants(
     db: &IndexDb,
+    grm: &GraphReadModel,
     root_uid: &str,
     max_depth: usize,
     include_methods: bool,
@@ -266,16 +279,16 @@ fn bfs_descendants(
             continue;
         }
         // Query edges where target_symbol_uid = current (children point TO us)
-        let edges = db.query_semantic_edges(None, Some(&current_uid), None)?;
+        let edges = grm.semantic_edges_to(&current_uid);
         for edge in &edges {
             let rel = &edge.relation_kind;
             if *rel != SemanticRelation::Inherits && *rel != SemanticRelation::Implements {
                 continue;
             }
-            let source_uid = match &edge.source_symbol_uid {
-                Some(uid) => uid.clone(),
-                None => continue,
-            };
+            if edge.source_symbol_uid.is_empty() {
+                continue;
+            }
+            let source_uid = edge.source_symbol_uid.clone();
             if visited.contains(&source_uid) {
                 continue;
             }
@@ -284,6 +297,7 @@ fn bfs_descendants(
             let relation_str = rel.as_str().to_string();
             let (name, kind, file_path, methods) = resolve_node_info(
                 db,
+                grm,
                 &source_uid,
                 &edge.source_symbol,
                 include_methods,
@@ -316,6 +330,7 @@ fn bfs_descendants(
 /// Resolve name/kind/file_path for a symbol UID, and optionally collect its methods.
 fn resolve_node_info(
     db: &IndexDb,
+    grm: &GraphReadModel,
     uid: &str,
     fallback_name: &str,
     include_methods: bool,
@@ -334,11 +349,20 @@ fn resolve_node_info(
 
     let mut methods = Vec::new();
     if include_methods {
-        let method_edges = db.query_semantic_edges(Some(uid), None, Some("defines_method"))?;
+        let method_edges: Vec<_> = grm
+            .semantic_edges_from(uid)
+            .into_iter()
+            .filter(|e| e.relation_kind == SemanticRelation::DefinesMethod)
+            .collect();
         let mut method_list = Vec::new();
         for me in &method_edges {
             methods.push(me.target_symbol.clone());
-            method_list.push((me.target_symbol.clone(), me.target_symbol_uid.clone()));
+            let uid_opt = if me.target_symbol_uid.is_empty() {
+                None
+            } else {
+                Some(me.target_symbol_uid.clone())
+            };
+            method_list.push((me.target_symbol.clone(), uid_opt));
         }
         type_methods.insert(uid.to_string(), method_list);
     }
@@ -478,7 +502,7 @@ mod tests {
     ///   Interface A (uid_a)
     ///   Class B implements A (uid_b), defines method "doWork" (uid_b_dowork)
     ///   Class C extends B (uid_c), defines method "doWork" (uid_c_dowork)
-    fn setup_hierarchy() -> (TempDir, Arc<IndexDb>) {
+    fn setup_hierarchy() -> (TempDir, Arc<IndexDb>, GraphReadModel) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("hierarchy.db")).unwrap().0);
         let conn = db.read_conn().unwrap();
@@ -558,14 +582,15 @@ mod tests {
             ).unwrap();
         }
 
-        (tmp, db)
+        let grm = GraphReadModel::without_http_bridges(db.clone());
+        (tmp, db, grm)
     }
 
     #[test]
     fn hierarchy_both_directions() {
-        let (_tmp, db) = setup_hierarchy();
+        let (_tmp, db, grm) = setup_hierarchy();
 
-        let result = type_hierarchy(&db, "B", None, None, "both", 5, true).unwrap();
+        let result = type_hierarchy(&db, &grm, "B", None, None, "both", 5, true).unwrap();
         let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
 
         // type_info should be B
@@ -596,9 +621,9 @@ mod tests {
 
     #[test]
     fn hierarchy_ancestors_only() {
-        let (_tmp, db) = setup_hierarchy();
+        let (_tmp, db, grm) = setup_hierarchy();
 
-        let result = type_hierarchy(&db, "C", None, None, "ancestors", 5, false).unwrap();
+        let result = type_hierarchy(&db, &grm, "C", None, None, "ancestors", 5, false).unwrap();
         let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
 
         assert_eq!(result.type_info.name, "C");
@@ -615,9 +640,9 @@ mod tests {
 
     #[test]
     fn hierarchy_descendants_only() {
-        let (_tmp, db) = setup_hierarchy();
+        let (_tmp, db, grm) = setup_hierarchy();
 
-        let result = type_hierarchy(&db, "A", None, None, "descendants", 5, true).unwrap();
+        let result = type_hierarchy(&db, &grm, "A", None, None, "descendants", 5, true).unwrap();
         let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
 
         assert_eq!(result.type_info.name, "A");
@@ -641,9 +666,9 @@ mod tests {
 
     #[test]
     fn hierarchy_with_symbol_uid() {
-        let (_tmp, db) = setup_hierarchy();
+        let (_tmp, db, grm) = setup_hierarchy();
 
-        let result = type_hierarchy(&db, "B", None, Some("uid_b"), "both", 5, false).unwrap();
+        let result = type_hierarchy(&db, &grm, "B", None, Some("uid_b"), "both", 5, false).unwrap();
         let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
 
         assert_eq!(result.type_info.uid, "uid_b");
@@ -685,7 +710,8 @@ mod tests {
             [],
         ).unwrap();
 
-        let result = type_hierarchy(&db, "Client", None, None, "both", 5, false).unwrap();
+        let grm = GraphReadModel::without_http_bridges(db.clone());
+        let result = type_hierarchy(&db, &grm, "Client", None, None, "both", 5, false).unwrap();
 
         // Should return candidates, not a hierarchy
         assert!(result.get("candidates").is_some());
@@ -697,17 +723,18 @@ mod tests {
     fn hierarchy_empty_db_returns_error() {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("empty.db")).unwrap().0);
+        let grm = GraphReadModel::without_http_bridges(db.clone());
 
-        let result = type_hierarchy(&db, "NonExistent", None, None, "both", 5, false);
+        let result = type_hierarchy(&db, &grm, "NonExistent", None, None, "both", 5, false);
         assert!(result.is_err());
     }
 
     #[test]
     fn hierarchy_max_depth_limits_traversal() {
-        let (_tmp, db) = setup_hierarchy();
+        let (_tmp, db, grm) = setup_hierarchy();
 
         // With max_depth=1, ancestors of C should only include B (not A)
-        let result = type_hierarchy(&db, "C", None, None, "ancestors", 1, false).unwrap();
+        let result = type_hierarchy(&db, &grm, "C", None, None, "ancestors", 1, false).unwrap();
         let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
 
         assert_eq!(result.ancestors.len(), 1);
@@ -716,16 +743,16 @@ mod tests {
 
     #[test]
     fn hierarchy_include_methods_lists_method_names() {
-        let (_tmp, db) = setup_hierarchy();
+        let (_tmp, db, grm) = setup_hierarchy();
 
-        let result = type_hierarchy(&db, "B", None, None, "ancestors", 5, true).unwrap();
+        let result = type_hierarchy(&db, &grm, "B", None, None, "ancestors", 5, true).unwrap();
         let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
 
         // A has no defines_method edges, so methods should be empty
         assert!(result.ancestors[0].methods.is_empty());
 
         // Now check descendants of A — B should have "doWork"
-        let result2 = type_hierarchy(&db, "A", None, None, "descendants", 5, true).unwrap();
+        let result2 = type_hierarchy(&db, &grm, "A", None, None, "descendants", 5, true).unwrap();
         let result2: TypeHierarchyResult = serde_json::from_value(result2).unwrap();
 
         let b_node = result2

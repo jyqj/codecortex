@@ -5,6 +5,7 @@
 //! changing their external output shape.
 
 use cc_db::index_db::{IndexDb, SymbolRow};
+use cc_model::edge::SemanticRelation;
 use cc_model::{CcError, CcResult};
 use lru::LruCache;
 use std::collections::{HashMap, HashSet, VecDeque};
@@ -46,6 +47,32 @@ static ADJ_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedAdj
 
 /// Process-global bridge edge cache, keyed by `db_identity`.
 static BRIDGE_CACHE: OnceLock<BridgeCache> = OnceLock::new();
+
+// ---------------------------------------------------------------------------
+// Semantic edge cache
+// ---------------------------------------------------------------------------
+
+/// Lightweight projection of `SemanticEdgeRecord` for in-memory caching.
+#[derive(Debug, Clone)]
+pub(crate) struct SemanticEdgeLite {
+    pub source_symbol_uid: String,
+    pub target_symbol_uid: String,
+    pub source_symbol: String,
+    pub target_symbol: String,
+    pub relation_kind: SemanticRelation,
+    pub confidence: f64,
+}
+
+struct SemanticAdjPair {
+    by_source: HashMap<String, Vec<SemanticEdgeLite>>,
+    by_target: HashMap<String, Vec<SemanticEdgeLite>>,
+}
+
+type SharedSemanticAdj = Arc<Mutex<SemanticAdjPair>>;
+
+/// Process-global semantic edge cache, keyed by `db_identity`.
+static SEMANTIC_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedSemanticAdj)>>> =
+    OnceLock::new();
 
 /// Clear the process-global bridge edge cache.
 ///
@@ -98,6 +125,8 @@ pub(crate) struct GraphReadModel {
     shared_adjacency: SharedAdjacency,
     /// Pre-loaded HTTP/async bridge edges keyed by caller UID.
     http_bridges: SharedBridgeEdges,
+    /// Process-global semantic edge cache, lazily loaded on first access.
+    shared_semantic: SharedSemanticAdj,
 }
 
 impl GraphReadModel {
@@ -107,11 +136,13 @@ impl GraphReadModel {
         let generation = GraphReadGeneration::from_db(&db);
         let http_bridges = Self::cached_bridge_edges_by_caller(&db, &generation)?;
         let shared_adjacency = Self::cached_adjacency(&generation);
+        let shared_semantic = Self::cached_semantic_adjacency(&generation);
         Ok(Self {
             db,
             generation,
             shared_adjacency,
             http_bridges,
+            shared_semantic,
         })
     }
 
@@ -119,11 +150,13 @@ impl GraphReadModel {
     pub(crate) fn without_http_bridges(db: Arc<IndexDb>) -> Self {
         let generation = GraphReadGeneration::from_db(&db);
         let shared_adjacency = Self::cached_adjacency(&generation);
+        let shared_semantic = Self::cached_semantic_adjacency(&generation);
         Self {
             db,
             generation,
             shared_adjacency,
             http_bridges: Arc::new(HashMap::new()),
+            shared_semantic,
         }
     }
 
@@ -148,9 +181,79 @@ impl GraphReadModel {
         adj
     }
 
+    /// Get or create the process-global shared semantic adjacency for `gen`.
+    ///
+    /// Mirrors `cached_adjacency()`: keyed by project identity, a cache hit
+    /// requires both the same project and the same generation.
+    fn cached_semantic_adjacency(gen: &GraphReadGeneration) -> SharedSemanticAdj {
+        let cache =
+            SEMANTIC_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
+        let mut map = cache.lock().unwrap();
+        if let Some((stored_gen, adj)) = map.get(&gen.db_identity) {
+            if stored_gen == gen {
+                return adj.clone();
+            }
+        }
+        let adj: SharedSemanticAdj = Arc::new(Mutex::new(SemanticAdjPair {
+            by_source: HashMap::new(),
+            by_target: HashMap::new(),
+        }));
+        map.put(gen.db_identity, (gen.clone(), adj.clone()));
+        adj
+    }
+
     #[allow(dead_code)]
     pub(crate) fn generation(&self) -> &GraphReadGeneration {
         &self.generation
+    }
+
+    /// Lazily load all semantic edges into the shared cache on first access.
+    ///
+    /// Returns the mutex guard so callers can query `by_source` / `by_target`
+    /// without a second lock acquisition.
+    fn ensure_semantic_loaded(&self) -> std::sync::MutexGuard<'_, SemanticAdjPair> {
+        let mut guard = self.shared_semantic.lock().unwrap();
+        if guard.by_source.is_empty() && guard.by_target.is_empty() {
+            if let Ok(edges) = self.db.query_semantic_edges(None, None, None) {
+                for e in edges {
+                    let lite = SemanticEdgeLite {
+                        source_symbol_uid: e.source_symbol_uid.clone().unwrap_or_default(),
+                        target_symbol_uid: e.target_symbol_uid.clone().unwrap_or_default(),
+                        source_symbol: e.source_symbol.clone(),
+                        target_symbol: e.target_symbol.clone(),
+                        relation_kind: e.relation_kind,
+                        confidence: e.confidence,
+                    };
+                    if !lite.source_symbol_uid.is_empty() {
+                        guard
+                            .by_source
+                            .entry(lite.source_symbol_uid.clone())
+                            .or_default()
+                            .push(lite.clone());
+                    }
+                    if !lite.target_symbol_uid.is_empty() {
+                        guard
+                            .by_target
+                            .entry(lite.target_symbol_uid.clone())
+                            .or_default()
+                            .push(lite);
+                    }
+                }
+            }
+        }
+        guard
+    }
+
+    /// Get semantic edges originating from `source_uid` (e.g. for ancestor BFS).
+    pub(crate) fn semantic_edges_from(&self, source_uid: &str) -> Vec<SemanticEdgeLite> {
+        let guard = self.ensure_semantic_loaded();
+        guard.by_source.get(source_uid).cloned().unwrap_or_default()
+    }
+
+    /// Get semantic edges pointing to `target_uid` (e.g. for descendant BFS).
+    pub(crate) fn semantic_edges_to(&self, target_uid: &str) -> Vec<SemanticEdgeLite> {
+        let guard = self.ensure_semantic_loaded();
+        guard.by_target.get(target_uid).cloned().unwrap_or_default()
     }
 
     /// Build edge-labeled call adjacency from persisted call edges.

@@ -794,8 +794,10 @@ pub fn type_hierarchy(
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
+    let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
     crate::graph_type_hierarchy::type_hierarchy(
         db,
+        &grm,
         type_name,
         file_path,
         symbol_uid,

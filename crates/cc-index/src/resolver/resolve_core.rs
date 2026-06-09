@@ -336,12 +336,7 @@ impl SymbolCatalog {
             return None;
         }
 
-        let key = ResolveKey {
-            name: trimmed.to_string(),
-            file_path: file.to_string(),
-            line,
-            container: container.map(|s| s.to_string()),
-        };
+        let key = resolve_key_hash(trimmed, file, line, container);
 
         // Check cache
         if let Ok(mut cache) = self.resolve_cache.lock() {

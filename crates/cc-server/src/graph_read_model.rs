@@ -6,7 +6,9 @@
 
 use cc_db::index_db::{IndexDb, SymbolRow};
 use cc_model::{CcError, CcResult};
+use lru::LruCache;
 use std::collections::{HashMap, HashSet, VecDeque};
+use std::num::NonZeroUsize;
 use std::sync::{Arc, Mutex, OnceLock};
 
 use crate::graph_types::{
@@ -15,19 +17,32 @@ use crate::graph_types::{
 
 type BridgeEdgesByCaller = HashMap<String, Vec<EdgeLite>>;
 type SharedBridgeEdges = Arc<BridgeEdgesByCaller>;
-type BridgeCache = Mutex<HashMap<GraphReadGeneration, SharedBridgeEdges>>;
+type BridgeCache = Mutex<LruCache<usize, (GraphReadGeneration, SharedBridgeEdges)>>;
 
 /// Process-global adjacency cache shared across all `GraphReadModel` instances.
 ///
-/// Keyed by `GraphReadGeneration` so stale entries from previous index builds are
-/// evicted automatically.  The inner map is keyed by caller UID → outgoing edges.
+/// The inner map is keyed by caller UID → outgoing edges.
 type SharedAdjacency = Arc<Mutex<HashMap<String, Vec<EdgeLite>>>>;
 
-struct AdjCacheEntry {
-    adjacency: SharedAdjacency,
+/// Per-project capacity for the process-global graph caches. Aligned with the
+/// project-session LRU so a multi-project workload keeps each project's graph
+/// hot instead of thrashing a single shared slot. Override with
+/// CODECORTEX_GRAPH_CACHE_SIZE.
+fn graph_cache_capacity() -> NonZeroUsize {
+    std::env::var("CODECORTEX_GRAPH_CACHE_SIZE")
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .and_then(NonZeroUsize::new)
+        .unwrap_or(NonZeroUsize::new(16).unwrap())
 }
 
-static ADJ_CACHE: OnceLock<Mutex<HashMap<GraphReadGeneration, AdjCacheEntry>>> = OnceLock::new();
+/// Process-global adjacency cache keyed by project identity (`db_identity`).
+///
+/// Each project keeps a single slot holding its latest `GraphReadGeneration`; an
+/// incremental rebuild replaces the slot in place, while distinct projects coexist
+/// up to `graph_cache_capacity()` so multi-project workloads do not thrash.
+static ADJ_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedAdjacency)>>> =
+    OnceLock::new();
 
 /// Cache/reuse discriminator for graph read data.
 ///
@@ -99,19 +114,23 @@ impl GraphReadModel {
 
     /// Get or create the process-global shared adjacency map for `gen`.
     ///
-    /// Old generations are evicted so only one generation occupies memory at a
-    /// time (matching the `BRIDGE_CACHE` eviction strategy).
+    /// Keyed by project identity: a cache hit requires both the same project and
+    /// the same generation. A new generation for the same project (e.g. after an
+    /// incremental rebuild) replaces the project's slot with a fresh empty map so
+    /// callers never read stale edges.
     fn cached_adjacency(gen: &GraphReadGeneration) -> SharedAdjacency {
-        let cache = ADJ_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+        let cache = ADJ_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
         let mut map = cache.lock().unwrap();
-        // Evict stale generations.
-        map.retain(|k, _| k == gen);
-        map.entry(gen.clone())
-            .or_insert_with(|| AdjCacheEntry {
-                adjacency: Arc::new(Mutex::new(HashMap::new())),
-            })
-            .adjacency
-            .clone()
+        if let Some((stored_gen, adj)) = map.get(&gen.db_identity) {
+            if stored_gen == gen {
+                return adj.clone();
+            }
+        }
+        // Miss, or same project with a newer generation: install a fresh empty
+        // adjacency under the latest generation for this project's slot.
+        let adj: SharedAdjacency = Arc::new(Mutex::new(HashMap::new()));
+        map.put(gen.db_identity, (gen.clone(), adj.clone()));
+        adj
     }
 
     #[allow(dead_code)]
@@ -228,17 +247,21 @@ impl GraphReadModel {
     ) -> CcResult<SharedBridgeEdges> {
         static BRIDGE_CACHE: OnceLock<BridgeCache> = OnceLock::new();
 
-        let cache = BRIDGE_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
-        if let Ok(cache) = cache.lock() {
-            if let Some(cached) = cache.get(generation) {
-                return Ok(Arc::clone(cached));
+        let cache = BRIDGE_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
+        // Fast path: hit only when both the project and its generation match.
+        if let Ok(mut cache) = cache.lock() {
+            if let Some((stored_gen, cached)) = cache.get(&generation.db_identity) {
+                if stored_gen == generation {
+                    return Ok(Arc::clone(cached));
+                }
             }
         }
 
+        // Miss, or same project with a newer generation: build outside the lock,
+        // then replace this project's slot with the latest generation's edges.
         let bridges = Arc::new(Self::bridge_edges_by_caller(db)?);
         if let Ok(mut cache) = cache.lock() {
-            cache.retain(|k, _| k == generation);
-            cache.insert(generation.clone(), Arc::clone(&bridges));
+            cache.put(generation.db_identity, (generation.clone(), Arc::clone(&bridges)));
         }
         Ok(bridges)
     }

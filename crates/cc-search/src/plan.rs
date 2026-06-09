@@ -489,6 +489,24 @@ impl CandidateChunk {
             text: read_chunk_text_with_encoding(row, 8, 9)?,
         })
     }
+
+    /// Build from a DB row but use a pre-cached text instead of decompressing.
+    pub(crate) fn from_row_with_text(
+        row: &rusqlite::Row<'_>,
+        cached_text: String,
+    ) -> rusqlite::Result<Self> {
+        Ok(Self {
+            chunk_id: row.get::<_, String>(0)?,
+            file_path: row.get::<_, String>(1)?,
+            language_name: row.get::<_, String>(2)?,
+            start_line: row.get::<_, u32>(3)?,
+            end_line: row.get::<_, u32>(4)?,
+            breadcrumb: row.get::<_, String>(5)?,
+            symbol_name: row.get::<_, Option<String>>(6)?,
+            symbol_kind: row.get::<_, Option<String>>(7)?,
+            text: cached_text,
+        })
+    }
 }
 
 fn normalize_request_from_dsl(request: &mut SearchRequest, dsl: &crate::dsl::ParsedQuery) {

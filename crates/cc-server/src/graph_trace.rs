@@ -98,7 +98,7 @@ pub fn trace_path_rich(
     let to_uid = resolve_symbol_uid(db, to, to_uid_override, "to", &mut disambiguation)?;
 
     // 2. Lazy BFS: load edges on demand instead of pre-loading the full graph.
-    let mut read_model = GraphReadModel::new(Arc::clone(db))?;
+    let read_model = GraphReadModel::new(Arc::clone(db))?;
     let labeled_paths = read_model.paths_between(&from_uid, &to_uid, max_depth, 20);
 
     // 3. Collect all unique UIDs across all paths.
@@ -120,7 +120,7 @@ pub fn trace_path_rich(
         &uid_vec,
         &sym_map,
         db,
-        &mut read_model,
+        &read_model,
         &uid_names,
         project_root,
         include_snippets,
@@ -209,7 +209,7 @@ fn build_trace_nodes(
     uid_vec: &[String],
     sym_map: &HashMap<String, cc_db::index_db::SymbolRow>,
     db: &Arc<IndexDb>,
-    read_model: &mut GraphReadModel,
+    read_model: &GraphReadModel,
     uid_names: &HashMap<String, String>,
     project_root: Option<&Path>,
     include_snippets: bool,
@@ -267,7 +267,7 @@ fn build_trace_nodes(
 /// the lookup per node here previously re-scanned the whole symbols table each time.
 fn outgoing_call_names_lazy(
     uid_names: &HashMap<String, String>,
-    read_model: &mut GraphReadModel,
+    read_model: &GraphReadModel,
     uid: &str,
 ) -> Option<Vec<String>> {
     let neighbors = read_model.neighbors(uid);

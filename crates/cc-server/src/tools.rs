@@ -79,6 +79,19 @@ fn is_valid_branch_name(s: &str) -> bool {
         .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'.' || b == b'/' || b == b'-')
 }
 
+fn validate_enum(value: &str, valid: &[&str], param_name: &str) -> Result<(), String> {
+    if valid.contains(&value) {
+        Ok(())
+    } else {
+        Err(format!(
+            "invalid {}: '{}' (valid: {})",
+            param_name,
+            value,
+            valid.join(", ")
+        ))
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Shared result type
 // ---------------------------------------------------------------------------
@@ -160,8 +173,13 @@ pub struct StatusParams {
 }
 
 impl StatusParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        validate_enum(
+            &self.aspect,
+            &["index", "capabilities", "schema", "all"],
+            "aspect",
+        )
     }
 }
 
@@ -192,8 +210,9 @@ pub struct IndexParams {
 }
 
 impl IndexParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.path, MAX_PATH_LEN);
+        Ok(())
     }
 }
 
@@ -268,7 +287,7 @@ pub struct SearchParams {
 }
 
 impl SearchParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         self.top_k = self.top_k.clamp(1, MAX_TOP_K);
         clamp_opt_str(&mut self.intent, MAX_QUERY_LEN);
@@ -282,6 +301,7 @@ impl SearchParams {
         if let Some(ref mut limit) = self.file_preselect_limit {
             *limit = (*limit).clamp(1, 10_000);
         }
+        validate_enum(&self.mode, &["hybrid", "symbol"], "mode")
     }
 }
 
@@ -335,13 +355,14 @@ pub struct ContextParams {
 }
 
 impl ContextParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.task, MAX_QUERY_LEN);
         if let Some(ref mut n) = self.max_symbols {
             *n = (*n).clamp(1, MAX_SYMBOLS);
         }
         clamp_opt_str(&mut self.intent, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        Ok(())
     }
 }
 
@@ -382,9 +403,14 @@ pub struct NodeParams {
 }
 
 impl NodeParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.symbol, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        validate_enum(
+            &self.include,
+            &["trail", "source", "outline", "summary"],
+            "include",
+        )
     }
 }
 
@@ -466,7 +492,7 @@ pub struct ExploreParams {
 }
 
 impl ExploreParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         self.symbols.truncate(MAX_SYMBOL_ITEMS);
         for s in &mut self.symbols {
             clamp_str(s, MAX_QUERY_LEN);
@@ -489,6 +515,7 @@ impl ExploreParams {
         }
         clamp_opt_str(&mut self.file_path, MAX_PATH_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        validate_enum(&self.mode, &["symbols", "flow"], "mode")
     }
 }
 
@@ -567,7 +594,7 @@ pub struct TraceParams {
 }
 
 impl TraceParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.from, MAX_QUERY_LEN);
         clamp_str(&mut self.to, MAX_QUERY_LEN);
         self.max_depth = self.max_depth.clamp(1, MAX_DEPTH);
@@ -577,6 +604,10 @@ impl TraceParams {
             *n = (*n).clamp(1, MAX_SNIPPET_LINES);
         }
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        if let Some(ref mode) = self.source_mode {
+            validate_enum(mode, &["none", "snippet", "body", "outline"], "source_mode")?;
+        }
+        Ok(())
     }
 }
 
@@ -633,10 +664,20 @@ pub struct RelationsParams {
 }
 
 impl RelationsParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.symbol, MAX_QUERY_LEN);
         self.limit = self.limit.clamp(1, MAX_LIMIT);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        validate_enum(
+            &self.kind,
+            &["callers", "callees", "both", "refs", "hierarchy"],
+            "kind",
+        )?;
+        validate_enum(
+            &self.direction,
+            &["up", "down", "both", "ancestors", "descendants"],
+            "direction",
+        )
     }
 }
 
@@ -702,7 +743,7 @@ pub struct ImpactParams {
 }
 
 impl ImpactParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         self.files.truncate(MAX_FILE_ITEMS);
         for f in &mut self.files {
             clamp_str(f, MAX_PATH_LEN);
@@ -719,6 +760,11 @@ impl ImpactParams {
             *t = t.clamp(0.0, 1.0);
         }
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        validate_enum(
+            &self.scope,
+            &["changes", "tests", "dead_code", "circular", "dependents"],
+            "scope",
+        )
     }
 }
 
@@ -772,10 +818,25 @@ pub struct ArchitectureParams {
 }
 
 impl ArchitectureParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_opt_str(&mut self.filter, MAX_QUERY_LEN);
         self.limit = self.limit.clamp(1, MAX_LIMIT);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        validate_enum(
+            &self.aspect,
+            &[
+                "overview",
+                "communities",
+                "frameworks",
+                "routes",
+                "services",
+                "async",
+                "boundaries",
+                "env",
+                "unresolved",
+            ],
+            "aspect",
+        )
     }
 }
 
@@ -828,10 +889,11 @@ pub struct FilesParams {
 }
 
 impl FilesParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_opt_str(&mut self.path, MAX_PATH_LEN);
         self.context_lines = self.context_lines.min(MAX_CONTEXT_LINES);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        Ok(())
     }
 }
 
@@ -865,9 +927,10 @@ pub struct GraphQueryParams {
 }
 
 impl GraphQueryParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        Ok(())
     }
 }
 
@@ -890,9 +953,10 @@ pub struct IngestTracesParams {
 }
 
 impl IngestTracesParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         self.traces.truncate(MAX_TRACE_ITEMS);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        Ok(())
     }
 }
 
@@ -934,12 +998,13 @@ pub struct AdrParams {
 }
 
 impl AdrParams {
-    pub fn sanitize(&mut self) {
+    pub fn sanitize(&mut self) -> Result<(), String> {
         clamp_opt_str(&mut self.adr_id, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.title, MAX_ADR_TEXT_LEN);
         clamp_opt_str(&mut self.context, MAX_ADR_TEXT_LEN);
         clamp_opt_str(&mut self.decision, MAX_ADR_TEXT_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
+        Ok(())
     }
 }
 
@@ -964,7 +1029,7 @@ mod tests {
             ..Default::default()
         };
         params.query.push('试');
-        params.sanitize();
+        params.sanitize().unwrap();
         assert!(params.query.len() <= MAX_QUERY_LEN);
         assert!(params.query.is_char_boundary(params.query.len()));
     }
@@ -982,7 +1047,7 @@ mod tests {
             exact: Some(true),
             ..Default::default()
         };
-        params.sanitize();
+        params.sanitize().unwrap();
         assert!(params.max_paths.unwrap() <= MAX_LIMIT);
         assert!(params.max_candidates.unwrap() <= MAX_LIMIT);
         assert!(params.max_callers.unwrap() <= MAX_LIMIT);
@@ -1000,7 +1065,7 @@ mod tests {
             max_snippet_lines: Some(usize::MAX),
             ..Default::default()
         };
-        params.sanitize();
+        params.sanitize().unwrap();
         assert!(params.max_snippet_lines.unwrap() <= MAX_SNIPPET_LINES);
     }
 
@@ -1011,7 +1076,7 @@ mod tests {
             path_prefix: Some("p".repeat(MAX_PATH_LEN + 50)),
             ..Default::default()
         };
-        params.sanitize();
+        params.sanitize().unwrap();
         assert!(params.path_prefix.as_ref().unwrap().len() <= MAX_PATH_LEN);
     }
 
@@ -1021,14 +1086,14 @@ mod tests {
             confidence_threshold: Some(5.0),
             ..Default::default()
         };
-        high.sanitize();
+        high.sanitize().unwrap();
         assert_eq!(high.confidence_threshold, Some(1.0));
 
         let mut low = ImpactParams {
             confidence_threshold: Some(-1.0),
             ..Default::default()
         };
-        low.sanitize();
+        low.sanitize().unwrap();
         assert_eq!(low.confidence_threshold, Some(0.0));
     }
 }

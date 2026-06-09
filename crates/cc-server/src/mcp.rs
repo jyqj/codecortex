@@ -79,7 +79,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::StatusParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -100,7 +101,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::IndexParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let path = normalize_project_path(&p.path);
         let index = self
             .project_session
@@ -122,7 +124,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::SearchParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -188,7 +191,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::ContextParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -216,7 +220,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::NodeParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -238,7 +243,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::ExploreParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -294,7 +300,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::TraceParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -330,7 +337,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::RelationsParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -354,7 +362,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::ImpactParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -388,7 +397,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::ArchitectureParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -414,7 +424,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::FilesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -444,7 +455,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::GraphQueryParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -463,7 +475,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::IngestTracesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -484,7 +497,8 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<cc_server::tools::AdrParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize();
+        p.sanitize()
+            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;

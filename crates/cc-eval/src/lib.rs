@@ -627,6 +627,15 @@ value = "formatName"
         assert_eq!(report.total_cases, cases.len());
         assert!(!report.per_tool.is_empty(), "should have per-tool results");
 
+        // Performance regression gate: all tools must stay under 500ms p95
+        for tb in &report.per_tool {
+            assert!(
+                tb.p95_ms < 500,
+                "perf regression: tool '{}' p95 = {}ms (limit 500ms)",
+                tb.tool, tb.p95_ms,
+            );
+        }
+
         // Write to docs/benchmarks/latest.md only when explicitly requested
         // via CODECORTEX_WRITE_BENCHMARK=1 to avoid side effects in CI.
         if std::env::var("CODECORTEX_WRITE_BENCHMARK").is_ok() {

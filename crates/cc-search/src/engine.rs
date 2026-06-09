@@ -4,6 +4,7 @@
 
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
+use std::num::NonZeroUsize;
 use std::sync::{Arc, Mutex};
 
 use lru::LruCache;
@@ -21,6 +22,13 @@ use crate::rrf::rrf_accumulate;
 /// LRU cache capacity for search results.
 const RESULT_CACHE_CAPACITY: usize = 32;
 
+/// LRU cache capacity for decompressed chunk text.
+///
+/// Eliminates double-decompression: `grep_search` scans all in-scope chunks
+/// (decompressing each), and matching chunks are fetched again in the
+/// batch-fetch step.  Caching the text avoids the second `zstd::decode_all`.
+const CHUNK_TEXT_CACHE_CAPACITY: usize = 512;
+
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
     pub(crate) config: SearchConfig,
@@ -28,6 +36,8 @@ pub struct SearchEngine {
     cache_generation: u64,
     /// LRU result cache keyed by `(cache_generation, query_hash)`.
     result_cache: Mutex<LruCache<(u64, u64), Vec<SearchHit>>>,
+    /// LRU cache of decompressed chunk text keyed by `chunk_id`.
+    chunk_text_cache: Mutex<LruCache<String, Arc<str>>>,
 }
 
 impl SearchEngine {
@@ -37,7 +47,10 @@ impl SearchEngine {
             config: config.search.clone(),
             cache_generation: 0,
             result_cache: Mutex::new(LruCache::new(
-                std::num::NonZeroUsize::new(RESULT_CACHE_CAPACITY).unwrap(),
+                NonZeroUsize::new(RESULT_CACHE_CAPACITY).unwrap(),
+            )),
+            chunk_text_cache: Mutex::new(LruCache::new(
+                NonZeroUsize::new(CHUNK_TEXT_CACHE_CAPACITY).unwrap(),
             )),
         }
     }
@@ -45,6 +58,9 @@ impl SearchEngine {
     pub fn invalidate_cache(&mut self, generation: u64) {
         self.cache_generation = generation;
         if let Ok(mut cache) = self.result_cache.lock() {
+            cache.clear();
+        }
+        if let Ok(mut cache) = self.chunk_text_cache.lock() {
             cache.clear();
         }
     }
@@ -146,7 +162,25 @@ impl SearchEngine {
         let lane_ranks = plan.lane_ranks(&lexical_hits, &grep_hits);
 
         // ── Batch-fetch all candidate chunks in one query ─────
+        //
+        // When grep was enabled, the chunk text cache already holds
+        // decompressed text for many (often all) candidates.  We
+        // reuse those cached values to avoid a second zstd decode.
         let mut chunk_map: HashMap<String, CandidateChunk> = {
+            // Snapshot cached texts for the candidate set so we only hold
+            // the mutex briefly.
+            let cached_texts: HashMap<String, Arc<str>> = {
+                let mut snapshot = HashMap::new();
+                if let Ok(mut cache) = self.chunk_text_cache.lock() {
+                    for (cid, _) in &candidates {
+                        if let Some(text) = cache.get(cid) {
+                            snapshot.insert(cid.clone(), Arc::clone(text));
+                        }
+                    }
+                }
+                snapshot
+            };
+
             let placeholders = (1..=candidates.len())
                 .map(|i| format!("?{}", i))
                 .collect::<Vec<_>>()
@@ -164,11 +198,23 @@ impl SearchEngine {
                 .map_err(|e| CcError::Database(e.to_string()))?;
             let rows = stmt
                 .query_map(rusqlite::params_from_iter(chunk_ids_refs.iter()), |row| {
-                    CandidateChunk::from_row(row)
+                    let chunk_id: String = row.get(0)?;
+                    if let Some(text) = cached_texts.get(&chunk_id) {
+                        CandidateChunk::from_row_with_text(row, text.to_string())
+                    } else {
+                        CandidateChunk::from_row(row)
+                    }
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
             let mut map = HashMap::with_capacity(candidates.len());
             for data in rows.flatten() {
+                // Also populate cache for chunks that weren't cached yet,
+                // benefiting subsequent searches against the same codebase.
+                if !cached_texts.contains_key(&data.chunk_id) {
+                    if let Ok(mut cache) = self.chunk_text_cache.lock() {
+                        cache.put(data.chunk_id.clone(), Arc::from(data.text.as_str()));
+                    }
+                }
                 map.insert(data.chunk_id.clone(), data);
             }
             map
@@ -281,6 +327,13 @@ impl SearchEngine {
             if !plan.passes_filters(&file_path, language) {
                 continue;
             }
+
+            // Cache the decompressed text so batch-fetch can reuse it.
+            let text_arc: Arc<str> = Arc::from(text.as_str());
+            if let Ok(mut cache) = self.chunk_text_cache.lock() {
+                cache.put(cid.clone(), Arc::clone(&text_arc));
+            }
+
             if re.is_match(&text) {
                 matches.push(cid);
                 if matches.len() >= limit {

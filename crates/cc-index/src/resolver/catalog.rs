@@ -21,6 +21,10 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) by_qname: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_file: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_export: HashMap<(String, String), Vec<usize>>,
+    /// (file_path, name_lowercase) -> Vec<usize>: composite index for same-file name lookup.
+    pub(in crate::resolver) by_file_name: HashMap<(String, String), Vec<usize>>,
+    /// (file_path, qname_lowercase) -> Vec<usize>: composite index for same-file qname lookup.
+    pub(in crate::resolver) by_file_qname: HashMap<(String, String), Vec<usize>>,
     /// Lightweight type catalog for method dispatch resolution.
     pub(in crate::resolver) type_catalog: Option<TypeCatalog>,
     /// LRU cache for `resolve_name` results to avoid redundant resolution.
@@ -40,6 +44,8 @@ impl SymbolCatalog {
             by_qname: HashMap::new(),
             by_file: HashMap::new(),
             by_export: HashMap::new(),
+            by_file_name: HashMap::new(),
+            by_file_qname: HashMap::new(),
             type_catalog: None,
             resolve_cache: Mutex::new(LruCache::new(
                 NonZeroUsize::new(cache_size).unwrap_or(NonZeroUsize::new(8192).unwrap()),
@@ -95,6 +101,8 @@ impl SymbolCatalog {
     pub fn add_symbols(&mut self, symbols: &[SymbolRecord]) {
         for sym in symbols {
             let idx = self.entries.len();
+            let name_lower = sym.name.to_lowercase();
+            let qname_lower = sym.qname.as_ref().map(|q| q.to_lowercase());
             let entry = CatalogEntry {
                 symbol_id: sym.symbol_id.clone(),
                 symbol_uid: sym.symbol_uid.clone(),
@@ -112,7 +120,7 @@ impl SymbolCatalog {
 
             // by_name (lowercase)
             self.by_name
-                .entry(sym.name.to_lowercase())
+                .entry(name_lower.clone())
                 .or_default()
                 .push(idx);
 
@@ -122,11 +130,8 @@ impl SymbolCatalog {
             }
 
             // by_qname (lowercase)
-            if let Some(ref qname) = sym.qname {
-                self.by_qname
-                    .entry(qname.to_lowercase())
-                    .or_default()
-                    .push(idx);
+            if let Some(ref ql) = qname_lower {
+                self.by_qname.entry(ql.clone()).or_default().push(idx);
             }
 
             // by_file
@@ -135,9 +140,23 @@ impl SymbolCatalog {
                 .or_default()
                 .push(idx);
 
+            // by_file_name (composite: file_path + name_lowercase)
+            self.by_file_name
+                .entry((sym.file_path.clone(), name_lower.clone()))
+                .or_default()
+                .push(idx);
+
+            // by_file_qname (composite: file_path + qname_lowercase)
+            if let Some(ref ql) = qname_lower {
+                self.by_file_qname
+                    .entry((sym.file_path.clone(), ql.clone()))
+                    .or_default()
+                    .push(idx);
+            }
+
             // by_export: export_name, name, and "default" for default exports
             let mut export_names: HashSet<String> = HashSet::new();
-            export_names.insert(sym.name.to_lowercase());
+            export_names.insert(name_lower);
             if let Some(ref en) = sym.export_name {
                 export_names.insert(en.to_lowercase());
             }
@@ -163,46 +182,41 @@ impl SymbolCatalog {
     }
 
     /// Find entries in the same file matching a name (case-insensitive).
+    ///
+    /// Matches against both `name` and `qname` (same semantics as before),
+    /// but uses composite HashMap indices instead of O(n) linear scan.
     pub(in crate::resolver) fn same_file_named(&self, file_path: &str, name: &str) -> Vec<usize> {
         let needle = name.to_lowercase();
-        self.by_file
-            .get(file_path)
-            .map(|indices| {
-                indices
-                    .iter()
-                    .copied()
-                    .filter(|&i| {
-                        let e = &self.entries[i];
-                        e.name.to_lowercase() == needle
-                            || e.qname
-                                .as_ref()
-                                .map(|q| q.to_lowercase() == needle)
-                                .unwrap_or(false)
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+        let key = (file_path.to_string(), needle.clone());
+
+        // Collect from by_file_name (name matches)
+        let name_hits = self.by_file_name.get(&key);
+        // Collect from by_file_qname (qname matches)
+        let qname_hits = self.by_file_qname.get(&key);
+
+        match (name_hits, qname_hits) {
+            (None, None) => Vec::new(),
+            (Some(v), None) => v.clone(),
+            (None, Some(v)) => v.clone(),
+            (Some(a), Some(b)) => {
+                // Merge and deduplicate; both vecs are typically small.
+                let mut merged = a.clone();
+                for &idx in b {
+                    if !merged.contains(&idx) {
+                        merged.push(idx);
+                    }
+                }
+                merged
+            }
+        }
     }
 
     /// Find entries in the same file matching a qname (case-insensitive).
+    ///
+    /// Uses composite HashMap index instead of O(n) linear scan.
     pub(in crate::resolver) fn same_file_qname(&self, file_path: &str, qname: &str) -> Vec<usize> {
-        let needle = qname.to_lowercase();
-        self.by_file
-            .get(file_path)
-            .map(|indices| {
-                indices
-                    .iter()
-                    .copied()
-                    .filter(|&i| {
-                        self.entries[i]
-                            .qname
-                            .as_ref()
-                            .map(|q| q.to_lowercase() == needle)
-                            .unwrap_or(false)
-                    })
-                    .collect()
-            })
-            .unwrap_or_default()
+        let key = (file_path.to_string(), qname.to_lowercase());
+        self.by_file_qname.get(&key).cloned().unwrap_or_default()
     }
 
     /// Find exported symbols by file + export name.

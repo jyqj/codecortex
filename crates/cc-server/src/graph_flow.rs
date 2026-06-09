@@ -113,7 +113,7 @@ pub fn explore_flow(
     }
 
     // 3. Build shared lazy graph read model once.
-    let mut read_model = GraphReadModel::new(Arc::clone(db))?;
+    let read_model = GraphReadModel::new(Arc::clone(db))?;
 
     // 4. Pairwise path finding.
     let uid_names = db.symbol_names_by_uid()?;

@@ -17,6 +17,18 @@ type BridgeEdgesByCaller = HashMap<String, Vec<EdgeLite>>;
 type SharedBridgeEdges = Arc<BridgeEdgesByCaller>;
 type BridgeCache = Mutex<HashMap<GraphReadGeneration, SharedBridgeEdges>>;
 
+/// Process-global adjacency cache shared across all `GraphReadModel` instances.
+///
+/// Keyed by `GraphReadGeneration` so stale entries from previous index builds are
+/// evicted automatically.  The inner map is keyed by caller UID → outgoing edges.
+type SharedAdjacency = Arc<Mutex<HashMap<String, Vec<EdgeLite>>>>;
+
+struct AdjCacheEntry {
+    adjacency: SharedAdjacency,
+}
+
+static ADJ_CACHE: OnceLock<Mutex<HashMap<GraphReadGeneration, AdjCacheEntry>>> = OnceLock::new();
+
 /// Cache/reuse discriminator for graph read data.
 ///
 /// The current schema does not expose a monotonic graph generation, so this key
@@ -47,12 +59,13 @@ pub(crate) struct GraphSymbolLite {
     pub community_id: Option<u32>,
 }
 
-/// Read-only graph view with per-instance adjacency caches.
+/// Read-only graph view with process-global adjacency caches.
 pub(crate) struct GraphReadModel {
     db: Arc<IndexDb>,
     generation: GraphReadGeneration,
-    /// Cached outgoing call edges keyed by caller UID.
-    outgoing_cache: HashMap<String, Vec<EdgeLite>>,
+    /// Process-global adjacency cache shared across all instances of the same
+    /// generation.  Populated lazily by `neighbors()`.
+    shared_adjacency: SharedAdjacency,
     /// Pre-loaded HTTP/async bridge edges keyed by caller UID.
     http_bridges: SharedBridgeEdges,
 }
@@ -63,10 +76,11 @@ impl GraphReadModel {
     pub(crate) fn new(db: Arc<IndexDb>) -> CcResult<Self> {
         let generation = GraphReadGeneration::from_db(&db);
         let http_bridges = Self::cached_bridge_edges_by_caller(&db, &generation)?;
+        let shared_adjacency = Self::cached_adjacency(&generation);
         Ok(Self {
             db,
             generation,
-            outgoing_cache: HashMap::new(),
+            shared_adjacency,
             http_bridges,
         })
     }
@@ -74,12 +88,30 @@ impl GraphReadModel {
     /// Build a read model for operations that do not need HTTP bridge edges.
     pub(crate) fn without_http_bridges(db: Arc<IndexDb>) -> Self {
         let generation = GraphReadGeneration::from_db(&db);
+        let shared_adjacency = Self::cached_adjacency(&generation);
         Self {
             db,
             generation,
-            outgoing_cache: HashMap::new(),
+            shared_adjacency,
             http_bridges: Arc::new(HashMap::new()),
         }
+    }
+
+    /// Get or create the process-global shared adjacency map for `gen`.
+    ///
+    /// Old generations are evicted so only one generation occupies memory at a
+    /// time (matching the `BRIDGE_CACHE` eviction strategy).
+    fn cached_adjacency(gen: &GraphReadGeneration) -> SharedAdjacency {
+        let cache = ADJ_CACHE.get_or_init(|| Mutex::new(HashMap::new()));
+        let mut map = cache.lock().unwrap();
+        // Evict stale generations.
+        map.retain(|k, _| k == gen);
+        map.entry(gen.clone())
+            .or_insert_with(|| AdjCacheEntry {
+                adjacency: Arc::new(Mutex::new(HashMap::new())),
+            })
+            .adjacency
+            .clone()
     }
 
     #[allow(dead_code)]
@@ -205,35 +237,46 @@ impl GraphReadModel {
 
         let bridges = Arc::new(Self::bridge_edges_by_caller(db)?);
         if let Ok(mut cache) = cache.lock() {
+            cache.retain(|k, _| k == generation);
             cache.insert(generation.clone(), Arc::clone(&bridges));
         }
         Ok(bridges)
     }
 
-    /// Return outgoing edges for a caller UID, backed by an on-demand cache.
-    pub(crate) fn neighbors(&mut self, uid: &str) -> &[EdgeLite] {
-        if !self.outgoing_cache.contains_key(uid) {
-            let mut edges = self.db.call_edges_from_uid_lite(uid).unwrap_or_default();
-            if let Some(bridges) = self.http_bridges.get(uid) {
-                edges.extend(bridges.iter().cloned());
+    /// Return outgoing edges for a caller UID, backed by a process-global cache.
+    ///
+    /// The adjacency map is shared across all `GraphReadModel` instances of the
+    /// same generation, so edges queried in one tool call are reused by later
+    /// calls without hitting SQLite again.
+    pub(crate) fn neighbors(&self, uid: &str) -> Vec<EdgeLite> {
+        // Fast path: check if the UID is already cached.
+        {
+            let adj = self.shared_adjacency.lock().unwrap();
+            if let Some(edges) = adj.get(uid) {
+                return edges.clone();
             }
-            self.outgoing_cache.insert(uid.to_string(), edges);
         }
-        self.outgoing_cache
-            .get(uid)
-            .map(|edges| edges.as_slice())
-            .unwrap_or(&[])
+        // Slow path: query DB *without* holding the adjacency lock.
+        let mut edges = self.db.call_edges_from_uid_lite(uid).unwrap_or_default();
+        if let Some(bridges) = self.http_bridges.get(uid) {
+            edges.extend(bridges.iter().cloned());
+        }
+        // Insert and return.
+        let mut adj = self.shared_adjacency.lock().unwrap();
+        // Another thread may have inserted between our read and write; use the
+        // existing entry if present so callers see a consistent snapshot.
+        adj.entry(uid.to_string()).or_insert(edges).clone()
     }
 
     pub(crate) fn paths_between(
-        &mut self,
+        &self,
         from_uid: &str,
         to_uid: &str,
         max_depth: usize,
         max_paths: usize,
     ) -> Vec<LabeledPath> {
         bfs_paths_labeled_with(from_uid, to_uid, max_depth, max_paths, |uid| {
-            self.neighbors(uid).to_vec()
+            self.neighbors(uid)
         })
     }
 

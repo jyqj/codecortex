@@ -77,10 +77,10 @@ pub fn type_hierarchy(
         type_methods.insert(root_uid.clone(), root_methods);
     }
 
-    if direction == "ancestors" || direction == "both" {
+    if direction == "ancestors" || direction == "up" || direction == "both" {
         ancestors = bfs_ancestors(db, &root_uid, max_depth, include_methods, &mut type_methods)?;
     }
-    if direction == "descendants" || direction == "both" {
+    if direction == "descendants" || direction == "down" || direction == "both" {
         let (desc, impls) =
             bfs_descendants(db, &root_uid, max_depth, include_methods, &mut type_methods)?;
         descendants = desc;

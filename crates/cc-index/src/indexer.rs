@@ -102,9 +102,6 @@ pub(crate) struct ParseResult {
     pub(crate) parse_errors: Vec<String>,
     pub(crate) files_to_parse: usize,
     pub(crate) used_parallel: bool,
-    /// rel_path -> source content read during parsing. Reused by Phase 3.7
-    /// framework enrichment to avoid re-reading the same files from disk.
-    pub(crate) source_cache: HashMap<String, String>,
 }
 
 /// Intermediate result for Phase 4 (resolve).
@@ -387,7 +384,6 @@ impl Indexer {
         let used_parallel = files_to_parse >= MIN_FILES_FOR_PARALLEL;
 
         let mut write_units: Vec<FileWriteUnit> = Vec::with_capacity(files_to_parse);
-        let mut source_cache: HashMap<String, String> = HashMap::with_capacity(files_to_parse);
 
         if used_parallel {
             // Build a controlled thread pool capped by max_concurrent_parse config.
@@ -415,8 +411,7 @@ impl Indexer {
 
                 for result in batch_results {
                     match result {
-                        Ok((unit, source)) => {
-                            source_cache.insert(unit.rel_path.clone(), source);
+                        Ok((unit, _source)) => {
                             write_units.push(unit);
                         }
                         Err((file, error)) => {
@@ -440,8 +435,7 @@ impl Indexer {
             // Small file count: sequential processing.
             for pf in &to_parse {
                 match parse_one(pf) {
-                    Ok((unit, source)) => {
-                        source_cache.insert(unit.rel_path.clone(), source);
+                    Ok((unit, _source)) => {
                         write_units.push(unit);
                     }
                     Err((file, error)) => {
@@ -457,7 +451,6 @@ impl Indexer {
             parse_errors,
             files_to_parse,
             used_parallel,
-            source_cache,
         })
     }
 
@@ -563,7 +556,6 @@ impl Indexer {
         &self,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
-        source_cache: &HashMap<String, String>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
         // Phase 3.7: Framework resolver enrichment (before resolution)
         let fw_context = {
@@ -625,28 +617,23 @@ impl Indexer {
                         continue;
                     }
 
-                    // Reuse the source already read during Phase 3 parsing to
-                    // avoid a redundant disk read. Only files not present in the
-                    // cache (e.g. dirty-reloaded files sourced from the DB) fall
-                    // back to reading from disk.
-                    let cached = source_cache.get(&unit.rel_path);
-                    let owned_fallback;
-                    let source: &str = match cached {
-                        Some(s) => s.as_str(),
-                        None => {
-                            let full_path = project_path.join(&unit.rel_path);
-                            match std::fs::read_to_string(&full_path) {
-                                Ok(s) => {
-                                    owned_fallback = s;
-                                    owned_fallback.as_str()
-                                }
-                                Err(_) => continue,
-                            }
-                        }
+                    // Read source on demand only for framework-relevant files.
+                    // The file was just read during Phase 3 parsing, so the OS
+                    // page cache is still warm and this re-read is cheap.
+                    let full_path = project_path.join(&unit.rel_path);
+                    let source = match std::fs::read_to_string(&full_path) {
+                        Ok(s) => s,
+                        Err(_) => continue,
                     };
 
                     for resolver in &applicable {
-                        resolver.enrich_file(&unit.rel_path, source, lang, &mut unit.outcome, &ctx);
+                        resolver.enrich_file(
+                            &unit.rel_path,
+                            &source,
+                            lang,
+                            &mut unit.outcome,
+                            &ctx,
+                        );
                     }
                 }
             }

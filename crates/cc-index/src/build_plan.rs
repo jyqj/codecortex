@@ -93,7 +93,6 @@ impl IndexBuildPlan {
         let parse_result = indexer.phase_parse(project_path, to_parse)?;
         let ParsedBuildState {
             mut write_units,
-            source_cache,
             parse_report,
         } = ParsedBuildState::from(parse_result);
 
@@ -104,10 +103,7 @@ impl IndexBuildPlan {
         // participate in project context, and before resolution so resolvers
         // can bind framework-specific edges.
         let fw_context =
-            indexer.phase_framework_enrichment(project_path, &mut write_units, &source_cache)?;
-        // `source_cache` is only needed for enrichment; drop it here rather than
-        // carrying it into the owned `PreparedBuild`.
-        drop(source_cache);
+            indexer.phase_framework_enrichment(project_path, &mut write_units)?;
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -266,7 +262,6 @@ impl DirtyClosure {
 
 struct ParsedBuildState {
     write_units: Vec<FileWriteUnit>,
-    source_cache: HashMap<String, String>,
     parse_report: ParseReport,
 }
 
@@ -274,7 +269,6 @@ impl From<ParseResult> for ParsedBuildState {
     fn from(parse_result: ParseResult) -> Self {
         Self {
             write_units: parse_result.write_units,
-            source_cache: parse_result.source_cache,
             parse_report: ParseReport {
                 parse_errors: parse_result.parse_errors,
                 files_to_parse: parse_result.files_to_parse,

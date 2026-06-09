@@ -1216,6 +1216,54 @@ impl Indexer {
                 .hash(&mut hasher);
         }
 
+        // Dispatch sites: inputs to event-emitter / JSX / state-setter / field-
+        // observer / react-rerender / vue synthesis. They are not call edges, so
+        // a new emit/JSX tag/binding would otherwise leave the signature
+        // unchanged and the synthesis (incorrectly) skipped.
+        let site_rows = self.db.query_json(
+            "SELECT site_kind, key, file_path, line, enclosing_symbol_uid, handler_symbol_uid \
+             FROM dispatch_sites ORDER BY site_id",
+            &[],
+        )?;
+        site_rows.len().hash(&mut hasher);
+        for row in &site_rows {
+            for col in [
+                "site_kind",
+                "key",
+                "file_path",
+                "enclosing_symbol_uid",
+                "handler_symbol_uid",
+            ] {
+                row.get(col)
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .hash(&mut hasher);
+            }
+            row.get("line")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+                .hash(&mut hasher);
+        }
+
+        // Real (non-synthetic) semantic edges: interface-dispatch synthesis reads
+        // the `implements` relation. Synthetic edges (edge_id 'synth:%') are
+        // excluded — like synthetic call edges above — so synthesis writing them
+        // back never drifts the signature.
+        let sem_rows = self.db.query_json(
+            "SELECT source_symbol_uid, target_symbol_uid, relation_kind FROM semantic_edges \
+             WHERE edge_id NOT LIKE 'synth:%' ORDER BY edge_id",
+            &[],
+        )?;
+        sem_rows.len().hash(&mut hasher);
+        for row in &sem_rows {
+            for col in ["source_symbol_uid", "target_symbol_uid", "relation_kind"] {
+                row.get(col)
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .hash(&mut hasher);
+            }
+        }
+
         Ok(hasher.finish())
     }
 
@@ -1535,5 +1583,78 @@ mod export_fingerprint_contract_tests {
 
         assert_eq!(db_fp, None);
         assert_eq!(mem_fp, None);
+    }
+}
+
+#[cfg(test)]
+mod graph_signature_coverage_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    /// The postprocess skip-signature must cover every synthesis input, not just
+    /// real call edges + symbols: dispatch sites (event / JSX / state-setter /
+    /// field-observer / rerender / vue) and the real `implements` semantic edges
+    /// (interface dispatch). Synthetic semantic edges (edge_id 'synth:%') must be
+    /// excluded so synthesis writing them back does not drift the signature.
+    #[test]
+    fn graph_signature_covers_dispatch_sites_and_semantic_edges() {
+        let tmp = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("sig_cov.db")).unwrap().0);
+        let cfg = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), tmp.path(), &cfg);
+
+        let conn = db.read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');\
+             INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid) \
+                 VALUES('s1','src/x.rs','A','function',1,1,'uA');\
+             INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid) \
+                 VALUES('e1','src/x.rs','B',1,'uA','uB');",
+        )
+        .unwrap();
+
+        let sig_base = indexer.graph_signature().unwrap();
+
+        // A new dispatch site (e.g. a JSX tag) must change the signature.
+        conn.execute(
+            "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
+             VALUES('ds1','src/x.rs',3,0,'jsx_tag','Foo')",
+            [],
+        )
+        .unwrap();
+        let sig_sites = indexer.graph_signature().unwrap();
+        assert_ne!(
+            sig_base, sig_sites,
+            "a new dispatch site must change the signature, else JSX/event synthesis is wrongly skipped"
+        );
+
+        // A real `implements` semantic edge must change the signature.
+        conn.execute(
+            "INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind) \
+             VALUES('se1','src/x.rs','A','uA','I','uI','implements')",
+            [],
+        )
+        .unwrap();
+        let sig_sem = indexer.graph_signature().unwrap();
+        assert_ne!(
+            sig_sites, sig_sem,
+            "a real semantic edge must change the signature, else interface_dispatch is wrongly skipped"
+        );
+
+        // A synthetic semantic edge ('synth:%') must NOT change the signature.
+        conn.execute(
+            "INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind) \
+             VALUES('synth:jsx:1','src/x.rs','A','uA','Foo','uFoo','renders_component')",
+            [],
+        )
+        .unwrap();
+        let sig_synth = indexer.graph_signature().unwrap();
+        assert_eq!(
+            sig_sem, sig_synth,
+            "synthetic semantic edges must be excluded so synthesis output does not drift the signature"
+        );
     }
 }

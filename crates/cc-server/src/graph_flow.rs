@@ -6,9 +6,10 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::sync::Arc;
 
-use crate::graph_trace::{read_symbol_snippet, GraphNeighborhood};
+use crate::graph_read_model::GraphReadModel;
+use crate::graph_trace::read_symbol_snippet;
 use crate::graph_types::{
-    AmbiguousSymbol, DisconnectedSymbol, FlowPath, FlowResult, SymbolBrief, TraceEdge, TraceNode,
+    AmbiguousSymbol, DisconnectedSymbol, FlowPath, FlowResult, SymbolBrief, TraceNode,
     UnresolvedSymbol,
 };
 
@@ -111,8 +112,8 @@ pub fn explore_flow(
         }
     }
 
-    // 3. Build shared lazy graph neighborhood once.
-    let mut neighborhood = GraphNeighborhood::new(Arc::clone(db))?;
+    // 3. Build shared lazy graph read model once.
+    let mut read_model = GraphReadModel::new(Arc::clone(db))?;
 
     // 4. Pairwise path finding.
     let uid_names = db.symbol_names_by_uid()?;
@@ -126,14 +127,14 @@ pub fn explore_flow(
             let uid_j = &resolved[j].1;
 
             // Forward: i → j
-            let fwd = neighborhood.paths_between(uid_i, uid_j, max_depth, max_paths_per_pair);
+            let fwd = read_model.paths_between(uid_i, uid_j, max_depth, max_paths_per_pair);
             for lp in fwd {
                 path_endpoints.push((i, j));
                 all_labeled_paths.push(lp);
             }
 
             // Reverse: j → i
-            let rev = neighborhood.paths_between(uid_j, uid_i, max_depth, max_paths_per_pair);
+            let rev = read_model.paths_between(uid_j, uid_i, max_depth, max_paths_per_pair);
             for lp in rev {
                 path_endpoints.push((j, i));
                 all_labeled_paths.push(lp);
@@ -143,36 +144,17 @@ pub fn explore_flow(
 
     // 5. Collect unique nodes and edges from all paths.
     let mut all_uids = HashSet::new();
-    let mut edge_seen: HashSet<(String, String, u32)> = HashSet::new();
-    let mut flow_edges: Vec<TraceEdge> = Vec::new();
-
     for lp in &all_labeled_paths {
         for uid in &lp.node_uids {
             all_uids.insert(uid.clone());
         }
-        for el in &lp.edge_lites {
-            let key = (el.caller_uid.clone(), el.callee_uid.clone(), el.line);
-            if edge_seen.insert(key) {
-                flow_edges.push(TraceEdge {
-                    from_uid: el.caller_uid.clone(),
-                    to_uid: el.callee_uid.clone(),
-                    dispatch_kind: el.dispatch_kind.clone(),
-                    synthesized_by: el.synthesized_by.clone(),
-                    synthesis_key: el.synthesis_key.clone(),
-                    confidence: el.confidence,
-                    file_path: el.file_path.clone(),
-                    line: el.line,
-                    registered_file: el.registered_file.clone(),
-                    registered_line: el.registered_line,
-                    resolution_kind: el.resolution_kind.clone(),
-                    parser_tier: el.parser_tier.clone(),
-                    resolution_strategy: el.resolution_strategy.clone(),
-                    parser_confidence: el.parser_confidence,
-                    evidence: None,
-                });
-            }
-        }
     }
+    let flow_edges = read_model.project_trace_edges(
+        all_labeled_paths
+            .iter()
+            .flat_map(|path| path.edge_lites.iter()),
+        false,
+    );
 
     let uid_vec: Vec<String> = all_uids.iter().cloned().collect();
     let sym_map = db.symbol_rows_by_uids(&uid_vec)?;

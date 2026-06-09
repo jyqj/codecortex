@@ -6,6 +6,7 @@ pub mod diagnostic;
 pub mod dispatch_site;
 pub mod edge;
 pub mod error;
+pub mod graph_catalog;
 pub mod id;
 pub mod impact;
 pub mod infra;

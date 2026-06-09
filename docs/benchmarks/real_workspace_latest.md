@@ -1,22 +1,22 @@
 # Benchmark Results
 
-Generated: 2026-06-08T16:41:24.388574+00:00
+Generated: 2026-06-08T17:19:27.623870+00:00
 Dataset: codecortex-rust workspace copy
-Files: 229
+Files: 234
 
 ## Per-Tool Latency
 
 | Tool | Cases | p50 | p95 | Max | Avg Output |
 |------|-------|-----|-----|-----|------------|
-| architecture | 1 | 90ms | 90ms | 90ms | 8.5 KB |
+| architecture | 1 | 96ms | 96ms | 96ms | 9.0 KB |
 | context | 1 | 0ms | 0ms | 0ms | 1.2 KB |
-| files | 1 | 0ms | 0ms | 0ms | 34.9 KB |
+| files | 1 | 0ms | 0ms | 0ms | 35.7 KB |
 | graph_query | 1 | 0ms | 0ms | 0ms | 1.6 KB |
-| impact | 1 | 8ms | 8ms | 8ms | 3.2 KB |
+| impact | 1 | 9ms | 9ms | 9ms | 3.2 KB |
 | node | 1 | 0ms | 0ms | 0ms | 276 B |
 | relations | 1 | 0ms | 0ms | 0ms | 413 B |
-| search | 2 | 0ms | 18ms | 18ms | 42.1 KB |
-| status | 1 | 26ms | 26ms | 26ms | 5.7 KB |
+| search | 2 | 0ms | 19ms | 19ms | 30.2 KB |
+| status | 1 | 35ms | 35ms | 35ms | 10.1 KB |
 
 ## Summary
 

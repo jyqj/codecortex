@@ -505,6 +505,32 @@ mod tests {
     }
 
     #[test]
+    fn edge_map_matches_graph_catalog() {
+        let m = edge_table_map();
+        for rel in cc_model::graph_catalog::graph_relationships() {
+            let info = m
+                .get(rel.edge)
+                .unwrap_or_else(|| panic!("missing catalog edge {}", rel.edge));
+            assert_eq!(info.table, rel.table, "{} table drift", rel.edge);
+            assert_eq!(
+                info.src_col, rel.source.column,
+                "{} source column drift",
+                rel.edge
+            );
+            assert_eq!(
+                info.dst_col, rel.destination.column,
+                "{} destination column drift",
+                rel.edge
+            );
+            assert_eq!(
+                info.extra_filter, rel.extra_filter,
+                "{} filter drift",
+                rel.edge
+            );
+        }
+    }
+
+    #[test]
     fn label_maps_correctly() {
         assert_eq!(label_table("Function"), "symbols");
         assert_eq!(label_table("File"), "files");
@@ -614,6 +640,30 @@ mod tests {
         assert_eq!(
             m["ASYNC_CALLS"].extra_filter,
             Some("call_kind IN ('async', 'grpc')")
+        );
+    }
+
+    #[test]
+    fn handles_joins_route_to_handler_symbol() {
+        let tokens =
+            tokenize("MATCH (r:Route)-[:HANDLES]->(f:Function) RETURN r.route_path, f.name")
+                .unwrap();
+        let ast = parse(&tokens).unwrap();
+        let pattern = &ast.match_clause().patterns[0];
+        let translated = translate_single_hop(&ast, pattern, false).unwrap();
+        let sql = &translated.sql;
+
+        assert!(
+            sql.contains("FROM routes AS e"),
+            "HANDLES should use routes as edge table, got: {sql}"
+        );
+        assert!(
+            sql.contains("JOIN routes AS r ON r.edge_id = e.edge_id"),
+            "HANDLES source should join the route row by edge_id, got: {sql}"
+        );
+        assert!(
+            sql.contains("JOIN symbols AS f ON f.symbol_uid = e.handler_symbol_uid"),
+            "HANDLES destination should join handler symbol uid, got: {sql}"
         );
     }
 

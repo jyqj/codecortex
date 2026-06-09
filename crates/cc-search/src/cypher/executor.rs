@@ -1,5 +1,6 @@
 use super::ast::*;
 use cc_db::index_db::IndexDb;
+use cc_model::graph_catalog::graph_relationships;
 use cc_model::{CcError, CcResult};
 use std::collections::HashMap;
 
@@ -29,344 +30,26 @@ pub(crate) struct EdgeTableInfo {
 }
 
 pub(crate) fn edge_table_map() -> HashMap<&'static str, EdgeTableInfo> {
-    let mut m = HashMap::new();
-    m.insert(
-        "CALLS",
-        EdgeTableInfo {
-            table: "call_edges",
-            src_col: "caller_symbol_uid",
-            dst_col: "callee_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "IMPORTS",
-        EdgeTableInfo {
-            table: "imports",
-            src_col: "file_path",
-            dst_col: "resolved_path",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "TESTS",
-        EdgeTableInfo {
-            table: "test_edges",
-            src_col: "test_file_path",
-            dst_col: "code_file_path",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "HANDLES",
-        EdgeTableInfo {
-            table: "routes",
-            src_col: "file_path",
-            dst_col: "route_path",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "ROUTES",
-        EdgeTableInfo {
-            table: "routes",
-            src_col: "file_path",
-            dst_col: "route_path",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "REFERENCES",
-        EdgeTableInfo {
-            table: "symbol_refs",
-            src_col: "file_path",
-            dst_col: "target_file_path",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "REFS",
-        EdgeTableInfo {
-            table: "symbol_refs",
-            src_col: "file_path",
-            dst_col: "target_file_path",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "CO_CHANGE",
-        EdgeTableInfo {
-            table: "co_change_edges",
-            src_col: "file_a",
-            dst_col: "file_b",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "DATA_FLOW",
-        EdgeTableInfo {
-            table: "data_flow_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "HTTP_CALLS",
-        EdgeTableInfo {
-            table: "http_call_edges",
-            src_col: "caller_symbol_uid",
-            dst_col: "normalized_path",
-            src_is_symbol: true,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: Some("normalized_path"),
-            extra_filter: Some("call_kind = 'http'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "ASYNC_CALLS",
-        EdgeTableInfo {
-            table: "http_call_edges",
-            src_col: "caller_symbol_uid",
-            dst_col: "normalized_path",
-            src_is_symbol: true,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: Some("normalized_path"),
-            extra_filter: Some("call_kind IN ('async', 'grpc')"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    // --- Semantic edges ---
-    m.insert(
-        "INHERITS",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'inherits'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "IMPLEMENTS",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'implements'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "DECORATES",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'decorates'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "THROWS",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'throws'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "USES_TYPE",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'uses_type'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "SEMANTIC",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: None,
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "RENDERS_COMPONENT",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'renders_component'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    // --- Hierarchical / containment edges ---
-    m.insert(
-        "DEFINES",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: false,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'defines'"),
-            // source is pseudo-UID `file::path` -- join files via substr strip
-            src_join_on: Some("{src}.file_path = SUBSTR({e}.source_symbol_uid, 7)"),
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "DEFINES_METHOD",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: true,
-            dst_is_symbol: true,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'defines_method'"),
-            src_join_on: None,
-            dst_join_on: None,
-        },
-    );
-    m.insert(
-        "CONTAINS_FILE",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'contains_file'"),
-            // source is pseudo-UID `dir::path` -- no dirs table, skip JOIN
-            src_join_on: Some(""),
-            // target is pseudo-UID `file::path` -- join files via substr strip
-            dst_join_on: Some("{dst}.file_path = SUBSTR({e}.target_symbol_uid, 7)"),
-        },
-    );
-    m.insert(
-        "CONTAINS_MODULE",
-        EdgeTableInfo {
-            table: "semantic_edges",
-            src_col: "source_symbol_uid",
-            dst_col: "target_symbol_uid",
-            src_is_symbol: false,
-            dst_is_symbol: false,
-            src_join_key: None,
-            dst_join_key: None,
-            extra_filter: Some("relation_kind = 'contains_module'"),
-            // Both sides may be pseudo-UIDs -- skip JOINs, use edge columns directly
-            src_join_on: Some(""),
-            dst_join_on: Some(""),
-        },
-    );
-    m
+    graph_relationships()
+        .iter()
+        .map(|rel| {
+            (
+                rel.edge,
+                EdgeTableInfo {
+                    table: rel.table,
+                    src_col: rel.source.column,
+                    dst_col: rel.destination.column,
+                    src_is_symbol: rel.source.is_symbol,
+                    dst_is_symbol: rel.destination.is_symbol,
+                    src_join_key: rel.source.join_key,
+                    dst_join_key: rel.destination.join_key,
+                    extra_filter: rel.extra_filter,
+                    src_join_on: rel.source.join_on,
+                    dst_join_on: rel.destination.join_on,
+                },
+            )
+        })
+        .collect()
 }
 
 /// Validate that a SQL identifier (table alias, column name) only contains safe characters.
@@ -1383,14 +1066,19 @@ pub(crate) fn translate_variable_length(
         ))
     })?;
 
-    // Only allow variable-length for known recursive-friendly edges.
-    match edge_type_str {
-        "CALLS" | "DEFINES" | "DEFINES_METHOD" | "CONTAINS_FILE" | "CONTAINS_MODULE" => {}
-        other => {
-            return Err(CcError::Search(format!(
-                "variable-length paths only supported for CALLS/DEFINES/DEFINES_METHOD/CONTAINS_FILE/CONTAINS_MODULE edges, got {other}"
-            )));
-        }
+    // Only allow variable-length for catalog-declared recursive-friendly edges.
+    if !cc_model::graph_catalog::graph_relationship(edge_type_str)
+        .is_some_and(|rel| rel.variable_length)
+    {
+        let supported = graph_relationships()
+            .iter()
+            .filter(|rel| rel.variable_length)
+            .map(|rel| rel.edge)
+            .collect::<Vec<_>>()
+            .join("/");
+        return Err(CcError::Search(format!(
+            "variable-length paths only supported for {supported} edges, got {edge_type_str}"
+        )));
     }
 
     let vl_table = edge_info.table;

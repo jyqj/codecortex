@@ -1,3 +1,4 @@
+pub(crate) mod build_plan;
 pub(crate) mod community;
 pub(crate) mod config_linker;
 pub(crate) mod dispatch_synthesis;

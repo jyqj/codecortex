@@ -5,6 +5,7 @@
 
 use cc_db::index_db::IndexDb;
 use cc_model::config::{OutputBudget, RepoSizeTier};
+use cc_model::graph_catalog::{graph_relationship_table_names, graph_relationships};
 use cc_model::impact::ImpactReport;
 use cc_model::{CcError, CcResult};
 use serde::Serialize;
@@ -26,7 +27,7 @@ struct GraphSchemaResponse {
     edge_provenance: EdgeProvenanceSummary,
     runtime_evidence: RuntimeEvidenceSummary,
     edge_properties: BTreeMap<&'static str, EdgePropertyInfo>,
-    runtime_evidence_edges: [&'static str; 1],
+    runtime_evidence_edges: Vec<&'static str>,
     next_tool_hints: NextToolHints,
 }
 
@@ -541,17 +542,9 @@ impl CodeIndex {
             })
             .collect();
 
-        // Edge table counts — query each table; tolerate missing tables
-        let edge_tables = [
-            "call_edges",
-            "imports",
-            "semantic_edges",
-            "test_edges",
-            "routes",
-            "http_call_edges",
-            "data_flow_edges",
-            "co_change_edges",
-        ];
+        // Edge table counts — derive tables from the shared graph catalog and
+        // tolerate missing tables for older/stale indexes.
+        let edge_tables = graph_relationship_table_names();
         let mut edge_counts = serde_json::Map::new();
         for table in &edge_tables {
             let sql = format!("SELECT COUNT(*) AS cnt FROM {}", table);
@@ -579,128 +572,18 @@ impl CodeIndex {
             .and_then(|row| row.get("cnt").cloned())
             .unwrap_or(serde_json::json!(0));
 
-        // --- Relationship patterns (static, describes the graph schema) ---
-        let relationship_patterns = vec![
-            RelationshipPattern {
-                from: "Function",
-                edge: "CALLS",
-                to: "Function",
-                table: "call_edges",
-                description: "Direct or dynamic function call",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "IMPORTS",
-                to: "Module",
-                table: "imports",
-                description: "Import dependency between files/modules",
-            },
-            RelationshipPattern {
-                from: "Class",
-                edge: "INHERITS",
-                to: "Class",
-                table: "semantic_edges",
-                description: "Class inheritance (extends)",
-            },
-            RelationshipPattern {
-                from: "Class",
-                edge: "IMPLEMENTS",
-                to: "Interface",
-                table: "semantic_edges",
-                description: "Interface implementation",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "DECORATES",
-                to: "Function",
-                table: "semantic_edges",
-                description: "Decorator / annotation application",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "THROWS",
-                to: "Class",
-                table: "semantic_edges",
-                description: "Exception / error throw relation",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "USES_TYPE",
-                to: "Class",
-                table: "semantic_edges",
-                description: "Type usage in parameters or return types",
-            },
-            RelationshipPattern {
-                from: "File",
-                edge: "DEFINES",
-                to: "Function",
-                table: "semantic_edges",
-                description: "File defines a top-level symbol",
-            },
-            RelationshipPattern {
-                from: "Class",
-                edge: "DEFINES_METHOD",
-                to: "Function",
-                table: "semantic_edges",
-                description: "Class/struct defines a method",
-            },
-            RelationshipPattern {
-                from: "Module",
-                edge: "CONTAINS_FILE",
-                to: "File",
-                table: "semantic_edges",
-                description: "Folder/module contains a file",
-            },
-            RelationshipPattern {
-                from: "Module",
-                edge: "CONTAINS_MODULE",
-                to: "Module",
-                table: "semantic_edges",
-                description: "Module contains a submodule",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "RENDERS_COMPONENT",
-                to: "Function",
-                table: "semantic_edges",
-                description: "React/Vue component renders another component",
-            },
-            RelationshipPattern {
-                from: "Route",
-                edge: "HANDLES",
-                to: "Function",
-                table: "routes",
-                description: "HTTP route mapped to handler function",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "HTTP_CALL",
-                to: "Route",
-                table: "http_call_edges",
-                description: "Code makes an outbound HTTP request",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "DATA_FLOW",
-                to: "Function",
-                table: "data_flow_edges",
-                description: "Data flows between functions",
-            },
-            RelationshipPattern {
-                from: "File",
-                edge: "CO_CHANGE",
-                to: "File",
-                table: "co_change_edges",
-                description: "Files frequently changed together in commits",
-            },
-            RelationshipPattern {
-                from: "Function",
-                edge: "TESTS",
-                to: "Function",
-                table: "test_edges",
-                description: "Test function covers a code function",
-            },
-        ];
+        // --- Relationship patterns (shared catalog, describes the graph schema) ---
+        let relationship_patterns: Vec<RelationshipPattern> = graph_relationships()
+            .iter()
+            .filter(|rel| rel.visible_in_schema)
+            .map(|rel| RelationshipPattern {
+                from: rel.schema.from,
+                edge: rel.edge,
+                to: rel.schema.to,
+                table: rel.table,
+                description: rel.schema.description,
+            })
+            .collect();
 
         // --- Example Cypher queries (static, the 5 most useful for agents) ---
         let example_queries = vec![
@@ -714,7 +597,7 @@ impl CodeIndex {
             },
             ExampleQuery {
                 description: "Find HTTP routes and their handlers",
-                cypher: "MATCH (r:Route)-[:HANDLES]->(f:Function) RETURN r.path, r.method, f.name, f.file_path",
+                cypher: "MATCH (r:Route)-[:HANDLES]->(f:Function) RETURN r.route_path, r.method, f.name, f.file_path",
             },
             ExampleQuery {
                 description: "Find potentially dead code (functions with zero in-degree)",
@@ -733,60 +616,39 @@ impl CodeIndex {
         let runtime_evidence = self.compute_runtime_evidence(db, &edge_counts);
 
         // --- Edge properties: tell agents what they can filter on in queries ---
-        let mut edge_properties = BTreeMap::new();
-        edge_properties.insert(
-            "CALLS",
-            edge_property_info(
-                vec![
-                    "dispatch_kind",
-                    "call_kind",
-                    "resolution_kind",
-                    "parser_tier",
-                    "synthesized_by",
-                ],
-                vec![
-                    "confidence",
-                    "parser_confidence",
-                    "synthesis_key",
-                    "registered_file",
-                ],
-            ),
-        );
-        edge_properties.insert(
-            "HTTP_CALL",
-            edge_property_info(
-                vec!["method", "call_kind", "broker_type"],
-                vec!["confidence", "url_or_path", "normalized_path"],
-            ),
-        );
-        edge_properties.insert(
-            "ROUTE",
-            edge_property_info(
-                vec!["method", "framework", "route_kind"],
-                vec!["confidence", "route_path", "handler_name"],
-            ),
-        );
-        edge_properties.insert(
-            "DATA_FLOW",
-            edge_property_info(vec!["flow_kind"], vec!["confidence", "env_key"]),
-        );
-        edge_properties.insert(
-            "SEMANTIC",
-            edge_property_info(vec!["relation_kind"], vec!["confidence"]),
-        );
+        let edge_properties = graph_relationships()
+            .iter()
+            .filter(|rel| !rel.properties.is_empty())
+            .map(|rel| {
+                (
+                    rel.edge,
+                    edge_property_info(
+                        rel.properties.filterable.to_vec(),
+                        rel.properties.informational.to_vec(),
+                    ),
+                )
+            })
+            .collect::<BTreeMap<_, _>>();
 
         // --- Next-tool hints: recommend tools for exploring each edge/node type ---
+        let mut next_tool_hint_map = graph_relationships()
+            .iter()
+            .filter_map(|rel| rel.next_tool_hint.map(|hint| (rel.edge, hint)))
+            .collect::<BTreeMap<_, _>>();
+        next_tool_hint_map.insert(
+            "runtime_evidence",
+            "ingest_traces(traces) to add observations; status(aspect='schema') to check current evidence counts",
+        );
         let next_tool_hints = NextToolHints {
             description: "Recommended tools for exploring specific graph relationships",
-            hints: BTreeMap::from([
-                ("CALLS", "trace(from, to, source_mode='body') for call paths; relations(symbol, kind='callers'|'callees') for direct edges"),
-                ("HTTP_CALL", "architecture(aspect='services') for service map; ingest_traces to validate with runtime data"),
-                ("ROUTE", "architecture(aspect='routes') for all routes; explore(symbols, mode='flow') for request flow"),
-                ("DATA_FLOW", "explore(symbols, mode='flow') for data dependencies; relations(symbol, kind='refs') for references"),
-                ("SEMANTIC", "relations(symbol, kind='hierarchy') for type hierarchy; node(symbol, include='trail') for overview"),
-                ("runtime_evidence", "ingest_traces(traces) to add observations; status(aspect='schema') to check current evidence counts"),
-            ]),
+            hints: next_tool_hint_map,
         };
+
+        let runtime_evidence_edges = graph_relationships()
+            .iter()
+            .filter(|rel| rel.runtime_evidence)
+            .map(|rel| rel.edge)
+            .collect::<Vec<_>>();
 
         serde_json::to_value(GraphSchemaResponse {
             node_kinds,
@@ -798,7 +660,7 @@ impl CodeIndex {
             edge_provenance,
             runtime_evidence,
             edge_properties,
-            runtime_evidence_edges: ["HTTP_CALL"],
+            runtime_evidence_edges,
             next_tool_hints,
         })
         .map_err(|e| CcError::Other(e.to_string()))
@@ -1095,6 +957,52 @@ mod tests {
         .unwrap();
         drop(conn);
         (dir, idx)
+    }
+
+    #[test]
+    fn graph_schema_uses_relationship_catalog() {
+        let (_dir, idx) = index_with_low_confidence_edge();
+        let schema = idx.graph_schema().unwrap();
+
+        let patterns = schema["relationship_patterns"].as_array().unwrap();
+        assert!(
+            patterns
+                .iter()
+                .any(|p| p["edge"] == "CALLS" && p["table"] == "call_edges"),
+            "CALLS pattern should come from graph catalog: {patterns:?}"
+        );
+        assert!(
+            patterns
+                .iter()
+                .any(|p| p["edge"] == "HTTP_CALLS" && p["table"] == "http_call_edges"),
+            "schema should advertise queryable HTTP_CALLS edge: {patterns:?}"
+        );
+        assert!(
+            schema["edge_counts"].get("symbol_refs").is_some(),
+            "edge_counts should include catalog table symbol_refs"
+        );
+        assert!(
+            schema["edge_properties"].get("HTTP_CALLS").is_some(),
+            "edge_properties should use catalog edge names"
+        );
+        let runtime_edges = schema["runtime_evidence_edges"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|v| v.as_str())
+            .collect::<Vec<_>>();
+        assert!(
+            runtime_edges.contains(&"HTTP_CALLS"),
+            "runtime evidence edges should include canonical HTTP_CALLS: {runtime_edges:?}"
+        );
+        assert!(
+            schema["edge_properties"].get("HTTP_CALL").is_some(),
+            "compatibility alias HTTP_CALL should remain catalog-backed"
+        );
+        assert!(
+            schema["next_tool_hints"]["hints"].get("CALLS").is_some(),
+            "next-tool hints should be derived from catalog"
+        );
     }
 
     #[test]

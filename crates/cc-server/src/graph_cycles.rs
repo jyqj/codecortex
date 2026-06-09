@@ -6,6 +6,7 @@ use std::sync::Arc;
 use cc_db::index_db::IndexDb;
 use cc_model::{CcError, CcResult};
 
+use crate::graph_read_model::GraphReadModel;
 use crate::graph_types::{CircularDepsResult, CycleComponent, InternalEdge};
 
 // ── Tarjan's SCC (iterative) ───────────────────────────────────────
@@ -209,21 +210,8 @@ pub fn find_circular_deps(
 // ── File-level circular deps ───────────────────────────────────────
 
 fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<CircularDepsResult> {
-    let rows = db.query_json(
-        "SELECT DISTINCT file_path, resolved_path FROM imports WHERE resolved_path IS NOT NULL",
-        &[],
-    )?;
-
-    let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-    for row in &rows {
-        let fp = row.get("file_path").and_then(|v| v.as_str());
-        let rp = row.get("resolved_path").and_then(|v| v.as_str());
-        if let (Some(fp), Some(rp)) = (fp, rp) {
-            if fp != rp {
-                adj.entry(fp.to_string()).or_default().push(rp.to_string());
-            }
-        }
-    }
+    let read_model = GraphReadModel::without_http_bridges(Arc::clone(db));
+    let adj = read_model.file_import_adjacency()?;
 
     let sccs = tarjan_scc(&adj);
     let total_components = sccs.len();
@@ -231,7 +219,7 @@ fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circular
     let mut components: Vec<CycleComponent> = Vec::new();
     for scc in sccs.iter().take(limit) {
         let severity = classify_severity("file", scc.len());
-        let internal_edges = collect_file_witness_edges(db, scc)?;
+        let internal_edges = collect_file_witness_edges(&read_model, scc)?;
         components.push(CycleComponent {
             size: scc.len(),
             nodes: scc.clone(),
@@ -253,61 +241,18 @@ fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circular
 }
 
 /// Collect witness edges for a file-level SCC by querying the imports table.
-fn collect_file_witness_edges(db: &Arc<IndexDb>, scc: &[String]) -> CcResult<Vec<InternalEdge>> {
-    let scc_set: std::collections::HashSet<&str> = scc.iter().map(|s| s.as_str()).collect();
-    let mut edges = Vec::new();
-
-    for node in scc {
-        // Find all imports from this node that land in another node in the same SCC
-        let rows = db.query_json(
-            "SELECT resolved_path, import_string FROM imports WHERE file_path = ?1 AND resolved_path IS NOT NULL",
-            std::slice::from_ref(node),
-        )?;
-        for row in &rows {
-            let rp = row.get("resolved_path").and_then(|v| v.as_str());
-            let imp = row.get("import_string").and_then(|v| v.as_str());
-            if let Some(rp) = rp {
-                if scc_set.contains(rp) {
-                    edges.push(InternalEdge {
-                        from: node.clone(),
-                        to: rp.to_string(),
-                        import: imp.map(|s| s.to_string()),
-                        line: None,
-                    });
-                }
-            }
-        }
-    }
-
-    Ok(edges)
+fn collect_file_witness_edges(
+    read_model: &GraphReadModel,
+    scc: &[String],
+) -> CcResult<Vec<InternalEdge>> {
+    read_model.file_import_witness_edges(scc)
 }
 
 // ── Package-level circular deps ────────────────────────────────────
 
 fn find_circular_deps_package(db: &Arc<IndexDb>, limit: usize) -> CcResult<CircularDepsResult> {
-    let rows = db.query_json(
-        "SELECT DISTINCT file_path, resolved_path FROM imports WHERE resolved_path IS NOT NULL",
-        &[],
-    )?;
-
-    let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-    for row in &rows {
-        let fp = row.get("file_path").and_then(|v| v.as_str());
-        let rp = row.get("resolved_path").and_then(|v| v.as_str());
-        if let (Some(fp), Some(rp)) = (fp, rp) {
-            let pkg_from = extract_package(fp);
-            let pkg_to = extract_package(rp);
-            if pkg_from != pkg_to {
-                adj.entry(pkg_from).or_default().push(pkg_to);
-            }
-        }
-    }
-
-    // Deduplicate adjacency lists
-    for targets in adj.values_mut() {
-        targets.sort();
-        targets.dedup();
-    }
+    let read_model = GraphReadModel::without_http_bridges(Arc::clone(db));
+    let adj = read_model.projected_import_adjacency(extract_package)?;
 
     let sccs = tarjan_scc(&adj);
     let total_components = sccs.len();
@@ -339,46 +284,8 @@ fn find_circular_deps_package(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circu
 // ── Community-level circular deps ──────────────────────────────────
 
 fn find_circular_deps_community(db: &Arc<IndexDb>, limit: usize) -> CcResult<CircularDepsResult> {
-    // Build uid → community map
-    let sym_rows = db.query_json(
-        "SELECT DISTINCT symbol_uid, community_id FROM symbols WHERE community_id IS NOT NULL AND symbol_uid IS NOT NULL",
-        &[],
-    )?;
-
-    let mut uid_to_community: HashMap<String, String> = HashMap::new();
-    for row in &sym_rows {
-        let uid = row.get("symbol_uid").and_then(|v| v.as_str());
-        let cid = row.get("community_id");
-        if let (Some(uid), Some(cid)) = (uid, cid) {
-            // community_id can be integer or string in JSON
-            let cid_str = match cid {
-                serde_json::Value::Number(n) => n.to_string(),
-                serde_json::Value::String(s) => s.clone(),
-                _ => continue,
-            };
-            uid_to_community.insert(uid.to_string(), cid_str);
-        }
-    }
-
-    // Load call_uid_edges and aggregate to community level
-    let call_edges = db.call_uid_edges()?;
-
-    let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-    for (caller, callee) in &call_edges {
-        let c_from = uid_to_community.get(caller);
-        let c_to = uid_to_community.get(callee);
-        if let (Some(from), Some(to)) = (c_from, c_to) {
-            if from != to {
-                adj.entry(from.clone()).or_default().push(to.clone());
-            }
-        }
-    }
-
-    // Deduplicate adjacency lists
-    for targets in adj.values_mut() {
-        targets.sort();
-        targets.dedup();
-    }
+    let read_model = GraphReadModel::without_http_bridges(Arc::clone(db));
+    let adj = read_model.community_call_adjacency()?;
 
     let sccs = tarjan_scc(&adj);
     let total_components = sccs.len();
@@ -409,25 +316,7 @@ fn find_circular_deps_community(db: &Arc<IndexDb>, limit: usize) -> CcResult<Cir
 // ── Utility: collect edges from adjacency map within an SCC ────────
 
 fn collect_adj_edges(adj: &HashMap<String, Vec<String>>, scc: &[String]) -> Vec<InternalEdge> {
-    let scc_set: std::collections::HashSet<&str> = scc.iter().map(|s| s.as_str()).collect();
-    let mut edges = Vec::new();
-
-    for node in scc {
-        if let Some(targets) = adj.get(node) {
-            for target in targets {
-                if scc_set.contains(target.as_str()) {
-                    edges.push(InternalEdge {
-                        from: node.clone(),
-                        to: target.clone(),
-                        import: None,
-                        line: None,
-                    });
-                }
-            }
-        }
-    }
-
-    edges
+    GraphReadModel::internal_edges_from_adjacency(adj, scc)
 }
 
 // ── Tests ──────────────────────────────────────────────────────────

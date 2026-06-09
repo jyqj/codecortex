@@ -85,26 +85,26 @@ pub struct Indexer {
 }
 
 /// Intermediate result for Phase 1+2 (scan and diff).
-struct ScanDiffResult {
-    files_scanned: usize,
-    files_added: usize,
-    files_updated: usize,
-    files_skipped: usize,
-    existing: HashMap<String, FileState>,
-    scanned_paths: HashSet<String>,
-    to_remove: Vec<String>,
-    to_parse: Vec<PendingFile>,
+pub(crate) struct ScanDiffResult {
+    pub(crate) files_scanned: usize,
+    pub(crate) files_added: usize,
+    pub(crate) files_updated: usize,
+    pub(crate) files_skipped: usize,
+    pub(crate) existing: HashMap<String, FileState>,
+    pub(crate) scanned_paths: HashSet<String>,
+    pub(crate) to_remove: Vec<String>,
+    pub(crate) to_parse: Vec<PendingFile>,
 }
 
 /// Intermediate result for Phase 3 (parse).
-struct ParseResult {
-    write_units: Vec<FileWriteUnit>,
-    parse_errors: Vec<String>,
-    files_to_parse: usize,
-    used_parallel: bool,
+pub(crate) struct ParseResult {
+    pub(crate) write_units: Vec<FileWriteUnit>,
+    pub(crate) parse_errors: Vec<String>,
+    pub(crate) files_to_parse: usize,
+    pub(crate) used_parallel: bool,
     /// rel_path -> source content read during parsing. Reused by Phase 3.7
     /// framework enrichment to avoid re-reading the same files from disk.
-    source_cache: HashMap<String, String>,
+    pub(crate) source_cache: HashMap<String, String>,
 }
 
 /// Intermediate result for Phase 4 (resolve).
@@ -159,101 +159,13 @@ impl Indexer {
         full: bool,
         auto_file_limit: Option<usize>,
     ) -> CcResult<IndexReport> {
-        let start = std::time::Instant::now();
-
-        // Phase 1+2: Scan and diff
-        let scan_result = self.phase_scan_and_diff(project_path, full, auto_file_limit)?;
-
-        // Phase 3: Parallel parse
-        let parse_result = self.phase_parse(project_path, scan_result.to_parse)?;
-
-        let mut write_units = parse_result.write_units;
-        let source_cache = parse_result.source_cache;
-
-        // Phase 3.5+3.6: Dirty propagation and reload
-        let mut actions = self.build_actions_map(
-            &write_units,
-            &scan_result.existing,
-            &scan_result.scanned_paths,
-        );
-        let dirty_count = if full {
-            0
-        } else {
-            self.run_dirty_propagation(&mut actions, &write_units)?
-        };
-        self.phase_dirty_reload(
-            &mut write_units,
-            &actions,
-            &scan_result.existing,
-            dirty_count,
-        )?;
-
-        // Phase 3.7+3.8: Framework enrichment and C/C++ include resolution
-        let fw_context =
-            self.phase_framework_enrichment(project_path, &mut write_units, &source_cache)?;
-
-        // Phase 4: Symbol resolution (all sub-phases)
-        let resolve_result = self.phase_resolve(
-            project_path,
-            full,
-            &mut write_units,
-            &scan_result.to_remove,
-            &fw_context,
-        )?;
-
-        // Count statistics
-        let mut symbols_total = 0;
-        let mut chunks_total = 0;
-        for unit in &write_units {
-            symbols_total += unit.outcome.symbols.len();
-            chunks_total += unit.outcome.chunks.len();
-        }
-        let route_nodes = self.collect_route_nodes(&write_units);
-
-        // Phase 6: Batch write (dual path)
-        let write_result = self.phase_write(
-            project_path,
-            full,
-            write_units,
-            &actions,
-            &scan_result.to_remove,
-            &route_nodes,
-            &resolve_result.hierarchy_edges,
-        )?;
-
-        // Phase 7: Post-processing (test edges, dispatch synthesis, communities)
-        self.phase_postprocess(
-            project_path,
-            full,
-            &write_result.write_units,
-            &write_result.config_units,
-            &scan_result.to_remove,
-        )?;
-
-        // Phase 8-11: Analysis (git cochange, infra, resolver feedback, ADR)
-        self.phase_analysis(project_path, &write_result.write_units, &route_nodes)?;
-
-        let elapsed = start.elapsed().as_millis() as u64;
-
-        Ok(IndexReport {
-            files_scanned: scan_result.files_scanned,
-            files_added: scan_result.files_added,
-            files_updated: scan_result.files_updated,
-            files_removed: scan_result.to_remove.len(),
-            files_skipped: scan_result.files_skipped,
-            symbols_total,
-            chunks_total,
-            parse_errors: parse_result.parse_errors,
-            elapsed_ms: elapsed,
-            files_parsed: parse_result.files_to_parse,
-            used_parallel_parse: parse_result.used_parallel,
-        })
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).execute(self, project_path)
     }
 
     // ── Phase helper structs ────────────────────────────────────────────
 
     /// Phase 1+2: Scan files and compute diff against existing DB state.
-    fn phase_scan_and_diff(
+    pub(crate) fn phase_scan_and_diff(
         &self,
         _project_path: &Path,
         full: bool,
@@ -359,7 +271,7 @@ impl Indexer {
     }
 
     /// Phase 3: Parallel (or sequential) parsing of pending files.
-    fn phase_parse(
+    pub(crate) fn phase_parse(
         &self,
         project_path: &Path,
         to_parse: Vec<PendingFile>,
@@ -521,7 +433,7 @@ impl Indexer {
     }
 
     /// Build the actions map from write_units and scanned paths for dirty propagation.
-    fn build_actions_map(
+    pub(crate) fn build_actions_map(
         &self,
         write_units: &[FileWriteUnit],
         existing: &HashMap<String, FileState>,

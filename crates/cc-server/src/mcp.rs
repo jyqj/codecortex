@@ -1,11 +1,10 @@
 //! MCP Server — code indexing, search and graph tools only.
 
-use crate::watcher::FileWatcher;
 use cc_model::config::RepoSizeTier;
 use cc_server::engine::CodeIndex;
 use cc_server::handlers;
+use cc_server::project_session::{normalize_project_path, ProjectSession};
 use cc_server::tools::JsonResult;
-use lru::LruCache;
 use rmcp::handler::server::router::tool::ToolRouter;
 use rmcp::handler::server::tool::ToolCallContext;
 use rmcp::handler::server::wrapper::{Json, Parameters};
@@ -13,68 +12,29 @@ use rmcp::model::*;
 use rmcp::service::{RequestContext, RoleServer};
 use rmcp::{tool, tool_router, ServerHandler};
 use std::borrow::Cow;
-use std::num::NonZeroUsize;
-use std::path::PathBuf;
 use std::str::FromStr;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, RwLock};
-use std::time::Instant;
-// tokio::sync::RwLock is used via full path for ProjectServices wrapping (async),
-// while std::sync::RwLock is used for CodeIndex (sync handler access).
-
-#[derive(Clone)]
-pub struct ProjectServices {
-    index: Arc<RwLock<CodeIndex>>,
-}
-
-impl ProjectServices {
-    pub fn new(project_path: Option<&std::path::Path>) -> cc_model::CcResult<Self> {
-        Ok(Self {
-            index: Arc::new(RwLock::new(CodeIndex::new(project_path)?)),
-        })
-    }
-}
+use std::sync::{Arc, RwLock};
+// std::sync::RwLock is used for CodeIndex (sync handler access).
 
 pub struct CodeCortexMcpServer {
-    project: Arc<tokio::sync::RwLock<ProjectServices>>,
-    project_cache: Arc<tokio::sync::Mutex<LruCache<PathBuf, ProjectServices>>>,
+    project_session: ProjectSession,
     tool_router: ToolRouter<Self>,
-    last_activity: Arc<Mutex<Instant>>,
-    auto_indexing: Arc<AtomicBool>,
-    /// Handle for the active file-watcher background task. When the project
-    /// changes this is replaced so the old watcher is stopped.
-    watcher_handle: Arc<tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>>,
 }
 
 impl CodeCortexMcpServer {
     async fn index(&self) -> Arc<RwLock<CodeIndex>> {
-        self.project.read().await.index.clone()
+        self.project_session.active_index().await
     }
 
     async fn index_for_project_path(
         &self,
         project_path: Option<&str>,
     ) -> Result<Arc<RwLock<CodeIndex>>, rmcp::ErrorData> {
-        let Some(raw_path) = project_path.filter(|p| !p.trim().is_empty()) else {
-            return Ok(self.index().await);
-        };
-        let path = normalize_project_path(raw_path);
-
-        let mut cache = self.project_cache.lock().await;
-        if let Some(svc) = cache.get(&path).cloned() {
-            return Ok(svc.index);
-        }
-        let services = ProjectServices::new(Some(path.as_path()))
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
-        let index = services.index.clone();
-        cache.put(path, services);
-        Ok(index)
+        self.project_session
+            .index_for_project_path(project_path)
+            .await
+            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))
     }
-}
-
-fn normalize_project_path(raw_path: &str) -> PathBuf {
-    let path = PathBuf::from(raw_path);
-    std::fs::canonicalize(&path).unwrap_or(path)
 }
 
 macro_rules! spawn_handler {
@@ -142,16 +102,12 @@ impl CodeCortexMcpServer {
         let mut p = p;
         p.sanitize();
         let path = normalize_project_path(&p.path);
-        let new_services = ProjectServices::new(Some(path.as_path()))
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
-        self.project_cache
-            .lock()
+        let index = self
+            .project_session
+            .set_active_project(path)
             .await
-            .put(path.clone(), new_services.clone());
-        *self.project.write().await = new_services;
-        self.start_watcher(path);
+            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
         let full = p.full;
-        let index = self.index().await;
         spawn_handler!(index, move |rt| handlers::core::build_index(rt, full))
     }
 
@@ -556,248 +512,20 @@ impl CodeCortexMcpServer {
 
 impl CodeCortexMcpServer {
     pub fn new(project_path: Option<&std::path::Path>) -> Self {
-        let services = ProjectServices::new(project_path).unwrap_or_else(|e| {
-            tracing::warn!("failed to initialize project: {}", e);
-            ProjectServices::new(None).unwrap_or_else(|e2| {
-                tracing::error!("fatal: cannot create empty CodeIndex either: {}", e2);
-                ProjectServices {
-                    index: Arc::new(RwLock::new(CodeIndex::empty())),
-                }
-            })
-        });
-        let mut initial_cache = LruCache::new(NonZeroUsize::new(16).unwrap());
-        if let Some(path) = project_path {
-            initial_cache.put(
-                normalize_project_path(&path.to_string_lossy()),
-                services.clone(),
-            );
-        }
-        let project = Arc::new(tokio::sync::RwLock::new(services));
-        let project_cache = Arc::new(tokio::sync::Mutex::new(initial_cache));
         let tool_router = Self::tool_router();
         Self {
-            project,
-            project_cache,
+            project_session: ProjectSession::new(project_path),
             tool_router,
-            last_activity: Arc::new(Mutex::new(Instant::now())),
-            auto_indexing: Arc::new(AtomicBool::new(false)),
-            watcher_handle: Arc::new(tokio::sync::Mutex::new(None)),
         }
     }
 
     fn touch_activity(&self) {
-        if let Ok(mut ts) = self.last_activity.lock() {
-            *ts = Instant::now();
-        }
-    }
-
-    fn maybe_auto_index(&self) {
-        let auto_indexing = self.auto_indexing.clone();
-        let project = self.project.clone();
-
-        if auto_indexing.load(Ordering::SeqCst) {
-            return;
-        }
-
-        tokio::spawn(async move {
-            let services = project.read().await;
-            let index = services.index.clone();
-            drop(services);
-
-            let should_index = tokio::task::spawn_blocking({
-                let index = index.clone();
-                move || {
-                    let rt = match index.read() {
-                        Ok(rt) => rt,
-                        Err(_) => return false,
-                    };
-                    let project_path = match rt.project_path.as_deref() {
-                        Some(p) => p,
-                        None => return false,
-                    };
-                    let config = cc_model::config::load_project_config(project_path);
-                    if !config.auto_index.enabled {
-                        return false;
-                    }
-                    // Check whether the DB was freshly created (empty) rather
-                    // than checking file existence — IndexDb::open already
-                    // creates the file before we get here.
-                    rt.needs_initial_index()
-                }
-            })
-            .await
-            .unwrap_or(false);
-
-            if !should_index {
-                return;
-            }
-            if auto_indexing
-                .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-                .is_err()
-            {
-                return;
-            }
-
-            let result = tokio::task::spawn_blocking(move || {
-                if let Ok(mut rt) = index.write() {
-                    if let Err(e) = rt.build_auto_index(false) {
-                        tracing::warn!("auto-index failed: {}", e);
-                    }
-                }
-            })
-            .await;
-
-            if let Err(e) = result {
-                tracing::warn!("auto-index task panicked: {}", e);
-            }
-            auto_indexing.store(false, Ordering::SeqCst);
-        });
-    }
-
-    /// Start a file watcher for the given project path. Stops any previously
-    /// running watcher first. The watcher periodically drains pending events
-    /// and triggers an incremental index rebuild.
-    ///
-    /// The watcher is only started when `auto_index.enabled` is `true` in the
-    /// project configuration (`.codecortex.json`). This method is intentionally
-    /// fire-and-forget — errors in the watcher never propagate to callers.
-    fn start_watcher(&self, project_path: PathBuf) {
-        let watcher_handle = self.watcher_handle.clone();
-        let project = self.project.clone();
-        let auto_indexing = self.auto_indexing.clone();
-
-        tokio::spawn(async move {
-            // Stop previous watcher if any.
-            {
-                let mut guard = watcher_handle.lock().await;
-                if let Some(handle) = guard.take() {
-                    handle.abort();
-                }
-            }
-
-            // Check config: only start watcher when auto_index is enabled.
-            let enabled = {
-                let services = project.read().await;
-                let index = services.index.clone();
-                tokio::task::spawn_blocking(move || {
-                    let rt = match index.read() {
-                        Ok(rt) => rt,
-                        Err(_) => return false,
-                    };
-                    let pp = match rt.project_path.as_deref() {
-                        Some(p) => p,
-                        None => return false,
-                    };
-                    cc_model::config::load_project_config(pp).auto_index.enabled
-                })
-                .await
-                .unwrap_or(false)
-            };
-
-            if !enabled {
-                tracing::info!("watcher: auto_index disabled, skipping file watcher");
-                return;
-            }
-
-            // Create the FileWatcher on a blocking thread (it uses `notify` internally).
-            let path_for_watcher = project_path.clone();
-            let watcher_result =
-                tokio::task::spawn_blocking(move || FileWatcher::start(&path_for_watcher)).await;
-
-            let watcher = match watcher_result {
-                Ok(Ok(w)) => w,
-                Ok(Err(e)) => {
-                    tracing::warn!("watcher: failed to start file watcher: {}", e);
-                    return;
-                }
-                Err(e) => {
-                    tracing::warn!("watcher: spawn_blocking failed: {}", e);
-                    return;
-                }
-            };
-
-            tracing::info!(path = %project_path.display(), "watcher: started file watcher");
-
-            // Wrap watcher in Arc<Mutex> so it can be shared with the poll task
-            // and cleaned up on Drop.
-            let watcher = Arc::new(std::sync::Mutex::new(Some(watcher)));
-            let watcher_for_task = watcher.clone();
-
-            let poll_handle = tokio::spawn({
-                let project = project.clone();
-                let auto_indexing = auto_indexing.clone();
-                async move {
-                    let poll_interval = tokio::time::Duration::from_secs(2);
-                    loop {
-                        tokio::time::sleep(poll_interval).await;
-
-                        // Drain pending events from the watcher.
-                        let drain = {
-                            let guard = match watcher_for_task.lock() {
-                                Ok(g) => g,
-                                Err(e) => e.into_inner(),
-                            };
-                            match guard.as_ref() {
-                                Some(w) => w.drain_pending(),
-                                None => break,
-                            }
-                        };
-
-                        if drain.is_empty() {
-                            continue;
-                        }
-
-                        tracing::info!(
-                            changed = drain.changed.len(),
-                            removed = drain.removed.len(),
-                            "watcher: file changes detected, triggering incremental index"
-                        );
-
-                        // Skip if another auto-index is already running.
-                        if auto_indexing
-                            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-                            .is_err()
-                        {
-                            tracing::debug!(
-                                "watcher: skipping incremental index — already in progress"
-                            );
-                            continue;
-                        }
-
-                        let index = project.read().await.index.clone();
-                        let result = tokio::task::spawn_blocking(move || {
-                            if let Ok(mut rt) = index.write() {
-                                if let Err(e) = rt.build_index(false) {
-                                    tracing::warn!("watcher: incremental index failed: {}", e);
-                                }
-                            }
-                        })
-                        .await;
-
-                        if let Err(e) = result {
-                            tracing::warn!("watcher: incremental index task panicked: {}", e);
-                        }
-                        auto_indexing.store(false, Ordering::SeqCst);
-                    }
-                }
-            });
-
-            // Store the poll task handle so it can be aborted when the watcher
-            // is replaced or the server shuts down.
-            {
-                let mut guard = watcher_handle.lock().await;
-                *guard = Some(poll_handle);
-            }
-        });
+        self.project_session.touch_activity();
     }
 
     /// Get the current project's `RepoSizeTier`, falling back to `Tiny` on error.
     fn current_tier(&self, index: &Arc<RwLock<CodeIndex>>) -> RepoSizeTier {
-        index
-            .read()
-            .ok()
-            .map(|rt| rt.repo_size_tier())
-            .unwrap_or(RepoSizeTier::Tiny)
+        ProjectSession::current_tier(index)
     }
 
     /// Append budget hints to a tool description based on the project's repo size tier.
@@ -953,23 +681,10 @@ index(path) → search(query) → context(task)
     {
         self.touch_activity();
         async move {
-            {
-                let index = self.project.read().await.index.clone();
-                let need_reopen = {
-                    let rt = handlers::lock_index(&index)
-                        .map_err(|e| rmcp::ErrorData::internal_error(e, None))?;
-                    rt.is_closed()
-                };
-                if need_reopen {
-                    let mut rt = handlers::lock_index_write(&index)
-                        .map_err(|e| rmcp::ErrorData::internal_error(e, None))?;
-                    if rt.is_closed() {
-                        if let Err(e) = rt.reopen() {
-                            tracing::warn!("failed to reopen index after idle eviction: {}", e);
-                        }
-                    }
-                }
-            }
+            self.project_session
+                .reopen_active_index_if_closed()
+                .await
+                .map_err(|e| rmcp::ErrorData::internal_error(e, None))?;
             let ctx = ToolCallContext::new(self, request, context);
             self.tool_router.call(ctx).await
         }
@@ -982,49 +697,10 @@ index(path) → search(query) → context(task)
 
 pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_model::CcResult<()> {
     let server = CodeCortexMcpServer::new(project_path.as_deref());
-
-    if let Some(ref path) = project_path {
-        server.maybe_auto_index();
-        server.start_watcher(path.clone());
-    }
-
-    let idle_timeout_secs = {
-        let services = server.project.read().await;
-        let rt = services.index.read().ok();
-        rt.as_ref()
-            .and_then(|rt| rt.project_path.as_deref())
-            .map(|p| {
-                cc_model::config::load_project_config(p)
-                    .auto_index
-                    .idle_timeout_secs
-            })
-            .unwrap_or(60)
-    };
-
-    let last_activity = server.last_activity.clone();
-    let project = server.project.clone();
-    let idle_timeout = std::time::Duration::from_secs(idle_timeout_secs);
-    let _idle_task = tokio::spawn(async move {
-        let check_interval = std::time::Duration::from_secs(30);
-        loop {
-            tokio::time::sleep(check_interval).await;
-            let elapsed = last_activity
-                .lock()
-                .map(|ts| ts.elapsed())
-                .unwrap_or_default();
-            if elapsed >= idle_timeout {
-                let index = project.read().await.index.clone();
-                let mut guard = match index.write() {
-                    Ok(g) => g,
-                    Err(_) => continue,
-                };
-                if guard.project_path.is_some() && !guard.is_closed() {
-                    tracing::info!("idle eviction: closing after {}s", elapsed.as_secs());
-                    guard.close();
-                }
-            }
-        }
-    });
+    server
+        .project_session
+        .start_initial_project_tasks(project_path.as_deref());
+    server.project_session.start_idle_eviction().await;
 
     // PPID watchdog: detect parent process death to prevent zombie MCP servers
     {

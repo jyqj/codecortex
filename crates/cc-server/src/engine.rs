@@ -16,6 +16,27 @@ use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
 
+/// Stable snapshot for caches that derive data from the current index.
+///
+/// The generation is bumped only after a successful index build. Pairing it
+/// with the project path gives future query caches a compact invalidation key
+/// without coupling them to the database handle.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct IndexSnapshot {
+    project_path: Option<PathBuf>,
+    generation: u64,
+}
+
+impl IndexSnapshot {
+    pub fn project_path(&self) -> Option<&Path> {
+        self.project_path.as_deref()
+    }
+
+    pub fn generation(&self) -> u64 {
+        self.generation
+    }
+}
+
 fn estimate_project_file_count(project: &Path) -> usize {
     const EXCLUDED_DIRS: &[&str] = &[
         ".git",
@@ -62,6 +83,9 @@ pub struct CodeIndex {
     /// True when the DB was freshly created (Initialized) or rebuilt after a
     /// schema mismatch — signals that an auto-index build is needed.
     needs_initial_index: bool,
+    /// Monotonic generation for cache invalidation. Incremented after every
+    /// successful build_index/build_auto_index.
+    generation: u64,
 }
 
 impl CodeIndex {
@@ -81,6 +105,7 @@ impl CodeIndex {
             engine: None,
             repo_tier: None,
             needs_initial_index: false,
+            generation: 0,
         }
     }
 
@@ -138,6 +163,17 @@ impl CodeIndex {
         self.index_db.as_ref()
     }
 
+    pub fn index_snapshot(&self) -> IndexSnapshot {
+        IndexSnapshot {
+            project_path: self.project_path.clone(),
+            generation: self.generation,
+        }
+    }
+
+    pub fn index_generation(&self) -> u64 {
+        self.generation
+    }
+
     /// Whether this CodeIndex was freshly created (empty DB) and needs an
     /// initial index build. Cleared after a successful build.
     pub fn needs_initial_index(&self) -> bool {
@@ -181,6 +217,10 @@ impl CodeIndex {
     }
 
     fn after_successful_index_build(&mut self) {
+        self.generation = self.generation.saturating_add(1);
+        if let Some(engine) = self.engine.as_mut() {
+            engine.invalidate_cache(self.generation);
+        }
         self.repo_tier = Some(self.compute_repo_tier());
         self.needs_initial_index = false;
     }
@@ -823,6 +863,30 @@ mod tests {
 
         // A freshly created DB should have SchemaStatus::Initialized
         assert!(idx.needs_initial_index());
+    }
+
+    #[test]
+    fn successful_build_bumps_generation_and_clears_initial_index_flag() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        let before = idx.index_snapshot();
+
+        let report = idx.build_index(false).unwrap();
+
+        assert!(report.files_scanned >= 1);
+        assert_eq!(idx.index_generation(), before.generation() + 1);
+        assert_eq!(idx.index_snapshot().generation(), idx.index_generation());
+        assert_eq!(idx.index_snapshot().project_path(), before.project_path());
+        assert!(!idx.needs_initial_index());
+
+        let after_build_generation = idx.index_generation();
+        let auto_report = idx.build_auto_index(false).unwrap();
+
+        assert!(auto_report.files_scanned >= 1);
+        assert_eq!(idx.index_generation(), after_build_generation + 1);
     }
 
     // ── build_context_search_request propagates overrides ──────────

@@ -3,7 +3,6 @@ use clap::Parser;
 mod cli;
 mod installer;
 mod mcp;
-mod watcher;
 
 fn main() {
     tracing_subscriber::fmt()

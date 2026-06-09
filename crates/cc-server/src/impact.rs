@@ -2,10 +2,12 @@
 
 use cc_db::index_db::IndexDb;
 use cc_model::impact::*;
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 use std::collections::{HashMap, HashSet};
 use std::process::Command;
 use std::sync::Arc;
+
+use crate::graph_read_model::GraphReadModel;
 
 pub struct ImpactAnalyzer {
     db: Arc<IndexDb>,
@@ -128,128 +130,57 @@ impl ImpactAnalyzer {
             });
         }
 
-        let conn = self.db.read_conn()?;
+        let read_model = GraphReadModel::without_http_bridges(Arc::clone(&self.db));
 
         // 1. Find symbols in changed files (hop 0 — critical)
-        let mut seed_uids: Vec<(String, String, String, String, Option<u32>)> = Vec::new();
-        for file in changed_files {
-            let mut stmt = conn
-                .prepare(
-                    "SELECT symbol_uid, name, file_path, kind, community_id \
-                     FROM symbols WHERE file_path=?1 AND symbol_uid IS NOT NULL",
-                )
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let rows = stmt
-                .query_map(rusqlite::params![file], |r| {
-                    Ok((
-                        r.get::<_, String>(0)?,
-                        r.get::<_, String>(1)?,
-                        r.get::<_, String>(2)?,
-                        r.get::<_, String>(3)?,
-                        r.get::<_, Option<u32>>(4)?,
-                    ))
-                })
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.flatten() {
-                seed_uids.push(row);
-            }
-        }
+        let seed_symbols = read_model.symbols_in_files(changed_files)?;
 
         // Build seed impacted symbols
         let mut impacted: Vec<ImpactedSymbol> = Vec::new();
         let mut visited: HashSet<String> = HashSet::new();
 
-        for (uid, name, fp, kind, cid) in &seed_uids {
-            visited.insert(uid.clone());
+        for seed in &seed_symbols {
+            visited.insert(seed.symbol_uid.clone());
             impacted.push(ImpactedSymbol {
-                symbol_uid: uid.clone(),
-                name: name.clone(),
-                file_path: fp.clone(),
-                kind: kind.clone(),
+                symbol_uid: seed.symbol_uid.clone(),
+                name: seed.name.clone(),
+                file_path: seed.file_path.clone(),
+                kind: seed.kind.clone(),
                 risk_level: RiskLevel::Critical,
                 hop_depth: 0,
-                community_id: *cid,
+                community_id: seed.community_id,
                 confidence: 1.0,
             });
         }
 
         // 2. BFS reverse callers with batch queries and optional confidence filtering
-        let mut current_layer: Vec<String> =
-            seed_uids.iter().map(|(uid, ..)| uid.clone()).collect();
+        let mut current_layer: Vec<String> = seed_symbols
+            .iter()
+            .map(|seed| seed.symbol_uid.clone())
+            .collect();
 
         for hop in 1..=max_depth {
             if current_layer.is_empty() {
                 break;
             }
             let mut next_layer: Vec<String> = Vec::new();
-            let batch_size = 200;
 
-            for batch_start in (0..current_layer.len()).step_by(batch_size) {
-                let batch_end = (batch_start + batch_size).min(current_layer.len());
-                let batch = &current_layer[batch_start..batch_end];
-                let placeholders: String = (0..batch.len())
-                    .map(|i| format!("?{}", i + 1))
-                    .collect::<Vec<_>>()
-                    .join(",");
-
-                // Build query with optional confidence filter
-                let conf_clause = if confidence_threshold.is_some() {
-                    format!("AND ce.parser_confidence >= ?{}", batch.len() + 1)
-                } else {
-                    String::new()
-                };
-
-                let sql = format!(
-                    "SELECT DISTINCT ce.caller_symbol_uid, s.name, s.file_path, s.kind, s.community_id \
-                     FROM call_edges ce \
-                     JOIN symbols s ON s.symbol_uid = ce.caller_symbol_uid \
-                     WHERE ce.callee_symbol_uid IN ({}) \
-                     AND ce.caller_symbol_uid IS NOT NULL \
-                     {}",
-                    placeholders, conf_clause
-                );
-
-                let result = conn.prepare(&sql).and_then(|mut stmt| {
-                    let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
-                    for uid in batch {
-                        params.push(Box::new(uid.clone()));
-                    }
-                    if let Some(threshold) = confidence_threshold {
-                        params.push(Box::new(threshold));
-                    }
-                    let param_refs: Vec<&dyn rusqlite::types::ToSql> =
-                        params.iter().map(|p| p.as_ref()).collect();
-                    let rows = stmt
-                        .query_map(param_refs.as_slice(), |r| {
-                            Ok((
-                                r.get::<_, String>(0)?,
-                                r.get::<_, String>(1)?,
-                                r.get::<_, String>(2)?,
-                                r.get::<_, String>(3)?,
-                                r.get::<_, Option<u32>>(4)?,
-                            ))
-                        })?
-                        .filter_map(|r| r.ok())
-                        .collect::<Vec<_>>();
-                    Ok(rows)
-                });
-
-                if let Ok(rows) = result {
-                    for (caller_uid, name, fp, kind, cid) in rows {
-                        if visited.insert(caller_uid.clone()) {
-                            impacted.push(ImpactedSymbol {
-                                symbol_uid: caller_uid.clone(),
-                                name,
-                                file_path: fp,
-                                kind,
-                                risk_level: RiskLevel::from_hop_depth(hop as u32),
-                                hop_depth: hop as u32,
-                                community_id: cid,
-                                confidence: 0.8f64.powi(hop as i32),
-                            });
-                            next_layer.push(caller_uid);
-                        }
-                    }
+            for caller in read_model
+                .reverse_callers(&current_layer, confidence_threshold)
+                .unwrap_or_default()
+            {
+                if visited.insert(caller.symbol_uid.clone()) {
+                    impacted.push(ImpactedSymbol {
+                        symbol_uid: caller.symbol_uid.clone(),
+                        name: caller.name,
+                        file_path: caller.file_path,
+                        kind: caller.kind,
+                        risk_level: RiskLevel::from_hop_depth(hop as u32),
+                        hop_depth: hop as u32,
+                        community_id: caller.community_id,
+                        confidence: 0.8f64.powi(hop as i32),
+                    });
+                    next_layer.push(caller.symbol_uid);
                 }
             }
             current_layer = next_layer;
@@ -263,34 +194,9 @@ impl ImpactAnalyzer {
             }
         }
 
-        let mut suggested_tests: Vec<String> = Vec::new();
-        let mut seen_tests: HashSet<String> = HashSet::new();
-        if !all_files.is_empty() {
-            // Single batched query over all changed+impacted files rather than a
-            // per-file round-trip.
-            let placeholders: String = (1..=all_files.len())
-                .map(|i| format!("?{}", i))
-                .collect::<Vec<_>>()
-                .join(",");
-            let sql = format!(
-                "SELECT DISTINCT test_file_path FROM test_edges \
-                 WHERE code_file_path IN ({}) ORDER BY test_file_path",
-                placeholders
-            );
-            let params: Vec<&dyn rusqlite::types::ToSql> = all_files
-                .iter()
-                .map(|f| f as &dyn rusqlite::types::ToSql)
-                .collect();
-            if let Ok(mut stmt) = conn.prepare(&sql) {
-                if let Ok(rows) = stmt.query_map(params.as_slice(), |r| r.get::<_, String>(0)) {
-                    for tf in rows.filter_map(|r| r.ok()) {
-                        if seen_tests.insert(tf.clone()) {
-                            suggested_tests.push(tf);
-                        }
-                    }
-                }
-            }
-        }
+        let suggested_tests = read_model
+            .suggested_tests_for_files(&all_files)
+            .unwrap_or_default();
 
         // 4. Boundary crossing detection
         let boundary_crossings = Self::detect_boundary_crossings(&impacted);
@@ -486,43 +392,9 @@ impl ImpactAnalyzer {
     /// and `WHERE symbol_uid IN (...)` query (chunked to bound placeholder count).
     /// UIDs without a matching symbol row are simply absent from the map.
     fn symbol_names_by_uid(&self, uids: &[String]) -> HashMap<String, String> {
-        let mut map = HashMap::new();
-        if uids.is_empty() {
-            return map;
-        }
-        let conn = match self.db.read_conn() {
-            Ok(c) => c,
-            Err(_) => return map,
-        };
-        let batch_size = 200;
-        for batch in uids.chunks(batch_size) {
-            let placeholders: String = (0..batch.len())
-                .map(|i| format!("?{}", i + 1))
-                .collect::<Vec<_>>()
-                .join(",");
-            let sql = format!(
-                "SELECT symbol_uid, name FROM symbols WHERE symbol_uid IN ({})",
-                placeholders
-            );
-            let mut stmt = match conn.prepare(&sql) {
-                Ok(s) => s,
-                Err(_) => continue,
-            };
-            let param_refs: Vec<&dyn rusqlite::types::ToSql> = batch
-                .iter()
-                .map(|u| u as &dyn rusqlite::types::ToSql)
-                .collect();
-            let rows: Vec<(String, String)> = match stmt.query_map(param_refs.as_slice(), |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-            }) {
-                Ok(mapped) => mapped.flatten().collect(),
-                Err(_) => continue,
-            };
-            for (uid, name) in rows {
-                map.insert(uid, name);
-            }
-        }
-        map
+        GraphReadModel::without_http_bridges(Arc::clone(&self.db))
+            .symbol_names_by_uid(uids)
+            .unwrap_or_default()
     }
 
     // ── Advisory Pass B: historical co-change impact ─────────────

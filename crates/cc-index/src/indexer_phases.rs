@@ -289,6 +289,24 @@ impl Indexer {
             self.db.rebuild_test_edges_for_files(&changed_paths)?;
         }
 
+        // Graph signature gate: dispatch synthesis and community detection are
+        // both pure functions of the call graph + symbol structure. On
+        // incremental builds, if the signature matches the last run the synthetic
+        // edges and community assignments are already correct, so skip the whole
+        // block (Louvain + 7 synthesis passes). A full rebuild must always
+        // recompute (the DB was swapped out), so it bypasses the skip and still
+        // refreshes the stored signature.
+        let graph_sig = self.graph_signature()?;
+        if !full {
+            let last_sig = self
+                .db
+                .get_metadata("last_postprocess_graph_sig")?
+                .and_then(|s| s.parse::<u64>().ok());
+            if last_sig == Some(graph_sig) {
+                return Ok(());
+            }
+        }
+
         // Phase 7b: Dynamic dispatch synthesis (event emitter -> handler)
         if self.dispatch_synthesis {
             let synthesis_config = crate::dispatch_synthesis::SynthesisConfig {
@@ -401,6 +419,12 @@ impl Indexer {
 
         self.rebuild_communities()?;
 
+        // Persist the signature so the next incremental build can skip when the
+        // graph is unchanged. Written after synthesis + communities complete so a
+        // mid-pass failure never records a signature for work that did not finish.
+        self.db
+            .set_metadata("last_postprocess_graph_sig", &graph_sig.to_string())?;
+
         Ok(())
     }
 
@@ -415,40 +439,60 @@ impl Indexer {
         self.analyze_git_cochanges(project_path)?;
 
         // Phase 9: Infrastructure pass
-        let (mut infra_nodes, mut infra_edges) = crate::infra_pass::run_infra_pass(project_path);
-        if !infra_nodes.is_empty() || !infra_edges.is_empty() {
-            // Bind infra nodes to code symbols before persisting
-            let bind_symbols: Vec<_> = write_units
-                .iter()
-                .flat_map(|u| u.outcome.symbols.iter().cloned())
-                .collect();
-            crate::infra_pass::bind_infra_to_symbols(&mut infra_nodes, &bind_symbols);
+        //
+        // The infra pass scans the whole project (Dockerfiles, compose, K8s,
+        // terraform, compile_commands) independently of the language parser
+        // pipeline — so infra files generally never appear in `write_units` and
+        // their changes cannot be inferred from it. To stay strictly correct
+        // *and* skip when unchanged, gate the pass on a signature over the infra
+        // candidate set (paths + mtime + size). Computing the signature only
+        // walks the tree and stats files; it never reads/parses contents nor
+        // binds symbols, so it is strictly cheaper than the pass it gates.
+        let infra_sig = Self::infra_signature(project_path);
+        let last_infra_sig = self
+            .db
+            .get_metadata("last_infra_sig")?
+            .and_then(|s| s.parse::<u64>().ok());
+        if last_infra_sig != Some(infra_sig) {
+            let (mut infra_nodes, mut infra_edges) =
+                crate::infra_pass::run_infra_pass(project_path);
+            if !infra_nodes.is_empty() || !infra_edges.is_empty() {
+                // Bind infra nodes to code symbols before persisting
+                let bind_symbols: Vec<_> = write_units
+                    .iter()
+                    .flat_map(|u| u.outcome.symbols.iter().cloned())
+                    .collect();
+                crate::infra_pass::bind_infra_to_symbols(&mut infra_nodes, &bind_symbols);
 
-            // Match binding target URLs to known route nodes
-            crate::infra_pass::match_bindings_to_routes(&mut infra_edges, route_nodes);
+                // Match binding target URLs to known route nodes
+                crate::infra_pass::match_bindings_to_routes(&mut infra_edges, route_nodes);
 
-            self.db.replace_infra_data(&infra_nodes, &infra_edges)?;
-            let bound_count = infra_nodes
-                .iter()
-                .filter(|n| n.bound_symbol_uid.is_some())
-                .count();
-            let binding_count = infra_edges
-                .iter()
-                .filter(|e| {
-                    matches!(
-                        e.kind,
-                        cc_model::infra::InfraEdgeKind::BindsTopic
-                            | cc_model::infra::InfraEdgeKind::ConsumesQueue
-                    )
-                })
-                .count();
-            tracing::info!(
-                nodes = infra_nodes.len(),
-                edges = infra_edges.len(),
-                bound = bound_count,
-                bindings = binding_count,
-                "indexed infra graph"
-            );
+                self.db.replace_infra_data(&infra_nodes, &infra_edges)?;
+                let bound_count = infra_nodes
+                    .iter()
+                    .filter(|n| n.bound_symbol_uid.is_some())
+                    .count();
+                let binding_count = infra_edges
+                    .iter()
+                    .filter(|e| {
+                        matches!(
+                            e.kind,
+                            cc_model::infra::InfraEdgeKind::BindsTopic
+                                | cc_model::infra::InfraEdgeKind::ConsumesQueue
+                        )
+                    })
+                    .count();
+                tracing::info!(
+                    nodes = infra_nodes.len(),
+                    edges = infra_edges.len(),
+                    bound = bound_count,
+                    bindings = binding_count,
+                    "indexed infra graph"
+                );
+            }
+            // Record the signature only after a successful pass.
+            self.db
+                .set_metadata("last_infra_sig", &infra_sig.to_string())?;
         }
 
         // Phase 10: Resolver quality feedback
@@ -1004,11 +1048,33 @@ impl Indexer {
     }
 
     fn analyze_git_cochanges(&self, project_path: &Path) -> CcResult<()> {
+        // HEAD-skip: co-change edges only depend on commit history. If HEAD has
+        // not advanced since the last successful analysis, the result is
+        // unchanged (the `--since=1.year` window drifts but produces equivalent
+        // output while HEAD is fixed), so we can skip the git log + parse + write.
+        let current_head = Self::current_git_head(project_path);
+        if let Some(head) = current_head.as_deref() {
+            if !head.is_empty() {
+                let last_head = self.db.get_metadata("last_cochange_head")?;
+                if last_head.as_deref() == Some(head) {
+                    return Ok(());
+                }
+            }
+        }
+
         match crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500) {
             Ok(co_changes) => {
                 if !co_changes.is_empty() {
                     self.db.insert_co_change_edges_batch(&co_changes)?;
                     tracing::info!(count = co_changes.len(), "indexed git co-change edges");
+                }
+                // Record HEAD only after a successful analysis so a transient
+                // failure never poisons the skip cache. A non-git repo yields
+                // `None`/empty head and simply skips the metadata update.
+                if let Some(head) = current_head.as_deref() {
+                    if !head.is_empty() {
+                        self.db.set_metadata("last_cochange_head", head)?;
+                    }
                 }
             }
             Err(err) => {
@@ -1017,6 +1083,140 @@ impl Indexer {
             }
         }
         Ok(())
+    }
+
+    /// Deterministic signature over the infrastructure file inputs: the sorted
+    /// set of discovered infra candidate paths, each tagged with its mtime and
+    /// size. Adding, removing, or modifying any infra file (Dockerfile, compose,
+    /// K8s manifest, terraform, compile_commands) changes the signature and
+    /// forces the infra pass to recompute.
+    ///
+    /// This only walks the tree and stats files (the `discover_infra_files`
+    /// strong-feature filter), so it is strictly cheaper than the full pass
+    /// (read + parse + symbol bind + route match + `replace_infra_data`) it
+    /// gates. mtime + size matches the change-detection contract used by the
+    /// scan/diff fast path.
+    fn infra_signature(project_path: &Path) -> u64 {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let mut candidates = crate::infra_pass::discover_infra_files(project_path);
+        candidates.sort_by(|a, b| a.rel_path.cmp(&b.rel_path));
+
+        let mut hasher = DefaultHasher::new();
+        candidates.len().hash(&mut hasher);
+        for candidate in &candidates {
+            candidate.rel_path.hash(&mut hasher);
+            if let Ok(metadata) = std::fs::metadata(&candidate.abs_path) {
+                metadata.len().hash(&mut hasher);
+                let mtime = metadata
+                    .modified()
+                    .ok()
+                    .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                    .map(|d| d.as_secs())
+                    .unwrap_or(0);
+                mtime.hash(&mut hasher);
+            }
+        }
+        hasher.finish()
+    }
+
+    /// Resolve the current git HEAD sha for `project_path`. Returns `None` when
+    /// git is unavailable or the directory is not a git repository, in which
+    /// case callers must fall back to running analysis unconditionally (never
+    /// permanently skip just because HEAD could not be read).
+    fn current_git_head(project_path: &Path) -> Option<String> {
+        let output = std::process::Command::new("git")
+            .arg("-C")
+            .arg(project_path)
+            .arg("rev-parse")
+            .arg("HEAD")
+            .output()
+            .ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        let head = String::from_utf8_lossy(&output.stdout).trim().to_string();
+        if head.is_empty() {
+            None
+        } else {
+            Some(head)
+        }
+    }
+
+    /// Deterministic signature over the *inputs* of dispatch synthesis and
+    /// community detection: the real (non-synthetic) call graph plus the symbol
+    /// structure (uid/name/kind/container).
+    ///
+    /// Synthesis is a pure function of the real call edges + symbols, so its
+    /// output (synthetic edges) is fully determined by them; community detection
+    /// then runs over real + synthetic edges, which is therefore also determined
+    /// by the same inputs. Hashing real edges only (excluding `synthesized_by IS
+    /// NOT NULL`) is both sufficient and necessary: necessary because synthesis
+    /// writes synthetic edges back into `call_edges`, so a signature that
+    /// included them would drift every run and never match.
+    ///
+    /// Cost is O(E + S) — strictly less than the Louvain + 7 synthesis passes it
+    /// gates — so it is a net win when unchanged and free overhead when changed
+    /// (those passes would scan the same data anyway).
+    ///
+    /// `DefaultHasher` (SipHash with a fixed key) is deterministic across
+    /// processes, so persisting the resulting u64 across runs is sound.
+    fn graph_signature(&self) -> CcResult<u64> {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let mut hasher = DefaultHasher::new();
+
+        // Real call graph (synthetic edges excluded), ordered in SQL for a
+        // deterministic traversal without a Rust-side sort over a large vector.
+        let edge_rows = self.db.query_json(
+            "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
+             WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
+             AND synthesized_by IS NULL \
+             ORDER BY caller_symbol_uid, callee_symbol_uid",
+            &[],
+        )?;
+        edge_rows.len().hash(&mut hasher);
+        for row in &edge_rows {
+            row.get("caller_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+            row.get("callee_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+        }
+
+        // Symbol structure: uid/name/kind/container, ordered by uid in SQL for a
+        // deterministic traversal without a Rust-side sort over a large vector.
+        let symbol_rows = self.db.query_json(
+            "SELECT symbol_uid, name, kind, container FROM symbols \
+             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
+            &[],
+        )?;
+        symbol_rows.len().hash(&mut hasher);
+        for row in &symbol_rows {
+            row.get("symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+            row.get("name")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+            row.get("kind")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+            row.get("container")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+        }
+
+        Ok(hasher.finish())
     }
 
     fn rebuild_communities(&self) -> CcResult<()> {

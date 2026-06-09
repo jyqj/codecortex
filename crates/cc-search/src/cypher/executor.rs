@@ -1213,14 +1213,21 @@ pub(crate) fn translate_variable_length(
         format!(" JOIN {dst_table} AS {dst_alias} ON {dst_alias}.{join_col} = path_cte.uid")
     };
 
+    // Reachability semantics (not path enumeration): `UNION` dedupes
+    // (root_uid, uid, depth) tuples, so the working set is bounded by
+    // O(nodes x max_depth) instead of O(distinct paths). This removes the
+    // per-path `visited` string and its quadratic LIKE cycle-guard; cycles
+    // terminate at the `depth < max` cap. The trade-off is that variable-length
+    // results report the *set of reachable nodes* within the hop range and no
+    // longer carry path multiplicity (e.g. COUNT(*) counts nodes, not paths).
     let mut sql = format!(
-        "WITH RECURSIVE path_cte(root_uid, uid, depth, visited) AS (\
-            SELECT {seed_uid_expr}, {seed_uid_expr}, 0, CHAR(10) || {seed_uid_expr} || CHAR(10) FROM {seed_table} AS s WHERE {cte_where} \
-            UNION ALL \
-            SELECT pc.root_uid, ce.{vl_dst_col}, pc.depth + 1, pc.visited || ce.{vl_dst_col} || CHAR(10) \
+        "WITH RECURSIVE path_cte(root_uid, uid, depth) AS (\
+            SELECT {seed_uid_expr}, {seed_uid_expr}, 0 FROM {seed_table} AS s WHERE {cte_where} \
+            UNION \
+            SELECT pc.root_uid, ce.{vl_dst_col}, pc.depth + 1 \
             FROM path_cte pc \
             JOIN {vl_table} ce ON ce.{vl_src_col} = pc.uid \
-            WHERE pc.depth < CAST(?{max_param_idx} AS INTEGER) AND pc.visited NOT LIKE '%' || CHAR(10) || ce.{vl_dst_col} || CHAR(10) || '%'{extra_and}\
+            WHERE pc.depth < CAST(?{max_param_idx} AS INTEGER){extra_and}\
         ) \
         SELECT DISTINCT {select_cols} \
         FROM path_cte\

@@ -491,6 +491,65 @@ mod tests {
         assert!(params.contains(&"function".to_string()));
     }
 
+    /// Reachability-semantics variable-length traversal: a node reachable via
+    /// multiple paths is returned once, and a cycle terminates at the hop cap
+    /// instead of looping forever or exploding the row count.
+    #[test]
+    fn variable_length_reachability_dedups_and_terminates() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("varlen_reach.db"))
+            .unwrap()
+            .0;
+        let conn = db.read_conn().unwrap();
+        // Diamond A->B, A->C, B->D, C->D (D reachable via two paths) plus a
+        // back-edge D->A forming a cycle.
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');\
+             INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid) VALUES \
+                 ('a','src/x.rs','A','function',1,1,'uA'),\
+                 ('b','src/x.rs','B','function',2,2,'uB'),\
+                 ('c','src/x.rs','C','function',3,3,'uC'),\
+                 ('d','src/x.rs','D','function',4,4,'uD');\
+             INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid) VALUES \
+                 ('e1','src/x.rs','B',1,'uA','uB'),\
+                 ('e2','src/x.rs','C',1,'uA','uC'),\
+                 ('e3','src/x.rs','D',1,'uB','uD'),\
+                 ('e4','src/x.rs','D',1,'uC','uD'),\
+                 ('e5','src/x.rs','A',1,'uD','uA');",
+        )
+        .unwrap();
+
+        let result = cypher_query(
+            "MATCH (a:Function)-[:CALLS*1..3]->(b:Function) WHERE a.name = 'A' RETURN b.name",
+            &db,
+        )
+        .unwrap();
+
+        let names: Vec<String> = result
+            .rows
+            .iter()
+            .filter_map(|r| r.first().and_then(|v| v.as_str()).map(String::from))
+            .collect();
+
+        assert!(names.contains(&"B".to_string()), "B reachable at hop 1: {names:?}");
+        assert!(names.contains(&"C".to_string()), "C reachable at hop 1: {names:?}");
+        assert!(
+            names.contains(&"D".to_string()),
+            "D reachable via two paths: {names:?}"
+        );
+        assert_eq!(
+            names.iter().filter(|n| n.as_str() == "D").count(),
+            1,
+            "D must be returned once (reachability dedup), not per path: {names:?}"
+        );
+        // The D->A cycle must terminate and stay bounded by the reachable node set.
+        assert!(
+            result.rows.len() <= 4,
+            "cycle must not explode the result: {names:?}"
+        );
+    }
+
     #[test]
     fn translate_applies_default_limit_when_omitted() {
         // No explicit LIMIT → the default limit (50) is appended as the last param.

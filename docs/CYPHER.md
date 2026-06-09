@@ -37,7 +37,12 @@ Invalid patterns produce an explicit SQL error, not silent false results.
 ## Intentional limits
 
 - Read-only only: no `CREATE`, `MERGE`, `DELETE`, `SET`, `WITH`, or `UNWIND`.
-- `LIMIT` defaults to 50 when omitted.
+- `LIMIT` defaults to 50 when omitted. `graph_query` returns an envelope
+  `{ results, row_count, truncated, truncated_reason, limit_applied }`: when the
+  default limit may have clipped rows it sets `truncated: true` with
+  `truncated_reason: "default_limit"` (or `"output_budget"` when a server-side
+  item budget truncated them), so callers can tell a full result set from a
+  capped one.
 - `OPTIONAL MATCH` supports a single-hop optional relationship, either standalone
   or as the second clause anchored on a preceding single-node `MATCH` that shares
   the source variable. Chains of multiple optional clauses are not supported.

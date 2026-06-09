@@ -71,6 +71,17 @@ pub struct ImpactReport {
     pub confidence_weighted_risk: f64,
     pub cross_service_impacts: Vec<CrossServiceImpact>,
     pub historical_impacts: Vec<HistoricalImpact>,
+    /// True when the BFS stopped early (max_nodes / max_per_layer) or the
+    /// returned `impacted_symbols` were clipped to a result limit. Signals that
+    /// the blast radius is NOT fully covered — AI agents must not assume the
+    /// returned set is exhaustive.
+    pub truncated: bool,
+    /// Number of impacted symbols actually returned in `impacted_symbols`.
+    pub returned_symbol_count: usize,
+    /// Number of distinct impacted symbols discovered by the BFS before any
+    /// result-limit clipping. When `truncated` is true due to a BFS cap, this
+    /// is a lower bound on the true blast radius.
+    pub total_impacted_discovered: usize,
 }
 
 /// A community boundary crossing detected during impact analysis.

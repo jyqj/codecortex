@@ -4,6 +4,9 @@ use cc_model::graph_catalog::graph_relationships;
 use cc_model::{CcError, CcResult};
 use std::collections::HashMap;
 
+/// Default LIMIT applied when a Cypher query omits an explicit LIMIT clause.
+pub(crate) const DEFAULT_CYPHER_LIMIT: usize = 50;
+
 // ── Executor ───────────────────────────────────────
 
 /// Edge-type to table mapping.
@@ -550,6 +553,8 @@ pub fn execute(query: &CypherQuery, db: &IndexDb) -> CcResult<CypherResult> {
             columns: Vec::new(),
             rows: Vec::new(),
             row_count: 0,
+            default_limit_applied: false,
+            limit: None,
         });
     }
 
@@ -633,10 +638,14 @@ pub fn execute(query: &CypherQuery, db: &IndexDb) -> CcResult<CypherResult> {
         .collect();
 
     let row_count = rows.len();
+    let default_limit_applied = query.limit.is_none();
+    let limit = Some(query.limit.unwrap_or(DEFAULT_CYPHER_LIMIT));
     Ok(CypherResult {
         columns,
         rows,
         row_count,
+        default_limit_applied,
+        limit,
     })
 }
 
@@ -716,7 +725,7 @@ pub(crate) fn translate_single_node(
     }
 
     // LIMIT.
-    let limit = query.limit.unwrap_or(50);
+    let limit = query.limit.unwrap_or(DEFAULT_CYPHER_LIMIT);
     sql.push_str(&format!(" LIMIT ?{}", params.len() + 1));
     params.push(limit.to_string());
 
@@ -884,7 +893,7 @@ pub(crate) fn translate_single_hop(
     }
 
     // LIMIT.
-    let limit = query.limit.unwrap_or(50);
+    let limit = query.limit.unwrap_or(DEFAULT_CYPHER_LIMIT);
     sql.push_str(&format!(" LIMIT ?{}", params.len() + 1));
     params.push(limit.to_string());
 
@@ -1038,7 +1047,7 @@ pub(crate) fn translate_optional_match(
         sql.push_str(&parts.join(", "));
     }
 
-    let limit = query.limit.unwrap_or(50);
+    let limit = query.limit.unwrap_or(DEFAULT_CYPHER_LIMIT);
     sql.push_str(&format!(" LIMIT ?{}", params.len() + 1));
     params.push(limit.to_string());
 
@@ -1247,7 +1256,7 @@ pub(crate) fn translate_variable_length(
     }
 
     // LIMIT.
-    let limit = query.limit.unwrap_or(50);
+    let limit = query.limit.unwrap_or(DEFAULT_CYPHER_LIMIT);
     sql.push_str(&format!(" LIMIT ?{}", params.len() + 1));
     params.push(limit.to_string());
 
@@ -1320,6 +1329,8 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
     // Execute the first sub-query to establish columns.
     let first_result = execute(&uq.queries[0], db)?;
     let columns = first_result.columns.clone();
+    let default_limit_applied = first_result.default_limit_applied;
+    let limit = first_result.limit;
     let mut all_rows: Vec<Vec<serde_json::Value>> = first_result.rows;
 
     // Execute remaining sub-queries and merge.
@@ -1367,6 +1378,8 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
         columns,
         rows: all_rows,
         row_count,
+        default_limit_applied,
+        limit,
     })
 }
 

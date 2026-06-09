@@ -244,6 +244,10 @@ pub struct CypherResult {
     pub columns: Vec<String>,
     pub rows: Vec<Vec<serde_json::Value>>,
     pub row_count: usize,
+    /// True when the query had no explicit LIMIT and the default LIMIT was applied.
+    pub default_limit_applied: bool,
+    /// The LIMIT value that actually took effect (explicit or default), if any.
+    pub limit: Option<usize>,
 }
 
 #[derive(Debug, Clone)]

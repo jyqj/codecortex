@@ -31,7 +31,7 @@ for the authoritative runtime surface.
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
 | `relations` | Get callers, callees, refs, or type hierarchy | `symbol`, `kind`: callers / callees / both / refs / hierarchy, `limit`, `direction` | List of related symbols with edge metadata |
-| `impact` | Understand change blast radius | `scope`: changes / tests / dead_code / circular / dependents, `files`, `base_branch`, `granularity`, `confidence_threshold` | Impacted symbols, affected tests, dead code list, or dependency cycles |
+| `impact` | Understand change blast radius | `scope`: changes / tests / dead_code / circular / dependents, `files`, `base_branch`, `granularity`, `confidence_threshold`, `max_nodes` / `max_per_layer` (changes-scope BFS caps) | Impacted symbols (with `truncated` + `total_impacted_discovered` when the blast-radius BFS is capped), affected tests, dead code list, or dependency cycles |
 | `architecture` | Get high-level project structure | `aspect`: overview / communities / frameworks / routes / services / async / boundaries / env / unresolved, `filter`, `limit` | Architectural view matching the requested aspect |
 
 ## Utilities
@@ -39,7 +39,7 @@ for the authoritative runtime surface.
 | Tool | When to use | Key params | Returns |
 |------|-------------|------------|---------|
 | `files` | List indexed files or read a code region | `action`: list / region / expand, `path`, `start_line`, `end_line`, `context_lines` | File list, or source code for the requested line range |
-| `graph_query` | Run a Cypher-subset query against the code graph | `query` (Cypher string) | Query result rows (see [CYPHER.md](CYPHER.md)) |
+| `graph_query` | Run a Cypher-subset query against the code graph | `query` (Cypher string) | Envelope `{ results, row_count, truncated, truncated_reason, limit_applied }` (see [CYPHER.md](CYPHER.md)) |
 | `ingest_traces` | Feed OTLP runtime traces to validate HTTP edges | `traces[]` (service_name, method, path, status_code) | Validation summary with matched/boosted edge counts |
 | `adr` | Manage Architecture Decision Records | `action`: list / get / store / delete, `adr_id`, `title`, `status`, `context`, `decision` | ADR list or individual record |
 

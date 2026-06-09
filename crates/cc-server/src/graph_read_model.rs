@@ -556,6 +556,7 @@ impl GraphReadModel {
         &self,
         callee_uids: &[String],
         confidence_threshold: Option<f64>,
+        limit: Option<usize>,
     ) -> CcResult<Vec<GraphSymbolLite>> {
         let conn = self.db.read_conn()?;
         let mut callers = Vec::new();
@@ -570,8 +571,18 @@ impl GraphReadModel {
                 .map(|idx| format!("?{}", idx + 1))
                 .collect::<Vec<_>>()
                 .join(",");
+            // Parameter slots after the IN(...) uids: optional confidence
+            // threshold, then optional LIMIT, in that bind order.
+            let mut next_param = batch.len() + 1;
             let conf_clause = if confidence_threshold.is_some() {
-                format!("AND ce.parser_confidence >= ?{}", batch.len() + 1)
+                let clause = format!("AND ce.parser_confidence >= ?{}", next_param);
+                next_param += 1;
+                clause
+            } else {
+                String::new()
+            };
+            let limit_clause = if limit.is_some() {
+                format!("LIMIT ?{}", next_param)
             } else {
                 String::new()
             };
@@ -581,8 +592,9 @@ impl GraphReadModel {
                  JOIN symbols s ON s.symbol_uid = ce.caller_symbol_uid \
                  WHERE ce.callee_symbol_uid IN ({}) \
                  AND ce.caller_symbol_uid IS NOT NULL \
+                 {} \
                  {}",
-                placeholders, conf_clause
+                placeholders, conf_clause, limit_clause
             );
 
             let mut stmt = conn
@@ -594,6 +606,9 @@ impl GraphReadModel {
             }
             if let Some(threshold) = confidence_threshold {
                 params.push(Box::new(threshold));
+            }
+            if let Some(cap) = limit {
+                params.push(Box::new(cap as i64));
             }
             let param_refs: Vec<&dyn rusqlite::types::ToSql> =
                 params.iter().map(|param| param.as_ref()).collect();

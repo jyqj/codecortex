@@ -236,6 +236,8 @@ impl CodeIndexBackend {
                     file_path,
                     limit,
                     confidence_threshold,
+                    None,
+                    None,
                 )
             }
             "architecture" => {

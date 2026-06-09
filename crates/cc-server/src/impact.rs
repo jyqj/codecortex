@@ -9,6 +9,41 @@ use std::sync::Arc;
 
 use crate::graph_read_model::GraphReadModel;
 
+/// Tunable bounds for impact BFS expansion.
+///
+/// `max_nodes`, `max_per_layer` and `result_limit` are all optional; `None`
+/// preserves the historical unbounded behaviour. The capped MCP path supplies
+/// concrete values so a hub callee cannot fan out into an unbounded report.
+#[derive(Debug, Clone)]
+pub struct ImpactOptions {
+    pub max_depth: usize,
+    pub confidence_threshold: Option<f64>,
+    /// Upper bound on the deduplicated impacted-symbol count expanded by BFS.
+    /// When reached, expansion stops and `truncated` is set.
+    pub max_nodes: Option<usize>,
+    /// Upper bound on callers fetched per BFS layer; pushed down as the
+    /// `reverse_callers` SQL LIMIT. When a layer hits this cap, `truncated`
+    /// is set.
+    pub max_per_layer: Option<usize>,
+    /// Final cap on the returned `impacted_symbols`. Seeds (hop 0) are kept
+    /// first; the remainder are clipped to this size when exceeded.
+    pub result_limit: Option<usize>,
+}
+
+impl ImpactOptions {
+    /// Legacy/unbounded options: only `max_depth` + optional confidence apply.
+    #[cfg(test)]
+    pub fn unbounded(max_depth: usize, confidence_threshold: Option<f64>) -> Self {
+        Self {
+            max_depth,
+            confidence_threshold,
+            max_nodes: None,
+            max_per_layer: None,
+            result_limit: None,
+        }
+    }
+}
+
 pub struct ImpactAnalyzer {
     db: Arc<IndexDb>,
     project_root: Option<String>,
@@ -105,14 +140,26 @@ impl ImpactAnalyzer {
 
     #[cfg(test)]
     pub fn analyze(&self, changed_files: &[String], max_depth: usize) -> CcResult<ImpactReport> {
-        self.analyze_with_options(changed_files, max_depth, None)
+        self.analyze_with(changed_files, &ImpactOptions::unbounded(max_depth, None))
     }
 
+    #[cfg(test)]
     pub fn analyze_with_options(
         &self,
         changed_files: &[String],
         max_depth: usize,
         confidence_threshold: Option<f64>,
+    ) -> CcResult<ImpactReport> {
+        self.analyze_with(
+            changed_files,
+            &ImpactOptions::unbounded(max_depth, confidence_threshold),
+        )
+    }
+
+    pub fn analyze_with(
+        &self,
+        changed_files: &[String],
+        opts: &ImpactOptions,
     ) -> CcResult<ImpactReport> {
         if changed_files.is_empty() {
             return Ok(ImpactReport {
@@ -127,9 +174,14 @@ impl ImpactAnalyzer {
                 confidence_weighted_risk: 0.0,
                 cross_service_impacts: Vec::new(),
                 historical_impacts: Vec::new(),
+                truncated: false,
+                returned_symbol_count: 0,
+                total_impacted_discovered: 0,
             });
         }
 
+        let max_depth = opts.max_depth;
+        let confidence_threshold = opts.confidence_threshold;
         let read_model = GraphReadModel::without_http_bridges(Arc::clone(&self.db));
 
         // 1. Find symbols in changed files (hop 0 — critical)
@@ -138,6 +190,7 @@ impl ImpactAnalyzer {
         // Build seed impacted symbols
         let mut impacted: Vec<ImpactedSymbol> = Vec::new();
         let mut visited: HashSet<String> = HashSet::new();
+        let mut truncated = false;
 
         for seed in &seed_symbols {
             visited.insert(seed.symbol_uid.clone());
@@ -153,22 +206,43 @@ impl ImpactAnalyzer {
             });
         }
 
-        // 2. BFS reverse callers with batch queries and optional confidence filtering
+        // 2. BFS reverse callers with batch queries, optional confidence filtering
+        //    and safety caps (max_per_layer pushed down as SQL LIMIT, max_nodes
+        //    bounding total expansion). Seeds always remain in `impacted`.
         let mut current_layer: Vec<String> = seed_symbols
             .iter()
             .map(|seed| seed.symbol_uid.clone())
             .collect();
 
-        for hop in 1..=max_depth {
+        'bfs: for hop in 1..=max_depth {
             if current_layer.is_empty() {
                 break;
             }
+            if let Some(cap) = opts.max_nodes {
+                if impacted.len() >= cap {
+                    truncated = true;
+                    break;
+                }
+            }
             let mut next_layer: Vec<String> = Vec::new();
 
-            for caller in read_model
-                .reverse_callers(&current_layer, confidence_threshold)
-                .unwrap_or_default()
-            {
+            let layer_callers = read_model
+                .reverse_callers(&current_layer, confidence_threshold, opts.max_per_layer)
+                .unwrap_or_default();
+            // A full layer at the per-layer cap means callers were dropped.
+            if let Some(per_layer) = opts.max_per_layer {
+                if layer_callers.len() >= per_layer {
+                    truncated = true;
+                }
+            }
+
+            for caller in layer_callers {
+                if let Some(cap) = opts.max_nodes {
+                    if impacted.len() >= cap {
+                        truncated = true;
+                        break 'bfs;
+                    }
+                }
                 if visited.insert(caller.symbol_uid.clone()) {
                     impacted.push(ImpactedSymbol {
                         symbol_uid: caller.symbol_uid.clone(),
@@ -184,6 +258,19 @@ impl ImpactAnalyzer {
                 }
             }
             current_layer = next_layer;
+        }
+
+        // 2a. Record the deduplicated discovery total before any result clipping.
+        let total_impacted_discovered = impacted.len();
+
+        // 2b. Clip the returned set to `result_limit`, keeping seeds (hop 0)
+        //     first so the critical changed symbols are never dropped.
+        if let Some(limit) = opts.result_limit {
+            if impacted.len() > limit {
+                impacted.sort_by_key(|sym| sym.hop_depth);
+                impacted.truncate(limit);
+                truncated = true;
+            }
         }
 
         // 3. Collect suggested tests — cover both changed files and impacted files
@@ -280,6 +367,8 @@ impl ImpactAnalyzer {
             historical_count: historical_impacts.len(),
         };
 
+        let returned_symbol_count = impacted.len();
+
         Ok(ImpactReport {
             changed_files: changed_files.to_vec(),
             impacted_symbols: impacted,
@@ -289,6 +378,9 @@ impl ImpactAnalyzer {
             confidence_weighted_risk,
             cross_service_impacts,
             historical_impacts,
+            truncated,
+            returned_symbol_count,
+            total_impacted_discovered,
         })
     }
 
@@ -815,6 +907,133 @@ mod tests {
             hop1.is_empty(),
             "high confidence threshold should filter low-confidence edges"
         );
+    }
+
+    // ── analyze_with: result_limit clips returned symbols ───────────
+
+    #[test]
+    fn analyze_with_result_limit_truncates_and_keeps_seeds() {
+        let (_dir, db) = temp_db();
+        insert_file(&db, "src/lib.rs");
+        insert_file(&db, "src/callers.rs");
+        // One seed callee with many hop-1 callers.
+        insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
+        for i in 0..10 {
+            let uid = format!("uid_c{}", i);
+            insert_symbol(&db, &uid, &format!("C{}", i), "src/callers.rs", "function", None);
+            insert_call_edge(&db, &format!("edge_{}", i), "src/callers.rs", &uid, "uid_seed");
+        }
+
+        let analyzer = ImpactAnalyzer::new(db);
+        // Unbounded discovers seed + 10 callers = 11.
+        let full = analyzer
+            .analyze_with(
+                &["src/lib.rs".to_string()],
+                &ImpactOptions::unbounded(3, None),
+            )
+            .unwrap();
+        assert_eq!(full.impacted_symbols.len(), 11);
+        assert!(!full.truncated);
+        assert_eq!(full.total_impacted_discovered, 11);
+        assert_eq!(full.returned_symbol_count, 11);
+
+        // result_limit=5 clips to 5 and flags truncation.
+        let opts = ImpactOptions {
+            max_depth: 3,
+            confidence_threshold: None,
+            max_nodes: None,
+            max_per_layer: None,
+            result_limit: Some(5),
+        };
+        let clipped = analyzer.analyze_with(&["src/lib.rs".to_string()], &opts).unwrap();
+        assert!(clipped.truncated);
+        assert_eq!(clipped.impacted_symbols.len(), 5);
+        assert_eq!(clipped.returned_symbol_count, 5);
+        // Discovered count reflects pre-clip total.
+        assert_eq!(clipped.total_impacted_discovered, 11);
+        // The seed (hop 0) must survive the clip.
+        assert!(clipped
+            .impacted_symbols
+            .iter()
+            .any(|s| s.hop_depth == 0 && s.name == "Seed"));
+    }
+
+    // ── analyze_with: max_per_layer pushes down SQL LIMIT ───────────
+
+    #[test]
+    fn analyze_with_max_per_layer_caps_callers() {
+        let (_dir, db) = temp_db();
+        insert_file(&db, "src/lib.rs");
+        insert_file(&db, "src/callers.rs");
+        insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
+        for i in 0..10 {
+            let uid = format!("uid_c{}", i);
+            insert_symbol(&db, &uid, &format!("C{}", i), "src/callers.rs", "function", None);
+            insert_call_edge(&db, &format!("edge_{}", i), "src/callers.rs", &uid, "uid_seed");
+        }
+
+        let analyzer = ImpactAnalyzer::new(db);
+        let opts = ImpactOptions {
+            max_depth: 3,
+            confidence_threshold: None,
+            max_nodes: None,
+            max_per_layer: Some(3),
+            result_limit: None,
+        };
+        let report = analyzer.analyze_with(&["src/lib.rs".to_string()], &opts).unwrap();
+
+        // Only 3 of the 10 hop-1 callers are fetched (SQL LIMIT).
+        let hop1 = report
+            .impacted_symbols
+            .iter()
+            .filter(|s| s.hop_depth == 1)
+            .count();
+        assert_eq!(hop1, 3);
+        assert!(report.truncated);
+    }
+
+    // ── analyze_with: max_nodes stops BFS expansion ─────────────────
+
+    #[test]
+    fn analyze_with_max_nodes_stops_expansion() {
+        let (_dir, db) = temp_db();
+        insert_file(&db, "src/lib.rs");
+        insert_file(&db, "src/callers.rs");
+        insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
+        for i in 0..10 {
+            let uid = format!("uid_c{}", i);
+            insert_symbol(&db, &uid, &format!("C{}", i), "src/callers.rs", "function", None);
+            insert_call_edge(&db, &format!("edge_{}", i), "src/callers.rs", &uid, "uid_seed");
+        }
+
+        let analyzer = ImpactAnalyzer::new(db);
+        // max_nodes=4: seed + a few callers before the cap halts expansion.
+        let opts = ImpactOptions {
+            max_depth: 3,
+            confidence_threshold: None,
+            max_nodes: Some(4),
+            max_per_layer: None,
+            result_limit: None,
+        };
+        let report = analyzer.analyze_with(&["src/lib.rs".to_string()], &opts).unwrap();
+
+        assert!(report.truncated);
+        assert!(report.impacted_symbols.len() <= 4);
+        assert!(!report.impacted_symbols.is_empty());
+    }
+
+    // ── analyze_with: empty changed_files carries truncation fields ──
+
+    #[test]
+    fn analyze_with_empty_changed_files_reports_zero_counts() {
+        let (_dir, db) = temp_db();
+        let analyzer = ImpactAnalyzer::new(db);
+        let report = analyzer
+            .analyze_with(&[], &ImpactOptions::unbounded(3, None))
+            .unwrap();
+        assert!(!report.truncated);
+        assert_eq!(report.returned_symbol_count, 0);
+        assert_eq!(report.total_impacted_discovered, 0);
     }
 
     // ── suggested_tests via test_edges ───────────────────────────────

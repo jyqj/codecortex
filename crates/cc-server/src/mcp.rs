@@ -374,6 +374,8 @@ impl CodeCortexMcpServer {
         let file_path = p.file_path;
         let limit = p.limit;
         let confidence_threshold = p.confidence_threshold;
+        let max_nodes = p.max_nodes;
+        let max_per_layer = p.max_per_layer;
         spawn_handler!(index, move |rt| handlers::facade::handle_impact(
             rt,
             &scope,
@@ -383,6 +385,8 @@ impl CodeCortexMcpServer {
             file_path.as_deref(),
             limit,
             confidence_threshold,
+            max_nodes,
+            max_per_layer,
         ))
     }
 

@@ -7,14 +7,40 @@ use super::SharedCodeIndex;
 pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("graph_query");
-    let results = rt.graph_query(query).map_err(|e| e.to_string())?;
+    let output = rt.graph_query(query).map_err(|e| e.to_string())?;
+
+    let default_limit_applied = output.default_limit_applied;
+    let limit_applied = output.limit;
+    let mut rows = output.rows;
+    let has_explicit_limit = query.to_uppercase().contains("LIMIT");
+
     // Enforce adaptive item limit when the query itself has no explicit LIMIT.
-    let results = if !query.to_uppercase().contains("LIMIT") && results.len() > budget.max_items {
-        results.into_iter().take(budget.max_items).collect()
+    let budget_truncated = !has_explicit_limit && rows.len() > budget.max_items;
+    if budget_truncated {
+        rows.truncate(budget.max_items);
+    }
+
+    // A default-LIMIT truncation is signalled when no explicit LIMIT was given
+    // and the returned rows exactly fill the default limit (likely more exist).
+    let default_limit_truncated =
+        default_limit_applied && limit_applied.is_some_and(|lim| rows.len() == lim);
+
+    let (truncated, truncated_reason) = if budget_truncated {
+        (true, Some("output_budget"))
+    } else if default_limit_truncated {
+        (true, Some("default_limit"))
     } else {
-        results
+        (false, None)
     };
-    serde_json::to_value(results).map_err(|e| e.to_string())
+
+    let row_count = rows.len();
+    Ok(serde_json::json!({
+        "results": rows,
+        "row_count": row_count,
+        "truncated": truncated,
+        "truncated_reason": truncated_reason,
+        "limit_applied": limit_applied,
+    }))
 }
 
 /// Trace call path between two symbols (rich version with optional snippets).
@@ -778,4 +804,52 @@ pub fn type_hierarchy(
         include_methods,
     )
     .map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn build_test_index() -> (tempfile::TempDir, SharedCodeIndex) {
+        let fixture_src = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../cc-eval/fixtures/sample-project");
+        let tmp = tempfile::TempDir::new().unwrap();
+        for entry in std::fs::read_dir(&fixture_src).unwrap() {
+            let entry = entry.unwrap();
+            if entry.file_type().unwrap().is_file() {
+                std::fs::copy(entry.path(), tmp.path().join(entry.file_name())).unwrap();
+            }
+        }
+        let mut idx = crate::engine::CodeIndex::new(Some(tmp.path())).unwrap();
+        idx.build_index(true).unwrap();
+        (tmp, std::sync::Arc::new(std::sync::RwLock::new(idx)))
+    }
+
+    #[test]
+    fn graph_query_returns_truncation_envelope() {
+        let (_tmp, rt) = build_test_index();
+        let result = graph_query(rt, "MATCH (f:Function) RETURN f.name").unwrap();
+
+        // Envelope shape: results array + truncation signals.
+        assert!(result.get("results").unwrap().is_array());
+        assert!(result.get("row_count").unwrap().is_u64());
+        assert!(result.get("truncated").unwrap().is_boolean());
+        assert!(result.get("truncated_reason").is_some());
+        // No explicit LIMIT → default limit of 50 reported.
+        assert_eq!(result.get("limit_applied").unwrap().as_u64(), Some(50));
+    }
+
+    #[test]
+    fn graph_query_explicit_limit_not_default_truncated() {
+        let (_tmp, rt) = build_test_index();
+        let result = graph_query(rt, "MATCH (f:Function) RETURN f.name LIMIT 1").unwrap();
+
+        assert!(result.get("results").unwrap().is_array());
+        assert_eq!(result.get("limit_applied").unwrap().as_u64(), Some(1));
+        // An explicit LIMIT must never be reported as a default_limit truncation.
+        assert_ne!(
+            result.get("truncated_reason").unwrap().as_str(),
+            Some("default_limit")
+        );
+    }
 }

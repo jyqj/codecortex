@@ -12,7 +12,7 @@ use serde::Serialize;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
-use crate::impact::ImpactAnalyzer;
+use crate::impact::{ImpactAnalyzer, ImpactOptions};
 
 use super::engine::{centrality_hint, CodeIndex};
 
@@ -106,11 +106,28 @@ impl CodeIndex {
         changed_files: &[String],
         confidence_threshold: Option<f32>,
     ) -> CcResult<ImpactReport> {
-        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with_options(
-            changed_files,
-            3,
-            confidence_threshold.map(|v| v as f64),
-        )
+        self.detect_impact_capped(changed_files, confidence_threshold, None, None, None)
+    }
+
+    /// Like `detect_impact` but with explicit BFS safety caps. `result_limit`
+    /// clips the returned `impacted_symbols`; `max_nodes`/`max_per_layer` bound
+    /// the BFS expansion. `None` for all caps reproduces the legacy behaviour.
+    pub fn detect_impact_capped(
+        &self,
+        changed_files: &[String],
+        confidence_threshold: Option<f32>,
+        result_limit: Option<usize>,
+        max_nodes: Option<usize>,
+        max_per_layer: Option<usize>,
+    ) -> CcResult<ImpactReport> {
+        let opts = ImpactOptions {
+            max_depth: 3,
+            confidence_threshold: confidence_threshold.map(|v| v as f64),
+            max_nodes,
+            max_per_layer,
+            result_limit,
+        };
+        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with(changed_files, &opts)
     }
 
     pub fn analyze_impact(
@@ -118,12 +135,27 @@ impl CodeIndex {
         base_ref: Option<&str>,
         confidence_threshold: Option<f32>,
     ) -> CcResult<ImpactReport> {
+        self.analyze_impact_capped(base_ref, confidence_threshold, None, None, None)
+    }
+
+    /// Git-diff-based counterpart to `detect_impact_capped`.
+    pub fn analyze_impact_capped(
+        &self,
+        base_ref: Option<&str>,
+        confidence_threshold: Option<f32>,
+        result_limit: Option<usize>,
+        max_nodes: Option<usize>,
+        max_per_layer: Option<usize>,
+    ) -> CcResult<ImpactReport> {
         let changed = self.git_changed_files(base_ref)?;
-        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with_options(
-            &changed,
-            3,
-            confidence_threshold.map(|v| v as f64),
-        )
+        let opts = ImpactOptions {
+            max_depth: 3,
+            confidence_threshold: confidence_threshold.map(|v| v as f64),
+            max_nodes,
+            max_per_layer,
+            result_limit,
+        };
+        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with(&changed, &opts)
     }
 
     pub fn git_changed_files(&self, base_ref: Option<&str>) -> CcResult<Vec<String>> {

@@ -16,6 +16,8 @@ const MAX_QUERY_LEN: usize = 4096;
 const MAX_PATH_LEN: usize = 1024;
 const MAX_BRANCH_LEN: usize = 256;
 const MAX_TRACE_ITEMS: usize = 1000;
+/// Hard ceiling for impact blast-radius BFS caps (max_nodes / max_per_layer).
+const MAX_BFS_NODES: usize = 5000;
 const MAX_FILE_ITEMS: usize = 200;
 const MAX_SYMBOL_ITEMS: usize = 10;
 const MAX_ADR_TEXT_LEN: usize = 65536;
@@ -737,6 +739,20 @@ pub struct ImpactParams {
     #[serde(default)]
     pub confidence_threshold: Option<f32>,
 
+    /// Safety cap on the total number of impacted symbols the blast-radius BFS
+    /// will expand (deduplicated). When reached, expansion stops early and the
+    /// report's `truncated` flag is set. Only applies to the `changes` scope.
+    /// Defaults to a bounded value derived from `limit` when omitted.
+    #[serde(default)]
+    pub max_nodes: Option<usize>,
+
+    /// Safety cap on the number of callers fetched per BFS layer (pushed down
+    /// as a SQL LIMIT). Prevents a hub callee from returning every caller. When
+    /// a layer hits this cap, the report's `truncated` flag is set. Only
+    /// applies to the `changes` scope. Defaults to 500 when omitted.
+    #[serde(default)]
+    pub max_per_layer: Option<usize>,
+
     /// Optional project root override.
     #[serde(default)]
     pub project_path: Option<String>,
@@ -759,6 +775,12 @@ impl ImpactParams {
         if let Some(ref mut t) = self.confidence_threshold {
             *t = t.clamp(0.0, 1.0);
         }
+        if let Some(ref mut n) = self.max_nodes {
+            *n = (*n).clamp(1, MAX_BFS_NODES);
+        }
+        if let Some(ref mut n) = self.max_per_layer {
+            *n = (*n).clamp(1, MAX_BFS_NODES);
+        }
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
         validate_enum(
             &self.scope,
@@ -778,6 +800,8 @@ impl Default for ImpactParams {
             file_path: None,
             limit: default_limit(),
             confidence_threshold: None,
+            max_nodes: None,
+            max_per_layer: None,
             project_path: None,
         }
     }

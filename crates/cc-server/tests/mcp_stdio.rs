@@ -518,12 +518,13 @@ async fn stdio_analysis_tools_smoke() -> Result<(), Box<dyn std::error::Error>> 
     )
     .await?;
     assert!(
-        gq.is_array(),
-        "graph_query should return an array of rows: {gq}"
+        gq.is_object(),
+        "graph_query should return a result envelope object: {gq}"
     );
+    let gq_results = gq.get("results").and_then(|v| v.as_array());
     assert!(
-        !gq.as_array().unwrap().is_empty(),
-        "graph_query for Function nodes should return rows: {gq}"
+        gq_results.is_some_and(|rows| !rows.is_empty()),
+        "graph_query for Function nodes should return rows in 'results': {gq}"
     );
 
     // adr lifecycle: list (empty) → store → list (present) → get → delete.

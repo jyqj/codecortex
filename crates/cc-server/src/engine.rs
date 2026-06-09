@@ -37,6 +37,17 @@ impl IndexSnapshot {
     }
 }
 
+/// Result of `CodeIndex::graph_query`, carrying the flattened rows plus
+/// truncation signals so callers can distinguish a complete result from one
+/// that was cut off by the default LIMIT.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct GraphQueryOutput {
+    pub rows: Vec<serde_json::Value>,
+    pub row_count: usize,
+    pub default_limit_applied: bool,
+    pub limit: Option<usize>,
+}
+
 fn estimate_project_file_count(project: &Path) -> usize {
     const EXCLUDED_DIRS: &[&str] = &[
         ".git",
@@ -451,13 +462,15 @@ impl CodeIndex {
         self.ensure_db()?.file_summary(file_path)
     }
 
-    pub fn graph_query(&self, query: &str) -> CcResult<Vec<serde_json::Value>> {
+    pub fn graph_query(&self, query: &str) -> CcResult<GraphQueryOutput> {
         let db = self.ensure_db()?;
 
         let tokens = cc_search::cypher::tokenize(query)?;
         let parsed = cc_search::cypher::parse_tokens(&tokens)?;
         let result = cc_search::cypher::execute_parsed(&parsed, db)?;
-        let maps = result
+        let default_limit_applied = result.default_limit_applied;
+        let limit = result.limit;
+        let rows: Vec<serde_json::Value> = result
             .rows
             .into_iter()
             .map(|row| {
@@ -473,7 +486,13 @@ impl CodeIndex {
                 serde_json::Value::Object(map)
             })
             .collect();
-        Ok(maps)
+        let row_count = rows.len();
+        Ok(GraphQueryOutput {
+            rows,
+            row_count,
+            default_limit_applied,
+            limit,
+        })
     }
 
     pub fn callers(
@@ -1011,5 +1030,40 @@ mod tests {
             ref_count: 0,
         };
         assert_eq!(centrality_hint(&info), "leaf");
+    }
+
+    // ── graph_query truncation signals ──────────────────────────────
+
+    #[test]
+    fn graph_query_signals_default_limit_when_omitted() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        idx.build_index(false).unwrap();
+
+        // No explicit LIMIT → default limit applied, limit = DEFAULT_CYPHER_LIMIT.
+        let output = idx.graph_query("MATCH (f:Function) RETURN f.name").unwrap();
+        assert!(output.default_limit_applied);
+        assert_eq!(output.limit, Some(50));
+        assert_eq!(output.row_count, output.rows.len());
+    }
+
+    #[test]
+    fn graph_query_no_default_limit_when_explicit() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        idx.build_index(false).unwrap();
+
+        // Explicit LIMIT → no default limit, limit reflects the explicit value.
+        let output = idx
+            .graph_query("MATCH (f:Function) RETURN f.name LIMIT 5")
+            .unwrap();
+        assert!(!output.default_limit_applied);
+        assert_eq!(output.limit, Some(5));
     }
 }

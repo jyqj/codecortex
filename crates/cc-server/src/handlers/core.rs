@@ -98,17 +98,33 @@ pub fn callees(
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn analyze_impact(
     runtime: SharedCodeIndex,
     files: &[String],
     base_branch: Option<&str>,
     confidence_threshold: Option<f32>,
+    result_limit: Option<usize>,
+    max_nodes: Option<usize>,
+    max_per_layer: Option<usize>,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let report = if files.is_empty() {
-        rt.analyze_impact(base_branch, confidence_threshold)
+        rt.analyze_impact_capped(
+            base_branch,
+            confidence_threshold,
+            result_limit,
+            max_nodes,
+            max_per_layer,
+        )
     } else {
-        rt.detect_impact(files, confidence_threshold)
+        rt.detect_impact_capped(
+            files,
+            confidence_threshold,
+            result_limit,
+            max_nodes,
+            max_per_layer,
+        )
     }
     .map_err(|e| e.to_string())?;
     serde_json::to_value(report).map_err(|e| e.to_string())

@@ -212,6 +212,8 @@ pub fn handle_impact(
     file_path: Option<&str>,
     limit: usize,
     confidence_threshold: Option<f32>,
+    max_nodes: Option<usize>,
+    max_per_layer: Option<usize>,
 ) -> Result<Value, String> {
     let max_limit = {
         let rt = super::lock_index(&runtime)?;
@@ -240,7 +242,23 @@ pub fn handle_impact(
                 .ok_or_else(|| "file_path is required for 'dependents' scope".to_string())?;
             graph::get_dependents(runtime, json!({"file_path": fp}))
         }
-        _ => core::analyze_impact(runtime, files, base_branch, confidence_threshold),
+        _ => {
+            // BFS safety caps for the blast-radius path. `limit` (already
+            // clamped to the output budget) is the returned-symbol cap; the
+            // BFS node/layer caps default to bounded values so a hub callee
+            // cannot fan out into an unbounded report.
+            let node_cap = max_nodes.unwrap_or_else(|| limit.saturating_mul(10).min(5000));
+            let layer_cap = max_per_layer.unwrap_or(500);
+            core::analyze_impact(
+                runtime,
+                files,
+                base_branch,
+                confidence_threshold,
+                Some(limit),
+                Some(node_cap),
+                Some(layer_cap),
+            )
+        }
     }
 }
 
@@ -762,7 +780,8 @@ mod tests {
     #[test]
     fn handle_impact_dead_code_returns_result() {
         let (_tmp, rt) = build_test_index();
-        let result = handle_impact(rt, "dead_code", &[], None, "file", None, 20, None).unwrap();
+        let result =
+            handle_impact(rt, "dead_code", &[], None, "file", None, 20, None, None, None).unwrap();
         assert!(result.is_object() || result.is_array());
     }
 

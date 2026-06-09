@@ -51,6 +51,7 @@ pub(crate) use executor::validate_query_identifiers;
 pub(crate) use executor::{
     edge_table_map, expr_to_sql, label_kind_filter, label_table, translate_single_hop,
     translate_single_node, translate_variable_length, validate_regex_for_like, validate_sql_ident,
+    DEFAULT_CYPHER_LIMIT,
 };
 
 use cc_db::index_db::IndexDb;
@@ -488,6 +489,32 @@ mod tests {
         assert!(params.contains(&"3".to_string()));
         assert!(params.contains(&"1".to_string()));
         assert!(params.contains(&"function".to_string()));
+    }
+
+    #[test]
+    fn translate_applies_default_limit_when_omitted() {
+        // No explicit LIMIT → the default limit (50) is appended as the last param.
+        let tokens = tokenize("MATCH (f:Function) RETURN f.name").unwrap();
+        let ast = parse(&tokens).unwrap();
+        assert_eq!(ast.limit, None);
+        let pattern = &ast.match_clause().patterns[0];
+        let translated = translate_single_node(&ast, pattern).unwrap();
+        assert!(translated.sql.contains("LIMIT"));
+        assert_eq!(
+            translated.params.last().map(String::as_str),
+            Some(DEFAULT_CYPHER_LIMIT.to_string().as_str())
+        );
+    }
+
+    #[test]
+    fn translate_uses_explicit_limit_value() {
+        // Explicit LIMIT → that value is appended, not the default.
+        let tokens = tokenize("MATCH (f:Function) RETURN f.name LIMIT 7").unwrap();
+        let ast = parse(&tokens).unwrap();
+        assert_eq!(ast.limit, Some(7));
+        let pattern = &ast.match_clause().patterns[0];
+        let translated = translate_single_node(&ast, pattern).unwrap();
+        assert_eq!(translated.params.last().map(String::as_str), Some("7"));
     }
 
     // --- Edge table mapping tests ---

@@ -44,6 +44,21 @@ fn graph_cache_capacity() -> NonZeroUsize {
 static ADJ_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedAdjacency)>>> =
     OnceLock::new();
 
+/// Process-global bridge edge cache, keyed by `db_identity`.
+static BRIDGE_CACHE: OnceLock<BridgeCache> = OnceLock::new();
+
+/// Clear the process-global bridge edge cache.
+///
+/// Call this when runtime evidence (e.g. ingested traces) may have invalidated
+/// the synthesized HTTP bridge edges.
+pub(crate) fn clear_bridge_cache() {
+    if let Some(cache) = BRIDGE_CACHE.get() {
+        if let Ok(mut guard) = cache.lock() {
+            guard.clear();
+        }
+    }
+}
+
 /// Cache/reuse discriminator for graph read data.
 ///
 /// The current schema does not expose a monotonic graph generation, so this key
@@ -159,8 +174,18 @@ impl GraphReadModel {
 
     /// Build synthesized caller → route-handler edges from HTTP/async evidence.
     pub(crate) fn bridge_edges_by_caller(db: &IndexDb) -> CcResult<BridgeEdgesByCaller> {
-        let http_edges = db.all_http_call_edges_lite(5000)?;
-        let route_nodes = db.all_route_nodes_lite(5000)?;
+        let limit: usize = std::env::var("CODECORTEX_BRIDGE_EDGE_LIMIT")
+            .ok()
+            .and_then(|v| v.parse().ok())
+            .unwrap_or(10_000);
+        let http_edges = db.all_http_call_edges_lite(limit)?;
+        let route_nodes = db.all_route_nodes_lite(limit)?;
+        if http_edges.len() == limit {
+            tracing::warn!(count = http_edges.len(), limit, "HTTP bridge edges may be truncated");
+        }
+        if route_nodes.len() == limit {
+            tracing::warn!(count = route_nodes.len(), limit, "HTTP bridge route nodes may be truncated");
+        }
 
         let mut route_lookup: HashMap<(String, String), Vec<(String, f64)>> = HashMap::new();
         let mut route_any_method_lookup: HashMap<String, Vec<(String, f64)>> = HashMap::new();
@@ -245,8 +270,6 @@ impl GraphReadModel {
         db: &Arc<IndexDb>,
         generation: &GraphReadGeneration,
     ) -> CcResult<SharedBridgeEdges> {
-        static BRIDGE_CACHE: OnceLock<BridgeCache> = OnceLock::new();
-
         let cache = BRIDGE_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
         // Fast path: hit only when both the project and its generation match.
         if let Ok(mut cache) = cache.lock() {

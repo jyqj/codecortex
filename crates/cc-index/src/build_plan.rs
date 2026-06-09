@@ -14,7 +14,7 @@ use cc_db::index_db::FileWriteUnit;
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
 use cc_model::CcResult;
 
-use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, ScanDiffResult, WriteResult};
+use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, ScanDiffResult};
 
 /// Owned, read-only output of the prepare phase.
 ///
@@ -31,6 +31,9 @@ pub struct PreparedBuild {
     hierarchy_edges: Vec<SemanticEdgeRecord>,
     parse_report: ParseReport,
     start: Instant,
+    scan_diff_ms: u64,
+    parse_ms: u64,
+    resolve_ms: u64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -87,8 +90,12 @@ impl IndexBuildPlan {
     ) -> CcResult<PreparedBuild> {
         let start = Instant::now();
 
+        let phase_start = Instant::now();
         let mut scan_result =
             indexer.phase_scan_and_diff(project_path, self.mode.is_full(), self.auto_file_limit)?;
+        let scan_diff_ms = phase_start.elapsed().as_millis() as u64;
+
+        let phase_start = Instant::now();
         let to_parse = std::mem::take(&mut scan_result.to_parse);
         let parse_result = indexer.phase_parse(project_path, to_parse)?;
         let ParsedBuildState {
@@ -98,7 +105,9 @@ impl IndexBuildPlan {
 
         let dirty_closure =
             DirtyClosure::prepare(indexer, self.mode, &scan_result, &mut write_units)?;
+        let parse_ms = phase_start.elapsed().as_millis() as u64;
 
+        let phase_start = Instant::now();
         // Framework enrichment must run after dirty reload so dirty units
         // participate in project context, and before resolution so resolvers
         // can bind framework-specific edges.
@@ -112,6 +121,7 @@ impl IndexBuildPlan {
             &scan_result.to_remove,
             &fw_context,
         )?;
+        let resolve_ms = phase_start.elapsed().as_millis() as u64;
 
         // Capture report totals and route nodes from the resolved in-memory
         // units before `phase_write` consumes them. Route nodes must be the
@@ -126,6 +136,9 @@ impl IndexBuildPlan {
             hierarchy_edges: resolve_result.hierarchy_edges,
             parse_report,
             start,
+            scan_diff_ms,
+            parse_ms,
+            resolve_ms,
         })
     }
 
@@ -148,8 +161,12 @@ impl IndexBuildPlan {
             hierarchy_edges,
             parse_report,
             start,
+            scan_diff_ms,
+            parse_ms,
+            resolve_ms,
         } = prepared;
 
+        let phase_start = Instant::now();
         let write_result = indexer.phase_write(
             project_path,
             self.mode.is_full(),
@@ -159,28 +176,9 @@ impl IndexBuildPlan {
             &output_snapshot.route_nodes,
             &hierarchy_edges,
         )?;
+        let write_ms = phase_start.elapsed().as_millis() as u64;
 
-        self.run_after_write(
-            indexer,
-            project_path,
-            &scan_result,
-            &write_result,
-            &output_snapshot,
-        )?;
-
-        Ok(self.report(scan_result, parse_report, output_snapshot, start.elapsed()))
-    }
-
-    fn run_after_write(
-        &self,
-        indexer: &Indexer,
-        project_path: &Path,
-        scan_result: &ScanDiffResult,
-        write_result: &WriteResult,
-        output_snapshot: &OutputSnapshot,
-    ) -> CcResult<()> {
-        // Post-processing observes the live DB after full/direct-writer or
-        // incremental writes have completed.
+        let phase_start = Instant::now();
         indexer.phase_postprocess(
             project_path,
             self.mode.is_full(),
@@ -188,15 +186,26 @@ impl IndexBuildPlan {
             &write_result.config_units,
             &scan_result.to_remove,
         )?;
+        let postprocess_ms = phase_start.elapsed().as_millis() as u64;
 
-        // Analysis intentionally reuses the pre-write route-node snapshot used
-        // for the DB write so infra route matching cannot drift from persisted
-        // route nodes in the same build.
+        let phase_start = Instant::now();
         indexer.phase_analysis(
             project_path,
             &write_result.write_units,
             &output_snapshot.route_nodes,
-        )
+        )?;
+        let analysis_ms = phase_start.elapsed().as_millis() as u64;
+
+        let timing = crate::indexer::PhaseTiming {
+            scan_diff_ms,
+            parse_ms,
+            resolve_ms,
+            write_ms,
+            postprocess_ms,
+            analysis_ms,
+        };
+
+        Ok(self.report(scan_result, parse_report, output_snapshot, start.elapsed(), Some(timing)))
     }
 
     fn report(
@@ -205,6 +214,7 @@ impl IndexBuildPlan {
         parse_report: ParseReport,
         output_snapshot: OutputSnapshot,
         elapsed: Duration,
+        phase_timing: Option<crate::indexer::PhaseTiming>,
     ) -> IndexReport {
         IndexReport {
             files_scanned: scan_result.files_scanned,
@@ -218,6 +228,7 @@ impl IndexBuildPlan {
             elapsed_ms: elapsed.as_millis() as u64,
             files_parsed: parse_report.files_to_parse,
             used_parallel_parse: parse_report.used_parallel,
+            phase_timing,
         }
     }
 }

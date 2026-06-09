@@ -13,7 +13,7 @@ use cc_model::config::SearchConfig;
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
-use crate::preselect::PreselectResult;
+use crate::preselect::{PreselectRequest, PreselectResult};
 
 #[derive(Debug)]
 pub(crate) struct SearchPlan {
@@ -91,16 +91,18 @@ impl SearchPlan {
         let preselect_limit = request
             .file_preselect_limit
             .unwrap_or_else(|| 60usize.max(top_k * 12));
-        let preselect = crate::preselect::preselect_files(
+        let preselect = crate::preselect::preselect(
             db,
-            &query_text,
-            request.path_prefix.as_deref(),
-            request.boost_file_paths.as_deref(),
-            request.recent_file_paths.as_deref(),
-            request.pinned_file_paths.as_deref(),
-            request.overlay_file_paths.as_deref(),
-            request.file_paths.as_deref(),
-            preselect_limit,
+            &PreselectRequest {
+                query: &query_text,
+                path_prefix: request.path_prefix.as_deref(),
+                boost_paths: request.boost_file_paths.as_deref(),
+                recent_paths: request.recent_file_paths.as_deref(),
+                pinned_paths: request.pinned_file_paths.as_deref(),
+                overlay_paths: request.overlay_file_paths.as_deref(),
+                explicit_file_paths: request.file_paths.as_deref(),
+                limit: preselect_limit,
+            },
         )?;
         if !preselect.files.is_empty() && request.file_paths.is_none() {
             request.file_paths = Some(preselect.files.clone());

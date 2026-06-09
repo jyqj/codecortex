@@ -1281,11 +1281,19 @@ impl Indexer {
             .and_then(|v| v.as_i64())
             .unwrap_or(0);
 
-        if edge_count > 2_000_000 {
+        let max_community_edges: i64 = std::env::var("CODECORTEX_COMMUNITY_MAX_EDGES")
+            .ok()
+            .and_then(|v| v.parse::<i64>().ok())
+            .unwrap_or(2_000_000);
+
+        if edge_count > max_community_edges {
             tracing::warn!(
                 edge_count,
-                "skipping community detection: too many call edges (>2M), would risk OOM"
+                max_community_edges,
+                "community detection: edge count exceeds limit, assigning all symbols to community 0"
             );
+            // Degraded: assign all symbols to a single community
+            self.db.assign_all_symbols_to_community(0)?;
             return Ok(());
         }
 

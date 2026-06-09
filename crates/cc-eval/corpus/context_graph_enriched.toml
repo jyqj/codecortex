@@ -1,0 +1,14 @@
+name = "context_graph_enriched"
+tool = "context"
+description = "Verify context search path returns graph-enriched evidence"
+
+[params]
+task = "explain the overall architecture and main entry points"
+include_source = false
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "graph_enrichment"

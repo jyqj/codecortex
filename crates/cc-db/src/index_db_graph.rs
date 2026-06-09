@@ -424,6 +424,22 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Degraded community assignment: assign all symbols that have no community
+    /// to the given `community_id`. Used when edge count exceeds the threshold
+    /// and full Louvain detection would risk OOM.
+    pub fn assign_all_symbols_to_community(&self, community_id: u32) -> CcResult<()> {
+        let conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        conn.execute(
+            "UPDATE symbols SET community_id = ?1 WHERE community_id IS NULL",
+            rusqlite::params![community_id],
+        )
+        .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
     pub fn replace_repo_frameworks(&self, signals: &[RepoFrameworkRecord]) -> CcResult<()> {
         let mut conn = self
             .write_conn
@@ -1135,6 +1151,44 @@ impl IndexDb {
             dispatch_sites,
             route_edges,
         })
+    }
+
+    pub fn symbols_by_file_paths(&self, file_paths: &[&str]) -> CcResult<Vec<SymbolRow>> {
+        if file_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.read_conn()?;
+        let placeholders: Vec<&str> = file_paths.iter().map(|_| "?").collect();
+        let sql = format!(
+            "SELECT symbol_id, symbol_uid, name, kind, file_path, container, \
+                    start_line, end_line, qname, signature \
+             FROM symbols \
+             WHERE file_path IN ({}) AND symbol_uid IS NOT NULL \
+             ORDER BY file_path, start_line",
+            placeholders.join(",")
+        );
+        let mut stmt = conn
+            .prepare(&sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let params: Vec<&dyn rusqlite::types::ToSql> =
+            file_paths.iter().map(|s| s as &dyn rusqlite::types::ToSql).collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| {
+                Ok(SymbolRow {
+                    symbol_id: row.get(0)?,
+                    symbol_uid: row.get(1)?,
+                    name: row.get(2)?,
+                    kind: row.get(3)?,
+                    file_path: row.get(4)?,
+                    container: row.get(5)?,
+                    start_line: row.get(6)?,
+                    end_line: row.get(7)?,
+                    qname: row.get(8)?,
+                    signature: row.get(9)?,
+                })
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
     }
 }
 

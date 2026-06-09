@@ -427,6 +427,56 @@ impl RepoSizeTier {
     }
 }
 
+/// Budget limits for graph enrichment in the `context` tool.
+#[derive(Debug, Clone)]
+pub struct GraphEnrichLimits {
+    pub max_resolve: usize,
+    pub callers_per_sym: usize,
+    pub callees_per_sym: usize,
+    pub max_tests: usize,
+    pub max_routes: usize,
+    pub graph_budget_pct: u32,
+}
+
+impl RepoSizeTier {
+    pub fn graph_enrich_limits(&self) -> GraphEnrichLimits {
+        match self {
+            Self::Tiny => GraphEnrichLimits {
+                max_resolve: 3,
+                callers_per_sym: 2,
+                callees_per_sym: 2,
+                max_tests: 2,
+                max_routes: 1,
+                graph_budget_pct: 20,
+            },
+            Self::Small => GraphEnrichLimits {
+                max_resolve: 5,
+                callers_per_sym: 3,
+                callees_per_sym: 3,
+                max_tests: 3,
+                max_routes: 2,
+                graph_budget_pct: 25,
+            },
+            Self::Medium => GraphEnrichLimits {
+                max_resolve: 7,
+                callers_per_sym: 3,
+                callees_per_sym: 3,
+                max_tests: 4,
+                max_routes: 2,
+                graph_budget_pct: 25,
+            },
+            Self::Large => GraphEnrichLimits {
+                max_resolve: 8,
+                callers_per_sym: 4,
+                callees_per_sym: 4,
+                max_tests: 5,
+                max_routes: 3,
+                graph_budget_pct: 30,
+            },
+        }
+    }
+}
+
 /// Resolved filesystem paths for a project.
 #[derive(Debug, Clone)]
 pub struct IndexPaths {

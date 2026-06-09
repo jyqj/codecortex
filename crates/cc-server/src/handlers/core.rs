@@ -1,10 +1,21 @@
 //! Core domain handlers: project setup, indexing, search, symbol queries, impact.
 
 use super::SharedCodeIndex;
+use crate::engine::CodeIndex;
 
 pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::Value, String> {
+    // Brief read lock: clone the owned build inputs, then release.
+    let inputs = {
+        let rt = super::lock_index(&runtime)?;
+        rt.build_inputs().map_err(|e| e.to_string())?
+    };
+    // Heavy prepare phase runs with NO lock held — read queries are not blocked.
+    let prepared = CodeIndex::prepare_build(&inputs, full, None).map_err(|e| e.to_string())?;
+    // Brief write lock: commit (write + postprocess + bookkeeping).
     let mut rt = super::lock_index_write(&runtime)?;
-    let report = rt.build_index(full).map_err(|e| e.to_string())?;
+    let report = rt
+        .commit_build(&inputs, full, None, prepared)
+        .map_err(|e| e.to_string())?;
     serde_json::to_value(report).map_err(|e| e.to_string())
 }
 

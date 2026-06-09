@@ -46,7 +46,7 @@ Automated via the eval harness. Run:
 CODECORTEX_WRITE_BENCHMARK=1 cargo test -p cc-eval -- benchmark_fixture
 ```
 
-This executes a 3-run warm benchmark (1 warmup + 2 measured, take min) and writes results to `docs/benchmarks/latest.md`. Without `CODECORTEX_WRITE_BENCHMARK`, the test still runs but does not persist the report. Retrieval quality metrics are produced by `cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture`; current fixture coverage uses 5 `expected_symbols` cases.
+This executes a 3-run warm benchmark (1 warmup + 2 measured, take min) and writes results to `docs/benchmarks/latest.md`. Without `CODECORTEX_WRITE_BENCHMARK`, the test still runs but does not persist the report. Retrieval quality metrics are produced by `cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture`; current fixture coverage uses 8 `expected_symbols` cases.
 
 For a non-fixture benchmark against this real workspace copy, run:
 

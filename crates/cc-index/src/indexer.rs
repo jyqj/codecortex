@@ -67,6 +67,20 @@ pub struct IndexReport {
     pub files_parsed: usize,
     /// Whether the parallel parse path was taken.
     pub used_parallel_parse: bool,
+    /// Per-phase timing breakdown (all in milliseconds).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phase_timing: Option<PhaseTiming>,
+}
+
+/// Per-phase timing breakdown in milliseconds.
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct PhaseTiming {
+    pub scan_diff_ms: u64,
+    pub parse_ms: u64,
+    pub resolve_ms: u64,
+    pub write_ms: u64,
+    pub postprocess_ms: u64,
+    pub analysis_ms: u64,
 }
 
 pub struct Indexer {

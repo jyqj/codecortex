@@ -656,6 +656,7 @@ value = "formatName"
 
     /// Integration test: load fixtures, build index, run all corpus cases.
     /// This test requires the fixture files to exist.
+    /// Uses a temp copy to avoid polluting the fixture tree with `.codecortex/`.
     #[test]
     fn integration_fixtures_and_corpus() {
         let crate_dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
@@ -670,8 +671,13 @@ value = "formatName"
             return;
         }
 
+        // Copy fixtures to a temp directory so the index DB doesn't pollute
+        // the source tree.
+        let tmp = tempfile::tempdir().expect("create tempdir for integration test");
+        copy_sample_fixture_sources(&fixtures_dir, tmp.path());
+
         // Build the backend — must succeed; do not silently skip.
-        let backend = runner::CodeIndexBackend::new(&fixtures_dir)
+        let backend = runner::CodeIndexBackend::new(tmp.path())
             .expect("backend should build fixture index");
 
         // Load corpus

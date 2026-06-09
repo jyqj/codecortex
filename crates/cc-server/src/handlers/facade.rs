@@ -529,6 +529,10 @@ pub fn handle_ingest_traces(
         )?;
     }
 
+    // Invalidate the bridge edge cache so subsequent graph queries pick up
+    // any route/edge changes implied by the newly ingested runtime evidence.
+    crate::graph_read_model::clear_bridge_cache();
+
     Ok(json!({
         "accepted": stats.accepted,
         "matched_to_edges": stats.matched,

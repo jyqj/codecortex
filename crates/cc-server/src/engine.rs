@@ -350,7 +350,17 @@ impl CodeIndex {
         let engine = self.ensure_engine()?;
         let detected_intent = intent.unwrap_or_else(|| detect_intent(query));
         let request = build_context_search_request(query, top_k, overrides);
-        let hits = engine.search(&request)?;
+        let mut hits = engine.search(&request)?;
+
+        // Graph enrichment: resolve UIDs, compute graph_score, collect neighbor/test nodes.
+        let db = self.ensure_db()?;
+        let graph_limits = tier.graph_enrich_limits();
+        let enrichment = Self::graph_enrich(db, &hits, &graph_limits, token_budget);
+        for hit in &mut hits {
+            if let Some(&gs) = enrichment.scores.get(&hit.chunk_id) {
+                hit.graph_score = gs;
+            }
+        }
 
         let mut nodes = Vec::with_capacity(hits.len());
         let mut spans = Vec::with_capacity(hits.len());
@@ -409,7 +419,21 @@ impl CodeIndex {
             nodes.push(node);
         }
 
-        let token_estimate: u32 = nodes.iter().map(|n| n.token_estimate).sum();
+        // Append graph context nodes within budget.
+        let primary_tokens: u32 = nodes.iter().map(|n| n.token_estimate).sum();
+        let graph_budget = (token_budget * graph_limits.graph_budget_pct) / 100;
+        let mut graph_tokens_used = 0u32;
+        let mut graph_rendered: Vec<String> = Vec::new();
+        for gnode in enrichment.nodes {
+            if graph_tokens_used + gnode.token_estimate > graph_budget {
+                break;
+            }
+            graph_tokens_used += gnode.token_estimate;
+            graph_rendered.push(format!("- {}", gnode.title));
+            nodes.push(gnode);
+        }
+
+        let token_estimate: u32 = primary_tokens + graph_tokens_used;
         let summary = if hits.is_empty() {
             format!("No indexed code results found for `{}`.", query)
         } else {
@@ -426,6 +450,10 @@ impl CodeIndex {
             query,
             rendered_sections.join("\n\n")
         );
+        if !graph_rendered.is_empty() {
+            rendered_prompt.push_str("\n\n## Graph Context\n");
+            rendered_prompt.push_str(&graph_rendered.join("\n"));
+        }
         if rendered_prompt.len() > max_output_chars {
             let mut truncate_at = max_output_chars.min(rendered_prompt.len());
             while !rendered_prompt.is_char_boundary(truncate_at) {
@@ -446,7 +474,13 @@ impl CodeIndex {
             revision: 0,
             nodes,
             spans,
-            reasons: vec!["hybrid search over code index".to_string()],
+            reasons: {
+                let mut r = vec!["hybrid search over code index".to_string()];
+                if enrichment.symbols_resolved > 0 {
+                    r.push("graph-enriched".to_string());
+                }
+                r
+            },
             invalidations: Vec::new(),
             machine_pack: serde_json::json!({
                 "kind": "code_index_context",
@@ -459,8 +493,174 @@ impl CodeIndex {
             evidence_summary: serde_json::json!({
                 "search_hits": hits.len(),
                 "files": files.into_iter().collect::<Vec<_>>(),
+                "graph_enrichment": {
+                    "symbols_resolved": enrichment.symbols_resolved,
+                    "callers_added": enrichment.callers_added,
+                    "callees_added": enrichment.callees_added,
+                    "tests_found": enrichment.tests_found,
+                },
             }),
         })
+    }
+
+    // ── graph enrichment (private) ─────────────────────────────────────
+
+    fn graph_enrich(
+        db: &IndexDb,
+        hits: &[cc_model::search::SearchHit],
+        limits: &cc_model::config::GraphEnrichLimits,
+        token_budget: u32,
+    ) -> GraphEnrichment {
+        let mut enrichment = GraphEnrichment::default();
+        if hits.is_empty() {
+            return enrichment;
+        }
+
+        // 1. Batch load symbols for hit file paths.
+        let file_paths: Vec<&str> = hits
+            .iter()
+            .take(limits.max_resolve)
+            .map(|h| h.file_path.as_str())
+            .collect::<HashSet<_>>()
+            .into_iter()
+            .collect();
+        let all_symbols = db.symbols_by_file_paths(&file_paths).unwrap_or_default();
+
+        // 2. Resolve each hit → symbol_uid via (file_path, symbol_name) or span overlap.
+        let mut resolved: Vec<(String, String)> = Vec::new(); // (chunk_id, uid)
+        let mut seen_uids = HashSet::new();
+        for hit in hits.iter().take(limits.max_resolve) {
+            let uid = all_symbols.iter().find(|s| {
+                s.file_path == hit.file_path
+                    && (hit.symbol_name.as_deref() == Some(&s.name)
+                        || (s.start_line <= hit.start_line && s.end_line >= hit.end_line))
+            });
+            if let Some(sym) = uid {
+                if let Some(ref uid) = sym.symbol_uid {
+                    if seen_uids.insert(uid.clone()) {
+                        resolved.push((hit.chunk_id.clone(), uid.clone()));
+                    }
+                }
+            }
+        }
+        enrichment.symbols_resolved = resolved.len();
+
+        // 3. Degree metrics → graph_score per chunk.
+        for (chunk_id, uid) in &resolved {
+            if let Ok(info) = db.symbol_degree_details(uid) {
+                let total = (info.in_degree + info.out_degree) as f64;
+                let connectivity = (total + 1.0).ln() / 10.0;
+                let ref_bonus = (info.ref_count as f64).min(10.0) / 100.0;
+                let score = (connectivity + ref_bonus).min(0.4);
+                enrichment.scores.insert(chunk_id.clone(), score);
+            }
+        }
+
+        // 4. Callers + callees → ContextNodes.
+        let graph_budget = (token_budget * limits.graph_budget_pct) / 100;
+        let mut graph_tokens = 0u32;
+        let mut neighbor_uids = HashSet::new();
+
+        for (_chunk_id, uid) in &resolved {
+            if let Ok(callers) = db.caller_rows_by_uid(uid, limits.callers_per_sym) {
+                for edge in &callers {
+                    let caller_uid = edge.caller_symbol_uid.as_deref().unwrap_or("");
+                    if caller_uid.is_empty() || !neighbor_uids.insert(caller_uid.to_string()) {
+                        continue;
+                    }
+                    let text = format!(
+                        "caller: {} → {} ({}:{})",
+                        edge.caller_symbol.as_deref().unwrap_or("?"),
+                        edge.callee_symbol,
+                        edge.file_path,
+                        edge.line
+                    );
+                    let est = (text.len() / 4).max(10) as u32;
+                    if graph_tokens + est > graph_budget {
+                        break;
+                    }
+                    graph_tokens += est;
+                    let node_id = format!("graph:caller:{}", caller_uid);
+                    let mut node = ContextNode::new(
+                        node_id.clone(),
+                        NodeType::CallEdge,
+                        Role::Neighbor,
+                        format!("Caller: {}", edge.caller_symbol.as_deref().unwrap_or("?")),
+                        text,
+                    );
+                    node.file_path = Some(edge.file_path.clone());
+                    node.start_line = Some(edge.line);
+                    node.confidence = edge.confidence;
+                    node.token_estimate = est;
+                    node.source = "graph".to_string();
+                    enrichment.nodes.push(node);
+                    enrichment.callers_added += 1;
+                }
+            }
+            if let Ok(callees) = db.callee_rows_by_uid(uid, limits.callees_per_sym) {
+                for edge in &callees {
+                    let callee_uid = edge.callee_symbol_uid.as_deref().unwrap_or("");
+                    if callee_uid.is_empty() || !neighbor_uids.insert(callee_uid.to_string()) {
+                        continue;
+                    }
+                    let text = format!(
+                        "callee: {} → {} ({}:{})",
+                        edge.caller_symbol.as_deref().unwrap_or("?"),
+                        edge.callee_symbol,
+                        edge.file_path,
+                        edge.line
+                    );
+                    let est = (text.len() / 4).max(10) as u32;
+                    if graph_tokens + est > graph_budget {
+                        break;
+                    }
+                    graph_tokens += est;
+                    let node_id = format!("graph:callee:{}", callee_uid);
+                    let mut node = ContextNode::new(
+                        node_id.clone(),
+                        NodeType::CallEdge,
+                        Role::Neighbor,
+                        format!("Callee: {}", edge.callee_symbol),
+                        text,
+                    );
+                    node.file_path = Some(edge.file_path.clone());
+                    node.start_line = Some(edge.line);
+                    node.confidence = edge.confidence;
+                    node.token_estimate = est;
+                    node.source = "graph".to_string();
+                    enrichment.nodes.push(node);
+                    enrichment.callees_added += 1;
+                }
+            }
+        }
+
+        // 5. Test coverage.
+        let hit_files: Vec<String> = file_paths.iter().map(|s| s.to_string()).collect();
+        if let Ok(tests) = db.find_impacted_tests(&hit_files) {
+            for test_path in tests.iter().take(limits.max_tests) {
+                let text = format!("test file: {}", test_path);
+                let est = (text.len() / 4).max(10) as u32;
+                if graph_tokens + est > graph_budget {
+                    break;
+                }
+                graph_tokens += est;
+                let node_id = format!("graph:test:{}", test_path);
+                let mut node = ContextNode::new(
+                    node_id,
+                    NodeType::TestEdge,
+                    Role::Test,
+                    format!("Test: {}", test_path),
+                    text,
+                );
+                node.file_path = Some(test_path.clone());
+                node.token_estimate = est;
+                node.source = "graph".to_string();
+                enrichment.nodes.push(node);
+                enrichment.tests_found += 1;
+            }
+        }
+
+        enrichment
     }
 
     pub fn find_symbol(
@@ -812,6 +1012,16 @@ pub(crate) fn centrality_hint(info: &cc_db::index_db::SymbolDegreeInfo) -> &'sta
 }
 
 pub use crate::engine_query::{compute_package_boundaries, PackageBoundary};
+
+#[derive(Default)]
+struct GraphEnrichment {
+    scores: HashMap<String, f64>,
+    nodes: Vec<ContextNode>,
+    symbols_resolved: usize,
+    callers_added: usize,
+    callees_added: usize,
+    tests_found: usize,
+}
 
 #[cfg(test)]
 mod tests {

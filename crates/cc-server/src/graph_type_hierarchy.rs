@@ -1,6 +1,6 @@
 //! Type hierarchy queries: ancestors, descendants, implementors, overrides.
 
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use cc_db::index_db::{IndexDb, SymbolRow};
@@ -8,7 +8,7 @@ use cc_model::edge::SemanticRelation;
 use cc_model::{CcError, CcResult};
 use serde_json::json;
 
-use crate::graph_read_model::GraphReadModel;
+use crate::graph_read_model::{GraphReadModel, SemanticEdgeLite};
 use crate::graph_types::{HierarchyNode, OverrideInfo, TypeHierarchyResult, TypeNodeInfo};
 
 /// Query the type hierarchy (ancestors, descendants, overrides) for a given type.
@@ -206,6 +206,11 @@ fn resolve_root_symbol(
     }
 }
 
+/// Keep only hierarchy edges (`inherits` / `implements`) during BFS.
+fn is_hierarchy_relation(rel: &SemanticRelation) -> bool {
+    *rel == SemanticRelation::Inherits || *rel == SemanticRelation::Implements
+}
+
 /// BFS upward: follow `inherits` / `implements` edges from source to target.
 fn bfs_ancestors(
     db: &IndexDb,
@@ -216,56 +221,36 @@ fn bfs_ancestors(
     type_methods: &mut HashMap<String, Vec<(String, Option<String>)>>,
 ) -> CcResult<Vec<HierarchyNode>> {
     let mut result = Vec::new();
-    let mut visited = HashSet::new();
-    visited.insert(root_uid.to_string());
-
-    // (uid, depth)
-    let mut queue: VecDeque<(String, usize)> = VecDeque::new();
-    queue.push_back((root_uid.to_string(), 0));
-
-    while let Some((current_uid, depth)) = queue.pop_front() {
-        if depth >= max_depth {
-            continue;
-        }
-        // Query outgoing edges from current_uid (source → target = parent)
-        let edges = grm.semantic_edges_from(&current_uid);
-        for edge in &edges {
-            let rel = &edge.relation_kind;
-            if *rel != SemanticRelation::Inherits && *rel != SemanticRelation::Implements {
-                continue;
-            }
-            if edge.target_symbol_uid.is_empty() {
-                continue;
-            }
-            let target_uid = edge.target_symbol_uid.clone();
-            if visited.contains(&target_uid) {
-                continue;
-            }
-            visited.insert(target_uid.clone());
-
-            let relation_str = rel.as_str().to_string();
+    crate::graph_walk::bfs_visit(
+        &[root_uid.to_string()],
+        max_depth,
+        // Outgoing edges from the current node (source → target = parent).
+        |uid| grm.semantic_edges_from(uid),
+        |edge: &SemanticEdgeLite| {
+            (is_hierarchy_relation(&edge.relation_kind) && !edge.target_symbol_uid.is_empty())
+                .then_some(edge.target_symbol_uid.as_str())
+        },
+        |target_uid, depth, edge| {
             let (name, kind, file_path, methods) = resolve_node_info(
                 db,
                 grm,
-                &target_uid,
+                target_uid,
                 &edge.target_symbol,
                 include_methods,
                 type_methods,
             )?;
-
             result.push(HierarchyNode {
                 name,
                 kind,
                 file_path,
-                uid: target_uid.clone(),
-                relation: relation_str,
-                depth: depth + 1,
+                uid: target_uid.to_string(),
+                relation: edge.relation_kind.as_str().to_string(),
+                depth,
                 methods,
             });
-
-            queue.push_back((target_uid, depth + 1));
-        }
-    }
+            Ok(())
+        },
+    )?;
     Ok(result)
 }
 
@@ -281,62 +266,42 @@ fn bfs_descendants(
 ) -> CcResult<(Vec<HierarchyNode>, Vec<HierarchyNode>)> {
     let mut descendants = Vec::new();
     let mut implementors = Vec::new();
-    let mut visited = HashSet::new();
-    visited.insert(root_uid.to_string());
-
-    let mut queue: VecDeque<(String, usize)> = VecDeque::new();
-    queue.push_back((root_uid.to_string(), 0));
-
-    while let Some((current_uid, depth)) = queue.pop_front() {
-        if depth >= max_depth {
-            continue;
-        }
-        // Query edges where target_symbol_uid = current (children point TO us)
-        let edges = grm.semantic_edges_to(&current_uid);
-        for edge in &edges {
-            let rel = &edge.relation_kind;
-            if *rel != SemanticRelation::Inherits && *rel != SemanticRelation::Implements {
-                continue;
-            }
-            if edge.source_symbol_uid.is_empty() {
-                continue;
-            }
-            let source_uid = edge.source_symbol_uid.clone();
-            if visited.contains(&source_uid) {
-                continue;
-            }
-            visited.insert(source_uid.clone());
-
-            let relation_str = rel.as_str().to_string();
+    crate::graph_walk::bfs_visit(
+        &[root_uid.to_string()],
+        max_depth,
+        // Edges where target_symbol_uid = current (children point TO us).
+        |uid| grm.semantic_edges_to(uid),
+        |edge: &SemanticEdgeLite| {
+            (is_hierarchy_relation(&edge.relation_kind) && !edge.source_symbol_uid.is_empty())
+                .then_some(edge.source_symbol_uid.as_str())
+        },
+        |source_uid, depth, edge| {
+            let relation_str = edge.relation_kind.as_str().to_string();
             let (name, kind, file_path, methods) = resolve_node_info(
                 db,
                 grm,
-                &source_uid,
+                source_uid,
                 &edge.source_symbol,
                 include_methods,
                 type_methods,
             )?;
-
             let node = HierarchyNode {
                 name,
                 kind,
                 file_path,
-                uid: source_uid.clone(),
+                uid: source_uid.to_string(),
                 relation: relation_str.clone(),
-                depth: depth + 1,
+                depth,
                 methods,
             };
-
             if relation_str == "implements" {
                 implementors.push(node);
             } else {
                 descendants.push(node);
             }
-
-            // Continue BFS from this child
-            queue.push_back((source_uid, depth + 1));
-        }
-    }
+            Ok(())
+        },
+    )?;
     Ok((descendants, implementors))
 }
 
@@ -486,10 +451,9 @@ fn lookup_param_counts(db: &IndexDb, uids: &[String]) -> CcResult<HashMap<String
 
     // Use query_json to fetch param_count for each UID
     for chunk in uids.chunks(100) {
-        let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
         let sql = format!(
             "SELECT symbol_uid, param_count FROM symbols WHERE symbol_uid IN ({})",
-            placeholders.join(",")
+            cc_db::sql_util::sql_in_placeholders(chunk.len())
         );
         let params: Vec<String> = chunk.to_vec();
         let rows = db.query_json(&sql, &params)?;

@@ -130,9 +130,8 @@ pub fn find_impacted_tests(
 
 /// Get files that depend on (import) the given file, including transitive dependents.
 ///
-/// Extracts: `file_path` (required).
-/// Uses a reverse-imports Cypher query to find direct importers, then a second
-/// pass for 2-hop transitive dependents.
+/// Extracts: `file_path` (required). Delegates to
+/// `GraphReadModel::dependents_of_file` (cached reverse import adjacency).
 pub fn get_dependents(
     runtime: SharedCodeIndex,
     params: serde_json::Value,
@@ -144,50 +143,10 @@ pub fn get_dependents(
 
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
-
-    // Query direct dependents via parameterized SQL on imports table
-    let rows = db
-        .query_json(
-            "SELECT DISTINCT file_path FROM imports WHERE resolved_path = ?1 LIMIT 200",
-            &[file_path.to_string()],
-        )
+    let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
+    let dependents = grm
+        .dependents_of_file(file_path)
         .map_err(|e| e.to_string())?;
-
-    // Collect unique direct dependents
-    let mut dependents: Vec<String> = Vec::new();
-    let mut seen = std::collections::HashSet::new();
-    for row in &rows {
-        if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
-            if fp != file_path && seen.insert(fp.to_string()) {
-                dependents.push(fp.to_string());
-            }
-        }
-    }
-
-    // 2-hop: find importers of the direct dependents in a single batched query
-    // (WHERE resolved_path IN (...)) instead of one SQL round-trip per dependent.
-    let mut transitive: Vec<String> = Vec::new();
-    if !dependents.is_empty() {
-        let placeholders: String = (0..dependents.len())
-            .map(|i| format!("?{}", i + 1))
-            .collect::<Vec<_>>()
-            .join(",");
-        let sql = format!(
-            "SELECT DISTINCT file_path FROM imports WHERE resolved_path IN ({}) LIMIT 10000",
-            placeholders
-        );
-        let rows2 = db.query_json(&sql, &dependents).unwrap_or_default();
-        for row in &rows2 {
-            if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
-                if fp != file_path && seen.insert(fp.to_string()) {
-                    transitive.push(fp.to_string());
-                }
-            }
-        }
-    }
-
-    dependents.extend(transitive);
-    dependents.sort();
 
     Ok(serde_json::json!({
         "file_path": file_path,
@@ -220,151 +179,23 @@ pub fn find_dead_code(
     // capped at 5000 to bound query cost.
     let scan_limit = (effective_limit * 40).min(5000);
 
-    // Fetch all symbols via parameterized SQL
-    let all_symbols = if let Some(prefix) = scope {
-        let pattern = format!("%{}%", prefix);
-        db.query_json(
-            &format!(
-                "SELECT name, symbol_uid, file_path, kind FROM symbols \
-                 WHERE file_path LIKE ?1 LIMIT {}",
-                scan_limit
-            ),
-            &[pattern],
-        )
-        .map_err(|e| e.to_string())?
-    } else {
-        db.query_json(
-            &format!(
-                "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT {}",
-                scan_limit
-            ),
-            &[],
-        )
-        .map_err(|e| e.to_string())?
-    };
+    let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
+    let candidates = grm
+        .dead_code_candidates(scope, scan_limit)
+        .map_err(|e| e.to_string())?;
 
-    // Fetch all call edges to build a set of UIDs that have callers.
-    // Exclude self-edges (caller == callee) since they don't indicate real usage.
-    let edge_rows = db
-        .query_json(
-            "SELECT DISTINCT callee_symbol_uid FROM call_edges \
-             WHERE callee_symbol_uid IS NOT NULL \
-               AND (caller_symbol_uid IS NULL OR caller_symbol_uid != callee_symbol_uid) \
-             LIMIT 10000",
-            &[],
-        )
-        .unwrap_or_default();
-    let mut has_callers = std::collections::HashSet::new();
-    for row in &edge_rows {
-        if let Some(uid) = row.get("callee_symbol_uid").and_then(|v| v.as_str()) {
-            has_callers.insert(uid.to_string());
-        }
-    }
-
-    let excluded_names = ["main", "__init__", "__main__", "setup", "configure"];
-    let excluded_prefixes = ["test_", "Test"];
-
-    // Phase 1: collect candidates that pass the scope / exclusion / no-caller
-    // filters. Their reference status is resolved in a batched second pass to
-    // avoid one symbol_refs query per candidate.
-    struct DeadCandidate<'a> {
-        name: &'a str,
-        uid: &'a str,
-        file_path: &'a str,
-        kind: &'a str,
-    }
-    let mut candidates: Vec<DeadCandidate> = Vec::new();
-    for row in &all_symbols {
-        let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
-        let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
-        let file_path = row.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
-        let kind = row.get("kind").and_then(|v| v.as_str()).unwrap_or("");
-
-        if uid.is_empty() || name.is_empty() {
-            continue;
-        }
-
-        // Scope filter
-        if let Some(prefix) = scope {
-            if !file_path.starts_with(prefix) {
-                continue;
-            }
-        }
-
-        // Exclusions
-        if excluded_names.contains(&name) {
-            continue;
-        }
-        if excluded_prefixes.iter().any(|p| name.starts_with(p)) {
-            continue;
-        }
-
-        // Only symbols without callers can be dead code.
-        if !has_callers.contains(uid) {
-            candidates.push(DeadCandidate {
-                name,
-                uid,
-                file_path,
-                kind,
-            });
-        }
-    }
-
-    // Phase 2: batch-load references for all candidate UIDs at once, then
-    // determine which have an *external* reference (container differs from the
-    // symbol's own name, i.e. not a self-reference inside its own body).
-    let mut uids_with_external_refs: std::collections::HashSet<String> =
-        std::collections::HashSet::new();
-    let candidate_uids: Vec<String> = candidates.iter().map(|c| c.uid.to_string()).collect();
-    // Map each candidate uid -> its own name for the self-reference check.
-    let name_by_uid: std::collections::HashMap<&str, &str> =
-        candidates.iter().map(|c| (c.uid, c.name)).collect();
-    let batch_size = 200;
-    for batch in candidate_uids.chunks(batch_size) {
-        let placeholders: String = (0..batch.len())
-            .map(|i| format!("?{}", i + 1))
-            .collect::<Vec<_>>()
-            .join(",");
-        let sql = format!(
-            "SELECT target_symbol_uid, container FROM symbol_refs \
-             WHERE target_symbol_uid IN ({})",
-            placeholders
-        );
-        let ref_rows = db.query_json(&sql, batch).unwrap_or_default();
-        for row in &ref_rows {
-            let target_uid = row
-                .get("target_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-            if target_uid.is_empty() {
-                continue;
-            }
-            let container = row.get("container").and_then(|v| v.as_str());
-            let own_name = name_by_uid.get(target_uid).copied();
-            // External reference iff container is NULL or differs from own name.
-            let is_external = match (container, own_name) {
-                (None, _) => true,
-                (Some(c), Some(n)) => c != n,
-                (Some(_), None) => true,
-            };
-            if is_external {
-                uids_with_external_refs.insert(target_uid.to_string());
-            }
-        }
-    }
-
-    let mut dead_items: Vec<serde_json::Value> = Vec::new();
-    for cand in &candidates {
-        if !uids_with_external_refs.contains(cand.uid) {
-            dead_items.push(serde_json::json!({
+    let mut dead_items: Vec<serde_json::Value> = candidates
+        .iter()
+        .map(|cand| {
+            serde_json::json!({
                 "symbol_name": cand.name,
                 "symbol_uid": cand.uid,
                 "file_path": cand.file_path,
                 "kind": cand.kind,
                 "reason": "no-callers",
-            }));
-        }
-    }
+            })
+        })
+        .collect();
 
     let total_found = dead_items.len();
     let truncated = total_found > effective_limit;
@@ -417,8 +248,9 @@ pub fn get_architecture(
 
 /// Find HTTP route handlers matching a pattern.
 ///
-/// Extracts: `route_path` (optional pattern to match).
-/// Queries the route_edges table via Cypher ROUTES relationship.
+/// Extracts: `route_path` (optional pattern), `method`, `framework`, `limit`.
+/// Delegates to `GraphReadModel::route_handlers`; this handler only shapes the
+/// output rows.
 pub fn find_route_handlers(
     runtime: SharedCodeIndex,
     params: serde_json::Value,
@@ -430,49 +262,13 @@ pub fn find_route_handlers(
 
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
+    let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
+    let rows = grm
+        .route_handlers(route_path, method_filter, framework_filter, limit)
+        .map_err(|e| e.to_string())?;
 
-    // Build parameterized SQL query for route_edges
-    let rows = if let Some(pattern) = route_path {
-        let like_pattern = format!("%{}%", pattern);
-        db.query_json(
-            &format!(
-                "SELECT route_path, method, handler_name, file_path, framework, line \
-                 FROM routes WHERE route_path LIKE ?1 LIMIT {}",
-                limit
-            ),
-            &[like_pattern],
-        )
-        .map_err(|e| e.to_string())?
-    } else {
-        db.query_json(
-            &format!(
-                "SELECT route_path, method, handler_name, file_path, framework, line \
-                 FROM routes LIMIT {}",
-                limit
-            ),
-            &[],
-        )
-        .map_err(|e| e.to_string())?
-    };
-
-    // Post-filter by method and framework if specified
-    let filtered: Vec<serde_json::Value> = rows
+    let shaped: Vec<serde_json::Value> = rows
         .into_iter()
-        .filter(|row| {
-            if let Some(method) = method_filter {
-                let row_method = row.get("method").and_then(|v| v.as_str()).unwrap_or("");
-                if !row_method.eq_ignore_ascii_case(method) {
-                    return false;
-                }
-            }
-            if let Some(fw) = framework_filter {
-                let row_fw = row.get("framework").and_then(|v| v.as_str()).unwrap_or("");
-                if !row_fw.eq_ignore_ascii_case(fw) {
-                    return false;
-                }
-            }
-            true
-        })
         .map(|row| {
             serde_json::json!({
                 "route_path": row.get("route_path").cloned().unwrap_or(serde_json::Value::Null),
@@ -486,50 +282,24 @@ pub fn find_route_handlers(
         .collect();
 
     Ok(serde_json::json!({
-        "route_handlers": filtered,
-        "count": filtered.len(),
+        "route_handlers": shaped,
+        "count": shaped.len(),
     }))
 }
 
 /// Find consumers of a topic or queue.
 ///
-/// Queries infra_edges with kind IN ('binds_topic', 'consumes_queue') and joins
-/// infra_nodes to resolve source/target names. Filters by topic_or_queue name.
+/// Delegates to `GraphReadModel::async_consumers` (infra_edges with kind IN
+/// ('binds_topic', 'consumes_queue') joined to infra_nodes/routes).
 pub fn find_async_consumers(
     runtime: SharedCodeIndex,
     topic_or_queue: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
-
-    let pattern = format!("%{}%", topic_or_queue);
-    let rows = db
-        .query_json(
-            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
-                    ie.confidence, ie.properties, \
-                    src.name AS source_name, src.kind AS source_kind, \
-                    src.file_path AS source_file, \
-                    src.bound_symbol_uid AS source_bound_uid, \
-                    CASE \
-                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
-                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
-                        ELSE 'unknown' \
-                    END AS target_type, \
-                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
-                    tgt_infra.kind AS target_kind, \
-                    COALESCE(tgt_infra.file_path, tgt_route.file_path) AS target_file, \
-                    COALESCE(tgt_infra.bound_symbol_uid, tgt_route.handler_symbol_uid) AS target_bound_uid, \
-                    tgt_route.route_path AS target_route_path, \
-                    tgt_route.method AS target_method, \
-                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
-             FROM infra_edges ie \
-             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
-             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
-             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
-             WHERE ie.kind IN ('binds_topic', 'consumes_queue') \
-               AND (src.name LIKE ?1 OR ie.properties LIKE ?1)",
-            &[pattern],
-        )
+    let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
+    let rows = grm
+        .async_consumers(topic_or_queue)
         .map_err(|e| e.to_string())?;
 
     Ok(serde_json::json!({
@@ -541,104 +311,24 @@ pub fn find_async_consumers(
 
 /// Find infrastructure bindings for a service or route.
 ///
-/// Two query dimensions:
-/// 1. infra_nodes — matches by name or bound_symbol_uid
-/// 2. route_nodes — matches by route_path, normalized_path, handler_name, or handler_symbol_uid
-///
-/// Then fetches associated infra_edges connected to any matched infra node_ids
-/// or route_ids.
+/// Delegates to `GraphReadModel::service_bindings` (infra node + route match
+/// dimensions plus connecting edges).
 pub fn find_service_bindings(
     runtime: SharedCodeIndex,
     service_or_route: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
-
-    let pattern = format!("%{}%", service_or_route);
-
-    // ── Dimension 1: infra_nodes ──────────────────────────────────────
-    let matched_infra_nodes = db
-        .query_json(
-            "SELECT node_id, file_path, kind, name, namespace, line, end_line, \
-                    properties, bound_symbol_uid, binding_confidence \
-             FROM infra_nodes \
-             WHERE name LIKE ?1 OR bound_symbol_uid LIKE ?1",
-            std::slice::from_ref(&pattern),
-        )
+    let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
+    let bindings = grm
+        .service_bindings(service_or_route)
         .map_err(|e| e.to_string())?;
-
-    let infra_node_ids: Vec<String> = matched_infra_nodes
-        .iter()
-        .filter_map(|n| {
-            n.get("node_id")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string())
-        })
-        .collect();
-
-    // ── Dimension 2: route_nodes ──────────────────────────────────────
-    let matched_routes = db
-        .query_json(
-            "SELECT route_id, file_path, route_path, method, handler_symbol_uid, \
-                    handler_name, framework, line, end_line, normalized_path, confidence \
-             FROM routes \
-             WHERE route_path LIKE ?1 \
-                OR normalized_path LIKE ?1 \
-                OR handler_name LIKE ?1 \
-                OR handler_symbol_uid LIKE ?1",
-            &[pattern],
-        )
-        .map_err(|e| e.to_string())?;
-
-    let route_ids: Vec<String> = matched_routes
-        .iter()
-        .filter_map(|r| {
-            r.get("route_id")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string())
-        })
-        .collect();
-
-    // ── Dimension 3: related edges ────────────────────────────────────
-    // Collect all IDs (infra node_ids + route_ids) for a single edge query
-    let mut all_ids: Vec<String> = Vec::with_capacity(infra_node_ids.len() + route_ids.len());
-    all_ids.extend(infra_node_ids);
-    all_ids.extend(route_ids);
-
-    let related_edges = if all_ids.is_empty() {
-        Vec::new()
-    } else {
-        let placeholders: Vec<String> = (1..=all_ids.len()).map(|i| format!("?{}", i)).collect();
-        let ph_str = placeholders.join(",");
-        let sql = format!(
-            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
-                    ie.confidence, ie.properties, \
-                    src.name AS source_name, src.kind AS source_kind, \
-                    CASE \
-                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
-                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
-                        ELSE 'unknown' \
-                    END AS target_type, \
-                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
-                    COALESCE(tgt_infra.kind, 'route') AS target_kind, \
-                    tgt_route.route_path AS target_route_path, \
-                    tgt_route.method AS target_method, \
-                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
-             FROM infra_edges ie \
-             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
-             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
-             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
-             WHERE ie.source_node_id IN ({ph}) OR ie.target_node_id IN ({ph})",
-            ph = ph_str,
-        );
-        db.query_json(&sql, &all_ids).map_err(|e| e.to_string())?
-    };
 
     Ok(serde_json::json!({
         "service_or_route": service_or_route,
-        "matched_infra_nodes": matched_infra_nodes,
-        "matched_routes": matched_routes,
-        "related_edges": related_edges,
+        "matched_infra_nodes": bindings.matched_infra_nodes,
+        "matched_routes": bindings.matched_routes,
+        "related_edges": bindings.related_edges,
     }))
 }
 
@@ -853,5 +543,420 @@ mod tests {
             result.get("truncated_reason").unwrap().as_str(),
             Some("default_limit")
         );
+    }
+
+    // ── Characterization tests for the 5 raw-SQL graph tools ─────────
+    //
+    // These pin the current JSON output of get_dependents / find_dead_code /
+    // find_route_handlers / find_async_consumers / find_service_bindings on a
+    // synthetic index DB so the GraphReadModel collapse cannot change behavior.
+
+    fn synthetic_runtime() -> (
+        tempfile::TempDir,
+        SharedCodeIndex,
+        std::sync::Arc<cc_db::index_db::IndexDb>,
+    ) {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let idx = crate::engine::CodeIndex::new(Some(tmp.path())).unwrap();
+        let db = idx.index_db().expect("index db opened").clone();
+        // Give each synthetic DB a unique generation so process-global graph
+        // caches keyed by (db identity, metadata) never alias across tests.
+        db.set_metadata("last_indexed_at", &tmp.path().display().to_string())
+            .unwrap();
+        (tmp, std::sync::Arc::new(std::sync::RwLock::new(idx)), db)
+    }
+
+    fn insert_file(db: &cc_db::index_db::IndexDb, file_path: &str) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
+                 VALUES(?1,'TypeScript',?2,1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+                rusqlite::params![file_path, format!("hash:{file_path}")],
+            )
+            .unwrap();
+    }
+
+    fn insert_import(db: &cc_db::index_db::IndexDb, file_path: &str, resolved_path: &str) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO imports(file_path, import_string, resolved_path) VALUES(?1, ?2, ?3)",
+                rusqlite::params![file_path, format!("import:{resolved_path}"), resolved_path],
+            )
+            .unwrap();
+    }
+
+    fn insert_symbol(
+        db: &cc_db::index_db::IndexDb,
+        uid: &str,
+        name: &str,
+        kind: &str,
+        file_path: &str,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, start_line, end_line)
+                 VALUES(?1, ?2, ?3, ?4, ?5, 1, 10)",
+                rusqlite::params![format!("sid:{uid}"), uid, name, kind, file_path],
+            )
+            .unwrap();
+    }
+
+    fn insert_call_edge(
+        db: &cc_db::index_db::IndexDb,
+        edge_id: &str,
+        file_path: &str,
+        caller_uid: Option<&str>,
+        callee_uid: &str,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
+                 VALUES(?1, ?2, 'callee', 5, ?3, ?4)",
+                rusqlite::params![edge_id, file_path, caller_uid, callee_uid],
+            )
+            .unwrap();
+    }
+
+    fn insert_symbol_ref(
+        db: &cc_db::index_db::IndexDb,
+        ref_id: &str,
+        file_path: &str,
+        target_uid: &str,
+        container: Option<&str>,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO symbol_refs(ref_id, file_path, symbol_name, container, ref_kind, line, target_symbol_uid)
+                 VALUES(?1, ?2, 'ref', ?3, 'call', 7, ?4)",
+                rusqlite::params![ref_id, file_path, container, target_uid],
+            )
+            .unwrap();
+    }
+
+    fn insert_route(
+        db: &cc_db::index_db::IndexDb,
+        edge_id: &str,
+        file_path: &str,
+        route_path: &str,
+        method: &str,
+        handler_name: &str,
+        framework: &str,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO routes(edge_id, file_path, route_path, method, handler_name, framework, line, normalized_path, route_id)
+                 VALUES(?1, ?2, ?3, ?4, ?5, ?6, 10, ?3, ?1)",
+                rusqlite::params![edge_id, file_path, route_path, method, handler_name, framework],
+            )
+            .unwrap();
+    }
+
+    fn insert_infra_node(
+        db: &cc_db::index_db::IndexDb,
+        node_id: &str,
+        file_path: &str,
+        kind: &str,
+        name: &str,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO infra_nodes(node_id, file_path, kind, name) VALUES(?1, ?2, ?3, ?4)",
+                rusqlite::params![node_id, file_path, kind, name],
+            )
+            .unwrap();
+    }
+
+    fn insert_infra_edge(
+        db: &cc_db::index_db::IndexDb,
+        edge_id: &str,
+        source_node_id: &str,
+        target_node_id: &str,
+        kind: &str,
+        properties: &str,
+    ) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO infra_edges(edge_id, source_node_id, target_node_id, kind, properties)
+                 VALUES(?1, ?2, ?3, ?4, ?5)",
+                rusqlite::params![edge_id, source_node_id, target_node_id, kind, properties],
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn dependents_direct_and_two_hop_transitive_sorted() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        for file in ["src/a.ts", "src/b.ts", "src/c.ts", "src/d.ts"] {
+            insert_file(&db, file);
+        }
+        insert_import(&db, "src/a.ts", "src/a.ts"); // self-import must be excluded
+        insert_import(&db, "src/b.ts", "src/a.ts"); // direct dependent
+        insert_import(&db, "src/c.ts", "src/b.ts"); // 2-hop transitive dependent
+        insert_import(&db, "src/d.ts", "src/c.ts"); // 3 hops away: out of reach
+
+        let result = get_dependents(rt, serde_json::json!({"file_path": "src/a.ts"})).unwrap();
+
+        assert_eq!(
+            result.get("dependents").unwrap(),
+            &serde_json::json!(["src/b.ts", "src/c.ts"])
+        );
+        assert_eq!(result.get("count").unwrap().as_u64(), Some(2));
+        assert_eq!(result.get("file_path").unwrap().as_str(), Some("src/a.ts"));
+    }
+
+    #[test]
+    fn dead_code_pins_caller_ref_and_exclusion_filters() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/app.ts");
+        insert_file(&db, "lib/util.ts");
+
+        // Dead: no callers, no refs.
+        insert_symbol(&db, "uid_orphan", "orphan", "function", "src/app.ts");
+        // Alive: incoming call edge from another symbol.
+        insert_symbol(&db, "uid_used", "used_fn", "function", "src/app.ts");
+        insert_call_edge(&db, "ce_used", "src/app.ts", Some("uid_orphan"), "uid_used");
+        // Dead: only a self call edge (caller == callee).
+        insert_symbol(&db, "uid_selfcall", "self_call", "function", "src/app.ts");
+        insert_call_edge(
+            &db,
+            "ce_self",
+            "src/app.ts",
+            Some("uid_selfcall"),
+            "uid_selfcall",
+        );
+        // Excluded by name / prefix even with no callers.
+        insert_symbol(&db, "uid_main", "main", "function", "src/app.ts");
+        insert_symbol(&db, "uid_th", "test_helper", "function", "src/app.ts");
+        // Dead: only a self reference (container == own name).
+        insert_symbol(&db, "uid_selfref", "self_ref", "function", "src/app.ts");
+        insert_symbol_ref(
+            &db,
+            "sr_self",
+            "src/app.ts",
+            "uid_selfref",
+            Some("self_ref"),
+        );
+        // Alive: an external reference (container differs from own name).
+        insert_symbol(&db, "uid_extref", "ext_ref", "function", "src/app.ts");
+        insert_symbol_ref(&db, "sr_ext", "src/app.ts", "uid_extref", Some("caller_fn"));
+        // Dead, but outside the "src/" scope filter.
+        insert_symbol(&db, "uid_oos", "out_of_scope", "function", "lib/util.ts");
+
+        let scoped = find_dead_code(rt.clone(), serde_json::json!({"scope": "src/"})).unwrap();
+        let scoped_names: std::collections::HashSet<String> = scoped["dead_code"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item["symbol_name"].as_str().unwrap().to_string())
+            .collect();
+        let expected: std::collections::HashSet<String> = ["orphan", "self_call", "self_ref"]
+            .iter()
+            .map(|name| name.to_string())
+            .collect();
+        assert_eq!(scoped_names, expected);
+        assert_eq!(scoped["count"].as_u64(), Some(3));
+        assert_eq!(scoped["truncated"].as_bool(), Some(false));
+        for item in scoped["dead_code"].as_array().unwrap() {
+            assert_eq!(item["reason"].as_str(), Some("no-callers"));
+            assert_eq!(item["kind"].as_str(), Some("function"));
+        }
+
+        let unscoped = find_dead_code(rt, serde_json::json!({})).unwrap();
+        let unscoped_names: std::collections::HashSet<String> = unscoped["dead_code"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|item| item["symbol_name"].as_str().unwrap().to_string())
+            .collect();
+        assert!(unscoped_names.contains("out_of_scope"));
+        assert_eq!(unscoped_names.len(), 4);
+    }
+
+    #[test]
+    fn route_handlers_pin_pattern_method_and_framework_filters() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/routes.ts");
+        insert_route(
+            &db,
+            "r1",
+            "src/routes.ts",
+            "/api/users",
+            "GET",
+            "getUsers",
+            "express",
+        );
+        insert_route(
+            &db,
+            "r2",
+            "src/routes.ts",
+            "/api/users",
+            "POST",
+            "createUser",
+            "express",
+        );
+        insert_route(
+            &db,
+            "r3",
+            "src/routes.ts",
+            "/admin",
+            "GET",
+            "adminHome",
+            "fastify",
+        );
+
+        let all = find_route_handlers(rt.clone(), serde_json::json!({})).unwrap();
+        assert_eq!(all["count"].as_u64(), Some(3));
+
+        // Pattern is substring LIKE; method/framework filters are case-insensitive.
+        let filtered = find_route_handlers(
+            rt,
+            serde_json::json!({"route_path": "users", "method": "get", "framework": "EXPRESS"}),
+        )
+        .unwrap();
+        assert_eq!(filtered["count"].as_u64(), Some(1));
+        let row = &filtered["route_handlers"][0];
+        assert_eq!(row["handler"].as_str(), Some("getUsers"));
+        assert_eq!(row["method"].as_str(), Some("GET"));
+        assert_eq!(row["route_path"].as_str(), Some("/api/users"));
+        assert_eq!(row["framework"].as_str(), Some("express"));
+        assert_eq!(row["file_path"].as_str(), Some("src/routes.ts"));
+        assert_eq!(row["line"].as_u64(), Some(10));
+    }
+
+    #[test]
+    fn async_consumers_pin_kind_filter_and_target_resolution() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/consumer.ts");
+        insert_file(&db, "src/routes.ts");
+        insert_infra_node(
+            &db,
+            "n_consumer",
+            "src/consumer.ts",
+            "consumer",
+            "orders-consumer",
+        );
+        insert_infra_node(&db, "n_queue", "src/consumer.ts", "queue", "orders-queue");
+        insert_infra_node(
+            &db,
+            "n_other",
+            "src/consumer.ts",
+            "consumer",
+            "payments-svc",
+        );
+        insert_route(
+            &db,
+            "route_pay",
+            "src/routes.ts",
+            "/orders/submit",
+            "POST",
+            "handleOrder",
+            "express",
+        );
+
+        // Matched: kind in (binds_topic, consumes_queue) and src.name LIKE %orders%.
+        insert_infra_edge(&db, "e1", "n_consumer", "n_queue", "consumes_queue", "{}");
+        // Matched via properties LIKE even though target is a route.
+        insert_infra_edge(
+            &db,
+            "e2",
+            "n_other",
+            "route_pay",
+            "binds_topic",
+            "{\"topic\":\"orders\"}",
+        );
+        // Excluded: wrong edge kind.
+        insert_infra_edge(&db, "e3", "n_consumer", "n_queue", "deploys", "{}");
+        // Excluded: neither source name nor properties match.
+        insert_infra_edge(&db, "e4", "n_other", "n_queue", "consumes_queue", "{}");
+
+        let result = find_async_consumers(rt, "orders").unwrap();
+        assert_eq!(result["count"].as_u64(), Some(2));
+        assert_eq!(result["topic_or_queue"].as_str(), Some("orders"));
+
+        let consumers = result["consumers"].as_array().unwrap();
+        let by_edge = |id: &str| {
+            consumers
+                .iter()
+                .find(|row| row["edge_id"].as_str() == Some(id))
+                .unwrap_or_else(|| panic!("edge {id} missing"))
+        };
+        let infra_target = by_edge("e1");
+        assert_eq!(infra_target["target_type"].as_str(), Some("infra_node"));
+        assert_eq!(infra_target["target_name"].as_str(), Some("orders-queue"));
+        assert_eq!(
+            infra_target["source_name"].as_str(),
+            Some("orders-consumer")
+        );
+        let route_target = by_edge("e2");
+        assert_eq!(route_target["target_type"].as_str(), Some("route"));
+        assert_eq!(route_target["target_name"].as_str(), Some("handleOrder"));
+        assert_eq!(
+            route_target["target_route_path"].as_str(),
+            Some("/orders/submit")
+        );
+    }
+
+    #[test]
+    fn service_bindings_pin_two_dimension_match_and_related_edges() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/infra.ts");
+        insert_file(&db, "src/routes.ts");
+        insert_infra_node(&db, "n_pay", "src/infra.ts", "service", "payment-service");
+        insert_infra_node(&db, "n_db", "src/infra.ts", "database", "postgres-main");
+        insert_route(
+            &db,
+            "route_pay",
+            "src/routes.ts",
+            "/payments",
+            "POST",
+            "payHandler",
+            "express",
+        );
+        insert_route(
+            &db,
+            "route_health",
+            "src/routes.ts",
+            "/health",
+            "GET",
+            "healthHandler",
+            "express",
+        );
+        // Related: touches a matched infra node and a matched route.
+        insert_infra_edge(&db, "e_bind", "n_pay", "route_pay", "exposes_route", "{}");
+        // Unrelated: touches neither matched id.
+        insert_infra_edge(
+            &db,
+            "e_other",
+            "n_db",
+            "route_health",
+            "exposes_route",
+            "{}",
+        );
+
+        let result = find_service_bindings(rt, "payment").unwrap();
+
+        let nodes = result["matched_infra_nodes"].as_array().unwrap();
+        assert_eq!(nodes.len(), 1);
+        assert_eq!(nodes[0]["name"].as_str(), Some("payment-service"));
+
+        let routes = result["matched_routes"].as_array().unwrap();
+        assert_eq!(routes.len(), 1);
+        assert_eq!(routes[0]["route_path"].as_str(), Some("/payments"));
+        assert_eq!(routes[0]["handler_name"].as_str(), Some("payHandler"));
+
+        let edges = result["related_edges"].as_array().unwrap();
+        assert_eq!(edges.len(), 1);
+        assert_eq!(edges[0]["edge_id"].as_str(), Some("e_bind"));
+        assert_eq!(edges[0]["source_name"].as_str(), Some("payment-service"));
+        assert_eq!(edges[0]["target_type"].as_str(), Some("route"));
+        assert_eq!(edges[0]["target_route_path"].as_str(), Some("/payments"));
     }
 }

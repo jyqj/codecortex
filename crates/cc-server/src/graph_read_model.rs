@@ -5,10 +5,11 @@
 //! changing their external output shape.
 
 use cc_db::index_db::{IndexDb, SymbolRow};
+use cc_db::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 use cc_model::edge::SemanticRelation;
 use cc_model::{CcError, CcResult};
 use lru::LruCache;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::{HashMap, HashSet};
 use std::num::NonZeroUsize;
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -18,7 +19,10 @@ use crate::graph_types::{
 
 type BridgeEdgesByCaller = HashMap<String, Vec<EdgeLite>>;
 type SharedBridgeEdges = Arc<BridgeEdgesByCaller>;
-type BridgeCache = Mutex<LruCache<usize, (GraphReadGeneration, SharedBridgeEdges)>>;
+
+/// One process-global generation-cache slot: project identity -> the value
+/// computed for that project's latest `GraphReadGeneration`.
+type GenerationSlot<T> = OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, Arc<T>)>>>;
 
 /// Process-global adjacency cache shared across all `GraphReadModel` instances.
 ///
@@ -42,11 +46,10 @@ fn graph_cache_capacity() -> NonZeroUsize {
 /// Each project keeps a single slot holding its latest `GraphReadGeneration`; an
 /// incremental rebuild replaces the slot in place, while distinct projects coexist
 /// up to `graph_cache_capacity()` so multi-project workloads do not thrash.
-static ADJ_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedAdjacency)>>> =
-    OnceLock::new();
+static ADJ_CACHE: GenerationSlot<Mutex<HashMap<String, Vec<EdgeLite>>>> = OnceLock::new();
 
 /// Process-global bridge edge cache, keyed by `db_identity`.
-static BRIDGE_CACHE: OnceLock<BridgeCache> = OnceLock::new();
+static BRIDGE_CACHE: GenerationSlot<BridgeEdgesByCaller> = OnceLock::new();
 
 // ---------------------------------------------------------------------------
 // Semantic edge cache
@@ -72,27 +75,27 @@ struct SemanticAdjPair {
 type SharedSemanticAdj = Arc<Mutex<SemanticAdjPair>>;
 
 /// Process-global semantic edge cache, keyed by `db_identity`.
-static SEMANTIC_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedSemanticAdj)>>> =
-    OnceLock::new();
+static SEMANTIC_CACHE: GenerationSlot<Mutex<SemanticAdjPair>> = OnceLock::new();
 
 // ---------------------------------------------------------------------------
 // Import adjacency cache
 // ---------------------------------------------------------------------------
 
-type SharedImportAdj = Arc<HashMap<String, Vec<String>>>;
-
-static IMPORT_ADJ_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedImportAdj)>>> =
-    OnceLock::new();
+static IMPORT_ADJ_CACHE: GenerationSlot<HashMap<String, Vec<String>>> = OnceLock::new();
 
 // ---------------------------------------------------------------------------
 // Community adjacency cache
 // ---------------------------------------------------------------------------
 
-type SharedCommunityAdj = Arc<HashMap<String, Vec<String>>>;
+static COMMUNITY_ADJ_CACHE: GenerationSlot<HashMap<String, Vec<String>>> = OnceLock::new();
 
-static COMMUNITY_ADJ_CACHE: OnceLock<
-    Mutex<LruCache<usize, (GraphReadGeneration, SharedCommunityAdj)>>,
-> = OnceLock::new();
+// ---------------------------------------------------------------------------
+// Dead-code caller set cache (callee UIDs with at least one non-self caller)
+// ---------------------------------------------------------------------------
+
+type SharedCalleeSet = Arc<HashSet<String>>;
+
+static CALLEES_WITH_CALLERS_CACHE: GenerationSlot<HashSet<String>> = OnceLock::new();
 
 /// Clear the process-global bridge edge cache.
 ///
@@ -127,6 +130,39 @@ impl GraphReadGeneration {
     }
 }
 
+/// Shared generation-cache ritual: look up `slot` by project identity, hit
+/// only when the stored generation matches, otherwise compute outside the
+/// lock and install the fresh value under the latest generation.
+///
+/// A failed `compute` is NOT cached — the error is returned and the next call
+/// retries, so per-request degradation at the call site never becomes sticky
+/// for the whole generation.
+fn generation_cached<T>(
+    slot: &'static GenerationSlot<T>,
+    generation: &GraphReadGeneration,
+    compute: impl FnOnce() -> CcResult<Arc<T>>,
+) -> CcResult<Arc<T>> {
+    let cache = slot.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
+    if let Ok(mut guard) = cache.lock() {
+        if let Some((stored_gen, value)) = guard.get(&generation.db_identity) {
+            if stored_gen == generation {
+                return Ok(Arc::clone(value));
+            }
+        }
+    }
+
+    // Miss, or same project with a newer generation: compute outside the
+    // lock, then replace this project's slot with the latest generation.
+    let value = compute()?;
+    if let Ok(mut guard) = cache.lock() {
+        guard.put(
+            generation.db_identity,
+            (generation.clone(), Arc::clone(&value)),
+        );
+    }
+    Ok(value)
+}
+
 #[derive(Debug, Clone)]
 pub(crate) struct GraphSymbolLite {
     pub symbol_uid: String,
@@ -134,6 +170,22 @@ pub(crate) struct GraphSymbolLite {
     pub file_path: String,
     pub kind: String,
     pub community_id: Option<u32>,
+}
+
+/// Symbol with no incoming callers and no external references.
+#[derive(Debug, Clone)]
+pub(crate) struct DeadCodeCandidate {
+    pub name: String,
+    pub uid: String,
+    pub file_path: String,
+    pub kind: String,
+}
+
+/// Infra nodes, routes, and connecting edges matched for a service/route query.
+pub(crate) struct ServiceBindings {
+    pub matched_infra_nodes: Vec<serde_json::Value>,
+    pub matched_routes: Vec<serde_json::Value>,
+    pub related_edges: Vec<serde_json::Value>,
 }
 
 /// Read-only graph view with process-global adjacency caches.
@@ -187,18 +239,10 @@ impl GraphReadModel {
     /// incremental rebuild) replaces the project's slot with a fresh empty map so
     /// callers never read stale edges.
     fn cached_adjacency(gen: &GraphReadGeneration) -> SharedAdjacency {
-        let cache = ADJ_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
-        let mut map = cache.lock().unwrap();
-        if let Some((stored_gen, adj)) = map.get(&gen.db_identity) {
-            if stored_gen == gen {
-                return adj.clone();
-            }
-        }
-        // Miss, or same project with a newer generation: install a fresh empty
-        // adjacency under the latest generation for this project's slot.
-        let adj: SharedAdjacency = Arc::new(Mutex::new(HashMap::new()));
-        map.put(gen.db_identity, (gen.clone(), adj.clone()));
-        adj
+        // A miss installs a fresh empty adjacency under the latest generation
+        // for this project's slot; `neighbors()` populates it lazily.
+        generation_cached(&ADJ_CACHE, gen, || Ok(Arc::new(Mutex::new(HashMap::new()))))
+            .expect("empty adjacency construction is infallible")
     }
 
     /// Get or create the process-global shared semantic adjacency for `gen`.
@@ -206,20 +250,13 @@ impl GraphReadModel {
     /// Mirrors `cached_adjacency()`: keyed by project identity, a cache hit
     /// requires both the same project and the same generation.
     fn cached_semantic_adjacency(gen: &GraphReadGeneration) -> SharedSemanticAdj {
-        let cache =
-            SEMANTIC_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
-        let mut map = cache.lock().unwrap();
-        if let Some((stored_gen, adj)) = map.get(&gen.db_identity) {
-            if stored_gen == gen {
-                return adj.clone();
-            }
-        }
-        let adj: SharedSemanticAdj = Arc::new(Mutex::new(SemanticAdjPair {
-            by_source: HashMap::new(),
-            by_target: HashMap::new(),
-        }));
-        map.put(gen.db_identity, (gen.clone(), adj.clone()));
-        adj
+        generation_cached(&SEMANTIC_CACHE, gen, || {
+            Ok(Arc::new(Mutex::new(SemanticAdjPair {
+                by_source: HashMap::new(),
+                by_target: HashMap::new(),
+            })))
+        })
+        .expect("empty semantic adjacency construction is infallible")
     }
 
     #[allow(dead_code)]
@@ -401,26 +438,9 @@ impl GraphReadModel {
         db: &Arc<IndexDb>,
         generation: &GraphReadGeneration,
     ) -> CcResult<SharedBridgeEdges> {
-        let cache = BRIDGE_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
-        // Fast path: hit only when both the project and its generation match.
-        if let Ok(mut cache) = cache.lock() {
-            if let Some((stored_gen, cached)) = cache.get(&generation.db_identity) {
-                if stored_gen == generation {
-                    return Ok(Arc::clone(cached));
-                }
-            }
-        }
-
-        // Miss, or same project with a newer generation: build outside the lock,
-        // then replace this project's slot with the latest generation's edges.
-        let bridges = Arc::new(Self::bridge_edges_by_caller(db)?);
-        if let Ok(mut cache) = cache.lock() {
-            cache.put(
-                generation.db_identity,
-                (generation.clone(), Arc::clone(&bridges)),
-            );
-        }
-        Ok(bridges)
+        generation_cached(&BRIDGE_CACHE, generation, || {
+            Ok(Arc::new(Self::bridge_edges_by_caller(db)?))
+        })
     }
 
     /// Return outgoing edges for a caller UID, backed by a process-global cache.
@@ -609,31 +629,13 @@ impl GraphReadModel {
     }
 
     pub(crate) fn file_import_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        // Check cache
-        let cache_mutex =
-            IMPORT_ADJ_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
-
-        if let Ok(mut cache) = cache_mutex.lock() {
-            if let Some((stored_gen, adj)) = cache.get(&self.generation.db_identity) {
-                if stored_gen == &self.generation {
-                    return Ok(HashMap::clone(adj));
-                }
-            }
-        }
-
-        // Cache miss: compute via identity projection
-        let result = self.projected_import_adjacency(|path| path.to_string())?;
-
-        // Store in cache
-        let shared = Arc::new(result.clone());
-        if let Ok(mut cache) = cache_mutex.lock() {
-            cache.put(
-                self.generation.db_identity,
-                (self.generation.clone(), shared),
-            );
-        }
-
-        Ok(result)
+        let shared = generation_cached(&IMPORT_ADJ_CACHE, &self.generation, || {
+            // Compute via identity projection.
+            Ok(Arc::new(
+                self.projected_import_adjacency(|path| path.to_string())?,
+            ))
+        })?;
+        Ok(HashMap::clone(&shared))
     }
 
     pub(crate) fn file_import_witness_edges(&self, scc: &[String]) -> CcResult<Vec<InternalEdge>> {
@@ -665,65 +667,45 @@ impl GraphReadModel {
     }
 
     pub(crate) fn community_call_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        // Check cache
-        let cache_mutex =
-            COMMUNITY_ADJ_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
+        let shared = generation_cached(&COMMUNITY_ADJ_CACHE, &self.generation, || {
+            let rows = self.db.query_json(
+                "SELECT DISTINCT s1.community_id AS from_community, s2.community_id AS to_community \
+                 FROM call_edges ce \
+                 JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
+                 JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
+                 WHERE s1.community_id IS NOT NULL \
+                   AND s2.community_id IS NOT NULL \
+                   AND s1.community_id != s2.community_id",
+                &[],
+            )?;
 
-        if let Ok(mut cache) = cache_mutex.lock() {
-            if let Some((stored_gen, adj)) = cache.get(&self.generation.db_identity) {
-                if stored_gen == &self.generation {
-                    return Ok(HashMap::clone(adj));
+            let mut adj: HashMap<String, Vec<String>> = HashMap::new();
+            for row in &rows {
+                let from = row.get("from_community");
+                let to = row.get("to_community");
+                if let (Some(from_val), Some(to_val)) = (from, to) {
+                    let from_str = match from_val {
+                        serde_json::Value::Number(n) => n.to_string(),
+                        serde_json::Value::String(s) => s.clone(),
+                        _ => continue,
+                    };
+                    let to_str = match to_val {
+                        serde_json::Value::Number(n) => n.to_string(),
+                        serde_json::Value::String(s) => s.clone(),
+                        _ => continue,
+                    };
+                    adj.entry(from_str).or_default().push(to_str);
                 }
             }
-        }
 
-        // Cache miss: compute from SQL
-        let rows = self.db.query_json(
-            "SELECT DISTINCT s1.community_id AS from_community, s2.community_id AS to_community \
-             FROM call_edges ce \
-             JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
-             JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
-             WHERE s1.community_id IS NOT NULL \
-               AND s2.community_id IS NOT NULL \
-               AND s1.community_id != s2.community_id",
-            &[],
-        )?;
-
-        let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-        for row in &rows {
-            let from = row.get("from_community");
-            let to = row.get("to_community");
-            if let (Some(from_val), Some(to_val)) = (from, to) {
-                let from_str = match from_val {
-                    serde_json::Value::Number(n) => n.to_string(),
-                    serde_json::Value::String(s) => s.clone(),
-                    _ => continue,
-                };
-                let to_str = match to_val {
-                    serde_json::Value::Number(n) => n.to_string(),
-                    serde_json::Value::String(s) => s.clone(),
-                    _ => continue,
-                };
-                adj.entry(from_str).or_default().push(to_str);
+            // Rows are DISTINCT, but multiple rows can share the same from_community.
+            for targets in adj.values_mut() {
+                targets.sort();
+                targets.dedup();
             }
-        }
-
-        // Results are already DISTINCT per row, but multiple rows can share the same from_community
-        for targets in adj.values_mut() {
-            targets.sort();
-            targets.dedup();
-        }
-
-        // Store in cache
-        let shared = Arc::new(adj.clone());
-        if let Ok(mut cache) = cache_mutex.lock() {
-            cache.put(
-                self.generation.db_identity,
-                (self.generation.clone(), shared),
-            );
-        }
-
-        Ok(adj)
+            Ok(Arc::new(adj))
+        })?;
+        Ok(HashMap::clone(&shared))
     }
 
     pub(crate) fn internal_edges_from_adjacency(
@@ -787,17 +769,13 @@ impl GraphReadModel {
     ) -> CcResult<Vec<GraphSymbolLite>> {
         let conn = self.db.read_conn()?;
         let mut callers = Vec::new();
-        let batch_size = 200;
 
-        for batch in callee_uids.chunks(batch_size) {
+        for batch in callee_uids.chunks(IN_BATCH_SIZE) {
             if batch.is_empty() {
                 continue;
             }
 
-            let placeholders = (0..batch.len())
-                .map(|idx| format!("?{}", idx + 1))
-                .collect::<Vec<_>>()
-                .join(",");
+            let placeholders = sql_in_placeholders(batch.len());
             // Parameter slots after the IN(...) uids: optional confidence
             // threshold, then optional LIMIT, in that bind order.
             let mut next_param = batch.len() + 1;
@@ -862,10 +840,7 @@ impl GraphReadModel {
         }
 
         let conn = self.db.read_conn()?;
-        let placeholders = (1..=files.len())
-            .map(|idx| format!("?{}", idx))
-            .collect::<Vec<_>>()
-            .join(",");
+        let placeholders = sql_in_placeholders(files.len());
         let sql = format!(
             "SELECT DISTINCT test_file_path FROM test_edges \
              WHERE code_file_path IN ({}) ORDER BY test_file_path",
@@ -899,15 +874,10 @@ impl GraphReadModel {
 
         let conn = self.db.read_conn()?;
         let mut map = HashMap::new();
-        let batch_size = 200;
-        for batch in uids.chunks(batch_size) {
-            let placeholders = (0..batch.len())
-                .map(|idx| format!("?{}", idx + 1))
-                .collect::<Vec<_>>()
-                .join(",");
+        for batch in uids.chunks(IN_BATCH_SIZE) {
             let sql = format!(
                 "SELECT symbol_uid, name FROM symbols WHERE symbol_uid IN ({})",
-                placeholders
+                sql_in_placeholders(batch.len())
             );
             let mut stmt = conn
                 .prepare(&sql)
@@ -927,6 +897,353 @@ impl GraphReadModel {
         }
         Ok(map)
     }
+
+    /// Files that depend on (import) `file_path`, direct plus 2-hop transitive,
+    /// deduplicated and sorted. Two bounded SQL queries: 200 direct importers,
+    /// 10k transitive rows — no full-table materialization.
+    pub(crate) fn dependents_of_file(&self, file_path: &str) -> CcResult<Vec<String>> {
+        // Direct importers, bounded in SQL; self-imports are excluded in the
+        // query so the cap counts only real dependents. A failure here
+        // propagates to the caller.
+        let rows = self.db.query_json(
+            "SELECT DISTINCT file_path FROM imports \
+             WHERE resolved_path = ?1 AND file_path != ?1 \
+             ORDER BY file_path LIMIT 200",
+            &[file_path.to_string()],
+        )?;
+        let mut seen: HashSet<String> = HashSet::new();
+        let mut dependents: Vec<String> = Vec::new();
+        for row in &rows {
+            if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
+                if seen.insert(fp.to_string()) {
+                    dependents.push(fp.to_string());
+                }
+            }
+        }
+
+        // 2-hop: importers of the direct dependents in a single batched query.
+        // A failure here degrades to direct-only results (partial answer beats
+        // none), matching the original handler behavior.
+        if !dependents.is_empty() {
+            let sql = format!(
+                "SELECT DISTINCT file_path FROM imports WHERE resolved_path IN ({}) LIMIT 10000",
+                sql_in_placeholders(dependents.len())
+            );
+            let rows2 = self.db.query_json(&sql, &dependents).unwrap_or_default();
+            let mut transitive: Vec<String> = Vec::new();
+            for row in &rows2 {
+                if let Some(fp) = row.get("file_path").and_then(|v| v.as_str()) {
+                    if fp != file_path && seen.insert(fp.to_string()) {
+                        transitive.push(fp.to_string());
+                    }
+                }
+            }
+            dependents.extend(transitive);
+        }
+
+        dependents.sort();
+        Ok(dependents)
+    }
+
+    /// Callee UIDs that have at least one non-self caller. Cached per
+    /// generation on success; derived purely from `call_edges`.
+    fn callees_with_external_callers(&self) -> SharedCalleeSet {
+        let computed = generation_cached(&CALLEES_WITH_CALLERS_CACHE, &self.generation, || {
+            let rows = self.db.query_json(
+                "SELECT DISTINCT callee_symbol_uid FROM call_edges \
+                 WHERE callee_symbol_uid IS NOT NULL \
+                   AND (caller_symbol_uid IS NULL OR caller_symbol_uid != callee_symbol_uid) \
+                 LIMIT 10000",
+                &[],
+            )?;
+            let mut has_callers = HashSet::new();
+            for row in &rows {
+                if let Some(uid) = row.get("callee_symbol_uid").and_then(|v| v.as_str()) {
+                    has_callers.insert(uid.to_string());
+                }
+            }
+            Ok(Arc::new(has_callers))
+        });
+        match computed {
+            Ok(set) => set,
+            // A query failure degrades to "no callers known" for THIS request
+            // only (matching the old per-call unwrap_or_default). The empty
+            // set is never cached, so the next request retries the query
+            // instead of mass-reporting dead code for the whole generation.
+            Err(err) => {
+                tracing::warn!(
+                    error = %err,
+                    "dead-code caller query failed; degrading to uncached empty caller set"
+                );
+                Arc::new(HashSet::new())
+            }
+        }
+    }
+
+    /// Symbols that appear to be dead code: no non-self callers and no
+    /// external references. `scope` filters by file-path prefix; `scan_limit`
+    /// bounds the symbols scan. Result is untruncated (callers clip it).
+    pub(crate) fn dead_code_candidates(
+        &self,
+        scope: Option<&str>,
+        scan_limit: usize,
+    ) -> CcResult<Vec<DeadCodeCandidate>> {
+        let all_symbols = if let Some(prefix) = scope {
+            let pattern = format!("%{}%", prefix);
+            self.db.query_json(
+                &format!(
+                    "SELECT name, symbol_uid, file_path, kind FROM symbols \
+                     WHERE file_path LIKE ?1 LIMIT {}",
+                    scan_limit
+                ),
+                &[pattern],
+            )?
+        } else {
+            self.db.query_json(
+                &format!(
+                    "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT {}",
+                    scan_limit
+                ),
+                &[],
+            )?
+        };
+
+        let has_callers = self.callees_with_external_callers();
+
+        let excluded_names = ["main", "__init__", "__main__", "setup", "configure"];
+        let excluded_prefixes = ["test_", "Test"];
+
+        // Phase 1: scope / exclusion / no-caller filters. Reference status is
+        // resolved in a batched second pass to avoid per-candidate queries.
+        let mut candidates: Vec<DeadCodeCandidate> = Vec::new();
+        for row in &all_symbols {
+            let name = row.get("name").and_then(|v| v.as_str()).unwrap_or("");
+            let uid = row.get("symbol_uid").and_then(|v| v.as_str()).unwrap_or("");
+            let file_path = row.get("file_path").and_then(|v| v.as_str()).unwrap_or("");
+            let kind = row.get("kind").and_then(|v| v.as_str()).unwrap_or("");
+
+            if uid.is_empty() || name.is_empty() {
+                continue;
+            }
+            if let Some(prefix) = scope {
+                if !file_path.starts_with(prefix) {
+                    continue;
+                }
+            }
+            if excluded_names.contains(&name) {
+                continue;
+            }
+            if excluded_prefixes.iter().any(|p| name.starts_with(p)) {
+                continue;
+            }
+            if !has_callers.contains(uid) {
+                candidates.push(DeadCodeCandidate {
+                    name: name.to_string(),
+                    uid: uid.to_string(),
+                    file_path: file_path.to_string(),
+                    kind: kind.to_string(),
+                });
+            }
+        }
+
+        // Phase 2: batch-load references and drop candidates with an
+        // *external* reference (container differs from the symbol's own name).
+        let mut uids_with_external_refs: HashSet<String> = HashSet::new();
+        let candidate_uids: Vec<String> = candidates.iter().map(|c| c.uid.clone()).collect();
+        let name_by_uid: HashMap<&str, &str> = candidates
+            .iter()
+            .map(|c| (c.uid.as_str(), c.name.as_str()))
+            .collect();
+        for batch in candidate_uids.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT target_symbol_uid, container FROM symbol_refs \
+                 WHERE target_symbol_uid IN ({})",
+                sql_in_placeholders(batch.len())
+            );
+            let ref_rows = self.db.query_json(&sql, batch).unwrap_or_default();
+            for row in &ref_rows {
+                let target_uid = row
+                    .get("target_symbol_uid")
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("");
+                if target_uid.is_empty() {
+                    continue;
+                }
+                let container = row.get("container").and_then(|v| v.as_str());
+                let own_name = name_by_uid.get(target_uid).copied();
+                let is_external = match (container, own_name) {
+                    (None, _) => true,
+                    (Some(c), Some(n)) => c != n,
+                    (Some(_), None) => true,
+                };
+                if is_external {
+                    uids_with_external_refs.insert(target_uid.to_string());
+                }
+            }
+        }
+
+        candidates.retain(|cand| !uids_with_external_refs.contains(&cand.uid));
+        Ok(candidates)
+    }
+
+    /// HTTP route handler rows matching the optional `route_path` LIKE pattern,
+    /// post-filtered case-insensitively by method/framework.
+    pub(crate) fn route_handlers(
+        &self,
+        route_path: Option<&str>,
+        method: Option<&str>,
+        framework: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<serde_json::Value>> {
+        let rows = if let Some(pattern) = route_path {
+            let like_pattern = format!("%{}%", pattern);
+            self.db.query_json(
+                &format!(
+                    "SELECT route_path, method, handler_name, file_path, framework, line \
+                     FROM routes WHERE route_path LIKE ?1 LIMIT {}",
+                    limit
+                ),
+                &[like_pattern],
+            )?
+        } else {
+            self.db.query_json(
+                &format!(
+                    "SELECT route_path, method, handler_name, file_path, framework, line \
+                     FROM routes LIMIT {}",
+                    limit
+                ),
+                &[],
+            )?
+        };
+
+        let method_filter = normalize_bridge_method(method);
+        let filtered = rows
+            .into_iter()
+            .filter(|row| {
+                if let Some(wanted) = &method_filter {
+                    let row_method =
+                        normalize_bridge_method(row.get("method").and_then(|v| v.as_str()));
+                    if row_method.as_ref() != Some(wanted) {
+                        return false;
+                    }
+                }
+                if let Some(fw) = framework {
+                    let row_fw = row.get("framework").and_then(|v| v.as_str()).unwrap_or("");
+                    if !row_fw.eq_ignore_ascii_case(fw) {
+                        return false;
+                    }
+                }
+                true
+            })
+            .collect();
+        Ok(filtered)
+    }
+
+    /// Consumers of a topic/queue: infra edges with kind in
+    /// (binds_topic, consumes_queue) whose source name or properties match.
+    pub(crate) fn async_consumers(&self, topic_or_queue: &str) -> CcResult<Vec<serde_json::Value>> {
+        let pattern = format!("%{}%", topic_or_queue);
+        self.db.query_json(
+            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
+                    ie.confidence, ie.properties, \
+                    src.name AS source_name, src.kind AS source_kind, \
+                    src.file_path AS source_file, \
+                    src.bound_symbol_uid AS source_bound_uid, \
+                    CASE \
+                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
+                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
+                        ELSE 'unknown' \
+                    END AS target_type, \
+                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
+                    tgt_infra.kind AS target_kind, \
+                    COALESCE(tgt_infra.file_path, tgt_route.file_path) AS target_file, \
+                    COALESCE(tgt_infra.bound_symbol_uid, tgt_route.handler_symbol_uid) AS target_bound_uid, \
+                    tgt_route.route_path AS target_route_path, \
+                    tgt_route.method AS target_method, \
+                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
+             FROM infra_edges ie \
+             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
+             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
+             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
+             WHERE ie.kind IN ('binds_topic', 'consumes_queue') \
+               AND (src.name LIKE ?1 OR ie.properties LIKE ?1)",
+            &[pattern],
+        )
+    }
+
+    /// Infra bindings for a service or route, matched on two dimensions
+    /// (infra node name/bound UID, route path/handler) plus connecting edges.
+    pub(crate) fn service_bindings(&self, service_or_route: &str) -> CcResult<ServiceBindings> {
+        let pattern = format!("%{}%", service_or_route);
+
+        let matched_infra_nodes = self.db.query_json(
+            "SELECT node_id, file_path, kind, name, namespace, line, end_line, \
+                    properties, bound_symbol_uid, binding_confidence \
+             FROM infra_nodes \
+             WHERE name LIKE ?1 OR bound_symbol_uid LIKE ?1",
+            std::slice::from_ref(&pattern),
+        )?;
+
+        let infra_node_ids = matched_infra_nodes.iter().filter_map(|node| {
+            node.get("node_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        });
+
+        let matched_routes = self.db.query_json(
+            "SELECT route_id, file_path, route_path, method, handler_symbol_uid, \
+                    handler_name, framework, line, end_line, normalized_path, confidence \
+             FROM routes \
+             WHERE route_path LIKE ?1 \
+                OR normalized_path LIKE ?1 \
+                OR handler_name LIKE ?1 \
+                OR handler_symbol_uid LIKE ?1",
+            &[pattern],
+        )?;
+
+        let route_ids = matched_routes.iter().filter_map(|route| {
+            route
+                .get("route_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        });
+
+        // All matched IDs (infra node_ids + route_ids) feed one edge query.
+        let all_ids: Vec<String> = infra_node_ids.chain(route_ids).collect();
+        let related_edges = if all_ids.is_empty() {
+            Vec::new()
+        } else {
+            let ph_str = sql_in_placeholders(all_ids.len());
+            let sql = format!(
+                "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
+                        ie.confidence, ie.properties, \
+                        src.name AS source_name, src.kind AS source_kind, \
+                        CASE \
+                            WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
+                            WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
+                            ELSE 'unknown' \
+                        END AS target_type, \
+                        COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
+                        COALESCE(tgt_infra.kind, 'route') AS target_kind, \
+                        tgt_route.route_path AS target_route_path, \
+                        tgt_route.method AS target_method, \
+                        tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
+                 FROM infra_edges ie \
+                 LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
+                 LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
+                 LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
+                 WHERE ie.source_node_id IN ({ph}) OR ie.target_node_id IN ({ph})",
+                ph = ph_str,
+            );
+            self.db.query_json(&sql, &all_ids)?
+        };
+
+        Ok(ServiceBindings {
+            matched_infra_nodes,
+            matched_routes,
+            related_edges,
+        })
+    }
 }
 
 fn normalize_bridge_method(method: Option<&str>) -> Option<String> {
@@ -941,64 +1258,21 @@ fn bfs_paths_labeled_with<F>(
     to_uid: &str,
     max_depth: usize,
     max_paths: usize,
-    mut neighbors: F,
+    neighbors: F,
 ) -> Vec<LabeledPath>
 where
     F: FnMut(&str) -> Vec<EdgeLite>,
 {
-    let mut results = Vec::new();
-    // Each queue entry carries its own visited set so distinct paths through
-    // shared intermediate nodes are all discovered (simple-path constraint:
-    // no node appears twice within the *same* path).
-    let mut queue: VecDeque<(Vec<String>, Vec<EdgeLite>, HashSet<String>)> = VecDeque::new();
-    let mut initial_visited = HashSet::new();
-    initial_visited.insert(from_uid.to_string());
-    queue.push_back((vec![from_uid.to_string()], Vec::new(), initial_visited));
-
-    // Safety valve: cap total queue pushes to prevent runaway exploration.
-    let explore_budget = max_paths.saturating_mul(500).max(1);
-    let mut explored: usize = 0;
-
-    while let Some((nodes, edges, visited)) = queue.pop_front() {
-        if results.len() >= max_paths {
-            break;
-        }
-        if nodes.len() > max_depth + 1 {
-            continue;
-        }
-        let current = nodes.last().expect("path has at least one uid").clone();
-        if current == to_uid {
-            results.push(LabeledPath {
-                node_uids: nodes,
-                edge_lites: edges,
-            });
-            continue;
-        }
-
-        for edge in neighbors(&current) {
-            if !visited.contains(&edge.callee_uid) {
-                if explored >= explore_budget {
-                    tracing::debug!(
-                        explore_budget,
-                        results = results.len(),
-                        max_paths,
-                        "BFS explore budget exhausted, truncating path enumeration"
-                    );
-                    break;
-                }
-                explored += 1;
-                let mut new_visited = visited.clone();
-                new_visited.insert(edge.callee_uid.clone());
-                let mut new_nodes = nodes.clone();
-                new_nodes.push(edge.callee_uid.clone());
-                let mut new_edges = edges.clone();
-                new_edges.push(edge);
-                queue.push_back((new_nodes, new_edges, new_visited));
-            }
-        }
-    }
-
-    results
+    let budget = crate::graph_walk::WalkBudget::for_path_enumeration(max_depth, max_paths);
+    crate::graph_walk::bfs_simple_paths(from_uid, to_uid, &budget, neighbors, |edge: &EdgeLite| {
+        Some(edge.callee_uid.as_str())
+    })
+    .into_iter()
+    .map(|(node_uids, edge_lites)| LabeledPath {
+        node_uids,
+        edge_lites,
+    })
+    .collect()
 }
 
 #[cfg(test)]
@@ -1172,6 +1446,92 @@ mod tests {
         assert_eq!(edge.dispatch_kind, "async_bridge");
         assert_eq!(edge.synthesized_by.as_deref(), Some("async_bridge"));
         assert_eq!(edge.callee_uid, "handler_get_users");
+    }
+
+    /// DB with one file and a unique generation marker so the process-global
+    /// caches cannot collide with other tests reusing a freed Arc address.
+    fn setup_callee_db(tag: &str) -> (TempDir, Arc<IndexDb>) {
+        let tmp = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
+        db.set_metadata("last_indexed_at", &format!("{tag}-{:p}", Arc::as_ptr(&db)))
+            .unwrap();
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
+                 VALUES('src/app.ts','TypeScript','hash',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+                [],
+            )
+            .unwrap();
+        (tmp, db)
+    }
+
+    fn insert_callee_edge(db: &IndexDb, edge_id: &str, caller_uid: &str, callee_uid: &str) {
+        db.read_conn()
+            .unwrap()
+            .execute(
+                "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
+                 VALUES(?1, 'src/app.ts', 'callee', 5, ?2, ?3)",
+                rusqlite::params![edge_id, caller_uid, callee_uid],
+            )
+            .unwrap();
+    }
+
+    #[test]
+    fn callees_with_callers_caches_successful_query_per_generation() {
+        let (_tmp, db) = setup_callee_db("callees-ok");
+        insert_callee_edge(&db, "ce1", "uid_caller", "uid_callee");
+
+        let grm = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        let first = grm.callees_with_external_callers();
+        assert!(first.contains("uid_callee"));
+
+        // Delete the underlying rows: a second call within the same generation
+        // must be served from the cache and still see the callee.
+        db.read_conn()
+            .unwrap()
+            .execute("DELETE FROM call_edges", [])
+            .unwrap();
+        let second = grm.callees_with_external_callers();
+        assert!(
+            second.contains("uid_callee"),
+            "successful query result should be cached for the generation"
+        );
+    }
+
+    #[test]
+    fn callees_with_callers_failure_is_not_cached() {
+        let (_tmp, db) = setup_callee_db("callees-err");
+        let grm = GraphReadModel::without_http_bridges(Arc::clone(&db));
+
+        // Capture the table schema, then drop it to force a query failure.
+        let schema: String = db
+            .read_conn()
+            .unwrap()
+            .query_row(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name='call_edges'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        db.read_conn()
+            .unwrap()
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+
+        // Failure degrades to an empty set for this request only.
+        let degraded = grm.callees_with_external_callers();
+        assert!(degraded.is_empty());
+
+        // Restore the table and add an edge: the next call must see it, i.e.
+        // the failed (empty) result must NOT have been cached.
+        db.read_conn().unwrap().execute(&schema, []).unwrap();
+        insert_callee_edge(&db, "ce1", "uid_caller", "uid_callee");
+        let recovered = grm.callees_with_external_callers();
+        assert!(
+            recovered.contains("uid_callee"),
+            "a failed query must not stick an empty set in the generation cache"
+        );
     }
 
     #[test]

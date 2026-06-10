@@ -209,6 +209,9 @@ impl ImpactAnalyzer {
         // 2. BFS reverse callers with batch queries, optional confidence filtering
         //    and safety caps (max_per_layer pushed down as SQL LIMIT, max_nodes
         //    bounding total expansion). Seeds always remain in `impacted`.
+        //    Deliberately NOT on graph_walk::bfs_visit: that kernel expands one
+        //    node at a time, while this walk batches a whole layer into a single
+        //    reverse_callers SQL query (IN(...) + LIMIT pushdown).
         let mut current_layer: Vec<String> = seed_symbols
             .iter()
             .map(|seed| seed.symbol_uid.clone())

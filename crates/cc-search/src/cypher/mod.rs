@@ -35,6 +35,7 @@
 
 mod ast;
 mod executor;
+mod fast_path;
 mod lexer;
 mod parser;
 

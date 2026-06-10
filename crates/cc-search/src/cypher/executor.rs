@@ -547,6 +547,17 @@ fn build_group_by_clause(projections: &[SelectProjection]) -> String {
 }
 
 pub fn execute(query: &CypherQuery, db: &IndexDb) -> CcResult<CypherResult> {
+    execute_with_options(query, db, true)
+}
+
+/// Execute with explicit control over the lazy-BFS fast path
+/// (`allow_fast_path = false` forces the SQL translation, used by UNION
+/// sub-queries and by equivalence tests).
+pub(crate) fn execute_with_options(
+    query: &CypherQuery,
+    db: &IndexDb,
+    allow_fast_path: bool,
+) -> CcResult<CypherResult> {
     // We only support the first MATCH clause's first pattern for now.
     if query.match_clauses.is_empty() || query.match_clauses[0].patterns.is_empty() {
         return Ok(CypherResult {
@@ -584,6 +595,11 @@ pub fn execute(query: &CypherQuery, db: &IndexDb) -> CcResult<CypherResult> {
         if rel.min_hops == 1 && rel.max_hops == 1 {
             translate_single_hop(query, pattern, first_match.is_optional)?
         } else {
+            if allow_fast_path && super::fast_path::env_enabled() {
+                if let Some(result) = super::fast_path::try_execute(query, db)? {
+                    return Ok(result);
+                }
+            }
             translate_variable_length(query, pattern)?
         }
     } else {
@@ -1334,7 +1350,9 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
     }
 
     // Execute the first sub-query to establish columns.
-    let first_result = execute(&uq.queries[0], db)?;
+    // UNION branches stay on the SQL path (the fast path is gated to plain
+    // single-query traversals only).
+    let first_result = execute_with_options(&uq.queries[0], db, false)?;
     let columns = first_result.columns.clone();
     let default_limit_applied = first_result.default_limit_applied;
     let limit = first_result.limit;
@@ -1342,7 +1360,7 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
 
     // Execute remaining sub-queries and merge.
     for (i, query) in uq.queries.iter().enumerate().skip(1) {
-        let result = execute(query, db)?;
+        let result = execute_with_options(query, db, false)?;
         let is_all = uq.union_all[i - 1]; // union_all[0] = between query 0 and 1
 
         if is_all {

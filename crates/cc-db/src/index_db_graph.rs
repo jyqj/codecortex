@@ -11,7 +11,7 @@ use crate::index_db::{
 };
 
 /// Methods grouped by container name: container -> [(symbol_uid, name, file_path, start_line)].
-type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
+pub(crate) type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
 
 impl IndexDb {
     pub fn symbols_covering(
@@ -505,6 +505,14 @@ impl IndexDb {
         kinds: &[&str],
     ) -> CcResult<Vec<SymbolRow>> {
         let conn = self.read_conn()?;
+        Self::find_symbols_by_name_and_kinds_on(&conn, name, kinds)
+    }
+
+    pub(crate) fn find_symbols_by_name_and_kinds_on(
+        conn: &rusqlite::Connection,
+        name: &str,
+        kinds: &[&str],
+    ) -> CcResult<Vec<SymbolRow>> {
         if kinds.is_empty() {
             return Ok(Vec::new());
         }
@@ -557,16 +565,22 @@ impl IndexDb {
         let tx = conn
             .unchecked_transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let pattern = format!("{}%", edge_id_prefix);
-        let count = tx
-            .execute(
-                "DELETE FROM semantic_edges WHERE edge_id LIKE ?1",
-                rusqlite::params![pattern],
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let count = Self::delete_synthetic_semantic_edges_on(&tx, edge_id_prefix)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(count)
+    }
+
+    pub(crate) fn delete_synthetic_semantic_edges_on(
+        conn: &rusqlite::Connection,
+        edge_id_prefix: &str,
+    ) -> CcResult<usize> {
+        let pattern = format!("{}%", edge_id_prefix);
+        conn.execute(
+            "DELETE FROM semantic_edges WHERE edge_id LIKE ?1",
+            rusqlite::params![pattern],
+        )
+        .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Find the symbol_uid of a method named `method_name` contained in the same class
@@ -577,6 +591,14 @@ impl IndexDb {
         method_name: &str,
     ) -> CcResult<Option<String>> {
         let conn = self.read_conn()?;
+        Self::find_method_in_same_class_on(&conn, member_symbol_uid, method_name)
+    }
+
+    pub(crate) fn find_method_in_same_class_on(
+        conn: &rusqlite::Connection,
+        member_symbol_uid: &str,
+        method_name: &str,
+    ) -> CcResult<Option<String>> {
         let container: Option<String> = conn
             .query_row(
                 "SELECT container FROM symbols WHERE symbol_uid = ?1",
@@ -615,11 +637,21 @@ impl IndexDb {
     /// `IN (...)` query, grouped by container name. Avoids the per-container
     /// N+1 round-trips in dispatch synthesis.
     pub fn find_methods_by_containers(&self, containers: &[&str]) -> CcResult<MethodsByContainer> {
+        if containers.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let conn = self.read_conn()?;
+        Self::find_methods_by_containers_on(&conn, containers)
+    }
+
+    pub(crate) fn find_methods_by_containers_on(
+        conn: &rusqlite::Connection,
+        containers: &[&str],
+    ) -> CcResult<MethodsByContainer> {
         let mut grouped: MethodsByContainer = HashMap::new();
         if containers.is_empty() {
             return Ok(grouped);
         }
-        let conn = self.read_conn()?;
         let placeholders: String = containers
             .iter()
             .enumerate()
@@ -670,6 +702,16 @@ impl IndexDb {
             return Ok(Vec::new());
         }
         let conn = self.read_conn()?;
+        Self::find_classes_with_method_names_on(&conn, method_names)
+    }
+
+    pub(crate) fn find_classes_with_method_names_on(
+        conn: &rusqlite::Connection,
+        method_names: &[&str],
+    ) -> CcResult<Vec<(String, String)>> {
+        if method_names.is_empty() {
+            return Ok(Vec::new());
+        }
         let placeholders: String = method_names
             .iter()
             .enumerate()

@@ -314,14 +314,22 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::insert_semantic_edges_batch_on(&tx, edges)?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    pub(crate) fn insert_semantic_edges_batch_on(
+        conn: &rusqlite::Connection,
+        edges: &[cc_model::edge::SemanticEdgeRecord],
+    ) -> CcResult<()> {
         for e in edges {
-            tx.execute(
+            conn.execute(
                 "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
                 rusqlite::params![e.edge_id, e.file_path, e.source_symbol, e.source_symbol_uid, e.target_symbol, e.target_symbol_uid, e.relation_kind.as_str(), e.line, e.confidence, e.parser_tier.as_str()],
             ).map_err(|e| CcError::Database(e.to_string()))?;
         }
-        Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -552,6 +560,12 @@ impl IndexDb {
 
     pub fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
         let conn = self.read_conn()?;
+        Self::load_all_dispatch_sites_on(&conn)
+    }
+
+    pub(crate) fn load_all_dispatch_sites_on(
+        conn: &rusqlite::Connection,
+    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
         let mut stmt = conn
             .prepare(
                 "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
@@ -589,6 +603,13 @@ impl IndexDb {
         kind: &str,
     ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
         let conn = self.read_conn()?;
+        Self::load_dispatch_sites_by_kind_on(&conn, kind)
+    }
+
+    pub(crate) fn load_dispatch_sites_by_kind_on(
+        conn: &rusqlite::Connection,
+        kind: &str,
+    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
         let mut stmt = conn
             .prepare(
                 "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
@@ -629,15 +650,21 @@ impl IndexDb {
         let tx = conn
             .unchecked_transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let count = tx
-            .execute(
-                "DELETE FROM call_edges WHERE synthesized_by = ?1",
-                rusqlite::params![synthesized_by],
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let count = Self::delete_synthetic_call_edges_on(&tx, synthesized_by)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(count)
+    }
+
+    pub(crate) fn delete_synthetic_call_edges_on(
+        conn: &rusqlite::Connection,
+        synthesized_by: &str,
+    ) -> CcResult<usize> {
+        conn.execute(
+            "DELETE FROM call_edges WHERE synthesized_by = ?1",
+            rusqlite::params![synthesized_by],
+        )
+        .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub fn insert_synthetic_call_edges(
@@ -651,9 +678,19 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::insert_synthetic_call_edges_on(&tx, edges)?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(edges.len())
+    }
+
+    pub(crate) fn insert_synthetic_call_edges_on(
+        conn: &rusqlite::Connection,
+        edges: &[cc_model::CallEdgeRecord],
+    ) -> CcResult<usize> {
         for e in edges {
             Self::execute_cached(
-                &tx,
+                conn,
                 "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
                 rusqlite::params![
                     e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol,
@@ -670,8 +707,6 @@ impl IndexDb {
                 ],
             )?;
         }
-        Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(edges.len())
     }
 

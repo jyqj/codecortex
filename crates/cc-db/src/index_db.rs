@@ -801,6 +801,15 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Begin a typed multi-statement write transaction.
+    ///
+    /// The returned [`crate::unit_of_work::UnitOfWork`] holds the write lock
+    /// until it is committed or dropped (drop rolls back). See the module
+    /// docs of [`crate::unit_of_work`] for the locking and epoch contract.
+    pub fn begin_unit_of_work(&self) -> CcResult<crate::unit_of_work::UnitOfWork<'_>> {
+        crate::unit_of_work::UnitOfWork::begin(self)
+    }
+
     /// Get a read connection from the pool.
     pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
         let pool = self

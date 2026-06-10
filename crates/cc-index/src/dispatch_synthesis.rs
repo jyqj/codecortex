@@ -13,7 +13,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use cc_db::index_db::IndexDb;
+use cc_db::unit_of_work::UnitOfWork;
 use cc_model::dispatch_site::{DispatchSiteKind, DispatchSiteRecord};
 use cc_model::edge::{
     CallEdgeRecord, DispatchKind, ResolutionKind, SemanticEdgeRecord, SemanticRelation,
@@ -66,7 +66,7 @@ pub struct SynthesisStats {
 /// Run event-emitter synthesis: match emit sites to on sites and produce
 /// synthetic `CallEdgeRecord` entries.
 pub fn run_event_emitter_synthesis(
-    db: &IndexDb,
+    db: &UnitOfWork,
     config: &SynthesisConfig,
 ) -> CcResult<SynthesisStats> {
     if !config.enabled {
@@ -287,7 +287,7 @@ fn make_synthetic_edge(
 
 /// Match `<Component />` JSX usage sites to component definitions and produce
 /// `RendersComponent` semantic edges.
-pub fn run_jsx_synthesis(db: &IndexDb) -> CcResult<usize> {
+pub fn run_jsx_synthesis(db: &UnitOfWork) -> CcResult<usize> {
     // 1. Delete old synthesized RendersComponent edges (prefixed with "synth:jsx").
     db.delete_synthetic_semantic_edges("synth:jsx:")?;
 
@@ -397,7 +397,7 @@ impl StateSetterBindingTarget {
 ///   to determine which component owns the state. Create an edge from the caller to the component.
 /// - For `this.setState`, find the class's render method (existing logic).
 /// - If no binding is found for a setter call, skip (could be a non-React set* function).
-pub fn run_state_setter_synthesis(db: &IndexDb) -> CcResult<usize> {
+pub fn run_state_setter_synthesis(db: &UnitOfWork) -> CcResult<usize> {
     // 1. Delete old synthetic state setter edges.
     db.delete_synthetic_call_edges("react_state_setter")?;
 
@@ -626,7 +626,7 @@ fn matches_method_prefix(name: &str, prefixes: &[&str]) -> bool {
 /// This complements the event-emitter synthesis (which matches by event name string)
 /// by catching cases where the event bus pattern is used but event names aren't
 /// statically detectable.
-pub fn run_field_observer_synthesis(db: &IndexDb, config: &SynthesisConfig) -> CcResult<usize> {
+pub fn run_field_observer_synthesis(db: &UnitOfWork, config: &SynthesisConfig) -> CcResult<usize> {
     if !config.enabled {
         return Ok(0);
     }
@@ -850,7 +850,7 @@ pub fn run_field_observer_synthesis(db: &IndexDb, config: &SynthesisConfig) -> C
 /// This runs after both state setter synthesis and JSX synthesis, and creates
 /// additional `react_rerender` edges for the render→child component links
 /// that form the cascade path.
-pub fn run_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<usize> {
+pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
     // 1. Delete old react_rerender synthetic edges.
     db.delete_synthetic_call_edges("react_rerender")?;
 
@@ -991,7 +991,7 @@ pub fn run_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<usize> {
 /// - **VueEventHandler** dispatch sites (from `@click="handler"` in template)
 ///   are resolved to functions/methods in the same file, producing synthetic
 ///   call edges with `synthesized_by="vue_event_handler"`.
-pub fn run_vue_template_synthesis(db: &IndexDb) -> CcResult<usize> {
+pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
     // 1. Delete old synthetic edges from previous runs.
     db.delete_synthetic_semantic_edges("synth:vue:")?;
     db.delete_synthetic_call_edges("vue_event_handler")?;
@@ -1164,7 +1164,10 @@ pub fn run_vue_template_synthesis(db: &IndexDb) -> CcResult<usize> {
 ///    - (class_uid, method_name) → method_uid for quick lookup
 /// 4. For each call edge targeting an interface method, find implementor methods
 ///    with the same name and create synthetic edges.
-pub fn run_interface_dispatch_synthesis(db: &IndexDb, config: &SynthesisConfig) -> CcResult<usize> {
+pub fn run_interface_dispatch_synthesis(
+    db: &UnitOfWork,
+    config: &SynthesisConfig,
+) -> CcResult<usize> {
     if !config.enabled {
         return Ok(0);
     }
@@ -1434,6 +1437,7 @@ fn synth_edge_id(kind: &str, source_id: &str, target_id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use cc_db::index_db::IndexDb;
     use tempfile::TempDir;
 
     fn setup_test_db() -> (TempDir, IndexDb) {
@@ -1501,7 +1505,9 @@ mod tests {
         db.replace_dispatch_sites("src/App.vue", &sites).unwrap();
 
         // Run synthesis.
-        let count = run_vue_template_synthesis(&db).unwrap();
+        let uow = db.begin_unit_of_work().unwrap();
+        let count = run_vue_template_synthesis(&uow).unwrap();
+        uow.commit().unwrap();
         assert_eq!(count, 1, "should produce 1 RendersComponent edge");
 
         // Verify the semantic edge.
@@ -1545,7 +1551,9 @@ mod tests {
         db.replace_dispatch_sites("src/MyForm.vue", &sites).unwrap();
 
         // Run synthesis.
-        let count = run_vue_template_synthesis(&db).unwrap();
+        let uow = db.begin_unit_of_work().unwrap();
+        let count = run_vue_template_synthesis(&uow).unwrap();
+        uow.commit().unwrap();
         assert_eq!(count, 1, "should produce 1 call edge");
 
         // Verify the synthetic call edge via SQL.
@@ -1581,7 +1589,9 @@ mod tests {
     #[test]
     fn vue_synthesis_no_dispatch_sites_returns_zero() {
         let (_tmp, db) = setup_test_db();
-        let count = run_vue_template_synthesis(&db).unwrap();
+        let uow = db.begin_unit_of_work().unwrap();
+        let count = run_vue_template_synthesis(&uow).unwrap();
+        uow.commit().unwrap();
         assert_eq!(count, 0);
     }
 
@@ -1721,7 +1731,9 @@ mod tests {
         );
 
         // Run interface dispatch synthesis.
-        let count = run_interface_dispatch_synthesis(&db, &config).unwrap();
+        let uow = db.begin_unit_of_work().unwrap();
+        let count = run_interface_dispatch_synthesis(&uow, &config).unwrap();
+        uow.commit().unwrap();
         assert_eq!(count, 1, "should produce 1 synthetic edge");
 
         // Verify the synthetic edge.
@@ -1814,7 +1826,9 @@ mod tests {
         );
 
         // Run synthesis — should skip due to fanout > 2.
-        let count = run_interface_dispatch_synthesis(&db, &config).unwrap();
+        let uow = db.begin_unit_of_work().unwrap();
+        let count = run_interface_dispatch_synthesis(&uow, &config).unwrap();
+        uow.commit().unwrap();
         assert_eq!(count, 0, "should skip due to fanout cap");
 
         // Verify no synthetic edges were created.
@@ -1827,5 +1841,447 @@ mod tests {
             )
             .unwrap();
         assert_eq!(count, 0);
+    }
+
+    // ── Unit-of-work atomicity and equivalence tests ────────────
+
+    fn make_site(
+        site_id: &str,
+        file_path: &str,
+        line: u32,
+        site_kind: DispatchSiteKind,
+        key: &str,
+        enclosing_symbol_uid: Option<&str>,
+        handler_expr: Option<&str>,
+    ) -> DispatchSiteRecord {
+        DispatchSiteRecord {
+            site_id: site_id.to_string(),
+            file_path: file_path.to_string(),
+            line,
+            col: 1,
+            enclosing_symbol_uid: enclosing_symbol_uid.map(|s| s.to_string()),
+            receiver_expr: None,
+            site_kind,
+            key: key.to_string(),
+            handler_expr: handler_expr.map(|s| s.to_string()),
+            handler_symbol_uid: None,
+            confidence: 0.78,
+        }
+    }
+
+    /// Fixture exercising every synthesis pass: event emitter, JSX, state
+    /// setter, field observer, React re-render, Vue template, and interface
+    /// dispatch all produce at least one edge.
+    fn seed_multi_pass_fixture(db: &IndexDb) {
+        // Event emitter: emit("userSaved") in emitSave → on("userSaved", handleSaved).
+        insert_symbol(db, "src/events.ts", "emitSave", "function", "uid:emitSave");
+        insert_symbol(
+            db,
+            "src/events.ts",
+            "handleSaved",
+            "function",
+            "uid:handleSaved",
+        );
+        db.replace_dispatch_sites(
+            "src/events.ts",
+            &[
+                make_site(
+                    "ds:emit:1",
+                    "src/events.ts",
+                    5,
+                    DispatchSiteKind::EventEmit,
+                    "userSaved",
+                    Some("uid:emitSave"),
+                    None,
+                ),
+                make_site(
+                    "ds:on:1",
+                    "src/events.ts",
+                    20,
+                    DispatchSiteKind::EventOn,
+                    "userSaved",
+                    None,
+                    Some("handleSaved"),
+                ),
+            ],
+        )
+        .unwrap();
+
+        // JSX + state setter + re-render: App renders <Child/> and owns setOpen.
+        insert_symbol(db, "src/App.tsx", "App", "component", "uid:App");
+        insert_symbol(db, "src/Child.tsx", "Child", "component", "uid:Child");
+        db.replace_dispatch_sites(
+            "src/App.tsx",
+            &[
+                make_site(
+                    "ds:jsx:1",
+                    "src/App.tsx",
+                    8,
+                    DispatchSiteKind::JsxTag,
+                    "Child",
+                    Some("uid:App"),
+                    None,
+                ),
+                make_site(
+                    "ds:ssb:1",
+                    "src/App.tsx",
+                    3,
+                    DispatchSiteKind::StateSetterBinding,
+                    "setOpen",
+                    Some("uid:App"),
+                    None,
+                ),
+                make_site(
+                    "ds:ssc:1",
+                    "src/App.tsx",
+                    12,
+                    DispatchSiteKind::StateSetterCall,
+                    "setOpen",
+                    Some("uid:App"),
+                    None,
+                ),
+            ],
+        )
+        .unwrap();
+
+        // Field observer (name heuristic): class Bus with on()/emit() methods.
+        insert_symbol(db, "src/bus.ts", "Bus", "class", "uid:Bus");
+        insert_symbol_with_container(db, "src/bus.ts", "on", "method", "uid:Bus:on", "Bus");
+        insert_symbol_with_container(db, "src/bus.ts", "emit", "method", "uid:Bus:emit", "Bus");
+
+        // Vue template: <VChild/> plus @submit="submitForm".
+        insert_symbol(db, "src/MyForm.vue", "MyForm", "component", "uid:MyForm");
+        insert_symbol(
+            db,
+            "src/MyForm.vue",
+            "submitForm",
+            "function",
+            "uid:submitForm",
+        );
+        insert_symbol(db, "src/VChild.vue", "VChild", "component", "uid:VChild");
+        db.replace_dispatch_sites(
+            "src/MyForm.vue",
+            &[
+                make_site(
+                    "ds:vuec:1",
+                    "src/MyForm.vue",
+                    4,
+                    DispatchSiteKind::VueChildComponent,
+                    "VChild",
+                    Some("uid:MyForm"),
+                    None,
+                ),
+                make_site(
+                    "ds:vueh:1",
+                    "src/MyForm.vue",
+                    9,
+                    DispatchSiteKind::VueEventHandler,
+                    "submitForm",
+                    Some("uid:MyForm"),
+                    Some("submitForm"),
+                ),
+            ],
+        )
+        .unwrap();
+
+        // Interface dispatch: caller → IService.execute, ServiceImpl implements.
+        insert_symbol(
+            db,
+            "src/service.ts",
+            "IService",
+            "interface",
+            "uid:IService",
+        );
+        insert_symbol_with_container(
+            db,
+            "src/service.ts",
+            "execute",
+            "method",
+            "uid:IService:execute",
+            "IService",
+        );
+        insert_symbol(db, "src/impl.ts", "ServiceImpl", "class", "uid:ServiceImpl");
+        insert_symbol_with_container(
+            db,
+            "src/impl.ts",
+            "execute",
+            "method",
+            "uid:ServiceImpl:execute",
+            "ServiceImpl",
+        );
+        insert_symbol(db, "src/caller.ts", "run", "function", "uid:Caller:run");
+        insert_semantic_edge(
+            db,
+            "se:impl:fixture",
+            "src/impl.ts",
+            "uid:ServiceImpl",
+            "uid:IService",
+            "implements",
+        );
+        insert_call_edge(
+            db,
+            "ce:fixture",
+            "src/caller.ts",
+            "uid:Caller:run",
+            "uid:IService:execute",
+            "execute",
+        );
+
+        // Cross-pass dependency chain: the ONLY call edge targeting
+        // IListener.handleEvent is the one synthesized by the event emitter
+        // pass (emit("ping") → on("ping", handleEvent), where handleEvent
+        // resolves to the interface method declared in the same file as the
+        // on-site). The interface dispatch pass can therefore produce the
+        // pingEmitter → ConcreteListener.handleEvent edge only if its
+        // call_edges read observes the uncommitted event-emitter edge of the
+        // same unit of work.
+        insert_symbol(
+            db,
+            "src/listener.ts",
+            "IListener",
+            "interface",
+            "uid:IListener",
+        );
+        insert_symbol_with_container(
+            db,
+            "src/listener.ts",
+            "handleEvent",
+            "method",
+            "uid:IListener:handleEvent",
+            "IListener",
+        );
+        insert_symbol(
+            db,
+            "src/concrete.ts",
+            "ConcreteListener",
+            "class",
+            "uid:ConcreteListener",
+        );
+        insert_symbol_with_container(
+            db,
+            "src/concrete.ts",
+            "handleEvent",
+            "method",
+            "uid:ConcreteListener:handleEvent",
+            "ConcreteListener",
+        );
+        insert_semantic_edge(
+            db,
+            "se:impl:listener",
+            "src/concrete.ts",
+            "uid:ConcreteListener",
+            "uid:IListener",
+            "implements",
+        );
+        insert_symbol(
+            db,
+            "src/ping.ts",
+            "pingEmitter",
+            "function",
+            "uid:pingEmitter",
+        );
+        db.replace_dispatch_sites(
+            "src/ping.ts",
+            &[make_site(
+                "ds:emit:ping",
+                "src/ping.ts",
+                7,
+                DispatchSiteKind::EventEmit,
+                "ping",
+                Some("uid:pingEmitter"),
+                None,
+            )],
+        )
+        .unwrap();
+        db.replace_dispatch_sites(
+            "src/listener.ts",
+            &[make_site(
+                "ds:on:ping",
+                "src/listener.ts",
+                15,
+                DispatchSiteKind::EventOn,
+                "ping",
+                None,
+                Some("handleEvent"),
+            )],
+        )
+        .unwrap();
+    }
+
+    /// Run all 7 passes in pipeline order against one unit of work.
+    fn run_all_passes(uow: &UnitOfWork, config: &SynthesisConfig) -> CcResult<()> {
+        run_event_emitter_synthesis(uow, config)?;
+        run_jsx_synthesis(uow)?;
+        run_state_setter_synthesis(uow)?;
+        run_field_observer_synthesis(uow, config)?;
+        run_react_rerender_chain_synthesis(uow)?;
+        run_vue_template_synthesis(uow)?;
+        run_interface_dispatch_synthesis(uow, config)?;
+        Ok(())
+    }
+
+    /// Deterministic snapshot of all synthetic edges (call + semantic).
+    fn synthetic_snapshot(db: &IndexDb) -> Vec<String> {
+        let mut rows: Vec<String> = db
+            .query_json(
+                "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, call_kind, synthesized_by \
+                 FROM call_edges WHERE synthesized_by IS NOT NULL",
+                &[],
+            )
+            .unwrap()
+            .iter()
+            .map(|row| row.to_string())
+            .collect();
+        rows.extend(
+            db.query_json(
+                "SELECT edge_id, source_symbol_uid, target_symbol_uid, relation_kind \
+                 FROM semantic_edges WHERE edge_id LIKE 'synth:%'",
+                &[],
+            )
+            .unwrap()
+            .iter()
+            .map(|row| row.to_string()),
+        );
+        rows.sort();
+        rows
+    }
+
+    #[test]
+    fn single_unit_of_work_matches_per_pass_committed_synthesis() {
+        let config = SynthesisConfig::default();
+
+        // Reference run: each pass commits in its own transaction (the
+        // pre-unit-of-work behavior).
+        let (_tmp_a, db_a) = setup_test_db();
+        seed_multi_pass_fixture(&db_a);
+        {
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_event_emitter_synthesis(&uow, &config).unwrap();
+            uow.commit().unwrap();
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_jsx_synthesis(&uow).unwrap();
+            uow.commit().unwrap();
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_state_setter_synthesis(&uow).unwrap();
+            uow.commit().unwrap();
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_field_observer_synthesis(&uow, &config).unwrap();
+            uow.commit().unwrap();
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_react_rerender_chain_synthesis(&uow).unwrap();
+            uow.commit().unwrap();
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_vue_template_synthesis(&uow).unwrap();
+            uow.commit().unwrap();
+            let uow = db_a.begin_unit_of_work().unwrap();
+            run_interface_dispatch_synthesis(&uow, &config).unwrap();
+            uow.commit().unwrap();
+        }
+
+        // Transactional run: all passes in a single atomic unit of work.
+        let (_tmp_b, db_b) = setup_test_db();
+        seed_multi_pass_fixture(&db_b);
+        let uow = db_b.begin_unit_of_work().unwrap();
+        run_all_passes(&uow, &config).unwrap();
+        uow.commit().unwrap();
+
+        let reference = synthetic_snapshot(&db_a);
+        let transactional = synthetic_snapshot(&db_b);
+        assert_eq!(
+            reference, transactional,
+            "single unit of work must produce the same synthetic edge set as per-pass commits"
+        );
+
+        // The fixture must exercise every pass, otherwise equality is vacuous.
+        let joined = reference.join("\n");
+        for marker in [
+            "event_emitter",
+            "react_state_setter",
+            "field_observer",
+            "react_rerender",
+            "vue_event_handler",
+            "interface_dispatch",
+            "synth:jsx:",
+            "synth:vue:",
+        ] {
+            assert!(
+                joined.contains(marker),
+                "fixture must produce edges for {marker}, got:\n{joined}"
+            );
+        }
+
+        // Cross-pass visibility pin: this interface_dispatch edge is derived
+        // exclusively from the event-emitter edge synthesized earlier in the
+        // SAME unit of work (no real call edge targets IListener.handleEvent).
+        // If unit-of-work reads were ever routed to the read pool instead of
+        // the transaction connection, this edge would silently disappear.
+        let chained = db_b
+            .query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges \
+                 WHERE synthesized_by = 'interface_dispatch' \
+                   AND caller_symbol_uid = 'uid:pingEmitter' \
+                   AND callee_symbol_uid = 'uid:ConcreteListener:handleEvent'",
+                &[],
+            )
+            .unwrap();
+        assert_eq!(
+            chained[0]["cnt"].as_i64(),
+            Some(1),
+            "interface dispatch must observe the event-emitter edge written \
+             earlier in the same unit of work"
+        );
+    }
+
+    #[test]
+    fn mid_pass_failure_rolls_back_all_synthetic_writes_and_signatures() {
+        let (_tmp, db) = setup_test_db();
+        seed_multi_pass_fixture(&db);
+        let config = SynthesisConfig::default();
+        let generation_before = db.generation().unwrap();
+
+        let result: CcResult<()> = (|| {
+            let uow = db.begin_unit_of_work()?;
+            run_event_emitter_synthesis(&uow, &config)?;
+            run_jsx_synthesis(&uow)?;
+            run_state_setter_synthesis(&uow)?;
+            // The first passes did write synthetic edges inside the transaction.
+            let in_tx = uow.query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",
+                &[],
+            )?;
+            assert!(in_tx[0]["cnt"].as_i64().unwrap_or(0) > 0);
+            // Simulate the 4th pass failing: the error propagates and the
+            // unit of work is dropped without commit (as in phase_postprocess).
+            Err(cc_model::CcError::Database(
+                "injected pass failure".to_string(),
+            ))
+        })();
+        assert!(result.is_err());
+
+        // No synthetic edge of this round survives the rollback.
+        let call_rows = db
+            .query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",
+                &[],
+            )
+            .unwrap();
+        assert_eq!(call_rows[0]["cnt"].as_i64(), Some(0));
+        let semantic_rows = db
+            .query_json(
+                "SELECT COUNT(*) AS cnt FROM semantic_edges WHERE edge_id LIKE 'synth:%'",
+                &[],
+            )
+            .unwrap();
+        assert_eq!(semantic_rows[0]["cnt"].as_i64(), Some(0));
+
+        // Signatures never advanced: phase_postprocess persists them only
+        // after every pass (and the commit) succeeded, so the next run
+        // re-executes synthesis.
+        assert!(db.get_metadata("last_dispatch_sig").unwrap().is_none());
+        assert!(db.get_metadata("last_interface_sig").unwrap().is_none());
+
+        // The aborted unit of work did not bump the index epoch.
+        let generation_after = db.generation().unwrap();
+        assert_eq!(generation_after.index_epoch, generation_before.index_epoch);
     }
 }

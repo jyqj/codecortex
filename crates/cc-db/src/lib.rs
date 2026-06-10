@@ -10,3 +10,4 @@ mod index_db_query;
 mod index_db_retrieval;
 pub mod index_migrate;
 pub mod sql_util;
+pub mod unit_of_work;

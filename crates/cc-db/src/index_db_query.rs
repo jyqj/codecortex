@@ -61,6 +61,13 @@ impl IndexDb {
 
     pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
         let conn = self.read_conn()?;
+        Self::file_symbols_on(&conn, file_path)
+    }
+
+    pub(crate) fn file_symbols_on(
+        conn: &rusqlite::Connection,
+        file_path: &str,
+    ) -> CcResult<Vec<SymbolRow>> {
         let mut stmt = conn
             .prepare(
                 "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature
@@ -277,6 +284,14 @@ impl IndexDb {
 
     pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
         let conn = self.read_conn()?;
+        Self::query_json_on(&conn, sql, params)
+    }
+
+    pub(crate) fn query_json_on(
+        conn: &rusqlite::Connection,
+        sql: &str,
+        params: &[String],
+    ) -> CcResult<Vec<Value>> {
         let mut stmt = conn
             .prepare(sql)
             .map_err(|e| CcError::Database(e.to_string()))?;

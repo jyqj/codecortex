@@ -141,62 +141,13 @@ fn score_fts_summary(
         return 0;
     }
 
-    let conn = match db.read_conn() {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::warn!("preselect: FTS summary read_conn failed: {}", e);
-            return 0;
-        }
-    };
-
     let fts_limit = if limit <= 120 {
         limit.min(80)
     } else {
         80 + (limit.saturating_sub(120)) / 3
     };
-    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) =
-        if let Some(pfx) = prefix {
-            (
-                "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
-             FROM files_fts \
-             JOIN files ON files.file_path = files_fts.file_path \
-             WHERE files_fts MATCH ?1 AND files.file_path LIKE ?2 \
-             ORDER BY score LIMIT ?3"
-                    .into(),
-                vec![
-                    Box::new(fts_query) as Box<dyn rusqlite::types::ToSql>,
-                    Box::new(format!("{}%", pfx)),
-                    Box::new(fts_limit as i64),
-                ],
-            )
-        } else {
-            (
-                "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
-             FROM files_fts \
-             JOIN files ON files.file_path = files_fts.file_path \
-             WHERE files_fts MATCH ?1 \
-             ORDER BY score LIMIT ?2"
-                    .into(),
-                vec![
-                    Box::new(fts_query) as Box<dyn rusqlite::types::ToSql>,
-                    Box::new(fts_limit as i64),
-                ],
-            )
-        };
-
-    let mut stmt = match conn.prepare_cached(&sql) {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::warn!("preselect: FTS summary prepare failed: {}", e);
-            return 0;
-        }
-    };
-    let param_refs: Vec<&dyn rusqlite::types::ToSql> =
-        params_vec.iter().map(|p| p.as_ref()).collect();
-    let rows = match stmt.query_map(param_refs.as_slice(), |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
-    }) {
-        Ok(r) => r,
+    let rows = match db.fts_file_summaries(&fts_query, prefix, fts_limit) {
+        Ok(rows) => rows,
         Err(e) => {
             tracing::warn!("preselect: FTS summary query failed: {}", e);
             return 0;
@@ -204,10 +155,10 @@ fn score_fts_summary(
     };
 
     let mut hits = 0usize;
-    for row in rows.flatten() {
-        let bm25_score = row.1.abs();
+    for (file_path, raw_score) in rows {
+        let bm25_score = raw_score.abs();
         let file_score = 1.4 + (1.0 / (1.0 + bm25_score));
-        score_file(scores, reasons, &row.0, file_score, "fts-summary");
+        score_file(scores, reasons, &file_path, file_score, "fts-summary");
         hits += 1;
     }
     hits
@@ -215,6 +166,9 @@ fn score_fts_summary(
 
 /// Layer 6: per-token symbol name match + path token hit. Returns the total
 /// number of hits across all tokens.
+///
+/// Both lookups are batched (`*_many`) so the whole layer costs two pooled
+/// connection checkouts instead of two per token.
 fn score_token_search(
     db: &IndexDb,
     query: &str,
@@ -234,144 +188,46 @@ fn score_token_search(
         return 0;
     }
 
-    let conn = match db.read_conn() {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::warn!("preselect: token search read_conn failed: {}", e);
-            return 0;
-        }
-    };
-
     let mut hits = 0usize;
 
-    for token in &candidate_tokens {
-        // 6a. Path token match
-        hits += score_path_token(&conn, token, prefix, scores, reasons);
-        // 6b. Symbol name match
-        hits += score_symbol_token(&conn, token, prefix, scores, reasons);
+    // 6a. Path token match (one batched query pass for all tokens)
+    match db.path_token_file_hits_many(&candidate_tokens, prefix, 20) {
+        Ok(per_token) => {
+            for (token, file_paths) in candidate_tokens.iter().zip(per_token) {
+                for file_path in file_paths {
+                    score_file(
+                        scores,
+                        reasons,
+                        &file_path,
+                        1.0,
+                        &format!("path-token:{}", token),
+                    );
+                    hits += 1;
+                }
+            }
+        }
+        Err(e) => tracing::warn!("preselect: path-token query failed: {}", e),
     }
 
-    hits
-}
-
-/// Layer 6a helper: path-token substring match via `file_paths_fts`.
-fn score_path_token(
-    conn: &rusqlite::Connection,
-    token: &str,
-    prefix: Option<&str>,
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) -> usize {
-    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) = if let Some(pfx) =
-        prefix
-    {
-        (
-            "SELECT file_path FROM file_paths_fts WHERE file_path LIKE ?1 AND file_path LIKE ?2 ORDER BY file_path LIMIT 20".into(),
-            vec![
-                Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
-                Box::new(format!("{}%", pfx)),
-            ],
-        )
-    } else {
-        (
-            "SELECT file_path FROM file_paths_fts WHERE file_path LIKE ?1 ORDER BY file_path LIMIT 20".into(),
-            vec![Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>],
-        )
-    };
-
-    let mut stmt = match conn.prepare_cached(&sql) {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::warn!("preselect: path-token prepare failed: {}", e);
-            return 0;
+    // 6b. Symbol name match (one batched query pass for all tokens)
+    match db.symbol_token_hits_many(&candidate_tokens, prefix, 24) {
+        Ok(per_token) => {
+            for (token, symbol_hits) in candidate_tokens.iter().zip(per_token) {
+                for (file_path, name) in symbol_hits {
+                    let bonus = if name.to_lowercase() == **token {
+                        2.0
+                    } else {
+                        1.2
+                    };
+                    let reason = format!("symbol:{}", name);
+                    score_file(scores, reasons, &file_path, bonus, &reason);
+                    hits += 1;
+                }
+            }
         }
-    };
-    let param_refs: Vec<&dyn rusqlite::types::ToSql> =
-        params_vec.iter().map(|p| p.as_ref()).collect();
-    let rows = match stmt.query_map(param_refs.as_slice(), |row| row.get::<_, String>(0)) {
-        Ok(r) => r,
-        Err(e) => {
-            tracing::warn!("preselect: path-token query failed: {}", e);
-            return 0;
-        }
-    };
-
-    let mut hits = 0usize;
-    for row in rows.flatten() {
-        score_file(scores, reasons, &row, 1.0, &format!("path-token:{}", token));
-        hits += 1;
+        Err(e) => tracing::warn!("preselect: symbol-token query failed: {}", e),
     }
-    hits
-}
 
-/// Layer 6b helper: symbol-name substring match via `symbols_fts`.
-fn score_symbol_token(
-    conn: &rusqlite::Connection,
-    token: &str,
-    prefix: Option<&str>,
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) -> usize {
-    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) =
-        if let Some(pfx) = prefix {
-            (
-                "SELECT DISTINCT file_path, name \
-             FROM symbols_fts \
-             WHERE name LIKE ?1 AND file_path LIKE ?2 \
-             ORDER BY CASE WHEN lower(name) = lower(?3) THEN 0 ELSE 1 END, file_path \
-             LIMIT 24"
-                    .into(),
-                vec![
-                    Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
-                    Box::new(format!("{}%", pfx)),
-                    Box::new(token.to_string()),
-                ],
-            )
-        } else {
-            (
-                "SELECT DISTINCT file_path, name \
-             FROM symbols_fts \
-             WHERE name LIKE ?1 \
-             ORDER BY CASE WHEN lower(name) = lower(?2) THEN 0 ELSE 1 END, file_path \
-             LIMIT 24"
-                    .into(),
-                vec![
-                    Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
-                    Box::new(token.to_string()),
-                ],
-            )
-        };
-
-    let mut stmt = match conn.prepare_cached(&sql) {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::warn!("preselect: symbol-token prepare failed: {}", e);
-            return 0;
-        }
-    };
-    let param_refs: Vec<&dyn rusqlite::types::ToSql> =
-        params_vec.iter().map(|p| p.as_ref()).collect();
-    let rows = match stmt.query_map(param_refs.as_slice(), |row| {
-        Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-    }) {
-        Ok(r) => r,
-        Err(e) => {
-            tracing::warn!("preselect: symbol-token query failed: {}", e);
-            return 0;
-        }
-    };
-
-    let mut hits = 0usize;
-    for row in rows.flatten() {
-        let bonus = if row.1.to_lowercase() == *token {
-            2.0
-        } else {
-            1.2
-        };
-        let reason = format!("symbol:{}", row.1);
-        score_file(scores, reasons, &row.0, bonus, &reason);
-        hits += 1;
-    }
     hits
 }
 
@@ -468,33 +324,15 @@ fn score_fallback(
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
 ) {
-    let conn = match db.read_conn() {
-        Ok(c) => c,
-        Err(e) => {
-            tracing::warn!("preselect: fallback read_conn failed: {}", e);
-            return;
-        }
-    };
-    let mut stmt = match conn
-        .prepare_cached("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
-    {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::warn!("preselect: fallback prepare failed: {}", e);
-            return;
-        }
-    };
-    let rows = match stmt.query_map(rusqlite::params![limit as i64], |row| {
-        row.get::<_, String>(0)
-    }) {
-        Ok(r) => r,
+    let file_paths = match db.recent_indexed_files(limit) {
+        Ok(rows) => rows,
         Err(e) => {
             tracing::warn!("preselect: fallback query failed: {}", e);
             return;
         }
     };
-    for row in rows.flatten() {
-        score_file(scores, reasons, &row, 0.2, "fallback-indexed");
+    for file_path in file_paths {
+        score_file(scores, reasons, &file_path, 0.2, "fallback-indexed");
     }
 }
 

@@ -8,11 +8,12 @@
 use std::collections::{HashMap, HashSet};
 
 use cc_db::fts::{expand_query_text, tokenize_codeish};
-use cc_db::index_db::{read_chunk_text_with_encoding, IndexDb};
+use cc_db::index_db::IndexDb;
 use cc_model::config::{RepoSizeTier, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
+use crate::lanes::{LaneOutcome, LANE_GRAPH, LANE_GREP, LANE_LEXICAL};
 use crate::preselect::{PreselectRequest, PreselectResult};
 
 #[derive(Debug)]
@@ -50,10 +51,17 @@ struct RerankInputs {
     overlay_files: HashSet<String>,
 }
 
+/// Per-lane 1-based rank lookups, uniformly keyed by lane id.
+///
+/// Also carries the ordered list of lanes that opted into per-hit
+/// annotation (`RetrievalLane::annotates_hits()`), so `hit_from_chunk`
+/// can produce `{lane_id}@{rank}` reasons generically in lane-collection
+/// order instead of consulting a lane-id whitelist.
 #[derive(Debug)]
 pub(crate) struct LaneRanks<'a> {
-    lexical: HashMap<&'a str, usize>,
-    grep: HashMap<&'a str, usize>,
+    by_lane: HashMap<&'static str, HashMap<&'a str, usize>>,
+    /// Lane ids with `annotates_hits() == true`, in lane-collection order.
+    annotating: Vec<&'static str>,
 }
 
 #[derive(Debug)]
@@ -163,12 +171,8 @@ impl SearchPlan {
         self.filters.fts_chunk_scope_sql(limit)
     }
 
-    pub(crate) fn lane_ranks<'a>(
-        &self,
-        lexical_hits: &'a [(String, f64)],
-        grep_hits: &'a [(String, f64)],
-    ) -> LaneRanks<'a> {
-        LaneRanks::from_lanes(lexical_hits, grep_hits)
+    pub(crate) fn lane_ranks<'a>(&self, outcomes: &'a [LaneOutcome]) -> LaneRanks<'a> {
+        LaneRanks::from_outcomes(outcomes)
     }
 
     pub(crate) fn hit_from_chunk(
@@ -205,20 +209,33 @@ impl SearchPlan {
         let mut rerank = fused_score + overlap * 0.35;
 
         let mut reasons = Vec::new();
-        let lexical_score = lane_ranks
-            .lexical_rank(&chunk_id)
-            .map(|rank| 1.0 / rank as f64)
-            .unwrap_or(0.0);
-        let grep_score = lane_ranks
-            .grep_rank(&chunk_id)
-            .map(|rank| 1.0 / rank as f64)
-            .unwrap_or(0.0);
-
-        if let Some(rank) = lane_ranks.lexical_rank(&chunk_id) {
-            reasons.push(format!("lexical@{}", rank));
-        }
-        if let Some(rank) = lane_ranks.grep_rank(&chunk_id) {
-            reasons.push(format!("grep@{}", rank));
+        // Per-hit annotation is lane-driven: every lane that opted in via
+        // `RetrievalLane::annotates_hits()` contributes a `{lane_id}@{rank}`
+        // reason and a rank-derived score, iterated in lane-collection order.
+        // Opted-out lanes (graph) are fusion-only and never appear here.
+        let mut lexical_score = 0.0;
+        let mut grep_score = 0.0;
+        let mut graph_score = 0.0;
+        for lane_id in lane_ranks.annotating_lanes() {
+            let Some(rank) = lane_ranks.rank(lane_id, &chunk_id) else {
+                continue;
+            };
+            reasons.push(format!("{lane_id}@{rank}"));
+            // LANE-ID → SCORE-FIELD MAPPING — the only remaining
+            // lane-id-specific code on this path.  `SearchHit`'s per-lane
+            // score fields live in cc-model and are fixed; a NEW lane needs
+            // an arm here only IF it wants a dedicated score field —
+            // otherwise its `{lane_id}@{rank}` reason above already
+            // surfaces generically.
+            let lane_score = 1.0 / rank as f64;
+            match lane_id {
+                LANE_LEXICAL => lexical_score = lane_score,
+                LANE_GREP => grep_score = lane_score,
+                // Dormant today (graph opts out of annotation) but keeps the
+                // field wired if the graph lane ever opts in.
+                LANE_GRAPH => graph_score = lane_score,
+                _ => {}
+            }
         }
 
         if let Some(ref sym_name) = symbol_name {
@@ -293,7 +310,7 @@ impl SearchPlan {
             fused_score,
             lexical_score,
             grep_score,
-            graph_score: 0.0,
+            graph_score,
             rerank_score: rerank,
             reasons,
             source: "index".into(),
@@ -465,61 +482,54 @@ impl RerankInputs {
 }
 
 impl<'a> LaneRanks<'a> {
-    fn from_lanes(lexical_hits: &'a [(String, f64)], grep_hits: &'a [(String, f64)]) -> Self {
+    fn from_outcomes(outcomes: &'a [LaneOutcome]) -> Self {
+        let mut by_lane = HashMap::with_capacity(outcomes.len());
+        let mut annotating = Vec::new();
+        for outcome in outcomes {
+            if outcome.annotates_hits {
+                annotating.push(outcome.lane_id);
+            }
+            by_lane.insert(
+                outcome.lane_id,
+                outcome
+                    .hits
+                    .iter()
+                    .enumerate()
+                    .map(|(position, (chunk_id, _))| (chunk_id.as_str(), position + 1))
+                    .collect(),
+            );
+        }
         Self {
-            lexical: lexical_hits
-                .iter()
-                .enumerate()
-                .map(|(i, (id, _))| (id.as_str(), i + 1))
-                .collect(),
-            grep: grep_hits
-                .iter()
-                .enumerate()
-                .map(|(i, (id, _))| (id.as_str(), i + 1))
-                .collect(),
+            by_lane,
+            annotating,
         }
     }
 
-    fn lexical_rank(&self, chunk_id: &str) -> Option<usize> {
-        self.lexical.get(chunk_id).copied()
+    /// Lane ids that opted into per-hit annotation, in lane-collection order.
+    fn annotating_lanes(&self) -> impl Iterator<Item = &'static str> + '_ {
+        self.annotating.iter().copied()
     }
 
-    fn grep_rank(&self, chunk_id: &str) -> Option<usize> {
-        self.grep.get(chunk_id).copied()
+    fn rank(&self, lane_id: &str, chunk_id: &str) -> Option<usize> {
+        self.by_lane
+            .get(lane_id)
+            .and_then(|ranks| ranks.get(chunk_id).copied())
     }
 }
 
-impl CandidateChunk {
-    pub(crate) fn from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<Self> {
-        Ok(Self {
-            chunk_id: row.get::<_, String>(0)?,
-            file_path: row.get::<_, String>(1)?,
-            language_name: row.get::<_, String>(2)?,
-            start_line: row.get::<_, u32>(3)?,
-            end_line: row.get::<_, u32>(4)?,
-            breadcrumb: row.get::<_, String>(5)?,
-            symbol_name: row.get::<_, Option<String>>(6)?,
-            symbol_kind: row.get::<_, Option<String>>(7)?,
-            text: read_chunk_text_with_encoding(row, 8, 9)?,
-        })
-    }
-
-    /// Build from a DB row but use a pre-cached text instead of decompressing.
-    pub(crate) fn from_row_with_text(
-        row: &rusqlite::Row<'_>,
-        cached_text: String,
-    ) -> rusqlite::Result<Self> {
-        Ok(Self {
-            chunk_id: row.get::<_, String>(0)?,
-            file_path: row.get::<_, String>(1)?,
-            language_name: row.get::<_, String>(2)?,
-            start_line: row.get::<_, u32>(3)?,
-            end_line: row.get::<_, u32>(4)?,
-            breadcrumb: row.get::<_, String>(5)?,
-            symbol_name: row.get::<_, Option<String>>(6)?,
-            symbol_kind: row.get::<_, Option<String>>(7)?,
-            text: cached_text,
-        })
+impl From<cc_db::index_db::ChunkDetailRow> for CandidateChunk {
+    fn from(row: cc_db::index_db::ChunkDetailRow) -> Self {
+        Self {
+            chunk_id: row.chunk_id,
+            file_path: row.file_path,
+            language_name: row.language,
+            start_line: row.start_line,
+            end_line: row.end_line,
+            breadcrumb: row.breadcrumb,
+            symbol_name: row.symbol_name,
+            symbol_kind: row.symbol_kind,
+            text: row.text,
+        }
     }
 }
 
@@ -595,6 +605,17 @@ fn escape_like(value: &str) -> String {
 
 pub(crate) fn parse_language_name(value: &str) -> Language {
     Language::from_name(value)
+}
+
+/// Infer a file's language from its path extension.
+///
+/// Mirrors how the indexer assigns languages to files
+/// (`cc_parsers::detect_language` → `Language::from_extension`), for call
+/// sites that only have a file path — e.g. graph-lane symbol rows, which
+/// don't carry a language column.
+pub(crate) fn language_from_path(file_path: &str) -> Language {
+    let ext = file_path.rsplit('.').next().unwrap_or("");
+    Language::from_extension(ext)
 }
 
 /// Return true if the file path looks like a project documentation file.

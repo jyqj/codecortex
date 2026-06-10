@@ -241,6 +241,20 @@ pub struct SymbolTargetRow {
     pub file_path: String,
 }
 
+/// Full chunk row with decoded text, returned by `chunk_rows_by_ids`.
+#[derive(Debug, Clone)]
+pub struct ChunkDetailRow {
+    pub chunk_id: String,
+    pub file_path: String,
+    pub language: String,
+    pub start_line: u32,
+    pub end_line: u32,
+    pub breadcrumb: String,
+    pub symbol_name: Option<String>,
+    pub symbol_kind: Option<String>,
+    pub text: String,
+}
+
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct FileInfoRow {
     pub file_path: String,

@@ -833,6 +833,59 @@ impl IndexDb {
         Ok(result.into_iter().collect())
     }
 
+    /// Resolved re-export targets for many files in one batched query:
+    /// `file_path → [resolved_path...]` over `imports` rows with
+    /// `is_reexport = 1 AND resolved_path IS NOT NULL`. Files with no such
+    /// rows are absent from the map. Used by dirty propagation to decide
+    /// whether a promoted file's effective export surface changed.
+    ///
+    /// Known limitation: the jsts extractor sets `is_reexport = 1` for
+    /// single-statement re-exports (`export * from './b'`,
+    /// `export { x } from './b'`) and two-step forwarding of ES imports
+    /// (`import { x } from './b'; export { x };`). CommonJS forwarding
+    /// (`const { x } = require('./b')` then exported) and other languages'
+    /// equivalents (Python star re-exports, Rust `pub use`) are stored as
+    /// plain imports, so those surface changes are still missed here.
+    pub fn reexport_targets_for_files(
+        &self,
+        file_paths: &[&str],
+    ) -> CcResult<HashMap<String, Vec<String>>> {
+        let mut result: HashMap<String, Vec<String>> = HashMap::new();
+        if file_paths.is_empty() {
+            return Ok(result);
+        }
+        const BATCH_SIZE: usize = 500;
+        let conn = self.read_conn()?;
+
+        for chunk in file_paths.chunks(BATCH_SIZE) {
+            let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
+            let sql = format!(
+                "SELECT file_path, resolved_path FROM imports \
+                 WHERE file_path IN ({}) AND is_reexport = 1 AND resolved_path IS NOT NULL",
+                placeholders.join(",")
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let params: Vec<&dyn rusqlite::types::ToSql> = chunk
+                .iter()
+                .map(|p| p as &dyn rusqlite::types::ToSql)
+                .collect();
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows {
+                let (file_path, resolved_path) =
+                    row.map_err(|e| CcError::Database(e.to_string()))?;
+                result.entry(file_path).or_default().push(resolved_path);
+            }
+        }
+
+        Ok(result)
+    }
+
     /// Load file edge data for re-resolve scenarios.
     pub fn load_file_edges_for_reresolve(
         &self,
@@ -1322,6 +1375,78 @@ mod tests {
         let (db, _tmp) = setup();
         let batch = db.get_export_fingerprints(&[]).unwrap();
         assert!(batch.is_empty());
+    }
+
+    /// Helper: insert an imports row with the given re-export flag.
+    fn insert_import(
+        db: &IndexDb,
+        file_path: &str,
+        resolved_path: Option<&str>,
+        is_reexport: bool,
+    ) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport)
+             VALUES(?1,?2,?3,NULL,NULL,0,0,?4)",
+            rusqlite::params![
+                file_path,
+                resolved_path.unwrap_or("./unresolved"),
+                resolved_path,
+                is_reexport as i32
+            ],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn test_reexport_targets_for_files() {
+        let (db, _tmp) = setup();
+        for f in ["src/a.ts", "src/b.ts", "src/c.ts", "src/plain.ts"] {
+            insert_file(&db, f);
+        }
+
+        // a.ts: two resolved re-exports plus a plain import (excluded) and an
+        // unresolved re-export (excluded).
+        insert_import(&db, "src/a.ts", Some("src/b.ts"), true);
+        insert_import(&db, "src/a.ts", Some("src/c.ts"), true);
+        insert_import(&db, "src/a.ts", Some("src/plain.ts"), false);
+        insert_import(&db, "src/a.ts", None, true);
+        // b.ts: one resolved re-export.
+        insert_import(&db, "src/b.ts", Some("src/c.ts"), true);
+        // plain.ts: only a plain import → must be absent from the map.
+        insert_import(&db, "src/plain.ts", Some("src/c.ts"), false);
+
+        let targets = db
+            .reexport_targets_for_files(&["src/a.ts", "src/b.ts", "src/plain.ts", "src/missing.ts"])
+            .unwrap();
+
+        let mut a_targets = targets.get("src/a.ts").cloned().unwrap_or_default();
+        a_targets.sort();
+        assert_eq!(
+            a_targets,
+            vec!["src/b.ts".to_string(), "src/c.ts".to_string()],
+            "only resolved is_reexport=1 rows count"
+        );
+        assert_eq!(
+            targets.get("src/b.ts").cloned().unwrap_or_default(),
+            vec!["src/c.ts".to_string()]
+        );
+        assert!(
+            !targets.contains_key("src/plain.ts"),
+            "files without resolved re-exports are absent"
+        );
+        assert!(!targets.contains_key("src/missing.ts"));
+        assert!(
+            !targets.contains_key("src/c.ts"),
+            "files not queried must not appear"
+        );
+    }
+
+    #[test]
+    fn test_reexport_targets_for_files_empty_input() {
+        let (db, _tmp) = setup();
+        let targets = db.reexport_targets_for_files(&[]).unwrap();
+        assert!(targets.is_empty());
     }
 
     #[test]

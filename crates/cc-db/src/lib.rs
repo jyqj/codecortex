@@ -6,4 +6,6 @@ mod index_db_edges;
 mod index_db_frontier;
 mod index_db_graph;
 mod index_db_query;
+mod index_db_retrieval;
 pub mod index_migrate;
+pub mod sql_util;

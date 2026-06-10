@@ -1,0 +1,910 @@
+//! IndexDb methods: retrieval queries used by cc-search (preselect + engine).
+//!
+//! These methods absorb the discrete raw-SQL sites that previously lived in
+//! cc-search, so FTS5 table names (`files_fts`, `file_paths_fts`,
+//! `symbols_fts`), bm25 scoring, and LIKE patterns stay behind the cc-db
+//! seam. SQL shape, ordering, and limits follow the original call sites,
+//! with two fixes on top: LIKE metacharacters in user-derived tokens and
+//! path prefixes are escaped (`ESCAPE '\'`), and the `symbols_fts`
+//! path-prefix filter actually filters instead of returning zero rows.
+
+use std::collections::HashMap;
+use std::sync::Arc;
+
+use cc_model::{CcError, CcResult};
+
+use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb};
+use crate::sql_util::{escape_like, sql_in_placeholders, IN_BATCH_SIZE};
+
+/// `(chunk_id, start_line, end_line)` spans grouped by file path.
+pub type ChunkSpansByFile = HashMap<String, Vec<(String, u32, u32)>>;
+
+impl IndexDb {
+    /// FTS file-summary search on `files_fts` with bm25 scoring.
+    ///
+    /// Returns `(file_path, raw bm25 score)` ordered by score ascending
+    /// (bm25 is negative-better, so the best match comes first).
+    ///
+    /// Sanitization is the caller's responsibility: `sanitized_query` must
+    /// already be a valid FTS5 MATCH expression (see `fts::sanitize_fts_query`),
+    /// and callers should skip the call entirely for empty/`""` queries.
+    pub fn fts_file_summaries(
+        &self,
+        sanitized_query: &str,
+        path_prefix: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<(String, f64)>> {
+        let conn = self.read_conn()?;
+        let (sql, params_vec): (&str, Vec<Box<dyn rusqlite::types::ToSql>>) =
+            if let Some(prefix) = path_prefix {
+                (
+                    "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
+                 FROM files_fts \
+                 JOIN files ON files.file_path = files_fts.file_path \
+                 WHERE files_fts MATCH ?1 AND files.file_path LIKE ?2 ESCAPE '\\' \
+                 ORDER BY score LIMIT ?3",
+                    vec![
+                        Box::new(sanitized_query.to_string()) as Box<dyn rusqlite::types::ToSql>,
+                        Box::new(format!("{}%", escape_like(prefix))),
+                        Box::new(limit as i64),
+                    ],
+                )
+            } else {
+                (
+                    "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
+                 FROM files_fts \
+                 JOIN files ON files.file_path = files_fts.file_path \
+                 WHERE files_fts MATCH ?1 \
+                 ORDER BY score LIMIT ?2",
+                    vec![
+                        Box::new(sanitized_query.to_string()) as Box<dyn rusqlite::types::ToSql>,
+                        Box::new(limit as i64),
+                    ],
+                )
+            };
+        let mut stmt = conn
+            .prepare_cached(sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+            params_vec.iter().map(|p| p.as_ref()).collect();
+        let rows = stmt
+            .query_map(param_refs.as_slice(), |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Path-token substring match via the trigram `file_paths_fts` mirror,
+    /// batched over multiple tokens with a single pooled-connection checkout.
+    ///
+    /// Returns one result list per input token, in input order. Per-token
+    /// semantics match the original single-token query exactly: `%token%`
+    /// LIKE against indexed file paths, ordered by `file_path` ascending,
+    /// capped at `per_token_limit`. `path_prefix` adds an additional
+    /// `prefix%` LIKE filter.
+    ///
+    /// LIKE metacharacters (`%`, `_`, `\`) in tokens and the prefix are
+    /// escaped so they match literally. Note: the `ESCAPE` clause keeps
+    /// SQLite from handing the LIKE constraints to the FTS5 trigram LIKE
+    /// optimization, so these queries scan `file_paths_fts` and post-filter
+    /// (correct, but no trigram acceleration).
+    pub fn path_token_file_hits_many(
+        &self,
+        tokens: &[&str],
+        path_prefix: Option<&str>,
+        per_token_limit: usize,
+    ) -> CcResult<Vec<Vec<String>>> {
+        if tokens.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.read_conn()?;
+        let mut results = Vec::with_capacity(tokens.len());
+        for token in tokens {
+            let like_token = format!("%{}%", escape_like(token));
+            let mut hits = Vec::new();
+            if let Some(prefix) = path_prefix {
+                let mut stmt = conn
+                    .prepare_cached(
+                        "SELECT file_path FROM file_paths_fts \
+                         WHERE file_path LIKE ?1 ESCAPE '\\' \
+                         AND file_path LIKE ?2 ESCAPE '\\' \
+                         ORDER BY file_path LIMIT ?3",
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                let rows = stmt
+                    .query_map(
+                        rusqlite::params![
+                            like_token,
+                            format!("{}%", escape_like(prefix)),
+                            per_token_limit as i64
+                        ],
+                        |row| row.get::<_, String>(0),
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                hits.extend(rows.filter_map(|r| r.ok()));
+            } else {
+                let mut stmt = conn
+                    .prepare_cached(
+                        "SELECT file_path FROM file_paths_fts \
+                         WHERE file_path LIKE ?1 ESCAPE '\\' \
+                         ORDER BY file_path LIMIT ?2",
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                let rows = stmt
+                    .query_map(
+                        rusqlite::params![like_token, per_token_limit as i64],
+                        |row| row.get::<_, String>(0),
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                hits.extend(rows.filter_map(|r| r.ok()));
+            }
+            results.push(hits);
+        }
+        Ok(results)
+    }
+
+    /// Symbol-name substring match via the trigram `symbols_fts` mirror,
+    /// batched over multiple tokens with a single pooled-connection checkout.
+    ///
+    /// Returns one result list per input token, in input order. Per-token
+    /// semantics match the original single-token query exactly: distinct
+    /// `(file_path, symbol_name)` pairs for `%token%` LIKE hits, with
+    /// case-insensitive exact-name matches ordered first, then by
+    /// `file_path` ascending, capped at `per_token_limit`.
+    ///
+    /// LIKE metacharacters (`%`, `_`, `\`) in tokens and the prefix are
+    /// escaped so they match literally.
+    ///
+    /// The `path_prefix` variant filters on the UNINDEXED `file_path` column.
+    /// The unary `+` on `file_path` (plus the `ESCAPE` clause) keeps SQLite
+    /// from routing that LIKE constraint into the FTS5 trigram LIKE
+    /// optimization, which cannot serve UNINDEXED columns and used to yield
+    /// zero rows; instead it is evaluated as an ordinary post-filter.
+    pub fn symbol_token_hits_many(
+        &self,
+        tokens: &[&str],
+        path_prefix: Option<&str>,
+        per_token_limit: usize,
+    ) -> CcResult<Vec<Vec<(String, String)>>> {
+        if tokens.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.read_conn()?;
+        let mut results = Vec::with_capacity(tokens.len());
+        for token in tokens {
+            let like_token = format!("%{}%", escape_like(token));
+            let mut hits = Vec::new();
+            if let Some(prefix) = path_prefix {
+                let mut stmt = conn
+                    .prepare_cached(
+                        "SELECT DISTINCT file_path, name \
+                         FROM symbols_fts \
+                         WHERE name LIKE ?1 ESCAPE '\\' AND +file_path LIKE ?2 ESCAPE '\\' \
+                         ORDER BY CASE WHEN lower(name) = lower(?3) THEN 0 ELSE 1 END, file_path \
+                         LIMIT ?4",
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                let rows = stmt
+                    .query_map(
+                        rusqlite::params![
+                            like_token,
+                            format!("{}%", escape_like(prefix)),
+                            token,
+                            per_token_limit as i64
+                        ],
+                        |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                hits.extend(rows.filter_map(|r| r.ok()));
+            } else {
+                let mut stmt = conn
+                    .prepare_cached(
+                        "SELECT DISTINCT file_path, name \
+                         FROM symbols_fts \
+                         WHERE name LIKE ?1 ESCAPE '\\' \
+                         ORDER BY CASE WHEN lower(name) = lower(?2) THEN 0 ELSE 1 END, file_path \
+                         LIMIT ?3",
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                let rows = stmt
+                    .query_map(
+                        rusqlite::params![like_token, token, per_token_limit as i64],
+                        |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+                    )
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                hits.extend(rows.filter_map(|r| r.ok()));
+            }
+            results.push(hits);
+        }
+        Ok(results)
+    }
+
+    /// Most recently indexed file paths (`files` ordered by `indexed_at` DESC).
+    pub fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
+        let conn = self.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(rusqlite::params![limit as i64], |row| {
+                row.get::<_, String>(0)
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Batch-fetch full chunk rows by chunk id, queried in
+    /// [`IN_BATCH_SIZE`]-sized `IN (...)` batches like the sibling
+    /// batch methods.
+    ///
+    /// `cached_texts` lets callers supply already-decoded text per chunk id
+    /// (e.g. from a decompression cache); for those rows the stored text
+    /// column is not decoded again. Row order is unspecified (DB order).
+    pub fn chunk_rows_by_ids(
+        &self,
+        chunk_ids: &[&str],
+        cached_texts: &HashMap<String, Arc<str>>,
+    ) -> CcResult<Vec<ChunkDetailRow>> {
+        if chunk_ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.read_conn()?;
+        let mut results = Vec::with_capacity(chunk_ids.len());
+        for batch in chunk_ids.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, \
+                 symbol_name, symbol_kind, text, text_encoding \
+                 FROM chunks WHERE chunk_id IN ({})",
+                sql_in_placeholders(batch.len()),
+            );
+            let mut stmt = conn
+                .prepare_cached(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
+                    let chunk_id: String = row.get(0)?;
+                    let text = if let Some(cached) = cached_texts.get(&chunk_id) {
+                        cached.to_string()
+                    } else {
+                        read_chunk_text_with_encoding(row, 8, 9)?
+                    };
+                    Ok(ChunkDetailRow {
+                        chunk_id,
+                        file_path: row.get(1)?,
+                        language: row.get(2)?,
+                        start_line: row.get(3)?,
+                        end_line: row.get(4)?,
+                        breadcrumb: row.get(5)?,
+                        symbol_name: row.get(6)?,
+                        symbol_kind: row.get(7)?,
+                        text,
+                    })
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            results.extend(rows.filter_map(|r| r.ok()));
+        }
+        Ok(results)
+    }
+
+    /// Graph-lane seed lookup: `(symbol_uid, name)` pairs whose name contains
+    /// `token` (LIKE via `symbols_fts`).
+    ///
+    /// Case-insensitive exact-name matches sort first, then shorter names,
+    /// so the row cap doesn't crowd out the best seeds. NULL-uid symbols are
+    /// excluded. LIKE metacharacters (`%`, `_`, `\`) in `token` are escaped
+    /// so they match literally (the `ESCAPE` clause trades the trigram LIKE
+    /// acceleration for a scan-and-filter plan).
+    pub fn symbol_seed_hits(&self, token: &str, limit: usize) -> CcResult<Vec<(String, String)>> {
+        let conn = self.read_conn()?;
+        let like_pattern = format!("%{}%", escape_like(token));
+        let mut stmt = conn
+            .prepare(
+                "SELECT s.symbol_uid, s.name \
+                 FROM symbols_fts f \
+                 JOIN symbols s ON s.symbol_id = f.symbol_id \
+                 WHERE f.name LIKE ?1 ESCAPE '\\' \
+                 AND s.symbol_uid IS NOT NULL \
+                 ORDER BY (lower(s.name) = lower(?2)) DESC, length(s.name) ASC \
+                 LIMIT ?3",
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(
+                rusqlite::params![like_pattern, token, limit as i64],
+                |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
+    /// index-served via `idx_symbols_name`). NULL-uid symbols are excluded.
+    pub fn symbol_uids_by_exact_names(
+        &self,
+        names: &[&str],
+        limit: usize,
+    ) -> CcResult<Vec<String>> {
+        if names.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.read_conn()?;
+        // sql_in_placeholders yields numbered ?1..?N, so the trailing LIMIT
+        // bind keeps its explicit ?(N+1) index.
+        let sql = format!(
+            "SELECT symbol_uid FROM symbols \
+             WHERE name IN ({}) AND symbol_uid IS NOT NULL \
+             LIMIT ?{}",
+            sql_in_placeholders(names.len()),
+            names.len() + 1,
+        );
+        let mut stmt = conn
+            .prepare(&sql)
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut params_vec: Vec<Box<dyn rusqlite::types::ToSql>> = names
+            .iter()
+            .map(|name| Box::new(name.to_string()) as Box<dyn rusqlite::types::ToSql>)
+            .collect();
+        params_vec.push(Box::new(limit as i64));
+        let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+            params_vec.iter().map(|p| p.as_ref()).collect();
+        let rows = stmt
+            .query_map(param_refs.as_slice(), |row| row.get::<_, String>(0))
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
+    /// keyed by file path. Queried in [`IN_BATCH_SIZE`]-sized `IN (...)`
+    /// batches.
+    pub fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
+        let mut by_file: ChunkSpansByFile = HashMap::new();
+        if file_paths.is_empty() {
+            return Ok(by_file);
+        }
+        let conn = self.read_conn()?;
+        for batch in file_paths.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT file_path, chunk_id, start_line, end_line \
+                 FROM chunks WHERE file_path IN ({})",
+                sql_in_placeholders(batch.len())
+            );
+            let mut stmt = conn
+                .prepare_cached(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let params: Vec<&dyn rusqlite::types::ToSql> = batch
+                .iter()
+                .map(|path| path as &dyn rusqlite::types::ToSql)
+                .collect();
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, u32>(2)?,
+                        row.get::<_, u32>(3)?,
+                    ))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.flatten() {
+                let (file, chunk_id, start, end) = row;
+                by_file
+                    .entry(file)
+                    .or_default()
+                    .push((chunk_id, start, end));
+            }
+        }
+        Ok(by_file)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::HashMap;
+    use std::sync::Arc;
+
+    use crate::index_db::IndexDb;
+    use tempfile::TempDir;
+
+    fn setup() -> (IndexDb, TempDir) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("retrieval_test.db"))
+            .unwrap()
+            .0;
+        (db, tmp)
+    }
+
+    /// Insert a `files` row (file_paths_fts is trigger-synced).
+    fn insert_file(db: &IndexDb, file_path: &str, indexed_at: &str) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT OR IGNORE INTO files(file_path,language,content_hash,mtime,size,indexed_at)
+             VALUES(?1,'Rust','hash1',1.0,100,?2)",
+            rusqlite::params![file_path, indexed_at],
+        )
+        .unwrap();
+    }
+
+    /// Insert a `files` row plus its `files_fts` mirror (application-synced).
+    fn insert_file_with_summary(db: &IndexDb, file_path: &str, summary: &str) {
+        insert_file(db, file_path, "2024-01-01T00:00:00Z");
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO files_fts(file_path,summary,content_excerpt) VALUES(?1,?2,'')",
+            rusqlite::params![file_path, summary],
+        )
+        .unwrap();
+    }
+
+    /// Insert a `symbols` row (symbols_fts is trigger-synced).
+    fn insert_symbol(
+        db: &IndexDb,
+        symbol_id: &str,
+        file_path: &str,
+        name: &str,
+        symbol_uid: Option<&str>,
+    ) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid)
+             VALUES(?1,?2,?3,'function',1,5,?4)",
+            rusqlite::params![symbol_id, file_path, name, symbol_uid],
+        )
+        .unwrap();
+    }
+
+    /// Insert a plain-text `chunks` row.
+    fn insert_chunk(
+        db: &IndexDb,
+        chunk_id: &str,
+        file_path: &str,
+        start_line: u32,
+        end_line: u32,
+        text: &str,
+    ) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,text)
+             VALUES(?1,?2,'rust',0,?3,?4,'root',?5)",
+            rusqlite::params![chunk_id, file_path, start_line, end_line, text],
+        )
+        .unwrap();
+    }
+
+    // ── fts_file_summaries ─────────────────────────────────────
+
+    #[test]
+    fn fts_file_summaries_orders_by_bm25() {
+        let (db, _tmp) = setup();
+        insert_file_with_summary(&db, "src/a.rs", "alpha alpha alpha alpha");
+        insert_file_with_summary(&db, "src/b.rs", "alpha filler filler filler");
+        insert_file_with_summary(&db, "lib/c.rs", "alpha alpha alpha alpha");
+
+        let hits = db.fts_file_summaries("alpha", None, 10).unwrap();
+        assert_eq!(
+            hits.len(),
+            3,
+            "all three files match 'alpha'; got {:?}",
+            hits
+        );
+        // bm25 is negative-better; ORDER BY score ASC puts the highest-tf docs
+        // first and the weakest match (src/b.rs) last.
+        assert_eq!(
+            hits[2].0, "src/b.rs",
+            "weakest match must sort last; got {:?}",
+            hits
+        );
+        let score_a = hits.iter().find(|(p, _)| p == "src/a.rs").unwrap().1;
+        let score_b = hits.iter().find(|(p, _)| p == "src/b.rs").unwrap().1;
+        assert!(
+            score_a < score_b,
+            "bm25(a)={} must be more negative than bm25(b)={}",
+            score_a,
+            score_b
+        );
+    }
+
+    #[test]
+    fn fts_file_summaries_applies_prefix_and_limit() {
+        let (db, _tmp) = setup();
+        insert_file_with_summary(&db, "src/a.rs", "alpha alpha");
+        insert_file_with_summary(&db, "lib/c.rs", "alpha alpha");
+
+        let hits = db.fts_file_summaries("alpha", Some("src/"), 10).unwrap();
+        assert_eq!(hits.len(), 1);
+        assert_eq!(hits[0].0, "src/a.rs");
+
+        let limited = db.fts_file_summaries("alpha", None, 1).unwrap();
+        assert_eq!(limited.len(), 1);
+    }
+
+    #[test]
+    fn fts_file_summaries_empty_for_no_match() {
+        let (db, _tmp) = setup();
+        insert_file_with_summary(&db, "src/a.rs", "alpha");
+        let hits = db.fts_file_summaries("zzznonexistent", None, 10).unwrap();
+        assert!(hits.is_empty());
+    }
+
+    // ── path_token_file_hits_many ──────────────────────────────
+
+    #[test]
+    fn path_token_file_hits_many_substring_match_per_token() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/widgetstore/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_file(&db, "vendor/widget.rs", "2024-01-01");
+        insert_file(&db, "lib/storefront.rs", "2024-01-01");
+
+        // One result list per input token, in input order; each list keeps
+        // the single-token semantics (substring LIKE, file_path ASC).
+        let hits = db
+            .path_token_file_hits_many(&["widget", "store", "zzznope"], None, 20)
+            .unwrap();
+        assert_eq!(hits.len(), 3, "one entry per token");
+        assert_eq!(
+            hits[0],
+            vec![
+                "src/widgetstore/a.rs".to_string(),
+                "vendor/widget.rs".to_string()
+            ],
+            "token 'widget': substring match ordered by file_path"
+        );
+        assert_eq!(
+            hits[1],
+            vec![
+                "lib/storefront.rs".to_string(),
+                "src/widgetstore/a.rs".to_string()
+            ],
+            "token 'store': substring match ordered by file_path"
+        );
+        assert!(hits[2].is_empty(), "unmatched token yields an empty list");
+
+        let prefixed = db
+            .path_token_file_hits_many(&["widget"], Some("vendor/"), 20)
+            .unwrap();
+        assert_eq!(prefixed, vec![vec!["vendor/widget.rs".to_string()]]);
+
+        let limited = db.path_token_file_hits_many(&["widget"], None, 1).unwrap();
+        assert_eq!(limited[0].len(), 1, "per-token limit applies");
+
+        let empty = db.path_token_file_hits_many(&[], None, 20).unwrap();
+        assert!(empty.is_empty());
+    }
+
+    // ── symbol_token_hits_many ─────────────────────────────────
+
+    #[test]
+    fn symbol_token_hits_many_exact_name_first_per_token() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_file(&db, "src/z.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/a.rs", "getUserById", Some("uid:guid"));
+        insert_symbol(&db, "s2", "src/z.rs", "user", Some("uid:user"));
+        insert_symbol(&db, "s3", "src/b.rs", "createOrder", Some("uid:co"));
+
+        let hits = db
+            .symbol_token_hits_many(&["user", "order"], None, 24)
+            .unwrap();
+        assert_eq!(hits.len(), 2, "one entry per token");
+        // Exact (case-insensitive) name match must sort before substring hits,
+        // even though src/z.rs > src/a.rs lexicographically.
+        assert_eq!(
+            hits[0],
+            vec![
+                ("src/z.rs".to_string(), "user".to_string()),
+                ("src/a.rs".to_string(), "getUserById".to_string()),
+            ]
+        );
+        assert_eq!(
+            hits[1],
+            vec![("src/b.rs".to_string(), "createOrder".to_string())]
+        );
+
+        // The path_prefix variant must actually filter (formerly an inherited
+        // defect: SQLite routed the UNINDEXED `file_path` LIKE constraint into
+        // the FTS5 trigram LIKE optimization, yielding zero rows).
+        let prefixed = db
+            .symbol_token_hits_many(&["user"], Some("src/a"), 24)
+            .unwrap();
+        assert_eq!(
+            prefixed[0],
+            vec![("src/a.rs".to_string(), "getUserById".to_string())],
+            "prefixed query must return the in-prefix substring hit"
+        );
+
+        let empty = db.symbol_token_hits_many(&[], None, 24).unwrap();
+        assert!(empty.is_empty());
+    }
+
+    #[test]
+    fn symbol_token_hits_many_prefixed_keeps_exact_name_first_ordering() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/p/a.rs", "2024-01-01");
+        insert_file(&db, "src/p/z.rs", "2024-01-01");
+        insert_file(&db, "vendor/v.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/p/a.rs", "getUserById", Some("uid:guid"));
+        insert_symbol(&db, "s2", "src/p/z.rs", "user", Some("uid:user"));
+        insert_symbol(&db, "s3", "vendor/v.rs", "user", Some("uid:vuser"));
+
+        // Same ordering contract as the unprefixed variant: case-insensitive
+        // exact-name matches first, then file_path ascending — and the
+        // out-of-prefix exact match must be excluded.
+        let hits = db
+            .symbol_token_hits_many(&["user"], Some("src/p/"), 24)
+            .unwrap();
+        assert_eq!(
+            hits[0],
+            vec![
+                ("src/p/z.rs".to_string(), "user".to_string()),
+                ("src/p/a.rs".to_string(), "getUserById".to_string()),
+            ],
+            "exact name first, then file_path ASC, prefix-filtered"
+        );
+    }
+
+    // ── LIKE wildcard escaping (`_` / `%` are literals, not wildcards) ──
+
+    #[test]
+    fn symbol_token_hits_many_treats_underscore_as_literal() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/a.rs", "read_conn", Some("uid:rc"));
+        insert_symbol(&db, "s2", "src/b.rs", "readxconn", Some("uid:rx"));
+
+        let hits = db.symbol_token_hits_many(&["read_conn"], None, 24).unwrap();
+        assert_eq!(
+            hits[0],
+            vec![("src/a.rs".to_string(), "read_conn".to_string())],
+            "token 'read_conn' must not LIKE-match 'readxconn'"
+        );
+    }
+
+    #[test]
+    fn path_token_file_hits_many_treats_underscore_as_literal() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/read_conn.rs", "2024-01-01");
+        insert_file(&db, "src/readxconn.rs", "2024-01-01");
+        insert_file(&db, "my_app/conn.rs", "2024-01-01");
+        insert_file(&db, "myxapp/conn.rs", "2024-01-01");
+
+        let token_hits = db
+            .path_token_file_hits_many(&["read_conn"], None, 20)
+            .unwrap();
+        assert_eq!(
+            token_hits,
+            vec![vec!["src/read_conn.rs".to_string()]],
+            "token 'read_conn' must not LIKE-match 'readxconn'"
+        );
+
+        let prefixed = db
+            .path_token_file_hits_many(&["conn"], Some("my_app/"), 20)
+            .unwrap();
+        assert_eq!(
+            prefixed,
+            vec![vec!["my_app/conn.rs".to_string()]],
+            "prefix 'my_app/' must not LIKE-match 'myxapp/'"
+        );
+    }
+
+    #[test]
+    fn fts_file_summaries_prefix_treats_underscore_as_literal() {
+        let (db, _tmp) = setup();
+        insert_file_with_summary(&db, "my_app/a.rs", "alpha alpha");
+        insert_file_with_summary(&db, "myxapp/b.rs", "alpha alpha");
+
+        let hits = db.fts_file_summaries("alpha", Some("my_app/"), 10).unwrap();
+        assert_eq!(hits.len(), 1, "prefix 'my_app/' must not match 'myxapp/'");
+        assert_eq!(hits[0].0, "my_app/a.rs");
+    }
+
+    #[test]
+    fn symbol_seed_hits_treats_underscore_as_literal() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/a.rs", "read_conn", Some("uid:rc"));
+        insert_symbol(&db, "s2", "src/b.rs", "readxconn", Some("uid:rx"));
+
+        let hits = db.symbol_seed_hits("read_conn", 10).unwrap();
+        assert_eq!(
+            hits,
+            vec![("uid:rc".to_string(), "read_conn".to_string())],
+            "token 'read_conn' must not LIKE-match 'readxconn'"
+        );
+    }
+
+    // ── recent_indexed_files ───────────────────────────────────
+
+    #[test]
+    fn recent_indexed_files_newest_first() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/old.rs", "2024-01-01T00:00:00Z");
+        insert_file(&db, "src/newest.rs", "2024-03-01T00:00:00Z");
+        insert_file(&db, "src/mid.rs", "2024-02-01T00:00:00Z");
+
+        let files = db.recent_indexed_files(2).unwrap();
+        assert_eq!(
+            files,
+            vec!["src/newest.rs".to_string(), "src/mid.rs".to_string()]
+        );
+    }
+
+    // ── chunk_rows_by_ids ──────────────────────────────────────
+
+    #[test]
+    fn chunk_rows_by_ids_fetches_batch() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_chunk(&db, "ch1", "src/a.rs", 1, 5, "fn alpha() {}");
+        insert_chunk(&db, "ch2", "src/a.rs", 6, 10, "fn beta() {}");
+        insert_chunk(&db, "ch3", "src/a.rs", 11, 15, "fn gamma() {}");
+
+        let no_cache: HashMap<String, Arc<str>> = HashMap::new();
+        let rows = db.chunk_rows_by_ids(&["ch1", "ch3"], &no_cache).unwrap();
+        assert_eq!(rows.len(), 2);
+        let by_id: HashMap<&str, &str> = rows
+            .iter()
+            .map(|r| (r.chunk_id.as_str(), r.text.as_str()))
+            .collect();
+        assert_eq!(by_id["ch1"], "fn alpha() {}");
+        assert_eq!(by_id["ch3"], "fn gamma() {}");
+        let ch1 = rows.iter().find(|r| r.chunk_id == "ch1").unwrap();
+        assert_eq!(ch1.file_path, "src/a.rs");
+        assert_eq!(ch1.language, "rust");
+        assert_eq!(ch1.start_line, 1);
+        assert_eq!(ch1.end_line, 5);
+        assert_eq!(ch1.breadcrumb, "root");
+    }
+
+    #[test]
+    fn chunk_rows_by_ids_prefers_cached_text() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_chunk(&db, "ch1", "src/a.rs", 1, 5, "fn alpha() {}");
+        insert_chunk(&db, "ch2", "src/a.rs", 6, 10, "fn beta() {}");
+
+        let mut cached: HashMap<String, Arc<str>> = HashMap::new();
+        cached.insert("ch1".to_string(), Arc::from("CACHED TEXT"));
+        let rows = db.chunk_rows_by_ids(&["ch1", "ch2"], &cached).unwrap();
+        let by_id: HashMap<&str, &str> = rows
+            .iter()
+            .map(|r| (r.chunk_id.as_str(), r.text.as_str()))
+            .collect();
+        assert_eq!(
+            by_id["ch1"], "CACHED TEXT",
+            "cached text must win over the stored column"
+        );
+        assert_eq!(by_id["ch2"], "fn beta() {}");
+    }
+
+    #[test]
+    fn chunk_rows_by_ids_spans_multiple_in_batches() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        // More ids than one IN(...) batch (IN_BATCH_SIZE = 200) to exercise
+        // the multi-batch path.
+        let total = crate::sql_util::IN_BATCH_SIZE + 50;
+        for i in 0..total {
+            insert_chunk(
+                &db,
+                &format!("ch{}", i),
+                "src/a.rs",
+                i as u32 + 1,
+                i as u32 + 1,
+                &format!("text {}", i),
+            );
+        }
+        let ids: Vec<String> = (0..total).map(|i| format!("ch{}", i)).collect();
+        let id_refs: Vec<&str> = ids.iter().map(|s| s.as_str()).collect();
+
+        let no_cache: HashMap<String, Arc<str>> = HashMap::new();
+        let rows = db.chunk_rows_by_ids(&id_refs, &no_cache).unwrap();
+        assert_eq!(rows.len(), total, "all ids across batches must be fetched");
+        let last = rows
+            .iter()
+            .find(|r| r.chunk_id == format!("ch{}", total - 1))
+            .unwrap();
+        assert_eq!(last.text, format!("text {}", total - 1));
+    }
+
+    #[test]
+    fn chunk_rows_by_ids_empty_input() {
+        let (db, _tmp) = setup();
+        let no_cache: HashMap<String, Arc<str>> = HashMap::new();
+        let rows = db.chunk_rows_by_ids(&[], &no_cache).unwrap();
+        assert!(rows.is_empty());
+    }
+
+    // ── symbol_seed_hits ───────────────────────────────────────
+
+    #[test]
+    fn symbol_seed_hits_exact_first_and_skips_null_uid() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_file(&db, "src/c.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/a.rs", "user", Some("uid:user"));
+        insert_symbol(&db, "s2", "src/b.rs", "getUserById", Some("uid:guid"));
+        insert_symbol(&db, "s3", "src/c.rs", "userx", None);
+
+        let hits = db.symbol_seed_hits("user", 10).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("uid:user".to_string(), "user".to_string()),
+                ("uid:guid".to_string(), "getUserById".to_string()),
+            ],
+            "exact name first, NULL-uid rows excluded"
+        );
+    }
+
+    #[test]
+    fn symbol_seed_hits_mixed_case_token_exact_first() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/a.rs", "user", Some("uid:user"));
+        insert_symbol(&db, "s2", "src/b.rs", "getUserById", Some("uid:guid"));
+
+        // Documented contract: exact-name matching is case-INsensitive, so a
+        // mixed-case token must still rank the exact symbol first.  The SQL
+        // compares lower(name) against lower(?2); binding the raw token left
+        // the flag permanently false for mixed-case input.
+        let hits = db.symbol_seed_hits("User", 10).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("uid:user".to_string(), "user".to_string()),
+                ("uid:guid".to_string(), "getUserById".to_string()),
+            ],
+            "mixed-case token 'User' must rank case-insensitive exact match first"
+        );
+    }
+
+    // ── symbol_uids_by_exact_names ─────────────────────────────
+
+    #[test]
+    fn symbol_uids_by_exact_names_matches_only_listed_names() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_file(&db, "src/c.rs", "2024-01-01");
+        insert_file(&db, "src/d.rs", "2024-01-01");
+        insert_symbol(&db, "s1", "src/a.rs", "do", Some("uid:do"));
+        insert_symbol(&db, "s2", "src/b.rs", "Do", Some("uid:Do"));
+        insert_symbol(&db, "s3", "src/c.rs", "door", Some("uid:door"));
+        insert_symbol(&db, "s4", "src/d.rs", "do", None);
+
+        let mut uids = db.symbol_uids_by_exact_names(&["do", "Do"], 10).unwrap();
+        uids.sort();
+        assert_eq!(uids, vec!["uid:Do".to_string(), "uid:do".to_string()]);
+
+        let empty = db.symbol_uids_by_exact_names(&[], 10).unwrap();
+        assert!(empty.is_empty());
+    }
+
+    // ── chunk_spans_for_files ──────────────────────────────────
+
+    #[test]
+    fn chunk_spans_for_files_groups_by_file() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "src/b.rs", "2024-01-01");
+        insert_chunk(&db, "ch1", "src/a.rs", 1, 5, "x");
+        insert_chunk(&db, "ch2", "src/a.rs", 6, 10, "y");
+        insert_chunk(&db, "ch3", "src/b.rs", 1, 3, "z");
+
+        let spans = db
+            .chunk_spans_for_files(&["src/a.rs", "src/b.rs", "src/missing.rs"])
+            .unwrap();
+        assert_eq!(spans.len(), 2);
+        assert_eq!(spans["src/a.rs"].len(), 2);
+        assert_eq!(spans["src/b.rs"], vec![("ch3".to_string(), 1u32, 3u32)]);
+
+        let empty = db.chunk_spans_for_files(&[]).unwrap();
+        assert!(empty.is_empty());
+    }
+}

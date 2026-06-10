@@ -12,7 +12,7 @@ pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 /// Returns `Ok(Initialized)` if the database was freshly created (version was 0).
 /// Returns `Ok(UpToDate)` if the version already matches.
 /// Returns `Ok(Mismatch)` if the stored version differs — the caller should
-/// delete the db file and retry.
+/// destructively reset the database and retry.
 pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
     let stored = conn
         .pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
@@ -51,7 +51,7 @@ pub enum SchemaStatus {
     UpToDate,
     /// Fresh database, schema was just created.
     Initialized,
-    /// Stored version differs from expected — database file must be deleted.
+    /// Stored version differs from expected — database must be rebuilt.
     Mismatch { stored: u32 },
 }
 

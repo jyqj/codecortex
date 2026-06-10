@@ -364,7 +364,7 @@ static NEXT_INSTANCE_ID: AtomicU64 = AtomicU64::new(1);
 impl IndexDb {
     /// Open (or create) the index database at the given path using the default
     /// read pool size.
-    /// If the schema version doesn't match, the database file is deleted and recreated.
+    /// If the schema version doesn't match, the database is reset in place and rebuilt.
     ///
     /// Returns the database handle together with the [`SchemaStatus`] so callers
     /// can tell whether the database was freshly initialized, migrated, or
@@ -438,24 +438,52 @@ impl IndexDb {
             SchemaStatus::Mismatch { stored } => {
                 tracing::warn!(
                     stored_version = stored,
-                    "deleting index database for schema rebuild"
+                    "resetting index database for schema rebuild"
                 );
                 // Export persistent assets before destroying the database.
                 let preserved = Self::export_persistent_assets(&conn);
                 // Snapshot the old epoch vector so the rebuilt database never
                 // rolls back below a generation consumers may have cached.
                 let prev_generation = Self::read_generation_on(&conn).ok();
-                drop(conn);
 
-                let _ = std::fs::remove_file(path);
-                let wal = path.with_extension("sqlite3-wal");
-                let shm = path.with_extension("sqlite3-shm");
-                let _ = std::fs::remove_file(&wal);
-                let _ = std::fs::remove_file(&shm);
-
-                let conn = Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
-                conn.execute_batch(pragmas)
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                // Reset the schema in place instead of deleting the file.
+                // Unlinking and recreating the path splits SQLite's per-inode
+                // lock coordination with any connection that still has the old
+                // file open: when such a connection closes later, it unlinks
+                // the *new* database's `-wal`/`-shm` by name, after which every
+                // fresh connection fails with SQLITE_IOERR while the write
+                // connection lives. r2d2 pools close their connections
+                // asynchronously after drop (an in-flight background
+                // `add_connection` task keeps the shared pool alive), so a
+                // just-dropped `IndexDb` on the same path is exactly such a
+                // lingering connection. An in-place reset keeps the inode, so
+                // SQLite's own locking stays coherent with any straggler.
+                let conn = match Self::reset_schema_in_place(&conn) {
+                    Ok(()) => conn,
+                    Err(reset_err) => {
+                        // Unreadable/corrupt database: fall back to deleting
+                        // the file. The lingering-connection race is accepted
+                        // here — the alternative is failing the open outright.
+                        tracing::warn!(
+                            err = %reset_err,
+                            "in-place schema reset failed; deleting index database file"
+                        );
+                        drop(conn);
+                        let _ = std::fs::remove_file(path);
+                        let mut wal = path.as_os_str().to_owned();
+                        wal.push("-wal");
+                        let mut shm = path.as_os_str().to_owned();
+                        shm.push("-shm");
+                        let _ = std::fs::remove_file(&wal);
+                        let _ = std::fs::remove_file(&shm);
+                        let new_conn =
+                            Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
+                        new_conn
+                            .execute_batch(pragmas)
+                            .map_err(|e| CcError::Database(e.to_string()))?;
+                        new_conn
+                    }
+                };
                 migrate_index_db(&conn)?;
 
                 // Re-import preserved assets into the fresh database.
@@ -491,6 +519,27 @@ impl IndexDb {
                 Ok((conn, SchemaStatus::Initialized))
             }
         }
+    }
+
+    /// Destructively drop every SQL object in the open database without
+    /// touching the file itself, leaving an empty database (`user_version` 0)
+    /// ready for [`migrate_index_db`] to re-apply the full schema.
+    ///
+    /// The `writable_schema` route removes tables (including FTS5 virtual
+    /// tables and their shadow tables), indexes, triggers, and views in one
+    /// pass without dependency-ordering concerns; `VACUUM` then reclaims the
+    /// orphaned pages and rebuilds the file compactly.
+    fn reset_schema_in_place(conn: &Connection) -> CcResult<()> {
+        conn.execute_batch(
+            "PRAGMA writable_schema = 1;
+             DELETE FROM sqlite_master;
+             PRAGMA writable_schema = RESET;
+             PRAGMA user_version = 0;",
+        )
+        .map_err(|e| CcError::Database(format!("reset schema in place: {}", e)))?;
+        conn.execute_batch("VACUUM;")
+            .map_err(|e| CcError::Database(format!("vacuum after schema reset: {}", e)))?;
+        Ok(())
     }
 
     /// Export ADR and runtime_evidence rows as JSON before a schema rebuild.
@@ -1956,10 +2005,11 @@ mod tests {
         assert!(rebuilt.evidence_epoch > old_generation.evidence_epoch);
     }
 
-    // TEMP repro: in-process loop amplifying the pool-drop vs file-delete race.
+    // Stress repro for the pool-drop vs file-delete race fixed by in-place
+    // schema reset; run with --ignored when touching the mismatch-rebuild path.
     #[test]
     #[ignore]
-    fn tmp_mismatch_rebuild_stress_loop() {
+    fn mismatch_rebuild_stress_loop() {
         for iteration in 0..300 {
             let tmp = TempDir::new().unwrap();
             let path = tmp.path().join("index.sqlite3");

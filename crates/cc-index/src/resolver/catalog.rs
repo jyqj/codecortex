@@ -195,8 +195,14 @@ impl SymbolCatalog {
         let needle = name.to_lowercase();
 
         // Two-level lookup without allocating a tuple key
-        let name_hits = self.by_file_name.get(file_path).and_then(|m| m.get(&needle));
-        let qname_hits = self.by_file_qname.get(file_path).and_then(|m| m.get(&needle));
+        let name_hits = self
+            .by_file_name
+            .get(file_path)
+            .and_then(|m| m.get(&needle));
+        let qname_hits = self
+            .by_file_qname
+            .get(file_path)
+            .and_then(|m| m.get(&needle));
 
         match (name_hits, qname_hits) {
             (None, None) => Vec::new(),

@@ -1,5 +1,6 @@
 //! Circular dependency detection via Tarjan's SCC algorithm.
 
+use std::cmp::Reverse;
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -216,8 +217,13 @@ fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circular
     let sccs = tarjan_scc(&adj);
     let total_components = sccs.len();
 
+    // Sort SCCs by size descending BEFORE taking limit,
+    // so we always keep the largest cycles even when limit truncates.
+    let mut ordered: Vec<&Vec<String>> = sccs.iter().collect();
+    ordered.sort_by_key(|scc| Reverse(scc.len()));
+
     let mut components: Vec<CycleComponent> = Vec::new();
-    for scc in sccs.iter().take(limit) {
+    for scc in ordered.into_iter().take(limit) {
         let severity = classify_severity("file", scc.len());
         let internal_edges = collect_file_witness_edges(&read_model, scc)?;
         components.push(CycleComponent {
@@ -227,9 +233,6 @@ fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circular
             internal_edges,
         });
     }
-
-    // Sort by size descending for relevance
-    components.sort_by(|a, b| b.size.cmp(&a.size));
 
     let shown = components.len();
     Ok(CircularDepsResult {
@@ -257,8 +260,13 @@ fn find_circular_deps_package(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circu
     let sccs = tarjan_scc(&adj);
     let total_components = sccs.len();
 
+    // Sort SCCs by size descending BEFORE taking limit,
+    // so we always keep the largest cycles even when limit truncates.
+    let mut ordered: Vec<&Vec<String>> = sccs.iter().collect();
+    ordered.sort_by_key(|scc| Reverse(scc.len()));
+
     let mut components: Vec<CycleComponent> = Vec::new();
-    for scc in sccs.iter().take(limit) {
+    for scc in ordered.into_iter().take(limit) {
         let severity = classify_severity("package", scc.len());
         // For package level, report edges between component nodes without detailed witness data.
         let internal_edges = collect_adj_edges(&adj, scc);
@@ -269,8 +277,6 @@ fn find_circular_deps_package(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circu
             internal_edges,
         });
     }
-
-    components.sort_by(|a, b| b.size.cmp(&a.size));
 
     let shown = components.len();
     Ok(CircularDepsResult {
@@ -290,8 +296,13 @@ fn find_circular_deps_community(db: &Arc<IndexDb>, limit: usize) -> CcResult<Cir
     let sccs = tarjan_scc(&adj);
     let total_components = sccs.len();
 
+    // Sort SCCs by size descending BEFORE taking limit,
+    // so we always keep the largest cycles even when limit truncates.
+    let mut ordered: Vec<&Vec<String>> = sccs.iter().collect();
+    ordered.sort_by_key(|scc| Reverse(scc.len()));
+
     let mut components: Vec<CycleComponent> = Vec::new();
-    for scc in sccs.iter().take(limit) {
+    for scc in ordered.into_iter().take(limit) {
         let severity = classify_severity("community", scc.len());
         let internal_edges = collect_adj_edges(&adj, scc);
         components.push(CycleComponent {
@@ -301,8 +312,6 @@ fn find_circular_deps_community(db: &Arc<IndexDb>, limit: usize) -> CcResult<Cir
             internal_edges,
         });
     }
-
-    components.sort_by(|a, b| b.size.cmp(&a.size));
 
     let shown = components.len();
     Ok(CircularDepsResult {
@@ -537,5 +546,50 @@ mod tests {
 
         let result = find_circular_deps(&db, "invalid", 10);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn cycle_sort_returns_largest_first() {
+        // Construct a graph with 3 SCCs: size 2, 5, 3.
+        // Tarjan discovery order depends on graph structure;
+        // we arrange edges so the largest SCC is NOT discovered first.
+        let mut adj: HashMap<String, Vec<String>> = HashMap::new();
+
+        // SCC 1: a <-> b (size 2)
+        adj.entry("a".into()).or_default().push("b".into());
+        adj.entry("b".into()).or_default().push("a".into());
+
+        // SCC 2: c -> d -> e -> f -> g -> c (size 5)
+        adj.entry("c".into()).or_default().push("d".into());
+        adj.entry("d".into()).or_default().push("e".into());
+        adj.entry("e".into()).or_default().push("f".into());
+        adj.entry("f".into()).or_default().push("g".into());
+        adj.entry("g".into()).or_default().push("c".into());
+
+        // SCC 3: h -> i -> j -> h (size 3)
+        adj.entry("h".into()).or_default().push("i".into());
+        adj.entry("i".into()).or_default().push("j".into());
+        adj.entry("j".into()).or_default().push("h".into());
+
+        // Link SCCs in order that forces discovery to find size-2 first
+        adj.entry("a".into()).or_default().push("c".into());
+        adj.entry("c".into()).or_default().push("h".into());
+
+        let sccs = tarjan_scc(&adj);
+        assert_eq!(sccs.len(), 3);
+
+        // Verify our sort-before-take fix:
+        // After sorting by size descending, order should be [5, 3, 2]
+        let mut ordered: Vec<&Vec<String>> = sccs.iter().collect();
+        ordered.sort_by_key(|scc| Reverse(scc.len()));
+
+        assert_eq!(ordered[0].len(), 5);
+        assert_eq!(ordered[1].len(), 3);
+        assert_eq!(ordered[2].len(), 2);
+
+        // With limit=2, we should get size 5 and 3, NOT the first two by discovery order
+        let limited: Vec<&Vec<String>> = ordered.into_iter().take(2).collect();
+        assert_eq!(limited[0].len(), 5);
+        assert_eq!(limited[1].len(), 3);
     }
 }

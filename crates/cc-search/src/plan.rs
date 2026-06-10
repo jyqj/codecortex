@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 
 use cc_db::fts::{expand_query_text, tokenize_codeish};
 use cc_db::index_db::{read_chunk_text_with_encoding, IndexDb};
-use cc_model::config::SearchConfig;
+use cc_model::config::{RepoSizeTier, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
@@ -74,6 +74,7 @@ impl SearchPlan {
         db: &IndexDb,
         config: &SearchConfig,
         request: &SearchRequest,
+        repo_tier: Option<RepoSizeTier>,
     ) -> CcResult<Self> {
         let dsl = crate::dsl::parse_search_dsl(&request.query);
         let mut request = request.clone();
@@ -90,7 +91,7 @@ impl SearchPlan {
 
         let preselect_limit = request
             .file_preselect_limit
-            .unwrap_or_else(|| 60usize.max(top_k * 12));
+            .unwrap_or_else(|| default_preselect_limit(top_k, repo_tier));
         let preselect = crate::preselect::preselect(
             db,
             &PreselectRequest {
@@ -140,6 +141,10 @@ impl SearchPlan {
 
     pub(crate) fn grep_query(&self) -> &str {
         &self.request.query
+    }
+
+    pub(crate) fn query_tokens(&self) -> &[String] {
+        &self.query_tokens
     }
 
     pub(crate) fn limits(&self) -> LaneLimits {
@@ -298,6 +303,13 @@ impl SearchPlan {
     }
 
     pub(crate) fn finalize_results(&self, results: &mut Vec<SearchHit>) {
+        self.finalize_results_with_limit(results, self.limits.top_k);
+    }
+
+    /// Like `finalize_results` but truncates to an explicit `limit` instead
+    /// of `self.limits.top_k`.  Used by `search_extended` to return up to
+    /// `rerank_window` results for downstream graph enrichment.
+    pub(crate) fn finalize_results_with_limit(&self, results: &mut Vec<SearchHit>, limit: usize) {
         if let Some(ref kind_filter) = self.dsl.kind_filter {
             results.retain(|hit| match &hit.symbol_kind {
                 Some(sk) => crate::dsl::matches_kind(sk, kind_filter),
@@ -328,7 +340,7 @@ impl SearchPlan {
                 .partial_cmp(&a.rerank_score)
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
-        results.truncate(self.limits.top_k);
+        results.truncate(limit);
     }
 
     fn rerank_metadata(&self, file_path: &str, stage_a_score: f64) -> serde_json::Value {
@@ -511,6 +523,18 @@ impl CandidateChunk {
     }
 }
 
+/// Compute the default file preselect limit based on `top_k` and the
+/// repository size tier.  Larger repos get a wider multiplier so that
+/// preselection covers a meaningful fraction of the codebase.
+pub(crate) fn default_preselect_limit(top_k: usize, tier: Option<RepoSizeTier>) -> usize {
+    let multiplier = match tier {
+        Some(RepoSizeTier::Tiny) | Some(RepoSizeTier::Small) | None => 12,
+        Some(RepoSizeTier::Medium) => 15,
+        Some(RepoSizeTier::Large) => 20,
+    };
+    60usize.max(top_k * multiplier)
+}
+
 fn normalize_request_from_dsl(request: &mut SearchRequest, dsl: &crate::dsl::ParsedQuery) {
     if dsl.path_filter.is_some() && request.path_prefix.is_none() {
         request.path_prefix = dsl.path_filter.clone();
@@ -617,6 +641,20 @@ pub fn is_project_doc(file_path: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn preselect_scales_with_tier() {
+        assert_eq!(default_preselect_limit(10, None), 120); // 60.max(10*12)
+        assert_eq!(default_preselect_limit(10, Some(RepoSizeTier::Small)), 120);
+        assert_eq!(default_preselect_limit(10, Some(RepoSizeTier::Medium)), 150); // 60.max(10*15)
+        assert_eq!(default_preselect_limit(10, Some(RepoSizeTier::Large)), 200); // 60.max(10*20)
+                                                                                 // Large top_k scenario
+        assert_eq!(default_preselect_limit(20, Some(RepoSizeTier::Large)), 400); // 60.max(20*20)
+                                                                                 // Tiny tier
+        assert_eq!(default_preselect_limit(10, Some(RepoSizeTier::Tiny)), 120); // 60.max(10*12)
+                                                                                // Small top_k should still respect the floor
+        assert_eq!(default_preselect_limit(3, None), 60); // 60.max(3*12=36) => 60
+    }
 
     #[test]
     fn materialized_grep_scope_sql_pushes_filters_into_db_query() {

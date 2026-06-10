@@ -919,8 +919,14 @@ pub fn compute_package_boundaries(db: &IndexDb) -> CcResult<Vec<PackageBoundary>
 
     let mut pkg_counts: HashMap<(String, String), u32> = HashMap::new();
     for row in &cross_file_rows {
-        let from_fp = row.get("caller_file").and_then(|v| v.as_str()).unwrap_or("");
-        let to_fp = row.get("callee_file").and_then(|v| v.as_str()).unwrap_or("");
+        let from_fp = row
+            .get("caller_file")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
+        let to_fp = row
+            .get("callee_file")
+            .and_then(|v| v.as_str())
+            .unwrap_or("");
         let from_pkg = extract_package(from_fp);
         let to_pkg = extract_package(to_fp);
         if from_pkg != to_pkg {

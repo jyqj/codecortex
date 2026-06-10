@@ -920,8 +920,21 @@ mod tests {
         insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
         for i in 0..10 {
             let uid = format!("uid_c{}", i);
-            insert_symbol(&db, &uid, &format!("C{}", i), "src/callers.rs", "function", None);
-            insert_call_edge(&db, &format!("edge_{}", i), "src/callers.rs", &uid, "uid_seed");
+            insert_symbol(
+                &db,
+                &uid,
+                &format!("C{}", i),
+                "src/callers.rs",
+                "function",
+                None,
+            );
+            insert_call_edge(
+                &db,
+                &format!("edge_{}", i),
+                "src/callers.rs",
+                &uid,
+                "uid_seed",
+            );
         }
 
         let analyzer = ImpactAnalyzer::new(db);
@@ -945,7 +958,9 @@ mod tests {
             max_per_layer: None,
             result_limit: Some(5),
         };
-        let clipped = analyzer.analyze_with(&["src/lib.rs".to_string()], &opts).unwrap();
+        let clipped = analyzer
+            .analyze_with(&["src/lib.rs".to_string()], &opts)
+            .unwrap();
         assert!(clipped.truncated);
         assert_eq!(clipped.impacted_symbols.len(), 5);
         assert_eq!(clipped.returned_symbol_count, 5);
@@ -968,8 +983,21 @@ mod tests {
         insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
         for i in 0..10 {
             let uid = format!("uid_c{}", i);
-            insert_symbol(&db, &uid, &format!("C{}", i), "src/callers.rs", "function", None);
-            insert_call_edge(&db, &format!("edge_{}", i), "src/callers.rs", &uid, "uid_seed");
+            insert_symbol(
+                &db,
+                &uid,
+                &format!("C{}", i),
+                "src/callers.rs",
+                "function",
+                None,
+            );
+            insert_call_edge(
+                &db,
+                &format!("edge_{}", i),
+                "src/callers.rs",
+                &uid,
+                "uid_seed",
+            );
         }
 
         let analyzer = ImpactAnalyzer::new(db);
@@ -980,7 +1008,9 @@ mod tests {
             max_per_layer: Some(3),
             result_limit: None,
         };
-        let report = analyzer.analyze_with(&["src/lib.rs".to_string()], &opts).unwrap();
+        let report = analyzer
+            .analyze_with(&["src/lib.rs".to_string()], &opts)
+            .unwrap();
 
         // Only 3 of the 10 hop-1 callers are fetched (SQL LIMIT).
         let hop1 = report
@@ -1002,8 +1032,21 @@ mod tests {
         insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
         for i in 0..10 {
             let uid = format!("uid_c{}", i);
-            insert_symbol(&db, &uid, &format!("C{}", i), "src/callers.rs", "function", None);
-            insert_call_edge(&db, &format!("edge_{}", i), "src/callers.rs", &uid, "uid_seed");
+            insert_symbol(
+                &db,
+                &uid,
+                &format!("C{}", i),
+                "src/callers.rs",
+                "function",
+                None,
+            );
+            insert_call_edge(
+                &db,
+                &format!("edge_{}", i),
+                "src/callers.rs",
+                &uid,
+                "uid_seed",
+            );
         }
 
         let analyzer = ImpactAnalyzer::new(db);
@@ -1015,7 +1058,9 @@ mod tests {
             max_per_layer: None,
             result_limit: None,
         };
-        let report = analyzer.analyze_with(&["src/lib.rs".to_string()], &opts).unwrap();
+        let report = analyzer
+            .analyze_with(&["src/lib.rs".to_string()], &opts)
+            .unwrap();
 
         assert!(report.truncated);
         assert!(report.impacted_symbols.len() <= 4);

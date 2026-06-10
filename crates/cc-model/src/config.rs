@@ -9,6 +9,8 @@ pub struct ProjectConfig {
     #[serde(default = "SearchConfig::default")]
     pub search: SearchConfig,
     #[serde(default)]
+    pub ranking: RankingConfig,
+    #[serde(default)]
     pub auto_index: AutoIndexConfig,
 }
 
@@ -190,6 +192,10 @@ pub struct SearchConfig {
     pub grep_weight: f64,
     #[serde(default = "default_rerank_window")]
     pub rerank_window: usize,
+    #[serde(default = "default_graph_weight")]
+    pub graph_weight: f64,
+    #[serde(default = "default_graph_top_k")]
+    pub graph_top_k: usize,
 }
 
 fn default_lexical_top_k() -> usize {
@@ -210,6 +216,12 @@ fn default_grep_weight() -> f64 {
 fn default_rerank_window() -> usize {
     40
 }
+fn default_graph_weight() -> f64 {
+    0.6
+}
+fn default_graph_top_k() -> usize {
+    12
+}
 
 impl Default for SearchConfig {
     fn default() -> Self {
@@ -220,6 +232,29 @@ impl Default for SearchConfig {
             lexical_weight: default_lexical_weight(),
             grep_weight: default_grep_weight(),
             rerank_window: default_rerank_window(),
+            graph_weight: default_graph_weight(),
+            graph_top_k: default_graph_top_k(),
+        }
+    }
+}
+
+/// Ranking configuration for search result scoring.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct RankingConfig {
+    /// Weight of graph_score contribution to final rerank_score.
+    /// Range: 0.0 (disabled) to 1.0 (maximum influence).
+    #[serde(default = "default_graph_rerank_weight")]
+    pub graph_rerank_weight: f64,
+}
+
+fn default_graph_rerank_weight() -> f64 {
+    0.3
+}
+
+impl Default for RankingConfig {
+    fn default() -> Self {
+        Self {
+            graph_rerank_weight: default_graph_rerank_weight(),
         }
     }
 }

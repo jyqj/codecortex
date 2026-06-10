@@ -784,8 +784,19 @@ mod tests {
     #[test]
     fn handle_impact_dead_code_returns_result() {
         let (_tmp, rt) = build_test_index();
-        let result =
-            handle_impact(rt, "dead_code", &[], None, "file", None, 20, None, None, None).unwrap();
+        let result = handle_impact(
+            rt,
+            "dead_code",
+            &[],
+            None,
+            "file",
+            None,
+            20,
+            None,
+            None,
+            None,
+        )
+        .unwrap();
         assert!(result.is_object() || result.is_array());
     }
 

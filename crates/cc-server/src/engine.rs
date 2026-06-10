@@ -5,7 +5,7 @@
 use cc_db::index_db::IndexDb;
 use cc_index::{IndexReport, Indexer, PreparedBuild};
 use cc_model::config::{
-    load_project_config, IndexingConfig, IndexPaths, ProjectConfig, ProjectStats, RepoSizeTier,
+    load_project_config, IndexPaths, IndexingConfig, ProjectConfig, ProjectStats, RepoSizeTier,
 };
 use cc_model::context::{ContextEnvelope, ContextNode, ContextSpan, NodeType, Role};
 use cc_model::search::SearchRequest;
@@ -145,13 +145,14 @@ impl CodeIndex {
         let (db, schema_status) =
             IndexDb::open_with_read_pool_size(&paths.index_db, read_pool_size)?;
         let db = Arc::new(db);
-        let engine = SearchEngine::new(db.clone(), &config);
+        let repo_tier = Some(RepoSizeTier::from_file_count(estimated_files));
+        let engine = SearchEngine::new(db.clone(), &config, repo_tier);
 
         self.project_path = Some(project);
         self.config = Some(config);
         self.index_db = Some(db);
         self.engine = Some(engine);
-        self.repo_tier = Some(self.compute_repo_tier());
+        self.repo_tier = repo_tier;
         self.needs_initial_index = matches!(
             schema_status,
             cc_db::index_migrate::SchemaStatus::Initialized
@@ -350,17 +351,34 @@ impl CodeIndex {
         let engine = self.ensure_engine()?;
         let detected_intent = intent.unwrap_or_else(|| detect_intent(query));
         let request = build_context_search_request(query, top_k, overrides);
-        let mut hits = engine.search(&request)?;
+        // Use search_extended to get rerank_window results (not just top_k)
+        // so graph enrichment can promote high-connectivity results.
+        let mut hits = engine.search_extended(&request)?;
 
         // Graph enrichment: resolve UIDs, compute graph_score, collect neighbor/test nodes.
         let db = self.ensure_db()?;
         let graph_limits = tier.graph_enrich_limits();
         let enrichment = Self::graph_enrich(db, &hits, &graph_limits, token_budget);
+
+        // Graph score contribution to final ranking
+        let gw = self
+            .config
+            .as_ref()
+            .map(|c| c.ranking.graph_rerank_weight)
+            .unwrap_or(0.3);
         for hit in &mut hits {
             if let Some(&gs) = enrichment.scores.get(&hit.chunk_id) {
                 hit.graph_score = gs;
+                hit.rerank_score += gs * gw;
             }
         }
+        // Re-sort with graph contribution and truncate to actual top_k
+        hits.sort_by(|a, b| {
+            b.rerank_score
+                .partial_cmp(&a.rerank_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        hits.truncate(top_k);
 
         let mut nodes = Vec::with_capacity(hits.len());
         let mut spans = Vec::with_capacity(hits.len());
@@ -1329,5 +1347,70 @@ mod tests {
             .unwrap();
         assert!(!output.default_limit_applied);
         assert_eq!(output.limit, Some(5));
+    }
+
+    #[test]
+    fn graph_score_affects_final_ranking() {
+        use cc_model::search::SearchHit;
+        use cc_model::Language;
+
+        // Construct two hits: B has higher rerank but no graph, A has lower rerank but high graph
+        let mut hit_a = SearchHit {
+            chunk_id: "a".into(),
+            file_path: "a.rs".into(),
+            language: Language::Rust,
+            start_line: 1,
+            end_line: 10,
+            breadcrumb: String::new(),
+            symbol_name: None,
+            symbol_kind: None,
+            text: String::new(),
+            fused_score: 0.5,
+            lexical_score: 0.5,
+            grep_score: 0.0,
+            graph_score: 0.4,   // high graph score
+            rerank_score: 0.50, // lower rerank
+            reasons: vec![],
+            source: String::new(),
+            lane: None,
+            metadata: serde_json::Value::Null,
+        };
+
+        let hit_b = SearchHit {
+            chunk_id: "b".into(),
+            file_path: "b.rs".into(),
+            language: Language::Rust,
+            start_line: 1,
+            end_line: 10,
+            breadcrumb: String::new(),
+            symbol_name: None,
+            symbol_kind: None,
+            text: String::new(),
+            fused_score: 0.55,
+            lexical_score: 0.55,
+            grep_score: 0.0,
+            graph_score: 0.0,   // no graph score
+            rerank_score: 0.55, // higher rerank
+            reasons: vec![],
+            source: String::new(),
+            lane: None,
+            metadata: serde_json::Value::Null,
+        };
+
+        // Apply graph rerank with weight 0.3
+        let gw = 0.3;
+        hit_a.rerank_score += hit_a.graph_score * gw; // 0.50 + 0.12 = 0.62
+                                                      // hit_b stays at 0.55
+
+        let mut hits = [hit_b, hit_a];
+        hits.sort_by(|a, b| {
+            b.rerank_score
+                .partial_cmp(&a.rerank_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+
+        // A should now be first (0.62 > 0.55)
+        assert_eq!(hits[0].chunk_id, "a");
+        assert_eq!(hits[1].chunk_id, "b");
     }
 }

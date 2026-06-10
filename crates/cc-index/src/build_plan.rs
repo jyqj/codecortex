@@ -111,8 +111,7 @@ impl IndexBuildPlan {
         // Framework enrichment must run after dirty reload so dirty units
         // participate in project context, and before resolution so resolvers
         // can bind framework-specific edges.
-        let fw_context =
-            indexer.phase_framework_enrichment(project_path, &mut write_units)?;
+        let fw_context = indexer.phase_framework_enrichment(project_path, &mut write_units)?;
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -205,7 +204,13 @@ impl IndexBuildPlan {
             analysis_ms,
         };
 
-        Ok(self.report(scan_result, parse_report, output_snapshot, start.elapsed(), Some(timing)))
+        Ok(self.report(
+            scan_result,
+            parse_report,
+            output_snapshot,
+            start.elapsed(),
+            Some(timing),
+        ))
     }
 
     fn report(
@@ -383,16 +388,24 @@ class Accumulator:
         let db_b = open_db(dir_b.path());
         let indexer_b = Indexer::new(db_b.clone(), dir_b.path(), &config);
         let plan_b = IndexBuildPlan::new(false, None);
-        let prepared = plan_b.prepare(&indexer_b, dir_b.path()).expect("prepare build");
+        let prepared = plan_b
+            .prepare(&indexer_b, dir_b.path())
+            .expect("prepare build");
         let report_b = plan_b
             .commit(&indexer_b, dir_b.path(), prepared)
             .expect("commit build");
 
         // Key report fields must be identical across both paths.
         assert_eq!(report_a.files_added, report_b.files_added, "files_added");
-        assert_eq!(report_a.files_updated, report_b.files_updated, "files_updated");
+        assert_eq!(
+            report_a.files_updated, report_b.files_updated,
+            "files_updated"
+        );
         assert_eq!(report_a.files_parsed, report_b.files_parsed, "files_parsed");
-        assert_eq!(report_a.symbols_total, report_b.symbols_total, "symbols_total");
+        assert_eq!(
+            report_a.symbols_total, report_b.symbols_total,
+            "symbols_total"
+        );
         assert_eq!(report_a.chunks_total, report_b.chunks_total, "chunks_total");
         assert!(report_a.symbols_total > 0, "fixture should yield symbols");
 

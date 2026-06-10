@@ -198,8 +198,11 @@ impl Indexer {
         auto_file_limit: Option<usize>,
         prepared: crate::build_plan::PreparedBuild,
     ) -> CcResult<IndexReport> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
-            .commit(self, project_path, prepared)
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).commit(
+            self,
+            project_path,
+            prepared,
+        )
     }
 
     // ── Phase helper structs ────────────────────────────────────────────

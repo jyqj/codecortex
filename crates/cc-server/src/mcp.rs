@@ -713,6 +713,29 @@ index(path) → search(query) → context(task)
 // Server entry point and infrastructure
 // ═══════════════════════════════════════════════════════════════════════
 
+/// Wait for a shutdown signal (SIGTERM, SIGINT, or Ctrl+C).
+async fn shutdown_signal() {
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
+        let mut sigterm = signal(SignalKind::terminate()).expect("SIGTERM handler");
+        let mut sigint = signal(SignalKind::interrupt()).expect("SIGINT handler");
+        tokio::select! {
+            _ = sigterm.recv() => {
+                tracing::info!("received SIGTERM, initiating graceful shutdown");
+            }
+            _ = sigint.recv() => {
+                tracing::info!("received SIGINT, initiating graceful shutdown");
+            }
+        }
+    }
+    #[cfg(not(unix))]
+    {
+        tokio::signal::ctrl_c().await.ok();
+        tracing::info!("received Ctrl+C, initiating graceful shutdown");
+    }
+}
+
 pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_model::CcResult<()> {
     let server = CodeCortexMcpServer::new(project_path.as_deref());
     server
@@ -720,7 +743,10 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
         .start_initial_project_tasks(project_path.as_deref());
     server.project_session.start_idle_eviction().await;
 
-    // PPID watchdog: detect parent process death to prevent zombie MCP servers
+    // Unified shutdown signal for PPID watchdog
+    let shutdown = Arc::new(tokio::sync::Notify::new());
+
+    // PPID watchdog: detect parent process death → notify shutdown
     {
         let ppid_poll_ms: u64 = std::env::var("CODECORTEX_PPID_POLL_MS")
             .ok()
@@ -731,6 +757,7 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
             #[cfg(unix)]
             {
                 let initial_ppid = std::os::unix::process::parent_id();
+                let shutdown_tx = Arc::clone(&shutdown);
                 tokio::spawn(async move {
                     let interval = tokio::time::Duration::from_millis(ppid_poll_ms);
                     loop {
@@ -742,7 +769,8 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
                                 current_ppid,
                                 "parent process died, initiating graceful shutdown"
                             );
-                            std::process::exit(0);
+                            shutdown_tx.notify_one();
+                            return;
                         }
                     }
                 });
@@ -755,13 +783,30 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
         .await
         .map_err(|e| cc_model::CcError::Other(format!("MCP server error: {}", e)))?;
     tracing::info!("MCP server started on stdio");
-    service
-        .waiting()
-        .await
-        .map_err(|e| cc_model::CcError::Other(format!("MCP server error: {}", e)))?;
+
+    // Wait for either: normal service end, OS signal, or PPID watchdog
+    tokio::select! {
+        result = service.waiting() => {
+            result.map_err(|e| cc_model::CcError::Other(format!("MCP server error: {}", e)))?;
+        }
+        _ = shutdown_signal() => {}
+        _ = shutdown.notified() => {}
+    }
+    // `service` and `server` drop here → ProjectSession drop → watcher stop → DB close
+    tracing::info!("MCP server shut down gracefully");
     Ok(())
 }
 
 fn parse_intent_opt(value: Option<&str>) -> Option<cc_model::Intent> {
     value.and_then(|i| cc_model::Intent::from_str(i).ok())
+}
+
+#[cfg(test)]
+mod shutdown_tests {
+    #[test]
+    fn shutdown_signal_compiles() {
+        // Verify the function exists and compiles.
+        // Actual signal handling requires manual testing.
+        let _ = super::shutdown_signal;
+    }
 }

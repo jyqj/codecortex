@@ -340,10 +340,7 @@ impl ProjectSession {
                             let prepared = match CodeIndex::prepare_build(&inputs, false, None) {
                                 Ok(p) => p,
                                 Err(e) => {
-                                    tracing::warn!(
-                                        "watcher: incremental prepare failed: {}",
-                                        e
-                                    );
+                                    tracing::warn!("watcher: incremental prepare failed: {}", e);
                                     return;
                                 }
                             };

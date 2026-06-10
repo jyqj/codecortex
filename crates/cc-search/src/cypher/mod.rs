@@ -532,8 +532,14 @@ mod tests {
             .filter_map(|r| r.first().and_then(|v| v.as_str()).map(String::from))
             .collect();
 
-        assert!(names.contains(&"B".to_string()), "B reachable at hop 1: {names:?}");
-        assert!(names.contains(&"C".to_string()), "C reachable at hop 1: {names:?}");
+        assert!(
+            names.contains(&"B".to_string()),
+            "B reachable at hop 1: {names:?}"
+        );
+        assert!(
+            names.contains(&"C".to_string()),
+            "C reachable at hop 1: {names:?}"
+        );
         assert!(
             names.contains(&"D".to_string()),
             "D reachable via two paths: {names:?}"

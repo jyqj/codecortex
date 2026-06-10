@@ -289,25 +289,53 @@ impl Indexer {
             self.db.rebuild_test_edges_for_files(&changed_paths)?;
         }
 
-        // Graph signature gate: dispatch synthesis and community detection are
-        // both pure functions of the call graph + symbol structure. On
-        // incremental builds, if the signature matches the last run the synthetic
-        // edges and community assignments are already correct, so skip the whole
-        // block (Louvain + 7 synthesis passes). A full rebuild must always
-        // recompute (the DB was swapped out), so it bypasses the skip and still
-        // refreshes the stored signature.
-        let graph_sig = self.graph_signature()?;
-        if !full {
-            let last_sig = self
+        // Per-pass signature gate: instead of a single graph_signature that
+        // hashes all 4 tables, compute separate signatures for each pass group.
+        // This avoids re-running all 7 synthesis passes + Louvain when only one
+        // input changed (e.g. a new dispatch site does not need interface
+        // dispatch recomputation, and vice versa).
+        let dispatch_sig = self.dispatch_synthesis_signature()?;
+        let interface_sig = self.interface_dispatch_signature()?;
+
+        let (dispatch_changed, interface_changed) = if !full {
+            let last_dispatch = self
                 .db
-                .get_metadata("last_postprocess_graph_sig")?
+                .get_metadata("last_dispatch_sig")?
                 .and_then(|s| s.parse::<u64>().ok());
-            if last_sig == Some(graph_sig) {
+            let last_interface = self
+                .db
+                .get_metadata("last_interface_sig")?
+                .and_then(|s| s.parse::<u64>().ok());
+
+            let dc = last_dispatch != Some(dispatch_sig);
+            let ic = last_interface != Some(interface_sig);
+
+            if !dc && !ic {
+                // Synthesis inputs unchanged — check community signature.
+                // Community sig includes synthetic edges, so it must be
+                // computed after synthesis. But if synthesis is unchanged the
+                // synthetic edges are unchanged too, so we can check now.
+                let community_sig = self.community_signature()?;
+                let last_community = self
+                    .db
+                    .get_metadata("last_community_sig")?
+                    .and_then(|s| s.parse::<u64>().ok());
+                if last_community == Some(community_sig) {
+                    return Ok(()); // Everything unchanged
+                }
+                // Only community changed (e.g. direct edge edits) — skip
+                // synthesis, rebuild communities only.
+                self.rebuild_communities()?;
+                self.db
+                    .set_metadata("last_community_sig", &community_sig.to_string())?;
                 return Ok(());
             }
-        }
+            (dc, ic)
+        } else {
+            (true, true) // Full rebuild: run everything
+        };
 
-        // Phase 7b: Dynamic dispatch synthesis (event emitter -> handler)
+        // Phase 7b–7h: Dynamic dispatch synthesis
         if self.dispatch_synthesis {
             let synthesis_config = crate::dispatch_synthesis::SynthesisConfig {
                 enabled: true,
@@ -318,70 +346,76 @@ impl Indexer {
                     self.event_denylist.iter().cloned().collect()
                 },
             };
-            let mut stats = crate::dispatch_synthesis::run_event_emitter_synthesis(
-                &self.db,
-                &synthesis_config,
-            )?;
-            if stats.event_emitter_edges > 0 {
-                tracing::info!(
-                    edges = stats.event_emitter_edges,
-                    skipped_generic = stats.skipped_generic,
-                    skipped_fanout = stats.skipped_fanout,
-                    "event emitter synthesis complete"
-                );
+
+            // 6 dispatch passes (gated by dispatch_sig)
+            if dispatch_changed {
+                let mut stats = crate::dispatch_synthesis::run_event_emitter_synthesis(
+                    &self.db,
+                    &synthesis_config,
+                )?;
+                if stats.event_emitter_edges > 0 {
+                    tracing::info!(
+                        edges = stats.event_emitter_edges,
+                        skipped_generic = stats.skipped_generic,
+                        skipped_fanout = stats.skipped_fanout,
+                        "event emitter synthesis complete"
+                    );
+                }
+
+                // Phase 7c: JSX component synthesis
+                let jsx_count = crate::dispatch_synthesis::run_jsx_synthesis(&self.db)?;
+                stats.jsx_edges = jsx_count;
+                if jsx_count > 0 {
+                    tracing::info!(edges = jsx_count, "JSX component synthesis complete");
+                }
+
+                // Phase 7d: State setter synthesis
+                let setter_count = crate::dispatch_synthesis::run_state_setter_synthesis(&self.db)?;
+                stats.setter_edges = setter_count;
+                if setter_count > 0 {
+                    tracing::info!(edges = setter_count, "state setter synthesis complete");
+                }
+
+                // Phase 7e: Field-backed observer synthesis
+                let observer_count = crate::dispatch_synthesis::run_field_observer_synthesis(
+                    &self.db,
+                    &synthesis_config,
+                )?;
+                stats.field_observer_edges = observer_count;
+                if observer_count > 0 {
+                    tracing::info!(edges = observer_count, "field observer synthesis complete");
+                }
+
+                // Phase 7f: React re-render chain synthesis
+                let rerender_count =
+                    crate::dispatch_synthesis::run_react_rerender_chain_synthesis(&self.db)?;
+                stats.react_rerender_edges = rerender_count;
+                if rerender_count > 0 {
+                    tracing::info!(
+                        edges = rerender_count,
+                        "React re-render chain synthesis complete"
+                    );
+                }
+
+                // Phase 7g: Vue template synthesis (child components + event handlers)
+                let vue_count = crate::dispatch_synthesis::run_vue_template_synthesis(&self.db)?;
+                if vue_count > 0 {
+                    tracing::info!(edges = vue_count, "Vue template synthesis complete");
+                }
             }
 
-            // Phase 7c: JSX component synthesis
-            let jsx_count = crate::dispatch_synthesis::run_jsx_synthesis(&self.db)?;
-            stats.jsx_edges = jsx_count;
-            if jsx_count > 0 {
-                tracing::info!(edges = jsx_count, "JSX component synthesis complete");
-            }
-
-            // Phase 7d: State setter synthesis
-            let setter_count = crate::dispatch_synthesis::run_state_setter_synthesis(&self.db)?;
-            stats.setter_edges = setter_count;
-            if setter_count > 0 {
-                tracing::info!(edges = setter_count, "state setter synthesis complete");
-            }
-
-            // Phase 7e: Field-backed observer synthesis
-            let observer_count = crate::dispatch_synthesis::run_field_observer_synthesis(
-                &self.db,
-                &synthesis_config,
-            )?;
-            stats.field_observer_edges = observer_count;
-            if observer_count > 0 {
-                tracing::info!(edges = observer_count, "field observer synthesis complete");
-            }
-
-            // Phase 7f: React re-render chain synthesis
-            let rerender_count =
-                crate::dispatch_synthesis::run_react_rerender_chain_synthesis(&self.db)?;
-            stats.react_rerender_edges = rerender_count;
-            if rerender_count > 0 {
-                tracing::info!(
-                    edges = rerender_count,
-                    "React re-render chain synthesis complete"
-                );
-            }
-
-            // Phase 7g: Vue template synthesis (child components + event handlers)
-            let vue_count = crate::dispatch_synthesis::run_vue_template_synthesis(&self.db)?;
-            if vue_count > 0 {
-                tracing::info!(edges = vue_count, "Vue template synthesis complete");
-            }
-
-            // Phase 7h: Interface/abstract method dispatch synthesis
-            let interface_count = crate::dispatch_synthesis::run_interface_dispatch_synthesis(
-                &self.db,
-                &synthesis_config,
-            )?;
-            if interface_count > 0 {
-                tracing::info!(
-                    edges = interface_count,
-                    "Interface dispatch synthesis complete"
-                );
+            // Phase 7h: Interface/abstract method dispatch (gated by interface_sig)
+            if interface_changed {
+                let interface_count = crate::dispatch_synthesis::run_interface_dispatch_synthesis(
+                    &self.db,
+                    &synthesis_config,
+                )?;
+                if interface_count > 0 {
+                    tracing::info!(
+                        edges = interface_count,
+                        "Interface dispatch synthesis complete"
+                    );
+                }
             }
         } else {
             // If synthesis was enabled in a previous run and is disabled now,
@@ -417,13 +451,31 @@ impl Indexer {
             }
         }
 
-        self.rebuild_communities()?;
+        // Community detection — computed AFTER synthesis. The signature includes
+        // synthetic edges, so it reflects the output of the passes above.
+        let community_sig = self.community_signature()?;
+        let should_rebuild_community = if !full {
+            let last_community = self
+                .db
+                .get_metadata("last_community_sig")?
+                .and_then(|s| s.parse::<u64>().ok());
+            last_community != Some(community_sig)
+        } else {
+            true
+        };
 
-        // Persist the signature so the next incremental build can skip when the
-        // graph is unchanged. Written after synthesis + communities complete so a
+        if should_rebuild_community {
+            self.rebuild_communities()?;
+            self.db
+                .set_metadata("last_community_sig", &community_sig.to_string())?;
+        }
+
+        // Persist dispatch/interface signatures after all work completes so a
         // mid-pass failure never records a signature for work that did not finish.
         self.db
-            .set_metadata("last_postprocess_graph_sig", &graph_sig.to_string())?;
+            .set_metadata("last_dispatch_sig", &dispatch_sig.to_string())?;
+        self.db
+            .set_metadata("last_interface_sig", &interface_sig.to_string())?;
 
         Ok(())
     }
@@ -495,16 +547,7 @@ impl Indexer {
                 .set_metadata("last_infra_sig", &infra_sig.to_string())?;
         }
 
-        // Phase 10: Resolver quality feedback
-        let unresolved_count = self.db.rebuild_resolution_attempts()?;
-        if unresolved_count > 0 {
-            tracing::info!(
-                count = unresolved_count,
-                "rebuilt unresolved reference backlog"
-            );
-        }
-
-        // Phase 11: Architecture Decision Records (ADR) indexing
+        // Phase 10: Architecture Decision Records (ADR) indexing
         {
             let adr_dirs = [
                 "docs/adr",
@@ -1156,70 +1199,19 @@ impl Indexer {
     /// writes synthetic edges back into `call_edges`, so a signature that
     /// included them would drift every run and never match.
     ///
-    /// Cost is O(E + S) — strictly less than the Louvain + 7 synthesis passes it
-    /// gates — so it is a net win when unchanged and free overhead when changed
-    /// (those passes would scan the same data anyway).
+    /// Signature covering dispatch synthesis inputs (dispatch_sites + symbols).
+    /// Used to gate the 6 dispatch synthesis passes (event_emitter, jsx,
+    /// state_setter, field_observer, react_rerender, vue_template).
     ///
     /// `DefaultHasher` (SipHash with a fixed key) is deterministic across
     /// processes, so persisting the resulting u64 across runs is sound.
-    fn graph_signature(&self) -> CcResult<u64> {
+    fn dispatch_synthesis_signature(&self) -> CcResult<u64> {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
 
-        // Real call graph (synthetic edges excluded), ordered in SQL for a
-        // deterministic traversal without a Rust-side sort over a large vector.
-        let edge_rows = self.db.query_json(
-            "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
-             WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
-             AND synthesized_by IS NULL \
-             ORDER BY caller_symbol_uid, callee_symbol_uid",
-            &[],
-        )?;
-        edge_rows.len().hash(&mut hasher);
-        for row in &edge_rows {
-            row.get("caller_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-            row.get("callee_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-        }
-
-        // Symbol structure: uid/name/kind/container, ordered by uid in SQL for a
-        // deterministic traversal without a Rust-side sort over a large vector.
-        let symbol_rows = self.db.query_json(
-            "SELECT symbol_uid, name, kind, container FROM symbols \
-             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
-            &[],
-        )?;
-        symbol_rows.len().hash(&mut hasher);
-        for row in &symbol_rows {
-            row.get("symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-            row.get("name")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-            row.get("kind")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-            row.get("container")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-        }
-
-        // Dispatch sites: inputs to event-emitter / JSX / state-setter / field-
-        // observer / react-rerender / vue synthesis. They are not call edges, so
-        // a new emit/JSX tag/binding would otherwise leave the signature
-        // unchanged and the synthesis (incorrectly) skipped.
+        // Dispatch sites (input to 6 synthesis passes)
         let site_rows = self.db.query_json(
             "SELECT site_kind, key, file_path, line, enclosing_symbol_uid, handler_symbol_uid \
              FROM dispatch_sites ORDER BY site_id",
@@ -1245,10 +1237,44 @@ impl Indexer {
                 .hash(&mut hasher);
         }
 
-        // Real (non-synthetic) semantic edges: interface-dispatch synthesis reads
-        // the `implements` relation. Synthetic edges (edge_id 'synth:%') are
-        // excluded — like synthetic call edges above — so synthesis writing them
-        // back never drifts the signature.
+        // Symbol structure (all synthesis passes read symbols)
+        self.hash_symbols(&mut hasher)?;
+
+        Ok(hasher.finish())
+    }
+
+    /// Signature covering interface dispatch synthesis inputs
+    /// (real call_edges + symbols + real semantic_edges).
+    fn interface_dispatch_signature(&self) -> CcResult<u64> {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let mut hasher = DefaultHasher::new();
+
+        // Real call edges (synthetic excluded)
+        let edge_rows = self.db.query_json(
+            "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
+             WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
+             AND synthesized_by IS NULL \
+             ORDER BY caller_symbol_uid, callee_symbol_uid",
+            &[],
+        )?;
+        edge_rows.len().hash(&mut hasher);
+        for row in &edge_rows {
+            row.get("caller_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+            row.get("callee_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+        }
+
+        // Symbols
+        self.hash_symbols(&mut hasher)?;
+
+        // Real semantic edges (synthetic 'synth:%' excluded)
         let sem_rows = self.db.query_json(
             "SELECT source_symbol_uid, target_symbol_uid, relation_kind FROM semantic_edges \
              WHERE edge_id NOT LIKE 'synth:%' ORDER BY edge_id",
@@ -1265,6 +1291,75 @@ impl Indexer {
         }
 
         Ok(hasher.finish())
+    }
+
+    /// Signature covering community detection inputs.
+    /// Must be computed AFTER synthesis passes, since synthetic edges affect
+    /// community structure.
+    fn community_signature(&self) -> CcResult<u64> {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let mut hasher = DefaultHasher::new();
+
+        // ALL call edges (including synthetic)
+        let edge_rows = self.db.query_json(
+            "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
+             WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
+             ORDER BY caller_symbol_uid, callee_symbol_uid",
+            &[],
+        )?;
+        edge_rows.len().hash(&mut hasher);
+        for row in &edge_rows {
+            row.get("caller_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+            row.get("callee_symbol_uid")
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .hash(&mut hasher);
+        }
+
+        // Symbols (uid + name + kind — container not relevant for community)
+        let symbol_rows = self.db.query_json(
+            "SELECT symbol_uid, name, kind FROM symbols \
+             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
+            &[],
+        )?;
+        symbol_rows.len().hash(&mut hasher);
+        for row in &symbol_rows {
+            for col in ["symbol_uid", "name", "kind"] {
+                row.get(col)
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .hash(&mut hasher);
+            }
+        }
+
+        Ok(hasher.finish())
+    }
+
+    /// Hash symbol structure (uid/name/kind/container) into the given hasher.
+    /// Shared by `dispatch_synthesis_signature` and `interface_dispatch_signature`.
+    fn hash_symbols(&self, hasher: &mut std::collections::hash_map::DefaultHasher) -> CcResult<()> {
+        use std::hash::Hash;
+
+        let symbol_rows = self.db.query_json(
+            "SELECT symbol_uid, name, kind, container FROM symbols \
+             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
+            &[],
+        )?;
+        symbol_rows.len().hash(hasher);
+        for row in &symbol_rows {
+            for col in ["symbol_uid", "name", "kind", "container"] {
+                row.get(col)
+                    .and_then(|v| v.as_str())
+                    .unwrap_or("")
+                    .hash(hasher);
+            }
+        }
+        Ok(())
     }
 
     fn rebuild_communities(&self) -> CcResult<()> {
@@ -1601,13 +1696,7 @@ mod graph_signature_coverage_tests {
     use std::sync::Arc;
     use tempfile::TempDir;
 
-    /// The postprocess skip-signature must cover every synthesis input, not just
-    /// real call edges + symbols: dispatch sites (event / JSX / state-setter /
-    /// field-observer / rerender / vue) and the real `implements` semantic edges
-    /// (interface dispatch). Synthetic semantic edges (edge_id 'synth:%') must be
-    /// excluded so synthesis writing them back does not drift the signature.
-    #[test]
-    fn graph_signature_covers_dispatch_sites_and_semantic_edges() {
+    fn setup_indexer() -> (TempDir, Indexer) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("sig_cov.db")).unwrap().0);
         let cfg = IndexingConfig::default();
@@ -1624,45 +1713,150 @@ mod graph_signature_coverage_tests {
         )
         .unwrap();
 
-        let sig_base = indexer.graph_signature().unwrap();
+        (tmp, indexer)
+    }
 
-        // A new dispatch site (e.g. a JSX tag) must change the signature.
+    /// dispatch_synthesis_signature must change when dispatch_sites change,
+    /// but NOT when call_edges or semantic_edges change.
+    #[test]
+    fn dispatch_synthesis_signature_covers_sites_and_symbols() {
+        let (_tmp, indexer) = setup_indexer();
+        let db = &indexer.db;
+
+        let sig_base = indexer.dispatch_synthesis_signature().unwrap();
+
+        // A new dispatch site must change the dispatch signature.
+        let conn = db.read_conn().unwrap();
         conn.execute(
             "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
              VALUES('ds1','src/x.rs',3,0,'jsx_tag','Foo')",
             [],
         )
         .unwrap();
-        let sig_sites = indexer.graph_signature().unwrap();
+        let sig_after_site = indexer.dispatch_synthesis_signature().unwrap();
         assert_ne!(
-            sig_base, sig_sites,
-            "a new dispatch site must change the signature, else JSX/event synthesis is wrongly skipped"
+            sig_base, sig_after_site,
+            "a new dispatch site must change dispatch_synthesis_signature"
         );
 
-        // A real `implements` semantic edge must change the signature.
+        // A new semantic edge must NOT change the dispatch signature.
         conn.execute(
             "INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind) \
              VALUES('se1','src/x.rs','A','uA','I','uI','implements')",
             [],
         )
         .unwrap();
-        let sig_sem = indexer.graph_signature().unwrap();
-        assert_ne!(
-            sig_sites, sig_sem,
-            "a real semantic edge must change the signature, else interface_dispatch is wrongly skipped"
+        let sig_after_sem = indexer.dispatch_synthesis_signature().unwrap();
+        assert_eq!(
+            sig_after_site, sig_after_sem,
+            "semantic edges must NOT affect dispatch_synthesis_signature"
+        );
+    }
+
+    /// interface_dispatch_signature must change when semantic_edges or real
+    /// call_edges change, but NOT when dispatch_sites change.
+    #[test]
+    fn interface_dispatch_signature_covers_edges_and_semantics() {
+        let (_tmp, indexer) = setup_indexer();
+        let db = &indexer.db;
+
+        let sig_base = indexer.interface_dispatch_signature().unwrap();
+
+        // A new dispatch site must NOT change the interface signature.
+        let conn = db.read_conn().unwrap();
+        conn.execute(
+            "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
+             VALUES('ds1','src/x.rs',3,0,'jsx_tag','Foo')",
+            [],
+        )
+        .unwrap();
+        let sig_after_site = indexer.interface_dispatch_signature().unwrap();
+        assert_eq!(
+            sig_base, sig_after_site,
+            "dispatch sites must NOT affect interface_dispatch_signature"
         );
 
-        // A synthetic semantic edge ('synth:%') must NOT change the signature.
+        // A real semantic edge must change the interface signature.
+        conn.execute(
+            "INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind) \
+             VALUES('se1','src/x.rs','A','uA','I','uI','implements')",
+            [],
+        )
+        .unwrap();
+        let sig_after_sem = indexer.interface_dispatch_signature().unwrap();
+        assert_ne!(
+            sig_base, sig_after_sem,
+            "a real semantic edge must change interface_dispatch_signature"
+        );
+
+        // A synthetic semantic edge ('synth:%') must NOT change the interface
+        // signature.
         conn.execute(
             "INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind) \
              VALUES('synth:jsx:1','src/x.rs','A','uA','Foo','uFoo','renders_component')",
             [],
         )
         .unwrap();
-        let sig_synth = indexer.graph_signature().unwrap();
+        let sig_after_synth = indexer.interface_dispatch_signature().unwrap();
         assert_eq!(
-            sig_sem, sig_synth,
-            "synthetic semantic edges must be excluded so synthesis output does not drift the signature"
+            sig_after_sem, sig_after_synth,
+            "synthetic semantic edges must be excluded from interface_dispatch_signature"
+        );
+    }
+
+    /// community_signature must include ALL call edges (including synthetic),
+    /// but must NOT depend on dispatch_sites.
+    #[test]
+    fn community_signature_includes_all_edges() {
+        let (_tmp, indexer) = setup_indexer();
+        let db = &indexer.db;
+
+        let sig_base = indexer.community_signature().unwrap();
+
+        // A synthetic call edge must change the community signature.
+        let conn = db.read_conn().unwrap();
+        conn.execute(
+            "INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,synthesized_by) \
+             VALUES('se1','src/x.rs','C',1,'uA','uC','event_emitter')",
+            [],
+        )
+        .unwrap();
+        let sig_after_synth = indexer.community_signature().unwrap();
+        assert_ne!(
+            sig_base, sig_after_synth,
+            "a synthetic call edge must change community_signature"
+        );
+    }
+
+    /// Per-pass signatures must be independent: changing dispatch_sites only
+    /// affects dispatch_synthesis_signature, not interface_dispatch_signature.
+    #[test]
+    fn per_pass_signatures_are_independent() {
+        let (_tmp, indexer) = setup_indexer();
+        let db = &indexer.db;
+
+        let dispatch_before = indexer.dispatch_synthesis_signature().unwrap();
+        let interface_before = indexer.interface_dispatch_signature().unwrap();
+
+        // Modify only dispatch_sites
+        let conn = db.read_conn().unwrap();
+        conn.execute(
+            "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
+             VALUES('ds2','src/x.rs',5,0,'event_emit','click')",
+            [],
+        )
+        .unwrap();
+
+        let dispatch_after = indexer.dispatch_synthesis_signature().unwrap();
+        let interface_after = indexer.interface_dispatch_signature().unwrap();
+
+        assert_ne!(
+            dispatch_before, dispatch_after,
+            "dispatch_synthesis_signature must change when dispatch_sites change"
+        );
+        assert_eq!(
+            interface_before, interface_after,
+            "interface_dispatch_signature must NOT change when only dispatch_sites change"
         );
     }
 }

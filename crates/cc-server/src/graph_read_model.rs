@@ -60,6 +60,7 @@ pub(crate) struct SemanticEdgeLite {
     pub source_symbol: String,
     pub target_symbol: String,
     pub relation_kind: SemanticRelation,
+    #[allow(dead_code)]
     pub confidence: f64,
 }
 
@@ -73,6 +74,25 @@ type SharedSemanticAdj = Arc<Mutex<SemanticAdjPair>>;
 /// Process-global semantic edge cache, keyed by `db_identity`.
 static SEMANTIC_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedSemanticAdj)>>> =
     OnceLock::new();
+
+// ---------------------------------------------------------------------------
+// Import adjacency cache
+// ---------------------------------------------------------------------------
+
+type SharedImportAdj = Arc<HashMap<String, Vec<String>>>;
+
+static IMPORT_ADJ_CACHE: OnceLock<Mutex<LruCache<usize, (GraphReadGeneration, SharedImportAdj)>>> =
+    OnceLock::new();
+
+// ---------------------------------------------------------------------------
+// Community adjacency cache
+// ---------------------------------------------------------------------------
+
+type SharedCommunityAdj = Arc<HashMap<String, Vec<String>>>;
+
+static COMMUNITY_ADJ_CACHE: OnceLock<
+    Mutex<LruCache<usize, (GraphReadGeneration, SharedCommunityAdj)>>,
+> = OnceLock::new();
 
 /// Clear the process-global bridge edge cache.
 ///
@@ -284,10 +304,18 @@ impl GraphReadModel {
         let http_edges = db.all_http_call_edges_lite(limit)?;
         let route_nodes = db.all_route_nodes_lite(limit)?;
         if http_edges.len() == limit {
-            tracing::warn!(count = http_edges.len(), limit, "HTTP bridge edges may be truncated");
+            tracing::warn!(
+                count = http_edges.len(),
+                limit,
+                "HTTP bridge edges may be truncated"
+            );
         }
         if route_nodes.len() == limit {
-            tracing::warn!(count = route_nodes.len(), limit, "HTTP bridge route nodes may be truncated");
+            tracing::warn!(
+                count = route_nodes.len(),
+                limit,
+                "HTTP bridge route nodes may be truncated"
+            );
         }
 
         let mut route_lookup: HashMap<(String, String), Vec<(String, f64)>> = HashMap::new();
@@ -387,7 +415,10 @@ impl GraphReadModel {
         // then replace this project's slot with the latest generation's edges.
         let bridges = Arc::new(Self::bridge_edges_by_caller(db)?);
         if let Ok(mut cache) = cache.lock() {
-            cache.put(generation.db_identity, (generation.clone(), Arc::clone(&bridges)));
+            cache.put(
+                generation.db_identity,
+                (generation.clone(), Arc::clone(&bridges)),
+            );
         }
         Ok(bridges)
     }
@@ -578,7 +609,31 @@ impl GraphReadModel {
     }
 
     pub(crate) fn file_import_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        self.projected_import_adjacency(|path| path.to_string())
+        // Check cache
+        let cache_mutex =
+            IMPORT_ADJ_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
+
+        if let Ok(mut cache) = cache_mutex.lock() {
+            if let Some((stored_gen, adj)) = cache.get(&self.generation.db_identity) {
+                if stored_gen == &self.generation {
+                    return Ok(HashMap::clone(adj));
+                }
+            }
+        }
+
+        // Cache miss: compute via identity projection
+        let result = self.projected_import_adjacency(|path| path.to_string())?;
+
+        // Store in cache
+        let shared = Arc::new(result.clone());
+        if let Ok(mut cache) = cache_mutex.lock() {
+            cache.put(
+                self.generation.db_identity,
+                (self.generation.clone(), shared),
+            );
+        }
+
+        Ok(result)
     }
 
     pub(crate) fn file_import_witness_edges(&self, scc: &[String]) -> CcResult<Vec<InternalEdge>> {
@@ -610,6 +665,19 @@ impl GraphReadModel {
     }
 
     pub(crate) fn community_call_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
+        // Check cache
+        let cache_mutex =
+            COMMUNITY_ADJ_CACHE.get_or_init(|| Mutex::new(LruCache::new(graph_cache_capacity())));
+
+        if let Ok(mut cache) = cache_mutex.lock() {
+            if let Some((stored_gen, adj)) = cache.get(&self.generation.db_identity) {
+                if stored_gen == &self.generation {
+                    return Ok(HashMap::clone(adj));
+                }
+            }
+        }
+
+        // Cache miss: compute from SQL
         let rows = self.db.query_json(
             "SELECT DISTINCT s1.community_id AS from_community, s2.community_id AS to_community \
              FROM call_edges ce \
@@ -645,6 +713,16 @@ impl GraphReadModel {
             targets.sort();
             targets.dedup();
         }
+
+        // Store in cache
+        let shared = Arc::new(adj.clone());
+        if let Ok(mut cache) = cache_mutex.lock() {
+            cache.put(
+                self.generation.db_identity,
+                (self.generation.clone(), shared),
+            );
+        }
+
         Ok(adj)
     }
 
@@ -1132,10 +1210,7 @@ mod tests {
 
         assert_eq!(paths.len(), 2, "should find 2 paths through shared node D");
 
-        let mut path_strs: Vec<String> = paths
-            .iter()
-            .map(|p| p.node_uids.join("→"))
-            .collect();
+        let mut path_strs: Vec<String> = paths.iter().map(|p| p.node_uids.join("→")).collect();
         path_strs.sort();
         assert_eq!(path_strs, vec!["A→B→D", "A→C→D"]);
     }

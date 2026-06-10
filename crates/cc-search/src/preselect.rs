@@ -1,7 +1,6 @@
 //! File preselection — narrows candidate files before chunk-level search.
 //!
-//! Implements the full 6-layer scoring strategy ported from Python's
-//! `_preselect_files()`:
+//! Implements the full 7-layer scoring strategy:
 //!   1. working-set boost   max(2.0, 5.0 / rank)
 //!   2. recent files         max(1.2, 3.5 / rank)
 //!   3. pinned files         max(2.2, 4.0 / rank)
@@ -9,6 +8,7 @@
 //!   5. FTS summary search   1.4 + 1.0 / (1.0 + |score|)
 //!   6. per-token: symbol name match (exact=2.0, fuzzy=1.2) + path token hit (1.0)
 //!      fallback: recently-indexed files if nothing scored
+//!   7. graph neighbor expansion   0.8 base (1-hop call_edges from top seeds)
 
 use std::collections::HashMap;
 
@@ -75,7 +75,13 @@ fn score_working_set(
 ) {
     for (rank, fp) in paths.iter().enumerate() {
         let rank1 = (rank + 1) as f64;
-        score_file(scores, reasons, fp, f64::max(2.0, 5.0 / rank1), "working-set");
+        score_file(
+            scores,
+            reasons,
+            fp,
+            f64::max(2.0, 5.0 / rank1),
+            "working-set",
+        );
     }
 }
 
@@ -143,37 +149,40 @@ fn score_fts_summary(
         }
     };
 
-    let fts_limit = limit.min(80);
-    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) = if let Some(pfx) =
-        prefix
-    {
-        (
-            "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
+    let fts_limit = if limit <= 120 {
+        limit.min(80)
+    } else {
+        80 + (limit.saturating_sub(120)) / 3
+    };
+    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) =
+        if let Some(pfx) = prefix {
+            (
+                "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
              FROM files_fts \
              JOIN files ON files.file_path = files_fts.file_path \
              WHERE files_fts MATCH ?1 AND files.file_path LIKE ?2 \
              ORDER BY score LIMIT ?3"
-                .into(),
-            vec![
-                Box::new(fts_query) as Box<dyn rusqlite::types::ToSql>,
-                Box::new(format!("{}%", pfx)),
-                Box::new(fts_limit as i64),
-            ],
-        )
-    } else {
-        (
-            "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
+                    .into(),
+                vec![
+                    Box::new(fts_query) as Box<dyn rusqlite::types::ToSql>,
+                    Box::new(format!("{}%", pfx)),
+                    Box::new(fts_limit as i64),
+                ],
+            )
+        } else {
+            (
+                "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
              FROM files_fts \
              JOIN files ON files.file_path = files_fts.file_path \
              WHERE files_fts MATCH ?1 \
              ORDER BY score LIMIT ?2"
-                .into(),
-            vec![
-                Box::new(fts_query) as Box<dyn rusqlite::types::ToSql>,
-                Box::new(fts_limit as i64),
-            ],
-        )
-    };
+                    .into(),
+                vec![
+                    Box::new(fts_query) as Box<dyn rusqlite::types::ToSql>,
+                    Box::new(fts_limit as i64),
+                ],
+            )
+        };
 
     let mut stmt = match conn.prepare_cached(&sql) {
         Ok(s) => s,
@@ -289,13 +298,7 @@ fn score_path_token(
 
     let mut hits = 0usize;
     for row in rows.flatten() {
-        score_file(
-            scores,
-            reasons,
-            &row,
-            1.0,
-            &format!("path-token:{}", token),
-        );
+        score_file(scores, reasons, &row, 1.0, &format!("path-token:{}", token));
         hits += 1;
     }
     hits
@@ -309,36 +312,35 @@ fn score_symbol_token(
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
 ) -> usize {
-    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) = if let Some(pfx) =
-        prefix
-    {
-        (
-            "SELECT DISTINCT file_path, name \
+    let (sql, params_vec): (String, Vec<Box<dyn rusqlite::types::ToSql>>) =
+        if let Some(pfx) = prefix {
+            (
+                "SELECT DISTINCT file_path, name \
              FROM symbols_fts \
              WHERE name LIKE ?1 AND file_path LIKE ?2 \
              ORDER BY CASE WHEN lower(name) = lower(?3) THEN 0 ELSE 1 END, file_path \
              LIMIT 24"
-                .into(),
-            vec![
-                Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
-                Box::new(format!("{}%", pfx)),
-                Box::new(token.to_string()),
-            ],
-        )
-    } else {
-        (
-            "SELECT DISTINCT file_path, name \
+                    .into(),
+                vec![
+                    Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
+                    Box::new(format!("{}%", pfx)),
+                    Box::new(token.to_string()),
+                ],
+            )
+        } else {
+            (
+                "SELECT DISTINCT file_path, name \
              FROM symbols_fts \
              WHERE name LIKE ?1 \
              ORDER BY CASE WHEN lower(name) = lower(?2) THEN 0 ELSE 1 END, file_path \
              LIMIT 24"
-                .into(),
-            vec![
-                Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
-                Box::new(token.to_string()),
-            ],
-        )
-    };
+                    .into(),
+                vec![
+                    Box::new(format!("%{}%", token)) as Box<dyn rusqlite::types::ToSql>,
+                    Box::new(token.to_string()),
+                ],
+            )
+        };
 
     let mut stmt = match conn.prepare_cached(&sql) {
         Ok(s) => s,
@@ -371,6 +373,92 @@ fn score_symbol_token(
         hits += 1;
     }
     hits
+}
+
+/// Layer 7: Expand preselect candidates by finding files that are
+/// call-graph neighbors of the current top-scoring files.
+///
+/// Takes seed files from current scores, finds their symbols, walks 1-hop
+/// call_edges (both callers and callees), and returns discovered neighbor
+/// files with a base score of 0.8 (below FTS ~1.4 but above fallback 0.2).
+fn score_graph_neighbors(
+    db: &IndexDb,
+    current_scores: &HashMap<String, f64>,
+    expansion_limit: usize,
+) -> CcResult<Vec<(String, f64)>> {
+    if expansion_limit == 0 || current_scores.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    // Take top-20 files by score as seeds
+    let mut top_files: Vec<(&String, &f64)> = current_scores.iter().collect();
+    top_files.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap_or(std::cmp::Ordering::Equal));
+    let seed_files: Vec<&str> = top_files.iter().take(20).map(|(f, _)| f.as_str()).collect();
+
+    // Find symbol UIDs in seed files
+    let symbols = db.symbols_by_file_paths(&seed_files)?;
+    let seed_uids: Vec<&str> = symbols
+        .iter()
+        .filter_map(|s| s.symbol_uid.as_deref())
+        .take(50) // cap to avoid explosion
+        .collect();
+
+    if seed_uids.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let mut neighbor_files: HashMap<String, f64> = HashMap::new();
+
+    // --- Callers: who calls symbols in our seed files? ---
+    for uid in &seed_uids {
+        if let Ok(callers) = db.caller_rows_by_uid(uid, 5) {
+            for edge in &callers {
+                let file = &edge.file_path;
+                if !current_scores.contains_key(file) {
+                    neighbor_files
+                        .entry(file.clone())
+                        .and_modify(|s| *s = (*s + 0.1).min(1.2))
+                        .or_insert(0.8);
+                }
+            }
+        }
+    }
+
+    // --- Callees: what do symbols in our seed files call? ---
+    // Collect all callee UIDs first, then batch-resolve to file paths.
+    let mut callee_uids_to_resolve: Vec<String> = Vec::new();
+    for uid in &seed_uids {
+        if let Ok(callees) = db.callee_rows_by_uid(uid, 5) {
+            for edge in callees {
+                if let Some(callee_uid) = edge.callee_symbol_uid {
+                    callee_uids_to_resolve.push(callee_uid);
+                }
+            }
+        }
+    }
+
+    // Batch resolve callee UIDs -> file paths
+    if !callee_uids_to_resolve.is_empty() {
+        callee_uids_to_resolve.sort();
+        callee_uids_to_resolve.dedup();
+        callee_uids_to_resolve.truncate(100);
+        if let Ok(sym_rows) = db.symbol_rows_by_uids(&callee_uids_to_resolve) {
+            for sym in sym_rows.values() {
+                if !current_scores.contains_key(&sym.file_path) {
+                    neighbor_files
+                        .entry(sym.file_path.clone())
+                        .and_modify(|s| *s = (*s + 0.1).min(1.2))
+                        .or_insert(0.8);
+                }
+            }
+        }
+    }
+
+    // Sort by score and limit
+    let mut result: Vec<(String, f64)> = neighbor_files.into_iter().collect();
+    result.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    result.truncate(expansion_limit);
+    Ok(result)
 }
 
 /// Fallback: recently-indexed files when nothing scored.
@@ -452,8 +540,14 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     }
 
     // ── Layer 5: FTS summary search ────────────────────────────
-    lane_stats.fts_hits =
-        score_fts_summary(db, req.query, req.path_prefix, req.limit, &mut scores, &mut reasons);
+    lane_stats.fts_hits = score_fts_summary(
+        db,
+        req.query,
+        req.path_prefix,
+        req.limit,
+        &mut scores,
+        &mut reasons,
+    );
 
     // ── Layer 6: per-token symbol + path match ─────────────────
     lane_stats.token_hits =
@@ -463,6 +557,24 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     if scores.is_empty() {
         score_fallback(db, req.limit, &mut scores, &mut reasons);
         lane_stats.used_fallback = true;
+    }
+
+    // ── Layer 7: Graph neighbor expansion ─────────────────────
+    // Only expand when preselect hasn't filled its budget and we're
+    // not in explicit scope (already short-circuited above).
+    if scores.len() < req.limit {
+        let budget = req.limit.saturating_sub(scores.len());
+        if let Ok(extras) = score_graph_neighbors(db, &scores, budget) {
+            for (file, score) in extras {
+                scores.entry(file.clone()).or_insert_with(|| {
+                    reasons
+                        .entry(file)
+                        .or_default()
+                        .push("graph-neighbor".to_string());
+                    score
+                });
+            }
+        }
     }
 
     // ── Filter by path_prefix, sort, truncate ──────────────────
@@ -690,6 +802,152 @@ mod tests {
             limit: 10,
         };
         let result = preselect(&db, &req).unwrap();
-        assert!(result.lane_stats.used_fallback, "should use fallback for unmatched query");
+        assert!(
+            result.lane_stats.used_fallback,
+            "should use fallback for unmatched query"
+        );
+    }
+
+    // ── Layer 7: graph neighbor expansion tests ───────────────
+
+    /// score_graph_neighbors returns empty vec when given empty scores.
+    #[test]
+    fn graph_neighbors_empty_scores() {
+        let (_tmp, db) = db_with_symbols();
+        let scores: HashMap<String, f64> = HashMap::new();
+        let result = score_graph_neighbors(&db, &scores, 10).unwrap();
+        assert!(result.is_empty());
+    }
+
+    /// score_graph_neighbors returns empty vec when expansion_limit is 0.
+    #[test]
+    fn graph_neighbors_zero_limit() {
+        let (_tmp, db) = db_with_symbols();
+        let mut scores = HashMap::new();
+        scores.insert("src/a.rs".to_string(), 2.0);
+        let result = score_graph_neighbors(&db, &scores, 0).unwrap();
+        assert!(result.is_empty());
+    }
+
+    /// Build a DB with symbols that have UIDs and call_edges connecting them,
+    /// then verify that graph neighbor expansion discovers the callee file.
+    fn db_with_call_graph() -> (TempDir, IndexDb) {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("graph_test.db")).unwrap().0;
+        let conn = db.read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES('src/caller.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');
+             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES('src/callee.rs', 'Rust', 'h2', 1.0, 100, '2024-01-01');
+             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+                 VALUES('src/reverse_caller.rs', 'Rust', 'h3', 1.0, 100, '2024-01-01');
+
+             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)
+                 VALUES('s1', 'uid:caller:handle_request', 'src/caller.rs', 'handle_request', 'function', 1, 10);
+             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)
+                 VALUES('s2', 'uid:callee:process_data', 'src/callee.rs', 'process_data', 'function', 1, 10);
+             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)
+                 VALUES('s3', 'uid:reverse:invoke_handler', 'src/reverse_caller.rs', 'invoke_handler', 'function', 1, 10);
+
+             -- caller.rs::handle_request calls callee.rs::process_data
+             INSERT INTO call_edges(edge_id, file_path, caller_symbol, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence)
+                 VALUES('e1', 'src/caller.rs', 'handle_request', 'process_data', 5, 'uid:caller:handle_request', 'uid:callee:process_data', 'resolved', 1.0);
+
+             -- reverse_caller.rs::invoke_handler calls caller.rs::handle_request
+             INSERT INTO call_edges(edge_id, file_path, caller_symbol, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence)
+                 VALUES('e2', 'src/reverse_caller.rs', 'invoke_handler', 'handle_request', 3, 'uid:reverse:invoke_handler', 'uid:caller:handle_request', 'resolved', 1.0);",
+        )
+        .unwrap();
+        (tmp, db)
+    }
+
+    /// Graph expansion from seed file discovers callee and reverse-caller files.
+    #[test]
+    fn graph_neighbors_discovers_callees_and_callers() {
+        let (_tmp, db) = db_with_call_graph();
+
+        // Seed: only src/caller.rs is already scored
+        let mut scores = HashMap::new();
+        scores.insert("src/caller.rs".to_string(), 2.0);
+
+        let result = score_graph_neighbors(&db, &scores, 10).unwrap();
+        let neighbor_paths: Vec<&str> = result.iter().map(|(p, _)| p.as_str()).collect();
+
+        // Callee side: handle_request calls process_data -> src/callee.rs
+        assert!(
+            neighbor_paths.contains(&"src/callee.rs"),
+            "callee file should be discovered via call graph; got {:?}",
+            neighbor_paths
+        );
+
+        // Caller side: invoke_handler calls handle_request -> src/reverse_caller.rs
+        assert!(
+            neighbor_paths.contains(&"src/reverse_caller.rs"),
+            "reverse caller file should be discovered via call graph; got {:?}",
+            neighbor_paths
+        );
+
+        // Score should be 0.8 (base)
+        for (_, score) in &result {
+            assert!(
+                (*score - 0.8).abs() < 0.01 || *score >= 0.8,
+                "neighbor score should be >= 0.8; got {}",
+                score
+            );
+        }
+    }
+
+    /// Graph expansion skips files already in current scores.
+    #[test]
+    fn graph_neighbors_skips_already_scored_files() {
+        let (_tmp, db) = db_with_call_graph();
+
+        // Both caller and callee are already scored
+        let mut scores = HashMap::new();
+        scores.insert("src/caller.rs".to_string(), 2.0);
+        scores.insert("src/callee.rs".to_string(), 1.5);
+        scores.insert("src/reverse_caller.rs".to_string(), 1.0);
+
+        let result = score_graph_neighbors(&db, &scores, 10).unwrap();
+        assert!(
+            result.is_empty(),
+            "all neighbors already scored, should return empty; got {:?}",
+            result
+        );
+    }
+
+    /// Full preselect integration: graph expansion fires when budget remains.
+    #[test]
+    fn preselect_graph_expansion_fires_when_budget_remains() {
+        let (_tmp, db) = db_with_call_graph();
+
+        // Query "handle_request" should match the symbol in src/caller.rs,
+        // and with limit > 1, graph expansion should add callee/caller neighbors.
+        let req = PreselectRequest {
+            query: "handle_request",
+            path_prefix: None,
+            boost_paths: None,
+            recent_paths: None,
+            pinned_paths: None,
+            overlay_paths: None,
+            explicit_file_paths: None,
+            limit: 10,
+        };
+        let result = preselect(&db, &req).unwrap();
+
+        assert!(
+            result.files.contains(&"src/caller.rs".to_string()),
+            "seed file must be present; got {:?}",
+            result.files
+        );
+        // Graph neighbors should have been added
+        let has_callee = result.files.contains(&"src/callee.rs".to_string());
+        let has_reverse = result.files.contains(&"src/reverse_caller.rs".to_string());
+        assert!(
+            has_callee || has_reverse,
+            "at least one graph neighbor should be added; got {:?}",
+            result.files
+        );
     }
 }

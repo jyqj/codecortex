@@ -19,6 +19,7 @@ use crate::graph_types::{HierarchyNode, OverrideInfo, TypeHierarchyResult, TypeN
 /// 3. Otherwise, find by name and filter to class/interface/enum kinds.
 /// 4. If multiple candidates remain, return a `{ "candidates": [...] }` JSON.
 /// 5. If none found, return an error.
+#[allow(clippy::too_many_arguments)]
 pub fn type_hierarchy(
     db: &Arc<IndexDb>,
     grm: &GraphReadModel,
@@ -87,12 +88,24 @@ pub fn type_hierarchy(
     }
 
     if direction == "ancestors" || direction == "up" || direction == "both" {
-        ancestors =
-            bfs_ancestors(db, grm, &root_uid, max_depth, include_methods, &mut type_methods)?;
+        ancestors = bfs_ancestors(
+            db,
+            grm,
+            &root_uid,
+            max_depth,
+            include_methods,
+            &mut type_methods,
+        )?;
     }
     if direction == "descendants" || direction == "down" || direction == "both" {
-        let (desc, impls) =
-            bfs_descendants(db, grm, &root_uid, max_depth, include_methods, &mut type_methods)?;
+        let (desc, impls) = bfs_descendants(
+            db,
+            grm,
+            &root_uid,
+            max_depth,
+            include_methods,
+            &mut type_methods,
+        )?;
         descendants = desc;
         implementors = impls;
     }

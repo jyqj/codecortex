@@ -183,12 +183,6 @@ impl IndexDb {
     }
 
     /// No-op: resolution_attempts table removed in schema consolidation.
-    /// Kept as API stub so callers don't need immediate refactoring.
-    pub fn rebuild_resolution_attempts(&self) -> CcResult<usize> {
-        Ok(0)
-    }
-
-    /// No-op: resolution_attempts table removed in schema consolidation.
     pub fn list_resolution_attempts(
         &self,
         _limit: usize,
@@ -1170,8 +1164,10 @@ impl IndexDb {
         let mut stmt = conn
             .prepare(&sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let params: Vec<&dyn rusqlite::types::ToSql> =
-            file_paths.iter().map(|s| s as &dyn rusqlite::types::ToSql).collect();
+        let params: Vec<&dyn rusqlite::types::ToSql> = file_paths
+            .iter()
+            .map(|s| s as &dyn rusqlite::types::ToSql)
+            .collect();
         let rows = stmt
             .query_map(params.as_slice(), |row| {
                 Ok(SymbolRow {

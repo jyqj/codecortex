@@ -78,8 +78,14 @@ impl IndexDb {
         let mut pkg_fan_in: HashMap<String, usize> = HashMap::new();
         let mut pkg_fan_out: HashMap<String, usize> = HashMap::new();
         for row in &cross_file_rows {
-            let from_fp = row.get("caller_file").and_then(|v| v.as_str()).unwrap_or("");
-            let to_fp = row.get("callee_file").and_then(|v| v.as_str()).unwrap_or("");
+            let from_fp = row
+                .get("caller_file")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+            let to_fp = row
+                .get("callee_file")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let from_pkg = Self::extract_package_from_path(from_fp);
             let to_pkg = Self::extract_package_from_path(to_fp);
             if from_pkg != to_pkg {
@@ -231,8 +237,14 @@ impl IndexDb {
 
         let mut counts: HashMap<(String, String), usize> = HashMap::new();
         for row in &cross_file_rows {
-            let from_fp = row.get("caller_file").and_then(|v| v.as_str()).unwrap_or("");
-            let to_fp = row.get("callee_file").and_then(|v| v.as_str()).unwrap_or("");
+            let from_fp = row
+                .get("caller_file")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
+            let to_fp = row
+                .get("callee_file")
+                .and_then(|v| v.as_str())
+                .unwrap_or("");
             let from_pkg = Self::extract_package_from_path(from_fp);
             let to_pkg = Self::extract_package_from_path(to_fp);
             if from_pkg != to_pkg {

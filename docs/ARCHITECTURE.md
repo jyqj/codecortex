@@ -41,11 +41,10 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
 
 - `IndexDb` — r2d2 read pool (default 4 readers) + a dedicated Mutex-guarded
   writer connection, WAL mode
-- 21 tables: files, chunks, symbols, imports, symbol_refs, resolution_attempts,
-  call_edges, test_edges, route_edges, route_nodes, diagnostics, literal_index,
-  communities, repo_frameworks, file_frameworks, data_flow_edges,
-  co_change_edges, http_call_edges, semantic_edges, infra_nodes, infra_edges,
-  dispatch_sites, runtime_evidence, adr, metadata
+- 21 tables: metadata, files, chunks, symbols, imports, symbol_refs,
+  call_edges, test_edges, routes, literal_index, communities, frameworks,
+  data_flow_edges, co_change_edges, http_call_edges, semantic_edges,
+  infra_nodes, infra_edges, dispatch_sites, runtime_evidence, adr
 - 5 FTS5 virtual tables: full-text search on chunks, literals,
   files, plus two trigram mirrors — `symbols_fts` (name) and `file_paths_fts`
   (file_path) — that accelerate the substring symbol and path-token lookups in

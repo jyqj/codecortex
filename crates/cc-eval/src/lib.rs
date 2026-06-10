@@ -632,7 +632,8 @@ value = "formatName"
             assert!(
                 tb.p95_ms < 500,
                 "perf regression: tool '{}' p95 = {}ms (limit 500ms)",
-                tb.tool, tb.p95_ms,
+                tb.tool,
+                tb.p95_ms,
             );
         }
 
@@ -677,8 +678,8 @@ value = "formatName"
         copy_sample_fixture_sources(&fixtures_dir, tmp.path());
 
         // Build the backend — must succeed; do not silently skip.
-        let backend = runner::CodeIndexBackend::new(tmp.path())
-            .expect("backend should build fixture index");
+        let backend =
+            runner::CodeIndexBackend::new(tmp.path()).expect("backend should build fixture index");
 
         // Load corpus
         let cases = corpus::load_corpus(&corpus_dir).expect("load corpus");

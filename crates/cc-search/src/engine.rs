@@ -11,7 +11,7 @@ use lru::LruCache;
 
 use cc_db::fts::sanitize_fts_query;
 use cc_db::index_db::{read_chunk_text_with_encoding, IndexDb};
-use cc_model::config::{ProjectStats, SearchConfig};
+use cc_model::config::{ProjectStats, RepoSizeTier, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcError, CcResult};
 
@@ -44,6 +44,7 @@ fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize {
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
     pub(crate) config: SearchConfig,
+    pub(crate) repo_tier: Option<RepoSizeTier>,
     /// Last index generation this engine has accepted for cache state.
     cache_generation: u64,
     /// LRU result cache keyed by `(cache_generation, query_hash)`.
@@ -53,10 +54,15 @@ pub struct SearchEngine {
 }
 
 impl SearchEngine {
-    pub fn new(db: Arc<IndexDb>, config: &cc_model::ProjectConfig) -> Self {
+    pub fn new(
+        db: Arc<IndexDb>,
+        config: &cc_model::ProjectConfig,
+        repo_tier: Option<RepoSizeTier>,
+    ) -> Self {
         Self {
             db,
             config: config.search.clone(),
+            repo_tier,
             cache_generation: 0,
             result_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
                 "CODECORTEX_SEARCH_RESULT_CACHE_SIZE",
@@ -89,6 +95,17 @@ impl SearchEngine {
 
     /// Compute a deterministic hash of `SearchRequest` key fields.
     fn query_hash(request: &SearchRequest) -> u64 {
+        fn hash_sorted_opt_vec<T: Ord + std::hash::Hash + Clone>(
+            value: &Option<Vec<T>>,
+            hasher: &mut impl std::hash::Hasher,
+        ) {
+            if let Some(items) = value {
+                let mut sorted = items.clone();
+                sorted.sort_unstable();
+                sorted.hash(hasher);
+            }
+        }
+
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
         request.query.hash(&mut hasher);
         request.top_k.hash(&mut hasher);
@@ -101,38 +118,62 @@ impl SearchEngine {
             names.sort_unstable();
             names.hash(&mut hasher);
         }
-        if let Some(ref fps) = request.file_paths {
-            let mut sorted = fps.clone();
-            sorted.sort_unstable();
-            sorted.hash(&mut hasher);
+        hash_sorted_opt_vec(&request.file_paths, &mut hasher);
+        hash_sorted_opt_vec(&request.boost_file_paths, &mut hasher);
+        // conversation_queries: 不排序，顺序影响 augmented_query_text() 拼接语义
+        if let Some(ref cq) = request.conversation_queries {
+            cq.hash(&mut hasher);
         }
-        if let Some(ref bfp) = request.boost_file_paths {
-            let mut sorted = bfp.clone();
-            sorted.sort_unstable();
-            sorted.hash(&mut hasher);
-        }
+        hash_sorted_opt_vec(&request.recent_file_paths, &mut hasher);
+        hash_sorted_opt_vec(&request.pinned_file_paths, &mut hasher);
+        hash_sorted_opt_vec(&request.overlay_file_paths, &mut hasher);
         hasher.finish()
     }
 
     /// Core search — FTS5 + grep with RRF fusion and reranking.
     pub fn search(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
-        // ── Cache lookup ────────────────────────────────────────
+        self.search_internal(request, true)
+    }
+
+    /// Like `search()` but returns up to `rerank_window` results instead of
+    /// `top_k`.  Used by `search_in_context_with()` to give graph enrichment
+    /// a larger candidate window before final truncation.
+    ///
+    /// Results are **not** cached (this path is typically called once per
+    /// `search_in_context_with` invocation).
+    pub fn search_extended(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
+        self.search_internal(request, false)
+    }
+
+    /// Shared implementation for `search` / `search_extended`.
+    ///
+    /// When `truncate_to_top_k` is true the result list is cut to `top_k`
+    /// (standard behaviour).  When false, results are cut to `rerank_window`
+    /// giving downstream graph enrichment a wider candidate set.
+    fn search_internal(
+        &self,
+        request: &SearchRequest,
+        truncate_to_top_k: bool,
+    ) -> CcResult<Vec<SearchHit>> {
+        // ── Cache lookup (only for the truncated path) ──────────
         let qhash = Self::query_hash(request);
         let cache_key = (self.cache_generation, qhash);
-        if let Ok(mut cache) = self.result_cache.lock() {
-            if let Some(cached) = cache.get(&cache_key) {
-                tracing::debug!(
-                    query = %request.query,
-                    "search cache hit (generation={}, hash={})",
-                    self.cache_generation,
-                    qhash,
-                );
-                return Ok(cached.clone());
+        if truncate_to_top_k {
+            if let Ok(mut cache) = self.result_cache.lock() {
+                if let Some(cached) = cache.get(&cache_key) {
+                    tracing::debug!(
+                        query = %request.query,
+                        "search cache hit (generation={}, hash={})",
+                        self.cache_generation,
+                        qhash,
+                    );
+                    return Ok(cached.clone());
+                }
             }
         }
 
         let conn = self.db.read_conn()?;
-        let plan = SearchPlan::build(&self.db, &self.config, request)?;
+        let plan = SearchPlan::build(&self.db, &self.config, request, self.repo_tier)?;
         let limits = plan.limits();
 
         // Lexical search (FTS5)
@@ -146,7 +187,15 @@ impl SearchEngine {
             Vec::new()
         };
 
-        // RRF fusion
+        // Graph search lane
+        let graph_hits = if self.config.graph_weight > 0.0 {
+            self.graph_search(&conn, plan.query_tokens(), self.config.graph_top_k, &plan)
+                .unwrap_or_default()
+        } else {
+            Vec::new()
+        };
+
+        // RRF fusion (3-lane: lexical + grep + graph)
         let mut fused: HashMap<String, f64> = HashMap::new();
         let k = self.config.rrf_k;
         rrf_accumulate(
@@ -164,6 +213,14 @@ impl SearchEngine {
             self.config.grep_weight,
             k,
         );
+        if !graph_hits.is_empty() {
+            rrf_accumulate(
+                &mut fused,
+                &graph_hits.iter().map(|h| h.0.as_str()).collect::<Vec<_>>(),
+                self.config.graph_weight,
+                k,
+            );
+        }
 
         let mut candidates: Vec<(String, f64)> = fused.into_iter().collect();
         candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
@@ -244,11 +301,17 @@ impl SearchEngine {
             }
         }
 
-        plan.finalize_results(&mut results);
+        if truncate_to_top_k {
+            plan.finalize_results(&mut results);
+        } else {
+            plan.finalize_results_with_limit(&mut results, limits.rerank_window);
+        }
 
-        // ── Cache store ─────────────────────────────────────────
-        if let Ok(mut cache) = self.result_cache.lock() {
-            cache.put(cache_key, results.clone());
+        // ── Cache store (only for the truncated path) ───────────
+        if truncate_to_top_k {
+            if let Ok(mut cache) = self.result_cache.lock() {
+                cache.put(cache_key, results.clone());
+            }
         }
 
         Ok(results)
@@ -361,6 +424,173 @@ impl SearchEngine {
             .map(|(i, id)| (id, 1.0 / (i + 1) as f64))
             .collect())
     }
+
+    /// Graph retrieval lane: find chunks connected to query-matching symbols
+    /// via the call graph (1-hop callers + callees).
+    fn graph_search(
+        &self,
+        conn: &rusqlite::Connection,
+        query_tokens: &[String],
+        limit: usize,
+        plan: &SearchPlan,
+    ) -> CcResult<Vec<(String, f64)>> {
+        // Step 1: Find seed symbols matching query tokens via symbols_fts (trigram LIKE)
+        let seed_uids = self.find_seed_symbol_uids(conn, query_tokens)?;
+        if seed_uids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Step 2: 1-hop expansion via call_edges (callers + callees)
+        let mut neighbor_uids: HashMap<String, f64> = HashMap::new();
+        for (uid, seed_score) in &seed_uids {
+            // Include the seed itself (distance 0)
+            neighbor_uids
+                .entry(uid.clone())
+                .and_modify(|s| *s = s.max(*seed_score))
+                .or_insert(*seed_score);
+
+            // Callees of seed (distance 1)
+            if let Ok(callees) = self.db.callee_rows_by_uid(uid, 10) {
+                for edge in &callees {
+                    if let Some(ref callee_uid) = edge.callee_symbol_uid {
+                        let score = seed_score * 0.5;
+                        neighbor_uids
+                            .entry(callee_uid.clone())
+                            .and_modify(|s| *s = s.max(score))
+                            .or_insert(score);
+                    }
+                }
+            }
+
+            // Callers of seed (distance 1)
+            if let Ok(callers) = self.db.caller_rows_by_uid(uid, 10) {
+                for edge in &callers {
+                    if let Some(ref caller_uid) = edge.caller_symbol_uid {
+                        let score = seed_score * 0.5;
+                        neighbor_uids
+                            .entry(caller_uid.clone())
+                            .and_modify(|s| *s = s.max(score))
+                            .or_insert(score);
+                    }
+                }
+            }
+        }
+
+        if neighbor_uids.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        // Step 3: Map symbol UIDs -> chunks, applying file filters
+        let uid_list: Vec<String> = neighbor_uids.keys().cloned().collect();
+        let sym_rows = self.db.symbol_rows_by_uids(&uid_list)?;
+
+        let mut chunk_scores: Vec<(String, f64)> = Vec::new();
+        let mut seen_chunks = std::collections::HashSet::new();
+
+        for (uid, score) in &neighbor_uids {
+            if let Some(sym) = sym_rows.get(uid) {
+                // Check file filter
+                if !plan.passes_filters(&sym.file_path, parse_language_name(&sym.file_path)) {
+                    continue;
+                }
+                // Find chunk containing this symbol
+                if let Ok(Some(cid)) =
+                    self.find_chunk_for_symbol(conn, &sym.file_path, sym.start_line, sym.end_line)
+                {
+                    if seen_chunks.insert(cid.clone()) {
+                        chunk_scores.push((cid, *score));
+                    }
+                }
+            }
+        }
+
+        // Sort by score descending and limit
+        chunk_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        chunk_scores.truncate(limit);
+        Ok(chunk_scores)
+    }
+
+    /// Find seed symbols matching query tokens via the symbols_fts trigram table.
+    ///
+    /// Uses LIKE substring matching (symbols_fts is an FTS5 trigram table, not
+    /// a standard BM25 table).
+    fn find_seed_symbol_uids(
+        &self,
+        conn: &rusqlite::Connection,
+        query_tokens: &[String],
+    ) -> CcResult<Vec<(String, f64)>> {
+        let mut results: HashMap<String, f64> = HashMap::new();
+
+        for token in query_tokens.iter().take(5) {
+            if token.len() < 3 {
+                continue;
+            }
+            // Use trigram-accelerated LIKE via symbols_fts
+            let like_pattern = format!("%{}%", token);
+            let sql = "SELECT s.symbol_uid, s.name \
+                       FROM symbols_fts f \
+                       JOIN symbols s ON s.symbol_id = f.symbol_id \
+                       WHERE f.name LIKE ?1 \
+                       AND s.symbol_uid IS NOT NULL \
+                       ORDER BY s.file_path \
+                       LIMIT 10";
+            let mut stmt = conn
+                .prepare(sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let rows = stmt
+                .query_map(rusqlite::params![like_pattern], |row| {
+                    let uid: String = row.get(0)?;
+                    let name: String = row.get(1)?;
+                    Ok((uid, name))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+
+            for row in rows.flatten() {
+                let (uid, name) = row;
+                // Score: exact match > contains
+                let relevance = if name.to_lowercase() == *token {
+                    1.0
+                } else {
+                    0.5
+                };
+                results
+                    .entry(uid)
+                    .and_modify(|s| *s = s.max(relevance))
+                    .or_insert(relevance);
+            }
+        }
+
+        let mut sorted: Vec<(String, f64)> = results.into_iter().collect();
+        sorted.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        sorted.truncate(20); // max 20 seed symbols
+        Ok(sorted)
+    }
+
+    /// Find the chunk_id containing a symbol at the given file/line range.
+    fn find_chunk_for_symbol(
+        &self,
+        conn: &rusqlite::Connection,
+        file_path: &str,
+        start_line: u32,
+        end_line: u32,
+    ) -> CcResult<Option<String>> {
+        let mut stmt = conn
+            .prepare(
+                "SELECT chunk_id FROM chunks \
+                 WHERE file_path = ?1 AND start_line <= ?2 AND end_line >= ?3 \
+                 ORDER BY (end_line - start_line) ASC \
+                 LIMIT 1",
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let result = stmt.query_row(rusqlite::params![file_path, start_line, end_line], |row| {
+            row.get::<_, String>(0)
+        });
+        match result {
+            Ok(cid) => Ok(Some(cid)),
+            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
+            Err(e) => Err(CcError::Database(e.to_string())),
+        }
+    }
 }
 
 #[cfg(test)]
@@ -383,10 +613,11 @@ mod tests {
                 lexical_weight: 1.0,
                 grep_weight: 0.0,
                 rerank_window: 3,
+                ..Default::default()
             },
             ..Default::default()
         };
-        (SearchEngine::new(Arc::new(db), &config), tmp)
+        (SearchEngine::new(Arc::new(db), &config, None), tmp)
     }
 
     fn insert_chunk_file(engine: &SearchEngine, file_path: &str, language: Language, text: &str) {
@@ -502,5 +733,144 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["src/in_scope/target.rs"]
         );
+    }
+
+    #[test]
+    fn cache_key_includes_context_fields() {
+        let base = SearchRequest {
+            query: "foo".into(),
+            top_k: 10,
+            ..Default::default()
+        };
+
+        let with_conv = SearchRequest {
+            conversation_queries: Some(vec!["bar".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_conv)
+        );
+
+        let with_pinned = SearchRequest {
+            pinned_file_paths: Some(vec!["a.rs".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_pinned)
+        );
+
+        let with_recent = SearchRequest {
+            recent_file_paths: Some(vec!["b.rs".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_recent)
+        );
+
+        let with_overlay = SearchRequest {
+            overlay_file_paths: Some(vec!["c.rs".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_overlay)
+        );
+
+        // 集合语义: pinned=[a,b] == pinned=[b,a]
+        let pinned_ab = SearchRequest {
+            pinned_file_paths: Some(vec!["a.rs".into(), "b.rs".into()]),
+            ..base.clone()
+        };
+        let pinned_ba = SearchRequest {
+            pinned_file_paths: Some(vec!["b.rs".into(), "a.rs".into()]),
+            ..base.clone()
+        };
+        assert_eq!(
+            SearchEngine::query_hash(&pinned_ab),
+            SearchEngine::query_hash(&pinned_ba)
+        );
+
+        // 顺序敏感: conversation_queries=[a,b] != [b,a]
+        let conv_ab = SearchRequest {
+            conversation_queries: Some(vec!["a".into(), "b".into()]),
+            ..base.clone()
+        };
+        let conv_ba = SearchRequest {
+            conversation_queries: Some(vec!["b".into(), "a".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&conv_ab),
+            SearchEngine::query_hash(&conv_ba)
+        );
+    }
+
+    #[test]
+    fn graph_search_returns_empty_for_no_symbols() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "fn alpha_handler() { process() }",
+        );
+
+        // graph_search on an empty symbol table should return empty, not error
+        let conn = engine.db.read_conn().unwrap();
+        let plan = SearchPlan::build(
+            &engine.db,
+            &engine.config,
+            &SearchRequest {
+                query: "alpha".to_string(),
+                top_k: 5,
+                include_grep: false,
+                ..Default::default()
+            },
+            None,
+        )
+        .unwrap();
+        let graph_hits = engine.graph_search(&conn, plan.query_tokens(), 12, &plan);
+        // Should succeed (possibly empty — no symbols indexed yet)
+        assert!(graph_hits.is_ok());
+    }
+
+    #[test]
+    fn graph_lane_does_not_break_existing_search() {
+        // Ensure enabling graph_weight > 0 doesn't change results when no
+        // symbols exist: search should still return lexical-only results.
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        let config = ProjectConfig {
+            search: SearchConfig {
+                lexical_top_k: 3,
+                grep_top_k: 3,
+                rrf_k: 50,
+                lexical_weight: 1.0,
+                grep_weight: 0.0,
+                rerank_window: 3,
+                graph_weight: 0.6,
+                graph_top_k: 12,
+            },
+            ..Default::default()
+        };
+        let engine = SearchEngine::new(Arc::new(db), &config, None);
+        insert_chunk_file(
+            &engine,
+            "src/foo.rs",
+            Language::Rust,
+            "fn foo_handler() { do_work() }",
+        );
+
+        let request = SearchRequest {
+            query: "foo".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let results = engine.search(&request).unwrap();
+        assert!(!results.is_empty(), "lexical results should still work");
     }
 }

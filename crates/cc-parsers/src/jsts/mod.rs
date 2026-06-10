@@ -426,6 +426,10 @@ impl JsTsParser {
                                 .insert(alias.clone(), broker_match.broker_type.to_string());
                         }
                     }
+                    let import_idx = ctx.imports.len();
+                    for binding in Self::collect_import_local_bindings(node, source) {
+                        ctx.import_bindings.entry(binding).or_insert(import_idx);
+                    }
                     ctx.imports.push(imp);
                 }
             }
@@ -1371,8 +1375,66 @@ impl JsTsParser {
                 } else if let Some(ref en) = pe.export_name {
                     ctx.symbols[idx].export_name = Some(en.clone());
                 }
+            } else if let Some(&imp_idx) = ctx.import_bindings.get(&pe.local_name) {
+                // Two-step forwarding: the exported binding has no local
+                // symbol and originates from an ES import
+                // (`import { x } from './b'; export { x };` or
+                // `export default x`). The file's effective export surface
+                // therefore depends on the import target, so mark the
+                // originating import as a re-export. Only the flag is
+                // flipped — all other ImportRecord fields stay as extracted.
+                ctx.imports[imp_idx].is_reexport = true;
             }
         }
+    }
+
+    /// Local binding names introduced by an ES `import_statement`: the
+    /// default import identifier, the `* as ns` namespace alias, and named
+    /// specifiers (using the `as` alias as the local name when present).
+    fn collect_import_local_bindings(node: &tree_sitter::Node, source: &[u8]) -> Vec<String> {
+        let mut bindings = Vec::new();
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() != "import_clause" {
+                continue;
+            }
+            let mut clause_cursor = child.walk();
+            for part in child.children(&mut clause_cursor) {
+                match part.kind() {
+                    "identifier" => {
+                        if let Some(name) = node_text(&part, source) {
+                            bindings.push(name.to_string());
+                        }
+                    }
+                    "namespace_import" => {
+                        let mut ns_cursor = part.walk();
+                        for ns_child in part.children(&mut ns_cursor) {
+                            if ns_child.kind() == "identifier" {
+                                if let Some(name) = node_text(&ns_child, source) {
+                                    bindings.push(name.to_string());
+                                }
+                            }
+                        }
+                    }
+                    "named_imports" => {
+                        let mut spec_cursor = part.walk();
+                        for spec in part.children(&mut spec_cursor) {
+                            if spec.kind() != "import_specifier" {
+                                continue;
+                            }
+                            let local = spec
+                                .child_by_field_name("alias")
+                                .or_else(|| spec.child_by_field_name("name"));
+                            if let Some(name) = local.and_then(|n| node_text(&n, source)) {
+                                bindings.push(name.to_string());
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        bindings
     }
 
     // -------------------------------------------------------------------
@@ -1810,6 +1872,10 @@ struct ExtractCtx {
     dispatch_sites: Vec<DispatchSiteRecord>,
     literals: Vec<LiteralRecord>,
     pending_exports: Vec<PendingExport>,
+    /// Local binding name → index into `imports`, for ES `import_statement`
+    /// records. Used by `apply_pending_exports` to mark two-step forwarding
+    /// (`import { x } from './b'; export { x };`) as a re-export.
+    import_bindings: HashMap<String, usize>,
     /// Maps imported local name → broker_type (e.g. "KafkaProducer" → "kafka").
     /// Built from import paths that match known broker patterns.
     broker_imports: HashMap<String, String>,
@@ -1828,6 +1894,7 @@ impl ExtractCtx {
             dispatch_sites: Vec::new(),
             literals: Vec::new(),
             pending_exports: Vec::new(),
+            import_bindings: HashMap::new(),
             broker_imports: HashMap::new(),
             current_symbol_uid: None,
         }
@@ -2252,6 +2319,81 @@ export default foo;
         assert!(
             foo.unwrap().is_default_export,
             "foo should be default export"
+        );
+    }
+
+    #[test]
+    fn two_step_forwarding_marks_import_as_reexport() {
+        let p = JsTsParser::new();
+        let code = "import { x } from './b';\nexport { x };\n";
+        let outcome = p.parse("a.ts", code, Language::TypeScript).unwrap();
+        let imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string == "./b")
+            .expect("import record for './b' must exist");
+        assert!(
+            imp.is_reexport,
+            "two-step forwarding (import then local export of the same binding) \
+             must mark the originating import as a re-export"
+        );
+    }
+
+    #[test]
+    fn two_step_forwarding_with_import_alias_marks_reexport() {
+        let p = JsTsParser::new();
+        let code = "import { x as localX } from './b';\nexport { localX as y };\n";
+        let outcome = p.parse("a.ts", code, Language::TypeScript).unwrap();
+        let imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string == "./b")
+            .expect("import record for './b' must exist");
+        assert!(
+            imp.is_reexport,
+            "export of an aliased import binding (localX) must mark the import as a re-export"
+        );
+    }
+
+    #[test]
+    fn two_step_forwarding_export_default_of_imported_binding_marks_reexport() {
+        let p = JsTsParser::new();
+        let code = "import { x } from './b';\nexport default x;\n";
+        let outcome = p.parse("a.ts", code, Language::TypeScript).unwrap();
+        let imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string == "./b")
+            .expect("import record for './b' must exist");
+        assert!(
+            imp.is_reexport,
+            "`export default x` where x is an imported binding must mark the import as a re-export"
+        );
+    }
+
+    #[test]
+    fn local_export_does_not_mark_unrelated_import_as_reexport() {
+        let p = JsTsParser::new();
+        let code = "import { x } from './b';\nconst y = 1;\nexport { y };\n";
+        let outcome = p.parse("a.ts", code, Language::TypeScript).unwrap();
+        let imp = outcome
+            .imports
+            .iter()
+            .find(|i| i.import_string == "./b")
+            .expect("import record for './b' must exist");
+        assert!(
+            !imp.is_reexport,
+            "exporting a local binding (y) must not mark an unrelated import as a re-export"
+        );
+        let y_sym = outcome
+            .symbols
+            .iter()
+            .find(|s| s.name == "y")
+            .expect("local symbol y must exist");
+        assert_eq!(
+            y_sym.export_name.as_deref(),
+            Some("y"),
+            "local export must still bind to the local symbol"
         );
     }
 

@@ -1456,34 +1456,42 @@ impl Indexer {
             return Ok(0);
         }
 
-        // Step 3: Find all files that import at least one of the changed files
-        let importers = self.db.find_importers_of(&export_changed_files)?;
+        // Step 3: Fixpoint closure over importers. Round 1 promotes direct
+        //         importers of export-changed files; if a promoted file's own
+        //         effective export surface changed (re-export chains), its
+        //         importers are promoted in the next round, until convergence.
+        //         The iteration policy, global budget, and round cap all live
+        //         in `compute_dirty_closure`.
+        // Per-file resolved re-export targets, memoized across rounds and
+        // re-evaluation passes so each file's targets are fetched at most
+        // once (one batched query per pass for the not-yet-cached files).
+        let mut reexport_targets_cache: HashMap<String, Vec<String>> = HashMap::new();
+        let closure_result = crate::dirty_closure::compute_dirty_closure(
+            &export_changed_files,
+            self.dirty_propagation_max_files,
+            crate::dirty_closure::DIRTY_CLOSURE_MAX_ROUNDS,
+            |files| self.db.find_importers_of(files),
+            |path| matches!(actions.get(path), Some(FileAction::Skip)),
+            |files, changed_so_far| {
+                self.promoted_export_surfaces_changed(
+                    files,
+                    changed_so_far,
+                    &mut reexport_targets_cache,
+                )
+            },
+        )?;
 
-        // Step 4: Count how many Skip files would be promoted. If the count
-        //         exceeds the configured limit, bail out to avoid runaway
-        //         propagation (the user should do a full rebuild instead).
-        let dirty_count = importers
-            .iter()
-            .filter(|p| matches!(actions.get(*p), Some(FileAction::Skip)))
-            .count();
-
-        if dirty_count > self.dirty_propagation_max_files {
-            tracing::warn!(
-                dirty_count,
-                max = self.dirty_propagation_max_files,
-                "dirty propagation: too many affected files, skipping (consider full rebuild)"
-            );
+        // Budget bail (warn already emitted inside the closure): degrade to no
+        // propagation, the user should do a full rebuild instead.
+        if closure_result.budget_exceeded {
             return Ok(0);
         }
 
-        // Step 5: Promote Skip → DirtyResolveOnly
-        let mut marked = 0;
-        for importer in importers {
-            if let Some(action) = actions.get_mut(&importer) {
-                if matches!(action, FileAction::Skip) {
-                    *action = FileAction::DirtyResolveOnly;
-                    marked += 1;
-                }
+        // Step 4: Promote Skip → DirtyResolveOnly
+        let marked = closure_result.promoted.len();
+        for importer in &closure_result.promoted {
+            if let Some(action) = actions.get_mut(importer) {
+                *action = FileAction::DirtyResolveOnly;
             }
         }
 
@@ -1491,11 +1499,75 @@ impl Indexer {
             tracing::info!(
                 marked,
                 export_changed = export_changed_files.len(),
+                rounds = closure_result.rounds_run,
+                partial = closure_result.partial,
                 "dirty propagation: marked files for re-resolution"
             );
         }
 
         Ok(marked)
+    }
+
+    /// Which of the given promoted (DirtyResolveOnly) files' *effective*
+    /// export surfaces changed, given the set of files whose exports changed
+    /// so far (batch hook for `compute_dirty_closure`).
+    ///
+    /// Promoted files are reloaded verbatim from the DB (`phase_dirty_reload`
+    /// does not re-parse), so their own export fingerprint provably cannot
+    /// change within this build — the in-memory and DB fingerprint formulas
+    /// are locked together by `in_memory_and_db_fingerprints_match`. What CAN
+    /// change is the surface contributed by re-exports (`export * from './b'`,
+    /// `export { x } from './b'`): when a promoted file re-exports from a
+    /// changed file, its own importers observe a changed surface and must be
+    /// re-resolved too.
+    ///
+    /// Re-export targets are fetched via one batched
+    /// `reexport_targets_for_files` query per pass (only for files not yet in
+    /// `targets_cache`, which memoizes them across rounds and re-evaluation
+    /// passes), replacing the previous per-file N+1 query.
+    ///
+    /// Coverage: the jsts extractor sets `is_reexport = 1` for
+    /// single-statement re-exports (`export * from './b'`,
+    /// `export { x } from './b'`) AND for two-step forwarding via ES imports
+    /// (`import { x } from './b'; export { x };`, including `as` aliasing and
+    /// `export default x` of an imported binding), so surface changes flowing
+    /// through such files promote their importers.
+    ///
+    /// Known remaining gaps: CommonJS forwarding
+    /// (`const { x } = require('./b'); module.exports = { x }` or mixed
+    /// `export { x }`) is still stored as a plain import, and other language
+    /// extractors never set the flag (e.g. Python `from b import *` /
+    /// `__init__.py` star re-exports, Rust `pub use`), so equivalent
+    /// forwarding in those languages is still missed.
+    fn promoted_export_surfaces_changed(
+        &self,
+        files: &[String],
+        changed_so_far: &HashSet<String>,
+        targets_cache: &mut HashMap<String, Vec<String>>,
+    ) -> CcResult<Vec<String>> {
+        let missing: Vec<&str> = files
+            .iter()
+            .filter(|path| !targets_cache.contains_key(path.as_str()))
+            .map(|path| path.as_str())
+            .collect();
+        if !missing.is_empty() {
+            let mut fetched = self.db.reexport_targets_for_files(&missing)?;
+            for path in missing {
+                // Files with no resolved re-exports are absent from the batch
+                // result; cache an empty target list so they are not refetched.
+                let targets = fetched.remove(path).unwrap_or_default();
+                targets_cache.insert(path.to_string(), targets);
+            }
+        }
+        Ok(files
+            .iter()
+            .filter(|path| {
+                targets_cache
+                    .get(path.as_str())
+                    .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))
+            })
+            .cloned()
+            .collect())
     }
 
     /// Compute the export fingerprint from freshly-parsed write_units.
@@ -1863,5 +1935,177 @@ mod graph_signature_coverage_tests {
             interface_before, interface_after,
             "interface_dispatch_signature must NOT change when only dispatch_sites change"
         );
+    }
+}
+
+#[cfg(test)]
+mod dirty_propagation_fixpoint_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    /// End-to-end fixpoint propagation over a TS re-export chain:
+    /// `c.ts` imports from `a.ts`, `a.ts` does `export * from './b'`, and an
+    /// edit to `b.ts` adds a new exported function. The incremental pass must
+    /// promote BOTH `a.ts` (direct importer) and `c.ts` (importer of the
+    /// re-exporting file) to `DirtyResolveOnly`.
+    #[test]
+    fn reexport_chain_promotes_transitive_importer_incrementally() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n",
+        )
+        .unwrap();
+        std::fs::write(project.join("a.ts"), "export * from './b';\n").unwrap();
+        std::fs::write(
+            project.join("c.ts"),
+            "import { beta } from './a';\nexport function useBeta(): number { return beta(); }\n",
+        )
+        .unwrap();
+
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let config = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), project, &config);
+        indexer.build_index(project, true).unwrap();
+
+        // Premise check: the re-export in a.ts must be persisted with a
+        // resolved path to b.ts, otherwise round 2 has nothing to chain on.
+        let reexports = db
+            .query_json(
+                "SELECT resolved_path FROM imports \
+                 WHERE file_path = 'a.ts' AND is_reexport = 1",
+                &[],
+            )
+            .unwrap();
+        assert!(
+            reexports
+                .iter()
+                .any(|row| row.get("resolved_path").and_then(|v| v.as_str()) == Some("b.ts")),
+            "jsts must persist `export * from './b'` as a resolved re-export import; got {:?}",
+            reexports
+        );
+
+        // Edit b.ts: add a new exported function so its export fingerprint changes.
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n\
+             export function gamma(): number { return 2; }\n",
+        )
+        .unwrap();
+
+        let mut scan = indexer.phase_scan_and_diff(project, false, None).unwrap();
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        let parse = indexer.phase_parse(project, to_parse).unwrap();
+        let mut actions =
+            indexer.build_actions_map(&parse.write_units, &scan.existing, &scan.scanned_paths);
+        assert!(
+            matches!(actions.get("b.ts"), Some(FileAction::Update)),
+            "edited b.ts must be re-parsed as Update; got {:?}",
+            actions.get("b.ts")
+        );
+
+        let marked = indexer
+            .run_dirty_propagation(&mut actions, &parse.write_units)
+            .unwrap();
+
+        assert!(
+            matches!(actions.get("a.ts"), Some(FileAction::DirtyResolveOnly)),
+            "a.ts directly imports b.ts and must be promoted; got {:?}",
+            actions.get("a.ts")
+        );
+        assert!(
+            matches!(actions.get("c.ts"), Some(FileAction::DirtyResolveOnly)),
+            "c.ts imports a.ts whose re-exported surface changed; got {:?}",
+            actions.get("c.ts")
+        );
+        assert_eq!(marked, 2, "exactly a.ts and c.ts are promoted");
+    }
+
+    /// Same chain as `reexport_chain_promotes_transitive_importer_incrementally`,
+    /// but the middle file forwards via two steps
+    /// (`import { beta } from './b'; export { beta };`) instead of a
+    /// single-statement re-export. The jsts extractor must mark the
+    /// originating import as `is_reexport = 1` so dirty propagation promotes
+    /// the transitive importer `c.ts` as well.
+    #[test]
+    fn two_step_forwarding_chain_promotes_transitive_importer_incrementally() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.join("a.ts"),
+            "import { beta } from './b';\nexport { beta };\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.join("c.ts"),
+            "import { beta } from './a';\nexport function useBeta(): number { return beta(); }\n",
+        )
+        .unwrap();
+
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let config = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), project, &config);
+        indexer.build_index(project, true).unwrap();
+
+        // Premise check: the forwarded import in a.ts must be persisted as a
+        // resolved re-export, otherwise round 2 has nothing to chain on.
+        let reexports = db
+            .query_json(
+                "SELECT resolved_path FROM imports \
+                 WHERE file_path = 'a.ts' AND is_reexport = 1",
+                &[],
+            )
+            .unwrap();
+        assert!(
+            reexports
+                .iter()
+                .any(|row| row.get("resolved_path").and_then(|v| v.as_str()) == Some("b.ts")),
+            "jsts must persist two-step forwarding (`import {{ beta }} from './b'; \
+             export {{ beta }};`) as a resolved re-export import; got {:?}",
+            reexports
+        );
+
+        // Edit b.ts: add a new exported function so its export fingerprint changes.
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n\
+             export function gamma(): number { return 2; }\n",
+        )
+        .unwrap();
+
+        let mut scan = indexer.phase_scan_and_diff(project, false, None).unwrap();
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        let parse = indexer.phase_parse(project, to_parse).unwrap();
+        let mut actions =
+            indexer.build_actions_map(&parse.write_units, &scan.existing, &scan.scanned_paths);
+        assert!(
+            matches!(actions.get("b.ts"), Some(FileAction::Update)),
+            "edited b.ts must be re-parsed as Update; got {:?}",
+            actions.get("b.ts")
+        );
+
+        let marked = indexer
+            .run_dirty_propagation(&mut actions, &parse.write_units)
+            .unwrap();
+
+        assert!(
+            matches!(actions.get("a.ts"), Some(FileAction::DirtyResolveOnly)),
+            "a.ts directly imports b.ts and must be promoted; got {:?}",
+            actions.get("a.ts")
+        );
+        assert!(
+            matches!(actions.get("c.ts"), Some(FileAction::DirtyResolveOnly)),
+            "c.ts imports a.ts whose forwarded surface changed; got {:?}",
+            actions.get("c.ts")
+        );
+        assert_eq!(marked, 2, "exactly a.ts and c.ts are promoted");
     }
 }

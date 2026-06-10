@@ -47,4 +47,16 @@ LIMIT ≤ 1000），其余形态回落原 CTE；语义与 CTE 逐行等价（(ro
   基准方法（`crates/cc-server/tests/graph_traversal_bench.rs`，`#[ignore]`）
   可直接复跑。
 - SQL 路径对变长段忽略方向（`<-`/`--` 均按正向）是既有怪癖；fast path 不
-  复制该行为，直接回落。修复该怪癖时两条路径需同步。
+  复制该行为，直接回落。修复该怪癖时两条路径需同步。（"直接回落"与"两条
+  路径需同步"已被下方 2026-06-10 更新取代。）
+- 2026-06-10 更新（C7）：上述"两条路径需同步"的义务已由共享语义声明收敛到
+  一处——`crates/cc-search/src/cypher/traversal_semantics.rs` 以单变体枚举
+  声明方向处理（`DirectionHandling::IgnoreDirection`，注明为兼容性怪癖）、
+  元组多重性（`(root, uid, depth)` 去重）、环终止（仅 max_hops 深度上限）
+  与投影去重（`SELECT DISTINCT`）；CTE 翻译与 fast path 均通过穷尽 `match`
+  消费该声明。据此 fast path 资格门不再拒绝 `<-`/`--` 变长形态（与 CTE 同样
+  按正向遍历，等价性测试逐行锁定），其余资格门不变。编译期约束：多重性/环/
+  去重三条规则新增变体会直接打断两条引擎的消费点；方向规则是间接约束——
+  新增 `DirectionHandling` 变体直接打断的是 `orient()` 与 fast path 资格门，
+  两条引擎经由 `orient()` 返回的 `WalkOrientation` 感知方向，行走方式不同时
+  需为 `WalkOrientation` 新增变体（届时才直接打断两端的行走映射）。

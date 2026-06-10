@@ -38,6 +38,7 @@ mod executor;
 mod fast_path;
 mod lexer;
 mod parser;
+mod traversal_semantics;
 
 pub use ast::*;
 pub use executor::{execute, execute_union};

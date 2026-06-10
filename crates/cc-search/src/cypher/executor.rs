@@ -1,4 +1,7 @@
 use super::ast::*;
+use super::traversal_semantics::{
+    CyclePolicy, ProjectionDedup, TupleMultiplicity, WalkOrientation, VARLEN_TRAVERSAL,
+};
 use cc_db::index_db::IndexDb;
 use cc_model::graph_catalog::graph_relationships;
 use cc_model::{CcError, CcResult};
@@ -1111,6 +1114,22 @@ pub(crate) fn translate_variable_length(
     let vl_dst_col = edge_info.dst_col;
     let vl_extra_filter = edge_info.extra_filter;
 
+    // Traversal semantics come from the shared declaration consumed by both
+    // this CTE translation and the lazy-BFS fast path (see
+    // traversal_semantics.rs). Each `match` on a declared rule below is this
+    // engine's mechanical mapping to SQL. A new variant on the multiplicity/
+    // cycle/dedup rules fails compilation in both engines directly; direction
+    // is constrained indirectly: a new `DirectionHandling` variant breaks
+    // `orient()` and the fast-path gate, and reaches this translation only
+    // through the `WalkOrientation` that `orient()` returns.
+    let semantics = &VARLEN_TRAVERSAL;
+    // DirectionHandling::IgnoreDirection (compatibility quirk): every arrow
+    // spelling walks the edge table from its source column to its
+    // destination column, in textual pattern order.
+    let (walk_from_col, walk_to_col) = match semantics.orient(rel.direction) {
+        WalkOrientation::Forward => (vl_src_col, vl_dst_col),
+    };
+
     let src_alias = src_node.var.as_deref().unwrap_or("src");
     let dst_alias = dst_node.var.as_deref().unwrap_or("dst");
     let min_hops = rel.min_hops;
@@ -1126,7 +1145,7 @@ pub(crate) fn translate_variable_length(
         if let Some(tmpl) = edge_info.src_join_on {
             if tmpl.is_empty() {
                 // No node table for source -- seed directly from the edge table.
-                (vl_table, format!("s.{vl_src_col}"), vl_src_col)
+                (vl_table, format!("s.{walk_from_col}"), walk_from_col)
             } else {
                 // Custom JOIN expression -- source is pseudo-UID backed by files table.
                 // Seed from files, synthesise pseudo-UID = 'file::' || file_path.
@@ -1229,23 +1248,36 @@ pub(crate) fn translate_variable_length(
         format!(" JOIN {dst_table} AS {dst_alias} ON {dst_alias}.{join_col} = path_cte.uid")
     };
 
-    // Reachability semantics (not path enumeration): `UNION` dedupes
-    // (root_uid, uid, depth) tuples, so the working set is bounded by
-    // O(nodes x max_depth) instead of O(distinct paths). This removes the
-    // per-path `visited` string and its quadratic LIKE cycle-guard; cycles
-    // terminate at the `depth < max` cap. The trade-off is that variable-length
-    // results report the *set of reachable nodes* within the hop range and no
-    // longer carry path multiplicity (e.g. COUNT(*) counts nodes, not paths).
+    // Reachability semantics (not path enumeration): the working set is
+    // bounded by O(nodes x max_depth) instead of O(distinct paths). This
+    // removes the per-path `visited` string and its quadratic LIKE
+    // cycle-guard. The trade-off is that variable-length results report the
+    // *set of reachable nodes* within the hop range and no longer carry path
+    // multiplicity (e.g. COUNT(*) counts nodes, not paths).
+    //
+    // TupleMultiplicity::DistinctPerRootNodeDepth: `UNION` (never UNION ALL)
+    // dedups (root_uid, uid, depth) tuples in the recursion.
+    let recursion_set_op = match semantics.tuple_multiplicity {
+        TupleMultiplicity::DistinctPerRootNodeDepth => "UNION",
+    };
+    // CyclePolicy::BoundedByMaxHops: the depth cap is the only cycle guard.
+    let depth_cap = match semantics.cycle_policy {
+        CyclePolicy::BoundedByMaxHops => format!("pc.depth < CAST(?{max_param_idx} AS INTEGER)"),
+    };
+    // ProjectionDedup::DistinctRows: identical projected rows collapse.
+    let projection_select = match semantics.projection_dedup {
+        ProjectionDedup::DistinctRows => "SELECT DISTINCT",
+    };
     let mut sql = format!(
         "WITH RECURSIVE path_cte(root_uid, uid, depth) AS (\
             SELECT {seed_uid_expr}, {seed_uid_expr}, 0 FROM {seed_table} AS s WHERE {cte_where} \
-            UNION \
-            SELECT pc.root_uid, ce.{vl_dst_col}, pc.depth + 1 \
+            {recursion_set_op} \
+            SELECT pc.root_uid, ce.{walk_to_col}, pc.depth + 1 \
             FROM path_cte pc \
-            JOIN {vl_table} ce ON ce.{vl_src_col} = pc.uid \
-            WHERE pc.depth < CAST(?{max_param_idx} AS INTEGER){extra_and}\
+            JOIN {vl_table} ce ON ce.{walk_from_col} = pc.uid \
+            WHERE {depth_cap}{extra_and}\
         ) \
-        SELECT DISTINCT {select_cols} \
+        {projection_select} {select_cols} \
         FROM path_cte\
         {src_final_join}\
         {dst_final_join} \

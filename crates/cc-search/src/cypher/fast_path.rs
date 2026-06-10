@@ -5,9 +5,15 @@
 //! while a lazy per-node BFS over `IndexDb::call_edges_from_uid_lite` costs
 //! 0.11-0.28 ms p50 for LIMIT-50 queries. This module implements that BFS for
 //! a narrow, conservatively-gated query shape and mirrors the CTE's observable
-//! semantics exactly:
+//! semantics exactly. The semantics themselves are declared once in
+//! `traversal_semantics.rs` and consumed by both engines through exhaustive
+//! `match`es; the notes below describe this engine's mechanical mapping:
 //!
-//! - The CTE deduplicates `(root_uid, uid, depth)` tuples via `UNION`, so a
+//! - `DirectionHandling::IgnoreDirection` (compatibility quirk): `->`, `<-`
+//!   and `--` variable-length segments all walk caller -> callee in textual
+//!   pattern order, exactly like the SQL CTE.
+//! - The CTE deduplicates `(root_uid, uid, depth)` tuples via `UNION`
+//!   (`TupleMultiplicity::DistinctPerRootNodeDepth`), so a
 //!   node reachable at several depths yields one tuple *per depth* (a cycle
 //!   can re-reach the root at depth >= 1). The BFS therefore keys its visited
 //!   set on `(root, uid, depth)` — implemented as a per-level node set — and
@@ -26,6 +32,10 @@
 
 use super::ast::*;
 use super::executor::{label_kind_filter, label_table, DEFAULT_CYPHER_LIMIT};
+use super::traversal_semantics::{
+    CyclePolicy, DirectionHandling, ProjectionDedup, TraversalSemantics, TupleMultiplicity,
+    WalkOrientation, VARLEN_TRAVERSAL,
+};
 use cc_db::index_db::IndexDb;
 use cc_model::CcResult;
 use serde_json::Value as JsonValue;
@@ -75,6 +85,9 @@ struct Projection {
 struct FastPlan {
     min_hops: usize,
     max_hops: usize,
+    /// Walk orientation derived from the shared semantics declaration
+    /// (`traversal_semantics::VARLEN_TRAVERSAL.orient(...)`).
+    walk: WalkOrientation,
     /// Source-side equality conditions on `symbols` columns — the CTE seed WHERE.
     seed_conds: Vec<(&'static str, String)>,
     /// Destination-side equality conditions, applied to each output tuple.
@@ -110,7 +123,9 @@ pub(crate) fn try_execute(query: &CypherQuery, db: &IndexDb) -> CcResult<Option<
 /// Conservative gate: accept ONLY the narrow hot shape
 /// `MATCH (a)-[:CALLS*m..n]->(b) WHERE <AND of name/symbol_uid string
 /// equalities, at least one on a> RETURN <simple symbol properties of a/b>
-/// [ORDER BY returned properties] [LIMIT k]`.
+/// [ORDER BY returned properties] [LIMIT k]`. Any arrow spelling (`->`,
+/// `<-`, `--`) is accepted: the shared semantics declaration says the arrow
+/// is ignored for variable-length segments, so all spellings walk forward.
 fn build_plan(query: &CypherQuery) -> Result<FastPlan, &'static str> {
     if query.match_clauses.len() != 1 {
         return Err("multiple MATCH clauses");
@@ -133,12 +148,22 @@ fn build_plan(query: &CypherQuery) -> Result<FastPlan, &'static str> {
     if rel.rel_type.as_deref().unwrap_or("CALLS") != "CALLS" {
         return Err("edge kind is not CALLS");
     }
-    // The SQL path currently ignores direction for variable-length paths
-    // (always traverses caller -> callee); rather than bake that quirk in,
-    // only take cleanly forward patterns and leave the rest to SQL.
-    if rel.direction != RelDirection::Outgoing {
-        return Err("non-outgoing direction");
+    // Compile-time tether to the shared semantics declaration: this match is
+    // exhaustive on every declared rule, so adding a variant in
+    // traversal_semantics.rs fails compilation here and forces this BFS to be
+    // re-validated against the SQL CTE (equivalence tests below).
+    match VARLEN_TRAVERSAL {
+        TraversalSemantics {
+            direction: DirectionHandling::IgnoreDirection,
+            tuple_multiplicity: TupleMultiplicity::DistinctPerRootNodeDepth,
+            cycle_policy: CyclePolicy::BoundedByMaxHops,
+            projection_dedup: ProjectionDedup::DistinctRows,
+        } => {}
     }
+    // DirectionHandling::IgnoreDirection (compatibility quirk shared with the
+    // SQL CTE): `->`, `<-` and `--` spellings all walk forward in textual
+    // pattern order, so every direction is eligible here.
+    let walk = VARLEN_TRAVERSAL.orient(rel.direction);
 
     let src_node = &pattern.nodes[0];
     let dst_node = &pattern.nodes[1];
@@ -231,6 +256,7 @@ fn build_plan(query: &CypherQuery) -> Result<FastPlan, &'static str> {
     Ok(FastPlan {
         min_hops: rel.min_hops,
         max_hops: rel.max_hops,
+        walk,
         seed_conds,
         dst_conds,
         dst_kind: dst_node.label.as_deref().and_then(label_kind_filter),
@@ -358,11 +384,15 @@ fn run_bfs(query: &CypherQuery, plan: &FastPlan, db: &IndexDb) -> CcResult<Cyphe
             let mut next_seen: HashSet<(usize, String)> = HashSet::new();
             for (root_idx, uid) in &frontier {
                 if !memo.neighbors.contains_key(uid.as_str()) {
-                    let callees: Vec<String> = db
-                        .call_edges_from_uid_lite(uid)?
-                        .into_iter()
-                        .map(|edge| edge.callee_uid)
-                        .collect();
+                    // Mechanical mapping of the declared walk orientation:
+                    // Forward = follow call_edges caller -> callee.
+                    let callees: Vec<String> = match plan.walk {
+                        WalkOrientation::Forward => db
+                            .call_edges_from_uid_lite(uid)?
+                            .into_iter()
+                            .map(|edge| edge.callee_uid)
+                            .collect(),
+                    };
                     memo.neighbors.insert(uid.clone(), callees);
                 }
                 for callee in &memo.neighbors[uid.as_str()] {
@@ -965,6 +995,158 @@ mod tests {
         assert_eq!(result.row_count, 0);
     }
 
+    // ── Equivalence: ignored-direction spellings (`<-` / `--`) ──
+    //
+    // The shared semantics declaration (traversal_semantics.rs) says the
+    // arrow is IGNORED for variable-length segments (compatibility quirk):
+    // `->`, `<-` and `--` all walk caller -> callee in textual pattern
+    // order. The fast path executes the same declaration, so all spellings
+    // are eligible and must stay row-for-row equal to the SQL CTE.
+
+    /// The three arrow spellings of the same variable-length segment.
+    /// `{}` is replaced with the hop range (e.g. `:CALLS*1..3`).
+    fn direction_spellings(range: &str) -> [String; 3] {
+        [
+            format!("-[{range}]->"),
+            format!("<-[{range}]-"),
+            format!("-[{range}]-"),
+        ]
+    }
+
+    #[test]
+    fn ignored_direction_spellings_all_match_forward() {
+        let (_tmp, db) = diamond_db();
+        let mut expected: Option<Vec<String>> = None;
+        for arrow in direction_spellings(":CALLS*1..2") {
+            let query = format!("MATCH (a){arrow}(b) WHERE a.name = 'A' RETURN b.name");
+            let result = assert_equivalent(&db, &query);
+            let rows = sorted_rows(&result);
+            match &expected {
+                None => expected = Some(rows),
+                Some(forward) => assert_eq!(
+                    &rows, forward,
+                    "direction must be ignored (quirk parity): {query}"
+                ),
+            }
+        }
+    }
+
+    #[test]
+    fn incoming_direction_cycle_re_reaches_root() {
+        let (_tmp, db) = cycle_db();
+        let result = assert_equivalent(
+            &db,
+            "MATCH (a:Function)<-[:CALLS*1..3]-(b:Function) WHERE a.name = 'A' RETURN b.name",
+        );
+        let names: Vec<&str> = result.rows.iter().filter_map(|r| r[0].as_str()).collect();
+        assert!(names.contains(&"A"), "cycle must re-reach root: {names:?}");
+        assert_eq!(result.row_count, 3, "A, B, C: {names:?}");
+    }
+
+    #[test]
+    fn undirected_diamond_multiplicity_and_min_depth() {
+        let (_tmp, db) = diamond_db();
+        let result = assert_equivalent(
+            &db,
+            "MATCH (a)-[:CALLS*1..2]-(b) WHERE a.name = 'A' RETURN b.name",
+        );
+        let d_count = result
+            .rows
+            .iter()
+            .filter(|r| r[0].as_str() == Some("D"))
+            .count();
+        assert_eq!(d_count, 1, "D reachable via two paths must appear once");
+        let result = assert_equivalent(
+            &db,
+            "MATCH (a)<-[:CALLS*2..3]-(b) WHERE a.name = 'A' RETURN b.name",
+        );
+        let names: Vec<&str> = result.rows.iter().filter_map(|r| r[0].as_str()).collect();
+        assert!(!names.contains(&"B"), "B is depth 1 only: {names:?}");
+    }
+
+    #[test]
+    fn incoming_direction_distinct_collapse() {
+        let (_tmp, db) = diamond_db();
+        let result = assert_equivalent(
+            &db,
+            "MATCH (a)<-[:CALLS*1..3]-(b) WHERE a.name = 'A' RETURN b.kind",
+        );
+        assert_eq!(result.row_count, 1, "identical projected rows collapse");
+    }
+
+    /// Property-style sweep: for every representative fixture x query
+    /// template x arrow spelling, the fast path must engage and produce the
+    /// same result set as the SQL CTE.
+    #[test]
+    fn equivalence_sweep_over_fixtures_templates_and_directions() {
+        let fixtures: Vec<(&str, (tempfile::TempDir, IndexDb))> = vec![
+            ("cycle", cycle_db()),
+            ("diamond", diamond_db()),
+            (
+                "multi-depth shortcut",
+                setup_db(
+                    &[
+                        ("A", "function", "uA"),
+                        ("B", "function", "uB"),
+                        ("C", "function", "uC"),
+                    ],
+                    &[("uA", "uB"), ("uB", "uC"), ("uA", "uC")],
+                ),
+            ),
+            (
+                "ghost uid",
+                setup_db(
+                    &[("A", "function", "uA"), ("B", "function", "uB")],
+                    &[("uA", "uGhost"), ("uGhost", "uB")],
+                ),
+            ),
+        ];
+        let templates = [
+            "MATCH (a){ARROW}(b) WHERE a.name = 'A' RETURN b.name",
+            "MATCH (a){ARROW}(b) WHERE a.name = 'A' RETURN a.name, b.name, b.kind",
+            "MATCH (a){ARROW}(b:Function) WHERE a.symbol_uid = 'uA' RETURN b.name",
+            "MATCH (a){ARROW}(b) WHERE a.name = 'A' RETURN b.kind",
+            // Destination-side equality on top of the seed pin ('B' exists
+            // in every fixture, reachable at varying depths or not at all).
+            "MATCH (a){ARROW}(b) WHERE a.name = 'A' AND b.name = 'B' RETURN a.name, b.name",
+        ];
+        let ranges = [":CALLS*1..3", ":CALLS*2..3", ":CALLS*2..2"];
+        for (fixture_name, (_tmp, db)) in &fixtures {
+            for template in &templates {
+                for range in &ranges {
+                    for arrow in direction_spellings(range) {
+                        let query = template.replace("{ARROW}", &arrow);
+                        let parsed = parse_query(&query);
+                        let fast = try_execute(&parsed, db).unwrap().unwrap_or_else(|| {
+                            panic!("fast path must engage [{fixture_name}]: {query}")
+                        });
+                        let sql = execute_with_options(&parsed, db, false).unwrap();
+                        assert_eq!(
+                            sorted_rows(&fast),
+                            sorted_rows(&sql),
+                            "result sets diverge [{fixture_name}]: {query}"
+                        );
+                        assert_eq!(
+                            fast.columns, sql.columns,
+                            "columns diverge [{fixture_name}]: {query}"
+                        );
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn incoming_direction_order_by_matches_positionally() {
+        let (_tmp, db) = diamond_db();
+        let query = "MATCH (a)<-[:CALLS*1..2]-(b) WHERE a.name = 'A' \
+                     RETURN b.name ORDER BY b.name LIMIT 2";
+        let parsed = parse_query(query);
+        let fast = try_execute(&parsed, &db).unwrap().expect("must engage");
+        let sql = execute_with_options(&parsed, &db, false).unwrap();
+        assert_eq!(fast.rows, sql.rows, "ordered rows must match exactly");
+    }
+
     // ── Eligibility gate: conservative fallbacks ────────────────
 
     #[test]
@@ -974,9 +1156,6 @@ mod tests {
             // Non-CALLS edge kind.
             "MATCH (a)-[:IMPORTS*1..2]->(b) WHERE a.name = 'A' RETURN b.name",
             "MATCH (a)-[:CONTAINS_FILE*1..2]->(b) WHERE a.name = 'A' RETURN b.name",
-            // Reverse / undirected (SQL path ignores direction; stay out).
-            "MATCH (a)<-[:CALLS*1..2]-(b) WHERE a.name = 'A' RETURN b.name",
-            "MATCH (a)-[:CALLS*1..2]-(b) WHERE a.name = 'A' RETURN b.name",
             // No WHERE / no source pin.
             "MATCH (a)-[:CALLS*1..2]->(b) RETURN b.name",
             "MATCH (a)-[:CALLS*1..2]->(b) WHERE b.name = 'D' RETURN b.name",

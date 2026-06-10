@@ -2,6 +2,7 @@ pub(crate) mod build_plan;
 pub(crate) mod community;
 pub(crate) mod config_linker;
 pub(crate) mod dirty_closure;
+pub(crate) mod dirty_reload_policy;
 pub(crate) mod dispatch_synthesis;
 pub mod framework_registry;
 pub mod framework_resolvers;

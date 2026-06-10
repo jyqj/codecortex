@@ -15,9 +15,9 @@ use std::sync::Arc;
 use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
+use crate::dirty_reload_policy::apply_dirty_reload_policy;
 use crate::memory_budget::MemoryBudget;
 use cc_db::index_db::{FileState, FileWriteUnit, IndexDb};
-use cc_model::edge::ResolutionKind;
 use cc_model::parse::ParseOutcome;
 use cc_model::{CcError, CcResult, Language};
 
@@ -512,40 +512,6 @@ impl Indexer {
 
         for dirty_path in &dirty_files {
             let edges = self.db.load_file_edges_for_reresolve(dirty_path)?;
-            // Build a FileWriteUnit from DB data with resolution fields cleared
-            let mut call_edges = edges.call_edges;
-            for edge in &mut call_edges {
-                edge.callee_symbol_uid = None;
-                edge.resolution_kind = ResolutionKind::Unresolved;
-            }
-            let mut symbol_refs = edges.symbol_refs;
-            for sr in &mut symbol_refs {
-                sr.target_symbol_uid = None;
-                sr.target_symbol_id = None;
-                sr.resolution_kind = ResolutionKind::Unresolved;
-            }
-            let mut route_edges = edges.route_edges;
-            for re in &mut route_edges {
-                re.handler_symbol_id = None;
-                re.handler_symbol_uid = None;
-            }
-            let mut semantic_edges = edges.semantic_edges;
-            for se in &mut semantic_edges {
-                // Cross-file target UIDs may be stale (the parent definition's
-                // file changed). Re-resolution in phase 4a only runs when the
-                // UID is None, so a stale value would be kept verbatim.
-                // Hierarchy relations (Defines/DefinesMethod/ContainsFile/
-                // ContainsModule) are regenerated each run and skipped here.
-                if !matches!(
-                    se.relation_kind,
-                    cc_model::edge::SemanticRelation::Defines
-                        | cc_model::edge::SemanticRelation::DefinesMethod
-                        | cc_model::edge::SemanticRelation::ContainsFile
-                        | cc_model::edge::SemanticRelation::ContainsModule
-                ) {
-                    se.target_symbol_uid = None;
-                }
-            }
 
             // Retrieve file metadata from existing state for mtime/hash
             let (content_hash, mtime, size) = if let Some(state) = existing.get(dirty_path) {
@@ -554,19 +520,19 @@ impl Indexer {
                 (String::new(), 0.0, 0u64)
             };
 
-            let outcome = ParseOutcome {
+            let mut outcome = ParseOutcome {
                 symbols: edges.symbols,
                 imports: edges.imports,
-                call_edges,
-                symbol_refs,
-                semantic_edges,
-                // dispatch_sites carry only same-file enclosing UIDs in the DB
-                // (handler UIDs are resolved in-memory during synthesis), so
-                // they can be reused as-is for content-unchanged files.
+                call_edges: edges.call_edges,
+                symbol_refs: edges.symbol_refs,
+                semantic_edges: edges.semantic_edges,
                 dispatch_sites: edges.dispatch_sites,
-                route_edges,
+                route_edges: edges.route_edges,
                 ..Default::default()
             };
+            // Clear potentially-stale resolution state per the central policy
+            // declared in `dirty_reload_policy` (one invariant, one place).
+            apply_dirty_reload_policy(&mut outcome);
 
             write_units.push(FileWriteUnit {
                 rel_path: dirty_path.clone(),
@@ -825,10 +791,11 @@ mod dirty_reload_tests {
         (tmp, indexer)
     }
 
-    /// Re-resolution in phase 4a only runs when the UID is None, so dirty
-    /// reload must clear potentially-stale cross-file target UIDs on
-    /// resolver-resolved semantic edges — while leaving hierarchy edges
-    /// (regenerated each run) untouched.
+    /// End-to-end behavior check: dirty reload clears potentially-stale
+    /// cross-file target UIDs on resolver-resolved semantic edges while
+    /// leaving hierarchy edges untouched. The rule itself is declared in
+    /// `crate::dirty_reload_policy` (see its unit tests for per-category
+    /// assertions).
     #[test]
     fn dirty_reload_clears_stale_semantic_target_uids() {
         let (_tmp, indexer) = setup_indexer();

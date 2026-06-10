@@ -6,6 +6,7 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, RwLock};
 use std::time::Duration;
 
@@ -136,6 +137,25 @@ fn read_chunk_text_auto(row: &rusqlite::Row, col_idx: usize) -> rusqlite::Result
             }
         }
     }
+}
+
+/// Metadata key for the index-content epoch counter.
+pub const INDEX_EPOCH_KEY: &str = "index_epoch";
+/// Metadata key for the runtime-evidence epoch counter.
+pub const EVIDENCE_EPOCH_KEY: &str = "evidence_epoch";
+
+/// Monotonic epoch vector persisted in the metadata KV table.
+///
+/// `index_epoch` advances whenever index content is committed (file batches,
+/// postprocess edge rebuilds, full rebuilds). `evidence_epoch` advances on
+/// runtime-evidence writes only, so evidence ingestion never invalidates
+/// caches that depend solely on index content. Consumers key their caches on
+/// these values and compare on read; any observed change forces a recompute.
+/// Databases created before the epochs existed read as `0` until first write.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct IndexGeneration {
+    pub index_epoch: u64,
+    pub evidence_epoch: u64,
 }
 
 /// Persisted file metadata used to decide whether an incremental scan can skip
@@ -332,7 +352,14 @@ pub struct IndexDb {
     pub(crate) pool: RwLock<Pool<SqliteConnectionManager>>,
     pub(crate) write_conn: Mutex<Connection>,
     read_pool_size: u32,
+    /// Process-unique handle identity assigned at open from a monotonic
+    /// counter. Unlike `Arc::as_ptr`, it is never reused after a handle is
+    /// dropped, so caches keyed on it cannot alias across project instances.
+    instance_id: u64,
 }
+
+/// Process-wide monotonic source for [`IndexDb::instance_id`].
+static NEXT_INSTANCE_ID: AtomicU64 = AtomicU64::new(1);
 
 impl IndexDb {
     /// Open (or create) the index database at the given path using the default
@@ -368,9 +395,15 @@ impl IndexDb {
                 pool: RwLock::new(pool),
                 write_conn: Mutex::new(write_conn),
                 read_pool_size,
+                instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
             },
             schema_status,
         ))
+    }
+
+    /// Process-unique, never-reused identity of this database handle.
+    pub fn instance_id(&self) -> u64 {
+        self.instance_id
     }
 
     fn build_read_pool(
@@ -409,6 +442,9 @@ impl IndexDb {
                 );
                 // Export persistent assets before destroying the database.
                 let preserved = Self::export_persistent_assets(&conn);
+                // Snapshot the old epoch vector so the rebuilt database never
+                // rolls back below a generation consumers may have cached.
+                let prev_generation = Self::read_generation_on(&conn).ok();
                 drop(conn);
 
                 let _ = std::fs::remove_file(path);
@@ -426,6 +462,30 @@ impl IndexDb {
                 if let Ok(assets) = preserved {
                     Self::import_persistent_assets(&conn, &assets)?;
                 }
+                // Epoch floor after the destructive rebuild (which also just
+                // re-imported runtime evidence without bumping): old + 1 keeps
+                // the "rebuilt generation exceeds every observed value"
+                // invariant. When the old metadata was unreadable, seed from
+                // wall-clock seconds — far above any realistic write-counter
+                // value, so no previously cached small integer can collide.
+                let next = match prev_generation {
+                    Some(prev) => IndexGeneration {
+                        index_epoch: prev.index_epoch.saturating_add(1),
+                        evidence_epoch: prev.evidence_epoch.saturating_add(1),
+                    },
+                    None => {
+                        let seed = std::time::SystemTime::now()
+                            .duration_since(std::time::UNIX_EPOCH)
+                            .map(|d| d.as_secs())
+                            .unwrap_or(1)
+                            .max(1);
+                        IndexGeneration {
+                            index_epoch: seed,
+                            evidence_epoch: seed,
+                        }
+                    }
+                };
+                Self::write_generation_on(&conn, next)?;
                 // After mismatch rebuild the DB is empty — report as Initialized
                 // so callers know an index build is needed.
                 Ok((conn, SchemaStatus::Initialized))
@@ -590,6 +650,108 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Read the persisted epoch vector. Missing keys (old databases) read as 0.
+    ///
+    /// One metadata SELECT covering both keys — cheap enough to call on every
+    /// search/graph read, which is how consumers observe invalidation.
+    pub fn generation(&self) -> CcResult<IndexGeneration> {
+        let conn = self.read_conn()?;
+        Self::read_generation_on(&conn)
+    }
+
+    /// Read the epoch vector from an arbitrary connection (e.g. a soon-to-be
+    /// destroyed mismatched-schema database).
+    fn read_generation_on(conn: &Connection) -> CcResult<IndexGeneration> {
+        let mut stmt = conn
+            .prepare_cached("SELECT key, value FROM metadata WHERE key IN (?1, ?2)")
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let rows = stmt
+            .query_map(
+                rusqlite::params![INDEX_EPOCH_KEY, EVIDENCE_EPOCH_KEY],
+                |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut generation = IndexGeneration::default();
+        for row in rows {
+            let (key, value) = row.map_err(|e| CcError::Database(e.to_string()))?;
+            let parsed = value.parse::<u64>().unwrap_or(0);
+            match key.as_str() {
+                INDEX_EPOCH_KEY => generation.index_epoch = parsed,
+                EVIDENCE_EPOCH_KEY => generation.evidence_epoch = parsed,
+                _ => {}
+            }
+        }
+        Ok(generation)
+    }
+
+    /// Increment the index-content epoch on the given connection/transaction.
+    ///
+    /// Every cc-db method that commits index content MUST call this inside the
+    /// same transaction as the data write, so callers can never forget to
+    /// invalidate downstream caches.
+    pub(crate) fn bump_index_epoch_on(conn: &Connection) -> CcResult<()> {
+        Self::bump_epoch_on(conn, INDEX_EPOCH_KEY)
+    }
+
+    /// Increment the runtime-evidence epoch on the given connection/transaction.
+    pub(crate) fn bump_evidence_epoch_on(conn: &Connection) -> CcResult<()> {
+        Self::bump_epoch_on(conn, EVIDENCE_EPOCH_KEY)
+    }
+
+    /// Persist the post-rebuild epoch vector into the finished temp database.
+    ///
+    /// Must be called while the write lock is held, immediately before the
+    /// atomic swap: the live generation is re-read at that point so writers
+    /// that advanced the epochs during the rebuild (including other
+    /// processes) can never produce a "same generation, different content"
+    /// collision with the floor snapshot taken when the rebuild started.
+    /// A full rebuild can change arbitrary index content and drops runtime
+    /// evidence rows, so both epochs advance past `max(floor, live)`.
+    fn finalize_rebuild_generation(&self, tmp_path: &Path, floor: IndexGeneration) -> CcResult<()> {
+        let live = self.generation().unwrap_or_default();
+        let next = IndexGeneration {
+            index_epoch: floor.index_epoch.max(live.index_epoch).saturating_add(1),
+            evidence_epoch: floor
+                .evidence_epoch
+                .max(live.evidence_epoch)
+                .saturating_add(1),
+        };
+        let tmp_conn = Connection::open(tmp_path)
+            .map_err(|e| CcError::Database(format!("open temp db for generation: {}", e)))?;
+        Self::write_generation_on(&tmp_conn, next)?;
+        // Fold the write back into the main file before the rename; the temp
+        // db may be in WAL mode and only the main file is swapped in.
+        let _ = tmp_conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);");
+        drop(tmp_conn);
+        let mut tmp_wal = tmp_path.as_os_str().to_owned();
+        tmp_wal.push("-wal");
+        let mut tmp_shm = tmp_path.as_os_str().to_owned();
+        tmp_shm.push("-shm");
+        let _ = std::fs::remove_file(&tmp_wal);
+        let _ = std::fs::remove_file(&tmp_shm);
+        Ok(())
+    }
+
+    /// Persist an explicit epoch vector on the given connection/transaction.
+    fn write_generation_on(conn: &Connection, generation: IndexGeneration) -> CcResult<()> {
+        Self::set_metadata_on(conn, INDEX_EPOCH_KEY, &generation.index_epoch.to_string())?;
+        Self::set_metadata_on(
+            conn,
+            EVIDENCE_EPOCH_KEY,
+            &generation.evidence_epoch.to_string(),
+        )
+    }
+
+    fn bump_epoch_on(conn: &Connection, key: &str) -> CcResult<()> {
+        Self::execute_cached(
+            conn,
+            "INSERT INTO metadata(key,value) VALUES(?1,'1') \
+             ON CONFLICT(key) DO UPDATE SET value = CAST(CAST(value AS INTEGER) + 1 AS TEXT)",
+            rusqlite::params![key],
+        )?;
+        Ok(())
+    }
+
     /// Get a read connection from the pool.
     pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
         let pool = self
@@ -689,6 +851,9 @@ impl IndexDb {
     where
         F: FnOnce(&Connection) -> CcResult<()>,
     {
+        // Floor snapshot of the epoch vector; the final value is written at
+        // swap time (under the write lock) as max(floor, live) + 1.
+        let generation_floor = self.generation().unwrap_or_default();
         let tmp_path = self.db_path.with_extension("sqlite3.tmp");
 
         // Clean up any stale temp file from a previous crashed run.
@@ -774,6 +939,11 @@ impl IndexDb {
                 .lock()
                 .map_err(|e| CcError::Database(e.to_string()))?;
 
+            // Write the final epoch vector now that no further writes can
+            // land: max(floor, live) + 1 covers writes committed while the
+            // rebuild ran (including from other processes).
+            self.finalize_rebuild_generation(&tmp_path, generation_floor)?;
+
             // Remove the old WAL/SHM files — the new file will create its own
             let wal = self.db_path.with_extension("sqlite3-wal");
             let shm = self.db_path.with_extension("sqlite3-shm");
@@ -841,6 +1011,9 @@ impl IndexDb {
     where
         F: FnOnce(&Connection) -> CcResult<()>,
     {
+        // Same floor-snapshot + finalize-at-swap epoch handling as
+        // rebuild_with_temp_db.
+        let generation_floor = self.generation().unwrap_or_default();
         let tmp_path = self.db_path.with_extension("direct-tmp.sqlite3");
 
         // Clean up stale temp file from a previous crashed run.
@@ -876,6 +1049,10 @@ impl IndexDb {
                 .write_conn
                 .lock()
                 .map_err(|e| CcError::Database(e.to_string()))?;
+
+            // Write the final epoch vector under the write lock (see
+            // rebuild_with_temp_db).
+            self.finalize_rebuild_generation(&tmp_path, generation_floor)?;
 
             // Remove old WAL/SHM files
             let wal = self.db_path.with_extension("sqlite3-wal");
@@ -959,6 +1136,9 @@ impl IndexDb {
     // ── Batch write ──────────────────────────────────────────────
 
     pub fn replace_files_batch(&self, files: &[FileWriteUnit]) -> CcResult<()> {
+        if files.is_empty() {
+            return Ok(());
+        }
         let mut conn = self
             .write_conn
             .lock()
@@ -970,6 +1150,7 @@ impl IndexDb {
             Self::delete_file_data(&tx, &file.rel_path)?;
             Self::insert_file_data(&tx, file)?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -991,6 +1172,7 @@ impl IndexDb {
         for file in units {
             Self::replace_reresolved_edges_for_file(&tx, file)?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -1124,6 +1306,7 @@ impl IndexDb {
             Self::replace_reresolved_edges_for_file(&tx, file)?;
         }
         Self::insert_route_nodes_on(&tx, route_nodes)?;
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -1142,6 +1325,7 @@ impl IndexDb {
         for path in paths {
             Self::delete_file_data(&tx, path)?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(paths.len())
     }
@@ -1538,6 +1722,55 @@ pub struct HttpCallEdgeLite {
     pub confidence: f64,
 }
 
+/// Lightweight symbol row for graph projections (impact seeds, reverse
+/// callers): just the identity/location fields plus community membership.
+#[derive(Debug, Clone)]
+pub struct SymbolLiteRow {
+    pub symbol_uid: String,
+    pub name: String,
+    pub file_path: String,
+    pub kind: String,
+    pub community_id: Option<u32>,
+}
+
+/// Raw symbol row from the dead-code scan; UID may be empty for symbols
+/// without a stable identity (callers filter those out).
+#[derive(Debug, Clone)]
+pub struct DeadCodeSymbolRow {
+    pub name: String,
+    pub symbol_uid: String,
+    pub file_path: String,
+    pub kind: String,
+}
+
+/// One resolved import edge from a specific file: target path plus the
+/// original import string (cycle witness reporting).
+#[derive(Debug, Clone)]
+pub struct ImportWitnessRow {
+    pub resolved_path: String,
+    pub import_string: Option<String>,
+}
+
+/// Infra nodes, routes, and connecting edges matched for a service/route
+/// query. Rows keep the JSON projection shape used by the MCP handlers.
+#[derive(Debug, Clone)]
+pub struct ServiceBindingRows {
+    pub matched_infra_nodes: Vec<serde_json::Value>,
+    pub matched_routes: Vec<serde_json::Value>,
+    pub related_edges: Vec<serde_json::Value>,
+}
+
+/// Aggregated provenance counters over `call_edges`, grouped by
+/// dispatch/resolution/synthesis dimensions. Each failed sub-query degrades
+/// to an empty breakdown (matching the previous best-effort behavior).
+#[derive(Debug, Clone, Default)]
+pub struct CallEdgeProvenanceCounts {
+    pub by_dispatch_kind: Vec<(Option<String>, i64)>,
+    pub synthesized_total: i64,
+    pub by_synthesized_by: Vec<(Option<String>, i64)>,
+    pub by_resolution_kind: Vec<(Option<String>, i64)>,
+}
+
 /// 增量重解析场景的文件边数据载体。
 /// 包含重新 resolve 所需的所有边类型，不含 chunk / literal 等无需重解析的数据。
 pub struct FileEdgesForReresolve {
@@ -1580,6 +1813,167 @@ mod tests {
         db.set_metadata("version", "1.0").unwrap();
         assert_eq!(db.get_metadata("version").unwrap(), Some("1.0".to_string()));
         assert_eq!(db.get_metadata("nonexistent").unwrap(), None);
+    }
+
+    fn file_unit(rel_path: &str) -> FileWriteUnit {
+        FileWriteUnit {
+            rel_path: rel_path.to_string(),
+            language: Language::Rust,
+            content_hash: format!("hash-{rel_path}"),
+            mtime: 1.0,
+            size: 1,
+            outcome: ParseOutcome::default(),
+        }
+    }
+
+    #[test]
+    fn generation_starts_at_zero_and_index_writes_bump_index_epoch() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("gen.db")).unwrap().0;
+
+        // Old databases (or fresh ones) without the epoch keys read as 0/0.
+        assert_eq!(db.generation().unwrap(), IndexGeneration::default());
+
+        db.replace_files_batch(&[file_unit("src/a.rs")]).unwrap();
+        let after_write = db.generation().unwrap();
+        assert_eq!(after_write.index_epoch, 1);
+        assert_eq!(after_write.evidence_epoch, 0);
+
+        db.write_incremental_batch(&["src/a.rs".to_string()], &[], &[], &[])
+            .unwrap();
+        let after_batch = db.generation().unwrap();
+        assert!(after_batch.index_epoch > after_write.index_epoch);
+        assert_eq!(after_batch.evidence_epoch, 0);
+
+        // An empty incremental batch writes nothing and must not bump.
+        db.write_incremental_batch(&[], &[], &[], &[]).unwrap();
+        assert_eq!(db.generation().unwrap(), after_batch);
+    }
+
+    #[test]
+    fn full_rebuild_advances_both_epochs_past_previous_values() {
+        let tmp = TempDir::new().unwrap();
+        // Production naming: rebuild_with_temp_db derives WAL/tmp paths from
+        // the `.sqlite3` extension, so the test must use it too.
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+
+        db.replace_files_batch(&[file_unit("src/a.rs")]).unwrap();
+        db.upsert_runtime_evidence(
+            "ev1",
+            "svc",
+            Some("GET"),
+            "/x",
+            None,
+            "2024-01-01T00:00:00Z",
+        )
+        .unwrap();
+        let before = db.generation().unwrap();
+        assert!(before.index_epoch >= 1 && before.evidence_epoch >= 1);
+
+        db.rebuild_with_temp_db(|_conn| Ok(())).unwrap();
+        let after = db.generation().unwrap();
+        assert!(after.index_epoch > before.index_epoch);
+        assert!(after.evidence_epoch > before.evidence_epoch);
+    }
+
+    #[test]
+    fn rebuild_generation_exceeds_writes_committed_during_rebuild() {
+        use std::sync::mpsc;
+        use std::sync::Arc;
+
+        let tmp = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0);
+        db.replace_files_batch(&[file_unit("src/a.rs")]).unwrap();
+
+        let (started_tx, started_rx) = mpsc::channel::<()>();
+        let (go_tx, go_rx) = mpsc::channel::<()>();
+        let rebuild_db = Arc::clone(&db);
+        let rebuild = std::thread::spawn(move || {
+            rebuild_db.rebuild_with_temp_db(move |_conn| {
+                started_tx.send(()).unwrap();
+                // Park mid-rebuild so the main thread can commit writes that
+                // advance the live epochs past the floor snapshot.
+                go_rx.recv().unwrap();
+                Ok(())
+            })
+        });
+
+        started_rx.recv().unwrap();
+        db.replace_files_batch(&[file_unit("src/b.rs")]).unwrap();
+        db.upsert_runtime_evidence(
+            "ev-mid",
+            "svc",
+            Some("GET"),
+            "/y",
+            None,
+            "2024-01-01T00:00:00Z",
+        )
+        .unwrap();
+        let live_during_rebuild = db.generation().unwrap();
+        go_tx.send(()).unwrap();
+        rebuild.join().unwrap().unwrap();
+
+        // The swapped-in database must exceed the epochs observed for the
+        // concurrent writes, not just the floor taken when the rebuild began.
+        let after = db.generation().unwrap();
+        assert!(after.index_epoch > live_during_rebuild.index_epoch);
+        assert!(after.evidence_epoch > live_during_rebuild.evidence_epoch);
+    }
+
+    #[test]
+    fn schema_mismatch_rebuild_advances_generation_past_old_values() {
+        let tmp = TempDir::new().unwrap();
+        let path = tmp.path().join("index.sqlite3");
+        let old_generation;
+        {
+            let db = IndexDb::open(&path).unwrap().0;
+            db.replace_files_batch(&[file_unit("src/a.rs")]).unwrap();
+            db.upsert_runtime_evidence(
+                "ev1",
+                "svc",
+                Some("GET"),
+                "/x",
+                None,
+                "2024-01-01T00:00:00Z",
+            )
+            .unwrap();
+            old_generation = db.generation().unwrap();
+            assert!(old_generation.index_epoch >= 1 && old_generation.evidence_epoch >= 1);
+            // Force a schema mismatch for the next open.
+            let conn = db.write_conn.lock().unwrap();
+            conn.pragma_update(None, "user_version", 1u32).unwrap();
+        }
+
+        let (db, status) = IndexDb::open(&path).unwrap();
+        assert!(matches!(status, SchemaStatus::Initialized));
+        let rebuilt = db.generation().unwrap();
+        assert!(
+            rebuilt.index_epoch > old_generation.index_epoch,
+            "mismatch rebuild must not roll index_epoch back ({} <= {})",
+            rebuilt.index_epoch,
+            old_generation.index_epoch
+        );
+        assert!(rebuilt.evidence_epoch > old_generation.evidence_epoch);
+    }
+
+    // TEMP repro: in-process loop amplifying the pool-drop vs file-delete race.
+    #[test]
+    #[ignore]
+    fn tmp_mismatch_rebuild_stress_loop() {
+        for iteration in 0..300 {
+            let tmp = TempDir::new().unwrap();
+            let path = tmp.path().join("index.sqlite3");
+            {
+                let db = IndexDb::open(&path).unwrap().0;
+                db.replace_files_batch(&[file_unit("src/a.rs")]).unwrap();
+                let _ = db.generation().unwrap();
+                let conn = db.write_conn.lock().unwrap();
+                conn.pragma_update(None, "user_version", 1u32).unwrap();
+            }
+            let (db, _status) =
+                IndexDb::open(&path).unwrap_or_else(|e| panic!("iter {iteration}: {e:?}"));
+            let _ = db.generation().unwrap();
+        }
     }
 
     #[test]

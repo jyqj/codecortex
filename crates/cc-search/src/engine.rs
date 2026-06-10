@@ -5,15 +5,19 @@
 use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::num::NonZeroUsize;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Arc, Mutex};
 
 use lru::LruCache;
 
 use cc_db::index_db::IndexDb;
-use cc_model::config::{ProjectStats, RepoSizeTier, SearchConfig};
+use cc_model::config::{
+    GraphEnrichLimits, ProjectStats, RankingConfig, RepoSizeTier, SearchConfig,
+};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::CcResult;
 
+use crate::enrich::{graph_enrich, GraphEnrichment};
 use crate::lanes::{
     fuse_outcomes, run_lanes, GraphLane, GrepLane, LaneContext, LexicalLane, RetrievalLane,
 };
@@ -45,10 +49,15 @@ fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize {
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
     pub(crate) config: SearchConfig,
+    pub(crate) ranking: RankingConfig,
     pub(crate) repo_tier: Option<RepoSizeTier>,
-    /// Last index generation this engine has accepted for cache state.
-    cache_generation: u64,
-    /// LRU result cache keyed by `(cache_generation, query_hash)`.
+    /// Index epoch last observed by this engine. The result cache is keyed on
+    /// the epoch read from the DB at search time, so it never needs explicit
+    /// invalidation; this field only detects epoch changes so the chunk text
+    /// cache (keyed by positional, non-content-addressed chunk ids) can be
+    /// cleared eagerly.
+    last_seen_index_epoch: AtomicU64,
+    /// LRU result cache keyed by `(index_epoch, query_hash)`.
     result_cache: Mutex<LruCache<(u64, u64), Vec<SearchHit>>>,
     /// LRU cache of decompressed chunk text keyed by `chunk_id`.
     chunk_text_cache: Mutex<LruCache<String, Arc<str>>>,
@@ -60,11 +69,13 @@ impl SearchEngine {
         config: &cc_model::ProjectConfig,
         repo_tier: Option<RepoSizeTier>,
     ) -> Self {
+        let initial_epoch = db.generation().map(|g| g.index_epoch).unwrap_or(0);
         Self {
             db,
             config: config.search.clone(),
+            ranking: config.ranking.clone(),
             repo_tier,
-            cache_generation: 0,
+            last_seen_index_epoch: AtomicU64::new(initial_epoch),
             result_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
                 "CODECORTEX_SEARCH_RESULT_CACHE_SIZE",
                 RESULT_CACHE_CAPACITY,
@@ -76,8 +87,12 @@ impl SearchEngine {
         }
     }
 
-    pub fn invalidate_cache(&mut self, generation: u64) {
-        self.cache_generation = generation;
+    /// Drop all cached search state.
+    ///
+    /// NOT needed after index writes — cc-db bumps the persisted index epoch
+    /// inside every write transaction and `search()` re-reads it per call.
+    /// Kept only for defensive clearing (e.g. lock-poison recovery) and tests.
+    pub fn invalidate_cache(&self) {
         if let Ok(mut cache) = self.result_cache.lock() {
             cache.clear();
         }
@@ -86,8 +101,17 @@ impl SearchEngine {
         }
     }
 
-    pub fn cache_generation(&self) -> u64 {
-        self.cache_generation
+    /// Observe the current index epoch, clearing the chunk text cache (and the
+    /// already epoch-keyed result cache, for memory hygiene) when it changed.
+    fn observe_index_epoch(&self) -> CcResult<u64> {
+        let index_epoch = self.db.generation()?.index_epoch;
+        let previous = self
+            .last_seen_index_epoch
+            .swap(index_epoch, Ordering::AcqRel);
+        if previous != index_epoch {
+            self.invalidate_cache();
+        }
+        Ok(index_epoch)
     }
 
     pub fn status(&self) -> CcResult<ProjectStats> {
@@ -141,40 +165,86 @@ impl SearchEngine {
     }
 
     /// Core search — FTS5 + grep with RRF fusion and reranking.
+    ///
+    /// INVARIANT: `rerank_score` on the returned hits is FINAL and the list
+    /// is sorted on it.  Callers must not re-score or re-sort; graph-aware
+    /// reranking happens inside [`Self::search_with_graph_context`], never
+    /// downstream.
     pub fn search(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
         self.search_internal(request, true)
     }
 
-    /// Like `search()` but returns up to `rerank_window` results instead of
-    /// `top_k`.  Used by `search_in_context_with()` to give graph enrichment
-    /// a larger candidate window before final truncation.
+    /// Search with graph-aware reranking, for context assembly.
+    ///
+    /// Runs the core search over a `rerank_window`-sized candidate list,
+    /// computes a connectivity-based `graph_score` for the top
+    /// `limits.max_resolve` hits, folds it into `rerank_score` using
+    /// `ranking.graph_rerank_weight`, then performs the single, final sort
+    /// and truncates to the request's `top_k`.
+    ///
+    /// INVARIANT: this is the only place the graph contribution is applied —
+    /// `rerank_score` and hit order are final on return, and the returned
+    /// [`GraphEnrichment`] carries the neighbor/test context nodes without
+    /// any score state.
     ///
     /// Results are **not** cached (this path is typically called once per
     /// `search_in_context_with` invocation).
-    pub fn search_extended(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
-        self.search_internal(request, false)
+    pub fn search_with_graph_context(
+        &self,
+        request: &SearchRequest,
+        limits: &GraphEnrichLimits,
+        token_budget: u32,
+    ) -> CcResult<(Vec<SearchHit>, GraphEnrichment)> {
+        let mut hits = self.search_internal(request, false)?;
+
+        let (scores, enrichment) = graph_enrich(&self.db, &hits, limits, token_budget);
+        let weight = self.ranking.graph_rerank_weight;
+        for hit in &mut hits {
+            if let Some(&graph_score) = scores.get(&hit.chunk_id) {
+                hit.graph_score = graph_score;
+                hit.rerank_score += graph_score * weight;
+            }
+        }
+
+        // Single final sort + truncation: rerank_score is immutable after this.
+        hits.sort_by(|a, b| {
+            b.rerank_score
+                .partial_cmp(&a.rerank_score)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
+        let top_k = if request.top_k == 0 {
+            10
+        } else {
+            request.top_k
+        };
+        hits.truncate(top_k);
+        Ok((hits, enrichment))
     }
 
-    /// Shared implementation for `search` / `search_extended`.
+    /// Shared implementation for `search` / `search_with_graph_context`.
     ///
     /// When `truncate_to_top_k` is true the result list is cut to `top_k`
     /// (standard behaviour).  When false, results are cut to `rerank_window`
-    /// giving downstream graph enrichment a wider candidate set.
+    /// giving the graph-rerank step a wider candidate set.
     fn search_internal(
         &self,
         request: &SearchRequest,
         truncate_to_top_k: bool,
     ) -> CcResult<Vec<SearchHit>> {
         // ── Cache lookup (only for the truncated path) ──────────
+        // The cache key embeds the persisted index epoch: any committed index
+        // write bumps it, so stale entries can never be served. One metadata
+        // SELECT per search; local SQLite reads are microseconds.
+        let index_epoch = self.observe_index_epoch()?;
         let qhash = Self::query_hash(request);
-        let cache_key = (self.cache_generation, qhash);
+        let cache_key = (index_epoch, qhash);
         if truncate_to_top_k {
             if let Ok(mut cache) = self.result_cache.lock() {
                 if let Some(cached) = cache.get(&cache_key) {
                     tracing::debug!(
                         query = %request.query,
-                        "search cache hit (generation={}, hash={})",
-                        self.cache_generation,
+                        "search cache hit (index_epoch={}, hash={})",
+                        index_epoch,
                         qhash,
                     );
                     return Ok(cached.clone());
@@ -185,7 +255,13 @@ impl SearchEngine {
         // No pooled read connection is held here: plan build (preselect),
         // each lane, and the batch fetch below all check out and release
         // their own, so a 1-connection read pool never sees nested checkouts.
-        let plan = SearchPlan::build(&self.db, &self.config, request, self.repo_tier)?;
+        let plan = SearchPlan::build(
+            &self.db,
+            &self.config,
+            &self.ranking,
+            request,
+            self.repo_tier,
+        )?;
         let limits = plan.limits();
 
         // Retrieval lanes, executed in deterministic fusion order
@@ -341,6 +417,125 @@ mod tests {
             },
         )
         .unwrap();
+    }
+
+    fn chunk_write_unit(file_path: &str, text: &str) -> FileWriteUnit {
+        let chunk = ChunkRecord {
+            chunk_id: format!("chunk:{}", file_path),
+            file_path: file_path.to_string(),
+            language: Language::Rust,
+            chunk_index: 0,
+            start_line: 1,
+            end_line: 1,
+            breadcrumb: "root".to_string(),
+            text: text.to_string(),
+            symbol_name: None,
+            symbol_kind: None,
+            token_estimate: 8,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+        };
+        FileWriteUnit {
+            rel_path: file_path.to_string(),
+            language: Language::Rust,
+            content_hash: format!("hash-{file_path}-{}", text.len()),
+            mtime: 0.0,
+            size: text.len() as u64,
+            outcome: ParseOutcome {
+                summary: text.to_string(),
+                chunks: vec![chunk],
+                parser_tier: ParserTier::TreeSitter,
+                parser_confidence: 1.0,
+                ..Default::default()
+            },
+        }
+    }
+
+    #[test]
+    fn index_write_invalidates_search_cache_without_manual_call() {
+        let (engine, _tmp) = scoped_test_engine();
+
+        // Committed write #1: chunk text contains alpha_one.
+        engine
+            .db
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = SearchRequest {
+            query: "cached_marker".to_string(),
+            top_k: 5,
+            include_grep: true,
+            ..Default::default()
+        };
+        let first = engine.search(&request).unwrap();
+        assert_eq!(first.len(), 1);
+        assert!(first[0].text.contains("alpha_one"));
+
+        // Committed write #2 replaces the SAME file (same chunk_id, new text).
+        // No invalidate_cache() call: the epoch bump inside the cc-db write
+        // transaction must make both the result cache and the chunk text
+        // cache miss on the next search.
+        engine
+            .db
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_two() }",
+            )])
+            .unwrap();
+
+        let second = engine.search(&request).unwrap();
+        assert_eq!(second.len(), 1);
+        assert!(
+            second[0].text.contains("alpha_two"),
+            "stale cached text served after index write: {}",
+            second[0].text
+        );
+    }
+
+    #[test]
+    fn index_write_invalidates_chunk_text_cache_on_lexical_only_path() {
+        // Lexical-only variant of the test above: with grep disabled, the
+        // GrepLane never rescans chunk text, so the candidate batch-fetch is
+        // the only consumer of chunk_text_cache — a missed clear would serve
+        // the stale text here without grep masking it.
+        let (engine, _tmp) = scoped_test_engine();
+
+        engine
+            .db
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = SearchRequest {
+            query: "cached_marker".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let first = engine.search(&request).unwrap();
+        assert_eq!(first.len(), 1);
+        assert!(first[0].text.contains("alpha_one"));
+
+        engine
+            .db
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_two() }",
+            )])
+            .unwrap();
+
+        let second = engine.search(&request).unwrap();
+        assert_eq!(second.len(), 1);
+        assert!(
+            second[0].text.contains("alpha_two"),
+            "stale chunk text served from batch-fetch cache after index write: {}",
+            second[0].text
+        );
     }
 
     #[test]
@@ -564,6 +759,7 @@ mod tests {
         let plan = SearchPlan::build(
             &engine.db,
             &engine.config,
+            &engine.ranking,
             &SearchRequest {
                 query: "alpha".to_string(),
                 top_k: 5,
@@ -587,7 +783,7 @@ mod tests {
     use cc_model::{CallEdgeRecord, SymbolRecord};
 
     fn build_plan(engine: &SearchEngine, request: &SearchRequest) -> SearchPlan {
-        SearchPlan::build(&engine.db, &engine.config, request, None).unwrap()
+        SearchPlan::build(&engine.db, &engine.config, &engine.ranking, request, None).unwrap()
     }
 
     /// Insert a single-chunk file together with one symbol (lines 1-1) and

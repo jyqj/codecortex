@@ -17,6 +17,13 @@ pub struct SearchHit {
     pub lexical_score: f64,
     pub grep_score: f64,
     pub graph_score: f64,
+    /// Final ranking score.
+    ///
+    /// INVARIANT: `rerank_score` is assigned exactly once, inside cc-search
+    /// (including the optional graph-rerank contribution), and the hit list
+    /// is sorted on it there.  Once a `SearchHit` leaves `SearchEngine`,
+    /// downstream consumers must treat this field as read-only — re-scoring
+    /// or re-sorting outside cc-search silently breaks ranking guarantees.
     pub rerank_score: f64,
     pub reasons: Vec<String>,
     pub source: String,

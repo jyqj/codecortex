@@ -340,8 +340,9 @@ impl GraphLane {
         query_tokens: &[String],
         limit: usize,
     ) -> CcResult<Vec<(String, f64)>> {
+        let ranking = plan.ranking();
         // Step 1: Find seed symbols matching query tokens via symbols_fts (trigram LIKE)
-        let seed_uids = find_seed_symbol_uids(db, query_tokens)?;
+        let seed_uids = find_seed_symbol_uids(db, query_tokens, ranking)?;
         if seed_uids.is_empty() {
             return Ok(Vec::new());
         }
@@ -359,7 +360,7 @@ impl GraphLane {
             if let Ok(callees) = db.callee_rows_by_uid(uid, 10) {
                 for edge in &callees {
                     if let Some(ref callee_uid) = edge.callee_symbol_uid {
-                        let score = seed_score * 0.5;
+                        let score = seed_score * ranking.graph_neighbor_decay;
                         neighbor_uids
                             .entry(callee_uid.clone())
                             .and_modify(|s| *s = s.max(score))
@@ -372,7 +373,7 @@ impl GraphLane {
             if let Ok(callers) = db.caller_rows_by_uid(uid, 10) {
                 for edge in &callers {
                     if let Some(ref caller_uid) = edge.caller_symbol_uid {
-                        let score = seed_score * 0.5;
+                        let score = seed_score * ranking.graph_neighbor_decay;
                         neighbor_uids
                             .entry(caller_uid.clone())
                             .and_modify(|s| *s = s.max(score))
@@ -441,7 +442,11 @@ impl GraphLane {
 ///
 /// Uses LIKE substring matching (symbols_fts is an FTS5 trigram table, not
 /// a standard BM25 table).
-fn find_seed_symbol_uids(db: &IndexDb, query_tokens: &[String]) -> CcResult<Vec<(String, f64)>> {
+fn find_seed_symbol_uids(
+    db: &IndexDb,
+    query_tokens: &[String],
+    ranking: &cc_model::config::RankingConfig,
+) -> CcResult<Vec<(String, f64)>> {
     let mut results: HashMap<String, f64> = HashMap::new();
 
     for token in query_tokens.iter().take(5) {
@@ -463,8 +468,8 @@ fn find_seed_symbol_uids(db: &IndexDb, query_tokens: &[String]) -> CcResult<Vec<
             for uid in uids {
                 results
                     .entry(uid)
-                    .and_modify(|s| *s = s.max(1.0))
-                    .or_insert(1.0);
+                    .and_modify(|s| *s = s.max(ranking.graph_seed_exact_score))
+                    .or_insert(ranking.graph_seed_exact_score);
             }
             continue;
         }
@@ -474,9 +479,9 @@ fn find_seed_symbol_uids(db: &IndexDb, query_tokens: &[String]) -> CcResult<Vec<
         for (uid, name) in db.symbol_seed_hits(token, 10)? {
             // Score: exact match > contains
             let relevance = if name.to_lowercase() == *token {
-                1.0
+                ranking.graph_seed_exact_score
             } else {
-                0.5
+                ranking.graph_seed_fuzzy_score
             };
             results
                 .entry(uid)

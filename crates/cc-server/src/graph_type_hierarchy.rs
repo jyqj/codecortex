@@ -397,8 +397,8 @@ fn detect_overrides(
         }
     }
 
-    // Batch-lookup param_count via query_json
-    let param_counts = lookup_param_counts(db, &method_uids_to_lookup)?;
+    // Batch-lookup param_count via cc-db typed query
+    let param_counts = db.param_counts_for_uids(&method_uids_to_lookup)?;
 
     let mut overrides = Vec::new();
     for desc in descendants {
@@ -440,34 +440,6 @@ fn detect_overrides(
     }
 
     Ok(overrides)
-}
-
-/// Lookup param_count for a set of symbol UIDs. Returns uid → Option<u32>.
-fn lookup_param_counts(db: &IndexDb, uids: &[String]) -> CcResult<HashMap<String, Option<u32>>> {
-    let mut result = HashMap::new();
-    if uids.is_empty() {
-        return Ok(result);
-    }
-
-    // Use query_json to fetch param_count for each UID
-    for chunk in uids.chunks(100) {
-        let sql = format!(
-            "SELECT symbol_uid, param_count FROM symbols WHERE symbol_uid IN ({})",
-            cc_db::sql_util::sql_in_placeholders(chunk.len())
-        );
-        let params: Vec<String> = chunk.to_vec();
-        let rows = db.query_json(&sql, &params)?;
-        for row in rows {
-            if let Some(uid) = row.get("symbol_uid").and_then(|v| v.as_str()) {
-                let pc = row
-                    .get("param_count")
-                    .and_then(|v| v.as_i64())
-                    .map(|n| n as u32);
-                result.insert(uid.to_string(), pc);
-            }
-        }
-    }
-    Ok(result)
 }
 
 #[cfg(test)]

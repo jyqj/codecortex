@@ -1,6 +1,7 @@
 //! File preselection — narrows candidate files before chunk-level search.
 //!
-//! Implements the full 7-layer scoring strategy:
+//! Implements the full 7-layer scoring strategy (constants live in
+//! [`RankingConfig`]; defaults shown):
 //!   1. working-set boost   max(2.0, 5.0 / rank)
 //!   2. recent files         max(1.2, 3.5 / rank)
 //!   3. pinned files         max(2.2, 4.0 / rank)
@@ -14,6 +15,7 @@ use std::collections::HashMap;
 
 use cc_db::fts::{sanitize_fts_query, tokenize_codeish};
 use cc_db::index_db::IndexDb;
+use cc_model::config::RankingConfig;
 use cc_model::CcResult;
 
 // ── Public types ───────────────────────────────────────────────
@@ -28,6 +30,8 @@ pub struct PreselectRequest<'a> {
     pub overlay_paths: Option<&'a [String]>,
     pub explicit_file_paths: Option<&'a [String]>,
     pub limit: usize,
+    /// Scoring constants for every preselect layer.
+    pub ranking: &'a RankingConfig,
 }
 
 /// Statistics about which scoring lanes fired during preselection.
@@ -67,63 +71,19 @@ fn score_file(
 
 // ── Layer functions ────────────────────────────────────────────
 
-/// Layer 1: working-set boost — `max(2.0, 5.0 / rank)`
-fn score_working_set(
+/// Layers 1-4 (working-set / recent / pinned / overlay) share the shape
+/// `max(floor, scale / rank)`; floor and scale come from [`RankingConfig`].
+fn score_rank_decay_layer(
     paths: &[String],
+    floor: f64,
+    scale: f64,
+    reason: &str,
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
 ) {
     for (rank, fp) in paths.iter().enumerate() {
         let rank1 = (rank + 1) as f64;
-        score_file(
-            scores,
-            reasons,
-            fp,
-            f64::max(2.0, 5.0 / rank1),
-            "working-set",
-        );
-    }
-}
-
-/// Layer 2: recent files — `max(1.2, 3.5 / rank)`
-fn score_recent(
-    paths: &[String],
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) {
-    for (rank, fp) in paths.iter().enumerate() {
-        let rank1 = (rank + 1) as f64;
-        score_file(scores, reasons, fp, f64::max(1.2, 3.5 / rank1), "recent");
-    }
-}
-
-/// Layer 3: pinned files — `max(2.2, 4.0 / rank)`
-fn score_pinned(
-    paths: &[String],
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) {
-    for (rank, fp) in paths.iter().enumerate() {
-        let rank1 = (rank + 1) as f64;
-        score_file(scores, reasons, fp, f64::max(2.2, 4.0 / rank1), "pinned");
-    }
-}
-
-/// Layer 4: overlay (dirty-buffer) files — `max(1.5, 3.0 / rank)`
-fn score_overlay(
-    paths: &[String],
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) {
-    for (rank, fp) in paths.iter().enumerate() {
-        let rank1 = (rank + 1) as f64;
-        score_file(
-            scores,
-            reasons,
-            fp,
-            f64::max(1.5, 3.0 / rank1),
-            "dirty-buffer",
-        );
+        score_file(scores, reasons, fp, f64::max(floor, scale / rank1), reason);
     }
 }
 
@@ -133,6 +93,7 @@ fn score_fts_summary(
     query: &str,
     prefix: Option<&str>,
     limit: usize,
+    ranking: &RankingConfig,
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
 ) -> usize {
@@ -157,7 +118,7 @@ fn score_fts_summary(
     let mut hits = 0usize;
     for (file_path, raw_score) in rows {
         let bm25_score = raw_score.abs();
-        let file_score = 1.4 + (1.0 / (1.0 + bm25_score));
+        let file_score = ranking.preselect_fts_base + (1.0 / (1.0 + bm25_score));
         score_file(scores, reasons, &file_path, file_score, "fts-summary");
         hits += 1;
     }
@@ -173,6 +134,7 @@ fn score_token_search(
     db: &IndexDb,
     query: &str,
     prefix: Option<&str>,
+    ranking: &RankingConfig,
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
 ) -> usize {
@@ -199,7 +161,7 @@ fn score_token_search(
                         scores,
                         reasons,
                         &file_path,
-                        1.0,
+                        ranking.preselect_path_token_bonus,
                         &format!("path-token:{}", token),
                     );
                     hits += 1;
@@ -215,9 +177,9 @@ fn score_token_search(
             for (token, symbol_hits) in candidate_tokens.iter().zip(per_token) {
                 for (file_path, name) in symbol_hits {
                     let bonus = if name.to_lowercase() == **token {
-                        2.0
+                        ranking.preselect_symbol_exact_bonus
                     } else {
-                        1.2
+                        ranking.preselect_symbol_fuzzy_bonus
                     };
                     let reason = format!("symbol:{}", name);
                     score_file(scores, reasons, &file_path, bonus, &reason);
@@ -241,6 +203,7 @@ fn score_graph_neighbors(
     db: &IndexDb,
     current_scores: &HashMap<String, f64>,
     expansion_limit: usize,
+    neighbor_base: f64,
 ) -> CcResult<Vec<(String, f64)>> {
     if expansion_limit == 0 || current_scores.is_empty() {
         return Ok(Vec::new());
@@ -263,6 +226,11 @@ fn score_graph_neighbors(
         return Ok(Vec::new());
     }
 
+    // The +0.1 per-edge increment and the 1.2 accumulation cap are
+    // deliberate literals (not RankingConfig fields); the configurable
+    // `neighbor_base` is clamped to the same cap so a base above 1.2
+    // cannot bypass it on first insertion.
+    let neighbor_base = neighbor_base.min(1.2);
     let mut neighbor_files: HashMap<String, f64> = HashMap::new();
 
     // --- Callers: who calls symbols in our seed files? ---
@@ -274,7 +242,7 @@ fn score_graph_neighbors(
                     neighbor_files
                         .entry(file.clone())
                         .and_modify(|s| *s = (*s + 0.1).min(1.2))
-                        .or_insert(0.8);
+                        .or_insert(neighbor_base);
                 }
             }
         }
@@ -304,7 +272,7 @@ fn score_graph_neighbors(
                     neighbor_files
                         .entry(sym.file_path.clone())
                         .and_modify(|s| *s = (*s + 0.1).min(1.2))
-                        .or_insert(0.8);
+                        .or_insert(neighbor_base);
                 }
             }
         }
@@ -321,6 +289,7 @@ fn score_graph_neighbors(
 fn score_fallback(
     db: &IndexDb,
     limit: usize,
+    fallback_score: f64,
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
 ) {
@@ -332,7 +301,13 @@ fn score_fallback(
         }
     };
     for file_path in file_paths {
-        score_file(scores, reasons, &file_path, 0.2, "fallback-indexed");
+        score_file(
+            scores,
+            reasons,
+            &file_path,
+            fallback_score,
+            "fallback-indexed",
+        );
     }
 }
 
@@ -363,18 +338,48 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     let mut reasons: HashMap<String, Vec<String>> = HashMap::new();
     let mut lane_stats = LaneStats::default();
 
+    let ranking = req.ranking;
+
     // ── Layers 1-4: context-boost layers ───────────────────────
     if let Some(paths) = req.boost_paths {
-        score_working_set(paths, &mut scores, &mut reasons);
+        score_rank_decay_layer(
+            paths,
+            ranking.preselect_working_set_floor,
+            ranking.preselect_working_set_scale,
+            "working-set",
+            &mut scores,
+            &mut reasons,
+        );
     }
     if let Some(paths) = req.recent_paths {
-        score_recent(paths, &mut scores, &mut reasons);
+        score_rank_decay_layer(
+            paths,
+            ranking.preselect_recent_floor,
+            ranking.preselect_recent_scale,
+            "recent",
+            &mut scores,
+            &mut reasons,
+        );
     }
     if let Some(paths) = req.pinned_paths {
-        score_pinned(paths, &mut scores, &mut reasons);
+        score_rank_decay_layer(
+            paths,
+            ranking.preselect_pinned_floor,
+            ranking.preselect_pinned_scale,
+            "pinned",
+            &mut scores,
+            &mut reasons,
+        );
     }
     if let Some(paths) = req.overlay_paths {
-        score_overlay(paths, &mut scores, &mut reasons);
+        score_rank_decay_layer(
+            paths,
+            ranking.preselect_overlay_floor,
+            ranking.preselect_overlay_scale,
+            "dirty-buffer",
+            &mut scores,
+            &mut reasons,
+        );
     }
 
     // ── Layer 5: FTS summary search ────────────────────────────
@@ -383,17 +388,30 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
         req.query,
         req.path_prefix,
         req.limit,
+        ranking,
         &mut scores,
         &mut reasons,
     );
 
     // ── Layer 6: per-token symbol + path match ─────────────────
-    lane_stats.token_hits =
-        score_token_search(db, req.query, req.path_prefix, &mut scores, &mut reasons);
+    lane_stats.token_hits = score_token_search(
+        db,
+        req.query,
+        req.path_prefix,
+        ranking,
+        &mut scores,
+        &mut reasons,
+    );
 
     // ── Fallback: recently-indexed files if nothing scored ──────
     if scores.is_empty() {
-        score_fallback(db, req.limit, &mut scores, &mut reasons);
+        score_fallback(
+            db,
+            req.limit,
+            ranking.preselect_fallback_score,
+            &mut scores,
+            &mut reasons,
+        );
         lane_stats.used_fallback = true;
     }
 
@@ -402,7 +420,9 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     // not in explicit scope (already short-circuited above).
     if scores.len() < req.limit {
         let budget = req.limit.saturating_sub(scores.len());
-        if let Ok(extras) = score_graph_neighbors(db, &scores, budget) {
+        if let Ok(extras) =
+            score_graph_neighbors(db, &scores, budget, ranking.preselect_graph_neighbor_base)
+        {
             for (file, score) in extras {
                 scores.entry(file.clone()).or_insert_with(|| {
                     reasons
@@ -454,7 +474,8 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     })
 }
 
-/// Backward-compatible wrapper: delegates to [`preselect`] via [`PreselectRequest`].
+/// Backward-compatible wrapper: delegates to [`preselect`] via
+/// [`PreselectRequest`] with default scoring constants.
 #[allow(clippy::too_many_arguments)]
 pub fn preselect_files(
     db: &IndexDb,
@@ -478,6 +499,7 @@ pub fn preselect_files(
             overlay_paths,
             explicit_file_paths,
             limit,
+            ranking: &RankingConfig::default(),
         },
     )
 }
@@ -589,6 +611,7 @@ mod tests {
             overlay_paths: None,
             explicit_file_paths: None,
             limit: 10,
+            ranking: &RankingConfig::default(),
         };
         let result = preselect(&db, &req).unwrap();
         assert!(
@@ -617,6 +640,7 @@ mod tests {
             overlay_paths: None,
             explicit_file_paths: Some(&explicit),
             limit: 10,
+            ranking: &RankingConfig::default(),
         };
         let result = preselect(&db, &req).unwrap();
         assert_eq!(result.files.len(), 2);
@@ -638,6 +662,7 @@ mod tests {
             overlay_paths: None,
             explicit_file_paths: None,
             limit: 10,
+            ranking: &RankingConfig::default(),
         };
         let result = preselect(&db, &req).unwrap();
         assert!(
@@ -653,7 +678,7 @@ mod tests {
     fn graph_neighbors_empty_scores() {
         let (_tmp, db) = db_with_symbols();
         let scores: HashMap<String, f64> = HashMap::new();
-        let result = score_graph_neighbors(&db, &scores, 10).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 10, 0.8).unwrap();
         assert!(result.is_empty());
     }
 
@@ -663,7 +688,7 @@ mod tests {
         let (_tmp, db) = db_with_symbols();
         let mut scores = HashMap::new();
         scores.insert("src/a.rs".to_string(), 2.0);
-        let result = score_graph_neighbors(&db, &scores, 0).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 0, 0.8).unwrap();
         assert!(result.is_empty());
     }
 
@@ -709,7 +734,7 @@ mod tests {
         let mut scores = HashMap::new();
         scores.insert("src/caller.rs".to_string(), 2.0);
 
-        let result = score_graph_neighbors(&db, &scores, 10).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 10, 0.8).unwrap();
         let neighbor_paths: Vec<&str> = result.iter().map(|(p, _)| p.as_str()).collect();
 
         // Callee side: handle_request calls process_data -> src/callee.rs
@@ -747,7 +772,7 @@ mod tests {
         scores.insert("src/callee.rs".to_string(), 1.5);
         scores.insert("src/reverse_caller.rs".to_string(), 1.0);
 
-        let result = score_graph_neighbors(&db, &scores, 10).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 10, 0.8).unwrap();
         assert!(
             result.is_empty(),
             "all neighbors already scored, should return empty; got {:?}",
@@ -771,6 +796,7 @@ mod tests {
             overlay_paths: None,
             explicit_file_paths: None,
             limit: 10,
+            ranking: &RankingConfig::default(),
         };
         let result = preselect(&db, &req).unwrap();
 

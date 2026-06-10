@@ -207,15 +207,6 @@ impl CodeIndex {
 
         let mut results = Vec::with_capacity(capped.len());
 
-        // Outline mode queries child symbols per symbol; reuse one read
-        // connection + a cached statement across the loop instead of acquiring a
-        // connection and recompiling the SQL for every symbol.
-        let outline_conn = if include_source && outline {
-            Some(db.read_conn()?)
-        } else {
-            None
-        };
-
         for name in capped {
             // Exact match first, fuzzy fallback
             let mut syms = db.find_symbol(name, true, 3)?;
@@ -319,30 +310,14 @@ impl CodeIndex {
                     if let Some(ref sig) = sym.signature {
                         outline_parts.push(sig.clone());
                     }
-                    // Query child symbols via parent_symbol_id, reusing the
-                    // hoisted connection + cached statement.
-                    if let Some(conn) = &outline_conn {
-                        let child_sql = "SELECT name, kind, signature FROM symbols WHERE parent_symbol_id = ?1 ORDER BY start_line";
-                        if let Ok(mut stmt) = conn.prepare_cached(child_sql) {
-                            let children: Vec<(String, String, Option<String>)> = stmt
-                                .query_map(rusqlite::params![uid], |row| {
-                                    Ok((
-                                        row.get::<_, String>(0)?,
-                                        row.get::<_, String>(1)?,
-                                        row.get::<_, Option<String>>(2)?,
-                                    ))
-                                })
-                                .ok()
-                                .map(|rows| rows.filter_map(|r| r.ok()).collect())
-                                .unwrap_or_default();
-                            for (child_name, child_kind, child_sig) in &children {
-                                if let Some(sig) = child_sig {
-                                    outline_parts
-                                        .push(format!("  {} {}: {}", child_kind, child_name, sig));
-                                } else {
-                                    outline_parts.push(format!("  {} {}", child_kind, child_name));
-                                }
-                            }
+                    // Query child symbols via parent_symbol_id (best-effort:
+                    // a query failure just omits the child outline).
+                    let children = db.child_symbol_outline_rows(uid).unwrap_or_default();
+                    for (child_name, child_kind, child_sig) in &children {
+                        if let Some(sig) = child_sig {
+                            outline_parts.push(format!("  {} {}: {}", child_kind, child_name, sig));
+                        } else {
+                            outline_parts.push(format!("  {} {}", child_kind, child_name));
                         }
                     }
                     if !outline_parts.is_empty() {
@@ -487,26 +462,7 @@ impl CodeIndex {
         let tier = self.repo_size_tier();
         let max_src_chars = max_chars.unwrap_or_else(|| tier.max_source_chars_per_symbol());
 
-        let rows = if exact {
-            db.query_json(
-                "SELECT name, kind, file_path, container, start_line, end_line, qname, signature, symbol_uid
-                 FROM symbols
-                 WHERE qname = ?1 OR name = ?1
-                 ORDER BY CASE WHEN qname = ?1 THEN 0 WHEN name = ?1 THEN 1 ELSE 2 END, file_path, start_line
-                 LIMIT 8",
-                &[symbol.to_string()],
-            )?
-        } else {
-            let pat = format!("%{}%", symbol);
-            db.query_json(
-                "SELECT name, kind, file_path, container, start_line, end_line, qname, signature, symbol_uid
-                 FROM symbols
-                 WHERE qname = ?1 OR name = ?1 OR qname LIKE ?2 OR name LIKE ?2
-                 ORDER BY CASE WHEN qname = ?1 THEN 0 WHEN name = ?1 THEN 1 WHEN qname LIKE ?2 THEN 2 ELSE 3 END, file_path, start_line
-                 LIMIT 8",
-                &[symbol.to_string(), pat],
-            )?
-        };
+        let rows = db.symbol_source_candidates(symbol, exact)?;
 
         if rows.is_empty() {
             return Ok(serde_json::json!({
@@ -562,15 +518,12 @@ impl CodeIndex {
         let db = self.ensure_db()?;
 
         // Symbol kind counts
-        let kind_rows = db.query_json(
-            "SELECT kind, COUNT(*) AS cnt FROM symbols GROUP BY kind ORDER BY cnt DESC",
-            &[],
-        )?;
-        let node_kinds: Vec<NodeKindCount> = kind_rows
+        let node_kinds: Vec<NodeKindCount> = db
+            .symbol_kind_counts()?
             .into_iter()
-            .map(|row| NodeKindCount {
-                kind: row.get("kind").cloned().unwrap_or(serde_json::Value::Null),
-                count: row.get("cnt").cloned().unwrap_or(serde_json::json!(0)),
+            .map(|(kind, count)| NodeKindCount {
+                kind: serde_json::json!(kind),
+                count: serde_json::json!(count),
             })
             .collect();
 
@@ -579,29 +532,22 @@ impl CodeIndex {
         let edge_tables = graph_relationship_table_names();
         let mut edge_counts = serde_json::Map::new();
         for table in &edge_tables {
-            let sql = format!("SELECT COUNT(*) AS cnt FROM {}", table);
             let count = db
-                .query_json(&sql, &[])
-                .ok()
-                .and_then(|rows| rows.into_iter().next())
-                .and_then(|row| row.get("cnt").cloned())
+                .count_table_rows(table)
+                .map(|n| serde_json::json!(n))
                 .unwrap_or(serde_json::json!(0));
             edge_counts.insert(table.to_string(), count);
         }
 
         // Total files and chunks
         let file_count = db
-            .query_json("SELECT COUNT(*) AS cnt FROM files", &[])
-            .ok()
-            .and_then(|rows| rows.into_iter().next())
-            .and_then(|row| row.get("cnt").cloned())
+            .count_table_rows("files")
+            .map(|n| serde_json::json!(n))
             .unwrap_or(serde_json::json!(0));
 
         let chunk_count = db
-            .query_json("SELECT COUNT(*) AS cnt FROM chunks", &[])
-            .ok()
-            .and_then(|rows| rows.into_iter().next())
-            .and_then(|row| row.get("cnt").cloned())
+            .count_table_rows("chunks")
+            .map(|n| serde_json::json!(n))
             .unwrap_or(serde_json::json!(0));
 
         // --- Relationship patterns (shared catalog, describes the graph schema) ---
@@ -702,57 +648,22 @@ impl CodeIndex {
     /// Groups edges by their origin: tree-sitter parsed, heuristic inferred,
     /// runtime-verified, or synthesized by post-processing.
     fn compute_edge_provenance(&self, db: &Arc<IndexDb>) -> EdgeProvenanceSummary {
-        // Count by dispatch_kind to distinguish tree-sitter vs heuristic
-        let dispatch_rows = db
-            .query_json(
-                "SELECT dispatch_kind, COUNT(*) AS cnt FROM call_edges GROUP BY dispatch_kind",
-                &[],
-            )
-            .unwrap_or_default();
+        // Grouped dispatch/synthesis/resolution counters (each sub-query is
+        // best-effort and degrades to an empty breakdown inside cc-db).
+        let provenance = db.call_edge_provenance().unwrap_or_default();
 
-        // Count synthesized edges (synthesized_by IS NOT NULL)
-        let synthesized_count: i64 = db
-            .query_json(
-                "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",
-                &[],
-            )
-            .ok()
-            .and_then(|rows| rows.into_iter().next())
-            .and_then(|row| row.get("cnt").and_then(|v| v.as_i64()))
-            .unwrap_or(0);
-
-        // Count synthesized by source
-        let synth_by_rows = db
-            .query_json(
-                "SELECT synthesized_by, COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL GROUP BY synthesized_by ORDER BY cnt DESC",
-                &[],
-            )
-            .unwrap_or_default();
-
-        // Count by resolution_kind to separate exact/heuristic
-        let resolution_rows = db
-            .query_json(
-                "SELECT resolution_kind, COUNT(*) AS cnt FROM call_edges GROUP BY resolution_kind",
-                &[],
-            )
-            .unwrap_or_default();
-
-        let total_call_edges: i64 = dispatch_rows
+        let total_call_edges: i64 = provenance
+            .by_dispatch_kind
             .iter()
-            .filter_map(|r| r.get("cnt").and_then(|v| v.as_i64()))
+            .map(|(_, cnt)| *cnt)
             .sum();
 
         // Classify: tree_sitter = exact + qualified + scope_resolved, heuristic = heuristic, unresolved = unresolved
         let mut tree_sitter: i64 = 0;
         let mut heuristic: i64 = 0;
         let mut unresolved: i64 = 0;
-        for row in &resolution_rows {
-            let kind = row
-                .get("resolution_kind")
-                .and_then(|v| v.as_str())
-                .unwrap_or("");
-            let cnt = row.get("cnt").and_then(|v| v.as_i64()).unwrap_or(0);
-            match kind {
+        for (kind, cnt) in &provenance.by_resolution_kind {
+            match kind.as_deref().unwrap_or("") {
                 "exact" | "qualified" | "scope_resolved" => tree_sitter += cnt,
                 "heuristic" => heuristic += cnt,
                 "unresolved" | "" => unresolved += cnt,
@@ -762,26 +673,20 @@ impl CodeIndex {
 
         // Dispatch kind breakdown
         let mut dispatch_breakdown = serde_json::Map::new();
-        for row in &dispatch_rows {
-            let kind = row
-                .get("dispatch_kind")
-                .and_then(|v| v.as_str())
-                .unwrap_or("unknown")
-                .to_string();
-            let cnt = row.get("cnt").cloned().unwrap_or(serde_json::json!(0));
-            dispatch_breakdown.insert(kind, cnt);
+        for (kind, cnt) in &provenance.by_dispatch_kind {
+            dispatch_breakdown.insert(
+                kind.clone().unwrap_or_else(|| "unknown".to_string()),
+                serde_json::json!(cnt),
+            );
         }
 
         // Synthesized-by breakdown
         let mut synth_breakdown = serde_json::Map::new();
-        for row in &synth_by_rows {
-            let by = row
-                .get("synthesized_by")
-                .and_then(|v| v.as_str())
-                .unwrap_or("unknown")
-                .to_string();
-            let cnt = row.get("cnt").cloned().unwrap_or(serde_json::json!(0));
-            synth_breakdown.insert(by, cnt);
+        for (by, cnt) in &provenance.by_synthesized_by {
+            synth_breakdown.insert(
+                by.clone().unwrap_or_else(|| "unknown".to_string()),
+                serde_json::json!(cnt),
+            );
         }
 
         EdgeProvenanceSummary {
@@ -791,7 +696,7 @@ impl CodeIndex {
                 heuristic,
                 unresolved,
             },
-            synthesized: synthesized_count,
+            synthesized: provenance.synthesized_total,
             by_dispatch_kind: dispatch_breakdown,
             by_synthesized_by: synth_breakdown,
         }
@@ -906,27 +811,10 @@ fn extract_package(file_path: &str) -> String {
 
 pub fn compute_package_boundaries(db: &IndexDb) -> CcResult<Vec<PackageBoundary>> {
     // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
-    let cross_file_rows = db.query_json(
-        "SELECT s1.file_path AS caller_file, s2.file_path AS callee_file \
-         FROM call_edges ce \
-         JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
-         JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
-         WHERE ce.caller_symbol_uid IS NOT NULL \
-           AND ce.callee_symbol_uid IS NOT NULL \
-           AND s1.file_path != s2.file_path",
-        &[],
-    )?;
+    let cross_file_rows = db.cross_file_call_file_pairs()?;
 
     let mut pkg_counts: HashMap<(String, String), u32> = HashMap::new();
-    for row in &cross_file_rows {
-        let from_fp = row
-            .get("caller_file")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
-        let to_fp = row
-            .get("callee_file")
-            .and_then(|v| v.as_str())
-            .unwrap_or("");
+    for (from_fp, to_fp) in &cross_file_rows {
         let from_pkg = extract_package(from_fp);
         let to_pkg = extract_package(to_fp);
         if from_pkg != to_pkg {

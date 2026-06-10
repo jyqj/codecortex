@@ -284,19 +284,25 @@ impl CodeIndex {
 
     fn after_successful_index_build(&mut self) {
         self.generation = self.generation.saturating_add(1);
-        if let Some(engine) = self.engine.as_mut() {
-            engine.invalidate_cache(self.generation);
-        }
+        // No manual search-cache invalidation: cc-db bumps the persisted
+        // index epoch inside every write transaction and SearchEngine keys
+        // its caches on it at search time.
         self.repo_tier = Some(self.compute_repo_tier());
         self.needs_initial_index = false;
     }
 
     /// Drop cached search results after recovering a poisoned lock — they may
     /// have been computed from a half-mutated CodeIndex.
+    ///
+    /// Correctness depends on the CodeIndex lock ordering: this runs while
+    /// holding the CodeIndex WRITE lock (`&mut self`), and every in-flight
+    /// search — including its result-cache `put` — completes under a READ
+    /// lock, so no stale entry can be inserted concurrently with or after
+    /// this clear.
     pub fn invalidate_search_cache_after_poison(&mut self) {
         self.generation = self.generation.saturating_add(1);
-        if let Some(engine) = self.engine.as_mut() {
-            engine.invalidate_cache(self.generation);
+        if let Some(engine) = self.engine.as_ref() {
+            engine.invalidate_cache();
         }
     }
 
@@ -361,34 +367,13 @@ impl CodeIndex {
         let engine = self.ensure_engine()?;
         let detected_intent = intent.unwrap_or_else(|| detect_intent(query));
         let request = build_context_search_request(query, top_k, overrides);
-        // Use search_extended to get rerank_window results (not just top_k)
-        // so graph enrichment can promote high-connectivity results.
-        let mut hits = engine.search_extended(&request)?;
-
-        // Graph enrichment: resolve UIDs, compute graph_score, collect neighbor/test nodes.
-        let db = self.ensure_db()?;
+        // Graph-aware rerank happens entirely inside cc-search: it searches a
+        // rerank_window-sized candidate list, folds graph connectivity into
+        // rerank_score, and returns the FINAL top_k ordering.  Hits must not
+        // be re-scored or re-sorted here (see SearchHit::rerank_score).
         let graph_limits = tier.graph_enrich_limits();
-        let enrichment = Self::graph_enrich(db, &hits, &graph_limits, token_budget);
-
-        // Graph score contribution to final ranking
-        let gw = self
-            .config
-            .as_ref()
-            .map(|c| c.ranking.graph_rerank_weight)
-            .unwrap_or(0.3);
-        for hit in &mut hits {
-            if let Some(&gs) = enrichment.scores.get(&hit.chunk_id) {
-                hit.graph_score = gs;
-                hit.rerank_score += gs * gw;
-            }
-        }
-        // Re-sort with graph contribution and truncate to actual top_k
-        hits.sort_by(|a, b| {
-            b.rerank_score
-                .partial_cmp(&a.rerank_score)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
-        hits.truncate(top_k);
+        let (hits, enrichment) =
+            engine.search_with_graph_context(&request, &graph_limits, token_budget)?;
 
         let mut nodes = Vec::with_capacity(hits.len());
         let mut spans = Vec::with_capacity(hits.len());
@@ -529,166 +514,6 @@ impl CodeIndex {
                 },
             }),
         })
-    }
-
-    // ── graph enrichment (private) ─────────────────────────────────────
-
-    fn graph_enrich(
-        db: &IndexDb,
-        hits: &[cc_model::search::SearchHit],
-        limits: &cc_model::config::GraphEnrichLimits,
-        token_budget: u32,
-    ) -> GraphEnrichment {
-        let mut enrichment = GraphEnrichment::default();
-        if hits.is_empty() {
-            return enrichment;
-        }
-
-        // 1. Batch load symbols for hit file paths.
-        let file_paths: Vec<&str> = hits
-            .iter()
-            .take(limits.max_resolve)
-            .map(|h| h.file_path.as_str())
-            .collect::<HashSet<_>>()
-            .into_iter()
-            .collect();
-        let all_symbols = db.symbols_by_file_paths(&file_paths).unwrap_or_default();
-
-        // 2. Resolve each hit → symbol_uid via (file_path, symbol_name) or span overlap.
-        let mut resolved: Vec<(String, String)> = Vec::new(); // (chunk_id, uid)
-        let mut seen_uids = HashSet::new();
-        for hit in hits.iter().take(limits.max_resolve) {
-            let uid = all_symbols.iter().find(|s| {
-                s.file_path == hit.file_path
-                    && (hit.symbol_name.as_deref() == Some(&s.name)
-                        || (s.start_line <= hit.start_line && s.end_line >= hit.end_line))
-            });
-            if let Some(sym) = uid {
-                if let Some(ref uid) = sym.symbol_uid {
-                    if seen_uids.insert(uid.clone()) {
-                        resolved.push((hit.chunk_id.clone(), uid.clone()));
-                    }
-                }
-            }
-        }
-        enrichment.symbols_resolved = resolved.len();
-
-        // 3. Degree metrics → graph_score per chunk.
-        for (chunk_id, uid) in &resolved {
-            if let Ok(info) = db.symbol_degree_details(uid) {
-                let total = (info.in_degree + info.out_degree) as f64;
-                let connectivity = (total + 1.0).ln() / 10.0;
-                let ref_bonus = (info.ref_count as f64).min(10.0) / 100.0;
-                let score = (connectivity + ref_bonus).min(0.4);
-                enrichment.scores.insert(chunk_id.clone(), score);
-            }
-        }
-
-        // 4. Callers + callees → ContextNodes.
-        let graph_budget = (token_budget * limits.graph_budget_pct) / 100;
-        let mut graph_tokens = 0u32;
-        let mut neighbor_uids = HashSet::new();
-
-        for (_chunk_id, uid) in &resolved {
-            if let Ok(callers) = db.caller_rows_by_uid(uid, limits.callers_per_sym) {
-                for edge in &callers {
-                    let caller_uid = edge.caller_symbol_uid.as_deref().unwrap_or("");
-                    if caller_uid.is_empty() || !neighbor_uids.insert(caller_uid.to_string()) {
-                        continue;
-                    }
-                    let text = format!(
-                        "caller: {} → {} ({}:{})",
-                        edge.caller_symbol.as_deref().unwrap_or("?"),
-                        edge.callee_symbol,
-                        edge.file_path,
-                        edge.line
-                    );
-                    let est = (text.len() / 4).max(10) as u32;
-                    if graph_tokens + est > graph_budget {
-                        break;
-                    }
-                    graph_tokens += est;
-                    let node_id = format!("graph:caller:{}", caller_uid);
-                    let mut node = ContextNode::new(
-                        node_id.clone(),
-                        NodeType::CallEdge,
-                        Role::Neighbor,
-                        format!("Caller: {}", edge.caller_symbol.as_deref().unwrap_or("?")),
-                        text,
-                    );
-                    node.file_path = Some(edge.file_path.clone());
-                    node.start_line = Some(edge.line);
-                    node.confidence = edge.confidence;
-                    node.token_estimate = est;
-                    node.source = "graph".to_string();
-                    enrichment.nodes.push(node);
-                    enrichment.callers_added += 1;
-                }
-            }
-            if let Ok(callees) = db.callee_rows_by_uid(uid, limits.callees_per_sym) {
-                for edge in &callees {
-                    let callee_uid = edge.callee_symbol_uid.as_deref().unwrap_or("");
-                    if callee_uid.is_empty() || !neighbor_uids.insert(callee_uid.to_string()) {
-                        continue;
-                    }
-                    let text = format!(
-                        "callee: {} → {} ({}:{})",
-                        edge.caller_symbol.as_deref().unwrap_or("?"),
-                        edge.callee_symbol,
-                        edge.file_path,
-                        edge.line
-                    );
-                    let est = (text.len() / 4).max(10) as u32;
-                    if graph_tokens + est > graph_budget {
-                        break;
-                    }
-                    graph_tokens += est;
-                    let node_id = format!("graph:callee:{}", callee_uid);
-                    let mut node = ContextNode::new(
-                        node_id.clone(),
-                        NodeType::CallEdge,
-                        Role::Neighbor,
-                        format!("Callee: {}", edge.callee_symbol),
-                        text,
-                    );
-                    node.file_path = Some(edge.file_path.clone());
-                    node.start_line = Some(edge.line);
-                    node.confidence = edge.confidence;
-                    node.token_estimate = est;
-                    node.source = "graph".to_string();
-                    enrichment.nodes.push(node);
-                    enrichment.callees_added += 1;
-                }
-            }
-        }
-
-        // 5. Test coverage.
-        let hit_files: Vec<String> = file_paths.iter().map(|s| s.to_string()).collect();
-        if let Ok(tests) = db.find_impacted_tests(&hit_files) {
-            for test_path in tests.iter().take(limits.max_tests) {
-                let text = format!("test file: {}", test_path);
-                let est = (text.len() / 4).max(10) as u32;
-                if graph_tokens + est > graph_budget {
-                    break;
-                }
-                graph_tokens += est;
-                let node_id = format!("graph:test:{}", test_path);
-                let mut node = ContextNode::new(
-                    node_id,
-                    NodeType::TestEdge,
-                    Role::Test,
-                    format!("Test: {}", test_path),
-                    text,
-                );
-                node.file_path = Some(test_path.clone());
-                node.token_estimate = est;
-                node.source = "graph".to_string();
-                enrichment.nodes.push(node);
-                enrichment.tests_found += 1;
-            }
-        }
-
-        enrichment
     }
 
     pub fn find_symbol(
@@ -1041,16 +866,6 @@ pub(crate) fn centrality_hint(info: &cc_db::index_db::SymbolDegreeInfo) -> &'sta
 
 pub use crate::engine_query::{compute_package_boundaries, PackageBoundary};
 
-#[derive(Default)]
-struct GraphEnrichment {
-    scores: HashMap<String, f64>,
-    nodes: Vec<ContextNode>,
-    symbols_resolved: usize,
-    callers_added: usize,
-    callees_added: usize,
-    tests_found: usize,
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1357,6 +1172,196 @@ mod tests {
             .unwrap();
         assert!(!output.default_limit_applied);
         assert_eq!(output.limit, Some(5));
+    }
+
+    // ── graph rerank parity fixture ─────────────────────────────────
+    //
+    // Fixates the end-to-end behaviour of `search_in_context_with`'s graph
+    // rerank on a fixture with call edges: hit ORDER, graph_score values,
+    // and rerank_score values were captured from the pre-refactor
+    // implementation (graph_enrich in cc-server) and must stay bit-identical
+    // after the rerank moves into cc-search.
+
+    fn insert_context_fixture_file(
+        db: &cc_db::index_db::IndexDb,
+        file_path: &str,
+        text: &str,
+        symbol_name: &str,
+        symbol_uid: Option<&str>,
+        call_edges: Vec<cc_model::CallEdgeRecord>,
+    ) {
+        use cc_db::index_db::FileWriteUnit;
+        use cc_model::{ChunkRecord, Language, ParseOutcome, ParserTier, SymbolRecord};
+
+        let chunk = ChunkRecord {
+            chunk_id: format!("chunk:{}", file_path),
+            file_path: file_path.to_string(),
+            language: Language::Rust,
+            chunk_index: 0,
+            start_line: 1,
+            end_line: 3,
+            breadcrumb: "root".to_string(),
+            text: text.to_string(),
+            symbol_name: Some(symbol_name.to_string()),
+            symbol_kind: Some(cc_model::SymbolKind::Function),
+            token_estimate: 8,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+        };
+        let symbol = SymbolRecord {
+            symbol_id: format!("sym:{file_path}:{symbol_name}"),
+            file_path: file_path.to_string(),
+            name: symbol_name.to_string(),
+            kind: cc_model::SymbolKind::Function,
+            container: None,
+            start_line: 1,
+            end_line: 3,
+            start_col: 0,
+            end_col: 0,
+            signature: None,
+            doc: None,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+            qname: None,
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: symbol_uid.map(|s| s.to_string()),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        };
+        let outcome = ParseOutcome {
+            summary: text.to_string(),
+            chunks: vec![chunk],
+            symbols: vec![symbol],
+            call_edges,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+            ..Default::default()
+        };
+        let conn = db.read_conn().unwrap();
+        cc_db::index_db::IndexDb::insert_file_data(
+            &conn,
+            &FileWriteUnit {
+                rel_path: file_path.to_string(),
+                language: Language::Rust,
+                content_hash: format!("hash-{file_path}"),
+                mtime: 0.0,
+                size: text.len() as u64,
+                outcome,
+            },
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn graph_rerank_parity_with_pre_refactor_baseline() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        let db = idx.ensure_db().unwrap().clone();
+
+        // beta: lexically stronger (matches all 8 query tokens), no symbol_uid
+        // so the graph lane and graph enrichment cannot see it.
+        insert_context_fixture_file(
+            &db,
+            "src/beta.rs",
+            "fn ranktoken() { alphaword(); betaword(); gammaword(); deltaword(); epsword(); zetaword(); etaword(); }",
+            "ranktoken",
+            None,
+            vec![],
+        );
+        // alpha: lexically weaker (7 of 8 query tokens) but heavily connected
+        // in the call graph (20 outgoing edges -> high graph_score).
+        let ghost_edges: Vec<cc_model::CallEdgeRecord> = (0..20)
+            .map(|i| cc_model::CallEdgeRecord {
+                edge_id: format!("edge:alpha->ghost{i}"),
+                file_path: "src/alpha.rs".to_string(),
+                caller_symbol: Some("ranktoken".to_string()),
+                callee_symbol: format!("ghost_fn_{i}"),
+                line: 2,
+                caller_symbol_uid: Some("uid:alpha".to_string()),
+                callee_symbol_uid: Some(format!("uid:ghost{i}")),
+                ..Default::default()
+            })
+            .collect();
+        insert_context_fixture_file(
+            &db,
+            "src/alpha.rs",
+            "fn ranktoken() { alphaword(); betaword(); gammaword(); deltaword(); epsword(); zetaword(); }",
+            "ranktoken",
+            Some("uid:alpha"),
+            ghost_edges,
+        );
+
+        let query = "ranktoken alphaword betaword gammaword deltaword epsword zetaword etaword";
+        let envelope = idx
+            .search_in_context_with(query, 2, None, SearchRequest::default())
+            .unwrap();
+
+        let hits = envelope.machine_pack["hits"].as_array().unwrap();
+        assert_eq!(hits.len(), 2, "expected exactly the two fixture hits");
+
+        let order: Vec<&str> = hits
+            .iter()
+            .map(|h| h["chunk_id"].as_str().unwrap())
+            .collect();
+        let graph_scores: Vec<f64> = hits
+            .iter()
+            .map(|h| h["graph_score"].as_f64().unwrap())
+            .collect();
+        let rerank_scores: Vec<f64> = hits
+            .iter()
+            .map(|h| h["rerank_score"].as_f64().unwrap())
+            .collect();
+
+        // Baseline captured from the pre-refactor implementation
+        // (graph_enrich + re-sort living in cc-server). The graph boost must
+        // FLIP the order: alpha is lexically weaker but heavily connected.
+        assert_eq!(
+            order,
+            vec!["chunk:src/alpha.rs", "chunk:src/beta.rs"],
+            "graph-boosted hit order must match pre-refactor baseline"
+        );
+
+        let expected_alpha_graph = (21.0f64).ln() / 10.0; // ln(in+out+1)/10, 20 edges
+        assert!(
+            (graph_scores[0] - expected_alpha_graph).abs() < 1e-12,
+            "alpha graph_score drifted: got {}, want {}",
+            graph_scores[0],
+            expected_alpha_graph
+        );
+        assert_eq!(graph_scores[1], 0.0, "beta has no graph connectivity");
+
+        // Bit-exact rerank values captured pre-refactor; any scoring-constant
+        // drift during the ScoringConfig migration shows up here.
+        assert!(
+            (rerank_scores[0] - 0.7865038336950975).abs() < 1e-12,
+            "alpha rerank_score drifted: got {}",
+            rerank_scores[0]
+        );
+        assert!(
+            (rerank_scores[1] - 0.7275681946166044).abs() < 1e-12,
+            "beta rerank_score drifted: got {}",
+            rerank_scores[1]
+        );
+
+        // Flip proof: without the graph contribution (weight 0.3) alpha would
+        // rank BELOW beta — the final ordering genuinely depends on the graph
+        // rerank step.
+        let alpha_pre_graph = rerank_scores[0] - graph_scores[0] * 0.3;
+        assert!(
+            alpha_pre_graph < rerank_scores[1],
+            "fixture must demonstrate a graph-driven flip: alpha pre-graph {} vs beta {}",
+            alpha_pre_graph,
+            rerank_scores[1]
+        );
     }
 
     #[test]

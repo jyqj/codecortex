@@ -239,22 +239,228 @@ impl Default for SearchConfig {
 }
 
 /// Ranking configuration for search result scoring.
+///
+/// Centralizes the tunable scoring weights used by cc-search (chunk rerank,
+/// file preselection, and graph-lane seeding) so tuning happens in one
+/// place instead of scattered literals.  A few structural constants (e.g.
+/// the preselect graph-neighbor increment/cap) deliberately remain literals
+/// at their use sites.  All defaults preserve the historical hard-coded
+/// values exactly.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct RankingConfig {
     /// Weight of graph_score contribution to final rerank_score.
     /// Range: 0.0 (disabled) to 1.0 (maximum influence).
     #[serde(default = "default_graph_rerank_weight")]
     pub graph_rerank_weight: f64,
+
+    // ── Chunk rerank bonuses (plan.rs::hit_from_chunk) ──────────────
+    /// Weight of query-token/text overlap added to the fused score.
+    #[serde(default = "default_overlap_weight")]
+    pub overlap_weight: f64,
+    /// Bonus when a query token exactly matches the chunk's symbol name.
+    #[serde(default = "default_symbol_exact_bonus")]
+    pub symbol_exact_bonus: f64,
+    /// Bonus when the file path starts with the requested path prefix.
+    #[serde(default = "default_path_prefix_bonus")]
+    pub path_prefix_bonus: f64,
+    /// Bonus for project documentation files (README, docs/, ADRs).
+    #[serde(default = "default_doc_file_bonus")]
+    pub doc_file_bonus: f64,
+    /// Bonus for files in the caller's working set (boost_file_paths).
+    #[serde(default = "default_working_set_boost")]
+    pub working_set_boost: f64,
+    /// Bonus for recently-edited files (recent_file_paths).
+    #[serde(default = "default_recent_file_boost")]
+    pub recent_file_boost: f64,
+    /// Bonus for pinned context files (pinned_file_paths).
+    #[serde(default = "default_pinned_context_boost")]
+    pub pinned_context_boost: f64,
+    /// Bonus for overlay/dirty-buffer files (overlay_file_paths).
+    #[serde(default = "default_overlay_neighbor_boost")]
+    pub overlay_neighbor_boost: f64,
+    /// Multiplier mapping the stage-A (preselect) file score into rerank.
+    #[serde(default = "default_stage_a_weight")]
+    pub stage_a_weight: f64,
+    /// Cap on the stage-A file-score contribution to rerank.
+    #[serde(default = "default_stage_a_cap")]
+    pub stage_a_cap: f64,
+    /// Bonus when a `name:` DSL filter matches the hit's symbol name.
+    #[serde(default = "default_dsl_name_bonus")]
+    pub dsl_name_bonus: f64,
+
+    // ── File preselection scores (preselect.rs) ─────────────────────
+    /// Working-set layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_working_set_floor")]
+    pub preselect_working_set_floor: f64,
+    #[serde(default = "default_preselect_working_set_scale")]
+    pub preselect_working_set_scale: f64,
+    /// Recent-files layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_recent_floor")]
+    pub preselect_recent_floor: f64,
+    #[serde(default = "default_preselect_recent_scale")]
+    pub preselect_recent_scale: f64,
+    /// Pinned-files layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_pinned_floor")]
+    pub preselect_pinned_floor: f64,
+    #[serde(default = "default_preselect_pinned_scale")]
+    pub preselect_pinned_scale: f64,
+    /// Overlay (dirty-buffer) layer: score is `max(floor, scale / rank)`.
+    #[serde(default = "default_preselect_overlay_floor")]
+    pub preselect_overlay_floor: f64,
+    #[serde(default = "default_preselect_overlay_scale")]
+    pub preselect_overlay_scale: f64,
+    /// FTS summary layer: score is `base + 1 / (1 + |bm25|)`.
+    #[serde(default = "default_preselect_fts_base")]
+    pub preselect_fts_base: f64,
+    /// Per-token symbol-name match: exact name equality.
+    #[serde(default = "default_preselect_symbol_exact_bonus")]
+    pub preselect_symbol_exact_bonus: f64,
+    /// Per-token symbol-name match: substring (fuzzy) match.
+    #[serde(default = "default_preselect_symbol_fuzzy_bonus")]
+    pub preselect_symbol_fuzzy_bonus: f64,
+    /// Per-token path component match.
+    #[serde(default = "default_preselect_path_token_bonus")]
+    pub preselect_path_token_bonus: f64,
+    /// Graph neighbor expansion: base score for 1-hop call-graph neighbors.
+    #[serde(default = "default_preselect_graph_neighbor_base")]
+    pub preselect_graph_neighbor_base: f64,
+    /// Fallback layer: score for recently-indexed files when nothing matched.
+    #[serde(default = "default_preselect_fallback_score")]
+    pub preselect_fallback_score: f64,
+
+    // ── Graph retrieval lane (lanes.rs) ─────────────────────────────
+    /// Score decay per hop when expanding from a seed symbol to its
+    /// call-graph neighbors.
+    #[serde(default = "default_graph_neighbor_decay")]
+    pub graph_neighbor_decay: f64,
+    /// Seed relevance for an exact symbol-name match.
+    #[serde(default = "default_graph_seed_exact_score")]
+    pub graph_seed_exact_score: f64,
+    /// Seed relevance for a substring symbol-name match.
+    #[serde(default = "default_graph_seed_fuzzy_score")]
+    pub graph_seed_fuzzy_score: f64,
 }
 
 fn default_graph_rerank_weight() -> f64 {
     0.3
+}
+fn default_overlap_weight() -> f64 {
+    0.35
+}
+fn default_symbol_exact_bonus() -> f64 {
+    0.18
+}
+fn default_path_prefix_bonus() -> f64 {
+    0.05
+}
+fn default_doc_file_bonus() -> f64 {
+    0.08
+}
+fn default_working_set_boost() -> f64 {
+    0.22
+}
+fn default_recent_file_boost() -> f64 {
+    0.12
+}
+fn default_pinned_context_boost() -> f64 {
+    0.20
+}
+fn default_overlay_neighbor_boost() -> f64 {
+    0.10
+}
+fn default_stage_a_weight() -> f64 {
+    0.04
+}
+fn default_stage_a_cap() -> f64 {
+    0.25
+}
+fn default_dsl_name_bonus() -> f64 {
+    0.25
+}
+fn default_preselect_working_set_floor() -> f64 {
+    2.0
+}
+fn default_preselect_working_set_scale() -> f64 {
+    5.0
+}
+fn default_preselect_recent_floor() -> f64 {
+    1.2
+}
+fn default_preselect_recent_scale() -> f64 {
+    3.5
+}
+fn default_preselect_pinned_floor() -> f64 {
+    2.2
+}
+fn default_preselect_pinned_scale() -> f64 {
+    4.0
+}
+fn default_preselect_overlay_floor() -> f64 {
+    1.5
+}
+fn default_preselect_overlay_scale() -> f64 {
+    3.0
+}
+fn default_preselect_fts_base() -> f64 {
+    1.4
+}
+fn default_preselect_symbol_exact_bonus() -> f64 {
+    2.0
+}
+fn default_preselect_symbol_fuzzy_bonus() -> f64 {
+    1.2
+}
+fn default_preselect_path_token_bonus() -> f64 {
+    1.0
+}
+fn default_preselect_graph_neighbor_base() -> f64 {
+    0.8
+}
+fn default_preselect_fallback_score() -> f64 {
+    0.2
+}
+fn default_graph_neighbor_decay() -> f64 {
+    0.5
+}
+fn default_graph_seed_exact_score() -> f64 {
+    1.0
+}
+fn default_graph_seed_fuzzy_score() -> f64 {
+    0.5
 }
 
 impl Default for RankingConfig {
     fn default() -> Self {
         Self {
             graph_rerank_weight: default_graph_rerank_weight(),
+            overlap_weight: default_overlap_weight(),
+            symbol_exact_bonus: default_symbol_exact_bonus(),
+            path_prefix_bonus: default_path_prefix_bonus(),
+            doc_file_bonus: default_doc_file_bonus(),
+            working_set_boost: default_working_set_boost(),
+            recent_file_boost: default_recent_file_boost(),
+            pinned_context_boost: default_pinned_context_boost(),
+            overlay_neighbor_boost: default_overlay_neighbor_boost(),
+            stage_a_weight: default_stage_a_weight(),
+            stage_a_cap: default_stage_a_cap(),
+            dsl_name_bonus: default_dsl_name_bonus(),
+            preselect_working_set_floor: default_preselect_working_set_floor(),
+            preselect_working_set_scale: default_preselect_working_set_scale(),
+            preselect_recent_floor: default_preselect_recent_floor(),
+            preselect_recent_scale: default_preselect_recent_scale(),
+            preselect_pinned_floor: default_preselect_pinned_floor(),
+            preselect_pinned_scale: default_preselect_pinned_scale(),
+            preselect_overlay_floor: default_preselect_overlay_floor(),
+            preselect_overlay_scale: default_preselect_overlay_scale(),
+            preselect_fts_base: default_preselect_fts_base(),
+            preselect_symbol_exact_bonus: default_preselect_symbol_exact_bonus(),
+            preselect_symbol_fuzzy_bonus: default_preselect_symbol_fuzzy_bonus(),
+            preselect_path_token_bonus: default_preselect_path_token_bonus(),
+            preselect_graph_neighbor_base: default_preselect_graph_neighbor_base(),
+            preselect_fallback_score: default_preselect_fallback_score(),
+            graph_neighbor_decay: default_graph_neighbor_decay(),
+            graph_seed_exact_score: default_graph_seed_exact_score(),
+            graph_seed_fuzzy_score: default_graph_seed_fuzzy_score(),
         }
     }
 }
@@ -764,7 +970,8 @@ mod tests {
         // for the rest (previously failed with `missing field chunk_line_budget`).
         let json = r#"{
             "indexing": { "max_file_bytes": 1024 },
-            "search": { "lexical_top_k": 8 }
+            "search": { "lexical_top_k": 8 },
+            "ranking": { "overlap_weight": 0.5 }
         }"#;
         let config: ProjectConfig = serde_json::from_str(json).expect("partial config must parse");
 
@@ -777,6 +984,13 @@ mod tests {
         assert_eq!(config.search.lexical_top_k, 8);
         assert_eq!(config.search.grep_top_k, default_grep_top_k());
         assert_eq!(config.search.rrf_k, default_rrf_k());
+        assert_eq!(config.ranking.overlap_weight, 0.5);
+        assert_eq!(
+            config.ranking.graph_rerank_weight,
+            default_graph_rerank_weight()
+        );
+        assert_eq!(config.ranking.symbol_exact_bonus, 0.18);
+        assert_eq!(config.ranking.preselect_working_set_scale, 5.0);
     }
 
     #[test]

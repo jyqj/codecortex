@@ -232,6 +232,7 @@ impl IndexDb {
             }
         }
 
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -254,8 +255,13 @@ impl IndexDb {
                 .write_conn
                 .lock()
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            conn.execute("DELETE FROM test_edges", [])
+            let tx = conn
+                .unchecked_transaction()
                 .map_err(|e| CcError::Database(e.to_string()))?;
+            tx.execute("DELETE FROM test_edges", [])
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            Self::bump_index_epoch_on(&tx)?;
+            tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         }
         self.rebuild_test_edges_for_files(&all_files)
     }
@@ -275,6 +281,7 @@ impl IndexDb {
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
         Self::insert_route_nodes_on(&tx, routes)?;
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -313,6 +320,7 @@ impl IndexDb {
                 rusqlite::params![e.edge_id, e.file_path, e.source_symbol, e.source_symbol_uid, e.target_symbol, e.target_symbol_uid, e.relation_kind.as_str(), e.line, e.confidence, e.parser_tier.as_str()],
             ).map_err(|e| CcError::Database(e.to_string()))?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -330,6 +338,7 @@ impl IndexDb {
             rusqlite::params![file_path],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -428,6 +437,7 @@ impl IndexDb {
                 rusqlite::params![e.edge_id, e.file_a, e.file_b, e.co_change_count, e.total_commits_a, e.total_commits_b, e.confidence],
             ).map_err(|e| CcError::Database(e.to_string()))?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -506,6 +516,7 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -534,6 +545,7 @@ impl IndexDb {
                 rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
             )?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -614,12 +626,17 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let count = conn
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let count = tx
             .execute(
                 "DELETE FROM call_edges WHERE synthesized_by = ?1",
                 rusqlite::params![synthesized_by],
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(count)
     }
 
@@ -653,6 +670,7 @@ impl IndexDb {
                 ],
             )?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(edges.len())
     }
@@ -670,12 +688,17 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "INSERT INTO runtime_evidence(evidence_id, service_name, method, path, status_code, observed_count, first_seen, last_seen)
              VALUES(?1, ?2, ?3, ?4, ?5, 1, ?6, ?6)
              ON CONFLICT(evidence_id) DO UPDATE SET observed_count = observed_count + 1, last_seen = ?6",
             rusqlite::params![evidence_id, service_name, method, path, status_code, now],
         ).map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_evidence_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -684,11 +707,16 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "UPDATE runtime_evidence SET http_edge_id = ?2 WHERE evidence_id = ?1",
             rusqlite::params![evidence_id, http_edge_id],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_evidence_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -697,7 +725,10 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "UPDATE runtime_evidence SET p95_ms = CASE \
                WHEN p95_ms IS NULL THEN ?1 \
                ELSE p95_ms * 0.95 + ?1 * 0.05 \
@@ -705,6 +736,8 @@ impl IndexDb {
             rusqlite::params![duration_ms, evidence_id],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_evidence_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -713,25 +746,92 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "UPDATE runtime_evidence SET route_id = ?1 WHERE evidence_id = ?2",
             rusqlite::params![route_id, evidence_id],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_evidence_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
+    /// Evidence-driven confidence boost. Although it mutates `http_call_edges`,
+    /// it only happens during evidence ingestion, so it bumps `evidence_epoch`
+    /// (caches derived from http edges — bridges, adjacency — are keyed on it).
     pub fn boost_http_edge_confidence(&self, http_edge_id: &str, boost: f64) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "UPDATE http_call_edges SET confidence = MIN(1.0, confidence + ?2) WHERE edge_id = ?1",
             rusqlite::params![http_edge_id, boost],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_evidence_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
+    }
+
+    /// Match a runtime-evidence observation against indexed HTTP call edges:
+    /// returns `(edge_id, candidate_count)` for `normalized_path`. A
+    /// method-specific match is tried first (when `method` is given), then a
+    /// path-only fallback; lookup misses degrade to `None`/`0`.
+    pub fn http_edge_match_for_path(
+        &self,
+        normalized_path: &str,
+        method: Option<&str>,
+    ) -> CcResult<(Option<String>, u32)> {
+        let conn = self.read_conn()?;
+
+        let edge_id: Option<String> = if let Some(method) = method {
+            conn.query_row(
+                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
+                rusqlite::params![normalized_path, method],
+                |r| r.get(0),
+            )
+            .ok()
+        } else {
+            None
+        };
+
+        let edge_id = edge_id.or_else(|| {
+            conn.query_row(
+                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
+                [normalized_path],
+                |r| r.get(0),
+            )
+            .ok()
+        });
+
+        let candidate_count: u32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
+                [normalized_path],
+                |r| r.get(0),
+            )
+            .unwrap_or(0);
+
+        Ok((edge_id, candidate_count))
+    }
+
+    /// First route id registered under `normalized_path`, if any.
+    pub fn route_id_for_normalized_path(&self, normalized_path: &str) -> CcResult<Option<String>> {
+        let conn = self.read_conn()?;
+        Ok(conn
+            .query_row(
+                "SELECT route_id FROM routes WHERE normalized_path = ?1 LIMIT 1",
+                [normalized_path],
+                |r| r.get(0),
+            )
+            .ok())
     }
 
     pub fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
@@ -818,6 +918,123 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
         (db, tmp)
+    }
+
+    #[test]
+    fn evidence_writes_bump_only_evidence_epoch() {
+        let (db, _tmp) = setup();
+        assert_eq!(db.generation().unwrap().evidence_epoch, 0);
+
+        db.upsert_runtime_evidence(
+            "ev1",
+            "svc-a",
+            Some("GET"),
+            "/api/users",
+            Some("200"),
+            "2024-01-01T00:00:00Z",
+        )
+        .unwrap();
+        let after_upsert = db.generation().unwrap();
+        assert_eq!(
+            after_upsert.index_epoch, 0,
+            "evidence must not touch index_epoch"
+        );
+        assert_eq!(after_upsert.evidence_epoch, 1);
+
+        db.boost_http_edge_confidence("missing-edge", 0.15).unwrap();
+        let after_boost = db.generation().unwrap();
+        assert_eq!(after_boost.index_epoch, 0);
+        assert!(after_boost.evidence_epoch > after_upsert.evidence_epoch);
+    }
+
+    #[test]
+    fn postprocess_writes_bump_index_epoch() {
+        let (db, _tmp) = setup();
+        let start = db.generation().unwrap().index_epoch;
+
+        db.insert_semantic_edges_batch(&[cc_model::edge::SemanticEdgeRecord {
+            edge_id: "sem:gen".to_string(),
+            file_path: "src/a.py".to_string(),
+            source_symbol: "A".to_string(),
+            source_symbol_uid: Some("uid:a".to_string()),
+            target_symbol: "B".to_string(),
+            target_symbol_uid: Some("uid:b".to_string()),
+            relation_kind: cc_model::edge::SemanticRelation::Inherits,
+            line: 1,
+            confidence: 0.9,
+            parser_tier: cc_model::ParserTier::TreeSitter,
+        }])
+        .unwrap();
+        let after_semantic = db.generation().unwrap().index_epoch;
+        assert!(after_semantic > start);
+
+        db.delete_synthetic_call_edges("event_emitter").unwrap();
+        assert!(db.generation().unwrap().index_epoch > after_semantic);
+        assert_eq!(db.generation().unwrap().evidence_epoch, 0);
+    }
+
+    #[test]
+    fn http_edge_match_prefers_method_then_falls_back_to_path() {
+        let (db, _tmp) = setup();
+        let conn = db.read_conn().unwrap();
+        conn.execute(
+            "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+             VALUES('src/client.ts', 'TypeScript', 'hash', 0.0, 100, '2025-01-01')",
+            [],
+        )
+        .unwrap();
+        for (edge_id, method) in [("e_get", Some("GET")), ("e_any", None::<&str>)] {
+            conn.execute(
+                "INSERT INTO http_call_edges(edge_id, file_path, url_or_path, normalized_path, method, line)
+                 VALUES(?1, 'src/client.ts', '/api/users', '/api/users', ?2, 10)",
+                rusqlite::params![edge_id, method],
+            )
+            .unwrap();
+        }
+        drop(conn);
+
+        let (edge_id, count) = db
+            .http_edge_match_for_path("/api/users", Some("GET"))
+            .unwrap();
+        assert_eq!(edge_id.as_deref(), Some("e_get"));
+        assert_eq!(count, 2);
+
+        // Unknown method falls back to the path-only first match.
+        let (fallback, _) = db
+            .http_edge_match_for_path("/api/users", Some("DELETE"))
+            .unwrap();
+        assert!(fallback.is_some());
+
+        let (missing, missing_count) = db.http_edge_match_for_path("/nope", None).unwrap();
+        assert!(missing.is_none());
+        assert_eq!(missing_count, 0);
+    }
+
+    #[test]
+    fn route_id_for_normalized_path_returns_first_match() {
+        let (db, _tmp) = setup();
+        let conn = db.read_conn().unwrap();
+        conn.execute(
+            "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at)
+             VALUES('src/routes.ts', 'TypeScript', 'hash', 0.0, 100, '2025-01-01')",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO routes(edge_id, file_path, route_path, line, normalized_path, route_id)
+             VALUES('r1', 'src/routes.ts', '/api/users', 5, '/api/users', 'r1')",
+            [],
+        )
+        .unwrap();
+        drop(conn);
+
+        assert_eq!(
+            db.route_id_for_normalized_path("/api/users")
+                .unwrap()
+                .as_deref(),
+            Some("r1")
+        );
+        assert!(db.route_id_for_normalized_path("/nope").unwrap().is_none());
     }
 
     #[test]

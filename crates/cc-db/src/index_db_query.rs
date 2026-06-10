@@ -263,6 +263,18 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
+    /// Total row count of `table`. The table name must come from a trusted
+    /// static catalog (it is interpolated, not bound).
+    pub fn count_table_rows(&self, table: &str) -> CcResult<i64> {
+        let conn = self.read_conn()?;
+        conn.query_row(
+            &format!("SELECT COUNT(*) AS cnt FROM {}", table),
+            [],
+            |row| row.get(0),
+        )
+        .map_err(|e| CcError::Database(e.to_string()))
+    }
+
     pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
@@ -402,6 +414,17 @@ mod tests {
             rusqlite::params![file_path],
         )
         .unwrap();
+    }
+
+    #[test]
+    fn count_table_rows_counts_and_errors_on_missing_table() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs");
+        insert_file(&db, "src/b.rs");
+
+        assert_eq!(db.count_table_rows("files").unwrap(), 2);
+        assert_eq!(db.count_table_rows("chunks").unwrap(), 0);
+        assert!(db.count_table_rows("no_such_table").is_err());
     }
 
     #[test]

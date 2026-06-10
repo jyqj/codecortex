@@ -414,6 +414,7 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
         }
 
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -426,11 +427,16 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "UPDATE symbols SET community_id = ?1 WHERE community_id IS NULL",
             rusqlite::params![community_id],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -454,6 +460,7 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -486,6 +493,7 @@ impl IndexDb {
                 .map_err(|e| CcError::Database(e.to_string()))?;
             }
         }
+        Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
@@ -546,13 +554,18 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         let pattern = format!("{}%", edge_id_prefix);
-        let count = conn
+        let count = tx
             .execute(
                 "DELETE FROM semantic_edges WHERE edge_id LIKE ?1",
                 rusqlite::params![pattern],
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(count)
     }
 

@@ -454,12 +454,17 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute(
             "INSERT INTO adr(adr_id, title, status, context, decision, created_at, updated_at)
              VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?6)
              ON CONFLICT(adr_id) DO UPDATE SET title=?2, status=?3, context=?4, decision=?5, updated_at=?6",
             rusqlite::params![adr_id, title, status, context, decision, now],
         ).map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 
@@ -468,9 +473,14 @@ impl IndexDb {
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let affected = conn
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let affected = tx
             .execute("DELETE FROM adr WHERE adr_id = ?1", [adr_id])
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(affected > 0)
     }
 }

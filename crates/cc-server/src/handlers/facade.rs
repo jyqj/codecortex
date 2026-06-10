@@ -416,35 +416,10 @@ fn ingest_observation(
     }
 
     let norm = cc_model::route_normalize::normalize_route_path(obs.path);
-    let conn = db.read_conn().map_err(|e| e.to_string())?;
 
-    let edge_id: Option<String> = if let Some(method) = obs.method {
-        conn.query_row(
-            "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
-            rusqlite::params![&norm, method],
-            |r| r.get(0),
-        )
-        .ok()
-    } else {
-        None
-    };
-
-    let edge_id = edge_id.or_else(|| {
-        conn.query_row(
-            "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
-            [&norm],
-            |r| r.get(0),
-        )
-        .ok()
-    });
-
-    let candidate_count: u32 = conn
-        .query_row(
-            "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
-            [&norm],
-            |r| r.get(0),
-        )
-        .unwrap_or(0);
+    let (edge_id, candidate_count) = db
+        .http_edge_match_for_path(&norm, obs.method)
+        .map_err(|e| e.to_string())?;
 
     if let Some(ref eid_db) = edge_id {
         let _ = db.link_evidence_to_edge(&eid, eid_db);
@@ -457,13 +432,9 @@ fn ingest_observation(
         stats.unmatched += 1;
     }
 
-    let route_id: Option<String> = conn
-        .query_row(
-            "SELECT route_id FROM routes WHERE normalized_path = ?1 LIMIT 1",
-            [&norm],
-            |r| r.get(0),
-        )
-        .ok();
+    let route_id = db
+        .route_id_for_normalized_path(&norm)
+        .map_err(|e| e.to_string())?;
 
     if let Some(ref rid) = route_id {
         let _ = db.update_evidence_route_id(&eid, rid);
@@ -543,10 +514,9 @@ pub fn handle_ingest_traces(
         )?;
     }
 
-    // Invalidate the bridge edge cache so subsequent graph queries pick up
-    // any route/edge changes implied by the newly ingested runtime evidence.
-    crate::graph_read_model::clear_bridge_cache();
-
+    // No manual cache invalidation: every evidence write above bumps the
+    // persisted evidence_epoch inside cc-db, which keys the bridge/adjacency
+    // caches in graph_read_model.
     Ok(json!({
         "accepted": stats.accepted,
         "matched_to_edges": stats.matched,

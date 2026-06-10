@@ -9,7 +9,7 @@ use std::collections::{HashMap, HashSet};
 
 use cc_db::fts::{expand_query_text, tokenize_codeish};
 use cc_db::index_db::IndexDb;
-use cc_model::config::{RepoSizeTier, SearchConfig};
+use cc_model::config::{RankingConfig, RepoSizeTier, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
@@ -26,6 +26,7 @@ pub(crate) struct SearchPlan {
     filters: MaterializedFilters,
     preselect: PreselectResult,
     rerank_inputs: RerankInputs,
+    ranking: RankingConfig,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -81,6 +82,7 @@ impl SearchPlan {
     pub(crate) fn build(
         db: &IndexDb,
         config: &SearchConfig,
+        ranking: &RankingConfig,
         request: &SearchRequest,
         repo_tier: Option<RepoSizeTier>,
     ) -> CcResult<Self> {
@@ -111,6 +113,7 @@ impl SearchPlan {
                 overlay_paths: request.overlay_file_paths.as_deref(),
                 explicit_file_paths: request.file_paths.as_deref(),
                 limit: preselect_limit,
+                ranking,
             },
         )?;
         if !preselect.files.is_empty() && request.file_paths.is_none() {
@@ -136,7 +139,12 @@ impl SearchPlan {
             filters,
             preselect,
             rerank_inputs,
+            ranking: ranking.clone(),
         })
+    }
+
+    pub(crate) fn ranking(&self) -> &RankingConfig {
+        &self.ranking
     }
 
     pub(crate) fn request(&self) -> &SearchRequest {
@@ -206,7 +214,7 @@ impl SearchPlan {
         );
         let overlap =
             crate::rrf::overlap_score(&self.query_tokens, &format!("{}\n{}", path_text, text));
-        let mut rerank = fused_score + overlap * 0.35;
+        let mut rerank = fused_score + overlap * self.ranking.overlap_weight;
 
         let mut reasons = Vec::new();
         // Per-hit annotation is lane-driven: every lane that opted in via
@@ -241,32 +249,32 @@ impl SearchPlan {
         if let Some(ref sym_name) = symbol_name {
             let sym_lower = sym_name.to_lowercase();
             if self.query_tokens.contains(&sym_lower) {
-                rerank += 0.18;
+                rerank += self.ranking.symbol_exact_bonus;
                 reasons.push("symbol-exact".into());
             }
         }
 
         if let Some(prefix) = self.filters.path_prefix() {
             if file_path.starts_with(prefix) {
-                rerank += 0.05;
+                rerank += self.ranking.path_prefix_bonus;
             }
         }
 
         if is_project_doc(&file_path) {
-            rerank += 0.08;
+            rerank += self.ranking.doc_file_bonus;
             reasons.push("doc-file".into());
         }
 
         if self.rerank_inputs.boost_files.contains(file_path.as_str()) {
-            rerank += 0.22;
+            rerank += self.ranking.working_set_boost;
             reasons.push("working-set-boost".into());
         }
         if self.rerank_inputs.recent_files.contains(file_path.as_str()) {
-            rerank += 0.12;
+            rerank += self.ranking.recent_file_boost;
             reasons.push("recent-file".into());
         }
         if self.rerank_inputs.pinned_files.contains(file_path.as_str()) {
-            rerank += 0.20;
+            rerank += self.ranking.pinned_context_boost;
             reasons.push("pinned-context".into());
         }
         if self
@@ -274,7 +282,7 @@ impl SearchPlan {
             .overlay_files
             .contains(file_path.as_str())
         {
-            rerank += 0.10;
+            rerank += self.ranking.overlay_neighbor_boost;
             reasons.push("overlay-neighbor".into());
         }
 
@@ -285,7 +293,7 @@ impl SearchPlan {
             .copied()
             .unwrap_or(0.0);
         if stage_a_score > 0.0 {
-            rerank += (stage_a_score * 0.04).min(0.25);
+            rerank += (stage_a_score * self.ranking.stage_a_weight).min(self.ranking.stage_a_cap);
             if let Some(file_reasons) = self.preselect.reasons.get(&file_path) {
                 for r in file_reasons.iter().take(3) {
                     reasons.push(r.clone());
@@ -324,8 +332,8 @@ impl SearchPlan {
     }
 
     /// Like `finalize_results` but truncates to an explicit `limit` instead
-    /// of `self.limits.top_k`.  Used by `search_extended` to return up to
-    /// `rerank_window` results for downstream graph enrichment.
+    /// of `self.limits.top_k`.  Used by `search_with_graph_context` to keep
+    /// up to `rerank_window` results for the graph-rerank step.
     pub(crate) fn finalize_results_with_limit(&self, results: &mut Vec<SearchHit>, limit: usize) {
         if let Some(ref kind_filter) = self.dsl.kind_filter {
             results.retain(|hit| match &hit.symbol_kind {
@@ -339,7 +347,7 @@ impl SearchPlan {
             for hit in results.iter_mut() {
                 if let Some(ref sn) = hit.symbol_name {
                     if sn.to_lowercase().contains(&nf_lower) {
-                        hit.rerank_score += 0.25;
+                        hit.rerank_score += self.ranking.dsl_name_bonus;
                         hit.reasons.push(format!("dsl-name:{}", name_filter));
                     }
                 }

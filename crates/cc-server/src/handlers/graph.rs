@@ -437,33 +437,10 @@ pub fn search_env_vars(
         format!("%{}%", pattern)
     };
 
-    let (sql, params): (String, Vec<String>) = if let Some(fp) = file_path {
-        (
-            format!(
-                "SELECT env_key, file_path, line, source_symbol_uid \
-                 FROM data_flow_edges \
-                 WHERE flow_kind = 'env_access' AND env_key LIKE ?1 AND file_path LIKE ?2 \
-                 ORDER BY env_key, file_path \
-                 LIMIT {}",
-                limit
-            ),
-            vec![like_pattern, format!("%{}%", fp)],
-        )
-    } else {
-        (
-            format!(
-                "SELECT env_key, file_path, line, source_symbol_uid \
-                 FROM data_flow_edges \
-                 WHERE flow_kind = 'env_access' AND env_key LIKE ?1 \
-                 ORDER BY env_key, file_path \
-                 LIMIT {}",
-                limit
-            ),
-            vec![like_pattern],
-        )
-    };
-
-    let rows = db.query_json(&sql, &params).map_err(|e| e.to_string())?;
+    let file_pattern = file_path.map(|fp| format!("%{}%", fp));
+    let rows = db
+        .env_access_rows(&like_pattern, file_pattern.as_deref(), limit)
+        .map_err(|e| e.to_string())?;
     let total = rows.len();
     Ok(serde_json::json!({
         "pattern": pattern,
@@ -559,10 +536,8 @@ mod tests {
         let tmp = tempfile::TempDir::new().unwrap();
         let idx = crate::engine::CodeIndex::new(Some(tmp.path())).unwrap();
         let db = idx.index_db().expect("index db opened").clone();
-        // Give each synthetic DB a unique generation so process-global graph
-        // caches keyed by (db identity, metadata) never alias across tests.
-        db.set_metadata("last_indexed_at", &tmp.path().display().to_string())
-            .unwrap();
+        // No per-test generation marker needed: the process-unique
+        // IndexDb::instance_id keys the process-global graph caches.
         (tmp, std::sync::Arc::new(std::sync::RwLock::new(idx)), db)
     }
 

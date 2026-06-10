@@ -117,7 +117,9 @@ pub(crate) fn apply_dirty_reload_policy(outcome: &mut ParseOutcome) {
             edge.target_symbol_uid = None;
         }
     }
-    // DispatchSites: KeepAsIs — nothing to do.
+    // DispatchSites only store same-file enclosing UIDs; the policy keeps
+    // them, so there is nothing to clear here.
+    debug_assert!(!should_clear(ReloadedEdgeCategory::DispatchSites));
 }
 
 #[cfg(test)]

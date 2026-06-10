@@ -2,7 +2,7 @@
 
 use crate::types::{Assertion, EvalCase, EvalCaseResult};
 use cc_server::engine::CodeIndex;
-use cc_server::handlers::{context, core, facade, graph};
+use cc_server::handlers::{context, core, facade, graph, output_budget};
 use serde_json::Value;
 use std::path::Path;
 use std::sync::{Arc, RwLock};
@@ -59,9 +59,12 @@ impl CodeIndexBackend {
     }
 
     /// Dispatch a tool call by name, with JSON params.
+    ///
+    /// Mirrors the MCP server dispatch: per-tool output budgets are applied
+    /// once at this exit via `output_budget::finalize`.
     pub fn call_tool(&self, tool: &str, params: &Value) -> Result<Value, String> {
         let rt = self.runtime.clone();
-        match tool {
+        let result = match tool {
             "status" => {
                 let aspect = params
                     .get("aspect")
@@ -294,7 +297,8 @@ impl CodeIndexBackend {
                 facade::handle_adr(rt, action, adr_id, title, status, context, decision)
             }
             unknown => Err(format!("unknown tool: {}", unknown)),
-        }
+        };
+        result.map(|v| output_budget::finalize(&self.runtime, tool, v))
     }
 }
 

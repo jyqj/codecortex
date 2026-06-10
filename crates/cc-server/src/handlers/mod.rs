@@ -4,6 +4,7 @@ pub mod context;
 pub mod core;
 pub mod facade;
 pub mod graph;
+pub mod output_budget;
 
 use crate::engine::CodeIndex;
 use std::sync::atomic::{AtomicBool, Ordering};

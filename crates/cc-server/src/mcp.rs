@@ -37,12 +37,15 @@ impl CodeCortexMcpServer {
     }
 }
 
+/// Run a tool handler on the blocking pool and apply the tool's output
+/// budget policy at this single dispatch exit (`output_budget::finalize`).
 macro_rules! spawn_handler {
-    ($index:expr, $body:expr) => {{
+    ($index:expr, $tool:expr, $body:expr) => {{
         let index = $index;
+        let budget_index = index.clone();
         tokio::task::spawn_blocking(move || {
-            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| $body(index))).unwrap_or_else(
-                |panic_val| {
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| $body(index)))
+                .unwrap_or_else(|panic_val| {
                     let msg = match panic_val.downcast_ref::<&str>() {
                         Some(s) => (*s).to_string(),
                         None => match panic_val.downcast_ref::<String>() {
@@ -52,8 +55,8 @@ macro_rules! spawn_handler {
                     };
                     tracing::error!("handler panic caught: {}", msg);
                     Err(format!("internal error: {}", msg))
-                },
-            )
+                })
+                .map(|v| handlers::output_budget::finalize(&budget_index, $tool, v))
         })
         .await
         .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?
@@ -85,7 +88,7 @@ impl CodeCortexMcpServer {
             .index_for_project_path(p.project_path.as_deref())
             .await?;
         let aspect = p.aspect;
-        spawn_handler!(index, move |rt| handlers::facade::handle_status(
+        spawn_handler!(index, "status", move |rt| handlers::facade::handle_status(
             rt, &aspect
         ))
     }
@@ -110,7 +113,9 @@ impl CodeCortexMcpServer {
             .await
             .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
         let full = p.full;
-        spawn_handler!(index, move |rt| handlers::core::build_index(rt, full))
+        spawn_handler!(index, "index", move |rt| handlers::core::build_index(
+            rt, full
+        ))
     }
 
     // ── 3. search ────────────────────────────────────────────────────
@@ -143,7 +148,7 @@ impl CodeCortexMcpServer {
         let path_prefix = p.path_prefix;
         match mode.as_str() {
             "symbol" => {
-                spawn_handler!(index, move |rt| handlers::core::find_symbol(
+                spawn_handler!(index, "search", move |rt| handlers::core::find_symbol(
                     rt, &query, exact, top_k, false
                 ))
             }
@@ -166,15 +171,15 @@ impl CodeCortexMcpServer {
                         path_prefix,
                         ..Default::default()
                     };
-                    spawn_handler!(index, move |rt| {
+                    spawn_handler!(index, "search", move |rt| {
                         handlers::context::search_in_context_with(
                             rt, &query, top_k, intent, overrides,
                         )
                     })
                 } else {
-                    spawn_handler!(index, move |rt| handlers::context::search_in_context(
-                        rt, &query, top_k, intent
-                    ))
+                    spawn_handler!(index, "search", move |rt| {
+                        handlers::context::search_in_context(rt, &query, top_k, intent)
+                    })
                 }
             }
         }
@@ -200,13 +205,17 @@ impl CodeCortexMcpServer {
         let max_symbols = p.max_symbols;
         let include_source = p.include_source;
         let intent = p.intent;
-        spawn_handler!(index, move |rt| handlers::facade::handle_context(
-            rt,
-            &task,
-            max_symbols,
-            include_source,
-            intent.as_deref(),
-        ))
+        spawn_handler!(
+            index,
+            "context",
+            move |rt| handlers::facade::handle_context(
+                rt,
+                &task,
+                max_symbols,
+                include_source,
+                intent.as_deref(),
+            )
+        )
     }
 
     // ── 5. node ──────────────────────────────────────────────────────
@@ -227,7 +236,7 @@ impl CodeCortexMcpServer {
             .await?;
         let symbol = p.symbol;
         let include = p.include;
-        spawn_handler!(index, move |rt| handlers::facade::handle_node(
+        spawn_handler!(index, "node", move |rt| handlers::facade::handle_node(
             rt, &symbol, &include
         ))
     }
@@ -262,7 +271,7 @@ impl CodeCortexMcpServer {
         let max_source_per_file = p.max_source_per_file;
         match mode.as_str() {
             "flow" => {
-                spawn_handler!(index, move |rt| handlers::graph::explore_flow(
+                spawn_handler!(index, "explore", move |rt| handlers::graph::explore_flow(
                     rt,
                     &symbols,
                     max_depth,
@@ -274,17 +283,19 @@ impl CodeCortexMcpServer {
                 ))
             }
             _ => {
-                spawn_handler!(index, move |rt| handlers::context::explore_symbols(
-                    rt,
-                    &symbols,
-                    max_callers,
-                    max_callees,
-                    include_source,
-                    true,
-                    false,
-                    outline,
-                    max_source_per_file,
-                ))
+                spawn_handler!(index, "explore", move |rt| {
+                    handlers::context::explore_symbols(
+                        rt,
+                        &symbols,
+                        max_callers,
+                        max_callees,
+                        include_source,
+                        true,
+                        false,
+                        outline,
+                        max_source_per_file,
+                    )
+                })
             }
         }
     }
@@ -313,7 +324,7 @@ impl CodeCortexMcpServer {
         let from_uid = p.from_uid;
         let to_uid = p.to_uid;
         let max_snippet_lines = p.max_snippet_lines;
-        spawn_handler!(index, move |rt| handlers::graph::trace_path(
+        spawn_handler!(index, "trace", move |rt| handlers::graph::trace_path(
             rt,
             &from,
             &to,
@@ -346,9 +357,9 @@ impl CodeCortexMcpServer {
         let kind = p.kind;
         let limit = p.limit;
         let direction = p.direction;
-        spawn_handler!(index, move |rt| handlers::facade::handle_relations(
-            rt, &symbol, &kind, limit, &direction
-        ))
+        spawn_handler!(index, "relations", move |rt| {
+            handlers::facade::handle_relations(rt, &symbol, &kind, limit, &direction)
+        })
     }
 
     // ── 9. impact ────────────────────────────────────────────────────
@@ -376,7 +387,7 @@ impl CodeCortexMcpServer {
         let confidence_threshold = p.confidence_threshold;
         let max_nodes = p.max_nodes;
         let max_per_layer = p.max_per_layer;
-        spawn_handler!(index, move |rt| handlers::facade::handle_impact(
+        spawn_handler!(index, "impact", move |rt| handlers::facade::handle_impact(
             rt,
             &scope,
             &files,
@@ -409,12 +420,9 @@ impl CodeCortexMcpServer {
         let aspect = p.aspect;
         let filter = p.filter;
         let limit = p.limit;
-        spawn_handler!(index, move |rt| handlers::facade::handle_architecture(
-            rt,
-            &aspect,
-            filter.as_deref(),
-            limit,
-        ))
+        spawn_handler!(index, "architecture", move |rt| {
+            handlers::facade::handle_architecture(rt, &aspect, filter.as_deref(), limit)
+        })
     }
 
     // ── 11. files ────────────────────────────────────────────────────
@@ -438,7 +446,7 @@ impl CodeCortexMcpServer {
         let start_line = p.start_line;
         let end_line = p.end_line;
         let context_lines = p.context_lines;
-        spawn_handler!(index, move |rt| handlers::facade::handle_files(
+        spawn_handler!(index, "files", move |rt| handlers::facade::handle_files(
             rt,
             &action,
             path.as_deref(),
@@ -465,7 +473,11 @@ impl CodeCortexMcpServer {
             .index_for_project_path(p.project_path.as_deref())
             .await?;
         let query = p.query;
-        spawn_handler!(index, move |rt| handlers::graph::graph_query(rt, &query))
+        spawn_handler!(
+            index,
+            "graph_query",
+            move |rt| handlers::graph::graph_query(rt, &query)
+        )
     }
 
     // ── 13. ingest_traces ───────────────────────────────────────────
@@ -485,9 +497,9 @@ impl CodeCortexMcpServer {
             .index_for_project_path(p.project_path.as_deref())
             .await?;
         let traces = p.traces;
-        spawn_handler!(index, move |rt| handlers::facade::handle_ingest_traces(
-            rt, &traces
-        ))
+        spawn_handler!(index, "ingest_traces", move |rt| {
+            handlers::facade::handle_ingest_traces(rt, &traces)
+        })
     }
 
     // ── 14. adr ─────────────────────────────────────────────────────
@@ -512,7 +524,7 @@ impl CodeCortexMcpServer {
         let status = p.status;
         let context = p.context;
         let decision = p.decision;
-        spawn_handler!(index, move |rt| handlers::facade::handle_adr(
+        spawn_handler!(index, "adr", move |rt| handlers::facade::handle_adr(
             rt,
             &action,
             adr_id.as_deref(),

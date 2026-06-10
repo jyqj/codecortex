@@ -1,32 +1,11 @@
 //! Facade handlers: composite dispatch for the 14 MCP tools.
+//!
+//! Byte/item output caps are applied once at the dispatch exit
+//! (`handlers::output_budget::finalize`), not inside these handlers.
 
 use super::{context, core, graph, SharedCodeIndex};
-use crate::tools::utf8_prefix;
 use cc_db::index_db::IndexDb;
 use serde_json::{json, Value};
-
-pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
-    let serialized = serde_json::to_string(&value).unwrap_or_default();
-    if serialized.len() <= max_chars {
-        return value;
-    }
-
-    // Keep only a bounded UTF-8-safe preview. The old fallback inserted the
-    // original `value` when the preview was not valid JSON, which defeated the
-    // output budget for large strings/objects.
-    let preview_budget = max_chars.saturating_sub(256);
-    let preview = utf8_prefix(&serialized, preview_budget).to_string();
-    let partial = serde_json::from_str::<Value>(&preview)
-        .ok()
-        .unwrap_or(Value::String(preview));
-
-    json!({
-        "_truncated": true,
-        "_original_chars": serialized.len(),
-        "_max_chars": max_chars,
-        "partial": partial,
-    })
-}
 
 // ── 1. handle_status ────────────────────────────────────────────────
 
@@ -93,10 +72,6 @@ pub fn handle_context(
     include_source: bool,
     intent: Option<&str>,
 ) -> Result<Value, String> {
-    let max_chars = {
-        let rt = super::lock_index(&runtime)?;
-        rt.repo_size_tier().max_output_chars()
-    };
     let mut result = context::task_symbols(runtime.clone(), task, max_symbols, Some(1), intent)?;
 
     if include_source {
@@ -131,18 +106,17 @@ pub fn handle_context(
         }
     }
 
-    Ok(enforce_output_limit(result, max_chars))
+    Ok(result)
 }
 
 // ── 3. handle_node ──────────────────────────────────────────────────
 
 pub fn handle_node(runtime: SharedCodeIndex, symbol: &str, include: &str) -> Result<Value, String> {
-    let (relation_limit, max_chars) = {
+    let relation_limit = {
         let rt = super::lock_index(&runtime)?;
-        let tier = rt.repo_size_tier();
-        (tier.explore_max_symbols(), tier.max_output_chars())
+        rt.repo_size_tier().explore_max_symbols()
     };
-    let result = match include {
+    match include {
         "source" => context::get_symbol_source(runtime, symbol, false, true, None),
         "outline" => context::explore_symbols(
             runtime,
@@ -166,8 +140,7 @@ pub fn handle_node(runtime: SharedCodeIndex, symbol: &str, include: &str) -> Res
                 "callees": callees_val,
             }))
         }
-    };
-    result.map(|v| enforce_output_limit(v, max_chars))
+    }
 }
 
 // ── 4. handle_relations ─────────────────────────────────────────────
@@ -179,15 +152,15 @@ pub fn handle_relations(
     limit: usize,
     direction: &str,
 ) -> Result<Value, String> {
-    let (max_limit, max_chars) = {
+    let max_limit = {
         let rt = super::lock_index(&runtime)?;
-        (
-            rt.output_budget("relations").max_items,
-            rt.repo_size_tier().max_output_chars(),
-        )
+        rt.output_budget("relations").max_items
     };
     let limit = limit.min(max_limit);
-    let result = match kind {
+    // Item-count clamps alone don't bound output size: a handful of records
+    // with long signatures/snippets can still blow past the agent context —
+    // the dispatch-exit byte cap (output_budget::finalize) handles that.
+    match kind {
         "callers" => core::callers(runtime, symbol, limit),
         "callees" => core::callees(runtime, symbol, limit),
         "refs" => graph::symbol_refs(runtime, symbol, limit),
@@ -200,10 +173,7 @@ pub fn handle_relations(
                 "callees": callees_val,
             }))
         }
-    };
-    // Item-count clamps alone don't bound output size: a handful of records
-    // with long signatures/snippets can still blow past the agent context.
-    result.map(|v| enforce_output_limit(v, max_chars))
+    }
 }
 
 // ── 5. handle_impact ────────────────────────────────────────────────
@@ -221,15 +191,12 @@ pub fn handle_impact(
     max_nodes: Option<usize>,
     max_per_layer: Option<usize>,
 ) -> Result<Value, String> {
-    let (max_limit, max_chars) = {
+    let max_limit = {
         let rt = super::lock_index(&runtime)?;
-        (
-            rt.output_budget("impact").max_items,
-            rt.repo_size_tier().max_output_chars(),
-        )
+        rt.output_budget("impact").max_items
     };
     let limit = limit.min(max_limit);
-    let result = match scope {
+    match scope {
         "tests" => {
             if files.is_empty() {
                 let auto_files = core::git_changed_files(runtime.clone(), base_branch)?;
@@ -268,8 +235,7 @@ pub fn handle_impact(
                 Some(layer_cap),
             )
         }
-    };
-    result.map(|v| enforce_output_limit(v, max_chars))
+    }
 }
 
 // ── 6. handle_architecture ──────────────────────────────────────────
@@ -280,15 +246,12 @@ pub fn handle_architecture(
     filter: Option<&str>,
     limit: usize,
 ) -> Result<Value, String> {
-    let (max_limit, max_chars) = {
+    let max_limit = {
         let rt = super::lock_index(&runtime)?;
-        (
-            rt.output_budget("architecture").max_items,
-            rt.repo_size_tier().max_output_chars(),
-        )
+        rt.output_budget("architecture").max_items
     };
     let limit = limit.min(max_limit);
-    let result = match aspect {
+    match aspect {
         "communities" => core::list_communities(runtime),
         "frameworks" => core::list_frameworks(runtime),
         "routes" => {
@@ -313,8 +276,7 @@ pub fn handle_architecture(
         }
         "unresolved" => graph::list_unresolved_refs(runtime, limit, None, None),
         _ => graph::get_architecture(runtime, json!({"limit": limit})),
-    };
-    result.map(|v| enforce_output_limit(v, max_chars))
+    }
 }
 
 // ── 7. handle_files ─────────────────────────────────────────────────
@@ -344,21 +306,9 @@ pub fn handle_files(
                 end_line.ok_or_else(|| "end_line is required for 'expand' action".to_string())?;
             context::expand_code_region(runtime, p, sl, el, context_lines)
         }
-        "list" => {
-            let max_files = {
-                let rt = super::lock_index(&runtime)?;
-                rt.output_budget("files").max_items
-            };
-            let mut result = core::list_files(runtime)?;
-            if let Some(arr) = result.as_array_mut() {
-                if arr.len() > max_files {
-                    let total = arr.len();
-                    arr.truncate(max_files);
-                    arr.push(json!({"_truncated": true, "_total": total, "_shown": max_files}));
-                }
-            }
-            Ok(result)
-        }
+        // The "files" item cap (output_budget("files").max_items) is applied
+        // at the dispatch exit by output_budget::finalize.
+        "list" => core::list_files(runtime),
         other => Err(format!(
             "unknown files action {:?}; expected \"list\", \"region\", or \"expand\"",
             other
@@ -578,129 +528,6 @@ pub fn handle_adr(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_json::json;
-
-    // ── enforce_output_limit: passthrough when under limit ──────────
-
-    #[test]
-    fn enforce_output_limit_passthrough_when_small() {
-        let input = json!({"key": "value"});
-        let result = enforce_output_limit(input.clone(), 10000);
-        assert_eq!(result, input);
-    }
-
-    // ── enforce_output_limit: truncation when over limit ────────────
-
-    #[test]
-    fn enforce_output_limit_truncates_when_over() {
-        let large = json!({"data": "x".repeat(500)});
-        let result = enforce_output_limit(large.clone(), 50);
-
-        assert!(result.get("_truncated").is_some());
-        assert_eq!(result["_truncated"], true);
-        assert!(result["_original_chars"].as_u64().unwrap() > 50);
-        assert_eq!(result["_max_chars"], 50);
-        assert!(result.get("partial").is_some());
-    }
-
-    #[test]
-    fn enforce_output_limit_does_not_embed_original_on_invalid_prefix() {
-        let large = json!({"data": "x".repeat(10_000)});
-        let result = enforce_output_limit(large, 1_000);
-        let rendered = serde_json::to_string(&result).unwrap();
-
-        assert_eq!(result["_truncated"], true);
-        assert!(rendered.len() < 2_000);
-        assert!(!rendered.contains(&"x".repeat(5_000)));
-    }
-
-    #[test]
-    fn enforce_output_limit_handles_multibyte_boundaries() {
-        let large = json!({"data": "测".repeat(2_000)});
-        let result = enforce_output_limit(large, 300);
-
-        assert_eq!(result["_truncated"], true);
-        serde_json::to_string(&result).unwrap();
-    }
-
-    // ── enforce_output_limit: zero max_chars ────────────────────────
-
-    #[test]
-    fn enforce_output_limit_zero_max() {
-        let input = json!({"a": 1});
-        let result = enforce_output_limit(input.clone(), 0);
-        // Should produce a truncated wrapper (since serialized len > 0)
-        assert!(result.get("_truncated").is_some());
-    }
-
-    // ── enforce_output_limit: exact boundary ────────────────────────
-
-    #[test]
-    fn enforce_output_limit_at_exact_boundary() {
-        let input = json!({"k": "v"});
-        let serialized_len = serde_json::to_string(&input).unwrap().len();
-        // At exact length, should pass through
-        let result = enforce_output_limit(input.clone(), serialized_len);
-        assert_eq!(result, input);
-    }
-
-    // ── enforce_output_limit: one less than serialized len ──────────
-
-    #[test]
-    fn enforce_output_limit_one_less_than_len() {
-        let input = json!({"k": "v"});
-        let serialized_len = serde_json::to_string(&input).unwrap().len();
-        let result = enforce_output_limit(input, serialized_len - 1);
-        assert!(result.get("_truncated").is_some());
-    }
-
-    // ── enforce_output_limit: nested structure ──────────────────────
-
-    #[test]
-    fn enforce_output_limit_nested_json() {
-        let input = json!({
-            "outer": {
-                "inner": [1, 2, 3],
-                "deep": {"value": "hello"}
-            }
-        });
-        let serialized_len = serde_json::to_string(&input).unwrap().len();
-
-        // Under limit: passthrough
-        let result = enforce_output_limit(input.clone(), serialized_len + 100);
-        assert_eq!(result, input);
-
-        // Over limit: truncated
-        let result = enforce_output_limit(input, 30);
-        assert!(result.get("_truncated").is_some());
-    }
-
-    // ── enforce_output_limit: array value ───────────────────────────
-
-    #[test]
-    fn enforce_output_limit_with_array() {
-        let input = json!([1, 2, 3, 4, 5]);
-        let result = enforce_output_limit(input.clone(), 100000);
-        assert_eq!(result, input);
-    }
-
-    // ── enforce_output_limit: string value ──────────────────────────
-
-    #[test]
-    fn enforce_output_limit_with_string() {
-        let input = json!("hello world");
-        let result = enforce_output_limit(input.clone(), 100000);
-        assert_eq!(result, input);
-    }
-
-    // ── enforce_output_limit: null value ────────────────────────────
-
-    #[test]
-    fn enforce_output_limit_with_null() {
-        let input = json!(null);
-        let result = enforce_output_limit(input.clone(), 100);
-        assert_eq!(result, input);
-    }
 
     // ── Handler dispatch integration tests ─────────────────────────
 

@@ -107,7 +107,12 @@ pub fn explore_symbols(
             max_source_per_file,
         )
         .map_err(|e| e.to_string())?;
-    Ok(super::facade::enforce_output_limit(result, max_chars))
+    // Mid-layer cap (not exit-only): this result is also embedded as
+    // `symbol_details` inside handle_context / handle_node envelopes, where
+    // it must already be bounded before assembly.
+    Ok(super::output_budget::enforce_output_limit(
+        result, max_chars,
+    ))
 }
 
 pub fn get_symbol_source(

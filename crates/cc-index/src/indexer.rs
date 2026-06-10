@@ -529,6 +529,23 @@ impl Indexer {
                 re.handler_symbol_id = None;
                 re.handler_symbol_uid = None;
             }
+            let mut semantic_edges = edges.semantic_edges;
+            for se in &mut semantic_edges {
+                // Cross-file target UIDs may be stale (the parent definition's
+                // file changed). Re-resolution in phase 4a only runs when the
+                // UID is None, so a stale value would be kept verbatim.
+                // Hierarchy relations (Defines/DefinesMethod/ContainsFile/
+                // ContainsModule) are regenerated each run and skipped here.
+                if !matches!(
+                    se.relation_kind,
+                    cc_model::edge::SemanticRelation::Defines
+                        | cc_model::edge::SemanticRelation::DefinesMethod
+                        | cc_model::edge::SemanticRelation::ContainsFile
+                        | cc_model::edge::SemanticRelation::ContainsModule
+                ) {
+                    se.target_symbol_uid = None;
+                }
+            }
 
             // Retrieve file metadata from existing state for mtime/hash
             let (content_hash, mtime, size) = if let Some(state) = existing.get(dirty_path) {
@@ -542,7 +559,10 @@ impl Indexer {
                 imports: edges.imports,
                 call_edges,
                 symbol_refs,
-                semantic_edges: edges.semantic_edges,
+                semantic_edges,
+                // dispatch_sites carry only same-file enclosing UIDs in the DB
+                // (handler UIDs are resolved in-memory during synthesis), so
+                // they can be reused as-is for content-unchanged files.
                 dispatch_sites: edges.dispatch_sites,
                 route_edges,
                 ..Default::default()
@@ -786,6 +806,71 @@ mod import_marker_dedup_tests {
             scores.contains_key("nextjs"),
             "nextjs was missing from the removed inline tables; it must now be \
              detected via the authoritative table"
+        );
+    }
+}
+
+#[cfg(test)]
+mod dirty_reload_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use cc_model::edge::SemanticRelation;
+    use tempfile::TempDir;
+
+    fn setup_indexer() -> (TempDir, Indexer) {
+        let tmp = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("dirty.db")).unwrap().0);
+        let cfg = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), tmp.path(), &cfg);
+        (tmp, indexer)
+    }
+
+    /// Re-resolution in phase 4a only runs when the UID is None, so dirty
+    /// reload must clear potentially-stale cross-file target UIDs on
+    /// resolver-resolved semantic edges — while leaving hierarchy edges
+    /// (regenerated each run) untouched.
+    #[test]
+    fn dirty_reload_clears_stale_semantic_target_uids() {
+        let (_tmp, indexer) = setup_indexer();
+        let conn = indexer.db.read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/a.py','Python','h',1.0,1,'2024-01-01');\
+             INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line) \
+                 VALUES('se-inh','src/a.py','Child','uChild','Base','uBase-STALE','inherits',1);\
+             INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line) \
+                 VALUES('se-def','src/a.py','a.py','uFile','Child','uChild','defines',1);",
+        )
+        .unwrap();
+        drop(conn);
+
+        let mut write_units: Vec<FileWriteUnit> = Vec::new();
+        let mut actions: HashMap<String, FileAction> = HashMap::new();
+        actions.insert("src/a.py".to_string(), FileAction::DirtyResolveOnly);
+        let existing: HashMap<String, FileState> = HashMap::new();
+
+        indexer
+            .phase_dirty_reload(&mut write_units, &actions, &existing, 1)
+            .unwrap();
+
+        assert_eq!(write_units.len(), 1);
+        let edges = &write_units[0].outcome.semantic_edges;
+        let inherits = edges
+            .iter()
+            .find(|e| e.relation_kind == SemanticRelation::Inherits)
+            .expect("inherits edge loaded");
+        assert_eq!(
+            inherits.target_symbol_uid, None,
+            "stale cross-file target UID must be cleared for re-resolution"
+        );
+        let defines = edges
+            .iter()
+            .find(|e| e.relation_kind == SemanticRelation::Defines)
+            .expect("defines edge loaded");
+        assert_eq!(
+            defines.target_symbol_uid.as_deref(),
+            Some("uChild"),
+            "hierarchy edges are regenerated each run and must not be touched"
         );
     }
 }

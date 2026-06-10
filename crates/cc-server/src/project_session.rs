@@ -379,6 +379,22 @@ impl ProjectSession {
         }
     }
 
+    /// Stop the watcher poll task and wait for it to terminate.
+    ///
+    /// Dropping the `JoinHandle` only detaches the task, leaving up to one
+    /// poll interval of background work racing process exit. Abort + await
+    /// guarantees the poll loop is gone before shutdown proceeds. (A commit
+    /// already running inside `spawn_blocking` finishes on its blocking
+    /// thread; SQLite transactional writes keep the DB consistent either way.)
+    pub async fn shutdown(&self) {
+        let handle = { self.watcher_handle.lock().await.take() };
+        if let Some(handle) = handle {
+            handle.abort();
+            let _ = handle.await;
+            tracing::debug!("watcher poll task stopped");
+        }
+    }
+
     pub async fn start_idle_eviction(&self) {
         let last_activity = self.last_activity.clone();
         let active = self.active.clone();

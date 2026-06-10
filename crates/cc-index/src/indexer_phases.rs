@@ -214,20 +214,18 @@ impl Indexer {
                 )?
             }
         } else {
-            // Incremental: keep existing path
-            if !to_remove.is_empty() {
-                self.db.remove_files_batch(to_remove)?;
-            }
-            if !normal_write_units.is_empty() {
-                self.db.replace_files_batch(&normal_write_units)?;
-            }
-            if !dirty_write_units.is_empty() {
-                self.db.replace_reresolved_edges_only(&dirty_write_units)?;
-            }
-            if !route_nodes.is_empty() {
-                self.db.insert_route_nodes_batch(route_nodes)?;
-            }
+            // Incremental: removals, replacements, dirty re-resolution and
+            // route nodes commit atomically — a crash cannot leave files
+            // deleted with their edges still present.
+            self.db.write_incremental_batch(
+                to_remove,
+                &normal_write_units,
+                &dirty_write_units,
+                route_nodes,
+            )?;
 
+            // Config links read the just-committed snapshot (separate read
+            // connection), so they stay outside the batch transaction.
             let config_units = self.build_config_link_units(project_path)?;
             if !config_units.is_empty() {
                 self.db.replace_files_batch(&config_units)?;
@@ -237,6 +235,13 @@ impl Indexer {
             let now = chrono::Utc::now().to_rfc3339();
             self.db.set_metadata("last_indexed_at", &now)?;
             self.db.set_metadata("index_version", "1.0.0")?;
+
+            // Long incremental-only sessions never hit the full-rebuild
+            // checkpoint, so reclaim the WAL here once it grows too large.
+            const MAX_INCREMENTAL_WAL_BYTES: u64 = 16 * 1024 * 1024;
+            if let Err(e) = self.db.checkpoint_wal_if_large(MAX_INCREMENTAL_WAL_BYTES) {
+                tracing::warn!(err = %e, "incremental WAL checkpoint failed");
+            }
 
             config_units
         };

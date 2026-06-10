@@ -179,12 +179,15 @@ pub fn handle_relations(
     limit: usize,
     direction: &str,
 ) -> Result<Value, String> {
-    let max_limit = {
+    let (max_limit, max_chars) = {
         let rt = super::lock_index(&runtime)?;
-        rt.output_budget("relations").max_items
+        (
+            rt.output_budget("relations").max_items,
+            rt.repo_size_tier().max_output_chars(),
+        )
     };
     let limit = limit.min(max_limit);
-    match kind {
+    let result = match kind {
         "callers" => core::callers(runtime, symbol, limit),
         "callees" => core::callees(runtime, symbol, limit),
         "refs" => graph::symbol_refs(runtime, symbol, limit),
@@ -197,7 +200,10 @@ pub fn handle_relations(
                 "callees": callees_val,
             }))
         }
-    }
+    };
+    // Item-count clamps alone don't bound output size: a handful of records
+    // with long signatures/snippets can still blow past the agent context.
+    result.map(|v| enforce_output_limit(v, max_chars))
 }
 
 // ── 5. handle_impact ────────────────────────────────────────────────
@@ -215,12 +221,15 @@ pub fn handle_impact(
     max_nodes: Option<usize>,
     max_per_layer: Option<usize>,
 ) -> Result<Value, String> {
-    let max_limit = {
+    let (max_limit, max_chars) = {
         let rt = super::lock_index(&runtime)?;
-        rt.output_budget("impact").max_items
+        (
+            rt.output_budget("impact").max_items,
+            rt.repo_size_tier().max_output_chars(),
+        )
     };
     let limit = limit.min(max_limit);
-    match scope {
+    let result = match scope {
         "tests" => {
             if files.is_empty() {
                 let auto_files = core::git_changed_files(runtime.clone(), base_branch)?;
@@ -259,7 +268,8 @@ pub fn handle_impact(
                 Some(layer_cap),
             )
         }
-    }
+    };
+    result.map(|v| enforce_output_limit(v, max_chars))
 }
 
 // ── 6. handle_architecture ──────────────────────────────────────────
@@ -270,12 +280,15 @@ pub fn handle_architecture(
     filter: Option<&str>,
     limit: usize,
 ) -> Result<Value, String> {
-    let max_limit = {
+    let (max_limit, max_chars) = {
         let rt = super::lock_index(&runtime)?;
-        rt.output_budget("architecture").max_items
+        (
+            rt.output_budget("architecture").max_items,
+            rt.repo_size_tier().max_output_chars(),
+        )
     };
     let limit = limit.min(max_limit);
-    match aspect {
+    let result = match aspect {
         "communities" => core::list_communities(runtime),
         "frameworks" => core::list_frameworks(runtime),
         "routes" => {
@@ -300,7 +313,8 @@ pub fn handle_architecture(
         }
         "unresolved" => graph::list_unresolved_refs(runtime, limit, None, None),
         _ => graph::get_architecture(runtime, json!({"limit": limit})),
-    }
+    };
+    result.map(|v| enforce_output_limit(v, max_chars))
 }
 
 // ── 7. handle_files ─────────────────────────────────────────────────

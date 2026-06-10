@@ -301,7 +301,11 @@ impl SearchParams {
         clamp_query_list(&mut self.conversation_queries);
         clamp_path_list(&mut self.overlay_files);
         if let Some(ref mut limit) = self.file_preselect_limit {
-            *limit = (*limit).clamp(1, 10_000);
+            // Candidate-file-set size, not an output count: cap at the same
+            // ceiling the default path can reach (MAX_TOP_K * largest tier
+            // multiplier in default_preselect_limit), so an explicit override
+            // cannot make preselect degenerate into a full-repo scan.
+            *limit = (*limit).clamp(1, 4_000);
         }
         validate_enum(&self.mode, &["hybrid", "symbol"], "mode")
     }

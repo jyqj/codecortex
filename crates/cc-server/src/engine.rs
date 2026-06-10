@@ -291,6 +291,15 @@ impl CodeIndex {
         self.needs_initial_index = false;
     }
 
+    /// Drop cached search results after recovering a poisoned lock — they may
+    /// have been computed from a half-mutated CodeIndex.
+    pub fn invalidate_search_cache_after_poison(&mut self) {
+        self.generation = self.generation.saturating_add(1);
+        if let Some(engine) = self.engine.as_mut() {
+            engine.invalidate_cache(self.generation);
+        }
+    }
+
     pub fn index_status(&self) -> CcResult<ProjectStats> {
         let project = self.ensure_project()?;
         self.ensure_db()?.stats(project)
@@ -321,6 +330,7 @@ impl CodeIndex {
             "db_schema_version": db_schema_version,
             "last_indexed_at": last_indexed,
             "auto_index_enabled": auto_index_enabled,
+            "lock_poison_recovered": crate::handlers::poison_recovered(),
         })
     }
 

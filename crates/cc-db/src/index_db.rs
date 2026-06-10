@@ -600,6 +600,26 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Truncate the WAL only once it has grown past `max_bytes`.
+    ///
+    /// Incremental builds never swap the database file, so the WAL otherwise
+    /// shrinks only via SQLite's page-count autocheckpoint and stays large in
+    /// long watch sessions, amplifying reads. Returns whether a checkpoint ran.
+    pub fn checkpoint_wal_if_large(&self, max_bytes: u64) -> CcResult<bool> {
+        let mut wal_path = self.db_path.as_os_str().to_owned();
+        wal_path.push("-wal");
+        let wal_size = match std::fs::metadata(&wal_path) {
+            Ok(meta) => meta.len(),
+            Err(_) => return Ok(false),
+        };
+        if wal_size <= max_bytes {
+            return Ok(false);
+        }
+        self.checkpoint_wal()?;
+        tracing::debug!(wal_size, max_bytes, "truncated oversized WAL");
+        Ok(true)
+    }
+
     // ── Bulk rebuild pragmas ────────────────────────────────────
 
     /// Apply aggressive pragmas for full rebuild (not safe for incremental).
@@ -955,6 +975,19 @@ impl IndexDb {
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
         for file in units {
+            Self::replace_reresolved_edges_for_file(&tx, file)?;
+        }
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Per-file body of [`Self::replace_reresolved_edges_only`], usable inside
+    /// a caller-owned transaction.
+    pub(crate) fn replace_reresolved_edges_for_file(
+        tx: &Connection,
+        file: &FileWriteUnit,
+    ) -> CcResult<()> {
+        {
             let rel = file.rel_path.as_str();
             let outcome = &file.outcome;
 
@@ -969,7 +1002,7 @@ impl IndexDb {
                 "routes",
             ] {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     &format!("DELETE FROM {} WHERE file_path = ?1", table),
                     rusqlite::params![rel],
                 )?;
@@ -978,7 +1011,7 @@ impl IndexDb {
             // Re-insert symbols
             for s in &outcome.symbols {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25)",
                     rusqlite::params![s.symbol_id, s.file_path, s.name, s.kind.as_str(), s.container, s.start_line, s.end_line, s.start_col, s.end_col, s.signature, s.doc, s.parser_tier.as_str(), s.parser_confidence, s.qname, s.parent_symbol_id, s.export_name, s.is_default_export as i32, s.symbol_uid, s.framework_role, s.receiver_type, s.param_types, s.return_type, s.param_count, s.base_types, s.implements],
                 )?;
@@ -987,7 +1020,7 @@ impl IndexDb {
             // Re-insert imports
             for i in &outcome.imports {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
                     rusqlite::params![i.file_path, i.import_string, i.resolved_path, i.imported_name, i.alias, i.is_namespace as i32, i.is_default as i32, i.is_reexport as i32],
                 )?;
@@ -996,7 +1029,7 @@ impl IndexDb {
             // Re-insert symbol_refs
             for r in &outcome.symbol_refs {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)",
                     rusqlite::params![r.ref_id, r.file_path, r.symbol_name, r.container, r.ref_kind, r.line, r.column, r.target_symbol_id, r.target_file_path, r.target_symbol_uid, r.ref_name, r.resolution_kind.as_str(), r.resolution_confidence, r.resolution_strategy, r.ref_end_line, r.ref_end_col, r.parser_tier.as_str(), r.parser_confidence],
                 )?;
@@ -1005,7 +1038,7 @@ impl IndexDb {
             // Re-insert call_edges
             for e in &outcome.call_edges {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
                     rusqlite::params![e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol, e.line, e.start_col, e.end_line, e.end_col, e.target_symbol_id, e.target_file_path, e.caller_symbol_id, e.callee_ref_id, e.caller_symbol_uid, e.callee_symbol_uid, e.dispatch_kind.as_str(), e.call_kind, e.resolution_kind.as_str(), e.resolution_confidence, e.resolution_strategy, e.receiver_expr, e.arg_count.map(|v| v as i32), e.is_optional_chain as i32, e.is_awaited as i32, e.is_constructor as i32, e.parser_tier.as_str(), e.parser_confidence, e.synthesized_by, e.synthesis_key, e.registered_file, e.registered_line.map(|v| v as i32)],
                 )?;
@@ -1014,7 +1047,7 @@ impl IndexDb {
             // Re-insert semantic_edges
             for se in &outcome.semantic_edges {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
                     rusqlite::params![se.edge_id, se.file_path, se.source_symbol, se.source_symbol_uid, se.target_symbol, se.target_symbol_uid, se.relation_kind.as_str(), se.line, se.confidence, se.parser_tier.as_str()],
                 )?;
@@ -1023,7 +1056,7 @@ impl IndexDb {
             // Re-insert dispatch_sites
             for ds in &outcome.dispatch_sites {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT OR REPLACE INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
                     rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
                 )?;
@@ -1032,12 +1065,51 @@ impl IndexDb {
             // Re-insert route_edges
             for r in &outcome.route_edges {
                 Self::execute_cached(
-                    &tx,
+                    tx,
                     "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
                     rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str()],
                 )?;
             }
         }
+        Ok(())
+    }
+
+    /// Write one incremental index batch atomically: file removals, full file
+    /// replacements, dirty-file edge re-resolution, and route nodes share a
+    /// single transaction, so a crash cannot leave files deleted with their
+    /// edges still present (and the batch costs one WAL sync instead of four).
+    pub fn write_incremental_batch(
+        &self,
+        to_remove: &[String],
+        normal_units: &[FileWriteUnit],
+        dirty_units: &[FileWriteUnit],
+        route_nodes: &[cc_model::edge::RouteNodeRecord],
+    ) -> CcResult<()> {
+        if to_remove.is_empty()
+            && normal_units.is_empty()
+            && dirty_units.is_empty()
+            && route_nodes.is_empty()
+        {
+            return Ok(());
+        }
+        let mut conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let tx = conn
+            .transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        for path in to_remove {
+            Self::delete_file_data(&tx, path)?;
+        }
+        for file in normal_units {
+            Self::delete_file_data(&tx, &file.rel_path)?;
+            Self::insert_file_data(&tx, file)?;
+        }
+        for file in dirty_units {
+            Self::replace_reresolved_edges_for_file(&tx, file)?;
+        }
+        Self::insert_route_nodes_on(&tx, route_nodes)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }

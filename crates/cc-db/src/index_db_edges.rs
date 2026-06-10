@@ -274,13 +274,22 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::insert_route_nodes_on(&tx, routes)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Insert route nodes on a caller-owned connection/transaction.
+    pub(crate) fn insert_route_nodes_on(
+        conn: &rusqlite::Connection,
+        routes: &[cc_model::edge::RouteNodeRecord],
+    ) -> CcResult<()> {
         for r in routes {
-            tx.execute(
+            conn.execute(
                 "INSERT OR REPLACE INTO routes(edge_id,route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
                 rusqlite::params![r.route_id, r.route_id, r.file_path, r.route_path, r.method, r.handler_symbol_uid, r.handler_name, r.framework, r.line, r.end_line, r.normalized_path, r.confidence, r.parser_tier.as_str()],
             ).map_err(|e| CcError::Database(e.to_string()))?;
         }
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
     }
 

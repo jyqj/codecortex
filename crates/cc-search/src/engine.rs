@@ -19,6 +19,9 @@ pub use crate::plan::is_project_doc;
 use crate::plan::{parse_language_name, CandidateChunk, SearchPlan};
 use crate::rrf::rrf_accumulate;
 
+/// (chunk_id, start_line, end_line) for in-memory containment matching.
+type ChunkSpan = (String, u32, u32);
+
 /// Default LRU capacity for search results.
 /// Override with `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`.
 const RESULT_CACHE_CAPACITY: usize = 32;
@@ -95,14 +98,23 @@ impl SearchEngine {
 
     /// Compute a deterministic hash of `SearchRequest` key fields.
     fn query_hash(request: &SearchRequest) -> u64 {
-        fn hash_sorted_opt_vec<T: Ord + std::hash::Hash + Clone>(
+        // Order-insensitive combine: hash each item independently and merge
+        // with wrapping_add, so list order doesn't matter and we never pay a
+        // clone + sort on the cache-hit path (large file lists are common).
+        fn hash_unordered_opt_vec<T: std::hash::Hash>(
             value: &Option<Vec<T>>,
             hasher: &mut impl std::hash::Hasher,
         ) {
+            use std::hash::Hasher as _;
             if let Some(items) = value {
-                let mut sorted = items.clone();
-                sorted.sort_unstable();
-                sorted.hash(hasher);
+                items.len().hash(hasher);
+                let mut acc: u64 = 0;
+                for item in items {
+                    let mut item_hasher = std::collections::hash_map::DefaultHasher::new();
+                    item.hash(&mut item_hasher);
+                    acc = acc.wrapping_add(item_hasher.finish());
+                }
+                acc.hash(hasher);
             }
         }
 
@@ -112,21 +124,21 @@ impl SearchEngine {
         request.path_prefix.hash(&mut hasher);
         request.include_grep.hash(&mut hasher);
         request.file_preselect_limit.hash(&mut hasher);
-        // Languages — hash names in sorted order for stability.
-        if let Some(ref langs) = request.languages {
-            let mut names: Vec<&str> = langs.iter().map(|l| l.as_str()).collect();
-            names.sort_unstable();
-            names.hash(&mut hasher);
-        }
-        hash_sorted_opt_vec(&request.file_paths, &mut hasher);
-        hash_sorted_opt_vec(&request.boost_file_paths, &mut hasher);
+        // Languages — order-insensitive like the path lists.
+        let lang_names = request
+            .languages
+            .as_ref()
+            .map(|langs| langs.iter().map(|l| l.as_str()).collect::<Vec<_>>());
+        hash_unordered_opt_vec(&lang_names, &mut hasher);
+        hash_unordered_opt_vec(&request.file_paths, &mut hasher);
+        hash_unordered_opt_vec(&request.boost_file_paths, &mut hasher);
         // conversation_queries: 不排序，顺序影响 augmented_query_text() 拼接语义
         if let Some(ref cq) = request.conversation_queries {
             cq.hash(&mut hasher);
         }
-        hash_sorted_opt_vec(&request.recent_file_paths, &mut hasher);
-        hash_sorted_opt_vec(&request.pinned_file_paths, &mut hasher);
-        hash_sorted_opt_vec(&request.overlay_file_paths, &mut hasher);
+        hash_unordered_opt_vec(&request.recent_file_paths, &mut hasher);
+        hash_unordered_opt_vec(&request.pinned_file_paths, &mut hasher);
+        hash_unordered_opt_vec(&request.overlay_file_paths, &mut hasher);
         hasher.finish()
     }
 
@@ -484,25 +496,43 @@ impl SearchEngine {
         let uid_list: Vec<String> = neighbor_uids.keys().cloned().collect();
         let sym_rows = self.db.symbol_rows_by_uids(&uid_list)?;
 
-        let mut chunk_scores: Vec<(String, f64)> = Vec::new();
-        let mut seen_chunks = std::collections::HashSet::new();
-
+        // Apply file filters first, then batch-load chunk spans for the
+        // surviving files in one query instead of one point query per neighbor.
+        let mut candidates: Vec<(&str, u32, u32, f64)> = Vec::new(); // (file, start, end, score)
         for (uid, score) in &neighbor_uids {
             if let Some(sym) = sym_rows.get(uid) {
-                // Check file filter
                 if !plan.passes_filters(&sym.file_path, parse_language_name(&sym.file_path)) {
                     continue;
                 }
-                // Find chunk containing this symbol
-                if let Ok(Some(cid)) =
-                    self.find_chunk_for_symbol(conn, &sym.file_path, sym.start_line, sym.end_line)
-                {
-                    if seen_chunks.insert(cid.clone()) {
-                        chunk_scores.push((cid, *score));
-                    }
-                }
+                candidates.push((sym.file_path.as_str(), sym.start_line, sym.end_line, *score));
             }
         }
+        let candidate_files: Vec<&str> = candidates
+            .iter()
+            .map(|(f, ..)| *f)
+            .collect::<std::collections::HashSet<_>>()
+            .into_iter()
+            .collect();
+        let chunks_by_file = self.chunk_spans_for_files(conn, &candidate_files)?;
+
+        let mut best_per_chunk: HashMap<String, f64> = HashMap::new();
+        for (file, start, end, score) in candidates {
+            // Smallest containing chunk, matching the old per-symbol query.
+            let cid = chunks_by_file.get(file).and_then(|spans| {
+                spans
+                    .iter()
+                    .filter(|(_, cs, ce)| *cs <= start && *ce >= end)
+                    .min_by_key(|(_, cs, ce)| ce - cs)
+                    .map(|(cid, _, _)| cid.clone())
+            });
+            if let Some(cid) = cid {
+                best_per_chunk
+                    .entry(cid)
+                    .and_modify(|s| *s = s.max(score))
+                    .or_insert(score);
+            }
+        }
+        let mut chunk_scores: Vec<(String, f64)> = best_per_chunk.into_iter().collect();
 
         // Sort by score descending and limit
         chunk_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
@@ -523,22 +553,53 @@ impl SearchEngine {
 
         for token in query_tokens.iter().take(5) {
             if token.len() < 3 {
+                // The trigram table cannot accelerate sub-3-char LIKE, and a
+                // substring match on 2 chars would be pure noise — but exact
+                // short names (Go's `do`, Rust's `ok`) are valid seeds.
+                // Equality on idx_symbols_name (BINARY) via the two common
+                // casings keeps this an index lookup.
+                let capitalized = {
+                    let mut chars = token.chars();
+                    match chars.next() {
+                        Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+                        None => continue,
+                    }
+                };
+                let sql = "SELECT symbol_uid FROM symbols \
+                           WHERE name IN (?1, ?2) AND symbol_uid IS NOT NULL \
+                           LIMIT 10";
+                let mut stmt = conn
+                    .prepare(sql)
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                let rows = stmt
+                    .query_map(rusqlite::params![token, capitalized], |row| {
+                        row.get::<_, String>(0)
+                    })
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                for uid in rows.flatten() {
+                    results
+                        .entry(uid)
+                        .and_modify(|s| *s = s.max(1.0))
+                        .or_insert(1.0);
+                }
                 continue;
             }
-            // Use trigram-accelerated LIKE via symbols_fts
+            // Use trigram-accelerated LIKE via symbols_fts; surface exact name
+            // matches first so the 10-row cap doesn't crowd them out with
+            // arbitrary substring hits.
             let like_pattern = format!("%{}%", token);
             let sql = "SELECT s.symbol_uid, s.name \
                        FROM symbols_fts f \
                        JOIN symbols s ON s.symbol_id = f.symbol_id \
                        WHERE f.name LIKE ?1 \
                        AND s.symbol_uid IS NOT NULL \
-                       ORDER BY s.file_path \
+                       ORDER BY (lower(s.name) = ?2) DESC, length(s.name) ASC \
                        LIMIT 10";
             let mut stmt = conn
                 .prepare(sql)
                 .map_err(|e| CcError::Database(e.to_string()))?;
             let rows = stmt
-                .query_map(rusqlite::params![like_pattern], |row| {
+                .query_map(rusqlite::params![like_pattern, token], |row| {
                     let uid: String = row.get(0)?;
                     let name: String = row.get(1)?;
                     Ok((uid, name))
@@ -566,30 +627,46 @@ impl SearchEngine {
         Ok(sorted)
     }
 
-    /// Find the chunk_id containing a symbol at the given file/line range.
-    fn find_chunk_for_symbol(
+    /// Batch-load chunk spans for a set of files, keyed by file path.
+    fn chunk_spans_for_files(
         &self,
         conn: &rusqlite::Connection,
-        file_path: &str,
-        start_line: u32,
-        end_line: u32,
-    ) -> CcResult<Option<String>> {
-        let mut stmt = conn
-            .prepare(
-                "SELECT chunk_id FROM chunks \
-                 WHERE file_path = ?1 AND start_line <= ?2 AND end_line >= ?3 \
-                 ORDER BY (end_line - start_line) ASC \
-                 LIMIT 1",
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let result = stmt.query_row(rusqlite::params![file_path, start_line, end_line], |row| {
-            row.get::<_, String>(0)
-        });
-        match result {
-            Ok(cid) => Ok(Some(cid)),
-            Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-            Err(e) => Err(CcError::Database(e.to_string())),
+        file_paths: &[&str],
+    ) -> CcResult<HashMap<String, Vec<ChunkSpan>>> {
+        let mut by_file: HashMap<String, Vec<ChunkSpan>> = HashMap::new();
+        if file_paths.is_empty() {
+            return Ok(by_file);
         }
+        for chunk in file_paths.chunks(500) {
+            let placeholders = vec!["?"; chunk.len()].join(",");
+            let sql = format!(
+                "SELECT file_path, chunk_id, start_line, end_line \
+                 FROM chunks WHERE file_path IN ({})",
+                placeholders
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let params: Vec<&dyn rusqlite::types::ToSql> = chunk
+                .iter()
+                .map(|p| p as &dyn rusqlite::types::ToSql)
+                .collect();
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, u32>(2)?,
+                        row.get::<_, u32>(3)?,
+                    ))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.flatten() {
+                let (file, cid, start, end) = row;
+                by_file.entry(file).or_default().push((cid, start, end));
+            }
+        }
+        Ok(by_file)
     }
 }
 

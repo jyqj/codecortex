@@ -742,6 +742,8 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
         .project_session
         .start_initial_project_tasks(project_path.as_deref());
     server.project_session.start_idle_eviction().await;
+    // Cheap Arc-clone handle kept for shutdown; `server` moves into the service.
+    let session_for_shutdown = server.project_session.clone();
 
     // Unified shutdown signal for PPID watchdog
     let shutdown = Arc::new(tokio::sync::Notify::new());
@@ -792,7 +794,10 @@ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_mode
         _ = shutdown_signal() => {}
         _ = shutdown.notified() => {}
     }
-    // `service` and `server` drop here → ProjectSession drop → watcher stop → DB close
+    // Stop the watcher poll task and wait for it before tearing down the
+    // service; a plain drop would only detach it.
+    session_for_shutdown.shutdown().await;
+    // `service` and `server` drop here → ProjectSession drop → DB close
     tracing::info!("MCP server shut down gracefully");
     Ok(())
 }

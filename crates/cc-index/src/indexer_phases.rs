@@ -352,87 +352,19 @@ impl Indexer {
                 },
             };
 
-            // All synthesis passes run inside one unit of work: a mid-pass
-            // failure rolls back every delete/insert of this round (no
-            // partially-synthesized edge sets), and later passes still observe
-            // the uncommitted edges written by earlier passes because every
-            // read goes through the transaction connection. While the unit is
-            // alive no `self.db` write method may be called (the write mutex
-            // is not reentrant).
-            let uow = self.db.begin_unit_of_work()?;
-
-            // 6 dispatch passes (gated by dispatch_sig)
-            if dispatch_changed {
-                let mut stats = crate::dispatch_synthesis::run_event_emitter_synthesis(
-                    &uow,
-                    &synthesis_config,
-                )?;
-                if stats.event_emitter_edges > 0 {
-                    tracing::info!(
-                        edges = stats.event_emitter_edges,
-                        skipped_generic = stats.skipped_generic,
-                        skipped_fanout = stats.skipped_fanout,
-                        "event emitter synthesis complete"
-                    );
-                }
-
-                // Phase 7c: JSX component synthesis
-                let jsx_count = crate::dispatch_synthesis::run_jsx_synthesis(&uow)?;
-                stats.jsx_edges = jsx_count;
-                if jsx_count > 0 {
-                    tracing::info!(edges = jsx_count, "JSX component synthesis complete");
-                }
-
-                // Phase 7d: State setter synthesis
-                let setter_count = crate::dispatch_synthesis::run_state_setter_synthesis(&uow)?;
-                stats.setter_edges = setter_count;
-                if setter_count > 0 {
-                    tracing::info!(edges = setter_count, "state setter synthesis complete");
-                }
-
-                // Phase 7e: Field-backed observer synthesis
-                let observer_count = crate::dispatch_synthesis::run_field_observer_synthesis(
-                    &uow,
-                    &synthesis_config,
-                )?;
-                stats.field_observer_edges = observer_count;
-                if observer_count > 0 {
-                    tracing::info!(edges = observer_count, "field observer synthesis complete");
-                }
-
-                // Phase 7f: React re-render chain synthesis
-                let rerender_count =
-                    crate::dispatch_synthesis::run_react_rerender_chain_synthesis(&uow)?;
-                stats.react_rerender_edges = rerender_count;
-                if rerender_count > 0 {
-                    tracing::info!(
-                        edges = rerender_count,
-                        "React re-render chain synthesis complete"
-                    );
-                }
-
-                // Phase 7g: Vue template synthesis (child components + event handlers)
-                let vue_count = crate::dispatch_synthesis::run_vue_template_synthesis(&uow)?;
-                if vue_count > 0 {
-                    tracing::info!(edges = vue_count, "Vue template synthesis complete");
-                }
-            }
-
-            // Phase 7h: Interface/abstract method dispatch (gated by interface_sig)
-            if interface_changed {
-                let interface_count = crate::dispatch_synthesis::run_interface_dispatch_synthesis(
-                    &uow,
-                    &synthesis_config,
-                )?;
-                if interface_count > 0 {
-                    tracing::info!(
-                        edges = interface_count,
-                        "Interface dispatch synthesis complete"
-                    );
-                }
-            }
-
-            uow.commit()?;
+            // Phase 7b–7h: compute every pass delta against the committed
+            // snapshot (no write lock held), then apply all deltas in one
+            // short atomic unit of work. A mid-pass failure leaves the
+            // database untouched; the apply itself is all-or-nothing. See
+            // `crate::synthesis_pipeline` for the cross-pass overlay and the
+            // concurrency notes.
+            let round = crate::synthesis_pipeline::compute_synthesis_round(
+                &self.db,
+                &synthesis_config,
+                dispatch_changed,
+                interface_changed,
+            )?;
+            crate::synthesis_pipeline::apply_synthesis_round(&self.db, &round)?;
         } else {
             // If synthesis was enabled in a previous run and is disabled now,
             // proactively remove stale synthetic edges.

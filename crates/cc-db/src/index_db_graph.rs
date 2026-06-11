@@ -9,6 +9,7 @@ use crate::index_db::{
     RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow, SymbolDegreeInfo, SymbolRefLite,
     SymbolRow,
 };
+use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Methods grouped by container name: container -> [(symbol_uid, name, file_path, start_line)].
 pub(crate) type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
@@ -554,6 +555,66 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+
+    /// Batched variant of [`Self::find_symbols_by_name_and_kinds`]: resolves
+    /// many names with [`IN_BATCH_SIZE`]-sized `IN (...)` queries instead of
+    /// one round-trip per name. Returns rows grouped by symbol name; names
+    /// with no match are absent from the map. Within each name, row order
+    /// matches the single-name variant (`ORDER BY file_path`).
+    pub fn find_symbols_by_names_and_kinds(
+        &self,
+        names: &[&str],
+        kinds: &[&str],
+    ) -> CcResult<HashMap<String, Vec<SymbolRow>>> {
+        let mut grouped: HashMap<String, Vec<SymbolRow>> = HashMap::new();
+        if names.is_empty() || kinds.is_empty() {
+            return Ok(grouped);
+        }
+        let conn = self.read_conn()?;
+        for batch in names.chunks(IN_BATCH_SIZE) {
+            let name_placeholders = sql_in_placeholders(batch.len());
+            let kind_placeholders: String = (1..=kinds.len())
+                .map(|idx| format!("?{}", batch.len() + idx))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql = format!(
+                "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature \
+                 FROM symbols WHERE name IN ({}) AND kind IN ({}) ORDER BY name, file_path",
+                name_placeholders, kind_placeholders
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut params: Vec<&dyn rusqlite::types::ToSql> =
+                Vec::with_capacity(batch.len() + kinds.len());
+            for name in batch {
+                params.push(name);
+            }
+            for kind in kinds {
+                params.push(kind);
+            }
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok(SymbolRow {
+                        symbol_id: row.get(0)?,
+                        symbol_uid: row.get(1)?,
+                        name: row.get(2)?,
+                        kind: row.get(3)?,
+                        file_path: row.get(4)?,
+                        container: row.get(5)?,
+                        start_line: row.get(6)?,
+                        end_line: row.get(7)?,
+                        qname: row.get(8)?,
+                        signature: row.get(9)?,
+                    })
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.filter_map(|r| r.ok()) {
+                grouped.entry(row.name.clone()).or_default().push(row);
+            }
+        }
+        Ok(grouped)
     }
 
     /// Delete synthetic semantic edges whose edge_id starts with a given prefix.
@@ -1354,6 +1415,56 @@ mod tests {
         // Smallest span first: inner (span 20) before outer (span 49)
         assert_eq!(rows[0].name, "inner");
         assert_eq!(rows[1].name, "outer");
+    }
+
+    #[test]
+    fn test_find_symbols_by_names_and_kinds_matches_single() {
+        let (db, _tmp) = setup();
+        for f in ["src/a.tsx", "src/b.tsx"] {
+            insert_file(&db, f);
+        }
+
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            // "Button" exists in both files; "Modal" only in b.tsx; "helper" has
+            // a kind outside the queried set.
+            for (id, file, name, kind, uid) in [
+                ("s1", "src/a.tsx", "Button", "component", "uid_a_button"),
+                ("s2", "src/b.tsx", "Button", "component", "uid_b_button"),
+                ("s3", "src/b.tsx", "Modal", "function", "uid_b_modal"),
+                ("s4", "src/a.tsx", "helper", "variable", "uid_a_helper"),
+            ] {
+                tx.execute(
+                    "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                     VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![id, file, name, kind, "", 1, 5, 0, 0, "", "", "tree_sitter", 0.9, name, uid],
+                ).unwrap();
+            }
+            tx.commit().unwrap();
+        }
+
+        let kinds: &[&str] = &["function", "class", "component", "hook"];
+        let names: &[&str] = &["Button", "Modal", "helper", "Missing"];
+        let batch = db.find_symbols_by_names_and_kinds(names, kinds).unwrap();
+
+        // Batch result must equal the per-name query for every name.
+        for name in names {
+            let single = db.find_symbols_by_name_and_kinds(name, kinds).unwrap();
+            let batched = batch.get(*name).cloned().unwrap_or_default();
+            assert_eq!(
+                single.len(),
+                batched.len(),
+                "row count mismatch for {name}"
+            );
+            for (s, b) in single.iter().zip(batched.iter()) {
+                assert_eq!(s.symbol_uid, b.symbol_uid, "uid mismatch for {name}");
+                assert_eq!(s.file_path, b.file_path, "file mismatch for {name}");
+            }
+        }
+        // Names with no rows are absent, not present-but-empty.
+        assert!(!batch.contains_key("helper"));
+        assert!(!batch.contains_key("Missing"));
     }
 
     #[test]

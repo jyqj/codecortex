@@ -8,6 +8,8 @@ mod index_db_graph;
 mod index_db_graph_read;
 mod index_db_query;
 mod index_db_retrieval;
+
+pub use index_db_graph_read::GraphReads;
 pub mod index_migrate;
 pub mod sql_util;
 pub mod unit_of_work;

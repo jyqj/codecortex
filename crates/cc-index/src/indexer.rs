@@ -15,10 +15,9 @@ use std::sync::Arc;
 use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
-use crate::dirty_reload_policy::apply_dirty_reload_policy;
+use crate::dirty_reload_policy::parse_outcome_from_reloaded_edges;
 use crate::memory_budget::MemoryBudget;
 use cc_db::index_db::{FileState, FileWriteUnit, IndexDb};
-use cc_model::parse::ParseOutcome;
 use cc_model::{CcError, CcResult, Language};
 
 use crate::framework_registry;
@@ -520,19 +519,10 @@ impl Indexer {
                 (String::new(), 0.0, 0u64)
             };
 
-            let mut outcome = ParseOutcome {
-                symbols: edges.symbols,
-                imports: edges.imports,
-                call_edges: edges.call_edges,
-                symbol_refs: edges.symbol_refs,
-                semantic_edges: edges.semantic_edges,
-                dispatch_sites: edges.dispatch_sites,
-                route_edges: edges.route_edges,
-                ..Default::default()
-            };
-            // Clear potentially-stale resolution state per the central policy
-            // declared in `dirty_reload_policy` (one invariant, one place).
-            apply_dirty_reload_policy(&mut outcome);
+            // The conversion clears potentially-stale resolution state per
+            // the central policy declared in `dirty_reload_policy`; its
+            // complete destructuring keeps every reload field policed.
+            let outcome = parse_outcome_from_reloaded_edges(edges);
 
             write_units.push(FileWriteUnit {
                 rel_path: dirty_path.clone(),

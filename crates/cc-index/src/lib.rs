@@ -17,6 +17,8 @@ pub(crate) mod infra_terraform;
 pub(crate) mod memory_budget;
 pub(crate) mod resolver;
 pub mod scanner;
+pub(crate) mod synthesis_pipeline;
+pub(crate) mod synthesis_symbol_resolver;
 pub(crate) mod type_catalog;
 
 pub use build_plan::PreparedBuild;

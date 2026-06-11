@@ -12,7 +12,8 @@
 //!   the dead-code caller-set projection.
 //! - [`bridges`]: HTTP/async bridge edge synthesis from routes + http edges.
 //!
-//! All SQL lives in cc-db typed query methods; this module only orchestrates
+//! All SQL lives in cc-db typed query methods, reached through the narrow
+//! [`cc_db::GraphReads`] facet (see `reads()`); this module only orchestrates
 //! caching and in-memory projection.
 
 mod bridges;
@@ -20,6 +21,7 @@ mod cache;
 mod projections;
 
 use cc_db::index_db::{IndexDb, SymbolRow};
+use cc_db::GraphReads;
 use cc_model::CcResult;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
@@ -94,6 +96,14 @@ impl GraphReadModel {
     #[allow(dead_code)]
     pub(crate) fn generation(&self) -> &GraphReadGeneration {
         &self.generation
+    }
+
+    /// The narrow cc-db read facet this model is allowed to query through.
+    /// Every db call below (including `projections` and `bridges`) goes via
+    /// this seam, so the model's full read surface is the [`GraphReads`]
+    /// method list.
+    fn reads(&self) -> GraphReads<'_> {
+        GraphReads::new(&self.db)
     }
 
     pub(crate) fn paths_between(
@@ -174,7 +184,7 @@ impl GraphReadModel {
         }
 
         let evidence_map = if include_runtime_evidence && !bridge_norm_paths.is_empty() {
-            self.db
+            self.reads()
                 .evidence_for_normalized_paths(&bridge_norm_paths)
                 .unwrap_or_default()
         } else {
@@ -227,7 +237,7 @@ impl GraphReadModel {
     // ── Plain typed-query facades (SQL lives in cc-db) ─────────────────────
 
     pub(crate) fn symbols_in_files(&self, files: &[String]) -> CcResult<Vec<GraphSymbolLite>> {
-        self.db.symbols_lite_in_files(files)
+        self.reads().symbols_lite_in_files(files)
     }
 
     pub(crate) fn reverse_callers(
@@ -236,16 +246,16 @@ impl GraphReadModel {
         confidence_threshold: Option<f64>,
         limit: Option<usize>,
     ) -> CcResult<Vec<GraphSymbolLite>> {
-        self.db
+        self.reads()
             .reverse_callers(callee_uids, confidence_threshold, limit)
     }
 
     pub(crate) fn suggested_tests_for_files(&self, files: &[String]) -> CcResult<Vec<String>> {
-        self.db.suggested_test_files(files)
+        self.reads().suggested_test_files(files)
     }
 
     pub(crate) fn symbol_names_by_uid(&self, uids: &[String]) -> CcResult<HashMap<String, String>> {
-        self.db.symbol_names_for_uids(uids)
+        self.reads().symbol_names_for_uids(uids)
     }
 
     /// HTTP route handler rows matching the optional `route_path` LIKE pattern,
@@ -257,7 +267,7 @@ impl GraphReadModel {
         framework: Option<&str>,
         limit: usize,
     ) -> CcResult<Vec<serde_json::Value>> {
-        let rows = self.db.route_handler_rows(route_path, limit)?;
+        let rows = self.reads().route_handler_rows(route_path, limit)?;
 
         let method_filter = normalize_bridge_method(method);
         let filtered = rows
@@ -285,13 +295,13 @@ impl GraphReadModel {
     /// Consumers of a topic/queue: infra edges with kind in
     /// (binds_topic, consumes_queue) whose source name or properties match.
     pub(crate) fn async_consumers(&self, topic_or_queue: &str) -> CcResult<Vec<serde_json::Value>> {
-        self.db.async_consumer_rows(topic_or_queue)
+        self.reads().async_consumer_rows(topic_or_queue)
     }
 
     /// Infra bindings for a service or route, matched on two dimensions
     /// (infra node name/bound UID, route path/handler) plus connecting edges.
     pub(crate) fn service_bindings(&self, service_or_route: &str) -> CcResult<ServiceBindings> {
-        self.db.service_binding_rows(service_or_route)
+        self.reads().service_binding_rows(service_or_route)
     }
 }
 

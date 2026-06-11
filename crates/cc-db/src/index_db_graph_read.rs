@@ -12,8 +12,8 @@ use cc_model::{CcError, CcResult};
 use serde_json::Value;
 
 use crate::index_db::{
-    CallEdgeProvenanceCounts, DeadCodeSymbolRow, ImportWitnessRow, IndexDb, ServiceBindingRows,
-    SymbolLiteRow,
+    CallEdgeProvenanceCounts, DeadCodeSymbolRow, EdgeLiteBfs, HttpCallEdgeLite, ImportWitnessRow,
+    IndexDb, IndexGeneration, RouteNodeLite, ServiceBindingRows, SymbolLiteRow,
 };
 use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 
@@ -737,6 +737,190 @@ impl IndexDb {
                 &[env_key_pattern.to_string()],
             )
         }
+    }
+}
+
+/// Narrow graph-read facet over [`IndexDb`] consumed by the server's
+/// `GraphReadModel` (adjacency loading, projections, bridge synthesis, and
+/// generation-keyed caching).
+///
+/// Same seam pattern as `index_db_retrieval.rs` for cc-search: the SQL stays
+/// on [`IndexDb`] typed methods (other callers keep using them directly);
+/// this facet only enumerates the exact read surface the graph read model
+/// depends on, so "what GraphReadModel needs" is one narrow interface
+/// instead of a scattering of calls into the 130+-method `IndexDb` facade.
+///
+/// Borrowed and `Copy` so it can be materialized for free from either an
+/// owned `Arc<IndexDb>` or a plain `&IndexDb` (both entry shapes exist on
+/// the server side).
+#[derive(Clone, Copy)]
+pub struct GraphReads<'a> {
+    db: &'a IndexDb,
+}
+
+impl<'a> GraphReads<'a> {
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
+    // ── Cache identity (generation-keyed caching) ───────────────────────
+
+    /// Process-unique, never-reused id of the underlying [`IndexDb`] handle.
+    pub fn instance_id(&self) -> u64 {
+        self.db.instance_id()
+    }
+
+    /// Persisted epoch vector (`index_epoch` / `evidence_epoch`).
+    pub fn generation(&self) -> CcResult<IndexGeneration> {
+        self.db.generation()
+    }
+
+    // ── Call graph adjacency ────────────────────────────────────────────
+
+    /// All UID-resolved call edges (full-graph adjacency load).
+    pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
+        self.db.call_uid_edges_lite()
+    }
+
+    /// Outgoing call edges of one caller UID (lazy per-node adjacency).
+    pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
+        self.db.call_edges_from_uid_lite(caller_uid)
+    }
+
+    /// Distinct callers of any of `callee_uids` (impact reverse BFS).
+    pub fn reverse_callers(
+        &self,
+        callee_uids: &[String],
+        confidence_threshold: Option<f64>,
+        limit: Option<usize>,
+    ) -> CcResult<Vec<SymbolLiteRow>> {
+        self.db
+            .reverse_callers(callee_uids, confidence_threshold, limit)
+    }
+
+    /// Callee UIDs with at least one non-self caller (dead-code input).
+    pub fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
+        self.db.callees_with_nonself_callers(limit)
+    }
+
+    // ── Semantic edges ──────────────────────────────────────────────────
+
+    /// Semantic edges, optionally filtered (semantic adjacency load).
+    pub fn query_semantic_edges(
+        &self,
+        source_uid: Option<&str>,
+        target_uid: Option<&str>,
+        relation_kind: Option<&str>,
+    ) -> CcResult<Vec<cc_model::edge::SemanticEdgeRecord>> {
+        self.db
+            .query_semantic_edges(source_uid, target_uid, relation_kind)
+    }
+
+    // ── Imports / communities ───────────────────────────────────────────
+
+    /// Distinct resolved `(file_path, resolved_path)` import pairs.
+    pub fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
+        self.db.file_import_pairs()
+    }
+
+    /// Resolved import rows from `file_path` (cycle witness edges).
+    pub fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
+        self.db.import_witness_rows(file_path)
+    }
+
+    /// Direct importers of `file_path`, bounded.
+    pub fn direct_importers_of_file(&self, file_path: &str, limit: usize) -> CcResult<Vec<String>> {
+        self.db.direct_importers_of_file(file_path, limit)
+    }
+
+    /// Files importing any of `resolved_paths` (2-hop dependents), bounded.
+    pub fn importers_of_paths(
+        &self,
+        resolved_paths: &[String],
+        limit: usize,
+    ) -> CcResult<Vec<String>> {
+        self.db.importers_of_paths(resolved_paths, limit)
+    }
+
+    /// Distinct cross-community call pairs.
+    pub fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
+        self.db.community_adjacency_pairs()
+    }
+
+    // ── Symbols / tests ─────────────────────────────────────────────────
+
+    /// Symbols (with stable UID) living in any of `files`.
+    pub fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
+        self.db.symbols_lite_in_files(files)
+    }
+
+    /// Batch `uid -> name` resolution.
+    pub fn symbol_names_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, String>> {
+        self.db.symbol_names_for_uids(uids)
+    }
+
+    /// Raw symbol rows for the dead-code scan.
+    pub fn dead_code_symbol_scan(
+        &self,
+        scope: Option<&str>,
+        scan_limit: usize,
+    ) -> CcResult<Vec<DeadCodeSymbolRow>> {
+        self.db.dead_code_symbol_scan(scope, scan_limit)
+    }
+
+    /// `(target_symbol_uid, container)` reference rows (dead-code phase 2).
+    pub fn symbol_ref_containers_for_targets(
+        &self,
+        target_uids: &[String],
+    ) -> CcResult<Vec<(String, Option<String>)>> {
+        self.db.symbol_ref_containers_for_targets(target_uids)
+    }
+
+    /// Distinct test files covering any of `code_files`.
+    pub fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
+        self.db.suggested_test_files(code_files)
+    }
+
+    // ── HTTP/async bridges and infra bindings ───────────────────────────
+
+    /// UID-resolved HTTP call edges (bridge synthesis input), bounded.
+    pub fn all_http_call_edges_lite(&self, limit: usize) -> CcResult<Vec<HttpCallEdgeLite>> {
+        self.db.all_http_call_edges_lite(limit)
+    }
+
+    /// UID-resolved route nodes (bridge synthesis input), bounded.
+    pub fn all_route_nodes_lite(&self, limit: usize) -> CcResult<Vec<RouteNodeLite>> {
+        self.db.all_route_nodes_lite(limit)
+    }
+
+    /// HTTP route handler rows, optionally LIKE-filtered, bounded.
+    pub fn route_handler_rows(
+        &self,
+        route_path: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<Value>> {
+        self.db.route_handler_rows(route_path, limit)
+    }
+
+    /// Consumers of a topic/queue (infra edges).
+    pub fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
+        self.db.async_consumer_rows(topic_or_queue)
+    }
+
+    /// Infra bindings for a service or route, plus connecting edges.
+    pub fn service_binding_rows(&self, service_or_route: &str) -> CcResult<ServiceBindingRows> {
+        self.db.service_binding_rows(service_or_route)
+    }
+
+    // ── Runtime evidence ────────────────────────────────────────────────
+
+    /// `normalized_path -> (observed_count, last_seen)` runtime evidence for
+    /// synthesized HTTP bridge edges.
+    pub fn evidence_for_normalized_paths(
+        &self,
+        paths: &[String],
+    ) -> CcResult<HashMap<String, (u32, String)>> {
+        self.db.evidence_for_normalized_paths(paths)
     }
 }
 

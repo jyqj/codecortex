@@ -7,7 +7,7 @@ use super::SharedCodeIndex;
 pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("graph_query");
-    let output = rt.graph_query(query).map_err(|e| e.to_string())?;
+    let output = rt.graph().graph_query(query).map_err(|e| e.to_string())?;
 
     let default_limit_applied = output.default_limit_applied;
     let limit_applied = output.limit;
@@ -101,7 +101,7 @@ pub fn symbol_refs(
     limit: usize,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let refs = rt.symbol_refs(symbol, limit).map_err(|e| e.to_string())?;
+    let refs = rt.graph().symbol_refs(symbol, limit).map_err(|e| e.to_string())?;
     serde_json::to_value(refs).map_err(|e| e.to_string())
 }
 
@@ -112,7 +112,8 @@ pub fn list_unresolved_refs(
     kind: Option<&str>,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.list_unresolved_refs(limit, file_path, kind)
+    rt.graph()
+        .list_unresolved_refs(limit, file_path, kind)
         .map_err(|e| e.to_string())
 }
 
@@ -122,7 +123,7 @@ pub fn find_impacted_tests(
     files: &[String],
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let tests = rt.find_impacted_tests(files).map_err(|e| e.to_string())?;
+    let tests = rt.impact().find_impacted_tests(files).map_err(|e| e.to_string())?;
     serde_json::to_value(tests).map_err(|e| e.to_string())
 }
 

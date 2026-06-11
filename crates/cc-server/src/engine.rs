@@ -1,6 +1,24 @@
 //! Lightweight code-index engine for cc-server.
 //!
 //! Thin wrapper around cc-db, cc-index and cc-search.
+//!
+//! # Domain views
+//!
+//! `CodeIndex` itself only carries the index lifecycle (open/close/build),
+//! the shared infrastructure accessors (`ensure_db`, `index_status`,
+//! `repo_size_tier`, `output_budget`, `diagnostics_info`), and the lock
+//! poison-recovery hook. All query surface area is grouped into three
+//! zero-cost borrowed views, entered via:
+//!
+//! - [`CodeIndex::search`] → [`SearchOps`]: context search and task-to-symbol
+//!   retrieval (`search_in_context`, `search_in_context_with`, `task_symbols`).
+//! - [`CodeIndex::graph`] → [`GraphOps`]: symbol/file/graph lookups
+//!   (`find_symbol`, `callers`, `graph_query`, `explore_symbols`,
+//!   `graph_schema`, ...). Impl blocks live here and in `engine_query.rs`,
+//!   mirroring the historical `CodeIndex` split across the two files.
+//! - [`CodeIndex::impact`] → [`ImpactOps`]: change-impact analysis
+//!   (`detect_impact*`, `analyze_impact*`, `git_changed_files`,
+//!   `find_impacted_tests`), in `engine_query.rs`.
 
 use cc_db::index_db::IndexDb;
 use cc_index::{IndexReport, Indexer, PreparedBuild};
@@ -15,27 +33,6 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
-
-/// Stable snapshot for caches that derive data from the current index.
-///
-/// The generation is bumped only after a successful index build. Pairing it
-/// with the project path gives future query caches a compact invalidation key
-/// without coupling them to the database handle.
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
-pub struct IndexSnapshot {
-    project_path: Option<PathBuf>,
-    generation: u64,
-}
-
-impl IndexSnapshot {
-    pub fn project_path(&self) -> Option<&Path> {
-        self.project_path.as_deref()
-    }
-
-    pub fn generation(&self) -> u64 {
-        self.generation
-    }
-}
 
 /// Owned inputs cloned from a `CodeIndex` under a brief read lock so that the
 /// heavy, read-only `prepare_build` phase can run with no `CodeIndex` lock held.
@@ -104,12 +101,40 @@ pub struct CodeIndex {
     /// True when the DB was freshly created (Initialized) or rebuilt after a
     /// schema mismatch — signals that an auto-index build is needed.
     needs_initial_index: bool,
-    /// Monotonic generation for cache invalidation. Incremented after every
-    /// successful build_index/build_auto_index.
-    generation: u64,
 }
 
+/// Borrowed view over [`CodeIndex`] for the search domain: context search and
+/// task-to-symbol retrieval. Obtained via [`CodeIndex::search`].
+#[derive(Clone, Copy)]
+pub struct SearchOps<'a>(pub(crate) &'a CodeIndex);
+
+/// Borrowed view over [`CodeIndex`] for the graph domain: symbol, file, and
+/// graph lookups. Obtained via [`CodeIndex::graph`].
+#[derive(Clone, Copy)]
+pub struct GraphOps<'a>(pub(crate) &'a CodeIndex);
+
+/// Borrowed view over [`CodeIndex`] for the impact domain: change-impact
+/// analysis over the call graph and git diffs. Obtained via
+/// [`CodeIndex::impact`].
+#[derive(Clone, Copy)]
+pub struct ImpactOps<'a>(pub(crate) &'a CodeIndex);
+
 impl CodeIndex {
+    /// Enter the search domain view.
+    pub fn search(&self) -> SearchOps<'_> {
+        SearchOps(self)
+    }
+
+    /// Enter the graph domain view.
+    pub fn graph(&self) -> GraphOps<'_> {
+        GraphOps(self)
+    }
+
+    /// Enter the impact domain view.
+    pub fn impact(&self) -> ImpactOps<'_> {
+        ImpactOps(self)
+    }
+
     pub fn new(project_path: Option<&Path>) -> CcResult<Self> {
         let mut index = Self::empty();
         if let Some(path) = project_path {
@@ -126,7 +151,6 @@ impl CodeIndex {
             engine: None,
             repo_tier: None,
             needs_initial_index: false,
-            generation: 0,
         }
     }
 
@@ -183,17 +207,6 @@ impl CodeIndex {
 
     pub fn index_db(&self) -> Option<&Arc<IndexDb>> {
         self.index_db.as_ref()
-    }
-
-    pub fn index_snapshot(&self) -> IndexSnapshot {
-        IndexSnapshot {
-            project_path: self.project_path.clone(),
-            generation: self.generation,
-        }
-    }
-
-    pub fn index_generation(&self) -> u64 {
-        self.generation
     }
 
     /// Whether this CodeIndex was freshly created (empty DB) and needs an
@@ -283,16 +296,20 @@ impl CodeIndex {
     }
 
     fn after_successful_index_build(&mut self) {
-        self.generation = self.generation.saturating_add(1);
-        // No manual search-cache invalidation: cc-db bumps the persisted
-        // index epoch inside every write transaction and SearchEngine keys
-        // its caches on it at search time.
+        // No manual cache invalidation: the cc-db persisted epoch vector
+        // (index_epoch/evidence_epoch, bumped inside every write transaction)
+        // is the single index clock — both the SearchEngine result cache and
+        // the GraphReadModel caches key their entries on it.
         self.repo_tier = Some(self.compute_repo_tier());
         self.needs_initial_index = false;
     }
 
     /// Drop cached search results after recovering a poisoned lock — they may
-    /// have been computed from a half-mutated CodeIndex.
+    /// have been computed from a half-mutated CodeIndex. The cc-db persisted
+    /// epoch vector remains the only index clock for search/graph caches;
+    /// poison recovery additionally calls `engine.invalidate_cache()` because
+    /// the epochs cannot tell results computed from a half-mutated CodeIndex
+    /// apart from valid ones.
     ///
     /// Correctness depends on the CodeIndex lock ordering: this runs while
     /// holding the CodeIndex WRITE lock (`&mut self`), and every in-flight
@@ -300,7 +317,6 @@ impl CodeIndex {
     /// lock, so no stale entry can be inserted concurrently with or after
     /// this clear.
     pub fn invalidate_search_cache_after_poison(&mut self) {
-        self.generation = self.generation.saturating_add(1);
         if let Some(engine) = self.engine.as_ref() {
             engine.invalidate_cache();
         }
@@ -339,7 +355,9 @@ impl CodeIndex {
             "lock_poison_recovered": crate::handlers::poison_recovered(),
         })
     }
+}
 
+impl SearchOps<'_> {
     pub fn search_in_context(
         &self,
         query: &str,
@@ -356,7 +374,7 @@ impl CodeIndex {
         intent: Option<Intent>,
         overrides: SearchRequest,
     ) -> CcResult<ContextEnvelope> {
-        let tier = self.repo_size_tier();
+        let tier = self.0.repo_size_tier();
         let token_budget = tier.default_token_budget();
         let max_output_chars = tier.max_output_chars();
         let top_k = if top_k == 0 {
@@ -364,7 +382,7 @@ impl CodeIndex {
         } else {
             top_k
         };
-        let engine = self.ensure_engine()?;
+        let engine = self.0.ensure_engine()?;
         let detected_intent = intent.unwrap_or_else(|| detect_intent(query));
         let request = build_context_search_request(query, top_k, overrides);
         // Graph-aware rerank happens entirely inside cc-search: it searches a
@@ -515,7 +533,9 @@ impl CodeIndex {
             }),
         })
     }
+}
 
+impl GraphOps<'_> {
     pub fn find_symbol(
         &self,
         name: &str,
@@ -523,7 +543,7 @@ impl CodeIndex {
         top_k: usize,
         include_metrics: bool,
     ) -> CcResult<serde_json::Value> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
         let rows = db.find_symbol(name, exact, top_k)?;
         if !include_metrics {
             return serde_json::to_value(&rows).map_err(|e| CcError::Search(e.to_string()));
@@ -550,27 +570,27 @@ impl CodeIndex {
     }
 
     pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<cc_db::index_db::SymbolRow>> {
-        self.ensure_db()?.file_symbols(file_path)
+        self.0.ensure_db()?.file_symbols(file_path)
     }
 
     pub fn list_indexed_files(&self) -> CcResult<Vec<cc_db::index_db::FileInfoRow>> {
-        self.ensure_db()?.list_indexed_files()
+        self.0.ensure_db()?.list_indexed_files()
     }
 
     pub fn list_communities(&self) -> CcResult<Vec<cc_db::index_db::CommunityRow>> {
-        self.ensure_db()?.list_communities()
+        self.0.ensure_db()?.list_communities()
     }
 
     pub fn list_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
-        self.ensure_db()?.list_repo_frameworks()
+        self.0.ensure_db()?.list_repo_frameworks()
     }
 
     pub fn summarize_file(&self, file_path: &str) -> CcResult<serde_json::Value> {
-        self.ensure_db()?.file_summary(file_path)
+        self.0.ensure_db()?.file_summary(file_path)
     }
 
     pub fn graph_query(&self, query: &str) -> CcResult<GraphQueryOutput> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
 
         let tokens = cc_search::cypher::tokenize(query)?;
         let parsed = cc_search::cypher::parse_tokens(&tokens)?;
@@ -607,7 +627,7 @@ impl CodeIndex {
         symbol_name: &str,
         limit: usize,
     ) -> CcResult<Vec<cc_db::index_db::CallEdgeLite>> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
         let syms = db.find_symbol(symbol_name, true, 1)?;
         let sym = syms
             .first()
@@ -624,7 +644,7 @@ impl CodeIndex {
         symbol_name: &str,
         limit: usize,
     ) -> CcResult<Vec<cc_db::index_db::CallEdgeLite>> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
         let syms = db.find_symbol(symbol_name, true, 1)?;
         let sym = syms
             .first()
@@ -641,7 +661,7 @@ impl CodeIndex {
         symbol_name: &str,
         limit: usize,
     ) -> CcResult<Vec<cc_db::index_db::SymbolRefLite>> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
         let syms = db.find_symbol(symbol_name, true, 1)?;
         let sym = syms
             .first()
@@ -659,7 +679,7 @@ impl CodeIndex {
         file_path: Option<&str>,
         kind: Option<&str>,
     ) -> CcResult<serde_json::Value> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
         let rows = db.list_resolution_attempts(limit.clamp(1, 500), file_path, kind)?;
         let mut by_kind: HashMap<String, usize> = HashMap::new();
         let mut with_candidates = 0usize;
@@ -686,10 +706,12 @@ impl CodeIndex {
         }))
     }
 
-    pub fn find_impacted_tests(&self, files: &[String]) -> CcResult<Vec<String>> {
-        self.ensure_db()?.find_impacted_tests(files)
-    }
+}
 
+// task_symbols lives in a second `SearchOps` impl block to keep the method in
+// its historical position in this file (minimal move); it belongs to the
+// search domain because it is task-text retrieval with a search fallback.
+impl SearchOps<'_> {
     pub fn task_symbols(
         &self,
         task: &str,
@@ -704,7 +726,7 @@ impl CodeIndex {
         let mut seen_uids: HashSet<String> = HashSet::new();
 
         for name in &candidates {
-            if let Ok(syms) = self.ensure_db()?.find_symbol(name, true, 1) {
+            if let Ok(syms) = self.0.ensure_db()?.find_symbol(name, true, 1) {
                 for sym in &syms {
                     let dedup_key = sym.symbol_uid.clone().unwrap_or_else(|| {
                         format!("{}:{}:{}", sym.file_path, sym.name, sym.start_line)
@@ -740,12 +762,12 @@ impl CodeIndex {
         }
 
         let max_syms = max_symbols
-            .unwrap_or_else(|| self.repo_size_tier().explore_max_symbols())
+            .unwrap_or_else(|| self.0.repo_size_tier().explore_max_symbols())
             .clamp(1, 20);
         matched_symbols.truncate(max_syms);
         matched_uids.truncate(max_syms);
 
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
 
         let mut expanded_callers: Vec<serde_json::Value> = Vec::new();
         let mut expanded_callees: Vec<serde_json::Value> = Vec::new();
@@ -992,27 +1014,21 @@ mod tests {
     }
 
     #[test]
-    fn successful_build_bumps_generation_and_clears_initial_index_flag() {
+    fn successful_build_clears_initial_index_flag() {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
 
         let mut idx = CodeIndex::empty();
         idx.set_project(dir.path(), false).unwrap();
-        let before = idx.index_snapshot();
+        assert!(idx.needs_initial_index());
 
         let report = idx.build_index(false).unwrap();
 
         assert!(report.files_scanned >= 1);
-        assert_eq!(idx.index_generation(), before.generation() + 1);
-        assert_eq!(idx.index_snapshot().generation(), idx.index_generation());
-        assert_eq!(idx.index_snapshot().project_path(), before.project_path());
         assert!(!idx.needs_initial_index());
 
-        let after_build_generation = idx.index_generation();
         let auto_report = idx.build_auto_index(false).unwrap();
-
         assert!(auto_report.files_scanned >= 1);
-        assert_eq!(idx.index_generation(), after_build_generation + 1);
     }
 
     // ── build_context_search_request propagates overrides ──────────
@@ -1151,7 +1167,10 @@ mod tests {
         idx.build_index(false).unwrap();
 
         // No explicit LIMIT → default limit applied, limit = DEFAULT_CYPHER_LIMIT.
-        let output = idx.graph_query("MATCH (f:Function) RETURN f.name").unwrap();
+        let output = idx
+            .graph()
+            .graph_query("MATCH (f:Function) RETURN f.name")
+            .unwrap();
         assert!(output.default_limit_applied);
         assert_eq!(output.limit, Some(50));
         assert_eq!(output.row_count, output.rows.len());
@@ -1168,6 +1187,7 @@ mod tests {
 
         // Explicit LIMIT → no default limit, limit reflects the explicit value.
         let output = idx
+            .graph()
             .graph_query("MATCH (f:Function) RETURN f.name LIMIT 5")
             .unwrap();
         assert!(!output.default_limit_applied);
@@ -1302,6 +1322,7 @@ mod tests {
 
         let query = "ranktoken alphaword betaword gammaword deltaword epsword zetaword etaword";
         let envelope = idx
+            .search()
             .search_in_context_with(query, 2, None, SearchRequest::default())
             .unwrap();
 

@@ -13,7 +13,7 @@ use cc_model::config::{RankingConfig, RepoSizeTier, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
-use crate::lanes::{LaneOutcome, LANE_GRAPH, LANE_GREP, LANE_LEXICAL};
+use crate::lanes::{LaneOutcome, ScoreSlot};
 use crate::preselect::{PreselectRequest, PreselectResult};
 
 #[derive(Debug)]
@@ -61,8 +61,9 @@ struct RerankInputs {
 #[derive(Debug)]
 pub(crate) struct LaneRanks<'a> {
     by_lane: HashMap<&'static str, HashMap<&'a str, usize>>,
-    /// Lane ids with `annotates_hits() == true`, in lane-collection order.
-    annotating: Vec<&'static str>,
+    /// Lanes with `annotates_hits() == true`, in lane-collection order,
+    /// each paired with its declared `SearchHit` score slot (if any).
+    annotating: Vec<(&'static str, Option<ScoreSlot>)>,
 }
 
 #[derive(Debug)]
@@ -221,28 +222,34 @@ impl SearchPlan {
         // `RetrievalLane::annotates_hits()` contributes a `{lane_id}@{rank}`
         // reason and a rank-derived score, iterated in lane-collection order.
         // Opted-out lanes (graph) are fusion-only and never appear here.
-        let mut lexical_score = 0.0;
-        let mut grep_score = 0.0;
-        let mut graph_score = 0.0;
-        for lane_id in lane_ranks.annotating_lanes() {
+        // Lanes that declared a `ScoreSlot` accumulate their rank-derived
+        // score here, keyed by slot; lanes without a slot surface through
+        // their reason string only.
+        let mut slot_scores: Vec<(ScoreSlot, f64)> = Vec::new();
+        for (lane_id, score_slot) in lane_ranks.annotating_lanes() {
             let Some(rank) = lane_ranks.rank(lane_id, &chunk_id) else {
                 continue;
             };
             reasons.push(format!("{lane_id}@{rank}"));
-            // LANE-ID → SCORE-FIELD MAPPING — the only remaining
-            // lane-id-specific code on this path.  `SearchHit`'s per-lane
-            // score fields live in cc-model and are fixed; a NEW lane needs
-            // an arm here only IF it wants a dedicated score field —
-            // otherwise its `{lane_id}@{rank}` reason above already
-            // surfaces generically.
-            let lane_score = 1.0 / rank as f64;
-            match lane_id {
-                LANE_LEXICAL => lexical_score = lane_score,
-                LANE_GREP => grep_score = lane_score,
-                // Dormant today (graph opts out of annotation) but keeps the
-                // field wired if the graph lane ever opts in.
-                LANE_GRAPH => graph_score = lane_score,
-                _ => {}
+            if let Some(slot) = score_slot {
+                slot_scores.push((slot, 1.0 / rank as f64));
+            }
+        }
+        // SCHEMA PROJECTION — the single, centralized slot → `SearchHit`
+        // field table.  `SearchHit`'s per-lane score fields live in cc-model
+        // and are fixed (MCP output schema), so this match is over the
+        // closed `ScoreSlot` set and never grows when a lane is added: a
+        // new lane declares a slot via `RetrievalLane::score_slot()` (or
+        // `None`) and is registered in `lanes::default_lanes()` — nothing
+        // here changes.
+        let mut lexical_score = 0.0;
+        let mut grep_score = 0.0;
+        let mut graph_score = 0.0;
+        for (slot, lane_score) in slot_scores {
+            match slot {
+                ScoreSlot::Lexical => lexical_score = lane_score,
+                ScoreSlot::Grep => grep_score = lane_score,
+                ScoreSlot::Graph => graph_score = lane_score,
             }
         }
 
@@ -495,7 +502,7 @@ impl<'a> LaneRanks<'a> {
         let mut annotating = Vec::new();
         for outcome in outcomes {
             if outcome.annotates_hits {
-                annotating.push(outcome.lane_id);
+                annotating.push((outcome.lane_id, outcome.score_slot));
             }
             by_lane.insert(
                 outcome.lane_id,
@@ -513,8 +520,9 @@ impl<'a> LaneRanks<'a> {
         }
     }
 
-    /// Lane ids that opted into per-hit annotation, in lane-collection order.
-    fn annotating_lanes(&self) -> impl Iterator<Item = &'static str> + '_ {
+    /// Lanes that opted into per-hit annotation, in lane-collection order,
+    /// as `(lane_id, score_slot)` pairs.
+    fn annotating_lanes(&self) -> impl Iterator<Item = (&'static str, Option<ScoreSlot>)> + '_ {
         self.annotating.iter().copied()
     }
 

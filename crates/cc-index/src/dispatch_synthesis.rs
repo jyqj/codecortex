@@ -10,15 +10,23 @@
 //!    from dispatcher to registrar targets.
 //! 5. **React re-render chain** – extends state setter synthesis by linking
 //!    re-rendering components to their JSX child components.
+//!
+//! Every pass is compute-only: it reads committed index state via the read
+//! pool and returns an [`EdgeDelta`] (the synthesized-edge kinds it replaces
+//! plus the edges it produces). Passes never take the write lock — ordering
+//! and atomic application live in [`crate::synthesis_pipeline`].
 
 use std::collections::{HashMap, HashSet};
 
-use cc_db::unit_of_work::UnitOfWork;
+use cc_db::index_db::IndexDb;
 use cc_model::dispatch_site::{DispatchSiteKind, DispatchSiteRecord};
 use cc_model::edge::{
     CallEdgeRecord, DispatchKind, ResolutionKind, SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::{CcResult, ParserTier};
+
+use crate::synthesis_pipeline::EdgeDelta;
+use crate::synthesis_symbol_resolver::{ResolutionScope, SynthesisSymbolResolver};
 
 /// Configuration knobs for dispatch synthesis.
 pub struct SynthesisConfig {
@@ -52,37 +60,29 @@ impl Default for SynthesisConfig {
     }
 }
 
-/// Statistics returned after a synthesis pass.
+/// Statistics returned by the event-emitter synthesis pass.
+#[derive(Default)]
 pub struct SynthesisStats {
     pub event_emitter_edges: usize,
     pub skipped_generic: usize,
     pub skipped_fanout: usize,
-    pub jsx_edges: usize,
-    pub setter_edges: usize,
-    pub field_observer_edges: usize,
-    pub react_rerender_edges: usize,
 }
 
-/// Run event-emitter synthesis: match emit sites to on sites and produce
+/// Compute event-emitter synthesis: match emit sites to on sites and produce
 /// synthetic `CallEdgeRecord` entries.
-pub fn run_event_emitter_synthesis(
-    db: &UnitOfWork,
+pub(crate) fn compute_event_emitter_synthesis(
+    db: &IndexDb,
     config: &SynthesisConfig,
-) -> CcResult<SynthesisStats> {
+) -> CcResult<(EdgeDelta, SynthesisStats)> {
     if !config.enabled {
-        return Ok(SynthesisStats {
-            event_emitter_edges: 0,
-            skipped_generic: 0,
-            skipped_fanout: 0,
-            jsx_edges: 0,
-            setter_edges: 0,
-            field_observer_edges: 0,
-            react_rerender_edges: 0,
-        });
+        return Ok((EdgeDelta::default(), SynthesisStats::default()));
     }
 
-    // 1. Delete all existing synthetic event_emitter edges.
-    db.delete_synthetic_call_edges("event_emitter")?;
+    // 1. This pass replaces all synthetic event_emitter edges.
+    let mut delta = EdgeDelta {
+        delete_call_kinds: vec!["event_emitter"],
+        ..Default::default()
+    };
 
     // 2. Load all dispatch sites.
     let all_sites = db.load_all_dispatch_sites()?;
@@ -99,29 +99,31 @@ pub fn run_event_emitter_synthesis(
     }
 
     // 3b. Resolve handler_symbol_uid for on-sites that have handler_expr but no uid.
-    //     Look up handler_expr as a function/method name in the DB, preferring same file.
+    //     Look up handler_expr as a function/method name in the DB, preferring same
+    //     file, then a truly unique global match. Avoid "first of a few" fallback:
+    //     that produces plausible-looking but wrong synthetic call edges in common
+    //     handler-name collisions.
     let handler_kinds: &[&str] = &["function", "method", "class", "hook", "component"];
+    let lookup_names: Vec<&str> = on_sites
+        .iter()
+        .filter(|site| site.handler_symbol_uid.is_none())
+        .filter_map(|site| site.handler_expr.as_deref())
+        // Strip dotted prefix (e.g. "self.handle_ready" → "handle_ready")
+        .map(|expr| expr.rsplit('.').next().unwrap_or(expr))
+        .collect();
+    // Lookup failure degrades to unresolved handlers (matching the previous
+    // per-name `if let Ok` swallowing) instead of failing the pass.
+    let handler_resolver =
+        SynthesisSymbolResolver::prefetch(db, &lookup_names, handler_kinds).unwrap_or_default();
     let mut resolved_on_sites: Vec<DispatchSiteRecord> = Vec::new();
     for site in on_sites {
         let mut site = site.clone();
         if site.handler_symbol_uid.is_none() {
             if let Some(ref handler_name) = site.handler_expr {
-                // Strip dotted prefix (e.g. "self.handle_ready" → "handle_ready")
                 let lookup_name = handler_name.rsplit('.').next().unwrap_or(handler_name);
-                if let Ok(matches) = db.find_symbols_by_name_and_kinds(lookup_name, handler_kinds) {
-                    // Prefer same-file match, then a truly unique global match.
-                    // Avoid "first of a few" fallback: that produces plausible-looking
-                    // but wrong synthetic call edges in common handler-name collisions.
-                    let target = if matches.len() == 1 {
-                        matches[0].symbol_uid.clone()
-                    } else {
-                        matches
-                            .iter()
-                            .find(|s| s.file_path == site.file_path)
-                            .and_then(|s| s.symbol_uid.clone())
-                    };
-                    site.handler_symbol_uid = target;
-                }
+                site.handler_symbol_uid = handler_resolver
+                    .resolve_strict(lookup_name, &site.file_path)
+                    .map(|(uid, _)| uid);
             }
         }
         resolved_on_sites.push(site);
@@ -213,21 +215,18 @@ pub fn run_event_emitter_synthesis(
         }
     }
 
-    // 6. Batch insert all synthetic edges.
+    // 6. Collect all synthetic edges into the pass delta.
     let edge_count = synthetic_edges.len();
-    if !synthetic_edges.is_empty() {
-        db.insert_synthetic_call_edges(&synthetic_edges)?;
-    }
+    delta.insert_call_edges = synthetic_edges;
 
-    Ok(SynthesisStats {
-        event_emitter_edges: edge_count,
-        skipped_generic,
-        skipped_fanout,
-        jsx_edges: 0,
-        setter_edges: 0,
-        field_observer_edges: 0,
-        react_rerender_edges: 0,
-    })
+    Ok((
+        delta,
+        SynthesisStats {
+            event_emitter_edges: edge_count,
+            skipped_generic,
+            skipped_fanout,
+        },
+    ))
 }
 
 /// Compute confidence based on the tier of match:
@@ -287,32 +286,25 @@ fn make_synthetic_edge(
 
 /// Match `<Component />` JSX usage sites to component definitions and produce
 /// `RendersComponent` semantic edges.
-pub fn run_jsx_synthesis(db: &UnitOfWork) -> CcResult<usize> {
-    // 1. Delete old synthesized RendersComponent edges (prefixed with "synth:jsx").
-    db.delete_synthetic_semantic_edges("synth:jsx:")?;
+pub(crate) fn compute_jsx_synthesis(db: &IndexDb) -> CcResult<EdgeDelta> {
+    // 1. This pass replaces all synthesized RendersComponent edges
+    //    (prefixed with "synth:jsx").
+    let mut delta = EdgeDelta {
+        delete_semantic_prefixes: vec!["synth:jsx:"],
+        ..Default::default()
+    };
 
     // 2. Load all JsxTag dispatch sites.
     let jsx_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::JsxTag.as_str())?;
     if jsx_sites.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
 
-    // 3. Collect unique component names to batch-query.
-    let unique_names: HashSet<&str> = jsx_sites.iter().map(|s| s.key.as_str()).collect();
-
-    // 4. Build name → symbol_uid map (only function/class/component kinds).
+    // 3-4. Batch-resolve unique component names (only function/class/component
+    //      kinds) into an in-memory resolver.
     let component_kinds: &[&str] = &["function", "class", "component", "hook"];
-    let mut name_to_uid: HashMap<&str, Vec<(String, String)>> = HashMap::new();
-    for name in &unique_names {
-        let matches = db.find_symbols_by_name_and_kinds(name, component_kinds)?;
-        let entries: Vec<(String, String)> = matches
-            .into_iter()
-            .filter_map(|s| s.symbol_uid.map(|uid| (uid, s.file_path)))
-            .collect();
-        if !entries.is_empty() {
-            name_to_uid.insert(name, entries);
-        }
-    }
+    let jsx_names: Vec<&str> = jsx_sites.iter().map(|s| s.key.as_str()).collect();
+    let resolver = SynthesisSymbolResolver::prefetch(db, &jsx_names, component_kinds)?;
 
     // 5. For each JsxTag site, try to find the target component.
     let mut semantic_edges: Vec<SemanticEdgeRecord> = Vec::new();
@@ -322,35 +314,28 @@ pub fn run_jsx_synthesis(db: &UnitOfWork) -> CcResult<usize> {
             None => continue,
         };
 
-        let candidates = match name_to_uid.get(site.key.as_str()) {
-            Some(c) => c,
-            None => continue,
-        };
-
         // Prefer same-file match, then a truly unique global match.
         // Do not pick the first of several global candidates: JSX component
         // names collide frequently across feature folders.
-        let target =
-            if let Some(candidate) = candidates.iter().find(|(_, fp)| *fp == site.file_path) {
-                Some((candidate, 0.82))
-            } else if candidates.len() == 1 {
-                Some((&candidates[0], 0.75))
-            } else {
-                None
-            };
+        let target = resolver
+            .resolve_lenient(site.key.as_str(), &site.file_path)
+            .map(|(uid, scope)| match scope {
+                ResolutionScope::SameFile => (uid, 0.82),
+                ResolutionScope::UniqueGlobal => (uid, 0.75),
+            });
 
-        if let Some(((target_uid, _target_file), confidence)) = target {
+        if let Some((target_uid, confidence)) = target {
             // Skip self-references.
             if target_uid.as_str() == source_uid.as_str() {
                 continue;
             }
             semantic_edges.push(SemanticEdgeRecord {
-                edge_id: synth_edge_id("jsx", &site.site_id, target_uid),
+                edge_id: synth_edge_id("jsx", &site.site_id, &target_uid),
                 file_path: site.file_path.clone(),
                 source_symbol: String::new(),
                 source_symbol_uid: Some(source_uid.clone()),
                 target_symbol: site.key.clone(),
-                target_symbol_uid: Some(target_uid.clone()),
+                target_symbol_uid: Some(target_uid),
                 relation_kind: SemanticRelation::RendersComponent,
                 line: site.line,
                 confidence,
@@ -359,13 +344,8 @@ pub fn run_jsx_synthesis(db: &UnitOfWork) -> CcResult<usize> {
         }
     }
 
-    // 6. Batch insert.
-    let count = semantic_edges.len();
-    if !semantic_edges.is_empty() {
-        db.insert_semantic_edges_batch(&semantic_edges)?;
-    }
-
-    Ok(count)
+    delta.insert_semantic_edges = semantic_edges;
+    Ok(delta)
 }
 
 // ── State setter synthesis ────────────────────────────────────
@@ -397,9 +377,12 @@ impl StateSetterBindingTarget {
 ///   to determine which component owns the state. Create an edge from the caller to the component.
 /// - For `this.setState`, find the class's render method (existing logic).
 /// - If no binding is found for a setter call, skip (could be a non-React set* function).
-pub fn run_state_setter_synthesis(db: &UnitOfWork) -> CcResult<usize> {
-    // 1. Delete old synthetic state setter edges.
-    db.delete_synthetic_call_edges("react_state_setter")?;
+pub(crate) fn compute_state_setter_synthesis(db: &IndexDb) -> CcResult<EdgeDelta> {
+    // 1. This pass replaces all synthetic state setter edges.
+    let mut delta = EdgeDelta {
+        delete_call_kinds: vec!["react_state_setter"],
+        ..Default::default()
+    };
 
     // 2. Load StateSetterBinding sites — tells us which component owns which setter.
     let binding_sites =
@@ -409,7 +392,7 @@ pub fn run_state_setter_synthesis(db: &UnitOfWork) -> CcResult<usize> {
     let call_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::StateSetterCall.as_str())?;
 
     if call_sites.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
 
     // 4. Build a map: (file_path, setter_name) → candidate owner components.
@@ -560,13 +543,8 @@ pub fn run_state_setter_synthesis(db: &UnitOfWork) -> CcResult<usize> {
         }
     }
 
-    // 5. Batch insert.
-    let count = synthetic_edges.len();
-    if !synthetic_edges.is_empty() {
-        db.insert_synthetic_call_edges(&synthetic_edges)?;
-    }
-
-    Ok(count)
+    delta.insert_call_edges = synthetic_edges;
+    Ok(delta)
 }
 
 // ── Field-backed observer synthesis ──────────────────────────
@@ -626,13 +604,19 @@ fn matches_method_prefix(name: &str, prefixes: &[&str]) -> bool {
 /// This complements the event-emitter synthesis (which matches by event name string)
 /// by catching cases where the event bus pattern is used but event names aren't
 /// statically detectable.
-pub fn run_field_observer_synthesis(db: &UnitOfWork, config: &SynthesisConfig) -> CcResult<usize> {
+pub(crate) fn compute_field_observer_synthesis(
+    db: &IndexDb,
+    config: &SynthesisConfig,
+) -> CcResult<EdgeDelta> {
     if !config.enabled {
-        return Ok(0);
+        return Ok(EdgeDelta::default());
     }
 
-    // 1. Delete old field_observer synthetic edges.
-    db.delete_synthetic_call_edges("field_observer")?;
+    // 1. This pass replaces all field_observer synthetic edges.
+    let mut delta = EdgeDelta {
+        delete_call_kinds: vec!["field_observer"],
+        ..Default::default()
+    };
 
     // 2. Collect all registrar and dispatcher method names to query.
     //    We query for classes that contain methods matching either pattern.
@@ -830,13 +814,8 @@ pub fn run_field_observer_synthesis(db: &UnitOfWork, config: &SynthesisConfig) -
         }
     }
 
-    // 3. Batch insert.
-    let count = synthetic_edges.len();
-    if !synthetic_edges.is_empty() {
-        db.insert_synthetic_call_edges(&synthetic_edges)?;
-    }
-
-    Ok(count)
+    delta.insert_call_edges = synthetic_edges;
+    Ok(delta)
 }
 
 // ── React re-render chain synthesis ─────────────────────────
@@ -850,9 +829,12 @@ pub fn run_field_observer_synthesis(db: &UnitOfWork, config: &SynthesisConfig) -
 /// This runs after both state setter synthesis and JSX synthesis, and creates
 /// additional `react_rerender` edges for the render→child component links
 /// that form the cascade path.
-pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
-    // 1. Delete old react_rerender synthetic edges.
-    db.delete_synthetic_call_edges("react_rerender")?;
+pub(crate) fn compute_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<EdgeDelta> {
+    // 1. This pass replaces all react_rerender synthetic edges.
+    let mut delta = EdgeDelta {
+        delete_call_kinds: vec!["react_rerender"],
+        ..Default::default()
+    };
 
     // 2. Load existing state setter edges to find components that have setState triggers.
     //    These were created by run_state_setter_synthesis and point caller → component.
@@ -878,7 +860,7 @@ pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
         .collect();
 
     if jsx_sites.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
 
     // 3. Build a map: component_uid → JSX children rendered by that component.
@@ -916,6 +898,14 @@ pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
     }
 
     // 5. For each re-rendering component, find JSX children and resolve them.
+    //    Batch-prefetch every child tag name of re-rendering components first.
+    let child_names: Vec<&str> = rerendering_components
+        .iter()
+        .filter_map(|uid| component_children.get(uid.as_str()))
+        .flat_map(|children| children.iter().map(|site| site.key.as_str()))
+        .collect();
+    let resolver = SynthesisSymbolResolver::prefetch(db, &child_names, component_kinds)?;
+
     for component_uid in &rerendering_components {
         let children = match component_children.get(component_uid.as_str()) {
             Some(c) => c,
@@ -924,21 +914,10 @@ pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
 
         for child_jsx in children {
             // Resolve the JSX tag name to a component symbol.
+            // Prefer same-file, then unique global.
             let child_name = &child_jsx.key;
-            let matches = db.find_symbols_by_name_and_kinds(child_name, component_kinds)?;
-
-            // Same resolution logic as JSX synthesis: prefer same-file, then unique global.
-            let target =
-                if let Some(m) = matches.iter().find(|s| s.file_path == child_jsx.file_path) {
-                    m.symbol_uid.clone()
-                } else if matches.len() == 1 {
-                    matches[0].symbol_uid.clone()
-                } else {
-                    None
-                };
-
-            let child_uid = match target {
-                Some(uid) => uid,
+            let child_uid = match resolver.resolve_strict(child_name, &child_jsx.file_path) {
+                Some((uid, _)) => uid,
                 None => continue,
             };
 
@@ -972,13 +951,8 @@ pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
         }
     }
 
-    // 6. Batch insert.
-    let count = synthetic_edges.len();
-    if !synthetic_edges.is_empty() {
-        db.insert_synthetic_call_edges(&synthetic_edges)?;
-    }
-
-    Ok(count)
+    delta.insert_call_edges = synthetic_edges;
+    Ok(delta)
 }
 
 // ── Vue template synthesis ─────────────────────────────────
@@ -991,10 +965,13 @@ pub fn run_react_rerender_chain_synthesis(db: &UnitOfWork) -> CcResult<usize> {
 /// - **VueEventHandler** dispatch sites (from `@click="handler"` in template)
 ///   are resolved to functions/methods in the same file, producing synthetic
 ///   call edges with `synthesized_by="vue_event_handler"`.
-pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
-    // 1. Delete old synthetic edges from previous runs.
-    db.delete_synthetic_semantic_edges("synth:vue:")?;
-    db.delete_synthetic_call_edges("vue_event_handler")?;
+pub(crate) fn compute_vue_template_synthesis(db: &IndexDb) -> CcResult<EdgeDelta> {
+    // 1. This pass replaces all synthetic Vue edges from previous runs.
+    let mut delta = EdgeDelta {
+        delete_call_kinds: vec!["vue_event_handler"],
+        delete_semantic_prefixes: vec!["synth:vue:"],
+        ..Default::default()
+    };
 
     // 2. Load VueChildComponent dispatch sites.
     let child_sites =
@@ -1005,26 +982,14 @@ pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
         db.load_dispatch_sites_by_kind(DispatchSiteKind::VueEventHandler.as_str())?;
 
     if child_sites.is_empty() && handler_sites.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
-
-    let mut total = 0usize;
 
     // ── Child component → RendersComponent semantic edges ──────
     if !child_sites.is_empty() {
-        let unique_names: HashSet<&str> = child_sites.iter().map(|s| s.key.as_str()).collect();
         let component_kinds: &[&str] = &["function", "class", "component", "hook"];
-        let mut name_to_uid: HashMap<&str, Vec<(String, String)>> = HashMap::new();
-        for name in &unique_names {
-            let matches = db.find_symbols_by_name_and_kinds(name, component_kinds)?;
-            let entries: Vec<(String, String)> = matches
-                .into_iter()
-                .filter_map(|s| s.symbol_uid.map(|uid| (uid, s.file_path)))
-                .collect();
-            if !entries.is_empty() {
-                name_to_uid.insert(name, entries);
-            }
-        }
+        let child_names: Vec<&str> = child_sites.iter().map(|s| s.key.as_str()).collect();
+        let resolver = SynthesisSymbolResolver::prefetch(db, &child_names, component_kinds)?;
 
         let mut semantic_edges: Vec<SemanticEdgeRecord> = Vec::new();
         for site in &child_sites {
@@ -1033,32 +998,25 @@ pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
                 None => continue,
             };
 
-            let candidates = match name_to_uid.get(site.key.as_str()) {
-                Some(c) => c,
-                None => continue,
-            };
-
             // Prefer same-file match, then unique global match.
-            let target =
-                if let Some(candidate) = candidates.iter().find(|(_, fp)| *fp == site.file_path) {
-                    Some((candidate, 0.82))
-                } else if candidates.len() == 1 {
-                    Some((&candidates[0], 0.75))
-                } else {
-                    None
-                };
+            let target = resolver
+                .resolve_lenient(site.key.as_str(), &site.file_path)
+                .map(|(uid, scope)| match scope {
+                    ResolutionScope::SameFile => (uid, 0.82),
+                    ResolutionScope::UniqueGlobal => (uid, 0.75),
+                });
 
-            if let Some(((target_uid, _), confidence)) = target {
+            if let Some((target_uid, confidence)) = target {
                 if target_uid.as_str() == source_uid.as_str() {
                     continue;
                 }
                 semantic_edges.push(SemanticEdgeRecord {
-                    edge_id: synth_edge_id("vue", &site.site_id, target_uid),
+                    edge_id: synth_edge_id("vue", &site.site_id, &target_uid),
                     file_path: site.file_path.clone(),
                     source_symbol: String::new(),
                     source_symbol_uid: Some(source_uid.clone()),
                     target_symbol: site.key.clone(),
-                    target_symbol_uid: Some(target_uid.clone()),
+                    target_symbol_uid: Some(target_uid),
                     relation_kind: SemanticRelation::RendersComponent,
                     line: site.line,
                     confidence,
@@ -1067,16 +1025,17 @@ pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
             }
         }
 
-        let count = semantic_edges.len();
-        if !semantic_edges.is_empty() {
-            db.insert_semantic_edges_batch(&semantic_edges)?;
-        }
-        total += count;
+        delta.insert_semantic_edges = semantic_edges;
     }
 
     // ── Event handler → call edges ─────────────────────────────
     if !handler_sites.is_empty() {
         let handler_kinds: &[&str] = &["function", "method", "class", "hook", "component"];
+        let handler_names: Vec<&str> = handler_sites
+            .iter()
+            .filter_map(|s| s.handler_expr.as_deref())
+            .collect();
+        let resolver = SynthesisSymbolResolver::prefetch(db, &handler_names, handler_kinds)?;
         let mut synthetic_edges: Vec<CallEdgeRecord> = Vec::new();
 
         for site in &handler_sites {
@@ -1092,14 +1051,12 @@ pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
 
             // Resolve handler to a function/method in the same file first,
             // then fall back to unique global match.
-            let matches = db.find_symbols_by_name_and_kinds(handler_name, handler_kinds)?;
-            let target = if let Some(m) = matches.iter().find(|s| s.file_path == site.file_path) {
-                m.symbol_uid.clone().map(|uid| (uid, 0.80))
-            } else if matches.len() == 1 {
-                matches[0].symbol_uid.clone().map(|uid| (uid, 0.68))
-            } else {
-                None
-            };
+            let target = resolver
+                .resolve_strict(handler_name, &site.file_path)
+                .map(|(uid, scope)| match scope {
+                    ResolutionScope::SameFile => (uid, 0.80),
+                    ResolutionScope::UniqueGlobal => (uid, 0.68),
+                });
 
             let (target_uid, confidence) = match target {
                 Some(t) => t,
@@ -1139,14 +1096,10 @@ pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
             });
         }
 
-        let count = synthetic_edges.len();
-        if !synthetic_edges.is_empty() {
-            db.insert_synthetic_call_edges(&synthetic_edges)?;
-        }
-        total += count;
+        delta.insert_call_edges = synthetic_edges;
     }
 
-    Ok(total)
+    Ok(delta)
 }
 
 // ── Interface/abstract method dispatch synthesis ──────────────
@@ -1164,26 +1117,85 @@ pub fn run_vue_template_synthesis(db: &UnitOfWork) -> CcResult<usize> {
 ///    - (class_uid, method_name) → method_uid for quick lookup
 /// 4. For each call edge targeting an interface method, find implementor methods
 ///    with the same name and create synthetic edges.
-pub fn run_interface_dispatch_synthesis(
-    db: &UnitOfWork,
+pub(crate) fn compute_interface_dispatch_synthesis(
+    db: &IndexDb,
     config: &SynthesisConfig,
-) -> CcResult<usize> {
+    prior_deltas: &[EdgeDelta],
+) -> CcResult<EdgeDelta> {
     if !config.enabled {
-        return Ok(0);
+        return Ok(EdgeDelta::default());
     }
 
-    // 1. Delete old interface_dispatch synthetic edges.
-    db.delete_synthetic_call_edges("interface_dispatch")?;
+    // 1. This pass replaces all interface_dispatch synthetic edges.
+    let mut delta = EdgeDelta {
+        delete_call_kinds: vec!["interface_dispatch"],
+        ..Default::default()
+    };
 
-    // 2. Load all call edges where callee_symbol_uid is set.
-    let call_edge_rows = db.query_json(
-        "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, callee_symbol, file_path, line \
+    // 2. Load all call edges where both UIDs are set. Committed rows of every
+    //    `synthesized_by` kind regenerated this round are excluded (their
+    //    replacement lives in `prior_deltas`, overlaid below) — including this
+    //    pass's own previous edges. This reproduces the transaction-local view
+    //    the passes had when they ran inside one unit of work.
+    let mut excluded_kinds: Vec<&str> = vec!["interface_dispatch"];
+    for prior in prior_deltas {
+        excluded_kinds.extend(prior.delete_call_kinds.iter().copied());
+    }
+    let placeholders = (1..=excluded_kinds.len())
+        .map(|i| format!("?{}", i))
+        .collect::<Vec<_>>()
+        .join(",");
+    let sql = format!(
+        "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, file_path, line \
          FROM call_edges \
-         WHERE callee_symbol_uid IS NOT NULL AND caller_symbol_uid IS NOT NULL",
-        &[],
-    )?;
+         WHERE callee_symbol_uid IS NOT NULL AND caller_symbol_uid IS NOT NULL \
+           AND (synthesized_by IS NULL OR synthesized_by NOT IN ({placeholders}))"
+    );
+    let params: Vec<String> = excluded_kinds.iter().map(|k| k.to_string()).collect();
+    let committed_rows = db.query_json(&sql, &params)?;
+
+    struct CallEdgeRowLite {
+        edge_id: String,
+        caller_uid: String,
+        callee_uid: String,
+        file_path: String,
+        line: u32,
+    }
+
+    let mut call_edge_rows: Vec<CallEdgeRowLite> = committed_rows
+        .iter()
+        .map(|row| CallEdgeRowLite {
+            edge_id: row["edge_id"].as_str().unwrap_or_default().to_string(),
+            caller_uid: row["caller_symbol_uid"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string(),
+            callee_uid: row["callee_symbol_uid"]
+                .as_str()
+                .unwrap_or_default()
+                .to_string(),
+            file_path: row["file_path"].as_str().unwrap_or_default().to_string(),
+            line: row["line"].as_i64().unwrap_or(0) as u32,
+        })
+        .collect();
+    // Overlay the call edges synthesized earlier in this round.
+    for prior in prior_deltas {
+        for edge in &prior.insert_call_edges {
+            if let (Some(caller_uid), Some(callee_uid)) =
+                (&edge.caller_symbol_uid, &edge.callee_symbol_uid)
+            {
+                call_edge_rows.push(CallEdgeRowLite {
+                    edge_id: edge.edge_id.clone(),
+                    caller_uid: caller_uid.clone(),
+                    callee_uid: callee_uid.clone(),
+                    file_path: edge.file_path.clone(),
+                    line: edge.line,
+                });
+            }
+        }
+    }
     if call_edge_rows.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
 
     // 3a. Load all symbols to build:
@@ -1232,7 +1244,7 @@ pub fn run_interface_dispatch_synthesis(
         .collect();
 
     if interface_uids.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
 
     // 3c. Load implements edges: source = implementor, target = interface.
@@ -1265,7 +1277,7 @@ pub fn run_interface_dispatch_synthesis(
     }
 
     if interface_to_implementors.is_empty() {
-        return Ok(0);
+        return Ok(delta);
     }
 
     // 3d. Build (container_name, method_name) → [method_uid, ...] for implementor method lookup.
@@ -1312,30 +1324,23 @@ pub fn run_interface_dispatch_synthesis(
     let mut synthetic_edges: Vec<CallEdgeRecord> = Vec::new();
 
     for row in &call_edge_rows {
-        let edge_id = row["edge_id"].as_str().unwrap_or_default();
-        let caller_uid = row["caller_symbol_uid"]
-            .as_str()
-            .unwrap_or_default()
-            .to_string();
-        let callee_uid = row["callee_symbol_uid"]
-            .as_str()
-            .unwrap_or_default()
-            .to_string();
-        let file_path = row["file_path"].as_str().unwrap_or_default().to_string();
-        let line = row["line"].as_i64().unwrap_or(0) as u32;
+        let caller_uid = &row.caller_uid;
+        let callee_uid = &row.callee_uid;
+        let file_path = &row.file_path;
+        let line = row.line;
 
-        if caller_uid.is_empty() || callee_uid.is_empty() || edge_id.is_empty() {
+        if caller_uid.is_empty() || callee_uid.is_empty() || row.edge_id.is_empty() {
             continue;
         }
 
         // Check if callee is a method on an interface/trait.
-        let iface_uid = match method_uid_to_iface_uid.get(&callee_uid) {
+        let iface_uid = match method_uid_to_iface_uid.get(callee_uid) {
             Some(uid) => uid,
             None => continue,
         };
 
         // Get the method name of the callee.
-        let method_name = match uid_to_info.get(&callee_uid) {
+        let method_name = match uid_to_info.get(callee_uid) {
             Some((_, _, name)) => name.clone(),
             None => continue,
         };
@@ -1368,12 +1373,12 @@ pub fn run_interface_dispatch_synthesis(
 
             for impl_method_uid in impl_method_uids {
                 // Skip self-reference.
-                if *impl_method_uid == callee_uid {
+                if impl_method_uid == callee_uid {
                     continue;
                 }
 
                 synthetic_edges.push(CallEdgeRecord {
-                    edge_id: synth_edge_id("id", &caller_uid, impl_method_uid),
+                    edge_id: synth_edge_id("id", caller_uid, impl_method_uid),
                     file_path: file_path.clone(),
                     caller_symbol: None,
                     callee_symbol: method_name.clone(),
@@ -1402,13 +1407,8 @@ pub fn run_interface_dispatch_synthesis(
     let mut seen: HashSet<String> = HashSet::new();
     synthetic_edges.retain(|e| seen.insert(e.edge_id.clone()));
 
-    // 6. Batch insert.
-    let count = synthetic_edges.len();
-    if !synthetic_edges.is_empty() {
-        db.insert_synthetic_call_edges(&synthetic_edges)?;
-    }
-
-    Ok(count)
+    delta.insert_call_edges = synthetic_edges;
+    Ok(delta)
 }
 
 // ── Shared helpers ────────────────────────────────────────────
@@ -1437,7 +1437,9 @@ fn synth_edge_id(kind: &str, source_id: &str, target_id: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use cc_db::index_db::IndexDb;
+    use crate::synthesis_pipeline::{
+        apply_synthesis_round, compute_synthesis_round, SynthesisRound,
+    };
     use tempfile::TempDir;
 
     fn setup_test_db() -> (TempDir, IndexDb) {
@@ -1445,6 +1447,17 @@ mod tests {
         let db_path = tmp.path().join("test_index.sqlite3");
         let db = IndexDb::open(&db_path).unwrap().0;
         (tmp, db)
+    }
+
+    /// Compute-then-apply for a single pass delta (test convenience).
+    fn apply_one(db: &IndexDb, delta: EdgeDelta) {
+        apply_synthesis_round(
+            db,
+            &SynthesisRound {
+                deltas: vec![delta],
+            },
+        )
+        .unwrap();
     }
 
     /// Insert a symbol into the DB for resolution during synthesis.
@@ -1505,9 +1518,9 @@ mod tests {
         db.replace_dispatch_sites("src/App.vue", &sites).unwrap();
 
         // Run synthesis.
-        let uow = db.begin_unit_of_work().unwrap();
-        let count = run_vue_template_synthesis(&uow).unwrap();
-        uow.commit().unwrap();
+        let delta = compute_vue_template_synthesis(&db).unwrap();
+        let count = delta.insert_call_edges.len() + delta.insert_semantic_edges.len();
+        apply_one(&db, delta);
         assert_eq!(count, 1, "should produce 1 RendersComponent edge");
 
         // Verify the semantic edge.
@@ -1551,9 +1564,9 @@ mod tests {
         db.replace_dispatch_sites("src/MyForm.vue", &sites).unwrap();
 
         // Run synthesis.
-        let uow = db.begin_unit_of_work().unwrap();
-        let count = run_vue_template_synthesis(&uow).unwrap();
-        uow.commit().unwrap();
+        let delta = compute_vue_template_synthesis(&db).unwrap();
+        let count = delta.insert_call_edges.len() + delta.insert_semantic_edges.len();
+        apply_one(&db, delta);
         assert_eq!(count, 1, "should produce 1 call edge");
 
         // Verify the synthetic call edge via SQL.
@@ -1589,10 +1602,9 @@ mod tests {
     #[test]
     fn vue_synthesis_no_dispatch_sites_returns_zero() {
         let (_tmp, db) = setup_test_db();
-        let uow = db.begin_unit_of_work().unwrap();
-        let count = run_vue_template_synthesis(&uow).unwrap();
-        uow.commit().unwrap();
-        assert_eq!(count, 0);
+        let delta = compute_vue_template_synthesis(&db).unwrap();
+        assert!(delta.insert_call_edges.is_empty());
+        assert!(delta.insert_semantic_edges.is_empty());
     }
 
     // ── Interface dispatch synthesis tests ─────────────────────
@@ -1730,10 +1742,10 @@ mod tests {
             "execute",
         );
 
-        // Run interface dispatch synthesis.
-        let uow = db.begin_unit_of_work().unwrap();
-        let count = run_interface_dispatch_synthesis(&uow, &config).unwrap();
-        uow.commit().unwrap();
+        // Run interface dispatch synthesis (no prior in-round deltas).
+        let delta = compute_interface_dispatch_synthesis(&db, &config, &[]).unwrap();
+        let count = delta.insert_call_edges.len();
+        apply_one(&db, delta);
         assert_eq!(count, 1, "should produce 1 synthetic edge");
 
         // Verify the synthetic edge.
@@ -1826,9 +1838,9 @@ mod tests {
         );
 
         // Run synthesis — should skip due to fanout > 2.
-        let uow = db.begin_unit_of_work().unwrap();
-        let count = run_interface_dispatch_synthesis(&uow, &config).unwrap();
-        uow.commit().unwrap();
+        let delta = compute_interface_dispatch_synthesis(&db, &config, &[]).unwrap();
+        let count = delta.insert_call_edges.len();
+        apply_one(&db, delta);
         assert_eq!(count, 0, "should skip due to fanout cap");
 
         // Verify no synthetic edges were created.
@@ -2032,9 +2044,10 @@ mod tests {
         // pass (emit("ping") → on("ping", handleEvent), where handleEvent
         // resolves to the interface method declared in the same file as the
         // on-site). The interface dispatch pass can therefore produce the
-        // pingEmitter → ConcreteListener.handleEvent edge only if its
-        // call_edges read observes the uncommitted event-emitter edge of the
-        // same unit of work.
+        // pingEmitter → ConcreteListener.handleEvent edge only if it observes
+        // the event-emitter edge synthesized earlier in the same round — via
+        // the in-memory prior-delta overlay in a single-round run, or via the
+        // committed row in a per-pass-applied run.
         insert_symbol(
             db,
             "src/listener.ts",
@@ -2108,18 +2121,6 @@ mod tests {
         .unwrap();
     }
 
-    /// Run all 7 passes in pipeline order against one unit of work.
-    fn run_all_passes(uow: &UnitOfWork, config: &SynthesisConfig) -> CcResult<()> {
-        run_event_emitter_synthesis(uow, config)?;
-        run_jsx_synthesis(uow)?;
-        run_state_setter_synthesis(uow)?;
-        run_field_observer_synthesis(uow, config)?;
-        run_react_rerender_chain_synthesis(uow)?;
-        run_vue_template_synthesis(uow)?;
-        run_interface_dispatch_synthesis(uow, config)?;
-        Ok(())
-    }
-
     /// Deterministic snapshot of all synthetic edges (call + semantic).
     fn synthetic_snapshot(db: &IndexDb) -> Vec<String> {
         let mut rows: Vec<String> = db
@@ -2147,49 +2148,47 @@ mod tests {
     }
 
     #[test]
-    fn single_unit_of_work_matches_per_pass_committed_synthesis() {
+    fn single_round_matches_per_pass_applied_synthesis() {
         let config = SynthesisConfig::default();
 
-        // Reference run: each pass commits in its own transaction (the
-        // pre-unit-of-work behavior).
+        // Reference run: each pass computed against committed state and
+        // applied in its own round (so later passes read the committed rows
+        // of earlier passes).
         let (_tmp_a, db_a) = setup_test_db();
         seed_multi_pass_fixture(&db_a);
         {
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_event_emitter_synthesis(&uow, &config).unwrap();
-            uow.commit().unwrap();
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_jsx_synthesis(&uow).unwrap();
-            uow.commit().unwrap();
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_state_setter_synthesis(&uow).unwrap();
-            uow.commit().unwrap();
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_field_observer_synthesis(&uow, &config).unwrap();
-            uow.commit().unwrap();
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_react_rerender_chain_synthesis(&uow).unwrap();
-            uow.commit().unwrap();
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_vue_template_synthesis(&uow).unwrap();
-            uow.commit().unwrap();
-            let uow = db_a.begin_unit_of_work().unwrap();
-            run_interface_dispatch_synthesis(&uow, &config).unwrap();
-            uow.commit().unwrap();
+            let (delta, _) = compute_event_emitter_synthesis(&db_a, &config).unwrap();
+            apply_one(&db_a, delta);
+            apply_one(&db_a, compute_jsx_synthesis(&db_a).unwrap());
+            apply_one(&db_a, compute_state_setter_synthesis(&db_a).unwrap());
+            apply_one(
+                &db_a,
+                compute_field_observer_synthesis(&db_a, &config).unwrap(),
+            );
+            apply_one(
+                &db_a,
+                compute_react_rerender_chain_synthesis(&db_a).unwrap(),
+            );
+            apply_one(&db_a, compute_vue_template_synthesis(&db_a).unwrap());
+            apply_one(
+                &db_a,
+                compute_interface_dispatch_synthesis(&db_a, &config, &[]).unwrap(),
+            );
         }
 
-        // Transactional run: all passes in a single atomic unit of work.
+        // Pipeline run: one compute round (interface dispatch sees earlier
+        // passes only through the in-memory prior-delta overlay), one apply.
         let (_tmp_b, db_b) = setup_test_db();
         seed_multi_pass_fixture(&db_b);
-        let uow = db_b.begin_unit_of_work().unwrap();
-        run_all_passes(&uow, &config).unwrap();
-        uow.commit().unwrap();
+        let round = compute_synthesis_round(&db_b, &config, true, true).unwrap();
+        apply_synthesis_round(&db_b, &round).unwrap();
 
         let reference = synthetic_snapshot(&db_a);
-        let transactional = synthetic_snapshot(&db_b);
+        let pipeline = synthetic_snapshot(&db_b);
         assert_eq!(
-            reference, transactional,
-            "single unit of work must produce the same synthetic edge set as per-pass commits"
+            reference, pipeline,
+            "a single compute round must produce the same synthetic edge set \
+             as per-pass applied rounds"
         );
 
         // The fixture must exercise every pass, otherwise equality is vacuous.
@@ -2212,9 +2211,10 @@ mod tests {
 
         // Cross-pass visibility pin: this interface_dispatch edge is derived
         // exclusively from the event-emitter edge synthesized earlier in the
-        // SAME unit of work (no real call edge targets IListener.handleEvent).
-        // If unit-of-work reads were ever routed to the read pool instead of
-        // the transaction connection, this edge would silently disappear.
+        // SAME round (no real call edge targets IListener.handleEvent). If
+        // the interface pass ever stopped overlaying the prior in-round
+        // deltas onto its committed-state read, this edge would silently
+        // disappear.
         let chained = db_b
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM call_edges \
@@ -2232,33 +2232,81 @@ mod tests {
         );
     }
 
+    /// Pin the `(dispatch_changed=false, interface_changed=true)` gate: an
+    /// interface-only round must still see the COMMITTED call edges of the
+    /// dispatch kinds (they are not regenerated this round, so they must not
+    /// be excluded from its committed-state read). If the exclusion list ever
+    /// wrongly covered the dispatch kinds unconditionally, the chained edge
+    /// below would silently disappear when interface dispatch is recomputed
+    /// alone.
     #[test]
-    fn mid_pass_failure_rolls_back_all_synthetic_writes_and_signatures() {
+    fn interface_only_round_reads_committed_dispatch_kind_edges() {
+        let (_tmp, db) = setup_test_db();
+        seed_multi_pass_fixture(&db);
+        let config = SynthesisConfig::default();
+
+        let chained_edge_count = |db: &IndexDb| {
+            db.query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges \
+                 WHERE synthesized_by = 'interface_dispatch' \
+                   AND caller_symbol_uid = 'uid:pingEmitter' \
+                   AND callee_symbol_uid = 'uid:ConcreteListener:handleEvent'",
+                &[],
+            )
+            .unwrap()[0]["cnt"]
+                .as_i64()
+        };
+
+        // Round 1: full synthesis commits the event-emitter edge and the
+        // interface edge chained from it.
+        let round = compute_synthesis_round(&db, &config, true, true).unwrap();
+        apply_synthesis_round(&db, &round).unwrap();
+        assert_eq!(chained_edge_count(&db), Some(1));
+
+        // Round 2: interface-only. Exactly one delta (the dispatch passes are
+        // gated off), and the chained edge survives recomputation because the
+        // committed event_emitter edge is visible to its read.
+        let round = compute_synthesis_round(&db, &config, false, true).unwrap();
+        assert_eq!(
+            round.deltas.len(),
+            1,
+            "interface-only round must produce exactly the interface delta"
+        );
+        apply_synthesis_round(&db, &round).unwrap();
+        assert_eq!(
+            chained_edge_count(&db),
+            Some(1),
+            "interface-only recomputation must observe committed dispatch-kind \
+             edges instead of excluding them"
+        );
+    }
+
+    #[test]
+    fn mid_compute_failure_leaves_database_and_write_lock_untouched() {
         let (_tmp, db) = setup_test_db();
         seed_multi_pass_fixture(&db);
         let config = SynthesisConfig::default();
         let generation_before = db.generation().unwrap();
 
         let result: CcResult<()> = (|| {
-            let uow = db.begin_unit_of_work()?;
-            run_event_emitter_synthesis(&uow, &config)?;
-            run_jsx_synthesis(&uow)?;
-            run_state_setter_synthesis(&uow)?;
-            // The first passes did write synthetic edges inside the transaction.
-            let in_tx = uow.query_json(
-                "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",
-                &[],
-            )?;
-            assert!(in_tx[0]["cnt"].as_i64().unwrap_or(0) > 0);
-            // Simulate the 4th pass failing: the error propagates and the
-            // unit of work is dropped without commit (as in phase_postprocess).
+            // Compute is write-free: the first passes produce in-memory
+            // deltas only.
+            let (delta, _) = compute_event_emitter_synthesis(&db, &config)?;
+            let produced = !delta.insert_call_edges.is_empty();
+            let jsx = compute_jsx_synthesis(&db)?;
+            let produced = produced || !jsx.insert_semantic_edges.is_empty();
+            assert!(produced, "fixture must make early passes produce edges");
+            // Simulate a later pass failing: the error propagates before
+            // apply ever runs (as in phase_postprocess).
             Err(cc_model::CcError::Database(
                 "injected pass failure".to_string(),
             ))
         })();
         assert!(result.is_err());
 
-        // No synthetic edge of this round survives the rollback.
+        // Nothing was applied: compute never touches the database, so there
+        // is no partial write to roll back and the write mutex was never
+        // taken (a poisoned-lock failure mode no longer exists for compute).
         let call_rows = db
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",

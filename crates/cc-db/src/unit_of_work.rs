@@ -1,32 +1,31 @@
 //! Typed multi-statement write transaction over the index database.
 //!
 //! [`UnitOfWork`] is the cc-db transaction seam for callers that must apply
-//! several logically-coupled writes atomically (currently: the dispatch
-//! synthesis passes). It holds the single write connection for its whole
-//! lifetime and exposes only typed read/write methods — never the raw
-//! `rusqlite::Connection` — so all SQL stays inside cc-db.
+//! several logically-coupled writes atomically (currently: applying a
+//! dispatch-synthesis round's edge deltas). It holds the single write
+//! connection for its whole lifetime and exposes only typed write methods —
+//! never the raw `rusqlite::Connection` — so all SQL stays inside cc-db.
 //!
 //! Semantics:
 //! - `begin` opens an `IMMEDIATE` transaction on the write connection.
-//! - All reads go through the transaction connection, so they observe the
-//!   unit's own uncommitted writes (required by passes that consume edges
-//!   produced by earlier passes in the same unit).
+//! - `query_json` reads through the transaction connection, so it observes
+//!   the unit's own uncommitted writes.
 //! - `commit` bumps `index_epoch` exactly once and commits; the per-method
 //!   epoch bump done by `IndexDb` write methods is intentionally skipped
 //!   inside a unit of work to avoid double-counting.
 //! - Dropping an uncommitted unit rolls the transaction back.
 //!
 //! Failure and contention model:
-//! - The write mutex is held for the unit's whole lifetime. A panic inside
-//!   a pass unwinds through `Drop` (rolling the transaction back) but then
-//!   poisons the write mutex: every later write fails with a lock error
-//!   until the process restarts. This is an explicit fail-stop mode, not
-//!   silent corruption.
-//! - The `IMMEDIATE` transaction holds SQLite's RESERVED lock for the whole
-//!   synthesis phase, so writers in *other processes* block for at most
-//!   `busy_timeout` (5000 ms) before erroring. If a unit of work ever runs
-//!   longer than ~5 s, re-evaluate this trade-off (chunked units or a larger
-//!   busy timeout).
+//! - Units of work are expected to be short batch writes (synthesis compute
+//!   happens *before* `begin`, against the read pool — see cc-index's
+//!   `synthesis_pipeline`). The `IMMEDIATE` transaction holds SQLite's
+//!   RESERVED lock only for that batch write, so writers in other processes
+//!   wait well under the 5000 ms `busy_timeout`.
+//! - A panic between `begin` and `commit` unwinds through `Drop` (rolling
+//!   the transaction back) and poisons the write mutex: every later write
+//!   fails with a lock error until the process restarts. This is an explicit
+//!   fail-stop mode, not silent corruption — and it can only originate from
+//!   the apply step itself, never from pass computation.
 //!
 //! The seam is designed to grow: future migrations (rebuild, evidence
 //! ingest) can add their typed methods here without changing the contract.
@@ -38,8 +37,7 @@ use serde_json::Value;
 
 use cc_model::{CcError, CcResult};
 
-use crate::index_db::{IndexDb, SymbolRow};
-use crate::index_db_graph::MethodsByContainer;
+use crate::index_db::IndexDb;
 
 /// A typed, atomic batch of index writes (plus transaction-local reads).
 pub struct UnitOfWork<'db> {
@@ -106,56 +104,8 @@ impl<'db> UnitOfWork<'db> {
 
     // ── Transaction-local reads ──────────────────────────────────
 
-    /// Load every dispatch site.
-    pub fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        IndexDb::load_all_dispatch_sites_on(&self.conn)
-    }
-
-    /// Load dispatch sites of a single kind.
-    pub fn load_dispatch_sites_by_kind(
-        &self,
-        kind: &str,
-    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        IndexDb::load_dispatch_sites_by_kind_on(&self.conn, kind)
-    }
-
-    /// Find symbols by exact name restricted to the given kinds.
-    pub fn find_symbols_by_name_and_kinds(
-        &self,
-        name: &str,
-        kinds: &[&str],
-    ) -> CcResult<Vec<SymbolRow>> {
-        IndexDb::find_symbols_by_name_and_kinds_on(&self.conn, name, kinds)
-    }
-
-    /// All symbols of a file, ordered by start line.
-    pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
-        IndexDb::file_symbols_on(&self.conn, file_path)
-    }
-
-    /// Find a method by name in the same class as the given member symbol.
-    pub fn find_method_in_same_class(
-        &self,
-        member_symbol_uid: &str,
-        method_name: &str,
-    ) -> CcResult<Option<String>> {
-        IndexDb::find_method_in_same_class_on(&self.conn, member_symbol_uid, method_name)
-    }
-
-    /// Methods of many containers in one query, grouped by container name.
-    pub fn find_methods_by_containers(&self, containers: &[&str]) -> CcResult<MethodsByContainer> {
-        IndexDb::find_methods_by_containers_on(&self.conn, containers)
-    }
-
-    /// Classes that have methods matching any of the given names.
-    pub fn find_classes_with_method_names(
-        &self,
-        method_names: &[&str],
-    ) -> CcResult<Vec<(String, String)>> {
-        IndexDb::find_classes_with_method_names_on(&self.conn, method_names)
-    }
-
-    /// Run a read-only query and return rows as JSON objects.
+    /// Run a read-only query through the transaction connection (observes
+    /// the unit's own uncommitted writes) and return rows as JSON objects.
     pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
         IndexDb::query_json_on(&self.conn, sql, params)
     }

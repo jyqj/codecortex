@@ -82,6 +82,7 @@ Hybrid search engine.
 
 - **Lexical** search — FTS5 over chunks.
 - **Grep** search — regex over symbols.
+- **Graph** lane — call-graph expansion from seed symbols.
 - **Preselection** — trigram-backed symbol substring recall narrows candidates.
 - **RRF** (Reciprocal Rank Fusion) combines local retrieval lanes, followed by
   reranking with file-path / breadcrumb / recency boosts
@@ -119,14 +120,19 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 
 ## Key internal components
 
-- **CodeIndex** (`cc-server`, ~1900 lines across `engine.rs` + `engine_query.rs`)
-  wraps cc-db + cc-index + cc-search:
-  - `new(project_path)` / `set_project` / `close` / `reopen`
-  - `build_index` / `build_auto_index` / `index_status`
-  - `search_in_context(query, top_k, intent)` -> `ContextEnvelope`
-  - `find_symbol` / `file_symbols` / `list_indexed_files` / `summarize_file`
-  - `graph_query` / `callers` / `callees` / `trace_path` / `symbol_refs`
-  - `detect_impact` / `analyze_impact` / `find_impacted_tests`
+- **CodeIndex** (`cc-server`, ~2400 lines across `engine.rs` + `engine_query.rs`)
+  wraps cc-db + cc-index + cc-search. Lifecycle and shared infrastructure stay
+  on `CodeIndex` itself; the query surface is grouped into three zero-cost
+  borrowed views:
+  - lifecycle: `new(project_path)` / `set_project` / `close` / `reopen`,
+    `build_index` / `build_auto_index` / `index_status`
+  - `.search()` -> `SearchOps`: `search_in_context(query, top_k, intent)` ->
+    `ContextEnvelope`, `task_symbols`
+  - `.graph()` -> `GraphOps`: `find_symbol` / `file_symbols` /
+    `list_indexed_files` / `summarize_file` / `graph_query` / `callers` /
+    `callees` / `symbol_refs`
+  - `.impact()` -> `ImpactOps`: `detect_impact` / `analyze_impact` /
+    `find_impacted_tests`
 - **ImpactAnalyzer** — BFS reverse-caller expansion + community boundary
   detection + cross-service HTTP impact + historical co-change analysis. Git
   integration reads unstaged, staged, untracked, and `base...HEAD` diffs.

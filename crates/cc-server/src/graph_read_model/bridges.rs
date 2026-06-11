@@ -2,6 +2,7 @@
 //! `http_call_edges` and `routes` evidence, plus their generation cache.
 
 use cc_db::index_db::IndexDb;
+use cc_db::GraphReads;
 use cc_model::CcResult;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -29,8 +30,9 @@ impl GraphReadModel {
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(10_000);
-        let http_edges = db.all_http_call_edges_lite(limit)?;
-        let route_nodes = db.all_route_nodes_lite(limit)?;
+        let reads = GraphReads::new(db);
+        let http_edges = reads.all_http_call_edges_lite(limit)?;
+        let route_nodes = reads.all_route_nodes_lite(limit)?;
         if http_edges.len() == limit {
             tracing::warn!(
                 count = http_edges.len(),

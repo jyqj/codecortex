@@ -2,6 +2,7 @@
 //! edges, file-import and community adjacency, and the dead-code caller set.
 
 use cc_db::index_db::IndexDb;
+use cc_db::GraphReads;
 use cc_model::edge::SemanticRelation;
 use cc_model::CcResult;
 use std::collections::{HashMap, HashSet};
@@ -41,7 +42,7 @@ impl GraphReadModel {
     fn ensure_semantic_loaded(&self) -> std::sync::MutexGuard<'_, SemanticAdjPair> {
         let mut guard = self.shared_semantic.lock().unwrap();
         if guard.by_source.is_empty() && guard.by_target.is_empty() {
-            if let Ok(edges) = self.db.query_semantic_edges(None, None, None) {
+            if let Ok(edges) = self.reads().query_semantic_edges(None, None, None) {
                 for e in edges {
                     let lite = SemanticEdgeLite {
                         source_symbol_uid: e.source_symbol_uid.clone().unwrap_or_default(),
@@ -85,7 +86,7 @@ impl GraphReadModel {
 
     /// Build edge-labeled call adjacency from persisted call edges.
     pub(crate) fn call_adjacency(db: &IndexDb) -> CcResult<BfsAdj> {
-        let edges = db.call_uid_edges_lite()?;
+        let edges = GraphReads::new(db).call_uid_edges_lite()?;
         let mut adj: HashMap<String, Vec<EdgeLite>> = HashMap::new();
         for edge in edges {
             adj.entry(edge.caller_uid.clone()).or_default().push(edge);
@@ -107,7 +108,7 @@ impl GraphReadModel {
             }
         }
         // Slow path: query DB *without* holding the adjacency lock.
-        let mut edges = self.db.call_edges_from_uid_lite(uid).unwrap_or_default();
+        let mut edges = self.reads().call_edges_from_uid_lite(uid).unwrap_or_default();
         if let Some(bridges) = self.http_bridges.get(uid) {
             edges.extend(bridges.iter().cloned());
         }
@@ -125,7 +126,7 @@ impl GraphReadModel {
     where
         F: FnMut(&str) -> String,
     {
-        let pairs = self.db.file_import_pairs()?;
+        let pairs = self.reads().file_import_pairs()?;
 
         let mut adj: HashMap<String, Vec<String>> = HashMap::new();
         for (file_path, resolved_path) in &pairs {
@@ -144,7 +145,7 @@ impl GraphReadModel {
     }
 
     pub(crate) fn file_import_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        let shared = generation_cached(&IMPORT_ADJ_CACHE, &self.generation.index_only(), || {
+        let shared = generation_cached(&IMPORT_ADJ_CACHE, &self.generation, || {
             // Compute via identity projection.
             Ok(Arc::new(
                 self.projected_import_adjacency(|path| path.to_string())?,
@@ -158,7 +159,7 @@ impl GraphReadModel {
         let mut edges = Vec::new();
 
         for node in scc {
-            for row in self.db.import_witness_rows(node)? {
+            for row in self.reads().import_witness_rows(node)? {
                 if scc_set.contains(row.resolved_path.as_str()) {
                     edges.push(InternalEdge {
                         from: node.clone(),
@@ -174,22 +175,21 @@ impl GraphReadModel {
     }
 
     pub(crate) fn community_call_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        let shared =
-            generation_cached(&COMMUNITY_ADJ_CACHE, &self.generation.index_only(), || {
-                let pairs = self.db.community_adjacency_pairs()?;
+        let shared = generation_cached(&COMMUNITY_ADJ_CACHE, &self.generation, || {
+            let pairs = self.reads().community_adjacency_pairs()?;
 
-                let mut adj: HashMap<String, Vec<String>> = HashMap::new();
-                for (from, to) in pairs {
-                    adj.entry(from).or_default().push(to);
-                }
+            let mut adj: HashMap<String, Vec<String>> = HashMap::new();
+            for (from, to) in pairs {
+                adj.entry(from).or_default().push(to);
+            }
 
-                // Rows are DISTINCT, but multiple rows can share the same from_community.
-                for targets in adj.values_mut() {
-                    targets.sort();
-                    targets.dedup();
-                }
-                Ok(Arc::new(adj))
-            })?;
+            // Rows are DISTINCT, but multiple rows can share the same from_community.
+            for targets in adj.values_mut() {
+                targets.sort();
+                targets.dedup();
+            }
+            Ok(Arc::new(adj))
+        })?;
         Ok(HashMap::clone(&shared))
     }
 
@@ -225,7 +225,7 @@ impl GraphReadModel {
         // Direct importers, bounded in SQL; self-imports are excluded in the
         // query so the cap counts only real dependents. A failure here
         // propagates to the caller.
-        let direct = self.db.direct_importers_of_file(file_path, 200)?;
+        let direct = self.reads().direct_importers_of_file(file_path, 200)?;
         let mut seen: HashSet<String> = HashSet::new();
         let mut dependents: Vec<String> = Vec::new();
         for fp in direct {
@@ -239,7 +239,7 @@ impl GraphReadModel {
         // none), matching the original handler behavior.
         if !dependents.is_empty() {
             let transitive_rows = self
-                .db
+                .reads()
                 .importers_of_paths(&dependents, 10_000)
                 .unwrap_or_default();
             let mut transitive: Vec<String> = Vec::new();
@@ -258,9 +258,8 @@ impl GraphReadModel {
     /// Callee UIDs that have at least one non-self caller. Cached per
     /// generation on success; derived purely from `call_edges`.
     pub(super) fn callees_with_external_callers(&self) -> SharedCalleeSet {
-        let index_generation = self.generation.index_only();
-        let computed = generation_cached(&CALLEES_WITH_CALLERS_CACHE, &index_generation, || {
-            let uids = self.db.callees_with_nonself_callers(10_000)?;
+        let computed = generation_cached(&CALLEES_WITH_CALLERS_CACHE, &self.generation, || {
+            let uids = self.reads().callees_with_nonself_callers(10_000)?;
             Ok(Arc::new(uids.into_iter().collect::<HashSet<String>>()))
         });
         match computed {
@@ -287,7 +286,7 @@ impl GraphReadModel {
         scope: Option<&str>,
         scan_limit: usize,
     ) -> CcResult<Vec<DeadCodeCandidate>> {
-        let all_symbols = self.db.dead_code_symbol_scan(scope, scan_limit)?;
+        let all_symbols = self.reads().dead_code_symbol_scan(scope, scan_limit)?;
 
         let has_callers = self.callees_with_external_callers();
 
@@ -332,7 +331,7 @@ impl GraphReadModel {
             .map(|c| (c.uid.as_str(), c.name.as_str()))
             .collect();
         let ref_rows = self
-            .db
+            .reads()
             .symbol_ref_containers_for_targets(&candidate_uids)
             .unwrap_or_default();
         for (target_uid, container) in &ref_rows {

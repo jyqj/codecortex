@@ -3,22 +3,19 @@
 //! expansion).
 //!
 //! Each lane is one ranked candidate source feeding RRF fusion.  Adding a
-//! lane means implementing [`RetrievalLane`] and appending it to the lane
-//! collection in `search_internal`.
+//! lane means implementing [`RetrievalLane`] and registering it in
+//! [`default_lanes`] — no `plan.rs` or `engine.rs` edits.
 //!
 //! What is generic (no `plan.rs` edits needed for a new lane):
 //! - execution and rank-map plumbing ([`run_lanes`]);
 //! - RRF fusion ([`fuse_outcomes`]);
 //! - per-hit annotation: lanes that return `true` from
 //!   [`RetrievalLane::annotates_hits`] get a `{lane_id}@{rank}` reason on
-//!   every hit they ranked, driven by the lane collection order.
-//!
-//! The one lane-id-specific spot left: `SearchHit`'s per-lane score fields
-//! (`lexical_score` / `grep_score` / `graph_score`) are fixed in cc-model,
-//! so a new lane that wants a *dedicated score field* must add an arm to
-//! the lane-id → score-field mapping in `plan.rs::hit_from_chunk` (clearly
-//! marked there).  Without a mapping the lane's reason string still
-//! surfaces generically.
+//!   every hit they ranked, driven by the lane collection order;
+//! - per-lane score projection: a lane that wants a dedicated `SearchHit`
+//!   score field declares it via [`RetrievalLane::score_slot`]; the slot →
+//!   field projection lives in one place in `plan.rs::hit_from_chunk` and
+//!   never needs a new arm (the slot set mirrors the fixed cc-model schema).
 
 use std::collections::HashMap;
 use std::sync::{Arc, Mutex};
@@ -39,6 +36,33 @@ pub(crate) const LANE_LEXICAL: &str = "lexical";
 pub(crate) const LANE_GREP: &str = "grep";
 /// Lane id for the call-graph expansion lane.
 pub(crate) const LANE_GRAPH: &str = "graph";
+
+/// Dedicated per-lane score field of `SearchHit` a lane projects its
+/// rank-derived score into.
+///
+/// This is a *closed* set mirroring the fixed cc-model output schema
+/// (`lexical_score` / `grep_score` / `graph_score`) — it grows only when
+/// cc-model grows a new field, never when a lane is added.  New lanes
+/// either reuse a slot or return `None` from
+/// [`RetrievalLane::score_slot`] and surface via reason strings only.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum ScoreSlot {
+    /// Projects into `SearchHit.lexical_score`.
+    Lexical,
+    /// Projects into `SearchHit.grep_score`.
+    Grep,
+    /// Projects into `SearchHit.graph_score`.
+    Graph,
+}
+
+/// The engine's lane registry — the single place to register a new lane.
+///
+/// Order is the deterministic fusion order (lexical, grep, graph): RRF
+/// accumulation and tie-breaking stay stable because every search runs
+/// lanes in this exact sequence.
+pub(crate) fn default_lanes() -> Vec<&'static dyn RetrievalLane> {
+    vec![&LexicalLane, &GrepLane, &GraphLane]
+}
 
 /// Per-search context handed to every lane.
 ///
@@ -98,6 +122,18 @@ pub(crate) trait RetrievalLane {
     /// explicitly rather than silently producing no diagnostics.
     fn annotates_hits(&self) -> bool;
 
+    /// Dedicated `SearchHit` score field this lane's rank-derived score
+    /// projects into, when the lane annotates hits.
+    ///
+    /// Defaults to `None`: the lane has no dedicated field and surfaces
+    /// only through its `{lane_id}@{rank}` reason string.  Built-in lanes
+    /// override this to claim their schema field; `SearchHit`'s per-lane
+    /// fields are fixed in cc-model, so the available slots are the closed
+    /// [`ScoreSlot`] set.
+    fn score_slot(&self) -> Option<ScoreSlot> {
+        None
+    }
+
     /// Execute retrieval and return the lane's ranked hits.
     fn run(&self, context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>>;
 }
@@ -109,6 +145,7 @@ pub(crate) struct LaneOutcome {
     pub(crate) lane_id: &'static str,
     pub(crate) weight: f64,
     pub(crate) annotates_hits: bool,
+    pub(crate) score_slot: Option<ScoreSlot>,
     pub(crate) hits: Vec<(String, f64)>,
 }
 
@@ -131,6 +168,7 @@ pub(crate) fn run_lanes(
             lane_id: lane.lane_id(),
             weight: lane.weight(context.config),
             annotates_hits: lane.annotates_hits(),
+            score_slot: lane.score_slot(),
             hits,
         });
     }
@@ -175,6 +213,10 @@ impl RetrievalLane for LexicalLane {
 
     fn annotates_hits(&self) -> bool {
         true
+    }
+
+    fn score_slot(&self) -> Option<ScoreSlot> {
+        Some(ScoreSlot::Lexical)
     }
 
     fn run(&self, context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
@@ -236,6 +278,10 @@ impl RetrievalLane for GrepLane {
 
     fn annotates_hits(&self) -> bool {
         true
+    }
+
+    fn score_slot(&self) -> Option<ScoreSlot> {
+        Some(ScoreSlot::Grep)
     }
 
     fn run(&self, context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
@@ -316,6 +362,12 @@ impl RetrievalLane for GraphLane {
     /// `SearchHit.graph_score` at 0.0, preserving pre-seam output exactly.
     fn annotates_hits(&self) -> bool {
         false
+    }
+
+    /// Dormant today (the lane opts out of annotation) but keeps
+    /// `SearchHit.graph_score` wired if the graph lane ever opts in.
+    fn score_slot(&self) -> Option<ScoreSlot> {
+        Some(ScoreSlot::Graph)
     }
 
     fn run(&self, context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {

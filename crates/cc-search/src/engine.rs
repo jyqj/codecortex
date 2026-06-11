@@ -18,9 +18,7 @@ use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::CcResult;
 
 use crate::enrich::{graph_enrich, GraphEnrichment};
-use crate::lanes::{
-    fuse_outcomes, run_lanes, GraphLane, GrepLane, LaneContext, LexicalLane, RetrievalLane,
-};
+use crate::lanes::{default_lanes, fuse_outcomes, run_lanes, LaneContext};
 pub use crate::plan::is_project_doc;
 use crate::plan::{CandidateChunk, SearchPlan};
 
@@ -264,9 +262,10 @@ impl SearchEngine {
         )?;
         let limits = plan.limits();
 
-        // Retrieval lanes, executed in deterministic fusion order
-        // (lexical, grep, graph) so RRF tie-breaking stays stable.
-        let lanes: [&dyn RetrievalLane; 3] = [&LexicalLane, &GrepLane, &GraphLane];
+        // Retrieval lanes from the central registry
+        // (`lanes::default_lanes()`), executed in deterministic fusion
+        // order so RRF tie-breaking stays stable.
+        let lanes = default_lanes();
         let lane_context = LaneContext {
             plan: &plan,
             db: &self.db,
@@ -778,7 +777,7 @@ mod tests {
 
     use crate::lanes::{
         fuse_outcomes, run_lanes, GraphLane, GrepLane, LaneContext, LaneOutcome, LexicalLane,
-        RetrievalLane, LANE_GRAPH, LANE_GREP, LANE_LEXICAL,
+        RetrievalLane, ScoreSlot, LANE_GRAPH, LANE_GREP, LANE_LEXICAL,
     };
     use cc_model::{CallEdgeRecord, SymbolRecord};
 
@@ -1088,6 +1087,207 @@ mod tests {
         );
     }
 
+    #[test]
+    fn graph_lane_expands_caller_direction_at_decay() {
+        // Mirror of the callee-direction golden test: the query matches the
+        // CALLEE, and the caller must be pulled in at graph_neighbor_decay.
+        let (engine, _tmp) = scoped_test_engine();
+        let process_to_helper = CallEdgeRecord {
+            edge_id: "edge:process->helper".to_string(),
+            file_path: "src/a.rs".to_string(),
+            caller_symbol: Some("process".to_string()),
+            callee_symbol: "helper".to_string(),
+            line: 1,
+            caller_symbol_uid: Some("uid:process".to_string()),
+            callee_symbol_uid: Some("uid:helper".to_string()),
+            ..Default::default()
+        };
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn process() { helper() }",
+            "process",
+            "uid:process",
+            vec![process_to_helper],
+        );
+        insert_graph_file(
+            &engine,
+            "src/b.rs",
+            "fn helper() {}",
+            "helper",
+            "uid:helper",
+            vec![],
+        );
+
+        let request = SearchRequest {
+            query: "helper".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("chunk:src/b.rs".to_string(), 1.0),
+                ("chunk:src/a.rs".to_string(), 0.5),
+            ],
+            "seed (callee) chunk first, 1-hop caller chunk at decay score"
+        );
+    }
+
+    #[test]
+    fn graph_lane_scores_fuzzy_seed_below_exact_seed() {
+        // Exact name match seeds at graph_seed_exact_score (1.0); a substring
+        // match seeds at graph_seed_fuzzy_score (0.5).
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(
+            &engine,
+            "src/exact.rs",
+            "fn process() {}",
+            "process",
+            "uid:process",
+            vec![],
+        );
+        insert_graph_file(
+            &engine,
+            "src/fuzzy.rs",
+            "fn process_batch() {}",
+            "process_batch",
+            "uid:process_batch",
+            vec![],
+        );
+
+        let request = SearchRequest {
+            query: "process".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("chunk:src/exact.rs".to_string(), 1.0),
+                ("chunk:src/fuzzy.rs".to_string(), 0.5),
+            ],
+            "exact-name seed must outrank substring seed"
+        );
+    }
+
+    #[test]
+    fn graph_lane_seeds_short_tokens_by_exact_name() {
+        // Tokens under 3 chars cannot use the trigram table; they seed via
+        // exact-name equality (both common casings) instead of being dropped.
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(&engine, "src/ok.rs", "fn ok() {}", "ok", "uid:ok", vec![]);
+
+        let request = SearchRequest {
+            query: "ok".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:src/ok.rs".to_string(), 1.0)],
+            "a 2-char exact symbol name must still seed the graph lane"
+        );
+    }
+
+    #[test]
+    fn graph_lane_maps_symbol_to_smallest_containing_chunk() {
+        // A file with a wide chunk and a narrow chunk that both contain the
+        // symbol span: the lane must pick the narrowest container.
+        let (engine, _tmp) = scoped_test_engine();
+        let make_chunk = |chunk_id: &str, index: i64, start: u32, end: u32| ChunkRecord {
+            chunk_id: chunk_id.to_string(),
+            file_path: "src/wide.rs".to_string(),
+            language: Language::Rust,
+            chunk_index: index as u32,
+            start_line: start,
+            end_line: end,
+            breadcrumb: "root".to_string(),
+            text: "fn narrow_fn() {}".to_string(),
+            symbol_name: None,
+            symbol_kind: None,
+            token_estimate: 8,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+        };
+        let symbol = SymbolRecord {
+            symbol_id: "sym:src/wide.rs:narrow_fn".to_string(),
+            file_path: "src/wide.rs".to_string(),
+            name: "narrow_fn".to_string(),
+            kind: cc_model::SymbolKind::Function,
+            container: None,
+            start_line: 2,
+            end_line: 3,
+            start_col: 0,
+            end_col: 0,
+            signature: None,
+            doc: None,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+            qname: None,
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: Some("uid:narrow_fn".to_string()),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        };
+        let outcome = ParseOutcome {
+            summary: "fixture".to_string(),
+            chunks: vec![
+                make_chunk("chunk:wide", 0, 1, 50),
+                make_chunk("chunk:narrow", 1, 1, 5),
+            ],
+            symbols: vec![symbol],
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+            ..Default::default()
+        };
+        let conn = engine.db.read_conn().unwrap();
+        IndexDb::insert_file_data(
+            &conn,
+            &FileWriteUnit {
+                rel_path: "src/wide.rs".to_string(),
+                language: Language::Rust,
+                content_hash: "hash-wide".to_string(),
+                mtime: 0.0,
+                size: 10,
+                outcome,
+            },
+        )
+        .unwrap();
+        drop(conn);
+
+        let request = SearchRequest {
+            query: "narrow_fn".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:narrow".to_string(), 1.0)],
+            "the smallest chunk containing the symbol span must win"
+        );
+    }
+
     /// Synthetic lane for exercising the generic lane loop.
     struct FakeLane {
         id: &'static str,
@@ -1184,11 +1384,84 @@ mod tests {
             vec!["fourth@1".to_string(), "fifth@2".to_string()],
             "annotating lanes must contribute {{lane_id}}@{{rank}} reasons in lane order"
         );
-        // Unknown lane ids have no dedicated score field in SearchHit
-        // (cc-model fields are fixed); the built-in fields stay 0.0.
+        // Lanes without a declared ScoreSlot have no dedicated score field
+        // in SearchHit (cc-model fields are fixed); built-ins stay 0.0.
         assert_eq!(hit.lexical_score, 0.0);
         assert_eq!(hit.grep_score, 0.0);
         assert_eq!(hit.graph_score, 0.0);
+    }
+
+    #[test]
+    fn new_lane_declaring_score_slot_projects_without_plan_edits() {
+        // Extensibility guarantee: a brand-new lane that declares an
+        // existing ScoreSlot gets its rank-derived score projected into the
+        // matching SearchHit field purely via trait impl + registration —
+        // no lane-id match arm anywhere in plan.rs or engine.rs.
+        struct SlottedLane;
+        impl RetrievalLane for SlottedLane {
+            fn lane_id(&self) -> &'static str {
+                "semantic"
+            }
+            fn weight(&self, _config: &SearchConfig) -> f64 {
+                1.0
+            }
+            fn is_enabled(&self, _context: &LaneContext<'_>) -> bool {
+                true
+            }
+            fn annotates_hits(&self) -> bool {
+                true
+            }
+            fn score_slot(&self) -> Option<ScoreSlot> {
+                Some(ScoreSlot::Graph)
+            }
+            fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
+                Ok(vec![
+                    ("chunk:other".to_string(), 1.0),
+                    ("chunk:src/x.rs".to_string(), 0.5),
+                ])
+            }
+        }
+
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let slotted = SlottedLane;
+        let lanes: [&dyn RetrievalLane; 1] = [&slotted];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+        let lane_ranks = plan.lane_ranks(&outcomes);
+
+        let hit = plan
+            .hit_from_chunk(fake_candidate_chunk(), 0.5, &lane_ranks)
+            .unwrap();
+
+        assert_eq!(hit.reasons, vec!["semantic@2".to_string()]);
+        assert_eq!(
+            hit.graph_score, 0.5,
+            "declared slot must receive the lane's rank-derived score (1/rank)"
+        );
+        assert_eq!(hit.lexical_score, 0.0);
+        assert_eq!(hit.grep_score, 0.0);
+    }
+
+    #[test]
+    fn default_lanes_registry_keeps_fusion_order() {
+        // The registry is the single registration point; its order is the
+        // deterministic RRF fusion order.
+        let lanes = crate::lanes::default_lanes();
+        let ids: Vec<&str> = lanes.iter().map(|lane| lane.lane_id()).collect();
+        assert_eq!(ids, vec![LANE_LEXICAL, LANE_GREP, LANE_GRAPH]);
     }
 
     #[test]
@@ -1300,12 +1573,14 @@ mod tests {
                 lane_id: "fake-a",
                 weight: 1.0,
                 annotates_hits: false,
+                score_slot: None,
                 hits: vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
             },
             LaneOutcome {
                 lane_id: "fake-b",
                 weight: 0.5,
                 annotates_hits: false,
+                score_slot: None,
                 hits: vec![("y".to_string(), 1.0)],
             },
         ];

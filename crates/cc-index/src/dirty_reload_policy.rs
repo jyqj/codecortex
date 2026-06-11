@@ -10,17 +10,15 @@
 //! declaration point for that invariant; [`apply_dirty_reload_policy`]
 //! mechanically enforces it.
 //!
-//! Compile-time enforcement is limited to the semantic-relation dimension:
+//! Compile-time enforcement covers both dimensions of the reload surface:
 //! the semantic-edge arm matches [`SemanticRelation`] exhaustively, so adding
-//! a relation kind forces the author to declare its policy here. Adding a
-//! whole new reload category (a new edge field on `FileEdgesForReresolve` /
-//! [`ParseOutcome`]) is NOT caught by the compiler — the new field would
-//! silently bypass this policy until a [`ReloadedEdgeCategory`] variant and a
-//! matching step in [`apply_dirty_reload_policy`] are added by hand.
-//! Likewise, `symbols` and `imports` are written back by the reload but are
-//! intentionally not modelled as categories: they carry no cross-file
-//! resolution state to clear (implicitly `KeepAsIs`).
+//! a relation kind forces the author to declare its policy here; and
+//! [`parse_outcome_from_reloaded_edges`] destructures
+//! [`FileEdgesForReresolve`] completely (no `..`), so adding a reload data
+//! field fails to compile at this module until the author declares its
+//! [`ReloadedEdgeCategory`] policy and routes the field through it.
 
+use cc_db::index_db::FileEdgesForReresolve;
 use cc_model::edge::{ResolutionKind, SemanticRelation};
 use cc_model::parse::ParseOutcome;
 
@@ -40,9 +38,12 @@ pub(crate) enum DirtyReloadPolicy {
     KeepAsIs,
 }
 
-/// Edge/reference categories carried through a dirty reload.
+/// Edge/reference categories carried through a dirty reload. One variant per
+/// field of [`FileEdgesForReresolve`].
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum ReloadedEdgeCategory {
+    Symbols,
+    Imports,
     CallEdges,
     SymbolRefs,
     RouteEdges,
@@ -54,6 +55,9 @@ pub(crate) enum ReloadedEdgeCategory {
 pub(crate) fn dirty_reload_policy(category: ReloadedEdgeCategory) -> DirtyReloadPolicy {
     use DirtyReloadPolicy::*;
     match category {
+        // Symbols and imports carry no cross-file resolution state to clear.
+        ReloadedEdgeCategory::Symbols => KeepAsIs,
+        ReloadedEdgeCategory::Imports => KeepAsIs,
         // Resolver-resolved targets: clear so phase 4a re-resolves.
         ReloadedEdgeCategory::CallEdges => ClearResolvedTargets,
         ReloadedEdgeCategory::SymbolRefs => ClearResolvedTargets,
@@ -90,36 +94,65 @@ fn should_clear(category: ReloadedEdgeCategory) -> bool {
     )
 }
 
-/// Apply the dirty-reload policy to a [`ParseOutcome`] rebuilt from stored
-/// edge data, clearing resolution state wherever the policy demands it.
-pub(crate) fn apply_dirty_reload_policy(outcome: &mut ParseOutcome) {
+/// Convert reloaded edge data into a [`ParseOutcome`], clearing resolution
+/// state wherever the policy demands it.
+///
+/// The destructuring below is intentionally complete (no `..`): adding a
+/// field to [`FileEdgesForReresolve`] fails to compile here until its
+/// dirty-reload policy is declared as a [`ReloadedEdgeCategory`] and the
+/// field is routed through it.
+pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) -> ParseOutcome {
+    let FileEdgesForReresolve {
+        symbols,
+        imports,
+        mut call_edges,
+        mut symbol_refs,
+        mut semantic_edges,
+        dispatch_sites,
+        mut route_edges,
+    } = edges;
+
+    // KeepAsIs categories pass through verbatim; the asserts pin each field
+    // to its declared policy.
+    debug_assert!(!should_clear(ReloadedEdgeCategory::Symbols));
+    debug_assert!(!should_clear(ReloadedEdgeCategory::Imports));
+    debug_assert!(!should_clear(ReloadedEdgeCategory::DispatchSites));
+
     if should_clear(ReloadedEdgeCategory::CallEdges) {
-        for edge in &mut outcome.call_edges {
+        for edge in &mut call_edges {
             edge.callee_symbol_uid = None;
             edge.resolution_kind = ResolutionKind::Unresolved;
         }
     }
     if should_clear(ReloadedEdgeCategory::SymbolRefs) {
-        for sym_ref in &mut outcome.symbol_refs {
+        for sym_ref in &mut symbol_refs {
             sym_ref.target_symbol_uid = None;
             sym_ref.target_symbol_id = None;
             sym_ref.resolution_kind = ResolutionKind::Unresolved;
         }
     }
     if should_clear(ReloadedEdgeCategory::RouteEdges) {
-        for route in &mut outcome.route_edges {
+        for route in &mut route_edges {
             route.handler_symbol_id = None;
             route.handler_symbol_uid = None;
         }
     }
-    for edge in &mut outcome.semantic_edges {
+    for edge in &mut semantic_edges {
         if should_clear(ReloadedEdgeCategory::SemanticEdge(edge.relation_kind)) {
             edge.target_symbol_uid = None;
         }
     }
-    // DispatchSites only store same-file enclosing UIDs; the policy keeps
-    // them, so there is nothing to clear here.
-    debug_assert!(!should_clear(ReloadedEdgeCategory::DispatchSites));
+
+    ParseOutcome {
+        symbols,
+        imports,
+        call_edges,
+        symbol_refs,
+        semantic_edges,
+        dispatch_sites,
+        route_edges,
+        ..Default::default()
+    }
 }
 
 #[cfg(test)]
@@ -142,11 +175,18 @@ mod tests {
     }
 
     #[test]
-    fn dispatch_sites_are_kept_as_is() {
-        assert_eq!(
-            dirty_reload_policy(ReloadedEdgeCategory::DispatchSites),
-            DirtyReloadPolicy::KeepAsIs,
-        );
+    fn local_state_categories_are_kept_as_is() {
+        for category in [
+            ReloadedEdgeCategory::Symbols,
+            ReloadedEdgeCategory::Imports,
+            ReloadedEdgeCategory::DispatchSites,
+        ] {
+            assert_eq!(
+                dirty_reload_policy(category),
+                DirtyReloadPolicy::KeepAsIs,
+                "{category:?} carries no cross-file resolution state"
+            );
+        }
     }
 
     #[test]
@@ -195,7 +235,7 @@ mod tests {
     }
 
     #[test]
-    fn apply_clears_per_policy_and_keeps_the_rest() {
+    fn conversion_clears_per_policy_and_keeps_the_rest() {
         use cc_model::dispatch_site::{DispatchSiteKind, DispatchSiteRecord};
         use cc_model::edge::{CallEdgeRecord, RouteEdgeRecord, SemanticEdgeRecord};
         use cc_model::symbol::SymbolRefRecord;
@@ -214,7 +254,9 @@ mod tests {
             parser_tier: ParserTier::Generic,
         };
 
-        let mut outcome = ParseOutcome {
+        let edges = FileEdgesForReresolve {
+            symbols: Vec::new(),
+            imports: Vec::new(),
             call_edges: vec![CallEdgeRecord {
                 callee_symbol_uid: Some("uCallee".into()),
                 resolution_kind: ResolutionKind::Exact,
@@ -277,10 +319,9 @@ mod tests {
                 handler_symbol_uid: None,
                 confidence: 1.0,
             }],
-            ..Default::default()
         };
 
-        apply_dirty_reload_policy(&mut outcome);
+        let outcome = parse_outcome_from_reloaded_edges(edges);
 
         let call = &outcome.call_edges[0];
         assert_eq!(call.callee_symbol_uid, None);

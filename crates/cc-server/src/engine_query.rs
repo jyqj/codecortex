@@ -1,7 +1,9 @@
-//! Advanced query and analysis methods for `CodeIndex`.
+//! Advanced query and analysis methods for the `CodeIndex` domain views.
 //!
-//! Split from `engine.rs` for maintainability. Contains impact analysis,
-//! explore/graph_schema, symbol source retrieval, and package boundary analysis.
+//! Split from `engine.rs` for maintainability. Contains the `ImpactOps` view
+//! (impact analysis), the heavier `GraphOps` methods (explore/graph_schema,
+//! symbol source retrieval), the tier/budget infrastructure that stays on
+//! `CodeIndex` itself, and package boundary analysis.
 
 use cc_db::index_db::IndexDb;
 use cc_model::config::{OutputBudget, RepoSizeTier};
@@ -14,7 +16,7 @@ use std::sync::Arc;
 
 use crate::impact::{ImpactAnalyzer, ImpactOptions};
 
-use super::engine::{centrality_hint, CodeIndex};
+use super::engine::{centrality_hint, CodeIndex, GraphOps, ImpactOps};
 
 #[derive(Debug, Serialize)]
 struct GraphSchemaResponse {
@@ -100,7 +102,7 @@ fn edge_property_info(
     }
 }
 
-impl CodeIndex {
+impl ImpactOps<'_> {
     pub fn detect_impact(
         &self,
         changed_files: &[String],
@@ -127,7 +129,7 @@ impl CodeIndex {
             max_per_layer,
             result_limit,
         };
-        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with(changed_files, &opts)
+        ImpactAnalyzer::new(self.0.ensure_db()?.clone()).analyze_with(changed_files, &opts)
     }
 
     pub fn analyze_impact(
@@ -155,16 +157,22 @@ impl CodeIndex {
             max_per_layer,
             result_limit,
         };
-        ImpactAnalyzer::new(self.ensure_db()?.clone()).analyze_with(&changed, &opts)
+        ImpactAnalyzer::new(self.0.ensure_db()?.clone()).analyze_with(&changed, &opts)
     }
 
     pub fn git_changed_files(&self, base_ref: Option<&str>) -> CcResult<Vec<String>> {
-        let project = self.ensure_project()?;
-        let analyzer = ImpactAnalyzer::new(self.ensure_db()?.clone())
+        let project = self.0.ensure_project()?;
+        let analyzer = ImpactAnalyzer::new(self.0.ensure_db()?.clone())
             .with_project_root(project.display().to_string());
         Ok(analyzer.git_changed_files(base_ref))
     }
 
+    pub fn find_impacted_tests(&self, files: &[String]) -> CcResult<Vec<String>> {
+        self.0.ensure_db()?.find_impacted_tests(files)
+    }
+}
+
+impl CodeIndex {
     pub fn repo_size_tier(&self) -> RepoSizeTier {
         if let Some(tier) = self.repo_tier {
             return tier;
@@ -181,7 +189,9 @@ impl CodeIndex {
     pub fn output_budget(&self, handler: &str) -> OutputBudget {
         self.repo_size_tier().output_budget(handler)
     }
+}
 
+impl GraphOps<'_> {
     #[allow(clippy::too_many_arguments)]
     pub fn explore_symbols(
         &self,
@@ -199,11 +209,11 @@ impl CodeIndex {
         } else {
             names
         };
-        let tier = self.repo_size_tier();
+        let tier = self.0.repo_size_tier();
         let caller_limit = max_callers.unwrap_or(tier.explore_max_symbols());
         let callee_limit = max_callees.unwrap_or(tier.explore_max_symbols());
         let max_src_chars = max_source_per_file.unwrap_or(tier.max_source_chars_per_symbol());
-        let db = self.ensure_db()?.clone();
+        let db = self.0.ensure_db()?.clone();
 
         let mut results = Vec::with_capacity(capped.len());
 
@@ -326,7 +336,7 @@ impl CodeIndex {
                 } else {
                     // Full source mode
                     if let (Some(project), Some(db)) =
-                        (self.project_path.as_ref(), self.index_db.as_ref())
+                        (self.0.project_path.as_ref(), self.0.index_db.as_ref())
                     {
                         if let Ok(full_path) = crate::path_guard::resolve_indexed_path_strict(
                             project,
@@ -457,9 +467,9 @@ impl CodeIndex {
         include_line_numbers: bool,
         max_chars: Option<usize>,
     ) -> CcResult<serde_json::Value> {
-        let project = self.ensure_project()?.to_path_buf();
-        let db = self.ensure_db()?.clone();
-        let tier = self.repo_size_tier();
+        let project = self.0.ensure_project()?.to_path_buf();
+        let db = self.0.ensure_db()?.clone();
+        let tier = self.0.repo_size_tier();
         let max_src_chars = max_chars.unwrap_or_else(|| tier.max_source_chars_per_symbol());
 
         let rows = db.symbol_source_candidates(symbol, exact)?;
@@ -515,7 +525,7 @@ impl CodeIndex {
     /// edge table counts, relationship patterns, example queries,
     /// edge provenance summary, and runtime evidence coverage.
     pub fn graph_schema(&self) -> CcResult<serde_json::Value> {
-        let db = self.ensure_db()?;
+        let db = self.0.ensure_db()?;
 
         // Symbol kind counts
         let node_kinds: Vec<NodeKindCount> = db
@@ -878,7 +888,7 @@ mod tests {
     #[test]
     fn graph_schema_uses_relationship_catalog() {
         let (_dir, idx) = index_with_low_confidence_edge();
-        let schema = idx.graph_schema().unwrap();
+        let schema = idx.graph().graph_schema().unwrap();
 
         let patterns = schema["relationship_patterns"].as_array().unwrap();
         assert!(
@@ -925,6 +935,7 @@ mod tests {
     fn detect_impact_high_confidence_threshold_filters_callers() {
         let (_dir, idx) = index_with_low_confidence_edge();
         let report = idx
+            .impact()
             .detect_impact(&["src/a.rs".to_string()], Some(0.9))
             .unwrap();
         let hop1: Vec<_> = report
@@ -941,7 +952,10 @@ mod tests {
     #[test]
     fn detect_impact_without_threshold_keeps_callers() {
         let (_dir, idx) = index_with_low_confidence_edge();
-        let report = idx.detect_impact(&["src/a.rs".to_string()], None).unwrap();
+        let report = idx
+            .impact()
+            .detect_impact(&["src/a.rs".to_string()], None)
+            .unwrap();
         let hop1: Vec<_> = report
             .impacted_symbols
             .iter()

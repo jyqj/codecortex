@@ -10,6 +10,7 @@ pub fn search_in_context(
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let env = rt
+        .search()
         .search_in_context(query, top_k, intent)
         .map_err(|e| e.to_string())?;
     serde_json::to_value(env).map_err(|e| e.to_string())
@@ -24,6 +25,7 @@ pub fn search_in_context_with(
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let env = rt
+        .search()
         .search_in_context_with(query, top_k, intent, overrides)
         .map_err(|e| e.to_string())?;
     serde_json::to_value(env).map_err(|e| e.to_string())
@@ -36,7 +38,7 @@ pub fn prepare_edit_region(
     end_line: u32,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let symbols = rt.file_symbols(file_path).map_err(|e| e.to_string())?;
+    let symbols = rt.graph().file_symbols(file_path).map_err(|e| e.to_string())?;
     let lower_line = start_line.saturating_sub(5);
     let upper_line = end_line.saturating_add(5);
     let region_symbols: Vec<_> = symbols
@@ -73,7 +75,8 @@ pub fn task_symbols(
     intent: Option<&str>,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.task_symbols(task, max_symbols, expand_depth, intent)
+    rt.search()
+        .task_symbols(task, max_symbols, expand_depth, intent)
         .map_err(|e| e.to_string())
 }
 
@@ -96,6 +99,7 @@ pub fn explore_symbols(
     let rt = super::lock_index(&runtime)?;
     let max_chars = rt.repo_size_tier().max_output_chars();
     let result = rt
+        .graph()
         .explore_symbols(
             symbols,
             max_callers,
@@ -126,7 +130,8 @@ pub fn get_symbol_source(
         return Err("missing or empty 'symbol' parameter".to_string());
     }
     let rt = super::lock_index(&runtime)?;
-    rt.get_symbol_source(symbol, exact, include_line_numbers, max_chars)
+    rt.graph()
+        .get_symbol_source(symbol, exact, include_line_numbers, max_chars)
         .map_err(|e| e.to_string())
 }
 

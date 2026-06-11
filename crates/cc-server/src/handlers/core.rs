@@ -33,19 +33,20 @@ pub fn find_symbol(
     include_metrics: bool,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.find_symbol(name, exact, top_k, include_metrics)
+    rt.graph()
+        .find_symbol(name, exact, top_k, include_metrics)
         .map_err(|e| e.to_string())
 }
 
 pub fn list_files(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let files = rt.list_indexed_files().map_err(|e| e.to_string())?;
+    let files = rt.graph().list_indexed_files().map_err(|e| e.to_string())?;
     serde_json::to_value(files).map_err(|e| e.to_string())
 }
 
 pub fn list_communities(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.list_communities().map_err(|e| e.to_string())?;
+    let rows = rt.graph().list_communities().map_err(|e| e.to_string())?;
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
@@ -53,7 +54,7 @@ pub fn list_frameworks(runtime: SharedCodeIndex) -> Result<serde_json::Value, St
     use cc_index::framework_resolvers::resolver_tier_for_key;
 
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.list_frameworks().map_err(|e| e.to_string())?;
+    let rows = rt.graph().list_frameworks().map_err(|e| e.to_string())?;
 
     // Enrich each framework entry with its resolver coverage tier.
     let enriched: Vec<serde_json::Value> = rows
@@ -95,7 +96,7 @@ pub fn callers(
     limit: usize,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.callers(symbol, limit).map_err(|e| e.to_string())?;
+    let rows = rt.graph().callers(symbol, limit).map_err(|e| e.to_string())?;
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
@@ -105,7 +106,7 @@ pub fn callees(
     limit: usize,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.callees(symbol, limit).map_err(|e| e.to_string())?;
+    let rows = rt.graph().callees(symbol, limit).map_err(|e| e.to_string())?;
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
@@ -121,7 +122,7 @@ pub fn analyze_impact(
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let report = if files.is_empty() {
-        rt.analyze_impact_capped(
+        rt.impact().analyze_impact_capped(
             base_branch,
             confidence_threshold,
             result_limit,
@@ -129,7 +130,7 @@ pub fn analyze_impact(
             max_per_layer,
         )
     } else {
-        rt.detect_impact_capped(
+        rt.impact().detect_impact_capped(
             files,
             confidence_threshold,
             result_limit,
@@ -146,7 +147,9 @@ pub fn git_changed_files(
     base_branch: Option<&str>,
 ) -> Result<Vec<String>, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.git_changed_files(base_branch).map_err(|e| e.to_string())
+    rt.impact()
+        .git_changed_files(base_branch)
+        .map_err(|e| e.to_string())
 }
 
 /// Get a summary of a single file.
@@ -155,11 +158,11 @@ pub fn summarize_file(
     file_path: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.summarize_file(file_path).map_err(|e| e.to_string())
+    rt.graph().summarize_file(file_path).map_err(|e| e.to_string())
 }
 
 /// Show available node kinds, edge types, and their counts in the index.
 pub fn graph_schema(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.graph_schema().map_err(|e| e.to_string())
+    rt.graph().graph_schema().map_err(|e| e.to_string())
 }

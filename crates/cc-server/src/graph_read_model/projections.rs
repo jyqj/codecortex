@@ -108,7 +108,10 @@ impl GraphReadModel {
             }
         }
         // Slow path: query DB *without* holding the adjacency lock.
-        let mut edges = self.reads().call_edges_from_uid_lite(uid).unwrap_or_default();
+        let mut edges = self
+            .reads()
+            .call_edges_from_uid_lite(uid)
+            .unwrap_or_default();
         if let Some(bridges) = self.http_bridges.get(uid) {
             edges.extend(bridges.iter().cloned());
         }
@@ -276,6 +279,19 @@ impl GraphReadModel {
                 Arc::new(HashSet::new())
             }
         }
+    }
+
+    /// Multiplier on the desired dead-code item cap for the symbol scan.
+    pub(crate) const DEAD_CODE_SCAN_FACTOR: usize = 40;
+    /// Ceiling on the dead-code symbol scan to bound query cost.
+    pub(crate) const DEAD_CODE_SCAN_MAX: usize = 5000;
+
+    /// Default adaptive scan budget for [`Self::dead_code_candidates`]:
+    /// `item_cap × 40`, capped at 5000 to bound query cost. This is the same
+    /// default the MCP `find_dead_code` handler applies, so direct engine
+    /// callers passing `dead_code_scan_limit(cap)` observe identical behaviour.
+    pub(crate) fn dead_code_scan_limit(item_cap: usize) -> usize {
+        (item_cap * Self::DEAD_CODE_SCAN_FACTOR).min(Self::DEAD_CODE_SCAN_MAX)
     }
 
     /// Symbols that appear to be dead code: no non-self callers and no

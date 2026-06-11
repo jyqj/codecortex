@@ -123,13 +123,54 @@ impl ImpactOps<'_> {
         max_per_layer: Option<usize>,
     ) -> CcResult<ImpactReport> {
         let opts = ImpactOptions {
-            max_depth: 3,
+            max_depth: ImpactOptions::DEFAULT_MAX_DEPTH,
             confidence_threshold: confidence_threshold.map(|v| v as f64),
             max_nodes,
             max_per_layer,
             result_limit,
         };
         ImpactAnalyzer::new(self.0.ensure_db()?.clone()).analyze_with(changed_files, &opts)
+    }
+
+    /// Like `detect_impact_capped` but with the MCP `impact` handler's
+    /// adaptive default budget filled in for any cap left `None`: node cap =
+    /// `result_limit × 10` capped at 5000, layer cap = 500, depth 3 (see
+    /// [`ImpactOptions::default_for`]). Direct engine callers get exactly the
+    /// same bounds as the MCP tool.
+    pub fn detect_impact_with_default_budget(
+        &self,
+        changed_files: &[String],
+        confidence_threshold: Option<f32>,
+        result_limit: usize,
+        max_nodes: Option<usize>,
+        max_per_layer: Option<usize>,
+    ) -> CcResult<ImpactReport> {
+        let opts = ImpactOptions::default_for(
+            result_limit,
+            confidence_threshold.map(|v| v as f64),
+            max_nodes,
+            max_per_layer,
+        );
+        ImpactAnalyzer::new(self.0.ensure_db()?.clone()).analyze_with(changed_files, &opts)
+    }
+
+    /// Git-diff-based counterpart to `detect_impact_with_default_budget`.
+    pub fn analyze_impact_with_default_budget(
+        &self,
+        base_ref: Option<&str>,
+        confidence_threshold: Option<f32>,
+        result_limit: usize,
+        max_nodes: Option<usize>,
+        max_per_layer: Option<usize>,
+    ) -> CcResult<ImpactReport> {
+        let changed = self.git_changed_files(base_ref)?;
+        self.detect_impact_with_default_budget(
+            &changed,
+            confidence_threshold,
+            result_limit,
+            max_nodes,
+            max_per_layer,
+        )
     }
 
     pub fn analyze_impact(
@@ -151,7 +192,7 @@ impl ImpactOps<'_> {
     ) -> CcResult<ImpactReport> {
         let changed = self.git_changed_files(base_ref)?;
         let opts = ImpactOptions {
-            max_depth: 3,
+            max_depth: ImpactOptions::DEFAULT_MAX_DEPTH,
             confidence_threshold: confidence_threshold.map(|v| v as f64),
             max_nodes,
             max_per_layer,
@@ -946,6 +987,36 @@ mod tests {
         assert!(
             hop1.is_empty(),
             "confidence_threshold=0.9 should filter the 0.5-confidence caller"
+        );
+    }
+
+    #[test]
+    fn detect_impact_with_default_budget_matches_handler_caps() {
+        let (_dir, idx) = index_with_low_confidence_edge();
+        let limit: usize = 20;
+
+        // Engine path with defaults filled in.
+        let with_defaults = idx
+            .impact()
+            .detect_impact_with_default_budget(&["src/a.rs".to_string()], None, limit, None, None)
+            .unwrap();
+
+        // The exact caps the MCP handler used to compute inline:
+        // node cap = limit×10 (≤5000), layer cap = 500, result cap = limit.
+        let manual = idx
+            .impact()
+            .detect_impact_capped(
+                &["src/a.rs".to_string()],
+                None,
+                Some(limit),
+                Some(limit.saturating_mul(10).min(5000)),
+                Some(500),
+            )
+            .unwrap();
+
+        assert_eq!(
+            serde_json::to_value(&with_defaults).unwrap(),
+            serde_json::to_value(&manual).unwrap()
         );
     }
 

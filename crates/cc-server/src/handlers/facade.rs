@@ -221,18 +221,24 @@ pub fn handle_impact(
         _ => {
             // BFS safety caps for the blast-radius path. `limit` (already
             // clamped to the output budget) is the returned-symbol cap; the
-            // BFS node/layer caps default to bounded values so a hub callee
-            // cannot fan out into an unbounded report.
-            let node_cap = max_nodes.unwrap_or_else(|| limit.saturating_mul(10).min(5000));
-            let layer_cap = max_per_layer.unwrap_or(500);
+            // BFS node/layer caps default via `ImpactOptions::default_for`
+            // (node cap = limit×10 ≤ 5000, layer cap = 500) so a hub callee
+            // cannot fan out into an unbounded report — and so direct engine
+            // callers share the exact same defaults.
+            let opts = crate::impact::ImpactOptions::default_for(
+                limit,
+                confidence_threshold.map(f64::from),
+                max_nodes,
+                max_per_layer,
+            );
             core::analyze_impact(
                 runtime,
                 files,
                 base_branch,
                 confidence_threshold,
-                Some(limit),
-                Some(node_cap),
-                Some(layer_cap),
+                opts.result_limit,
+                opts.max_nodes,
+                opts.max_per_layer,
             )
         }
     }

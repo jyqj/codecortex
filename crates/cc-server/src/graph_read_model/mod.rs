@@ -333,6 +333,19 @@ mod tests {
     use crate::graph_types::BfsAdj;
     use tempfile::TempDir;
 
+    // ── dead_code_scan_limit: formula lock (item_cap × 40, capped 5000) ──
+
+    #[test]
+    fn dead_code_scan_limit_formula_lock() {
+        assert_eq!(GraphReadModel::dead_code_scan_limit(0), 0);
+        assert_eq!(GraphReadModel::dead_code_scan_limit(1), 40);
+        assert_eq!(GraphReadModel::dead_code_scan_limit(50), 2000);
+        // Exactly at the ceiling: 125 × 40 = 5000.
+        assert_eq!(GraphReadModel::dead_code_scan_limit(125), 5000);
+        // Above the ceiling: capped.
+        assert_eq!(GraphReadModel::dead_code_scan_limit(200), 5000);
+    }
+
     fn setup_bridge_db() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;

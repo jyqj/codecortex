@@ -31,6 +31,42 @@ pub struct ImpactOptions {
 }
 
 impl ImpactOptions {
+    /// Multiplier on `result_limit` for the default BFS node cap.
+    pub const DEFAULT_NODE_CAP_FACTOR: usize = 10;
+    /// Ceiling on the default BFS node cap.
+    pub const DEFAULT_NODE_CAP_MAX: usize = 5000;
+    /// Default per-layer caller cap (pushed down as the `reverse_callers`
+    /// SQL LIMIT).
+    pub const DEFAULT_MAX_PER_LAYER: usize = 500;
+    /// Default BFS depth used by the MCP impact path.
+    pub const DEFAULT_MAX_DEPTH: usize = 3;
+
+    /// Adaptive default budget used by the MCP `impact` handler: result cap =
+    /// `result_limit`, node cap = `result_limit × 10` capped at 5000, layer
+    /// cap = 500, depth 3. Explicit `max_nodes` / `max_per_layer` override
+    /// the corresponding default unchanged (no extra clamping), so a caller
+    /// who asks for a wider BFS gets exactly what they asked for.
+    pub fn default_for(
+        result_limit: usize,
+        confidence_threshold: Option<f64>,
+        max_nodes: Option<usize>,
+        max_per_layer: Option<usize>,
+    ) -> Self {
+        let node_cap = max_nodes.unwrap_or_else(|| {
+            result_limit
+                .saturating_mul(Self::DEFAULT_NODE_CAP_FACTOR)
+                .min(Self::DEFAULT_NODE_CAP_MAX)
+        });
+        let layer_cap = max_per_layer.unwrap_or(Self::DEFAULT_MAX_PER_LAYER);
+        Self {
+            max_depth: Self::DEFAULT_MAX_DEPTH,
+            confidence_threshold,
+            max_nodes: Some(node_cap),
+            max_per_layer: Some(layer_cap),
+            result_limit: Some(result_limit),
+        }
+    }
+
     /// Legacy/unbounded options: only `max_depth` + optional confidence apply.
     #[cfg(test)]
     pub fn unbounded(max_depth: usize, confidence_threshold: Option<f64>) -> Self {
@@ -1135,6 +1171,41 @@ mod tests {
         let (_dir, db) = temp_db();
         let analyzer = ImpactAnalyzer::new(db);
         assert!(analyzer.symbol_names_by_uid(&[]).is_empty());
+    }
+
+    // ── ImpactOptions::default_for: formula lock ────────────────────
+
+    #[test]
+    fn default_for_applies_handler_formulas() {
+        let opts = ImpactOptions::default_for(50, None, None, None);
+        assert_eq!(opts.max_depth, 3);
+        assert_eq!(opts.confidence_threshold, None);
+        assert_eq!(opts.max_nodes, Some(500)); // 50 × 10
+        assert_eq!(opts.max_per_layer, Some(500));
+        assert_eq!(opts.result_limit, Some(50));
+    }
+
+    #[test]
+    fn default_for_node_cap_is_capped_at_5000() {
+        // 600 × 10 = 6000 → capped at the ceiling.
+        let over = ImpactOptions::default_for(600, None, None, None);
+        assert_eq!(over.max_nodes, Some(5000));
+        // Exactly at the ceiling: 500 × 10 = 5000.
+        let exact = ImpactOptions::default_for(500, None, None, None);
+        assert_eq!(exact.max_nodes, Some(5000));
+        // Saturating multiply cannot overflow past the ceiling.
+        let huge = ImpactOptions::default_for(usize::MAX, None, None, None);
+        assert_eq!(huge.max_nodes, Some(5000));
+    }
+
+    #[test]
+    fn default_for_explicit_caps_pass_through_unclamped() {
+        let opts = ImpactOptions::default_for(50, Some(0.7), Some(9999), Some(7));
+        // Explicit max_nodes is used as-is: no ×10 formula, no 5000 clamp.
+        assert_eq!(opts.max_nodes, Some(9999));
+        assert_eq!(opts.max_per_layer, Some(7));
+        assert_eq!(opts.confidence_threshold, Some(0.7));
+        assert_eq!(opts.result_limit, Some(50));
     }
 
     // ── Helper: create an ImpactedSymbol for boundary tests ─────────

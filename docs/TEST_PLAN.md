@@ -2,23 +2,25 @@
 
 ## Unit Tests
 
-751 passed + 2 ignored in the latest `cargo test -q --workspace --all-targets` —
-746 crate/unit-target tests + 5 `mcp_stdio` integration tests (the 2 ignored
-cases are the real-workspace and benchmark tests in cc-eval).
+1058 passed + 8 ignored in the latest `cargo test -q --workspace --all-targets` —
+1039 crate/unit-target tests + 13 `type_catalog_bench` and 5 `mcp_stdio`
+integration tests (the 8 ignored cases: the 5 real-workspace/incremental
+benchmarks in cc-eval, the cc-db rebuild stress loop, and the 2 release-only
+micro-benchmarks in `type_catalog_bench` / `graph_traversal_bench`).
 
 | Crate | Tests | Coverage Focus |
 |-------|-------|----------------|
-| cc-db | 51 | Schema v3 rebuild-on-mismatch, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
-| cc-eval | 15 passed + 2 ignored | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace/benchmark tests |
-| cc-index | 225 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, export-fingerprint contract, adaptive memory budget |
-| cc-model | 36 | Route normalization, data structures, enum round-trip, project root discovery, partial config defaults, external cache-dir paths |
-| cc-parsers | 173 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs, spec-driven heuristic intra-file call edges, C/C++/Rust param/return data-flow |
-| cc-search | 121 | Cypher parser/executor, variable-length path cap, regex validation, WHERE/Degree identifier validation, FTS5/RRF search, grep SQL scoping, search engine, preselect substring recall via trigram |
-| cc-server | 125 | Engine lifecycle, impact analyzer BFS, confidence-threshold filtering, exposed explore/trace params, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
+| cc-db | 115 | Schema v4 rebuild-on-mismatch, chunk text encoding, SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
+| cc-eval | 16 passed + 5 ignored | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold, expect_error), corpus loading, fixture integration, ignored real-workspace/incremental benchmark tests |
+| cc-index | 309 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, route-resolution provenance, dirty-closure status classification, framework detection signals, export-fingerprint contract, adaptive memory budget |
+| cc-model | 39 | Route normalization, data structures, enum round-trip, element-confidence matrix baselines, project root discovery, partial config defaults, external cache-dir paths |
+| cc-parsers | 177 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs, spec-driven heuristic intra-file call edges, C/C++/Rust param/return data-flow |
+| cc-search | 207 | Cypher parser/executor, variable-length path cap, regex validation, WHERE/Degree identifier validation, FTS5/RRF search, grep SQL scoping, search engine, result-cache Arc reuse, preselect substring recall via trigram |
+| cc-server | 177 | Engine lifecycle, impact analyzer BFS, confidence-threshold filtering, exposed explore/trace params, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow |
 
 ## Eval Suite (cc-eval)
 
-62 corpus cases covering all 14 MCP tools + error paths + boundary conditions, across Python/JS/TS/Rust/Go/Java/C/C++. Run with `cargo test -p cc-eval`.
+63 corpus cases covering all 14 MCP tools + error paths + boundary conditions, across Python/JS/TS/Rust/Go/Java/C/C++. Run with `cargo test -p cc-eval`.
 
 ### Corpus Cases
 
@@ -38,6 +40,7 @@ cases are the real-workspace and benchmark tests in cc-eval).
 | context_flask_routes | context | Flask route context building |
 | context_golden_refactor | context | Golden test: context for refactoring formatName |
 | context_with_intent | context | Context query with intent=fix to prioritize bug-fix relevant symbols |
+| context_graph_enriched | context | Context search path returns graph-enriched evidence |
 | node_trail | node | Single symbol trail (callers + callees) |
 | node_source_rust | node | Rust function source inspection |
 | node_outline | node | File outline using include=outline for utils.js symbols |
@@ -116,7 +119,8 @@ cases are the real-workspace and benchmark tests in cc-eval).
 - p95/max latency and output size tracked via `bench::run_benchmark()`
 - Real workspace benchmark: `benchmark_real_workspace` copies the CodeCortex workspace (234 files in latest run) into a temp dir and writes `docs/benchmarks/real_workspace_latest.md` when requested
 - Incremental index report benchmark: `benchmark_incremental_index_report_correctness` is ignored by default and covers full build -> no-op incremental -> one-file incremental update without writing benchmark artifacts
-- Recall@5 and MRR implemented via `expected_symbols` assertions (5 corpus cases active)
+- Incremental latency benchmarks: `cargo test -p cc-eval bench_incremental -- --ignored --nocapture` runs three ignored scenarios (`bench_incremental_noop`, `bench_incremental_single_file`, `bench_incremental_dirty_closure`) over a synthesized 41-file TypeScript project; each prints p50/p95/max from `IndexReport.elapsed_ms` plus the `phase_timing` breakdown and hard-asserts counters and `dirty_propagation` status (see docs/BENCHMARK.md)
+- Recall@5 and MRR implemented via `expected_symbols` assertions (8 corpus cases active)
 
 ## Integration Testing
 

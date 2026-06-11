@@ -14,7 +14,7 @@ use cc_model::edge::{
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
-use cc_model::ParserTier;
+use cc_model::{ElementKind, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
@@ -208,7 +208,7 @@ impl JsTsParser {
                 target_symbol_uid: None,
                 relation_kind: SemanticRelation::Inherits,
                 line,
-                confidence: 0.95,
+                confidence: tier.element_confidence(ElementKind::SemanticEdge),
                 parser_tier: tier,
             });
         }
@@ -234,7 +234,7 @@ impl JsTsParser {
                     target_symbol_uid: None,
                     relation_kind: SemanticRelation::Implements,
                     line,
-                    confidence: 0.95,
+                    confidence: tier.element_confidence(ElementKind::SemanticEdge),
                     parser_tier: tier,
                 });
             }
@@ -294,7 +294,7 @@ impl JsTsParser {
                 target_symbol_uid: None,
                 relation_kind: SemanticRelation::Decorates,
                 line,
-                confidence: 0.95,
+                confidence: tier.element_confidence(ElementKind::SemanticEdge),
                 parser_tier: tier,
             });
         }
@@ -333,7 +333,7 @@ impl JsTsParser {
                 target_symbol_uid: None,
                 flow_kind: "type_ref".to_string(),
                 line,
-                confidence: 0.85,
+                confidence: ParserTier::Semantic.element_confidence(ElementKind::TypeRef),
                 parser_tier: ParserTier::Semantic,
                 env_key: None,
             });
@@ -363,7 +363,7 @@ impl JsTsParser {
                 target_symbol_uid: None,
                 flow_kind: "type_ref".to_string(),
                 line,
-                confidence: 0.85,
+                confidence: ParserTier::Semantic.element_confidence(ElementKind::TypeRef),
                 parser_tier: ParserTier::Semantic,
                 env_key: None,
             });
@@ -407,7 +407,7 @@ impl JsTsParser {
                 target_symbol_uid: None,
                 flow_kind: "env_access".to_string(),
                 line,
-                confidence: 0.80,
+                confidence: ParserTier::Heuristic.element_confidence(ElementKind::EnvAccess),
                 parser_tier: ParserTier::Heuristic,
                 env_key,
             });
@@ -657,7 +657,8 @@ impl JsTsParser {
                         ref_end_line: Some(line_no),
                         ref_end_col: Some(m.end() as u32),
                         parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.7,
+                        parser_confidence: ParserTier::Semantic
+                            .element_confidence(ElementKind::CallRef),
                     });
                     calls.push(CallEdgeRecord {
                         edge_id: StableId::edge_id("call", file_path, line_no, start_col),
@@ -693,7 +694,8 @@ impl JsTsParser {
                         is_awaited: false,
                         is_constructor: false,
                         parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.7,
+                        parser_confidence: ParserTier::Semantic
+                            .element_confidence(ElementKind::CallEdge),
                         synthesized_by: None,
                         synthesis_key: None,
                         registered_file: None,
@@ -737,7 +739,8 @@ impl JsTsParser {
                         ref_end_line: Some(line_no),
                         ref_end_col: Some(m.end() as u32),
                         parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.6,
+                        parser_confidence: ParserTier::Semantic
+                            .element_confidence(ElementKind::IdentifierRef),
                     });
                 }
             }

@@ -13,8 +13,12 @@ use cc_model::edge::{
 use cc_model::id::StableId;
 use cc_model::symbol::SymbolRecord;
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
-use cc_model::ParserTier;
+use cc_model::{ElementKind, ParserTier};
 use std::collections::HashMap;
+
+/// Throws edges inferred from `raise` statements inside bodies are less
+/// certain than declared relationships (Python has no declared throws clause).
+const THROWS_STMT_CONFIDENCE: f64 = 0.9;
 
 // ---------------------------------------------------------------------------
 // HTTP call extraction
@@ -93,7 +97,7 @@ pub(super) fn try_extract_http_call(
         method: http_method,
         call_kind: "http".to_string(),
         line,
-        confidence: 0.80,
+        confidence: ParserTier::TreeSitter.element_confidence(ElementKind::HttpCall),
         parser_tier: ParserTier::TreeSitter,
         broker_type: None,
     })
@@ -148,7 +152,7 @@ pub(super) fn try_extract_broker_call(
         method: None,
         call_kind: "async".to_string(),
         line,
-        confidence: 0.80,
+        confidence: ParserTier::TreeSitter.element_confidence(ElementKind::HttpCall),
         parser_tier: ParserTier::TreeSitter,
         broker_type: Some(broker_type),
     })
@@ -246,7 +250,7 @@ pub(super) fn try_extract_dispatch_site(
             key: event_name,
             handler_expr,
             handler_symbol_uid: None,
-            confidence: 0.85,
+            confidence: ParserTier::Semantic.element_confidence(ElementKind::DispatchSite),
         });
     }
 
@@ -265,7 +269,7 @@ pub(super) fn try_extract_dispatch_site(
             key: event_name,
             handler_expr: None,
             handler_symbol_uid: None,
-            confidence: 0.85,
+            confidence: ParserTier::Semantic.element_confidence(ElementKind::DispatchSite),
         });
     }
 
@@ -362,7 +366,7 @@ impl PythonParser {
                 target_symbol_uid: None,
                 relation_kind: SemanticRelation::Throws,
                 line,
-                confidence: 0.9,
+                confidence: THROWS_STMT_CONFIDENCE,
                 parser_tier: tier,
             });
         }
@@ -395,7 +399,7 @@ impl PythonParser {
                 target_symbol_uid: None,
                 flow_kind: "type_ref".to_string(),
                 line,
-                confidence: 0.85,
+                confidence: ParserTier::Semantic.element_confidence(ElementKind::TypeRef),
                 parser_tier: ParserTier::Semantic,
                 env_key: None,
             });
@@ -416,7 +420,7 @@ impl PythonParser {
                 target_symbol_uid: None,
                 flow_kind: "type_ref".to_string(),
                 line,
-                confidence: 0.85,
+                confidence: ParserTier::Semantic.element_confidence(ElementKind::TypeRef),
                 parser_tier: ParserTier::Semantic,
                 env_key: None,
             });

@@ -16,6 +16,7 @@ use cc_model::{CcResult, Language, ParserTier, StableId};
 
 use crate::community::{build_community_labels, louvain_communities};
 use crate::config_linker::{extract_config_links, ConfigLinkKind};
+use crate::dirty_closure::{DirtyPropagationOutcome, DirtyPropagationStatus};
 use crate::framework_registry;
 use crate::pass_gate::{
     run_gated_passes, DbSignatureGate, FileSignatureGate, GatedPass, PairGate, RecordTiming,
@@ -1432,14 +1433,19 @@ impl Indexer {
 
     /// Dirty propagation: detect export signature changes and mark importers
     /// as `DirtyResolveOnly` so their cross-file references get re-resolved
-    /// against the updated symbol catalog.
+    /// against the updated symbol catalog. The returned outcome carries the
+    /// closure status so degradations (budget bail, partial closure) surface
+    /// on the index report instead of only in logs.
     pub(crate) fn run_dirty_propagation(
         &self,
         actions: &mut HashMap<String, FileAction>,
         write_units: &[FileWriteUnit],
-    ) -> CcResult<usize> {
+    ) -> CcResult<DirtyPropagationOutcome> {
         if !self.dirty_propagation {
-            return Ok(0);
+            return Ok(DirtyPropagationOutcome {
+                marked: 0,
+                status: DirtyPropagationStatus::Disabled,
+            });
         }
 
         // Step 1: Collect all Add/Update files (the ones that were freshly parsed)
@@ -1449,8 +1455,12 @@ impl Indexer {
             .map(|(p, _)| p.clone())
             .collect();
 
+        // Nothing changed: the closure is trivially converged.
         if changed_files.is_empty() {
-            return Ok(0);
+            return Ok(DirtyPropagationOutcome {
+                marked: 0,
+                status: DirtyPropagationStatus::Normal,
+            });
         }
 
         // Step 2: Compare old vs new export fingerprints to find files whose
@@ -1479,7 +1489,10 @@ impl Indexer {
         }
 
         if export_changed_files.is_empty() {
-            return Ok(0);
+            return Ok(DirtyPropagationOutcome {
+                marked: 0,
+                status: DirtyPropagationStatus::Normal,
+            });
         }
 
         // Step 3: Fixpoint closure over importers. Round 1 promotes direct
@@ -1510,7 +1523,10 @@ impl Indexer {
         // Budget bail (warn already emitted inside the closure): degrade to no
         // propagation, the user should do a full rebuild instead.
         if closure_result.budget_exceeded {
-            return Ok(0);
+            return Ok(DirtyPropagationOutcome {
+                marked: 0,
+                status: DirtyPropagationStatus::BudgetExceeded,
+            });
         }
 
         // Step 4: Promote Skip → DirtyResolveOnly
@@ -1531,7 +1547,10 @@ impl Indexer {
             );
         }
 
-        Ok(marked)
+        Ok(DirtyPropagationOutcome {
+            marked,
+            status: closure_result.status(),
+        })
     }
 
     /// Which of the given promoted (DirtyResolveOnly) files' *effective*
@@ -2369,7 +2388,7 @@ mod dirty_propagation_fixpoint_tests {
             actions.get("b.ts")
         );
 
-        let marked = indexer
+        let outcome = indexer
             .run_dirty_propagation(&mut actions, &parse.write_units)
             .unwrap();
 
@@ -2383,7 +2402,12 @@ mod dirty_propagation_fixpoint_tests {
             "c.ts imports a.ts whose re-exported surface changed; got {:?}",
             actions.get("c.ts")
         );
-        assert_eq!(marked, 2, "exactly a.ts and c.ts are promoted");
+        assert_eq!(outcome.marked, 2, "exactly a.ts and c.ts are promoted");
+        assert_eq!(
+            outcome.status,
+            DirtyPropagationStatus::Normal,
+            "a converged closure must classify as normal"
+        );
     }
 
     /// Same chain as `reexport_chain_promotes_transitive_importer_incrementally`,
@@ -2455,7 +2479,7 @@ mod dirty_propagation_fixpoint_tests {
             actions.get("b.ts")
         );
 
-        let marked = indexer
+        let outcome = indexer
             .run_dirty_propagation(&mut actions, &parse.write_units)
             .unwrap();
 
@@ -2469,6 +2493,80 @@ mod dirty_propagation_fixpoint_tests {
             "c.ts imports a.ts whose forwarded surface changed; got {:?}",
             actions.get("c.ts")
         );
-        assert_eq!(marked, 2, "exactly a.ts and c.ts are promoted");
+        assert_eq!(outcome.marked, 2, "exactly a.ts and c.ts are promoted");
+    }
+
+    /// A round-1 budget bail must surface as `budget_exceeded` on the
+    /// incremental `IndexReport` instead of being a silent no-op; the full
+    /// build that precedes it must carry no propagation status at all.
+    #[test]
+    fn budget_bail_surfaces_on_incremental_index_report() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.join("a.ts"),
+            "import { beta } from './b';\nexport function useBeta(): number { return beta(); }\n",
+        )
+        .unwrap();
+
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let config = IndexingConfig {
+            dirty_propagation_max_files: 0,
+            ..IndexingConfig::default()
+        };
+        let indexer = Indexer::new(db, project, &config);
+        let full_report = indexer.build_index(project, true).unwrap();
+        assert_eq!(
+            full_report.dirty_propagation, None,
+            "full builds must not carry a propagation status"
+        );
+
+        // Edit b.ts so its export fingerprint changes; its single importer
+        // a.ts already exceeds the zero budget, so round 1 bails.
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n\
+             export function gamma(): number { return 2; }\n",
+        )
+        .unwrap();
+
+        let report = indexer.build_index(project, false).unwrap();
+        assert_eq!(
+            report.dirty_propagation,
+            Some(DirtyPropagationStatus::BudgetExceeded),
+            "round-1 budget bail must be surfaced on the report"
+        );
+    }
+
+    /// Config-off propagation classifies as `disabled`; an enabled run with
+    /// nothing changed is a trivially converged `normal`.
+    #[test]
+    fn disabled_and_trivially_converged_statuses() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+
+        let disabled_config = IndexingConfig {
+            dirty_propagation: false,
+            ..IndexingConfig::default()
+        };
+        let disabled_indexer = Indexer::new(db.clone(), project, &disabled_config);
+        let outcome = disabled_indexer
+            .run_dirty_propagation(&mut HashMap::new(), &[])
+            .unwrap();
+        assert_eq!(outcome.status, DirtyPropagationStatus::Disabled);
+        assert_eq!(outcome.marked, 0);
+
+        let enabled_indexer = Indexer::new(db, project, &IndexingConfig::default());
+        let outcome = enabled_indexer
+            .run_dirty_propagation(&mut HashMap::new(), &[])
+            .unwrap();
+        assert_eq!(outcome.status, DirtyPropagationStatus::Normal);
+        assert_eq!(outcome.marked, 0);
     }
 }

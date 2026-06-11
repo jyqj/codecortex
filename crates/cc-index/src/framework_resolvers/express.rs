@@ -394,6 +394,8 @@ app.set("view engine", pug);
             route_kind: Some("middleware_mount".into()),
             confidence: 0.9,
             parser_tier: ParserTier::TreeSitter,
+            resolution_strategy: None,
+            resolution_confidence: None,
         };
         // Sub-router file: router.get("/users", ...) → http edge with bare path.
         let sub_edge = RouteEdgeRecord {
@@ -414,6 +416,8 @@ app.set("view engine", pug);
             route_kind: Some("http".into()),
             confidence: 0.9,
             parser_tier: ParserTier::TreeSitter,
+            resolution_strategy: None,
+            resolution_confidence: None,
         };
 
         let mount_outcome = ParseOutcome {

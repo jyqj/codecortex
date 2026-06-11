@@ -136,6 +136,8 @@ impl FrameworkResolver for VueResolver {
                 route_kind: Some("vue_route".to_string()),
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -159,6 +161,8 @@ impl FrameworkResolver for VueResolver {
                 route_kind: Some("nuxt_page".to_string()),
                 confidence: 0.85,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -185,6 +189,8 @@ impl FrameworkResolver for VueResolver {
                 route_kind: Some("vue_options_api".to_string()),
                 confidence: 0.70,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -210,6 +216,8 @@ impl FrameworkResolver for VueResolver {
                 route_kind: Some("vue_composition_api".to_string()),
                 confidence: 0.70,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
     }

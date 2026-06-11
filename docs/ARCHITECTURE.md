@@ -12,7 +12,7 @@ A 7-crate Cargo workspace with strictly downward dependencies (no cycles):
 ```
 cc-model      Data types, config, error definitions (serde, thiserror, blake3)
     |
-cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 21 tables + 5 FTS5, schema v3)
+cc-db         SQLite index store (r2d2 pool, WAL mode, FTS5, 21 tables + 5 FTS5, schema v4)
     |
 cc-parsers    Tree-sitter AST extraction + framework detection
 cc-index      File scanning, incremental indexing, community detection (Louvain)
@@ -46,7 +46,12 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
   borrowed views (same pattern as `CodeIndex`); lifecycle (`open` /
   `open_with_read_pool_size`) stays on `IndexDb` itself:
   - `.reads()` -> `ReadOps`: all queries — symbol/file/graph/retrieval reads,
-    `generation`, `stats`, `get_metadata`, `get_file_state`, `read_conn`
+    `generation`, `stats`, `get_metadata`, `get_file_state`, `read_conn`.
+    Multi-symbol adjacency reads are batched (`caller_rows_by_uids` /
+    `callee_rows_by_uids` / `symbol_degree_details_batch`); cc-search's graph
+    consumers (enrichment, preselect, graph lane) all use the batched
+    variants, so graph enrichment issues three queries per search instead of
+    three per resolved symbol
   - `.writes()` -> `WriteOps`: every epoch-bumping mutation — batch writes,
     edge/evidence writes, `set_metadata`, `begin_unit_of_work`; the only
     public path to write methods (compile-time write isolation)
@@ -96,7 +101,7 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
 - A `REGEXP(pattern, text)` scalar UDF backs Cypher `=~`; the compiled pattern is
   cached as SQLite auxiliary data so a constant pattern compiles once per
   statement, not once per row
-- Schema versioning via the `user_version` pragma (v3). The current strategy is
+- Schema versioning via the `user_version` pragma (v4). The current strategy is
   rebuild-on-mismatch for on-disk indexes.
 
 ### cc-parsers
@@ -121,18 +126,31 @@ postprocess → analysis (phase headers in `crates/cc-index/src/indexer.rs` and
 - Parse: memory-budgeted parallel parsing (`rayon` + `memory_budget.rs`)
 - Dirty closure (`dirty_closure.rs`): a fixpoint loop promotes importers of
   export-changed files to re-resolution, bounded by a file budget and a round
-  cap; reloaded edge data passes through a per-category dirty-reload policy
-  (`dirty_reload_policy.rs`) deciding whether stored target UIDs are cleared,
-  regenerated, or kept
+  cap (`DIRTY_CLOSURE_MAX_ROUNDS` = 16); reloaded edge data passes through a
+  per-category dirty-reload policy (`dirty_reload_policy.rs`) deciding whether
+  stored target UIDs are cleared, regenerated, or kept. How the phase ended is
+  classified by `DirtyClosureResult::status()` and surfaced as
+  `dirty_propagation` on `IndexReport` (and thus the MCP `index()` response;
+  omitted for full builds): `normal` (fixpoint converged), `partial_closure`
+  (round cap hit or budget exceeded after round 1 — a complete-round prefix of
+  the closure was kept), `budget_exceeded` (round-1 direct importers alone
+  exceeded `indexing.dirty_propagation_max_files`; nothing was re-resolved,
+  cross-file references may be stale, a full rebuild is advised), or
+  `disabled` (config off)
 - Enrichment + resolve: framework resolver enrichment (`framework_resolvers/`),
   then symbol catalog / type catalog / semantic-edge resolution (`resolver/`,
   `type_catalog.rs`), then cross-file framework resolution. Name resolution
   walks a declared ladder (`RESOLVE_LADDER` in `resolver/resolve_core.rs`):
   self-member → scope → same-file → imports → suffix → global-unique →
   call-site signals (arg-count, then receiver; metadata-less candidates
-  survive as wildcards) → import-distance. Each result records its
-  `candidate_count` and `winning_step`, exposed through
-  `resolution_strategy` (e.g. `fuzzy_arg_count`, `...:upgraded_from=...`)
+  survive as wildcards) → import-distance. Each result's `winning_step`
+  names the `resolution_strategy` persisted on the edge/ref (e.g.
+  `fuzzy_arg_count`, `...:upgraded_from=...`); its `candidate_count` feeds
+  the confidence penalty but is not persisted. Route-handler resolution
+  (`resolver/route_resolve.rs`) records its own tier provenance on the route
+  record: `route_dotted` (0.85), `route_ladder:<ladder strategy>` (the
+  ladder's confidence), or `route_global` (0.5); framework-resolver-resolved
+  handlers (NestJS, ASP.NET, …) leave it NULL
 - Write: incremental atomic batch or full rebuild (see cc-db)
 - Postprocess (after write): test edges, dispatch synthesis (below), and
   Louvain community detection — skip logic is declared per pass as a
@@ -145,7 +163,11 @@ postprocess → analysis (phase headers in `crates/cc-index/src/indexer.rs` and
 - Full and incremental builds share one orchestration (`build_plan.rs`):
   `prepare` is read-only (scan → parse → resolve → snapshot) and produces an
   owned `PreparedBuild`; `commit` consumes it to run write → postprocess →
-  analysis, so the two modes cannot drift apart
+  analysis, so the two modes cannot drift apart. Invariant: all three
+  index-build entry points in cc-server (MCP `index()`, the watcher poll,
+  auto-index on connect) follow the same lock discipline — `prepare` runs
+  with no engine write lock held, so reads stay unblocked through the heavy
+  phase, and only `commit` takes the write lock, briefly
 
 #### Dispatch synthesis
 Synthetic edges for dynamic dispatch (event emitter → handler, JSX/Vue
@@ -174,8 +196,12 @@ Hybrid search engine.
   adding a lane needs no `plan.rs` / `engine.rs` edits.
 - **Two-level caching** (`engine.rs`) — an LRU result cache keyed by
   `(index_epoch, query_hash)` and an LRU chunk-text cache keyed by chunk id.
-  Every cc-db write transaction bumps the persisted index epoch, so both
-  caches self-invalidate without manual hooks.
+  The result cache stores the final immutable hit list as `Arc<[SearchHit]>`
+  — `SearchEngine::search()` returns that Arc, so a cache hit is a pointer
+  clone with no per-hit text copy; `search_with_graph_context`, which mutates
+  hits during graph rerank, bypasses the result cache. Every cc-db write
+  transaction bumps the persisted index epoch, so both caches self-invalidate
+  without manual hooks.
 - **Preselection** (`preselect.rs`) — a 7-layer file scoring strategy (working set, recent,
   pinned, overlay, FTS summary, symbol/path tokens, graph-neighbor expansion).
   Each layer is a `PreselectLayer` adapter registered in
@@ -278,8 +304,13 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 | Generic | 0.3 | Regex-based extraction |
 | Heuristic | 0.5 | Pattern matching with language awareness |
 | TreeSitter | 0.7 | Full AST parsing |
-| Semantic | 0.85 | Cross-reference resolved |
+| Semantic | 0.85 | Full AST parsing + richer intra-file semantic extraction |
 | Verified | 0.95 | Runtime-validated (via `ingest_traces`) |
+
+Per-element-kind deviations from these tier defaults are single-sourced in
+`ParserTier::element_confidence` (`cc-model/src/lib.rs`); see the matrix in
+[LANGUAGES.md](LANGUAGES.md). Cross-file resolution happens later in cc-index
+and assigns `resolution_confidence` separately.
 
 ## Extension points
 
@@ -291,6 +322,7 @@ point; adding an implementation does not require edits elsewhere.
 | retrieval lane | `RetrievalLane` | `default_lanes()` in [`cc-search/src/lanes.rs`](../crates/cc-search/src/lanes.rs) | `GraphLane` |
 | preselect layer | `PreselectLayer` | `default_preselect_layers()` in [`cc-search/src/preselect.rs`](../crates/cc-search/src/preselect.rs) | `GraphNeighborLayer` |
 | framework route resolver | `FrameworkResolver` | `default_registry()` in [`cc-index/src/framework_resolvers/mod.rs`](../crates/cc-index/src/framework_resolvers/mod.rs) | [`fastapi.rs`](../crates/cc-index/src/framework_resolvers/fastapi.rs) |
+| framework detection signal | `FrameworkSignalSpec` | `signal_registry()` in [`cc-index/src/framework_registry/mod.rs`](../crates/cc-index/src/framework_registry/mod.rs) | [`import_marker.rs`](../crates/cc-index/src/framework_registry/import_marker.rs) |
 | language (no tree-sitter grammar) | `LangSpec` | [`cc-parsers/src/lang_spec.rs`](../crates/cc-parsers/src/lang_spec.rs) + `ParserRegistry` in [`cc-parsers/src/lib.rs`](../crates/cc-parsers/src/lib.rs) | `CSHARP_SPEC` |
 | synthetic-edge pass | `SynthesisPassSpec` | `registry()` in [`cc-index/src/dispatch_synthesis/mod.rs`](../crates/cc-index/src/dispatch_synthesis/mod.rs) | [`event_emitter.rs`](../crates/cc-index/src/dispatch_synthesis/event_emitter.rs) |
 | postprocess skip gate | `PassGate` | [`cc-index/src/pass_gate.rs`](../crates/cc-index/src/pass_gate.rs), consumed by `run_gated_passes` (called from `indexer_phases.rs`) | `DbSignatureGate` |
@@ -307,6 +339,15 @@ point; adding an implementation does not require edits elsewhere.
   `cc-index/src/framework_resolvers/<framework>.rs`, implement
   `FrameworkResolver`, and add one `registry.register(...)` line in
   `default_registry()`.
+- **Framework detection signal** — add a submodule under
+  `framework_registry/` exporting a `SPEC: FrameworkSignalSpec` (id + detect
+  fn) and list it in `signal_registry()` (same declarative style as
+  `SynthesisPassSpec`). Order is execution order: import markers run first so
+  the `require()` fallback sees the same scan's declared-import detections.
+  `detect_file_frameworks_conn` is orchestration-only — it iterates the
+  registry, aggregates, and persists. Repo-level signals (package manifests)
+  and activation literals live in their own submodules outside the per-file
+  registry.
 - **Language without a tree-sitter grammar** — declare a
   `static <LANG>_SPEC: LangSpec` in `lang_spec.rs` (language, grammar-name
   tag, extensions, qualified-name separator), then wire a `SpecDrivenParser`

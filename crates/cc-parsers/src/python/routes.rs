@@ -2,7 +2,14 @@
 
 use super::PythonParser;
 use cc_model::edge::RouteEdgeRecord;
-use cc_model::ParserTier;
+use cc_model::{ElementKind, ParserTier};
+
+/// DRF `.as_view()` registrations resolve the handler indirectly, so they are
+/// less certain than decorator routes (tier baseline).
+const DRF_ROUTE_CONFIDENCE: f64 = 0.75;
+
+/// Django `urls.py` patterns are regex-matched without decorator context.
+const DJANGO_URL_ROUTE_CONFIDENCE: f64 = 0.8;
 
 /// HTTP methods recognized in decorator route detection.
 pub(super) const HTTP_METHODS: &[&str] = &[
@@ -90,8 +97,11 @@ impl PythonParser {
                                         router_symbol_uid: None,
                                         framework: Some(framework),
                                         route_kind: Some("http".to_string()),
-                                        confidence: 0.85,
+                                        confidence: ParserTier::Semantic
+                                            .element_confidence(ElementKind::Route),
                                         parser_tier: ParserTier::Semantic,
+                                        resolution_strategy: None,
+                                        resolution_confidence: None,
                                     });
                                 }
                             }
@@ -124,8 +134,10 @@ impl PythonParser {
                             router_symbol_uid: None,
                             framework: Some("drf".to_string()),
                             route_kind: Some("http".to_string()),
-                            confidence: 0.75,
+                            confidence: DRF_ROUTE_CONFIDENCE,
                             parser_tier: ParserTier::Semantic,
+                            resolution_strategy: None,
+                            resolution_confidence: None,
                         });
                     }
                 }
@@ -246,8 +258,10 @@ impl PythonParser {
                         router_symbol_uid: None,
                         framework: Some("django".to_string()),
                         route_kind: Some("http".to_string()),
-                        confidence: 0.8,
+                        confidence: DJANGO_URL_ROUTE_CONFIDENCE,
                         parser_tier: ParserTier::Semantic,
+                        resolution_strategy: None,
+                        resolution_confidence: None,
                     });
                 }
             }

@@ -154,6 +154,135 @@ pub fn run_benchmark_named(
     }
 }
 
+// ── Incremental indexing latency ───────────────────────────────────
+
+/// p50/p95/max over a series of per-iteration durations.
+#[derive(Debug, Clone, Serialize)]
+pub struct LatencyStats {
+    pub p50_ms: u64,
+    pub p95_ms: u64,
+    pub max_ms: u64,
+}
+
+impl LatencyStats {
+    fn from_durations(durations: &[u64]) -> Self {
+        let mut sorted = durations.to_vec();
+        sorted.sort_unstable();
+        Self {
+            p50_ms: percentile(&sorted, 0.50),
+            p95_ms: percentile(&sorted, 0.95),
+            max_ms: sorted.last().copied().unwrap_or(0),
+        }
+    }
+}
+
+/// Latency stats for one `IndexReport.phase_timing` entry.
+#[derive(Debug, Clone, Serialize)]
+pub struct PhaseLatency {
+    pub phase: String,
+    pub stats: LatencyStats,
+}
+
+/// Aggregated latency for one incremental indexing scenario.
+#[derive(Debug, Clone, Serialize)]
+pub struct IncrementalBenchReport {
+    pub scenario: String,
+    pub fixture_files: usize,
+    pub iterations: usize,
+    /// Total build latency from `IndexReport.elapsed_ms`.
+    pub elapsed: LatencyStats,
+    /// Per-phase breakdown, sorted by p50 descending (dominant phase first).
+    pub phases: Vec<PhaseLatency>,
+}
+
+/// `IndexReport.phase_timing` field names, mirroring `cc_index::indexer::PhaseTiming`.
+const PHASE_TIMING_FIELDS: &[&str] = &[
+    "scan_diff_ms",
+    "parse_ms",
+    "resolve_ms",
+    "write_ms",
+    "postprocess_ms",
+    "analysis_ms",
+];
+
+/// Aggregate per-iteration serialized `IndexReport` values (`elapsed_ms` +
+/// `phase_timing`) into a latency summary for one incremental scenario.
+pub fn summarize_incremental_reports(
+    scenario: &str,
+    fixture_files: usize,
+    reports: &[serde_json::Value],
+) -> IncrementalBenchReport {
+    let elapsed: Vec<u64> = reports
+        .iter()
+        .map(|report| {
+            report
+                .get("elapsed_ms")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0)
+        })
+        .collect();
+
+    let mut phases: Vec<PhaseLatency> = PHASE_TIMING_FIELDS
+        .iter()
+        .map(|field| {
+            let durations: Vec<u64> = reports
+                .iter()
+                .map(|report| {
+                    report
+                        .get("phase_timing")
+                        .and_then(|timing| timing.get(*field))
+                        .and_then(|v| v.as_u64())
+                        .unwrap_or(0)
+                })
+                .collect();
+            PhaseLatency {
+                phase: field.trim_end_matches("_ms").to_string(),
+                stats: LatencyStats::from_durations(&durations),
+            }
+        })
+        .collect();
+    phases.sort_by(|a, b| {
+        b.stats
+            .p50_ms
+            .cmp(&a.stats.p50_ms)
+            .then(a.phase.cmp(&b.phase))
+    });
+
+    IncrementalBenchReport {
+        scenario: scenario.to_string(),
+        fixture_files,
+        iterations: reports.len(),
+        elapsed: LatencyStats::from_durations(&elapsed),
+        phases,
+    }
+}
+
+/// Generate a Markdown section for one incremental indexing latency scenario.
+pub fn generate_incremental_markdown(report: &IncrementalBenchReport) -> String {
+    let mut md = String::new();
+
+    md.push_str(&format!("## Incremental Latency: {}\n\n", report.scenario));
+    md.push_str(&format!(
+        "Files: {} | Measured iterations: {}\n\n",
+        report.fixture_files, report.iterations
+    ));
+    md.push_str("| Phase | p50 | p95 | Max |\n");
+    md.push_str("|-------|-----|-----|-----|\n");
+    md.push_str(&format!(
+        "| total elapsed | {}ms | {}ms | {}ms |\n",
+        report.elapsed.p50_ms, report.elapsed.p95_ms, report.elapsed.max_ms
+    ));
+    for phase in &report.phases {
+        md.push_str(&format!(
+            "| {} | {}ms | {}ms | {}ms |\n",
+            phase.phase, phase.stats.p50_ms, phase.stats.p95_ms, phase.stats.max_ms
+        ));
+    }
+    md.push('\n');
+
+    md
+}
+
 // ── Markdown generation ────────────────────────────────────────────
 
 /// Format byte counts for human readability.

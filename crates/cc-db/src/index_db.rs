@@ -1370,8 +1370,8 @@ impl IndexDb {
             for r in &outcome.route_edges {
                 Self::execute_cached(
                     tx,
-                    "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
-                    rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str()],
+                    "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
+                    rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str(), r.resolution_strategy, r.resolution_confidence],
                 )?;
             }
         }
@@ -1592,8 +1592,8 @@ impl IndexDb {
 
         // route_edges
         for r in &outcome.route_edges {
-            Self::execute_cached(conn, "INSERT OR REPLACE INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17)",
-                rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str()],
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
+                rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str(), r.resolution_strategy, r.resolution_confidence],
             )?;
         }
 
@@ -2036,6 +2036,50 @@ mod tests {
             size: 1,
             outcome: ParseOutcome::default(),
         }
+    }
+
+    #[test]
+    fn route_edge_resolution_provenance_round_trips() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("routes.db")).unwrap().0;
+
+        let mut unit = file_unit("src/routes.ts");
+        unit.outcome
+            .route_edges
+            .push(cc_model::edge::RouteEdgeRecord {
+                edge_id: "route:1".to_string(),
+                file_path: "src/routes.ts".to_string(),
+                route_path: "/users".to_string(),
+                handler_name: Some("getUsers".to_string()),
+                method: Some("GET".to_string()),
+                line: 5,
+                start_col: 0,
+                end_line: None,
+                end_col: 0,
+                handler_symbol_id: Some("id:getUsers".to_string()),
+                handler_symbol_uid: Some("uid:getUsers".to_string()),
+                handler_expr: None,
+                router_symbol_uid: None,
+                framework: Some("express".to_string()),
+                route_kind: None,
+                confidence: 0.8,
+                parser_tier: cc_model::ParserTier::TreeSitter,
+                resolution_strategy: Some("route_ladder:global_unique".to_string()),
+                resolution_confidence: Some(0.75),
+            });
+        db.replace_files_batch(&[unit]).unwrap();
+
+        let edges = db
+            .reads()
+            .load_file_edges_for_reresolve("src/routes.ts")
+            .unwrap();
+        assert_eq!(edges.route_edges.len(), 1);
+        let route = &edges.route_edges[0];
+        assert_eq!(
+            route.resolution_strategy.as_deref(),
+            Some("route_ladder:global_unique")
+        );
+        assert_eq!(route.resolution_confidence, Some(0.75));
     }
 
     #[test]

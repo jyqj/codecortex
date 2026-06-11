@@ -120,6 +120,8 @@ impl FrameworkResolver for HonoResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.85,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -149,6 +151,8 @@ impl FrameworkResolver for HonoResolver {
                 route_kind: Some("subrouter_mount".to_string()),
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -185,6 +189,8 @@ impl FrameworkResolver for HonoResolver {
                 route_kind: Some(route_kind.to_string()),
                 confidence: 0.75,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
     }

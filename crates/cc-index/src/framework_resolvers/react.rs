@@ -198,6 +198,8 @@ impl FrameworkResolver for ReactComponentResolver {
                 route_kind: Some("react_route".to_string()),
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -234,6 +236,8 @@ impl FrameworkResolver for ReactComponentResolver {
                 route_kind: Some("react_lazy_route".to_string()),
                 confidence: 0.78,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -267,6 +271,8 @@ impl FrameworkResolver for ReactComponentResolver {
                 route_kind: Some("react_route_config".to_string()),
                 confidence: 0.78,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -300,6 +306,8 @@ impl FrameworkResolver for ReactComponentResolver {
                 route_kind: Some(kind.to_string()),
                 confidence: 0.85,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -334,6 +342,8 @@ impl FrameworkResolver for ReactComponentResolver {
                     route_kind: Some("component_export".to_string()),
                     confidence: 0.70,
                     parser_tier: ParserTier::Heuristic,
+                    resolution_strategy: None,
+                    resolution_confidence: None,
                 });
             }
 
@@ -360,6 +370,8 @@ impl FrameworkResolver for ReactComponentResolver {
                     route_kind: Some("component_export".to_string()),
                     confidence: 0.65,
                     parser_tier: ParserTier::Heuristic,
+                    resolution_strategy: None,
+                    resolution_confidence: None,
                 });
             }
         }

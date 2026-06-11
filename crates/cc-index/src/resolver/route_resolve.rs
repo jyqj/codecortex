@@ -8,6 +8,26 @@ use super::catalog::SymbolCatalog;
 use super::helpers::*;
 use super::types::*;
 
+/// Tier-1 dotted resolution traces a unique handler through imports, scope
+/// bindings, or qname lookup — evidence comparable to the ladder's import
+/// step (`InternalResKind::ImportResolved`, 0.85).
+const ROUTE_DOTTED_CONFIDENCE: f64 = 0.85;
+
+/// Tier-3 global resolution is leaf-name scoring with no scope/import proof —
+/// same weight as the resolver's generic `global_fallback`
+/// (`default_resolution_confidence(Heuristic)`, 0.5).
+const ROUTE_GLOBAL_CONFIDENCE: f64 = 0.5;
+
+/// Outcome of [`SymbolCatalog::resolve_route_handler`]: the winning catalog
+/// entry plus provenance (which tier won and at what confidence).
+#[derive(Clone, Debug)]
+pub(crate) struct RouteHandlerResolution {
+    pub(crate) catalog_index: usize,
+    /// "route_dotted", "route_ladder:<ladder strategy>", or "route_global".
+    pub(crate) strategy: String,
+    pub(crate) confidence: f64,
+}
+
 impl SymbolCatalog {
     // -----------------------------------------------------------------------
     // Cross-file route handler resolution
@@ -21,6 +41,8 @@ impl SymbolCatalog {
     ///    member-chain resolution, then qname / qname-suffix lookup.
     /// 2. [`Self::resolve_name`] — the full resolution ladder with the
     ///    file's rich context; only attempted when scopes or imports exist.
+    ///    Its strategy name and confidence are carried into the returned
+    ///    provenance ("route_ladder:<strategy>").
     /// 3. [`Self::resolve_handler_global`] — global leaf-name scoring with
     ///    no same-file preference (routes typically call cross-file
     ///    handlers).
@@ -31,11 +53,15 @@ impl SymbolCatalog {
         line: u32,
         scopes: &HashMap<String, CatalogScope>,
         imports: &[ImportBinding],
-    ) -> Option<usize> {
+    ) -> Option<RouteHandlerResolution> {
         // Tier 1: dotted handler resolution
         if handler.contains('.') {
             if let Some(idx) = self.resolve_dotted_handler(handler, file_path, scopes, imports) {
-                return Some(idx);
+                return Some(RouteHandlerResolution {
+                    catalog_index: idx,
+                    strategy: "route_dotted".to_string(),
+                    confidence: ROUTE_DOTTED_CONFIDENCE,
+                });
             }
         }
 
@@ -43,12 +69,21 @@ impl SymbolCatalog {
         if !scopes.is_empty() || !imports.is_empty() {
             if let Some(result) = self.resolve_name(handler, file_path, line, scopes, imports, None)
             {
-                return Some(result.catalog_index);
+                return Some(RouteHandlerResolution {
+                    catalog_index: result.catalog_index,
+                    strategy: format!("route_ladder:{}", result.strategy_name()),
+                    confidence: result.confidence,
+                });
             }
         }
 
         // Tier 3: global handler resolution (no same-file preference)
         self.resolve_handler_global(handler, file_path, imports)
+            .map(|idx| RouteHandlerResolution {
+                catalog_index: idx,
+                strategy: "route_global".to_string(),
+                confidence: ROUTE_GLOBAL_CONFIDENCE,
+            })
     }
 
     /// Tier 1 of [`Self::resolve_route_handler`] — prefer that entry point.

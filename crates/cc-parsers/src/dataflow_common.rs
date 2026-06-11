@@ -1,7 +1,9 @@
 //! Shared data-flow extraction helpers used across language parsers.
 
 use cc_model::symbol::{SymbolKind, SymbolRecord};
-use cc_model::{CallEdgeRecord, DataFlowEdgeRecord, ParserTier, ResolutionKind, StableId};
+use cc_model::{
+    CallEdgeRecord, DataFlowEdgeRecord, ElementKind, ParserTier, ResolutionKind, StableId,
+};
 use regex::Regex;
 
 /// Find the innermost enclosing function/method symbol for a given line.
@@ -93,7 +95,7 @@ pub(crate) fn extract_env_accesses_with(
             target_symbol_uid: None,
             flow_kind: "env_access".to_string(),
             line,
-            confidence: 0.80,
+            confidence: ParserTier::Heuristic.element_confidence(ElementKind::EnvAccess),
             parser_tier: ParserTier::Heuristic,
             env_key,
         });

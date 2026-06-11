@@ -135,6 +135,8 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
         for route in &mut route_edges {
             route.handler_symbol_id = None;
             route.handler_symbol_uid = None;
+            route.resolution_strategy = None;
+            route.resolution_confidence = None;
         }
     }
     for edge in &mut semantic_edges {
@@ -301,6 +303,8 @@ mod tests {
                 route_kind: None,
                 confidence: 1.0,
                 parser_tier: ParserTier::Generic,
+                resolution_strategy: Some("route_dotted".into()),
+                resolution_confidence: Some(0.85),
             }],
             semantic_edges: vec![
                 semantic_edge(SemanticRelation::Inherits),
@@ -335,6 +339,8 @@ mod tests {
         let route = &outcome.route_edges[0];
         assert_eq!(route.handler_symbol_id, None);
         assert_eq!(route.handler_symbol_uid, None);
+        assert_eq!(route.resolution_strategy, None);
+        assert_eq!(route.resolution_confidence, None);
 
         assert_eq!(
             outcome.semantic_edges[0].target_symbol_uid, None,

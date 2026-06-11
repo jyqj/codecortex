@@ -157,6 +157,8 @@ impl FrameworkResolver for NestJsResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.88,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
     }

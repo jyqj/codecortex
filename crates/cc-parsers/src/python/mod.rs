@@ -15,7 +15,7 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
-use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use cc_model::{CcResult, ElementKind, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
@@ -140,7 +140,7 @@ impl PythonParser {
             signature: Some(signature),
             doc: None,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.85,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -197,7 +197,7 @@ impl PythonParser {
             signature: Some(signature),
             doc: None,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.85,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -253,7 +253,7 @@ impl PythonParser {
                     target_symbol_uid: None,
                     relation_kind: SemanticRelation::Inherits,
                     line,
-                    confidence: 0.95,
+                    confidence: tier.element_confidence(ElementKind::SemanticEdge),
                     parser_tier: tier,
                 });
             }
@@ -667,7 +667,8 @@ impl PythonParser {
                         ref_end_line: Some(line_no),
                         ref_end_col: Some(m.end() as u32),
                         parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.7,
+                        parser_confidence: ParserTier::Semantic
+                            .element_confidence(ElementKind::CallRef),
                     });
                     calls.push(CallEdgeRecord {
                         edge_id: StableId::edge_id("call", file_path, line_no, start_col),
@@ -703,7 +704,8 @@ impl PythonParser {
                         is_awaited: false,
                         is_constructor: false,
                         parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.7,
+                        parser_confidence: ParserTier::Semantic
+                            .element_confidence(ElementKind::CallEdge),
                         synthesized_by: None,
                         synthesis_key: None,
                         registered_file: None,
@@ -747,7 +749,8 @@ impl PythonParser {
                         ref_end_line: Some(line_no),
                         ref_end_col: Some(m.end() as u32),
                         parser_tier: ParserTier::Semantic,
-                        parser_confidence: 0.6,
+                        parser_confidence: ParserTier::Semantic
+                            .element_confidence(ElementKind::IdentifierRef),
                     });
                 }
             }
@@ -1210,7 +1213,7 @@ impl FileParser for PythonParser {
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &symbols);
 
         let tier = ParserTier::Semantic;
-        let confidence = 0.85;
+        let confidence = tier.default_confidence();
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);

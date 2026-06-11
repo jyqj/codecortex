@@ -220,6 +220,26 @@ pub enum ParserTier {
     Verified,
 }
 
+/// Kind of element a parser extracts, used to look up the parser-assigned
+/// extraction confidence in [`ParserTier::element_confidence`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ElementKind {
+    Symbol,
+    CallEdge,
+    /// `SymbolRefRecord` with `ref_kind = "call"` (callee position).
+    CallRef,
+    /// `SymbolRefRecord` with `ref_kind = "identifier"` (bare identifier).
+    IdentifierRef,
+    SemanticEdge,
+    /// `DataFlowEdgeRecord` with `flow_kind = "type_ref"`.
+    TypeRef,
+    /// `DataFlowEdgeRecord` with `flow_kind = "env_access"`.
+    EnvAccess,
+    Route,
+    HttpCall,
+    DispatchSite,
+}
+
 impl ParserTier {
     pub fn default_confidence(&self) -> f64 {
         match self {
@@ -228,6 +248,37 @@ impl ParserTier {
             Self::TreeSitter => 0.7,
             Self::Semantic => 0.85,
             Self::Verified => 0.95,
+        }
+    }
+
+    /// Single source of truth for parser-assigned extraction confidence per
+    /// (tier, element kind). Resolution-time confidence (cc-index resolver) is
+    /// a separate concept and never read from this matrix. Framework-specific
+    /// calibrations (e.g. per-framework route detection) deviate from these
+    /// baselines via named constants at the call site.
+    pub fn element_confidence(&self, kind: ElementKind) -> f64 {
+        use ElementKind::*;
+        match (self, kind) {
+            (Self::Semantic, Symbol) => 0.85,
+            (Self::Semantic | Self::TreeSitter, CallEdge | CallRef) => 0.7,
+            // Bare identifier refs are noisier than callee refs.
+            (Self::Semantic | Self::TreeSitter, IdentifierRef) => 0.6,
+            // Declared relationships (inherits/implements/decorates) are
+            // syntactically explicit regardless of tier.
+            (Self::Semantic | Self::TreeSitter, SemanticEdge) => 0.95,
+            (Self::Semantic, TypeRef) => 0.85,
+            (Self::Semantic, Route) => 0.85,
+            (Self::Semantic, DispatchSite) => 0.85,
+            (Self::TreeSitter, Symbol) => 0.7,
+            (Self::TreeSitter, Route) => 0.8,
+            // AST-detected HTTP client calls; regex-detected ones come in via
+            // the Heuristic arm below.
+            (Self::TreeSitter, HttpCall) => 0.8,
+            (Self::Heuristic, HttpCall) => 0.7,
+            // Env-var access regexes are distinctive enough to beat the
+            // Heuristic default.
+            (Self::Heuristic, EnvAccess) => 0.8,
+            _ => self.default_confidence(),
         }
     }
 
@@ -333,6 +384,48 @@ fn first_sentence(text: &str) -> &str {
 fn chunked<T>(items: &[T], chunk_size: usize) -> impl Iterator<Item = &[T]> {
     assert!(chunk_size > 0, "chunk_size must be > 0");
     items.chunks(chunk_size)
+}
+
+#[cfg(test)]
+mod parser_tier_tests {
+    use super::*;
+
+    #[test]
+    fn element_confidence_matrix_baselines() {
+        use ElementKind::*;
+        let sem = ParserTier::Semantic;
+        let ts = ParserTier::TreeSitter;
+
+        assert_eq!(sem.element_confidence(Symbol), 0.85);
+        assert_eq!(ts.element_confidence(Symbol), 0.7);
+        for tier in [sem, ts] {
+            assert_eq!(tier.element_confidence(CallEdge), 0.7);
+            assert_eq!(tier.element_confidence(CallRef), 0.7);
+            assert_eq!(tier.element_confidence(IdentifierRef), 0.6);
+            assert_eq!(tier.element_confidence(SemanticEdge), 0.95);
+        }
+        assert_eq!(sem.element_confidence(TypeRef), 0.85);
+        assert_eq!(sem.element_confidence(Route), 0.85);
+        assert_eq!(sem.element_confidence(DispatchSite), 0.85);
+        assert_eq!(ts.element_confidence(Route), 0.8);
+        assert_eq!(ts.element_confidence(HttpCall), 0.8);
+        assert_eq!(ParserTier::Heuristic.element_confidence(HttpCall), 0.7);
+        assert_eq!(ParserTier::Heuristic.element_confidence(EnvAccess), 0.8);
+    }
+
+    #[test]
+    fn element_confidence_falls_back_to_tier_default() {
+        for tier in [
+            ParserTier::Generic,
+            ParserTier::Heuristic,
+            ParserTier::Verified,
+        ] {
+            assert_eq!(
+                tier.element_confidence(ElementKind::Symbol),
+                tier.default_confidence()
+            );
+        }
+    }
 }
 
 #[cfg(test)]

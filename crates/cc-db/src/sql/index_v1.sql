@@ -205,7 +205,11 @@ CREATE TABLE IF NOT EXISTS routes (
     confidence          REAL NOT NULL DEFAULT 0.5,
     parser_tier         TEXT NOT NULL DEFAULT 'generic',
     normalized_path     TEXT,
-    route_id            TEXT
+    route_id            TEXT,
+    -- route-handler resolution provenance (tier + confidence), NULL when the
+    -- handler was never resolved (or the row is a route node)
+    resolution_strategy TEXT,
+    resolution_confidence REAL
 );
 CREATE INDEX IF NOT EXISTS idx_routes_path ON routes(route_path);
 CREATE INDEX IF NOT EXISTS idx_routes_handler ON routes(handler_name);

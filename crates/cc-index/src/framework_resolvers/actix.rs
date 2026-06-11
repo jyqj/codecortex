@@ -154,6 +154,8 @@ impl FrameworkResolver for ActixResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.88,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -191,6 +193,8 @@ impl FrameworkResolver for ActixResolver {
                     route_kind: Some("http".to_string()),
                     confidence: 0.82,
                     parser_tier: ParserTier::Heuristic,
+                    resolution_strategy: None,
+                    resolution_confidence: None,
                 });
             }
         }
@@ -236,6 +240,8 @@ impl FrameworkResolver for ActixResolver {
                     route_kind: Some("scope_mount".to_string()),
                     confidence: 0.80,
                     parser_tier: ParserTier::Heuristic,
+                    resolution_strategy: None,
+                    resolution_confidence: None,
                 });
             }
 
@@ -265,6 +271,8 @@ impl FrameworkResolver for ActixResolver {
                     route_kind: Some("scope_mount".to_string()),
                     confidence: 0.78,
                     parser_tier: ParserTier::Heuristic,
+                    resolution_strategy: None,
+                    resolution_confidence: None,
                 });
             }
         }

@@ -8,7 +8,7 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
-use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use cc_model::{CcResult, ElementKind, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
@@ -607,7 +607,7 @@ impl RustParser {
             ref_end_line: Some(line_no),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::CallRef),
         });
 
         calls.push(CallEdgeRecord {
@@ -644,7 +644,7 @@ impl RustParser {
             is_awaited: false,
             is_constructor: false,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::CallEdge),
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -717,7 +717,7 @@ impl RustParser {
             ref_end_line: Some(line_no),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.6,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::IdentifierRef),
         });
     }
 
@@ -780,7 +780,7 @@ impl RustParser {
                 target_symbol_uid: None,
                 relation_kind: SemanticRelation::Implements,
                 line,
-                confidence: 0.95,
+                confidence: tier.element_confidence(ElementKind::SemanticEdge),
                 parser_tier: tier,
             });
         }
@@ -835,7 +835,7 @@ impl RustParser {
                     target_symbol_uid: None,
                     relation_kind: SemanticRelation::Decorates,
                     line,
-                    confidence: 0.95,
+                    confidence: tier.element_confidence(ElementKind::SemanticEdge),
                     parser_tier: tier,
                 });
             }
@@ -875,7 +875,7 @@ impl RustParser {
             signature: signature.map(String::from),
             doc: None,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.8,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::Symbol),
             qname: Some(qname.to_string()),
             parent_symbol_id: None,
             scope_id: None,
@@ -943,7 +943,7 @@ impl FileParser for RustParser {
         let (symbol_refs, call_edges) =
             self.extract_refs_and_calls(&tree, content.as_bytes(), file_path, &symbols);
         let tier = ParserTier::Semantic;
-        let confidence = 0.8;
+        let confidence = tier.default_confidence();
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
         let mut data_flow_edges = self.extract_env_accesses(content, &symbols, file_path);
         data_flow_edges.extend(crate::dataflow_common::extract_param_return_flow(
@@ -1902,7 +1902,9 @@ impl std::fmt::Display for Point {
         let code = "fn foo() {}\n";
         let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
         assert_eq!(outcome.parser_tier, ParserTier::Semantic);
-        assert!((outcome.parser_confidence - 0.8).abs() < f64::EPSILON);
+        // Normalized to the Semantic-tier default (was 0.8 before the
+        // element-confidence matrix landed).
+        assert!((outcome.parser_confidence - 0.85).abs() < f64::EPSILON);
     }
 
     #[test]

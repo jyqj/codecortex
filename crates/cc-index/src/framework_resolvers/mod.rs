@@ -79,6 +79,8 @@ pub(crate) fn make_route_edge(
         route_kind: Some(spec.route_kind.to_string()),
         confidence: spec.confidence,
         parser_tier: spec.parser_tier,
+        resolution_strategy: None,
+        resolution_confidence: None,
     }
 }
 

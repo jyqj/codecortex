@@ -106,6 +106,10 @@ impl IndexDb {
     /// absent from the map. Both the single-UID point queries and this
     /// batched variant order rows by `(line ASC, rowid ASC)` as a
     /// contract, so per-UID row selection and order are identical.
+    /// Multi-symbol neighbor resolution should use the batched variants
+    /// (together with [`Self::symbol_degree_details_batch`]) instead of
+    /// looping the point queries — `cc-search`'s enrich, preselect, and
+    /// lanes adapters are the reference call sites.
     pub(crate) fn caller_rows_by_uids(
         &self,
         callee_uids: &[&str],
@@ -423,6 +427,124 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(info)
+    }
+
+    /// Batched variant of [`Self::symbol_degree_details`]: compute the same
+    /// five subcounts for many UIDs in [`IN_BATCH_SIZE`]-sized `IN (...)`
+    /// queries (three `GROUP BY` aggregates per chunk) instead of five
+    /// correlated subqueries per UID. Every requested UID is present in the
+    /// returned map; UIDs with no edges/refs — including UIDs unknown to the
+    /// index — carry all-zero counts, exactly what the single-UID query
+    /// returns for them. Multi-symbol degree resolution should use this
+    /// batched variant (`cc-search`'s enrich is the reference adapter).
+    pub(crate) fn symbol_degree_details_batch(
+        &self,
+        uids: &[&str],
+    ) -> CcResult<HashMap<String, SymbolDegreeInfo>> {
+        let mut result: HashMap<String, SymbolDegreeInfo> = uids
+            .iter()
+            .map(|uid| {
+                (
+                    uid.to_string(),
+                    SymbolDegreeInfo {
+                        in_degree: 0,
+                        out_degree: 0,
+                        caller_count: 0,
+                        callee_count: 0,
+                        ref_count: 0,
+                    },
+                )
+            })
+            .collect();
+        if result.is_empty() {
+            return Ok(result);
+        }
+        let mut unique: Vec<&str> = uids.to_vec();
+        unique.sort_unstable();
+        unique.dedup();
+
+        let conn = self.read_conn()?;
+        for chunk in unique.chunks(IN_BATCH_SIZE) {
+            let placeholders = sql_in_placeholders(chunk.len());
+            let params: Vec<&dyn rusqlite::types::ToSql> = chunk
+                .iter()
+                .map(|uid| uid as &dyn rusqlite::types::ToSql)
+                .collect();
+
+            // Callee side: in_degree + distinct caller count.
+            let sql = format!(
+                "SELECT callee_symbol_uid, COUNT(*), COUNT(DISTINCT caller_symbol_uid)
+                 FROM call_edges WHERE callee_symbol_uid IN ({placeholders})
+                 GROUP BY callee_symbol_uid"
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, u32>(1)?,
+                        row.get::<_, u32>(2)?,
+                    ))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.filter_map(|r| r.ok()) {
+                let (uid, in_degree, caller_count) = row;
+                if let Some(info) = result.get_mut(&uid) {
+                    info.in_degree = in_degree;
+                    info.caller_count = caller_count;
+                }
+            }
+
+            // Caller side: out_degree + distinct callee count.
+            let sql = format!(
+                "SELECT caller_symbol_uid, COUNT(*), COUNT(DISTINCT callee_symbol_uid)
+                 FROM call_edges WHERE caller_symbol_uid IN ({placeholders})
+                 GROUP BY caller_symbol_uid"
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, u32>(1)?,
+                        row.get::<_, u32>(2)?,
+                    ))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.filter_map(|r| r.ok()) {
+                let (uid, out_degree, callee_count) = row;
+                if let Some(info) = result.get_mut(&uid) {
+                    info.out_degree = out_degree;
+                    info.callee_count = callee_count;
+                }
+            }
+
+            // Reference count.
+            let sql = format!(
+                "SELECT target_symbol_uid, COUNT(*)
+                 FROM symbol_refs WHERE target_symbol_uid IN ({placeholders})
+                 GROUP BY target_symbol_uid"
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.filter_map(|r| r.ok()) {
+                let (uid, ref_count) = row;
+                if let Some(info) = result.get_mut(&uid) {
+                    info.ref_count = ref_count;
+                }
+            }
+        }
+        Ok(result)
     }
 
     pub(crate) fn update_communities(
@@ -1301,7 +1423,7 @@ impl IndexDb {
             .prepare(
                 "SELECT edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,\
                  handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,\
-                 route_kind,confidence,parser_tier \
+                 route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence \
                  FROM routes WHERE file_path = ?1",
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -1326,6 +1448,8 @@ impl IndexDb {
                     route_kind: row.get(14)?,
                     confidence: row.get(15)?,
                     parser_tier: crate::index_db::parse_parser_tier(&tier_str),
+                    resolution_strategy: row.get(17)?,
+                    resolution_confidence: row.get(18)?,
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -1464,6 +1588,18 @@ impl ReadOps<'_> {
     /// Get degree info for a single symbol UID.
     pub fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
         self.0.symbol_degree_details(uid)
+    }
+
+    /// Batched variant of [`Self::symbol_degree_details`]: every requested
+    /// UID is present in the map (all-zero counts when it has no edges or
+    /// refs, matching the single-UID query). Multi-symbol degree resolution
+    /// should use this instead of looping the point query (`cc-search`'s
+    /// enrich is the reference adapter).
+    pub fn symbol_degree_details_batch(
+        &self,
+        uids: &[&str],
+    ) -> CcResult<HashMap<String, SymbolDegreeInfo>> {
+        self.0.symbol_degree_details_batch(uids)
     }
 
     /// Find symbols by exact name, filtering to function/class/component kinds.
@@ -2090,5 +2226,86 @@ mod tests {
         assert_eq!(info.caller_count, 2); // 2 distinct callers
         assert_eq!(info.callee_count, 1); // 1 distinct callee
         assert_eq!(info.ref_count, 3); // 3 symbol refs
+    }
+
+    /// Equivalence lock: `symbol_degree_details_batch` must return, per
+    /// requested UID, exactly what the single-UID query returns. The single
+    /// query yields all-zero counts for UIDs with no edges/refs — including
+    /// UIDs unknown to the index — so the batch keeps every requested UID
+    /// present in the map with zeroed counts instead of omitting it.
+    /// Also covers: duplicate seeds, a NULL caller UID (counts toward
+    /// `in_degree` but not the DISTINCT caller count on either path), and
+    /// noise edges whose endpoints were not requested.
+    #[test]
+    fn test_symbol_degree_details_batch_matches_single() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        // uid_a: two in-edges from the same caller (in_degree 2 vs
+        // caller_count 1), one out-edge, no refs.
+        insert_call_edge(&db, "e1", "uid_p1", "uid_a", 10);
+        insert_call_edge(&db, "e2", "uid_p1", "uid_a", 20);
+        insert_call_edge(&db, "e3", "uid_a", "uid_b", 5);
+        // uid_b: one in-edge (e3), no out-edges, two refs.
+        // Noise edge: neither endpoint is a requested seed.
+        insert_call_edge(&db, "e5", "uid_noise", "uid_noise2", 50);
+        {
+            let conn = db.write_conn.lock().unwrap();
+            // NULL caller UID into uid_a: in_degree counts it, DISTINCT does not.
+            conn.execute(
+                "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+                 VALUES('e4','src/main.rs','anon','callee_a',30,NULL,'uid_a','direct','sync','exact','tree_sitter',0.8)",
+                [],
+            )
+            .unwrap();
+            for ref_id in ["sr1", "sr2"] {
+                conn.execute(
+                    "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,target_symbol_uid,resolution_kind,resolution_confidence,resolution_strategy,parser_tier,parser_confidence)
+                     VALUES(?1,'src/main.rs','b_fn','','usage',1,'uid_b','exact',0.9,'import_map','tree_sitter',0.8)",
+                    rusqlite::params![ref_id],
+                )
+                .unwrap();
+            }
+            // uid_zero: present in symbols but with no edges/refs anywhere.
+            conn.execute(
+                "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,symbol_uid)
+                 VALUES('id_zero','src/main.rs','zero_fn','Function','',1,3,0,0,'fn zero_fn()','','tree_sitter',0.8,'zero_fn','uid_zero')",
+                [],
+            )
+            .unwrap();
+        }
+
+        // uid_unknown appears nowhere; uid_a appears twice (duplicate seed).
+        let seeds = ["uid_a", "uid_b", "uid_zero", "uid_unknown", "uid_a"];
+        let batch = db.symbol_degree_details_batch(&seeds).unwrap();
+
+        assert_eq!(batch.len(), 4, "duplicate seeds collapse to one entry");
+        for uid in ["uid_a", "uid_b", "uid_zero", "uid_unknown"] {
+            let single = db.symbol_degree_details(uid).unwrap();
+            let batched = batch.get(uid).expect("every requested UID is present");
+            assert_eq!(
+                format!("{:?}", batched),
+                format!("{:?}", single),
+                "degree info for {uid} must match point query"
+            );
+        }
+
+        // Hard-coded spot checks so both paths cannot drift in lockstep.
+        let info_a = batch.get("uid_a").unwrap();
+        assert_eq!(info_a.in_degree, 3); // e1, e2, e4 (NULL caller counted)
+        assert_eq!(info_a.caller_count, 1); // DISTINCT skips NULL, dedupes uid_p1
+        assert_eq!(info_a.out_degree, 1);
+        assert_eq!(info_a.callee_count, 1);
+        assert_eq!(info_a.ref_count, 0);
+        let info_b = batch.get("uid_b").unwrap();
+        assert_eq!(info_b.in_degree, 1);
+        assert_eq!(info_b.out_degree, 0);
+        assert_eq!(info_b.ref_count, 2);
+        assert_eq!(batch.get("uid_unknown").unwrap().in_degree, 0);
+        assert!(!batch.contains_key("uid_noise"));
+        assert!(!batch.contains_key("uid_noise2"));
+
+        // Empty seed list -> empty map, no SQL issued.
+        assert!(db.symbol_degree_details_batch(&[]).unwrap().is_empty());
     }
 }

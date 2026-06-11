@@ -66,6 +66,11 @@ pub struct IndexReport {
     pub files_parsed: usize,
     /// Whether the parallel parse path was taken.
     pub used_parallel_parse: bool,
+    /// How incremental dirty propagation ended — `normal`, `partial_closure`,
+    /// `budget_exceeded`, or `disabled`. `None` for full builds, where
+    /// propagation does not apply.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub dirty_propagation: Option<crate::dirty_closure::DirtyPropagationStatus>,
     /// Per-phase timing breakdown (all in milliseconds).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub phase_timing: Option<PhaseTiming>,
@@ -152,15 +157,6 @@ impl Indexer {
 
     pub fn build_index(&self, project_path: &Path, full: bool) -> CcResult<IndexReport> {
         self.build_index_internal(project_path, full, None)
-    }
-
-    pub fn build_auto_index(
-        &self,
-        project_path: &Path,
-        full: bool,
-        file_limit: usize,
-    ) -> CcResult<IndexReport> {
-        self.build_index_internal(project_path, full, Some(file_limit))
     }
 
     fn build_index_internal(

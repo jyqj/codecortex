@@ -23,6 +23,7 @@ pub(crate) mod synthesis_symbol_resolver;
 pub(crate) mod type_catalog;
 
 pub use build_plan::PreparedBuild;
+pub use dirty_closure::DirtyPropagationStatus;
 pub use framework_registry::FileFrameworkDetection;
 pub use indexer::{IndexReport, Indexer};
 pub use scanner::{ScannedFile, Scanner};

@@ -14,6 +14,7 @@ use cc_db::index_db::{FileState, FileWriteUnit};
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
 use cc_model::CcResult;
 
+use crate::dirty_closure::DirtyPropagationStatus;
 use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, ScanDiffResult};
 
 /// Owned, read-only output of the prepare phase.
@@ -30,6 +31,7 @@ pub struct PreparedBuild {
     output_snapshot: OutputSnapshot,
     hierarchy_edges: Vec<SemanticEdgeRecord>,
     parse_report: ParseReport,
+    dirty_propagation: Option<DirtyPropagationStatus>,
     start: Instant,
     scan_diff_ms: u64,
     parse_ms: u64,
@@ -110,6 +112,7 @@ impl IndexBuildPlan {
         // provably participate in project context before resolvers bind
         // framework-specific edges.
         let dirty_closed = DirtyClosed::compute(indexer, self.mode, &scan_result, &write_units)?;
+        let dirty_propagation = dirty_closed.dirty_propagation;
         let reloaded = dirty_closed.reload(indexer, &mut write_units, &scan_result.existing)?;
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
@@ -137,6 +140,7 @@ impl IndexBuildPlan {
             output_snapshot,
             hierarchy_edges: resolve_result.hierarchy_edges,
             parse_report,
+            dirty_propagation,
             start,
             scan_diff_ms,
             parse_ms,
@@ -162,6 +166,7 @@ impl IndexBuildPlan {
             output_snapshot,
             hierarchy_edges,
             parse_report,
+            dirty_propagation,
             start,
             scan_diff_ms,
             parse_ms,
@@ -211,6 +216,7 @@ impl IndexBuildPlan {
             scan_result,
             parse_report,
             output_snapshot,
+            dirty_propagation,
             start.elapsed(),
             Some(timing),
         ))
@@ -221,6 +227,7 @@ impl IndexBuildPlan {
         scan_result: ScanDiffResult,
         parse_report: ParseReport,
         output_snapshot: OutputSnapshot,
+        dirty_propagation: Option<DirtyPropagationStatus>,
         elapsed: Duration,
         phase_timing: Option<crate::indexer::PhaseTiming>,
     ) -> IndexReport {
@@ -236,6 +243,7 @@ impl IndexBuildPlan {
             elapsed_ms: elapsed.as_millis() as u64,
             files_parsed: parse_report.files_to_parse,
             used_parallel_parse: parse_report.used_parallel,
+            dirty_propagation,
             phase_timing,
         }
     }
@@ -249,6 +257,9 @@ impl IndexBuildPlan {
 struct DirtyClosed {
     actions: HashMap<String, FileAction>,
     dirty_count: usize,
+    /// Closure status for the report; `None` for full builds, where
+    /// propagation does not apply.
+    dirty_propagation: Option<DirtyPropagationStatus>,
 }
 
 /// Proof that dirty units have been reloaded into `write_units`. Framework
@@ -274,15 +285,17 @@ impl DirtyClosed {
 
         // Full builds never promote skipped files; incremental builds may
         // close over importers whose dependency exports changed.
-        let dirty_count = if mode.is_incremental() {
-            indexer.run_dirty_propagation(&mut actions, write_units)?
+        let (dirty_count, dirty_propagation) = if mode.is_incremental() {
+            let outcome = indexer.run_dirty_propagation(&mut actions, write_units)?;
+            (outcome.marked, Some(outcome.status))
         } else {
-            0
+            (0, None)
         };
 
         Ok(Self {
             actions,
             dirty_count,
+            dirty_propagation,
         })
     }
 

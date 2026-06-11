@@ -264,6 +264,44 @@ value = "formatName"
         assert_eq!(status.p95_duration_ms, 50);
     }
 
+    #[test]
+    fn incremental_latency_summary_computation() {
+        let reports: Vec<serde_json::Value> = vec![
+            serde_json::json!({
+                "elapsed_ms": 100,
+                "phase_timing": {"scan_diff_ms": 10, "parse_ms": 5, "resolve_ms": 60, "write_ms": 15, "postprocess_ms": 5, "analysis_ms": 5},
+            }),
+            serde_json::json!({
+                "elapsed_ms": 300,
+                "phase_timing": {"scan_diff_ms": 20, "parse_ms": 10, "resolve_ms": 200, "write_ms": 40, "postprocess_ms": 15, "analysis_ms": 15},
+            }),
+            serde_json::json!({
+                "elapsed_ms": 200,
+                "phase_timing": {"scan_diff_ms": 15, "parse_ms": 8, "resolve_ms": 120, "write_ms": 30, "postprocess_ms": 12, "analysis_ms": 15},
+            }),
+        ];
+
+        let summary = bench::summarize_incremental_reports("single_file", 41, &reports);
+        assert_eq!(summary.scenario, "single_file");
+        assert_eq!(summary.fixture_files, 41);
+        assert_eq!(summary.iterations, 3);
+        assert_eq!(summary.elapsed.p50_ms, 200);
+        assert_eq!(summary.elapsed.p95_ms, 300);
+        assert_eq!(summary.elapsed.max_ms, 300);
+
+        // All six phases present, dominant phase first (sorted by p50 desc).
+        assert_eq!(summary.phases.len(), 6);
+        assert_eq!(summary.phases[0].phase, "resolve");
+        assert_eq!(summary.phases[0].stats.p50_ms, 120);
+        assert_eq!(summary.phases[0].stats.p95_ms, 200);
+        assert_eq!(summary.phases[0].stats.max_ms, 200);
+
+        let md = bench::generate_incremental_markdown(&summary);
+        assert!(md.contains("single_file"));
+        assert!(md.contains("| resolve |"));
+        assert!(md.contains("| total elapsed | 200ms | 300ms | 300ms |"));
+    }
+
     fn copy_real_workspace_fixture(src: &std::path::Path, dst: &std::path::Path) -> usize {
         const EXCLUDED_DIRS: &[&str] = &[
             ".git",
@@ -562,6 +600,217 @@ value = "formatName"
         );
         assert_eq!(report_usize(&incremental, "files_parsed"), 1);
         assert_no_parse_errors(&incremental, "single-file incremental");
+    }
+
+    // ── Incremental indexing latency benchmarks ────────────────────
+
+    const INCREMENTAL_BENCH_IMPORTER_FILES: usize = 30;
+    const INCREMENTAL_BENCH_LEAF_FILES: usize = 10;
+    const INCREMENTAL_BENCH_ITERATIONS: usize = 5;
+    /// Generous sanity bound matching the documented "<2s for 10 changed
+    /// files" target in docs/BENCHMARK.md: each scenario re-parses at most
+    /// one file and re-resolves at most all importers, bracketing that case.
+    /// Tight relative assertions (e.g. noop < single-file) are intentionally
+    /// avoided — they are flaky on shared hardware.
+    const INCREMENTAL_BENCH_P95_BUDGET_MS: u64 = 2_000;
+
+    /// Synthesize a TypeScript project with a hub module (`core.ts`), N
+    /// importer files depending on it, and standalone leaf files, so
+    /// incremental scans have a meaningful skip set and the dirty closure has
+    /// real importers to promote. Returns the total file count.
+    fn write_incremental_bench_project(dir: &std::path::Path) -> usize {
+        std::fs::write(
+            dir.join("core.ts"),
+            "export function coreAlpha(): number { return 1; }\n\
+             export function coreBeta(): number { return 2; }\n",
+        )
+        .expect("write core.ts");
+        for idx in 0..INCREMENTAL_BENCH_IMPORTER_FILES {
+            let source = format!(
+                "import {{ coreAlpha }} from './core';\n\
+                 export function useAlpha{idx:02}(): number {{ return coreAlpha() + {idx}; }}\n",
+            );
+            std::fs::write(dir.join(format!("importer_{idx:02}.ts")), source)
+                .expect("write importer file");
+        }
+        for idx in 0..INCREMENTAL_BENCH_LEAF_FILES {
+            let source =
+                format!("export function leafValue{idx:02}(): number {{ return {idx}; }}\n");
+            std::fs::write(dir.join(format!("leaf_{idx:02}.ts")), source).expect("write leaf file");
+        }
+        1 + INCREMENTAL_BENCH_IMPORTER_FILES + INCREMENTAL_BENCH_LEAF_FILES
+    }
+
+    /// Build the synthesized project and run the initial full index build.
+    fn incremental_bench_backend(dir: &std::path::Path) -> (runner::CodeIndexBackend, usize) {
+        let file_count = write_incremental_bench_project(dir);
+        let backend = runner::CodeIndexBackend::new_unindexed(dir)
+            .expect("backend should initialize without building");
+        let full = backend
+            .build_index_report(true)
+            .expect("full index build should succeed");
+        assert_eq!(report_usize(&full, "files_added"), file_count);
+        assert_no_parse_errors(&full, "full");
+        (backend, file_count)
+    }
+
+    /// Run 1 warmup + `iterations` measured incremental builds, applying
+    /// `mutate(iteration)` before each build (iteration 0 is the warmup).
+    /// Returns the measured `IndexReport` values only.
+    fn run_incremental_iterations(
+        backend: &runner::CodeIndexBackend,
+        iterations: usize,
+        mut mutate: impl FnMut(usize),
+    ) -> Vec<serde_json::Value> {
+        let mut reports = Vec::with_capacity(iterations);
+        for iteration in 0..=iterations {
+            mutate(iteration);
+            let report = backend
+                .build_index_report(false)
+                .expect("incremental index build should succeed");
+            if iteration >= 1 {
+                reports.push(report);
+            }
+        }
+        reports
+    }
+
+    fn report_dirty_propagation(report: &serde_json::Value) -> Option<&str> {
+        report.get("dirty_propagation").and_then(|v| v.as_str())
+    }
+
+    fn print_incremental_summary(
+        scenario: &str,
+        fixture_files: usize,
+        reports: &[serde_json::Value],
+    ) -> bench::IncrementalBenchReport {
+        let summary = bench::summarize_incremental_reports(scenario, fixture_files, reports);
+        eprintln!("{}", bench::generate_incremental_markdown(&summary));
+        assert!(
+            summary.elapsed.p95_ms <= INCREMENTAL_BENCH_P95_BUDGET_MS,
+            "incremental scenario '{}' p95 = {}ms exceeds the {}ms sanity budget",
+            scenario,
+            summary.elapsed.p95_ms,
+            INCREMENTAL_BENCH_P95_BUDGET_MS
+        );
+        summary
+    }
+
+    /// Ignored by default: measures the zero-change incremental rebuild
+    /// (scan fast path + skip classification, no parse/resolve work).
+    #[test]
+    #[ignore = "measures incremental no-op rebuild latency; run explicitly"]
+    fn bench_incremental_noop() {
+        let tmp = tempfile::tempdir().expect("create tempdir for incremental benchmark");
+        let (backend, file_count) = incremental_bench_backend(tmp.path());
+
+        let reports = run_incremental_iterations(&backend, INCREMENTAL_BENCH_ITERATIONS, |_| {});
+
+        for report in &reports {
+            assert_eq!(report_usize(report, "files_parsed"), 0);
+            assert_eq!(report_usize(report, "files_added"), 0);
+            assert_eq!(report_usize(report, "files_updated"), 0);
+            assert_eq!(report_usize(report, "files_removed"), 0);
+            assert_eq!(report_usize(report, "files_skipped"), file_count);
+            // Incremental builds always classify propagation; with zero
+            // changed files the closure is trivially converged → "normal".
+            // (`None`/omitted is reserved for full builds.)
+            assert_eq!(
+                report_dirty_propagation(report),
+                Some("normal"),
+                "no-op incremental build should classify dirty propagation as normal: {}",
+                report
+            );
+            assert_no_parse_errors(report, "no-op incremental");
+        }
+
+        print_incremental_summary("noop", file_count, &reports);
+    }
+
+    /// Ignored by default: measures a body-only single-file edit (one
+    /// re-parse, export fingerprint stable, no dirty propagation).
+    #[test]
+    #[ignore = "measures single-file incremental rebuild latency; run explicitly"]
+    fn bench_incremental_single_file() {
+        let tmp = tempfile::tempdir().expect("create tempdir for incremental benchmark");
+        let (backend, file_count) = incremental_bench_backend(tmp.path());
+
+        let touched = tmp.path().join("importer_00.ts");
+        let reports =
+            run_incremental_iterations(&backend, INCREMENTAL_BENCH_ITERATIONS, |iteration| {
+                let mut source = std::fs::read_to_string(&touched).expect("read file to modify");
+                source.push_str(&format!("// body-only edit marker {iteration}\n"));
+                std::fs::write(&touched, source).expect("write single-file modification");
+            });
+
+        for report in &reports {
+            assert_eq!(report_usize(report, "files_parsed"), 1);
+            assert_eq!(report_usize(report, "files_updated"), 1);
+            assert_eq!(report_usize(report, "files_skipped"), file_count - 1);
+            // A comment-only edit keeps the export fingerprint stable, so the
+            // closure converges without promoting any importer → "normal".
+            assert_eq!(
+                report_dirty_propagation(report),
+                Some("normal"),
+                "body-only edit should classify dirty propagation as normal: {}",
+                report
+            );
+            assert_no_parse_errors(report, "single-file incremental");
+        }
+
+        print_incremental_summary("single_file", file_count, &reports);
+    }
+
+    /// Ignored by default: measures an export-surface change on the hub
+    /// module, so every importer is promoted Skip → DirtyResolveOnly via the
+    /// dirty closure and re-resolved.
+    #[test]
+    #[ignore = "measures dirty-closure incremental rebuild latency; run explicitly"]
+    fn bench_incremental_dirty_closure() {
+        let tmp = tempfile::tempdir().expect("create tempdir for incremental benchmark");
+        let (backend, file_count) = incremental_bench_backend(tmp.path());
+
+        // Premise: cross-file call edges from the importers must have
+        // resolved, otherwise the dirty closure has no importers to promote
+        // and this scenario silently measures nothing.
+        let relations = backend
+            .call_tool(
+                "relations",
+                &serde_json::json!({ "symbol": "coreAlpha", "kind": "both", "limit": 50 }),
+            )
+            .expect("relations on the hub export should succeed");
+        let serialized = serde_json::to_string(&relations).unwrap_or_default();
+        assert!(
+            serialized.contains("useAlpha"),
+            "importer call edges must resolve before measuring the dirty closure: {}",
+            serialized
+        );
+
+        let core = tmp.path().join("core.ts");
+        let reports =
+            run_incremental_iterations(&backend, INCREMENTAL_BENCH_ITERATIONS, |iteration| {
+                let mut source = std::fs::read_to_string(&core).expect("read core.ts");
+                source.push_str(&format!(
+                    "export function coreExtra{iteration}(): number {{ return {iteration}; }}\n"
+                ));
+                std::fs::write(&core, source).expect("write export-surface modification");
+            });
+
+        for report in &reports {
+            assert_eq!(report_usize(report, "files_parsed"), 1);
+            assert_eq!(report_usize(report, "files_updated"), 1);
+            // Export surface changed: all importers are promoted in round 1
+            // and the closure converges within budget → "normal".
+            assert_eq!(
+                report_dirty_propagation(report),
+                Some("normal"),
+                "converged dirty closure should classify as normal: {}",
+                report
+            );
+            assert_no_parse_errors(report, "dirty-closure incremental");
+        }
+
+        print_incremental_summary("dirty_closure", file_count, &reports);
     }
 
     /// Benchmark test: load fixtures, run benchmark, optionally write report.

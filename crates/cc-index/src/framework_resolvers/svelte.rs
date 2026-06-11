@@ -165,6 +165,8 @@ impl FrameworkResolver for SvelteResolver {
                     route_kind: Some(kind.to_string()),
                     confidence: 0.85,
                     parser_tier: ParserTier::Heuristic,
+                    resolution_strategy: None,
+                    resolution_confidence: None,
                 });
             }
 
@@ -194,6 +196,8 @@ impl FrameworkResolver for SvelteResolver {
                         route_kind: Some("api_endpoint".to_string()),
                         confidence: 0.85,
                         parser_tier: ParserTier::Heuristic,
+                        resolution_strategy: None,
+                        resolution_confidence: None,
                     });
                     found_method = true;
                 }
@@ -218,6 +222,8 @@ impl FrameworkResolver for SvelteResolver {
                         route_kind: Some("api_endpoint".to_string()),
                         confidence: 0.75,
                         parser_tier: ParserTier::Heuristic,
+                        resolution_strategy: None,
+                        resolution_confidence: None,
                     });
                 }
             }

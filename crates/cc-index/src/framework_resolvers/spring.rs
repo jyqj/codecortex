@@ -279,6 +279,8 @@ impl FrameworkResolver for SpringResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.88,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -312,6 +314,8 @@ impl FrameworkResolver for SpringResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.85,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 

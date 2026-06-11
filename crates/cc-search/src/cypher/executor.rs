@@ -371,6 +371,8 @@ fn table_json_expr(table: &str, alias: &str) -> CcResult<String> {
             ("route_kind", "route_kind"),
             ("normalized_path", "normalized_path"),
             ("confidence", "confidence"),
+            ("resolution_strategy", "resolution_strategy"),
+            ("resolution_confidence", "resolution_confidence"),
         ],
         "data_flow_edges" => &[
             ("edge_id", "edge_id"),

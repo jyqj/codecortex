@@ -20,6 +20,35 @@ use cc_model::CcResult;
 /// closure rather than bailing.
 pub(crate) const DIRTY_CLOSURE_MAX_ROUNDS: usize = 16;
 
+/// How the incremental dirty-propagation phase ended, surfaced on
+/// [`crate::indexer::IndexReport`] so agents can tell a complete closure from
+/// a degraded one instead of inferring it from log output.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DirtyPropagationStatus {
+    /// Fixpoint converged: every transitive importer was promoted (including
+    /// the trivial case where no export surface changed).
+    Normal,
+    /// The closure stopped early — round cap hit, or the global budget was
+    /// exceeded after round 1 — but the promotions kept form a valid
+    /// complete-round prefix of the full closure.
+    PartialClosure,
+    /// Round-1 direct importers alone exceeded the budget; propagation
+    /// degraded to a no-op (consider a full rebuild).
+    BudgetExceeded,
+    /// Dirty propagation is disabled via config.
+    Disabled,
+}
+
+/// Outcome of the dirty-propagation phase: promotion count plus the closure
+/// classification surfaced on the index report.
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct DirtyPropagationOutcome {
+    /// Files promoted Skip → DirtyResolveOnly.
+    pub(crate) marked: usize,
+    pub(crate) status: DirtyPropagationStatus,
+}
+
 /// Outcome of the fixpoint dirty closure.
 #[derive(Debug)]
 pub(crate) struct DirtyClosureResult {
@@ -36,6 +65,21 @@ pub(crate) struct DirtyClosureResult {
     /// after round 1 and later rounds were dropped); `promoted` is a valid
     /// complete-round prefix of the full closure.
     pub(crate) partial: bool,
+}
+
+impl DirtyClosureResult {
+    /// Classify the closure outcome for the index report. `budget_exceeded`
+    /// and `partial` are mutually exclusive by construction (the round-1 bail
+    /// returns `partial: false`), so the precedence here is cosmetic.
+    pub(crate) fn status(&self) -> DirtyPropagationStatus {
+        if self.budget_exceeded {
+            DirtyPropagationStatus::BudgetExceeded
+        } else if self.partial {
+            DirtyPropagationStatus::PartialClosure
+        } else {
+            DirtyPropagationStatus::Normal
+        }
+    }
 }
 
 /// Compute the transitive dirty closure as a fixpoint iteration.
@@ -270,6 +314,7 @@ mod tests {
             "C imports A whose export surface changed; C must be promoted too"
         );
         assert_eq!(result.rounds_run, 2);
+        assert_eq!(result.status(), DirtyPropagationStatus::Normal);
     }
 
     /// Round 1 alone exceeding the budget bails to 0 promotions, exactly like
@@ -296,6 +341,7 @@ mod tests {
             result.promoted.is_empty(),
             "round-1 budget bail must discard all promotions"
         );
+        assert_eq!(result.status(), DirtyPropagationStatus::BudgetExceeded);
     }
 
     /// The budget is GLOBAL across rounds, but exceeding it after round 1 must
@@ -333,6 +379,7 @@ mod tests {
             result.partial,
             "budget truncation must report a partial closure"
         );
+        assert_eq!(result.status(), DirtyPropagationStatus::PartialClosure);
     }
 
     /// Exactly-at-budget is allowed (legacy check is strictly greater-than).
@@ -456,5 +503,30 @@ mod tests {
             "one promotion per round up to the cap"
         );
         assert_eq!(result.rounds_run, DIRTY_CLOSURE_MAX_ROUNDS);
+        assert_eq!(result.status(), DirtyPropagationStatus::PartialClosure);
+    }
+
+    /// The status is part of the MCP `index()` wire format; pin the
+    /// snake_case spelling agents will match on.
+    #[test]
+    fn status_serializes_snake_case() {
+        let rendered: Vec<serde_json::Value> = [
+            DirtyPropagationStatus::Normal,
+            DirtyPropagationStatus::PartialClosure,
+            DirtyPropagationStatus::BudgetExceeded,
+            DirtyPropagationStatus::Disabled,
+        ]
+        .iter()
+        .map(|status| serde_json::to_value(status).unwrap())
+        .collect();
+        assert_eq!(
+            rendered,
+            vec![
+                serde_json::json!("normal"),
+                serde_json::json!("partial_closure"),
+                serde_json::json!("budget_exceeded"),
+                serde_json::json!("disabled"),
+            ]
+        );
     }
 }

@@ -4,11 +4,22 @@ use super::{child_by_kind, node_text, short_text, ExtractCtx, JsTsParser};
 use cc_model::edge::{HttpCallEdgeRecord, RouteEdgeRecord};
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord};
-use cc_model::ParserTier;
+use cc_model::{ElementKind, ParserTier};
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
+
+// Per-framework route-detection confidence: how reliably the detection
+// pattern identifies a real route, independent of parser tier.
+/// Next.js routes follow file conventions, near-deterministic.
+const NEXTJS_ROUTE_CONFIDENCE: f64 = 0.92;
+/// Express `app.get(path, ...)` calls are explicit registrations.
+const EXPRESS_ROUTE_CONFIDENCE: f64 = 0.90;
+/// NestJS routes join a method decorator with the controller prefix.
+const NESTJS_ROUTE_CONFIDENCE: f64 = 0.88;
+/// `app.use(...)` middleware may not be an actual route.
+const MIDDLEWARE_ROUTE_CONFIDENCE: f64 = 0.80;
 
 /// Router objects that can register routes (e.g., `app.get(...)`, `router.post(...)`).
 pub(super) const ROUTER_OBJECTS: &[&str] = &[
@@ -122,8 +133,10 @@ pub(super) fn detect_nextjs_file_route(
         router_symbol_uid: None,
         framework: Some("nextjs".to_string()),
         route_kind: Some(route_kind.to_string()),
-        confidence: 0.92,
+        confidence: NEXTJS_ROUTE_CONFIDENCE,
         parser_tier: ParserTier::Semantic,
+        resolution_strategy: None,
+        resolution_confidence: None,
     })
 }
 
@@ -242,8 +255,10 @@ impl JsTsParser {
             router_symbol_uid: None,
             framework: Some(framework.to_string()),
             route_kind: Some("http".to_string()),
-            confidence: 0.90,
+            confidence: EXPRESS_ROUTE_CONFIDENCE,
             parser_tier: ParserTier::Semantic,
+            resolution_strategy: None,
+            resolution_confidence: None,
         });
     }
 
@@ -281,7 +296,7 @@ impl JsTsParser {
                     method: None,
                     call_kind: "async".to_string(),
                     line,
-                    confidence: 0.80,
+                    confidence: ParserTier::TreeSitter.element_confidence(ElementKind::HttpCall),
                     parser_tier: ParserTier::TreeSitter,
                     broker_type: Some(bt.clone()),
                 });
@@ -366,8 +381,10 @@ impl JsTsParser {
             router_symbol_uid: None,
             framework: Some(framework.to_string()),
             route_kind: Some("middleware".to_string()),
-            confidence: 0.80,
+            confidence: MIDDLEWARE_ROUTE_CONFIDENCE,
             parser_tier: ParserTier::Semantic,
+            resolution_strategy: None,
+            resolution_confidence: None,
         });
     }
 
@@ -444,8 +461,10 @@ impl JsTsParser {
             router_symbol_uid: None,
             framework: Some("nestjs".to_string()),
             route_kind: Some("http".to_string()),
-            confidence: 0.88,
+            confidence: NESTJS_ROUTE_CONFIDENCE,
             parser_tier: ParserTier::Semantic,
+            resolution_strategy: None,
+            resolution_confidence: None,
         });
     }
 }

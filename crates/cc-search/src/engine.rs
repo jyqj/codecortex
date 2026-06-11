@@ -24,14 +24,20 @@ use crate::plan::{CandidateChunk, SearchPlan};
 
 /// Default LRU capacity for search results.
 /// Override with `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`.
+///
+/// Values are `Arc<[SearchHit]>`: a cache hit hands out a pointer clone
+/// instead of deep-copying `top_k` hits, each of which carries full chunk
+/// text in `SearchHit::text`.
 const RESULT_CACHE_CAPACITY: usize = 32;
 
 /// Default LRU capacity for decompressed chunk text.
 /// Override with `CODECORTEX_SEARCH_CHUNK_CACHE_SIZE`.
 ///
-/// Eliminates double-decompression: `grep_search` scans all in-scope chunks
-/// (decompressing each), and matching chunks are fetched again in the
-/// batch-fetch step.  Caching the text avoids the second `zstd::decode_all`.
+/// Eliminates double-decompression on the retrieval (cache-miss) path:
+/// `grep_search` scans all in-scope chunks (decompressing each), and
+/// matching chunks are fetched again in the batch-fetch step.  Caching the
+/// text avoids the second `zstd::decode_all`.  The cache-HIT path never
+/// decompresses at all — it returns the `Arc`'d result list above.
 const CHUNK_TEXT_CACHE_CAPACITY: usize = 512;
 
 /// Read an LRU capacity from `var`, falling back to `default` when unset,
@@ -43,6 +49,9 @@ fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize {
         .and_then(NonZeroUsize::new)
         .unwrap_or_else(|| NonZeroUsize::new(default).unwrap())
 }
+
+/// Result cache map: `(index_epoch, query_hash)` → shared, immutable hits.
+type ResultCache = LruCache<(u64, u64), Arc<[SearchHit]>>;
 
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
@@ -56,7 +65,13 @@ pub struct SearchEngine {
     /// cleared eagerly.
     last_seen_index_epoch: AtomicU64,
     /// LRU result cache keyed by `(index_epoch, query_hash)`.
-    result_cache: Mutex<LruCache<(u64, u64), Vec<SearchHit>>>,
+    ///
+    /// INVARIANT: the stored slice is FINAL — `search_internal` assigns all
+    /// scores, sorts, and truncates before the `put` in [`Self::search`], and
+    /// nothing mutates hits afterwards (`search_with_graph_context`, which
+    /// does mutate, bypasses this cache entirely).  A hit therefore returns
+    /// `Arc::clone` of the shared slice with no per-hit deep copy.
+    result_cache: Mutex<ResultCache>,
     /// LRU cache of decompressed chunk text keyed by `chunk_id`.
     chunk_text_cache: Mutex<LruCache<String, Arc<str>>>,
 }
@@ -167,9 +182,35 @@ impl SearchEngine {
     /// INVARIANT: `rerank_score` on the returned hits is FINAL and the list
     /// is sorted on it.  Callers must not re-score or re-sort; graph-aware
     /// reranking happens inside [`Self::search_with_graph_context`], never
-    /// downstream.
-    pub fn search(&self, request: &SearchRequest) -> CcResult<Vec<SearchHit>> {
-        self.search_internal(request, true)
+    /// downstream.  The shared `Arc<[SearchHit]>` return type enforces this:
+    /// a result-cache hit is an `Arc` clone of the stored slice, so mutating
+    /// it would corrupt the cache.
+    pub fn search(&self, request: &SearchRequest) -> CcResult<Arc<[SearchHit]>> {
+        // ── Cache lookup ─────────────────────────────────────────
+        // The cache key embeds the persisted index epoch: any committed index
+        // write bumps it, so stale entries can never be served. One metadata
+        // SELECT per search; local SQLite reads are microseconds.
+        let index_epoch = self.observe_index_epoch()?;
+        let qhash = Self::query_hash(request);
+        let cache_key = (index_epoch, qhash);
+        if let Ok(mut cache) = self.result_cache.lock() {
+            if let Some(cached) = cache.get(&cache_key) {
+                tracing::debug!(
+                    query = %request.query,
+                    "search cache hit (index_epoch={}, hash={})",
+                    index_epoch,
+                    qhash,
+                );
+                return Ok(Arc::clone(cached));
+            }
+        }
+
+        let results: Arc<[SearchHit]> = self.search_internal(request, true)?.into();
+
+        if let Ok(mut cache) = self.result_cache.lock() {
+            cache.put(cache_key, Arc::clone(&results));
+        }
+        Ok(results)
     }
 
     /// Search with graph-aware reranking, for context assembly.
@@ -193,6 +234,7 @@ impl SearchEngine {
         limits: &GraphEnrichLimits,
         token_budget: u32,
     ) -> CcResult<(Vec<SearchHit>, GraphEnrichment)> {
+        self.observe_index_epoch()?;
         let mut hits = self.search_internal(request, false)?;
 
         let (scores, enrichment) = graph_enrich(&self.db, &hits, limits, token_budget);
@@ -231,32 +273,15 @@ impl SearchEngine {
     /// When `truncate_to_top_k` is true the result list is cut to `top_k`
     /// (standard behaviour).  When false, results are cut to `rerank_window`
     /// giving the graph-rerank step a wider candidate set.
+    ///
+    /// PRECONDITION: the caller has invoked [`Self::observe_index_epoch`] so
+    /// the chunk text cache was cleared if the index epoch moved.  Result
+    /// caching lives in [`Self::search`]; this function always recomputes.
     fn search_internal(
         &self,
         request: &SearchRequest,
         truncate_to_top_k: bool,
     ) -> CcResult<Vec<SearchHit>> {
-        // ── Cache lookup (only for the truncated path) ──────────
-        // The cache key embeds the persisted index epoch: any committed index
-        // write bumps it, so stale entries can never be served. One metadata
-        // SELECT per search; local SQLite reads are microseconds.
-        let index_epoch = self.observe_index_epoch()?;
-        let qhash = Self::query_hash(request);
-        let cache_key = (index_epoch, qhash);
-        if truncate_to_top_k {
-            if let Ok(mut cache) = self.result_cache.lock() {
-                if let Some(cached) = cache.get(&cache_key) {
-                    tracing::debug!(
-                        query = %request.query,
-                        "search cache hit (index_epoch={}, hash={})",
-                        index_epoch,
-                        qhash,
-                    );
-                    return Ok(cached.clone());
-                }
-            }
-        }
-
         // No pooled read connection is held here: plan build (preselect),
         // each lane, and the batch fetch below all check out and release
         // their own, so a 1-connection read pool never sees nested checkouts.
@@ -358,13 +383,6 @@ impl SearchEngine {
         // Pipeline exit invariant (debug builds only): every traced hit's
         // bill must replay its final rerank_score.
         crate::score_trace::debug_assert_trace_consistency(&results);
-
-        // ── Cache store (only for the truncated path) ───────────
-        if truncate_to_top_k {
-            if let Ok(mut cache) = self.result_cache.lock() {
-                cache.put(cache_key, results.clone());
-            }
-        }
 
         Ok(results)
     }
@@ -593,6 +611,62 @@ mod tests {
             assert!(
                 (a.fused_score - b.fused_score).abs() < f64::EPSILON,
                 "fused_scores must match"
+            );
+        }
+    }
+
+    #[test]
+    fn search_cache_hit_is_zero_copy_and_equivalent() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "fn alpha_handler() { process() }",
+        );
+        insert_chunk_file(
+            &engine,
+            "src/beta.rs",
+            Language::Rust,
+            "fn beta_helper() { alpha_handler() }",
+        );
+
+        let request = SearchRequest {
+            query: "alpha".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+
+        let first = engine.search(&request).unwrap();
+        let second = engine.search(&request).unwrap();
+        assert!(!first.is_empty(), "should find at least one result");
+        assert!(
+            Arc::ptr_eq(&first, &second),
+            "a cache hit must return the same shared allocation (zero-copy)"
+        );
+
+        // The shared slice must carry exactly what a fresh engine (separate
+        // cache, guaranteed miss) recomputes from the same DB.
+        let fresh_config = ProjectConfig {
+            search: engine.config.clone(),
+            ..Default::default()
+        };
+        let fresh_engine = SearchEngine::new(engine.db.clone(), &fresh_config, None);
+        let recomputed = fresh_engine.search(&request).unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &recomputed),
+            "fresh engine must recompute, not share the other engine's cache"
+        );
+        assert_eq!(first.len(), recomputed.len());
+        for (cached, fresh) in first.iter().zip(recomputed.iter()) {
+            assert_eq!(cached.chunk_id, fresh.chunk_id, "chunk_ids must match");
+            assert_eq!(cached.text, fresh.text, "chunk text must match");
+            assert!(
+                (cached.rerank_score - fresh.rerank_score).abs() < 1e-12,
+                "rerank_score must match: cached={} fresh={}",
+                cached.rerank_score,
+                fresh.rerank_score
             );
         }
     }

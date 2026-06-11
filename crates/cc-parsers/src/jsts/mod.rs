@@ -17,7 +17,17 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord};
-use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use cc_model::{CcResult, ElementKind, Language, ParseOutcome, ParserTier};
+
+/// AST-based call extraction carries receiver/scope context, so it is more
+/// precise than the regex fallback in extras.rs (which uses the tier baseline).
+const AST_CALL_CONFIDENCE: f64 = 0.85;
+
+/// React state setter detected only by the `setXxx(...)` name pattern.
+const STATE_SETTER_NAME_CONFIDENCE: f64 = 0.75;
+
+/// React state setter bound by explicit `const [x, setX] = useState(...)`.
+const STATE_SETTER_BINDING_CONFIDENCE: f64 = 0.90;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
@@ -664,7 +674,8 @@ impl JsTsParser {
                             key: tag_text.to_string(),
                             handler_expr: None,
                             handler_symbol_uid: None,
-                            confidence: 0.85,
+                            confidence: ParserTier::Semantic
+                                .element_confidence(ElementKind::DispatchSite),
                         });
                     }
                 }
@@ -880,7 +891,8 @@ impl JsTsParser {
                         method: infer_http_method(prop_text).map(|m| m.to_string()),
                         call_kind: "http".to_string(),
                         line,
-                        confidence: 0.85,
+                        confidence: ParserTier::TreeSitter
+                            .element_confidence(ElementKind::HttpCall),
                         parser_tier: ParserTier::TreeSitter,
                         broker_type: None,
                     });
@@ -905,7 +917,7 @@ impl JsTsParser {
                     key: event_name,
                     handler_expr,
                     handler_symbol_uid: None,
-                    confidence: 0.85,
+                    confidence: ParserTier::Semantic.element_confidence(ElementKind::DispatchSite),
                 });
             }
         }
@@ -926,7 +938,7 @@ impl JsTsParser {
                     key: event_name,
                     handler_expr: None,
                     handler_symbol_uid: None,
-                    confidence: 0.85,
+                    confidence: ParserTier::Semantic.element_confidence(ElementKind::DispatchSite),
                 });
             }
         }
@@ -946,7 +958,7 @@ impl JsTsParser {
                 key: "setState".to_string(),
                 handler_expr: None,
                 handler_symbol_uid: None,
-                confidence: 0.85,
+                confidence: ParserTier::Semantic.element_confidence(ElementKind::DispatchSite),
             });
         }
 
@@ -988,7 +1000,7 @@ impl JsTsParser {
             is_awaited,
             is_constructor: false,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.85,
+            parser_confidence: AST_CALL_CONFIDENCE,
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -1033,7 +1045,8 @@ impl JsTsParser {
                         ),
                         call_kind: "http".to_string(),
                         line,
-                        confidence: 0.85,
+                        confidence: ParserTier::TreeSitter
+                            .element_confidence(ElementKind::HttpCall),
                         parser_tier: ParserTier::TreeSitter,
                         broker_type: None,
                     });
@@ -1061,7 +1074,7 @@ impl JsTsParser {
                 key: callee.to_string(),
                 handler_expr: None,
                 handler_symbol_uid: None,
-                confidence: 0.75,
+                confidence: STATE_SETTER_NAME_CONFIDENCE,
             });
         }
 
@@ -1097,7 +1110,7 @@ impl JsTsParser {
             is_awaited,
             is_constructor: false,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.85,
+            parser_confidence: AST_CALL_CONFIDENCE,
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -1187,7 +1200,7 @@ impl JsTsParser {
                     is_awaited: false,
                     is_constructor: true,
                     parser_tier: ParserTier::Semantic,
-                    parser_confidence: 0.85,
+                    parser_confidence: AST_CALL_CONFIDENCE,
                     synthesized_by: None,
                     synthesis_key: None,
                     registered_file: None,
@@ -1713,7 +1726,7 @@ impl JsTsParser {
                                                 key: setter_name.to_string(),
                                                 handler_expr: None,
                                                 handler_symbol_uid: None,
-                                                confidence: 0.90,
+                                                confidence: STATE_SETTER_BINDING_CONFIDENCE,
                                             });
                                         }
                                     }
@@ -1819,7 +1832,7 @@ impl JsTsParser {
             signature: signature.map(String::from),
             doc: None,
             parser_tier: ParserTier::Semantic,
-            parser_confidence: 0.85,
+            parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::Symbol),
             qname: Some(qname.to_string()),
             parent_symbol_id: None,
             scope_id: None,
@@ -1947,7 +1960,7 @@ impl FileParser for JsTsParser {
         }
 
         let tier = ParserTier::Semantic;
-        let confidence = 0.85;
+        let confidence = tier.default_confidence();
         let semantic_edges = self.extract_semantic_edges(content, file_path, tier);
 
         // Extract data flow edges (type refs + env accesses + param/return flow)

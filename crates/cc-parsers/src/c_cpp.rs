@@ -8,7 +8,7 @@ use cc_model::edge::{
 };
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
-use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use cc_model::{CcResult, ElementKind, Language, ParseOutcome, ParserTier};
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
@@ -285,7 +285,7 @@ impl CCppParser {
             signature: Some(signature),
             doc,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -424,7 +424,7 @@ impl CCppParser {
             signature: Some(signature),
             doc,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -481,7 +481,7 @@ impl CCppParser {
             signature: Some(signature),
             doc,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -545,7 +545,7 @@ impl CCppParser {
             signature: Some(signature),
             doc: None,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -597,7 +597,7 @@ impl CCppParser {
             signature: Some(signature),
             doc: None,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -916,7 +916,7 @@ impl CCppParser {
             ref_end_line: Some(line_no),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallRef),
         });
 
         calls.push(CallEdgeRecord {
@@ -958,7 +958,7 @@ impl CCppParser {
             is_awaited: false,
             is_constructor: false,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallEdge),
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -1112,7 +1112,7 @@ impl CCppParser {
             ref_end_line: Some(line_no),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallRef),
         });
 
         calls.push(CallEdgeRecord {
@@ -1149,7 +1149,7 @@ impl CCppParser {
             is_awaited: false,
             is_constructor: true,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallEdge),
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -1217,7 +1217,8 @@ impl CCppParser {
                                                 target_symbol_uid: None,
                                                 relation_kind: SemanticRelation::Inherits,
                                                 line,
-                                                confidence: 0.95,
+                                                confidence: ParserTier::TreeSitter
+                                                    .element_confidence(ElementKind::SemanticEdge),
                                                 parser_tier: ParserTier::TreeSitter,
                                             });
                                         }
@@ -1394,7 +1395,7 @@ impl FileParser for CCppParser {
         ));
 
         let tier = ParserTier::TreeSitter;
-        let confidence = 0.7;
+        let confidence = tier.default_confidence();
         let lang_name = if self.is_cpp { "cpp" } else { "c" };
         let chunks = self
             .chunker

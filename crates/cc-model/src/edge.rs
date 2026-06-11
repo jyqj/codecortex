@@ -16,7 +16,7 @@
 /// - semantic_edges: confidence + parser_tier only
 /// - data_flow_edges: confidence + parser_tier only
 /// - test_edges: confidence only (no parser_tier!)
-/// - route_edges: confidence + parser_tier + framework
+/// - route_edges: confidence + parser_tier + framework + resolution_*
 use crate::ParserTier;
 use serde::{Deserialize, Serialize};
 
@@ -333,6 +333,14 @@ pub struct RouteEdgeRecord {
     pub route_kind: Option<String>,
     pub confidence: f64,
     pub parser_tier: ParserTier,
+    /// Which route-resolution tier produced `handler_symbol_uid`:
+    /// "route_dotted", "route_ladder:<ladder strategy>", or "route_global".
+    /// None when the handler was never resolved by `resolve_route_handler`.
+    #[serde(default)]
+    pub resolution_strategy: Option<String>,
+    /// Confidence of the winning resolution tier (0.0–1.0).
+    #[serde(default)]
+    pub resolution_confidence: Option<f64>,
 }
 
 #[cfg(test)]

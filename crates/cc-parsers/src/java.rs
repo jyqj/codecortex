@@ -9,7 +9,11 @@ use cc_model::edge::{
 use cc_model::id::StableId;
 use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
-use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
+use cc_model::{CcResult, ElementKind, Language, ParseOutcome, ParserTier};
+
+/// Throws edges inferred from `throw` statements inside bodies are less
+/// certain than relationships declared in a `throws` clause.
+const THROWS_STMT_CONFIDENCE: f64 = 0.9;
 use regex::Regex;
 use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
@@ -259,7 +263,7 @@ impl JavaParser {
             signature: Some(signature),
             doc,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -347,7 +351,7 @@ impl JavaParser {
             signature: Some(signature),
             doc,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -417,7 +421,7 @@ impl JavaParser {
             signature: Some(signature),
             doc,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
             parent_symbol_id: None,
             scope_id: None,
@@ -673,7 +677,7 @@ impl JavaParser {
             ref_end_line: Some(line_no),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallRef),
         });
 
         calls.push(CallEdgeRecord {
@@ -715,7 +719,7 @@ impl JavaParser {
             is_awaited: false,
             is_constructor: false,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallEdge),
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -799,7 +803,7 @@ impl JavaParser {
             ref_end_line: Some(line_no),
             ref_end_col: Some(end_col),
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallRef),
         });
 
         calls.push(CallEdgeRecord {
@@ -836,7 +840,7 @@ impl JavaParser {
             is_awaited: false,
             is_constructor: true,
             parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 0.7,
+            parser_confidence: ParserTier::TreeSitter.element_confidence(ElementKind::CallEdge),
             synthesized_by: None,
             synthesis_key: None,
             registered_file: None,
@@ -948,7 +952,8 @@ impl JavaParser {
                     target_symbol_uid: None,
                     relation_kind: SemanticRelation::Inherits,
                     line,
-                    confidence: 0.95,
+                    confidence: ParserTier::TreeSitter
+                        .element_confidence(ElementKind::SemanticEdge),
                     parser_tier: ParserTier::TreeSitter,
                 });
             }
@@ -1021,7 +1026,8 @@ impl JavaParser {
                                 target_symbol_uid: None,
                                 relation_kind: SemanticRelation::Throws,
                                 line: throws_line,
-                                confidence: 0.95,
+                                confidence: ParserTier::TreeSitter
+                                    .element_confidence(ElementKind::SemanticEdge),
                                 parser_tier: ParserTier::TreeSitter,
                             });
                         }
@@ -1066,7 +1072,7 @@ impl JavaParser {
                             target_symbol_uid: None,
                             relation_kind: SemanticRelation::Throws,
                             line,
-                            confidence: 0.9,
+                            confidence: THROWS_STMT_CONFIDENCE,
                             parser_tier: ParserTier::TreeSitter,
                         });
                     }
@@ -1163,7 +1169,7 @@ impl JavaParser {
             target_symbol_uid: None,
             relation_kind: SemanticRelation::Decorates,
             line,
-            confidence: 0.95,
+            confidence: ParserTier::TreeSitter.element_confidence(ElementKind::SemanticEdge),
             parser_tier: ParserTier::TreeSitter,
         });
     }
@@ -1212,7 +1218,8 @@ impl JavaParser {
                             target_symbol_uid: None,
                             relation_kind: relation,
                             line,
-                            confidence: 0.95,
+                            confidence: ParserTier::TreeSitter
+                                .element_confidence(ElementKind::SemanticEdge),
                             parser_tier: ParserTier::TreeSitter,
                         });
                     }
@@ -1654,7 +1661,7 @@ impl FileParser for JavaParser {
         );
 
         let tier = ParserTier::TreeSitter;
-        let confidence = 0.7;
+        let confidence = tier.default_confidence();
         let chunks = self
             .chunker
             .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);

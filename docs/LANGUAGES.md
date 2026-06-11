@@ -6,13 +6,25 @@ resolvers.
 
 ## Extraction tiers
 
-### Full tree-sitter parsing (confidence 0.7+)
+### Semantic (confidence 0.85)
 
-Python, JavaScript, TypeScript, TSX, JSX, Java, Go, Rust, C, C++
+Python, JavaScript, TypeScript, TSX, JSX, Rust
 
-All of these extract symbols, call edges, imports, data-flow edges (env access +
-param/return flow), and semantic edges. The remaining edge kinds are
-language-specific:
+Full tree-sitter parsing plus richer intra-file semantic extraction (qualified
+names, scopes, receiver/parameter types, dispatch sites, type refs). The tier
+describes parse-time extraction depth only — cross-file resolution happens
+later in cc-index and upgrades `resolution_confidence` separately.
+
+### TreeSitter (confidence 0.7)
+
+Java, Go, C, C++
+
+Full tree-sitter parsing with the standard symbol / call / import / semantic
+edge extraction, without the deeper intra-file semantic enrichment above.
+
+All ten Semantic and TreeSitter languages extract symbols, call edges, imports,
+data-flow edges (env access + param/return flow), and semantic edges. The
+remaining edge kinds are language-specific:
 
 - **Route edges:** Python, JS/TS, Go at the parser level; Java (Spring) and Rust
   (Actix / Axum) via framework resolvers.
@@ -33,13 +45,38 @@ hierarchies.
 
 ### Confidence tiers
 
-| Tier | Score | Source |
-|------|-------|--------|
+| Tier | Default | Source |
+|------|---------|--------|
 | Generic | 0.3 | Regex-based extraction |
 | Heuristic | 0.5 | Pattern matching with language awareness |
 | TreeSitter | 0.7 | Full AST parsing |
-| Semantic | 0.85 | Cross-reference resolved |
+| Semantic | 0.85 | Full AST parsing + richer intra-file semantic extraction |
 | Verified | 0.95 | Runtime-validated (via `ingest_traces`) |
+
+Parser-assigned extraction confidence per element kind is single-sourced in
+`ParserTier::element_confidence` (`crates/cc-model/src/lib.rs`); kinds not
+listed fall back to the tier default above:
+
+| Element kind | Semantic | TreeSitter |
+|--------------|----------|------------|
+| Symbol | 0.85 | 0.7 |
+| Call edge / call ref | 0.7 | 0.7 |
+| Identifier ref | 0.6 | 0.6 |
+| Semantic edge (declared) | 0.95 | 0.95 |
+| Type ref (data flow) | 0.85 | — |
+| Route | 0.85 | 0.8 |
+| HTTP call (AST-detected) | — | 0.8 |
+| Dispatch site | 0.85 | — |
+
+HTTP call edges carry the tier of their detection mechanism: AST-detected ones
+are recorded as TreeSitter (0.8), regex-detected ones via
+`http_call_helpers.rs` as Heuristic (0.7). Env-access data-flow edges are
+always regex-detected and recorded as Heuristic (0.8). Deliberate deviations stay at the
+call site as named constants — e.g. per-framework route calibration (Next.js
+0.92, Express 0.90, NestJS 0.88, middleware 0.80, DRF 0.75, Django urls 0.8),
+JS/TS AST-based call edges (0.85), and throws edges inferred from
+`raise`/`throw` statements (0.9). Resolution-time confidence assigned by the
+cc-index resolver is a separate concept and not covered by this matrix.
 
 ## Extraction capability notes
 

@@ -241,14 +241,24 @@ impl CodeIndex {
         Ok(report)
     }
 
+    /// Bundled auto-index entry point (prepare + commit inline), routed
+    /// through the same split internals as the lock-aware callers so every
+    /// index build shares one implementation. Callers that must not hold the
+    /// `CodeIndex` write lock during prepare should instead clone
+    /// `build_inputs`/`auto_index_file_limit` under a read lock, run
+    /// `prepare_build` with no lock, and `commit_build` under the write lock.
     pub fn build_auto_index(&mut self, full: bool) -> CcResult<IndexReport> {
-        let project = self.ensure_project()?;
-        let config = self.ensure_config()?;
-        let db = self.ensure_db()?;
-        let indexer = Indexer::new(db.clone(), project, &config.indexing);
-        let report = indexer.build_auto_index(project, full, config.auto_index.file_limit)?;
-        self.after_successful_index_build();
-        Ok(report)
+        let file_limit = self.auto_index_file_limit()?;
+        let inputs = self.build_inputs()?;
+        let prepared = Self::prepare_build(&inputs, full, Some(file_limit))?;
+        self.commit_build(&inputs, full, Some(file_limit), prepared)
+    }
+
+    /// Auto-index file-count gate (`auto_index.file_limit` from project
+    /// config), passed as `auto_file_limit` to the split prepare/commit pair
+    /// so oversized repos are skipped during the lock-free prepare phase.
+    pub fn auto_index_file_limit(&self) -> CcResult<usize> {
+        Ok(self.ensure_config()?.auto_index.file_limit)
     }
 
     /// Clone the owned inputs needed to drive a split build. Call this under a
@@ -1030,6 +1040,44 @@ mod tests {
 
         let auto_report = idx.build_auto_index(false).unwrap();
         assert!(auto_report.files_scanned >= 1);
+    }
+
+    // ── auto-index file-limit gate fires during lock-free prepare ───
+
+    #[test]
+    fn auto_index_file_limit_gates_prepare() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            r#"{"auto_index": {"file_limit": 1}}"#,
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("a.rs"), "pub fn alpha() {}\n").unwrap();
+        std::fs::write(dir.path().join("b.rs"), "pub fn beta() {}\n").unwrap();
+
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        assert_eq!(idx.auto_index_file_limit().unwrap(), 1);
+
+        // The gate fires inside the lock-free prepare half, so split callers
+        // skip oversized repos without ever taking the write lock.
+        let inputs = idx.build_inputs().unwrap();
+        match CodeIndex::prepare_build(&inputs, false, Some(1)) {
+            Ok(_) => panic!("prepare must be gated by the auto-index file limit"),
+            Err(err) => assert!(
+                err.to_string().contains("auto-index skipped"),
+                "unexpected prepare error: {err}"
+            ),
+        }
+
+        // The bundled entry point routes through the same split internals.
+        match idx.build_auto_index(false) {
+            Ok(_) => panic!("bundled auto-index must be gated by the file limit"),
+            Err(err) => assert!(
+                err.to_string().contains("auto-index skipped"),
+                "unexpected bundled error: {err}"
+            ),
+        }
     }
 
     // ── build_context_search_request propagates overrides ──────────

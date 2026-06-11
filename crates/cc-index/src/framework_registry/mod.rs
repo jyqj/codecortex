@@ -13,15 +13,33 @@
 //!   - package marker:    +0.60  (package.json / pyproject / go.mod / Cargo.toml)
 //!
 //! A framework is considered detected when its score exceeds `DETECTION_THRESHOLD`.
+//!
+//! Each detection signal lives in its own submodule and owns its literal table
+//! plus its SQL/scan logic, declared once as a [`FrameworkSignalSpec`]
+//! (mirroring `SynthesisPassSpec` in `dispatch_synthesis`). [`signal_registry`]
+//! lists the per-file signals in execution order; the orchestration here only
+//! iterates the registry, aggregates repo-level signals, persists, and queries.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use cc_db::index_db::{
-    read_chunk_text_with_encoding, FileFrameworkRecord, FileFrameworkSignal, IndexDb,
-    RepoFrameworkRecord,
-};
+use cc_db::index_db::{FileFrameworkRecord, FileFrameworkSignal, IndexDb, RepoFrameworkRecord};
 use cc_model::{CcError, CcResult};
+
+mod activation;
+mod file_path;
+mod import_marker;
+mod package_manifest;
+mod route_framework;
+mod symbol_pattern;
+
+// Shared consumers keep their existing paths: indexer.rs enrichment reads the
+// import-marker table, and `check_package_markers` is part of the public API.
+pub(crate) use import_marker::import_marker_table;
+pub use package_manifest::check_package_markers;
+
+use activation::activation_literals_table;
+use route_framework::normalize_route_framework;
 
 // ---------------------------------------------------------------------------
 // Configuration
@@ -52,419 +70,59 @@ pub struct FileFrameworkDetection {
 }
 
 // ---------------------------------------------------------------------------
-// Import marker table  (framework_key -> list of import strings)
+// Declarative signal seam
 // ---------------------------------------------------------------------------
 
-pub(crate) fn import_marker_table() -> &'static [(&'static str, &'static [&'static str])] {
-    &[
-        ("express", &["express"]),
-        ("fastify", &["fastify"]),
-        ("react", &["react", "react-dom"]),
-        (
-            "nextjs",
-            &["next", "next/server", "next/router", "next/navigation"],
-        ),
-        ("nestjs", &["@nestjs/common", "@nestjs/core"]),
-        ("fastapi", &["fastapi", "starlette"]),
-        ("django", &["django"]),
-        ("flask", &["flask"]),
-        ("koa", &["koa"]),
-        ("vue", &["vue"]),
-        ("angular", &["@angular/core"]),
-        ("gin", &["github.com/gin-gonic/gin"]),
-        ("echo", &["github.com/labstack/echo"]),
-        ("fiber", &["github.com/gofiber/fiber"]),
-        ("chi", &["github.com/go-chi/chi"]),
-        ("gorilla", &["github.com/gorilla/mux"]),
-        ("net_http", &["net/http"]),
-        ("spring", &["org.springframework", "spring-boot"]),
-        ("axum", &["axum"]),
-        ("actix", &["actix-web", "actix_web"]),
-        ("rocket", &["rocket"]),
-        // --- Laravel (PHP) ---
-        (
-            "laravel",
-            &[
-                "Illuminate\\",
-                "Illuminate\\Http",
-                "Illuminate\\Routing",
-                "Illuminate\\Support",
-            ],
-        ),
-        // --- Rails (Ruby) ---
-        (
-            "rails",
-            &["rails", "action_controller", "active_record", "action_view"],
-        ),
-        // --- ASP.NET (C#) ---
-        (
-            "aspnet",
-            &[
-                "Microsoft.AspNetCore",
-                "Microsoft.AspNetCore.Mvc",
-                "Microsoft.AspNetCore.Http",
-            ],
-        ),
-        // --- SvelteKit ---
-        ("sveltekit", &["@sveltejs/kit", "$app/navigation"]),
-        // --- Vue Router ---
-        ("vue_router", &["vue-router"]),
-        // --- Nuxt ---
-        ("nuxt", &["nuxt", "#app", "@nuxt/kit"]),
-        // --- Remix ---
-        (
-            "remix",
-            &[
-                "@remix-run/react",
-                "@remix-run/node",
-                "@remix-run/cloudflare",
-                "@remix-run/serve",
-            ],
-        ),
-        // --- Hono ---
-        ("hono", &["hono"]),
-    ]
+/// Read-only inputs shared by every per-file detection signal scan.
+pub(crate) struct SignalContext<'a> {
+    pub(crate) conn: &'a rusqlite::Connection,
+    pub(crate) file_path: &'a str,
 }
 
-// ---------------------------------------------------------------------------
-// File path pattern table  (framework_key -> path substrings)
-// ---------------------------------------------------------------------------
-
-fn file_path_pattern_table() -> &'static [(&'static str, &'static [&'static str])] {
-    &[
-        ("nextjs", &["app/", "pages/", "next.config"]),
-        ("django", &["urls.py", "views.py", "models.py", "admin.py"]),
-        ("flask", &["templates/", "static/"]),
-        ("angular", &[".component.ts", ".module.ts", ".service.ts"]),
-        ("vue", &[".vue"]),
-        (
-            "spring",
-            &[
-                "Application.java",
-                "Controller.java",
-                "Service.java",
-                "Repository.java",
-            ],
-        ),
-        // --- Laravel ---
-        (
-            "laravel",
-            &[
-                "app/Http/Controllers",
-                "routes/web.php",
-                "routes/api.php",
-                "app/Providers",
-                "resources/views",
-            ],
-        ),
-        // --- Rails ---
-        (
-            "rails",
-            &[
-                "app/controllers/",
-                "config/routes.rb",
-                "app/models/",
-                "app/views/",
-            ],
-        ),
-        // --- ASP.NET ---
-        (
-            "aspnet",
-            &[
-                "Controllers/",
-                "Program.cs",
-                "Startup.cs",
-                "appsettings.json",
-            ],
-        ),
-        // --- SvelteKit ---
-        (
-            "sveltekit",
-            &[
-                "src/routes/+page.svelte",
-                "src/routes/+layout.svelte",
-                "src/routes/+server.ts",
-                "svelte.config",
-            ],
-        ),
-        // --- Nuxt ---
-        ("nuxt", &["nuxt.config", "pages/", "composables/"]),
-        // --- Remix ---
-        ("remix", &["app/routes/", "app/root.tsx", "app/root.jsx"]),
-    ]
+/// Single declaration point for one per-file detection signal: its identity
+/// and its scan entry point. Each signal accumulates weighted detections into
+/// the shared map; thresholding happens once after all signals ran.
+pub(crate) struct FrameworkSignalSpec {
+    /// Stable signal identifier (assertions, tests).
+    pub(crate) id: &'static str,
+    /// Scan one file's index data and accumulate weighted detections.
+    pub(crate) detect: fn(&SignalContext, &mut HashMap<String, FileFrameworkDetection>),
 }
 
-// ---------------------------------------------------------------------------
-// Symbol role -> framework key mapping
-// ---------------------------------------------------------------------------
-
-fn role_to_framework() -> &'static [(&'static str, &'static str)] {
-    &[
-        ("hook", "react"),
-        ("component", "react"),
-        ("controller", "nestjs"),
-        ("route_handler", "nestjs"),
-        ("service", "nestjs"),
-        ("middleware", "express"),
-        ("spring_controller", "spring"),
-        ("spring_service", "spring"),
-        ("spring_repository", "spring"),
-        ("laravel_controller", "laravel"),
-        ("rails_controller", "rails"),
-        ("aspnet_controller", "aspnet"),
-        ("gin_handler", "gin"),
-        ("axum_handler", "axum"),
-        ("actix_handler", "actix"),
-        ("rocket_handler", "rocket"),
-    ]
+/// All per-file detection signals in execution order. Import markers run
+/// first so the `require()` fallback's already-detected snapshot covers
+/// exactly the declared-import matches of the same scan.
+pub(crate) fn signal_registry() -> &'static [FrameworkSignalSpec] {
+    const REGISTRY: &[FrameworkSignalSpec] = &[
+        import_marker::SPEC,
+        file_path::SPEC,
+        route_framework::SPEC,
+        symbol_pattern::SPEC,
+    ];
+    debug_assert!(
+        REGISTRY
+            .iter()
+            .map(|spec| spec.id)
+            .collect::<HashSet<_>>()
+            .len()
+            == REGISTRY.len(),
+        "framework signal ids must be unique"
+    );
+    REGISTRY
 }
 
-// ---------------------------------------------------------------------------
-// Activation literals table (for compute_active_frameworks task text matching)
-// ---------------------------------------------------------------------------
-
-fn activation_literals_table() -> &'static [(&'static str, &'static [&'static str])] {
-    &[
-        (
-            "express",
-            &[
-                "express",
-                "router",
-                "middleware",
-                "req",
-                "res",
-                "app.get",
-                "app.post",
-            ],
-        ),
-        (
-            "fastify",
-            &["fastify", "reply", "request.body", "server.listen"],
-        ),
-        (
-            "react",
-            &[
-                "useState",
-                "useEffect",
-                "component",
-                "jsx",
-                "props",
-                "render",
-            ],
-        ),
-        (
-            "nextjs",
-            &[
-                "nextjs",
-                "next",
-                "getServerSideProps",
-                "getStaticProps",
-                "NextRequest",
-                "NextResponse",
-                "app router",
-            ],
-        ),
-        (
-            "nestjs",
-            &[
-                "nestjs",
-                "@Controller",
-                "@Injectable",
-                "@Module",
-                "@Get",
-                "@Post",
-                "dependency injection",
-            ],
-        ),
-        (
-            "fastapi",
-            &[
-                "fastapi",
-                "uvicorn",
-                "Depends",
-                "HTTPException",
-                "pydantic",
-                "BaseModel",
-            ],
-        ),
-        (
-            "django",
-            &[
-                "django",
-                "urlpatterns",
-                "HttpResponse",
-                "models.Model",
-                "admin.site",
-            ],
-        ),
-        (
-            "spring",
-            &[
-                "spring",
-                "SpringBootApplication",
-                "RestController",
-                "RequestMapping",
-                "GetMapping",
-                "PostMapping",
-                "Autowired",
-            ],
-        ),
-        ("chi", &["chi", "go-chi", "chi.NewRouter", "chi.Router"]),
-        (
-            "gorilla",
-            &["gorilla", "mux.NewRouter", "mux.Router", "gorilla/mux"],
-        ),
-        (
-            "gin",
-            &[
-                "gin",
-                "gin.Default",
-                "gin.New",
-                "gin.Context",
-                "r.GET",
-                "r.POST",
-            ],
-        ),
-        (
-            "echo",
-            &["echo", "echo.New", "echo.Context", "e.GET", "e.POST"],
-        ),
-        (
-            "axum",
-            &[
-                "axum",
-                "Router::new",
-                ".route(",
-                "axum::extract",
-                "axum::response",
-            ],
-        ),
-        (
-            "actix",
-            &[
-                "actix",
-                "actix-web",
-                "HttpServer",
-                "web::get",
-                "web::post",
-                "web::resource",
-            ],
-        ),
-        (
-            "rocket",
-            &[
-                "rocket",
-                "#[get",
-                "#[post",
-                "rocket::launch",
-                "rocket::routes",
-            ],
-        ),
-        (
-            "laravel",
-            &[
-                "laravel",
-                "Eloquent",
-                "Illuminate",
-                "artisan",
-                "Route::get",
-                "Route::post",
-            ],
-        ),
-        (
-            "rails",
-            &[
-                "rails",
-                "ActiveRecord",
-                "ActionController",
-                "routes.rb",
-                "resources",
-            ],
-        ),
-        (
-            "aspnet",
-            &[
-                "asp.net",
-                "aspnet",
-                "ApiController",
-                "HttpGet",
-                "HttpPost",
-                "IActionResult",
-            ],
-        ),
-        (
-            "sveltekit",
-            &[
-                "sveltekit",
-                "svelte",
-                "+page.svelte",
-                "+server",
-                "load function",
-            ],
-        ),
-        (
-            "nuxt",
-            &[
-                "nuxt",
-                "nuxt3",
-                "useFetch",
-                "defineNuxtConfig",
-                "useAsyncData",
-            ],
-        ),
-        (
-            "remix",
-            &["remix", "@remix-run", "loader", "action", "useLoaderData"],
-        ),
-        (
-            "vue_router",
-            &[
-                "vue-router",
-                "router",
-                "useRoute",
-                "useRouter",
-                "createRouter",
-            ],
-        ),
-        (
-            "hono",
-            &["hono", "Hono", "app.get", "app.post", "c.json", "c.text"],
-        ),
-    ]
-}
-
-// ---------------------------------------------------------------------------
-// Route framework normalization
-// ---------------------------------------------------------------------------
-
-fn normalize_route_framework(fw: &str) -> Option<&'static str> {
-    match fw.to_lowercase().as_str() {
-        "express" => Some("express"),
-        "fastify" => Some("fastify"),
-        "django" => Some("django"),
-        "fastapi" => Some("fastapi"),
-        "nestjs" => Some("nestjs"),
-        "koa" => Some("koa"),
-        "gin" => Some("gin"),
-        "echo" => Some("echo"),
-        "fiber" => Some("fiber"),
-        "axum" => Some("axum"),
-        "actix" => Some("actix"),
-        "rocket" => Some("rocket"),
-        "spring" => Some("spring"),
-        "chi" => Some("chi"),
-        "gorilla" => Some("gorilla"),
-        "net/http" | "net_http" => Some("net_http"),
-        "laravel" => Some("laravel"),
-        "rails" => Some("rails"),
-        "aspnet" | "asp.net" => Some("aspnet"),
-        "sveltekit" => Some("sveltekit"),
-        "vue_router" | "vue-router" => Some("vue_router"),
-        "nuxt" => Some("nuxt"),
-        "remix" => Some("remix"),
-        "hono" => Some("hono"),
-        _ => None,
-    }
+/// Fetch-or-create the accumulating detection entry for `fw_key`.
+fn detection_entry<'a>(
+    detections: &'a mut HashMap<String, FileFrameworkDetection>,
+    fw_key: &str,
+) -> &'a mut FileFrameworkDetection {
+    detections
+        .entry(fw_key.to_string())
+        .or_insert_with(|| FileFrameworkDetection {
+            framework_key: fw_key.to_string(),
+            confidence: 0.0,
+            signals: Vec::new(),
+        })
 }
 
 // ---------------------------------------------------------------------------
@@ -491,325 +149,16 @@ fn detect_file_frameworks_conn(
     file_path: &str,
 ) -> Vec<FileFrameworkDetection> {
     let mut detections: HashMap<String, FileFrameworkDetection> = HashMap::new();
+    let ctx = SignalContext { conn, file_path };
 
-    // --- 1. Import markers ---
-    let import_strings: Vec<String> = conn
-        .prepare_cached("SELECT import_string FROM imports WHERE file_path = ?1")
-        .ok()
-        .and_then(|mut stmt| {
-            stmt.query_map(rusqlite::params![file_path], |row| row.get::<_, String>(0))
-                .ok()
-                .map(|rows| rows.filter_map(|r| r.ok()).collect())
-        })
-        .unwrap_or_default();
-
-    let import_lower: Vec<String> = import_strings.iter().map(|s| s.to_lowercase()).collect();
-
-    for &(fw_key, markers) in import_marker_table() {
-        for marker in markers {
-            let marker_lower = marker.to_lowercase();
-            if import_lower
-                .iter()
-                .any(|imp| *imp == marker_lower || imp.starts_with(&format!("{}/", marker_lower)))
-            {
-                let det = detections.entry(fw_key.to_string()).or_insert_with(|| {
-                    FileFrameworkDetection {
-                        framework_key: fw_key.to_string(),
-                        confidence: 0.0,
-                        signals: Vec::new(),
-                    }
-                });
-                det.confidence += WEIGHT_IMPORT;
-                det.signals.push(format!("import:{}", marker));
-                break; // one marker match per framework is enough
-            }
-        }
-    }
-
-    // --- 1b. CommonJS require() fallback: scan first 3 chunks for require('pkg') ---
-    let already_detected: Vec<String> = detections.keys().cloned().collect();
-    let chunk_text: String = conn
-        .prepare_cached(
-            "SELECT text, text_encoding FROM chunks WHERE file_path = ?1 ORDER BY chunk_index LIMIT 3",
-        )
-        .ok()
-        .and_then(|mut stmt| {
-            stmt.query_map(rusqlite::params![file_path], |row| {
-                read_chunk_text_with_encoding(row, 0, 1)
-            })
-                .ok()
-                .map(|rows| {
-                    rows.filter_map(|r| r.ok())
-                        .collect::<Vec<String>>()
-                        .join(" ")
-                })
-        })
-        .unwrap_or_default()
-        .to_lowercase();
-
-    if !chunk_text.is_empty() {
-        for &(fw_key, markers) in import_marker_table() {
-            if already_detected.contains(&fw_key.to_string()) {
-                continue;
-            }
-            for marker in markers {
-                let m = marker.to_lowercase();
-                if chunk_text.contains(&format!("require('{}')", m))
-                    || chunk_text.contains(&format!("require(\"{}\")", m))
-                {
-                    let det = detections.entry(fw_key.to_string()).or_insert_with(|| {
-                        FileFrameworkDetection {
-                            framework_key: fw_key.to_string(),
-                            confidence: 0.0,
-                            signals: Vec::new(),
-                        }
-                    });
-                    det.confidence += WEIGHT_IMPORT;
-                    det.signals.push(format!("require:{}", marker));
-                    break;
-                }
-            }
-        }
-    }
-
-    // --- 2. File path conventions ---
-    for &(fw_key, patterns) in file_path_pattern_table() {
-        for pattern in patterns {
-            if file_path.contains(pattern) {
-                let det = detections.entry(fw_key.to_string()).or_insert_with(|| {
-                    FileFrameworkDetection {
-                        framework_key: fw_key.to_string(),
-                        confidence: 0.0,
-                        signals: Vec::new(),
-                    }
-                });
-                let signal = format!("file_path:{}", pattern);
-                if !det.signals.contains(&signal) {
-                    det.confidence += WEIGHT_FILE_PATH;
-                    det.signals.push(signal);
-                }
-                break;
-            }
-        }
-    }
-
-    // --- 3. Route framework signal from route_edges ---
-    if let Ok(mut stmt) = conn.prepare_cached(
-        "SELECT DISTINCT framework FROM routes WHERE file_path = ?1 AND framework IS NOT NULL AND framework != ''",
-    ) {
-        if let Ok(rows) = stmt.query_map(rusqlite::params![file_path], |row| row.get::<_, String>(0))
-        {
-            for row in rows.flatten() {
-                if let Some(fw_key) = normalize_route_framework(&row) {
-                    let det = detections
-                        .entry(fw_key.to_string())
-                        .or_insert_with(|| FileFrameworkDetection {
-                            framework_key: fw_key.to_string(),
-                            confidence: 0.0,
-                            signals: Vec::new(),
-                        });
-                    let signal = format!("route_framework:{}", row);
-                    if !det.signals.contains(&signal) {
-                        det.confidence += WEIGHT_ROUTE_FRAMEWORK;
-                        det.signals.push(signal);
-                    }
-                }
-            }
-        }
-    }
-
-    // --- 4. Symbol pattern detection (framework_role from parser) ---
-    if let Ok(mut stmt) = conn.prepare_cached(
-        "SELECT framework_role FROM symbols WHERE file_path = ?1 AND framework_role IS NOT NULL",
-    ) {
-        if let Ok(rows) =
-            stmt.query_map(rusqlite::params![file_path], |row| row.get::<_, String>(0))
-        {
-            for role in rows.flatten() {
-                for &(r, fw_key) in role_to_framework() {
-                    if role == r {
-                        let det = detections.entry(fw_key.to_string()).or_insert_with(|| {
-                            FileFrameworkDetection {
-                                framework_key: fw_key.to_string(),
-                                confidence: 0.0,
-                                signals: Vec::new(),
-                            }
-                        });
-                        let signal = format!("symbol_pattern:{}", role);
-                        if !det.signals.contains(&signal) {
-                            det.confidence += WEIGHT_SYMBOL_PATTERN;
-                            det.signals.push(signal);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
+    for spec in signal_registry() {
+        (spec.detect)(&ctx, &mut detections);
     }
 
     detections
         .into_values()
         .filter(|d| d.confidence >= DETECTION_THRESHOLD)
         .collect()
-}
-
-// ---------------------------------------------------------------------------
-// Package manifest checking
-// ---------------------------------------------------------------------------
-
-/// Check package manifest files for framework dependencies.
-///
-/// Returns `framework_key -> confidence` for each detected framework.
-pub fn check_package_markers(project_path: &Path) -> HashMap<String, f64> {
-    let mut results: HashMap<String, f64> = HashMap::new();
-
-    // --- package.json (Node.js) ---
-    if let Ok(content) = std::fs::read_to_string(project_path.join("package.json")) {
-        if let Ok(pkg) = serde_json::from_str::<serde_json::Value>(&content) {
-            let deps = merge_deps(&pkg);
-            let checks: &[(&str, &str)] = &[
-                ("express", "express"),
-                ("fastify", "fastify"),
-                ("react", "react"),
-                ("nextjs", "next"),
-                ("nestjs", "@nestjs/core"),
-                ("nestjs", "@nestjs/common"),
-                ("koa", "koa"),
-                ("vue", "vue"),
-                ("angular", "@angular/core"),
-                ("hono", "hono"),
-                ("sveltekit", "@sveltejs/kit"),
-                ("vue_router", "vue-router"),
-                ("nuxt", "nuxt"),
-                ("remix", "@remix-run/react"),
-                ("remix", "@remix-run/node"),
-            ];
-            for &(fw_key, dep) in checks {
-                if deps.contains(&dep.to_string()) {
-                    let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                    *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-                }
-            }
-        }
-    }
-
-    // --- pyproject.toml / requirements.txt / setup.py (Python) ---
-    let py_files = ["pyproject.toml", "requirements.txt", "setup.py"];
-    for fname in &py_files {
-        if let Ok(content) = std::fs::read_to_string(project_path.join(fname)) {
-            let lower = content.to_lowercase();
-            let checks: &[(&str, &str)] = &[
-                ("fastapi", "fastapi"),
-                ("django", "django"),
-                ("flask", "flask"),
-            ];
-            for &(fw_key, dep) in checks {
-                if lower.contains(dep) {
-                    let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                    *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-                }
-            }
-        }
-    }
-
-    // --- go.mod (Go) ---
-    if let Ok(content) = std::fs::read_to_string(project_path.join("go.mod")) {
-        let checks: &[(&str, &str)] = &[
-            ("gin", "github.com/gin-gonic/gin"),
-            ("echo", "github.com/labstack/echo"),
-            ("fiber", "github.com/gofiber/fiber"),
-            ("chi", "github.com/go-chi/chi"),
-            ("gorilla", "github.com/gorilla/mux"),
-        ];
-        for &(fw_key, dep) in checks {
-            if content.contains(dep) {
-                let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-            }
-        }
-    }
-
-    // --- pom.xml / build.gradle (Java / Spring) ---
-    for fname in &["pom.xml", "build.gradle", "build.gradle.kts"] {
-        if let Ok(content) = std::fs::read_to_string(project_path.join(fname)) {
-            let checks: &[(&str, &str)] =
-                &[("spring", "org.springframework"), ("spring", "spring-boot")];
-            for &(fw_key, dep) in checks {
-                if content.contains(dep) {
-                    let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                    *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-                }
-            }
-        }
-    }
-
-    // --- Cargo.toml (Rust) ---
-    if let Ok(content) = std::fs::read_to_string(project_path.join("Cargo.toml")) {
-        let checks: &[(&str, &str)] = &[
-            ("actix", "actix-web"),
-            ("axum", "axum"),
-            ("rocket", "rocket"),
-        ];
-        for &(fw_key, dep) in checks {
-            if content.contains(dep) {
-                let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-            }
-        }
-    }
-
-    // --- composer.json (PHP / Laravel) ---
-    if let Ok(content) = std::fs::read_to_string(project_path.join("composer.json")) {
-        let lower = content.to_lowercase();
-        let checks: &[(&str, &str)] =
-            &[("laravel", "laravel/framework"), ("laravel", "illuminate/")];
-        for &(fw_key, dep) in checks {
-            if lower.contains(dep) {
-                let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-            }
-        }
-    }
-
-    // --- Gemfile (Ruby / Rails) ---
-    if let Ok(content) = std::fs::read_to_string(project_path.join("Gemfile")) {
-        let checks: &[(&str, &str)] = &[("rails", "rails")];
-        for &(fw_key, dep) in checks {
-            if content.contains(dep) {
-                let entry = results.entry(fw_key.to_string()).or_insert(0.0);
-                *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-            }
-        }
-    }
-
-    // --- *.csproj (ASP.NET / C#) ---
-    if let Ok(entries) = std::fs::read_dir(project_path) {
-        for entry in entries.flatten() {
-            let path = entry.path();
-            if path.extension().and_then(|e| e.to_str()) == Some("csproj") {
-                if let Ok(content) = std::fs::read_to_string(&path) {
-                    if content.contains("Microsoft.AspNetCore")
-                        || content.contains("Microsoft.NET.Sdk.Web")
-                    {
-                        let entry = results.entry("aspnet".to_string()).or_insert(0.0);
-                        *entry = (*entry + WEIGHT_PACKAGE_MARKER).min(0.95);
-                    }
-                }
-            }
-        }
-    }
-
-    results
-}
-
-fn merge_deps(pkg: &serde_json::Value) -> Vec<String> {
-    let mut deps = Vec::new();
-    for key in &["dependencies", "devDependencies", "peerDependencies"] {
-        if let Some(obj) = pkg.get(key).and_then(|v| v.as_object()) {
-            deps.extend(obj.keys().cloned());
-        }
-    }
-    deps
 }
 
 // ---------------------------------------------------------------------------
@@ -864,13 +213,7 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
         if let Ok(rows) = stmt.query_map([], |row| row.get::<_, String>(0)) {
             for fw in rows.flatten() {
                 if let Some(fw_key) = normalize_route_framework(&fw) {
-                    let det = repo_scores.entry(fw_key.to_string()).or_insert_with(|| {
-                        FileFrameworkDetection {
-                            framework_key: fw_key.to_string(),
-                            confidence: 0.0,
-                            signals: Vec::new(),
-                        }
-                    });
+                    let det = detection_entry(&mut repo_scores, fw_key);
                     det.confidence = (det.confidence + WEIGHT_ROUTE_FRAMEWORK).min(0.95);
                     det.signals.push(format!("route_framework:{}", fw));
                 }
@@ -881,13 +224,7 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
     // 3. Package marker signal from filesystem
     let pkg_markers = check_package_markers(project_path);
     for (fw_key, pkg_conf) in pkg_markers {
-        let det = repo_scores
-            .entry(fw_key.clone())
-            .or_insert_with(|| FileFrameworkDetection {
-                framework_key: fw_key,
-                confidence: 0.0,
-                signals: Vec::new(),
-            });
+        let det = detection_entry(&mut repo_scores, &fw_key);
         det.confidence = (det.confidence + pkg_conf).min(0.95);
         det.signals.push("package_marker".to_string());
     }
@@ -1179,6 +516,21 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
 
+    /// The `require()` fallback inside the import-marker signal snapshots
+    /// `already_detected` from the detections accumulated so far; it must see
+    /// exactly the declared-import hits of the same scan and nothing from the
+    /// later signals. Reordering the registry would silently change detection
+    /// results, so the order is pinned here.
+    #[test]
+    fn test_import_marker_signal_runs_first() {
+        assert_eq!(
+            signal_registry()[0].id,
+            "import_marker",
+            "import_marker must stay first: the require() fallback snapshot \
+             depends on it running before any other signal"
+        );
+    }
+
     /// Helper: create a minimal IndexDb with the schema.
     fn setup_test_db() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
@@ -1448,6 +800,89 @@ mod tests {
         assert!(
             markers.contains_key("sveltekit"),
             "should detect sveltekit from package.json"
+        );
+    }
+
+    /// Characterization lock for the per-file signal scan: covers the signal
+    /// paths the other tests miss (CommonJS `require()` fallback, route
+    /// framework, symbol pattern), cross-signal score accumulation, signal
+    /// ordering within a detection, and threshold filtering of weak signals.
+    #[test]
+    fn test_detection_signals_characterization() {
+        let (_tmp, db) = setup_test_db();
+
+        // --- require() fallback: marker only inside chunk text, no import rows ---
+        insert_test_file(&db, "src/legacy_server.js", &[]);
+        {
+            let conn = db.reads().read_conn().unwrap();
+            conn.execute(
+                "INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, text) \
+                 VALUES('ck_legacy', 'src/legacy_server.js', 'javascript', 0, 1, 10, ?1)",
+                rusqlite::params!["const Koa = require('koa');"],
+            )
+            .unwrap();
+        }
+        let dets = detect_file_frameworks(&db, "src/legacy_server.js");
+        assert_eq!(dets.len(), 1, "only koa should be detected");
+        assert_eq!(dets[0].framework_key, "koa");
+        assert!((dets[0].confidence - WEIGHT_IMPORT).abs() < 0.001);
+        assert_eq!(dets[0].signals, vec!["require:koa".to_string()]);
+
+        // --- combined file: import + route + symbol signals accumulate; the
+        //     require() fallback must NOT double-count an already-imported
+        //     framework; a lone symbol signal stays below threshold ---
+        insert_test_file(&db, "src/combined_api.ts", &["express"]);
+        {
+            let conn = db.reads().read_conn().unwrap();
+            conn.execute(
+                "INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, text) \
+                 VALUES('ck_combined', 'src/combined_api.ts', 'typescript', 0, 1, 10, ?1)",
+                rusqlite::params!["const express = require('express');"],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO routes(edge_id, file_path, route_path, line, framework) \
+                 VALUES('rt_combined', 'src/combined_api.ts', '/users', 3, 'Express')",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, framework_role) \
+                 VALUES('sym_mw', 'src/combined_api.ts', 'authMiddleware', 'function', 1, 5, 'middleware')",
+                [],
+            )
+            .unwrap();
+            // role 'hook' maps to react, but symbol weight alone is sub-threshold
+            conn.execute(
+                "INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, framework_role) \
+                 VALUES('sym_hook', 'src/combined_api.ts', 'useThing', 'function', 6, 9, 'hook')",
+                [],
+            )
+            .unwrap();
+        }
+        let dets = detect_file_frameworks(&db, "src/combined_api.ts");
+        assert_eq!(
+            dets.len(),
+            1,
+            "express only; sub-threshold react must be filtered, got: {:?}",
+            dets.iter().map(|d| &d.framework_key).collect::<Vec<_>>()
+        );
+        let express_det = &dets[0];
+        assert_eq!(express_det.framework_key, "express");
+        let expected_conf = WEIGHT_IMPORT + WEIGHT_ROUTE_FRAMEWORK + WEIGHT_SYMBOL_PATTERN;
+        assert!(
+            (express_det.confidence - expected_conf).abs() < 0.001,
+            "confidence should accumulate import + route + symbol weights, got {}",
+            express_det.confidence
+        );
+        assert_eq!(
+            express_det.signals,
+            vec![
+                "import:express".to_string(),
+                "route_framework:Express".to_string(),
+                "symbol_pattern:middleware".to_string(),
+            ],
+            "signal order must follow the scan order (import, route, symbol)"
         );
     }
 

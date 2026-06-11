@@ -170,6 +170,8 @@ impl LaravelResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             })
             .collect()
     }
@@ -230,6 +232,8 @@ impl FrameworkResolver for LaravelResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.85,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -262,6 +266,8 @@ impl FrameworkResolver for LaravelResolver {
                 route_kind: Some("http".to_string()),
                 confidence: 0.85,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -303,6 +309,8 @@ impl FrameworkResolver for LaravelResolver {
                 route_kind: Some("group_file".to_string()),
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -332,6 +340,8 @@ impl FrameworkResolver for LaravelResolver {
                 route_kind: Some("group_file".to_string()),
                 confidence: 0.80,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
 
@@ -361,6 +371,8 @@ impl FrameworkResolver for LaravelResolver {
                 route_kind: Some("group_var".to_string()),
                 confidence: 0.75,
                 parser_tier: ParserTier::Heuristic,
+                resolution_strategy: None,
+                resolution_confidence: None,
             });
         }
     }

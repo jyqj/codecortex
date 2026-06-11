@@ -195,8 +195,38 @@ impl ProjectSession {
             }
 
             let result = tokio::task::spawn_blocking(move || {
+                // Brief read lock: clone the owned build inputs plus the
+                // auto-index file-count gate.
+                let (inputs, file_limit) = match index.read() {
+                    Ok(rt) => {
+                        let cloned = rt
+                            .build_inputs()
+                            .and_then(|inputs| Ok((inputs, rt.auto_index_file_limit()?)));
+                        match cloned {
+                            Ok(pair) => pair,
+                            Err(e) => {
+                                tracing::warn!("auto-index build_inputs failed: {}", e);
+                                return;
+                            }
+                        }
+                    }
+                    Err(_) => return,
+                };
+                // Heavy prepare: no CodeIndex lock held, so read queries are
+                // not blocked during scan/parse/resolve. The file-limit gate
+                // (skip oversized repos) fires inside prepare.
+                let prepared = match CodeIndex::prepare_build(&inputs, false, Some(file_limit)) {
+                    Ok(p) => p,
+                    Err(e) => {
+                        tracing::warn!("auto-index failed: {}", e);
+                        return;
+                    }
+                };
+                // Brief write lock: commit (phase_write + postprocess +
+                // bookkeeping) under the lock so readers never see the
+                // non-transactional intermediate write state.
                 if let Ok(mut rt) = index.write() {
-                    if let Err(e) = rt.build_auto_index(false) {
+                    if let Err(e) = rt.commit_build(&inputs, false, Some(file_limit), prepared) {
                         tracing::warn!("auto-index failed: {}", e);
                     }
                 }
@@ -446,4 +476,82 @@ async fn active_idle_timeout_secs(active: &tokio::sync::RwLock<ProjectServices>)
             })
         })
         .unwrap_or(DEFAULT_IDLE_TIMEOUT_SECS)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::time::Duration;
+    use tempfile::TempDir;
+
+    /// Poll until the auto-index build commits (clears `needs_initial_index`).
+    async fn wait_for_auto_index(session: &ProjectSession, timeout: Duration) -> bool {
+        let deadline = Instant::now() + timeout;
+        while Instant::now() < deadline {
+            let index = session.active_index().await;
+            let built = index
+                .read()
+                .map(|rt| !rt.needs_initial_index())
+                .unwrap_or(false);
+            if built {
+                return true;
+            }
+            tokio::time::sleep(Duration::from_millis(50)).await;
+        }
+        false
+    }
+
+    fn active_generation(index: &SharedCodeIndex) -> cc_db::index_db::IndexGeneration {
+        let rt = index.read().unwrap();
+        rt.index_db().unwrap().reads().generation().unwrap()
+    }
+
+    // The split-lock claim itself (prepare runs without the write lock) is
+    // guaranteed by structure: `maybe_auto_index` calls the associated
+    // `CodeIndex::prepare_build` between a read-lock `build_inputs` clone and
+    // a write-lock `commit_build`, identical to the watcher poll path. This
+    // test pins the observable behavior around that path: a fresh DB gets
+    // built, and a fresh index skips the rebuild.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn maybe_auto_index_builds_then_skips_when_fresh() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+
+        let session = ProjectSession::new(Some(dir.path()));
+        session.maybe_auto_index();
+        assert!(
+            wait_for_auto_index(&session, Duration::from_secs(30)).await,
+            "auto-index did not complete"
+        );
+
+        let index = session.active_index().await;
+        let stats = {
+            let rt = index.read().unwrap();
+            rt.index_status().unwrap()
+        };
+        assert!(stats.indexed_files >= 1, "expected lib.rs to be indexed");
+        let generation = active_generation(&index);
+        assert!(generation.index_epoch > 0, "build must bump index_epoch");
+
+        // Skip-when-fresh, asserted deterministically on the gating predicate:
+        // maybe_auto_index returns before the CAS whenever needs_initial_index
+        // is false, so this is the load-bearing check.
+        {
+            let rt = index.read().unwrap();
+            assert!(
+                !rt.needs_initial_index(),
+                "freshly built index must not need an initial index"
+            );
+        }
+        // Best-effort end-to-end confirmation of the same skip (the sleep only
+        // gives the spawned gate task a window in which a buggy rebuild would
+        // bump the generation; it cannot false-fail on slow machines).
+        session.maybe_auto_index();
+        tokio::time::sleep(Duration::from_millis(300)).await;
+        assert_eq!(
+            active_generation(&index),
+            generation,
+            "fresh index must not be rebuilt by a second maybe_auto_index"
+        );
+    }
 }

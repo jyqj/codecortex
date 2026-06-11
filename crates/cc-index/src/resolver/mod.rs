@@ -1012,6 +1012,8 @@ mod tests {
             route_kind: None,
             confidence: 0.8,
             parser_tier: ParserTier::TreeSitter,
+            resolution_strategy: None,
+            resolution_confidence: None,
         }
     }
 
@@ -1264,6 +1266,12 @@ mod tests {
             Some("uid:login"),
             "Dotted handler should resolve via tier 1"
         );
+        assert_eq!(
+            outcome.route_edges[0].resolution_strategy.as_deref(),
+            Some("route_dotted"),
+            "Tier-1 win must record the dotted strategy"
+        );
+        assert_eq!(outcome.route_edges[0].resolution_confidence, Some(0.85));
 
         // Verify route 2 resolved to the function
         assert_eq!(
@@ -1271,6 +1279,59 @@ mod tests {
             Some("uid:healthCheck"),
             "Simple handler should resolve via tier 2 or 3"
         );
+        // Rich context (imports) exists, so tier 2 wins; the ladder's own
+        // strategy name is embedded and its confidence carried through
+        // (global_unique 0.75 with the not-import-reachable 0.6 penalty).
+        assert_eq!(
+            outcome.route_edges[1].resolution_strategy.as_deref(),
+            Some("route_ladder:global_unique"),
+            "Tier-2 win must embed the ladder strategy name"
+        );
+        let ladder_confidence = outcome.route_edges[1]
+            .resolution_confidence
+            .expect("tier-2 win must record the ladder confidence");
+        assert!(
+            (ladder_confidence - 0.45).abs() < 1e-9,
+            "ladder confidence should pass through unchanged, got {ladder_confidence}"
+        );
+    }
+
+    #[test]
+    fn test_route_global_tier_records_provenance() {
+        // No scopes/imports → tier 2 is skipped, tier 3 (global) resolves.
+        let mut catalog = SymbolCatalog::new();
+        let handler_func = make_symbol(
+            "healthCheck",
+            "src/handlers/health.ts",
+            Some("uid:healthCheck"),
+            SymbolKind::Function,
+            None,
+            Some("health.healthCheck"),
+            1,
+            10,
+        );
+        catalog.add_symbols(&[handler_func]);
+
+        let mut outcome = cc_model::parse::ParseOutcome::default();
+        outcome.route_edges.push(make_route_edge(
+            "src/routes.ts",
+            "/health",
+            Some("healthCheck"),
+            5,
+        ));
+
+        catalog.resolve_outcome("src/routes.ts", &mut outcome);
+
+        assert_eq!(
+            outcome.route_edges[0].handler_symbol_uid.as_deref(),
+            Some("uid:healthCheck")
+        );
+        assert_eq!(
+            outcome.route_edges[0].resolution_strategy.as_deref(),
+            Some("route_global"),
+            "Tier-3 win must record the global strategy"
+        );
+        assert_eq!(outcome.route_edges[0].resolution_confidence, Some(0.5));
     }
 
     #[test]

@@ -290,12 +290,14 @@ impl SymbolCatalog {
                 Some(ref h) => h.clone(),
                 None => continue,
             };
-            if let Some(idx) =
+            if let Some(resolution) =
                 self.resolve_route_handler(&handler, file_path, route.line, scopes, imports)
             {
-                let e = &self.entries[idx];
+                let e = &self.entries[resolution.catalog_index];
                 route.handler_symbol_id = Some(e.symbol_id.clone());
                 route.handler_symbol_uid = e.symbol_uid.clone();
+                route.resolution_strategy = Some(resolution.strategy);
+                route.resolution_confidence = Some(resolution.confidence);
             }
         }
     }

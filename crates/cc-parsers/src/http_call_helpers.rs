@@ -1,6 +1,6 @@
 //! Shared helpers for detecting outbound HTTP client calls across languages.
 
-use cc_model::{HttpCallEdgeRecord, ParserTier, StableId};
+use cc_model::{ElementKind, HttpCallEdgeRecord, ParserTier, StableId};
 use regex::Regex;
 
 /// A regex-driven outbound-HTTP-call extraction pattern.
@@ -58,7 +58,7 @@ pub fn extract_http_calls_with(
                 method,
                 call_kind: "http".to_string(),
                 line,
-                confidence: 0.70,
+                confidence: ParserTier::Heuristic.element_confidence(ElementKind::HttpCall),
                 parser_tier: ParserTier::Heuristic,
                 broker_type: None,
             });

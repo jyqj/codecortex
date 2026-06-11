@@ -50,7 +50,7 @@ field is optional — the defaults work for most projects.
 | `parse_timeout_micros` | `null` | Per-file parse timeout in microseconds. `null` means no timeout. |
 | `db_read_pool_size` | `null` | SQLite read connection pool size. `null` derives from repo size tier (4–12). |
 | `dirty_propagation` | `true` | Re-parse dependents when a file's exports change. |
-| `dirty_propagation_max_files` | `200` | Max files a dirty propagation may touch; beyond this, suggests a full rebuild. |
+| `dirty_propagation_max_files` | `200` | Max files a dirty propagation may promote. Exceeding it degrades to a no-op (round 1; full rebuild advised) or keeps a partial closure (later rounds), surfaced as `dirty_propagation` on the index report. |
 | `memory_budget_fraction` | `0.5` | RSS cap as a fraction of system memory (0.1–0.95) for parallel parsing. |
 | `max_concurrent_parse` | `null` | Max parallel parse threads. `null` uses the rayon default. |
 | `use_direct_writer` | `false` | Experimental: bypass the SQL parser with a direct SQLite writer on full rebuild. |

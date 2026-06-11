@@ -46,6 +46,15 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
   the write connection for its whole lifetime, runs an `IMMEDIATE` transaction,
   exposes only typed write methods (never the raw connection), bumps
   `index_epoch` exactly once on commit, and rolls back when dropped uncommitted
+- Epoch invariant (`epoch_rules.rs` declares the full table → clock map; audit
+  tests verify each write method against it):
+
+  | Tables | Clock | Why |
+  |---|---|---|
+  | all index content (files, symbols, edges, routes, chunks, ...) | `index_epoch` | parsed/post-processed content; invalidates index-derived caches |
+  | post-process artifacts (communities, frameworks, infra, co_change, test_edges) + `adr` | `index_epoch` | consumed as index content by context/graph output |
+  | `runtime_evidence` | `evidence_epoch` | continuous ingestion must not evict index-only cache slots |
+  | `http_call_edges.confidence` via `boost_http_edge_confidence` | `evidence_epoch` | the one exception: evidence-driven boost, not an index change |
 - Two full-rebuild strategies — temp-db (`rebuild_with_temp_db`) and
   `DirectWriter` (`rebuild_with_direct_writer`) — are thin build adapters over
   one shared `run_rebuild_protocol`: snapshot an epoch floor → build the
@@ -101,14 +110,22 @@ postprocess → analysis (phase headers in `crates/cc-index/src/indexer.rs` and
   regenerated, or kept
 - Enrichment + resolve: framework resolver enrichment (`framework_resolvers/`),
   then symbol catalog / type catalog / semantic-edge resolution (`resolver/`,
-  `type_catalog.rs`), then cross-file framework resolution
+  `type_catalog.rs`), then cross-file framework resolution. Name resolution
+  walks a declared ladder (`RESOLVE_LADDER` in `resolver/resolve_core.rs`):
+  self-member → scope → same-file → imports → suffix → global-unique →
+  fuzzy-single → call-site signals (arg-count, then receiver; metadata-less
+  candidates survive as wildcards) → import-distance. Each result records its
+  `candidate_count` and `winning_step`, exposed through
+  `resolution_strategy` (e.g. `fuzzy_arg_count`, `...:upgraded_from=...`)
 - Write: incremental atomic batch or full rebuild (see cc-db)
 - Postprocess (after write): test edges, dispatch synthesis (below), and
-  Louvain community detection — each guarded by its own input signature so
-  unchanged inputs are skipped
+  Louvain community detection — skip logic is declared per pass as a
+  `PassGate` adapter (`pass_gate.rs`: DB-signature, file-signature,
+  HEAD-string, unconditional), so unchanged inputs are skipped through one
+  seam instead of hand-rolled checks
 - Analysis: git co-change (skipped when `HEAD` is unchanged), infrastructure
   pass (gated on a path+mtime+size signature over the infra candidate set),
-  ADR indexing
+  ADR indexing — same `PassGate` registry
 - Full and incremental builds share one orchestration (`build_plan.rs`):
   `prepare` is read-only (scan → parse → resolve → snapshot) and produces an
   owned `PreparedBuild`; `commit` consumes it to run write → postprocess →
@@ -144,14 +161,21 @@ Hybrid search engine.
   Every cc-db write transaction bumps the persisted index epoch, so both
   caches self-invalidate without manual hooks.
 - **Preselection** — a 7-layer file scoring strategy (working set, recent,
-  pinned, overlay, FTS summary, symbol/path tokens, graph-neighbor expansion);
-  the layer list and constants live in the header of `preselect.rs`.
+  pinned, overlay, FTS summary, symbol/path tokens, graph-neighbor expansion).
+  Each layer is a `PreselectLayer` adapter registered in
+  `default_preselect_layers()` (same seam style as the retrieval lanes);
+  scoring constants live in `RankingConfig`. `PreselectResult` carries a
+  per-layer score breakdown (`layer_scores`), surfaced in hit reasons as
+  `preselect:<layer>:+<score>` so a file's preselect score is auditable.
 - **RRF** (Reciprocal Rank Fusion) combines local retrieval lanes, followed by
   reranking with file-path / breadcrumb / recency boosts
 - **Cypher** read-only query engine (MATCH / OPTIONAL MATCH / WHERE / RETURN /
   ORDER BY / LIMIT / UNION); see [CYPHER.md](CYPHER.md). Variable-length
   `CALLS` traversals take a lazy-BFS fast path (`cypher/fast_path.rs`); see
-  [ADR-0001](adr/0001-cypher-traversal-lazy-bfs-fast-path.md).
+  [ADR-0001](adr/0001-cypher-traversal-lazy-bfs-fast-path.md). Eligibility is
+  gated by `FastPathConfig` and ineligibility is a typed
+  `FastPathIneligibility` surfaced to callers as `fast_path` metadata on
+  `graph_query` responses.
 
 ### cc-server
 CLI + MCP server, home of the `CodeIndex` engine. See [MCP_TOOLS.md](MCP_TOOLS.md)

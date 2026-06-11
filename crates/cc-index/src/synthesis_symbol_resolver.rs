@@ -90,10 +90,8 @@ impl SynthesisSymbolResolver {
         current_file: &str,
     ) -> Option<(String, ResolutionScope)> {
         let matches = self.by_name.get(name)?;
-        let candidates: Vec<&SymbolRow> = matches
-            .iter()
-            .filter(|s| s.symbol_uid.is_some())
-            .collect();
+        let candidates: Vec<&SymbolRow> =
+            matches.iter().filter(|s| s.symbol_uid.is_some()).collect();
         if let Some(found) = candidates.iter().find(|s| s.file_path == current_file) {
             return found
                 .symbol_uid

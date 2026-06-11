@@ -253,6 +253,8 @@ fn bench_type_catalog_build_from_symbols() {
 
     eprintln!();
     eprintln!("legend: build_from_symbols = the unconditional rebuild in phase_resolve (4b)");
-    eprintln!("        all_symbols clone  = the Vec<SymbolRecord> clone-collect feeding it (4b input)");
+    eprintln!(
+        "        all_symbols clone  = the Vec<SymbolRecord> clone-collect feeding it (4b input)"
+    );
     eprintln!("        add_type_assigns   = phase 4b-1 secondary fill at ~1 assign per 10 symbols");
 }

@@ -123,12 +123,13 @@ pub(crate) fn compute_vue_template_synthesis(db: &IndexDb) -> CcResult<EdgeDelta
 
             // Resolve handler to a function/method in the same file first,
             // then fall back to unique global match.
-            let target = resolver
-                .resolve_strict(handler_name, &site.file_path)
-                .map(|(uid, scope)| match scope {
-                    ResolutionScope::SameFile => (uid, 0.80),
-                    ResolutionScope::UniqueGlobal => (uid, 0.68),
-                });
+            let target =
+                resolver
+                    .resolve_strict(handler_name, &site.file_path)
+                    .map(|(uid, scope)| match scope {
+                        ResolutionScope::SameFile => (uid, 0.80),
+                        ResolutionScope::UniqueGlobal => (uid, 0.68),
+                    });
 
             let (target_uid, confidence) = match target {
                 Some(t) => t,

@@ -705,7 +705,6 @@ impl GraphOps<'_> {
             }
         }))
     }
-
 }
 
 // task_symbols lives in a second `SearchOps` impl block to keep the method in

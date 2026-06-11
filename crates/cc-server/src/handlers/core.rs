@@ -96,7 +96,10 @@ pub fn callers(
     limit: usize,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.graph().callers(symbol, limit).map_err(|e| e.to_string())?;
+    let rows = rt
+        .graph()
+        .callers(symbol, limit)
+        .map_err(|e| e.to_string())?;
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
@@ -106,7 +109,10 @@ pub fn callees(
     limit: usize,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.graph().callees(symbol, limit).map_err(|e| e.to_string())?;
+    let rows = rt
+        .graph()
+        .callees(symbol, limit)
+        .map_err(|e| e.to_string())?;
     serde_json::to_value(rows).map_err(|e| e.to_string())
 }
 
@@ -158,7 +164,9 @@ pub fn summarize_file(
     file_path: &str,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    rt.graph().summarize_file(file_path).map_err(|e| e.to_string())
+    rt.graph()
+        .summarize_file(file_path)
+        .map_err(|e| e.to_string())
 }
 
 /// Show available node kinds, edge types, and their counts in the index.

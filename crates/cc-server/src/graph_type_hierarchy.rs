@@ -164,7 +164,11 @@ fn resolve_root_symbol(
     }
 
     // 2. By name: exact match, then file filter (if given) or type-kind filter.
-    match resolve(db, type_name, &ResolutionOpts::for_type_hierarchy(file_path))? {
+    match resolve(
+        db,
+        type_name,
+        &ResolutionOpts::for_type_hierarchy(file_path),
+    )? {
         Resolution::Unique(row) => Ok(ResolveResult::Single(row)),
         Resolution::Ambiguous(rows) => Ok(ResolveResult::Candidates(rows)),
         Resolution::Unresolved(UnresolvedReason::NotFound) => {

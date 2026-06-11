@@ -38,7 +38,10 @@ pub fn prepare_edit_region(
     end_line: u32,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let symbols = rt.graph().file_symbols(file_path).map_err(|e| e.to_string())?;
+    let symbols = rt
+        .graph()
+        .file_symbols(file_path)
+        .map_err(|e| e.to_string())?;
     let lower_line = start_line.saturating_sub(5);
     let upper_line = end_line.saturating_add(5);
     let region_symbols: Vec<_> = symbols

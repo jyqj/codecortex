@@ -34,13 +34,23 @@ pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::
     };
 
     let row_count = rows.len();
-    Ok(serde_json::json!({
+    let mut envelope = serde_json::json!({
         "results": rows,
         "row_count": row_count,
         "truncated": truncated,
         "truncated_reason": truncated_reason,
         "limit_applied": limit_applied,
-    }))
+    });
+    // Fast-path visibility (ADR-0001): tell the caller which engine served a
+    // variable-length traversal and, on fallback, which gate check failed.
+    // The decision is a deterministic mirror of the executor routing, so
+    // recomputing it here reports exactly what execution did. Non-traversal
+    // queries omit the field entirely (None) — absence means "not applicable",
+    // never "fell back".
+    if let Some(meta) = cc_search::cypher::fast_path_decision_for_query(query).as_metadata() {
+        envelope["fast_path"] = meta;
+    }
+    Ok(envelope)
 }
 
 /// Trace call path between two symbols (rich version with optional snippets).
@@ -101,7 +111,10 @@ pub fn symbol_refs(
     limit: usize,
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let refs = rt.graph().symbol_refs(symbol, limit).map_err(|e| e.to_string())?;
+    let refs = rt
+        .graph()
+        .symbol_refs(symbol, limit)
+        .map_err(|e| e.to_string())?;
     serde_json::to_value(refs).map_err(|e| e.to_string())
 }
 
@@ -123,7 +136,10 @@ pub fn find_impacted_tests(
     files: &[String],
 ) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
-    let tests = rt.impact().find_impacted_tests(files).map_err(|e| e.to_string())?;
+    let tests = rt
+        .impact()
+        .find_impacted_tests(files)
+        .map_err(|e| e.to_string())?;
     serde_json::to_value(tests).map_err(|e| e.to_string())
 }
 
@@ -176,9 +192,10 @@ pub fn find_dead_code(
     let effective_limit = user_limit.unwrap_or(budget.max_items).min(budget.max_items);
     let db = rt.index_db().ok_or("no index database")?;
 
-    // Use an adaptive scan limit: 40x the desired dead_code item cap,
-    // capped at 5000 to bound query cost.
-    let scan_limit = (effective_limit * 40).min(5000);
+    // Adaptive scan limit: 40x the desired dead_code item cap, capped at
+    // 5000 — policy owned by `GraphReadModel::dead_code_scan_limit` so direct
+    // engine callers share the same default.
+    let scan_limit = crate::graph_read_model::GraphReadModel::dead_code_scan_limit(effective_limit);
 
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
     let candidates = grm
@@ -510,6 +527,32 @@ mod tests {
     }
 
     #[test]
+    fn graph_query_emits_fast_path_metadata_for_varlen_queries() {
+        let (_tmp, rt) = build_test_index();
+
+        // Non-traversal query: the field is omitted entirely (not applicable).
+        let plain = graph_query(rt.clone(), "MATCH (f:Function) RETURN f.name").unwrap();
+        assert!(plain.get("fast_path").is_none());
+
+        // Eligible variable-length traversal: served by the lazy BFS.
+        let eligible = graph_query(
+            rt.clone(),
+            "MATCH (a)-[:CALLS*1..2]->(b) WHERE a.name = 'main' RETURN b.name",
+        )
+        .unwrap();
+        assert_eq!(eligible["fast_path"]["used"].as_bool(), Some(true));
+        assert!(eligible["fast_path"].get("reason").is_none());
+
+        // Ineligible variable-length traversal: SQL CTE with a stable reason.
+        let fallback = graph_query(rt, "MATCH (a)-[:CALLS*1..2]->(b) RETURN b.name").unwrap();
+        assert_eq!(fallback["fast_path"]["used"].as_bool(), Some(false));
+        assert_eq!(
+            fallback["fast_path"]["reason"].as_str(),
+            Some("no_where_clause")
+        );
+    }
+
+    #[test]
     fn graph_query_explicit_limit_not_default_truncated() {
         let (_tmp, rt) = build_test_index();
         let result = graph_query(rt, "MATCH (f:Function) RETURN f.name LIMIT 1").unwrap();
@@ -754,6 +797,26 @@ mod tests {
             .collect();
         assert!(unscoped_names.contains("out_of_scope"));
         assert_eq!(unscoped_names.len(), 4);
+    }
+
+    #[test]
+    fn find_dead_code_scan_limit_matches_read_model_default() {
+        let (_tmp, rt, _db) = synthetic_runtime();
+
+        // Default path: effective limit = output_budget("dead_code").max_items,
+        // and the reported scan_limit must equal the GraphReadModel policy for
+        // that cap (handler path == direct-engine path).
+        let expected_default = {
+            let guard = super::super::lock_index(&rt).unwrap();
+            let budget = guard.output_budget("dead_code");
+            crate::graph_read_model::GraphReadModel::dead_code_scan_limit(budget.max_items)
+        };
+        let result = find_dead_code(rt.clone(), serde_json::json!({})).unwrap();
+        assert_eq!(result["scan_limit"].as_u64(), Some(expected_default as u64));
+
+        // Explicit limit param: 1 × 40 = 40 (well below the 5000 ceiling).
+        let result = find_dead_code(rt, serde_json::json!({"limit": 1})).unwrap();
+        assert_eq!(result["scan_limit"].as_u64(), Some(40));
     }
 
     #[test]

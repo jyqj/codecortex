@@ -42,6 +42,7 @@ mod traversal_semantics;
 
 pub use ast::*;
 pub use executor::{execute, execute_union};
+pub use fast_path::{FastPathDecision, FastPathIneligibility};
 pub use lexer::tokenize;
 pub use parser::parse;
 
@@ -176,6 +177,31 @@ pub fn cypher_query(input: &str, db: &IndexDb) -> CcResult<CypherResult> {
     let tokens = tokenize(input)?;
     let parsed = parse_tokens(&tokens)?;
     execute_parsed(&parsed, db)
+}
+
+/// Explain whether `parsed` takes the lazy-BFS fast path (ADR-0001), without
+/// executing it. Deterministic mirror of the routing in `execute`: the gate
+/// decision depends only on the query AST and the
+/// `CODECORTEX_CYPHER_FAST_PATH` toggle, so callers (e.g. the `graph_query`
+/// MCP handler) can recompute it at the response boundary and report exactly
+/// which engine served the query.
+pub fn fast_path_decision(parsed: &ParsedCypher) -> FastPathDecision {
+    match parsed {
+        ParsedCypher::Single(query) => fast_path::decide(query),
+        // UNION sub-queries always run the SQL translation
+        // (`execute_union` passes `allow_fast_path = false`).
+        ParsedCypher::Union(_) => FastPathDecision::NotApplicable,
+    }
+}
+
+/// Convenience for callers holding the raw query string: tokenize, parse and
+/// explain. Parse errors yield `NotApplicable` — the execution call surfaced
+/// the error itself, so there is no fast-path story to tell.
+pub fn fast_path_decision_for_query(input: &str) -> FastPathDecision {
+    match tokenize(input).and_then(|tokens| parse_tokens(&tokens)) {
+        Ok(parsed) => fast_path_decision(&parsed),
+        Err(_) => FastPathDecision::NotApplicable,
+    }
 }
 
 // ── Tests ──────────────────────────────────────────

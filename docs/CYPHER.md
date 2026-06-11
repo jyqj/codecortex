@@ -34,6 +34,30 @@ alternation, anchors, quantifiers, etc.
 
 Invalid patterns produce an explicit SQL error, not silent false results.
 
+## Fast-path metadata (`fast_path`)
+
+Variable-length `CALLS` traversals can be served by a lazy-BFS fast path
+instead of the recursive SQL CTE (ADR-0001); results are identical either way.
+The `graph_query` envelope reports which engine served the query via an
+additive `fast_path` field:
+
+- Eligible traversal served by the lazy BFS: `"fast_path": { "used": true }`.
+- Variable-length query that fell back to the SQL CTE:
+  `"fast_path": { "used": false, "reason": "<token>" }` where `reason` is a
+  stable, snapshot-locked token naming the failed gate check, e.g.
+  `no_where_clause`, `edge_kind_not_eligible(IMPORTS)`,
+  `return_not_simple_property`, `limit_too_large(5000>1000)`.
+- Fast path disabled via the environment toggle:
+  `"fast_path": { "used": false, "reason": "disabled(CODECORTEX_CYPHER_FAST_PATH=0)" }`.
+- Queries that never route through the fast path (single-node, single-hop,
+  `OPTIONAL MATCH`, `UNION`) omit the field entirely — absence means "not a
+  variable-length traversal", never "fell back".
+
+The reason token is advisory: it explains latency and how to reshape a query
+onto the fast path (single `MATCH`, one variable-length `CALLS` segment, a
+`name`/`symbol_uid` string equality pinning the source, simple property
+`RETURN`, `LIMIT <= 1000`). It never affects result contents.
+
 ## Intentional limits
 
 - Read-only only: no `CREATE`, `MERGE`, `DELETE`, `SET`, `WITH`, or `UNWIND`.

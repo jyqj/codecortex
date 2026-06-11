@@ -553,6 +553,25 @@ pub fn execute(query: &CypherQuery, db: &IndexDb) -> CcResult<CypherResult> {
     execute_with_options(query, db, true)
 }
 
+/// Detect the special case `MATCH (f:Label) OPTIONAL MATCH (f)-[:R]->(g) ...`
+/// — anchor on the required source node so it survives even with no matching
+/// edge/target. Shared by the routing in `execute_with_options` and by the
+/// fast-path decision metadata (`fast_path::decide`), so the two cannot drift.
+pub(crate) fn detect_two_clause_optional(query: &CypherQuery) -> Option<&MatchClause> {
+    let first_match = query.match_clauses.first()?;
+    let pattern = first_match.patterns.first()?;
+    (query.match_clauses.len() == 2
+        && !first_match.is_optional
+        && pattern.rels.is_empty()
+        && first_match.patterns.len() == 1)
+        .then(|| &query.match_clauses[1])
+        .filter(|m1| m1.is_optional && m1.patterns.len() == 1 && m1.patterns[0].rels.len() == 1)
+        .filter(|m1| {
+            let anchor_var = pattern.nodes[0].var.as_deref();
+            anchor_var.is_some() && m1.patterns[0].nodes[0].var.as_deref() == anchor_var
+        })
+}
+
 /// Execute with explicit control over the lazy-BFS fast path
 /// (`allow_fast_path = false` forces the SQL translation, used by UNION
 /// sub-queries and by equivalence tests).
@@ -575,18 +594,7 @@ pub(crate) fn execute_with_options(
     let first_match = &query.match_clauses[0];
     let pattern = &first_match.patterns[0];
 
-    // Special case: `MATCH (f:Label) OPTIONAL MATCH (f)-[:R]->(g) ...` — anchor on
-    // the required source node so it survives even with no matching edge/target.
-    let two_clause_optional = (query.match_clauses.len() == 2
-        && !first_match.is_optional
-        && pattern.rels.is_empty()
-        && first_match.patterns.len() == 1)
-        .then(|| &query.match_clauses[1])
-        .filter(|m1| m1.is_optional && m1.patterns.len() == 1 && m1.patterns[0].rels.len() == 1)
-        .filter(|m1| {
-            let anchor_var = pattern.nodes[0].var.as_deref();
-            anchor_var.is_some() && m1.patterns[0].nodes[0].var.as_deref() == anchor_var
-        });
+    let two_clause_optional = detect_two_clause_optional(query);
 
     let translated = if let Some(m1) = two_clause_optional {
         translate_optional_match(query, pattern.nodes[0].label.as_deref(), &m1.patterns[0])?

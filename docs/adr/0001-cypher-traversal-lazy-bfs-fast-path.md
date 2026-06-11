@@ -60,3 +60,9 @@ LIMIT ≤ 1000），其余形态回落原 CTE；语义与 CTE 逐行等价（(ro
   新增 `DirectionHandling` 变体直接打断的是 `orient()` 与 fast path 资格门，
   两条引擎经由 `orient()` 返回的 `WalkOrientation` 感知方向，行走方式不同时
   需为 `WalkOrientation` 新增变体（届时才直接打断两端的行走映射）。
+- 2026-06-11 更新（R2-D）：资格门可见化——`build_plan` 的拒绝原因从
+  `&'static str` 收敛为 `FastPathIneligibility` 枚举（Display 输出为稳定
+  token，测试快照锁定），随 `graph_query` 响应新增的 `fast_path` 元数据字段
+  透出（`used: true` / `used: false + reason` / 环境变量禁用 / 非变长查询时
+  省略字段）；门常量（LIMIT 上限、合格边类型、种子列、可投影列）收敛为
+  `FastPathConfig::DEFAULT` 单一声明。资格门的判定语义逐位不变。

@@ -896,102 +896,79 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    // ── Full rebuild with temp-db + atomic swap ─────────────────
+    // ── Full rebuild protocol (shared by both rebuild paths) ────
 
-    /// Perform a full rebuild using a temporary database file, then atomically
-    /// swap it into place. This avoids WAL contention and allows aggressive
-    /// pragmas without risk to the live database.
+    /// Derive a SQLite sidecar path (`-wal` / `-shm`) by appending to the
+    /// full file name. SQLite appends to the complete name, so this must not
+    /// go through `Path::with_extension` (which replaces the last extension).
+    fn sidecar_path(db_path: &Path, suffix: &str) -> PathBuf {
+        let mut os = db_path.as_os_str().to_owned();
+        os.push(suffix);
+        PathBuf::from(os)
+    }
+
+    /// Shared full-rebuild protocol behind [`Self::rebuild_with_temp_db`] and
+    /// [`Self::rebuild_with_direct_writer`].
     ///
-    /// The `write_fn` closure receives a mutable reference to the temp
-    /// `Connection` with bulk pragmas already applied and indexes dropped.
-    /// It should insert all data. Indexes are recreated automatically after
-    /// the closure returns.
+    /// The strategy-specific part is `build_temp`: it must leave a fully
+    /// written, closed SQLite database file at `tmp_path`, or return an error
+    /// (cleaning up after itself if it wants to — the protocol only sweeps
+    /// stale temp artifacts at the *start* of the next rebuild). The protocol
+    /// runs the invariant-bearing steps in order:
     ///
-    /// After successful write, the temp file is renamed over the main db file
-    /// and all connections (pool + write) are re-opened.
-    pub fn rebuild_with_temp_db<F>(&self, write_fn: F) -> CcResult<()>
-    where
-        F: FnOnce(&Connection) -> CcResult<()>,
-    {
+    /// 1. Snapshot the epoch floor.
+    /// 2. Remove stale temp artifacts left by a previous crashed run.
+    /// 3. `build_temp(tmp_path)` — produce the replacement database.
+    /// 4. Under the write lock: finalize the generation into the temp file,
+    ///    remove the live WAL/SHM sidecars, atomically rename temp → main,
+    ///    remove the temp sidecars.
+    /// 5. Reopen the write connection, rebuild the read pool, checkpoint the
+    ///    fresh WAL (non-fatal on failure).
+    ///
+    /// # Invariants
+    ///
+    /// - **Epoch floor.** The generation snapshotted in step 1 is only a
+    ///   *floor*: writers (including other processes) may advance the live
+    ///   epochs while `build_temp` runs. The final epoch vector is therefore
+    ///   written at swap time, under the write lock, as `max(floor, live) + 1`
+    ///   per epoch (see [`Self::finalize_rebuild_generation`]), so a rebuild
+    ///   can never produce a "same generation, different content" collision
+    ///   with values observed before or during the rebuild.
+    /// - **Lock scope / no reentrancy.** The `write_conn` mutex is held for
+    ///   the entire finalize + rename window so no writer can commit between
+    ///   epoch finalization and the file swap. The mutex is not reentrant:
+    ///   `build_temp` (and any `write_fn` it wraps) writes only to the temp
+    ///   file and must never take the write lock or call back into either
+    ///   rebuild method on the same thread. Concurrent writes from *other*
+    ///   threads during `build_temp` are allowed — the epoch floor exists
+    ///   precisely to absorb them.
+    /// - **FTS dual maintenance.** `symbols_fts` and `file_paths_fts` are
+    ///   maintained by schema triggers on `symbols`/`files`, while
+    ///   `chunks_fts`, `files_fts` and `literal_fts` have no triggers and are
+    ///   maintained at the application layer ([`Self::delete_file_data`] and
+    ///   the insert helpers). Rebuild strategies write into a fresh schema, so
+    ///   both models hold automatically — but `build_temp` must populate data
+    ///   through the shared insert helpers so the application-maintained FTS
+    ///   tables stay in sync with their base tables.
+    fn run_rebuild_protocol(
+        &self,
+        tmp_path: &Path,
+        label: &str,
+        build_temp: impl FnOnce(&Path) -> CcResult<()>,
+    ) -> CcResult<()> {
         // Floor snapshot of the epoch vector; the final value is written at
         // swap time (under the write lock) as max(floor, live) + 1.
         let generation_floor = self.generation().unwrap_or_default();
-        let tmp_path = self.db_path.with_extension("sqlite3.tmp");
 
-        // Clean up any stale temp file from a previous crashed run.
-        let _ = std::fs::remove_file(&tmp_path);
-        let _ = std::fs::remove_file(tmp_path.with_extension("tmp-wal"));
-        let _ = std::fs::remove_file(tmp_path.with_extension("tmp-shm"));
+        // Clean up any stale temp artifacts from a previous crashed run.
+        let _ = std::fs::remove_file(tmp_path);
+        let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-wal"));
+        let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-shm"));
 
-        tracing::info!(
-            tmp = %tmp_path.display(),
-            "full rebuild: creating temp database"
-        );
+        // Produce the replacement database (strategy-specific).
+        build_temp(tmp_path)?;
 
-        // 1. Open temp db and apply schema
-        let tmp_conn = Connection::open(&tmp_path)
-            .map_err(|e| CcError::Database(format!("open temp db: {}", e)))?;
-        tmp_conn
-            .execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
-            .map_err(|e| CcError::Database(format!("temp db pragmas: {}", e)))?;
-
-        // Apply full schema
-        tmp_conn
-            .execute_batch(FULL_SCHEMA_SQL)
-            .map_err(|e| CcError::Database(format!("temp db schema init failed: {}", e)))?;
-        tmp_conn
-            .pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
-            .map_err(|e| CcError::Database(format!("temp db set version: {}", e)))?;
-
-        // 2. Apply bulk pragmas
-        Self::set_bulk_rebuild_pragmas(&tmp_conn)?;
-
-        // 3. Drop non-PK indexes for faster bulk insert (derived from the schema
-        //    so the set always matches index_v1.sql)
-        tmp_conn
-            .execute_batch(&crate::direct_writer::drop_index_statements(
-                FULL_SCHEMA_SQL,
-            ))
-            .map_err(|e| CcError::Database(format!("temp db drop indexes: {}", e)))?;
-
-        tracing::info!("full rebuild: writing data to temp database");
-
-        // 4. Write all data inside a single transaction
-        {
-            let tx_result = (|| -> CcResult<()> {
-                let tx = tmp_conn
-                    .unchecked_transaction()
-                    .map_err(|e| CcError::Database(format!("temp db transaction: {}", e)))?;
-                write_fn(&tx)?;
-                tx.commit()
-                    .map_err(|e| CcError::Database(format!("temp db commit: {}", e)))?;
-                Ok(())
-            })();
-
-            if let Err(e) = tx_result {
-                tracing::warn!(err = %e, "full rebuild failed, cleaning up temp db");
-                drop(tmp_conn);
-                let _ = std::fs::remove_file(&tmp_path);
-                return Err(e);
-            }
-        }
-
-        // 5. Recreate indexes (same schema-derived set as the drop above)
-        tracing::info!("full rebuild: recreating indexes");
-        tmp_conn
-            .execute_batch(&crate::direct_writer::extract_index_statements(
-                FULL_SCHEMA_SQL,
-            ))
-            .map_err(|e| CcError::Database(format!("temp db recreate indexes: {}", e)))?;
-
-        // Restore normal pragmas before closing
-        Self::restore_normal_pragmas(&tmp_conn)?;
-
-        // 6. Close temp connection
-        drop(tmp_conn);
-
-        // 7. Acquire write lock, do atomic swap while lock is held
-        tracing::info!("full rebuild: swapping temp database into place");
+        // Acquire write lock, do atomic swap while lock is held
         {
             // Lock the write connection to prevent concurrent writes.
             // The rename MUST happen inside this scope so no writer can
@@ -1004,7 +981,7 @@ impl IndexDb {
             // Write the final epoch vector now that no further writes can
             // land: max(floor, live) + 1 covers writes committed while the
             // rebuild ran (including from other processes).
-            self.finalize_rebuild_generation(&tmp_path, generation_floor)?;
+            self.finalize_rebuild_generation(tmp_path, generation_floor)?;
 
             // Remove the old WAL/SHM files — the new file will create its own
             let wal = self.db_path.with_extension("sqlite3-wal");
@@ -1013,7 +990,7 @@ impl IndexDb {
             let _ = std::fs::remove_file(&shm);
 
             // Atomic rename: temp → main (inside write lock)
-            std::fs::rename(&tmp_path, &self.db_path).map_err(|e| {
+            std::fs::rename(tmp_path, &self.db_path).map_err(|e| {
                 CcError::Database(format!(
                     "atomic rename {} → {}: {}",
                     tmp_path.display(),
@@ -1023,120 +1000,8 @@ impl IndexDb {
             })?;
 
             // Clean up temp WAL/SHM if any
-            let tmp_wal = tmp_path.with_extension("tmp-wal");
-            let tmp_shm = tmp_path.with_extension("tmp-shm");
-            let _ = std::fs::remove_file(&tmp_wal);
-            let _ = std::fs::remove_file(&tmp_shm);
-        }
-
-        // 8. Reopen write connection
-        let (new_write_conn, _status) = Self::open_and_ensure_schema(&self.db_path)?;
-        {
-            let mut guard = self
-                .write_conn
-                .lock()
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            *guard = new_write_conn;
-        }
-
-        // 9. Rebuild the read pool using the configured/adaptive pool size.
-        let new_pool = Self::build_read_pool(&self.db_path, self.read_pool_size)?;
-        {
-            let mut pool_guard = self
-                .pool
-                .write()
-                .map_err(|e| CcError::Database(format!("write pool lock: {}", e)))?;
-            *pool_guard = new_pool;
-        }
-
-        // Checkpoint WAL to reclaim space after full rebuild
-        if let Err(e) = self.checkpoint_wal() {
-            tracing::warn!(err = %e, "full rebuild: WAL checkpoint failed (non-fatal)");
-        }
-
-        tracing::info!("full rebuild: temp-db swap complete");
-        Ok(())
-    }
-
-    /// High-speed full rebuild using DirectWriter.
-    ///
-    /// Creates a fresh database with aggressive PRAGMAs (journal OFF, synchronous OFF,
-    /// 64KB pages, exclusive locking), writes all data via the caller-supplied closure,
-    /// creates indexes after data, validates with integrity_check, then atomically
-    /// swaps the new file into place.
-    ///
-    /// The `write_fn` signature matches `rebuild_with_temp_db` so callers can switch
-    /// between them trivially.
-    ///
-    /// Enable via `IndexingConfig::use_direct_writer == true`.
-    pub fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
-    where
-        F: FnOnce(&Connection) -> CcResult<()>,
-    {
-        // Same floor-snapshot + finalize-at-swap epoch handling as
-        // rebuild_with_temp_db.
-        let generation_floor = self.generation().unwrap_or_default();
-        let tmp_path = self.db_path.with_extension("direct-tmp.sqlite3");
-
-        // Clean up stale temp file from a previous crashed run.
-        let _ = std::fs::remove_file(&tmp_path);
-        let _ = std::fs::remove_file(tmp_path.with_extension("sqlite3-wal"));
-        let _ = std::fs::remove_file(tmp_path.with_extension("sqlite3-shm"));
-
-        tracing::info!(
-            tmp = %tmp_path.display(),
-            "direct writer: creating high-speed temp database"
-        );
-
-        crate::direct_writer::DirectWriter::write_db(&tmp_path, FULL_SCHEMA_SQL, |tx| {
-            // Set schema version inside the transaction
-            tx.pragma_update(
-                None,
-                "user_version",
-                crate::index_migrate::CURRENT_SCHEMA_VERSION,
-            )
-            .map_err(|e| format!("set user_version: {}", e))?;
-
-            // Delegate to caller's write function.
-            // Transaction derefs to Connection, so write_fn(&tx) works.
-            write_fn(tx).map_err(|e| e.to_string())
-        })
-        .map_err(|e| CcError::Database(format!("direct writer: {}", e)))?;
-
-        tracing::info!("direct writer: temp database written, swapping into place");
-
-        // Atomic swap — same logic as rebuild_with_temp_db
-        {
-            let _write_guard = self
-                .write_conn
-                .lock()
-                .map_err(|e| CcError::Database(e.to_string()))?;
-
-            // Write the final epoch vector under the write lock (see
-            // rebuild_with_temp_db).
-            self.finalize_rebuild_generation(&tmp_path, generation_floor)?;
-
-            // Remove old WAL/SHM files
-            let wal = self.db_path.with_extension("sqlite3-wal");
-            let shm = self.db_path.with_extension("sqlite3-shm");
-            let _ = std::fs::remove_file(&wal);
-            let _ = std::fs::remove_file(&shm);
-
-            // Atomic rename: temp -> main
-            std::fs::rename(&tmp_path, &self.db_path).map_err(|e| {
-                CcError::Database(format!(
-                    "atomic rename {} -> {}: {}",
-                    tmp_path.display(),
-                    self.db_path.display(),
-                    e
-                ))
-            })?;
-
-            // Clean up temp WAL/SHM if any
-            let tmp_wal = tmp_path.with_extension("sqlite3-wal");
-            let tmp_shm = tmp_path.with_extension("sqlite3-shm");
-            let _ = std::fs::remove_file(&tmp_wal);
-            let _ = std::fs::remove_file(&tmp_shm);
+            let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-wal"));
+            let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-shm"));
         }
 
         // Reopen write connection
@@ -1161,8 +1026,150 @@ impl IndexDb {
 
         // Checkpoint WAL to reclaim space after full rebuild
         if let Err(e) = self.checkpoint_wal() {
-            tracing::warn!(err = %e, "direct writer: WAL checkpoint failed (non-fatal)");
+            tracing::warn!(err = %e, "{}: WAL checkpoint failed (non-fatal)", label);
         }
+
+        Ok(())
+    }
+
+    /// Perform a full rebuild using a temporary database file, then atomically
+    /// swap it into place. This avoids WAL contention and allows aggressive
+    /// pragmas without risk to the live database.
+    ///
+    /// The `write_fn` closure receives a mutable reference to the temp
+    /// `Connection` with bulk pragmas already applied and indexes dropped.
+    /// It should insert all data. Indexes are recreated automatically after
+    /// the closure returns.
+    ///
+    /// After successful write, the temp file is renamed over the main db file
+    /// and all connections (pool + write) are re-opened.
+    ///
+    /// Thin adapter over [`Self::run_rebuild_protocol`]; only the temp-file
+    /// build strategy lives here.
+    pub fn rebuild_with_temp_db<F>(&self, write_fn: F) -> CcResult<()>
+    where
+        F: FnOnce(&Connection) -> CcResult<()>,
+    {
+        let tmp_path = self.db_path.with_extension("sqlite3.tmp");
+        self.run_rebuild_protocol(&tmp_path, "full rebuild", |tmp_path| {
+            tracing::info!(
+                tmp = %tmp_path.display(),
+                "full rebuild: creating temp database"
+            );
+
+            // 1. Open temp db and apply schema
+            let tmp_conn = Connection::open(tmp_path)
+                .map_err(|e| CcError::Database(format!("open temp db: {}", e)))?;
+            tmp_conn
+                .execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
+                .map_err(|e| CcError::Database(format!("temp db pragmas: {}", e)))?;
+
+            // Apply full schema
+            tmp_conn
+                .execute_batch(FULL_SCHEMA_SQL)
+                .map_err(|e| CcError::Database(format!("temp db schema init failed: {}", e)))?;
+            tmp_conn
+                .pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
+                .map_err(|e| CcError::Database(format!("temp db set version: {}", e)))?;
+
+            // 2. Apply bulk pragmas
+            Self::set_bulk_rebuild_pragmas(&tmp_conn)?;
+
+            // 3. Drop non-PK indexes for faster bulk insert (derived from the schema
+            //    so the set always matches index_v1.sql)
+            tmp_conn
+                .execute_batch(&crate::direct_writer::drop_index_statements(
+                    FULL_SCHEMA_SQL,
+                ))
+                .map_err(|e| CcError::Database(format!("temp db drop indexes: {}", e)))?;
+
+            tracing::info!("full rebuild: writing data to temp database");
+
+            // 4. Write all data inside a single transaction
+            {
+                let tx_result = (|| -> CcResult<()> {
+                    let tx = tmp_conn
+                        .unchecked_transaction()
+                        .map_err(|e| CcError::Database(format!("temp db transaction: {}", e)))?;
+                    write_fn(&tx)?;
+                    tx.commit()
+                        .map_err(|e| CcError::Database(format!("temp db commit: {}", e)))?;
+                    Ok(())
+                })();
+
+                if let Err(e) = tx_result {
+                    tracing::warn!(err = %e, "full rebuild failed, cleaning up temp db");
+                    drop(tmp_conn);
+                    let _ = std::fs::remove_file(tmp_path);
+                    return Err(e);
+                }
+            }
+
+            // 5. Recreate indexes (same schema-derived set as the drop above)
+            tracing::info!("full rebuild: recreating indexes");
+            tmp_conn
+                .execute_batch(&crate::direct_writer::extract_index_statements(
+                    FULL_SCHEMA_SQL,
+                ))
+                .map_err(|e| CcError::Database(format!("temp db recreate indexes: {}", e)))?;
+
+            // Restore normal pragmas before closing
+            Self::restore_normal_pragmas(&tmp_conn)?;
+
+            // 6. Close temp connection
+            drop(tmp_conn);
+
+            tracing::info!("full rebuild: swapping temp database into place");
+            Ok(())
+        })?;
+
+        tracing::info!("full rebuild: temp-db swap complete");
+        Ok(())
+    }
+
+    /// High-speed full rebuild using DirectWriter.
+    ///
+    /// Creates a fresh database with aggressive PRAGMAs (journal OFF, synchronous OFF,
+    /// 64KB pages, exclusive locking), writes all data via the caller-supplied closure,
+    /// creates indexes after data, validates with integrity_check, then atomically
+    /// swaps the new file into place.
+    ///
+    /// The `write_fn` signature matches `rebuild_with_temp_db` so callers can switch
+    /// between them trivially.
+    ///
+    /// Thin adapter over [`Self::run_rebuild_protocol`]; only the
+    /// DirectWriter build strategy lives here.
+    ///
+    /// Enable via `IndexingConfig::use_direct_writer == true`.
+    pub fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+    where
+        F: FnOnce(&Connection) -> CcResult<()>,
+    {
+        let tmp_path = self.db_path.with_extension("direct-tmp.sqlite3");
+        self.run_rebuild_protocol(&tmp_path, "direct writer", |tmp_path| {
+            tracing::info!(
+                tmp = %tmp_path.display(),
+                "direct writer: creating high-speed temp database"
+            );
+
+            crate::direct_writer::DirectWriter::write_db(tmp_path, FULL_SCHEMA_SQL, |tx| {
+                // Set schema version inside the transaction
+                tx.pragma_update(
+                    None,
+                    "user_version",
+                    crate::index_migrate::CURRENT_SCHEMA_VERSION,
+                )
+                .map_err(|e| format!("set user_version: {}", e))?;
+
+                // Delegate to caller's write function.
+                // Transaction derefs to Connection, so write_fn(&tx) works.
+                write_fn(tx).map_err(|e| e.to_string())
+            })
+            .map_err(|e| CcError::Database(format!("direct writer: {}", e)))?;
+
+            tracing::info!("direct writer: temp database written, swapping into place");
+            Ok(())
+        })?;
 
         tracing::info!("direct writer: swap complete");
         Ok(())
@@ -1392,6 +1399,14 @@ impl IndexDb {
         Ok(paths.len())
     }
 
+    /// Delete every row owned by `rel_path` across content, FTS and edge tables.
+    ///
+    /// FTS dual-maintenance model: `symbols_fts` and `file_paths_fts` are kept
+    /// in sync by schema triggers (the `DELETE FROM files` below cascades into
+    /// `symbols` via `ON DELETE CASCADE`, firing those triggers), while
+    /// `chunks_fts`, `files_fts` and `literal_fts` have no triggers and MUST
+    /// be deleted here at the application layer, in the same transaction as
+    /// the base-table deletes.
     pub(crate) fn delete_file_data(conn: &Connection, rel_path: &str) -> CcResult<()> {
         for fts_table in &["chunks_fts", "files_fts", "literal_fts"] {
             conn.execute(

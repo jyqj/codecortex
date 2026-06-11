@@ -324,9 +324,20 @@ pub struct RankingConfig {
     /// Graph neighbor expansion: base score for 1-hop call-graph neighbors.
     #[serde(default = "default_preselect_graph_neighbor_base")]
     pub preselect_graph_neighbor_base: f64,
+    /// Graph neighbor expansion: score added per additional edge reaching
+    /// the same neighbor file.
+    #[serde(default = "default_preselect_graph_edge_increment")]
+    pub preselect_graph_edge_increment: f64,
+    /// Graph neighbor expansion: cap on the accumulated per-file score
+    /// (the base is also clamped to this cap).
+    #[serde(default = "default_preselect_graph_accum_cap")]
+    pub preselect_graph_accum_cap: f64,
     /// Fallback layer: score for recently-indexed files when nothing matched.
     #[serde(default = "default_preselect_fallback_score")]
     pub preselect_fallback_score: f64,
+    /// Score assigned to caller-pinned explicit file scopes (short-circuit).
+    #[serde(default = "default_preselect_explicit_scope_score")]
+    pub preselect_explicit_scope_score: f64,
 
     // ── Graph retrieval lane (lanes.rs) ─────────────────────────────
     /// Score decay per hop when expanding from a seed symbol to its
@@ -416,8 +427,17 @@ fn default_preselect_path_token_bonus() -> f64 {
 fn default_preselect_graph_neighbor_base() -> f64 {
     0.8
 }
+fn default_preselect_graph_edge_increment() -> f64 {
+    0.1
+}
+fn default_preselect_graph_accum_cap() -> f64 {
+    1.2
+}
 fn default_preselect_fallback_score() -> f64 {
     0.2
+}
+fn default_preselect_explicit_scope_score() -> f64 {
+    10.0
 }
 fn default_graph_neighbor_decay() -> f64 {
     0.5
@@ -457,7 +477,10 @@ impl Default for RankingConfig {
             preselect_symbol_fuzzy_bonus: default_preselect_symbol_fuzzy_bonus(),
             preselect_path_token_bonus: default_preselect_path_token_bonus(),
             preselect_graph_neighbor_base: default_preselect_graph_neighbor_base(),
+            preselect_graph_edge_increment: default_preselect_graph_edge_increment(),
+            preselect_graph_accum_cap: default_preselect_graph_accum_cap(),
             preselect_fallback_score: default_preselect_fallback_score(),
+            preselect_explicit_scope_score: default_preselect_explicit_scope_score(),
             graph_neighbor_decay: default_graph_neighbor_decay(),
             graph_seed_exact_score: default_graph_seed_exact_score(),
             graph_seed_fuzzy_score: default_graph_seed_fuzzy_score(),

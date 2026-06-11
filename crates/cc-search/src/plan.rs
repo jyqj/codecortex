@@ -306,6 +306,15 @@ impl SearchPlan {
                     reasons.push(r.clone());
                 }
             }
+            // Per-layer score bill from preselect: explains how stage-A
+            // arrived at this file's score (e.g. `preselect:working-set:+2.00`).
+            // Additive on top of the legacy reason strings above; bounded by
+            // the number of preselect layers.
+            if let Some(bill) = self.preselect.layer_scores.get(&file_path) {
+                for (layer, layer_score) in bill {
+                    reasons.push(format!("preselect:{layer}:+{layer_score:.2}"));
+                }
+            }
         }
 
         dedupe_reasons(&mut reasons);
@@ -380,6 +389,7 @@ impl SearchPlan {
             "stage_a_file_score": stage_a_score,
             "stage_a_files_considered": self.preselect.files.len(),
             "stage_a_file_reasons": self.preselect.reasons.get(file_path).cloned().unwrap_or_default(),
+            "stage_a_layer_scores": self.preselect.layer_scores.get(file_path).cloned().unwrap_or_default(),
         })
     }
 }

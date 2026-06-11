@@ -119,8 +119,11 @@ before chunk-level search. The four context layers score
 | `preselect_symbol_exact_bonus` | `2.0` | Per-token bonus for an exact symbol-name match. |
 | `preselect_symbol_fuzzy_bonus` | `1.2` | Per-token bonus for a substring symbol-name match. |
 | `preselect_path_token_bonus` | `1.0` | Per-token bonus for a path component match. |
-| `preselect_graph_neighbor_base` | `0.8` | Base score for 1-hop call-graph neighbor files (clamped to the built-in `1.2` accumulation cap). |
+| `preselect_graph_neighbor_base` | `0.8` | Base score for 1-hop call-graph neighbor files (clamped to `preselect_graph_accum_cap`). |
+| `preselect_graph_edge_increment` | `0.1` | Per-edge increment added on top of the graph-neighbor base score. |
+| `preselect_graph_accum_cap` | `1.2` | Cap on a file's accumulated graph-neighbor score (base + increments). |
 | `preselect_fallback_score` | `0.2` | Score for recently-indexed files when nothing else matched. |
+| `preselect_explicit_scope_score` | `10.0` | Short-circuit score given to explicitly scoped files (`file_paths`). |
 
 ### Graph retrieval lane
 

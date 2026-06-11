@@ -1,15 +1,25 @@
 //! File preselection — narrows candidate files before chunk-level search.
 //!
-//! Implements the full 7-layer scoring strategy (constants live in
-//! [`RankingConfig`]; defaults shown):
+//! Implements the full 7-layer scoring strategy as a layer registry (the
+//! seam mirrors `lanes.rs::RetrievalLane`): each layer implements
+//! [`PreselectLayer`] and is registered in [`default_preselect_layers`];
+//! [`preselect`] is a uniform fold over that registry that merges scores,
+//! reasons, and a per-layer score bill (`layer_scores`).
+//!
+//! Layers, in registry (= execution) order; constants live in
+//! [`RankingConfig`], defaults shown:
 //!   1. working-set boost   max(2.0, 5.0 / rank)
 //!   2. recent files         max(1.2, 3.5 / rank)
 //!   3. pinned files         max(2.2, 4.0 / rank)
 //!   4. overlay (dirty)      max(1.5, 3.0 / rank)
 //!   5. FTS summary search   1.4 + 1.0 / (1.0 + |score|)
 //!   6. per-token: symbol name match (exact=2.0, fuzzy=1.2) + path token hit (1.0)
-//!      fallback: recently-indexed files if nothing scored
-//!   7. graph neighbor expansion   0.8 base (1-hop call_edges from top seeds)
+//!
+//!   F. fallback: recently-indexed files (0.2) — a gated layer that only
+//!   fires when layers 1-6 produced zero scores (see [`FallbackLayer`])
+//!
+//!   7. graph neighbor expansion   0.8 base, +0.1/edge, capped at 1.2
+//!      (1-hop call_edges from top seeds; only fires while budget remains)
 
 use std::collections::HashMap;
 
@@ -49,161 +59,421 @@ pub struct PreselectResult {
     pub scores: HashMap<String, f64>,
     pub reasons: HashMap<String, Vec<String>>,
     pub lane_stats: LaneStats,
+    /// Per-file score bill: `file -> [(layer name, layer total)]` in layer
+    /// execution order.  The per-file sum equals `scores[file]`, so a hit
+    /// can explain "preselect 3.7 = working-set:2.0 + fts-summary:1.7".
+    pub layer_scores: HashMap<String, Vec<(&'static str, f64)>>,
 }
 
-// ── Internal helpers ───────────────────────────────────────────
+// ── Layer seam ─────────────────────────────────────────────────
 
-/// Add `score` to a file and record the reason.
-fn score_file(
+/// Layer name for the working-set rank-decay layer (layer 1).
+pub const LAYER_WORKING_SET: &str = "working-set";
+/// Layer name for the recent-files rank-decay layer (layer 2).
+pub const LAYER_RECENT: &str = "recent";
+/// Layer name for the pinned-files rank-decay layer (layer 3).
+pub const LAYER_PINNED: &str = "pinned";
+/// Layer name for the overlay (dirty-buffer) rank-decay layer (layer 4).
+pub const LAYER_OVERLAY: &str = "dirty-buffer";
+/// Layer name for the FTS file-summary layer (layer 5).
+pub const LAYER_FTS_SUMMARY: &str = "fts-summary";
+/// Layer name for the per-token symbol/path layer (layer 6).
+pub const LAYER_TOKEN_SEARCH: &str = "token-search";
+/// Layer name for the gated fallback layer (recently-indexed files).
+pub const LAYER_FALLBACK: &str = "fallback-indexed";
+/// Layer name for the graph-neighbor expansion layer (layer 7).
+pub const LAYER_GRAPH_NEIGHBOR: &str = "graph-neighbor";
+/// Pseudo-layer name used by the explicit-scope short circuit.
+pub const LAYER_EXPLICIT_SCOPE: &str = "explicit-scope";
+
+/// Per-call context handed to every preselect layer.
+///
+/// Deliberately narrow: layers see the index database, the query, the
+/// caller-supplied context path lists, the scoring constants, and a
+/// read-only view of the scores accumulated by *earlier* layers
+/// (`current_scores`) — which is how the graph-neighbor layer picks its
+/// expansion seeds and how the fallback layer evaluates its gate.
+pub struct LayerCtx<'a> {
+    pub db: &'a IndexDb,
+    pub query: &'a str,
+    pub path_prefix: Option<&'a str>,
+    /// Overall preselect budget (`PreselectRequest::limit`).
+    pub limit: usize,
+    pub ranking: &'a RankingConfig,
+    pub boost_paths: Option<&'a [String]>,
+    pub recent_paths: Option<&'a [String]>,
+    pub pinned_paths: Option<&'a [String]>,
+    pub overlay_paths: Option<&'a [String]>,
+    /// Scores accumulated by the layers that ran before this one, in
+    /// registry order.  Read-only; merging is the driver's job.
+    pub current_scores: &'a HashMap<String, f64>,
+}
+
+/// One file scored by one layer.
+#[derive(Debug, Clone)]
+pub struct LayerHit {
+    pub file_path: String,
+    pub score: f64,
+    /// Human-readable provenance string (kept byte-identical to the
+    /// pre-registry reason vocabulary, e.g. `symbol:getUserById`).
+    pub reason: String,
+}
+
+/// A preselect scoring layer: one candidate-file source merged additively
+/// into the shared score map.
+///
+/// Contract:
+/// - `score` returns the layer's hits; the driver owns merging (path
+///   normalization, score accumulation, reason + bill bookkeeping).
+///   Emitting the same file twice adds up (layer 6 relies on this).
+/// - Layers that must not re-score existing candidates (graph-neighbor)
+///   filter against `ctx.current_scores` themselves.
+/// - Returning `Err` aborts the whole preselect.  Layers that should
+///   degrade gracefully (every DB-backed layer today) swallow their own
+///   recoverable failures with a `tracing::warn!` and return `Ok(vec![])`.
+pub trait PreselectLayer: Sync {
+    /// Stable layer identifier used in reasons, `layer_scores`, and stats.
+    fn name(&self) -> &'static str;
+
+    /// Score candidate files for this layer.
+    fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>>;
+}
+
+/// The preselect layer registry — the single place to register a new layer.
+///
+/// Order is the execution order and must be preserved: the fallback layer's
+/// gate reads the scores of layers 1-6, and graph-neighbor seeds off
+/// everything before it (including fallback).
+pub fn default_preselect_layers() -> Vec<&'static dyn PreselectLayer> {
+    static WORKING_SET: RankDecayLayer = RankDecayLayer {
+        source: RankDecaySource::WorkingSet,
+    };
+    static RECENT: RankDecayLayer = RankDecayLayer {
+        source: RankDecaySource::Recent,
+    };
+    static PINNED: RankDecayLayer = RankDecayLayer {
+        source: RankDecaySource::Pinned,
+    };
+    static OVERLAY: RankDecayLayer = RankDecayLayer {
+        source: RankDecaySource::Overlay,
+    };
+    vec![
+        &WORKING_SET,
+        &RECENT,
+        &PINNED,
+        &OVERLAY,
+        &FtsSummaryLayer,
+        &TokenSearchLayer,
+        &FallbackLayer,
+        &GraphNeighborLayer,
+    ]
+}
+
+/// Merge one [`LayerHit`] into the shared score / reason / bill maps.
+///
+/// Semantics are identical to the pre-registry `score_file` helper:
+/// backslashes are normalized, scores accumulate additively, every hit
+/// appends its reason (deduplicated at the end of `preselect`).  The bill
+/// additionally aggregates per-layer totals; because layers run
+/// sequentially, a layer's contributions for a file always extend the last
+/// bill entry.
+fn merge_layer_hit(
     scores: &mut HashMap<String, f64>,
     reasons: &mut HashMap<String, Vec<String>>,
-    file_path: &str,
-    score: f64,
-    reason: &str,
+    layer_scores: &mut HashMap<String, Vec<(&'static str, f64)>>,
+    layer_name: &'static str,
+    hit: LayerHit,
 ) {
-    let normalized = file_path.replace('\\', "/");
-    *scores.entry(normalized.clone()).or_insert(0.0) += score;
+    let normalized = hit.file_path.replace('\\', "/");
+    *scores.entry(normalized.clone()).or_insert(0.0) += hit.score;
     reasons
-        .entry(normalized)
+        .entry(normalized.clone())
         .or_default()
-        .push(reason.to_string());
+        .push(hit.reason);
+    let bill = layer_scores.entry(normalized).or_default();
+    match bill.last_mut() {
+        Some((name, total)) if *name == layer_name => *total += hit.score,
+        _ => bill.push((layer_name, hit.score)),
+    }
 }
 
-// ── Layer functions ────────────────────────────────────────────
+// ── Layer implementations ──────────────────────────────────────
+
+/// Which context path list a [`RankDecayLayer`] instance scores.
+#[derive(Debug, Clone, Copy)]
+enum RankDecaySource {
+    WorkingSet,
+    Recent,
+    Pinned,
+    Overlay,
+}
 
 /// Layers 1-4 (working-set / recent / pinned / overlay) share the shape
-/// `max(floor, scale / rank)`; floor and scale come from [`RankingConfig`].
-fn score_rank_decay_layer(
-    paths: &[String],
-    floor: f64,
-    scale: f64,
-    reason: &str,
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) {
-    for (rank, fp) in paths.iter().enumerate() {
-        let rank1 = (rank + 1) as f64;
-        score_file(scores, reasons, fp, f64::max(floor, scale / rank1), reason);
-    }
+/// `max(floor, scale / rank)`; one struct, four registry instances —
+/// floor and scale come from [`RankingConfig`] per source.
+struct RankDecayLayer {
+    source: RankDecaySource,
 }
 
-/// Layer 5: FTS summary search on `files_fts`. Returns the number of hits.
-fn score_fts_summary(
-    db: &IndexDb,
-    query: &str,
-    prefix: Option<&str>,
-    limit: usize,
-    ranking: &RankingConfig,
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) -> usize {
-    let fts_query = sanitize_fts_query(query);
-    if fts_query == r#""""# || fts_query.is_empty() {
-        return 0;
-    }
-
-    let fts_limit = if limit <= 120 {
-        limit.min(80)
-    } else {
-        80 + (limit.saturating_sub(120)) / 3
-    };
-    let rows = match db.fts_file_summaries(&fts_query, prefix, fts_limit) {
-        Ok(rows) => rows,
-        Err(e) => {
-            tracing::warn!("preselect: FTS summary query failed: {}", e);
-            return 0;
+impl RankDecayLayer {
+    fn paths<'a>(&self, ctx: &LayerCtx<'a>) -> Option<&'a [String]> {
+        match self.source {
+            RankDecaySource::WorkingSet => ctx.boost_paths,
+            RankDecaySource::Recent => ctx.recent_paths,
+            RankDecaySource::Pinned => ctx.pinned_paths,
+            RankDecaySource::Overlay => ctx.overlay_paths,
         }
-    };
-
-    let mut hits = 0usize;
-    for (file_path, raw_score) in rows {
-        let bm25_score = raw_score.abs();
-        let file_score = ranking.preselect_fts_base + (1.0 / (1.0 + bm25_score));
-        score_file(scores, reasons, &file_path, file_score, "fts-summary");
-        hits += 1;
     }
-    hits
+
+    fn params(&self, ranking: &RankingConfig) -> (f64, f64) {
+        match self.source {
+            RankDecaySource::WorkingSet => (
+                ranking.preselect_working_set_floor,
+                ranking.preselect_working_set_scale,
+            ),
+            RankDecaySource::Recent => (
+                ranking.preselect_recent_floor,
+                ranking.preselect_recent_scale,
+            ),
+            RankDecaySource::Pinned => (
+                ranking.preselect_pinned_floor,
+                ranking.preselect_pinned_scale,
+            ),
+            RankDecaySource::Overlay => (
+                ranking.preselect_overlay_floor,
+                ranking.preselect_overlay_scale,
+            ),
+        }
+    }
 }
 
-/// Layer 6: per-token symbol name match + path token hit. Returns the total
-/// number of hits across all tokens.
+impl PreselectLayer for RankDecayLayer {
+    fn name(&self) -> &'static str {
+        match self.source {
+            RankDecaySource::WorkingSet => LAYER_WORKING_SET,
+            RankDecaySource::Recent => LAYER_RECENT,
+            RankDecaySource::Pinned => LAYER_PINNED,
+            RankDecaySource::Overlay => LAYER_OVERLAY,
+        }
+    }
+
+    fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
+        let Some(paths) = self.paths(ctx) else {
+            return Ok(Vec::new());
+        };
+        let (floor, scale) = self.params(ctx.ranking);
+        Ok(paths
+            .iter()
+            .enumerate()
+            .map(|(rank, fp)| {
+                let rank1 = (rank + 1) as f64;
+                LayerHit {
+                    file_path: fp.clone(),
+                    score: f64::max(floor, scale / rank1),
+                    reason: self.name().to_string(),
+                }
+            })
+            .collect())
+    }
+}
+
+/// Layer 5: FTS summary search on `files_fts`.
+struct FtsSummaryLayer;
+
+impl PreselectLayer for FtsSummaryLayer {
+    fn name(&self) -> &'static str {
+        LAYER_FTS_SUMMARY
+    }
+
+    fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
+        let fts_query = sanitize_fts_query(ctx.query);
+        if fts_query == r#""""# || fts_query.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let fts_limit = if ctx.limit <= 120 {
+            ctx.limit.min(80)
+        } else {
+            80 + (ctx.limit.saturating_sub(120)) / 3
+        };
+        let rows = match ctx
+            .db
+            .fts_file_summaries(&fts_query, ctx.path_prefix, fts_limit)
+        {
+            Ok(rows) => rows,
+            Err(e) => {
+                tracing::warn!("preselect: FTS summary query failed: {}", e);
+                return Ok(Vec::new());
+            }
+        };
+
+        Ok(rows
+            .into_iter()
+            .map(|(file_path, raw_score)| {
+                let bm25_score = raw_score.abs();
+                LayerHit {
+                    file_path,
+                    score: ctx.ranking.preselect_fts_base + (1.0 / (1.0 + bm25_score)),
+                    reason: LAYER_FTS_SUMMARY.to_string(),
+                }
+            })
+            .collect())
+    }
+}
+
+/// Layer 6: per-token symbol name match + path token hit.
 ///
 /// Both lookups are batched (`*_many`) so the whole layer costs two pooled
 /// connection checkouts instead of two per token.
-fn score_token_search(
-    db: &IndexDb,
-    query: &str,
-    prefix: Option<&str>,
-    ranking: &RankingConfig,
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) -> usize {
-    let query_tokens = tokenize_codeish(query);
-    let candidate_tokens: Vec<&str> = query_tokens
-        .iter()
-        .filter(|t| t.len() >= 3)
-        .take(8)
-        .map(|s| s.as_str())
-        .collect();
+struct TokenSearchLayer;
 
-    if candidate_tokens.is_empty() {
-        return 0;
+impl PreselectLayer for TokenSearchLayer {
+    fn name(&self) -> &'static str {
+        LAYER_TOKEN_SEARCH
     }
 
-    let mut hits = 0usize;
+    fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
+        let query_tokens = tokenize_codeish(ctx.query);
+        let candidate_tokens: Vec<&str> = query_tokens
+            .iter()
+            .filter(|t| t.len() >= 3)
+            .take(8)
+            .map(|s| s.as_str())
+            .collect();
 
-    // 6a. Path token match (one batched query pass for all tokens)
-    match db.path_token_file_hits_many(&candidate_tokens, prefix, 20) {
-        Ok(per_token) => {
-            for (token, file_paths) in candidate_tokens.iter().zip(per_token) {
-                for file_path in file_paths {
-                    score_file(
-                        scores,
-                        reasons,
-                        &file_path,
-                        ranking.preselect_path_token_bonus,
-                        &format!("path-token:{}", token),
-                    );
-                    hits += 1;
+        if candidate_tokens.is_empty() {
+            return Ok(Vec::new());
+        }
+
+        let mut hits = Vec::new();
+
+        // 6a. Path token match (one batched query pass for all tokens)
+        match ctx
+            .db
+            .path_token_file_hits_many(&candidate_tokens, ctx.path_prefix, 20)
+        {
+            Ok(per_token) => {
+                for (token, file_paths) in candidate_tokens.iter().zip(per_token) {
+                    for file_path in file_paths {
+                        hits.push(LayerHit {
+                            file_path,
+                            score: ctx.ranking.preselect_path_token_bonus,
+                            reason: format!("path-token:{}", token),
+                        });
+                    }
                 }
             }
+            Err(e) => tracing::warn!("preselect: path-token query failed: {}", e),
         }
-        Err(e) => tracing::warn!("preselect: path-token query failed: {}", e),
-    }
 
-    // 6b. Symbol name match (one batched query pass for all tokens)
-    match db.symbol_token_hits_many(&candidate_tokens, prefix, 24) {
-        Ok(per_token) => {
-            for (token, symbol_hits) in candidate_tokens.iter().zip(per_token) {
-                for (file_path, name) in symbol_hits {
-                    let bonus = if name.to_lowercase() == **token {
-                        ranking.preselect_symbol_exact_bonus
-                    } else {
-                        ranking.preselect_symbol_fuzzy_bonus
-                    };
-                    let reason = format!("symbol:{}", name);
-                    score_file(scores, reasons, &file_path, bonus, &reason);
-                    hits += 1;
+        // 6b. Symbol name match (one batched query pass for all tokens)
+        match ctx
+            .db
+            .symbol_token_hits_many(&candidate_tokens, ctx.path_prefix, 24)
+        {
+            Ok(per_token) => {
+                for (token, symbol_hits) in candidate_tokens.iter().zip(per_token) {
+                    for (file_path, name) in symbol_hits {
+                        let bonus = if name.to_lowercase() == **token {
+                            ctx.ranking.preselect_symbol_exact_bonus
+                        } else {
+                            ctx.ranking.preselect_symbol_fuzzy_bonus
+                        };
+                        hits.push(LayerHit {
+                            file_path,
+                            score: bonus,
+                            reason: format!("symbol:{}", name),
+                        });
+                    }
                 }
             }
+            Err(e) => tracing::warn!("preselect: symbol-token query failed: {}", e),
         }
-        Err(e) => tracing::warn!("preselect: symbol-token query failed: {}", e),
-    }
 
-    hits
+        Ok(hits)
+    }
 }
 
-/// Layer 7: Expand preselect candidates by finding files that are
-/// call-graph neighbors of the current top-scoring files.
+/// Gated fallback layer: recently-indexed files when nothing scored.
+///
+/// This *is* registered as a layer (rather than a special driver step) so
+/// `preselect` stays a uniform fold over the registry; the cross-layer
+/// trigger is expressed through `ctx.current_scores`, which the seam
+/// already carries for graph-neighbor seeding.  Gate (unchanged semantics):
+/// fires iff every layer before it in the registry produced zero scores.
+/// The driver mirrors the same predicate to set `LaneStats::used_fallback`.
+struct FallbackLayer;
+
+impl PreselectLayer for FallbackLayer {
+    fn name(&self) -> &'static str {
+        LAYER_FALLBACK
+    }
+
+    fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
+        if !ctx.current_scores.is_empty() {
+            return Ok(Vec::new());
+        }
+        let file_paths = match ctx.db.recent_indexed_files(ctx.limit) {
+            Ok(rows) => rows,
+            Err(e) => {
+                tracing::warn!("preselect: fallback query failed: {}", e);
+                return Ok(Vec::new());
+            }
+        };
+        Ok(file_paths
+            .into_iter()
+            .map(|file_path| LayerHit {
+                file_path,
+                score: ctx.ranking.preselect_fallback_score,
+                reason: LAYER_FALLBACK.to_string(),
+            })
+            .collect())
+    }
+}
+
+/// Layer 7: graph-neighbor expansion.
+///
+/// Only fires while preselect hasn't filled its budget; emits only files
+/// absent from `current_scores`, so additive merging is equivalent to the
+/// historical insert-if-absent semantics.  Recoverable DB failures are
+/// swallowed (expansion is best-effort, as before).
+struct GraphNeighborLayer;
+
+impl PreselectLayer for GraphNeighborLayer {
+    fn name(&self) -> &'static str {
+        LAYER_GRAPH_NEIGHBOR
+    }
+
+    fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
+        if ctx.current_scores.len() >= ctx.limit {
+            return Ok(Vec::new());
+        }
+        let budget = ctx.limit.saturating_sub(ctx.current_scores.len());
+        let extras = score_graph_neighbors(ctx.db, ctx.current_scores, budget, ctx.ranking)
+            .unwrap_or_default();
+        Ok(extras
+            .into_iter()
+            .map(|(file_path, score)| LayerHit {
+                file_path,
+                score,
+                reason: LAYER_GRAPH_NEIGHBOR.to_string(),
+            })
+            .collect())
+    }
+}
+
+/// Expand preselect candidates by finding files that are call-graph
+/// neighbors of the current top-scoring files.
 ///
 /// Takes seed files from current scores, finds their symbols, walks 1-hop
 /// call_edges (both callers and callees), and returns discovered neighbor
-/// files with a base score of 0.8 (below FTS ~1.4 but above fallback 0.2).
+/// files with a base score of `preselect_graph_neighbor_base` (0.8 —
+/// below FTS ~1.4 but above fallback 0.2).
 fn score_graph_neighbors(
     db: &IndexDb,
     current_scores: &HashMap<String, f64>,
     expansion_limit: usize,
-    neighbor_base: f64,
+    ranking: &RankingConfig,
 ) -> CcResult<Vec<(String, f64)>> {
     if expansion_limit == 0 || current_scores.is_empty() {
         return Ok(Vec::new());
@@ -226,11 +496,12 @@ fn score_graph_neighbors(
         return Ok(Vec::new());
     }
 
-    // The +0.1 per-edge increment and the 1.2 accumulation cap are
-    // deliberate literals (not RankingConfig fields); the configurable
-    // `neighbor_base` is clamped to the same cap so a base above 1.2
-    // cannot bypass it on first insertion.
-    let neighbor_base = neighbor_base.min(1.2);
+    // Per-edge increment and accumulation cap come from RankingConfig
+    // (defaults +0.1 / 1.2); the base is clamped to the same cap so a base
+    // above the cap cannot bypass it on first insertion.
+    let accum_cap = ranking.preselect_graph_accum_cap;
+    let edge_increment = ranking.preselect_graph_edge_increment;
+    let neighbor_base = ranking.preselect_graph_neighbor_base.min(accum_cap);
     let mut neighbor_files: HashMap<String, f64> = HashMap::new();
 
     // --- Callers: who calls symbols in our seed files? ---
@@ -241,7 +512,7 @@ fn score_graph_neighbors(
                 if !current_scores.contains_key(file) {
                     neighbor_files
                         .entry(file.clone())
-                        .and_modify(|s| *s = (*s + 0.1).min(1.2))
+                        .and_modify(|s| *s = (*s + edge_increment).min(accum_cap))
                         .or_insert(neighbor_base);
                 }
             }
@@ -271,7 +542,7 @@ fn score_graph_neighbors(
                 if !current_scores.contains_key(&sym.file_path) {
                     neighbor_files
                         .entry(sym.file_path.clone())
-                        .and_modify(|s| *s = (*s + 0.1).min(1.2))
+                        .and_modify(|s| *s = (*s + edge_increment).min(accum_cap))
                         .or_insert(neighbor_base);
                 }
             }
@@ -285,32 +556,6 @@ fn score_graph_neighbors(
     Ok(result)
 }
 
-/// Fallback: recently-indexed files when nothing scored.
-fn score_fallback(
-    db: &IndexDb,
-    limit: usize,
-    fallback_score: f64,
-    scores: &mut HashMap<String, f64>,
-    reasons: &mut HashMap<String, Vec<String>>,
-) {
-    let file_paths = match db.recent_indexed_files(limit) {
-        Ok(rows) => rows,
-        Err(e) => {
-            tracing::warn!("preselect: fallback query failed: {}", e);
-            return;
-        }
-    };
-    for file_path in file_paths {
-        score_file(
-            scores,
-            reasons,
-            &file_path,
-            fallback_score,
-            "fallback-indexed",
-        );
-    }
-}
-
 // ── Main entry point ───────────────────────────────────────────
 
 /// Pre-select files that are likely relevant to the query (new interface).
@@ -320,118 +565,66 @@ fn score_fallback(
 pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResult> {
     // If explicit file_paths given, return them directly (like Python).
     if let Some(fps) = req.explicit_file_paths {
+        let explicit_score = req.ranking.preselect_explicit_scope_score;
         let files: Vec<String> = fps.to_vec();
-        let scores: HashMap<String, f64> = files.iter().map(|f| (f.clone(), 10.0)).collect();
+        let scores: HashMap<String, f64> =
+            files.iter().map(|f| (f.clone(), explicit_score)).collect();
         let reasons: HashMap<String, Vec<String>> = files
             .iter()
-            .map(|f| (f.clone(), vec!["explicit-scope".into()]))
+            .map(|f| (f.clone(), vec![LAYER_EXPLICIT_SCOPE.into()]))
+            .collect();
+        let layer_scores: HashMap<String, Vec<(&'static str, f64)>> = files
+            .iter()
+            .map(|f| (f.clone(), vec![(LAYER_EXPLICIT_SCOPE, explicit_score)]))
             .collect();
         return Ok(PreselectResult {
             files,
             scores,
             reasons,
             lane_stats: LaneStats::default(),
+            layer_scores,
         });
     }
 
     let mut scores: HashMap<String, f64> = HashMap::new();
     let mut reasons: HashMap<String, Vec<String>> = HashMap::new();
+    let mut layer_scores: HashMap<String, Vec<(&'static str, f64)>> = HashMap::new();
     let mut lane_stats = LaneStats::default();
 
-    let ranking = req.ranking;
-
-    // ── Layers 1-4: context-boost layers ───────────────────────
-    if let Some(paths) = req.boost_paths {
-        score_rank_decay_layer(
-            paths,
-            ranking.preselect_working_set_floor,
-            ranking.preselect_working_set_scale,
-            "working-set",
-            &mut scores,
-            &mut reasons,
-        );
-    }
-    if let Some(paths) = req.recent_paths {
-        score_rank_decay_layer(
-            paths,
-            ranking.preselect_recent_floor,
-            ranking.preselect_recent_scale,
-            "recent",
-            &mut scores,
-            &mut reasons,
-        );
-    }
-    if let Some(paths) = req.pinned_paths {
-        score_rank_decay_layer(
-            paths,
-            ranking.preselect_pinned_floor,
-            ranking.preselect_pinned_scale,
-            "pinned",
-            &mut scores,
-            &mut reasons,
-        );
-    }
-    if let Some(paths) = req.overlay_paths {
-        score_rank_decay_layer(
-            paths,
-            ranking.preselect_overlay_floor,
-            ranking.preselect_overlay_scale,
-            "dirty-buffer",
-            &mut scores,
-            &mut reasons,
-        );
-    }
-
-    // ── Layer 5: FTS summary search ────────────────────────────
-    lane_stats.fts_hits = score_fts_summary(
-        db,
-        req.query,
-        req.path_prefix,
-        req.limit,
-        ranking,
-        &mut scores,
-        &mut reasons,
-    );
-
-    // ── Layer 6: per-token symbol + path match ─────────────────
-    lane_stats.token_hits = score_token_search(
-        db,
-        req.query,
-        req.path_prefix,
-        ranking,
-        &mut scores,
-        &mut reasons,
-    );
-
-    // ── Fallback: recently-indexed files if nothing scored ──────
-    if scores.is_empty() {
-        score_fallback(
-            db,
-            req.limit,
-            ranking.preselect_fallback_score,
-            &mut scores,
-            &mut reasons,
-        );
-        lane_stats.used_fallback = true;
-    }
-
-    // ── Layer 7: Graph neighbor expansion ─────────────────────
-    // Only expand when preselect hasn't filled its budget and we're
-    // not in explicit scope (already short-circuited above).
-    if scores.len() < req.limit {
-        let budget = req.limit.saturating_sub(scores.len());
-        if let Ok(extras) =
-            score_graph_neighbors(db, &scores, budget, ranking.preselect_graph_neighbor_base)
-        {
-            for (file, score) in extras {
-                scores.entry(file.clone()).or_insert_with(|| {
-                    reasons
-                        .entry(file)
-                        .or_default()
-                        .push("graph-neighbor".to_string());
-                    score
-                });
-            }
+    for layer in default_preselect_layers() {
+        // Mirror of FallbackLayer's gate: record that fallback fired even if
+        // its DB query then returns nothing (historical semantics).
+        if layer.name() == LAYER_FALLBACK && scores.is_empty() {
+            lane_stats.used_fallback = true;
+        }
+        let hits = {
+            let ctx = LayerCtx {
+                db,
+                query: req.query,
+                path_prefix: req.path_prefix,
+                limit: req.limit,
+                ranking: req.ranking,
+                boost_paths: req.boost_paths,
+                recent_paths: req.recent_paths,
+                pinned_paths: req.pinned_paths,
+                overlay_paths: req.overlay_paths,
+                current_scores: &scores,
+            };
+            layer.score(&ctx)?
+        };
+        match layer.name() {
+            LAYER_FTS_SUMMARY => lane_stats.fts_hits = hits.len(),
+            LAYER_TOKEN_SEARCH => lane_stats.token_hits = hits.len(),
+            _ => {}
+        }
+        for hit in hits {
+            merge_layer_hit(
+                &mut scores,
+                &mut reasons,
+                &mut layer_scores,
+                layer.name(),
+                hit,
+            );
         }
     }
 
@@ -465,12 +658,18 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
             (f.clone(), r)
         })
         .collect();
+    // Keep the score bill only for surviving files (mirrors reasons)
+    let final_layer_scores: HashMap<String, Vec<(&'static str, f64)>> = files
+        .iter()
+        .map(|f| (f.clone(), layer_scores.remove(f).unwrap_or_default()))
+        .collect();
 
     Ok(PreselectResult {
         files,
         scores: final_scores,
         reasons: final_reasons,
         lane_stats,
+        layer_scores: final_layer_scores,
     })
 }
 
@@ -531,6 +730,50 @@ mod tests {
         )
         .unwrap();
         (tmp, db)
+    }
+
+    /// Minimal LayerCtx over a db + optional path lists, for single-layer tests.
+    struct CtxFixture<'a> {
+        db: &'a IndexDb,
+        ranking: RankingConfig,
+        boost_paths: Option<&'a [String]>,
+        recent_paths: Option<&'a [String]>,
+        pinned_paths: Option<&'a [String]>,
+        overlay_paths: Option<&'a [String]>,
+        current_scores: HashMap<String, f64>,
+        query: &'a str,
+        limit: usize,
+    }
+
+    impl<'a> CtxFixture<'a> {
+        fn new(db: &'a IndexDb, query: &'a str) -> Self {
+            Self {
+                db,
+                ranking: RankingConfig::default(),
+                boost_paths: None,
+                recent_paths: None,
+                pinned_paths: None,
+                overlay_paths: None,
+                current_scores: HashMap::new(),
+                query,
+                limit: 10,
+            }
+        }
+
+        fn ctx(&self) -> LayerCtx<'_> {
+            LayerCtx {
+                db: self.db,
+                query: self.query,
+                path_prefix: None,
+                limit: self.limit,
+                ranking: &self.ranking,
+                boost_paths: self.boost_paths,
+                recent_paths: self.recent_paths,
+                pinned_paths: self.pinned_paths,
+                overlay_paths: self.overlay_paths,
+                current_scores: &self.current_scores,
+            }
+        }
     }
 
     /// A token that appears only mid-identifier (camelCase) must still recall the
@@ -647,6 +890,11 @@ mod tests {
         assert_eq!(*result.scores.get("src/a.rs").unwrap(), 10.0);
         assert_eq!(result.lane_stats.fts_hits, 0);
         assert!(!result.lane_stats.used_fallback);
+        // Explicit scope shows up in the bill too.
+        assert_eq!(
+            result.layer_scores.get("src/a.rs").unwrap(),
+            &vec![(LAYER_EXPLICIT_SCOPE, 10.0)]
+        );
     }
 
     /// Verify LaneStats reports fallback when query matches nothing.
@@ -671,6 +919,240 @@ mod tests {
         );
     }
 
+    // ── Layer registry / seam tests ────────────────────────────
+
+    /// Registry order must match the historical execution order: layers 1-6,
+    /// then fallback, then graph-neighbor (fallback gate and graph seeding
+    /// both depend on it).
+    #[test]
+    fn registry_preserves_execution_order() {
+        let names: Vec<&'static str> = default_preselect_layers()
+            .iter()
+            .map(|l| l.name())
+            .collect();
+        assert_eq!(
+            names,
+            vec![
+                LAYER_WORKING_SET,
+                LAYER_RECENT,
+                LAYER_PINNED,
+                LAYER_OVERLAY,
+                LAYER_FTS_SUMMARY,
+                LAYER_TOKEN_SEARCH,
+                LAYER_FALLBACK,
+                LAYER_GRAPH_NEIGHBOR,
+            ]
+        );
+    }
+
+    /// Each rank-decay instance scores its own path list with its own
+    /// floor/scale — single struct, four configurations.
+    #[test]
+    fn rank_decay_layers_score_their_own_lists() {
+        let (_tmp, db) = db_with_symbols();
+        let boost = vec!["src/ws.rs".to_string(), "src/ws2.rs".to_string()];
+        let pinned = vec!["src/pin.rs".to_string()];
+        let mut fixture = CtxFixture::new(&db, "user");
+        fixture.boost_paths = Some(&boost);
+        fixture.pinned_paths = Some(&pinned);
+
+        let working_set = RankDecayLayer {
+            source: RankDecaySource::WorkingSet,
+        };
+        let hits = working_set.score(&fixture.ctx()).unwrap();
+        assert_eq!(hits.len(), 2);
+        // rank 1: max(2.0, 5.0/1) = 5.0; rank 2: max(2.0, 5.0/2) = 2.5
+        assert_eq!(hits[0].file_path, "src/ws.rs");
+        assert!((hits[0].score - 5.0).abs() < 1e-9);
+        assert!((hits[1].score - 2.5).abs() < 1e-9);
+        assert_eq!(hits[0].reason, LAYER_WORKING_SET);
+
+        let pinned_layer = RankDecayLayer {
+            source: RankDecaySource::Pinned,
+        };
+        let hits = pinned_layer.score(&fixture.ctx()).unwrap();
+        assert_eq!(hits.len(), 1);
+        // rank 1: max(2.2, 4.0/1) = 4.0
+        assert!((hits[0].score - 4.0).abs() < 1e-9);
+        assert_eq!(hits[0].reason, LAYER_PINNED);
+
+        // Layers with no list provided emit nothing.
+        let recent_layer = RankDecayLayer {
+            source: RankDecaySource::Recent,
+        };
+        assert!(recent_layer.score(&fixture.ctx()).unwrap().is_empty());
+    }
+
+    /// FTS summary layer in isolation: no summaries indexed -> no hits, and a
+    /// blank query short-circuits.
+    #[test]
+    fn fts_summary_layer_isolated() {
+        let (_tmp, db) = db_with_symbols();
+        let fixture = CtxFixture::new(&db, "");
+        assert!(FtsSummaryLayer.score(&fixture.ctx()).unwrap().is_empty());
+    }
+
+    /// Token layer in isolation recalls symbol substring matches with the
+    /// fuzzy bonus and the historical `symbol:<name>` reason format.
+    #[test]
+    fn token_search_layer_isolated() {
+        let (_tmp, db) = db_with_symbols();
+        let fixture = CtxFixture::new(&db, "user");
+        let hits = TokenSearchLayer.score(&fixture.ctx()).unwrap();
+        assert!(
+            hits.iter()
+                .any(|h| h.file_path == "src/a.rs" && h.reason == "symbol:getUserById"),
+            "token layer must emit symbol:<name> reason for src/a.rs; got {:?}",
+            hits
+        );
+        let hit = hits.iter().find(|h| h.file_path == "src/a.rs").unwrap();
+        assert!(
+            (hit.score - RankingConfig::default().preselect_symbol_fuzzy_bonus).abs() < 1e-9,
+            "substring match uses the fuzzy bonus"
+        );
+    }
+
+    /// Fallback layer gate: fires only when current_scores is empty.
+    #[test]
+    fn fallback_layer_gate() {
+        let (_tmp, db) = db_with_symbols();
+
+        // Empty scores -> fallback emits recently-indexed files at 0.2.
+        let fixture = CtxFixture::new(&db, "zzznonexistent");
+        let hits = FallbackLayer.score(&fixture.ctx()).unwrap();
+        assert!(!hits.is_empty(), "fallback must fire on empty scores");
+        for hit in &hits {
+            assert!((hit.score - 0.2).abs() < 1e-9);
+            assert_eq!(hit.reason, LAYER_FALLBACK);
+        }
+
+        // Non-empty scores -> gated off.
+        let mut fixture = CtxFixture::new(&db, "zzznonexistent");
+        fixture.current_scores.insert("src/a.rs".to_string(), 1.0);
+        assert!(
+            FallbackLayer.score(&fixture.ctx()).unwrap().is_empty(),
+            "fallback must not fire once any layer scored"
+        );
+    }
+
+    /// Merge semantics regression: multiple layers (and repeated hits within
+    /// one layer) accumulate additively per file, reasons append, and the
+    /// bill aggregates per layer.
+    #[test]
+    fn merge_layer_hit_accumulates_and_bills() {
+        let mut scores = HashMap::new();
+        let mut reasons = HashMap::new();
+        let mut layer_scores = HashMap::new();
+
+        let hit = |score: f64, reason: &str| LayerHit {
+            file_path: "src/a.rs".to_string(),
+            score,
+            reason: reason.to_string(),
+        };
+        merge_layer_hit(
+            &mut scores,
+            &mut reasons,
+            &mut layer_scores,
+            LAYER_WORKING_SET,
+            hit(2.0, LAYER_WORKING_SET),
+        );
+        merge_layer_hit(
+            &mut scores,
+            &mut reasons,
+            &mut layer_scores,
+            LAYER_TOKEN_SEARCH,
+            hit(1.2, "symbol:foo"),
+        );
+        merge_layer_hit(
+            &mut scores,
+            &mut reasons,
+            &mut layer_scores,
+            LAYER_TOKEN_SEARCH,
+            hit(1.0, "path-token:foo"),
+        );
+
+        assert!((scores["src/a.rs"] - 4.2).abs() < 1e-9);
+        assert_eq!(
+            reasons["src/a.rs"],
+            vec!["working-set", "symbol:foo", "path-token:foo"]
+        );
+        // Bill: one entry per layer, same-layer hits aggregated.
+        assert_eq!(
+            layer_scores["src/a.rs"],
+            vec![(LAYER_WORKING_SET, 2.0), (LAYER_TOKEN_SEARCH, 2.2)]
+        );
+
+        // Backslash normalization matches the historical score_file helper.
+        merge_layer_hit(
+            &mut scores,
+            &mut reasons,
+            &mut layer_scores,
+            LAYER_RECENT,
+            LayerHit {
+                file_path: "src\\win.rs".to_string(),
+                score: 1.2,
+                reason: LAYER_RECENT.to_string(),
+            },
+        );
+        assert!(scores.contains_key("src/win.rs"));
+    }
+
+    /// layer_scores must be self-consistent with the total score: for every
+    /// surviving file, the sum of its bill equals scores[file].
+    #[test]
+    fn layer_scores_sum_to_total() {
+        let (_tmp, db) = db_with_symbols();
+        let boost = vec!["src/a.rs".to_string()];
+        let recent = vec!["src/a.rs".to_string(), "src/b.rs".to_string()];
+        let req = PreselectRequest {
+            query: "user",
+            path_prefix: None,
+            boost_paths: Some(&boost),
+            recent_paths: Some(&recent),
+            pinned_paths: None,
+            overlay_paths: None,
+            explicit_file_paths: None,
+            limit: 10,
+            ranking: &RankingConfig::default(),
+        };
+        let result = preselect(&db, &req).unwrap();
+        assert!(!result.files.is_empty());
+        for file in &result.files {
+            let total = result.scores[file];
+            let bill = result
+                .layer_scores
+                .get(file)
+                .unwrap_or_else(|| panic!("missing bill for {}", file));
+            let bill_sum: f64 = bill.iter().map(|(_, s)| s).sum();
+            assert!(
+                (bill_sum - total).abs() < 1e-9,
+                "bill for {} must sum to total: {:?} vs {}",
+                file,
+                bill,
+                total
+            );
+        }
+        // src/a.rs got working-set + recent + token-search contributions.
+        let a_bill = &result.layer_scores["src/a.rs"];
+        let a_layers: Vec<&'static str> = a_bill.iter().map(|(n, _)| *n).collect();
+        assert!(a_layers.contains(&LAYER_WORKING_SET));
+        assert!(a_layers.contains(&LAYER_RECENT));
+        assert!(a_layers.contains(&LAYER_TOKEN_SEARCH));
+    }
+
+    /// RankingConfig defaults must equal the historical magic numbers that
+    /// were collected into config by this refactor.
+    #[test]
+    fn ranking_defaults_match_legacy_magic_numbers() {
+        let ranking = RankingConfig::default();
+        assert!((ranking.preselect_graph_edge_increment - 0.1).abs() < 1e-9);
+        assert!((ranking.preselect_graph_accum_cap - 1.2).abs() < 1e-9);
+        assert!((ranking.preselect_explicit_scope_score - 10.0).abs() < 1e-9);
+        // Pre-existing fields the new layers read, for completeness.
+        assert!((ranking.preselect_graph_neighbor_base - 0.8).abs() < 1e-9);
+        assert!((ranking.preselect_fallback_score - 0.2).abs() < 1e-9);
+    }
+
     // ── Layer 7: graph neighbor expansion tests ───────────────
 
     /// score_graph_neighbors returns empty vec when given empty scores.
@@ -678,7 +1160,7 @@ mod tests {
     fn graph_neighbors_empty_scores() {
         let (_tmp, db) = db_with_symbols();
         let scores: HashMap<String, f64> = HashMap::new();
-        let result = score_graph_neighbors(&db, &scores, 10, 0.8).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 10, &RankingConfig::default()).unwrap();
         assert!(result.is_empty());
     }
 
@@ -688,7 +1170,7 @@ mod tests {
         let (_tmp, db) = db_with_symbols();
         let mut scores = HashMap::new();
         scores.insert("src/a.rs".to_string(), 2.0);
-        let result = score_graph_neighbors(&db, &scores, 0, 0.8).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 0, &RankingConfig::default()).unwrap();
         assert!(result.is_empty());
     }
 
@@ -734,7 +1216,7 @@ mod tests {
         let mut scores = HashMap::new();
         scores.insert("src/caller.rs".to_string(), 2.0);
 
-        let result = score_graph_neighbors(&db, &scores, 10, 0.8).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 10, &RankingConfig::default()).unwrap();
         let neighbor_paths: Vec<&str> = result.iter().map(|(p, _)| p.as_str()).collect();
 
         // Callee side: handle_request calls process_data -> src/callee.rs
@@ -772,12 +1254,40 @@ mod tests {
         scores.insert("src/callee.rs".to_string(), 1.5);
         scores.insert("src/reverse_caller.rs".to_string(), 1.0);
 
-        let result = score_graph_neighbors(&db, &scores, 10, 0.8).unwrap();
+        let result = score_graph_neighbors(&db, &scores, 10, &RankingConfig::default()).unwrap();
         assert!(
             result.is_empty(),
             "all neighbors already scored, should return empty; got {:?}",
             result
         );
+    }
+
+    /// GraphNeighborLayer adapter: gated off when the budget is full, fires
+    /// (and bills) when budget remains.
+    #[test]
+    fn graph_neighbor_layer_respects_budget() {
+        let (_tmp, db) = db_with_call_graph();
+
+        let mut fixture = CtxFixture::new(&db, "handle_request");
+        fixture
+            .current_scores
+            .insert("src/caller.rs".to_string(), 2.0);
+        fixture.limit = 1; // budget already consumed by the seed
+        assert!(
+            GraphNeighborLayer.score(&fixture.ctx()).unwrap().is_empty(),
+            "no expansion when scores.len() >= limit"
+        );
+
+        fixture.limit = 10;
+        let hits = GraphNeighborLayer.score(&fixture.ctx()).unwrap();
+        assert!(!hits.is_empty(), "expansion fires while budget remains");
+        for hit in &hits {
+            assert_eq!(hit.reason, LAYER_GRAPH_NEIGHBOR);
+            assert!(
+                hit.file_path != "src/caller.rs",
+                "must not re-emit seeded files"
+            );
+        }
     }
 
     /// Full preselect integration: graph expansion fires when budget remains.
@@ -813,5 +1323,10 @@ mod tests {
             "at least one graph neighbor should be added; got {:?}",
             result.files
         );
+        // Discovered neighbors carry a graph-neighbor bill entry.
+        if has_callee {
+            let bill = &result.layer_scores["src/callee.rs"];
+            assert!(bill.iter().any(|(n, _)| *n == LAYER_GRAPH_NEIGHBOR));
+        }
     }
 }

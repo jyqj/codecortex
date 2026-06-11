@@ -80,7 +80,7 @@ pub fn explore_flow(
     let read_model = GraphReadModel::new(Arc::clone(db))?;
 
     // 4. Pairwise path finding.
-    let uid_names = db.symbol_names_by_uid()?;
+    let uid_names = db.reads().symbol_names_by_uid()?;
 
     let mut all_labeled_paths = Vec::new();
     let mut path_endpoints: Vec<(usize, usize)> = Vec::new(); // indices into resolved
@@ -121,7 +121,7 @@ pub fn explore_flow(
     );
 
     let uid_vec: Vec<String> = all_uids.iter().cloned().collect();
-    let sym_map = db.symbol_rows_by_uids(&uid_vec)?;
+    let sym_map = db.reads().symbol_rows_by_uids(&uid_vec)?;
 
     // Per-node snippet budget: 32 KiB total, shared across all nodes.
     let mut snippet_budget: usize = 32 * 1024;
@@ -187,7 +187,10 @@ pub fn explore_flow(
                 })
             } else {
                 // Fetch from db for disconnected symbols not in any path
-                let rows = db.symbol_rows_by_uids(std::slice::from_ref(uid)).ok()?;
+                let rows = db
+                    .reads()
+                    .symbol_rows_by_uids(std::slice::from_ref(uid))
+                    .ok()?;
                 let sym = rows.get(uid)?;
                 Some(DisconnectedSymbol {
                     name: name.clone(),
@@ -277,7 +280,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
 
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
 
         conn.execute(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
@@ -383,7 +386,7 @@ mod tests {
         let (_tmp, db) = setup_abcd_graph();
 
         // Insert a second symbol with the same name but different file
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
              VALUES('src/other.rs','Rust','h2',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
@@ -423,7 +426,7 @@ mod tests {
         let (_tmp, db) = setup_abcd_graph();
 
         // Insert another isolated symbol E
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
               start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,

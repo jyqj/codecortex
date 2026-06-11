@@ -528,7 +528,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("varlen_reach.db"))
             .unwrap()
             .0;
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         // Diamond A->B, A->C, B->D, C->D (D reachable via two paths) plus a
         // back-edge D->A forming a cycle.
         conn.execute_batch(

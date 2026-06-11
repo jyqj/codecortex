@@ -298,6 +298,7 @@ impl PreselectLayer for FtsSummaryLayer {
         };
         let rows = match ctx
             .db
+            .reads()
             .fts_file_summaries(&fts_query, ctx.path_prefix, fts_limit)
         {
             Ok(rows) => rows,
@@ -350,6 +351,7 @@ impl PreselectLayer for TokenSearchLayer {
         // 6a. Path token match (one batched query pass for all tokens)
         match ctx
             .db
+            .reads()
             .path_token_file_hits_many(&candidate_tokens, ctx.path_prefix, 20)
         {
             Ok(per_token) => {
@@ -369,6 +371,7 @@ impl PreselectLayer for TokenSearchLayer {
         // 6b. Symbol name match (one batched query pass for all tokens)
         match ctx
             .db
+            .reads()
             .symbol_token_hits_many(&candidate_tokens, ctx.path_prefix, 24)
         {
             Ok(per_token) => {
@@ -413,7 +416,7 @@ impl PreselectLayer for FallbackLayer {
         if !ctx.current_scores.is_empty() {
             return Ok(Vec::new());
         }
-        let file_paths = match ctx.db.recent_indexed_files(ctx.limit) {
+        let file_paths = match ctx.db.reads().recent_indexed_files(ctx.limit) {
             Ok(rows) => rows,
             Err(e) => {
                 tracing::warn!("preselect: fallback query failed: {}", e);
@@ -485,7 +488,7 @@ fn score_graph_neighbors(
     let seed_files: Vec<&str> = top_files.iter().take(20).map(|(f, _)| f.as_str()).collect();
 
     // Find symbol UIDs in seed files
-    let symbols = db.symbols_by_file_paths(&seed_files)?;
+    let symbols = db.reads().symbols_by_file_paths(&seed_files)?;
     let seed_uids: Vec<&str> = symbols
         .iter()
         .filter_map(|s| s.symbol_uid.as_deref())
@@ -504,10 +507,22 @@ fn score_graph_neighbors(
     let neighbor_base = ranking.preselect_graph_neighbor_base.min(accum_cap);
     let mut neighbor_files: HashMap<String, f64> = HashMap::new();
 
+    // Both directions are fetched in one batched query each instead of one
+    // point query per seed; failures degrade to no expansion, matching the
+    // old per-seed `if let Ok(..)` swallowing.
+    let callers_by_seed = db
+        .reads()
+        .caller_rows_by_uids(&seed_uids, 5)
+        .unwrap_or_default();
+    let callees_by_seed = db
+        .reads()
+        .callee_rows_by_uids(&seed_uids, 5)
+        .unwrap_or_default();
+
     // --- Callers: who calls symbols in our seed files? ---
     for uid in &seed_uids {
-        if let Ok(callers) = db.caller_rows_by_uid(uid, 5) {
-            for edge in &callers {
+        if let Some(callers) = callers_by_seed.get(*uid) {
+            for edge in callers {
                 let file = &edge.file_path;
                 if !current_scores.contains_key(file) {
                     neighbor_files
@@ -523,9 +538,9 @@ fn score_graph_neighbors(
     // Collect all callee UIDs first, then batch-resolve to file paths.
     let mut callee_uids_to_resolve: Vec<String> = Vec::new();
     for uid in &seed_uids {
-        if let Ok(callees) = db.callee_rows_by_uid(uid, 5) {
+        if let Some(callees) = callees_by_seed.get(*uid) {
             for edge in callees {
-                if let Some(callee_uid) = edge.callee_symbol_uid {
+                if let Some(callee_uid) = edge.callee_symbol_uid.clone() {
                     callee_uids_to_resolve.push(callee_uid);
                 }
             }
@@ -537,7 +552,7 @@ fn score_graph_neighbors(
         callee_uids_to_resolve.sort();
         callee_uids_to_resolve.dedup();
         callee_uids_to_resolve.truncate(100);
-        if let Ok(sym_rows) = db.symbol_rows_by_uids(&callee_uids_to_resolve) {
+        if let Ok(sym_rows) = db.reads().symbol_rows_by_uids(&callee_uids_to_resolve) {
             for sym in sym_rows.values() {
                 if !current_scores.contains_key(&sym.file_path) {
                     neighbor_files
@@ -717,7 +732,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("preselect_test.db"))
             .unwrap()
             .0;
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/a.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');\
@@ -811,7 +826,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("preselect_path_test.db"))
             .unwrap()
             .0;
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         // Path contains "widget"; symbol names deliberately do not, so the only
         // possible hit is the path-token (file_paths_fts) lookup.
         conn.execute_batch(
@@ -1179,7 +1194,7 @@ mod tests {
     fn db_with_call_graph() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("graph_test.db")).unwrap().0;
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
                  VALUES('src/caller.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');

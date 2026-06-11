@@ -10,9 +10,9 @@ use std::collections::HashMap;
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::{
-    CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve, FileFrameworkRecord, IndexDb,
+    CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve, FileFrameworkRecord, IndexDb, ReadOps,
     RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow, SymbolDegreeInfo, SymbolRefLite,
-    SymbolRow,
+    SymbolRow, WriteOps,
 };
 use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 
@@ -20,7 +20,7 @@ use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 pub(crate) type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
 
 impl IndexDb {
-    pub fn symbols_covering(
+    pub(crate) fn symbols_covering(
         &self,
         file_path: &str,
         line: u32,
@@ -51,7 +51,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn caller_rows_by_uid(
+    pub(crate) fn caller_rows_by_uid(
         &self,
         callee_uid: &str,
         limit: usize,
@@ -62,7 +62,7 @@ impl IndexDb {
                 "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line
                  FROM call_edges
                  WHERE callee_symbol_uid = ?1
-                 ORDER BY line ASC
+                 ORDER BY line ASC, rowid ASC
                  LIMIT ?2",
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -75,7 +75,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn callee_rows_by_uid(
+    pub(crate) fn callee_rows_by_uid(
         &self,
         caller_uid: &str,
         limit: usize,
@@ -86,7 +86,7 @@ impl IndexDb {
                 "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line
                  FROM call_edges
                  WHERE caller_symbol_uid = ?1
-                 ORDER BY line ASC
+                 ORDER BY line ASC, rowid ASC
                  LIMIT ?2",
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -99,7 +99,90 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn symbol_ref_rows_by_uid(
+    /// Batched variant of [`Self::caller_rows_by_uid`]: fetch the top
+    /// `per_seed_limit` caller edges for many callee UIDs in
+    /// [`IN_BATCH_SIZE`]-sized queries instead of one round-trip per UID.
+    /// Returns rows grouped by callee UID; UIDs with no callers are
+    /// absent from the map. Both the single-UID point queries and this
+    /// batched variant order rows by `(line ASC, rowid ASC)` as a
+    /// contract, so per-UID row selection and order are identical.
+    pub(crate) fn caller_rows_by_uids(
+        &self,
+        callee_uids: &[&str],
+        per_seed_limit: usize,
+    ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
+        self.call_edge_rows_by_uids(callee_uids, per_seed_limit, "callee_symbol_uid")
+    }
+
+    /// Batched variant of [`Self::callee_rows_by_uid`]; see
+    /// [`Self::caller_rows_by_uids`] for grouping and ordering semantics.
+    pub(crate) fn callee_rows_by_uids(
+        &self,
+        caller_uids: &[&str],
+        per_seed_limit: usize,
+    ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
+        self.call_edge_rows_by_uids(caller_uids, per_seed_limit, "caller_symbol_uid")
+    }
+
+    /// Shared impl for the batched adjacency accessors: per-seed top-k via
+    /// `ROW_NUMBER() OVER (PARTITION BY seed ORDER BY line, rowid)`.
+    /// `seed_column` is one of the two UID columns of `call_edges`.
+    fn call_edge_rows_by_uids(
+        &self,
+        seed_uids: &[&str],
+        per_seed_limit: usize,
+        seed_column: &str,
+    ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
+        let mut grouped: HashMap<String, Vec<CallEdgeLite>> = HashMap::new();
+        if seed_uids.is_empty() || per_seed_limit == 0 {
+            return Ok(grouped);
+        }
+        // Dedupe so a seed repeated across chunks cannot collect its edges twice.
+        let mut unique: Vec<&str> = seed_uids.to_vec();
+        unique.sort_unstable();
+        unique.dedup();
+
+        let conn = self.read_conn()?;
+        for chunk in unique.chunks(IN_BATCH_SIZE) {
+            let placeholders = sql_in_placeholders(chunk.len());
+            let limit_param = chunk.len() + 1;
+            let sql = format!(
+                "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line, seed_uid
+                 FROM (
+                     SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line,
+                            {seed_column} AS seed_uid,
+                            ROW_NUMBER() OVER (PARTITION BY {seed_column} ORDER BY line ASC, rowid ASC) AS rn
+                     FROM call_edges
+                     WHERE {seed_column} IN ({placeholders})
+                 )
+                 WHERE rn <= ?{limit_param}
+                 ORDER BY seed_uid, rn"
+            );
+            let mut stmt = conn
+                .prepare(&sql)
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            let limit_value = per_seed_limit as i64;
+            let mut params: Vec<&dyn rusqlite::types::ToSql> = Vec::with_capacity(chunk.len() + 1);
+            for uid in chunk {
+                params.push(uid);
+            }
+            params.push(&limit_value);
+            let rows = stmt
+                .query_map(params.as_slice(), |row| {
+                    let edge = crate::rows::call_edge_lite(row)?;
+                    let seed: String = row.get(13)?;
+                    Ok((seed, edge))
+                })
+                .map_err(|e| CcError::Database(e.to_string()))?;
+            for row in rows.filter_map(|r| r.ok()) {
+                let (seed, edge) = row;
+                grouped.entry(seed).or_default().push(edge);
+            }
+        }
+        Ok(grouped)
+    }
+
+    pub(crate) fn symbol_ref_rows_by_uid(
         &self,
         target_uid: &str,
         limit: usize,
@@ -132,7 +215,7 @@ impl IndexDb {
     /// Return a summary of environment variable accesses, ordered by frequency.
     ///
     /// Each tuple: `(env_key, count, comma_separated_file_paths)`.
-    pub fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
+    pub(crate) fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -161,7 +244,7 @@ impl IndexDb {
     }
 
     /// No-op: resolution_attempts table removed in schema consolidation.
-    pub fn list_resolution_attempts(
+    pub(crate) fn list_resolution_attempts(
         &self,
         _limit: usize,
         _file_path: Option<&str>,
@@ -172,7 +255,7 @@ impl IndexDb {
 
     // ── Graph / framework post-processing ───────────────────────
 
-    pub fn call_uid_edges(&self) -> CcResult<Vec<(String, String)>> {
+    pub(crate) fn call_uid_edges(&self) -> CcResult<Vec<(String, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -193,7 +276,7 @@ impl IndexDb {
     ///
     /// This is the per-node variant of `call_uid_edges_lite`, used by lazy BFS
     /// to avoid loading the full edge set into memory.
-    pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
+    pub(crate) fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -228,7 +311,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
+    pub(crate) fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -263,7 +346,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
+    pub(crate) fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached("SELECT symbol_uid, name FROM symbols WHERE symbol_uid IS NOT NULL")
@@ -282,7 +365,10 @@ impl IndexDb {
     }
 
     /// Bulk lookup symbol metadata by UIDs. Batches in [`IN_BATCH_SIZE`] chunks.
-    pub fn symbol_rows_by_uids(&self, uids: &[String]) -> CcResult<HashMap<String, SymbolRow>> {
+    pub(crate) fn symbol_rows_by_uids(
+        &self,
+        uids: &[String],
+    ) -> CcResult<HashMap<String, SymbolRow>> {
         let conn = self.read_conn()?;
         let mut result = HashMap::new();
         for chunk in uids.chunks(IN_BATCH_SIZE) {
@@ -313,7 +399,7 @@ impl IndexDb {
     }
 
     /// Get degree info for a single symbol UID.
-    pub fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
+    pub(crate) fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -339,7 +425,7 @@ impl IndexDb {
         Ok(info)
     }
 
-    pub fn update_communities(
+    pub(crate) fn update_communities(
         &self,
         assignments: &HashMap<String, u32>,
         labels: &HashMap<u32, String>,
@@ -387,7 +473,7 @@ impl IndexDb {
     /// Degraded community assignment: assign all symbols that have no community
     /// to the given `community_id`. Used when edge count exceeds the threshold
     /// and full Louvain detection would risk OOM.
-    pub fn assign_all_symbols_to_community(&self, community_id: u32) -> CcResult<()> {
+    pub(crate) fn assign_all_symbols_to_community(&self, community_id: u32) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -405,7 +491,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn replace_repo_frameworks(&self, signals: &[RepoFrameworkRecord]) -> CcResult<()> {
+    pub(crate) fn replace_repo_frameworks(&self, signals: &[RepoFrameworkRecord]) -> CcResult<()> {
         let mut conn = self
             .write_conn
             .lock()
@@ -430,7 +516,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn replace_file_frameworks(&self, by_file: &[FileFrameworkRecord]) -> CcResult<()> {
+    pub(crate) fn replace_file_frameworks(&self, by_file: &[FileFrameworkRecord]) -> CcResult<()> {
         if by_file.is_empty() {
             return Ok(());
         }
@@ -464,7 +550,7 @@ impl IndexDb {
     }
 
     /// Find symbols by exact name, filtering to function/class/component kinds.
-    pub fn find_symbols_by_name_and_kinds(
+    pub(crate) fn find_symbols_by_name_and_kinds(
         &self,
         name: &str,
         kinds: &[&str],
@@ -513,7 +599,7 @@ impl IndexDb {
     /// one round-trip per name. Returns rows grouped by symbol name; names
     /// with no match are absent from the map. Within each name, row order
     /// matches the single-name variant (`ORDER BY file_path`).
-    pub fn find_symbols_by_names_and_kinds(
+    pub(crate) fn find_symbols_by_names_and_kinds(
         &self,
         names: &[&str],
         kinds: &[&str],
@@ -556,7 +642,7 @@ impl IndexDb {
     }
 
     /// Delete synthetic semantic edges whose edge_id starts with a given prefix.
-    pub fn delete_synthetic_semantic_edges(&self, edge_id_prefix: &str) -> CcResult<usize> {
+    pub(crate) fn delete_synthetic_semantic_edges(&self, edge_id_prefix: &str) -> CcResult<usize> {
         let conn = self
             .write_conn
             .lock()
@@ -584,7 +670,7 @@ impl IndexDb {
 
     /// Find the symbol_uid of a method named `method_name` contained in the same class
     /// as the given symbol_uid.
-    pub fn find_method_in_same_class(
+    pub(crate) fn find_method_in_same_class(
         &self,
         member_symbol_uid: &str,
         method_name: &str,
@@ -635,7 +721,10 @@ impl IndexDb {
     /// Fetch methods for many containers (class/struct names) in a single
     /// `IN (...)` query, grouped by container name. Avoids the per-container
     /// N+1 round-trips in dispatch synthesis.
-    pub fn find_methods_by_containers(&self, containers: &[&str]) -> CcResult<MethodsByContainer> {
+    pub(crate) fn find_methods_by_containers(
+        &self,
+        containers: &[&str],
+    ) -> CcResult<MethodsByContainer> {
         if containers.is_empty() {
             return Ok(HashMap::new());
         }
@@ -693,7 +782,7 @@ impl IndexDb {
     }
 
     /// Find all classes that have methods matching any of the given name patterns.
-    pub fn find_classes_with_method_names(
+    pub(crate) fn find_classes_with_method_names(
         &self,
         method_names: &[&str],
     ) -> CcResult<Vec<(String, String)>> {
@@ -741,7 +830,7 @@ impl IndexDb {
     }
 
     /// Get the export fingerprint for a file.
-    pub fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
+    pub(crate) fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -786,7 +875,7 @@ impl IndexDb {
     /// have at least one exported symbol (matching the single-file method,
     /// which returns `None` for files with no exports). The per-file hash is
     /// byte-for-byte identical to `get_export_fingerprint(path)`.
-    pub fn get_export_fingerprints(
+    pub(crate) fn get_export_fingerprints(
         &self,
         file_paths: &[String],
     ) -> CcResult<HashMap<String, String>> {
@@ -855,7 +944,7 @@ impl IndexDb {
     }
 
     /// Find all files that import the given resolved paths.
-    pub fn find_importers_of(&self, resolved_paths: &[String]) -> CcResult<Vec<String>> {
+    pub(crate) fn find_importers_of(&self, resolved_paths: &[String]) -> CcResult<Vec<String>> {
         if resolved_paths.is_empty() {
             return Ok(Vec::new());
         }
@@ -900,7 +989,7 @@ impl IndexDb {
     /// (`const { x } = require('./b')` then exported) and other languages'
     /// equivalents (Python star re-exports, Rust `pub use`) are stored as
     /// plain imports, so those surface changes are still missed here.
-    pub fn reexport_targets_for_files(
+    pub(crate) fn reexport_targets_for_files(
         &self,
         file_paths: &[&str],
     ) -> CcResult<HashMap<String, Vec<String>>> {
@@ -941,7 +1030,7 @@ impl IndexDb {
     }
 
     /// Load file edge data for re-resolve scenarios.
-    pub fn load_file_edges_for_reresolve(
+    pub(crate) fn load_file_edges_for_reresolve(
         &self,
         file_path: &str,
     ) -> CcResult<FileEdgesForReresolve> {
@@ -1254,7 +1343,7 @@ impl IndexDb {
         })
     }
 
-    pub fn symbols_by_file_paths(&self, file_paths: &[&str]) -> CcResult<Vec<SymbolRow>> {
+    pub(crate) fn symbols_by_file_paths(&self, file_paths: &[&str]) -> CcResult<Vec<SymbolRow>> {
         if file_paths.is_empty() {
             return Ok(Vec::new());
         }
@@ -1279,6 +1368,210 @@ impl IndexDb {
             .query_map(params.as_slice(), crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    pub fn symbols_covering(
+        &self,
+        file_path: &str,
+        line: u32,
+        limit: usize,
+    ) -> CcResult<Vec<SymbolCoverRow>> {
+        self.0.symbols_covering(file_path, line, limit)
+    }
+
+    pub fn caller_rows_by_uid(
+        &self,
+        callee_uid: &str,
+        limit: usize,
+    ) -> CcResult<Vec<CallEdgeLite>> {
+        self.0.caller_rows_by_uid(callee_uid, limit)
+    }
+
+    pub fn callee_rows_by_uid(
+        &self,
+        caller_uid: &str,
+        limit: usize,
+    ) -> CcResult<Vec<CallEdgeLite>> {
+        self.0.callee_rows_by_uid(caller_uid, limit)
+    }
+
+    /// Batched variant of [`Self::caller_rows_by_uid`]: fetch the top
+    pub fn caller_rows_by_uids(
+        &self,
+        callee_uids: &[&str],
+        per_seed_limit: usize,
+    ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
+        self.0.caller_rows_by_uids(callee_uids, per_seed_limit)
+    }
+
+    /// Batched variant of [`Self::callee_rows_by_uid`]; see
+    pub fn callee_rows_by_uids(
+        &self,
+        caller_uids: &[&str],
+        per_seed_limit: usize,
+    ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
+        self.0.callee_rows_by_uids(caller_uids, per_seed_limit)
+    }
+
+    pub fn symbol_ref_rows_by_uid(
+        &self,
+        target_uid: &str,
+        limit: usize,
+    ) -> CcResult<Vec<SymbolRefLite>> {
+        self.0.symbol_ref_rows_by_uid(target_uid, limit)
+    }
+
+    /// Return a summary of environment variable accesses, ordered by frequency.
+    pub fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
+        self.0.env_var_summary(limit)
+    }
+
+    /// No-op: resolution_attempts table removed in schema consolidation.
+    pub fn list_resolution_attempts(
+        &self,
+        _limit: usize,
+        _file_path: Option<&str>,
+        _kind: Option<&str>,
+    ) -> CcResult<Vec<ResolutionAttemptRow>> {
+        self.0.list_resolution_attempts(_limit, _file_path, _kind)
+    }
+
+    pub fn call_uid_edges(&self) -> CcResult<Vec<(String, String)>> {
+        self.0.call_uid_edges()
+    }
+
+    /// Return BFS-friendly outgoing edges for a single caller UID.
+    pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
+        self.0.call_edges_from_uid_lite(caller_uid)
+    }
+
+    pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
+        self.0.call_uid_edges_lite()
+    }
+
+    pub fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
+        self.0.symbol_names_by_uid()
+    }
+
+    /// Bulk lookup symbol metadata by UIDs. Batches in [`IN_BATCH_SIZE`] chunks.
+    pub fn symbol_rows_by_uids(&self, uids: &[String]) -> CcResult<HashMap<String, SymbolRow>> {
+        self.0.symbol_rows_by_uids(uids)
+    }
+
+    /// Get degree info for a single symbol UID.
+    pub fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
+        self.0.symbol_degree_details(uid)
+    }
+
+    /// Find symbols by exact name, filtering to function/class/component kinds.
+    pub fn find_symbols_by_name_and_kinds(
+        &self,
+        name: &str,
+        kinds: &[&str],
+    ) -> CcResult<Vec<SymbolRow>> {
+        self.0.find_symbols_by_name_and_kinds(name, kinds)
+    }
+
+    /// Batched variant of [`Self::find_symbols_by_name_and_kinds`]: resolves
+    pub fn find_symbols_by_names_and_kinds(
+        &self,
+        names: &[&str],
+        kinds: &[&str],
+    ) -> CcResult<HashMap<String, Vec<SymbolRow>>> {
+        self.0.find_symbols_by_names_and_kinds(names, kinds)
+    }
+
+    /// Find the symbol_uid of a method named `method_name` contained in the same class
+    pub fn find_method_in_same_class(
+        &self,
+        member_symbol_uid: &str,
+        method_name: &str,
+    ) -> CcResult<Option<String>> {
+        self.0
+            .find_method_in_same_class(member_symbol_uid, method_name)
+    }
+
+    /// Fetch methods for many containers (class/struct names) in a single
+    pub fn find_methods_by_containers(&self, containers: &[&str]) -> CcResult<MethodsByContainer> {
+        self.0.find_methods_by_containers(containers)
+    }
+
+    /// Find all classes that have methods matching any of the given name patterns.
+    pub fn find_classes_with_method_names(
+        &self,
+        method_names: &[&str],
+    ) -> CcResult<Vec<(String, String)>> {
+        self.0.find_classes_with_method_names(method_names)
+    }
+
+    /// Get the export fingerprint for a file.
+    pub fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
+        self.0.get_export_fingerprint(file_path)
+    }
+
+    /// Batch variant of [`Self::get_export_fingerprint`]: compute the export
+    pub fn get_export_fingerprints(
+        &self,
+        file_paths: &[String],
+    ) -> CcResult<HashMap<String, String>> {
+        self.0.get_export_fingerprints(file_paths)
+    }
+
+    /// Find all files that import the given resolved paths.
+    pub fn find_importers_of(&self, resolved_paths: &[String]) -> CcResult<Vec<String>> {
+        self.0.find_importers_of(resolved_paths)
+    }
+
+    /// Resolved re-export targets for many files in one batched query:
+    pub fn reexport_targets_for_files(
+        &self,
+        file_paths: &[&str],
+    ) -> CcResult<HashMap<String, Vec<String>>> {
+        self.0.reexport_targets_for_files(file_paths)
+    }
+
+    /// Load file edge data for re-resolve scenarios.
+    pub fn load_file_edges_for_reresolve(
+        &self,
+        file_path: &str,
+    ) -> CcResult<FileEdgesForReresolve> {
+        self.0.load_file_edges_for_reresolve(file_path)
+    }
+
+    pub fn symbols_by_file_paths(&self, file_paths: &[&str]) -> CcResult<Vec<SymbolRow>> {
+        self.0.symbols_by_file_paths(file_paths)
+    }
+}
+
+// Write facet delegates (see `IndexDb::writes()`).
+impl WriteOps<'_> {
+    pub fn update_communities(
+        &self,
+        assignments: &HashMap<String, u32>,
+        labels: &HashMap<u32, String>,
+    ) -> CcResult<()> {
+        self.0.update_communities(assignments, labels)
+    }
+
+    /// Degraded community assignment: assign all symbols that have no community
+    pub fn assign_all_symbols_to_community(&self, community_id: u32) -> CcResult<()> {
+        self.0.assign_all_symbols_to_community(community_id)
+    }
+
+    pub fn replace_repo_frameworks(&self, signals: &[RepoFrameworkRecord]) -> CcResult<()> {
+        self.0.replace_repo_frameworks(signals)
+    }
+
+    pub fn replace_file_frameworks(&self, by_file: &[FileFrameworkRecord]) -> CcResult<()> {
+        self.0.replace_file_frameworks(by_file)
+    }
+
+    /// Delete synthetic semantic edges whose edge_id starts with a given prefix.
+    pub fn delete_synthetic_semantic_edges(&self, edge_id_prefix: &str) -> CcResult<usize> {
+        self.0.delete_synthetic_semantic_edges(edge_id_prefix)
     }
 }
 
@@ -1573,6 +1866,111 @@ mod tests {
         assert_eq!(callees.len(), 2);
         assert_eq!(callees[0].callee_symbol_uid.as_deref(), Some("uid_b"));
         assert_eq!(callees[1].callee_symbol_uid.as_deref(), Some("uid_d"));
+    }
+
+    /// Helper: insert a call_edges row with the given UIDs and line.
+    fn insert_call_edge(
+        db: &IndexDb,
+        edge_id: &str,
+        caller_uid: &str,
+        callee_uid: &str,
+        line: u32,
+    ) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,parser_tier,parser_confidence)
+             VALUES(?1,'src/main.rs',?2,?3,?4,?5,?6,'direct','sync','exact','tree_sitter',0.8)",
+            rusqlite::params![edge_id, caller_uid, callee_uid, line, caller_uid, callee_uid],
+        )
+        .unwrap();
+    }
+
+    /// Equivalence lock: the batched `caller_rows_by_uids` /
+    /// `callee_rows_by_uids` must return, per seed, exactly what the
+    /// per-seed point queries return — same rows, same order — across
+    /// limits below / equal to / above the available edge count, with
+    /// no-edge seeds, duplicate seeds in the input, and equal-line ties
+    /// (broken by `rowid`, i.e. insertion order, on both paths).
+    #[test]
+    fn test_caller_callee_rows_by_uids_match_single_uid_queries() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+
+        // uid_a: 4 callers, 4 callees (exceeds limit 2; lines out of insert
+        // order; one equal-line tie on each side resolved by rowid).
+        insert_call_edge(&db, "e1", "uid_p2", "uid_a", 10);
+        insert_call_edge(&db, "e2", "uid_p3", "uid_a", 20);
+        insert_call_edge(&db, "e3", "uid_p1", "uid_a", 30);
+        insert_call_edge(&db, "e4", "uid_a", "uid_y", 5);
+        insert_call_edge(&db, "e5", "uid_a", "uid_z", 15);
+        insert_call_edge(&db, "e6", "uid_a", "uid_x", 25);
+        insert_call_edge(&db, "e12", "uid_p4", "uid_a", 20); // ties e2 at line 20
+        insert_call_edge(&db, "e13", "uid_a", "uid_w", 15); // ties e5 at line 15
+                                                            // uid_b: 3 callers, 2 callees; the caller tie at line 8 straddles
+                                                            // the limit-2 cut, so the tiebreak decides which row survives.
+        insert_call_edge(&db, "e7", "uid_p2", "uid_b", 3);
+        insert_call_edge(&db, "e8", "uid_p1", "uid_b", 8);
+        insert_call_edge(&db, "e14", "uid_p3", "uid_b", 8); // ties e8 at line 8
+        insert_call_edge(&db, "e9", "uid_b", "uid_y", 2);
+        insert_call_edge(&db, "e10", "uid_b", "uid_x", 7);
+        // Noise edge: neither endpoint is a requested seed.
+        insert_call_edge(&db, "e11", "uid_noise", "uid_noise2", 50);
+
+        // uid_c has no edges; uid_a appears twice (duplicate seed).
+        let seeds = ["uid_a", "uid_b", "uid_c", "uid_a"];
+
+        for limit in [1usize, 2, 3, 10] {
+            let batch_callers = db.caller_rows_by_uids(&seeds, limit).unwrap();
+            let batch_callees = db.callee_rows_by_uids(&seeds, limit).unwrap();
+            for uid in ["uid_a", "uid_b", "uid_c"] {
+                let single_callers = db.caller_rows_by_uid(uid, limit).unwrap();
+                let single_callees = db.callee_rows_by_uid(uid, limit).unwrap();
+                assert_eq!(
+                    format!("{:?}", batch_callers.get(uid).cloned().unwrap_or_default()),
+                    format!("{:?}", single_callers),
+                    "callers for {uid} at limit {limit} must match point query"
+                );
+                assert_eq!(
+                    format!("{:?}", batch_callees.get(uid).cloned().unwrap_or_default()),
+                    format!("{:?}", single_callees),
+                    "callees for {uid} at limit {limit} must match point query"
+                );
+            }
+            // Seeds with no edges and non-requested UIDs are absent.
+            assert!(!batch_callers.contains_key("uid_c"));
+            assert!(!batch_callers.contains_key("uid_noise2"));
+            assert!(!batch_callees.contains_key("uid_c"));
+            assert!(!batch_callees.contains_key("uid_noise"));
+        }
+
+        // Tie contract: equal-line rows come back in rowid (insertion)
+        // order, on the point query and therefore on the batch as well.
+        let tied_callers: Vec<_> = db
+            .caller_rows_by_uid("uid_a", 10)
+            .unwrap()
+            .into_iter()
+            .map(|edge| edge.caller_symbol_uid.unwrap())
+            .collect();
+        assert_eq!(tied_callers, ["uid_p2", "uid_p3", "uid_p4", "uid_p1"]);
+        let tied_callees: Vec<_> = db
+            .callee_rows_by_uid("uid_a", 10)
+            .unwrap()
+            .into_iter()
+            .map(|edge| edge.callee_symbol_uid.unwrap())
+            .collect();
+        assert_eq!(tied_callees, ["uid_y", "uid_z", "uid_w", "uid_x"]);
+        // Limit cut inside the line-8 tie group keeps the lower rowid (e8).
+        let cut_callers: Vec<_> = db
+            .caller_rows_by_uid("uid_b", 2)
+            .unwrap()
+            .into_iter()
+            .map(|edge| edge.caller_symbol_uid.unwrap())
+            .collect();
+        assert_eq!(cut_callers, ["uid_p2", "uid_p1"]);
+
+        // Empty seed list -> empty map, no SQL issued.
+        assert!(db.caller_rows_by_uids(&[], 5).unwrap().is_empty());
+        assert!(db.callee_rows_by_uids(&[], 5).unwrap().is_empty());
     }
 
     #[test]

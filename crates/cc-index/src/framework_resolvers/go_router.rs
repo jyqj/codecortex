@@ -14,6 +14,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
+use super::mount_resolution::{resolve_mounts, MountPoint, MountSpec, PrefixJoin, TargetLookup};
 use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
@@ -416,96 +417,39 @@ impl FrameworkResolver for GoRouterResolver {
         // the target file, then prepend the mount prefix to all http route_edges
         // in that target file.
 
-        // Step 1: collect mount points
-        struct MountInfo {
-            prefix: String,
-            handler_name: String,
-            mount_file: String,
-        }
-
-        let mut mounts: Vec<MountInfo> = Vec::new();
-        for (file_path, outcome) in outcomes.iter() {
-            for edge in &outcome.route_edges {
-                if edge.route_kind.as_deref() == Some("group_mount") {
-                    if let Some(ref handler) = edge.handler_name {
-                        let prefix = &edge.route_path;
-                        if !prefix.is_empty() {
-                            mounts.push(MountInfo {
-                                prefix: prefix.clone(),
-                                handler_name: handler.clone(),
-                                mount_file: file_path.clone(),
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-        // Step 2: for each mount, resolve the target file and prepend prefix
-        for mount in &mounts {
-            // For qualified names like "routes.RegisterUserRoutes", try:
-            //   1. The full qualified name
-            //   2. Just the function name (after the dot)
+        // For qualified names like "routes.RegisterUserRoutes", try the bare
+        // function name (after the dot) first, then the full qualified name.
+        let qualified_lookup = |catalog: &crate::resolver::SymbolCatalog,
+                                _outcomes: &[(String, ParseOutcome)],
+                                mount: &MountPoint|
+         -> Option<String> {
             let lookup_names: Vec<&str> = if mount.handler_name.contains('.') {
                 let parts: Vec<&str> = mount.handler_name.splitn(2, '.').collect();
                 vec![parts[1], &mount.handler_name]
             } else {
                 vec![&mount.handler_name]
             };
-
-            let mut target_file = None;
-            for name in &lookup_names {
+            for name in lookup_names {
                 if let Some((_, file)) = catalog.lookup_symbol(name, &mount.mount_file) {
                     if file != mount.mount_file {
-                        target_file = Some(file);
-                        break;
+                        return Some(file);
                     }
                 }
             }
+            None
+        };
 
-            let target_file = match target_file {
-                Some(f) => f,
-                None => continue,
-            };
-
-            // Prepend the mount prefix to all http routes in the target file
-            for (file_path, outcome) in outcomes.iter_mut() {
-                if *file_path != target_file {
-                    continue;
-                }
-                for edge in &mut outcome.route_edges {
-                    if edge.route_kind.as_deref() != Some("http") {
-                        continue;
-                    }
-                    // Only prepend once (avoid double-prefixing on repeated runs)
-                    if !edge.route_path.starts_with(&mount.prefix) {
-                        let combined = if edge.route_path == "/" {
-                            mount.prefix.clone()
-                        } else {
-                            format!("{}{}", mount.prefix, edge.route_path)
-                        };
-                        edge.route_path = combined;
-                    }
-                }
-            }
-        }
-
-        // Step 3: resolve handler_symbol_uid for http route_edges
-        for (file_path, outcome) in outcomes.iter_mut() {
-            let fp = file_path.clone();
-            for edge in &mut outcome.route_edges {
-                if edge.handler_symbol_uid.is_some() {
-                    continue;
-                }
-                if let Some(ref handler_name) = edge.handler_name {
-                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
-                        if !uid.is_empty() {
-                            edge.handler_symbol_uid = Some(uid);
-                        }
-                    }
-                }
-            }
-        }
+        resolve_mounts(
+            catalog,
+            outcomes,
+            &MountSpec {
+                mount_kinds: &["group_mount"],
+                skip_root_prefix: false,
+                framework: None,
+                join: PrefixJoin::Plain,
+                lookup: TargetLookup::Custom(&qualified_lookup),
+            },
+        );
     }
 }
 

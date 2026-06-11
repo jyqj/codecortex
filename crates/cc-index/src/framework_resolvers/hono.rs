@@ -10,6 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
+use super::mount_resolution::{resolve_mounts, MountSpec, PrefixJoin, TargetLookup};
 use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
@@ -202,76 +203,17 @@ impl FrameworkResolver for HonoResolver {
         //
         // Also resolve handler_symbol_uid for route_edges whose handler_name
         // is set but handler_symbol_uid is not.
-
-        // Step 1: collect mount points (prefix → sub-app variable name → mounting file)
-        struct MountInfo {
-            prefix: String,
-            sub_app_name: String,
-            mount_file: String,
-        }
-
-        let mut mounts: Vec<MountInfo> = Vec::new();
-        for (file_path, outcome) in outcomes.iter() {
-            for edge in &outcome.route_edges {
-                if edge.route_kind.as_deref() == Some("subrouter_mount") {
-                    if let Some(ref handler) = edge.handler_name {
-                        let prefix = &edge.route_path;
-                        if prefix != "/" && !prefix.is_empty() {
-                            mounts.push(MountInfo {
-                                prefix: prefix.clone(),
-                                sub_app_name: handler.clone(),
-                                mount_file: file_path.clone(),
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-        // Step 2: for each mount, find the target file via catalog and prepend prefix
-        for mount in &mounts {
-            let target_file = match catalog.lookup_symbol(&mount.sub_app_name, &mount.mount_file) {
-                Some((_, file)) if file != mount.mount_file => file,
-                _ => continue,
-            };
-
-            for (file_path, outcome) in outcomes.iter_mut() {
-                if *file_path != target_file {
-                    continue;
-                }
-                for edge in &mut outcome.route_edges {
-                    if edge.route_kind.as_deref() != Some("http") {
-                        continue;
-                    }
-                    // Only prepend once (avoid double-prefixing on repeated runs)
-                    if !edge.route_path.starts_with(&mount.prefix) {
-                        let combined = if edge.route_path == "/" {
-                            mount.prefix.clone()
-                        } else {
-                            format!("{}{}", mount.prefix, edge.route_path)
-                        };
-                        edge.route_path = combined;
-                    }
-                }
-            }
-        }
-
-        // Step 3: resolve handler_symbol_uid for http route_edges
-        for (file_path, outcome) in outcomes.iter_mut() {
-            let fp = file_path.clone();
-            for edge in &mut outcome.route_edges {
-                if edge.handler_symbol_uid.is_some() {
-                    continue;
-                }
-                if let Some(ref handler_name) = edge.handler_name {
-                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
-                        if !uid.is_empty() {
-                            edge.handler_symbol_uid = Some(uid);
-                        }
-                    }
-                }
-            }
-        }
+        resolve_mounts(
+            catalog,
+            outcomes,
+            &MountSpec {
+                mount_kinds: &["subrouter_mount"],
+                skip_root_prefix: true,
+                framework: None,
+                join: PrefixJoin::Plain,
+                lookup: TargetLookup::Default,
+            },
+        );
     }
 }
 

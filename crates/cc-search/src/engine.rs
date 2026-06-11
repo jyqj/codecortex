@@ -67,7 +67,7 @@ impl SearchEngine {
         config: &cc_model::ProjectConfig,
         repo_tier: Option<RepoSizeTier>,
     ) -> Self {
-        let initial_epoch = db.generation().map(|g| g.index_epoch).unwrap_or(0);
+        let initial_epoch = db.reads().generation().map(|g| g.index_epoch).unwrap_or(0);
         Self {
             db,
             config: config.search.clone(),
@@ -102,7 +102,7 @@ impl SearchEngine {
     /// Observe the current index epoch, clearing the chunk text cache (and the
     /// already epoch-keyed result cache, for memory hygiene) when it changed.
     fn observe_index_epoch(&self) -> CcResult<u64> {
-        let index_epoch = self.db.generation()?.index_epoch;
+        let index_epoch = self.db.reads().generation()?.index_epoch;
         let previous = self
             .last_seen_index_epoch
             .swap(index_epoch, Ordering::AcqRel);
@@ -113,7 +113,7 @@ impl SearchEngine {
     }
 
     pub fn status(&self) -> CcResult<ProjectStats> {
-        self.db.stats(std::path::Path::new(""))
+        self.db.reads().stats(std::path::Path::new(""))
     }
 
     /// Compute a deterministic hash of `SearchRequest` key fields.
@@ -200,7 +200,13 @@ impl SearchEngine {
         for hit in &mut hits {
             if let Some(&graph_score) = scores.get(&hit.chunk_id) {
                 hit.graph_score = graph_score;
-                hit.rerank_score += graph_score * weight;
+                // Atomically updates `rerank_score` and bills the matching
+                // trace component, keeping `sum(score_trace) == rerank_score`.
+                crate::score_trace::apply_traced_boost(
+                    hit,
+                    "boost:graph-rerank",
+                    graph_score * weight,
+                );
             }
         }
 
@@ -216,6 +222,7 @@ impl SearchEngine {
             request.top_k
         };
         hits.truncate(top_k);
+        crate::score_trace::debug_assert_trace_consistency(&hits);
         Ok((hits, enrichment))
     }
 
@@ -274,11 +281,16 @@ impl SearchEngine {
         };
         let lane_outcomes = run_lanes(&lanes, &lane_context)?;
 
-        // RRF fusion across all lane outcomes.
+        // RRF fusion across all lane outcomes; each candidate keeps its
+        // per-lane contribution breakdown for the hit's score trace.
         let fused = fuse_outcomes(&lane_outcomes, self.config.rrf_k);
 
-        let mut candidates: Vec<(String, f64)> = fused.into_iter().collect();
-        candidates.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        let mut candidates: Vec<(String, crate::lanes::FusedScore)> = fused.into_iter().collect();
+        candidates.sort_by(|a, b| {
+            b.1.total
+                .partial_cmp(&a.1.total)
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
         candidates.truncate(limits.rerank_window);
 
         if candidates.is_empty() {
@@ -309,7 +321,10 @@ impl SearchEngine {
 
             let chunk_ids_refs: Vec<&str> =
                 candidates.iter().map(|(cid, _)| cid.as_str()).collect();
-            let rows = self.db.chunk_rows_by_ids(&chunk_ids_refs, &cached_texts)?;
+            let rows = self
+                .db
+                .reads()
+                .chunk_rows_by_ids(&chunk_ids_refs, &cached_texts)?;
             let mut map = HashMap::with_capacity(candidates.len());
             for data in rows {
                 // Also populate cache for chunks that weren't cached yet,
@@ -329,7 +344,7 @@ impl SearchEngine {
             let Some(chunk) = chunk_map.remove(chunk_id) else {
                 continue;
             };
-            if let Some(hit) = plan.hit_from_chunk(chunk, *fused_score, &lane_ranks) {
+            if let Some(hit) = plan.hit_from_chunk(chunk, fused_score, &lane_ranks) {
                 results.push(hit);
             }
         }
@@ -339,6 +354,10 @@ impl SearchEngine {
         } else {
             plan.finalize_results_with_limit(&mut results, limits.rerank_window);
         }
+
+        // Pipeline exit invariant (debug builds only): every traced hit's
+        // bill must replay its final rerank_score.
+        crate::score_trace::debug_assert_trace_consistency(&results);
 
         // ── Cache store (only for the truncated path) ───────────
         if truncate_to_top_k {
@@ -403,7 +422,7 @@ mod tests {
         };
         outcome.is_test_file = false;
 
-        let conn = engine.db.read_conn().unwrap();
+        let conn = engine.db.reads().read_conn().unwrap();
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -457,6 +476,7 @@ mod tests {
         // Committed write #1: chunk text contains alpha_one.
         engine
             .db
+            .writes()
             .replace_files_batch(&[chunk_write_unit(
                 "src/cached.rs",
                 "fn cached_marker() { alpha_one() }",
@@ -479,6 +499,7 @@ mod tests {
         // cache miss on the next search.
         engine
             .db
+            .writes()
             .replace_files_batch(&[chunk_write_unit(
                 "src/cached.rs",
                 "fn cached_marker() { alpha_two() }",
@@ -504,6 +525,7 @@ mod tests {
 
         engine
             .db
+            .writes()
             .replace_files_batch(&[chunk_write_unit(
                 "src/cached.rs",
                 "fn cached_marker() { alpha_one() }",
@@ -522,6 +544,7 @@ mod tests {
 
         engine
             .db
+            .writes()
             .replace_files_batch(&[chunk_write_unit(
                 "src/cached.rs",
                 "fn cached_marker() { alpha_two() }",
@@ -776,8 +799,8 @@ mod tests {
     // ── Lane seam (RetrievalLane trait) ────────────────────────
 
     use crate::lanes::{
-        fuse_outcomes, run_lanes, GraphLane, GrepLane, LaneContext, LaneOutcome, LexicalLane,
-        RetrievalLane, ScoreSlot, LANE_GRAPH, LANE_GREP, LANE_LEXICAL,
+        fuse_outcomes, run_lanes, FusedScore, GraphLane, GrepLane, LaneContext, LaneOutcome,
+        LexicalLane, RetrievalLane, ScoreSlot, LANE_GRAPH, LANE_GREP, LANE_LEXICAL,
     };
     use cc_model::{CallEdgeRecord, SymbolRecord};
 
@@ -849,7 +872,7 @@ mod tests {
         };
         outcome.is_test_file = false;
 
-        let conn = engine.db.read_conn().unwrap();
+        let conn = engine.db.reads().read_conn().unwrap();
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -1258,7 +1281,7 @@ mod tests {
             parser_confidence: 1.0,
             ..Default::default()
         };
-        let conn = engine.db.read_conn().unwrap();
+        let conn = engine.db.reads().read_conn().unwrap();
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -1376,7 +1399,14 @@ mod tests {
         let lane_ranks = plan.lane_ranks(&outcomes);
 
         let hit = plan
-            .hit_from_chunk(fake_candidate_chunk(), 0.5, &lane_ranks)
+            .hit_from_chunk(
+                fake_candidate_chunk(),
+                &FusedScore {
+                    total: 0.5,
+                    by_lane: vec![],
+                },
+                &lane_ranks,
+            )
             .unwrap();
 
         assert_eq!(
@@ -1443,7 +1473,14 @@ mod tests {
         let lane_ranks = plan.lane_ranks(&outcomes);
 
         let hit = plan
-            .hit_from_chunk(fake_candidate_chunk(), 0.5, &lane_ranks)
+            .hit_from_chunk(
+                fake_candidate_chunk(),
+                &FusedScore {
+                    total: 0.5,
+                    by_lane: vec![],
+                },
+                &lane_ranks,
+            )
             .unwrap();
 
         assert_eq!(hit.reasons, vec!["semantic@2".to_string()]);
@@ -1503,7 +1540,11 @@ mod tests {
 
         let lane_ranks = plan.lane_ranks(&outcomes);
         let hit = plan
-            .hit_from_chunk(fake_candidate_chunk(), fused["chunk:src/x.rs"], &lane_ranks)
+            .hit_from_chunk(
+                fake_candidate_chunk(),
+                &fused["chunk:src/x.rs"],
+                &lane_ranks,
+            )
             .unwrap();
         assert!(
             hit.reasons.is_empty(),
@@ -1587,8 +1628,335 @@ mod tests {
         let fused = fuse_outcomes(&outcomes, 50);
 
         // score(d) = sum over lanes of weight / (k + rank)
-        assert!((fused["x"] - 1.0 / 51.0).abs() < 1e-12);
-        assert!((fused["y"] - (1.0 / 52.0 + 0.5 / 51.0)).abs() < 1e-12);
+        assert!((fused["x"].total - 1.0 / 51.0).abs() < 1e-12);
+        assert!((fused["y"].total - (1.0 / 52.0 + 0.5 / 51.0)).abs() < 1e-12);
+
+        // Per-lane breakdown is preserved in lane-accumulation order and
+        // sums (left-to-right) to the fused total bit-for-bit.
+        assert_eq!(fused["x"].by_lane, vec![("fake-a", 1.0 / 51.0)]);
+        assert_eq!(
+            fused["y"].by_lane,
+            vec![("fake-a", 1.0 / 52.0), ("fake-b", 0.5 / 51.0)]
+        );
+        for fused_score in fused.values() {
+            let component_sum: f64 = fused_score.by_lane.iter().map(|(_, v)| v).sum();
+            assert_eq!(component_sum, fused_score.total);
+        }
+    }
+
+    // ── score trace invariant: sum(components) == rerank_score ─────────
+    //
+    // Property exercised over hand-written scenarios: for every hit the
+    // search engine returns, the score_trace bill must replay the final
+    // rerank_score exactly (1e-9 tolerance), so a hit's ranking is fully
+    // auditable from its trace alone.
+
+    fn assert_trace_replays_rerank(hits: &[SearchHit]) {
+        assert!(!hits.is_empty(), "scenario must produce at least one hit");
+        for hit in hits {
+            assert!(
+                !hit.score_trace.is_empty(),
+                "every hit must carry a score trace, got none for {}",
+                hit.chunk_id
+            );
+            let component_sum: f64 = hit.score_trace.iter().map(|(_, amount)| amount).sum();
+            assert!(
+                (component_sum - hit.rerank_score).abs() < 1e-9,
+                "score_trace must sum to rerank_score for {}: sum={} rerank={} trace={:?}",
+                hit.chunk_id,
+                component_sum,
+                hit.rerank_score,
+                hit.score_trace
+            );
+        }
+    }
+
+    fn trace_components(hit: &SearchHit) -> Vec<&str> {
+        hit.score_trace
+            .iter()
+            .map(|(component, _)| component.as_str())
+            .collect()
+    }
+
+    #[test]
+    fn score_trace_replays_rerank_for_pure_lexical_hit() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "fn alpha_handler() { process() }",
+        );
+
+        let hits = engine
+            .search(&SearchRequest {
+                query: "alpha_handler".to_string(),
+                top_k: 5,
+                include_grep: false,
+                ..Default::default()
+            })
+            .unwrap();
+
+        assert_trace_replays_rerank(&hits);
+        let components = trace_components(&hits[0]);
+        assert!(
+            components.contains(&"rrf:lexical"),
+            "lexical hit must bill its lexical RRF component, got {components:?}"
+        );
+        // Query tokens appear in the chunk text, so the overlap term fires.
+        assert!(
+            components.contains(&"overlap"),
+            "token overlap must be billed, got {components:?}"
+        );
+    }
+
+    #[test]
+    fn score_trace_replays_rerank_for_grep_and_graph_mix() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        let config = ProjectConfig {
+            search: SearchConfig {
+                lexical_top_k: 5,
+                grep_top_k: 5,
+                rrf_k: 50,
+                lexical_weight: 1.0,
+                grep_weight: 0.7,
+                rerank_window: 5,
+                graph_weight: 0.6,
+                graph_top_k: 12,
+            },
+            ..Default::default()
+        };
+        let engine = SearchEngine::new(Arc::new(db), &config, None);
+        let process_to_helper = CallEdgeRecord {
+            edge_id: "edge:process->helper".to_string(),
+            file_path: "src/a.rs".to_string(),
+            caller_symbol: Some("process".to_string()),
+            callee_symbol: "helper".to_string(),
+            line: 1,
+            caller_symbol_uid: Some("uid:process".to_string()),
+            callee_symbol_uid: Some("uid:helper".to_string()),
+            ..Default::default()
+        };
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn process() { helper() }",
+            "process",
+            "uid:process",
+            vec![process_to_helper],
+        );
+        insert_graph_file(
+            &engine,
+            "src/b.rs",
+            "fn helper() {}",
+            "helper",
+            "uid:helper",
+            vec![],
+        );
+
+        let hits = engine
+            .search(&SearchRequest {
+                query: "process".to_string(),
+                top_k: 5,
+                include_grep: true,
+                ..Default::default()
+            })
+            .unwrap();
+
+        assert_trace_replays_rerank(&hits);
+        let seed = hits
+            .iter()
+            .find(|hit| hit.file_path == "src/a.rs")
+            .expect("seed file must be a hit");
+        let components = trace_components(seed);
+        assert!(
+            components.contains(&"rrf:lexical"),
+            "expected lexical RRF component, got {components:?}"
+        );
+        assert!(
+            components.contains(&"rrf:grep"),
+            "expected grep RRF component, got {components:?}"
+        );
+        assert!(
+            components.contains(&"rrf:graph"),
+            "expected graph RRF component, got {components:?}"
+        );
+    }
+
+    #[test]
+    fn score_trace_replays_rerank_with_preselect_and_multiple_boosts() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "fn alpha_handler() { process() }",
+        );
+        insert_chunk_file(
+            &engine,
+            "docs/alpha.md",
+            Language::Markdown,
+            "alpha_handler design notes",
+        );
+
+        let hits = engine
+            .search(&SearchRequest {
+                query: "alpha_handler".to_string(),
+                top_k: 5,
+                include_grep: false,
+                boost_file_paths: Some(vec!["src/alpha.rs".to_string()]),
+                recent_file_paths: Some(vec!["src/alpha.rs".to_string()]),
+                pinned_file_paths: Some(vec!["src/alpha.rs".to_string()]),
+                overlay_file_paths: Some(vec!["src/alpha.rs".to_string()]),
+                ..Default::default()
+            })
+            .unwrap();
+
+        assert_trace_replays_rerank(&hits);
+        let boosted = hits
+            .iter()
+            .find(|hit| hit.file_path == "src/alpha.rs")
+            .expect("boosted file must be a hit");
+        let components = trace_components(boosted);
+        for expected in [
+            "boost:working-set-boost",
+            "boost:recent-file",
+            "boost:pinned-context",
+            "boost:overlay-neighbor",
+            "boost:stage-a",
+        ] {
+            assert!(
+                components.contains(&expected),
+                "expected {expected} in trace, got {components:?}"
+            );
+        }
+        // The doc file collects its own doc-file boost.
+        if let Some(doc_hit) = hits.iter().find(|hit| hit.file_path == "docs/alpha.md") {
+            assert!(
+                trace_components(doc_hit).contains(&"boost:doc-file"),
+                "doc hit must bill boost:doc-file, got {:?}",
+                doc_hit.score_trace
+            );
+        }
+    }
+
+    #[test]
+    fn score_trace_replays_rerank_with_dsl_name_bonus() {
+        let (engine, _tmp) = scoped_test_engine();
+        // Chunk with a symbol_name so both symbol-exact and dsl-name fire.
+        let chunk = ChunkRecord {
+            chunk_id: "chunk:src/named.rs".to_string(),
+            file_path: "src/named.rs".to_string(),
+            language: Language::Rust,
+            chunk_index: 0,
+            start_line: 1,
+            end_line: 1,
+            breadcrumb: "root".to_string(),
+            text: "fn alpha_handler() {}".to_string(),
+            symbol_name: Some("alpha_handler".to_string()),
+            symbol_kind: Some(cc_model::SymbolKind::Function),
+            token_estimate: 8,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+        };
+        let conn = engine.db.reads().read_conn().unwrap();
+        IndexDb::insert_file_data(
+            &conn,
+            &FileWriteUnit {
+                rel_path: "src/named.rs".to_string(),
+                language: Language::Rust,
+                content_hash: "hash-named".to_string(),
+                mtime: 0.0,
+                size: 10,
+                outcome: ParseOutcome {
+                    summary: "fixture".to_string(),
+                    chunks: vec![chunk],
+                    parser_tier: ParserTier::TreeSitter,
+                    parser_confidence: 1.0,
+                    ..Default::default()
+                },
+            },
+        )
+        .unwrap();
+        drop(conn);
+
+        let hits = engine
+            .search(&SearchRequest {
+                query: "name:alpha_handler alpha_handler".to_string(),
+                top_k: 5,
+                include_grep: false,
+                ..Default::default()
+            })
+            .unwrap();
+
+        assert_trace_replays_rerank(&hits);
+        let components = trace_components(&hits[0]);
+        assert!(
+            components.contains(&"boost:dsl-name"),
+            "dsl-name bonus applied after hit construction must be billed, got {components:?}"
+        );
+        assert!(
+            components.contains(&"boost:symbol-exact"),
+            "expected symbol-exact boost, got {components:?}"
+        );
+    }
+
+    #[test]
+    fn score_trace_replays_rerank_after_graph_rerank() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        let config = ProjectConfig::default();
+        let engine = SearchEngine::new(Arc::new(db), &config, None);
+        let process_to_helper = CallEdgeRecord {
+            edge_id: "edge:process->helper".to_string(),
+            file_path: "src/a.rs".to_string(),
+            caller_symbol: Some("process".to_string()),
+            callee_symbol: "helper".to_string(),
+            line: 1,
+            caller_symbol_uid: Some("uid:process".to_string()),
+            callee_symbol_uid: Some("uid:helper".to_string()),
+            ..Default::default()
+        };
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn process() { helper() }",
+            "process",
+            "uid:process",
+            vec![process_to_helper],
+        );
+        insert_graph_file(
+            &engine,
+            "src/b.rs",
+            "fn helper() {}",
+            "helper",
+            "uid:helper",
+            vec![],
+        );
+
+        let (hits, _enrichment) = engine
+            .search_with_graph_context(
+                &SearchRequest {
+                    query: "process".to_string(),
+                    top_k: 5,
+                    include_grep: true,
+                    ..Default::default()
+                },
+                &RepoSizeTier::Small.graph_enrich_limits(),
+                4000,
+            )
+            .unwrap();
+
+        assert_trace_replays_rerank(&hits);
+        // At least one hit must have received (and billed) the post-search
+        // graph-rerank contribution.
+        assert!(
+            hits.iter()
+                .any(|hit| trace_components(hit).contains(&"boost:graph-rerank")),
+            "graph rerank contribution must appear in some hit's trace: {:?}",
+            hits.iter().map(trace_components).collect::<Vec<_>>()
+        );
     }
 
     #[test]

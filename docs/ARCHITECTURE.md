@@ -41,7 +41,17 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
 
 - `IndexDb` — r2d2 read pool (default 4 readers, clamped to 1–64) + a dedicated
   Mutex-guarded writer connection, WAL mode. Each read connection carries a
-  prepared-statement cache of 64; hot point reads go through `prepare_cached`
+  prepared-statement cache of 64; hot point reads go through `prepare_cached`.
+  The public method surface is split by capability into three zero-cost
+  borrowed views (same pattern as `CodeIndex`); lifecycle (`open` /
+  `open_with_read_pool_size`) stays on `IndexDb` itself:
+  - `.reads()` -> `ReadOps`: all queries — symbol/file/graph/retrieval reads,
+    `generation`, `stats`, `get_metadata`, `get_file_state`, `read_conn`
+  - `.writes()` -> `WriteOps`: every epoch-bumping mutation — batch writes,
+    edge/evidence writes, `set_metadata`, `begin_unit_of_work`; the only
+    public path to write methods (compile-time write isolation)
+  - `.admin()` -> `MaintenanceOps`: rebuild protocols (`rebuild_with_temp_db` /
+    `rebuild_with_direct_writer`), `checkpoint_wal*`, `instance_id`
 - `UnitOfWork` (`unit_of_work.rs`) — the multi-statement write seam: it holds
   the write connection for its whole lifetime, runs an `IMMEDIATE` transaction,
   exposes only typed write methods (never the raw connection), bumps
@@ -55,6 +65,12 @@ SQLite persistence for the code index. Single database file: `index.sqlite3`.
   | post-process artifacts (communities, frameworks, infra, co_change, test_edges) + `adr` | `index_epoch` | consumed as index content by context/graph output |
   | `runtime_evidence` | `evidence_epoch` | continuous ingestion must not evict index-only cache slots |
   | `http_call_edges.confidence` via `boost_http_edge_confidence` | `evidence_epoch` | the one exception: evidence-driven boost, not an index change |
+
+  The two clocks advance independently: every `UnitOfWork` commit bumps
+  `index_epoch` exactly once, while `boost_http_edge_confidence` bumps only
+  `evidence_epoch`. Downstream cache slots declare which clocks they key on
+  via `EpochSensitivity`
+  ([`graph_read_model/cache.rs`](../crates/cc-server/src/graph_read_model/cache.rs))
 - Two full-rebuild strategies — temp-db (`rebuild_with_temp_db`) and
   `DirectWriter` (`rebuild_with_direct_writer`) — are thin build adapters over
   one shared `run_rebuild_protocol`: snapshot an epoch floor → build the
@@ -113,8 +129,8 @@ postprocess → analysis (phase headers in `crates/cc-index/src/indexer.rs` and
   `type_catalog.rs`), then cross-file framework resolution. Name resolution
   walks a declared ladder (`RESOLVE_LADDER` in `resolver/resolve_core.rs`):
   self-member → scope → same-file → imports → suffix → global-unique →
-  fuzzy-single → call-site signals (arg-count, then receiver; metadata-less
-  candidates survive as wildcards) → import-distance. Each result records its
+  call-site signals (arg-count, then receiver; metadata-less candidates
+  survive as wildcards) → import-distance. Each result records its
   `candidate_count` and `winning_step`, exposed through
   `resolution_strategy` (e.g. `fuzzy_arg_count`, `...:upgraded_from=...`)
 - Write: incremental atomic batch or full rebuild (see cc-db)
@@ -160,7 +176,7 @@ Hybrid search engine.
   `(index_epoch, query_hash)` and an LRU chunk-text cache keyed by chunk id.
   Every cc-db write transaction bumps the persisted index epoch, so both
   caches self-invalidate without manual hooks.
-- **Preselection** — a 7-layer file scoring strategy (working set, recent,
+- **Preselection** (`preselect.rs`) — a 7-layer file scoring strategy (working set, recent,
   pinned, overlay, FTS summary, symbol/path tokens, graph-neighbor expansion).
   Each layer is a `PreselectLayer` adapter registered in
   `default_preselect_layers()` (same seam style as the retrieval lanes);
@@ -264,3 +280,46 @@ RRF fusion + reranking  -->  ContextEnvelope  -->  MCP tool responses
 | TreeSitter | 0.7 | Full AST parsing |
 | Semantic | 0.85 | Cross-reference resolved |
 | Verified | 0.95 | Runtime-validated (via `ingest_traces`) |
+
+## Extension points
+
+Each seam below is a trait or declarative spec with a single registration
+point; adding an implementation does not require edits elsewhere.
+
+| To add a… | Seam (trait/type) | Registration point | Reference adapter |
+|---|---|---|---|
+| retrieval lane | `RetrievalLane` | `default_lanes()` in [`cc-search/src/lanes.rs`](../crates/cc-search/src/lanes.rs) | `GraphLane` |
+| preselect layer | `PreselectLayer` | `default_preselect_layers()` in [`cc-search/src/preselect.rs`](../crates/cc-search/src/preselect.rs) | `GraphNeighborLayer` |
+| framework route resolver | `FrameworkResolver` | `default_registry()` in [`cc-index/src/framework_resolvers/mod.rs`](../crates/cc-index/src/framework_resolvers/mod.rs) | [`fastapi.rs`](../crates/cc-index/src/framework_resolvers/fastapi.rs) |
+| language (no tree-sitter grammar) | `LangSpec` | [`cc-parsers/src/lang_spec.rs`](../crates/cc-parsers/src/lang_spec.rs) + `ParserRegistry` in [`cc-parsers/src/lib.rs`](../crates/cc-parsers/src/lib.rs) | `CSHARP_SPEC` |
+| synthetic-edge pass | `SynthesisPassSpec` | `registry()` in [`cc-index/src/dispatch_synthesis/mod.rs`](../crates/cc-index/src/dispatch_synthesis/mod.rs) | [`event_emitter.rs`](../crates/cc-index/src/dispatch_synthesis/event_emitter.rs) |
+| postprocess skip gate | `PassGate` | [`cc-index/src/pass_gate.rs`](../crates/cc-index/src/pass_gate.rs), consumed by `run_gated_passes` (called from `indexer_phases.rs`) | `DbSignatureGate` |
+| multi-statement write | `UnitOfWork` | [`cc-db/src/unit_of_work.rs`](../crates/cc-db/src/unit_of_work.rs), entered via `IndexDb::writes().begin_unit_of_work()` | dispatch-synthesis apply in [`cc-index/src/synthesis_pipeline.rs`](../crates/cc-index/src/synthesis_pipeline.rs) |
+
+- **Retrieval lane** — implement `RetrievalLane` for a unit struct and append
+  it to the `default_lanes()` vec. Order is the deterministic RRF fusion
+  order; no `plan.rs` / `engine.rs` edits needed.
+- **Preselect layer** — implement `PreselectLayer` and append to
+  `default_preselect_layers()`. Order is execution order: the fallback gate
+  reads the scores of earlier layers, and graph-neighbor seeds off everything
+  before it.
+- **Framework route resolver** — create
+  `cc-index/src/framework_resolvers/<framework>.rs`, implement
+  `FrameworkResolver`, and add one `registry.register(...)` line in
+  `default_registry()`.
+- **Language without a tree-sitter grammar** — declare a
+  `static <LANG>_SPEC: LangSpec` in `lang_spec.rs` (language, grammar-name
+  tag, extensions, qualified-name separator), then wire a `SpecDrivenParser`
+  field and a `match` arm into `ParserRegistry` in `cc-parsers/src/lib.rs`.
+- **Synthetic-edge pass** — add a submodule under `dispatch_synthesis/`
+  exporting a `SPEC: SynthesisPassSpec` (id, signature gate, owned call kinds
+  / semantic prefixes, compute fn) and list it in `registry()`. Execution
+  order matters: interface dispatch runs last.
+- **Postprocess skip gate** — implement the `PassGate` trait (or reuse
+  `DbSignatureGate` / `FileSignatureGate` / `StringCacheGate` /
+  `Unconditional`) and hand the pass to `run_gated_passes` in
+  `indexer_phases.rs`.
+- **Multi-statement write** — `UnitOfWork` is the seam itself, not a trait to
+  implement: add a typed write method on `UnitOfWork` instead of exposing the
+  raw connection. Callers obtain one via `IndexDb::writes().begin_unit_of_work()`;
+  commit bumps `index_epoch` exactly once, drop without commit rolls back.

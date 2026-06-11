@@ -10,7 +10,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::time::{Duration, Instant};
 
-use cc_db::index_db::FileWriteUnit;
+use cc_db::index_db::{FileState, FileWriteUnit};
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
 use cc_model::CcResult;
 
@@ -103,15 +103,18 @@ impl IndexBuildPlan {
             parse_report,
         } = ParsedBuildState::from(parse_result);
 
-        let dirty_closure =
-            DirtyClosure::prepare(indexer, self.mode, &scan_result, &mut write_units)?;
+        // Ordering invariant, enforced by types: the dirty closure must be
+        // complete before dirty units are reloaded ([`DirtyClosed::reload`]
+        // consumes the closure proof), and framework enrichment is only
+        // reachable through the resulting [`Reloaded`] token — so dirty units
+        // provably participate in project context before resolvers bind
+        // framework-specific edges.
+        let dirty_closed = DirtyClosed::compute(indexer, self.mode, &scan_result, &write_units)?;
+        let reloaded = dirty_closed.reload(indexer, &mut write_units, &scan_result.existing)?;
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
-        // Framework enrichment must run after dirty reload so dirty units
-        // participate in project context, and before resolution so resolvers
-        // can bind framework-specific edges.
-        let fw_context = indexer.phase_framework_enrichment(project_path, &mut write_units)?;
+        let fw_context = reloaded.enrich_frameworks(indexer, project_path, &mut write_units)?;
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -130,7 +133,7 @@ impl IndexBuildPlan {
         Ok(PreparedBuild {
             scan_result,
             write_units,
-            actions: dirty_closure.into_actions(),
+            actions: reloaded.into_actions(),
             output_snapshot,
             hierarchy_edges: resolve_result.hierarchy_edges,
             parse_report,
@@ -238,16 +241,30 @@ impl IndexBuildPlan {
     }
 }
 
-struct DirtyClosure {
+/// Proof that the dirty-propagation closure has completed for this build's
+/// actions map. Constructed only by [`DirtyClosed::compute`]; the only way to
+/// proceed is [`DirtyClosed::reload`], which consumes the proof — so dirty
+/// reload provably runs after the closure is complete (it would otherwise
+/// miss re-resolve-only units in the catalog).
+struct DirtyClosed {
+    actions: HashMap<String, FileAction>,
+    dirty_count: usize,
+}
+
+/// Proof that dirty units have been reloaded into `write_units`. Framework
+/// enrichment in this plan is only reachable through
+/// [`Reloaded::enrich_frameworks`], so "dirty reload before framework
+/// enrichment" is a compile-time fact rather than a comment.
+struct Reloaded {
     actions: HashMap<String, FileAction>,
 }
 
-impl DirtyClosure {
-    fn prepare(
+impl DirtyClosed {
+    fn compute(
         indexer: &Indexer,
         mode: IndexBuildMode,
         scan_result: &ScanDiffResult,
-        write_units: &mut Vec<FileWriteUnit>,
+        write_units: &[FileWriteUnit],
     ) -> CcResult<Self> {
         let mut actions = indexer.build_actions_map(
             write_units,
@@ -263,12 +280,37 @@ impl DirtyClosure {
             0
         };
 
-        // Dirty reload must happen before enrichment/resolution and after the
-        // dirty closure is complete, otherwise the catalog would miss
-        // re-resolve-only units.
-        indexer.phase_dirty_reload(write_units, &actions, &scan_result.existing, dirty_count)?;
+        Ok(Self {
+            actions,
+            dirty_count,
+        })
+    }
 
-        Ok(Self { actions })
+    fn reload(
+        self,
+        indexer: &Indexer,
+        write_units: &mut Vec<FileWriteUnit>,
+        existing: &HashMap<String, FileState>,
+    ) -> CcResult<Reloaded> {
+        indexer.phase_dirty_reload(write_units, &self.actions, existing, self.dirty_count)?;
+        Ok(Reloaded {
+            actions: self.actions,
+        })
+    }
+}
+
+impl Reloaded {
+    /// Framework enrichment must run after dirty reload so dirty units
+    /// participate in project context, and before resolution so resolvers can
+    /// bind framework-specific edges (the latter is enforced by data flow:
+    /// `phase_resolve` requires the returned context).
+    fn enrich_frameworks(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+        write_units: &mut [FileWriteUnit],
+    ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
+        indexer.phase_framework_enrichment(project_path, write_units)
     }
 
     fn into_actions(self) -> HashMap<String, FileAction> {
@@ -371,7 +413,8 @@ class Accumulator:
     /// names the drifting table directly.
     fn graph_state(db: &IndexDb) -> Vec<(&'static str, i64)> {
         let count = |sql: &str| -> i64 {
-            db.query_json(sql, &[])
+            db.reads()
+                .query_json(sql, &[])
                 .expect("graph state query")
                 .first()
                 .and_then(|row| row.get("cnt"))
@@ -454,8 +497,8 @@ class Accumulator:
         assert!(report_a.symbols_total > 0, "fixture should yield symbols");
 
         // Persisted DB state must match: symbol, file, and chunk counts.
-        let stats_a = db_a.stats(dir_a.path()).expect("stats a");
-        let stats_b = db_b.stats(dir_b.path()).expect("stats b");
+        let stats_a = db_a.reads().stats(dir_a.path()).expect("stats a");
+        let stats_b = db_b.reads().stats(dir_b.path()).expect("stats b");
         assert_eq!(
             stats_a.indexed_symbols, stats_b.indexed_symbols,
             "db indexed_symbols"

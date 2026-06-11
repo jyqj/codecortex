@@ -136,7 +136,9 @@ impl<'a> ResolutionOpts<'a> {
 /// Pipeline: `find_symbol` → empty check → file filter → kind filter →
 /// single/multi split → (multi only) co-location pick → ambiguous.
 pub(crate) fn resolve(db: &IndexDb, name: &str, opts: &ResolutionOpts) -> CcResult<Resolution> {
-    let mut rows = db.find_symbol(name, opts.exact, opts.max_candidates)?;
+    let mut rows = db
+        .reads()
+        .find_symbol(name, opts.exact, opts.max_candidates)?;
     if rows.is_empty() {
         return Ok(Resolution::Unresolved(UnresolvedReason::NotFound));
     }
@@ -171,7 +173,10 @@ pub(crate) fn resolve(db: &IndexDb, name: &str, opts: &ResolutionOpts) -> CcResu
             let candidate_dir = dir_of(&r.file_path);
             already_resolved.iter().any(|(_, resolved_uid)| {
                 // Look up the resolved symbol's file_path from the DB
-                if let Ok(map) = db.symbol_rows_by_uids(std::slice::from_ref(resolved_uid)) {
+                if let Ok(map) = db
+                    .reads()
+                    .symbol_rows_by_uids(std::slice::from_ref(resolved_uid))
+                {
                     if let Some(resolved_row) = map.get(resolved_uid) {
                         return dir_of(&resolved_row.file_path) == candidate_dir;
                     }
@@ -208,7 +213,7 @@ mod tests {
     fn setup_db(symbols: &[(&str, &str, &str, &str, &str)]) -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("resolution.db")).unwrap().0);
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
 
         let mut seen_files = std::collections::HashSet::new();
         for (_, _, _, _, file_path) in symbols {

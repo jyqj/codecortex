@@ -11,7 +11,7 @@ use sha2::{Digest, Sha256};
 use cc_db::index_db::{FileWriteUnit, IndexDb, SymbolTargetRow};
 use cc_model::edge::{ResolutionKind, RouteNodeRecord};
 use cc_model::parse::ParseOutcome;
-use cc_model::symbol::SymbolRefRecord;
+use cc_model::symbol::{SymbolRecord, SymbolRefRecord};
 use cc_model::{CcResult, Language, ParserTier, StableId};
 
 use crate::community::{build_community_labels, louvain_communities};
@@ -50,7 +50,7 @@ impl SymbolRowsCache {
         if let Some(rows) = self.rows.borrow().as_ref() {
             return Ok(std::rc::Rc::clone(rows));
         }
-        let rows = std::rc::Rc::new(db.query_json(
+        let rows = std::rc::Rc::new(db.reads().query_json(
             "SELECT symbol_uid, name, kind, container FROM symbols \
              WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
             &[],
@@ -60,16 +60,72 @@ impl SymbolRowsCache {
     }
 }
 
+/// Phase 4a output: the [`SymbolCatalog`] seeded with persisted + freshly
+/// parsed symbols, the persisted symbols themselves (consumed again by the
+/// hierarchy sub-phase), and one pre-built [`ResolutionContext`] per write
+/// unit (index-aligned with the write units they were built from).
+struct ResolutionCatalog {
+    catalog: SymbolCatalog,
+    persisted_symbols: Vec<SymbolRecord>,
+    resolution_contexts: Vec<ResolutionContext>,
+}
+
+/// Owned output of the common front half of a full-snapshot write, shared by
+/// the temp-db and DirectWriter paths: the derived config-link units plus the
+/// `last_indexed_at` timestamp recorded inside the rebuilt snapshot.
+struct FullSnapshotPayload {
+    config_units: Vec<FileWriteUnit>,
+    recorded_at: String,
+}
+
 impl Indexer {
     /// Phase 4: Symbol resolution (semantic edges, type catalog, call edges, cross-file).
+    ///
+    /// Thin orchestration over four sub-phases, each of which owns only the
+    /// inputs it actually consumes so it can be exercised directly in tests:
+    /// [`Self::build_resolution_catalog`] → [`Self::resolve_semantic_edges`] →
+    /// [`Self::resolve_hierarchy`] → [`Self::resolve_call_edges`] →
+    /// [`Self::resolve_framework_cross_file`].
     pub(crate) fn phase_resolve(
         &self,
         _project_path: &Path,
         full: bool,
-        write_units: &mut Vec<FileWriteUnit>,
+        write_units: &mut [FileWriteUnit],
         to_remove: &[String],
         fw_context: &crate::framework_resolvers::ProjectFrameworkContext,
     ) -> CcResult<ResolveResult> {
+        let ResolutionCatalog {
+            mut catalog,
+            persisted_symbols,
+            resolution_contexts,
+        } = self.build_resolution_catalog(full, write_units, to_remove)?;
+
+        // Phase 4a / 4a-2: semantic edge UIDs + backfill, USES_TYPE derivation.
+        Self::resolve_semantic_edges(&catalog, write_units, &resolution_contexts);
+
+        // Phase 4b: type catalog (dispatch) + hierarchy edges.
+        let hierarchy_edges =
+            Self::resolve_hierarchy(&mut catalog, &persisted_symbols, write_units);
+
+        // Phase 4c: call edges, symbol refs, route edges.
+        Self::resolve_call_edges(&catalog, write_units, &resolution_contexts);
+
+        // Phase 4d: cross-file framework resolution (post-catalog).
+        Self::resolve_framework_cross_file(&catalog, write_units, fw_context);
+
+        Ok(ResolveResult { hierarchy_edges })
+    }
+
+    /// Phase 4a (input construction): seed the [`SymbolCatalog`] with symbols
+    /// persisted in the DB (incremental builds only — excluding files being
+    /// re-parsed or removed) plus the freshly parsed symbols, and pre-build
+    /// one [`ResolutionContext`] per write unit.
+    fn build_resolution_catalog(
+        &self,
+        full: bool,
+        write_units: &[FileWriteUnit],
+        to_remove: &[String],
+    ) -> CcResult<ResolutionCatalog> {
         let resolver_excluded_files: Vec<String> = write_units
             .iter()
             .map(|u| u.rel_path.clone())
@@ -79,6 +135,7 @@ impl Indexer {
             Vec::new()
         } else {
             self.db
+                .reads()
                 .resolver_seed_symbols_excluding(&resolver_excluded_files)?
         };
 
@@ -93,7 +150,22 @@ impl Indexer {
             .map(|unit| SymbolCatalog::build_resolution_context(&unit.outcome, &unit.rel_path))
             .collect();
 
-        // Phase 4a: Resolve semantic edge UIDs and backfill base_types/implements
+        Ok(ResolutionCatalog {
+            catalog,
+            persisted_symbols,
+            resolution_contexts,
+        })
+    }
+
+    /// Phase 4a: resolve semantic edge UIDs and backfill base_types/implements,
+    /// then (4a-2) derive USES_TYPE edges from type annotations. Mutates each
+    /// unit's outcome in place. `resolution_contexts` must be index-aligned
+    /// with `write_units` (as produced by [`Self::build_resolution_catalog`]).
+    fn resolve_semantic_edges(
+        catalog: &SymbolCatalog,
+        write_units: &mut [FileWriteUnit],
+        resolution_contexts: &[ResolutionContext],
+    ) {
         if write_units.len() >= MIN_FILES_FOR_PARALLEL {
             write_units
                 .par_iter_mut()
@@ -129,8 +201,19 @@ impl Indexer {
                 catalog.derive_uses_type_edges(&file_path, &mut unit.outcome);
             }
         }
+    }
 
-        // Phase 4b: Build TypeCatalog for type-aware method dispatch resolution
+    /// Phase 4b: build the TypeCatalog for type-aware method dispatch
+    /// resolution (4b), feed it the parsed type_assigns for variable type
+    /// inference (4b-1), and generate hierarchy edges — Defines,
+    /// DefinesMethod, ContainsFile (4b-2). The catalog feed and the hierarchy
+    /// edges consume the same snapshot of all symbols (persisted + freshly
+    /// parsed), which is why they form one sub-phase.
+    fn resolve_hierarchy(
+        catalog: &mut SymbolCatalog,
+        persisted_symbols: &[SymbolRecord],
+        write_units: &[FileWriteUnit],
+    ) -> Vec<cc_model::edge::SemanticEdgeRecord> {
         let all_symbols: Vec<_> = persisted_symbols
             .iter()
             .cloned()
@@ -141,17 +224,20 @@ impl Indexer {
             )
             .collect();
         catalog.build_type_catalog(&all_symbols);
-
-        // Phase 4b-1: Feed type_assigns into TypeCatalog for variable type inference
         catalog.add_type_assigns_from_outcomes(write_units);
 
-        // Phase 4b-2: Generate hierarchy edges (Defines, DefinesMethod, ContainsFile)
         let file_paths: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
-        let hierarchy_edges = crate::hierarchy::generate_hierarchy_edges(&all_symbols, &file_paths);
+        crate::hierarchy::generate_hierarchy_edges(&all_symbols, &file_paths)
+    }
 
-        drop(all_symbols);
-
-        // Phase 4c: Resolve call edges, symbol refs, route edges
+    /// Phase 4c: resolve call edges, symbol refs and route edges against the
+    /// catalog (type-catalog assisted once [`Self::resolve_hierarchy`] has
+    /// run). `resolution_contexts` must be index-aligned with `write_units`.
+    fn resolve_call_edges(
+        catalog: &SymbolCatalog,
+        write_units: &mut [FileWriteUnit],
+        resolution_contexts: &[ResolutionContext],
+    ) {
         if write_units.len() >= MIN_FILES_FOR_PARALLEL {
             write_units
                 .par_iter_mut()
@@ -166,37 +252,40 @@ impl Indexer {
                 catalog.resolve_outcome_with_context(&file_path, &mut unit.outcome, context);
             }
         }
+    }
 
-        // Phase 4d: Cross-file framework resolution (post-catalog).
-        //
-        // Resolvers need `&mut [(String, ParseOutcome)]`. Previously every
-        // outcome was deep-cloned (symbols/edges/refs/chunks) just to hand the
-        // resolvers a mutable view, then a partial subset of edges was merged
-        // back. Instead we *move* each outcome out of its write_unit (leaving a
-        // cheap default in place), let resolvers mutate it in place, and move it
-        // straight back. This eliminates the full-graph deep copy and also
-        // faithfully preserves in-place edge mutations (e.g. route prefix
-        // propagation / handler UID binding) that the old length-only merge
-        // silently dropped.
-        {
-            let registry = crate::framework_resolvers::default_registry();
-            let active = registry.active_resolvers(fw_context);
-            if !active.is_empty() {
-                let mut owned_pairs: Vec<(String, ParseOutcome)> = write_units
-                    .iter_mut()
-                    .map(|u| (u.rel_path.clone(), std::mem::take(&mut u.outcome)))
-                    .collect();
-                for resolver in &active {
-                    resolver.resolve_cross_file(&catalog, &mut owned_pairs, fw_context);
-                }
-                // Move the (possibly mutated) outcomes back into their units.
-                for (unit, (_, outcome)) in write_units.iter_mut().zip(owned_pairs) {
-                    unit.outcome = outcome;
-                }
-            }
+    /// Phase 4d: cross-file framework resolution (post-catalog).
+    ///
+    /// Resolvers need `&mut [(String, ParseOutcome)]`. Previously every
+    /// outcome was deep-cloned (symbols/edges/refs/chunks) just to hand the
+    /// resolvers a mutable view, then a partial subset of edges was merged
+    /// back. Instead we *move* each outcome out of its write_unit (leaving a
+    /// cheap default in place), let resolvers mutate it in place, and move it
+    /// straight back. This eliminates the full-graph deep copy and also
+    /// faithfully preserves in-place edge mutations (e.g. route prefix
+    /// propagation / handler UID binding) that the old length-only merge
+    /// silently dropped.
+    fn resolve_framework_cross_file(
+        catalog: &SymbolCatalog,
+        write_units: &mut [FileWriteUnit],
+        fw_context: &crate::framework_resolvers::ProjectFrameworkContext,
+    ) {
+        let registry = crate::framework_resolvers::default_registry();
+        let active = registry.active_resolvers(fw_context);
+        if active.is_empty() {
+            return;
         }
-
-        Ok(ResolveResult { hierarchy_edges })
+        let mut owned_pairs: Vec<(String, ParseOutcome)> = write_units
+            .iter_mut()
+            .map(|u| (u.rel_path.clone(), std::mem::take(&mut u.outcome)))
+            .collect();
+        for resolver in &active {
+            resolver.resolve_cross_file(catalog, &mut owned_pairs, fw_context);
+        }
+        // Move the (possibly mutated) outcomes back into their units.
+        for (unit, (_, outcome)) in write_units.iter_mut().zip(owned_pairs) {
+            unit.outcome = outcome;
+        }
     }
 
     /// Phase 6: Batch write to SQLite (dual path: full rebuild vs incremental).
@@ -256,7 +345,7 @@ impl Indexer {
             // Incremental: removals, replacements, dirty re-resolution and
             // route nodes commit atomically — a crash cannot leave files
             // deleted with their edges still present.
-            self.db.write_incremental_batch(
+            self.db.writes().write_incremental_batch(
                 to_remove,
                 &normal_write_units,
                 &dirty_write_units,
@@ -267,18 +356,22 @@ impl Indexer {
             // connection), so they stay outside the batch transaction.
             let config_units = self.build_config_link_units(project_path)?;
             if !config_units.is_empty() {
-                self.db.replace_files_batch(&config_units)?;
+                self.db.writes().replace_files_batch(&config_units)?;
             }
 
             // Update metadata (for incremental only; full path sets it inside temp-db)
             let now = chrono::Utc::now().to_rfc3339();
-            self.db.set_metadata("last_indexed_at", &now)?;
-            self.db.set_metadata("index_version", "1.0.0")?;
+            self.db.writes().set_metadata("last_indexed_at", &now)?;
+            self.db.writes().set_metadata("index_version", "1.0.0")?;
 
             // Long incremental-only sessions never hit the full-rebuild
             // checkpoint, so reclaim the WAL here once it grows too large.
             const MAX_INCREMENTAL_WAL_BYTES: u64 = 16 * 1024 * 1024;
-            if let Err(e) = self.db.checkpoint_wal_if_large(MAX_INCREMENTAL_WAL_BYTES) {
+            if let Err(e) = self
+                .db
+                .admin()
+                .checkpoint_wal_if_large(MAX_INCREMENTAL_WAL_BYTES)
+            {
                 tracing::warn!(err = %e, "incremental WAL checkpoint failed");
             }
 
@@ -298,7 +391,9 @@ impl Indexer {
 
         // Write hierarchy edges (appends to semantic_edges, does not replace)
         if !hierarchy_edges.is_empty() {
-            self.db.insert_semantic_edges_batch(hierarchy_edges)?;
+            self.db
+                .writes()
+                .insert_semantic_edges_batch(hierarchy_edges)?;
             tracing::info!(count = hierarchy_edges.len(), "generated hierarchy edges");
         }
 
@@ -328,9 +423,11 @@ impl Indexer {
         changed_paths.extend(config_units.iter().map(|u| u.rel_path.clone()));
         changed_paths.extend(to_remove.iter().cloned());
         if full {
-            self.db.rebuild_test_edges()?;
+            self.db.writes().rebuild_test_edges()?;
         } else if !changed_paths.is_empty() {
-            self.db.rebuild_test_edges_for_files(&changed_paths)?;
+            self.db
+                .writes()
+                .rebuild_test_edges_for_files(&changed_paths)?;
         }
 
         // Per-pass signature gates: instead of a single graph_signature that
@@ -420,10 +517,11 @@ impl Indexer {
                 let mut removed_edges = 0usize;
                 for spec in crate::dispatch_synthesis::registry() {
                     for kind in spec.owned_call_kinds {
-                        removed_edges += self.db.delete_synthetic_call_edges(kind)?;
+                        removed_edges += self.db.writes().delete_synthetic_call_edges(kind)?;
                     }
                     for prefix in spec.owned_semantic_prefixes {
-                        removed_edges += self.db.delete_synthetic_semantic_edges(prefix)?;
+                        removed_edges +=
+                            self.db.writes().delete_synthetic_semantic_edges(prefix)?;
                     }
                 }
                 if removed_edges > 0 {
@@ -475,7 +573,7 @@ impl Indexer {
             match crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500) {
                 Ok(co_changes) => {
                     if !co_changes.is_empty() {
-                        self.db.insert_co_change_edges_batch(&co_changes)?;
+                        self.db.writes().insert_co_change_edges_batch(&co_changes)?;
                         tracing::info!(count = co_changes.len(), "indexed git co-change edges");
                     }
                     Ok(true)
@@ -520,7 +618,9 @@ impl Indexer {
                 // Match binding target URLs to known route nodes
                 crate::infra_pass::match_bindings_to_routes(&mut infra_edges, route_nodes);
 
-                self.db.replace_infra_data(&infra_nodes, &infra_edges)?;
+                self.db
+                    .writes()
+                    .replace_infra_data(&infra_nodes, &infra_edges)?;
                 let bound_count = infra_nodes
                     .iter()
                     .filter(|n| n.bound_symbol_uid.is_some())
@@ -614,7 +714,7 @@ impl Indexer {
 
             if !adr_docs.is_empty() {
                 tracing::info!(count = adr_docs.len(), "indexed ADR documents");
-                self.db.set_metadata(
+                self.db.writes().set_metadata(
                     "adr_documents",
                     &serde_json::to_string(&adr_docs).unwrap_or_default(),
                 )?;
@@ -966,8 +1066,8 @@ impl Indexer {
     /// Compatibility wrapper: queries DB for symbol targets / file paths,
     /// then delegates to the pure function.
     fn build_config_link_units(&self, project_path: &Path) -> CcResult<Vec<FileWriteUnit>> {
-        let symbol_targets = self.db.list_symbol_targets()?;
-        let indexed_files = self.db.list_file_paths()?;
+        let symbol_targets = self.db.reads().list_symbol_targets()?;
+        let indexed_files = self.db.reads().list_file_paths()?;
         Self::build_config_link_units_from_snapshot(project_path, symbol_targets, &indexed_files)
     }
 
@@ -988,6 +1088,63 @@ impl Indexer {
         targets
     }
 
+    /// Common front half of both full-snapshot write paths: derive the
+    /// config-link units from the freshly parsed write units and stamp the
+    /// rebuild time. Returns an owned payload so the two paths only differ in
+    /// their rebuild adapter (`rebuild_with_temp_db` vs
+    /// `rebuild_with_direct_writer`).
+    fn prepare_full_snapshot_payload(
+        &self,
+        project_path: &Path,
+        write_units: &[FileWriteUnit],
+    ) -> CcResult<FullSnapshotPayload> {
+        // Pre-collect snapshot data for config links before entering the
+        // rebuild closure (the closure must not query the live DB).
+        let symbol_targets = Self::collect_symbol_targets(write_units);
+        let indexed_files: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
+        let config_units = Self::build_config_link_units_from_snapshot(
+            project_path,
+            symbol_targets,
+            &indexed_files,
+        )?;
+
+        Ok(FullSnapshotPayload {
+            config_units,
+            recorded_at: chrono::Utc::now().to_rfc3339(),
+        })
+    }
+
+    /// Shared rebuild-closure body: writes file data, route nodes, config-link
+    /// units and metadata into the connection handed out by either rebuild
+    /// adapter.
+    fn write_full_snapshot_contents(
+        conn: &rusqlite::Connection,
+        write_units: &[FileWriteUnit],
+        route_nodes: &[RouteNodeRecord],
+        payload: &FullSnapshotPayload,
+    ) -> CcResult<()> {
+        // Write main file data
+        for unit in write_units {
+            IndexDb::insert_file_data(conn, unit)?;
+        }
+
+        // Write route nodes
+        for r in route_nodes {
+            IndexDb::insert_route_node_into(conn, r)?;
+        }
+
+        // Write config link units
+        for unit in &payload.config_units {
+            IndexDb::insert_file_data(conn, unit)?;
+        }
+
+        // Write metadata
+        IndexDb::set_metadata_on(conn, "last_indexed_at", &payload.recorded_at)?;
+        IndexDb::set_metadata_on(conn, "index_version", "1.0.0")?;
+
+        Ok(())
+    }
+
     /// Write all index data via temp-db + atomic swap (full rebuild only).
     /// All main data (files, route_nodes, config_units, metadata) is written
     /// inside the temp-db transaction. Post-processing passes (frameworks,
@@ -999,44 +1156,11 @@ impl Indexer {
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
     ) -> CcResult<Vec<FileWriteUnit>> {
-        // Pre-collect snapshot data for config links before entering temp-db closure.
-        let symbol_targets = Self::collect_symbol_targets(write_units);
-        let indexed_files: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
-        let config_units = Self::build_config_link_units_from_snapshot(
-            project_path,
-            symbol_targets,
-            &indexed_files,
-        )?;
-
-        let now = chrono::Utc::now().to_rfc3339();
-
-        // Clone config_units for return value (originals move into the closure).
-        let config_units_ret = config_units.clone();
-
-        self.db.rebuild_with_temp_db(|conn| {
-            // Write main file data
-            for unit in write_units {
-                IndexDb::insert_file_data(conn, unit)?;
-            }
-
-            // Write route nodes
-            for r in route_nodes {
-                IndexDb::insert_route_node_into(conn, r)?;
-            }
-
-            // Write config link units
-            for unit in &config_units {
-                IndexDb::insert_file_data(conn, unit)?;
-            }
-
-            // Write metadata
-            IndexDb::set_metadata_on(conn, "last_indexed_at", &now)?;
-            IndexDb::set_metadata_on(conn, "index_version", "1.0.0")?;
-
-            Ok(())
+        let payload = self.prepare_full_snapshot_payload(project_path, write_units)?;
+        self.db.admin().rebuild_with_temp_db(|conn| {
+            Self::write_full_snapshot_contents(conn, write_units, route_nodes, &payload)
         })?;
-
-        Ok(config_units_ret)
+        Ok(payload.config_units)
     }
 
     /// Write all index data via DirectWriter (high-speed path) + atomic swap.
@@ -1048,42 +1172,11 @@ impl Indexer {
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
     ) -> CcResult<Vec<FileWriteUnit>> {
-        // Pre-collect snapshot data (same as temp_db path)
-        let symbol_targets = Self::collect_symbol_targets(write_units);
-        let indexed_files: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
-        let config_units = Self::build_config_link_units_from_snapshot(
-            project_path,
-            symbol_targets,
-            &indexed_files,
-        )?;
-
-        let now = chrono::Utc::now().to_rfc3339();
-        let config_units_ret = config_units.clone();
-
-        self.db.rebuild_with_direct_writer(|conn| {
-            // Write main file data
-            for unit in write_units {
-                IndexDb::insert_file_data(conn, unit)?;
-            }
-
-            // Write route nodes
-            for r in route_nodes {
-                IndexDb::insert_route_node_into(conn, r)?;
-            }
-
-            // Write config link units
-            for unit in &config_units {
-                IndexDb::insert_file_data(conn, unit)?;
-            }
-
-            // Write metadata
-            IndexDb::set_metadata_on(conn, "last_indexed_at", &now)?;
-            IndexDb::set_metadata_on(conn, "index_version", "1.0.0")?;
-
-            Ok(())
+        let payload = self.prepare_full_snapshot_payload(project_path, write_units)?;
+        self.db.admin().rebuild_with_direct_writer(|conn| {
+            Self::write_full_snapshot_contents(conn, write_units, route_nodes, &payload)
         })?;
-
-        Ok(config_units_ret)
+        Ok(payload.config_units)
     }
 
     fn persist_frameworks(
@@ -1139,7 +1232,7 @@ impl Indexer {
         let mut hasher = DefaultHasher::new();
 
         // Dispatch sites (input to 6 synthesis passes)
-        let site_rows = self.db.query_json(
+        let site_rows = self.db.reads().query_json(
             "SELECT site_kind, key, file_path, line, enclosing_symbol_uid, handler_symbol_uid \
              FROM dispatch_sites ORDER BY site_id",
             &[],
@@ -1186,7 +1279,7 @@ impl Indexer {
         let mut hasher = DefaultHasher::new();
 
         // Real call edges (synthetic excluded)
-        let edge_rows = self.db.query_json(
+        let edge_rows = self.db.reads().query_json(
             "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
              WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
              AND synthesized_by IS NULL \
@@ -1209,7 +1302,7 @@ impl Indexer {
         Self::hash_symbol_rows(&symbol_rows.get(&self.db)?, &mut hasher);
 
         // Real semantic edges (synthetic 'synth:%' excluded)
-        let sem_rows = self.db.query_json(
+        let sem_rows = self.db.reads().query_json(
             "SELECT source_symbol_uid, target_symbol_uid, relation_kind FROM semantic_edges \
              WHERE edge_id NOT LIKE 'synth:%' ORDER BY edge_id",
             &[],
@@ -1237,7 +1330,7 @@ impl Indexer {
         let mut hasher = DefaultHasher::new();
 
         // ALL call edges (including synthetic)
-        let edge_rows = self.db.query_json(
+        let edge_rows = self.db.reads().query_json(
             "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
              WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
              ORDER BY caller_symbol_uid, callee_symbol_uid",
@@ -1260,7 +1353,7 @@ impl Indexer {
         // built from symbol names by uid, so container is not an input — a
         // container-only change must not force a Louvain rerun. Locked by
         // `community_signature_ignores_container_unlike_synthesis_signatures`.
-        let symbol_rows = self.db.query_json(
+        let symbol_rows = self.db.reads().query_json(
             "SELECT symbol_uid, name, kind FROM symbols \
              WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
             &[],
@@ -1303,6 +1396,7 @@ impl Indexer {
         // Guard: check edge count before loading full graph to prevent OOM
         let edge_count = self
             .db
+            .reads()
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM call_edges \
                  WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL",
@@ -1325,15 +1419,15 @@ impl Indexer {
                 "community detection: edge count exceeds limit, assigning all symbols to community 0"
             );
             // Degraded: assign all symbols to a single community
-            self.db.assign_all_symbols_to_community(0)?;
+            self.db.writes().assign_all_symbols_to_community(0)?;
             return Ok(());
         }
 
-        let edges = self.db.call_uid_edges()?;
+        let edges = self.db.reads().call_uid_edges()?;
         let assignments = louvain_communities(&edges, 20);
-        let symbol_names = self.db.symbol_names_by_uid()?;
+        let symbol_names = self.db.reads().symbol_names_by_uid()?;
         let labels = build_community_labels(&assignments, &symbol_names);
-        self.db.update_communities(&assignments, &labels)
+        self.db.writes().update_communities(&assignments, &labels)
     }
 
     /// Dirty propagation: detect export signature changes and mark importers
@@ -1362,7 +1456,7 @@ impl Indexer {
         // Step 2: Compare old vs new export fingerprints to find files whose
         //         public API surface actually changed. Fetch all old
         //         fingerprints in one batched query to avoid N+1 round trips.
-        let old_fingerprints = self.db.get_export_fingerprints(&changed_files)?;
+        let old_fingerprints = self.db.reads().get_export_fingerprints(&changed_files)?;
 
         // Build a HashMap index over write_units for O(1) lookup per file,
         // avoiding the previous O(changed_files × write_units) linear scan.
@@ -1402,7 +1496,7 @@ impl Indexer {
             &export_changed_files,
             self.dirty_propagation_max_files,
             crate::dirty_closure::DIRTY_CLOSURE_MAX_ROUNDS,
-            |files| self.db.find_importers_of(files),
+            |files| self.db.reads().find_importers_of(files),
             |path| matches!(actions.get(path), Some(FileAction::Skip)),
             |files, changed_so_far| {
                 self.promoted_export_surfaces_changed(
@@ -1483,7 +1577,7 @@ impl Indexer {
             .map(|path| path.as_str())
             .collect();
         if !missing.is_empty() {
-            let mut fetched = self.db.reexport_targets_for_files(&missing)?;
+            let mut fetched = self.db.reads().reexport_targets_for_files(&missing)?;
             for path in missing {
                 // Files with no resolved re-exports are absent from the batch
                 // result; cache an empty target list so they are not refetched.
@@ -1656,8 +1750,10 @@ mod export_fingerprint_contract_tests {
         // Persist into a real IndexDb and read the DB-side fingerprint.
         let tmp = tempfile::TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("contract.db")).unwrap().0;
-        db.replace_files_batch(std::slice::from_ref(&unit)).unwrap();
-        let db_fp = db.get_export_fingerprint("src/lib.rs").unwrap();
+        db.writes()
+            .replace_files_batch(std::slice::from_ref(&unit))
+            .unwrap();
+        let db_fp = db.reads().get_export_fingerprint("src/lib.rs").unwrap();
 
         // Compute the in-memory fingerprint from the same write_unit.
         let mem_fp =
@@ -1687,8 +1783,10 @@ mod export_fingerprint_contract_tests {
         let db = IndexDb::open(&tmp.path().join("contract_none.db"))
             .unwrap()
             .0;
-        db.replace_files_batch(std::slice::from_ref(&unit)).unwrap();
-        let db_fp = db.get_export_fingerprint("src/lib.rs").unwrap();
+        db.writes()
+            .replace_files_batch(std::slice::from_ref(&unit))
+            .unwrap();
+        let db_fp = db.reads().get_export_fingerprint("src/lib.rs").unwrap();
 
         let mem_fp =
             Indexer::compute_new_export_fingerprint(std::slice::from_ref(&unit), "src/lib.rs");
@@ -1711,7 +1809,7 @@ mod graph_signature_coverage_tests {
         let cfg = IndexingConfig::default();
         let indexer = Indexer::new(db.clone(), tmp.path(), &cfg);
 
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');\
@@ -1735,7 +1833,7 @@ mod graph_signature_coverage_tests {
         let sig_base = indexer.dispatch_synthesis_signature().unwrap();
 
         // A new dispatch site must change the dispatch signature.
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
              VALUES('ds1','src/x.rs',3,0,'jsx_tag','Foo')",
@@ -1772,7 +1870,7 @@ mod graph_signature_coverage_tests {
         let sig_base = indexer.interface_dispatch_signature().unwrap();
 
         // A new dispatch site must NOT change the interface signature.
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
              VALUES('ds1','src/x.rs',3,0,'jsx_tag','Foo')",
@@ -1823,7 +1921,7 @@ mod graph_signature_coverage_tests {
         let sig_base = indexer.community_signature().unwrap();
 
         // A synthetic call edge must change the community signature.
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,synthesized_by) \
              VALUES('se1','src/x.rs','C',1,'uA','uC','event_emitter')",
@@ -1852,7 +1950,7 @@ mod graph_signature_coverage_tests {
         let dispatch_before = indexer.dispatch_synthesis_signature().unwrap();
         let interface_before = indexer.interface_dispatch_signature().unwrap();
 
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "UPDATE symbols SET container = 'NewContainer' WHERE symbol_id = 's1'",
             [],
@@ -1907,7 +2005,7 @@ mod graph_signature_coverage_tests {
         let interface_before = indexer.interface_dispatch_signature().unwrap();
 
         // Modify only dispatch_sites
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
              VALUES('ds2','src/x.rs',5,0,'event_emit','click')",
@@ -1925,6 +2023,278 @@ mod graph_signature_coverage_tests {
         assert_eq!(
             interface_before, interface_after,
             "interface_dispatch_signature must NOT change when only dispatch_sites change"
+        );
+    }
+}
+
+#[cfg(test)]
+mod phase_resolve_subphase_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use cc_model::edge::{CallEdgeRecord, SemanticEdgeRecord, SemanticRelation};
+    use cc_model::symbol::{SymbolKind, SymbolRecord};
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    fn symbol(uid: &str, name: &str, file_path: &str, kind: SymbolKind) -> SymbolRecord {
+        SymbolRecord {
+            symbol_id: uid.to_string(),
+            file_path: file_path.to_string(),
+            name: name.to_string(),
+            kind,
+            container: None,
+            start_line: 1,
+            end_line: 2,
+            start_col: 0,
+            end_col: 0,
+            signature: None,
+            doc: None,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 0.9,
+            qname: Some(name.to_string()),
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: Some(uid.to_string()),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        }
+    }
+
+    fn write_unit(rel_path: &str, outcome: ParseOutcome) -> FileWriteUnit {
+        FileWriteUnit {
+            rel_path: rel_path.to_string(),
+            language: Language::Python,
+            content_hash: "h".to_string(),
+            mtime: 1.0,
+            size: 1,
+            outcome,
+        }
+    }
+
+    fn contexts_for(units: &[FileWriteUnit]) -> Vec<ResolutionContext> {
+        units
+            .iter()
+            .map(|u| SymbolCatalog::build_resolution_context(&u.outcome, &u.rel_path))
+            .collect()
+    }
+
+    /// Phase 4a (input construction): the persisted seed must exclude files
+    /// being re-parsed (present in write_units) and files being removed, and
+    /// full builds must never seed from the DB at all.
+    #[test]
+    fn build_resolution_catalog_seeds_persisted_and_excludes_reparsed() {
+        let tmp = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("catalog.db")).unwrap().0);
+        let cfg = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), tmp.path(), &cfg);
+
+        let conn = db.reads().read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) VALUES \
+                 ('src/persisted.py','Python','h',1.0,1,'2024-01-01'), \
+                 ('src/changed.py','Python','h',1.0,1,'2024-01-01'), \
+                 ('src/gone.py','Python','h',1.0,1,'2024-01-01');\
+             INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid) VALUES \
+                 ('sp','src/persisted.py','persisted_fn','function',1,1,'uPersist'), \
+                 ('sc','src/changed.py','stale_fn','function',1,1,'uStale'), \
+                 ('sg','src/gone.py','gone_fn','function',1,1,'uGone');",
+        )
+        .unwrap();
+        drop(conn);
+
+        let units = vec![write_unit(
+            "src/changed.py",
+            ParseOutcome {
+                symbols: vec![symbol(
+                    "uNew",
+                    "new_fn",
+                    "src/changed.py",
+                    SymbolKind::Function,
+                )],
+                ..Default::default()
+            },
+        )];
+        let to_remove = vec!["src/gone.py".to_string()];
+
+        let incremental = indexer
+            .build_resolution_catalog(false, &units, &to_remove)
+            .unwrap();
+        let persisted_names: Vec<&str> = incremental
+            .persisted_symbols
+            .iter()
+            .map(|s| s.name.as_str())
+            .collect();
+        assert_eq!(
+            persisted_names,
+            vec!["persisted_fn"],
+            "re-parsed and removed files must be excluded from the persisted seed"
+        );
+        assert_eq!(
+            incremental.resolution_contexts.len(),
+            units.len(),
+            "one pre-built context per write unit"
+        );
+
+        // The catalog must contain BOTH the persisted seed and the freshly
+        // parsed symbols: call edges to either must resolve through it.
+        let mut probe_units = vec![write_unit(
+            "src/changed.py",
+            ParseOutcome {
+                call_edges: vec![
+                    CallEdgeRecord {
+                        edge_id: "ce1".to_string(),
+                        file_path: "src/changed.py".to_string(),
+                        callee_symbol: "persisted_fn".to_string(),
+                        line: 3,
+                        ..Default::default()
+                    },
+                    CallEdgeRecord {
+                        edge_id: "ce2".to_string(),
+                        file_path: "src/changed.py".to_string(),
+                        callee_symbol: "new_fn".to_string(),
+                        line: 4,
+                        ..Default::default()
+                    },
+                ],
+                ..Default::default()
+            },
+        )];
+        let probe_contexts = contexts_for(&probe_units);
+        Indexer::resolve_call_edges(&incremental.catalog, &mut probe_units, &probe_contexts);
+        let edges = &probe_units[0].outcome.call_edges;
+        assert_eq!(edges[0].callee_symbol_uid.as_deref(), Some("uPersist"));
+        assert_eq!(edges[1].callee_symbol_uid.as_deref(), Some("uNew"));
+
+        let full = indexer
+            .build_resolution_catalog(true, &units, &to_remove)
+            .unwrap();
+        assert!(
+            full.persisted_symbols.is_empty(),
+            "full builds must not seed persisted symbols from the DB"
+        );
+    }
+
+    /// Phase 4c: an unresolved call edge whose callee is a unique catalog
+    /// symbol must be bound to that symbol's UID and file.
+    #[test]
+    fn resolve_call_edges_binds_callee_uid_cross_file() {
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[symbol(
+            "uHelper",
+            "helper",
+            "src/lib.py",
+            SymbolKind::Function,
+        )]);
+
+        let mut units = vec![write_unit(
+            "src/main.py",
+            ParseOutcome {
+                call_edges: vec![CallEdgeRecord {
+                    edge_id: "ce1".to_string(),
+                    file_path: "src/main.py".to_string(),
+                    callee_symbol: "helper".to_string(),
+                    line: 3,
+                    ..Default::default()
+                }],
+                ..Default::default()
+            },
+        )];
+        let contexts = contexts_for(&units);
+
+        Indexer::resolve_call_edges(&catalog, &mut units, &contexts);
+
+        let edge = &units[0].outcome.call_edges[0];
+        assert_eq!(edge.callee_symbol_uid.as_deref(), Some("uHelper"));
+        assert_eq!(edge.target_file_path.as_deref(), Some("src/lib.py"));
+        assert!(
+            !edge.resolution_strategy.is_empty(),
+            "resolution strategy must be recorded"
+        );
+    }
+
+    /// Phase 4a: semantic edge source UIDs resolve same-file, target UIDs
+    /// resolve cross-file via the catalog (unique global class name).
+    #[test]
+    fn resolve_semantic_edges_fills_source_and_target_uids() {
+        let mut catalog = SymbolCatalog::new();
+        let base = symbol("uBase", "Base", "src/base.py", SymbolKind::Class);
+        let child = symbol("uChild", "Child", "src/child.py", SymbolKind::Class);
+        catalog.add_symbols(&[base, child.clone()]);
+
+        let mut units = vec![write_unit(
+            "src/child.py",
+            ParseOutcome {
+                symbols: vec![child],
+                semantic_edges: vec![SemanticEdgeRecord {
+                    edge_id: "se1".to_string(),
+                    file_path: "src/child.py".to_string(),
+                    source_symbol: "Child".to_string(),
+                    source_symbol_uid: None,
+                    target_symbol: "Base".to_string(),
+                    target_symbol_uid: None,
+                    relation_kind: SemanticRelation::Inherits,
+                    line: 1,
+                    confidence: 0.9,
+                    parser_tier: ParserTier::TreeSitter,
+                }],
+                ..Default::default()
+            },
+        )];
+        let contexts = contexts_for(&units);
+
+        Indexer::resolve_semantic_edges(&catalog, &mut units, &contexts);
+
+        let edge = &units[0].outcome.semantic_edges[0];
+        assert_eq!(edge.source_symbol_uid.as_deref(), Some("uChild"));
+        assert_eq!(
+            edge.target_symbol_uid.as_deref(),
+            Some("uBase"),
+            "a unique global class name must resolve cross-file"
+        );
+    }
+
+    /// Phase 4b: a method with a class container produces a DefinesMethod
+    /// edge from the class UID to the method UID, and the unit's file path
+    /// yields a ContainsFile edge.
+    #[test]
+    fn resolve_hierarchy_generates_defines_method_edges() {
+        let mut catalog = SymbolCatalog::new();
+        let class_sym = symbol("uAcc", "Accumulator", "src/lib.py", SymbolKind::Class);
+        let mut method_sym = symbol("uAdd", "add", "src/lib.py", SymbolKind::Method);
+        method_sym.container = Some("Accumulator".to_string());
+
+        let units = vec![write_unit(
+            "src/lib.py",
+            ParseOutcome {
+                symbols: vec![class_sym, method_sym],
+                ..Default::default()
+            },
+        )];
+
+        let edges = Indexer::resolve_hierarchy(&mut catalog, &[], &units);
+
+        assert!(
+            edges.iter().any(|e| {
+                e.relation_kind == SemanticRelation::DefinesMethod
+                    && e.source_symbol_uid.as_deref() == Some("uAcc")
+                    && e.target_symbol_uid.as_deref() == Some("uAdd")
+            }),
+            "expected class→method DefinesMethod edge; got {:?}",
+            edges
+        );
+        assert!(
+            edges
+                .iter()
+                .any(|e| e.relation_kind == SemanticRelation::ContainsFile),
+            "expected folder→file ContainsFile edge; got {:?}",
+            edges
         );
     }
 }
@@ -1965,6 +2335,7 @@ mod dirty_propagation_fixpoint_tests {
         // Premise check: the re-export in a.ts must be persisted with a
         // resolved path to b.ts, otherwise round 2 has nothing to chain on.
         let reexports = db
+            .reads()
             .query_json(
                 "SELECT resolved_path FROM imports \
                  WHERE file_path = 'a.ts' AND is_reexport = 1",
@@ -2049,6 +2420,7 @@ mod dirty_propagation_fixpoint_tests {
         // Premise check: the forwarded import in a.ts must be persisted as a
         // resolved re-export, otherwise round 2 has nothing to chain on.
         let reexports = db
+            .reads()
             .query_json(
                 "SELECT resolved_path FROM imports \
                  WHERE file_path = 'a.ts' AND is_reexport = 1",

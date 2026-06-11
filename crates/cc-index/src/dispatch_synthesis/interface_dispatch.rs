@@ -78,7 +78,7 @@ pub(crate) fn compute_interface_dispatch_synthesis(
            AND (synthesized_by IS NULL OR synthesized_by NOT IN ({placeholders}))"
     );
     let params: Vec<String> = excluded_kinds.iter().map(|k| k.to_string()).collect();
-    let committed_rows = db.query_json(&sql, &params)?;
+    let committed_rows = db.reads().query_json(&sql, &params)?;
 
     struct CallEdgeRowLite {
         edge_id: String,
@@ -127,7 +127,7 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     // 3a. Load all symbols to build:
     //     - uid → (container, kind, name)
     //     - a set of interface/trait UIDs
-    let symbol_rows = db.query_json(
+    let symbol_rows = db.reads().query_json(
         "SELECT symbol_uid, name, kind, container \
          FROM symbols \
          WHERE symbol_uid IS NOT NULL",
@@ -174,7 +174,7 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     }
 
     // 3c. Load implements edges: source = implementor, target = interface.
-    let implements_rows = db.query_json(
+    let implements_rows = db.reads().query_json(
         "SELECT source_symbol_uid, target_symbol_uid \
          FROM semantic_edges \
          WHERE relation_kind = 'implements' \

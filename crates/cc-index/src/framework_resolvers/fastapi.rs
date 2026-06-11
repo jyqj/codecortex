@@ -10,6 +10,8 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
+use super::mount_resolution::{resolve_mounts, MountSpec, PrefixJoin, TargetLookup};
+use super::python_patterns::http_method_decorator_re;
 use super::{
     line_for_offset, push_route_edge, FrameworkResolver, ProjectFrameworkContext, RouteEdgeSpec,
     PY_DEF_NAME_RE,
@@ -27,10 +29,8 @@ use super::{
 ///   @app.delete("/users/{user_id}")
 ///
 /// Captures: (1) HTTP method, (2) route path
-static DECORATOR_ROUTE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r#"@\w+\.(get|post|put|delete|patch|head|options)\(\s*["']([^"']+)["']"#)
-        .expect("fastapi decorator route re")
-});
+static DECORATOR_ROUTE_RE: LazyLock<Regex> =
+    LazyLock::new(|| http_method_decorator_re("get|post|put|delete|patch|head|options"));
 
 /// app.include_router(router_name, prefix="/prefix") or app.include_router(router_name)
 ///
@@ -141,74 +141,17 @@ impl FrameworkResolver for FastApiResolver {
         //   → prepend "/api/v1" to all http route_edges in that file
         //
         // Also resolve handler_symbol_uid for http route_edges.
-
-        struct MountInfo {
-            prefix: String,
-            router_name: String,
-            mount_file: String,
-        }
-
-        let mut mounts: Vec<MountInfo> = Vec::new();
-        for (file_path, outcome) in outcomes.iter() {
-            for edge in &outcome.route_edges {
-                if edge.route_kind.as_deref() == Some("router_mount") {
-                    if let Some(ref handler) = edge.handler_name {
-                        let prefix = &edge.route_path;
-                        if prefix != "/" && !prefix.is_empty() {
-                            mounts.push(MountInfo {
-                                prefix: prefix.clone(),
-                                router_name: handler.clone(),
-                                mount_file: file_path.clone(),
-                            });
-                        }
-                    }
-                }
-            }
-        }
-
-        // Prepend mount prefix to routes in target files
-        for mount in &mounts {
-            let target_file = match catalog.lookup_symbol(&mount.router_name, &mount.mount_file) {
-                Some((_, file)) if file != mount.mount_file => file,
-                _ => continue,
-            };
-
-            for (file_path, outcome) in outcomes.iter_mut() {
-                if *file_path != target_file {
-                    continue;
-                }
-                for edge in &mut outcome.route_edges {
-                    if edge.route_kind.as_deref() != Some("http") {
-                        continue;
-                    }
-                    if !edge.route_path.starts_with(&mount.prefix) {
-                        let combined = if edge.route_path == "/" {
-                            mount.prefix.clone()
-                        } else {
-                            format!("{}{}", mount.prefix, edge.route_path)
-                        };
-                        edge.route_path = combined;
-                    }
-                }
-            }
-        }
-
-        // Resolve handler_symbol_uid for http route_edges
-        for (file_path, outcome) in outcomes.iter_mut() {
-            let fp = file_path.clone();
-            for edge in &mut outcome.route_edges {
-                if edge.handler_symbol_uid.is_some() {
-                    continue;
-                }
-                if let Some(ref handler_name) = edge.handler_name {
-                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
-                        if !uid.is_empty() {
-                            edge.handler_symbol_uid = Some(uid);
-                        }
-                    }
-                }
-            }
-        }
+        resolve_mounts(
+            catalog,
+            outcomes,
+            &MountSpec {
+                mount_kinds: &["router_mount"],
+                skip_root_prefix: true,
+                framework: None,
+                join: PrefixJoin::Plain,
+                lookup: TargetLookup::Default,
+            },
+        );
     }
 }
 

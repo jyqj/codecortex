@@ -59,7 +59,7 @@ pub(crate) fn compute_event_emitter_synthesis(
     };
 
     // 2. Load all dispatch sites.
-    let all_sites = db.load_all_dispatch_sites()?;
+    let all_sites = db.reads().load_all_dispatch_sites()?;
 
     // 3. Partition into emit/on.
     let mut emit_sites: Vec<&DispatchSiteRecord> = Vec::new();

@@ -51,7 +51,7 @@ pub(crate) fn compute_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<E
     // 2. Load existing state setter edges to find components that have setState triggers.
     //    These were created by run_state_setter_synthesis and point caller → component.
     //    The callee_symbol_uid is the component that re-renders.
-    let all_sites = db.load_all_dispatch_sites()?;
+    let all_sites = db.reads().load_all_dispatch_sites()?;
 
     // Collect class components with setState calls.
     let class_setter_sites: Vec<&DispatchSiteRecord> = all_sites
@@ -96,7 +96,8 @@ pub(crate) fn compute_react_rerender_chain_synthesis(db: &IndexDb) -> CcResult<E
     for site in &class_setter_sites {
         if let Some(ref caller_uid) = site.enclosing_symbol_uid {
             // Find the render method in the same class.
-            if let Ok(Some(render_uid)) = db.find_method_in_same_class(caller_uid, "render") {
+            if let Ok(Some(render_uid)) = db.reads().find_method_in_same_class(caller_uid, "render")
+            {
                 rerendering_components.insert(render_uid);
             }
         }

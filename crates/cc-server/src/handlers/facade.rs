@@ -60,7 +60,7 @@ fn attach_status_extras(runtime: &SharedCodeIndex, result: &mut Value) {
 fn runtime_evidence_summary(runtime: &SharedCodeIndex) -> Option<Value> {
     let rt = super::lock_index(runtime).ok()?;
     let db = rt.index_db()?;
-    db.runtime_evidence_stats().ok()
+    db.reads().runtime_evidence_stats().ok()
 }
 
 // ── 2. handle_context ───────────────────────────────────────────────
@@ -361,6 +361,7 @@ fn ingest_observation(
     };
 
     if db
+        .writes()
         .upsert_runtime_evidence(&eid, obs.service, obs.method, obs.path, obs.status, now)
         .is_ok()
     {
@@ -368,18 +369,19 @@ fn ingest_observation(
     }
 
     if let Some(dur) = obs.duration_ms {
-        let _ = db.update_evidence_p95(&eid, dur);
+        let _ = db.writes().update_evidence_p95(&eid, dur);
     }
 
     let norm = cc_model::route_normalize::normalize_route_path(obs.path);
 
     let (edge_id, candidate_count) = db
+        .reads()
         .http_edge_match_for_path(&norm, obs.method)
         .map_err(|e| e.to_string())?;
 
     if let Some(ref eid_db) = edge_id {
-        let _ = db.link_evidence_to_edge(&eid, eid_db);
-        let _ = db.boost_http_edge_confidence(eid_db, 0.15);
+        let _ = db.writes().link_evidence_to_edge(&eid, eid_db);
+        let _ = db.writes().boost_http_edge_confidence(eid_db, 0.15);
         stats.matched += 1;
         if candidate_count > 1 {
             stats.ambiguous += 1;
@@ -389,11 +391,12 @@ fn ingest_observation(
     }
 
     let route_id = db
+        .reads()
         .route_id_for_normalized_path(&norm)
         .map_err(|e| e.to_string())?;
 
     if let Some(ref rid) = route_id {
-        let _ = db.update_evidence_route_id(&eid, rid);
+        let _ = db.writes().update_evidence_route_id(&eid, rid);
         stats.routes_matched += 1;
     }
 
@@ -500,12 +503,12 @@ pub fn handle_adr(
 
     match action {
         "list" => {
-            let records = db.adr_list().map_err(|e| e.to_string())?;
+            let records = db.reads().adr_list().map_err(|e| e.to_string())?;
             Ok(json!({ "adrs": records }))
         }
         "get" => {
             let id = adr_id.ok_or("adr_id is required for 'get'")?;
-            let record = db.adr_get(id).map_err(|e| e.to_string())?;
+            let record = db.reads().adr_get(id).map_err(|e| e.to_string())?;
             match record {
                 Some(v) => Ok(v),
                 None => Ok(json!({ "error": format!("ADR '{}' not found", id) })),
@@ -518,13 +521,14 @@ pub fn handle_adr(
             let c = context.unwrap_or("");
             let d = decision.unwrap_or("");
             let now = chrono::Utc::now().to_rfc3339();
-            db.adr_upsert(id, t, s, c, d, &now)
+            db.writes()
+                .adr_upsert(id, t, s, c, d, &now)
                 .map_err(|e| e.to_string())?;
             Ok(json!({ "stored": id }))
         }
         "delete" => {
             let id = adr_id.ok_or("adr_id is required for 'delete'")?;
-            let deleted = db.adr_delete(id).map_err(|e| e.to_string())?;
+            let deleted = db.writes().adr_delete(id).map_err(|e| e.to_string())?;
             Ok(json!({ "deleted": deleted, "adr_id": id }))
         }
         _ => Err(format!("unknown adr action: {}", action)),

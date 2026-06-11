@@ -13,8 +13,9 @@ use cc_model::config::{RankingConfig, RepoSizeTier, SearchConfig};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
-use crate::lanes::{LaneOutcome, ScoreSlot};
+use crate::lanes::{FusedScore, LaneOutcome, ScoreSlot};
 use crate::preselect::{PreselectRequest, PreselectResult};
+use crate::score_trace::ScoreTrace;
 
 #[derive(Debug)]
 pub(crate) struct SearchPlan {
@@ -187,7 +188,7 @@ impl SearchPlan {
     pub(crate) fn hit_from_chunk(
         &self,
         chunk: CandidateChunk,
-        fused_score: f64,
+        fused: &FusedScore,
         lane_ranks: &LaneRanks<'_>,
     ) -> Option<SearchHit> {
         let CandidateChunk {
@@ -215,7 +216,22 @@ impl SearchPlan {
         );
         let overlap =
             crate::rrf::overlap_score(&self.query_tokens, &format!("{}\n{}", path_text, text));
-        let mut rerank = fused_score + overlap * self.ranking.overlap_weight;
+
+        // Every additive rerank contribution flows through the trace; the
+        // final `rerank_score` is the trace total.  Components are pushed in
+        // the historical addition order (RRF lanes, overlap, then boosts),
+        // so the float result is bit-identical to the old incremental sum.
+        let mut trace = ScoreTrace::new();
+        if fused.by_lane.is_empty() {
+            // Fused total without a per-lane breakdown (ad-hoc construction
+            // in tests): bill it as one opaque RRF component.
+            trace.push("rrf", fused.total);
+        } else {
+            for (lane_id, lane_contribution) in &fused.by_lane {
+                trace.push(&format!("rrf:{lane_id}"), *lane_contribution);
+            }
+        }
+        trace.push("overlap", overlap * self.ranking.overlap_weight);
 
         let mut reasons = Vec::new();
         // Per-hit annotation is lane-driven: every lane that opted in via
@@ -256,32 +272,32 @@ impl SearchPlan {
         if let Some(ref sym_name) = symbol_name {
             let sym_lower = sym_name.to_lowercase();
             if self.query_tokens.contains(&sym_lower) {
-                rerank += self.ranking.symbol_exact_bonus;
+                trace.push("boost:symbol-exact", self.ranking.symbol_exact_bonus);
                 reasons.push("symbol-exact".into());
             }
         }
 
         if let Some(prefix) = self.filters.path_prefix() {
             if file_path.starts_with(prefix) {
-                rerank += self.ranking.path_prefix_bonus;
+                trace.push("boost:path-prefix", self.ranking.path_prefix_bonus);
             }
         }
 
         if is_project_doc(&file_path) {
-            rerank += self.ranking.doc_file_bonus;
+            trace.push("boost:doc-file", self.ranking.doc_file_bonus);
             reasons.push("doc-file".into());
         }
 
         if self.rerank_inputs.boost_files.contains(file_path.as_str()) {
-            rerank += self.ranking.working_set_boost;
+            trace.push("boost:working-set-boost", self.ranking.working_set_boost);
             reasons.push("working-set-boost".into());
         }
         if self.rerank_inputs.recent_files.contains(file_path.as_str()) {
-            rerank += self.ranking.recent_file_boost;
+            trace.push("boost:recent-file", self.ranking.recent_file_boost);
             reasons.push("recent-file".into());
         }
         if self.rerank_inputs.pinned_files.contains(file_path.as_str()) {
-            rerank += self.ranking.pinned_context_boost;
+            trace.push("boost:pinned-context", self.ranking.pinned_context_boost);
             reasons.push("pinned-context".into());
         }
         if self
@@ -289,7 +305,10 @@ impl SearchPlan {
             .overlay_files
             .contains(file_path.as_str())
         {
-            rerank += self.ranking.overlay_neighbor_boost;
+            trace.push(
+                "boost:overlay-neighbor",
+                self.ranking.overlay_neighbor_boost,
+            );
             reasons.push("overlay-neighbor".into());
         }
 
@@ -300,7 +319,10 @@ impl SearchPlan {
             .copied()
             .unwrap_or(0.0);
         if stage_a_score > 0.0 {
-            rerank += (stage_a_score * self.ranking.stage_a_weight).min(self.ranking.stage_a_cap);
+            trace.push(
+                "boost:stage-a",
+                (stage_a_score * self.ranking.stage_a_weight).min(self.ranking.stage_a_cap),
+            );
             if let Some(file_reasons) = self.preselect.reasons.get(&file_path) {
                 for r in file_reasons.iter().take(3) {
                     reasons.push(r.clone());
@@ -331,12 +353,16 @@ impl SearchPlan {
             symbol_kind: symbol_kind
                 .and_then(|s| cc_model::symbol::SymbolKind::from_str_lenient(&s)),
             text,
-            fused_score,
+            fused_score: fused.total,
             lexical_score,
             grep_score,
             graph_score,
-            rerank_score: rerank,
+            // INVARIANT: the final score IS the trace total — every later
+            // mutation (dsl-name bonus, graph rerank) must append a matching
+            // component so `sum(score_trace) == rerank_score` always holds.
+            rerank_score: trace.total(),
             reasons,
+            score_trace: trace.into_components(),
             source: "index".into(),
             lane: None,
             metadata,
@@ -363,7 +389,11 @@ impl SearchPlan {
             for hit in results.iter_mut() {
                 if let Some(ref sn) = hit.symbol_name {
                     if sn.to_lowercase().contains(&nf_lower) {
-                        hit.rerank_score += self.ranking.dsl_name_bonus;
+                        crate::score_trace::apply_traced_boost(
+                            hit,
+                            "boost:dsl-name",
+                            self.ranking.dsl_name_bonus,
+                        );
                         hit.reasons.push(format!("dsl-name:{}", name_filter));
                     }
                 }

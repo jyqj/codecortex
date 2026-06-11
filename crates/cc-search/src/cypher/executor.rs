@@ -629,6 +629,7 @@ pub(crate) fn execute_with_options(
 
     // Execute the SQL.
     let json_rows = db
+        .reads()
         .query_json(&translated.sql, &translated.params)
         .map_err(|e| CcError::Search(format!("cypher SQL error: {e} [sql={}]", translated.sql)))?;
 

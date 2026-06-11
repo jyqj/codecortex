@@ -13,7 +13,7 @@ use serde_json::Value;
 
 use crate::index_db::{
     CallEdgeProvenanceCounts, DeadCodeSymbolRow, EdgeLiteBfs, HttpCallEdgeLite, ImportWitnessRow,
-    IndexDb, IndexGeneration, RouteNodeLite, ServiceBindingRows, SymbolLiteRow,
+    IndexDb, IndexGeneration, ReadOps, RouteNodeLite, ServiceBindingRows, SymbolLiteRow,
 };
 use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 
@@ -36,7 +36,7 @@ fn community_value_to_string(value: rusqlite::types::Value) -> Option<String> {
 impl IndexDb {
     /// Distinct `(file_path, resolved_path)` import pairs with a resolved
     /// target. Feeds file/package import adjacency projections.
-    pub fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
+    pub(crate) fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -53,7 +53,7 @@ impl IndexDb {
 
     /// Resolved import rows originating from `file_path`, with the original
     /// import string (used to report cycle witness edges).
-    pub fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
+    pub(crate) fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -74,7 +74,7 @@ impl IndexDb {
     /// Distinct cross-community call pairs `(from_community, to_community)`
     /// as strings, from call edges whose endpoints live in different
     /// communities.
-    pub fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
+    pub(crate) fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -109,7 +109,7 @@ impl IndexDb {
     }
 
     /// Symbols (with stable UID) living in any of `files`, in file order.
-    pub fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
+    pub(crate) fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -134,7 +134,7 @@ impl IndexDb {
     ///
     /// UIDs are batched into IN(...) chunks; the limit applies per batch
     /// (preserved from the original impact BFS pushdown behavior).
-    pub fn reverse_callers(
+    pub(crate) fn reverse_callers(
         &self,
         callee_uids: &[String],
         confidence_threshold: Option<f64>,
@@ -198,7 +198,7 @@ impl IndexDb {
     }
 
     /// Distinct test files covering any of `code_files`, ordered by path.
-    pub fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
+    pub(crate) fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
         if code_files.is_empty() {
             return Ok(Vec::new());
         }
@@ -221,7 +221,10 @@ impl IndexDb {
 
     /// Resolve a batch of symbol UIDs to names (`uid -> name`); UIDs without
     /// a matching symbol row are absent from the map.
-    pub fn symbol_names_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, String>> {
+    pub(crate) fn symbol_names_for_uids(
+        &self,
+        uids: &[String],
+    ) -> CcResult<HashMap<String, String>> {
         if uids.is_empty() {
             return Ok(HashMap::new());
         }
@@ -251,7 +254,11 @@ impl IndexDb {
 
     /// Direct importers of `file_path` (self-imports excluded), bounded and
     /// ordered in SQL.
-    pub fn direct_importers_of_file(&self, file_path: &str, limit: usize) -> CcResult<Vec<String>> {
+    pub(crate) fn direct_importers_of_file(
+        &self,
+        file_path: &str,
+        limit: usize,
+    ) -> CcResult<Vec<String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
@@ -270,7 +277,7 @@ impl IndexDb {
 
     /// Files importing any of `resolved_paths`, in a single bounded query
     /// (used for the 2-hop transitive dependents expansion).
-    pub fn importers_of_paths(
+    pub(crate) fn importers_of_paths(
         &self,
         resolved_paths: &[String],
         limit: usize,
@@ -297,7 +304,7 @@ impl IndexDb {
 
     /// Distinct callee UIDs that have at least one non-self caller
     /// (dead-code detection input), bounded by `limit`.
-    pub fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
+    pub(crate) fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
         let conn = self.read_conn()?;
         let sql = format!(
             "SELECT DISTINCT callee_symbol_uid FROM call_edges \
@@ -318,7 +325,7 @@ impl IndexDb {
     /// Raw symbol rows for the dead-code scan. `scope` becomes a
     /// `%scope%` LIKE filter on file_path; `scan_limit` bounds the scan.
     /// NULL identity columns degrade to empty strings (callers skip those).
-    pub fn dead_code_symbol_scan(
+    pub(crate) fn dead_code_symbol_scan(
         &self,
         scope: Option<&str>,
         scan_limit: usize,
@@ -358,7 +365,7 @@ impl IndexDb {
     /// `(target_symbol_uid, container)` reference rows for any of
     /// `target_uids`, batched. A failed batch is skipped silently
     /// (best-effort, preserved from the previous per-batch degradation).
-    pub fn symbol_ref_containers_for_targets(
+    pub(crate) fn symbol_ref_containers_for_targets(
         &self,
         target_uids: &[String],
     ) -> CcResult<Vec<(String, Option<String>)>> {
@@ -395,7 +402,7 @@ impl IndexDb {
 
     /// HTTP route handler rows, optionally LIKE-filtered by route path
     /// substring, bounded by `limit`. JSON projection feeds the MCP output.
-    pub fn route_handler_rows(
+    pub(crate) fn route_handler_rows(
         &self,
         route_path: Option<&str>,
         limit: usize,
@@ -424,7 +431,7 @@ impl IndexDb {
 
     /// Consumers of a topic/queue: infra edges with kind in
     /// (binds_topic, consumes_queue) whose source name or properties match.
-    pub fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
+    pub(crate) fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
         let pattern = format!("%{}%", topic_or_queue);
         self.query_json(
             "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
@@ -456,7 +463,10 @@ impl IndexDb {
 
     /// Infra bindings for a service or route, matched on two dimensions
     /// (infra node name/bound UID, route path/handler) plus connecting edges.
-    pub fn service_binding_rows(&self, service_or_route: &str) -> CcResult<ServiceBindingRows> {
+    pub(crate) fn service_binding_rows(
+        &self,
+        service_or_route: &str,
+    ) -> CcResult<ServiceBindingRows> {
         let pattern = format!("%{}%", service_or_route);
 
         let matched_infra_nodes = self.query_json(
@@ -530,7 +540,7 @@ impl IndexDb {
 
     /// `(name, kind, signature)` of direct children of `parent_uid`, in
     /// source order (symbol outline view).
-    pub fn child_symbol_outline_rows(
+    pub(crate) fn child_symbol_outline_rows(
         &self,
         parent_uid: &str,
     ) -> CcResult<Vec<(String, String, Option<String>)>> {
@@ -554,7 +564,11 @@ impl IndexDb {
 
     /// Candidate symbol rows for source retrieval, ranked exact-first.
     /// `exact` restricts to qname/name equality; otherwise LIKE fallback.
-    pub fn symbol_source_candidates(&self, symbol: &str, exact: bool) -> CcResult<Vec<Value>> {
+    pub(crate) fn symbol_source_candidates(
+        &self,
+        symbol: &str,
+        exact: bool,
+    ) -> CcResult<Vec<Value>> {
         if exact {
             self.query_json(
                 "SELECT name, kind, file_path, container, start_line, end_line, qname, signature, symbol_uid
@@ -578,7 +592,7 @@ impl IndexDb {
     }
 
     /// Symbol kind counts, most frequent first (graph schema overview).
-    pub fn symbol_kind_counts(&self) -> CcResult<Vec<(String, i64)>> {
+    pub(crate) fn symbol_kind_counts(&self) -> CcResult<Vec<(String, i64)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT kind, COUNT(*) AS cnt FROM symbols GROUP BY kind ORDER BY cnt DESC")
@@ -593,7 +607,7 @@ impl IndexDb {
 
     /// Provenance counters over `call_edges`. Each sub-query degrades to an
     /// empty breakdown on failure (best-effort schema overview).
-    pub fn call_edge_provenance(&self) -> CcResult<CallEdgeProvenanceCounts> {
+    pub(crate) fn call_edge_provenance(&self) -> CcResult<CallEdgeProvenanceCounts> {
         let conn = self.read_conn()?;
 
         fn grouped_counts(conn: &rusqlite::Connection, sql: &str) -> Vec<(Option<String>, i64)> {
@@ -638,7 +652,7 @@ impl IndexDb {
 
     /// `(caller_file, callee_file)` pairs for resolved cross-file call edges
     /// (package boundary analysis input).
-    pub fn cross_file_call_file_pairs(&self) -> CcResult<Vec<(String, String)>> {
+    pub(crate) fn cross_file_call_file_pairs(&self) -> CcResult<Vec<(String, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -661,7 +675,10 @@ impl IndexDb {
 
     /// `uid -> param_count` for a set of symbol UIDs (override-compatibility
     /// checks in the type hierarchy).
-    pub fn param_counts_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, Option<u32>>> {
+    pub(crate) fn param_counts_for_uids(
+        &self,
+        uids: &[String],
+    ) -> CcResult<HashMap<String, Option<u32>>> {
         let mut result = HashMap::new();
         if uids.is_empty() {
             return Ok(result);
@@ -696,7 +713,7 @@ impl IndexDb {
     /// Environment variable access rows from `data_flow_edges`, LIKE-filtered
     /// by env key pattern and optionally by file path pattern. Patterns are
     /// passed through verbatim (callers control wildcard wrapping).
-    pub fn env_access_rows(
+    pub(crate) fn env_access_rows(
         &self,
         env_key_pattern: &str,
         file_path_pattern: Option<&str>,
@@ -911,6 +928,149 @@ impl<'a> GraphReads<'a> {
         paths: &[String],
     ) -> CcResult<HashMap<String, (u32, String)>> {
         self.db.evidence_for_normalized_paths(paths)
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    /// Distinct `(file_path, resolved_path)` import pairs with a resolved
+    pub fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
+        self.0.file_import_pairs()
+    }
+
+    /// Resolved import rows originating from `file_path`, with the original
+    pub fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
+        self.0.import_witness_rows(file_path)
+    }
+
+    /// Distinct cross-community call pairs `(from_community, to_community)`
+    pub fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
+        self.0.community_adjacency_pairs()
+    }
+
+    /// Symbols (with stable UID) living in any of `files`, in file order.
+    pub fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
+        self.0.symbols_lite_in_files(files)
+    }
+
+    /// Distinct callers of any of `callee_uids`, optionally filtered by
+    pub fn reverse_callers(
+        &self,
+        callee_uids: &[String],
+        confidence_threshold: Option<f64>,
+        limit: Option<usize>,
+    ) -> CcResult<Vec<SymbolLiteRow>> {
+        self.0
+            .reverse_callers(callee_uids, confidence_threshold, limit)
+    }
+
+    /// Distinct test files covering any of `code_files`, ordered by path.
+    pub fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
+        self.0.suggested_test_files(code_files)
+    }
+
+    /// Resolve a batch of symbol UIDs to names (`uid -> name`); UIDs without
+    pub fn symbol_names_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, String>> {
+        self.0.symbol_names_for_uids(uids)
+    }
+
+    /// Direct importers of `file_path` (self-imports excluded), bounded and
+    pub fn direct_importers_of_file(&self, file_path: &str, limit: usize) -> CcResult<Vec<String>> {
+        self.0.direct_importers_of_file(file_path, limit)
+    }
+
+    /// Files importing any of `resolved_paths`, in a single bounded query
+    pub fn importers_of_paths(
+        &self,
+        resolved_paths: &[String],
+        limit: usize,
+    ) -> CcResult<Vec<String>> {
+        self.0.importers_of_paths(resolved_paths, limit)
+    }
+
+    /// Distinct callee UIDs that have at least one non-self caller
+    pub fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
+        self.0.callees_with_nonself_callers(limit)
+    }
+
+    /// Raw symbol rows for the dead-code scan. `scope` becomes a
+    pub fn dead_code_symbol_scan(
+        &self,
+        scope: Option<&str>,
+        scan_limit: usize,
+    ) -> CcResult<Vec<DeadCodeSymbolRow>> {
+        self.0.dead_code_symbol_scan(scope, scan_limit)
+    }
+
+    /// `(target_symbol_uid, container)` reference rows for any of
+    pub fn symbol_ref_containers_for_targets(
+        &self,
+        target_uids: &[String],
+    ) -> CcResult<Vec<(String, Option<String>)>> {
+        self.0.symbol_ref_containers_for_targets(target_uids)
+    }
+
+    /// HTTP route handler rows, optionally LIKE-filtered by route path
+    pub fn route_handler_rows(
+        &self,
+        route_path: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<Value>> {
+        self.0.route_handler_rows(route_path, limit)
+    }
+
+    /// Consumers of a topic/queue: infra edges with kind in
+    pub fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
+        self.0.async_consumer_rows(topic_or_queue)
+    }
+
+    /// Infra bindings for a service or route, matched on two dimensions
+    pub fn service_binding_rows(&self, service_or_route: &str) -> CcResult<ServiceBindingRows> {
+        self.0.service_binding_rows(service_or_route)
+    }
+
+    /// `(name, kind, signature)` of direct children of `parent_uid`, in
+    pub fn child_symbol_outline_rows(
+        &self,
+        parent_uid: &str,
+    ) -> CcResult<Vec<(String, String, Option<String>)>> {
+        self.0.child_symbol_outline_rows(parent_uid)
+    }
+
+    /// Candidate symbol rows for source retrieval, ranked exact-first.
+    pub fn symbol_source_candidates(&self, symbol: &str, exact: bool) -> CcResult<Vec<Value>> {
+        self.0.symbol_source_candidates(symbol, exact)
+    }
+
+    /// Symbol kind counts, most frequent first (graph schema overview).
+    pub fn symbol_kind_counts(&self) -> CcResult<Vec<(String, i64)>> {
+        self.0.symbol_kind_counts()
+    }
+
+    /// Provenance counters over `call_edges`. Each sub-query degrades to an
+    pub fn call_edge_provenance(&self) -> CcResult<CallEdgeProvenanceCounts> {
+        self.0.call_edge_provenance()
+    }
+
+    /// `(caller_file, callee_file)` pairs for resolved cross-file call edges
+    pub fn cross_file_call_file_pairs(&self) -> CcResult<Vec<(String, String)>> {
+        self.0.cross_file_call_file_pairs()
+    }
+
+    /// `uid -> param_count` for a set of symbol UIDs (override-compatibility
+    pub fn param_counts_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, Option<u32>>> {
+        self.0.param_counts_for_uids(uids)
+    }
+
+    /// Environment variable access rows from `data_flow_edges`, LIKE-filtered
+    pub fn env_access_rows(
+        &self,
+        env_key_pattern: &str,
+        file_path_pattern: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<Value>> {
+        self.0
+            .env_access_rows(env_key_pattern, file_path_pattern, limit)
     }
 }
 

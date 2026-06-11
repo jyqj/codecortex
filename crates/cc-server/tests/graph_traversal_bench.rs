@@ -44,7 +44,7 @@ fn uid(i: usize) -> String {
 /// chains, fan-out hubs (degree 50-200), and uniform random edges.
 fn build_synthetic_db(dir: &std::path::Path) -> IndexDb {
     let db = IndexDb::open(&dir.join("bench.db")).unwrap().0;
-    let conn = db.read_conn().unwrap();
+    let conn = db.reads().read_conn().unwrap();
 
     conn.execute(
         "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
@@ -144,7 +144,7 @@ type Adjacency = HashMap<String, Vec<EdgeLiteBfs>>;
 
 /// Mirrors `GraphReadModel::call_adjacency`: bulk-load edges, group by caller.
 fn build_adjacency(db: &IndexDb) -> Adjacency {
-    let edges = db.call_uid_edges_lite().unwrap();
+    let edges = db.reads().call_uid_edges_lite().unwrap();
     let mut adj: Adjacency = HashMap::new();
     for edge in edges {
         adj.entry(edge.caller_uid.clone()).or_default().push(edge);
@@ -214,6 +214,7 @@ fn mem_query_lazy(db: &IndexDb, seed_name: &str, depth: usize, limit: Option<usi
             return cached.clone();
         }
         let callees: Vec<String> = db
+            .reads()
             .call_edges_from_uid_lite(node)
             .unwrap_or_default()
             .into_iter()
@@ -227,6 +228,7 @@ fn mem_query_lazy(db: &IndexDb, seed_name: &str, depth: usize, limit: Option<usi
 
 fn resolve_seed(db: &IndexDb, seed_name: &str) -> String {
     let rows = db
+        .reads()
         .query_json(
             "SELECT symbol_uid FROM symbols WHERE name = ?1 LIMIT 1",
             &[seed_name.to_string()],
@@ -250,7 +252,7 @@ fn resolve_names(db: &IndexDb, uids: &[String]) -> usize {
             .collect::<Vec<_>>()
             .join(",");
         let sql = format!("SELECT name FROM symbols WHERE symbol_uid IN ({placeholders})");
-        names += db.query_json(&sql, batch).unwrap().len();
+        names += db.reads().query_json(&sql, batch).unwrap().len();
     }
     names
 }

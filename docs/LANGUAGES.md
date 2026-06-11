@@ -81,6 +81,21 @@ resolve handler references across files.
 |----------|-----------|
 | C# | ASP.NET |
 
+### Adding a framework resolver
+
+Create `crates/cc-index/src/framework_resolvers/<framework>.rs`, implement the
+`FrameworkResolver` trait, and register it with one `registry.register(...)`
+line in `default_registry()`
+([`framework_resolvers/mod.rs`](../crates/cc-index/src/framework_resolvers/mod.rs)).
+[`fastapi.rs`](../crates/cc-index/src/framework_resolvers/fastapi.rs) is a
+compact full-tier reference. For HTTP frameworks with mount/prefix semantics
+(routers, blueprints, URL includes), declare a `MountSpec` and delegate
+`resolve_cross_file` to the shared
+[`mount_resolution.rs`](../crates/cc-index/src/framework_resolvers/mount_resolution.rs)
+core instead of hand-writing the collect → prefix → bind-UID steps. See the
+[Extension points](ARCHITECTURE.md#extension-points) catalog in
+ARCHITECTURE.md for the other seams.
+
 ## Detected framework signals
 
 Recognized via manifest files and import patterns but without a dedicated

@@ -229,7 +229,7 @@ impl Indexer {
         let existing = if full {
             HashMap::new()
         } else {
-            self.db.get_file_state()?
+            self.db.reads().get_file_state()?
         };
         let scanned_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
@@ -510,7 +510,7 @@ impl Indexer {
             .collect();
 
         for dirty_path in &dirty_files {
-            let edges = self.db.load_file_edges_for_reresolve(dirty_path)?;
+            let edges = self.db.reads().load_file_edges_for_reresolve(dirty_path)?;
 
             // Retrieve file metadata from existing state for mtime/hash
             let (content_hash, mtime, size) = if let Some(state) = existing.get(dirty_path) {
@@ -636,7 +636,7 @@ impl Indexer {
 
         // Phase 3.8: Resolve C/C++ includes using compile_commands.json include_dirs
         {
-            if let Ok(compile_targets) = self.db.infra_nodes_by_kind("compile_target") {
+            if let Ok(compile_targets) = self.db.reads().infra_nodes_by_kind("compile_target") {
                 let include_map: HashMap<String, Vec<String>> = compile_targets
                     .iter()
                     .filter_map(|node| {
@@ -789,7 +789,7 @@ mod dirty_reload_tests {
     #[test]
     fn dirty_reload_clears_stale_semantic_target_uids() {
         let (_tmp, indexer) = setup_indexer();
-        let conn = indexer.db.read_conn().unwrap();
+        let conn = indexer.db.reads().read_conn().unwrap();
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/a.py','Python','h',1.0,1,'2024-01-01');\

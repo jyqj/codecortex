@@ -361,6 +361,45 @@ pub struct IndexDb {
 /// Process-wide monotonic source for [`IndexDb::instance_id`].
 static NEXT_INSTANCE_ID: AtomicU64 = AtomicU64::new(1);
 
+/// Read-only facet over [`IndexDb`]: queries, graph/retrieval reads, stats,
+/// and metadata reads. Obtained via [`IndexDb::reads()`]; zero-cost borrow.
+///
+/// Same facet pattern as the server-side `CodeIndex` (`.search()` /
+/// `.graph()` / `.impact()`): the public surface of `IndexDb` is split by
+/// capability so callers state their intent at the call site and write
+/// access is impossible to reach from a read facet at compile time.
+#[derive(Clone, Copy)]
+pub struct ReadOps<'a>(pub(crate) &'a IndexDb);
+
+/// Write facet over [`IndexDb`]: every method that mutates index content or
+/// runtime evidence (and therefore bumps `index_epoch` / `evidence_epoch` —
+/// see [`crate::epoch_rules`]). Obtained via [`IndexDb::writes()`]; this is
+/// the only public path to the write methods.
+#[derive(Clone, Copy)]
+pub struct WriteOps<'a>(pub(crate) &'a IndexDb);
+
+/// Maintenance facet over [`IndexDb`]: full-rebuild protocols, WAL
+/// checkpointing, and handle identity. Obtained via [`IndexDb::admin()`].
+#[derive(Clone, Copy)]
+pub struct MaintenanceOps<'a>(pub(crate) &'a IndexDb);
+
+impl IndexDb {
+    /// Read-only view: queries, graph/retrieval reads, stats, metadata reads.
+    pub fn reads(&self) -> ReadOps<'_> {
+        ReadOps(self)
+    }
+
+    /// Write view: batch writes, edge/evidence mutations, unit-of-work.
+    pub fn writes(&self) -> WriteOps<'_> {
+        WriteOps(self)
+    }
+
+    /// Maintenance view: rebuild protocols, WAL checkpoints, handle identity.
+    pub fn admin(&self) -> MaintenanceOps<'_> {
+        MaintenanceOps(self)
+    }
+}
+
 impl IndexDb {
     /// Open (or create) the index database at the given path using the default
     /// read pool size.
@@ -402,7 +441,7 @@ impl IndexDb {
     }
 
     /// Process-unique, never-reused identity of this database handle.
-    pub fn instance_id(&self) -> u64 {
+    pub(crate) fn instance_id(&self) -> u64 {
         self.instance_id
     }
 
@@ -707,7 +746,7 @@ impl IndexDb {
     ///
     /// One metadata SELECT covering both keys — cheap enough to call on every
     /// search/graph read, which is how consumers observe invalidation.
-    pub fn generation(&self) -> CcResult<IndexGeneration> {
+    pub(crate) fn generation(&self) -> CcResult<IndexGeneration> {
         let conn = self.read_conn()?;
         Self::read_generation_on(&conn)
     }
@@ -810,12 +849,12 @@ impl IndexDb {
     /// The returned [`crate::unit_of_work::UnitOfWork`] holds the write lock
     /// until it is committed or dropped (drop rolls back). See the module
     /// docs of [`crate::unit_of_work`] for the locking and epoch contract.
-    pub fn begin_unit_of_work(&self) -> CcResult<crate::unit_of_work::UnitOfWork<'_>> {
+    pub(crate) fn begin_unit_of_work(&self) -> CcResult<crate::unit_of_work::UnitOfWork<'_>> {
         crate::unit_of_work::UnitOfWork::begin(self)
     }
 
     /// Get a read connection from the pool.
-    pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
+    pub(crate) fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
         let pool = self
             .pool
             .read()
@@ -828,7 +867,7 @@ impl IndexDb {
     ///
     /// Call after large writes (e.g. full rebuild) to reclaim WAL disk space
     /// and ensure all data is flushed to the main database file.
-    pub fn checkpoint_wal(&self) -> CcResult<()> {
+    pub(crate) fn checkpoint_wal(&self) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -843,7 +882,7 @@ impl IndexDb {
     /// Incremental builds never swap the database file, so the WAL otherwise
     /// shrinks only via SQLite's page-count autocheckpoint and stays large in
     /// long watch sessions, amplifying reads. Returns whether a checkpoint ran.
-    pub fn checkpoint_wal_if_large(&self, max_bytes: u64) -> CcResult<bool> {
+    pub(crate) fn checkpoint_wal_if_large(&self, max_bytes: u64) -> CcResult<bool> {
         let mut wal_path = self.db_path.as_os_str().to_owned();
         wal_path.push("-wal");
         let wal_size = match std::fs::metadata(&wal_path) {
@@ -1046,7 +1085,7 @@ impl IndexDb {
     ///
     /// Thin adapter over [`Self::run_rebuild_protocol`]; only the temp-file
     /// build strategy lives here.
-    pub fn rebuild_with_temp_db<F>(&self, write_fn: F) -> CcResult<()>
+    pub(crate) fn rebuild_with_temp_db<F>(&self, write_fn: F) -> CcResult<()>
     where
         F: FnOnce(&Connection) -> CcResult<()>,
     {
@@ -1141,7 +1180,7 @@ impl IndexDb {
     /// DirectWriter build strategy lives here.
     ///
     /// Enable via `IndexingConfig::use_direct_writer == true`.
-    pub fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+    pub(crate) fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
     where
         F: FnOnce(&Connection) -> CcResult<()>,
     {
@@ -1177,7 +1216,7 @@ impl IndexDb {
 
     // ── File state ───────────────────────────────────────────────
 
-    pub fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
+    pub(crate) fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT file_path, content_hash, mtime, size FROM files")
@@ -1204,7 +1243,7 @@ impl IndexDb {
 
     // ── Batch write ──────────────────────────────────────────────
 
-    pub fn replace_files_batch(&self, files: &[FileWriteUnit]) -> CcResult<()> {
+    pub(crate) fn replace_files_batch(&self, files: &[FileWriteUnit]) -> CcResult<()> {
         if files.is_empty() {
             return Ok(());
         }
@@ -1230,7 +1269,7 @@ impl IndexDb {
     /// co_change_edges, test_edges.
     /// Only replaces: symbols, imports, call_edges, symbol_refs, semantic_edges,
     /// dispatch_sites, route_edges.
-    pub fn replace_reresolved_edges_only(&self, units: &[FileWriteUnit]) -> CcResult<()> {
+    pub(crate) fn replace_reresolved_edges_only(&self, units: &[FileWriteUnit]) -> CcResult<()> {
         let mut conn = self
             .write_conn
             .lock()
@@ -1343,7 +1382,7 @@ impl IndexDb {
     /// replacements, dirty-file edge re-resolution, and route nodes share a
     /// single transaction, so a crash cannot leave files deleted with their
     /// edges still present (and the batch costs one WAL sync instead of four).
-    pub fn write_incremental_batch(
+    pub(crate) fn write_incremental_batch(
         &self,
         to_remove: &[String],
         normal_units: &[FileWriteUnit],
@@ -1380,7 +1419,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn remove_files_batch(&self, paths: &[String]) -> CcResult<usize> {
+    pub(crate) fn remove_files_batch(&self, paths: &[String]) -> CcResult<usize> {
         if paths.is_empty() {
             return Ok(0);
         }
@@ -1627,7 +1666,7 @@ impl IndexDb {
 
     // ── Metadata ─────────────────────────────────────────────────
 
-    pub fn get_metadata(&self, key: &str) -> CcResult<Option<String>> {
+    pub(crate) fn get_metadata(&self, key: &str) -> CcResult<Option<String>> {
         let conn = self.read_conn()?;
         Ok(conn
             .query_row(
@@ -1638,7 +1677,7 @@ impl IndexDb {
             .ok())
     }
 
-    pub fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
+    pub(crate) fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -1650,7 +1689,7 @@ impl IndexDb {
 
     // ── Stats ────────────────────────────────────────────────────
 
-    pub fn stats(&self, project_path: &Path) -> CcResult<ProjectStats> {
+    pub(crate) fn stats(&self, project_path: &Path) -> CcResult<ProjectStats> {
         let conn = self.read_conn()?;
         let count = |table: &str| -> usize {
             conn.query_row(&format!("SELECT COUNT(*) FROM {}", table), [], |r| {
@@ -1858,6 +1897,102 @@ pub struct FileEdgesForReresolve {
     pub semantic_edges: Vec<cc_model::SemanticEdgeRecord>,
     pub dispatch_sites: Vec<cc_model::DispatchSiteRecord>,
     pub route_edges: Vec<cc_model::edge::RouteEdgeRecord>,
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    /// Read the persisted epoch vector. Missing keys (old databases) read as 0.
+    pub fn generation(&self) -> CcResult<IndexGeneration> {
+        self.0.generation()
+    }
+
+    /// Get a read connection from the pool.
+    pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
+        self.0.read_conn()
+    }
+
+    pub fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
+        self.0.get_file_state()
+    }
+
+    pub fn get_metadata(&self, key: &str) -> CcResult<Option<String>> {
+        self.0.get_metadata(key)
+    }
+
+    pub fn stats(&self, project_path: &Path) -> CcResult<ProjectStats> {
+        self.0.stats(project_path)
+    }
+}
+
+// Write facet delegates (see `IndexDb::writes()`).
+impl<'a> WriteOps<'a> {
+    /// Begin a typed multi-statement write transaction.
+    pub fn begin_unit_of_work(&self) -> CcResult<crate::unit_of_work::UnitOfWork<'a>> {
+        self.0.begin_unit_of_work()
+    }
+
+    pub fn replace_files_batch(&self, files: &[FileWriteUnit]) -> CcResult<()> {
+        self.0.replace_files_batch(files)
+    }
+
+    /// Update only the edge/resolution data for dirty (DirtyResolveOnly) files.
+    pub fn replace_reresolved_edges_only(&self, units: &[FileWriteUnit]) -> CcResult<()> {
+        self.0.replace_reresolved_edges_only(units)
+    }
+
+    /// Write one incremental index batch atomically: file removals, full file
+    pub fn write_incremental_batch(
+        &self,
+        to_remove: &[String],
+        normal_units: &[FileWriteUnit],
+        dirty_units: &[FileWriteUnit],
+        route_nodes: &[cc_model::edge::RouteNodeRecord],
+    ) -> CcResult<()> {
+        self.0
+            .write_incremental_batch(to_remove, normal_units, dirty_units, route_nodes)
+    }
+
+    pub fn remove_files_batch(&self, paths: &[String]) -> CcResult<usize> {
+        self.0.remove_files_batch(paths)
+    }
+
+    pub fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
+        self.0.set_metadata(key, value)
+    }
+}
+
+// Maintenance facet delegates (see `IndexDb::admin()`).
+impl MaintenanceOps<'_> {
+    /// Process-unique, never-reused identity of this database handle.
+    pub fn instance_id(&self) -> u64 {
+        self.0.instance_id()
+    }
+
+    /// Force a WAL checkpoint, truncating the WAL file.
+    pub fn checkpoint_wal(&self) -> CcResult<()> {
+        self.0.checkpoint_wal()
+    }
+
+    /// Truncate the WAL only once it has grown past `max_bytes`.
+    pub fn checkpoint_wal_if_large(&self, max_bytes: u64) -> CcResult<bool> {
+        self.0.checkpoint_wal_if_large(max_bytes)
+    }
+
+    /// Perform a full rebuild using a temporary database file, then atomically
+    pub fn rebuild_with_temp_db<F>(&self, write_fn: F) -> CcResult<()>
+    where
+        F: FnOnce(&Connection) -> CcResult<()>,
+    {
+        self.0.rebuild_with_temp_db(write_fn)
+    }
+
+    /// High-speed full rebuild using DirectWriter.
+    pub fn rebuild_with_direct_writer<F>(&self, write_fn: F) -> CcResult<()>
+    where
+        F: FnOnce(&Connection) -> CcResult<()>,
+    {
+        self.0.rebuild_with_direct_writer(write_fn)
+    }
 }
 
 #[cfg(test)]

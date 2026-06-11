@@ -75,10 +75,10 @@ pub(crate) enum ResolveStep {
     Import,
     /// Qualified-name suffix match (pkg.mod.Func ↔ mod.Func).
     Suffix,
-    /// Globally unique leaf-name match.
+    /// Globally unique leaf-name match. Also populates the fuzzy candidate
+    /// pool shared by the later `Fuzzy*` steps (global uniqueness is the
+    /// single-candidate case of the same by-name pool).
     GlobalUnique,
-    /// Single fuzzy candidate by leaf name.
-    FuzzySingle,
     /// Fuzzy-multi narrowing ①: TypeCatalog parameter-count filter driven by
     /// the call site's `arg_count` signal.
     FuzzyArgCount,
@@ -91,16 +91,15 @@ pub(crate) enum ResolveStep {
 }
 
 /// The resolution ladder, in evaluation order. The signal-driven steps sit
-/// between `FuzzySingle` and the import-distance fallback so that call-site
+/// between `GlobalUnique` and the import-distance fallback so that call-site
 /// evidence outranks pure path proximity.
-pub(crate) const RESOLVE_LADDER: [ResolveStep; 10] = [
+pub(crate) const RESOLVE_LADDER: [ResolveStep; 9] = [
     ResolveStep::SelfMember,
     ResolveStep::ScopeBinding,
     ResolveStep::SameFile,
     ResolveStep::Import,
     ResolveStep::Suffix,
     ResolveStep::GlobalUnique,
-    ResolveStep::FuzzySingle,
     ResolveStep::FuzzyArgCount,
     ResolveStep::FuzzyReceiver,
     ResolveStep::FuzzyImportDistance,
@@ -118,7 +117,9 @@ pub enum InternalResKind {
     /// Qualified-name suffix match (e.g. pkg.mod.Func ↔ mod.Func).
     SuffixMatch,
     Heuristic,
-    /// Single candidate resolved by name (no scope/import proof).
+    /// Confidence anchor for a fuzzy pool narrowed to exactly one
+    /// import-reachable candidate by the import-distance step; no ladder
+    /// step emits this kind directly.
     FuzzySingle,
     /// Multiple fuzzy candidates narrowed to exactly one by call-site
     /// signals (arg count / receiver type).

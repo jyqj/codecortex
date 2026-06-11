@@ -474,7 +474,7 @@ fn normalize_route_framework(fw: &str) -> Option<&'static str> {
 /// Detect frameworks for a single file by querying its imports, file path,
 /// route_edges, and symbol patterns from the index database.
 pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFrameworkDetection> {
-    let conn = match db.read_conn() {
+    let conn = match db.reads().read_conn() {
         Ok(c) => c,
         Err(_) => return Vec::new(),
     };
@@ -818,7 +818,7 @@ fn merge_deps(pkg: &serde_json::Value) -> Vec<String> {
 
 /// Aggregate per-file detections + repo-level signals into a repo framework set.
 pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFrameworkDetection> {
-    let conn = match db.read_conn() {
+    let conn = match db.reads().read_conn() {
         Ok(c) => c,
         Err(_) => return Vec::new(),
     };
@@ -908,7 +908,7 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
 pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcResult<()> {
     // 1. Gather all file paths
     let file_paths: Vec<String> = {
-        let conn = db.read_conn()?;
+        let conn = db.reads().read_conn()?;
         let mut stmt = conn
             .prepare("SELECT file_path FROM files")
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -924,7 +924,7 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
     //    released before the write below.
     let mut file_records: Vec<FileFrameworkRecord> = Vec::new();
     {
-        let conn = db.read_conn()?;
+        let conn = db.reads().read_conn()?;
         for fp in &file_paths {
             let detections = detect_file_frameworks_conn(&conn, fp);
             if !detections.is_empty() {
@@ -941,7 +941,7 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
     }
 
     // 3. Persist file frameworks
-    db.replace_file_frameworks(&file_records)?;
+    db.writes().replace_file_frameworks(&file_records)?;
 
     // 4. Repo-level aggregation (depends on file_frameworks being written)
     refresh_repo_frameworks(db, project_path)?;
@@ -957,7 +957,7 @@ pub fn refresh_repo_frameworks(db: &IndexDb, project_path: &Path) -> CcResult<()
         .map(|d| (d.framework_key, d.confidence, d.signals))
         .collect();
 
-    db.replace_repo_frameworks(&repo_records)
+    db.writes().replace_repo_frameworks(&repo_records)
 }
 
 /// Incremental framework detection: only re-scan changed files.
@@ -983,7 +983,7 @@ pub fn detect_and_persist_frameworks_incremental(
     for &fp in changed_files {
         // Check the file still exists in the index
         let exists = {
-            let conn = db.read_conn()?;
+            let conn = db.reads().read_conn()?;
             conn.query_row(
                 "SELECT 1 FROM files WHERE file_path = ?1",
                 rusqlite::params![fp],
@@ -1006,7 +1006,7 @@ pub fn detect_and_persist_frameworks_incremental(
         file_records.push((fp.to_string(), signals));
     }
 
-    db.replace_file_frameworks(&file_records)?;
+    db.writes().replace_file_frameworks(&file_records)?;
 
     // Repo-level aggregation is cheap because it reads the persisted
     // file_frameworks table plus package markers. Keep it current even for
@@ -1021,7 +1021,7 @@ pub fn detect_and_persist_frameworks_incremental(
 
 /// Return all detected repo-level frameworks as `(framework_key, confidence)`.
 pub fn get_repo_frameworks(db: &IndexDb) -> Vec<(String, f64)> {
-    db.list_repo_frameworks().unwrap_or_default()
+    db.reads().list_repo_frameworks().unwrap_or_default()
 }
 
 /// Return `{file_path: [(framework_key, confidence), ...]}` for a set of files.
@@ -1032,7 +1032,7 @@ pub fn get_frameworks_for_files(
     if file_paths.is_empty() {
         return HashMap::new();
     }
-    let conn = match db.read_conn() {
+    let conn = match db.reads().read_conn() {
         Ok(c) => c,
         Err(_) => return HashMap::new(),
     };
@@ -1189,7 +1189,7 @@ mod tests {
 
     /// Helper: insert a file + import records into the test DB for detection.
     fn insert_test_file(db: &IndexDb, file_path: &str, imports: &[&str]) {
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'typescript', 'abc', 0.0, 100, '2025-01-01')",
@@ -1323,12 +1323,12 @@ mod tests {
                 file_records.push((fp.to_string(), signals));
             }
         }
-        db.replace_file_frameworks(&file_records).unwrap();
+        db.writes().replace_file_frameworks(&file_records).unwrap();
 
         // Repo level
         let repo_records: Vec<RepoFrameworkRecord> =
             vec![("express".to_string(), 0.9, vec!["file_count:2".to_string()])];
-        db.replace_repo_frameworks(&repo_records).unwrap();
+        db.writes().replace_repo_frameworks(&repo_records).unwrap();
 
         // Compute active frameworks
         let active = compute_active_frameworks(

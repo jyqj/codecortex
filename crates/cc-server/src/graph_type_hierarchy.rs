@@ -156,7 +156,7 @@ fn resolve_root_symbol(
 ) -> CcResult<ResolveResult> {
     // 1. By UID — direct lookup, skips name-based resolution entirely.
     if let Some(uid) = symbol_uid {
-        let map = db.symbol_rows_by_uids(&[uid.to_string()])?;
+        let map = db.reads().symbol_rows_by_uids(&[uid.to_string()])?;
         if let Some(row) = map.into_values().next() {
             return Ok(ResolveResult::Single(row));
         }
@@ -294,7 +294,7 @@ fn resolve_node_info(
     include_methods: bool,
     type_methods: &mut HashMap<String, Vec<(String, Option<String>)>>,
 ) -> CcResult<(String, String, String, Vec<String>)> {
-    let map = db.symbol_rows_by_uids(&[uid.to_string()])?;
+    let map = db.reads().symbol_rows_by_uids(&[uid.to_string()])?;
     let (name, kind, file_path) = if let Some(row) = map.get(uid) {
         (row.name.clone(), row.kind.clone(), row.file_path.clone())
     } else {
@@ -378,7 +378,7 @@ fn detect_overrides(
     }
 
     // Batch-lookup param_count via cc-db typed query
-    let param_counts = db.param_counts_for_uids(&method_uids_to_lookup)?;
+    let param_counts = db.reads().param_counts_for_uids(&method_uids_to_lookup)?;
 
     let mut overrides = Vec::new();
     for desc in descendants {
@@ -434,7 +434,7 @@ mod tests {
     fn setup_hierarchy() -> (TempDir, Arc<IndexDb>, GraphReadModel) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("hierarchy.db")).unwrap().0);
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
 
         // File record
         conn.execute(
@@ -608,7 +608,7 @@ mod tests {
     fn hierarchy_disambiguation_returns_candidates() {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("disamb.db")).unwrap().0);
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
 
         conn.execute(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)

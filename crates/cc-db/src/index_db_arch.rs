@@ -4,10 +4,12 @@ use std::collections::HashMap;
 
 use cc_model::{CcError, CcResult};
 
-use crate::index_db::IndexDb;
+use crate::index_db::{IndexDb, ReadOps, WriteOps};
 
 impl IndexDb {
-    pub fn architecture_languages(&self) -> CcResult<Vec<cc_model::architecture::LanguageStat>> {
+    pub(crate) fn architecture_languages(
+        &self,
+    ) -> CcResult<Vec<cc_model::architecture::LanguageStat>> {
         let dist = self.language_distribution()?;
         let total: usize = dist.iter().map(|(_, c)| c).sum();
         Ok(dist
@@ -27,7 +29,7 @@ impl IndexDb {
             .collect())
     }
 
-    pub fn architecture_packages(
+    pub(crate) fn architecture_packages(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::PackageInfo>> {
@@ -125,7 +127,7 @@ impl IndexDb {
             .to_string()
     }
 
-    pub fn architecture_entry_points(
+    pub(crate) fn architecture_entry_points(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::EntryPointInfo>> {
@@ -164,7 +166,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn architecture_routes(
+    pub(crate) fn architecture_routes(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::RouteInfo>> {
@@ -190,7 +192,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn architecture_hotspots(
+    pub(crate) fn architecture_hotspots(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::HotspotInfo>> {
@@ -219,7 +221,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn architecture_boundaries(
+    pub(crate) fn architecture_boundaries(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::BoundaryInfo>> {
@@ -267,7 +269,9 @@ impl IndexDb {
         Ok(boundaries)
     }
 
-    pub fn architecture_communities(&self) -> CcResult<Vec<cc_model::architecture::CommunityInfo>> {
+    pub(crate) fn architecture_communities(
+        &self,
+    ) -> CcResult<Vec<cc_model::architecture::CommunityInfo>> {
         let rows = self.list_communities()?;
         Ok(rows
             .into_iter()
@@ -279,7 +283,7 @@ impl IndexDb {
             .collect())
     }
 
-    pub fn get_architecture_info(
+    pub(crate) fn get_architecture_info(
         &self,
         aspects: &[&str],
         limit: usize,
@@ -363,7 +367,10 @@ impl IndexDb {
         })
     }
 
-    pub fn infra_nodes_by_kind(&self, kind: &str) -> CcResult<Vec<cc_model::infra::InfraNode>> {
+    pub(crate) fn infra_nodes_by_kind(
+        &self,
+        kind: &str,
+    ) -> CcResult<Vec<cc_model::infra::InfraNode>> {
         let conn = self.read_conn()?;
         let mut stmt = conn.prepare(
             "SELECT node_id, file_path, kind, name, namespace, line, end_line, properties, bound_symbol_uid, binding_confidence \
@@ -396,7 +403,7 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    pub fn adr_list(&self) -> CcResult<Vec<serde_json::Value>> {
+    pub(crate) fn adr_list(&self) -> CcResult<Vec<serde_json::Value>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT adr_id, title, status, created_at, updated_at FROM adr ORDER BY created_at DESC")
@@ -416,7 +423,7 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    pub fn adr_get(&self, adr_id: &str) -> CcResult<Option<serde_json::Value>> {
+    pub(crate) fn adr_get(&self, adr_id: &str) -> CcResult<Option<serde_json::Value>> {
         let conn = self.read_conn()?;
         let result = conn
             .query_row(
@@ -441,7 +448,7 @@ impl IndexDb {
         }
     }
 
-    pub fn adr_upsert(
+    pub(crate) fn adr_upsert(
         &self,
         adr_id: &str,
         title: &str,
@@ -468,7 +475,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn adr_delete(&self, adr_id: &str) -> CcResult<bool> {
+    pub(crate) fn adr_delete(&self, adr_id: &str) -> CcResult<bool> {
         let conn = self
             .write_conn
             .lock()
@@ -482,6 +489,92 @@ impl IndexDb {
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(affected > 0)
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    pub fn architecture_languages(&self) -> CcResult<Vec<cc_model::architecture::LanguageStat>> {
+        self.0.architecture_languages()
+    }
+
+    pub fn architecture_packages(
+        &self,
+        limit: usize,
+    ) -> CcResult<Vec<cc_model::architecture::PackageInfo>> {
+        self.0.architecture_packages(limit)
+    }
+
+    pub fn architecture_entry_points(
+        &self,
+        limit: usize,
+    ) -> CcResult<Vec<cc_model::architecture::EntryPointInfo>> {
+        self.0.architecture_entry_points(limit)
+    }
+
+    pub fn architecture_routes(
+        &self,
+        limit: usize,
+    ) -> CcResult<Vec<cc_model::architecture::RouteInfo>> {
+        self.0.architecture_routes(limit)
+    }
+
+    pub fn architecture_hotspots(
+        &self,
+        limit: usize,
+    ) -> CcResult<Vec<cc_model::architecture::HotspotInfo>> {
+        self.0.architecture_hotspots(limit)
+    }
+
+    pub fn architecture_boundaries(
+        &self,
+        limit: usize,
+    ) -> CcResult<Vec<cc_model::architecture::BoundaryInfo>> {
+        self.0.architecture_boundaries(limit)
+    }
+
+    pub fn architecture_communities(&self) -> CcResult<Vec<cc_model::architecture::CommunityInfo>> {
+        self.0.architecture_communities()
+    }
+
+    pub fn get_architecture_info(
+        &self,
+        aspects: &[&str],
+        limit: usize,
+    ) -> CcResult<cc_model::architecture::ArchitectureInfo> {
+        self.0.get_architecture_info(aspects, limit)
+    }
+
+    pub fn infra_nodes_by_kind(&self, kind: &str) -> CcResult<Vec<cc_model::infra::InfraNode>> {
+        self.0.infra_nodes_by_kind(kind)
+    }
+
+    pub fn adr_list(&self) -> CcResult<Vec<serde_json::Value>> {
+        self.0.adr_list()
+    }
+
+    pub fn adr_get(&self, adr_id: &str) -> CcResult<Option<serde_json::Value>> {
+        self.0.adr_get(adr_id)
+    }
+}
+
+// Write facet delegates (see `IndexDb::writes()`).
+impl WriteOps<'_> {
+    pub fn adr_upsert(
+        &self,
+        adr_id: &str,
+        title: &str,
+        status: &str,
+        context: &str,
+        decision: &str,
+        now: &str,
+    ) -> CcResult<()> {
+        self.0
+            .adr_upsert(adr_id, title, status, context, decision, now)
+    }
+
+    pub fn adr_delete(&self, adr_id: &str) -> CcResult<bool> {
+        self.0.adr_delete(adr_id)
     }
 }
 

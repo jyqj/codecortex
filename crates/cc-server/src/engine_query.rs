@@ -209,7 +209,7 @@ impl ImpactOps<'_> {
     }
 
     pub fn find_impacted_tests(&self, files: &[String]) -> CcResult<Vec<String>> {
-        self.0.ensure_db()?.find_impacted_tests(files)
+        self.0.ensure_db()?.reads().find_impacted_tests(files)
     }
 }
 
@@ -260,9 +260,9 @@ impl GraphOps<'_> {
 
         for name in capped {
             // Exact match first, fuzzy fallback
-            let mut syms = db.find_symbol(name, true, 3)?;
+            let mut syms = db.reads().find_symbol(name, true, 3)?;
             if syms.is_empty() {
-                syms = db.find_symbol(name, false, 3)?;
+                syms = db.reads().find_symbol(name, false, 3)?;
             }
             if syms.is_empty() {
                 results.push(serde_json::json!({
@@ -316,7 +316,7 @@ impl GraphOps<'_> {
             });
 
             // Callers
-            let callers = db.caller_rows_by_uid(uid, caller_limit)?;
+            let callers = db.reads().caller_rows_by_uid(uid, caller_limit)?;
             let callers_json: Vec<serde_json::Value> = callers
                 .iter()
                 .map(|c| {
@@ -335,7 +335,7 @@ impl GraphOps<'_> {
             entry["callers"] = serde_json::json!(callers_json);
 
             // Callees
-            let callees = db.callee_rows_by_uid(uid, callee_limit)?;
+            let callees = db.reads().callee_rows_by_uid(uid, callee_limit)?;
             let callees_json: Vec<serde_json::Value> = callees
                 .iter()
                 .map(|c| {
@@ -363,7 +363,10 @@ impl GraphOps<'_> {
                     }
                     // Query child symbols via parent_symbol_id (best-effort:
                     // a query failure just omits the child outline).
-                    let children = db.child_symbol_outline_rows(uid).unwrap_or_default();
+                    let children = db
+                        .reads()
+                        .child_symbol_outline_rows(uid)
+                        .unwrap_or_default();
                     for (child_name, child_kind, child_sig) in &children {
                         if let Some(sig) = child_sig {
                             outline_parts.push(format!("  {} {}: {}", child_kind, child_name, sig));
@@ -409,7 +412,7 @@ impl GraphOps<'_> {
             // Semantic relations
             if include_relations {
                 let mut relations = Vec::new();
-                if let Ok(edges) = db.query_semantic_edges(Some(uid), None, None) {
+                if let Ok(edges) = db.reads().query_semantic_edges(Some(uid), None, None) {
                     for edge in &edges {
                         relations.push(serde_json::json!({
                             "direction": "outgoing",
@@ -421,7 +424,7 @@ impl GraphOps<'_> {
                         }));
                     }
                 }
-                if let Ok(edges) = db.query_semantic_edges(None, Some(uid), None) {
+                if let Ok(edges) = db.reads().query_semantic_edges(None, Some(uid), None) {
                     for edge in &edges {
                         relations.push(serde_json::json!({
                             "direction": "incoming",
@@ -438,7 +441,7 @@ impl GraphOps<'_> {
 
             // Metrics
             if include_metrics {
-                if let Ok(info) = db.symbol_degree_details(uid) {
+                if let Ok(info) = db.reads().symbol_degree_details(uid) {
                     let hint = centrality_hint(&info);
                     entry["metrics"] = serde_json::json!({
                         "in_degree": info.in_degree,
@@ -513,7 +516,7 @@ impl GraphOps<'_> {
         let tier = self.0.repo_size_tier();
         let max_src_chars = max_chars.unwrap_or_else(|| tier.max_source_chars_per_symbol());
 
-        let rows = db.symbol_source_candidates(symbol, exact)?;
+        let rows = db.reads().symbol_source_candidates(symbol, exact)?;
 
         if rows.is_empty() {
             return Ok(serde_json::json!({
@@ -570,6 +573,7 @@ impl GraphOps<'_> {
 
         // Symbol kind counts
         let node_kinds: Vec<NodeKindCount> = db
+            .reads()
             .symbol_kind_counts()?
             .into_iter()
             .map(|(kind, count)| NodeKindCount {
@@ -584,6 +588,7 @@ impl GraphOps<'_> {
         let mut edge_counts = serde_json::Map::new();
         for table in &edge_tables {
             let count = db
+                .reads()
                 .count_table_rows(table)
                 .map(|n| serde_json::json!(n))
                 .unwrap_or(serde_json::json!(0));
@@ -592,11 +597,13 @@ impl GraphOps<'_> {
 
         // Total files and chunks
         let file_count = db
+            .reads()
             .count_table_rows("files")
             .map(|n| serde_json::json!(n))
             .unwrap_or(serde_json::json!(0));
 
         let chunk_count = db
+            .reads()
             .count_table_rows("chunks")
             .map(|n| serde_json::json!(n))
             .unwrap_or(serde_json::json!(0));
@@ -701,7 +708,7 @@ impl GraphOps<'_> {
     fn compute_edge_provenance(&self, db: &Arc<IndexDb>) -> EdgeProvenanceSummary {
         // Grouped dispatch/synthesis/resolution counters (each sub-query is
         // best-effort and degrades to an empty breakdown inside cc-db).
-        let provenance = db.call_edge_provenance().unwrap_or_default();
+        let provenance = db.reads().call_edge_provenance().unwrap_or_default();
 
         let total_call_edges: i64 = provenance
             .by_dispatch_kind
@@ -759,7 +766,7 @@ impl GraphOps<'_> {
         db: &Arc<IndexDb>,
         edge_counts: &serde_json::Map<String, serde_json::Value>,
     ) -> RuntimeEvidenceSummary {
-        match db.runtime_evidence_stats() {
+        match db.reads().runtime_evidence_stats() {
             Ok(stats) => {
                 let total = stats
                     .get("total_observations")
@@ -862,7 +869,7 @@ fn extract_package(file_path: &str) -> String {
 
 pub fn compute_package_boundaries(db: &IndexDb) -> CcResult<Vec<PackageBoundary>> {
     // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
-    let cross_file_rows = db.cross_file_call_file_pairs()?;
+    let cross_file_rows = db.reads().cross_file_call_file_pairs()?;
 
     let mut pkg_counts: HashMap<(String, String), u32> = HashMap::new();
     for (from_fp, to_fp) in &cross_file_rows {
@@ -898,7 +905,7 @@ mod tests {
         let mut idx = CodeIndex::empty();
         idx.set_project(dir.path(), false).unwrap();
         let db = idx.index_db().expect("db initialized");
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         for fp in ["src/a.rs", "src/b.rs"] {
             conn.execute(
                 "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \

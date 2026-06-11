@@ -191,7 +191,7 @@ mod tests {
 
     /// Insert a symbol into the DB for resolution during synthesis.
     fn insert_symbol(db: &IndexDb, file_path: &str, name: &str, kind: &str, uid: &str) {
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'vue', 'abc', 0.0, 100, '2025-01-01')",
@@ -244,7 +244,9 @@ mod tests {
             handler_symbol_uid: None,
             confidence: 0.78,
         }];
-        db.replace_dispatch_sites("src/App.vue", &sites).unwrap();
+        db.writes()
+            .replace_dispatch_sites("src/App.vue", &sites)
+            .unwrap();
 
         // Run synthesis.
         let delta = compute_vue_template_synthesis(&db).unwrap();
@@ -254,6 +256,7 @@ mod tests {
 
         // Verify the semantic edge.
         let edges = db
+            .reads()
             .query_semantic_edges(
                 Some(component_uid),
                 Some(child_uid),
@@ -290,7 +293,9 @@ mod tests {
             handler_symbol_uid: None,
             confidence: 0.78,
         }];
-        db.replace_dispatch_sites("src/MyForm.vue", &sites).unwrap();
+        db.writes()
+            .replace_dispatch_sites("src/MyForm.vue", &sites)
+            .unwrap();
 
         // Run synthesis.
         let delta = compute_vue_template_synthesis(&db).unwrap();
@@ -299,7 +304,7 @@ mod tests {
         assert_eq!(count, 1, "should produce 1 call edge");
 
         // Verify the synthetic call edge via SQL.
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         let mut stmt = conn
             .prepare(
                 "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, synthesized_by, call_kind \
@@ -347,7 +352,7 @@ mod tests {
         uid: &str,
         container: &str,
     ) {
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'ts', 'abc', 0.0, 100, '2025-01-01')",
@@ -379,7 +384,7 @@ mod tests {
         target_uid: &str,
         relation_kind: &str,
     ) {
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT INTO semantic_edges(edge_id, file_path, source_symbol, source_symbol_uid, \
              target_symbol, target_symbol_uid, relation_kind, line, confidence, parser_tier) \
@@ -398,7 +403,7 @@ mod tests {
         callee_uid: &str,
         callee_symbol: &str,
     ) {
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         conn.execute(
             "INSERT OR REPLACE INTO call_edges(edge_id, file_path, callee_symbol, line, start_col, end_col, \
              caller_symbol_uid, callee_symbol_uid, dispatch_kind, call_kind, \
@@ -478,7 +483,7 @@ mod tests {
         assert_eq!(count, 1, "should produce 1 synthetic edge");
 
         // Verify the synthetic edge.
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         let mut stmt = conn
             .prepare(
                 "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, synthesized_by, dispatch_kind \
@@ -573,7 +578,7 @@ mod tests {
         assert_eq!(count, 0, "should skip due to fanout cap");
 
         // Verify no synthetic edges were created.
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         let count: i64 = conn
             .query_row(
                 "SELECT COUNT(*) FROM call_edges WHERE synthesized_by = 'interface_dispatch'",
@@ -623,67 +628,69 @@ mod tests {
             "function",
             "uid:handleSaved",
         );
-        db.replace_dispatch_sites(
-            "src/events.ts",
-            &[
-                make_site(
-                    "ds:emit:1",
-                    "src/events.ts",
-                    5,
-                    DispatchSiteKind::EventEmit,
-                    "userSaved",
-                    Some("uid:emitSave"),
-                    None,
-                ),
-                make_site(
-                    "ds:on:1",
-                    "src/events.ts",
-                    20,
-                    DispatchSiteKind::EventOn,
-                    "userSaved",
-                    None,
-                    Some("handleSaved"),
-                ),
-            ],
-        )
-        .unwrap();
+        db.writes()
+            .replace_dispatch_sites(
+                "src/events.ts",
+                &[
+                    make_site(
+                        "ds:emit:1",
+                        "src/events.ts",
+                        5,
+                        DispatchSiteKind::EventEmit,
+                        "userSaved",
+                        Some("uid:emitSave"),
+                        None,
+                    ),
+                    make_site(
+                        "ds:on:1",
+                        "src/events.ts",
+                        20,
+                        DispatchSiteKind::EventOn,
+                        "userSaved",
+                        None,
+                        Some("handleSaved"),
+                    ),
+                ],
+            )
+            .unwrap();
 
         // JSX + state setter + re-render: App renders <Child/> and owns setOpen.
         insert_symbol(db, "src/App.tsx", "App", "component", "uid:App");
         insert_symbol(db, "src/Child.tsx", "Child", "component", "uid:Child");
-        db.replace_dispatch_sites(
-            "src/App.tsx",
-            &[
-                make_site(
-                    "ds:jsx:1",
-                    "src/App.tsx",
-                    8,
-                    DispatchSiteKind::JsxTag,
-                    "Child",
-                    Some("uid:App"),
-                    None,
-                ),
-                make_site(
-                    "ds:ssb:1",
-                    "src/App.tsx",
-                    3,
-                    DispatchSiteKind::StateSetterBinding,
-                    "setOpen",
-                    Some("uid:App"),
-                    None,
-                ),
-                make_site(
-                    "ds:ssc:1",
-                    "src/App.tsx",
-                    12,
-                    DispatchSiteKind::StateSetterCall,
-                    "setOpen",
-                    Some("uid:App"),
-                    None,
-                ),
-            ],
-        )
-        .unwrap();
+        db.writes()
+            .replace_dispatch_sites(
+                "src/App.tsx",
+                &[
+                    make_site(
+                        "ds:jsx:1",
+                        "src/App.tsx",
+                        8,
+                        DispatchSiteKind::JsxTag,
+                        "Child",
+                        Some("uid:App"),
+                        None,
+                    ),
+                    make_site(
+                        "ds:ssb:1",
+                        "src/App.tsx",
+                        3,
+                        DispatchSiteKind::StateSetterBinding,
+                        "setOpen",
+                        Some("uid:App"),
+                        None,
+                    ),
+                    make_site(
+                        "ds:ssc:1",
+                        "src/App.tsx",
+                        12,
+                        DispatchSiteKind::StateSetterCall,
+                        "setOpen",
+                        Some("uid:App"),
+                        None,
+                    ),
+                ],
+            )
+            .unwrap();
 
         // Field observer (name heuristic): class Bus with on()/emit() methods.
         insert_symbol(db, "src/bus.ts", "Bus", "class", "uid:Bus");
@@ -700,30 +707,31 @@ mod tests {
             "uid:submitForm",
         );
         insert_symbol(db, "src/VChild.vue", "VChild", "component", "uid:VChild");
-        db.replace_dispatch_sites(
-            "src/MyForm.vue",
-            &[
-                make_site(
-                    "ds:vuec:1",
-                    "src/MyForm.vue",
-                    4,
-                    DispatchSiteKind::VueChildComponent,
-                    "VChild",
-                    Some("uid:MyForm"),
-                    None,
-                ),
-                make_site(
-                    "ds:vueh:1",
-                    "src/MyForm.vue",
-                    9,
-                    DispatchSiteKind::VueEventHandler,
-                    "submitForm",
-                    Some("uid:MyForm"),
-                    Some("submitForm"),
-                ),
-            ],
-        )
-        .unwrap();
+        db.writes()
+            .replace_dispatch_sites(
+                "src/MyForm.vue",
+                &[
+                    make_site(
+                        "ds:vuec:1",
+                        "src/MyForm.vue",
+                        4,
+                        DispatchSiteKind::VueChildComponent,
+                        "VChild",
+                        Some("uid:MyForm"),
+                        None,
+                    ),
+                    make_site(
+                        "ds:vueh:1",
+                        "src/MyForm.vue",
+                        9,
+                        DispatchSiteKind::VueEventHandler,
+                        "submitForm",
+                        Some("uid:MyForm"),
+                        Some("submitForm"),
+                    ),
+                ],
+            )
+            .unwrap();
 
         // Interface dispatch: caller → IService.execute, ServiceImpl implements.
         insert_symbol(
@@ -822,37 +830,40 @@ mod tests {
             "function",
             "uid:pingEmitter",
         );
-        db.replace_dispatch_sites(
-            "src/ping.ts",
-            &[make_site(
-                "ds:emit:ping",
+        db.writes()
+            .replace_dispatch_sites(
                 "src/ping.ts",
-                7,
-                DispatchSiteKind::EventEmit,
-                "ping",
-                Some("uid:pingEmitter"),
-                None,
-            )],
-        )
-        .unwrap();
-        db.replace_dispatch_sites(
-            "src/listener.ts",
-            &[make_site(
-                "ds:on:ping",
+                &[make_site(
+                    "ds:emit:ping",
+                    "src/ping.ts",
+                    7,
+                    DispatchSiteKind::EventEmit,
+                    "ping",
+                    Some("uid:pingEmitter"),
+                    None,
+                )],
+            )
+            .unwrap();
+        db.writes()
+            .replace_dispatch_sites(
                 "src/listener.ts",
-                15,
-                DispatchSiteKind::EventOn,
-                "ping",
-                None,
-                Some("handleEvent"),
-            )],
-        )
-        .unwrap();
+                &[make_site(
+                    "ds:on:ping",
+                    "src/listener.ts",
+                    15,
+                    DispatchSiteKind::EventOn,
+                    "ping",
+                    None,
+                    Some("handleEvent"),
+                )],
+            )
+            .unwrap();
     }
 
     /// Deterministic snapshot of all synthetic edges (call + semantic).
     fn synthetic_snapshot(db: &IndexDb) -> Vec<String> {
         let mut rows: Vec<String> = db
+            .reads()
             .query_json(
                 "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, call_kind, synthesized_by \
                  FROM call_edges WHERE synthesized_by IS NOT NULL",
@@ -863,14 +874,15 @@ mod tests {
             .map(|row| row.to_string())
             .collect();
         rows.extend(
-            db.query_json(
-                "SELECT edge_id, source_symbol_uid, target_symbol_uid, relation_kind \
+            db.reads()
+                .query_json(
+                    "SELECT edge_id, source_symbol_uid, target_symbol_uid, relation_kind \
                  FROM semantic_edges WHERE edge_id LIKE 'synth:%'",
-                &[],
-            )
-            .unwrap()
-            .iter()
-            .map(|row| row.to_string()),
+                    &[],
+                )
+                .unwrap()
+                .iter()
+                .map(|row| row.to_string()),
         );
         rows.sort();
         rows
@@ -945,6 +957,7 @@ mod tests {
         // deltas onto its committed-state read, this edge would silently
         // disappear.
         let chained = db_b
+            .reads()
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM call_edges \
                  WHERE synthesized_by = 'interface_dispatch' \
@@ -975,14 +988,15 @@ mod tests {
         let config = SynthesisConfig::default();
 
         let chained_edge_count = |db: &IndexDb| {
-            db.query_json(
-                "SELECT COUNT(*) AS cnt FROM call_edges \
+            db.reads()
+                .query_json(
+                    "SELECT COUNT(*) AS cnt FROM call_edges \
                  WHERE synthesized_by = 'interface_dispatch' \
                    AND caller_symbol_uid = 'uid:pingEmitter' \
                    AND callee_symbol_uid = 'uid:ConcreteListener:handleEvent'",
-                &[],
-            )
-            .unwrap()[0]["cnt"]
+                    &[],
+                )
+                .unwrap()[0]["cnt"]
                 .as_i64()
         };
 
@@ -1015,7 +1029,7 @@ mod tests {
         let (_tmp, db) = setup_test_db();
         seed_multi_pass_fixture(&db);
         let config = SynthesisConfig::default();
-        let generation_before = db.generation().unwrap();
+        let generation_before = db.reads().generation().unwrap();
 
         let result: CcResult<()> = (|| {
             // Compute is write-free: the first passes produce in-memory
@@ -1037,6 +1051,7 @@ mod tests {
         // is no partial write to roll back and the write mutex was never
         // taken (a poisoned-lock failure mode no longer exists for compute).
         let call_rows = db
+            .reads()
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by IS NOT NULL",
                 &[],
@@ -1044,6 +1059,7 @@ mod tests {
             .unwrap();
         assert_eq!(call_rows[0]["cnt"].as_i64(), Some(0));
         let semantic_rows = db
+            .reads()
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM semantic_edges WHERE edge_id LIKE 'synth:%'",
                 &[],
@@ -1054,11 +1070,19 @@ mod tests {
         // Signatures never advanced: phase_postprocess persists them only
         // after every pass (and the commit) succeeded, so the next run
         // re-executes synthesis.
-        assert!(db.get_metadata("last_dispatch_sig").unwrap().is_none());
-        assert!(db.get_metadata("last_interface_sig").unwrap().is_none());
+        assert!(db
+            .reads()
+            .get_metadata("last_dispatch_sig")
+            .unwrap()
+            .is_none());
+        assert!(db
+            .reads()
+            .get_metadata("last_interface_sig")
+            .unwrap()
+            .is_none());
 
         // The aborted unit of work did not bump the index epoch.
-        let generation_after = db.generation().unwrap();
+        let generation_after = db.reads().generation().unwrap();
         assert_eq!(generation_after.index_epoch, generation_before.index_epoch);
     }
 
@@ -1138,10 +1162,10 @@ mod tests {
 
         for spec in registry() {
             for kind in spec.owned_call_kinds {
-                db.delete_synthetic_call_edges(kind).unwrap();
+                db.writes().delete_synthetic_call_edges(kind).unwrap();
             }
             for prefix in spec.owned_semantic_prefixes {
-                db.delete_synthetic_semantic_edges(prefix).unwrap();
+                db.writes().delete_synthetic_semantic_edges(prefix).unwrap();
             }
         }
         assert!(

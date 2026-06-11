@@ -10,6 +10,7 @@ mod index_db_graph_read;
 mod index_db_query;
 mod index_db_retrieval;
 
+pub use index_db::{MaintenanceOps, ReadOps, WriteOps};
 pub use index_db_graph_read::GraphReads;
 pub mod index_migrate;
 mod rows;

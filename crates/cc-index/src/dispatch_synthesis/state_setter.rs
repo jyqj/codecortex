@@ -66,11 +66,14 @@ pub(crate) fn compute_state_setter_synthesis(db: &IndexDb) -> CcResult<EdgeDelta
     };
 
     // 2. Load StateSetterBinding sites — tells us which component owns which setter.
-    let binding_sites =
-        db.load_dispatch_sites_by_kind(DispatchSiteKind::StateSetterBinding.as_str())?;
+    let binding_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::StateSetterBinding.as_str())?;
 
     // 3. Load StateSetterCall sites — actual call sites.
-    let call_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::StateSetterCall.as_str())?;
+    let call_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::StateSetterCall.as_str())?;
 
     if call_sites.is_empty() {
         return Ok(delta);
@@ -88,7 +91,7 @@ pub(crate) fn compute_state_setter_synthesis(db: &IndexDb) -> CcResult<EdgeDelta
         .collect();
     let mut component_ranges: HashMap<String, (u32, u32)> = HashMap::new();
     for file_path in binding_files {
-        if let Ok(symbols) = db.file_symbols(file_path) {
+        if let Ok(symbols) = db.reads().file_symbols(file_path) {
             for sym in symbols {
                 if let Some(uid) = sym.symbol_uid {
                     component_ranges.insert(uid, (sym.start_line, sym.end_line));
@@ -126,7 +129,9 @@ pub(crate) fn compute_state_setter_synthesis(db: &IndexDb) -> CcResult<EdgeDelta
 
         if site.key == "setState" {
             // Class component: caller method → render method in same class.
-            if let Ok(Some(render_uid)) = db.find_method_in_same_class(&caller_uid, "render") {
+            if let Ok(Some(render_uid)) =
+                db.reads().find_method_in_same_class(&caller_uid, "render")
+            {
                 synthetic_edges.push(CallEdgeRecord {
                     edge_id: synth_edge_id("ss", &site.site_id, &render_uid),
                     file_path: site.file_path.clone(),

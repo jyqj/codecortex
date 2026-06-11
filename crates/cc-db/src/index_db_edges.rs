@@ -6,7 +6,7 @@ use tracing::warn;
 
 use cc_model::{CcError, CcResult, ParserTier};
 
-use crate::index_db::{CoChangeLite, IndexDb};
+use crate::index_db::{CoChangeLite, IndexDb, ReadOps, WriteOps};
 
 /// Extract the "base clean" stem from a test file stem for matching against code files.
 ///
@@ -26,7 +26,7 @@ fn test_stem_to_base_clean(test_stem: &str) -> String {
 }
 
 impl IndexDb {
-    pub fn rebuild_test_edges_for_files(&self, changed: &[String]) -> CcResult<()> {
+    pub(crate) fn rebuild_test_edges_for_files(&self, changed: &[String]) -> CcResult<()> {
         if changed.is_empty() {
             return Ok(());
         }
@@ -237,7 +237,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn rebuild_test_edges(&self) -> CcResult<()> {
+    pub(crate) fn rebuild_test_edges(&self) -> CcResult<()> {
         let all_files: Vec<String> = {
             let conn = self.read_conn()?;
             let mut stmt = conn
@@ -266,7 +266,7 @@ impl IndexDb {
         self.rebuild_test_edges_for_files(&all_files)
     }
 
-    pub fn insert_route_nodes_batch(
+    pub(crate) fn insert_route_nodes_batch(
         &self,
         routes: &[cc_model::edge::RouteNodeRecord],
     ) -> CcResult<()> {
@@ -300,7 +300,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn insert_semantic_edges_batch(
+    pub(crate) fn insert_semantic_edges_batch(
         &self,
         edges: &[cc_model::edge::SemanticEdgeRecord],
     ) -> CcResult<()> {
@@ -333,7 +333,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn remove_semantic_edges_by_file(&self, file_path: &str) -> CcResult<()> {
+    pub(crate) fn remove_semantic_edges_by_file(&self, file_path: &str) -> CcResult<()> {
         let mut conn = self
             .write_conn
             .lock()
@@ -351,7 +351,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn query_semantic_edges(
+    pub(crate) fn query_semantic_edges(
         &self,
         source_uid: Option<&str>,
         target_uid: Option<&str>,
@@ -423,7 +423,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn insert_co_change_edges_batch(
+    pub(crate) fn insert_co_change_edges_batch(
         &self,
         edges: &[cc_model::edge::CoChangeEdgeRecord],
     ) -> CcResult<()> {
@@ -450,7 +450,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn get_co_changes_for_file(
+    pub(crate) fn get_co_changes_for_file(
         &self,
         file_path: &str,
         min_confidence: f64,
@@ -480,7 +480,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn replace_infra_data(
+    pub(crate) fn replace_infra_data(
         &self,
         nodes: &[cc_model::infra::InfraNode],
         edges: &[cc_model::infra::InfraEdge],
@@ -529,7 +529,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn replace_dispatch_sites(
+    pub(crate) fn replace_dispatch_sites(
         &self,
         file_path: &str,
         sites: &[cc_model::DispatchSiteRecord],
@@ -558,7 +558,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+    pub(crate) fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
         let conn = self.read_conn()?;
         Self::load_all_dispatch_sites_on(&conn)
     }
@@ -598,7 +598,7 @@ impl IndexDb {
         Ok(result)
     }
 
-    pub fn load_dispatch_sites_by_kind(
+    pub(crate) fn load_dispatch_sites_by_kind(
         &self,
         kind: &str,
     ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
@@ -642,7 +642,7 @@ impl IndexDb {
         Ok(result)
     }
 
-    pub fn delete_synthetic_call_edges(&self, synthesized_by: &str) -> CcResult<usize> {
+    pub(crate) fn delete_synthetic_call_edges(&self, synthesized_by: &str) -> CcResult<usize> {
         let conn = self
             .write_conn
             .lock()
@@ -667,7 +667,7 @@ impl IndexDb {
         .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    pub fn insert_synthetic_call_edges(
+    pub(crate) fn insert_synthetic_call_edges(
         &self,
         edges: &[cc_model::CallEdgeRecord],
     ) -> CcResult<usize> {
@@ -710,7 +710,7 @@ impl IndexDb {
         Ok(edges.len())
     }
 
-    pub fn upsert_runtime_evidence(
+    pub(crate) fn upsert_runtime_evidence(
         &self,
         evidence_id: &str,
         service_name: &str,
@@ -737,7 +737,11 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn link_evidence_to_edge(&self, evidence_id: &str, http_edge_id: &str) -> CcResult<()> {
+    pub(crate) fn link_evidence_to_edge(
+        &self,
+        evidence_id: &str,
+        http_edge_id: &str,
+    ) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -755,7 +759,7 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn update_evidence_p95(&self, evidence_id: &str, duration_ms: f64) -> CcResult<()> {
+    pub(crate) fn update_evidence_p95(&self, evidence_id: &str, duration_ms: f64) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -776,7 +780,11 @@ impl IndexDb {
         Ok(())
     }
 
-    pub fn update_evidence_route_id(&self, evidence_id: &str, route_id: &str) -> CcResult<()> {
+    pub(crate) fn update_evidence_route_id(
+        &self,
+        evidence_id: &str,
+        route_id: &str,
+    ) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -797,7 +805,11 @@ impl IndexDb {
     /// Evidence-driven confidence boost. Although it mutates `http_call_edges`,
     /// it only happens during evidence ingestion, so it bumps `evidence_epoch`
     /// (caches derived from http edges — bridges, adjacency — are keyed on it).
-    pub fn boost_http_edge_confidence(&self, http_edge_id: &str, boost: f64) -> CcResult<()> {
+    pub(crate) fn boost_http_edge_confidence(
+        &self,
+        http_edge_id: &str,
+        boost: f64,
+    ) -> CcResult<()> {
         let conn = self
             .write_conn
             .lock()
@@ -819,7 +831,7 @@ impl IndexDb {
     /// returns `(edge_id, candidate_count)` for `normalized_path`. A
     /// method-specific match is tried first (when `method` is given), then a
     /// path-only fallback; lookup misses degrade to `None`/`0`.
-    pub fn http_edge_match_for_path(
+    pub(crate) fn http_edge_match_for_path(
         &self,
         normalized_path: &str,
         method: Option<&str>,
@@ -858,7 +870,10 @@ impl IndexDb {
     }
 
     /// First route id registered under `normalized_path`, if any.
-    pub fn route_id_for_normalized_path(&self, normalized_path: &str) -> CcResult<Option<String>> {
+    pub(crate) fn route_id_for_normalized_path(
+        &self,
+        normalized_path: &str,
+    ) -> CcResult<Option<String>> {
         let conn = self.read_conn()?;
         Ok(conn
             .query_row(
@@ -869,7 +884,7 @@ impl IndexDb {
             .ok())
     }
 
-    pub fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
+    pub(crate) fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
         let conn = self.read_conn()?;
         let evidence_rows: u32 = conn
             .query_row("SELECT COUNT(*) FROM runtime_evidence", [], |r| r.get(0))
@@ -903,7 +918,7 @@ impl IndexDb {
     ///
     /// For each normalized path, returns (total_observed_count, latest_last_seen).
     /// Matches evidence whose linked http_edge_id has the given normalized_path.
-    pub fn evidence_for_normalized_paths(
+    pub(crate) fn evidence_for_normalized_paths(
         &self,
         paths: &[String],
     ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
@@ -940,6 +955,157 @@ impl IndexDb {
             result.insert(norm_path, (count, last_seen));
         }
         Ok(result)
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    pub fn query_semantic_edges(
+        &self,
+        source_uid: Option<&str>,
+        target_uid: Option<&str>,
+        relation_kind: Option<&str>,
+    ) -> CcResult<Vec<cc_model::edge::SemanticEdgeRecord>> {
+        self.0
+            .query_semantic_edges(source_uid, target_uid, relation_kind)
+    }
+
+    pub fn get_co_changes_for_file(
+        &self,
+        file_path: &str,
+        min_confidence: f64,
+    ) -> CcResult<Vec<CoChangeLite>> {
+        self.0.get_co_changes_for_file(file_path, min_confidence)
+    }
+
+    pub fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+        self.0.load_all_dispatch_sites()
+    }
+
+    pub fn load_dispatch_sites_by_kind(
+        &self,
+        kind: &str,
+    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+        self.0.load_dispatch_sites_by_kind(kind)
+    }
+
+    /// Match a runtime-evidence observation against indexed HTTP call edges:
+    pub fn http_edge_match_for_path(
+        &self,
+        normalized_path: &str,
+        method: Option<&str>,
+    ) -> CcResult<(Option<String>, u32)> {
+        self.0.http_edge_match_for_path(normalized_path, method)
+    }
+
+    /// First route id registered under `normalized_path`, if any.
+    pub fn route_id_for_normalized_path(&self, normalized_path: &str) -> CcResult<Option<String>> {
+        self.0.route_id_for_normalized_path(normalized_path)
+    }
+
+    pub fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
+        self.0.runtime_evidence_stats()
+    }
+
+    /// Query aggregated runtime evidence keyed by normalized path.
+    pub fn evidence_for_normalized_paths(
+        &self,
+        paths: &[String],
+    ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
+        self.0.evidence_for_normalized_paths(paths)
+    }
+}
+
+// Write facet delegates (see `IndexDb::writes()`).
+impl WriteOps<'_> {
+    pub fn rebuild_test_edges_for_files(&self, changed: &[String]) -> CcResult<()> {
+        self.0.rebuild_test_edges_for_files(changed)
+    }
+
+    pub fn rebuild_test_edges(&self) -> CcResult<()> {
+        self.0.rebuild_test_edges()
+    }
+
+    pub fn insert_route_nodes_batch(
+        &self,
+        routes: &[cc_model::edge::RouteNodeRecord],
+    ) -> CcResult<()> {
+        self.0.insert_route_nodes_batch(routes)
+    }
+
+    pub fn insert_semantic_edges_batch(
+        &self,
+        edges: &[cc_model::edge::SemanticEdgeRecord],
+    ) -> CcResult<()> {
+        self.0.insert_semantic_edges_batch(edges)
+    }
+
+    pub fn remove_semantic_edges_by_file(&self, file_path: &str) -> CcResult<()> {
+        self.0.remove_semantic_edges_by_file(file_path)
+    }
+
+    pub fn insert_co_change_edges_batch(
+        &self,
+        edges: &[cc_model::edge::CoChangeEdgeRecord],
+    ) -> CcResult<()> {
+        self.0.insert_co_change_edges_batch(edges)
+    }
+
+    pub fn replace_infra_data(
+        &self,
+        nodes: &[cc_model::infra::InfraNode],
+        edges: &[cc_model::infra::InfraEdge],
+    ) -> CcResult<()> {
+        self.0.replace_infra_data(nodes, edges)
+    }
+
+    pub fn replace_dispatch_sites(
+        &self,
+        file_path: &str,
+        sites: &[cc_model::DispatchSiteRecord],
+    ) -> CcResult<()> {
+        self.0.replace_dispatch_sites(file_path, sites)
+    }
+
+    pub fn delete_synthetic_call_edges(&self, synthesized_by: &str) -> CcResult<usize> {
+        self.0.delete_synthetic_call_edges(synthesized_by)
+    }
+
+    pub fn insert_synthetic_call_edges(
+        &self,
+        edges: &[cc_model::CallEdgeRecord],
+    ) -> CcResult<usize> {
+        self.0.insert_synthetic_call_edges(edges)
+    }
+
+    pub fn upsert_runtime_evidence(
+        &self,
+        evidence_id: &str,
+        service_name: &str,
+        method: Option<&str>,
+        path: &str,
+        status_code: Option<&str>,
+        now: &str,
+    ) -> CcResult<()> {
+        self.0
+            .upsert_runtime_evidence(evidence_id, service_name, method, path, status_code, now)
+    }
+
+    pub fn link_evidence_to_edge(&self, evidence_id: &str, http_edge_id: &str) -> CcResult<()> {
+        self.0.link_evidence_to_edge(evidence_id, http_edge_id)
+    }
+
+    pub fn update_evidence_p95(&self, evidence_id: &str, duration_ms: f64) -> CcResult<()> {
+        self.0.update_evidence_p95(evidence_id, duration_ms)
+    }
+
+    pub fn update_evidence_route_id(&self, evidence_id: &str, route_id: &str) -> CcResult<()> {
+        self.0.update_evidence_route_id(evidence_id, route_id)
+    }
+
+    /// Evidence-driven confidence boost. Although it mutates `http_call_edges`,
+    pub fn boost_http_edge_confidence(&self, http_edge_id: &str, boost: f64) -> CcResult<()> {
+        self.0.boost_http_edge_confidence(http_edge_id, boost)
     }
 }
 

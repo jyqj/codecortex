@@ -48,7 +48,10 @@ pub(crate) fn graph_enrich(
         .collect::<HashSet<_>>()
         .into_iter()
         .collect();
-    let all_symbols = db.symbols_by_file_paths(&file_paths).unwrap_or_default();
+    let all_symbols = db
+        .reads()
+        .symbols_by_file_paths(&file_paths)
+        .unwrap_or_default();
 
     // 2. Resolve each hit → symbol_uid via (file_path, symbol_name) or span overlap.
     let mut resolved: Vec<(String, String)> = Vec::new(); // (chunk_id, uid)
@@ -71,7 +74,7 @@ pub(crate) fn graph_enrich(
 
     // 3. Degree metrics → graph_score per chunk.
     for (chunk_id, uid) in &resolved {
-        if let Ok(info) = db.symbol_degree_details(uid) {
+        if let Ok(info) = db.reads().symbol_degree_details(uid) {
             let total = (info.in_degree + info.out_degree) as f64;
             let connectivity = (total + 1.0).ln() / 10.0;
             let ref_bonus = (info.ref_count as f64).min(10.0) / 100.0;
@@ -86,7 +89,7 @@ pub(crate) fn graph_enrich(
     let mut neighbor_uids = HashSet::new();
 
     for (_chunk_id, uid) in &resolved {
-        if let Ok(callers) = db.caller_rows_by_uid(uid, limits.callers_per_sym) {
+        if let Ok(callers) = db.reads().caller_rows_by_uid(uid, limits.callers_per_sym) {
             for edge in &callers {
                 let caller_uid = edge.caller_symbol_uid.as_deref().unwrap_or("");
                 if caller_uid.is_empty() || !neighbor_uids.insert(caller_uid.to_string()) {
@@ -121,7 +124,7 @@ pub(crate) fn graph_enrich(
                 enrichment.callers_added += 1;
             }
         }
-        if let Ok(callees) = db.callee_rows_by_uid(uid, limits.callees_per_sym) {
+        if let Ok(callees) = db.reads().callee_rows_by_uid(uid, limits.callees_per_sym) {
             for edge in &callees {
                 let callee_uid = edge.callee_symbol_uid.as_deref().unwrap_or("");
                 if callee_uid.is_empty() || !neighbor_uids.insert(callee_uid.to_string()) {
@@ -160,7 +163,7 @@ pub(crate) fn graph_enrich(
 
     // 5. Test coverage.
     let hit_files: Vec<String> = file_paths.iter().map(|s| s.to_string()).collect();
-    if let Ok(tests) = db.find_impacted_tests(&hit_files) {
+    if let Ok(tests) = db.reads().find_impacted_tests(&hit_files) {
         for test_path in tests.iter().take(limits.max_tests) {
             let text = format!("test file: {}", test_path);
             let est = (text.len() / 4).max(10) as u32;

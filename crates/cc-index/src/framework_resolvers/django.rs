@@ -10,6 +10,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
+use super::mount_resolution::{resolve_mounts, MountPoint, MountSpec, PrefixJoin, TargetLookup};
 use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
@@ -182,113 +183,40 @@ impl FrameworkResolver for DjangoResolver {
         // Also resolve handler_symbol_uid for route_edges whose handler_name
         // is set but handler_symbol_uid is not.
 
-        // Step 1: collect mount points (prefix → included module/var → mounting file)
-        struct MountInfo {
-            prefix: String,
-            handler_name: String,
-            handler_expr: String,
-            mount_file: String,
-        }
-
-        let mut mounts: Vec<MountInfo> = Vec::new();
-        for (file_path, outcome) in outcomes.iter() {
-            for edge in &outcome.route_edges {
-                if edge.route_kind.as_deref() == Some("router_mount") {
-                    if let Some(ref handler) = edge.handler_name {
-                        let prefix = &edge.route_path;
-                        if prefix != "/" && !prefix.is_empty() {
-                            mounts.push(MountInfo {
-                                prefix: prefix.clone(),
-                                handler_name: handler.clone(),
-                                handler_expr: edge
-                                    .handler_expr
-                                    .clone()
-                                    .unwrap_or_else(|| handler.clone()),
-                                mount_file: file_path.clone(),
-                            });
-                        }
-                    }
-                }
+        // Fallback for dotted module paths like "app.urls": try "urlpatterns"
+        // as a common Django convention, then check the file path matches the
+        // module hint (e.g. "app.urls" -> file should contain "app/urls").
+        let module_fallback = |catalog: &crate::resolver::SymbolCatalog,
+                               _outcomes: &[(String, ParseOutcome)],
+                               mount: &MountPoint|
+         -> Option<String> {
+            if !mount.handler_expr.contains('.') {
+                return None;
             }
-        }
-
-        // Step 2: for each mount, find the target file via catalog and prepend prefix
-        for mount in &mounts {
-            // Try lookup by handler_name first (last segment or bare variable)
-            let target_file = match catalog.lookup_symbol(&mount.handler_name, &mount.mount_file) {
-                Some((_, file)) if file != mount.mount_file => Some(file),
-                _ => {
-                    // For dotted module paths like "app.urls", also try the full expression
-                    // converted to a potential file path pattern
-                    if mount.handler_expr.contains('.') {
-                        // Try "urlpatterns" as a common Django convention in the target module
-                        catalog
-                            .lookup_symbol("urlpatterns", &mount.mount_file)
-                            .and_then(|(_, file)| {
-                                // Check if the file path matches the module hint
-                                // e.g. "app.urls" -> file should contain "app/urls"
-                                let module_path = mount.handler_expr.replace('.', "/");
-                                if file.contains(&module_path) {
-                                    Some(file)
-                                } else {
-                                    None
-                                }
-                            })
+            catalog
+                .lookup_symbol("urlpatterns", &mount.mount_file)
+                .and_then(|(_, file)| {
+                    let module_path = mount.handler_expr.replace('.', "/");
+                    if file.contains(&module_path) {
+                        Some(file)
                     } else {
                         None
                     }
-                }
-            };
+                })
+        };
 
-            let target_file = match target_file {
-                Some(f) => f,
-                None => continue,
-            };
-
-            // Prepend the mount prefix to all http routes in the target file
-            for (file_path, outcome) in outcomes.iter_mut() {
-                if *file_path != target_file {
-                    continue;
-                }
-                for edge in &mut outcome.route_edges {
-                    if edge.route_kind.as_deref() != Some("http") {
-                        continue;
-                    }
-                    // Only prepend once (avoid double-prefixing on repeated runs)
-                    if !edge.route_path.starts_with(&mount.prefix) {
-                        let combined = if edge.route_path == "/" {
-                            mount.prefix.clone()
-                        } else {
-                            // Django: "/api/" + "/users/" -> "/api/users/"
-                            // Strip leading slash from the sub-route to avoid double slash
-                            let sub = edge
-                                .route_path
-                                .strip_prefix('/')
-                                .unwrap_or(&edge.route_path);
-                            format!("{}{}", mount.prefix, sub)
-                        };
-                        edge.route_path = combined;
-                    }
-                }
-            }
-        }
-
-        // Step 3: resolve handler_symbol_uid for http route_edges
-        for (file_path, outcome) in outcomes.iter_mut() {
-            let fp = file_path.clone();
-            for edge in &mut outcome.route_edges {
-                if edge.handler_symbol_uid.is_some() {
-                    continue;
-                }
-                if let Some(ref handler_name) = edge.handler_name {
-                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
-                        if !uid.is_empty() {
-                            edge.handler_symbol_uid = Some(uid);
-                        }
-                    }
-                }
-            }
-        }
+        resolve_mounts(
+            catalog,
+            outcomes,
+            &MountSpec {
+                mount_kinds: &["router_mount"],
+                skip_root_prefix: true,
+                framework: None,
+                // Django: "/api/" + "/users/" -> "/api/users/"
+                join: PrefixJoin::StripSubLeadingSlash,
+                lookup: TargetLookup::DefaultWithFallback(&module_fallback),
+            },
+        );
     }
 }
 

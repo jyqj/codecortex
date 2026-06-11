@@ -10,6 +10,9 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
+use super::mount_resolution::{
+    default_target_lookup, resolve_mounts, MountPoint, MountSpec, PrefixJoin, TargetLookup,
+};
 use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
@@ -380,100 +383,37 @@ impl FrameworkResolver for LaravelResolver {
         //   → prepend the prefix to all http route_edges in that file
         //
         // Also resolve handler_symbol_uid for all route_edges.
-
-        // Step 1: collect group entries
-        struct GroupInfo {
-            prefix: String,
-            /// For group_file: the file path string (e.g. "routes/api.php")
-            /// For group_var: the variable name
-            target_ref: String,
-            mount_file: String,
-            is_file_ref: bool,
-        }
-
-        let mut groups: Vec<GroupInfo> = Vec::new();
-        for (file_path, outcome) in outcomes.iter() {
-            for edge in &outcome.route_edges {
-                let is_file = edge.route_kind.as_deref() == Some("group_file");
-                let is_var = edge.route_kind.as_deref() == Some("group_var");
-                if !is_file && !is_var {
-                    continue;
-                }
-                if let Some(ref handler) = edge.handler_name {
-                    let prefix = &edge.route_path;
-                    if prefix != "/" && !prefix.is_empty() {
-                        groups.push(GroupInfo {
-                            prefix: prefix.clone(),
-                            target_ref: handler.clone(),
-                            mount_file: file_path.clone(),
-                            is_file_ref: is_file,
-                        });
-                    }
-                }
-            }
-        }
-
-        // Step 2: for each group, find the target file and prepend prefix
-        for group in &groups {
-            let target_file = if group.is_file_ref {
-                // For file references like "routes/api.php", find by suffix match
-                // in the outcomes list
-                let suffix = &group.target_ref;
-                outcomes
+        let group_lookup = |catalog: &crate::resolver::SymbolCatalog,
+                            files: &[(String, ParseOutcome)],
+                            mount: &MountPoint|
+         -> Option<String> {
+            if mount.mount_kind == "group_file" {
+                // For file references like "routes/api.php", find by suffix
+                // match in the outcomes list
+                let suffix = &mount.handler_name;
+                files
                     .iter()
-                    .map(|(fp, _)| fp.clone())
-                    .find(|fp| fp.ends_with(suffix) || fp.ends_with(&format!("/{}", suffix)))
-                    .unwrap_or_default()
+                    .map(|(fp, _)| fp)
+                    .find(|fp| {
+                        fp.ends_with(suffix.as_str()) || fp.ends_with(&format!("/{}", suffix))
+                    })
+                    .cloned()
             } else {
-                // For variable references, look up via catalog
-                match catalog.lookup_symbol(&group.target_ref, &group.mount_file) {
-                    Some((_, file)) if file != group.mount_file => file,
-                    _ => continue,
-                }
-            };
-
-            if target_file.is_empty() {
-                continue;
+                default_target_lookup(catalog, mount)
             }
+        };
 
-            // Prepend the group prefix to all http routes in the target file
-            for (file_path, outcome) in outcomes.iter_mut() {
-                if *file_path != target_file {
-                    continue;
-                }
-                for edge in &mut outcome.route_edges {
-                    if edge.route_kind.as_deref() != Some("http") {
-                        continue;
-                    }
-                    // Only prepend once (avoid double-prefixing on repeated runs)
-                    if !edge.route_path.starts_with(&group.prefix) {
-                        let combined = if edge.route_path == "/" {
-                            group.prefix.clone()
-                        } else {
-                            format!("{}{}", group.prefix, edge.route_path)
-                        };
-                        edge.route_path = combined;
-                    }
-                }
-            }
-        }
-
-        // Step 3: resolve handler_symbol_uid for http route_edges
-        for (file_path, outcome) in outcomes.iter_mut() {
-            let fp = file_path.clone();
-            for edge in &mut outcome.route_edges {
-                if edge.handler_symbol_uid.is_some() {
-                    continue;
-                }
-                if let Some(ref handler_name) = edge.handler_name {
-                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
-                        if !uid.is_empty() {
-                            edge.handler_symbol_uid = Some(uid);
-                        }
-                    }
-                }
-            }
-        }
+        resolve_mounts(
+            catalog,
+            outcomes,
+            &MountSpec {
+                mount_kinds: &["group_file", "group_var"],
+                skip_root_prefix: true,
+                framework: None,
+                join: PrefixJoin::Plain,
+                lookup: TargetLookup::Custom(&group_lookup),
+            },
+        );
     }
 }
 

@@ -41,7 +41,9 @@ pub(crate) fn compute_jsx_synthesis(db: &IndexDb) -> CcResult<EdgeDelta> {
     };
 
     // 2. Load all JsxTag dispatch sites.
-    let jsx_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::JsxTag.as_str())?;
+    let jsx_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::JsxTag.as_str())?;
     if jsx_sites.is_empty() {
         return Ok(delta);
     }

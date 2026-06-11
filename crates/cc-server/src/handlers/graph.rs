@@ -258,6 +258,7 @@ pub fn get_architecture(
     };
 
     let info = db
+        .reads()
         .get_architecture_info(&aspect_vec, limit)
         .map_err(|e| e.to_string())?;
 
@@ -421,7 +422,10 @@ pub fn find_circular_deps(
 pub fn list_env_vars(runtime: SharedCodeIndex, limit: usize) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
-    let summary = db.env_var_summary(limit).map_err(|e| e.to_string())?;
+    let summary = db
+        .reads()
+        .env_var_summary(limit)
+        .map_err(|e| e.to_string())?;
     let items: Vec<serde_json::Value> = summary
         .iter()
         .map(|(key, count, files)| {
@@ -457,6 +461,7 @@ pub fn search_env_vars(
 
     let file_pattern = file_path.map(|fp| format!("%{}%", fp));
     let rows = db
+        .reads()
         .env_access_rows(&like_pattern, file_pattern.as_deref(), limit)
         .map_err(|e| e.to_string())?;
     let total = rows.len();
@@ -586,7 +591,7 @@ mod tests {
     }
 
     fn insert_file(db: &cc_db::index_db::IndexDb, file_path: &str) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
@@ -597,7 +602,8 @@ mod tests {
     }
 
     fn insert_import(db: &cc_db::index_db::IndexDb, file_path: &str, resolved_path: &str) {
-        db.read_conn()
+        db.reads()
+            .read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO imports(file_path, import_string, resolved_path) VALUES(?1, ?2, ?3)",
@@ -613,7 +619,7 @@ mod tests {
         kind: &str,
         file_path: &str,
     ) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, start_line, end_line)
@@ -630,7 +636,7 @@ mod tests {
         caller_uid: Option<&str>,
         callee_uid: &str,
     ) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
@@ -647,7 +653,7 @@ mod tests {
         target_uid: &str,
         container: Option<&str>,
     ) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO symbol_refs(ref_id, file_path, symbol_name, container, ref_kind, line, target_symbol_uid)
@@ -666,7 +672,7 @@ mod tests {
         handler_name: &str,
         framework: &str,
     ) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO routes(edge_id, file_path, route_path, method, handler_name, framework, line, normalized_path, route_id)
@@ -683,7 +689,8 @@ mod tests {
         kind: &str,
         name: &str,
     ) {
-        db.read_conn()
+        db.reads()
+            .read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO infra_nodes(node_id, file_path, kind, name) VALUES(?1, ?2, ?3, ?4)",
@@ -700,7 +707,8 @@ mod tests {
         kind: &str,
         properties: &str,
     ) {
-        db.read_conn()
+        db.reads()
+            .read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO infra_edges(edge_id, source_node_id, target_node_id, kind, properties)

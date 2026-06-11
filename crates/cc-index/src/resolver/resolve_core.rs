@@ -18,8 +18,8 @@ enum StepOutcome {
 }
 
 /// If a signal step narrowed the fuzzy pool to exactly one candidate, that
-/// candidate wins at [`InternalResKind::FuzzySignal`] confidence, with the
-/// same unreachable-import 0.5x penalty the `FuzzySingle` step applies.
+/// candidate wins at [`InternalResKind::FuzzySignal`] confidence, with a
+/// 0.5x penalty when the winner is not import-reachable.
 fn fuzzy_signal_winner(
     entries: &[CatalogEntry],
     pool: &[usize],
@@ -430,10 +430,11 @@ impl SymbolCatalog {
         let parts: Vec<&str> = name.split('.').collect();
         let leaf = *parts.last().unwrap_or(&parts[0]);
 
-        // Fuzzy candidate pool shared by the Fuzzy* steps: populated lazily
-        // at FuzzySingle, narrowed in place by the signal steps so each later
-        // step sees the previous step's survivors. `fuzzy_total` keeps the
-        // pre-narrowing count for candidate_count reporting.
+        // Fuzzy candidate pool shared by the Fuzzy* steps: populated at
+        // GlobalUnique (which inspects the same by-name pool), narrowed in
+        // place by the signal steps so each later step sees the previous
+        // step's survivors. `fuzzy_total` keeps the pre-narrowing count for
+        // candidate_count reporting.
         let mut fuzzy_pool: Option<Vec<usize>> = None;
         let mut fuzzy_total: usize = 0;
 
@@ -479,11 +480,7 @@ impl SymbolCatalog {
                     Some(result) => StepOutcome::Resolved(result),
                     None => StepOutcome::Continue,
                 },
-                ResolveStep::GlobalUnique => match self.try_global_unique(leaf, imports) {
-                    Some(result) => StepOutcome::Resolved(result),
-                    None => StepOutcome::Continue,
-                },
-                ResolveStep::FuzzySingle => {
+                ResolveStep::GlobalUnique => {
                     let pool = fuzzy_pool.get_or_insert_with(|| {
                         self.by_name
                             .get(&leaf.to_lowercase())
@@ -493,18 +490,18 @@ impl SymbolCatalog {
                     fuzzy_total = pool.len();
                     if pool.len() == 1 {
                         let idx = pool[0];
-                        let mut conf = InternalResKind::FuzzySingle.base_confidence();
+                        let mut confidence = InternalResKind::GlobalUnique.base_confidence();
                         if !imports.is_empty()
                             && !is_import_reachable(&self.entries[idx].file_path, imports)
                         {
-                            conf *= 0.5;
+                            confidence *= 0.6;
                         }
                         StepOutcome::Resolved(ResolveResult {
                             catalog_index: idx,
-                            resolution_kind: InternalResKind::FuzzySingle,
-                            confidence: conf,
+                            resolution_kind: InternalResKind::GlobalUnique,
+                            confidence,
                             candidate_count: 1,
-                            winning_step: ResolveStep::FuzzySingle,
+                            winning_step: ResolveStep::GlobalUnique,
                         })
                     } else {
                         StepOutcome::Continue
@@ -513,7 +510,7 @@ impl SymbolCatalog {
                 ResolveStep::FuzzyArgCount => {
                     let pool = fuzzy_pool
                         .as_mut()
-                        .expect("FuzzySingle precedes signal steps in RESOLVE_LADDER");
+                        .expect("GlobalUnique precedes the fuzzy steps in RESOLVE_LADDER");
                     match signals.arg_count {
                         Some(arg_count) if pool.len() > 1 => {
                             self.narrow_fuzzy_by_arg_count(pool, leaf, arg_count);
@@ -531,7 +528,7 @@ impl SymbolCatalog {
                 ResolveStep::FuzzyReceiver => {
                     let pool = fuzzy_pool
                         .as_mut()
-                        .expect("FuzzySingle precedes signal steps in RESOLVE_LADDER");
+                        .expect("GlobalUnique precedes the fuzzy steps in RESOLVE_LADDER");
                     match signals.receiver {
                         Some(receiver) if pool.len() > 1 => {
                             self.narrow_fuzzy_by_receiver(pool, leaf, file, receiver);
@@ -549,7 +546,7 @@ impl SymbolCatalog {
                 ResolveStep::FuzzyImportDistance => {
                     let pool = fuzzy_pool
                         .as_ref()
-                        .expect("FuzzySingle precedes signal steps in RESOLVE_LADDER");
+                        .expect("GlobalUnique precedes the fuzzy steps in RESOLVE_LADDER");
                     self.step_fuzzy_import_distance(pool, fuzzy_total, file, imports)
                 }
             };
@@ -734,30 +731,6 @@ impl SymbolCatalog {
         if any_positive && !matched.is_empty() && matched.len() < pool.len() {
             *pool = matched;
         }
-    }
-
-    pub(in crate::resolver) fn try_global_unique(
-        &self,
-        leaf_name: &str,
-        imports: &[ImportBinding],
-    ) -> Option<ResolveResult> {
-        let candidates = self.by_name.get(&leaf_name.to_lowercase())?;
-        let unique = dedup_by_id(&self.entries, candidates);
-        if unique.len() != 1 {
-            return None;
-        }
-        let idx = unique[0];
-        let mut confidence = InternalResKind::GlobalUnique.base_confidence();
-        if !imports.is_empty() && !is_import_reachable(&self.entries[idx].file_path, imports) {
-            confidence *= 0.6;
-        }
-        Some(ResolveResult {
-            catalog_index: idx,
-            resolution_kind: InternalResKind::GlobalUnique,
-            confidence,
-            candidate_count: 1,
-            winning_step: ResolveStep::GlobalUnique,
-        })
     }
 
     pub(in crate::resolver) fn try_suffix_match(

@@ -13,7 +13,7 @@ use std::sync::Arc;
 
 use cc_model::{CcError, CcResult};
 
-use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb};
+use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb, ReadOps};
 use crate::sql_util::{escape_like, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// `(chunk_id, start_line, end_line)` spans grouped by file path.
@@ -28,7 +28,7 @@ impl IndexDb {
     /// Sanitization is the caller's responsibility: `sanitized_query` must
     /// already be a valid FTS5 MATCH expression (see `fts::sanitize_fts_query`),
     /// and callers should skip the call entirely for empty/`""` queries.
-    pub fn fts_file_summaries(
+    pub(crate) fn fts_file_summaries(
         &self,
         sanitized_query: &str,
         path_prefix: Option<&str>,
@@ -89,7 +89,7 @@ impl IndexDb {
     /// SQLite from handing the LIKE constraints to the FTS5 trigram LIKE
     /// optimization, so these queries scan `file_paths_fts` and post-filter
     /// (correct, but no trigram acceleration).
-    pub fn path_token_file_hits_many(
+    pub(crate) fn path_token_file_hits_many(
         &self,
         tokens: &[&str],
         path_prefix: Option<&str>,
@@ -161,7 +161,7 @@ impl IndexDb {
     /// from routing that LIKE constraint into the FTS5 trigram LIKE
     /// optimization, which cannot serve UNINDEXED columns and used to yield
     /// zero rows; instead it is evaluated as an ordinary post-filter.
-    pub fn symbol_token_hits_many(
+    pub(crate) fn symbol_token_hits_many(
         &self,
         tokens: &[&str],
         path_prefix: Option<&str>,
@@ -221,7 +221,7 @@ impl IndexDb {
     }
 
     /// Most recently indexed file paths (`files` ordered by `indexed_at` DESC).
-    pub fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
+    pub(crate) fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
@@ -241,7 +241,7 @@ impl IndexDb {
     /// `cached_texts` lets callers supply already-decoded text per chunk id
     /// (e.g. from a decompression cache); for those rows the stored text
     /// column is not decoded again. Row order is unspecified (DB order).
-    pub fn chunk_rows_by_ids(
+    pub(crate) fn chunk_rows_by_ids(
         &self,
         chunk_ids: &[&str],
         cached_texts: &HashMap<String, Arc<str>>,
@@ -295,7 +295,11 @@ impl IndexDb {
     /// excluded. LIKE metacharacters (`%`, `_`, `\`) in `token` are escaped
     /// so they match literally (the `ESCAPE` clause trades the trigram LIKE
     /// acceleration for a scan-and-filter plan).
-    pub fn symbol_seed_hits(&self, token: &str, limit: usize) -> CcResult<Vec<(String, String)>> {
+    pub(crate) fn symbol_seed_hits(
+        &self,
+        token: &str,
+        limit: usize,
+    ) -> CcResult<Vec<(String, String)>> {
         let conn = self.read_conn()?;
         let like_pattern = format!("%{}%", escape_like(token));
         let mut stmt = conn
@@ -320,7 +324,7 @@ impl IndexDb {
 
     /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
     /// index-served via `idx_symbols_name`). NULL-uid symbols are excluded.
-    pub fn symbol_uids_by_exact_names(
+    pub(crate) fn symbol_uids_by_exact_names(
         &self,
         names: &[&str],
         limit: usize,
@@ -357,7 +361,7 @@ impl IndexDb {
     /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
     /// keyed by file path. Queried in [`IN_BATCH_SIZE`]-sized `IN (...)`
     /// batches.
-    pub fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
+    pub(crate) fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
         let mut by_file: ChunkSpansByFile = HashMap::new();
         if file_paths.is_empty() {
             return Ok(by_file);
@@ -395,6 +399,75 @@ impl IndexDb {
             }
         }
         Ok(by_file)
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    /// FTS file-summary search on `files_fts` with bm25 scoring.
+    pub fn fts_file_summaries(
+        &self,
+        sanitized_query: &str,
+        path_prefix: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<(String, f64)>> {
+        self.0
+            .fts_file_summaries(sanitized_query, path_prefix, limit)
+    }
+
+    /// Path-token substring match via the trigram `file_paths_fts` mirror,
+    pub fn path_token_file_hits_many(
+        &self,
+        tokens: &[&str],
+        path_prefix: Option<&str>,
+        per_token_limit: usize,
+    ) -> CcResult<Vec<Vec<String>>> {
+        self.0
+            .path_token_file_hits_many(tokens, path_prefix, per_token_limit)
+    }
+
+    /// Symbol-name substring match via the trigram `symbols_fts` mirror,
+    pub fn symbol_token_hits_many(
+        &self,
+        tokens: &[&str],
+        path_prefix: Option<&str>,
+        per_token_limit: usize,
+    ) -> CcResult<Vec<Vec<(String, String)>>> {
+        self.0
+            .symbol_token_hits_many(tokens, path_prefix, per_token_limit)
+    }
+
+    /// Most recently indexed file paths (`files` ordered by `indexed_at` DESC).
+    pub fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
+        self.0.recent_indexed_files(limit)
+    }
+
+    /// Batch-fetch full chunk rows by chunk id, queried in
+    pub fn chunk_rows_by_ids(
+        &self,
+        chunk_ids: &[&str],
+        cached_texts: &HashMap<String, Arc<str>>,
+    ) -> CcResult<Vec<ChunkDetailRow>> {
+        self.0.chunk_rows_by_ids(chunk_ids, cached_texts)
+    }
+
+    /// Graph-lane seed lookup: `(symbol_uid, name)` pairs whose name contains
+    pub fn symbol_seed_hits(&self, token: &str, limit: usize) -> CcResult<Vec<(String, String)>> {
+        self.0.symbol_seed_hits(token, limit)
+    }
+
+    /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
+    pub fn symbol_uids_by_exact_names(
+        &self,
+        names: &[&str],
+        limit: usize,
+    ) -> CcResult<Vec<String>> {
+        self.0.symbol_uids_by_exact_names(names, limit)
+    }
+
+    /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
+    pub fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
+        self.0.chunk_spans_for_files(file_paths)
     }
 }
 

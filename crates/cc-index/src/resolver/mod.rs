@@ -1579,8 +1579,8 @@ mod tests {
     #[test]
     fn test_fuzzy_signal_unreachable_import_penalty() {
         // Same disambiguation as the arg-count test, but with an import
-        // list that cannot reach the winner: FuzzySignal applies the same
-        // 0.5x penalty as FuzzySingle.
+        // list that cannot reach the winner: FuzzySignal applies the 0.5x
+        // unreachable-import penalty.
         let catalog = parse_method_catalog(1, 2);
         let imports = vec![ImportBinding {
             local_name: "other".to_string(),
@@ -1623,7 +1623,6 @@ mod tests {
                 ResolveStep::Import,
                 ResolveStep::Suffix,
                 ResolveStep::GlobalUnique,
-                ResolveStep::FuzzySingle,
                 ResolveStep::FuzzyArgCount,
                 ResolveStep::FuzzyReceiver,
                 ResolveStep::FuzzyImportDistance,
@@ -1685,6 +1684,132 @@ mod tests {
             .unwrap();
         assert_eq!(signaled_again.catalog_index, signaled.catalog_index);
         assert_eq!(signaled_again.winning_step, signaled.winning_step);
+    }
+
+    // ------------------------------------------------------------------
+    // Ladder confidence-boundary tests: Suffix (0.65), GlobalUnique
+    // (0.75), and the FuzzySingle confidence anchor (0.40). Each level
+    // gets a minimal hit scenario and a just-miss scenario that falls to
+    // the next level.
+    // ------------------------------------------------------------------
+
+    /// Symbol with a distinct symbol_id (make_simple_symbol derives the
+    /// qname from the file path, e.g. "src/mod.py" → "src.mod.<name>").
+    fn make_distinct_symbol(name: &str, file: &str, uid: &str) -> cc_model::symbol::SymbolRecord {
+        let mut sym = make_simple_symbol(name, file, Some(uid));
+        sym.symbol_id = format!("sym#{}#{}", file, name);
+        sym
+    }
+
+    /// Resolve `name` from a symbol-free file with no scopes or imports, so
+    /// only the global ladder steps (Suffix and later) can fire.
+    fn resolve_global(catalog: &SymbolCatalog, name: &str) -> Option<types::ResolveResult> {
+        catalog.resolve_name(name, "src/main.py", 5, &HashMap::new(), &[], None)
+    }
+
+    #[test]
+    fn test_ladder_suffix_hit_boundary() {
+        // qname "src.mod.helper" suffix-matches the dotted name "mod.helper".
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[make_distinct_symbol("helper", "src/mod.py", "uid:h")]);
+
+        let result = resolve_global(&catalog, "mod.helper").expect("suffix match should resolve");
+        assert_eq!(result.winning_step, ResolveStep::Suffix);
+        assert_eq!(result.resolution_kind, InternalResKind::SuffixMatch);
+        assert_eq!(result.candidate_count, 1);
+        assert!(
+            (result.confidence - InternalResKind::SuffixMatch.base_confidence()).abs() < 1e-9,
+            "single suffix match must score the 0.65 base, got {}",
+            result.confidence
+        );
+    }
+
+    #[test]
+    fn test_ladder_suffix_miss_falls_to_global_unique() {
+        // qname "src.other.helper" does NOT end with ".mod.helper", so the
+        // Suffix step misses and the globally unique leaf "helper" wins one
+        // step later at the GlobalUnique confidence.
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[make_distinct_symbol("helper", "src/other.py", "uid:h")]);
+
+        let result = resolve_global(&catalog, "mod.helper").expect("leaf should resolve");
+        assert_eq!(result.winning_step, ResolveStep::GlobalUnique);
+        assert_eq!(result.resolution_kind, InternalResKind::GlobalUnique);
+        assert_eq!(result.candidate_count, 1);
+        assert!((result.confidence - InternalResKind::GlobalUnique.base_confidence()).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_ladder_global_unique_hit_boundary() {
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[make_distinct_symbol("helper", "src/lib.py", "uid:h")]);
+
+        let result = resolve_global(&catalog, "helper").expect("unique leaf should resolve");
+        assert_eq!(result.winning_step, ResolveStep::GlobalUnique);
+        assert_eq!(result.candidate_count, 1);
+        assert!(
+            (result.confidence - InternalResKind::GlobalUnique.base_confidence()).abs() < 1e-9,
+            "globally unique leaf must score the 0.75 base, got {}",
+            result.confidence
+        );
+    }
+
+    #[test]
+    fn test_ladder_global_unique_miss_falls_to_import_distance() {
+        // Two same-name candidates: GlobalUnique misses, and with no
+        // call-site signals the signal steps are skipped, so resolution
+        // falls directly to FuzzyImportDistance — the next reachable level
+        // after GlobalUnique.
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[
+            make_distinct_symbol("helper", "src/a.py", "uid:a"),
+            make_distinct_symbol("helper", "lib/b.py", "uid:b"),
+        ]);
+
+        let result = resolve_global(&catalog, "helper").expect("fuzzy multi should resolve");
+        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
+        assert_eq!(result.candidate_count, 2);
+        // FuzzyMulti base (0.30), no count penalty for 2 candidates, halved
+        // because no imports make any candidate reachable.
+        assert!((result.confidence - 0.15).abs() < 1e-9);
+    }
+
+    #[test]
+    fn test_ladder_fuzzy_single_confidence_via_unique_reachable() {
+        // The FuzzySingle base (0.40) is observable when the import filter
+        // narrows a multi-candidate pool to exactly one reachable winner:
+        // the import-distance step promotes that winner to FuzzySingle
+        // confidence while keeping the FuzzyMulti kind.
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[
+            make_distinct_symbol("helper", "src/a.py", "uid:a"),
+            make_distinct_symbol("helper", "lib/b.py", "uid:b"),
+        ]);
+        let imports = vec![ImportBinding {
+            local_name: "a".to_string(),
+            source_module: "src/a".to_string(),
+            imported_name: None,
+            file_path: "src/main.py".to_string(),
+            is_namespace: false,
+            is_default: false,
+        }];
+
+        let result = catalog
+            .resolve_name("helper", "src/main.py", 5, &HashMap::new(), &imports, None)
+            .expect("unique reachable candidate should resolve");
+        assert_eq!(
+            catalog.entry(result.catalog_index).symbol_uid.as_deref(),
+            Some("uid:a")
+        );
+        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
+        assert_eq!(result.candidate_count, 2);
+        assert!(
+            (result.confidence - InternalResKind::FuzzySingle.base_confidence()).abs() < 1e-9,
+            "unique reachable winner must score the FuzzySingle 0.40 base, got {}",
+            result.confidence
+        );
     }
 
     // ------------------------------------------------------------------

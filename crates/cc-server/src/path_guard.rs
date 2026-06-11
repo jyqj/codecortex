@@ -35,6 +35,7 @@ pub fn resolve_indexed_path_strict(
 ) -> Result<PathBuf, String> {
     let resolved = resolve_indexed_path(project_root, file_path)?;
     if !db
+        .reads()
         .file_is_indexed(file_path)
         .map_err(|e| format!("index check failed: {}", e))?
     {

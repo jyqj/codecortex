@@ -28,7 +28,6 @@ use cc_model::config::SearchConfig;
 use cc_model::{CcError, CcResult};
 
 use crate::plan::{language_from_path, parse_language_name, SearchPlan};
-use crate::rrf::rrf_accumulate;
 
 /// Lane id for the FTS5 lexical lane.
 pub(crate) const LANE_LEXICAL: &str = "lexical";
@@ -185,12 +184,32 @@ fn rank_scored(ids: Vec<String>) -> Vec<(String, f64)> {
         .collect()
 }
 
+/// One candidate's RRF fusion result: the fused total plus the per-lane
+/// contributions that produced it.
+///
+/// `by_lane` is recorded in lane-accumulation order, so summing it
+/// left-to-right reproduces `total` bit-for-bit — this is what lets a
+/// hit's `score_trace` replay the fused part of `rerank_score` exactly.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct FusedScore {
+    pub(crate) total: f64,
+    pub(crate) by_lane: Vec<(&'static str, f64)>,
+}
+
 /// RRF-fuse lane outcomes, accumulating in lane order.
-pub(crate) fn fuse_outcomes(outcomes: &[LaneOutcome], rrf_k: usize) -> HashMap<String, f64> {
-    let mut fused: HashMap<String, f64> = HashMap::new();
+///
+/// Same accumulation as [`crate::rrf::rrf_accumulate`] (`weight / (k + rank)`
+/// summed in lane order), but each candidate additionally keeps its per-lane
+/// contribution breakdown for score tracing.
+pub(crate) fn fuse_outcomes(outcomes: &[LaneOutcome], rrf_k: usize) -> HashMap<String, FusedScore> {
+    let mut fused: HashMap<String, FusedScore> = HashMap::new();
     for outcome in outcomes {
-        let ranked_ids: Vec<&str> = outcome.hits.iter().map(|(id, _)| id.as_str()).collect();
-        rrf_accumulate(&mut fused, &ranked_ids, outcome.weight, rrf_k);
+        for (rank, (id, _)) in outcome.hits.iter().enumerate() {
+            let score = outcome.weight / (rrf_k + rank + 1) as f64;
+            let entry = fused.entry(id.clone()).or_default();
+            entry.total += score;
+            entry.by_lane.push((outcome.lane_id, score));
+        }
     }
     fused
 }
@@ -228,7 +247,7 @@ impl RetrievalLane for LexicalLane {
         }
         let (sql, mut params) = plan.lexical_scope_sql(limit);
         params.insert(0, fts_q);
-        let conn = context.db.read_conn()?;
+        let conn = context.db.reads().read_conn()?;
         let mut stmt = conn
             .prepare(&sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -298,7 +317,7 @@ impl RetrievalLane for GrepLane {
         };
 
         let (sql, params) = plan.grep_scope_sql();
-        let conn = context.db.read_conn()?;
+        let conn = context.db.reads().read_conn()?;
         let mut stmt = conn
             .prepare(&sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -399,7 +418,20 @@ impl GraphLane {
             return Ok(Vec::new());
         }
 
-        // Step 2: 1-hop expansion via call_edges (callers + callees)
+        // Step 2: 1-hop expansion via call_edges (callers + callees),
+        // fetched in two batched queries instead of two point queries per
+        // seed. Failures degrade to no expansion, matching the old
+        // per-seed `if let Ok(..)` swallowing.
+        let seed_keys: Vec<&str> = seed_uids.iter().map(|(uid, _)| uid.as_str()).collect();
+        let callees_by_seed = db
+            .reads()
+            .callee_rows_by_uids(&seed_keys, 10)
+            .unwrap_or_default();
+        let callers_by_seed = db
+            .reads()
+            .caller_rows_by_uids(&seed_keys, 10)
+            .unwrap_or_default();
+
         let mut neighbor_uids: HashMap<String, f64> = HashMap::new();
         for (uid, seed_score) in &seed_uids {
             // Include the seed itself (distance 0)
@@ -409,8 +441,8 @@ impl GraphLane {
                 .or_insert(*seed_score);
 
             // Callees of seed (distance 1)
-            if let Ok(callees) = db.callee_rows_by_uid(uid, 10) {
-                for edge in &callees {
+            if let Some(callees) = callees_by_seed.get(uid.as_str()) {
+                for edge in callees {
                     if let Some(ref callee_uid) = edge.callee_symbol_uid {
                         let score = seed_score * ranking.graph_neighbor_decay;
                         neighbor_uids
@@ -422,8 +454,8 @@ impl GraphLane {
             }
 
             // Callers of seed (distance 1)
-            if let Ok(callers) = db.caller_rows_by_uid(uid, 10) {
-                for edge in &callers {
+            if let Some(callers) = callers_by_seed.get(uid.as_str()) {
+                for edge in callers {
                     if let Some(ref caller_uid) = edge.caller_symbol_uid {
                         let score = seed_score * ranking.graph_neighbor_decay;
                         neighbor_uids
@@ -441,7 +473,7 @@ impl GraphLane {
 
         // Step 3: Map symbol UIDs -> chunks, applying file filters
         let uid_list: Vec<String> = neighbor_uids.keys().cloned().collect();
-        let sym_rows = db.symbol_rows_by_uids(&uid_list)?;
+        let sym_rows = db.reads().symbol_rows_by_uids(&uid_list)?;
 
         // Apply file filters first, then batch-load chunk spans for the
         // surviving files in one query instead of one point query per neighbor.
@@ -462,7 +494,7 @@ impl GraphLane {
             .collect::<std::collections::HashSet<_>>()
             .into_iter()
             .collect();
-        let chunks_by_file = db.chunk_spans_for_files(&candidate_files)?;
+        let chunks_by_file = db.reads().chunk_spans_for_files(&candidate_files)?;
 
         let mut best_per_chunk: HashMap<String, f64> = HashMap::new();
         for (file, start, end, score) in candidates {
@@ -515,8 +547,9 @@ fn find_seed_symbol_uids(
                     None => continue,
                 }
             };
-            let uids =
-                db.symbol_uids_by_exact_names(&[token.as_str(), capitalized.as_str()], 10)?;
+            let uids = db
+                .reads()
+                .symbol_uids_by_exact_names(&[token.as_str(), capitalized.as_str()], 10)?;
             for uid in uids {
                 results
                     .entry(uid)
@@ -528,7 +561,7 @@ fn find_seed_symbol_uids(
         // Use trigram-accelerated LIKE via symbols_fts; surface exact name
         // matches first so the 10-row cap doesn't crowd them out with
         // arbitrary substring hits.
-        for (uid, name) in db.symbol_seed_hits(token, 10)? {
+        for (uid, name) in db.reads().symbol_seed_hits(token, 10)? {
             // Score: exact match > contains
             let relevance = if name.to_lowercase() == *token {
                 ranking.graph_seed_exact_score

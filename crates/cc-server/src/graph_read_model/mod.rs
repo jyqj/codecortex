@@ -349,7 +349,7 @@ mod tests {
     fn setup_bridge_db() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
 
         for file_path in ["src/client.ts", "src/routes.ts"] {
             conn.execute(
@@ -394,7 +394,7 @@ mod tests {
         method: Option<&str>,
         call_kind: &str,
     ) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,normalized_path,method,call_kind,line,confidence,parser_tier)
@@ -405,7 +405,7 @@ mod tests {
     }
 
     fn insert_methodless_route(db: &IndexDb, edge_id: &str, handler_uid: &str) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
@@ -519,7 +519,7 @@ mod tests {
     fn setup_callee_db() -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
@@ -531,7 +531,7 @@ mod tests {
     }
 
     fn insert_callee_edge(db: &IndexDb, edge_id: &str, caller_uid: &str, callee_uid: &str) {
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
@@ -552,7 +552,8 @@ mod tests {
 
         // Delete the underlying rows: a second call within the same generation
         // must be served from the cache and still see the callee.
-        db.read_conn()
+        db.reads()
+            .read_conn()
             .unwrap()
             .execute("DELETE FROM call_edges", [])
             .unwrap();
@@ -570,6 +571,7 @@ mod tests {
 
         // Capture the table schema, then drop it to force a query failure.
         let schema: String = db
+            .reads()
             .read_conn()
             .unwrap()
             .query_row(
@@ -578,7 +580,8 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
-        db.read_conn()
+        db.reads()
+            .read_conn()
             .unwrap()
             .execute("DROP TABLE call_edges", [])
             .unwrap();
@@ -589,7 +592,11 @@ mod tests {
 
         // Restore the table and add an edge: the next call must see it, i.e.
         // the failed (empty) result must NOT have been cached.
-        db.read_conn().unwrap().execute(&schema, []).unwrap();
+        db.reads()
+            .read_conn()
+            .unwrap()
+            .execute(&schema, [])
+            .unwrap();
         insert_callee_edge(&db, "ce1", "uid_caller", "uid_callee");
         let recovered = grm.callees_with_external_callers();
         assert!(
@@ -610,16 +617,17 @@ mod tests {
 
         // A committed cc-db write bumps index_epoch; a read model built after
         // it must observe a new generation and recompute, no manual clearing.
-        db.insert_synthetic_call_edges(&[cc_model::CallEdgeRecord {
-            edge_id: "ce2".to_string(),
-            file_path: "src/app.ts".to_string(),
-            callee_symbol: "fresh".to_string(),
-            line: 9,
-            caller_symbol_uid: Some("uid_caller".to_string()),
-            callee_symbol_uid: Some("uid_fresh_callee".to_string()),
-            ..Default::default()
-        }])
-        .unwrap();
+        db.writes()
+            .insert_synthetic_call_edges(&[cc_model::CallEdgeRecord {
+                edge_id: "ce2".to_string(),
+                file_path: "src/app.ts".to_string(),
+                callee_symbol: "fresh".to_string(),
+                line: 9,
+                caller_symbol_uid: Some("uid_caller".to_string()),
+                callee_symbol_uid: Some("uid_fresh_callee".to_string()),
+                ..Default::default()
+            }])
+            .unwrap();
 
         let second_model = GraphReadModel::without_http_bridges(Arc::clone(&db));
         assert_ne!(first_model.generation(), second_model.generation());
@@ -657,7 +665,8 @@ mod tests {
 
         // Evidence ingestion boosts the http edge confidence and bumps
         // evidence_epoch inside cc-db — no manual clear_bridge_cache().
-        db.boost_http_edge_confidence("http_get_users", 0.15)
+        db.writes()
+            .boost_http_edge_confidence("http_get_users", 0.15)
             .unwrap();
 
         let second_model = GraphReadModel::new(Arc::clone(&db)).unwrap();
@@ -696,7 +705,7 @@ mod tests {
             Some("GET"),
             "http",
         );
-        db.read_conn()
+        db.reads().read_conn()
             .unwrap()
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
@@ -767,7 +776,8 @@ mod tests {
         let bridged_before = GraphReadModel::new(Arc::clone(&db)).unwrap();
 
         // Evidence-only write: bumps evidence_epoch, leaves index_epoch alone.
-        db.boost_http_edge_confidence("http_get_users", 0.15)
+        db.writes()
+            .boost_http_edge_confidence("http_get_users", 0.15)
             .unwrap();
 
         let plain_after = GraphReadModel::without_http_bridges(Arc::clone(&db));

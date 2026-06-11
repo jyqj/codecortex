@@ -107,7 +107,7 @@ pub(crate) fn apply_synthesis_round(db: &IndexDb, round: &SynthesisRound) -> CcR
     if round.deltas.is_empty() {
         return Ok(());
     }
-    let uow = db.begin_unit_of_work()?;
+    let uow = db.writes().begin_unit_of_work()?;
     for delta in &round.deltas {
         for kind in &delta.delete_call_kinds {
             uow.delete_synthetic_call_edges(kind)?;

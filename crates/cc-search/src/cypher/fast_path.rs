@@ -597,7 +597,7 @@ fn run_bfs(query: &CypherQuery, plan: &FastPlan, db: &IndexDb) -> CcResult<Cyphe
         seed_sql.push_str(&format!(" AND {column} = ?{}", params.len() + 1));
         params.push(value.clone());
     }
-    let seed_rows = db.query_json(&seed_sql, &params)?;
+    let seed_rows = db.reads().query_json(&seed_sql, &params)?;
     let mut roots: Vec<String> = Vec::new();
     let mut seen_roots: HashSet<String> = HashSet::new();
     for row in &seed_rows {
@@ -661,6 +661,7 @@ fn run_bfs(query: &CypherQuery, plan: &FastPlan, db: &IndexDb) -> CcResult<Cyphe
                     // Forward = follow call_edges caller -> callee.
                     let callees: Vec<String> = match plan.walk {
                         WalkOrientation::Forward => db
+                            .reads()
                             .call_edges_from_uid_lite(uid)?
                             .into_iter()
                             .map(|edge| edge.callee_uid)
@@ -809,7 +810,7 @@ fn batch_resolve_symbols(db: &IndexDb, memo: &mut QueryMemo, uids: &[String]) ->
             SYMBOL_COLUMNS.join(", "),
             placeholders.join(",")
         );
-        for value in db.query_json(&sql, chunk)? {
+        for value in db.reads().query_json(&sql, chunk)? {
             if let JsonValue::Object(map) = value {
                 let uid = map
                     .get("symbol_uid")
@@ -839,7 +840,7 @@ fn symbol_row<'m>(
             "SELECT {} FROM symbols WHERE symbol_uid = ?1",
             SYMBOL_COLUMNS.join(", ")
         );
-        let result = db.query_json(&sql, &[uid.to_string()])?;
+        let result = db.reads().query_json(&sql, &[uid.to_string()])?;
         let row = result.into_iter().next().and_then(|value| match value {
             JsonValue::Object(map) => Some(map),
             _ => None,
@@ -889,7 +890,7 @@ mod tests {
         let tmp = tempfile::TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("fastpath.db")).unwrap().0;
         {
-            let conn = db.read_conn().unwrap();
+            let conn = db.reads().read_conn().unwrap();
             conn.execute_batch(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');",

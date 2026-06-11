@@ -324,14 +324,14 @@ impl CodeIndex {
 
     pub fn index_status(&self) -> CcResult<ProjectStats> {
         let project = self.ensure_project()?;
-        self.ensure_db()?.stats(project)
+        self.ensure_db()?.reads().stats(project)
     }
 
     pub fn diagnostics_info(&self) -> serde_json::Value {
         let schema_version = cc_db::index_migrate::CURRENT_SCHEMA_VERSION;
 
         let db_schema_version = self.index_db.as_ref().and_then(|db| {
-            let conn = db.read_conn().ok()?;
+            let conn = db.reads().read_conn().ok()?;
             conn.pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
                 .ok()
         });
@@ -339,7 +339,7 @@ impl CodeIndex {
         let last_indexed = self
             .index_db
             .as_ref()
-            .and_then(|db| db.get_metadata("last_indexed_at").ok().flatten());
+            .and_then(|db| db.reads().get_metadata("last_indexed_at").ok().flatten());
 
         let auto_index_enabled = self
             .config
@@ -544,7 +544,7 @@ impl GraphOps<'_> {
         include_metrics: bool,
     ) -> CcResult<serde_json::Value> {
         let db = self.0.ensure_db()?;
-        let rows = db.find_symbol(name, exact, top_k)?;
+        let rows = db.reads().find_symbol(name, exact, top_k)?;
         if !include_metrics {
             return serde_json::to_value(&rows).map_err(|e| CcError::Search(e.to_string()));
         }
@@ -552,7 +552,7 @@ impl GraphOps<'_> {
         for row in &rows {
             let mut obj = serde_json::to_value(row).map_err(|e| CcError::Search(e.to_string()))?;
             if let Some(uid) = row.symbol_uid.as_deref() {
-                if let Ok(info) = db.symbol_degree_details(uid) {
+                if let Ok(info) = db.reads().symbol_degree_details(uid) {
                     let hint = centrality_hint(&info);
                     obj["metrics"] = serde_json::json!({
                         "in_degree": info.in_degree,
@@ -570,23 +570,23 @@ impl GraphOps<'_> {
     }
 
     pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<cc_db::index_db::SymbolRow>> {
-        self.0.ensure_db()?.file_symbols(file_path)
+        self.0.ensure_db()?.reads().file_symbols(file_path)
     }
 
     pub fn list_indexed_files(&self) -> CcResult<Vec<cc_db::index_db::FileInfoRow>> {
-        self.0.ensure_db()?.list_indexed_files()
+        self.0.ensure_db()?.reads().list_indexed_files()
     }
 
     pub fn list_communities(&self) -> CcResult<Vec<cc_db::index_db::CommunityRow>> {
-        self.0.ensure_db()?.list_communities()
+        self.0.ensure_db()?.reads().list_communities()
     }
 
     pub fn list_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
-        self.0.ensure_db()?.list_repo_frameworks()
+        self.0.ensure_db()?.reads().list_repo_frameworks()
     }
 
     pub fn summarize_file(&self, file_path: &str) -> CcResult<serde_json::Value> {
-        self.0.ensure_db()?.file_summary(file_path)
+        self.0.ensure_db()?.reads().file_summary(file_path)
     }
 
     pub fn graph_query(&self, query: &str) -> CcResult<GraphQueryOutput> {
@@ -628,7 +628,7 @@ impl GraphOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<cc_db::index_db::CallEdgeLite>> {
         let db = self.0.ensure_db()?;
-        let syms = db.find_symbol(symbol_name, true, 1)?;
+        let syms = db.reads().find_symbol(symbol_name, true, 1)?;
         let sym = syms
             .first()
             .ok_or_else(|| CcError::Search(format!("symbol not found: {}", symbol_name)))?;
@@ -636,7 +636,7 @@ impl GraphOps<'_> {
             .symbol_uid
             .as_deref()
             .ok_or_else(|| CcError::Search("symbol has no uid".into()))?;
-        db.caller_rows_by_uid(uid, limit)
+        db.reads().caller_rows_by_uid(uid, limit)
     }
 
     pub fn callees(
@@ -645,7 +645,7 @@ impl GraphOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<cc_db::index_db::CallEdgeLite>> {
         let db = self.0.ensure_db()?;
-        let syms = db.find_symbol(symbol_name, true, 1)?;
+        let syms = db.reads().find_symbol(symbol_name, true, 1)?;
         let sym = syms
             .first()
             .ok_or_else(|| CcError::Search(format!("symbol not found: {}", symbol_name)))?;
@@ -653,7 +653,7 @@ impl GraphOps<'_> {
             .symbol_uid
             .as_deref()
             .ok_or_else(|| CcError::Search("symbol has no uid".into()))?;
-        db.callee_rows_by_uid(uid, limit)
+        db.reads().callee_rows_by_uid(uid, limit)
     }
 
     pub fn symbol_refs(
@@ -662,7 +662,7 @@ impl GraphOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<cc_db::index_db::SymbolRefLite>> {
         let db = self.0.ensure_db()?;
-        let syms = db.find_symbol(symbol_name, true, 1)?;
+        let syms = db.reads().find_symbol(symbol_name, true, 1)?;
         let sym = syms
             .first()
             .ok_or_else(|| CcError::Search(format!("symbol not found: {}", symbol_name)))?;
@@ -670,7 +670,7 @@ impl GraphOps<'_> {
             .symbol_uid
             .as_deref()
             .ok_or_else(|| CcError::Search("symbol has no uid".into()))?;
-        db.symbol_ref_rows_by_uid(uid, limit)
+        db.reads().symbol_ref_rows_by_uid(uid, limit)
     }
 
     pub fn list_unresolved_refs(
@@ -680,7 +680,9 @@ impl GraphOps<'_> {
         kind: Option<&str>,
     ) -> CcResult<serde_json::Value> {
         let db = self.0.ensure_db()?;
-        let rows = db.list_resolution_attempts(limit.clamp(1, 500), file_path, kind)?;
+        let rows = db
+            .reads()
+            .list_resolution_attempts(limit.clamp(1, 500), file_path, kind)?;
         let mut by_kind: HashMap<String, usize> = HashMap::new();
         let mut with_candidates = 0usize;
         for row in &rows {
@@ -725,7 +727,7 @@ impl SearchOps<'_> {
         let mut seen_uids: HashSet<String> = HashSet::new();
 
         for name in &candidates {
-            if let Ok(syms) = self.0.ensure_db()?.find_symbol(name, true, 1) {
+            if let Ok(syms) = self.0.ensure_db()?.reads().find_symbol(name, true, 1) {
                 for sym in &syms {
                     let dedup_key = sym.symbol_uid.clone().unwrap_or_else(|| {
                         format!("{}:{}:{}", sym.file_path, sym.name, sym.start_line)
@@ -783,7 +785,7 @@ impl SearchOps<'_> {
         let depth = expand_depth.unwrap_or(1).min(3);
         let per_symbol_limit = depth * 3; // depth 1 = 3, depth 2 = 6, depth 3 = 9
         for uid in &matched_uids {
-            if let Ok(callers) = db.caller_rows_by_uid(uid, per_symbol_limit) {
+            if let Ok(callers) = db.reads().caller_rows_by_uid(uid, per_symbol_limit) {
                 for edge in &callers {
                     relevant_files.insert(edge.file_path.clone());
                     expanded_callers.push(serde_json::json!({
@@ -799,7 +801,7 @@ impl SearchOps<'_> {
                     }));
                 }
             }
-            if let Ok(callees) = db.callee_rows_by_uid(uid, per_symbol_limit) {
+            if let Ok(callees) = db.reads().callee_rows_by_uid(uid, per_symbol_limit) {
                 for edge in &callees {
                     relevant_files.insert(edge.file_path.clone());
                     expanded_callees.push(serde_json::json!({
@@ -1264,7 +1266,7 @@ mod tests {
             parser_confidence: 1.0,
             ..Default::default()
         };
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
         cc_db::index_db::IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -1406,6 +1408,7 @@ mod tests {
             graph_score: 0.4,   // high graph score
             rerank_score: 0.50, // lower rerank
             reasons: vec![],
+            score_trace: vec![],
             source: String::new(),
             lane: None,
             metadata: serde_json::Value::Null,
@@ -1427,6 +1430,7 @@ mod tests {
             graph_score: 0.0,   // no graph score
             rerank_score: 0.55, // higher rerank
             reasons: vec![],
+            score_trace: vec![],
             source: String::new(),
             lane: None,
             metadata: serde_json::Value::Null,

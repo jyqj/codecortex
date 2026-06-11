@@ -5,12 +5,17 @@ use cc_model::{CcError, CcResult};
 use serde_json::Value;
 
 use crate::index_db::{
-    parse_parser_tier, CommunityRow, FileInfoRow, IndexDb, SymbolRow, SymbolTargetRow,
+    parse_parser_tier, CommunityRow, FileInfoRow, IndexDb, ReadOps, SymbolRow, SymbolTargetRow,
 };
 
 /// `(name, kind, file_path, fan_in, fan_out)` for hotspot symbol queries.
 impl IndexDb {
-    pub fn find_symbol(&self, name: &str, exact: bool, top_k: usize) -> CcResult<Vec<SymbolRow>> {
+    pub(crate) fn find_symbol(
+        &self,
+        name: &str,
+        exact: bool,
+        top_k: usize,
+    ) -> CcResult<Vec<SymbolRow>> {
         let conn = self.read_conn()?;
         let (sql, param): (&str, String) = if exact {
             (
@@ -49,7 +54,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
+    pub(crate) fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
         let conn = self.read_conn()?;
         Self::file_symbols_on(&conn, file_path)
     }
@@ -70,7 +75,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn list_symbol_targets(&self) -> CcResult<Vec<SymbolTargetRow>> {
+    pub(crate) fn list_symbol_targets(&self) -> CcResult<Vec<SymbolTargetRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -93,7 +98,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn resolver_seed_symbols_excluding(
+    pub(crate) fn resolver_seed_symbols_excluding(
         &self,
         excluded_files: &[String],
     ) -> CcResult<Vec<SymbolRecord>> {
@@ -157,7 +162,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
+    pub(crate) fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -178,7 +183,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn list_file_paths(&self) -> CcResult<Vec<String>> {
+    pub(crate) fn list_file_paths(&self) -> CcResult<Vec<String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT file_path FROM files ORDER BY file_path")
@@ -189,7 +194,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
+    pub(crate) fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT 1 FROM files WHERE file_path = ?1 LIMIT 1")
@@ -198,7 +203,7 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    pub fn list_communities(&self) -> CcResult<Vec<CommunityRow>> {
+    pub(crate) fn list_communities(&self) -> CcResult<Vec<CommunityRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -217,7 +222,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
+    pub(crate) fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -232,7 +237,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
+    pub(crate) fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -249,7 +254,7 @@ impl IndexDb {
 
     /// Total row count of `table`. The table name must come from a trusted
     /// static catalog (it is interpolated, not bound).
-    pub fn count_table_rows(&self, table: &str) -> CcResult<i64> {
+    pub(crate) fn count_table_rows(&self, table: &str) -> CcResult<i64> {
         let conn = self.read_conn()?;
         conn.query_row(
             &format!("SELECT COUNT(*) AS cnt FROM {}", table),
@@ -259,7 +264,7 @@ impl IndexDb {
         .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
+    pub(crate) fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
         let conn = self.read_conn()?;
         Self::query_json_on(&conn, sql, params)
     }
@@ -304,7 +309,7 @@ impl IndexDb {
         Ok(out)
     }
 
-    pub fn find_impacted_tests(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
+    pub(crate) fn find_impacted_tests(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
         if file_paths.is_empty() {
             return Ok(Vec::new());
         }
@@ -331,7 +336,7 @@ impl IndexDb {
         Ok(tests)
     }
 
-    pub fn file_summary(&self, file_path: &str) -> CcResult<Value> {
+    pub(crate) fn file_summary(&self, file_path: &str) -> CcResult<Value> {
         let conn = self.read_conn()?;
         let file_info = conn.query_row(
             "SELECT language, size, parser_tier, summary, is_test_file FROM files WHERE file_path=?1",
@@ -383,6 +388,69 @@ impl IndexDb {
         obj.insert("frameworks".into(), Value::Array(frameworks));
 
         Ok(Value::Object(obj))
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    pub fn find_symbol(&self, name: &str, exact: bool, top_k: usize) -> CcResult<Vec<SymbolRow>> {
+        self.0.find_symbol(name, exact, top_k)
+    }
+
+    pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
+        self.0.file_symbols(file_path)
+    }
+
+    pub fn list_symbol_targets(&self) -> CcResult<Vec<SymbolTargetRow>> {
+        self.0.list_symbol_targets()
+    }
+
+    pub fn resolver_seed_symbols_excluding(
+        &self,
+        excluded_files: &[String],
+    ) -> CcResult<Vec<SymbolRecord>> {
+        self.0.resolver_seed_symbols_excluding(excluded_files)
+    }
+
+    pub fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
+        self.0.list_indexed_files()
+    }
+
+    pub fn list_file_paths(&self) -> CcResult<Vec<String>> {
+        self.0.list_file_paths()
+    }
+
+    pub fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
+        self.0.file_is_indexed(file_path)
+    }
+
+    pub fn list_communities(&self) -> CcResult<Vec<CommunityRow>> {
+        self.0.list_communities()
+    }
+
+    pub fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
+        self.0.list_repo_frameworks()
+    }
+
+    pub fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
+        self.0.language_distribution()
+    }
+
+    /// Total row count of `table`. The table name must come from a trusted
+    pub fn count_table_rows(&self, table: &str) -> CcResult<i64> {
+        self.0.count_table_rows(table)
+    }
+
+    pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
+        self.0.query_json(sql, params)
+    }
+
+    pub fn find_impacted_tests(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
+        self.0.find_impacted_tests(file_paths)
+    }
+
+    pub fn file_summary(&self, file_path: &str) -> CcResult<Value> {
+        self.0.file_summary(file_path)
     }
 }
 

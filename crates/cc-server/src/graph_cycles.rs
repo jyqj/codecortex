@@ -484,7 +484,7 @@ mod tests {
 
         // Insert test data: files and imports forming a cycle
         {
-            let conn = db.read_conn().unwrap();
+            let conn = db.reads().read_conn().unwrap();
             conn.execute_batch(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
                  VALUES ('a.ts', 'typescript', 'h1', 0.0, 100, '2024-01-01');
@@ -521,7 +521,7 @@ mod tests {
         let db = Arc::new(IndexDb::open(&db_path).unwrap().0);
 
         {
-            let conn = db.read_conn().unwrap();
+            let conn = db.reads().read_conn().unwrap();
             conn.execute_batch(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
                  VALUES ('a.ts', 'typescript', 'h1', 0.0, 100, '2024-01-01');

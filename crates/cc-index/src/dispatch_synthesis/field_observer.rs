@@ -107,8 +107,12 @@ pub(crate) fn compute_field_observer_synthesis(
     //    methods and filter in Rust.
 
     // First, find all classes that have CallbackStore or CallbackInvoke dispatch sites.
-    let store_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackStore.as_str())?;
-    let invoke_sites = db.load_dispatch_sites_by_kind(DispatchSiteKind::CallbackInvoke.as_str())?;
+    let store_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::CallbackStore.as_str())?;
+    let invoke_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::CallbackInvoke.as_str())?;
 
     // Build a map of (class_uid → store_sites) and (class_uid → invoke_sites).
     let mut class_stores: HashMap<String, Vec<&DispatchSiteRecord>> = HashMap::new();
@@ -202,8 +206,12 @@ pub(crate) fn compute_field_observer_synthesis(
     let dispatcher_query_names: Vec<&str> = DISPATCHER_PREFIXES.to_vec();
 
     // Find classes that have methods with registrar names.
-    let registrar_classes = db.find_classes_with_method_names(&registrar_query_names)?;
-    let dispatcher_classes = db.find_classes_with_method_names(&dispatcher_query_names)?;
+    let registrar_classes = db
+        .reads()
+        .find_classes_with_method_names(&registrar_query_names)?;
+    let dispatcher_classes = db
+        .reads()
+        .find_classes_with_method_names(&dispatcher_query_names)?;
 
     // Intersect: classes that have both registrar and dispatcher methods.
     let registrar_containers: HashSet<(&str, &str)> = registrar_classes
@@ -231,7 +239,7 @@ pub(crate) fn compute_field_observer_synthesis(
     // Fetch methods for all candidate containers in one batched query instead
     // of a per-container round-trip.
     let container_list: Vec<&str> = unique_containers.iter().copied().collect();
-    let methods_by_container = db.find_methods_by_containers(&container_list)?;
+    let methods_by_container = db.reads().find_methods_by_containers(&container_list)?;
 
     for container in unique_containers {
         let methods = match methods_by_container.get(container) {

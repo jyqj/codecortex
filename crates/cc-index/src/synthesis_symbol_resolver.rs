@@ -46,7 +46,9 @@ impl SynthesisSymbolResolver {
             .into_iter()
             .collect();
         Ok(Self {
-            by_name: db.find_symbols_by_names_and_kinds(&unique_names, kinds)?,
+            by_name: db
+                .reads()
+                .find_symbols_by_names_and_kinds(&unique_names, kinds)?,
         })
     }
 

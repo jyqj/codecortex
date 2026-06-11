@@ -94,12 +94,13 @@ impl SignatureStore<'_> {
     fn decide(&self, signature: &dyn Fn() -> CcResult<u64>) -> CcResult<GateDecision> {
         let recorded_algo = self
             .db
+            .reads()
             .get_metadata(self.algo_key)?
             .unwrap_or_else(|| LEGACY_ALGORITHM_VERSION.to_string());
         if recorded_algo != self.algo_version {
             return Ok(GateDecision::run("signature algorithm changed"));
         }
-        let Some(recorded) = self.db.get_metadata(self.sig_key)? else {
+        let Some(recorded) = self.db.reads().get_metadata(self.sig_key)? else {
             return Ok(GateDecision::run("no recorded signature"));
         };
         // An unparseable recorded value never matches, matching the previous
@@ -112,8 +113,12 @@ impl SignatureStore<'_> {
     }
 
     fn record(&self, signature: u64) -> CcResult<()> {
-        self.db.set_metadata(self.sig_key, &signature.to_string())?;
-        self.db.set_metadata(self.algo_key, self.algo_version)
+        self.db
+            .writes()
+            .set_metadata(self.sig_key, &signature.to_string())?;
+        self.db
+            .writes()
+            .set_metadata(self.algo_key, self.algo_version)
     }
 }
 
@@ -278,7 +283,7 @@ impl<F: Fn() -> Option<String>> PassGate for StringCacheGate<'_, F> {
         let Some(current) = self.current() else {
             return Ok(GateDecision::run("cache key unavailable"));
         };
-        if self.db.get_metadata(self.key)?.as_deref() == Some(current.as_str()) {
+        if self.db.reads().get_metadata(self.key)?.as_deref() == Some(current.as_str()) {
             Ok(GateDecision::skip("cache key unchanged"))
         } else {
             Ok(GateDecision::run("cache key changed"))
@@ -288,7 +293,7 @@ impl<F: Fn() -> Option<String>> PassGate for StringCacheGate<'_, F> {
     fn record_run(&self) -> CcResult<()> {
         // Unavailable key: skip the record so the next build runs again.
         if let Some(current) = self.current() {
-            self.db.set_metadata(self.key, &current)?;
+            self.db.writes().set_metadata(self.key, &current)?;
         }
         Ok(())
     }
@@ -467,9 +472,12 @@ mod tests {
         );
 
         gate.record_run().unwrap();
-        assert_eq!(db.get_metadata("test_sig").unwrap().as_deref(), Some("42"));
         assert_eq!(
-            db.get_metadata("test_sig_algo").unwrap().as_deref(),
+            db.reads().get_metadata("test_sig").unwrap().as_deref(),
+            Some("42")
+        );
+        assert_eq!(
+            db.reads().get_metadata("test_sig_algo").unwrap().as_deref(),
             Some("1")
         );
 
@@ -493,7 +501,7 @@ mod tests {
     #[test]
     fn db_signature_gate_runs_when_signature_changed() {
         let (_tmp, db) = open_db();
-        db.set_metadata("test_sig", "41").unwrap();
+        db.writes().set_metadata("test_sig", "41").unwrap();
 
         let calls = Cell::new(0usize);
         let gate = DbSignatureGate::new(
@@ -512,14 +520,17 @@ mod tests {
         // record_run reuses the cached signature from should_run.
         gate.record_run().unwrap();
         assert_eq!(calls.get(), 1, "same-build signature computes at most once");
-        assert_eq!(db.get_metadata("test_sig").unwrap().as_deref(), Some("42"));
+        assert_eq!(
+            db.reads().get_metadata("test_sig").unwrap().as_deref(),
+            Some("42")
+        );
     }
 
     #[test]
     fn db_signature_gate_missing_algo_key_reads_as_version_one() {
         let (_tmp, db) = open_db();
         // Signature recorded by a build that predates the algorithm key.
-        db.set_metadata("test_sig", "42").unwrap();
+        db.writes().set_metadata("test_sig", "42").unwrap();
 
         let calls = Cell::new(0usize);
         let gate = DbSignatureGate::new(
@@ -540,8 +551,8 @@ mod tests {
     #[test]
     fn db_signature_gate_algorithm_version_mismatch_forces_run() {
         let (_tmp, db) = open_db();
-        db.set_metadata("test_sig", "42").unwrap();
-        db.set_metadata("test_sig_algo", "1").unwrap();
+        db.writes().set_metadata("test_sig", "42").unwrap();
+        db.writes().set_metadata("test_sig_algo", "1").unwrap();
 
         let calls = Cell::new(0usize);
         let gate = DbSignatureGate::new(
@@ -563,7 +574,7 @@ mod tests {
 
         gate.record_run().unwrap();
         assert_eq!(
-            db.get_metadata("test_sig_algo").unwrap().as_deref(),
+            db.reads().get_metadata("test_sig_algo").unwrap().as_deref(),
             Some("2"),
             "record must persist the new algorithm version"
         );
@@ -584,7 +595,7 @@ mod tests {
     fn db_signature_gate_forced_skips_metadata_and_compute_until_record() {
         let (_tmp, db) = open_db();
         // Recorded state matches — a non-forced gate would skip.
-        db.set_metadata("test_sig", "42").unwrap();
+        db.writes().set_metadata("test_sig", "42").unwrap();
 
         let calls = Cell::new(0usize);
         let gate = DbSignatureGate::new(
@@ -618,7 +629,10 @@ mod tests {
         assert!(gate.should_run().unwrap().run, "missing signature runs");
         gate.record_run().unwrap();
         assert_eq!(calls.get(), 1, "decision + record share one computation");
-        assert_eq!(db.get_metadata("fs_sig").unwrap().as_deref(), Some("7"));
+        assert_eq!(
+            db.reads().get_metadata("fs_sig").unwrap().as_deref(),
+            Some("7")
+        );
 
         let gate2 = FileSignatureGate::new("infra", &db, "fs_sig", "fs_sig_algo", "1", &compute);
         assert!(
@@ -626,7 +640,7 @@ mod tests {
             "unchanged stat walk skips"
         );
 
-        db.set_metadata("fs_sig", "8").unwrap();
+        db.writes().set_metadata("fs_sig", "8").unwrap();
         let gate3 = FileSignatureGate::new("infra", &db, "fs_sig", "fs_sig_algo", "1", &compute);
         assert!(gate3.should_run().unwrap().run, "changed signature runs");
     }
@@ -641,7 +655,7 @@ mod tests {
         assert_eq!(decision.reason, "cache key unavailable");
         gate.record_run().unwrap();
         assert_eq!(
-            db.get_metadata("head_key").unwrap(),
+            db.reads().get_metadata("head_key").unwrap(),
             None,
             "unavailable key must not be recorded"
         );
@@ -650,7 +664,7 @@ mod tests {
         let gate = StringCacheGate::new("cochange", &db, "head_key", || Some(String::new()));
         assert!(gate.should_run().unwrap().run);
         gate.record_run().unwrap();
-        assert_eq!(db.get_metadata("head_key").unwrap(), None);
+        assert_eq!(db.reads().get_metadata("head_key").unwrap(), None);
     }
 
     #[test]
@@ -662,7 +676,10 @@ mod tests {
         let gate = StringCacheGate::new("cochange", &db, "head_key", &compute);
         assert!(gate.should_run().unwrap().run, "no recorded key runs");
         gate.record_run().unwrap();
-        assert_eq!(db.get_metadata("head_key").unwrap().as_deref(), Some("abc"));
+        assert_eq!(
+            db.reads().get_metadata("head_key").unwrap().as_deref(),
+            Some("abc")
+        );
 
         let gate2 = StringCacheGate::new("cochange", &db, "head_key", &compute);
         let decision = gate2.should_run().unwrap();
@@ -686,8 +703,8 @@ mod tests {
     fn pair_gate_exposes_individual_decisions_and_records_both() {
         let (_tmp, db) = open_db();
         // First gate changed (recorded 1, computes 2); second unchanged.
-        db.set_metadata("sig_a", "1").unwrap();
-        db.set_metadata("sig_b", "5").unwrap();
+        db.writes().set_metadata("sig_a", "1").unwrap();
+        db.writes().set_metadata("sig_b", "5").unwrap();
         let calls = Cell::new(0usize);
 
         let gate_a = DbSignatureGate::new(
@@ -717,12 +734,12 @@ mod tests {
 
         pair.record_run().unwrap();
         assert_eq!(
-            db.get_metadata("sig_a").unwrap().as_deref(),
+            db.reads().get_metadata("sig_a").unwrap().as_deref(),
             Some("2"),
             "changed gate records its new signature"
         );
         assert_eq!(
-            db.get_metadata("sig_b").unwrap().as_deref(),
+            db.reads().get_metadata("sig_b").unwrap().as_deref(),
             Some("5"),
             "unchanged gate re-records the same value (no-op write)"
         );
@@ -731,8 +748,8 @@ mod tests {
     #[test]
     fn pair_gate_skips_when_both_unchanged() {
         let (_tmp, db) = open_db();
-        db.set_metadata("sig_a", "2").unwrap();
-        db.set_metadata("sig_b", "5").unwrap();
+        db.writes().set_metadata("sig_a", "2").unwrap();
+        db.writes().set_metadata("sig_b", "5").unwrap();
         let calls = Cell::new(0usize);
 
         let gate_a = DbSignatureGate::new(

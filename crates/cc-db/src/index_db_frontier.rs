@@ -2,10 +2,10 @@
 
 use cc_model::{CcError, CcResult};
 
-use crate::index_db::{HttpCallEdgeLite, IndexDb, RouteEdgeLite, RouteNodeLite};
+use crate::index_db::{HttpCallEdgeLite, IndexDb, ReadOps, RouteEdgeLite, RouteNodeLite};
 
 impl IndexDb {
-    pub fn route_rows_by_path(
+    pub(crate) fn route_rows_by_path(
         &self,
         route_path: &str,
         limit: usize,
@@ -30,7 +30,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn route_rows_by_handler_uid(
+    pub(crate) fn route_rows_by_handler_uid(
         &self,
         handler_uid: &str,
         limit: usize,
@@ -55,7 +55,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn http_calls_by_caller_uid(
+    pub(crate) fn http_calls_by_caller_uid(
         &self,
         caller_uid: &str,
         limit: usize,
@@ -80,7 +80,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn http_callers_by_normalized_path(
+    pub(crate) fn http_callers_by_normalized_path(
         &self,
         normalized_path: &str,
         limit: usize,
@@ -105,7 +105,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn http_callers_by_normalized_path_and_method(
+    pub(crate) fn http_callers_by_normalized_path_and_method(
         &self,
         normalized_path: &str,
         method: Option<&str>,
@@ -137,7 +137,7 @@ impl IndexDb {
         self.http_callers_by_normalized_path(normalized_path, limit)
     }
 
-    pub fn route_nodes_by_normalized_path(
+    pub(crate) fn route_nodes_by_normalized_path(
         &self,
         normalized_path: &str,
         limit: usize,
@@ -173,7 +173,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn route_nodes_by_normalized_path_and_method(
+    pub(crate) fn route_nodes_by_normalized_path_and_method(
         &self,
         normalized_path: &str,
         method: Option<&str>,
@@ -216,7 +216,7 @@ impl IndexDb {
         self.route_nodes_by_normalized_path(normalized_path, limit)
     }
 
-    pub fn all_http_call_edges_lite(&self, limit: usize) -> CcResult<Vec<HttpCallEdgeLite>> {
+    pub(crate) fn all_http_call_edges_lite(&self, limit: usize) -> CcResult<Vec<HttpCallEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -237,7 +237,7 @@ impl IndexDb {
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
 
-    pub fn all_route_nodes_lite(&self, limit: usize) -> CcResult<Vec<RouteNodeLite>> {
+    pub(crate) fn all_route_nodes_lite(&self, limit: usize) -> CcResult<Vec<RouteNodeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare(
@@ -267,6 +267,79 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
+    }
+}
+
+// Read-only facet delegates (see `IndexDb::reads()`).
+impl ReadOps<'_> {
+    pub fn route_rows_by_path(
+        &self,
+        route_path: &str,
+        limit: usize,
+    ) -> CcResult<Vec<RouteEdgeLite>> {
+        self.0.route_rows_by_path(route_path, limit)
+    }
+
+    pub fn route_rows_by_handler_uid(
+        &self,
+        handler_uid: &str,
+        limit: usize,
+    ) -> CcResult<Vec<RouteEdgeLite>> {
+        self.0.route_rows_by_handler_uid(handler_uid, limit)
+    }
+
+    pub fn http_calls_by_caller_uid(
+        &self,
+        caller_uid: &str,
+        limit: usize,
+    ) -> CcResult<Vec<HttpCallEdgeLite>> {
+        self.0.http_calls_by_caller_uid(caller_uid, limit)
+    }
+
+    pub fn http_callers_by_normalized_path(
+        &self,
+        normalized_path: &str,
+        limit: usize,
+    ) -> CcResult<Vec<HttpCallEdgeLite>> {
+        self.0
+            .http_callers_by_normalized_path(normalized_path, limit)
+    }
+
+    pub fn http_callers_by_normalized_path_and_method(
+        &self,
+        normalized_path: &str,
+        method: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<HttpCallEdgeLite>> {
+        self.0
+            .http_callers_by_normalized_path_and_method(normalized_path, method, limit)
+    }
+
+    pub fn route_nodes_by_normalized_path(
+        &self,
+        normalized_path: &str,
+        limit: usize,
+    ) -> CcResult<Vec<RouteNodeLite>> {
+        self.0
+            .route_nodes_by_normalized_path(normalized_path, limit)
+    }
+
+    pub fn route_nodes_by_normalized_path_and_method(
+        &self,
+        normalized_path: &str,
+        method: Option<&str>,
+        limit: usize,
+    ) -> CcResult<Vec<RouteNodeLite>> {
+        self.0
+            .route_nodes_by_normalized_path_and_method(normalized_path, method, limit)
+    }
+
+    pub fn all_http_call_edges_lite(&self, limit: usize) -> CcResult<Vec<HttpCallEdgeLite>> {
+        self.0.all_http_call_edges_lite(limit)
+    }
+
+    pub fn all_route_nodes_lite(&self, limit: usize) -> CcResult<Vec<RouteNodeLite>> {
+        self.0.all_route_nodes_lite(limit)
     }
 }
 

@@ -46,12 +46,14 @@ pub(crate) fn compute_vue_template_synthesis(db: &IndexDb) -> CcResult<EdgeDelta
     };
 
     // 2. Load VueChildComponent dispatch sites.
-    let child_sites =
-        db.load_dispatch_sites_by_kind(DispatchSiteKind::VueChildComponent.as_str())?;
+    let child_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::VueChildComponent.as_str())?;
 
     // 3. Load VueEventHandler dispatch sites.
-    let handler_sites =
-        db.load_dispatch_sites_by_kind(DispatchSiteKind::VueEventHandler.as_str())?;
+    let handler_sites = db
+        .reads()
+        .load_dispatch_sites_by_kind(DispatchSiteKind::VueEventHandler.as_str())?;
 
     if child_sites.is_empty() && handler_sites.is_empty() {
         return Ok(delta);

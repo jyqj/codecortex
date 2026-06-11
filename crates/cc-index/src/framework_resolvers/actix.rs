@@ -15,6 +15,7 @@ use cc_model::{Language, ParserTier};
 use regex::Regex;
 use std::sync::LazyLock;
 
+use super::mount_resolution::{resolve_mounts, MountPoint, MountSpec, PrefixJoin, TargetLookup};
 use super::{line_for_offset, FrameworkResolver, ProjectFrameworkContext};
 
 // ---------------------------------------------------------------------------
@@ -285,126 +286,44 @@ impl FrameworkResolver for ActixResolver {
         //   → find the file containing `configure`
         //   → all http route_edges in that file get "/api" prepended
 
-        // Step 1: collect scope mounts (prefix + handler_name + handler_expr)
-        struct ScopeMount {
-            prefix: String,
-            handler_name: String,
-            handler_expr: String,
-            mount_file: String,
-        }
-
-        let mut mounts: Vec<ScopeMount> = Vec::new();
-        for (file_path, outcome) in outcomes.iter() {
-            for edge in &outcome.route_edges {
-                if edge.framework.as_deref() != Some("actix-web") {
-                    continue;
-                }
-                if edge.route_kind.as_deref() != Some("scope_mount") {
-                    continue;
-                }
-                if let Some(ref handler) = edge.handler_name {
-                    let prefix = &edge.route_path;
-                    if !prefix.is_empty() {
-                        mounts.push(ScopeMount {
-                            prefix: prefix.clone(),
-                            handler_name: handler.clone(),
-                            handler_expr: edge
-                                .handler_expr
-                                .clone()
-                                .unwrap_or_else(|| handler.clone()),
-                            mount_file: file_path.clone(),
-                        });
-                    }
-                }
+        // Fallback for qualified paths like "admin::configure": search any
+        // same-name symbol whose file path contains the module part.
+        let module_fallback = |catalog: &crate::resolver::SymbolCatalog,
+                               _outcomes: &[(String, ParseOutcome)],
+                               mount: &MountPoint|
+         -> Option<String> {
+            if !mount.handler_expr.contains("::") {
+                return None;
             }
-        }
-
-        // Step 2: for each mount, find the target file via catalog and prepend prefix
-        for mount in &mounts {
-            // Try lookup by handler_name (last segment, e.g. "list_users" or "configure")
-            let target_file = match catalog.lookup_symbol(&mount.handler_name, &mount.mount_file) {
-                Some((_, file)) if file != mount.mount_file => Some(file),
-                _ => {
-                    // For qualified paths like "admin::configure", also try
-                    // searching by the module name to find any symbol in that file
-                    if mount.handler_expr.contains("::") {
-                        // Extract the module part: "admin::configure" → "admin"
-                        let module_part = mount.handler_expr.split("::").next().unwrap_or("");
-                        if !module_part.is_empty() {
-                            // Look for any symbol whose file path contains the module name
-                            let candidates = catalog.lookup_all_by_name(&mount.handler_name);
-                            candidates.into_iter().find_map(|(_, file, _)| {
-                                if file != mount.mount_file && file.contains(module_part) {
-                                    Some(file)
-                                } else {
-                                    None
-                                }
-                            })
-                        } else {
-                            None
-                        }
+            // Extract the module part: "admin::configure" → "admin"
+            let module_part = mount.handler_expr.split("::").next().unwrap_or("");
+            if module_part.is_empty() {
+                return None;
+            }
+            catalog
+                .lookup_all_by_name(&mount.handler_name)
+                .into_iter()
+                .find_map(|(_, file, _)| {
+                    if file != mount.mount_file && file.contains(module_part) {
+                        Some(file)
                     } else {
                         None
                     }
-                }
-            };
+                })
+        };
 
-            let target_file = match target_file {
-                Some(f) => f,
-                None => continue,
-            };
-
-            // Prepend the scope prefix to all http routes in the target file
-            for (file_path, outcome) in outcomes.iter_mut() {
-                if *file_path != target_file {
-                    continue;
-                }
-                for edge in &mut outcome.route_edges {
-                    if edge.framework.as_deref() != Some("actix-web") {
-                        continue;
-                    }
-                    if edge.route_kind.as_deref() != Some("http") {
-                        continue;
-                    }
-                    // Only prepend once (avoid double-prefixing on repeated runs)
-                    if !edge.route_path.starts_with(&mount.prefix) {
-                        let combined = if edge.route_path == "/" {
-                            mount.prefix.clone()
-                        } else {
-                            // Actix: "/api" + "/users" -> "/api/users"
-                            // Strip leading slash from sub-route if prefix doesn't end with /
-                            let sub = edge
-                                .route_path
-                                .strip_prefix('/')
-                                .unwrap_or(&edge.route_path);
-                            let prefix = mount.prefix.trim_end_matches('/');
-                            format!("{}/{}", prefix, sub)
-                        };
-                        edge.route_path = combined;
-                    }
-                }
-            }
-        }
-
-        // Step 3: resolve handler_symbol_uid for http route_edges
-        for (file_path, outcome) in outcomes.iter_mut() {
-            let fp = file_path.clone();
-            for edge in &mut outcome.route_edges {
-                if edge.framework.as_deref() != Some("actix-web") {
-                    continue;
-                }
-                if edge.handler_symbol_uid.is_some() {
-                    continue;
-                }
-                if let Some(ref handler_name) = edge.handler_name {
-                    if let Some((uid, _)) = catalog.lookup_symbol(handler_name, &fp) {
-                        if !uid.is_empty() {
-                            edge.handler_symbol_uid = Some(uid);
-                        }
-                    }
-                }
-            }
-        }
+        resolve_mounts(
+            catalog,
+            outcomes,
+            &MountSpec {
+                mount_kinds: &["scope_mount"],
+                skip_root_prefix: false,
+                framework: Some("actix-web"),
+                // Actix: "/api" + "/users" -> "/api/users"
+                join: PrefixJoin::SlashNormalized,
+                lookup: TargetLookup::DefaultWithFallback(&module_fallback),
+            },
+        );
     }
 }
 

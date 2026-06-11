@@ -48,17 +48,19 @@ pub fn trace_path_names(
     max_depth: usize,
 ) -> CcResult<Vec<Vec<String>>> {
     let from_uid = db
+        .reads()
         .find_symbol(from, true, 1)?
         .first()
         .and_then(|s| s.symbol_uid.clone())
         .ok_or_else(|| CcError::Search(format!("symbol not found: {}", from)))?;
     let to_uid = db
+        .reads()
         .find_symbol(to, true, 1)?
         .first()
         .and_then(|s| s.symbol_uid.clone())
         .ok_or_else(|| CcError::Search(format!("symbol not found: {}", to)))?;
 
-    let uid_names = db.symbol_names_by_uid()?;
+    let uid_names = db.reads().symbol_names_by_uid()?;
     let adj = GraphReadModel::call_adjacency(db)?;
     let paths = GraphReadModel::paths_between_adj(&adj, &from_uid, &to_uid, max_depth, usize::MAX)
         .into_iter()
@@ -106,12 +108,12 @@ pub fn trace_path_rich(
     let uid_vec = collect_unique_uids(&labeled_paths);
 
     // 4. Bulk lookup symbol metadata.
-    let sym_map = db.symbol_rows_by_uids(&uid_vec)?;
+    let sym_map = db.reads().symbol_rows_by_uids(&uid_vec)?;
 
     // Preload the uid→name map once (only needed for outgoing-call labels); doing
     // this per node re-scanned the entire symbols table on every BFS node.
     let uid_names = if include_outgoing {
-        db.symbol_names_by_uid()?
+        db.reads().symbol_names_by_uid()?
     } else {
         HashMap::new()
     };
@@ -370,7 +372,7 @@ mod tests {
         let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
 
         // Use the read pool connection for inserts (WAL mode allows this).
-        let conn = db.read_conn().unwrap();
+        let conn = db.reads().read_conn().unwrap();
 
         // Insert a file record (needed for foreign key / indexed checks).
         conn.execute(

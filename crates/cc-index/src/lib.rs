@@ -15,6 +15,7 @@ pub(crate) mod infra_k8s;
 pub(crate) mod infra_pass;
 pub(crate) mod infra_terraform;
 pub(crate) mod memory_budget;
+pub(crate) mod pass_gate;
 pub(crate) mod resolver;
 pub mod scanner;
 pub(crate) mod synthesis_pipeline;

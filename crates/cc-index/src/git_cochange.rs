@@ -120,6 +120,29 @@ fn normalize_git_path(path: &str) -> Option<String> {
     }
 }
 
+/// Resolve the current git HEAD sha for `project_path`. Returns `None` when
+/// git is unavailable or the directory is not a git repository, in which
+/// case callers must fall back to running analysis unconditionally (never
+/// permanently skip just because HEAD could not be read).
+pub(crate) fn current_git_head(project_path: &Path) -> Option<String> {
+    let output = Command::new("git")
+        .arg("-C")
+        .arg(project_path)
+        .arg("rev-parse")
+        .arg("HEAD")
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let head = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if head.is_empty() {
+        None
+    } else {
+        Some(head)
+    }
+}
+
 fn is_noise_path(path: &str) -> bool {
     NOISE_PATTERNS
         .iter()

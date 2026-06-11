@@ -17,9 +17,48 @@ use cc_model::{CcResult, Language, ParserTier, StableId};
 use crate::community::{build_community_labels, louvain_communities};
 use crate::config_linker::{extract_config_links, ConfigLinkKind};
 use crate::framework_registry;
+use crate::pass_gate::{
+    run_gated_passes, DbSignatureGate, FileSignatureGate, GatedPass, PairGate, RecordTiming,
+    StringCacheGate, Unconditional,
+};
 use crate::resolver::{ResolutionContext, SymbolCatalog};
 
 use super::indexer::{FileAction, Indexer, ResolveResult, WriteResult, MIN_FILES_FOR_PARALLEL};
+
+/// Signature algorithm versions, persisted next to each recorded signature
+/// (see `pass_gate`). Bump a version when its signature's column set or hash
+/// formula changes, so a stale recorded value forces exactly one recompute
+/// instead of a wrong skip. Signatures recorded before the version keys
+/// existed read as version "1".
+const DISPATCH_SIG_ALGORITHM: &str = "1";
+const INTERFACE_SIG_ALGORITHM: &str = "1";
+const COMMUNITY_SIG_ALGORITHM: &str = "1";
+const INFRA_SIG_ALGORITHM: &str = "1";
+
+/// Per-build memo of the symbols scan shared by the dispatch and interface
+/// signatures (identical column set and ordering), so a build pays for the
+/// symbols table scan once instead of once per signature. Builds are
+/// single-threaded through the postprocess phase, hence plain interior
+/// mutability.
+#[derive(Default)]
+struct SymbolRowsCache {
+    rows: std::cell::RefCell<Option<std::rc::Rc<Vec<serde_json::Value>>>>,
+}
+
+impl SymbolRowsCache {
+    fn get(&self, db: &IndexDb) -> CcResult<std::rc::Rc<Vec<serde_json::Value>>> {
+        if let Some(rows) = self.rows.borrow().as_ref() {
+            return Ok(std::rc::Rc::clone(rows));
+        }
+        let rows = std::rc::Rc::new(db.query_json(
+            "SELECT symbol_uid, name, kind, container FROM symbols \
+             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
+            &[],
+        )?);
+        *self.rows.borrow_mut() = Some(std::rc::Rc::clone(&rows));
+        Ok(rows)
+    }
+}
 
 impl Indexer {
     /// Phase 4: Symbol resolution (semantic edges, type catalog, call edges, cross-file).
@@ -294,126 +333,126 @@ impl Indexer {
             self.db.rebuild_test_edges_for_files(&changed_paths)?;
         }
 
-        // Per-pass signature gate: instead of a single graph_signature that
-        // hashes all 4 tables, compute separate signatures for each pass group.
-        // This avoids re-running all 7 synthesis passes + Louvain when only one
-        // input changed (e.g. a new dispatch site does not need interface
-        // dispatch recomputation, and vice versa).
-        let dispatch_sig = self.dispatch_synthesis_signature()?;
-        let interface_sig = self.interface_dispatch_signature()?;
+        // Per-pass signature gates: instead of a single graph_signature that
+        // hashes all 4 tables, each pass group carries its own input
+        // signature. This avoids re-running all 7 synthesis passes + Louvain
+        // when only one input changed (e.g. a new dispatch site does not need
+        // interface dispatch recomputation, and vice versa).
+        //
+        // The dispatch and interface signatures share one symbols scan per
+        // build via `SymbolRowsCache`, and the synthesis round records its
+        // signatures only after community detection completed
+        // (`RecordTiming::Deferred`) — a mid-build failure never records a
+        // signature for work that did not finish.
+        let forced = if full { Some("full rebuild") } else { None };
+        let symbol_rows = SymbolRowsCache::default();
 
-        let (dispatch_changed, interface_changed) = if !full {
-            let last_dispatch = self
-                .db
-                .get_metadata("last_dispatch_sig")?
-                .and_then(|s| s.parse::<u64>().ok());
-            let last_interface = self
-                .db
-                .get_metadata("last_interface_sig")?
-                .and_then(|s| s.parse::<u64>().ok());
+        let dispatch_gate = DbSignatureGate::new(
+            "dispatch_synthesis",
+            &self.db,
+            "last_dispatch_sig",
+            "last_dispatch_sig_algo",
+            DISPATCH_SIG_ALGORITHM,
+            forced,
+            || self.dispatch_synthesis_signature_from(&symbol_rows),
+        );
+        let interface_gate = DbSignatureGate::new(
+            "interface_dispatch",
+            &self.db,
+            "last_interface_sig",
+            "last_interface_sig_algo",
+            INTERFACE_SIG_ALGORITHM,
+            forced,
+            || self.interface_dispatch_signature_from(&symbol_rows),
+        );
+        // The two signatures gate one synthesis round: the round runs when
+        // either input changed, and the individual decisions route work to
+        // the dispatch- vs interface-gated sub-passes inside the round (see
+        // `dispatch_synthesis::SynthesisPassSpec`).
+        let synthesis_gate = PairGate::new("synthesis_round", &dispatch_gate, &interface_gate);
 
-            let dc = last_dispatch != Some(dispatch_sig);
-            let ic = last_interface != Some(interface_sig);
-
-            if !dc && !ic {
-                // Synthesis inputs unchanged — check community signature.
-                // Community sig includes synthetic edges, so it must be
-                // computed after synthesis. But if synthesis is unchanged the
-                // synthetic edges are unchanged too, so we can check now.
-                let community_sig = self.community_signature()?;
-                let last_community = self
-                    .db
-                    .get_metadata("last_community_sig")?
-                    .and_then(|s| s.parse::<u64>().ok());
-                if last_community == Some(community_sig) {
-                    return Ok(()); // Everything unchanged
-                }
-                // Only community changed (e.g. direct edge edits) — skip
-                // synthesis, rebuild communities only.
-                self.rebuild_communities()?;
-                self.db
-                    .set_metadata("last_community_sig", &community_sig.to_string())?;
-                return Ok(());
-            }
-            (dc, ic)
-        } else {
-            (true, true) // Full rebuild: run everything
-        };
+        // Community detection runs AFTER synthesis: its signature includes
+        // synthetic edges, so the loop evaluates this gate only once the
+        // synthesis round has been applied (or skipped — in which case the
+        // synthetic edges are unchanged too and the pre-round state is
+        // already the post-round state).
+        let community_gate = DbSignatureGate::new(
+            "community",
+            &self.db,
+            "last_community_sig",
+            "last_community_sig_algo",
+            COMMUNITY_SIG_ALGORITHM,
+            forced,
+            || self.community_signature(),
+        );
 
         // Phase 7b–7h: Dynamic dispatch synthesis
-        if self.dispatch_synthesis {
-            let synthesis_config = crate::dispatch_synthesis::SynthesisConfig {
-                enabled: true,
-                event_fanout_cap: self.event_fanout_cap,
-                generic_event_denylist: if self.event_denylist.is_empty() {
-                    crate::dispatch_synthesis::SynthesisConfig::default().generic_event_denylist
-                } else {
-                    self.event_denylist.iter().cloned().collect()
-                },
-            };
+        let run_synthesis = || -> CcResult<bool> {
+            if self.dispatch_synthesis {
+                let synthesis_config = crate::dispatch_synthesis::SynthesisConfig {
+                    enabled: true,
+                    event_fanout_cap: self.event_fanout_cap,
+                    generic_event_denylist: if self.event_denylist.is_empty() {
+                        crate::dispatch_synthesis::SynthesisConfig::default().generic_event_denylist
+                    } else {
+                        self.event_denylist.iter().cloned().collect()
+                    },
+                };
 
-            // Phase 7b–7h: compute every pass delta against the committed
-            // snapshot (no write lock held), then apply all deltas in one
-            // short atomic unit of work. A mid-pass failure leaves the
-            // database untouched; the apply itself is all-or-nothing. See
-            // `crate::synthesis_pipeline` for the cross-pass overlay and the
-            // concurrency notes.
-            let round = crate::synthesis_pipeline::compute_synthesis_round(
-                &self.db,
-                &synthesis_config,
-                dispatch_changed,
-                interface_changed,
-            )?;
-            crate::synthesis_pipeline::apply_synthesis_round(&self.db, &round)?;
-        } else {
-            // If synthesis was enabled in a previous run and is disabled now,
-            // proactively remove stale synthetic edges. The deletion set is
-            // derived from each pass's declared owned kinds/prefixes, so a
-            // new pass is covered here the moment its spec is registered.
-            let mut removed_edges = 0usize;
-            for spec in crate::dispatch_synthesis::registry() {
-                for kind in spec.owned_call_kinds {
-                    removed_edges += self.db.delete_synthetic_call_edges(kind)?;
+                // Compute every pass delta against the committed snapshot (no
+                // write lock held), then apply all deltas in one short atomic
+                // unit of work. A mid-pass failure leaves the database
+                // untouched; the apply itself is all-or-nothing. See
+                // `crate::synthesis_pipeline` for the cross-pass overlay and
+                // the concurrency notes.
+                let round = crate::synthesis_pipeline::compute_synthesis_round(
+                    &self.db,
+                    &synthesis_config,
+                    synthesis_gate.first_changed(),
+                    synthesis_gate.second_changed(),
+                )?;
+                crate::synthesis_pipeline::apply_synthesis_round(&self.db, &round)?;
+            } else {
+                // If synthesis was enabled in a previous run and is disabled now,
+                // proactively remove stale synthetic edges. The deletion set is
+                // derived from each pass's declared owned kinds/prefixes, so a
+                // new pass is covered here the moment its spec is registered.
+                let mut removed_edges = 0usize;
+                for spec in crate::dispatch_synthesis::registry() {
+                    for kind in spec.owned_call_kinds {
+                        removed_edges += self.db.delete_synthetic_call_edges(kind)?;
+                    }
+                    for prefix in spec.owned_semantic_prefixes {
+                        removed_edges += self.db.delete_synthetic_semantic_edges(prefix)?;
+                    }
                 }
-                for prefix in spec.owned_semantic_prefixes {
-                    removed_edges += self.db.delete_synthetic_semantic_edges(prefix)?;
+                if removed_edges > 0 {
+                    tracing::info!(
+                        removed_edges,
+                        "dispatch synthesis disabled; removed stale synthetic edges"
+                    );
                 }
             }
-            if removed_edges > 0 {
-                tracing::info!(
-                    removed_edges,
-                    "dispatch synthesis disabled; removed stale synthetic edges"
-                );
-            }
-        }
-
-        // Community detection — computed AFTER synthesis. The signature includes
-        // synthetic edges, so it reflects the output of the passes above.
-        let community_sig = self.community_signature()?;
-        let should_rebuild_community = if !full {
-            let last_community = self
-                .db
-                .get_metadata("last_community_sig")?
-                .and_then(|s| s.parse::<u64>().ok());
-            last_community != Some(community_sig)
-        } else {
-            true
+            Ok(true)
         };
 
-        if should_rebuild_community {
+        let run_community = || -> CcResult<bool> {
             self.rebuild_communities()?;
-            self.db
-                .set_metadata("last_community_sig", &community_sig.to_string())?;
-        }
+            Ok(true)
+        };
 
-        // Persist dispatch/interface signatures after all work completes so a
-        // mid-pass failure never records a signature for work that did not finish.
-        self.db
-            .set_metadata("last_dispatch_sig", &dispatch_sig.to_string())?;
-        self.db
-            .set_metadata("last_interface_sig", &interface_sig.to_string())?;
-
-        Ok(())
+        run_gated_passes(&[
+            GatedPass {
+                gate: &synthesis_gate,
+                timing: RecordTiming::Deferred,
+                run: &run_synthesis,
+            },
+            GatedPass {
+                gate: &community_gate,
+                timing: RecordTiming::Immediate,
+                run: &run_community,
+            },
+        ])
     }
 
     /// Phase 8-11: Git co-change, infrastructure, resolver feedback, and ADR indexing.
@@ -423,25 +462,51 @@ impl Indexer {
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
     ) -> CcResult<()> {
-        // Phase 8: Git co-change analysis
-        self.analyze_git_cochanges(project_path)?;
+        // Phase 8: Git co-change analysis. HEAD-skip: co-change edges only
+        // depend on commit history. If HEAD has not advanced since the last
+        // successful analysis, the result is unchanged (the `--since=1.year`
+        // window drifts but produces equivalent output while HEAD is fixed),
+        // so the git log + parse + write can be skipped.
+        let cochange_gate =
+            StringCacheGate::new("git_cochange", &self.db, "last_cochange_head", || {
+                crate::git_cochange::current_git_head(project_path)
+            });
+        let run_cochange = || -> CcResult<bool> {
+            match crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500) {
+                Ok(co_changes) => {
+                    if !co_changes.is_empty() {
+                        self.db.insert_co_change_edges_batch(&co_changes)?;
+                        tracing::info!(count = co_changes.len(), "indexed git co-change edges");
+                    }
+                    Ok(true)
+                }
+                Err(err) => {
+                    // Non-fatal: git may not be available or the project may
+                    // not be a git repo. The HEAD marker stays unrecorded so a
+                    // transient failure never poisons the skip cache.
+                    tracing::warn!(error = %err, "skipping git co-change analysis");
+                    Ok(false)
+                }
+            }
+        };
 
-        // Phase 9: Infrastructure pass
+        // Phase 9: Infrastructure pass.
         //
         // The infra pass scans the whole project (Dockerfiles, compose, K8s,
         // terraform, compile_commands) independently of the language parser
         // pipeline — so infra files generally never appear in `write_units` and
         // their changes cannot be inferred from it. To stay strictly correct
         // *and* skip when unchanged, gate the pass on a signature over the infra
-        // candidate set (paths + mtime + size). Computing the signature only
-        // walks the tree and stats files; it never reads/parses contents nor
-        // binds symbols, so it is strictly cheaper than the pass it gates.
-        let infra_sig = Self::infra_signature(project_path);
-        let last_infra_sig = self
-            .db
-            .get_metadata("last_infra_sig")?
-            .and_then(|s| s.parse::<u64>().ok());
-        if last_infra_sig != Some(infra_sig) {
+        // candidate set (paths + mtime + size); see `infra_pass::infra_signature`.
+        let infra_gate = FileSignatureGate::new(
+            "infra",
+            &self.db,
+            "last_infra_sig",
+            "last_infra_sig_algo",
+            INFRA_SIG_ALGORITHM,
+            || crate::infra_pass::infra_signature(project_path),
+        );
+        let run_infra = || -> CcResult<bool> {
             let (mut infra_nodes, mut infra_edges) =
                 crate::infra_pass::run_infra_pass(project_path);
             if !infra_nodes.is_empty() || !infra_edges.is_empty() {
@@ -478,13 +543,12 @@ impl Indexer {
                     "indexed infra graph"
                 );
             }
-            // Record the signature only after a successful pass.
-            self.db
-                .set_metadata("last_infra_sig", &infra_sig.to_string())?;
-        }
+            Ok(true)
+        };
 
         // Phase 10: Architecture Decision Records (ADR) indexing
-        {
+        let adr_gate = Unconditional::new("adr");
+        let run_adr = || -> CcResult<bool> {
             let adr_dirs = [
                 "docs/adr",
                 "docs/decisions",
@@ -555,9 +619,26 @@ impl Indexer {
                     &serde_json::to_string(&adr_docs).unwrap_or_default(),
                 )?;
             }
-        }
+            Ok(true)
+        };
 
-        Ok(())
+        run_gated_passes(&[
+            GatedPass {
+                gate: &cochange_gate,
+                timing: RecordTiming::Immediate,
+                run: &run_cochange,
+            },
+            GatedPass {
+                gate: &infra_gate,
+                timing: RecordTiming::Immediate,
+                run: &run_infra,
+            },
+            GatedPass {
+                gate: &adr_gate,
+                timing: RecordTiming::Immediate,
+                run: &run_adr,
+            },
+        ])
     }
 
     pub(crate) fn collect_route_nodes(
@@ -1026,103 +1107,6 @@ impl Indexer {
         )
     }
 
-    fn analyze_git_cochanges(&self, project_path: &Path) -> CcResult<()> {
-        // HEAD-skip: co-change edges only depend on commit history. If HEAD has
-        // not advanced since the last successful analysis, the result is
-        // unchanged (the `--since=1.year` window drifts but produces equivalent
-        // output while HEAD is fixed), so we can skip the git log + parse + write.
-        let current_head = Self::current_git_head(project_path);
-        if let Some(head) = current_head.as_deref() {
-            if !head.is_empty() {
-                let last_head = self.db.get_metadata("last_cochange_head")?;
-                if last_head.as_deref() == Some(head) {
-                    return Ok(());
-                }
-            }
-        }
-
-        match crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500) {
-            Ok(co_changes) => {
-                if !co_changes.is_empty() {
-                    self.db.insert_co_change_edges_batch(&co_changes)?;
-                    tracing::info!(count = co_changes.len(), "indexed git co-change edges");
-                }
-                // Record HEAD only after a successful analysis so a transient
-                // failure never poisons the skip cache. A non-git repo yields
-                // `None`/empty head and simply skips the metadata update.
-                if let Some(head) = current_head.as_deref() {
-                    if !head.is_empty() {
-                        self.db.set_metadata("last_cochange_head", head)?;
-                    }
-                }
-            }
-            Err(err) => {
-                // Non-fatal: git may not be available or the project may not be a git repo
-                tracing::warn!(error = %err, "skipping git co-change analysis");
-            }
-        }
-        Ok(())
-    }
-
-    /// Deterministic signature over the infrastructure file inputs: the sorted
-    /// set of discovered infra candidate paths, each tagged with its mtime and
-    /// size. Adding, removing, or modifying any infra file (Dockerfile, compose,
-    /// K8s manifest, terraform, compile_commands) changes the signature and
-    /// forces the infra pass to recompute.
-    ///
-    /// This only walks the tree and stats files (the `discover_infra_files`
-    /// strong-feature filter), so it is strictly cheaper than the full pass
-    /// (read + parse + symbol bind + route match + `replace_infra_data`) it
-    /// gates. mtime + size matches the change-detection contract used by the
-    /// scan/diff fast path.
-    fn infra_signature(project_path: &Path) -> u64 {
-        use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash, Hasher};
-
-        let mut candidates = crate::infra_pass::discover_infra_files(project_path);
-        candidates.sort_by(|a, b| a.rel_path.cmp(&b.rel_path));
-
-        let mut hasher = DefaultHasher::new();
-        candidates.len().hash(&mut hasher);
-        for candidate in &candidates {
-            candidate.rel_path.hash(&mut hasher);
-            if let Ok(metadata) = std::fs::metadata(&candidate.abs_path) {
-                metadata.len().hash(&mut hasher);
-                let mtime = metadata
-                    .modified()
-                    .ok()
-                    .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-                    .map(|d| d.as_secs())
-                    .unwrap_or(0);
-                mtime.hash(&mut hasher);
-            }
-        }
-        hasher.finish()
-    }
-
-    /// Resolve the current git HEAD sha for `project_path`. Returns `None` when
-    /// git is unavailable or the directory is not a git repository, in which
-    /// case callers must fall back to running analysis unconditionally (never
-    /// permanently skip just because HEAD could not be read).
-    fn current_git_head(project_path: &Path) -> Option<String> {
-        let output = std::process::Command::new("git")
-            .arg("-C")
-            .arg(project_path)
-            .arg("rev-parse")
-            .arg("HEAD")
-            .output()
-            .ok()?;
-        if !output.status.success() {
-            return None;
-        }
-        let head = String::from_utf8_lossy(&output.stdout).trim().to_string();
-        if head.is_empty() {
-            None
-        } else {
-            Some(head)
-        }
-    }
-
     /// Deterministic signature over the *inputs* of dispatch synthesis and
     /// community detection: the real (non-synthetic) call graph plus the symbol
     /// structure (uid/name/kind/container).
@@ -1141,7 +1125,14 @@ impl Indexer {
     ///
     /// `DefaultHasher` (SipHash with a fixed key) is deterministic across
     /// processes, so persisting the resulting u64 across runs is sound.
+    #[cfg(test)]
     fn dispatch_synthesis_signature(&self) -> CcResult<u64> {
+        self.dispatch_synthesis_signature_from(&SymbolRowsCache::default())
+    }
+
+    /// Same as `dispatch_synthesis_signature`, reading the symbols
+    /// scan through a shared per-build cache.
+    fn dispatch_synthesis_signature_from(&self, symbol_rows: &SymbolRowsCache) -> CcResult<u64> {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
@@ -1174,14 +1165,21 @@ impl Indexer {
         }
 
         // Symbol structure (all synthesis passes read symbols)
-        self.hash_symbols(&mut hasher)?;
+        Self::hash_symbol_rows(&symbol_rows.get(&self.db)?, &mut hasher);
 
         Ok(hasher.finish())
     }
 
     /// Signature covering interface dispatch synthesis inputs
     /// (real call_edges + symbols + real semantic_edges).
+    #[cfg(test)]
     fn interface_dispatch_signature(&self) -> CcResult<u64> {
+        self.interface_dispatch_signature_from(&SymbolRowsCache::default())
+    }
+
+    /// Same as `interface_dispatch_signature`, reading the symbols
+    /// scan through a shared per-build cache.
+    fn interface_dispatch_signature_from(&self, symbol_rows: &SymbolRowsCache) -> CcResult<u64> {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
@@ -1208,7 +1206,7 @@ impl Indexer {
         }
 
         // Symbols
-        self.hash_symbols(&mut hasher)?;
+        Self::hash_symbol_rows(&symbol_rows.get(&self.db)?, &mut hasher);
 
         // Real semantic edges (synthetic 'synth:%' excluded)
         let sem_rows = self.db.query_json(
@@ -1257,7 +1255,11 @@ impl Indexer {
                 .hash(&mut hasher);
         }
 
-        // Symbols (uid + name + kind — container not relevant for community)
+        // Symbols (uid + name + kind). `container` is intentionally excluded:
+        // community output is Louvain over call-edge uid pairs plus labels
+        // built from symbol names by uid, so container is not an input — a
+        // container-only change must not force a Louvain rerun. Locked by
+        // `community_signature_ignores_container_unlike_synthesis_signatures`.
         let symbol_rows = self.db.query_json(
             "SELECT symbol_uid, name, kind FROM symbols \
              WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
@@ -1277,17 +1279,17 @@ impl Indexer {
     }
 
     /// Hash symbol structure (uid/name/kind/container) into the given hasher.
-    /// Shared by `dispatch_synthesis_signature` and `interface_dispatch_signature`.
-    fn hash_symbols(&self, hasher: &mut std::collections::hash_map::DefaultHasher) -> CcResult<()> {
+    /// Shared by `dispatch_synthesis_signature` and `interface_dispatch_signature`;
+    /// the rows come from a per-build [`SymbolRowsCache`] so the symbols table
+    /// is scanned once even when both signatures are computed.
+    fn hash_symbol_rows(
+        rows: &[serde_json::Value],
+        hasher: &mut std::collections::hash_map::DefaultHasher,
+    ) {
         use std::hash::Hash;
 
-        let symbol_rows = self.db.query_json(
-            "SELECT symbol_uid, name, kind, container FROM symbols \
-             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
-            &[],
-        )?;
-        symbol_rows.len().hash(hasher);
-        for row in &symbol_rows {
+        rows.len().hash(hasher);
+        for row in rows {
             for col in ["symbol_uid", "name", "kind", "container"] {
                 row.get(col)
                     .and_then(|v| v.as_str())
@@ -1295,7 +1297,6 @@ impl Indexer {
                     .hash(hasher);
             }
         }
-        Ok(())
     }
 
     fn rebuild_communities(&self) -> CcResult<()> {
@@ -1833,6 +1834,65 @@ mod graph_signature_coverage_tests {
         assert_ne!(
             sig_base, sig_after_synth,
             "a synthetic call edge must change community_signature"
+        );
+    }
+
+    /// `community_signature` intentionally excludes `container`: community
+    /// output is Louvain over call-edge uid pairs plus labels built from
+    /// symbol names by uid, so container is not an input and a container-only
+    /// change must not force a Louvain rerun. The dispatch/interface
+    /// signatures DO hash container (synthesis passes resolve methods through
+    /// their containers), so the same change must move both of them.
+    #[test]
+    fn community_signature_ignores_container_unlike_synthesis_signatures() {
+        let (_tmp, indexer) = setup_indexer();
+        let db = &indexer.db;
+
+        let community_before = indexer.community_signature().unwrap();
+        let dispatch_before = indexer.dispatch_synthesis_signature().unwrap();
+        let interface_before = indexer.interface_dispatch_signature().unwrap();
+
+        let conn = db.read_conn().unwrap();
+        conn.execute(
+            "UPDATE symbols SET container = 'NewContainer' WHERE symbol_id = 's1'",
+            [],
+        )
+        .unwrap();
+
+        assert_eq!(
+            community_before,
+            indexer.community_signature().unwrap(),
+            "a container-only change must NOT affect community_signature"
+        );
+        assert_ne!(
+            dispatch_before,
+            indexer.dispatch_synthesis_signature().unwrap(),
+            "a container change must affect dispatch_synthesis_signature"
+        );
+        assert_ne!(
+            interface_before,
+            indexer.interface_dispatch_signature().unwrap(),
+            "a container change must affect interface_dispatch_signature"
+        );
+    }
+
+    /// Sharing one symbols scan between the dispatch and interface signatures
+    /// must not change their values: computing through a shared
+    /// `SymbolRowsCache` yields the same u64s as independent scans.
+    #[test]
+    fn shared_symbol_rows_cache_preserves_signature_values() {
+        let (_tmp, indexer) = setup_indexer();
+        let shared = SymbolRowsCache::default();
+
+        assert_eq!(
+            indexer.dispatch_synthesis_signature().unwrap(),
+            indexer.dispatch_synthesis_signature_from(&shared).unwrap(),
+            "dispatch signature must be identical through the shared cache"
+        );
+        assert_eq!(
+            indexer.interface_dispatch_signature().unwrap(),
+            indexer.interface_dispatch_signature_from(&shared).unwrap(),
+            "interface signature must be identical through the shared cache"
         );
     }
 

@@ -366,6 +366,50 @@ class Accumulator:
         Arc::new(db)
     }
 
+    /// Snapshot of the persisted graph state a build produces: per-edge-type
+    /// counts plus node/community totals. Labeled so an assertion failure
+    /// names the drifting table directly.
+    fn graph_state(db: &IndexDb) -> Vec<(&'static str, i64)> {
+        let count = |sql: &str| -> i64 {
+            db.query_json(sql, &[])
+                .expect("graph state query")
+                .first()
+                .and_then(|row| row.get("cnt"))
+                .and_then(|value| value.as_i64())
+                .unwrap_or(0)
+        };
+        vec![
+            ("files", count("SELECT COUNT(*) AS cnt FROM files")),
+            ("symbols", count("SELECT COUNT(*) AS cnt FROM symbols")),
+            ("chunks", count("SELECT COUNT(*) AS cnt FROM chunks")),
+            (
+                "call_edges",
+                count("SELECT COUNT(*) AS cnt FROM call_edges"),
+            ),
+            (
+                "semantic_edges",
+                count("SELECT COUNT(*) AS cnt FROM semantic_edges"),
+            ),
+            (
+                "test_edges",
+                count("SELECT COUNT(*) AS cnt FROM test_edges"),
+            ),
+            (
+                "co_change_edges",
+                count("SELECT COUNT(*) AS cnt FROM co_change_edges"),
+            ),
+            ("routes", count("SELECT COUNT(*) AS cnt FROM routes")),
+            (
+                "community_assigned_symbols",
+                count("SELECT COUNT(*) AS cnt FROM symbols WHERE community_id IS NOT NULL"),
+            ),
+            (
+                "communities",
+                count("SELECT COUNT(*) AS cnt FROM communities"),
+            ),
+        ]
+    }
+
     /// `prepare` + `commit` must produce the same `IndexReport` and persisted DB
     /// state as the single-shot `execute` path, proving the split introduces no
     /// behavioral drift.
@@ -427,6 +471,16 @@ class Accumulator:
         assert_eq!(
             stats_a.indexed_symbols, report_b.symbols_total,
             "report vs db symbol count"
+        );
+
+        // Final graph state must match table by table: edge counts by type,
+        // community assignments, and node totals. This catches postprocess /
+        // analysis drift (synthesis, Louvain, test edges, co-change, routes)
+        // that the report counters above cannot observe.
+        assert_eq!(
+            graph_state(&db_a),
+            graph_state(&db_b),
+            "execute vs prepare+commit persisted graph state"
         );
     }
 }

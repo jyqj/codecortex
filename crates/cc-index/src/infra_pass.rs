@@ -146,6 +146,42 @@ pub fn bind_infra_to_symbols(
     }
 }
 
+/// Deterministic signature over the infrastructure file inputs: the sorted
+/// set of discovered infra candidate paths, each tagged with its mtime and
+/// size. Adding, removing, or modifying any infra file (Dockerfile, compose,
+/// K8s manifest, terraform, compile_commands) changes the signature and
+/// forces the infra pass to recompute.
+///
+/// This only walks the tree and stats files (the `discover_infra_files`
+/// strong-feature filter), so it is strictly cheaper than the full pass
+/// (read + parse + symbol bind + route match + `replace_infra_data`) it
+/// gates. mtime + size matches the change-detection contract used by the
+/// scan/diff fast path.
+pub(crate) fn infra_signature(project_path: &Path) -> u64 {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+
+    let mut candidates = discover_infra_files(project_path);
+    candidates.sort_by(|a, b| a.rel_path.cmp(&b.rel_path));
+
+    let mut hasher = DefaultHasher::new();
+    candidates.len().hash(&mut hasher);
+    for candidate in &candidates {
+        candidate.rel_path.hash(&mut hasher);
+        if let Ok(metadata) = std::fs::metadata(&candidate.abs_path) {
+            metadata.len().hash(&mut hasher);
+            let mtime = metadata
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_secs())
+                .unwrap_or(0);
+            mtime.hash(&mut hasher);
+        }
+    }
+    hasher.finish()
+}
+
 /// Run the full infra pass: discover -> parse -> return nodes + edges.
 pub fn run_infra_pass(project_path: &Path) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let candidates = discover_infra_files(project_path);

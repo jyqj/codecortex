@@ -66,7 +66,7 @@ impl IndexDb {
     pub fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT resolved_path, import_string FROM imports WHERE file_path = ?1 AND resolved_path IS NOT NULL",
             )
             .map_err(db_err)?;
@@ -122,7 +122,7 @@ impl IndexDb {
     pub fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT symbol_uid, name, file_path, kind, community_id \
                  FROM symbols WHERE file_path=?1 AND symbol_uid IS NOT NULL",
             )
@@ -264,7 +264,7 @@ impl IndexDb {
     pub fn direct_importers_of_file(&self, file_path: &str, limit: usize) -> CcResult<Vec<String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT DISTINCT file_path FROM imports \
                  WHERE resolved_path = ?1 AND file_path != ?1 \
                  ORDER BY file_path LIMIT ?2",

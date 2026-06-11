@@ -415,6 +415,10 @@ impl IndexDb {
                 "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
             )?;
             register_regexp_function(conn)?;
+            // The hot read paths keep ~25+ distinct constant statements alive
+            // via prepare_cached; rusqlite's default capacity of 16 would make
+            // them evict each other under LRU.
+            conn.set_prepared_statement_cache_capacity(64);
             Ok(())
         });
         Pool::builder()

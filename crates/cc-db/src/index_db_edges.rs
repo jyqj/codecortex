@@ -457,7 +457,7 @@ impl IndexDb {
     ) -> CcResult<Vec<CoChangeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT edge_id, file_a, file_b, co_change_count, total_commits_a, total_commits_b, confidence
                  FROM co_change_edges
                  WHERE (file_a = ?1 OR file_b = ?1) AND confidence >= ?2

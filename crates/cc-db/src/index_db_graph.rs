@@ -1,4 +1,9 @@
 //! IndexDb methods: graph traversal, community detection, framework post-processing.
+//!
+//! Convention: hot-path point reads with constant SQL string literals use
+//! `prepare_cached`; dynamically built SQL (e.g. variable-arity `IN (...)`
+//! placeholders) must keep using `prepare` so it does not pollute the
+//! per-connection statement cache.
 
 use std::collections::HashMap;
 
@@ -23,7 +28,7 @@ impl IndexDb {
     ) -> CcResult<Vec<SymbolCoverRow>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT symbol_id, symbol_uid, name, file_path, start_line, end_line
                  FROM symbols
                  WHERE file_path = ?1 AND start_line <= ?2 AND end_line >= ?2
@@ -53,7 +58,7 @@ impl IndexDb {
     ) -> CcResult<Vec<CallEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line
                  FROM call_edges
                  WHERE callee_symbol_uid = ?1
@@ -91,7 +96,7 @@ impl IndexDb {
     ) -> CcResult<Vec<CallEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line
                  FROM call_edges
                  WHERE caller_symbol_uid = ?1
@@ -129,7 +134,7 @@ impl IndexDb {
     ) -> CcResult<Vec<SymbolRefLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT file_path, line, symbol_name, target_symbol_uid, resolution_kind, resolution_confidence
                  FROM symbol_refs
                  WHERE target_symbol_uid = ?1
@@ -158,7 +163,7 @@ impl IndexDb {
     pub fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT env_key, COUNT(*) as cnt, GROUP_CONCAT(DISTINCT file_path) \
              FROM data_flow_edges \
              WHERE flow_kind = 'env_access' AND env_key IS NOT NULL \
@@ -198,7 +203,7 @@ impl IndexDb {
     pub fn call_uid_edges(&self) -> CcResult<Vec<(String, String)>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT caller_symbol_uid, callee_symbol_uid
                  FROM call_edges
                  WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL",
@@ -219,7 +224,7 @@ impl IndexDb {
     pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT caller_symbol_uid, callee_symbol_uid, dispatch_kind, \
                         synthesized_by, synthesis_key, resolution_confidence, \
                         file_path, line, registered_file, registered_line, \
@@ -254,7 +259,7 @@ impl IndexDb {
     pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT caller_symbol_uid, callee_symbol_uid, dispatch_kind, \
                         synthesized_by, synthesis_key, resolution_confidence, \
                         file_path, line, registered_file, registered_line, \
@@ -289,7 +294,7 @@ impl IndexDb {
     pub fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare("SELECT symbol_uid, name FROM symbols WHERE symbol_uid IS NOT NULL")
+            .prepare_cached("SELECT symbol_uid, name FROM symbols WHERE symbol_uid IS NOT NULL")
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
             .query_map([], |row| {
@@ -352,7 +357,7 @@ impl IndexDb {
     pub fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT \
                     (SELECT COUNT(*) FROM call_edges WHERE callee_symbol_uid = ?1) AS in_degree, \
                     (SELECT COUNT(*) FROM call_edges WHERE caller_symbol_uid = ?1) AS out_degree, \

@@ -299,7 +299,7 @@ impl IndexDb {
         let conn = self.read_conn()?;
         let like_pattern = format!("%{}%", escape_like(token));
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT s.symbol_uid, s.name \
                  FROM symbols_fts f \
                  JOIN symbols s ON s.symbol_id = f.symbol_id \

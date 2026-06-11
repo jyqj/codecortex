@@ -12,7 +12,7 @@ impl IndexDb {
     ) -> CcResult<Vec<RouteEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT edge_id, file_path, route_path, handler_name, method, line,
                         end_line, handler_symbol_uid, framework, confidence
                  FROM routes
@@ -47,7 +47,7 @@ impl IndexDb {
     ) -> CcResult<Vec<RouteEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT edge_id, file_path, route_path, handler_name, method, line,
                         end_line, handler_symbol_uid, framework, confidence
                  FROM routes
@@ -82,7 +82,7 @@ impl IndexDb {
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT edge_id, file_path, caller_symbol_uid, url_or_path, normalized_path,
                         method, call_kind, line, confidence
                  FROM http_call_edges
@@ -116,7 +116,7 @@ impl IndexDb {
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT edge_id, file_path, caller_symbol_uid, url_or_path, normalized_path,
                         method, call_kind, line, confidence
                  FROM http_call_edges
@@ -152,7 +152,7 @@ impl IndexDb {
         if let Some(m) = method {
             let conn = self.read_conn()?;
             let mut stmt = conn
-                .prepare(
+                .prepare_cached(
                     "SELECT edge_id, file_path, caller_symbol_uid, url_or_path, normalized_path,
                             method, call_kind, line, confidence
                      FROM http_call_edges
@@ -191,7 +191,7 @@ impl IndexDb {
     ) -> CcResult<Vec<RouteNodeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
-            .prepare(
+            .prepare_cached(
                 "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
                         handler_name, framework, line, end_line, confidence
                  FROM routes
@@ -229,7 +229,7 @@ impl IndexDb {
         if let Some(m) = method {
             let conn = self.read_conn()?;
             let mut stmt = conn
-                .prepare(
+                .prepare_cached(
                     "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
                             handler_name, framework, line, end_line, confidence
                      FROM routes

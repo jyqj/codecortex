@@ -256,6 +256,53 @@ impl TypeCatalog {
         best.map(|(i, _)| entries[i].symbol_uid.as_str())
     }
 
+    /// Declared parameter count of a specific method symbol, if recorded.
+    ///
+    /// Used by the resolver's fuzzy arg-count narrowing to test individual
+    /// candidates (unlike `resolve_method_by_arg_count`, which picks a single
+    /// winner among all same-named methods).
+    pub fn method_param_count(&self, method_name: &str, symbol_uid: &str) -> Option<u32> {
+        self.method_index
+            .get(&method_name.to_lowercase())?
+            .iter()
+            .find(|e| e.symbol_uid == symbol_uid)
+            .and_then(|e| e.param_count)
+    }
+
+    /// Tri-state receiver compatibility (alias resolution, normalization,
+    /// and a one-level subtype check): `None` means the method has no
+    /// recorded receiver metadata (no evidence either way — callers narrowing
+    /// a candidate pool must treat this as "cannot rule out"), `Some(bool)`
+    /// is a positive verdict from the recorded receiver type.
+    pub fn method_receiver_compat(
+        &self,
+        method_name: &str,
+        symbol_uid: &str,
+        receiver_expr: &str,
+    ) -> Option<bool> {
+        let entry = self
+            .method_index
+            .get(&method_name.to_lowercase())
+            .and_then(|entries| entries.iter().find(|e| e.symbol_uid == symbol_uid))?;
+        let rt = entry.receiver_type.as_ref()?.to_lowercase();
+        let rt_norm = self.normalize_type_name(self.resolve_alias(&rt));
+
+        let recv_lower = receiver_expr.to_lowercase();
+        let recv_norm = self.normalize_type_name(self.resolve_alias(&recv_lower));
+        if recv_norm == rt_norm {
+            return Some(true);
+        }
+        // Dotted receivers ("self.client") may carry the type hint in any
+        // segment; mirror resolve_method_by_receiver's segment matching.
+        if receiver_expr
+            .split('.')
+            .any(|part| self.normalize_type_name(part) == rt_norm)
+        {
+            return Some(true);
+        }
+        Some(self.is_subtype(&recv_lower, &rt))
+    }
+
     /// Resolve a method by argument count when multiple same-named methods exist.
     ///
     /// Returns the symbol_uid if exactly one candidate matches the given arg_count.
@@ -614,6 +661,69 @@ mod tests {
         assert!(catalog.is_subtype("Child", "Base"));
         assert!(catalog.is_subtype("pkg.Child", "pkg.Base"));
         assert!(!catalog.is_subtype("Base", "Child"));
+    }
+
+    #[test]
+    fn method_param_count_per_uid() {
+        let symbols = vec![
+            make_method("parse", "uid-parser-parse", Some("Parser"), Some(1)),
+            make_method("parse", "uid-validator-parse", Some("Validator"), Some(2)),
+            make_method("parse", "uid-untyped-parse", Some("Untyped"), None),
+        ];
+        let catalog = TypeCatalog::build_from_symbols(&symbols);
+
+        assert_eq!(
+            catalog.method_param_count("parse", "uid-parser-parse"),
+            Some(1)
+        );
+        assert_eq!(
+            catalog.method_param_count("parse", "uid-validator-parse"),
+            Some(2)
+        );
+        // No recorded param count
+        assert_eq!(
+            catalog.method_param_count("parse", "uid-untyped-parse"),
+            None
+        );
+        // Unknown uid / method name
+        assert_eq!(catalog.method_param_count("parse", "uid-missing"), None);
+        assert_eq!(
+            catalog.method_param_count("missing", "uid-parser-parse"),
+            None
+        );
+    }
+
+    #[test]
+    fn method_receiver_compat_specific_uid() {
+        let symbols = vec![
+            make_method("parse", "uid-parser-parse", Some("Parser"), Some(1)),
+            make_method("parse", "uid-validator-parse", Some("Validator"), Some(1)),
+            make_method("parse", "uid-untyped-parse", None, Some(1)),
+        ];
+        let catalog = TypeCatalog::build_from_symbols(&symbols);
+
+        assert_eq!(
+            catalog.method_receiver_compat("parse", "uid-parser-parse", "Parser"),
+            Some(true)
+        );
+        assert_eq!(
+            catalog.method_receiver_compat("parse", "uid-parser-parse", "Validator"),
+            Some(false)
+        );
+        // Dotted receiver carrying the type hint in a segment
+        assert_eq!(
+            catalog.method_receiver_compat("parse", "uid-validator-parse", "self.Validator"),
+            Some(true)
+        );
+        // No receiver metadata / unknown uid: no evidence either way
+        assert_eq!(
+            catalog.method_receiver_compat("parse", "uid-untyped-parse", "Parser"),
+            None
+        );
+        assert_eq!(
+            catalog.method_receiver_compat("parse", "uid-missing", "Parser"),
+            None
+        );
     }
 
     #[test]

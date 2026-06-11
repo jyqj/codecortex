@@ -18,7 +18,9 @@ pub(crate) use cargo_workspace::{resolve_cargo_workspace, resolve_rust_workspace
 pub(crate) use catalog::SymbolCatalog;
 pub(crate) use types::ResolutionContext;
 #[cfg(test)]
-pub(crate) use types::{CatalogScope, ImportBinding, InternalResKind};
+pub(crate) use types::{
+    CallSiteSignals, CatalogScope, ImportBinding, InternalResKind, ResolveStep, RESOLVE_LADDER,
+};
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -1367,6 +1369,426 @@ mod tests {
             (r1.confidence - r2.confidence).abs() < f64::EPSILON,
             "Confidence should be identical"
         );
+    }
+
+    // ------------------------------------------------------------------
+    // Call-site signal tests
+    // ------------------------------------------------------------------
+
+    /// Method symbol with receiver/param metadata and a unique symbol_id
+    /// (make_symbol derives symbol_id from the name alone, which would let
+    /// dedup_by_id collapse same-named candidates).
+    fn make_method_with_meta(
+        name: &str,
+        file: &str,
+        uid: &str,
+        receiver_type: &str,
+        param_count: u32,
+    ) -> cc_model::symbol::SymbolRecord {
+        let mut sym = make_symbol(
+            name,
+            file,
+            Some(uid),
+            SymbolKind::Method,
+            Some(receiver_type),
+            Some(&format!("{}.{}", receiver_type, name)),
+            1,
+            10,
+        );
+        sym.symbol_id = format!("sym_{}_{}", receiver_type, name);
+        sym.receiver_type = Some(receiver_type.to_string());
+        sym.param_count = Some(param_count);
+        sym
+    }
+
+    fn parse_method_catalog(parser_params: u32, validator_params: u32) -> SymbolCatalog {
+        let mut catalog = SymbolCatalog::new();
+        let symbols = vec![
+            make_method_with_meta(
+                "parse",
+                "src/parser.py",
+                "uid:parser_parse",
+                "Parser",
+                parser_params,
+            ),
+            make_method_with_meta(
+                "parse",
+                "src/validator.py",
+                "uid:validator_parse",
+                "Validator",
+                validator_params,
+            ),
+        ];
+        catalog.add_symbols(&symbols);
+        catalog.build_type_catalog(&symbols);
+        catalog
+    }
+
+    #[test]
+    fn test_fuzzy_signal_arg_count_disambiguation() {
+        // Parser.parse takes 1 param, Validator.parse takes 2 — a call with
+        // one argument must pick Parser.parse.
+        let catalog = parse_method_catalog(1, 2);
+        let scopes = HashMap::new();
+        let imports = vec![];
+
+        let signals = CallSiteSignals {
+            arg_count: Some(1),
+            receiver: None,
+        };
+        let result = catalog
+            .resolve_name_with_signals("parse", "src/main.py", 5, &scopes, &imports, None, signals)
+            .expect("arg-count signal should disambiguate");
+        assert_eq!(
+            catalog.entry(result.catalog_index).symbol_uid.as_deref(),
+            Some("uid:parser_parse")
+        );
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzySignal);
+        assert_eq!(result.winning_step, ResolveStep::FuzzyArgCount);
+        assert_eq!(result.candidate_count, 2);
+        assert_eq!(result.strategy_name(), "fuzzy_arg_count");
+        // Between FuzzySingle and GlobalUnique
+        assert!(result.confidence > InternalResKind::FuzzySingle.base_confidence());
+        assert!(result.confidence < InternalResKind::GlobalUnique.base_confidence());
+    }
+
+    #[test]
+    fn test_fuzzy_signal_receiver_disambiguation() {
+        // Equal param counts — only the receiver signal can discriminate.
+        let catalog = parse_method_catalog(1, 1);
+        let scopes = HashMap::new();
+        let imports = vec![];
+
+        let signals = CallSiteSignals {
+            arg_count: None,
+            receiver: Some("Validator"),
+        };
+        let result = catalog
+            .resolve_name_with_signals("parse", "src/main.py", 5, &scopes, &imports, None, signals)
+            .expect("receiver signal should disambiguate");
+        assert_eq!(
+            catalog.entry(result.catalog_index).symbol_uid.as_deref(),
+            Some("uid:validator_parse")
+        );
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzySignal);
+        assert_eq!(result.winning_step, ResolveStep::FuzzyReceiver);
+        assert_eq!(result.strategy_name(), "fuzzy_receiver");
+    }
+
+    #[test]
+    fn test_fuzzy_arg_count_keeps_metadata_less_wildcards() {
+        // Parser.parse declares 1 param; Untyped.parse has no recorded
+        // param count. Arity evidence must not eliminate the wildcard, so
+        // the pool stays at 2 and resolution falls through to the
+        // import-distance step instead of a FuzzySignal win.
+        let mut catalog = SymbolCatalog::new();
+        let mut untyped =
+            make_method_with_meta("parse", "src/untyped.py", "uid:untyped_parse", "Untyped", 0);
+        untyped.param_count = None;
+        let symbols = vec![
+            make_method_with_meta("parse", "src/parser.py", "uid:parser_parse", "Parser", 1),
+            untyped,
+        ];
+        catalog.add_symbols(&symbols);
+        catalog.build_type_catalog(&symbols);
+
+        let signals = CallSiteSignals {
+            arg_count: Some(1),
+            receiver: None,
+        };
+        let result = catalog
+            .resolve_name_with_signals(
+                "parse",
+                "src/main.py",
+                5,
+                &HashMap::new(),
+                &[],
+                None,
+                signals,
+            )
+            .expect("fuzzy fallback still resolves");
+        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
+    }
+
+    #[test]
+    fn test_fuzzy_arg_count_defaulted_params_tier() {
+        // No exact arity match: Parser.parse declares 3 params,
+        // Validator.parse declares 0. A 1-argument call matches the
+        // defaulted-params tier (param_count > arg_count) and must pick
+        // Parser.parse rather than eliminating it.
+        let catalog = parse_method_catalog(3, 0);
+        let signals = CallSiteSignals {
+            arg_count: Some(1),
+            receiver: None,
+        };
+        let result = catalog
+            .resolve_name_with_signals(
+                "parse",
+                "src/main.py",
+                5,
+                &HashMap::new(),
+                &[],
+                None,
+                signals,
+            )
+            .expect("defaulted-params tier should disambiguate");
+        assert_eq!(
+            catalog.entry(result.catalog_index).symbol_uid.as_deref(),
+            Some("uid:parser_parse")
+        );
+        assert_eq!(result.winning_step, ResolveStep::FuzzyArgCount);
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzySignal);
+    }
+
+    #[test]
+    fn test_fuzzy_receiver_elimination_only_keeps_pool() {
+        // Parser.parse is positively incompatible with the receiver, the
+        // other candidate has no receiver metadata. Elimination-only
+        // evidence must not narrow (one-level subtype check can be a false
+        // negative), so the pool survives to import-distance.
+        let mut catalog = SymbolCatalog::new();
+        let mut untyped =
+            make_method_with_meta("parse", "src/untyped.py", "uid:untyped_parse", "Untyped", 1);
+        untyped.receiver_type = None;
+        let symbols = vec![
+            make_method_with_meta("parse", "src/parser.py", "uid:parser_parse", "Parser", 1),
+            untyped,
+        ];
+        catalog.add_symbols(&symbols);
+        catalog.build_type_catalog(&symbols);
+
+        let signals = CallSiteSignals {
+            arg_count: None,
+            receiver: Some("Validator"),
+        };
+        let result = catalog
+            .resolve_name_with_signals(
+                "parse",
+                "src/main.py",
+                5,
+                &HashMap::new(),
+                &[],
+                None,
+                signals,
+            )
+            .expect("fuzzy fallback still resolves");
+        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+    }
+
+    #[test]
+    fn test_fuzzy_signal_unreachable_import_penalty() {
+        // Same disambiguation as the arg-count test, but with an import
+        // list that cannot reach the winner: FuzzySignal applies the same
+        // 0.5x penalty as FuzzySingle.
+        let catalog = parse_method_catalog(1, 2);
+        let imports = vec![ImportBinding {
+            local_name: "other".to_string(),
+            source_module: "pkg/elsewhere".to_string(),
+            imported_name: None,
+            file_path: "src/main.py".to_string(),
+            is_namespace: false,
+            is_default: false,
+        }];
+        let signals = CallSiteSignals {
+            arg_count: Some(1),
+            receiver: None,
+        };
+        let result = catalog
+            .resolve_name_with_signals(
+                "parse",
+                "src/main.py",
+                5,
+                &HashMap::new(),
+                &imports,
+                None,
+                signals,
+            )
+            .expect("arg-count signal should disambiguate");
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzySignal);
+        assert!(
+            (result.confidence - InternalResKind::FuzzySignal.base_confidence() * 0.5).abs()
+                < f64::EPSILON
+        );
+    }
+
+    #[test]
+    fn test_resolve_ladder_order_locked() {
+        assert_eq!(
+            RESOLVE_LADDER,
+            [
+                ResolveStep::SelfMember,
+                ResolveStep::ScopeBinding,
+                ResolveStep::SameFile,
+                ResolveStep::Import,
+                ResolveStep::Suffix,
+                ResolveStep::GlobalUnique,
+                ResolveStep::FuzzySingle,
+                ResolveStep::FuzzyArgCount,
+                ResolveStep::FuzzyReceiver,
+                ResolveStep::FuzzyImportDistance,
+            ]
+        );
+    }
+
+    #[test]
+    fn test_no_signal_resolution_matches_legacy_behavior() {
+        // Method metadata is present, but without call-site signals the
+        // ladder must skip the signal steps and fall through to the legacy
+        // import-distance tie-breaking with unchanged confidence math.
+        let catalog = parse_method_catalog(1, 2);
+        let scopes = HashMap::new();
+        let imports = vec![];
+
+        let result = catalog
+            .resolve_name("parse", "src/main.py", 5, &scopes, &imports, None)
+            .expect("fuzzy multi should still resolve without signals");
+        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
+        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+        assert_eq!(result.candidate_count, 2);
+        assert_eq!(result.strategy_name(), "fuzzy_multi");
+        // Legacy confidence: FuzzyMulti base (0.30), no count penalty for 2
+        // candidates, halved because no candidate is import-reachable.
+        assert!((result.confidence - 0.15).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_resolve_cache_key_includes_signals() {
+        let catalog = parse_method_catalog(1, 2);
+        let scopes = HashMap::new();
+        let imports = vec![];
+
+        // Signal-free resolution first populates the cache...
+        let plain = catalog
+            .resolve_name("parse", "src/main.py", 5, &scopes, &imports, None)
+            .unwrap();
+        assert_eq!(plain.resolution_kind, InternalResKind::FuzzyMulti);
+
+        // ...and a signal-bearing call at the same site must not be served
+        // the signal-free entry.
+        let signals = CallSiteSignals {
+            arg_count: Some(2),
+            receiver: None,
+        };
+        let signaled = catalog
+            .resolve_name_with_signals("parse", "src/main.py", 5, &scopes, &imports, None, signals)
+            .unwrap();
+        assert_eq!(signaled.resolution_kind, InternalResKind::FuzzySignal);
+        assert_eq!(
+            catalog.entry(signaled.catalog_index).symbol_uid.as_deref(),
+            Some("uid:validator_parse")
+        );
+
+        // Repeating the signal call hits its own cache entry consistently.
+        let signaled_again = catalog
+            .resolve_name_with_signals("parse", "src/main.py", 5, &scopes, &imports, None, signals)
+            .unwrap();
+        assert_eq!(signaled_again.catalog_index, signaled.catalog_index);
+        assert_eq!(signaled_again.winning_step, signaled.winning_step);
+    }
+
+    // ------------------------------------------------------------------
+    // TypeCatalog upgrade-gate tests
+    // ------------------------------------------------------------------
+
+    fn make_preresolved_edge(
+        kind: cc_model::edge::ResolutionKind,
+        strategy: &str,
+        confidence: f64,
+        target_uid: &str,
+        receiver: &str,
+    ) -> cc_model::edge::CallEdgeRecord {
+        cc_model::edge::CallEdgeRecord {
+            edge_id: "e1".into(),
+            file_path: "src/main.py".into(),
+            callee_symbol: "v.parse".into(),
+            receiver_expr: Some(receiver.to_string()),
+            line: 5,
+            target_symbol_id: Some("sym_pre".into()),
+            target_file_path: Some("src/parser.py".into()),
+            callee_symbol_uid: Some(target_uid.to_string()),
+            resolution_kind: kind,
+            resolution_confidence: confidence,
+            resolution_strategy: strategy.to_string(),
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn test_type_catalog_upgrade_replaces_name_evidence_result() {
+        // Edge pre-resolved by global_unique (name evidence only) to
+        // Parser.parse, but the receiver is a Validator: the type catalog's
+        // higher-confidence receiver match must replace it and record the
+        // upgrade provenance.
+        let catalog = parse_method_catalog(1, 2);
+        let mut outcome = cc_model::parse::ParseOutcome::default();
+        outcome.call_edges.push(make_preresolved_edge(
+            cc_model::edge::ResolutionKind::Heuristic,
+            "global_unique",
+            0.75,
+            "uid:parser_parse",
+            "Validator",
+        ));
+
+        catalog.resolve_outcome("src/main.py", &mut outcome);
+
+        let edge = &outcome.call_edges[0];
+        assert_eq!(
+            edge.callee_symbol_uid.as_deref(),
+            Some("uid:validator_parse")
+        );
+        assert!(edge.resolution_strategy.starts_with("receiver_type"));
+        assert!(edge
+            .resolution_strategy
+            .contains("upgraded_from=global_unique"));
+        assert!(edge.resolution_confidence > 0.75);
+    }
+
+    #[test]
+    fn test_type_catalog_upgrade_skips_import_proven_result() {
+        // Scope/import-proven results are never replaced, even when the type
+        // catalog disagrees with higher confidence.
+        let catalog = parse_method_catalog(1, 2);
+        let mut outcome = cc_model::parse::ParseOutcome::default();
+        outcome.call_edges.push(make_preresolved_edge(
+            cc_model::edge::ResolutionKind::ScopeResolved,
+            "import_map",
+            0.85,
+            "uid:parser_parse",
+            "Validator",
+        ));
+
+        catalog.resolve_outcome("src/main.py", &mut outcome);
+
+        let edge = &outcome.call_edges[0];
+        assert_eq!(edge.callee_symbol_uid.as_deref(), Some("uid:parser_parse"));
+        assert_eq!(edge.resolution_strategy, "import_map");
+        assert!((edge.resolution_confidence - 0.85).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_type_catalog_upgrade_keeps_same_target() {
+        // When the type catalog agrees with the main-chain target, the edge
+        // keeps its original strategy and confidence (no pointless rewrite).
+        let catalog = parse_method_catalog(1, 2);
+        let mut outcome = cc_model::parse::ParseOutcome::default();
+        outcome.call_edges.push(make_preresolved_edge(
+            cc_model::edge::ResolutionKind::Heuristic,
+            "global_unique",
+            0.75,
+            "uid:validator_parse",
+            "Validator",
+        ));
+
+        catalog.resolve_outcome("src/main.py", &mut outcome);
+
+        let edge = &outcome.call_edges[0];
+        assert_eq!(
+            edge.callee_symbol_uid.as_deref(),
+            Some("uid:validator_parse")
+        );
+        assert_eq!(edge.resolution_strategy, "global_unique");
+        assert!((edge.resolution_confidence - 0.75).abs() < 1e-6);
     }
 
     #[test]

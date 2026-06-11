@@ -13,6 +13,46 @@ impl SymbolCatalog {
     // Cross-file route handler resolution
     // -----------------------------------------------------------------------
 
+    /// Single entry point for route-handler resolution.
+    ///
+    /// Tier order (first hit wins):
+    /// 1. [`Self::resolve_dotted_handler`] — dotted names only
+    ///    ("ctrl.method", "controllers.users.list"): import/scope-traced
+    ///    member-chain resolution, then qname / qname-suffix lookup.
+    /// 2. [`Self::resolve_name`] — the full resolution ladder with the
+    ///    file's rich context; only attempted when scopes or imports exist.
+    /// 3. [`Self::resolve_handler_global`] — global leaf-name scoring with
+    ///    no same-file preference (routes typically call cross-file
+    ///    handlers).
+    pub(crate) fn resolve_route_handler(
+        &self,
+        handler: &str,
+        file_path: &str,
+        line: u32,
+        scopes: &HashMap<String, CatalogScope>,
+        imports: &[ImportBinding],
+    ) -> Option<usize> {
+        // Tier 1: dotted handler resolution
+        if handler.contains('.') {
+            if let Some(idx) = self.resolve_dotted_handler(handler, file_path, scopes, imports) {
+                return Some(idx);
+            }
+        }
+
+        // Tier 2: rich context resolution (scopes + imports)
+        if !scopes.is_empty() || !imports.is_empty() {
+            if let Some(result) = self.resolve_name(handler, file_path, line, scopes, imports, None)
+            {
+                return Some(result.catalog_index);
+            }
+        }
+
+        // Tier 3: global handler resolution (no same-file preference)
+        self.resolve_handler_global(handler, file_path, imports)
+    }
+
+    /// Tier 1 of [`Self::resolve_route_handler`] — prefer that entry point.
+    ///
     /// Resolve a dotted handler name (e.g. "userCtrl.getUsers", "controllers.users.list")
     /// by tracing through imports to find the target symbol in another module.
     pub(in crate::resolver) fn resolve_dotted_handler(
@@ -89,6 +129,8 @@ impl SymbolCatalog {
         None
     }
 
+    /// Tier 3 of [`Self::resolve_route_handler`] — prefer that entry point.
+    ///
     /// Global route handler resolution without same-file preference.
     ///
     /// Unlike `find_best`, this does NOT prefer symbols in the same file as the

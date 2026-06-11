@@ -2,13 +2,63 @@
 
 use std::collections::{BTreeSet, HashMap};
 
-use cc_model::edge::ResolutionKind;
+use cc_model::edge::{CallEdgeRecord, ResolutionKind};
 use cc_model::parse::ParseOutcome;
 use cc_model::symbol::SymbolKind;
+
+use crate::type_catalog::TypeCatalog;
 
 use super::catalog::SymbolCatalog;
 use super::helpers::*;
 use super::types::*;
+
+/// Whether the type-catalog pass may touch an already-processed call edge.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum TypeUpgradeGate {
+    /// Scope/import/parser-proven result — never touched.
+    Skip,
+    /// Unresolved or generic-heuristic result — overwritten unconditionally
+    /// (the pre-existing `dominated` fallback path).
+    Backfill,
+    /// Name-evidence-only result (global-unique / suffix / fuzzy*) — may be
+    /// replaced by a *different* target proposed at strictly higher
+    /// confidence, with the upgrade provenance recorded in the strategy.
+    Upgrade,
+}
+
+fn type_upgrade_gate(edge: &CallEdgeRecord) -> TypeUpgradeGate {
+    match edge.resolution_kind {
+        ResolutionKind::Unresolved => TypeUpgradeGate::Backfill,
+        ResolutionKind::Heuristic => match edge.resolution_strategy.as_str() {
+            "global_unique" | "suffix" | "fuzzy_single" | "fuzzy_signal" | "fuzzy_arg_count"
+            | "fuzzy_receiver" | "fuzzy_multi" => TypeUpgradeGate::Upgrade,
+            _ => TypeUpgradeGate::Backfill,
+        },
+        _ => TypeUpgradeGate::Skip,
+    }
+}
+
+/// A type-catalog resolution proposal for a call edge.
+struct TypeCatalogCandidate {
+    catalog_index: usize,
+    uid: String,
+    kind: ResolutionKind,
+    confidence: f64,
+    strategy: &'static str,
+}
+
+impl TypeCatalogCandidate {
+    fn apply(self, edge: &mut CallEdgeRecord, entries: &[CatalogEntry]) {
+        let e = &entries[self.catalog_index];
+        edge.target_symbol_id = Some(e.symbol_id.clone());
+        edge.target_file_path = Some(e.file_path.clone());
+        edge.callee_symbol_uid = Some(self.uid);
+        edge.resolution_kind = self.kind;
+        edge.resolution_confidence = self.confidence;
+        edge.resolution_strategy = self.strategy.to_string();
+        edge.parser_confidence = self.confidence;
+    }
+}
 
 impl SymbolCatalog {
     // -----------------------------------------------------------------------
@@ -63,7 +113,7 @@ impl SymbolCatalog {
                     sref.target_symbol_uid = e.symbol_uid.clone();
                     sref.resolution_kind = result.resolution_kind.to_resolution_kind();
                     sref.resolution_confidence = result.confidence;
-                    sref.resolution_strategy = result.resolution_kind.strategy_name().to_string();
+                    sref.resolution_strategy = result.strategy_name().to_string();
                     continue;
                 }
             }
@@ -100,13 +150,26 @@ impl SymbolCatalog {
                 continue;
             }
             if has_rich_context {
-                if let Some(result) = self.resolve_name(
+                // Call-site signals: arg count from the parser, receiver from
+                // the explicit receiver expression or the dotted callee head
+                // ("obj.method" → "obj").
+                let receiver = edge.receiver_expr.as_deref().or_else(|| {
+                    edge.callee_symbol
+                        .rsplit_once('.')
+                        .map(|(receiver, _)| receiver)
+                });
+                let signals = CallSiteSignals {
+                    arg_count: edge.arg_count,
+                    receiver,
+                };
+                if let Some(result) = self.resolve_name_with_signals(
                     &edge.callee_symbol,
                     file_path,
                     edge.line,
                     scopes,
                     imports,
                     edge.caller_symbol.as_deref(),
+                    signals,
                 ) {
                     let e = &self.entries[result.catalog_index];
                     edge.target_symbol_id = Some(e.symbol_id.clone());
@@ -114,7 +177,7 @@ impl SymbolCatalog {
                     edge.callee_symbol_uid = e.symbol_uid.clone();
                     edge.resolution_kind = result.resolution_kind.to_resolution_kind();
                     edge.resolution_confidence = result.confidence;
-                    edge.resolution_strategy = result.resolution_kind.strategy_name().to_string();
+                    edge.resolution_strategy = result.strategy_name().to_string();
                     edge.dispatch_kind = cc_model::edge::DispatchKind::Direct;
                     edge.call_kind =
                         Self::classify_call_kind(&edge.callee_symbol, imports).to_string();
@@ -141,73 +204,41 @@ impl SymbolCatalog {
             }
         }
 
-        // Type-catalog assisted resolution for call edges
+        // Type-catalog assisted resolution for call edges. Two regimes,
+        // decided by `type_upgrade_gate`:
+        // - Backfill: unresolved / generic-heuristic edges are overwritten
+        //   unconditionally (the pre-existing `dominated` path).
+        // - Upgrade: edges resolved by name-evidence-only ladder steps may be
+        //   replaced when the catalog proposes a *different* target at
+        //   strictly higher confidence; scope/import-proven results are
+        //   never touched.
         if let Some(ref tc) = self.type_catalog {
             for edge in &mut outcome.call_edges {
-                // Only attempt type-based resolution for edges that are still unresolved
-                // or resolved at heuristic level (low confidence)
-                let dominated = edge.resolution_kind == ResolutionKind::Unresolved
-                    || edge.resolution_kind == ResolutionKind::Heuristic;
-                if !dominated {
+                let gate = type_upgrade_gate(edge);
+                if gate == TypeUpgradeGate::Skip {
                     continue;
                 }
-
-                // Extract the leaf method name from dotted callee (e.g., "obj.parse" → "parse")
-                let callee = &edge.callee_symbol;
-                let leaf = callee.rsplit('.').next().unwrap_or(callee);
-
-                // Try type_assign-enhanced receiver resolution first:
-                // If receiver_expr is a variable name like "x", resolve x → Foo
-                // via type_assigns, then look up Foo.method_name.
-                if let Some(ref recv) = edge.receiver_expr {
-                    if let Some(resolved_type) = tc.resolve_var_type(&edge.file_path, recv) {
-                        if let Some(uid) = tc.resolve_method_by_receiver(leaf, resolved_type) {
-                            if let Some(idx) = self.find_by_uid(uid) {
-                                let e = &self.entries[idx];
-                                edge.target_symbol_id = Some(e.symbol_id.clone());
-                                edge.target_file_path = Some(e.file_path.clone());
-                                edge.callee_symbol_uid = Some(uid.to_string());
-                                edge.resolution_kind = ResolutionKind::ScopeResolved;
-                                edge.resolution_confidence = 0.90;
-                                edge.resolution_strategy = "type_assign_receiver".to_string();
-                                edge.parser_confidence = 0.90;
-                                continue;
-                            }
+                let candidate = match self.type_catalog_candidate(tc, edge) {
+                    Some(candidate) => candidate,
+                    None => continue,
+                };
+                match gate {
+                    TypeUpgradeGate::Backfill => candidate.apply(edge, &self.entries),
+                    TypeUpgradeGate::Upgrade => {
+                        let differs = edge
+                            .callee_symbol_uid
+                            .as_deref()
+                            .map(|current| current != candidate.uid)
+                            .unwrap_or(true);
+                        if differs && candidate.confidence > edge.resolution_confidence {
+                            let upgraded_from = std::mem::take(&mut edge.resolution_strategy);
+                            let strategy = candidate.strategy;
+                            candidate.apply(edge, &self.entries);
+                            edge.resolution_strategy =
+                                format!("{}:upgraded_from={}", strategy, upgraded_from);
                         }
                     }
-                }
-
-                // Try receiver-based resolution (using raw receiver expression)
-                if let Some(ref recv) = edge.receiver_expr {
-                    if let Some(uid) = tc.resolve_method_by_receiver(leaf, recv) {
-                        if let Some(idx) = self.find_by_uid(uid) {
-                            let e = &self.entries[idx];
-                            edge.target_symbol_id = Some(e.symbol_id.clone());
-                            edge.target_file_path = Some(e.file_path.clone());
-                            edge.callee_symbol_uid = Some(uid.to_string());
-                            edge.resolution_kind = ResolutionKind::Qualified;
-                            edge.resolution_confidence = 0.95;
-                            edge.resolution_strategy = "receiver_type".to_string();
-                            edge.parser_confidence = 0.95;
-                            continue;
-                        }
-                    }
-                }
-
-                // Try arg-count disambiguation
-                if let Some(ac) = edge.arg_count {
-                    if let Some(uid) = tc.resolve_method_by_arg_count(leaf, ac) {
-                        if let Some(idx) = self.find_by_uid(uid) {
-                            let e = &self.entries[idx];
-                            edge.target_symbol_id = Some(e.symbol_id.clone());
-                            edge.target_file_path = Some(e.file_path.clone());
-                            edge.callee_symbol_uid = Some(uid.to_string());
-                            edge.resolution_kind = ResolutionKind::ScopeResolved;
-                            edge.resolution_confidence = 0.9;
-                            edge.resolution_strategy = "arg_count".to_string();
-                            edge.parser_confidence = 0.9;
-                        }
-                    }
+                    TypeUpgradeGate::Skip => {}
                 }
             }
         }
@@ -249,10 +280,8 @@ impl SymbolCatalog {
             }
         }
 
-        // Resolve route edges — three-tier strategy:
-        // Tier 1: Import-traced dotted handler resolution (cross-module)
-        // Tier 2: Rich context resolution via resolve_name
-        // Tier 3: Global handler resolution without same-file preference
+        // Resolve route edges through the single three-tier entry point
+        // (see `resolve_route_handler` for the tier order and semantics).
         for route in &mut outcome.route_edges {
             if route.handler_symbol_id.is_some() {
                 continue;
@@ -261,37 +290,77 @@ impl SymbolCatalog {
                 Some(ref h) => h.clone(),
                 None => continue,
             };
-
-            // Tier 1: Dotted handler resolution (e.g. "userCtrl.getUsers", "controllers.users.list")
-            if handler.contains('.') {
-                if let Some(idx) = self.resolve_dotted_handler(&handler, file_path, scopes, imports)
-                {
-                    let e = &self.entries[idx];
-                    route.handler_symbol_id = Some(e.symbol_id.clone());
-                    route.handler_symbol_uid = e.symbol_uid.clone();
-                    continue;
-                }
-            }
-
-            // Tier 2: Rich context resolution (scopes + imports)
-            if has_rich_context {
-                if let Some(result) =
-                    self.resolve_name(&handler, file_path, route.line, scopes, imports, None)
-                {
-                    let e = &self.entries[result.catalog_index];
-                    route.handler_symbol_id = Some(e.symbol_id.clone());
-                    route.handler_symbol_uid = e.symbol_uid.clone();
-                    continue;
-                }
-            }
-
-            // Tier 3: Global handler resolution (no same-file preference)
-            if let Some(idx) = self.resolve_handler_global(&handler, file_path, imports) {
+            if let Some(idx) =
+                self.resolve_route_handler(&handler, file_path, route.line, scopes, imports)
+            {
                 let e = &self.entries[idx];
                 route.handler_symbol_id = Some(e.symbol_id.clone());
                 route.handler_symbol_uid = e.symbol_uid.clone();
             }
         }
+    }
+
+    /// Build a type-catalog resolution proposal for a call edge, trying the
+    /// signal sources in fixed precedence: type-assign-inferred receiver,
+    /// raw receiver expression, then arg-count disambiguation.
+    fn type_catalog_candidate(
+        &self,
+        tc: &TypeCatalog,
+        edge: &CallEdgeRecord,
+    ) -> Option<TypeCatalogCandidate> {
+        // Extract the leaf method name from dotted callee ("obj.parse" → "parse")
+        let callee = &edge.callee_symbol;
+        let leaf = callee.rsplit('.').next().unwrap_or(callee);
+
+        // If receiver_expr is a variable name like "x", resolve x → Foo via
+        // type_assigns, then look up Foo.method_name.
+        if let Some(ref recv) = edge.receiver_expr {
+            if let Some(resolved_type) = tc.resolve_var_type(&edge.file_path, recv) {
+                if let Some(uid) = tc.resolve_method_by_receiver(leaf, resolved_type) {
+                    if let Some(idx) = self.find_by_uid(uid) {
+                        return Some(TypeCatalogCandidate {
+                            catalog_index: idx,
+                            uid: uid.to_string(),
+                            kind: ResolutionKind::ScopeResolved,
+                            confidence: 0.90,
+                            strategy: "type_assign_receiver",
+                        });
+                    }
+                }
+            }
+        }
+
+        // Receiver-based resolution using the raw receiver expression.
+        if let Some(ref recv) = edge.receiver_expr {
+            if let Some(uid) = tc.resolve_method_by_receiver(leaf, recv) {
+                if let Some(idx) = self.find_by_uid(uid) {
+                    return Some(TypeCatalogCandidate {
+                        catalog_index: idx,
+                        uid: uid.to_string(),
+                        kind: ResolutionKind::Qualified,
+                        confidence: 0.95,
+                        strategy: "receiver_type",
+                    });
+                }
+            }
+        }
+
+        // Arg-count disambiguation.
+        if let Some(arg_count) = edge.arg_count {
+            if let Some(uid) = tc.resolve_method_by_arg_count(leaf, arg_count) {
+                if let Some(idx) = self.find_by_uid(uid) {
+                    return Some(TypeCatalogCandidate {
+                        catalog_index: idx,
+                        uid: uid.to_string(),
+                        kind: ResolutionKind::ScopeResolved,
+                        confidence: 0.9,
+                        strategy: "arg_count",
+                    });
+                }
+            }
+        }
+
+        None
     }
 
     /// Resolve semantic edge UIDs and backfill using a pre-built context.

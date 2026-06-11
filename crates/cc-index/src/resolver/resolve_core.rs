@@ -6,6 +6,45 @@ use super::catalog::SymbolCatalog;
 use super::helpers::*;
 use super::types::*;
 
+/// Control flow of one ladder step (see [`RESOLVE_LADDER`]).
+enum StepOutcome {
+    /// The step produced the final result — stop the ladder.
+    Resolved(ResolveResult),
+    /// The step does not apply or found nothing — try the next step.
+    Continue,
+    /// The step is authoritative for this name shape and failed — stop with
+    /// no result (e.g. `this.x` where the owner class has no member `x`).
+    Abort,
+}
+
+/// If a signal step narrowed the fuzzy pool to exactly one candidate, that
+/// candidate wins at [`InternalResKind::FuzzySignal`] confidence, with the
+/// same unreachable-import 0.5x penalty the `FuzzySingle` step applies.
+fn fuzzy_signal_winner(
+    entries: &[CatalogEntry],
+    pool: &[usize],
+    fuzzy_total: usize,
+    step: ResolveStep,
+    imports: &[ImportBinding],
+) -> StepOutcome {
+    if pool.len() == 1 {
+        let idx = pool[0];
+        let mut conf = InternalResKind::FuzzySignal.base_confidence();
+        if !imports.is_empty() && !is_import_reachable(&entries[idx].file_path, imports) {
+            conf *= 0.5;
+        }
+        StepOutcome::Resolved(ResolveResult {
+            catalog_index: idx,
+            resolution_kind: InternalResKind::FuzzySignal,
+            confidence: conf,
+            candidate_count: fuzzy_total as u32,
+            winning_step: step,
+        })
+    } else {
+        StepOutcome::Continue
+    }
+}
+
 impl SymbolCatalog {
     // -----------------------------------------------------------------------
     // Scope chain resolution
@@ -314,14 +353,9 @@ impl SymbolCatalog {
 
     /// Full resolution pipeline for a name at a given location.
     ///
-    /// Resolution order:
-    /// 1. If name starts with "this." or "self." → resolve member on owner class
-    /// 2. Check scope bindings
-    /// 3. Check same-file candidates (prefer closest scope)
-    /// 4. Check imports
-    /// 5. Check qualified-name suffix matches
-    /// 6. Check globally unique leaf names
-    /// 7. Fall back to fuzzy candidate selection
+    /// Steps run in [`RESOLVE_LADDER`] order; see [`ResolveStep`] for each
+    /// step's semantics. Callers with call-site evidence should prefer
+    /// [`Self::resolve_name_with_signals`].
     pub fn resolve_name(
         &self,
         name: &str,
@@ -331,12 +365,39 @@ impl SymbolCatalog {
         imports: &[ImportBinding],
         container: Option<&str>,
     ) -> Option<ResolveResult> {
+        self.resolve_name_with_signals(
+            name,
+            file,
+            line,
+            scopes,
+            imports,
+            container,
+            CallSiteSignals::default(),
+        )
+    }
+
+    /// [`Self::resolve_name`] with per-call-site disambiguation signals.
+    ///
+    /// Signals participate only in the fuzzy-multi steps of the ladder
+    /// (`FuzzyArgCount`, `FuzzyReceiver`); all earlier steps are unaffected,
+    /// so an empty `signals` reproduces `resolve_name` exactly.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn resolve_name_with_signals(
+        &self,
+        name: &str,
+        file: &str,
+        line: u32,
+        scopes: &HashMap<String, CatalogScope>,
+        imports: &[ImportBinding],
+        container: Option<&str>,
+        signals: CallSiteSignals<'_>,
+    ) -> Option<ResolveResult> {
         let trimmed = name.trim();
         if trimmed.is_empty() {
             return None;
         }
 
-        let key = resolve_key_hash(trimmed, file, line, container);
+        let key = resolve_key_hash(trimmed, file, line, container, signals);
 
         // Check cache
         if let Ok(mut cache) = self.resolve_cache.lock() {
@@ -345,7 +406,8 @@ impl SymbolCatalog {
             }
         }
 
-        let result = self.resolve_name_inner(trimmed, file, line, scopes, imports, container);
+        let result =
+            self.resolve_name_inner(trimmed, file, line, scopes, imports, container, signals);
 
         if let Ok(mut cache) = self.resolve_cache.lock() {
             cache.put(key, result.clone());
@@ -353,7 +415,8 @@ impl SymbolCatalog {
         result
     }
 
-    /// Core resolution logic (uncached). Called by `resolve_name`.
+    /// Core resolution logic (uncached): walks [`RESOLVE_LADDER`] in order.
+    #[allow(clippy::too_many_arguments)]
     pub(in crate::resolver) fn resolve_name_inner(
         &self,
         name: &str,
@@ -362,150 +425,315 @@ impl SymbolCatalog {
         scopes: &HashMap<String, CatalogScope>,
         imports: &[ImportBinding],
         container: Option<&str>,
+        signals: CallSiteSignals<'_>,
     ) -> Option<ResolveResult> {
         let parts: Vec<&str> = name.split('.').collect();
-        let head = parts[0];
-        let tail = &parts[1..];
+        let leaf = *parts.last().unwrap_or(&parts[0]);
 
-        // 1. this/self resolution
-        if (head == "this" || head == "self") && !tail.is_empty() {
-            let owner = self.owner_class_qname(file, container);
-            if let Some(ref owner_qname) = owner {
-                let member_qname = format!("{}.{}", owner_qname, tail[0]);
-                let candidates = self.same_file_qname(file, &member_qname);
-                if let Some(idx) = pick_unique(&self.entries, &candidates) {
-                    if tail.len() == 1 {
-                        return Some(ResolveResult {
+        // Fuzzy candidate pool shared by the Fuzzy* steps: populated lazily
+        // at FuzzySingle, narrowed in place by the signal steps so each later
+        // step sees the previous step's survivors. `fuzzy_total` keeps the
+        // pre-narrowing count for candidate_count reporting.
+        let mut fuzzy_pool: Option<Vec<usize>> = None;
+        let mut fuzzy_total: usize = 0;
+
+        for &step in RESOLVE_LADDER.iter() {
+            let outcome = match step {
+                ResolveStep::SelfMember => self.step_self_member(&parts, file, container),
+                ResolveStep::ScopeBinding => {
+                    match self.resolve_via_scope_bindings(scopes, file, name, line) {
+                        Some(idx) => StepOutcome::Resolved(ResolveResult::single(
+                            idx,
+                            InternalResKind::ScopeResolved,
+                            ResolveStep::ScopeBinding,
+                        )),
+                        None => StepOutcome::Continue,
+                    }
+                }
+                ResolveStep::SameFile => {
+                    match self.best_same_file_candidate(name, file, scopes, line, container) {
+                        Some(idx) => {
+                            let kind = if parts.len() > 1 {
+                                InternalResKind::Qualified
+                            } else {
+                                InternalResKind::ScopeResolved
+                            };
+                            StepOutcome::Resolved(ResolveResult::single(
+                                idx,
+                                kind,
+                                ResolveStep::SameFile,
+                            ))
+                        }
+                        None => StepOutcome::Continue,
+                    }
+                }
+                ResolveStep::Import => match self.resolve_via_imports(imports, name) {
+                    Some(idx) => StepOutcome::Resolved(ResolveResult::single(
+                        idx,
+                        InternalResKind::ImportResolved,
+                        ResolveStep::Import,
+                    )),
+                    None => StepOutcome::Continue,
+                },
+                ResolveStep::Suffix => match self.try_suffix_match(name, file) {
+                    Some(result) => StepOutcome::Resolved(result),
+                    None => StepOutcome::Continue,
+                },
+                ResolveStep::GlobalUnique => match self.try_global_unique(leaf, imports) {
+                    Some(result) => StepOutcome::Resolved(result),
+                    None => StepOutcome::Continue,
+                },
+                ResolveStep::FuzzySingle => {
+                    let pool = fuzzy_pool.get_or_insert_with(|| {
+                        self.by_name
+                            .get(&leaf.to_lowercase())
+                            .map(|candidates| dedup_by_id(&self.entries, candidates))
+                            .unwrap_or_default()
+                    });
+                    fuzzy_total = pool.len();
+                    if pool.len() == 1 {
+                        let idx = pool[0];
+                        let mut conf = InternalResKind::FuzzySingle.base_confidence();
+                        if !imports.is_empty()
+                            && !is_import_reachable(&self.entries[idx].file_path, imports)
+                        {
+                            conf *= 0.5;
+                        }
+                        StepOutcome::Resolved(ResolveResult {
                             catalog_index: idx,
-                            resolution_kind: InternalResKind::Exact,
-                            confidence: InternalResKind::Exact.base_confidence(),
-                        });
+                            resolution_kind: InternalResKind::FuzzySingle,
+                            confidence: conf,
+                            candidate_count: 1,
+                            winning_step: ResolveStep::FuzzySingle,
+                        })
+                    } else {
+                        StepOutcome::Continue
                     }
-                    if let Some(final_idx) = self.resolve_member_chain_from(idx, &tail[1..], file) {
-                        return Some(ResolveResult {
-                            catalog_index: final_idx,
-                            resolution_kind: InternalResKind::Qualified,
-                            confidence: InternalResKind::Qualified.base_confidence(),
-                        });
-                    }
-                    return Some(ResolveResult {
-                        catalog_index: idx,
-                        resolution_kind: InternalResKind::Exact,
-                        confidence: InternalResKind::Exact.base_confidence(),
-                    });
                 }
-            }
-            return None;
-        }
-
-        // 2. Scope bindings
-        if let Some(idx) = self.resolve_via_scope_bindings(scopes, file, name, line) {
-            return Some(ResolveResult {
-                catalog_index: idx,
-                resolution_kind: InternalResKind::ScopeResolved,
-                confidence: InternalResKind::ScopeResolved.base_confidence(),
-            });
-        }
-
-        // 3. Same-file candidates
-        if let Some(idx) = self.best_same_file_candidate(name, file, scopes, line, container) {
-            let kind = if parts.len() > 1 {
-                InternalResKind::Qualified
-            } else {
-                InternalResKind::ScopeResolved
+                ResolveStep::FuzzyArgCount => {
+                    let pool = fuzzy_pool
+                        .as_mut()
+                        .expect("FuzzySingle precedes signal steps in RESOLVE_LADDER");
+                    match signals.arg_count {
+                        Some(arg_count) if pool.len() > 1 => {
+                            self.narrow_fuzzy_by_arg_count(pool, leaf, arg_count);
+                            fuzzy_signal_winner(
+                                &self.entries,
+                                pool,
+                                fuzzy_total,
+                                ResolveStep::FuzzyArgCount,
+                                imports,
+                            )
+                        }
+                        _ => StepOutcome::Continue,
+                    }
+                }
+                ResolveStep::FuzzyReceiver => {
+                    let pool = fuzzy_pool
+                        .as_mut()
+                        .expect("FuzzySingle precedes signal steps in RESOLVE_LADDER");
+                    match signals.receiver {
+                        Some(receiver) if pool.len() > 1 => {
+                            self.narrow_fuzzy_by_receiver(pool, leaf, file, receiver);
+                            fuzzy_signal_winner(
+                                &self.entries,
+                                pool,
+                                fuzzy_total,
+                                ResolveStep::FuzzyReceiver,
+                                imports,
+                            )
+                        }
+                        _ => StepOutcome::Continue,
+                    }
+                }
+                ResolveStep::FuzzyImportDistance => {
+                    let pool = fuzzy_pool
+                        .as_ref()
+                        .expect("FuzzySingle precedes signal steps in RESOLVE_LADDER");
+                    self.step_fuzzy_import_distance(pool, fuzzy_total, file, imports)
+                }
             };
-            return Some(ResolveResult {
-                catalog_index: idx,
-                resolution_kind: kind,
-                confidence: kind.base_confidence(),
-            });
-        }
 
-        // 4. Import resolution
-        if let Some(idx) = self.resolve_via_imports(imports, name) {
-            return Some(ResolveResult {
-                catalog_index: idx,
-                resolution_kind: InternalResKind::ImportResolved,
-                confidence: InternalResKind::ImportResolved.base_confidence(),
-            });
-        }
-
-        // 5. Qualified-name suffix resolution
-        if let Some(result) = self.try_suffix_match(name, file) {
-            return Some(result);
-        }
-
-        // 6. Global unique leaf-name resolution
-        let leaf = parts.last().unwrap_or(&head);
-        if let Some(result) = self.try_global_unique(leaf, imports) {
-            return Some(result);
-        }
-
-        // 7. Fuzzy fallback with tiered candidate selection
-        if let Some(candidates) = self.by_name.get(&leaf.to_lowercase()) {
-            let unique = dedup_by_id(&self.entries, candidates);
-            let count = unique.len();
-
-            if count == 1 {
-                let idx = unique[0];
-                let mut conf = InternalResKind::FuzzySingle.base_confidence();
-                if !imports.is_empty()
-                    && !is_import_reachable(&self.entries[idx].file_path, imports)
-                {
-                    conf *= 0.5;
-                }
-                return Some(ResolveResult {
-                    catalog_index: idx,
-                    resolution_kind: InternalResKind::FuzzySingle,
-                    confidence: conf,
-                });
-            }
-
-            if count > 1 {
-                let base = InternalResKind::FuzzyMulti.base_confidence();
-                let penalized = candidate_count_penalty(base, count);
-
-                let reachable: Vec<usize> = if !imports.is_empty() {
-                    unique
-                        .iter()
-                        .copied()
-                        .filter(|&i| is_import_reachable(&self.entries[i].file_path, imports))
-                        .collect()
-                } else {
-                    Vec::new()
-                };
-
-                let (chosen, conf) = if reachable.len() == 1 {
-                    (
-                        Some(reachable[0]),
-                        candidate_count_penalty(
-                            InternalResKind::FuzzySingle.base_confidence(),
-                            count,
-                        ),
-                    )
-                } else if !reachable.is_empty() {
-                    (
-                        best_by_import_distance(&self.entries, &reachable, file),
-                        penalized,
-                    )
-                } else {
-                    (
-                        best_by_import_distance(&self.entries, &unique, file),
-                        penalized * 0.5,
-                    )
-                };
-
-                if let Some(idx) = chosen {
-                    return Some(ResolveResult {
-                        catalog_index: idx,
-                        resolution_kind: InternalResKind::FuzzyMulti,
-                        confidence: conf,
-                    });
-                }
+            match outcome {
+                StepOutcome::Resolved(result) => return Some(result),
+                StepOutcome::Abort => return None,
+                StepOutcome::Continue => {}
             }
         }
 
         None
+    }
+
+    /// `SelfMember` step: `this.x` / `self.x` member resolution on the owner
+    /// class. Returns `Continue` when the name is not this/self-prefixed.
+    fn step_self_member(&self, parts: &[&str], file: &str, container: Option<&str>) -> StepOutcome {
+        let head = parts[0];
+        let tail = &parts[1..];
+        if (head != "this" && head != "self") || tail.is_empty() {
+            return StepOutcome::Continue;
+        }
+        let owner = self.owner_class_qname(file, container);
+        if let Some(ref owner_qname) = owner {
+            let member_qname = format!("{}.{}", owner_qname, tail[0]);
+            let candidates = self.same_file_qname(file, &member_qname);
+            if let Some(idx) = pick_unique(&self.entries, &candidates) {
+                if tail.len() == 1 {
+                    return StepOutcome::Resolved(ResolveResult::single(
+                        idx,
+                        InternalResKind::Exact,
+                        ResolveStep::SelfMember,
+                    ));
+                }
+                if let Some(final_idx) = self.resolve_member_chain_from(idx, &tail[1..], file) {
+                    return StepOutcome::Resolved(ResolveResult::single(
+                        final_idx,
+                        InternalResKind::Qualified,
+                        ResolveStep::SelfMember,
+                    ));
+                }
+                return StepOutcome::Resolved(ResolveResult::single(
+                    idx,
+                    InternalResKind::Exact,
+                    ResolveStep::SelfMember,
+                ));
+            }
+        }
+        StepOutcome::Abort
+    }
+
+    /// `FuzzyImportDistance` step: the pre-existing fuzzy-multi tie-breaking
+    /// (import reachability, then longest common path prefix), applied to the
+    /// pool surviving the signal steps.
+    fn step_fuzzy_import_distance(
+        &self,
+        pool: &[usize],
+        fuzzy_total: usize,
+        file: &str,
+        imports: &[ImportBinding],
+    ) -> StepOutcome {
+        // len == 1 was claimed by an earlier fuzzy step; len == 0 means the
+        // leaf name is unknown.
+        if pool.len() < 2 {
+            return StepOutcome::Continue;
+        }
+        let count = pool.len();
+        let base = InternalResKind::FuzzyMulti.base_confidence();
+        let penalized = candidate_count_penalty(base, count);
+
+        let reachable: Vec<usize> = if !imports.is_empty() {
+            pool.iter()
+                .copied()
+                .filter(|&i| is_import_reachable(&self.entries[i].file_path, imports))
+                .collect()
+        } else {
+            Vec::new()
+        };
+
+        let (chosen, conf) = if reachable.len() == 1 {
+            (
+                Some(reachable[0]),
+                candidate_count_penalty(InternalResKind::FuzzySingle.base_confidence(), count),
+            )
+        } else if !reachable.is_empty() {
+            (
+                best_by_import_distance(&self.entries, &reachable, file),
+                penalized,
+            )
+        } else {
+            (
+                best_by_import_distance(&self.entries, pool, file),
+                penalized * 0.5,
+            )
+        };
+
+        match chosen {
+            Some(idx) => StepOutcome::Resolved(ResolveResult {
+                catalog_index: idx,
+                resolution_kind: InternalResKind::FuzzyMulti,
+                confidence: conf,
+                candidate_count: fuzzy_total as u32,
+                winning_step: ResolveStep::FuzzyImportDistance,
+            }),
+            None => StepOutcome::Continue,
+        }
+    }
+
+    /// Narrow a fuzzy pool by the call's argument count. Candidates without
+    /// recorded parameter counts are wildcards: arity evidence can rule
+    /// candidates *in*, never rule metadata-less candidates *out*. Known
+    /// counts match in two tiers — exact first, then `param_count >
+    /// arg_count` (callee declares defaulted/optional trailing params).
+    /// Varargs callees (`param_count < arg_count`) only survive as wildcards
+    /// or via the keep-pool-on-no-match guard; that residual window is
+    /// accepted because exact arity is the stronger prior.
+    fn narrow_fuzzy_by_arg_count(&self, pool: &mut Vec<usize>, leaf: &str, arg_count: u32) {
+        let tc = match self.type_catalog.as_ref() {
+            Some(tc) => tc,
+            None => return,
+        };
+        let mut exact: Vec<usize> = Vec::new();
+        let mut defaulted: Vec<usize> = Vec::new();
+        let mut wildcard: Vec<usize> = Vec::new();
+        for &idx in pool.iter() {
+            let known = self.entries[idx]
+                .symbol_uid
+                .as_deref()
+                .and_then(|uid| tc.method_param_count(leaf, uid));
+            match known {
+                Some(pc) if pc == arg_count => exact.push(idx),
+                Some(pc) if pc > arg_count => defaulted.push(idx),
+                Some(_) => {}
+                None => wildcard.push(idx),
+            }
+        }
+        let mut matched = if !exact.is_empty() { exact } else { defaulted };
+        if matched.is_empty() {
+            return;
+        }
+        matched.extend(wildcard);
+        if matched.len() < pool.len() {
+            *pool = matched;
+        }
+    }
+
+    /// Narrow a fuzzy pool by the call's receiver expression. Only a
+    /// positive incompatibility verdict (`Some(false)`) eliminates a
+    /// candidate; methods without recorded receiver metadata are wildcards,
+    /// same rationale as [`Self::narrow_fuzzy_by_arg_count`].
+    fn narrow_fuzzy_by_receiver(
+        &self,
+        pool: &mut Vec<usize>,
+        leaf: &str,
+        file: &str,
+        receiver: &str,
+    ) {
+        let tc = match self.type_catalog.as_ref() {
+            Some(tc) => tc,
+            None => return,
+        };
+        // A bare variable receiver ("client") may have a recorded type
+        // assignment; prefer the inferred type over the raw expression.
+        let receiver_hint = tc.resolve_var_type(file, receiver).unwrap_or(receiver);
+        let mut any_positive = false;
+        let matched: Vec<usize> = pool
+            .iter()
+            .copied()
+            .filter(|&idx| {
+                let compat = self.entries[idx]
+                    .symbol_uid
+                    .as_deref()
+                    .and_then(|uid| tc.method_receiver_compat(leaf, uid, receiver_hint));
+                any_positive |= compat == Some(true);
+                compat != Some(false)
+            })
+            .collect();
+        // Narrowing requires at least one positively compatible survivor:
+        // the one-level subtype check behind `Some(false)` can be a false
+        // negative on deep hierarchies, so elimination-only evidence is too
+        // weak to discard candidates.
+        if any_positive && !matched.is_empty() && matched.len() < pool.len() {
+            *pool = matched;
+        }
     }
 
     pub(in crate::resolver) fn try_global_unique(
@@ -527,6 +755,8 @@ impl SymbolCatalog {
             catalog_index: idx,
             resolution_kind: InternalResKind::GlobalUnique,
             confidence,
+            candidate_count: 1,
+            winning_step: ResolveStep::GlobalUnique,
         })
     }
 
@@ -564,6 +794,8 @@ impl SymbolCatalog {
                 InternalResKind::SuffixMatch.base_confidence(),
                 count,
             ),
+            candidate_count: count as u32,
+            winning_step: ResolveStep::Suffix,
         })
     }
 

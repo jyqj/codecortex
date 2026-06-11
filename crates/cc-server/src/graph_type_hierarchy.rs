@@ -10,6 +10,7 @@ use serde_json::json;
 
 use crate::graph_read_model::{GraphReadModel, SemanticEdgeLite};
 use crate::graph_types::{HierarchyNode, OverrideInfo, TypeHierarchyResult, TypeNodeInfo};
+use crate::symbol_resolution::{resolve, Resolution, ResolutionOpts, UnresolvedReason};
 
 /// Query the type hierarchy (ancestors, descendants, overrides) for a given type.
 ///
@@ -153,7 +154,7 @@ fn resolve_root_symbol(
     file_path: Option<&str>,
     symbol_uid: Option<&str>,
 ) -> CcResult<ResolveResult> {
-    // 1. By UID
+    // 1. By UID — direct lookup, skips name-based resolution entirely.
     if let Some(uid) = symbol_uid {
         let map = db.symbol_rows_by_uids(&[uid.to_string()])?;
         if let Some(row) = map.into_values().next() {
@@ -162,47 +163,22 @@ fn resolve_root_symbol(
         return Err(CcError::Other(format!("no symbol with uid '{}'", uid)));
     }
 
-    let rows = db.find_symbol(type_name, true, 10)?;
-    if rows.is_empty() {
-        return Err(CcError::Other(format!("no symbol named '{}'", type_name)));
-    }
-
-    // 2. Filter by file_path
-    if let Some(fp) = file_path {
-        let filtered: Vec<_> = rows.into_iter().filter(|r| r.file_path == fp).collect();
-        return match filtered.len() {
-            0 => Err(CcError::Other(format!(
-                "no symbol named '{}' in file '{}'",
-                type_name, fp
-            ))),
-            1 => Ok(ResolveResult::Single(filtered.into_iter().next().unwrap())),
-            _ => Ok(ResolveResult::Candidates(filtered)),
-        };
-    }
-
-    // 3. Filter to class/interface/enum kinds
-    let type_kinds: HashSet<&str> = [
-        "class",
-        "interface",
-        "enum",
-        "struct",
-        "trait",
-        "abstract_class",
-    ]
-    .iter()
-    .copied()
-    .collect();
-    let filtered: Vec<_> = rows
-        .into_iter()
-        .filter(|r| type_kinds.contains(r.kind.as_str()))
-        .collect();
-    match filtered.len() {
-        0 => Err(CcError::Other(format!(
+    // 2. By name: exact match, then file filter (if given) or type-kind filter.
+    match resolve(db, type_name, &ResolutionOpts::for_type_hierarchy(file_path))? {
+        Resolution::Unique(row) => Ok(ResolveResult::Single(row)),
+        Resolution::Ambiguous(rows) => Ok(ResolveResult::Candidates(rows)),
+        Resolution::Unresolved(UnresolvedReason::NotFound) => {
+            Err(CcError::Other(format!("no symbol named '{}'", type_name)))
+        }
+        Resolution::Unresolved(UnresolvedReason::FilteredByFile) => Err(CcError::Other(format!(
+            "no symbol named '{}' in file '{}'",
+            type_name,
+            file_path.unwrap_or_default()
+        ))),
+        Resolution::Unresolved(UnresolvedReason::FilteredByKind) => Err(CcError::Other(format!(
             "no class/interface/enum named '{}'",
             type_name
         ))),
-        1 => Ok(ResolveResult::Single(filtered.into_iter().next().unwrap())),
-        _ => Ok(ResolveResult::Candidates(filtered)),
     }
 }
 

@@ -12,6 +12,7 @@ use crate::graph_types::{
     AmbiguousSymbol, DisconnectedSymbol, FlowPath, FlowResult, SymbolBrief, TraceNode,
     UnresolvedSymbol,
 };
+use crate::symbol_resolution::{resolve, Resolution, ResolutionOpts};
 
 /// Discover call flow paths connecting multiple symbols.
 ///
@@ -39,76 +40,39 @@ pub fn explore_flow(
     let mut resolved: Vec<(String, String)> = Vec::new(); // (name, uid)
 
     for name in symbols {
-        let mut rows = db.find_symbol(name, exact, max_candidates)?;
-
-        if rows.is_empty() {
-            unresolved.push(UnresolvedSymbol {
-                query: name.clone(),
-            });
-            continue;
-        }
-
-        // Apply file_path_filter if provided
-        if let Some(filter) = file_path_filter {
-            rows.retain(|r| r.file_path.contains(filter));
-        }
-
-        if rows.is_empty() {
-            unresolved.push(UnresolvedSymbol {
-                query: name.clone(),
-            });
-            continue;
-        }
-
-        if rows.len() > 1 {
-            // Co-location heuristic: if one candidate shares a directory with
-            // an already-resolved symbol, prefer it over the others.
-            let colocated = rows.iter().find(|r| {
-                let candidate_dir = dir_of(&r.file_path);
-                resolved.iter().any(|(_, resolved_uid)| {
-                    // Look up the resolved symbol's file_path from the DB
-                    if let Ok(map) = db.symbol_rows_by_uids(std::slice::from_ref(resolved_uid)) {
-                        if let Some(resolved_row) = map.get(resolved_uid) {
-                            return dir_of(&resolved_row.file_path) == candidate_dir;
-                        }
-                    }
-                    false
-                })
-            });
-
-            if let Some(best) = colocated {
-                if let Some(uid) = &best.symbol_uid {
+        let opts = ResolutionOpts::for_flow(exact, max_candidates, file_path_filter, &resolved);
+        match resolve(db, name, &opts)? {
+            Resolution::Unresolved(_) => {
+                unresolved.push(UnresolvedSymbol {
+                    query: name.clone(),
+                });
+            }
+            Resolution::Unique(row) => {
+                if let Some(uid) = &row.symbol_uid {
                     resolved.push((name.clone(), uid.clone()));
-                    continue;
+                } else {
+                    unresolved.push(UnresolvedSymbol {
+                        query: name.clone(),
+                    });
                 }
             }
-
-            let candidates: Vec<SymbolBrief> = rows
-                .iter()
-                .filter_map(|r| {
-                    Some(SymbolBrief {
-                        name: r.name.clone(),
-                        kind: r.kind.clone(),
-                        file_path: r.file_path.clone(),
-                        uid: r.symbol_uid.clone()?,
+            Resolution::Ambiguous(rows) => {
+                let candidates: Vec<SymbolBrief> = rows
+                    .iter()
+                    .filter_map(|r| {
+                        Some(SymbolBrief {
+                            name: r.name.clone(),
+                            kind: r.kind.clone(),
+                            file_path: r.file_path.clone(),
+                            uid: r.symbol_uid.clone()?,
+                        })
                     })
-                })
-                .collect();
-            ambiguous.push(AmbiguousSymbol {
-                query: name.clone(),
-                candidates,
-            });
-            continue;
-        }
-
-        // Exactly 1 result
-        let row = &rows[0];
-        if let Some(uid) = &row.symbol_uid {
-            resolved.push((name.clone(), uid.clone()));
-        } else {
-            unresolved.push(UnresolvedSymbol {
-                query: name.clone(),
-            });
+                    .collect();
+                ambiguous.push(AmbiguousSymbol {
+                    query: name.clone(),
+                    candidates,
+                });
+            }
         }
     }
 
@@ -301,14 +265,6 @@ pub fn explore_flow(
     };
 
     Ok(serde_json::to_value(result).unwrap_or_default())
-}
-
-/// Return the directory portion of a file_path (everything before the last `/`).
-fn dir_of(file_path: &str) -> &str {
-    match file_path.rfind('/') {
-        Some(pos) => &file_path[..pos],
-        None => "",
-    }
 }
 
 #[cfg(test)]

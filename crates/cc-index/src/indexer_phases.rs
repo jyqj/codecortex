@@ -367,33 +367,21 @@ impl Indexer {
             crate::synthesis_pipeline::apply_synthesis_round(&self.db, &round)?;
         } else {
             // If synthesis was enabled in a previous run and is disabled now,
-            // proactively remove stale synthetic edges.
-            let removed_event = self.db.delete_synthetic_call_edges("event_emitter")?;
-            let removed_setter = self.db.delete_synthetic_call_edges("react_state_setter")?;
-            let removed_jsx = self.db.delete_synthetic_semantic_edges("synth:jsx:")?;
-            let removed_observer = self.db.delete_synthetic_call_edges("field_observer")?;
-            let removed_rerender = self.db.delete_synthetic_call_edges("react_rerender")?;
-            let removed_vue_semantic = self.db.delete_synthetic_semantic_edges("synth:vue:")?;
-            let removed_vue_handler = self.db.delete_synthetic_call_edges("vue_event_handler")?;
-            let removed_interface = self.db.delete_synthetic_call_edges("interface_dispatch")?;
-            if removed_event > 0
-                || removed_setter > 0
-                || removed_jsx > 0
-                || removed_observer > 0
-                || removed_rerender > 0
-                || removed_vue_semantic > 0
-                || removed_vue_handler > 0
-                || removed_interface > 0
-            {
+            // proactively remove stale synthetic edges. The deletion set is
+            // derived from each pass's declared owned kinds/prefixes, so a
+            // new pass is covered here the moment its spec is registered.
+            let mut removed_edges = 0usize;
+            for spec in crate::dispatch_synthesis::registry() {
+                for kind in spec.owned_call_kinds {
+                    removed_edges += self.db.delete_synthetic_call_edges(kind)?;
+                }
+                for prefix in spec.owned_semantic_prefixes {
+                    removed_edges += self.db.delete_synthetic_semantic_edges(prefix)?;
+                }
+            }
+            if removed_edges > 0 {
                 tracing::info!(
-                    event_edges = removed_event,
-                    setter_edges = removed_setter,
-                    jsx_edges = removed_jsx,
-                    observer_edges = removed_observer,
-                    rerender_edges = removed_rerender,
-                    vue_semantic_edges = removed_vue_semantic,
-                    vue_handler_edges = removed_vue_handler,
-                    interface_edges = removed_interface,
+                    removed_edges,
                     "dispatch synthesis disabled; removed stale synthetic edges"
                 );
             }

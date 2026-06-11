@@ -16,4 +16,5 @@ pub(crate) mod graph_walk;
 pub(crate) mod impact;
 pub(crate) mod path_guard;
 pub(crate) mod symbol_extract;
+pub(crate) mod symbol_resolution;
 pub(crate) mod watcher;

@@ -1,21 +1,21 @@
 //! Synthesis pipeline: compute/apply separation for dispatch synthesis.
 //!
-//! This module owns the pass order and the cross-pass data flow of dispatch
-//! synthesis. Each pass is a compute-only function (`dispatch_synthesis::
-//! compute_*`) that reads committed index state through the read pool and
-//! returns an [`EdgeDelta`] — it never touches the write connection. The
-//! single cross-pass dependency (interface dispatch consumes call edges
-//! synthesized earlier in the same round) is threaded explicitly: the
-//! interface pass receives the prior deltas and overlays their in-memory
-//! call edges onto its committed-state read, excluding the committed rows of
-//! every `synthesized_by` kind regenerated this round.
+//! The pass order lives in the declarative pass registry
+//! ([`crate::dispatch_synthesis::registry`]); this module drives a round from
+//! it. Each pass is compute-only: it reads committed index state through the
+//! read pool and returns an [`EdgeDelta`] — it never touches the write
+//! connection. The single cross-pass dependency (interface dispatch consumes
+//! call edges synthesized earlier in the same round) is threaded explicitly
+//! through [`PassContext::prior_deltas`]: each pass receives the deltas of
+//! the passes before it and may overlay their in-memory call edges onto its
+//! committed-state read. The overlay covers CALL edges only — see the
+//! [`PassContext`] documentation for the boundary and its rationale.
 //!
-//! Boundary: the overlay covers CALL edges only. Passes today synthesize
-//! semantic edges solely with the `RendersComponent` relation, which the
-//! interface pass (reading `implements` rows) never consumes — so its
-//! committed-state semantic read is round-equivalent. If a future pass ever
-//! synthesizes `implements` semantic edges, the interface pass will not see
-//! them in-round until the overlay is extended to semantic edges.
+//! A pass may only delete the call kinds / semantic prefixes it declared as
+//! owned in its `SynthesisPassSpec`; the round loop `debug_assert`s this,
+//! so a pass that grows a new synthetic edge kind without declaring it fails
+//! loudly in tests instead of silently desynchronizing the disable-cleanup
+//! deletion set derived from the registry.
 //!
 //! [`apply_synthesis_round`] then applies all deltas in pass order inside one
 //! [`UnitOfWork`]: the write lock and the `IMMEDIATE` transaction cover only
@@ -33,12 +33,7 @@ use cc_db::index_db::IndexDb;
 use cc_model::edge::{CallEdgeRecord, SemanticEdgeRecord};
 use cc_model::CcResult;
 
-use crate::dispatch_synthesis::{
-    compute_event_emitter_synthesis, compute_field_observer_synthesis,
-    compute_interface_dispatch_synthesis, compute_jsx_synthesis,
-    compute_react_rerender_chain_synthesis, compute_state_setter_synthesis,
-    compute_vue_template_synthesis, SynthesisConfig,
-};
+use crate::dispatch_synthesis::{registry, PassContext, PassGate, SynthesisConfig};
 
 /// The write set of one synthesis pass: which previously-synthesized edges it
 /// replaces, and the edges it produces.
@@ -57,8 +52,9 @@ pub(crate) struct SynthesisRound {
     pub(crate) deltas: Vec<EdgeDelta>,
 }
 
-/// Run the synthesis passes (gated like `phase_postprocess`) and collect
-/// their deltas. Pure compute: no write lock, no transaction.
+/// Run the synthesis passes (gated like `phase_postprocess`) in registry
+/// order and collect their deltas. Pure compute: no write lock, no
+/// transaction.
 pub(crate) fn compute_synthesis_round(
     db: &IndexDb,
     config: &SynthesisConfig,
@@ -67,70 +63,38 @@ pub(crate) fn compute_synthesis_round(
 ) -> CcResult<SynthesisRound> {
     let mut deltas: Vec<EdgeDelta> = Vec::new();
 
-    if dispatch_changed {
-        let (delta, stats) = compute_event_emitter_synthesis(db, config)?;
-        if stats.event_emitter_edges > 0 {
-            tracing::info!(
-                edges = stats.event_emitter_edges,
-                skipped_generic = stats.skipped_generic,
-                skipped_fanout = stats.skipped_fanout,
-                "event emitter synthesis complete"
-            );
+    for spec in registry() {
+        let gate_open = match spec.gate {
+            PassGate::Dispatch => dispatch_changed,
+            PassGate::Interface => interface_changed,
+        };
+        if !gate_open {
+            continue;
         }
-        deltas.push(delta);
 
-        let delta = compute_jsx_synthesis(db)?;
-        if !delta.insert_semantic_edges.is_empty() {
-            tracing::info!(
-                edges = delta.insert_semantic_edges.len(),
-                "JSX component synthesis complete"
-            );
-        }
-        deltas.push(delta);
+        let delta = (spec.compute)(&PassContext {
+            db,
+            config,
+            prior_deltas: &deltas,
+        })?;
 
-        let delta = compute_state_setter_synthesis(db)?;
-        if !delta.insert_call_edges.is_empty() {
-            tracing::info!(
-                edges = delta.insert_call_edges.len(),
-                "state setter synthesis complete"
-            );
-        }
-        deltas.push(delta);
+        debug_assert!(
+            delta
+                .delete_call_kinds
+                .iter()
+                .all(|kind| spec.owned_call_kinds.contains(kind)),
+            "pass `{}` deletes call kinds outside its declared owned set",
+            spec.id
+        );
+        debug_assert!(
+            delta
+                .delete_semantic_prefixes
+                .iter()
+                .all(|prefix| spec.owned_semantic_prefixes.contains(prefix)),
+            "pass `{}` deletes semantic prefixes outside its declared owned set",
+            spec.id
+        );
 
-        let delta = compute_field_observer_synthesis(db, config)?;
-        if !delta.insert_call_edges.is_empty() {
-            tracing::info!(
-                edges = delta.insert_call_edges.len(),
-                "field observer synthesis complete"
-            );
-        }
-        deltas.push(delta);
-
-        let delta = compute_react_rerender_chain_synthesis(db)?;
-        if !delta.insert_call_edges.is_empty() {
-            tracing::info!(
-                edges = delta.insert_call_edges.len(),
-                "React re-render chain synthesis complete"
-            );
-        }
-        deltas.push(delta);
-
-        let delta = compute_vue_template_synthesis(db)?;
-        let vue_edges = delta.insert_call_edges.len() + delta.insert_semantic_edges.len();
-        if vue_edges > 0 {
-            tracing::info!(edges = vue_edges, "Vue template synthesis complete");
-        }
-        deltas.push(delta);
-    }
-
-    if interface_changed {
-        let delta = compute_interface_dispatch_synthesis(db, config, &deltas)?;
-        if !delta.insert_call_edges.is_empty() {
-            tracing::info!(
-                edges = delta.insert_call_edges.len(),
-                "Interface dispatch synthesis complete"
-            );
-        }
         deltas.push(delta);
     }
 

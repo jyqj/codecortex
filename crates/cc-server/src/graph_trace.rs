@@ -10,6 +10,7 @@ use crate::graph_read_model::GraphReadModel;
 use crate::graph_types::{
     BfsAdj, DisambiguationCandidate, DisambiguationInfo, LabeledPath, TraceNode, TracePathResult,
 };
+use crate::symbol_resolution::{resolve, Resolution, ResolutionOpts};
 
 /// Build edge-labeled adjacency from call_uid_edges_lite.
 #[cfg(test)]
@@ -164,32 +165,36 @@ fn resolve_symbol_uid(
     if let Some(uid) = uid_override.filter(|u| u.contains(':')) {
         return Ok(uid.to_string());
     }
-    let candidates = db.find_symbol(name, true, 5)?;
-    let chosen = candidates
-        .first()
-        .and_then(|s| s.symbol_uid.clone())
-        .ok_or_else(|| CcError::Search(format!("symbol not found: {}", name)))?;
-    if candidates.len() > 1 {
-        disambiguation.push(DisambiguationInfo {
-            role: role.to_string(),
-            query: name.to_string(),
-            chosen_uid: chosen.clone(),
-            chosen_file: candidates[0].file_path.clone(),
-            candidates: candidates
-                .iter()
-                .filter_map(|s| {
-                    Some(DisambiguationCandidate {
-                        uid: s.symbol_uid.clone()?,
-                        name: s.name.clone(),
-                        file_path: s.file_path.clone(),
-                        kind: s.kind.clone(),
-                        start_line: s.start_line,
+    let not_found = || CcError::Search(format!("symbol not found: {}", name));
+    match resolve(db, name, &ResolutionOpts::for_trace())? {
+        Resolution::Unresolved(_) => Err(not_found()),
+        Resolution::Unique(row) => row.symbol_uid.ok_or_else(not_found),
+        Resolution::Ambiguous(candidates) => {
+            let chosen = candidates
+                .first()
+                .and_then(|s| s.symbol_uid.clone())
+                .ok_or_else(not_found)?;
+            disambiguation.push(DisambiguationInfo {
+                role: role.to_string(),
+                query: name.to_string(),
+                chosen_uid: chosen.clone(),
+                chosen_file: candidates[0].file_path.clone(),
+                candidates: candidates
+                    .iter()
+                    .filter_map(|s| {
+                        Some(DisambiguationCandidate {
+                            uid: s.symbol_uid.clone()?,
+                            name: s.name.clone(),
+                            file_path: s.file_path.clone(),
+                            kind: s.kind.clone(),
+                            start_line: s.start_line,
+                        })
                     })
-                })
-                .collect(),
-        });
+                    .collect(),
+            });
+            Ok(chosen)
+        }
     }
-    Ok(chosen)
 }
 
 /// Collect all unique UIDs across labeled BFS paths.

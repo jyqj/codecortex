@@ -2,7 +2,7 @@
 
 use cc_db::index_db::IndexDb;
 use cc_model::impact::*;
-use cc_model::CcResult;
+use cc_model::{CcResult, GraphExplainCollector};
 use std::collections::{HashMap, HashSet};
 use std::process::Command;
 use std::sync::Arc;
@@ -213,12 +213,23 @@ impl ImpactAnalyzer {
                 truncated: false,
                 returned_symbol_count: 0,
                 total_impacted_discovered: 0,
+                graph_explain: None,
             });
         }
 
         let max_depth = opts.max_depth;
         let confidence_threshold = opts.confidence_threshold;
         let read_model = GraphReadModel::without_http_bridges(Arc::clone(&self.db));
+        // Unified explainability envelope: records truncation causes and DB
+        // reads that degraded to partial results instead of failing the call.
+        // Declared subset (`tool_graph_subsets::IMPACT`): the blast-radius
+        // BFS walks reverse CALLS only — deliberately WITHOUT synthesized
+        // HTTP bridges (`without_http_bridges` above), because cross-service
+        // effects are advisory and reported separately; TESTS / HANDLES /
+        // HTTP_CALLS / ASYNC_CALLS / CO_CHANGE back the suggested-tests and
+        // advisory passes below.
+        let mut explain = GraphExplainCollector::new();
+        explain.declare_edge_kinds(cc_model::graph_catalog::tool_graph_subsets::IMPACT);
 
         // 1. Find symbols in changed files (hop 0 — critical)
         let seed_symbols = read_model.symbols_in_files(changed_files)?;
@@ -260,25 +271,45 @@ impl ImpactAnalyzer {
             if let Some(cap) = opts.max_nodes {
                 if impacted.len() >= cap {
                     truncated = true;
+                    explain.mark_truncated("max_nodes");
                     break;
                 }
             }
             let mut next_layer: Vec<String> = Vec::new();
 
-            let layer_callers = read_model
-                .reverse_callers(&current_layer, confidence_threshold, opts.max_per_layer)
-                .unwrap_or_default();
+            // A failed layer query degrades to an empty layer (the BFS ends
+            // at this hop, same graceful behavior as before), but the report
+            // now flags the blast radius as incomplete instead of silently
+            // pretending the walk converged.
+            let layer_callers = match read_model.reverse_callers(
+                &current_layer,
+                confidence_threshold,
+                opts.max_per_layer,
+            ) {
+                Ok(callers) => callers,
+                Err(err) => {
+                    explain.record_read_error("reverse_callers", &err);
+                    explain.mark_truncated("db_error:reverse_callers");
+                    truncated = true;
+                    Vec::new()
+                }
+            };
             // A full layer at the per-layer cap means callers were dropped.
             if let Some(per_layer) = opts.max_per_layer {
                 if layer_callers.len() >= per_layer {
                     truncated = true;
+                    explain.mark_truncated("max_per_layer");
                 }
             }
 
+            if !layer_callers.is_empty() {
+                explain.note_edge_kind("call");
+            }
             for caller in layer_callers {
                 if let Some(cap) = opts.max_nodes {
                     if impacted.len() >= cap {
                         truncated = true;
+                        explain.mark_truncated("max_nodes");
                         break 'bfs;
                     }
                 }
@@ -309,6 +340,7 @@ impl ImpactAnalyzer {
                 impacted.sort_by_key(|sym| sym.hop_depth);
                 impacted.truncate(limit);
                 truncated = true;
+                explain.mark_truncated("result_limit");
             }
         }
 
@@ -320,18 +352,28 @@ impl ImpactAnalyzer {
             }
         }
 
-        let suggested_tests = read_model
-            .suggested_tests_for_files(&all_files)
-            .unwrap_or_default();
+        let suggested_tests = match read_model.suggested_tests_for_files(&all_files) {
+            Ok(tests) => tests,
+            Err(err) => {
+                explain.record_read_error("suggested_test_files", &err);
+                Vec::new()
+            }
+        };
 
         // 4. Boundary crossing detection
         let boundary_crossings = Self::detect_boundary_crossings(&impacted);
 
         // 4a. Advisory Pass A: cross-service reverse impact
-        let cross_service_impacts = self.collect_cross_service_impacts(&impacted);
+        let cross_service_impacts = self.collect_cross_service_impacts(&impacted, &mut explain);
+        if !cross_service_impacts.is_empty() {
+            explain.note_edge_kind("http_call_reverse");
+        }
 
         // 4b. Advisory Pass B: historical co-change impact
-        let historical_impacts = self.collect_historical_impacts(changed_files);
+        let historical_impacts = self.collect_historical_impacts(changed_files, &mut explain);
+        if !historical_impacts.is_empty() {
+            explain.note_edge_kind("co_change");
+        }
 
         // 5. Risk summary
         let mut by_level: HashMap<&str, usize> = HashMap::new();
@@ -420,6 +462,7 @@ impl ImpactAnalyzer {
             truncated,
             returned_symbol_count,
             total_impacted_discovered,
+            graph_explain: explain.finish_non_empty(),
         })
     }
 
@@ -428,6 +471,7 @@ impl ImpactAnalyzer {
     fn collect_cross_service_impacts(
         &self,
         impacted_symbols: &[ImpactedSymbol],
+        explain: &mut GraphExplainCollector,
     ) -> Vec<CrossServiceImpact> {
         // Phase 1: gather every (seed, route, caller) tuple and the full set of
         // caller symbol UIDs that need a name lookup.
@@ -445,14 +489,18 @@ impl ImpactAnalyzer {
         let mut seen_uids: HashSet<String> = HashSet::new();
 
         for seed in impacted_symbols.iter().filter(|s| s.hop_depth == 0) {
-            // 1. Check if this symbol is a route handler
+            // 1. Check if this symbol is a route handler. Advisory pass: a
+            // failed lookup skips this seed, but is recorded, not swallowed.
             let routes = match self
                 .db
                 .reads()
                 .route_rows_by_handler_uid(&seed.symbol_uid, 10)
             {
                 Ok(r) => r,
-                Err(_) => continue,
+                Err(err) => {
+                    explain.record_read_error("route_rows_by_handler_uid", &err);
+                    continue;
+                }
             };
 
             for route in &routes {
@@ -467,7 +515,11 @@ impl ImpactAnalyzer {
                     .http_callers_by_normalized_path_and_method(&norm_path, method, 10)
                 {
                     Ok(c) => c,
-                    Err(_) => continue,
+                    Err(err) => {
+                        explain
+                            .record_read_error("http_callers_by_normalized_path_and_method", &err);
+                        continue;
+                    }
                 };
 
                 for caller in &callers {
@@ -491,7 +543,7 @@ impl ImpactAnalyzer {
 
         // Phase 2: resolve all caller UIDs to names in one batched pass instead
         // of opening a read connection + single-row query per caller.
-        let name_by_uid = self.symbol_names_by_uid(&caller_uids);
+        let name_by_uid = self.symbol_names_by_uid_explained(&caller_uids, explain);
 
         // Phase 3: assemble results, falling back to caller_file when the UID is
         // absent or unresolved.
@@ -527,22 +579,44 @@ impl ImpactAnalyzer {
     /// Resolve a batch of symbol UIDs to their names with a single connection
     /// and `WHERE symbol_uid IN (...)` query (chunked to bound placeholder count).
     /// UIDs without a matching symbol row are simply absent from the map.
+    #[cfg(test)]
     fn symbol_names_by_uid(&self, uids: &[String]) -> HashMap<String, String> {
-        GraphReadModel::without_http_bridges(Arc::clone(&self.db))
-            .symbol_names_by_uid(uids)
-            .unwrap_or_default()
+        self.symbol_names_by_uid_explained(uids, &mut GraphExplainCollector::new())
+    }
+
+    /// Like `symbol_names_by_uid` but records a failed batch lookup (which
+    /// degrades to file-path fallback names) into the explain collector.
+    fn symbol_names_by_uid_explained(
+        &self,
+        uids: &[String],
+        explain: &mut GraphExplainCollector,
+    ) -> HashMap<String, String> {
+        match GraphReadModel::without_http_bridges(Arc::clone(&self.db)).symbol_names_by_uid(uids) {
+            Ok(map) => map,
+            Err(err) => {
+                explain.record_read_error("symbol_names_for_uids", &err);
+                HashMap::new()
+            }
+        }
     }
 
     // ── Advisory Pass B: historical co-change impact ─────────────
 
-    fn collect_historical_impacts(&self, changed_files: &[String]) -> Vec<HistoricalImpact> {
+    fn collect_historical_impacts(
+        &self,
+        changed_files: &[String],
+        explain: &mut GraphExplainCollector,
+    ) -> Vec<HistoricalImpact> {
         let mut seen_files: HashSet<String> = changed_files.iter().cloned().collect();
         let mut results = Vec::new();
 
         for file in changed_files {
             let co_changes = match self.db.reads().get_co_changes_for_file(file, 0.35) {
                 Ok(c) => c,
-                Err(_) => continue,
+                Err(err) => {
+                    explain.record_read_error("get_co_changes_for_file", &err);
+                    continue;
+                }
             };
 
             for cc in co_changes.iter().take(8) {
@@ -991,6 +1065,10 @@ mod tests {
             .unwrap();
         assert_eq!(full.impacted_symbols.len(), 11);
         assert!(!full.truncated);
+        assert!(full
+            .graph_explain
+            .as_ref()
+            .map_or(true, |explain| !explain.truncated));
         assert_eq!(full.total_impacted_discovered, 11);
         assert_eq!(full.returned_symbol_count, 11);
 
@@ -1006,6 +1084,13 @@ mod tests {
             .analyze_with(&["src/lib.rs".to_string()], &opts)
             .unwrap();
         assert!(clipped.truncated);
+        assert_eq!(
+            clipped
+                .graph_explain
+                .as_ref()
+                .and_then(|explain| explain.truncated_reason.as_deref()),
+            Some("result_limit")
+        );
         assert_eq!(clipped.impacted_symbols.len(), 5);
         assert_eq!(clipped.returned_symbol_count, 5);
         // Discovered count reflects pre-clip total.
@@ -1064,6 +1149,10 @@ mod tests {
             .count();
         assert_eq!(hop1, 3);
         assert!(report.truncated);
+        let explain = report.graph_explain.expect("graph_explain attached");
+        assert!(explain.truncated);
+        assert_eq!(explain.truncated_reason.as_deref(), Some("max_per_layer"));
+        assert!(explain.read_errors.is_empty());
     }
 
     // ── analyze_with: max_nodes stops BFS expansion ─────────────────
@@ -1109,6 +1198,50 @@ mod tests {
         assert!(report.truncated);
         assert!(report.impacted_symbols.len() <= 4);
         assert!(!report.impacted_symbols.is_empty());
+        let explain = report.graph_explain.expect("graph_explain attached");
+        assert_eq!(explain.truncated_reason.as_deref(), Some("max_nodes"));
+        assert_eq!(explain.edge_kinds_used, vec!["call"]);
+        // The declared graph subset rides along with the dynamic counters.
+        assert_eq!(
+            explain.declared_edge_kinds,
+            cc_model::graph_catalog::tool_graph_subsets::IMPACT
+                .kinds()
+                .to_vec()
+        );
+    }
+
+    // ── analyze_with: a BFS layer DB error is reported, not swallowed ──
+
+    #[test]
+    fn analyze_with_layer_db_error_records_reason_and_keeps_seeds() {
+        let (_dir, db) = temp_db();
+        insert_file(&db, "src/lib.rs");
+        insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
+        // Drop call_edges so the reverse_callers layer query fails.
+        db.reads()
+            .read_conn()
+            .unwrap()
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+
+        let analyzer = ImpactAnalyzer::new(db);
+        let report = analyzer.analyze(&["src/lib.rs".to_string()], 3).unwrap();
+
+        // Graceful degradation: the seed survives, the BFS layer is empty...
+        assert_eq!(report.impacted_symbols.len(), 1);
+        assert_eq!(report.impacted_symbols[0].hop_depth, 0);
+        // ...but the failure is now visible instead of silently swallowed.
+        assert!(report.truncated);
+        let explain = report.graph_explain.expect("graph_explain attached");
+        assert!(explain.truncated);
+        assert_eq!(
+            explain.truncated_reason.as_deref(),
+            Some("db_error:reverse_callers")
+        );
+        assert!(explain
+            .read_errors
+            .iter()
+            .any(|entry| entry.starts_with("reverse_callers:")));
     }
 
     // ── analyze_with: empty changed_files carries truncation fields ──

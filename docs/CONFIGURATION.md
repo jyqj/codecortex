@@ -25,7 +25,9 @@ field is optional — the defaults work for most projects.
     "rrf_k": 50,
     "lexical_weight": 1.1,
     "grep_weight": 0.8,
-    "rerank_window": 40
+    "rerank_window": 40,
+    "graph_weight": 0.6,
+    "graph_top_k": 12
   },
   "ranking": {
     "graph_rerank_weight": 0.3,
@@ -60,9 +62,10 @@ field is optional — the defaults work for most projects.
 
 ## Search
 
-Local retrieval uses FTS5, regex symbol grep, and trigram-backed preselection.
-Results are fused with Reciprocal Rank Fusion (RRF), then reranked with
-file-path / breadcrumb / recency boosts.
+Local retrieval runs three lanes — FTS5 full-text, regex symbol grep, and a
+call-graph expansion lane — over trigram-backed preselection. Lane results are
+fused with Reciprocal Rank Fusion (RRF), then reranked with file-path /
+breadcrumb / recency boosts.
 
 | Field | Default | Meaning |
 |-------|---------|---------|
@@ -72,6 +75,8 @@ file-path / breadcrumb / recency boosts.
 | `lexical_weight` | `1.1` | RRF weight for the FTS5 full-text lane. |
 | `grep_weight` | `0.8` | RRF weight for the regex symbol grep lane. |
 | `rerank_window` | `40` | Number of fused candidates passed to the reranker. |
+| `graph_weight` | `0.6` | RRF weight for the call-graph retrieval lane (seed symbols + 1-hop call-edge expansion). `0.0` disables the lane. |
+| `graph_top_k` | `12` | Max candidates contributed by the call-graph lane per query. |
 
 ## Ranking
 
@@ -141,7 +146,7 @@ Seed and expansion scores for the call-graph retrieval lane feeding RRF.
 |-------|---------|---------|
 | `enabled` | `true` | Start the `FileWatcher` and re-index incrementally on file changes. |
 | `file_limit` | `50000` | Maximum files auto-indexed on first connect. |
-| `idle_timeout_secs` | `60` | Idle window used by the watcher's adaptive debounce. |
+| `idle_timeout_secs` | `60` | Idle-session eviction: after this many seconds without MCP activity, the active project's `CodeIndex` is closed (DB handles released) and transparently reopened on the next call. Not related to watcher debounce — the watcher computes its own adaptive debounce from repo size (500ms base + 100ms per 500 files, capped at 3000ms). |
 
 ## Repo size tiers
 
@@ -161,14 +166,41 @@ repos, `impact` up to 80 items).
 
 Environment variables take precedence over `.codecortex.json`.
 
-| Variable | Effect |
-|----------|--------|
-| `CODECORTEX_MEMORY_BUDGET_FRACTION` | RSS memory cap as a fraction (0.1 – 0.95) |
-| `CODECORTEX_DIRTY_PROPAGATION` | Enable/disable incremental dirty propagation |
-| `CODECORTEX_DIRTY_PROPAGATION_MAX_FILES` | Maximum files reloaded by dirty propagation |
-| `CODECORTEX_MAX_CONCURRENT_PARSE` | Cap parser worker threads |
-| `CODECORTEX_CACHE_DIR` | Store project index caches under this directory instead of `<project>/.codecortex`; each project gets a stable hashed subdirectory |
-| `CODECORTEX_RESOLVER_CACHE_SIZE` | Resolver catalog `resolve_name` LRU cache capacity (default `8192`) |
-| `CODECORTEX_USE_DIRECT_WRITER` | Enable the experimental direct SQLite writer |
-| `CODECORTEX_PPID_POLL_MS` | Parent-process death detection interval (0 to disable) |
-| `CODECORTEX_STRICT_HASH` | `1`/`true` hashes every file during incremental scans instead of using the mtime+size fast path |
+### Indexing
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `CODECORTEX_MEMORY_BUDGET_FRACTION` | `0.5` (config) | RSS memory cap as a fraction, clamped to 0.1 – 0.95; overrides `indexing.memory_budget_fraction` |
+| `CODECORTEX_DIRTY_PROPAGATION` | `true` (config) | Enable/disable incremental dirty propagation |
+| `CODECORTEX_DIRTY_PROPAGATION_MAX_FILES` | `200` (config) | Maximum files reloaded by dirty propagation |
+| `CODECORTEX_MAX_CONCURRENT_PARSE` | unset (rayon default) | Cap parser worker threads |
+| `CODECORTEX_USE_DIRECT_WRITER` | `false` (config) | Enable the experimental direct SQLite writer |
+| `CODECORTEX_CACHE_DIR` | unset (in-repo) | Store project index caches under this directory instead of `<project>/.codecortex`; each project gets a stable hashed subdirectory |
+| `CODECORTEX_STRICT_HASH` | off | `1`/`true`/`yes` hashes every file during incremental scans instead of using the mtime+size fast path |
+| `CODECORTEX_RESOLVER_CACHE_SIZE` | `8192` | Resolver catalog `resolve_name` LRU cache capacity |
+| `CODECORTEX_COMMUNITY_MAX_EDGES` | `2000000` | Edge-count cap for Louvain community detection; a graph above the cap skips detection and assigns every symbol to community 0 instead of risking OOM |
+
+### Search and graph caches
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `CODECORTEX_SEARCH_RESULT_CACHE_SIZE` | `32` | LRU capacity of the core search result cache, keyed by `(index_epoch, query_hash)` |
+| `CODECORTEX_GRAPH_SEARCH_CACHE_SIZE` | `32` | LRU capacity of the graph-aware search result cache (`search_with_graph_context`), keyed by `(index_epoch, evidence_epoch, query/limits/budget/ranking fingerprint)` |
+| `CODECORTEX_SEARCH_CHUNK_CACHE_SIZE` | `512` | LRU capacity of the decompressed chunk-text cache |
+| `CODECORTEX_GRAPH_CACHE_SIZE` | `16` | Per-project slot count of the process-global graph adjacency caches (`GraphReadModel`) |
+| `CODECORTEX_BRIDGE_EDGE_LIMIT` | `10000` | Max HTTP call edges / route nodes loaded when synthesizing cross-service bridge edges; hitting the cap logs a truncation warning |
+| `CODECORTEX_CYPHER_FAST_PATH` | enabled | Exactly `0` disables the lazy-BFS fast path for variable-length `CALLS` traversals (ADR-0001); `graph_query` responses then report `fast_path.reason = "disabled(CODECORTEX_CYPHER_FAST_PATH=0)"` |
+
+### Server lifecycle
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `CODECORTEX_PPID_POLL_MS` | `5000` | Parent-process death detection interval in milliseconds (`0` disables the watchdog) |
+
+### Evaluation / benchmarks (cc-eval only)
+
+| Variable | Default | Effect |
+|----------|---------|--------|
+| `CODECORTEX_WRITE_BENCHMARK` | off | `1` makes the fixture and synthetic scale benchmark tests persist their reports under `docs/benchmarks/` |
+| `CODECORTEX_WRITE_REAL_BENCHMARK` | off | `1` makes the ignored real-workspace benchmark persist `docs/benchmarks/real_workspace_latest.md` |
+| `CODECORTEX_BENCH_50K` | off | `1` enables the otherwise-skipped 50k-file synthetic scale benchmark (`bench_synthetic_50k`) |

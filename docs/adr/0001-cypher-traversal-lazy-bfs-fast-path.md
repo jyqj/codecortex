@@ -66,3 +66,10 @@ LIMIT ≤ 1000），其余形态回落原 CTE；语义与 CTE 逐行等价（(ro
   透出（`used: true` / `used: false + reason` / 环境变量禁用 / 非变长查询时
   省略字段）；门常量（LIMIT 上限、合格边类型、种子列、可投影列）收敛为
   `FastPathConfig::DEFAULT` 单一声明。资格门的判定语义逐位不变。
+- 2026-06-12 更新（R3-F）：`FastPathConfig::DEFAULT` 的合格边类型不再以
+  字面量声明，而是直接引用
+  `cc_model::graph_catalog::tool_graph_subsets::CYPHER_FAST_PATH`（工具×
+  边类型矩阵的单一声明点）——仍是单一声明，现在由 catalog 一致性测试机器
+  校验：成员必须存在于 graph catalog 且支持 `variable_length`（cc-search 侧
+  `fast_path_kinds_derive_from_catalog_declaration` 与 cc-model 侧
+  `tool_graph_subsets` 测试双向锁定）。资格门判定语义不变。

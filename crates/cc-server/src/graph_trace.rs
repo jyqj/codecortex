@@ -101,8 +101,17 @@ pub fn trace_path_rich(
     let to_uid = resolve_symbol_uid(db, to, to_uid_override, "to", &mut disambiguation)?;
 
     // 2. Lazy BFS: load edges on demand instead of pre-loading the full graph.
+    // The explain collector records which budget clipped the walk and any DB
+    // reads that degraded to partial results. Declared subset
+    // (`tool_graph_subsets::TRACE`): CALLS adjacency plus synthesized
+    // cross-service bridges (`GraphReadModel::new` joins HTTP_CALLS /
+    // ASYNC_CALLS evidence to HANDLES route handlers), so traces can cross
+    // service boundaries — the opposite choice from impact's BFS.
+    let mut explain = cc_model::GraphExplainCollector::new();
+    explain.declare_edge_kinds(cc_model::graph_catalog::tool_graph_subsets::TRACE);
     let read_model = GraphReadModel::new(Arc::clone(db))?;
-    let labeled_paths = read_model.paths_between(&from_uid, &to_uid, max_depth, 20);
+    let labeled_paths =
+        read_model.paths_between_explained(&from_uid, &to_uid, max_depth, 20, &mut explain);
 
     // 3. Collect all unique UIDs across all paths.
     let uid_vec = collect_unique_uids(&labeled_paths);
@@ -133,7 +142,8 @@ pub fn trace_path_rich(
     );
 
     // 6. Build TraceEdge list and backward-compat name paths.
-    let (paths, edges) = read_model.named_paths_and_trace_edges(&labeled_paths, &sym_map, true);
+    let (paths, edges) =
+        read_model.named_paths_and_trace_edges(&labeled_paths, &sym_map, true, &mut explain);
 
     let path_count = paths.len();
     let diagnostic = if path_count == 0 {
@@ -153,6 +163,7 @@ pub fn trace_path_rich(
         path_count,
         disambiguation,
         diagnostic,
+        graph_explain: explain.finish_non_empty(),
     })
 }
 
@@ -459,5 +470,28 @@ mod tests {
             .expect("edge A→B");
         assert_eq!(edge_a_b.dispatch_kind, "static");
         assert_eq!(edge_a_b.line, 3);
+
+        // graph_explain reports the edge kinds traversed; nothing was
+        // synthesized, evidence-backed, or truncated on this complete walk.
+        let explain = result.graph_explain.expect("graph_explain attached");
+        assert_eq!(explain.edge_kinds_used, vec!["static"]);
+        assert_eq!(explain.synthetic_edge_count, 0);
+        assert_eq!(explain.runtime_evidence_edge_count, 0);
+        assert!(!explain.truncated);
+        assert!(explain.read_errors.is_empty());
+    }
+
+    #[test]
+    fn trace_path_rich_reports_max_depth_truncation() {
+        let (_tmp, db) = setup_abc_graph();
+        // A→B→C needs depth 2; max_depth=1 clips the walk before reaching C.
+        let result = trace_path_rich(
+            &db, None, "fn_a", "fn_c", 1, false, 10, None, false, None, None,
+        )
+        .unwrap();
+        assert_eq!(result.path_count, 0);
+        let explain = result.graph_explain.expect("graph_explain attached");
+        assert!(explain.truncated);
+        assert_eq!(explain.truncated_reason.as_deref(), Some("max_depth"));
     }
 }

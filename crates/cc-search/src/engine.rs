@@ -10,7 +10,7 @@ use std::sync::{Arc, Mutex};
 
 use lru::LruCache;
 
-use cc_db::index_db::IndexDb;
+use cc_db::index_db::{IndexDb, IndexGeneration};
 use cc_model::config::{
     GraphEnrichLimits, ProjectStats, RankingConfig, RepoSizeTier, SearchConfig,
 };
@@ -40,6 +40,14 @@ const RESULT_CACHE_CAPACITY: usize = 32;
 /// decompresses at all — it returns the `Arc`'d result list above.
 const CHUNK_TEXT_CACHE_CAPACITY: usize = 512;
 
+/// Default LRU capacity for graph-aware (post-enrichment) search results.
+/// Override with `CODECORTEX_GRAPH_SEARCH_CACHE_SIZE`.
+///
+/// Separate slot count from `RESULT_CACHE_CAPACITY`: entries are heavier
+/// (final hits plus enrichment context nodes) and this path is the default
+/// agent entry point (`search_in_context_with`), so it gets its own knob.
+const GRAPH_RESULT_CACHE_CAPACITY: usize = 32;
+
 /// Read an LRU capacity from `var`, falling back to `default` when unset,
 /// unparseable, or zero.
 fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize {
@@ -53,25 +61,50 @@ fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize {
 /// Result cache map: `(index_epoch, query_hash)` → shared, immutable hits.
 type ResultCache = LruCache<(u64, u64), Arc<[SearchHit]>>;
 
+/// Graph-aware result cache map: `(index_epoch, evidence_epoch,
+/// graph_query_hash)` → shared, immutable final `(hits, enrichment)` pair
+/// from [`SearchEngine::search_with_graph_context`].
+type GraphResultCache = LruCache<(u64, u64, u64), Arc<(Vec<SearchHit>, GraphEnrichment)>>;
+
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
     pub(crate) config: SearchConfig,
     pub(crate) ranking: RankingConfig,
     pub(crate) repo_tier: Option<RepoSizeTier>,
-    /// Index epoch last observed by this engine. The result cache is keyed on
-    /// the epoch read from the DB at search time, so it never needs explicit
-    /// invalidation; this field only detects epoch changes so the chunk text
-    /// cache (keyed by positional, non-content-addressed chunk ids) can be
-    /// cleared eagerly.
+    /// Index epoch last observed by this engine. The result caches are keyed
+    /// on the epochs read from the DB at search time, so they never need
+    /// explicit invalidation; this field only detects epoch changes so the
+    /// chunk text cache (keyed by positional, non-content-addressed chunk
+    /// ids) can be cleared eagerly.
     last_seen_index_epoch: AtomicU64,
+    /// Evidence epoch last observed by this engine (companion to
+    /// `last_seen_index_epoch`): detects evidence-only bumps so the
+    /// graph-aware result cache can be cleared eagerly for memory hygiene
+    /// (correctness comes from the epoch pair in its key).
+    last_seen_evidence_epoch: AtomicU64,
     /// LRU result cache keyed by `(index_epoch, query_hash)`.
     ///
     /// INVARIANT: the stored slice is FINAL — `search_internal` assigns all
     /// scores, sorts, and truncates before the `put` in [`Self::search`], and
     /// nothing mutates hits afterwards (`search_with_graph_context`, which
-    /// does mutate, bypasses this cache entirely).  A hit therefore returns
-    /// `Arc::clone` of the shared slice with no per-hit deep copy.
+    /// does mutate, never touches this cache — it has its own
+    /// post-enrichment cache below).  A hit therefore returns `Arc::clone`
+    /// of the shared slice with no per-hit deep copy.
     result_cache: Mutex<ResultCache>,
+    /// LRU result cache for the graph-aware path, keyed by
+    /// `(index_epoch, evidence_epoch, graph_query_hash)` — see
+    /// [`Self::search_with_graph_context`].  Kept separate from
+    /// `result_cache` because the stored values embed post-enrichment state
+    /// (graph rerank + context nodes) that also depends on evidence-boosted
+    /// edge confidence, hence the evidence_epoch in the key.
+    graph_result_cache: Mutex<GraphResultCache>,
+    /// Hash of the ranking-relevant config: the full [`RankingConfig`] plus
+    /// [`SearchConfig`]'s `graph_weight`/`graph_top_k`.  Computed ONCE at
+    /// construction — `config` and `ranking` are cloned into the engine in
+    /// [`Self::new`] and never mutated afterwards (cc-server rebuilds the
+    /// engine on project/config change), so the fingerprint is immutable
+    /// per instance.  Folded into the graph-aware cache key.
+    ranking_fingerprint: u64,
     /// LRU cache of decompressed chunk text keyed by `chunk_id`.
     chunk_text_cache: Mutex<LruCache<String, Arc<str>>>,
 }
@@ -82,17 +115,24 @@ impl SearchEngine {
         config: &cc_model::ProjectConfig,
         repo_tier: Option<RepoSizeTier>,
     ) -> Self {
-        let initial_epoch = db.reads().generation().map(|g| g.index_epoch).unwrap_or(0);
+        let initial_generation = db.reads().generation().unwrap_or_default();
+        let ranking_fingerprint = Self::ranking_fingerprint(&config.search, &config.ranking);
         Self {
             db,
             config: config.search.clone(),
             ranking: config.ranking.clone(),
             repo_tier,
-            last_seen_index_epoch: AtomicU64::new(initial_epoch),
+            last_seen_index_epoch: AtomicU64::new(initial_generation.index_epoch),
+            last_seen_evidence_epoch: AtomicU64::new(initial_generation.evidence_epoch),
             result_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
                 "CODECORTEX_SEARCH_RESULT_CACHE_SIZE",
                 RESULT_CACHE_CAPACITY,
             ))),
+            graph_result_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
+                "CODECORTEX_GRAPH_SEARCH_CACHE_SIZE",
+                GRAPH_RESULT_CACHE_CAPACITY,
+            ))),
+            ranking_fingerprint,
             chunk_text_cache: Mutex::new(LruCache::new(cache_capacity_from_env(
                 "CODECORTEX_SEARCH_CHUNK_CACHE_SIZE",
                 CHUNK_TEXT_CACHE_CAPACITY,
@@ -109,22 +149,39 @@ impl SearchEngine {
         if let Ok(mut cache) = self.result_cache.lock() {
             cache.clear();
         }
+        if let Ok(mut cache) = self.graph_result_cache.lock() {
+            cache.clear();
+        }
         if let Ok(mut cache) = self.chunk_text_cache.lock() {
             cache.clear();
         }
     }
 
-    /// Observe the current index epoch, clearing the chunk text cache (and the
-    /// already epoch-keyed result cache, for memory hygiene) when it changed.
-    fn observe_index_epoch(&self) -> CcResult<u64> {
-        let index_epoch = self.db.reads().generation()?.index_epoch;
-        let previous = self
+    /// Observe the current `(index_epoch, evidence_epoch)` pair, clearing
+    /// caches eagerly when either moved.  An index bump invalidates
+    /// everything (the chunk text cache is keyed by positional chunk ids).
+    /// An evidence bump (`boost_http_edge_confidence` ingestion) clears only
+    /// the graph-aware result cache: its entries embed evidence-boosted edge
+    /// confidence, while plain `search()` results and chunk text do not
+    /// depend on evidence.  Both result caches stay correct regardless —
+    /// their keys embed the epoch(s), so a bump simply misses; the clears
+    /// here are memory hygiene.
+    fn observe_epochs(&self) -> CcResult<IndexGeneration> {
+        let generation = self.db.reads().generation()?;
+        let prev_index = self
             .last_seen_index_epoch
-            .swap(index_epoch, Ordering::AcqRel);
-        if previous != index_epoch {
+            .swap(generation.index_epoch, Ordering::AcqRel);
+        let prev_evidence = self
+            .last_seen_evidence_epoch
+            .swap(generation.evidence_epoch, Ordering::AcqRel);
+        if prev_index != generation.index_epoch {
             self.invalidate_cache();
+        } else if prev_evidence != generation.evidence_epoch {
+            if let Ok(mut cache) = self.graph_result_cache.lock() {
+                cache.clear();
+            }
         }
-        Ok(index_epoch)
+        Ok(generation)
     }
 
     pub fn status(&self) -> CcResult<ProjectStats> {
@@ -177,6 +234,46 @@ impl SearchEngine {
         hasher.finish()
     }
 
+    /// Fingerprint of every config knob that shapes graph-aware results.
+    /// The full [`RankingConfig`] is hashed via its serde serialization
+    /// (struct field order is stable), so any future ranking knob is
+    /// automatically covered without enumerating fields here; the two
+    /// graph-lane params from [`SearchConfig`] are folded in explicitly.
+    /// Called once from [`Self::new`] — see `ranking_fingerprint` field.
+    fn ranking_fingerprint(config: &SearchConfig, ranking: &RankingConfig) -> u64 {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        serde_json::to_string(ranking)
+            .unwrap_or_default()
+            .hash(&mut hasher);
+        config.graph_weight.to_bits().hash(&mut hasher);
+        config.graph_top_k.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    /// Cache hash for the graph-aware path: the base [`Self::query_hash`]
+    /// combined with every post-search input that shapes the final
+    /// `(hits, enrichment)` value — the enrichment limits, the token budget
+    /// (it caps the enrichment's graph node budget), and the per-engine
+    /// ranking fingerprint.
+    fn graph_query_hash(
+        &self,
+        request: &SearchRequest,
+        limits: &GraphEnrichLimits,
+        token_budget: u32,
+    ) -> u64 {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        Self::query_hash(request).hash(&mut hasher);
+        limits.max_resolve.hash(&mut hasher);
+        limits.callers_per_sym.hash(&mut hasher);
+        limits.callees_per_sym.hash(&mut hasher);
+        limits.max_tests.hash(&mut hasher);
+        limits.max_routes.hash(&mut hasher);
+        limits.graph_budget_pct.hash(&mut hasher);
+        token_budget.hash(&mut hasher);
+        self.ranking_fingerprint.hash(&mut hasher);
+        hasher.finish()
+    }
+
     /// Core search — FTS5 + grep with RRF fusion and reranking.
     ///
     /// INVARIANT: `rerank_score` on the returned hits is FINAL and the list
@@ -190,7 +287,7 @@ impl SearchEngine {
         // The cache key embeds the persisted index epoch: any committed index
         // write bumps it, so stale entries can never be served. One metadata
         // SELECT per search; local SQLite reads are microseconds.
-        let index_epoch = self.observe_index_epoch()?;
+        let index_epoch = self.observe_epochs()?.index_epoch;
         let qhash = Self::query_hash(request);
         let cache_key = (index_epoch, qhash);
         if let Ok(mut cache) = self.result_cache.lock() {
@@ -226,15 +323,41 @@ impl SearchEngine {
     /// [`GraphEnrichment`] carries the neighbor/test context nodes without
     /// any score state.
     ///
-    /// Results are **not** cached (this path is typically called once per
-    /// `search_in_context_with` invocation).
+    /// Results ARE cached (LRU, own slot count via
+    /// `CODECORTEX_GRAPH_SEARCH_CACHE_SIZE`, separate from [`Self::search`]'s
+    /// cache).  The key covers both DB epochs (`index_epoch`,
+    /// `evidence_epoch`), the request hash, the [`GraphEnrichLimits`], the
+    /// token budget, and the per-engine ranking fingerprint — so a bump of
+    /// either epoch simply misses.  evidence_epoch matters because runtime
+    /// evidence ingestion (`boost_http_edge_confidence`) alters the edge
+    /// confidence embedded in cached enrichment nodes without touching index
+    /// content.  Degraded results (`graph_explain.read_errors` non-empty)
+    /// are never cached: a transient DB failure must not be served from
+    /// cache for the rest of the epoch pair.  A hit returns `Arc::clone` of
+    /// the shared, immutable pair — callers must not mutate it.
     pub fn search_with_graph_context(
         &self,
         request: &SearchRequest,
         limits: &GraphEnrichLimits,
         token_budget: u32,
-    ) -> CcResult<(Vec<SearchHit>, GraphEnrichment)> {
-        self.observe_index_epoch()?;
+    ) -> CcResult<Arc<(Vec<SearchHit>, GraphEnrichment)>> {
+        // ── Cache lookup ─────────────────────────────────────────
+        let generation = self.observe_epochs()?;
+        let qhash = self.graph_query_hash(request, limits, token_budget);
+        let cache_key = (generation.index_epoch, generation.evidence_epoch, qhash);
+        if let Ok(mut cache) = self.graph_result_cache.lock() {
+            if let Some(cached) = cache.get(&cache_key) {
+                tracing::debug!(
+                    query = %request.query,
+                    "graph search cache hit (index_epoch={}, evidence_epoch={}, hash={})",
+                    generation.index_epoch,
+                    generation.evidence_epoch,
+                    qhash,
+                );
+                return Ok(Arc::clone(cached));
+            }
+        }
+
         let mut hits = self.search_internal(request, false)?;
 
         let (scores, enrichment) = graph_enrich(&self.db, &hits, limits, token_budget);
@@ -265,7 +388,18 @@ impl SearchEngine {
         };
         hits.truncate(top_k);
         crate::score_trace::debug_assert_trace_consistency(&hits);
-        Ok((hits, enrichment))
+
+        let result = Arc::new((hits, enrichment));
+        // Degraded-not-cached: a transient DB read failure (recorded in
+        // graph_explain.read_errors) produced partial graph context — keep
+        // serving it for THIS call, but never from cache, so the next call
+        // retries the reads instead of pinning the degradation to the epoch.
+        if result.1.graph_explain.read_errors.is_empty() {
+            if let Ok(mut cache) = self.graph_result_cache.lock() {
+                cache.put(cache_key, Arc::clone(&result));
+            }
+        }
+        Ok(result)
     }
 
     /// Shared implementation for `search` / `search_with_graph_context`.
@@ -274,9 +408,10 @@ impl SearchEngine {
     /// (standard behaviour).  When false, results are cut to `rerank_window`
     /// giving the graph-rerank step a wider candidate set.
     ///
-    /// PRECONDITION: the caller has invoked [`Self::observe_index_epoch`] so
-    /// the chunk text cache was cleared if the index epoch moved.  Result
-    /// caching lives in [`Self::search`]; this function always recomputes.
+    /// PRECONDITION: the caller has invoked [`Self::observe_epochs`] so the
+    /// chunk text cache was cleared if the index epoch moved.  Result
+    /// caching lives in [`Self::search`] / the graph-aware cache in
+    /// [`Self::search_with_graph_context`]; this function always recomputes.
     fn search_internal(
         &self,
         request: &SearchRequest,
@@ -838,6 +973,225 @@ mod tests {
         assert_ne!(
             SearchEngine::query_hash(&conv_ab),
             SearchEngine::query_hash(&conv_ba)
+        );
+    }
+
+    // ── graph-aware result cache (search_with_graph_context) ──────────
+
+    fn graph_cache_request() -> SearchRequest {
+        SearchRequest {
+            query: "cached_marker".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn graph_search_cache_hit_returns_shared_arc() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(!first.0.is_empty(), "fixture must produce hits");
+        assert!(
+            Arc::ptr_eq(&first, &second),
+            "second identical request must be served from the graph-aware cache"
+        );
+    }
+
+    #[test]
+    fn graph_search_cache_misses_on_index_epoch_bump() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(first.0[0].text.contains("alpha_one"));
+
+        // Committed reindex of the same file bumps index_epoch inside the
+        // cc-db write transaction — no manual invalidation call.
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_two() }",
+            )])
+            .unwrap();
+
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &second),
+            "index epoch bump must miss the graph-aware cache"
+        );
+        assert!(
+            second.0[0].text.contains("alpha_two"),
+            "stale enriched results served after index write: {}",
+            second.0[0].text
+        );
+    }
+
+    #[test]
+    fn graph_search_cache_misses_on_evidence_epoch_bump() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+
+        // Runtime-evidence ingestion bumps evidence_epoch WITHOUT touching
+        // index content; enrichment consumes evidence-boosted confidence, so
+        // cached enriched results must not survive the bump.
+        engine
+            .db
+            .writes()
+            .boost_http_edge_confidence("missing-edge", 0.1)
+            .unwrap();
+
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &second),
+            "evidence epoch bump must miss the graph-aware cache"
+        );
+
+        // The recomputed result is cached under the new epoch pair.
+        let third = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&second, &third),
+            "post-bump result must be cached under the new epoch pair"
+        );
+    }
+
+    #[test]
+    fn graph_search_cache_key_covers_budget_and_limits() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let base = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+
+        // Different token_budget → different key → miss (recompute).
+        let other_budget = engine
+            .search_with_graph_context(&request, &limits, 8000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&base, &other_budget),
+            "a different token_budget must not reuse the cached entry"
+        );
+
+        // Different GraphEnrichLimits → different key → miss.
+        let mut other_limits = RepoSizeTier::Small.graph_enrich_limits();
+        other_limits.callers_per_sym += 1;
+        let other = engine
+            .search_with_graph_context(&request, &other_limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&base, &other),
+            "different GraphEnrichLimits must not reuse the cached entry"
+        );
+
+        // The original key is still cached, untouched by the misses above.
+        let again = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&base, &again),
+            "the original (budget, limits) entry must still be served"
+        );
+    }
+
+    #[test]
+    fn graph_search_degraded_result_is_not_cached() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn cached_marker() {}",
+            "cached_marker",
+            "uid:cached_marker",
+            vec![],
+        );
+        // Drop call_edges so the enrichment's batched adjacency reads fail
+        // (the graph lane swallows its own failures, so search still works).
+        engine
+            .db
+            .reads()
+            .read_conn()
+            .unwrap()
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !first.1.graph_explain.read_errors.is_empty(),
+            "fixture must produce a degraded enrichment"
+        );
+        assert_eq!(
+            engine.graph_result_cache.lock().unwrap().len(),
+            0,
+            "degraded results must not be stored in the cache"
+        );
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &second),
+            "degraded result must be recomputed, never served from cache"
         );
     }
 
@@ -2009,7 +2363,7 @@ mod tests {
             vec![],
         );
 
-        let (hits, _enrichment) = engine
+        let outcome = engine
             .search_with_graph_context(
                 &SearchRequest {
                     query: "process".to_string(),
@@ -2021,8 +2375,9 @@ mod tests {
                 4000,
             )
             .unwrap();
+        let hits = &outcome.0;
 
-        assert_trace_replays_rerank(&hits);
+        assert_trace_replays_rerank(hits);
         // At least one hit must have received (and billed) the post-search
         // graph-rerank contribution.
         assert!(

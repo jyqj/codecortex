@@ -1,0 +1,19 @@
+name = "relations_golden_py_get_user_callers"
+tool = "relations"
+description = "Golden: cross-file Python callers of get_user include Flask and Django views"
+
+[params]
+symbol = "get_user"
+kind = "callers"
+limit = 20
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "api_get_user"
+
+[[assertions]]
+kind = "output_contains"
+value = "user_detail_view"

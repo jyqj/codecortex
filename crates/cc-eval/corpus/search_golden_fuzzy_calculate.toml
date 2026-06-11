@@ -1,0 +1,16 @@
+name = "search_golden_fuzzy_calculate"
+tool = "search"
+description = "Golden: fuzzy symbol lookup 'calculate' finds calculate_total"
+
+[params]
+query = "calculate"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "calculate_total"
+min_recall = 1.0

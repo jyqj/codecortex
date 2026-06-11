@@ -1,0 +1,21 @@
+name = "search_golden_rust_process_order"
+tool = "search"
+description = "Golden: exact symbol lookup for Rust function process_order"
+
+[params]
+query = "process_order"
+mode = "symbol"
+exact = true
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "process_order"
+min_recall = 1.0
+
+[[assertions]]
+kind = "output_contains"
+value = "lib.rs"

@@ -1,0 +1,22 @@
+name = "search_golden_hybrid_logging"
+tool = "search"
+description = "Golden: hybrid search for logging ranks the log method top-5; Logger class membership asserted positionlessly"
+
+[params]
+query = "log a message"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "machine_pack.hits"
+value = "log"
+min_recall = 1.0
+
+[[assertions]]
+kind = "array_contains_item"
+field = "machine_pack.hits"
+value = "symbol_name=Logger"

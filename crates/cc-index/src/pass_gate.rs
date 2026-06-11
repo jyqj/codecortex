@@ -3,10 +3,17 @@
 //! Every pass that runs after the index write follows the same shape: decide
 //! whether its inputs changed since the last successful run, execute when
 //! they did, and persist a marker so the next build can skip. This module
-//! owns that shape once — [`PassGate`] is the decision/record contract and
-//! [`run_gated_passes`] is the orchestration loop — so individual passes only
-//! declare *what* their input signature is, never re-implement the
-//! compare/record plumbing.
+//! owns that shape once — [`PassGate`] is the decision contract and
+//! [`DeferredSignatureRecord`] is the transportable record — so individual
+//! passes only declare *what* their input signature is, never re-implement
+//! the compare/record plumbing.
+//!
+//! Staged commit shape: gates decide (and compute their signature) during the
+//! lock-free compute stage; the resulting [`DeferredSignatureRecord`] travels
+//! with the pass's typed delta and is persisted in the apply stage, only
+//! after the pass's writes landed — a mid-build failure never records a
+//! marker for work that did not finish (see `Indexer::phase_postprocess_apply`
+//! for the cross-pass record ordering).
 //!
 //! Gate adapters:
 //! - [`DbSignatureGate`] — u64 signature computed from committed DB state
@@ -16,16 +23,15 @@
 //! - [`StringCacheGate`] — opaque string cache key (git co-change: HEAD sha).
 //!   A missing/empty key means the source is unavailable and the pass must
 //!   run unconditionally — never skip permanently on a read failure.
-//! - [`Unconditional`] — passes with no skip condition (ADR indexing).
 //! - [`PairGate`] — couples two gates whose passes execute as one round
 //!   (dispatch + interface gates feed a single synthesis round).
 //!
 //! Signature gates compare lazily: metadata is read first, and the signature
 //! is computed only when an actual comparison (or a record) needs it, at most
 //! once per gate per build — the cached value is shared between `should_run`
-//! and `record_run`. Hash comparison can never skip the computation itself,
-//! but the cache removes same-build recomputation and the forced (full
-//! rebuild) path skips the metadata round-trip entirely.
+//! and `deferred_record`. Hash comparison can never skip the computation
+//! itself, but the cache removes same-build recomputation and the forced
+//! (full rebuild) path skips the metadata round-trip entirely.
 //!
 //! Signature gates also persist an algorithm version next to the signature.
 //! Signatures recorded before the version key existed were produced by
@@ -67,19 +73,39 @@ impl GateDecision {
     }
 }
 
-/// Decision/record contract for one gated pass.
+/// Decision contract for one gated pass.
 ///
-/// `should_run` must be free of side effects on the index; `record_run` is
-/// called only after the pass completed successfully, so a mid-pass failure
-/// never records a marker for work that did not finish.
+/// `should_run` must be free of side effects on the index. Recording is data,
+/// not behavior: signature gates hand out a [`DeferredSignatureRecord`] that
+/// the apply stage persists once the pass's writes completed.
 pub(crate) trait PassGate {
     fn id(&self) -> &'static str;
     fn should_run(&self) -> CcResult<GateDecision>;
-    fn record_run(&self) -> CcResult<()>;
 }
 
-/// Shared compare/record plumbing for u64-signature gates: a signature
-/// metadata key plus its algorithm-version key.
+/// A signature record captured during the lock-free compute stage and
+/// persisted in the apply stage. Owns no DB borrow so it can travel inside
+/// the staged postprocess deltas across the unlocked window.
+pub(crate) struct DeferredSignatureRecord {
+    sig_key: &'static str,
+    algo_key: &'static str,
+    algo_version: &'static str,
+    value: u64,
+}
+
+impl DeferredSignatureRecord {
+    /// Persist the signature + algorithm version. Call only after the gated
+    /// pass's writes landed, so a mid-build failure never records a marker
+    /// for work that did not finish.
+    pub(crate) fn record(&self, db: &IndexDb) -> CcResult<()> {
+        db.writes()
+            .set_metadata(self.sig_key, &self.value.to_string())?;
+        db.writes().set_metadata(self.algo_key, self.algo_version)
+    }
+}
+
+/// Shared compare plumbing for u64-signature gates: a signature metadata key
+/// plus its algorithm-version key.
 struct SignatureStore<'a> {
     db: &'a IndexDb,
     sig_key: &'static str,
@@ -112,13 +138,13 @@ impl SignatureStore<'_> {
         }
     }
 
-    fn record(&self, signature: u64) -> CcResult<()> {
-        self.db
-            .writes()
-            .set_metadata(self.sig_key, &signature.to_string())?;
-        self.db
-            .writes()
-            .set_metadata(self.algo_key, self.algo_version)
+    fn deferred_record(&self, value: u64) -> DeferredSignatureRecord {
+        DeferredSignatureRecord {
+            sig_key: self.sig_key,
+            algo_key: self.algo_key,
+            algo_version: self.algo_version,
+            value,
+        }
     }
 }
 
@@ -167,6 +193,13 @@ impl<'a, F: Fn() -> CcResult<u64>> DbSignatureGate<'a, F> {
         self.cached.set(Some(sig));
         Ok(sig)
     }
+
+    /// Capture the record for the apply stage. Computes the signature when
+    /// the decision did not need it (forced / no recorded signature), reusing
+    /// the per-build cache otherwise.
+    pub(crate) fn deferred_record(&self) -> CcResult<DeferredSignatureRecord> {
+        Ok(self.store.deferred_record(self.signature()?))
+    }
 }
 
 impl<F: Fn() -> CcResult<u64>> PassGate for DbSignatureGate<'_, F> {
@@ -179,10 +212,6 @@ impl<F: Fn() -> CcResult<u64>> PassGate for DbSignatureGate<'_, F> {
             return Ok(GateDecision::run(reason));
         }
         self.store.decide(&|| self.signature())
-    }
-
-    fn record_run(&self) -> CcResult<()> {
-        self.store.record(self.signature()?)
     }
 }
 
@@ -225,6 +254,12 @@ impl<'a, F: Fn() -> u64> FileSignatureGate<'a, F> {
         self.cached.set(Some(sig));
         sig
     }
+
+    /// Capture the record for the apply stage (shares the per-build cache
+    /// with `should_run`).
+    pub(crate) fn deferred_record(&self) -> DeferredSignatureRecord {
+        self.store.deferred_record(self.signature())
+    }
 }
 
 impl<F: Fn() -> u64> PassGate for FileSignatureGate<'_, F> {
@@ -234,10 +269,6 @@ impl<F: Fn() -> u64> PassGate for FileSignatureGate<'_, F> {
 
     fn should_run(&self) -> CcResult<GateDecision> {
         self.store.decide(&|| Ok(self.signature()))
-    }
-
-    fn record_run(&self) -> CcResult<()> {
-        self.store.record(self.signature())
     }
 }
 
@@ -272,6 +303,13 @@ impl<'a, F: Fn() -> Option<String>> StringCacheGate<'a, F> {
             .get_or_insert_with(|| (self.compute)().filter(|value| !value.is_empty()))
             .clone()
     }
+
+    /// Key to persist in the apply stage; `None` when the source is
+    /// unavailable — the apply stage must then record nothing so the next
+    /// build runs again.
+    pub(crate) fn record_key(&self) -> Option<String> {
+        self.current()
+    }
 }
 
 impl<F: Fn() -> Option<String>> PassGate for StringCacheGate<'_, F> {
@@ -289,45 +327,13 @@ impl<F: Fn() -> Option<String>> PassGate for StringCacheGate<'_, F> {
             Ok(GateDecision::run("cache key changed"))
         }
     }
-
-    fn record_run(&self) -> CcResult<()> {
-        // Unavailable key: skip the record so the next build runs again.
-        if let Some(current) = self.current() {
-            self.db.writes().set_metadata(self.key, &current)?;
-        }
-        Ok(())
-    }
-}
-
-/// Gate for passes with no skip condition.
-pub(crate) struct Unconditional {
-    id: &'static str,
-}
-
-impl Unconditional {
-    pub(crate) fn new(id: &'static str) -> Self {
-        Self { id }
-    }
-}
-
-impl PassGate for Unconditional {
-    fn id(&self) -> &'static str {
-        self.id
-    }
-
-    fn should_run(&self) -> CcResult<GateDecision> {
-        Ok(GateDecision::run("unconditional"))
-    }
-
-    fn record_run(&self) -> CcResult<()> {
-        Ok(())
-    }
 }
 
 /// Couples two gates whose passes execute as a single round: the round runs
-/// when either gate's input changed, and both gates record afterwards (the
-/// round's output covers both input groups). The individual decisions stay
-/// observable so the pass can route work per input group.
+/// when either gate's input changed, and both gates' deferred records are
+/// persisted afterwards (the round's output covers both input groups). The
+/// individual decisions stay observable so the pass can route work per input
+/// group.
 pub(crate) struct PairGate<'a> {
     id: &'static str,
     first: &'a dyn PassGate,
@@ -370,62 +376,17 @@ impl PassGate for PairGate<'_> {
             (false, false) => GateDecision::skip("signatures unchanged"),
         })
     }
-
-    fn record_run(&self) -> CcResult<()> {
-        self.first.record_run()?;
-        self.second.record_run()
-    }
 }
 
-/// When a completed pass records its gate marker.
-///
-/// `Immediate` records right after the pass body returns (co-change, infra,
-/// community). `Deferred` postpones the record until every pass in the batch
-/// completed — the synthesis round uses this so a later community failure
-/// leaves no signature recorded for the build, exactly as before the seam.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum RecordTiming {
-    Immediate,
-    Deferred,
-}
-
-/// One pass wired to its gate. `run` returns whether the pass completed and
-/// its marker may be recorded — `Ok(false)` means the pass degraded
-/// gracefully (e.g. git unavailable) and must run again next build.
-pub(crate) struct GatedPass<'a> {
-    pub(crate) gate: &'a dyn PassGate,
-    pub(crate) timing: RecordTiming,
-    pub(crate) run: &'a dyn Fn() -> CcResult<bool>,
-}
-
-/// Drive a batch of gated passes in declaration order:
-/// `gate.should_run → pass → gate.record_run` (record timing per pass).
-/// Deferred records execute after all passes completed, in declaration order.
-pub(crate) fn run_gated_passes(passes: &[GatedPass]) -> CcResult<()> {
-    let mut deferred: Vec<&dyn PassGate> = Vec::new();
-    for pass in passes {
-        let decision = pass.gate.should_run()?;
-        tracing::debug!(
-            pass = pass.gate.id(),
-            run = decision.run,
-            reason = decision.reason,
-            "pass gate decision"
-        );
-        if !decision.run {
-            continue;
-        }
-        if !(pass.run)()? {
-            continue;
-        }
-        match pass.timing {
-            RecordTiming::Immediate => pass.gate.record_run()?,
-            RecordTiming::Deferred => deferred.push(pass.gate),
-        }
-    }
-    for gate in deferred {
-        gate.record_run()?;
-    }
-    Ok(())
+/// Log a gate decision in the shared format the old orchestration loop used,
+/// so the staged compute keeps the same observability per pass.
+pub(crate) fn log_gate_decision(gate: &dyn PassGate, decision: GateDecision) {
+    tracing::debug!(
+        pass = gate.id(),
+        run = decision.run,
+        reason = decision.reason,
+        "pass gate decision"
+    );
 }
 
 #[cfg(test)]
@@ -471,7 +432,7 @@ mod tests {
             "no comparison needed, signature must not be computed for the decision"
         );
 
-        gate.record_run().unwrap();
+        gate.deferred_record().unwrap().record(&db).unwrap();
         assert_eq!(
             db.reads().get_metadata("test_sig").unwrap().as_deref(),
             Some("42")
@@ -517,8 +478,8 @@ mod tests {
         assert!(decision.run);
         assert_eq!(decision.reason, "signature changed");
 
-        // record_run reuses the cached signature from should_run.
-        gate.record_run().unwrap();
+        // deferred_record reuses the cached signature from should_run.
+        gate.deferred_record().unwrap().record(&db).unwrap();
         assert_eq!(calls.get(), 1, "same-build signature computes at most once");
         assert_eq!(
             db.reads().get_metadata("test_sig").unwrap().as_deref(),
@@ -572,7 +533,7 @@ mod tests {
         assert_eq!(decision.reason, "signature algorithm changed");
         assert_eq!(calls.get(), 0, "no comparison: signature not computed");
 
-        gate.record_run().unwrap();
+        gate.deferred_record().unwrap().record(&db).unwrap();
         assert_eq!(
             db.reads().get_metadata("test_sig_algo").unwrap().as_deref(),
             Some("2"),
@@ -612,7 +573,7 @@ mod tests {
         assert_eq!(decision.reason, "full rebuild");
         assert_eq!(calls.get(), 0, "forced decision must not compute");
 
-        gate.record_run().unwrap();
+        gate.deferred_record().unwrap().record(&db).unwrap();
         assert_eq!(calls.get(), 1, "record computes the signature once");
     }
 
@@ -627,7 +588,7 @@ mod tests {
 
         let gate = FileSignatureGate::new("infra", &db, "fs_sig", "fs_sig_algo", "1", &compute);
         assert!(gate.should_run().unwrap().run, "missing signature runs");
-        gate.record_run().unwrap();
+        gate.deferred_record().record(&db).unwrap();
         assert_eq!(calls.get(), 1, "decision + record share one computation");
         assert_eq!(
             db.reads().get_metadata("fs_sig").unwrap().as_deref(),
@@ -646,25 +607,23 @@ mod tests {
     }
 
     #[test]
-    fn string_cache_gate_unavailable_key_runs_and_never_records() {
+    fn string_cache_gate_unavailable_key_runs_and_yields_no_record_key() {
         let (_tmp, db) = open_db();
 
         let gate = StringCacheGate::new("cochange", &db, "head_key", || None);
         let decision = gate.should_run().unwrap();
         assert!(decision.run);
         assert_eq!(decision.reason, "cache key unavailable");
-        gate.record_run().unwrap();
         assert_eq!(
-            db.reads().get_metadata("head_key").unwrap(),
+            gate.record_key(),
             None,
-            "unavailable key must not be recorded"
+            "unavailable key must yield no record key"
         );
 
         // Empty string normalizes to unavailable.
         let gate = StringCacheGate::new("cochange", &db, "head_key", || Some(String::new()));
         assert!(gate.should_run().unwrap().run);
-        gate.record_run().unwrap();
-        assert_eq!(db.reads().get_metadata("head_key").unwrap(), None);
+        assert_eq!(gate.record_key(), None);
     }
 
     #[test]
@@ -675,7 +634,8 @@ mod tests {
 
         let gate = StringCacheGate::new("cochange", &db, "head_key", &compute);
         assert!(gate.should_run().unwrap().run, "no recorded key runs");
-        gate.record_run().unwrap();
+        let key = gate.record_key().expect("available key must be recordable");
+        db.writes().set_metadata("head_key", &key).unwrap();
         assert_eq!(
             db.reads().get_metadata("head_key").unwrap().as_deref(),
             Some("abc")
@@ -689,14 +649,6 @@ mod tests {
         *head.borrow_mut() = "def".to_string();
         let gate3 = StringCacheGate::new("cochange", &db, "head_key", &compute);
         assert!(gate3.should_run().unwrap().run, "advanced key runs");
-    }
-
-    #[test]
-    fn unconditional_gate_always_runs() {
-        let gate = Unconditional::new("adr");
-        assert!(gate.should_run().unwrap().run);
-        gate.record_run().unwrap();
-        assert!(gate.should_run().unwrap().run);
     }
 
     #[test]
@@ -732,7 +684,10 @@ mod tests {
         assert!(pair.first_changed());
         assert!(!pair.second_changed());
 
-        pair.record_run().unwrap();
+        // The round's output covers both input groups, so the apply stage
+        // persists both children's deferred records.
+        gate_a.deferred_record().unwrap().record(&db).unwrap();
+        gate_b.deferred_record().unwrap().record(&db).unwrap();
         assert_eq!(
             db.reads().get_metadata("sig_a").unwrap().as_deref(),
             Some("2"),
@@ -776,124 +731,5 @@ mod tests {
         assert!(!decision.run);
         assert!(!pair.first_changed());
         assert!(!pair.second_changed());
-    }
-
-    /// Recording gate for orchestration tests: configurable decision, logs
-    /// record calls into a shared journal.
-    struct ProbeGate<'a> {
-        id: &'static str,
-        run: bool,
-        journal: &'a RefCell<Vec<String>>,
-    }
-
-    impl PassGate for ProbeGate<'_> {
-        fn id(&self) -> &'static str {
-            self.id
-        }
-
-        fn should_run(&self) -> CcResult<GateDecision> {
-            Ok(if self.run {
-                GateDecision::run("probe")
-            } else {
-                GateDecision::skip("probe")
-            })
-        }
-
-        fn record_run(&self) -> CcResult<()> {
-            self.journal
-                .borrow_mut()
-                .push(format!("record:{}", self.id));
-            Ok(())
-        }
-    }
-
-    #[test]
-    fn run_gated_passes_orders_immediate_and_deferred_records() {
-        let journal = RefCell::new(Vec::new());
-        let deferred_gate = ProbeGate {
-            id: "synthesis",
-            run: true,
-            journal: &journal,
-        };
-        let immediate_gate = ProbeGate {
-            id: "community",
-            run: true,
-            journal: &journal,
-        };
-        let skipped_gate = ProbeGate {
-            id: "skipped",
-            run: false,
-            journal: &journal,
-        };
-
-        let run_synthesis = || -> CcResult<bool> {
-            journal.borrow_mut().push("run:synthesis".to_string());
-            Ok(true)
-        };
-        let run_community = || -> CcResult<bool> {
-            journal.borrow_mut().push("run:community".to_string());
-            Ok(true)
-        };
-        let run_skipped = || -> CcResult<bool> {
-            journal.borrow_mut().push("run:skipped".to_string());
-            Ok(true)
-        };
-
-        run_gated_passes(&[
-            GatedPass {
-                gate: &deferred_gate,
-                timing: RecordTiming::Deferred,
-                run: &run_synthesis,
-            },
-            GatedPass {
-                gate: &skipped_gate,
-                timing: RecordTiming::Immediate,
-                run: &run_skipped,
-            },
-            GatedPass {
-                gate: &immediate_gate,
-                timing: RecordTiming::Immediate,
-                run: &run_community,
-            },
-        ])
-        .unwrap();
-
-        assert_eq!(
-            *journal.borrow(),
-            vec![
-                "run:synthesis",
-                "run:community",
-                "record:community",
-                "record:synthesis",
-            ],
-            "deferred records run after all passes, skipped passes never run"
-        );
-    }
-
-    #[test]
-    fn run_gated_passes_skips_record_when_pass_did_not_complete() {
-        let journal = RefCell::new(Vec::new());
-        let gate = ProbeGate {
-            id: "cochange",
-            run: true,
-            journal: &journal,
-        };
-        let degraded = || -> CcResult<bool> {
-            journal.borrow_mut().push("run:cochange".to_string());
-            Ok(false)
-        };
-
-        run_gated_passes(&[GatedPass {
-            gate: &gate,
-            timing: RecordTiming::Immediate,
-            run: &degraded,
-        }])
-        .unwrap();
-
-        assert_eq!(
-            *journal.borrow(),
-            vec!["run:cochange"],
-            "Ok(false) from the pass must not record the gate marker"
-        );
     }
 }

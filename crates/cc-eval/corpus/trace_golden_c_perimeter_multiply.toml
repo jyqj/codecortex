@@ -1,0 +1,29 @@
+name = "trace_golden_c_perimeter_multiply"
+tool = "trace"
+description = "Golden: C call path rectangle_perimeter -> multiply exists"
+
+[params]
+from = "rectangle_perimeter"
+to = "multiply"
+max_depth = 4
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+field = "paths"
+value = "1"
+
+[[assertions]]
+kind = "field_matches_regex"
+field = "path_count"
+value = "^[1-9][0-9]*$"
+
+[[assertions]]
+kind = "output_contains"
+value = "rectangle_perimeter"
+
+[[assertions]]
+kind = "output_contains"
+value = "multiply"

@@ -1,0 +1,17 @@
+name = "graph_query_golden_multiply_callers"
+tool = "graph_query"
+description = "Golden: Cypher CALLS query finds both C callers of multiply"
+
+[params]
+query = "MATCH (a)-[:CALLS]->(b) WHERE b.name = 'multiply' RETURN a.name LIMIT 10"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "compute_area"
+
+[[assertions]]
+kind = "output_contains"
+value = "rectangle_perimeter"

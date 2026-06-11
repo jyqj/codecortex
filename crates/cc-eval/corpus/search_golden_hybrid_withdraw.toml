@@ -1,0 +1,17 @@
+name = "search_golden_hybrid_withdraw"
+tool = "search"
+description = "Golden: hybrid search for withdrawal logic ranks the C++ withdraw method in top 5"
+
+[params]
+query = "withdraw funds if sufficient balance"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "machine_pack.hits"
+value = "withdraw"
+min_recall = 1.0

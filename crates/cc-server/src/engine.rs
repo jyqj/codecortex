@@ -21,7 +21,7 @@
 //!   `find_impacted_tests`), in `engine_query.rs`.
 
 use cc_db::index_db::IndexDb;
-use cc_index::{IndexReport, Indexer, PreparedBuild};
+use cc_index::{IndexReport, Indexer, PreparedBuild, StagedPostprocess, WrittenBuild};
 use cc_model::config::{
     load_project_config, IndexPaths, IndexingConfig, ProjectConfig, ProjectStats, RepoSizeTier,
 };
@@ -101,6 +101,17 @@ pub struct CodeIndex {
     /// True when the DB was freshly created (Initialized) or rebuilt after a
     /// schema mismatch — signals that an auto-index build is needed.
     needs_initial_index: bool,
+    /// Per-project build gate serializing prepare+commit pairs across every
+    /// build entry point (manual MCP `index`, watcher ticks, auto-index).
+    /// Created once at construction and untouched by `close()`/`reopen()` so
+    /// serialization survives idle eviction.
+    ///
+    /// Lock-ordering rule: in the build flow the gate is acquired BEFORE any
+    /// CodeIndex RwLock acquisition, and no thread may block on the gate
+    /// while holding the RwLock — callers that already hold the write lock
+    /// (`&mut self` builds) may only `try_lock` and must surface "busy" as an
+    /// error instead of waiting.
+    build_gate: Arc<std::sync::Mutex<()>>,
 }
 
 /// Borrowed view over [`CodeIndex`] for the search domain: context search and
@@ -151,6 +162,7 @@ impl CodeIndex {
             engine: None,
             repo_tier: None,
             needs_initial_index: false,
+            build_gate: Arc::new(std::sync::Mutex::new(())),
         }
     }
 
@@ -209,6 +221,32 @@ impl CodeIndex {
         self.index_db.as_ref()
     }
 
+    /// Clone the per-project build gate. Callers must follow the
+    /// lock-ordering rule documented on the field: acquire the gate before
+    /// any CodeIndex RwLock acquisition in the build flow, and never block on
+    /// the gate while holding the RwLock.
+    pub fn build_gate(&self) -> Arc<std::sync::Mutex<()>> {
+        self.build_gate.clone()
+    }
+
+    /// Acquire the build gate without blocking, for build entry points that
+    /// run with the CodeIndex write lock already held (`&mut self`). Blocking
+    /// here could deadlock against a gated split build waiting for that same
+    /// write lock, so "busy" is surfaced as an error instead.
+    fn try_acquire_build_gate(
+        gate: &Arc<std::sync::Mutex<()>>,
+    ) -> CcResult<std::sync::MutexGuard<'_, ()>> {
+        match gate.try_lock() {
+            Ok(permit) => Ok(permit),
+            Err(std::sync::TryLockError::WouldBlock) => Err(CcError::Other(
+                "index build already in progress".to_string(),
+            )),
+            // The gate guards no data — only build ordering — so a poisoned
+            // gate is safe to recover.
+            Err(std::sync::TryLockError::Poisoned(poisoned)) => Ok(poisoned.into_inner()),
+        }
+    }
+
     /// Whether this CodeIndex was freshly created (empty DB) and needs an
     /// initial index build. Cleared after a successful build.
     pub fn needs_initial_index(&self) -> bool {
@@ -232,6 +270,8 @@ impl CodeIndex {
     }
 
     pub fn build_index(&mut self, full: bool) -> CcResult<IndexReport> {
+        let gate = self.build_gate();
+        let _build_permit = Self::try_acquire_build_gate(&gate)?;
         let project = self.ensure_project()?;
         let config = self.ensure_config()?;
         let db = self.ensure_db()?;
@@ -248,6 +288,8 @@ impl CodeIndex {
     /// `build_inputs`/`auto_index_file_limit` under a read lock, run
     /// `prepare_build` with no lock, and `commit_build` under the write lock.
     pub fn build_auto_index(&mut self, full: bool) -> CcResult<IndexReport> {
+        let gate = self.build_gate();
+        let _build_permit = Self::try_acquire_build_gate(&gate)?;
         let file_limit = self.auto_index_file_limit()?;
         let inputs = self.build_inputs()?;
         let prepared = Self::prepare_build(&inputs, full, Some(file_limit))?;
@@ -289,9 +331,11 @@ impl CodeIndex {
     }
 
     /// Commit a previously prepared build under the caller's write lock. Runs
-    /// `phase_write` plus postprocess/analysis, then performs the post-build
-    /// bookkeeping (`after_successful_index_build`). `full`/`auto_file_limit`
-    /// must match the values passed to the paired `prepare_build`.
+    /// `phase_write` plus postprocess/analysis (the three commit stages
+    /// composed inline), then performs the post-build bookkeeping
+    /// (`after_successful_index_build`). `full`/`auto_file_limit` must match
+    /// the values passed to the paired `prepare_build`. Callers that can drop
+    /// the write lock between stages should use the staged trio below instead.
     pub fn commit_build(
         &mut self,
         inputs: &BuildInputs,
@@ -301,6 +345,55 @@ impl CodeIndex {
     ) -> CcResult<IndexReport> {
         let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
         let report = indexer.commit_build(&inputs.project, full, auto_file_limit, prepared)?;
+        self.after_successful_index_build();
+        Ok(report)
+    }
+
+    /// Stage 1 of the staged commit: generation guard + `phase_write` under
+    /// the caller's write lock (`&mut self` enforces it at the type level).
+    /// The lock may be released afterwards — postprocess compute does not
+    /// need it. Callers must keep holding the per-project build gate across
+    /// all three stages.
+    pub fn commit_build_write(
+        &mut self,
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        prepared: PreparedBuild,
+    ) -> CcResult<WrittenBuild> {
+        let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
+        indexer.commit_build_write(&inputs.project, full, auto_file_limit, prepared)
+    }
+
+    /// Stage 2 of the staged commit: postprocess/analysis compute. Like
+    /// [`CodeIndex::prepare_build`], this is an associated function (no
+    /// `self`) by design — it must run with NO CodeIndex lock held, reading
+    /// the just-committed snapshot through the read pool. Readers may observe
+    /// stage-1 content without refreshed postprocess artifacts during this
+    /// window (accepted eventually-consistent behavior; see `cc_index`'s
+    /// `build_plan` module doc).
+    pub fn compute_postprocess(
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        written: WrittenBuild,
+    ) -> CcResult<StagedPostprocess> {
+        let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
+        indexer.compute_build_postprocess(&inputs.project, full, auto_file_limit, written)
+    }
+
+    /// Stage 3 of the staged commit: apply the staged deltas (short DB
+    /// transactions) under the caller's write lock, then perform the
+    /// post-build bookkeeping (`after_successful_index_build`).
+    pub fn apply_postprocess(
+        &mut self,
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        staged: StagedPostprocess,
+    ) -> CcResult<IndexReport> {
+        let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
+        let report = indexer.apply_build_postprocess(full, auto_file_limit, staged)?;
         self.after_successful_index_build();
         Ok(report)
     }
@@ -400,8 +493,11 @@ impl SearchOps<'_> {
         // rerank_score, and returns the FINAL top_k ordering.  Hits must not
         // be re-scored or re-sorted here (see SearchHit::rerank_score).
         let graph_limits = tier.graph_enrich_limits();
-        let (hits, enrichment) =
+        // The returned Arc is a shared, possibly cached pair — read-only by
+        // contract (mutating it would corrupt cc-search's graph-aware cache).
+        let search_outcome =
             engine.search_with_graph_context(&request, &graph_limits, token_budget)?;
+        let (hits, enrichment) = (&search_outcome.0, &search_outcome.1);
 
         let mut nodes = Vec::with_capacity(hits.len());
         let mut spans = Vec::with_capacity(hits.len());
@@ -465,13 +561,13 @@ impl SearchOps<'_> {
         let graph_budget = (token_budget * graph_limits.graph_budget_pct) / 100;
         let mut graph_tokens_used = 0u32;
         let mut graph_rendered: Vec<String> = Vec::new();
-        for gnode in enrichment.nodes {
+        for gnode in &enrichment.nodes {
             if graph_tokens_used + gnode.token_estimate > graph_budget {
                 break;
             }
             graph_tokens_used += gnode.token_estimate;
             graph_rendered.push(format!("- {}", gnode.title));
-            nodes.push(gnode);
+            nodes.push(gnode.clone());
         }
 
         let token_estimate: u32 = primary_tokens + graph_tokens_used;
@@ -504,6 +600,21 @@ impl SearchOps<'_> {
             rendered_prompt.push_str("\n\n... truncated by adaptive repo-size budget");
         }
 
+        // Unified explainability envelope (additive, same pattern as the
+        // graph handlers): the enrichment's GraphExplain is attached only
+        // when non-empty, so a clean run keeps the response shape unchanged.
+        let mut graph_enrichment_summary = serde_json::json!({
+            "symbols_resolved": enrichment.symbols_resolved,
+            "callers_added": enrichment.callers_added,
+            "callees_added": enrichment.callees_added,
+            "tests_found": enrichment.tests_found,
+        });
+        if !enrichment.graph_explain.is_empty() {
+            graph_enrichment_summary["graph_explain"] =
+                serde_json::to_value(&enrichment.graph_explain)
+                    .map_err(|e| CcError::Search(e.to_string()))?;
+        }
+
         Ok(ContextEnvelope {
             task: query.to_string(),
             intent: detected_intent,
@@ -534,12 +645,7 @@ impl SearchOps<'_> {
             evidence_summary: serde_json::json!({
                 "search_hits": hits.len(),
                 "files": files.into_iter().collect::<Vec<_>>(),
-                "graph_enrichment": {
-                    "symbols_resolved": enrichment.symbols_resolved,
-                    "callers_added": enrichment.callers_added,
-                    "callees_added": enrichment.callees_added,
-                    "tests_found": enrichment.tests_found,
-                },
+                "graph_enrichment": graph_enrichment_summary,
             }),
         })
     }
@@ -1042,6 +1148,33 @@ mod tests {
         assert!(auto_report.files_scanned >= 1);
     }
 
+    // ── build gate: &mut self builds must not wait on a busy gate ───
+
+    #[test]
+    fn bundled_build_errors_when_gate_busy() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+
+        let gate = idx.build_gate();
+        let _held = gate.lock().unwrap();
+
+        // Callers of the `&mut self` builds already hold the write lock, so a
+        // busy gate must surface as an error instead of blocking (deadlock).
+        let err = idx.build_index(false).unwrap_err();
+        assert!(
+            err.to_string().contains("already in progress"),
+            "unexpected gate-busy error: {err}"
+        );
+        let err = idx.build_auto_index(false).unwrap_err();
+        assert!(
+            err.to_string().contains("already in progress"),
+            "unexpected gate-busy error: {err}"
+        );
+    }
+
     // ── auto-index file-limit gate fires during lock-free prepare ───
 
     #[test]
@@ -1431,6 +1564,76 @@ mod tests {
             "fixture must demonstrate a graph-driven flip: alpha pre-graph {} vs beta {}",
             alpha_pre_graph,
             rerank_scores[1]
+        );
+    }
+
+    #[test]
+    fn search_in_context_omits_graph_explain_when_clean() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        let db = idx.ensure_db().unwrap().clone();
+        insert_context_fixture_file(
+            &db,
+            "src/alpha.rs",
+            "fn cleanmarker() {}",
+            "cleanmarker",
+            Some("uid:clean"),
+            vec![],
+        );
+
+        let envelope = idx
+            .search()
+            .search_in_context_with("cleanmarker", 5, None, SearchRequest::default())
+            .unwrap();
+        let enrich = &envelope.evidence_summary["graph_enrichment"];
+        assert!(
+            enrich.get("symbols_resolved").is_some(),
+            "existing graph_enrichment counters must stay: {enrich}"
+        );
+        assert!(
+            enrich.get("graph_explain").is_none(),
+            "clean enrichment must omit graph_explain: {enrich}"
+        );
+    }
+
+    #[test]
+    fn search_in_context_surfaces_graph_explain_read_errors() {
+        let dir = TempDir::new().unwrap();
+        let mut idx = CodeIndex::empty();
+        idx.set_project(dir.path(), false).unwrap();
+        let db = idx.ensure_db().unwrap().clone();
+        insert_context_fixture_file(
+            &db,
+            "src/alpha.rs",
+            "fn brokenmarker() {}",
+            "brokenmarker",
+            Some("uid:broken"),
+            vec![],
+        );
+        // Drop call_edges so the enrichment's batched adjacency reads fail
+        // and degrade to partial graph context (the graph lane swallows its
+        // own failures, so the search itself still succeeds).
+        db.reads()
+            .read_conn()
+            .unwrap()
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+
+        let envelope = idx
+            .search()
+            .search_in_context_with("brokenmarker", 5, None, SearchRequest::default())
+            .unwrap();
+        let explain = &envelope.evidence_summary["graph_enrichment"]["graph_explain"];
+        let read_errors = explain["read_errors"]
+            .as_array()
+            .unwrap_or_else(|| panic!("graph_explain.read_errors must be surfaced: {explain}"));
+        assert!(
+            read_errors.iter().any(|entry| entry
+                .as_str()
+                .unwrap_or_default()
+                .starts_with("symbol_degree_details_batch:")),
+            "read_errors must name the failed op: {read_errors:?}"
         );
     }
 

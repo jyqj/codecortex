@@ -50,6 +50,17 @@ pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::
     if let Some(meta) = cc_search::cypher::fast_path_decision_for_query(query).as_metadata() {
         envelope["fast_path"] = meta;
     }
+    // Unified explainability envelope (additive): duplicates the legacy
+    // truncated/truncated_reason pair in the shared GraphExplain shape so all
+    // graph tools expose the same block. Absent when nothing was clipped.
+    if let Some(reason) = truncated_reason {
+        let mut explain = cc_model::GraphExplainCollector::new();
+        explain.mark_truncated(reason);
+        if let Some(graph_explain) = explain.finish_non_empty() {
+            envelope["graph_explain"] =
+                serde_json::to_value(graph_explain).map_err(|e| e.to_string())?;
+        }
+    }
     Ok(envelope)
 }
 
@@ -568,6 +579,72 @@ mod tests {
         assert_ne!(
             result.get("truncated_reason").unwrap().as_str(),
             Some("default_limit")
+        );
+    }
+
+    #[test]
+    fn graph_query_attaches_graph_explain_on_truncation() {
+        // 60 functions on a Tiny-tier index: the engine's default LIMIT (50)
+        // exceeds the output budget (15 items), so the adaptive budget clips
+        // the rows and the unified envelope must mirror the legacy fields.
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/many.ts");
+        for idx in 0..60 {
+            insert_symbol(
+                &db,
+                &format!("uid_fn{idx}"),
+                &format!("fn_{idx}"),
+                "function",
+                "src/many.ts",
+            );
+        }
+
+        let result = graph_query(rt, "MATCH (f:Function) RETURN f.name").unwrap();
+        assert_eq!(result["truncated"].as_bool(), Some(true));
+        assert_eq!(result["truncated_reason"].as_str(), Some("output_budget"));
+        assert_eq!(result["graph_explain"]["truncated"].as_bool(), Some(true));
+        assert_eq!(
+            result["graph_explain"]["truncated_reason"].as_str(),
+            Some("output_budget")
+        );
+    }
+
+    #[test]
+    fn graph_query_omits_graph_explain_when_not_truncated() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/few.ts");
+        insert_symbol(&db, "uid_only", "only_fn", "function", "src/few.ts");
+
+        let result = graph_query(rt, "MATCH (f:Function) RETURN f.name LIMIT 5").unwrap();
+        assert_eq!(result["truncated"].as_bool(), Some(false));
+        assert!(result.get("graph_explain").is_none());
+    }
+
+    #[test]
+    fn trace_path_handler_reports_max_depth_truncation() {
+        let (_tmp, rt, db) = synthetic_runtime();
+        insert_file(&db, "src/chain.ts");
+        insert_symbol(&db, "uid_alpha", "alpha_fn", "function", "src/chain.ts");
+        insert_symbol(&db, "uid_beta", "beta_fn", "function", "src/chain.ts");
+        insert_symbol(&db, "uid_gamma", "gamma_fn", "function", "src/chain.ts");
+        insert_call_edge(&db, "ce_ab", "src/chain.ts", Some("uid_alpha"), "uid_beta");
+        insert_call_edge(&db, "ce_bg", "src/chain.ts", Some("uid_beta"), "uid_gamma");
+
+        // alpha→beta→gamma needs depth 2; max_depth=1 clips the walk, and the
+        // response must say so instead of looking like "no path exists".
+        let result =
+            trace_path(rt, "alpha_fn", "gamma_fn", 1, false, None, None, None, None).unwrap();
+        assert_eq!(result["path_count"].as_u64(), Some(0));
+        assert_eq!(result["graph_explain"]["truncated"].as_bool(), Some(true));
+        assert_eq!(
+            result["graph_explain"]["truncated_reason"].as_str(),
+            Some("max_depth")
+        );
+        // The declared graph subset rides along whenever the envelope is
+        // attached (contract: trace consults CALLS + cross-service bridges).
+        assert_eq!(
+            result["graph_explain"]["declared_edge_kinds"],
+            serde_json::json!(cc_model::graph_catalog::tool_graph_subsets::TRACE.kinds())
         );
     }
 

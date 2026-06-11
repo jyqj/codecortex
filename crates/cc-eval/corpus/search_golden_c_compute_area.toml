@@ -1,0 +1,21 @@
+name = "search_golden_c_compute_area"
+tool = "search"
+description = "Golden: exact symbol lookup for C function compute_area"
+
+[params]
+query = "compute_area"
+mode = "symbol"
+exact = true
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "compute_area"
+min_recall = 1.0
+
+[[assertions]]
+kind = "output_contains"
+value = "geometry.c"

@@ -1,0 +1,29 @@
+name = "trace_golden_js_route_chain"
+tool = "trace"
+description = "Golden: cross-file JS path getUserRoute -> processUser -> formatName, intermediate hop present"
+
+[params]
+from = "getUserRoute"
+to = "formatName"
+max_depth = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+field = "paths"
+value = "1"
+
+[[assertions]]
+kind = "field_matches_regex"
+field = "path_count"
+value = "^[1-9][0-9]*$"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"

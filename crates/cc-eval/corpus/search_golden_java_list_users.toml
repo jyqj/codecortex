@@ -1,0 +1,21 @@
+name = "search_golden_java_list_users"
+tool = "search"
+description = "Golden: exact symbol lookup for Spring controller method listUsers"
+
+[params]
+query = "listUsers"
+mode = "symbol"
+exact = true
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "listUsers"
+min_recall = 1.0
+
+[[assertions]]
+kind = "output_contains"
+value = "UserController.java"

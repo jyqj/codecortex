@@ -2,7 +2,16 @@ pub mod bench;
 pub mod corpus;
 pub mod report;
 pub mod runner;
+pub mod synth;
 pub mod types;
+
+/// 真实 MCP dispatch seam：把 cc-server 二进制的 `mcp.rs`（rmcp `#[tool_router]`
+/// 路由 + `Parameters<T>` schema 反序列化 + `sanitize()` 校验 + `spawn_handler!`
+/// 派发）原样编译进 cc-eval。eval 与 stdio wire path 共享同一份 dispatch 源码 —
+/// 一份实现，两个适配器（stdio transport / in-process duplex）。任何工具新增
+/// 参数或 schema 校验规则都会被 eval 自动覆盖，无需改 runner。
+#[path = "../../cc-server/src/mcp.rs"]
+pub mod mcp_wire;
 
 #[cfg(test)]
 mod tests {
@@ -55,6 +64,7 @@ value = "formatName"
             value: Some("formatName".to_string()),
             field: None,
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion));
 
@@ -63,6 +73,7 @@ value = "formatName"
             value: Some("nonexistent_symbol".to_string()),
             field: None,
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_miss));
     }
@@ -78,6 +89,7 @@ value = "formatName"
             value: None,
             field: Some("meta.count".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion));
 
@@ -86,6 +98,7 @@ value = "formatName"
             value: None,
             field: Some("meta.missing".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_miss));
     }
@@ -100,6 +113,7 @@ value = "formatName"
             value: Some("2".to_string()),
             field: Some("hits".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_pass));
 
@@ -108,6 +122,7 @@ value = "formatName"
             value: Some("5".to_string()),
             field: Some("hits".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_fail));
     }
@@ -123,6 +138,7 @@ value = "formatName"
             value: Some("a,b".to_string()),
             field: Some("hits".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &pass));
 
@@ -131,6 +147,7 @@ value = "formatName"
             value: Some("a,b,c".to_string()),
             field: Some("hits".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &fail));
     }
@@ -150,6 +167,7 @@ value = "formatName"
             value: Some("ok".to_string()),
             field: Some("status".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_str));
 
@@ -159,6 +177,7 @@ value = "formatName"
             value: Some("42".to_string()),
             field: Some("count".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_num));
 
@@ -168,6 +187,7 @@ value = "formatName"
             value: Some("true".to_string()),
             field: Some("active".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_bool));
 
@@ -177,6 +197,7 @@ value = "formatName"
             value: Some("null".to_string()),
             field: Some("nothing".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_null));
 
@@ -186,6 +207,7 @@ value = "formatName"
             value: Some("error".to_string()),
             field: Some("status".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_miss));
 
@@ -195,6 +217,7 @@ value = "formatName"
             value: Some("anything".to_string()),
             field: Some("nonexistent".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_missing));
     }
@@ -985,6 +1008,7 @@ value = "formatName"
                 value: None,
                 field: None,
                 negate: false,
+                min_recall: None,
             }],
             expect_error: true,
         };
@@ -1061,6 +1085,7 @@ value = "formatName"
             value: Some("hello".to_string()),
             field: None,
             negate: true,
+            min_recall: None,
         };
         assert!(
             !runner::check_assertion(&output, &assertion_negated_fail),
@@ -1074,6 +1099,7 @@ value = "formatName"
             value: Some("missing".to_string()),
             field: None,
             negate: true,
+            min_recall: None,
         };
         assert!(
             runner::check_assertion(&output, &assertion_negated_pass),
@@ -1091,6 +1117,7 @@ value = "formatName"
             value: Some("error".to_string()),
             field: None,
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_pass));
 
@@ -1100,6 +1127,7 @@ value = "formatName"
             value: Some("ok".to_string()),
             field: None,
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_fail));
     }
@@ -1118,6 +1146,7 @@ value = "formatName"
             value: Some(r"^\d+\.\d+\.\d+$".to_string()),
             field: Some("version".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_pass));
 
@@ -1127,6 +1156,7 @@ value = "formatName"
             value: Some(r"^v\d+".to_string()),
             field: Some("version".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_fail));
 
@@ -1136,6 +1166,7 @@ value = "formatName"
             value: Some(r"^\d{2}$".to_string()),
             field: Some("count".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_num));
 
@@ -1145,6 +1176,7 @@ value = "formatName"
             value: Some(r"[invalid".to_string()),
             field: Some("version".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_bad_regex));
     }
@@ -1164,6 +1196,7 @@ value = "formatName"
             value: Some("name=processUser".to_string()),
             field: Some("users".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_pass));
 
@@ -1173,6 +1206,7 @@ value = "formatName"
             value: Some("role=viewer".to_string()),
             field: Some("users".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(runner::check_assertion(&output, &assertion_role));
 
@@ -1182,6 +1216,7 @@ value = "formatName"
             value: Some("name=unknownUser".to_string()),
             field: Some("users".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_fail));
 
@@ -1191,6 +1226,7 @@ value = "formatName"
             value: Some("name=processUser".to_string()),
             field: Some("nonexistent".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_missing));
 
@@ -1200,6 +1236,7 @@ value = "formatName"
             value: Some("no_equals_sign".to_string()),
             field: Some("users".to_string()),
             negate: false,
+            min_recall: None,
         };
         assert!(!runner::check_assertion(&output, &assertion_bad_fmt));
     }

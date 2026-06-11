@@ -1,0 +1,21 @@
+name = "impact_golden_geometry_callers"
+tool = "impact"
+description = "Golden: changing geometry.c impacts compute_area and rectangle_perimeter (callers of multiply/add)"
+
+[params]
+scope = "changes"
+files = ["geometry.c"]
+limit = 20
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "impacted_symbols"
+value = "name=compute_area"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "impacted_symbols"
+value = "name=rectangle_perimeter"

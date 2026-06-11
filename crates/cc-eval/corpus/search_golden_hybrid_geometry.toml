@@ -1,0 +1,17 @@
+name = "search_golden_hybrid_geometry"
+tool = "search"
+description = "Golden: hybrid search for rectangle area surfaces both C geometry functions"
+
+[params]
+query = "compute rectangle area"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "machine_pack.hits"
+value = "compute_area,rectangle_perimeter"
+min_recall = 1.0

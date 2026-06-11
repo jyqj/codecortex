@@ -1,0 +1,29 @@
+name = "trace_golden_cpp_transfer_deposit"
+tool = "trace"
+description = "Golden: C++ call path transfer -> deposit exists with both endpoints"
+
+[params]
+from = "transfer"
+to = "deposit"
+max_depth = 4
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+field = "paths"
+value = "1"
+
+[[assertions]]
+kind = "field_matches_regex"
+field = "path_count"
+value = "^[1-9][0-9]*$"
+
+[[assertions]]
+kind = "output_contains"
+value = "transfer"
+
+[[assertions]]
+kind = "output_contains"
+value = "deposit"

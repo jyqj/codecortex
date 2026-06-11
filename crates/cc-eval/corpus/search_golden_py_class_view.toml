@@ -1,0 +1,21 @@
+name = "search_golden_py_class_view"
+tool = "search"
+description = "Golden: exact symbol lookup for Django class-based view UserListView"
+
+[params]
+query = "UserListView"
+mode = "symbol"
+exact = true
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "UserListView"
+min_recall = 1.0
+
+[[assertions]]
+kind = "output_contains"
+value = "api_views.py"

@@ -56,7 +56,10 @@ additive `fast_path` field:
 The reason token is advisory: it explains latency and how to reshape a query
 onto the fast path (single `MATCH`, one variable-length `CALLS` segment, a
 `name`/`symbol_uid` string equality pinning the source, simple property
-`RETURN`, `LIMIT <= 1000`). It never affects result contents.
+`RETURN`, `LIMIT <= 1000`). It never affects result contents. The fast path's
+eligible edge-kind set is the shared `tool_graph_subsets::CYPHER_FAST_PATH`
+declaration in the graph catalog (`CALLS` only — the one kind with a lazy
+adjacency source), so the gate and the catalog cannot drift.
 
 ## Intentional limits
 
@@ -66,7 +69,10 @@ onto the fast path (single `MATCH`, one variable-length `CALLS` segment, a
   default limit may have clipped rows it sets `truncated: true` with
   `truncated_reason: "default_limit"` (or `"output_budget"` when a server-side
   item budget truncated them), so callers can tell a full result set from a
-  capped one.
+  capped one. On truncation the response also carries the additive
+  `graph_explain` envelope (same `truncated`/`truncated_reason` plus the
+  tool's declared edge kinds); clean runs omit it (see
+  [MCP_TOOLS.md](MCP_TOOLS.md#graph-explainability-graph_explain)).
 - `OPTIONAL MATCH` supports a single-hop optional relationship, either standalone
   or as the second clause anchored on a preceding single-node `MATCH` that shares
   the source variable. Chains of multiple optional clauses are not supported.

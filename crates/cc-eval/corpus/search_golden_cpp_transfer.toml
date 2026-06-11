@@ -1,0 +1,21 @@
+name = "search_golden_cpp_transfer"
+tool = "search"
+description = "Golden: exact symbol lookup for C++ free function banking::transfer"
+
+[params]
+query = "transfer"
+mode = "symbol"
+exact = true
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "transfer"
+min_recall = 1.0
+
+[[assertions]]
+kind = "output_contains"
+value = "account.cpp"

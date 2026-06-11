@@ -90,6 +90,12 @@ pub struct TracePathResult {
     /// Diagnostic hint when no path is found (e.g. reasons + suggested next action).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub diagnostic: Option<String>,
+    /// Unified explainability envelope (additive): which budget clipped the
+    /// walk ("max_depth"/"max_paths"/"max_expansions"), counts of synthetic
+    /// vs runtime-evidence edges actually traversed, and any DB read errors
+    /// degraded to partial results. Absent when there is nothing to report.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub graph_explain: Option<cc_model::GraphExplain>,
 }
 
 /// A single labeled path from BFS, carrying both node UIDs and edge data.
@@ -178,6 +184,11 @@ pub struct CircularDepsResult {
     pub components: Vec<CycleComponent>,
     pub total_components: usize,
     pub shown: usize,
+    /// Additive contract metadata: the tool's declared graph subset
+    /// (`tool_graph_subsets::CYCLES`). cycles has no dynamic collector, so
+    /// the envelope carries only `declared_edge_kinds`.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub graph_explain: Option<cc_model::GraphExplain>,
 }
 
 /// Result of type_hierarchy.
@@ -188,6 +199,11 @@ pub struct TypeHierarchyResult {
     pub descendants: Vec<HierarchyNode>,
     pub implementors: Vec<HierarchyNode>,
     pub overrides: Vec<OverrideInfo>,
+    /// Additive contract metadata: the tool's declared graph subset
+    /// (`tool_graph_subsets::TYPE_HIERARCHY`). No dynamic collector, so the
+    /// envelope carries only `declared_edge_kinds`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub graph_explain: Option<cc_model::GraphExplain>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

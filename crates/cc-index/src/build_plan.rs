@@ -5,17 +5,47 @@
 //! route-node/report snapshot → write → postprocess → analysis.
 //! Phase implementations stay on `Indexer`; this module keeps the plumbing
 //! concentrated so full and incremental builds cannot drift apart.
+//!
+//! # Staged commit (lock-scope contract)
+//!
+//! The commit half is itself split into three stages so the caller's
+//! exclusive lock only covers actual index writes:
+//!
+//! 1. [`IndexBuildPlan::commit_write`] — generation guard + `phase_write`,
+//!    under the caller's write lock → [`WrittenBuild`].
+//! 2. [`IndexBuildPlan::compute_postprocess`] — postprocess/analysis COMPUTE
+//!    with no index lock held: reads the just-committed state through the
+//!    read pool (WAL readers) and produces typed deltas →
+//!    [`StagedPostprocess`].
+//! 3. [`IndexBuildPlan::apply_postprocess`] — applies the deltas in short DB
+//!    transactions under a (brief) write lock and produces the report.
+//!
+//! Stage-2 correctness — no concurrent build mutating the DB between write
+//! and apply — relies on the caller holding the per-project build gate across
+//! all three stages (every cc-server build entry point does). Stage 3 still
+//! rechecks `index_epoch` cheaply so a cross-process writer surfaces as
+//! [`CcError::StalePreparedBuild`] instead of silently applying stale deltas.
+//!
+//! Eventual consistency: readers may observe a window where the index
+//! content from stage 1 is committed but postprocess artifacts (synthesized
+//! edges, communities, test edges, co-change/infra/ADR outputs) are not yet
+//! refreshed. This is accepted behavior — every stage-3 apply transaction
+//! bumps `index_epoch` as before, so epoch-keyed caches converge as the
+//! deltas land. The bundled [`IndexBuildPlan::commit`] composes the same
+//! three stage functions inline (single write-lock behavior unchanged), so
+//! each stage has exactly one implementation.
 
 use std::collections::HashMap;
 use std::path::Path;
 use std::time::{Duration, Instant};
 
-use cc_db::index_db::{FileState, FileWriteUnit};
+use cc_db::index_db::{FileState, FileWriteUnit, PrecompressedChunks};
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
-use cc_model::CcResult;
+use cc_model::{CcError, CcResult};
 
 use crate::dirty_closure::DirtyPropagationStatus;
-use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, ScanDiffResult};
+use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, PhaseTiming, ScanDiffResult};
+use crate::indexer_phases::{AnalysisPlan, PostprocessPlan};
 
 /// Owned, read-only output of the prepare phase.
 ///
@@ -27,15 +57,63 @@ use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, ScanDiffResu
 pub struct PreparedBuild {
     scan_result: ScanDiffResult,
     write_units: Vec<FileWriteUnit>,
+    /// Chunk payloads zstd-compressed during prepare (lock-free), so the
+    /// commit-side write transaction only binds pre-computed blobs.
+    chunk_blobs: PrecompressedChunks,
     actions: HashMap<String, FileAction>,
     output_snapshot: OutputSnapshot,
     hierarchy_edges: Vec<SemanticEdgeRecord>,
     parse_report: ParseReport,
     dirty_propagation: Option<DirtyPropagationStatus>,
+    /// `index_epoch` observed at prepare START, before the first DB read
+    /// (`get_file_state` in scan/diff). `commit` re-reads the epoch and
+    /// refuses to write on mismatch, so a later-committing stale prepare can
+    /// never overwrite newer index content. Deliberately NOT the full
+    /// generation pair: `evidence_epoch` is bumped concurrently by
+    /// runtime-evidence ingestion and would false-positive.
+    prepared_index_epoch: u64,
     start: Instant,
     scan_diff_ms: u64,
     parse_ms: u64,
     resolve_ms: u64,
+}
+
+/// Report inputs threaded through the commit stages: everything the final
+/// [`IndexReport`] needs, plus the progressively accumulated phase timing
+/// (compute and apply durations are added to `postprocess_ms`/`analysis_ms`
+/// as the stages run).
+struct ReportCarry {
+    scan_result: ScanDiffResult,
+    output_snapshot: OutputSnapshot,
+    parse_report: ParseReport,
+    dirty_propagation: Option<DirtyPropagationStatus>,
+    start: Instant,
+    timing: PhaseTiming,
+}
+
+/// Owned output of stage 1 ([`IndexBuildPlan::commit_write`]): the index
+/// content is committed; postprocess/analysis have not run. Fields stay
+/// private so callers only transport the bundle, mirroring [`PreparedBuild`].
+pub struct WrittenBuild {
+    carry: ReportCarry,
+    write_units: Vec<FileWriteUnit>,
+    config_units: Vec<FileWriteUnit>,
+    /// `index_epoch` observed after the stage-1 writes committed; stage 3
+    /// rechecks it before applying deltas. In-process the build gate makes
+    /// the recheck a tautology — it exists to surface cross-process writers
+    /// as `CcError::StalePreparedBuild`. Deliberately NOT `evidence_epoch`,
+    /// which runtime-evidence ingestion bumps concurrently.
+    written_index_epoch: u64,
+}
+
+/// Owned output of stage 2 ([`IndexBuildPlan::compute_postprocess`]): the
+/// typed postprocess/analysis deltas plus the report carry-through for
+/// stage 3. Transport-only, like [`WrittenBuild`].
+pub struct StagedPostprocess {
+    carry: ReportCarry,
+    postprocess: PostprocessPlan,
+    analysis: AnalysisPlan,
+    written_index_epoch: u64,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -92,6 +170,11 @@ impl IndexBuildPlan {
     ) -> CcResult<PreparedBuild> {
         let start = Instant::now();
 
+        // Generation snapshot must precede every DB read in this prepare
+        // (the first is `get_file_state` inside scan/diff): any index write
+        // that lands after our snapshot reads is then detected at commit.
+        let prepared_index_epoch = indexer.db.reads().generation()?.index_epoch;
+
         let phase_start = Instant::now();
         let mut scan_result =
             indexer.phase_scan_and_diff(project_path, self.mode.is_full(), self.auto_file_limit)?;
@@ -133,14 +216,20 @@ impl IndexBuildPlan {
         // same snapshot used by both DB write and infra route matching.
         let output_snapshot = OutputSnapshot::from_resolved_units(indexer, &write_units);
 
+        // Chunk text is final after resolution, so compress here (lock-free)
+        // instead of inside the commit-side write transaction.
+        let chunk_blobs = Indexer::precompress_chunks(&write_units);
+
         Ok(PreparedBuild {
             scan_result,
             write_units,
+            chunk_blobs,
             actions: reloaded.into_actions(),
             output_snapshot,
             hierarchy_edges: resolve_result.hierarchy_edges,
             parse_report,
             dirty_propagation,
+            prepared_index_epoch,
             start,
             scan_diff_ms,
             parse_ms,
@@ -148,30 +237,56 @@ impl IndexBuildPlan {
         })
     }
 
-    /// Write half of a build: `phase_write` → `run_after_write` → report.
-    /// Postprocess/analysis stay here, alongside `phase_write`, because the
-    /// incremental write path is a sequence of independent batch writes rather
-    /// than a single transaction; the caller's write lock is what keeps readers
-    /// from observing the intermediate state.
+    /// Write half of a build, composed from the three stage functions so the
+    /// bundled (single write-lock) path and the staged path share exactly one
+    /// implementation per stage. See the module doc for the staging contract.
     pub(crate) fn commit(
         &self,
         indexer: &Indexer,
         project_path: &Path,
         prepared: PreparedBuild,
     ) -> CcResult<IndexReport> {
+        let written = self.commit_write(indexer, project_path, prepared)?;
+        let staged = self.compute_postprocess(indexer, project_path, written)?;
+        self.apply_postprocess(indexer, staged)
+    }
+
+    /// Stage 1: generation guard + `phase_write`. Must run under the caller's
+    /// write lock — the incremental write path is a sequence of independent
+    /// batch writes rather than a single transaction, and the lock is what
+    /// keeps readers from observing that intermediate state.
+    pub(crate) fn commit_write(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+        prepared: PreparedBuild,
+    ) -> CcResult<WrittenBuild> {
         let PreparedBuild {
             scan_result,
             write_units,
+            chunk_blobs,
             actions,
             output_snapshot,
             hierarchy_edges,
             parse_report,
             dirty_propagation,
+            prepared_index_epoch,
             start,
             scan_diff_ms,
             parse_ms,
             resolve_ms,
         } = prepared;
+
+        // Generation guard: refuse to commit a PreparedBuild whose snapshot
+        // reads predate a newer index write. Checked under the caller's write
+        // lock, so the epoch cannot move between this check and phase_write.
+        let current_epoch = indexer.db.reads().generation()?.index_epoch;
+        if current_epoch != prepared_index_epoch {
+            return Err(CcError::StalePreparedBuild {
+                prepared_epoch: prepared_index_epoch,
+                current_epoch,
+            });
+        }
 
         let phase_start = Instant::now();
         let write_result = indexer.phase_write(
@@ -182,36 +297,121 @@ impl IndexBuildPlan {
             &scan_result.to_remove,
             &output_snapshot.route_nodes,
             &hierarchy_edges,
+            &chunk_blobs,
         )?;
         let write_ms = phase_start.elapsed().as_millis() as u64;
 
+        // Baseline for the stage-3 recheck, read after every stage-1 write
+        // committed.
+        let written_index_epoch = indexer.db.reads().generation()?.index_epoch;
+
+        Ok(WrittenBuild {
+            carry: ReportCarry {
+                scan_result,
+                output_snapshot,
+                parse_report,
+                dirty_propagation,
+                start,
+                timing: PhaseTiming {
+                    scan_diff_ms,
+                    parse_ms,
+                    resolve_ms,
+                    write_ms,
+                    postprocess_ms: 0,
+                    analysis_ms: 0,
+                },
+            },
+            write_units: write_result.write_units,
+            config_units: write_result.config_units,
+            written_index_epoch,
+        })
+    }
+
+    /// Stage 2: postprocess/analysis COMPUTE — signature gates, synthesis
+    /// passes, Louvain, git log, infra walk — reading the just-committed
+    /// state through the read pool only. Safe to run with no index lock held;
+    /// callers must keep holding the build gate (see module doc).
+    pub(crate) fn compute_postprocess(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+        written: WrittenBuild,
+    ) -> CcResult<StagedPostprocess> {
+        let WrittenBuild {
+            mut carry,
+            write_units,
+            config_units,
+            written_index_epoch,
+        } = written;
+
         let phase_start = Instant::now();
-        indexer.phase_postprocess(
-            project_path,
+        let postprocess = indexer.phase_postprocess_compute(
             self.mode.is_full(),
-            &write_result.write_units,
-            &write_result.config_units,
-            &scan_result.to_remove,
+            &write_units,
+            &config_units,
+            &carry.scan_result.to_remove,
         )?;
-        let postprocess_ms = phase_start.elapsed().as_millis() as u64;
+        carry.timing.postprocess_ms += phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
-        indexer.phase_analysis(
+        let analysis = indexer.phase_analysis_compute(
             project_path,
-            &write_result.write_units,
-            &output_snapshot.route_nodes,
+            &write_units,
+            &carry.output_snapshot.route_nodes,
         )?;
-        let analysis_ms = phase_start.elapsed().as_millis() as u64;
+        carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
 
-        let timing = crate::indexer::PhaseTiming {
-            scan_diff_ms,
-            parse_ms,
-            resolve_ms,
-            write_ms,
-            postprocess_ms,
-            analysis_ms,
-        };
+        Ok(StagedPostprocess {
+            carry,
+            postprocess,
+            analysis,
+            written_index_epoch,
+        })
+    }
 
+    /// Stage 3: APPLY the staged deltas — short DB transactions only — and
+    /// produce the report. Must run under the caller's write lock.
+    pub(crate) fn apply_postprocess(
+        &self,
+        indexer: &Indexer,
+        staged: StagedPostprocess,
+    ) -> CcResult<IndexReport> {
+        let StagedPostprocess {
+            mut carry,
+            postprocess,
+            analysis,
+            written_index_epoch,
+        } = staged;
+
+        // Cheap generation recheck: in-process the build gate guarantees
+        // equality; a cross-process writer that committed during stage 2
+        // surfaces here instead of having stale deltas applied on top. Only
+        // `index_epoch` is compared — `evidence_epoch` moves concurrently
+        // with runtime-evidence ingestion and must never guard a build.
+        let current_epoch = indexer.db.reads().generation()?.index_epoch;
+        if current_epoch != written_index_epoch {
+            return Err(CcError::StalePreparedBuild {
+                prepared_epoch: written_index_epoch,
+                current_epoch,
+            });
+        }
+
+        let phase_start = Instant::now();
+        indexer.phase_postprocess_apply(&postprocess)?;
+        carry.timing.postprocess_ms += phase_start.elapsed().as_millis() as u64;
+
+        let phase_start = Instant::now();
+        indexer.phase_analysis_apply(&analysis)?;
+        carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
+
+        let ReportCarry {
+            scan_result,
+            output_snapshot,
+            parse_report,
+            dirty_propagation,
+            start,
+            timing,
+        } = carry;
         Ok(self.report(
             scan_result,
             parse_report,
@@ -538,5 +738,213 @@ class Accumulator:
             graph_state(&db_b),
             "execute vs prepare+commit persisted graph state"
         );
+    }
+
+    /// The staged commit (commit_write → compute_postprocess →
+    /// apply_postprocess, with no lock semantics attached here) must produce
+    /// the same report and persisted graph state as the bundled single-shot
+    /// path — the staging is a lock-scope restructure only.
+    #[test]
+    fn staged_commit_matches_bundled_commit() {
+        let config = IndexingConfig::default();
+
+        // Path A: bundled execute (prepare + composed commit).
+        let dir_a = tempfile::tempdir().expect("tempdir a");
+        write_fixture(dir_a.path());
+        let db_a = open_db(dir_a.path());
+        let indexer_a = Indexer::new(db_a.clone(), dir_a.path(), &config);
+        let report_a = IndexBuildPlan::new(false, None)
+            .execute(&indexer_a, dir_a.path())
+            .expect("bundled build");
+
+        // Path B: the three stages driven explicitly.
+        let dir_b = tempfile::tempdir().expect("tempdir b");
+        write_fixture(dir_b.path());
+        let db_b = open_db(dir_b.path());
+        let indexer_b = Indexer::new(db_b.clone(), dir_b.path(), &config);
+        let plan_b = IndexBuildPlan::new(false, None);
+        let prepared = plan_b
+            .prepare(&indexer_b, dir_b.path())
+            .expect("prepare build");
+        let written = plan_b
+            .commit_write(&indexer_b, dir_b.path(), prepared)
+            .expect("stage 1: commit_write");
+
+        // Eventual-consistency window: after stage 1 the index content is
+        // already committed and reader-visible, while postprocess artifacts
+        // (communities) are not yet refreshed.
+        let mid_stats = db_b.reads().stats(dir_b.path()).expect("mid-stage stats");
+        assert!(
+            mid_stats.indexed_files >= 1,
+            "stage-1 content must be reader-visible before stage 3"
+        );
+
+        let staged = plan_b
+            .compute_postprocess(&indexer_b, dir_b.path(), written)
+            .expect("stage 2: compute_postprocess");
+        let report_b = plan_b
+            .apply_postprocess(&indexer_b, staged)
+            .expect("stage 3: apply_postprocess");
+
+        assert_eq!(report_a.files_added, report_b.files_added, "files_added");
+        assert_eq!(report_a.files_parsed, report_b.files_parsed, "files_parsed");
+        assert_eq!(
+            report_a.symbols_total, report_b.symbols_total,
+            "symbols_total"
+        );
+        assert_eq!(report_a.chunks_total, report_b.chunks_total, "chunks_total");
+        assert!(report_a.symbols_total > 0, "fixture should yield symbols");
+
+        // Final persisted graph state must match table by table — this is
+        // what catches a staged pass computing against the wrong snapshot
+        // (e.g. community detection missing the synthesis overlay).
+        assert_eq!(
+            graph_state(&db_a),
+            graph_state(&db_b),
+            "bundled vs staged persisted graph state"
+        );
+    }
+
+    /// Chunk payloads are zstd-compressed during prepare (incremental) or
+    /// inside the rebuild closure fallback (full). Both strategies share one
+    /// deterministic policy, so the persisted chunk rows — blob bytes and
+    /// text_encoding — must be byte-identical across build modes, and the
+    /// read path must restore the original text.
+    #[test]
+    fn full_and_incremental_builds_store_identical_chunk_rows() {
+        let config = IndexingConfig::default();
+        // Repetitive content well above the 128-byte floor guarantees at
+        // least one zstd-encoded chunk.
+        let repetitive: String = format!(
+            "def repeated_handler():\n    return [\n{}    ]\n",
+            "        \"the same compressible line of payload text\",\n".repeat(30)
+        );
+
+        let chunk_rows = |db: &IndexDb| -> Vec<(String, i64, rusqlite::types::Value, String)> {
+            let conn = db.reads().read_conn().expect("read conn");
+            let mut stmt = conn
+                .prepare(
+                    "SELECT file_path, chunk_index, text, text_encoding FROM chunks \
+                     ORDER BY file_path, chunk_index",
+                )
+                .expect("prepare chunk query");
+            let rows = stmt
+                .query_map([], |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, i64>(1)?,
+                        row.get::<_, rusqlite::types::Value>(2)?,
+                        row.get::<_, String>(3)?,
+                    ))
+                })
+                .expect("query chunks")
+                .map(|r| r.expect("chunk row"))
+                .collect();
+            rows
+        };
+
+        // Path A: incremental build (precompressed side-car through the
+        // single write transaction).
+        let dir_a = tempfile::tempdir().expect("tempdir a");
+        write_fixture(dir_a.path());
+        std::fs::write(dir_a.path().join("big.py"), &repetitive).expect("write big fixture");
+        let db_a = open_db(dir_a.path());
+        let indexer_a = Indexer::new(db_a.clone(), dir_a.path(), &IndexingConfig::default());
+        IndexBuildPlan::new(false, None)
+            .execute(&indexer_a, dir_a.path())
+            .expect("incremental build");
+
+        // Path B: full rebuild (temp-db / direct-writer rebuild protocol).
+        let dir_b = tempfile::tempdir().expect("tempdir b");
+        write_fixture(dir_b.path());
+        std::fs::write(dir_b.path().join("big.py"), &repetitive).expect("write big fixture");
+        let db_b = open_db(dir_b.path());
+        let indexer_b = Indexer::new(db_b.clone(), dir_b.path(), &config);
+        IndexBuildPlan::new(true, None)
+            .execute(&indexer_b, dir_b.path())
+            .expect("full build");
+
+        let rows_a = chunk_rows(&db_a);
+        let rows_b = chunk_rows(&db_b);
+        assert!(!rows_a.is_empty(), "fixture must produce chunks");
+        assert_eq!(
+            rows_a, rows_b,
+            "full vs incremental on-disk chunk data must be identical"
+        );
+        assert!(
+            rows_a.iter().any(|(_, _, _, enc)| enc == "zstd"),
+            "expected at least one zstd-compressed chunk; got encodings {:?}",
+            rows_a
+                .iter()
+                .map(|(_, _, _, enc)| enc.as_str())
+                .collect::<Vec<_>>()
+        );
+
+        // Read path restores the original text from the compressed blob:
+        // every chunk of big.py must decode to a slice of the source.
+        let conn = db_a.reads().read_conn().expect("read conn");
+        let mut stmt = conn
+            .prepare(
+                "SELECT text, text_encoding FROM chunks \
+                 WHERE file_path = 'big.py' ORDER BY chunk_index",
+            )
+            .expect("prepare big.py chunk query");
+        let restored: Vec<String> = stmt
+            .query_map([], |row| {
+                cc_db::index_db::read_chunk_text_with_encoding(row, 0, 1)
+            })
+            .expect("query big.py chunks")
+            .map(|r| r.expect("chunk text"))
+            .collect();
+        assert!(!restored.is_empty(), "big.py must produce chunks");
+        for text in &restored {
+            assert!(
+                repetitive.contains(text.trim_end_matches('\n')),
+                "restored chunk text must be a slice of the original source"
+            );
+        }
+    }
+
+    /// A `PreparedBuild` whose snapshot predates a newer index write must be
+    /// rejected at commit time with the typed stale error — otherwise a
+    /// later-committing stale prepare would overwrite fresher index content.
+    #[test]
+    fn stale_prepared_build_is_rejected_at_commit() {
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        write_fixture(dir.path());
+        let db = open_db(dir.path());
+        let indexer = Indexer::new(db.clone(), dir.path(), &config);
+
+        IndexBuildPlan::new(false, None)
+            .execute(&indexer, dir.path())
+            .expect("initial build");
+
+        // Snapshot a prepare, then let a concurrent build land first.
+        let plan = IndexBuildPlan::new(false, None);
+        let prepared = plan.prepare(&indexer, dir.path()).expect("prepare build");
+
+        std::fs::write(
+            dir.path().join("newcomer.py"),
+            "def newcomer():\n    return 1\n",
+        )
+        .expect("write interleaved file");
+        IndexBuildPlan::new(true, None)
+            .execute(&indexer, dir.path())
+            .expect("interleaved full build");
+
+        let err = plan
+            .commit(&indexer, dir.path(), prepared)
+            .expect_err("stale prepared build must be rejected");
+        match err {
+            cc_model::CcError::StalePreparedBuild {
+                prepared_epoch,
+                current_epoch,
+            } => assert!(
+                current_epoch > prepared_epoch,
+                "interleaved build must have advanced the epoch: prepared {prepared_epoch}, current {current_epoch}"
+            ),
+            other => panic!("expected StalePreparedBuild, got: {other}"),
+        }
     }
 }

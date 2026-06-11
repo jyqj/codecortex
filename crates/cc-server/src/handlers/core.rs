@@ -2,21 +2,83 @@
 
 use super::SharedCodeIndex;
 use crate::engine::CodeIndex;
+use cc_index::IndexReport;
+use cc_model::{CcError, CcResult};
 
 pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::Value, String> {
-    // Brief read lock: clone the owned build inputs, then release.
-    let inputs = {
+    // Per-project build gate: clone the Arc under a brief read lock and DROP
+    // the read lock before blocking on the gate (lock-ordering rule: never
+    // block on the gate while holding the CodeIndex RwLock). Manual builds
+    // queue behind whichever build is in flight instead of racing prepares.
+    let build_gate = {
         let rt = super::lock_index(&runtime)?;
-        rt.build_inputs().map_err(|e| e.to_string())?
+        rt.build_gate()
+    };
+    // The gate guards no data — only build ordering — so poison is safe to recover.
+    let _build_permit = build_gate
+        .lock()
+        .unwrap_or_else(|poisoned| poisoned.into_inner());
+    let report = run_split_build(&runtime, full, false).map_err(|e| e.to_string())?;
+    serde_json::to_value(report).map_err(|e| e.to_string())
+}
+
+/// Shared split-build driver for every gated entry point (manual `index`,
+/// watcher ticks, `maybe_auto_index`): brief read lock → clone inputs →
+/// lock-free prepare → write lock { stage 1: phase_write } → lock-free
+/// stage 2 (postprocess/analysis compute) → write lock { stage 3: apply +
+/// bookkeeping }. If a stage reports a stale build (index_epoch moved — at
+/// stage 1 against the prepare snapshot, or at stage 3 against the stage-1
+/// write), the whole prepare+commit sequence is re-run once. With the build
+/// gate held by every entry point the retry never fires in-process; it
+/// defends future ungated callers and cross-process writers. Callers must
+/// already hold the build gate — stage-2 correctness (no concurrent build
+/// mutating the DB between write and apply) relies on it.
+pub(crate) fn run_split_build(
+    runtime: &SharedCodeIndex,
+    full: bool,
+    use_auto_file_limit: bool,
+) -> CcResult<IndexReport> {
+    match split_build_once(runtime, full, use_auto_file_limit) {
+        Err(stale @ CcError::StalePreparedBuild { .. }) => {
+            tracing::warn!("stale prepared build detected, retrying once: {}", stale);
+            split_build_once(runtime, full, use_auto_file_limit)
+        }
+        other => other,
+    }
+}
+
+fn split_build_once(
+    runtime: &SharedCodeIndex,
+    full: bool,
+    use_auto_file_limit: bool,
+) -> CcResult<IndexReport> {
+    // Brief read lock: clone the owned build inputs (plus the auto-index
+    // file-count gate when requested), then release.
+    let (inputs, auto_file_limit) = {
+        let rt = super::lock_index(runtime).map_err(CcError::Other)?;
+        let limit = if use_auto_file_limit {
+            Some(rt.auto_index_file_limit()?)
+        } else {
+            None
+        };
+        (rt.build_inputs()?, limit)
     };
     // Heavy prepare phase runs with NO lock held — read queries are not blocked.
-    let prepared = CodeIndex::prepare_build(&inputs, full, None).map_err(|e| e.to_string())?;
-    // Brief write lock: commit (write + postprocess + bookkeeping).
-    let mut rt = super::lock_index_write(&runtime)?;
-    let report = rt
-        .commit_build(&inputs, full, None, prepared)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(report).map_err(|e| e.to_string())
+    let prepared = CodeIndex::prepare_build(&inputs, full, auto_file_limit)?;
+    // Stage 1 — write lock scoped to `phase_write` only (the generation guard
+    // runs inside, under this lock).
+    let written = {
+        let mut rt = super::lock_index_write(runtime).map_err(CcError::Other)?;
+        rt.commit_build_write(&inputs, full, auto_file_limit, prepared)?
+    };
+    // Stage 2 — postprocess/analysis compute with NO lock held: signature
+    // scans, synthesis passes, Louvain, git/infra/ADR analysis all read the
+    // just-committed snapshot through the read pool while readers proceed.
+    // The build gate (held by our caller) keeps the DB stable until stage 3.
+    let staged = CodeIndex::compute_postprocess(&inputs, full, auto_file_limit, written)?;
+    // Stage 3 — short write lock: apply the typed deltas + bookkeeping.
+    let mut rt = super::lock_index_write(runtime).map_err(CcError::Other)?;
+    rt.apply_postprocess(&inputs, full, auto_file_limit, staged)
 }
 
 pub fn index_status(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
@@ -173,4 +235,99 @@ pub fn summarize_file(
 pub fn graph_schema(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
     let rt = super::lock_index(&runtime)?;
     rt.graph().graph_schema().map_err(|e| e.to_string())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::{Arc, RwLock};
+    use tempfile::TempDir;
+
+    /// Two racing manual builds through the public handler seam must both
+    /// succeed: the per-project build gate serializes them (the second waits)
+    /// so concurrent prepares can never pair with interleaved commits.
+    #[test]
+    fn racing_manual_builds_serialize_on_the_gate() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+        let runtime: SharedCodeIndex =
+            Arc::new(RwLock::new(CodeIndex::new(Some(dir.path())).unwrap()));
+
+        let mut handles = Vec::new();
+        for _ in 0..2 {
+            let runtime = runtime.clone();
+            handles.push(std::thread::spawn(move || build_index(runtime, false)));
+        }
+        for handle in handles {
+            let result = handle.join().expect("build thread must not panic");
+            assert!(
+                result.is_ok(),
+                "racing manual build failed: {:?}",
+                result.err()
+            );
+        }
+
+        let rt = super::super::lock_index(&runtime).unwrap();
+        let stats = rt.index_status().unwrap();
+        assert!(
+            stats.indexed_files >= 1,
+            "final index state must be consistent"
+        );
+        assert!(!rt.needs_initial_index());
+    }
+
+    /// Reads must proceed during stage 2 of the staged commit. Driven
+    /// deterministically through the same seam `split_build_once` uses: after
+    /// stage 1 releases the write lock, this test ACQUIRES the read lock and
+    /// HOLDS it across the entire stage-2 compute — if compute (or anything
+    /// it calls) needed the CodeIndex write lock, the `try_read` would fail
+    /// or the compute would deadlock on this very thread. Stage-1 content is
+    /// asserted reader-visible inside the window (the documented
+    /// eventually-consistent state), and stage 3 then completes normally.
+    #[test]
+    fn reads_proceed_during_stage_two_compute() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+        let runtime: SharedCodeIndex =
+            Arc::new(RwLock::new(CodeIndex::new(Some(dir.path())).unwrap()));
+
+        // Hold the build gate across all three stages, as every production
+        // entry point does — stage-2 correctness relies on it.
+        let build_gate = {
+            let rt = super::super::lock_index(&runtime).unwrap();
+            rt.build_gate()
+        };
+        let _build_permit = build_gate.lock().unwrap();
+
+        let inputs = {
+            let rt = super::super::lock_index(&runtime).unwrap();
+            rt.build_inputs().unwrap()
+        };
+        let prepared = CodeIndex::prepare_build(&inputs, false, None).unwrap();
+
+        // Stage 1: write lock scoped to phase_write.
+        let written = {
+            let mut rt = runtime.write().unwrap();
+            rt.commit_build_write(&inputs, false, None, prepared)
+                .unwrap()
+        };
+
+        // Stage-2 window: the CodeIndex lock must be free for readers.
+        let read_guard = runtime
+            .try_read()
+            .expect("read lock must be acquirable during stage 2");
+        let staged = CodeIndex::compute_postprocess(&inputs, false, None, written)
+            .expect("stage-2 compute must succeed while a reader holds the lock");
+        assert!(
+            read_guard.index_status().unwrap().indexed_files >= 1,
+            "stage-1 content must be visible to concurrent readers during stage 2"
+        );
+        drop(read_guard);
+
+        // Stage 3: short write lock for the apply + bookkeeping.
+        let mut rt = runtime.write().unwrap();
+        let report = rt.apply_postprocess(&inputs, false, None, staged).unwrap();
+        assert!(report.symbols_total > 0, "staged build must index symbols");
+        assert!(!rt.needs_initial_index());
+    }
 }

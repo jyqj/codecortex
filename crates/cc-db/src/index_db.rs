@@ -178,6 +178,30 @@ pub struct FileWriteUnit {
     pub outcome: ParseOutcome,
 }
 
+/// Pre-compressed chunk payloads computed off the write lock, keyed by
+/// `FileWriteUnit::rel_path` and index-aligned with `outcome.chunks`.
+/// `Some(blob)` stores the zstd blob, `None` stores plain text — exactly the
+/// decision [`compress_chunk_text`] would make inside the transaction, so the
+/// on-disk bytes are identical whether or not a side-car entry is present.
+pub type PrecompressedChunks = HashMap<String, Vec<Option<Vec<u8>>>>;
+
+/// Deterministic chunk compression policy: zstd level 3, only for payloads
+/// larger than 128 bytes, and only when compression actually saves space.
+/// Returns `None` when the chunk should be stored as plain text. Shared by
+/// the prepare-phase precompression (cc-index) and the in-transaction
+/// fallback in [`IndexDb::insert_file_data`], so both produce byte-identical
+/// rows.
+pub fn compress_chunk_text(text: &str) -> Option<Vec<u8>> {
+    let text_bytes = text.as_bytes();
+    if text_bytes.len() <= 128 {
+        return None;
+    }
+    match zstd::encode_all(std::io::Cursor::new(text_bytes), 3) {
+        Ok(compressed) if compressed.len() < text_bytes.len() => Some(compressed),
+        _ => None,
+    }
+}
+
 pub type RepoFrameworkRecord = (String, f64, Vec<String>);
 pub type FileFrameworkSignal = (String, f64, String);
 pub type FileFrameworkRecord = (String, Vec<FileFrameworkSignal>);
@@ -1388,6 +1412,7 @@ impl IndexDb {
         normal_units: &[FileWriteUnit],
         dirty_units: &[FileWriteUnit],
         route_nodes: &[cc_model::edge::RouteNodeRecord],
+        precompressed: &PrecompressedChunks,
     ) -> CcResult<()> {
         if to_remove.is_empty()
             && normal_units.is_empty()
@@ -1408,7 +1433,11 @@ impl IndexDb {
         }
         for file in normal_units {
             Self::delete_file_data(&tx, &file.rel_path)?;
-            Self::insert_file_data(&tx, file)?;
+            Self::insert_file_data_precompressed(
+                &tx,
+                file,
+                precompressed.get(&file.rel_path).map(Vec::as_slice),
+            )?;
         }
         for file in dirty_units {
             Self::replace_reresolved_edges_for_file(&tx, file)?;
@@ -1495,6 +1524,18 @@ impl IndexDb {
     /// Accepts `&Connection` so it works with both `Transaction` (via Deref)
     /// and bare connections (e.g. inside `rebuild_with_temp_db`).
     pub fn insert_file_data(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
+        Self::insert_file_data_precompressed(conn, file, None)
+    }
+
+    /// [`Self::insert_file_data`] with optional pre-compressed chunk payloads
+    /// (index-aligned with `outcome.chunks`, see [`PrecompressedChunks`]).
+    /// Chunks without a side-car entry fall back to [`compress_chunk_text`]
+    /// inside the transaction — same policy, identical on-disk bytes.
+    pub fn insert_file_data_precompressed(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+    ) -> CcResult<()> {
         let outcome = &file.outcome;
         let now = chrono::Utc::now().to_rfc3339();
         let excerpt: String = outcome
@@ -1521,22 +1562,23 @@ impl IndexDb {
         )?;
 
         // chunks + chunks_fts
-        for c in &outcome.chunks {
-            // Compress chunk text with zstd when it saves space
-            let text_bytes = c.text.as_bytes();
-            let use_compressed = if text_bytes.len() > 128 {
-                match zstd::encode_all(std::io::Cursor::new(text_bytes), 3) {
-                    Ok(compressed) if compressed.len() < text_bytes.len() => Some(compressed),
-                    _ => None,
+        for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
+            // Compress chunk text with zstd when it saves space. Prefer the
+            // payload pre-compressed during prepare (off the write lock);
+            // fall back to compressing here for callers without a side-car.
+            let fallback;
+            let use_compressed: Option<&[u8]> = match chunk_blobs.and_then(|b| b.get(chunk_idx)) {
+                Some(precomputed) => precomputed.as_deref(),
+                None => {
+                    fallback = compress_chunk_text(&c.text);
+                    fallback.as_deref()
                 }
-            } else {
-                None
             };
-            if let Some(ref blob) = use_compressed {
+            if let Some(blob) = use_compressed {
                 Self::execute_cached(
                     conn,
                     "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob.as_slice(), "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
                 )?;
             } else {
                 Self::execute_cached(
@@ -1941,15 +1983,25 @@ impl<'a> WriteOps<'a> {
     }
 
     /// Write one incremental index batch atomically: file removals, full file
+    /// replacements, dirty re-resolution and route nodes in one transaction.
+    /// `precompressed` carries chunk payloads compressed during prepare (off
+    /// the write lock); units without an entry compress inside the
+    /// transaction with the same policy.
     pub fn write_incremental_batch(
         &self,
         to_remove: &[String],
         normal_units: &[FileWriteUnit],
         dirty_units: &[FileWriteUnit],
         route_nodes: &[cc_model::edge::RouteNodeRecord],
+        precompressed: &PrecompressedChunks,
     ) -> CcResult<()> {
-        self.0
-            .write_incremental_batch(to_remove, normal_units, dirty_units, route_nodes)
+        self.0.write_incremental_batch(
+            to_remove,
+            normal_units,
+            dirty_units,
+            route_nodes,
+            precompressed,
+        )
     }
 
     pub fn remove_files_batch(&self, paths: &[String]) -> CcResult<usize> {
@@ -2038,6 +2090,90 @@ mod tests {
         }
     }
 
+    fn chunk(chunk_index: u32, text: &str) -> cc_model::ChunkRecord {
+        cc_model::ChunkRecord {
+            chunk_id: format!("chunk:{chunk_index}"),
+            file_path: "src/c.rs".to_string(),
+            language: Language::Rust,
+            chunk_index,
+            start_line: 1,
+            end_line: 2,
+            breadcrumb: "root".to_string(),
+            text: text.to_string(),
+            symbol_name: None,
+            symbol_kind: None,
+            token_estimate: 4,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+        }
+    }
+
+    /// prepare 阶段预压缩的 side-car 与事务内回退压缩必须产生逐字节一致的
+    /// chunks 行（text blob + text_encoding），且读路径还原出原始文本。
+    #[test]
+    fn precompressed_chunk_payloads_match_in_transaction_compression() {
+        let tiny = "tiny";
+        let big = "fn handler() { compute_all_the_things(); }\n".repeat(40);
+        let mut unit = file_unit("src/c.rs");
+        unit.outcome.chunks = vec![chunk(0, tiny), chunk(1, &big)];
+
+        // Path A: no side-car — compression falls back inside the transaction.
+        let tmp_a = TempDir::new().unwrap();
+        let db_a = IndexDb::open(&tmp_a.path().join("a.db")).unwrap().0;
+        db_a.replace_files_batch(std::slice::from_ref(&unit))
+            .unwrap();
+
+        // Path B: side-car pre-compressed with the shared policy helper.
+        let tmp_b = TempDir::new().unwrap();
+        let db_b = IndexDb::open(&tmp_b.path().join("b.db")).unwrap().0;
+        let blobs: Vec<Option<Vec<u8>>> = unit
+            .outcome
+            .chunks
+            .iter()
+            .map(|c| compress_chunk_text(&c.text))
+            .collect();
+        let mut precompressed = PrecompressedChunks::new();
+        precompressed.insert("src/c.rs".to_string(), blobs);
+        db_b.write_incremental_batch(&[], std::slice::from_ref(&unit), &[], &[], &precompressed)
+            .unwrap();
+
+        let chunk_rows = |db: &IndexDb| -> Vec<(i64, rusqlite::types::Value, String)> {
+            let conn = db.read_conn().unwrap();
+            let mut stmt = conn
+                .prepare("SELECT chunk_index, text, text_encoding FROM chunks ORDER BY chunk_index")
+                .unwrap();
+            let rows = stmt
+                .query_map([], |row| {
+                    Ok((
+                        row.get::<_, i64>(0)?,
+                        row.get::<_, rusqlite::types::Value>(1)?,
+                        row.get::<_, String>(2)?,
+                    ))
+                })
+                .unwrap()
+                .map(|r| r.unwrap())
+                .collect();
+            rows
+        };
+
+        let rows_a = chunk_rows(&db_a);
+        let rows_b = chunk_rows(&db_b);
+        assert_eq!(rows_a, rows_b, "on-disk chunk rows must be byte-identical");
+        assert_eq!(rows_a[0].2, "plain", "small chunk stays plain");
+        assert_eq!(rows_a[1].2, "zstd", "large compressible chunk is zstd");
+
+        // Read path decodes the precompressed payload back to the original.
+        let conn = db_b.read_conn().unwrap();
+        let restored: String = conn
+            .query_row(
+                "SELECT text, text_encoding FROM chunks WHERE chunk_index = 1",
+                [],
+                |row| read_chunk_text_with_encoding(row, 0, 1),
+            )
+            .unwrap();
+        assert_eq!(restored, big, "decompressed chunk text round-trips");
+    }
+
     #[test]
     fn route_edge_resolution_provenance_round_trips() {
         let tmp = TempDir::new().unwrap();
@@ -2095,14 +2231,21 @@ mod tests {
         assert_eq!(after_write.index_epoch, 1);
         assert_eq!(after_write.evidence_epoch, 0);
 
-        db.write_incremental_batch(&["src/a.rs".to_string()], &[], &[], &[])
-            .unwrap();
+        db.write_incremental_batch(
+            &["src/a.rs".to_string()],
+            &[],
+            &[],
+            &[],
+            &PrecompressedChunks::new(),
+        )
+        .unwrap();
         let after_batch = db.generation().unwrap();
         assert!(after_batch.index_epoch > after_write.index_epoch);
         assert_eq!(after_batch.evidence_epoch, 0);
 
         // An empty incremental batch writes nothing and must not bump.
-        db.write_incremental_batch(&[], &[], &[], &[]).unwrap();
+        db.write_incremental_batch(&[], &[], &[], &[], &PrecompressedChunks::new())
+            .unwrap();
         assert_eq!(db.generation().unwrap(), after_batch);
     }
 

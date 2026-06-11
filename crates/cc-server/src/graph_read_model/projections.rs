@@ -42,30 +42,41 @@ impl GraphReadModel {
     fn ensure_semantic_loaded(&self) -> std::sync::MutexGuard<'_, SemanticAdjPair> {
         let mut guard = self.shared_semantic.lock().unwrap();
         if guard.by_source.is_empty() && guard.by_target.is_empty() {
-            if let Ok(edges) = self.reads().query_semantic_edges(None, None, None) {
-                for e in edges {
-                    let lite = SemanticEdgeLite {
-                        source_symbol_uid: e.source_symbol_uid.clone().unwrap_or_default(),
-                        target_symbol_uid: e.target_symbol_uid.clone().unwrap_or_default(),
-                        source_symbol: e.source_symbol.clone(),
-                        target_symbol: e.target_symbol.clone(),
-                        relation_kind: e.relation_kind,
-                        confidence: e.confidence,
-                    };
-                    if !lite.source_symbol_uid.is_empty() {
-                        guard
-                            .by_source
-                            .entry(lite.source_symbol_uid.clone())
-                            .or_default()
-                            .push(lite.clone());
-                    }
-                    if !lite.target_symbol_uid.is_empty() {
-                        guard
-                            .by_target
-                            .entry(lite.target_symbol_uid.clone())
-                            .or_default()
-                            .push(lite);
-                    }
+            // A failed load degrades to "no semantic edges" for this request
+            // (and is retried on the next access since the pair stays empty);
+            // log instead of swallowing the error silently.
+            let edges = match self.reads().query_semantic_edges(None, None, None) {
+                Ok(edges) => edges,
+                Err(err) => {
+                    tracing::warn!(
+                        error = %err,
+                        "semantic edge load failed; degrading to empty semantic adjacency"
+                    );
+                    Vec::new()
+                }
+            };
+            for e in edges {
+                let lite = SemanticEdgeLite {
+                    source_symbol_uid: e.source_symbol_uid.clone().unwrap_or_default(),
+                    target_symbol_uid: e.target_symbol_uid.clone().unwrap_or_default(),
+                    source_symbol: e.source_symbol.clone(),
+                    target_symbol: e.target_symbol.clone(),
+                    relation_kind: e.relation_kind,
+                    confidence: e.confidence,
+                };
+                if !lite.source_symbol_uid.is_empty() {
+                    guard
+                        .by_source
+                        .entry(lite.source_symbol_uid.clone())
+                        .or_default()
+                        .push(lite.clone());
+                }
+                if !lite.target_symbol_uid.is_empty() {
+                    guard
+                        .by_target
+                        .entry(lite.target_symbol_uid.clone())
+                        .or_default()
+                        .push(lite);
                 }
             }
         }
@@ -100,6 +111,19 @@ impl GraphReadModel {
     /// same generation and bridge dimension, so edges queried in one tool call
     /// are reused by later calls without hitting SQLite again.
     pub(crate) fn neighbors(&self, uid: &str) -> Vec<EdgeLite> {
+        // Degradation is still logged by the discarded collector
+        // (`record_read_error` always emits a tracing::warn).
+        let mut explain = cc_model::GraphExplainCollector::new();
+        self.neighbors_with_explain(uid, &mut explain)
+    }
+
+    /// Like [`Self::neighbors`] but records an adjacency-query failure into
+    /// `explain` instead of silently degrading to an isolated node.
+    pub(crate) fn neighbors_with_explain(
+        &self,
+        uid: &str,
+        explain: &mut cc_model::GraphExplainCollector,
+    ) -> Vec<EdgeLite> {
         // Fast path: check if the UID is already cached.
         {
             let adj = self.shared_adjacency.lock().unwrap();
@@ -107,11 +131,16 @@ impl GraphReadModel {
                 return edges.clone();
             }
         }
-        // Slow path: query DB *without* holding the adjacency lock.
-        let mut edges = self
-            .reads()
-            .call_edges_from_uid_lite(uid)
-            .unwrap_or_default();
+        // Slow path: query DB *without* holding the adjacency lock. A failure
+        // degrades to "no outgoing edges" for this UID (same graceful
+        // behavior as before), but is recorded for the explain envelope.
+        let mut edges = match self.reads().call_edges_from_uid_lite(uid) {
+            Ok(edges) => edges,
+            Err(err) => {
+                explain.record_read_error("call_edges_from_uid_lite", &err);
+                Vec::new()
+            }
+        };
         if let Some(bridges) = self.http_bridges.get(uid) {
             edges.extend(bridges.iter().cloned());
         }
@@ -239,12 +268,18 @@ impl GraphReadModel {
 
         // 2-hop: importers of the direct dependents in a single batched query.
         // A failure here degrades to direct-only results (partial answer beats
-        // none), matching the original handler behavior.
+        // none), matching the original handler behavior — but is logged now.
         if !dependents.is_empty() {
             let transitive_rows = self
                 .reads()
                 .importers_of_paths(&dependents, 10_000)
-                .unwrap_or_default();
+                .unwrap_or_else(|err| {
+                    tracing::warn!(
+                        error = %err,
+                        "transitive importer query failed; returning direct dependents only"
+                    );
+                    Vec::new()
+                });
             let mut transitive: Vec<String> = Vec::new();
             for fp in transitive_rows {
                 if fp != file_path && seen.insert(fp.clone()) {
@@ -349,7 +384,13 @@ impl GraphReadModel {
         let ref_rows = self
             .reads()
             .symbol_ref_containers_for_targets(&candidate_uids)
-            .unwrap_or_default();
+            .unwrap_or_else(|err| {
+                tracing::warn!(
+                    error = %err,
+                    "dead-code reference query failed; keeping unfiltered candidates"
+                );
+                Vec::new()
+            });
         for (target_uid, container) in &ref_rows {
             if target_uid.is_empty() {
                 continue;

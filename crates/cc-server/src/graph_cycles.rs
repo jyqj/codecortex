@@ -208,6 +208,16 @@ pub fn find_circular_deps(
     }
 }
 
+/// Declared graph subset for this tool (`tool_graph_subsets::CYCLES`),
+/// surfaced additively on every result: file/package granularity runs Tarjan
+/// over IMPORTS adjacency, community granularity over the community-projected
+/// CALLS adjacency. Visibility only — traversal is unchanged.
+fn cycles_graph_explain() -> Option<cc_model::GraphExplain> {
+    Some(cc_model::GraphExplain::declared_only(
+        cc_model::graph_catalog::tool_graph_subsets::CYCLES,
+    ))
+}
+
 // ── File-level circular deps ───────────────────────────────────────
 
 fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<CircularDepsResult> {
@@ -240,6 +250,7 @@ fn find_circular_deps_file(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circular
         components,
         total_components,
         shown,
+        graph_explain: cycles_graph_explain(),
     })
 }
 
@@ -284,6 +295,7 @@ fn find_circular_deps_package(db: &Arc<IndexDb>, limit: usize) -> CcResult<Circu
         components,
         total_components,
         shown,
+        graph_explain: cycles_graph_explain(),
     })
 }
 
@@ -319,6 +331,7 @@ fn find_circular_deps_community(db: &Arc<IndexDb>, limit: usize) -> CcResult<Cir
         components,
         total_components,
         shown,
+        graph_explain: cycles_graph_explain(),
     })
 }
 
@@ -505,6 +518,15 @@ mod tests {
         assert_eq!(result.total_components, 1);
         assert_eq!(result.shown, 1);
         assert_eq!(result.components[0].size, 3);
+
+        // The declared graph subset is surfaced additively on every result.
+        let explain = result.graph_explain.as_ref().expect("declared envelope");
+        assert_eq!(
+            explain.declared_edge_kinds,
+            cc_model::graph_catalog::tool_graph_subsets::CYCLES
+                .kinds()
+                .to_vec()
+        );
 
         let mut nodes = result.components[0].nodes.clone();
         nodes.sort();

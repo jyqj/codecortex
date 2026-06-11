@@ -315,6 +315,16 @@ impl GraphOps<'_> {
                 },
             });
 
+            // GraphReadModel bypass (declared, deliberate): the callers /
+            // callees / semantic-relations / metrics reads below go straight
+            // to cc-db typed queries (`caller_rows_by_uid`,
+            // `callee_rows_by_uid`, `query_semantic_edges`,
+            // `symbol_degree_details`) instead of GraphReadModel — relocating
+            // them buys nothing (no shared adjacency reuse, point lookups
+            // only) and is too invasive. The graph subset this block consults
+            // is declared in `tool_graph_subsets::RELATIONS` and surfaced via
+            // the `graph_explain` envelope attached to the response below.
+
             // Callers
             let callers = db.reads().caller_rows_by_uid(uid, caller_limit)?;
             let callers_json: Vec<serde_json::Value> = callers
@@ -472,6 +482,15 @@ impl GraphOps<'_> {
         let mut grouped = serde_json::json!({
             "symbols": results,
         });
+
+        // Additive contract visibility for the GraphReadModel bypass above:
+        // which catalog edge kinds this surface consults (CALLS callers/
+        // callees + degree, SEMANTIC relations, REFERENCES ref counts).
+        // Declaration only — traversal is unchanged.
+        grouped["graph_explain"] = serde_json::to_value(cc_model::GraphExplain::declared_only(
+            cc_model::graph_catalog::tool_graph_subsets::RELATIONS,
+        ))
+        .map_err(|e| CcError::Other(e.to_string()))?;
 
         if by_file.len() > 1 {
             let file_summary: Vec<serde_json::Value> = by_file
@@ -977,6 +996,32 @@ mod tests {
             schema["next_tool_hints"]["hints"].get("CALLS").is_some(),
             "next-tool hints should be derived from catalog"
         );
+    }
+
+    #[test]
+    fn explore_symbols_surfaces_declared_relations_subset() {
+        let (_dir, idx) = index_with_low_confidence_edge();
+        let result = idx
+            .graph()
+            .explore_symbols(
+                &["A".to_string()],
+                None,
+                None,
+                false,
+                true,
+                true,
+                false,
+                None,
+            )
+            .unwrap();
+
+        // Additive envelope on the bypass surface: declared kinds only.
+        assert_eq!(
+            result["graph_explain"]["declared_edge_kinds"],
+            serde_json::json!(cc_model::graph_catalog::tool_graph_subsets::RELATIONS.kinds())
+        );
+        // Existing fields stay untouched.
+        assert!(result["symbols"].is_array());
     }
 
     #[test]

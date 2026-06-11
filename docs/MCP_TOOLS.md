@@ -43,6 +43,20 @@ for the authoritative runtime surface.
 | `ingest_traces` | Feed OTLP runtime traces to validate HTTP edges | `traces[]` (service_name, method, path, status_code) | Validation summary with matched/boosted edge counts |
 | `adr` | Manage Architecture Decision Records | `action`: list / get / store / delete, `adr_id`, `title`, `status`, `context`, `decision` | ADR list or individual record |
 
+## Graph explainability (`graph_explain`)
+
+Graph read tools attach an additive `graph_explain` envelope when there is
+something to report: `impact` (incl. `scope="circular"`), `trace`, `relations`
+(incl. `kind="hierarchy"`), `graph_query`, and the graph-enrichment summary
+inside `context`/`search` responses. Fields: `edge_kinds_used` (what was
+actually traversed), `declared_edge_kinds` (the tool's static edge-kind
+contract), `synthetic_edge_count` / `runtime_evidence_edge_count`, `truncated`
+plus a stable `truncated_reason` token naming the first clipping cause, and
+`read_errors` (capped at 8) for DB reads that degraded to partial results
+instead of failing the call. A clean, untruncated run omits the field
+entirely. See [ARCHITECTURE.md](ARCHITECTURE.md#graph-explainability-graphexplain)
+for the per-tool edge-kind matrix.
+
 ## Recommended usage path
 
 A typical agent workflow:

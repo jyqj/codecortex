@@ -1,0 +1,25 @@
+name = "impact_golden_dead_code_known"
+tool = "impact"
+description = "Golden: dead code scan finds the deliberately-unreferenced Go helpers"
+
+[params]
+scope = "dead_code"
+limit = 50
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+field = "dead_code"
+value = "5"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "dead_code"
+value = "symbol_name=unusedGoHelper"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "dead_code"
+value = "symbol_name=formatResponse"

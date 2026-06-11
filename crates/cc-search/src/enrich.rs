@@ -12,6 +12,7 @@ use cc_db::index_db::IndexDb;
 use cc_model::config::GraphEnrichLimits;
 use cc_model::context::{ContextNode, NodeType, Role};
 use cc_model::search::SearchHit;
+use cc_model::{GraphExplain, GraphExplainCollector};
 
 /// Non-score outputs of graph enrichment: context nodes for the envelope
 /// plus counters for evidence summaries.
@@ -22,6 +23,10 @@ pub struct GraphEnrichment {
     pub callers_added: usize,
     pub callees_added: usize,
     pub tests_found: usize,
+    /// Unified explainability envelope: DB reads that failed and degraded the
+    /// enrichment to partial graph context (hits keep flowing either way).
+    /// Empty (`GraphExplain::is_empty`) when enrichment was complete.
+    pub graph_explain: GraphExplain,
 }
 
 /// Compute per-chunk graph scores and collect graph context nodes.
@@ -39,6 +44,13 @@ pub(crate) fn graph_enrich(
     if hits.is_empty() {
         return (scores, enrichment);
     }
+    // Records DB reads that failed and were degraded to empty maps so the
+    // caller can tell "no graph context" apart from "graph context lost".
+    // The declared subset (CALLS degree/neighbors, REFERENCES ref-count
+    // bonus, TESTS coverage nodes) rides along whenever the envelope is
+    // attached; it does not affect emptiness, so clean runs still omit it.
+    let mut explain = GraphExplainCollector::new();
+    explain.declare_edge_kinds(cc_model::graph_catalog::tool_graph_subsets::SEARCH_ENRICH);
 
     // 1. Batch load symbols for hit file paths.
     let file_paths: Vec<&str> = hits
@@ -51,7 +63,10 @@ pub(crate) fn graph_enrich(
     let all_symbols = db
         .reads()
         .symbols_by_file_paths(&file_paths)
-        .unwrap_or_default();
+        .unwrap_or_else(|err| {
+            explain.record_read_error("symbols_by_file_paths", &err);
+            Vec::new()
+        });
 
     // 2. Resolve each hit → symbol_uid via (file_path, symbol_name) or span overlap.
     let mut resolved: Vec<(String, String)> = Vec::new(); // (chunk_id, uid)
@@ -80,7 +95,10 @@ pub(crate) fn graph_enrich(
     let degree_by_uid = db
         .reads()
         .symbol_degree_details_batch(&resolved_uids)
-        .unwrap_or_default();
+        .unwrap_or_else(|err| {
+            explain.record_read_error("symbol_degree_details_batch", &err);
+            HashMap::new()
+        });
 
     // 3. Degree metrics → graph_score per chunk.
     for (chunk_id, uid) in &resolved {
@@ -100,11 +118,17 @@ pub(crate) fn graph_enrich(
     let callers_by_uid = db
         .reads()
         .caller_rows_by_uids(&resolved_uids, limits.callers_per_sym)
-        .unwrap_or_default();
+        .unwrap_or_else(|err| {
+            explain.record_read_error("caller_rows_by_uids", &err);
+            HashMap::new()
+        });
     let callees_by_uid = db
         .reads()
         .callee_rows_by_uids(&resolved_uids, limits.callees_per_sym)
-        .unwrap_or_default();
+        .unwrap_or_else(|err| {
+            explain.record_read_error("callee_rows_by_uids", &err);
+            HashMap::new()
+        });
 
     for (_chunk_id, uid) in &resolved {
         if let Some(callers) = callers_by_uid.get(uid) {
@@ -179,32 +203,39 @@ pub(crate) fn graph_enrich(
         }
     }
 
-    // 5. Test coverage.
+    // 5. Test coverage. A failed lookup degrades to "no test nodes" but is
+    // recorded instead of silently swallowed.
     let hit_files: Vec<String> = file_paths.iter().map(|s| s.to_string()).collect();
-    if let Ok(tests) = db.reads().find_impacted_tests(&hit_files) {
-        for test_path in tests.iter().take(limits.max_tests) {
-            let text = format!("test file: {}", test_path);
-            let est = (text.len() / 4).max(10) as u32;
-            if graph_tokens + est > graph_budget {
-                break;
-            }
-            graph_tokens += est;
-            let node_id = format!("graph:test:{}", test_path);
-            let mut node = ContextNode::new(
-                node_id,
-                NodeType::TestEdge,
-                Role::Test,
-                format!("Test: {}", test_path),
-                text,
-            );
-            node.file_path = Some(test_path.clone());
-            node.token_estimate = est;
-            node.source = "graph".to_string();
-            enrichment.nodes.push(node);
-            enrichment.tests_found += 1;
+    let impacted_tests = db
+        .reads()
+        .find_impacted_tests(&hit_files)
+        .unwrap_or_else(|err| {
+            explain.record_read_error("find_impacted_tests", &err);
+            Vec::new()
+        });
+    for test_path in impacted_tests.iter().take(limits.max_tests) {
+        let text = format!("test file: {}", test_path);
+        let est = (text.len() / 4).max(10) as u32;
+        if graph_tokens + est > graph_budget {
+            break;
         }
+        graph_tokens += est;
+        let node_id = format!("graph:test:{}", test_path);
+        let mut node = ContextNode::new(
+            node_id,
+            NodeType::TestEdge,
+            Role::Test,
+            format!("Test: {}", test_path),
+            text,
+        );
+        node.file_path = Some(test_path.clone());
+        node.token_estimate = est;
+        node.source = "graph".to_string();
+        enrichment.nodes.push(node);
+        enrichment.tests_found += 1;
     }
 
+    enrichment.graph_explain = explain.finish();
     (scores, enrichment)
 }
 
@@ -394,6 +425,16 @@ mod tests {
         assert_eq!(enrichment.callers_added, 2);
         assert_eq!(enrichment.callees_added, 2);
         assert_eq!(enrichment.tests_found, 0);
+        // A clean run reports nothing in the explain envelope — the declared
+        // subset is contract metadata, not a report, so it does not flip
+        // emptiness (the engine keeps omitting the envelope when clean).
+        assert!(enrichment.graph_explain.is_empty());
+        assert_eq!(
+            enrichment.graph_explain.declared_edge_kinds,
+            cc_model::graph_catalog::tool_graph_subsets::SEARCH_ENRICH
+                .kinds()
+                .to_vec()
+        );
 
         // Node identity and order follow hit order (alpha then beta), each
         // seed contributing callers before callees, deduped across seeds.
@@ -436,5 +477,71 @@ mod tests {
             "beta score {} != expected {expected_beta}",
             scores["chunk:src/b.rs"]
         );
+    }
+
+    /// A DB read failure mid-enrichment must degrade gracefully (hits keep
+    /// flowing, graph context partially lost) but be recorded in the explain
+    /// envelope instead of silently swallowed.
+    #[test]
+    fn test_graph_enrich_records_read_errors_on_db_failure() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+
+        let alpha_to_beta = CallEdgeRecord {
+            edge_id: "edge:alpha->beta".to_string(),
+            file_path: "src/a.rs".to_string(),
+            caller_symbol: Some("alpha".to_string()),
+            callee_symbol: "beta".to_string(),
+            line: 5,
+            caller_symbol_uid: Some("uid:alpha".to_string()),
+            callee_symbol_uid: Some("uid:beta".to_string()),
+            ..Default::default()
+        };
+        insert_graph_file(&db, "src/a.rs", "alpha", "uid:alpha", vec![alpha_to_beta]);
+
+        // Drop call_edges so the degree/caller/callee batch queries fail.
+        db.reads()
+            .read_conn()
+            .unwrap()
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+
+        let hits = vec![make_hit("chunk:src/a.rs", "src/a.rs", "alpha")];
+        let limits = GraphEnrichLimits {
+            max_resolve: 10,
+            callers_per_sym: 5,
+            callees_per_sym: 5,
+            max_tests: 5,
+            max_routes: 1,
+            graph_budget_pct: 50,
+        };
+        let (scores, enrichment) = graph_enrich(&db, &hits, &limits, 10_000);
+
+        // Degraded: no graph scores or neighbor nodes...
+        assert!(scores.is_empty());
+        assert_eq!(enrichment.callers_added, 0);
+        assert_eq!(enrichment.callees_added, 0);
+        // ...and the failures are visible in the explain envelope, alongside
+        // the declared graph subset.
+        let explain = &enrichment.graph_explain;
+        assert!(!explain.is_empty());
+        assert_eq!(
+            explain.declared_edge_kinds,
+            cc_model::graph_catalog::tool_graph_subsets::SEARCH_ENRICH
+                .kinds()
+                .to_vec()
+        );
+        assert!(explain
+            .read_errors
+            .iter()
+            .any(|entry| entry.starts_with("symbol_degree_details_batch:")));
+        assert!(explain
+            .read_errors
+            .iter()
+            .any(|entry| entry.starts_with("caller_rows_by_uids:")));
+        assert!(explain
+            .read_errors
+            .iter()
+            .any(|entry| entry.starts_with("callee_rows_by_uids:")));
     }
 }

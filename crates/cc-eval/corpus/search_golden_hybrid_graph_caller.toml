@@ -1,0 +1,27 @@
+name = "search_golden_hybrid_graph_caller"
+tool = "search"
+description = "Golden (graph-flavored): 'who calls formatName' must rank formatName top-5 and surface its caller processUser, which shares no query tokens and is reachable via the CALLS edge"
+
+[params]
+query = "who calls formatName to format a user name"
+mode = "hybrid"
+top_k = 10
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "machine_pack.hits"
+value = "formatName"
+min_recall = 1.0
+
+# 排名在相等分附近会抖动：对 graph 可达的 caller 断言成员性而非位置。
+[[assertions]]
+kind = "array_contains_item"
+field = "machine_pack.hits"
+value = "symbol_name=processUser"
+
+[[assertions]]
+kind = "field_exists"
+field = "evidence_summary.graph_enrichment"

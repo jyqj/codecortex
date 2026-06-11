@@ -1,0 +1,29 @@
+name = "trace_golden_rust_order_total"
+tool = "trace"
+description = "Golden: Rust call path process_order -> calculate_total exists"
+
+[params]
+from = "process_order"
+to = "calculate_total"
+max_depth = 4
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+field = "paths"
+value = "1"
+
+[[assertions]]
+kind = "field_matches_regex"
+field = "path_count"
+value = "^[1-9][0-9]*$"
+
+[[assertions]]
+kind = "output_contains"
+value = "process_order"
+
+[[assertions]]
+kind = "output_contains"
+value = "calculate_total"

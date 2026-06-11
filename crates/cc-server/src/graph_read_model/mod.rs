@@ -22,7 +22,7 @@ mod projections;
 
 use cc_db::index_db::{IndexDb, SymbolRow};
 use cc_db::GraphReads;
-use cc_model::CcResult;
+use cc_model::{CcResult, GraphExplainCollector};
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
@@ -113,9 +113,38 @@ impl GraphReadModel {
         max_depth: usize,
         max_paths: usize,
     ) -> Vec<LabeledPath> {
-        bfs_paths_labeled_with(from_uid, to_uid, max_depth, max_paths, |uid| {
-            self.neighbors(uid)
-        })
+        // Degradation is still logged by the discarded collector
+        // (`record_read_error` always emits a tracing::warn).
+        let mut explain = GraphExplainCollector::new();
+        self.paths_between_explained(from_uid, to_uid, max_depth, max_paths, &mut explain)
+    }
+
+    /// Like [`Self::paths_between`] but records read errors and the budget
+    /// (max_paths / max_depth / max_expansions) that clipped the walk, if any.
+    pub(crate) fn paths_between_explained(
+        &self,
+        from_uid: &str,
+        to_uid: &str,
+        max_depth: usize,
+        max_paths: usize,
+        explain: &mut GraphExplainCollector,
+    ) -> Vec<LabeledPath> {
+        let (paths, truncation) =
+            bfs_paths_labeled_with(from_uid, to_uid, max_depth, max_paths, |uid| {
+                self.neighbors_with_explain(uid, explain)
+            });
+        // First reason wins in the collector; a filled result cap is the
+        // primary cause, depth/expansion clipping secondary.
+        if truncation.results_clipped {
+            explain.mark_truncated("max_paths");
+        }
+        if truncation.depth_clipped {
+            explain.mark_truncated("max_depth");
+        }
+        if truncation.expansions_clipped {
+            explain.mark_truncated("max_expansions");
+        }
+        paths
     }
 
     #[cfg(test)]
@@ -129,14 +158,17 @@ impl GraphReadModel {
         bfs_paths_labeled_with(from_uid, to_uid, max_depth, max_paths, |uid| {
             adj.adj.get(uid).cloned().unwrap_or_default()
         })
+        .0
     }
 
-    /// Build backward-compatible name paths plus deduplicated TraceEdge values.
+    /// Build backward-compatible name paths plus deduplicated TraceEdge values,
+    /// recording edge-kind/synthesis usage and read errors into `explain`.
     pub(crate) fn named_paths_and_trace_edges(
         &self,
         labeled_paths: &[LabeledPath],
         sym_map: &HashMap<String, SymbolRow>,
         include_runtime_evidence: bool,
+        explain: &mut GraphExplainCollector,
     ) -> (Vec<Vec<String>>, Vec<TraceEdge>) {
         let uid_names: HashMap<String, String> = sym_map
             .iter()
@@ -152,9 +184,10 @@ impl GraphReadModel {
                     .collect()
             })
             .collect();
-        let edges = self.project_trace_edges(
+        let edges = self.project_trace_edges_with_explain(
             labeled_paths.iter().flat_map(|path| path.edge_lites.iter()),
             include_runtime_evidence,
+            explain,
         );
         (paths, edges)
     }
@@ -165,6 +198,22 @@ impl GraphReadModel {
         &self,
         edge_lites: I,
         include_runtime_evidence: bool,
+    ) -> Vec<TraceEdge>
+    where
+        I: IntoIterator<Item = &'a EdgeLite>,
+    {
+        // Read errors are still logged by the discarded collector.
+        let mut explain = GraphExplainCollector::new();
+        self.project_trace_edges_with_explain(edge_lites, include_runtime_evidence, &mut explain)
+    }
+
+    /// Like [`Self::project_trace_edges`] but records the edge kinds used,
+    /// synthetic/evidence edge counts, and any evidence-lookup read error.
+    pub(crate) fn project_trace_edges_with_explain<'a, I>(
+        &self,
+        edge_lites: I,
+        include_runtime_evidence: bool,
+        explain: &mut GraphExplainCollector,
     ) -> Vec<TraceEdge>
     where
         I: IntoIterator<Item = &'a EdgeLite>,
@@ -184,9 +233,19 @@ impl GraphReadModel {
         }
 
         let evidence_map = if include_runtime_evidence && !bridge_norm_paths.is_empty() {
-            self.reads()
+            // A failed evidence lookup degrades to evidence-less trace edges
+            // (same graceful behavior as before), but is now recorded instead
+            // of silently dropping the runtime-evidence metadata.
+            match self
+                .reads()
                 .evidence_for_normalized_paths(&bridge_norm_paths)
-                .unwrap_or_default()
+            {
+                Ok(map) => map,
+                Err(err) => {
+                    explain.record_read_error("evidence_for_normalized_paths", &err);
+                    HashMap::new()
+                }
+            }
         } else {
             HashMap::new()
         };
@@ -212,6 +271,14 @@ impl GraphReadModel {
             } else {
                 None
             };
+
+            explain.note_edge_kind(&edge.dispatch_kind);
+            if edge.synthesized_by.is_some() {
+                explain.add_synthetic_edges(1);
+            }
+            if evidence.is_some() {
+                explain.add_runtime_evidence_edges(1);
+            }
 
             edges.push(TraceEdge {
                 from_uid: edge.caller_uid.clone(),
@@ -311,20 +378,26 @@ fn bfs_paths_labeled_with<F>(
     max_depth: usize,
     max_paths: usize,
     neighbors: F,
-) -> Vec<LabeledPath>
+) -> (Vec<LabeledPath>, crate::graph_walk::WalkTruncation)
 where
     F: FnMut(&str) -> Vec<EdgeLite>,
 {
     let budget = crate::graph_walk::WalkBudget::for_path_enumeration(max_depth, max_paths);
-    crate::graph_walk::bfs_simple_paths(from_uid, to_uid, &budget, neighbors, |edge: &EdgeLite| {
-        Some(edge.callee_uid.as_str())
-    })
-    .into_iter()
-    .map(|(node_uids, edge_lites)| LabeledPath {
-        node_uids,
-        edge_lites,
-    })
-    .collect()
+    let (paths, truncation) = crate::graph_walk::bfs_simple_paths_explained(
+        from_uid,
+        to_uid,
+        &budget,
+        neighbors,
+        |edge: &EdgeLite| Some(edge.callee_uid.as_str()),
+    );
+    let labeled = paths
+        .into_iter()
+        .map(|(node_uids, edge_lites)| LabeledPath {
+            node_uids,
+            edge_lites,
+        })
+        .collect();
+    (labeled, truncation)
 }
 
 #[cfg(test)]

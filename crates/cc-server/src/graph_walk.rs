@@ -38,21 +38,52 @@ impl WalkBudget {
     }
 }
 
+/// Why a path enumeration stopped before exhausting the search space.
+/// All flags false means the walk completed within its budget.
+#[derive(Debug, Default, Clone, Copy)]
+pub(crate) struct WalkTruncation {
+    /// A queued partial path exceeded `max_depth` and was dropped.
+    pub depth_clipped: bool,
+    /// `max_results` was reached while unexplored entries remained queued.
+    pub results_clipped: bool,
+    /// The expansion safety valve (`max_expansions`) was exhausted.
+    pub expansions_clipped: bool,
+}
+
 /// Enumerate simple paths (no node repeated within a path) from `from` to
 /// `to` in BFS order. Returns up to `budget.max_results` paths as
 /// (node UIDs, edges) pairs.
+#[cfg(test)]
 pub(crate) fn bfs_simple_paths<E, F, G>(
     from: &str,
     to: &str,
     budget: &WalkBudget,
-    mut neighbors: F,
-    mut next_of: G,
+    neighbors: F,
+    next_of: G,
 ) -> Vec<(Vec<String>, Vec<E>)>
 where
     E: Clone,
     F: FnMut(&str) -> Vec<E>,
     G: FnMut(&E) -> Option<&str>,
 {
+    bfs_simple_paths_explained(from, to, budget, neighbors, next_of).0
+}
+
+/// Like `bfs_simple_paths` but also reports which budget (if any) clipped the
+/// walk, so callers can surface a stable truncation reason.
+pub(crate) fn bfs_simple_paths_explained<E, F, G>(
+    from: &str,
+    to: &str,
+    budget: &WalkBudget,
+    mut neighbors: F,
+    mut next_of: G,
+) -> (Vec<(Vec<String>, Vec<E>)>, WalkTruncation)
+where
+    E: Clone,
+    F: FnMut(&str) -> Vec<E>,
+    G: FnMut(&E) -> Option<&str>,
+{
+    let mut truncation = WalkTruncation::default();
     let mut results: Vec<(Vec<String>, Vec<E>)> = Vec::new();
     // Each queue entry carries its own visited set so distinct paths through
     // shared intermediate nodes are all discovered (simple-path constraint:
@@ -67,9 +98,13 @@ where
 
     while let Some((nodes, edges, visited)) = queue.pop_front() {
         if results.len() >= budget.max_results {
+            // We popped an unexplored entry just to discover the result cap:
+            // there was more search space than the caller asked for.
+            truncation.results_clipped = true;
             break;
         }
         if nodes.len() > budget.max_depth + 1 {
+            truncation.depth_clipped = true;
             continue;
         }
         let current = nodes.last().expect("path has at least one uid").clone();
@@ -88,6 +123,7 @@ where
                 continue;
             }
             if expansions >= budget.max_expansions {
+                truncation.expansions_clipped = true;
                 tracing::debug!(
                     max_expansions = budget.max_expansions,
                     results = results.len(),
@@ -108,7 +144,7 @@ where
         }
     }
 
-    results
+    (results, truncation)
 }
 
 /// Layered BFS over nodes with a global visited set. `on_visit` is invoked
@@ -274,6 +310,61 @@ mod tests {
             expansions_seen <= 25 * 11,
             "expansion not bounded: {expansions_seen}"
         );
+    }
+
+    #[test]
+    fn explained_reports_depth_clip() {
+        // A→B→C→D needs depth 3; with max_depth=1 the queued deeper partial
+        // paths are dropped, which must be reported as a depth clip.
+        let adj = graph(&[("A", "B"), ("B", "C"), ("C", "D")]);
+        let (paths, truncation) = bfs_simple_paths_explained(
+            "A",
+            "D",
+            &WalkBudget::for_path_enumeration(1, 10),
+            |uid| adj.get(uid).cloned().unwrap_or_default(),
+            edge_target,
+        );
+        assert!(paths.is_empty());
+        assert!(truncation.depth_clipped);
+        assert!(!truncation.results_clipped);
+        assert!(!truncation.expansions_clipped);
+    }
+
+    #[test]
+    fn explained_reports_results_clip() {
+        let adj = graph(&[
+            ("A", "B1"),
+            ("A", "B2"),
+            ("A", "B3"),
+            ("B1", "D"),
+            ("B2", "D"),
+            ("B3", "D"),
+        ]);
+        let (paths, truncation) = bfs_simple_paths_explained(
+            "A",
+            "D",
+            &WalkBudget::for_path_enumeration(5, 2),
+            |uid| adj.get(uid).cloned().unwrap_or_default(),
+            edge_target,
+        );
+        assert_eq!(paths.len(), 2);
+        assert!(truncation.results_clipped);
+    }
+
+    #[test]
+    fn explained_complete_walk_reports_no_truncation() {
+        let adj = graph(&[("A", "B"), ("B", "C")]);
+        let (paths, truncation) = bfs_simple_paths_explained(
+            "A",
+            "C",
+            &WalkBudget::for_path_enumeration(5, 10),
+            |uid| adj.get(uid).cloned().unwrap_or_default(),
+            edge_target,
+        );
+        assert_eq!(paths.len(), 1);
+        assert!(!truncation.depth_clipped);
+        assert!(!truncation.results_clipped);
+        assert!(!truncation.expansions_clipped);
     }
 
     #[test]

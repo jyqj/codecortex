@@ -1,0 +1,23 @@
+name = "context_golden_format_user"
+tool = "context"
+description = "Golden: context for user-name formatting surfaces processUser and formatName from handler.js"
+
+[params]
+task = "how is a user processed and the name formatted"
+max_symbols = 10
+include_source = false
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"
+
+[[assertions]]
+kind = "output_contains"
+value = "handler.js"

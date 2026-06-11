@@ -1,0 +1,20 @@
+name = "search_golden_fuzzy_create_user"
+tool = "search"
+description = "Golden: fuzzy symbol lookup 'create_use' finds create_user (prefix match, not exact)"
+
+[params]
+query = "create_use"
+mode = "symbol"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+value = "create_user"
+min_recall = 1.0
+
+[[assertions]]
+kind = "output_contains"
+value = "api_create_user"

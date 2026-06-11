@@ -426,6 +426,14 @@ impl FileWatcher {
         })
     }
 
+    /// Whether any pending events are waiting to be drained, WITHOUT
+    /// consuming them. Lets the poll loop secure a build slot before calling
+    /// [`FileWatcher::drain_pending`], so a busy tick never loses events.
+    pub fn has_pending(&self) -> bool {
+        let pending = self.pending.lock().unwrap_or_else(|e| e.into_inner());
+        !(pending.changed.is_empty() && pending.removed.is_empty())
+    }
+
     /// Drain all pending events accumulated since the last call.
     ///
     /// Returns a [`WatcherDrain`] with separate `changed` and `removed` lists

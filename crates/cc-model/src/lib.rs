@@ -7,6 +7,7 @@ pub mod dispatch_site;
 pub mod edge;
 pub mod error;
 pub mod graph_catalog;
+pub mod graph_explain;
 pub mod id;
 pub mod impact;
 pub mod infra;
@@ -30,6 +31,7 @@ pub use edge::{
     ImportRecord, ResolutionKind, RouteEdgeRecord, RouteNodeRecord, SemanticEdgeRecord,
     SemanticRelation, TestEdgeRecord,
 };
+pub use graph_explain::{GraphExplain, GraphExplainCollector};
 pub use id::StableId;
 pub use impact::{
     CrossServiceImpact, HistoricalImpact, ImpactReport, ImpactedSymbol, RiskLevel, RiskSummary,

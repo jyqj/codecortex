@@ -1,0 +1,23 @@
+name = "context_golden_order_total"
+tool = "context"
+description = "Golden: context for order-total calculation surfaces the Rust order chain in lib.rs"
+
+[params]
+task = "how is an order total calculated with calculate_total and formatted as a price"
+max_symbols = 10
+include_source = false
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "calculate_total"
+
+[[assertions]]
+kind = "output_contains"
+value = "process_order"
+
+[[assertions]]
+kind = "output_contains"
+value = "lib.rs"

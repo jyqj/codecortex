@@ -137,6 +137,12 @@ pub fn type_hierarchy(
         descendants,
         implementors,
         overrides,
+        // Declared graph subset (`tool_graph_subsets::TYPE_HIERARCHY`):
+        // the BFS keeps only INHERITS/IMPLEMENTS edges; DEFINES_METHOD backs
+        // method listing + override detection. Visibility only.
+        graph_explain: Some(cc_model::GraphExplain::declared_only(
+            cc_model::graph_catalog::tool_graph_subsets::TYPE_HIERARCHY,
+        )),
     };
     serde_json::to_value(result).map_err(CcError::Serde)
 }
@@ -546,6 +552,15 @@ mod tests {
         assert_eq!(ov.overriding_type, "C");
         assert_eq!(ov.base_type, "B");
         assert_eq!(ov.param_count, Some(2));
+
+        // The declared graph subset is surfaced additively.
+        let explain = result.graph_explain.as_ref().expect("declared envelope");
+        assert_eq!(
+            explain.declared_edge_kinds,
+            cc_model::graph_catalog::tool_graph_subsets::TYPE_HIERARCHY
+                .kinds()
+                .to_vec()
+        );
     }
 
     #[test]

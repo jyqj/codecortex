@@ -8,21 +8,28 @@ use std::path::Path;
 use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
-use cc_db::index_db::{FileWriteUnit, IndexDb, SymbolTargetRow};
-use cc_model::edge::{ResolutionKind, RouteNodeRecord};
+use cc_db::index_db::{
+    compress_chunk_text, FileWriteUnit, IndexDb, PrecompressedChunks, SymbolTargetRow,
+};
+use cc_model::edge::{CoChangeEdgeRecord, ResolutionKind, RouteNodeRecord};
+use cc_model::infra::{InfraEdge, InfraNode};
 use cc_model::parse::ParseOutcome;
 use cc_model::symbol::{SymbolRecord, SymbolRefRecord};
 use cc_model::{CcResult, Language, ParserTier, StableId};
 
 use crate::community::{build_community_labels, louvain_communities};
-use crate::config_linker::{extract_config_links, ConfigLinkKind};
+use crate::config_linker::{
+    config_files_signature, resolve_config_links, scan_config_tokens, ConfigLinkKind,
+    RawConfigToken,
+};
 use crate::dirty_closure::{DirtyPropagationOutcome, DirtyPropagationStatus};
 use crate::framework_registry;
 use crate::pass_gate::{
-    run_gated_passes, DbSignatureGate, FileSignatureGate, GatedPass, PairGate, RecordTiming,
-    StringCacheGate, Unconditional,
+    log_gate_decision, DbSignatureGate, DeferredSignatureRecord, FileSignatureGate, PairGate,
+    PassGate, StringCacheGate,
 };
 use crate::resolver::{ResolutionContext, SymbolCatalog};
+use crate::synthesis_pipeline::SynthesisRound;
 
 use super::indexer::{FileAction, Indexer, ResolveResult, WriteResult, MIN_FILES_FOR_PARALLEL};
 
@@ -35,6 +42,23 @@ const DISPATCH_SIG_ALGORITHM: &str = "1";
 const INTERFACE_SIG_ALGORITHM: &str = "1";
 const COMMUNITY_SIG_ALGORITHM: &str = "1";
 const INFRA_SIG_ALGORITHM: &str = "1";
+const CONFIG_SIG_ALGORITHM: &str = "1";
+
+/// Metadata keys for the config-linker gate: the config-file-set signature
+/// (paths + mtime + size, mirroring `last_infra_sig`), its algorithm version,
+/// and the cached raw token extraction the signature validates.
+const CONFIG_SIG_KEY: &str = "last_config_sig";
+const CONFIG_SIG_ALGO_KEY: &str = "last_config_sig_algo";
+const CONFIG_RAW_CACHE_KEY: &str = "config_raw_tokens";
+
+/// Upper bound for the persisted raw-token cache. Projects whose config scan
+/// produces more serialized tokens than this (huge lock files) simply skip
+/// the cache and rescan each build — the pre-gate behavior.
+const CONFIG_RAW_CACHE_MAX_BYTES: usize = 4 * 1024 * 1024;
+
+/// Metadata key for the git co-change HEAD-skip gate. Shared by the gate
+/// construction (compute) and the deferred record (apply).
+const COCHANGE_HEAD_KEY: &str = "last_cochange_head";
 
 /// Per-build memo of the symbols scan shared by the dispatch and interface
 /// signatures (identical column set and ordering), so a build pays for the
@@ -73,10 +97,92 @@ struct ResolutionCatalog {
 
 /// Owned output of the common front half of a full-snapshot write, shared by
 /// the temp-db and DirectWriter paths: the derived config-link units plus the
-/// `last_indexed_at` timestamp recorded inside the rebuilt snapshot.
+/// `last_indexed_at` timestamp recorded inside the rebuilt snapshot, and the
+/// config-linker gate state (signature + raw-token cache) so post-rebuild
+/// incrementals can skip the config scan.
 struct FullSnapshotPayload {
     config_units: Vec<FileWriteUnit>,
     recorded_at: String,
+    config_sig: u64,
+    /// Serialized raw tokens, or `None` when over the cache size cap.
+    config_raw_cache: Option<String>,
+}
+
+// ── Staged postprocess/analysis plans (compute → apply seam) ────────────
+//
+// Phase 7 (postprocess) and Phase 8-11 (analysis) are split into a COMPUTE
+// half (pure reads through the read pool, heavy work: signature scans,
+// synthesis passes, Louvain, git log, infra walk) and an APPLY half (short
+// DB transactions only). The plan structs below are the typed deltas that
+// travel between the two halves; the caller decides how much locking each
+// half needs (see `build_plan` for the staging contract).
+
+/// 测试边重建指令：计算本身在 cc-db 的 SQL 里完成，compute 阶段只决定
+/// apply 阶段执行哪一种重建。
+enum TestEdgeRebuild {
+    Skip,
+    Full,
+    Files(Vec<String>),
+}
+
+/// What the apply stage executes for the dispatch-synthesis round.
+enum SynthesisAction {
+    /// Normal round: one atomic batch write (see `synthesis_pipeline`).
+    Round(SynthesisRound),
+    /// Synthesis disabled after being enabled previously: delete every
+    /// synthetic edge kind/prefix declared by the pass registry.
+    DisableCleanup,
+}
+
+struct SynthesisStage {
+    action: SynthesisAction,
+    /// Dispatch + interface signatures, persisted only after the community
+    /// apply completed (the historical `RecordTiming::Deferred` semantics: a
+    /// later community failure leaves no synthesis signature recorded).
+    records: Vec<DeferredSignatureRecord>,
+}
+
+enum CommunityAction {
+    /// 边数超限的降级路径：未分配社区的符号全部归入 community 0。
+    Degraded,
+    Update {
+        assignments: HashMap<String, u32>,
+        labels: HashMap<u32, String>,
+    },
+}
+
+struct CommunityStage {
+    action: CommunityAction,
+    record: DeferredSignatureRecord,
+}
+
+/// Phase 7 deltas: test edges, dispatch synthesis, community detection.
+/// `None` stage fields mean the pass's gate decided to skip this build.
+pub(crate) struct PostprocessPlan {
+    test_edges: TestEdgeRebuild,
+    synthesis: Option<SynthesisStage>,
+    community: Option<CommunityStage>,
+}
+
+struct CoChangeStage {
+    co_changes: Vec<CoChangeEdgeRecord>,
+    /// HEAD sha to record after the apply; `None` when git was unavailable or
+    /// the analysis degraded — nothing is recorded so the next build retries.
+    record_head: Option<String>,
+}
+
+struct InfraStage {
+    nodes: Vec<InfraNode>,
+    edges: Vec<InfraEdge>,
+    record: DeferredSignatureRecord,
+}
+
+/// Phase 8-11 deltas: git co-change, infrastructure, ADR documents.
+pub(crate) struct AnalysisPlan {
+    cochange: Option<CoChangeStage>,
+    infra: Option<InfraStage>,
+    /// ADR docs are re-scanned unconditionally; an empty list writes nothing.
+    adr_docs: Vec<serde_json::Value>,
 }
 
 impl Indexer {
@@ -289,6 +395,29 @@ impl Indexer {
         }
     }
 
+    /// Phase 5.5 (prepare, lock-free): compress chunk payloads with the
+    /// shared deterministic policy so the write transaction only binds
+    /// pre-computed blobs instead of running zstd while holding the write
+    /// connection. Keyed by rel_path because `phase_write` re-partitions the
+    /// units (normal vs dirty) before writing.
+    pub(crate) fn precompress_chunks(write_units: &[FileWriteUnit]) -> PrecompressedChunks {
+        let compress_unit = |unit: &FileWriteUnit| {
+            (
+                unit.rel_path.clone(),
+                unit.outcome
+                    .chunks
+                    .iter()
+                    .map(|c| compress_chunk_text(&c.text))
+                    .collect::<Vec<_>>(),
+            )
+        };
+        if write_units.len() >= MIN_FILES_FOR_PARALLEL {
+            write_units.par_iter().map(compress_unit).collect()
+        } else {
+            write_units.iter().map(compress_unit).collect()
+        }
+    }
+
     /// Phase 6: Batch write to SQLite (dual path: full rebuild vs incremental).
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn phase_write(
@@ -300,6 +429,7 @@ impl Indexer {
         to_remove: &[String],
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
+        chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<WriteResult> {
         // Separate dirty write units from normal ones before write.
         let dirty_set: HashSet<String> = actions
@@ -318,6 +448,7 @@ impl Indexer {
                     project_path,
                     &normal_write_units,
                     route_nodes,
+                    chunk_blobs,
                 ) {
                     Ok(config_units) => {
                         tracing::info!("full rebuild completed via direct writer");
@@ -332,6 +463,7 @@ impl Indexer {
                             project_path,
                             &normal_write_units,
                             route_nodes,
+                            chunk_blobs,
                         )?
                     }
                 }
@@ -340,22 +472,29 @@ impl Indexer {
                     project_path,
                     &normal_write_units,
                     route_nodes,
+                    chunk_blobs,
                 )?
             }
         } else {
             // Incremental: removals, replacements, dirty re-resolution and
             // route nodes commit atomically — a crash cannot leave files
             // deleted with their edges still present.
+            let batch_empty = to_remove.is_empty()
+                && normal_write_units.is_empty()
+                && dirty_write_units.is_empty();
             self.db.writes().write_incremental_batch(
                 to_remove,
                 &normal_write_units,
                 &dirty_write_units,
                 route_nodes,
+                chunk_blobs,
             )?;
 
             // Config links read the just-committed snapshot (separate read
-            // connection), so they stay outside the batch transaction.
-            let config_units = self.build_config_link_units(project_path)?;
+            // connection), so they stay outside the batch transaction. The
+            // gate skips the config scan (and, for no-op batches, the whole
+            // pass) when the config-file set is unchanged.
+            let config_units = self.build_config_link_units_gated(project_path, batch_empty)?;
             if !config_units.is_empty() {
                 self.db.writes().replace_files_batch(&config_units)?;
             }
@@ -409,27 +548,32 @@ impl Indexer {
         })
     }
 
-    /// Phase 7: Post-processing (test edges, dispatch synthesis, community detection).
-    pub(crate) fn phase_postprocess(
+    /// Phase 7 (compute half): test edges, dispatch synthesis, community
+    /// detection. Pure reads through the read pool — the heavy work
+    /// (signature table scans, synthesis passes, Louvain) all happens here,
+    /// so callers may run it without holding any index lock. The signature
+    /// gates decide in this stage; their records travel inside the plan and
+    /// are persisted by [`Self::phase_postprocess_apply`].
+    pub(crate) fn phase_postprocess_compute(
         &self,
-        _project_path: &Path,
         full: bool,
         write_units: &[FileWriteUnit],
         config_units: &[FileWriteUnit],
         to_remove: &[String],
-    ) -> CcResult<()> {
-        // Rebuild test edges for changed files
+    ) -> CcResult<PostprocessPlan> {
+        // Test edges for changed files: the rebuild itself is a cc-db SQL
+        // operation, so compute only decides WHICH rebuild apply runs.
         let mut changed_paths: Vec<String> =
             write_units.iter().map(|u| u.rel_path.clone()).collect();
         changed_paths.extend(config_units.iter().map(|u| u.rel_path.clone()));
         changed_paths.extend(to_remove.iter().cloned());
-        if full {
-            self.db.writes().rebuild_test_edges()?;
+        let test_edges = if full {
+            TestEdgeRebuild::Full
         } else if !changed_paths.is_empty() {
-            self.db
-                .writes()
-                .rebuild_test_edges_for_files(&changed_paths)?;
-        }
+            TestEdgeRebuild::Files(changed_paths)
+        } else {
+            TestEdgeRebuild::Skip
+        };
 
         // Per-pass signature gates: instead of a single graph_signature that
         // hashes all 4 tables, each pass group carries its own input
@@ -438,10 +582,10 @@ impl Indexer {
         // interface dispatch recomputation, and vice versa).
         //
         // The dispatch and interface signatures share one symbols scan per
-        // build via `SymbolRowsCache`, and the synthesis round records its
-        // signatures only after community detection completed
-        // (`RecordTiming::Deferred`) — a mid-build failure never records a
-        // signature for work that did not finish.
+        // build via `SymbolRowsCache`, and the synthesis round's records are
+        // persisted only after the community apply completed (deferred) — a
+        // mid-build failure never records a signature for work that did not
+        // finish.
         let forced = if full { Some("full rebuild") } else { None };
         let symbol_rows = SymbolRowsCache::default();
 
@@ -468,25 +612,15 @@ impl Indexer {
         // the dispatch- vs interface-gated sub-passes inside the round (see
         // `dispatch_synthesis::SynthesisPassSpec`).
         let synthesis_gate = PairGate::new("synthesis_round", &dispatch_gate, &interface_gate);
+        let synthesis_decision = synthesis_gate.should_run()?;
+        log_gate_decision(&synthesis_gate, synthesis_decision);
 
-        // Community detection runs AFTER synthesis: its signature includes
-        // synthetic edges, so the loop evaluates this gate only once the
-        // synthesis round has been applied (or skipped — in which case the
-        // synthetic edges are unchanged too and the pre-round state is
-        // already the post-round state).
-        let community_gate = DbSignatureGate::new(
-            "community",
-            &self.db,
-            "last_community_sig",
-            "last_community_sig_algo",
-            COMMUNITY_SIG_ALGORITHM,
-            forced,
-            || self.community_signature(),
-        );
-
-        // Phase 7b–7h: Dynamic dispatch synthesis
-        let run_synthesis = || -> CcResult<bool> {
-            if self.dispatch_synthesis {
+        // Phase 7b–7h: Dynamic dispatch synthesis. Compute every pass delta
+        // against the committed snapshot; the apply stage writes all deltas
+        // in one short atomic unit of work. See `crate::synthesis_pipeline`
+        // for the cross-pass overlay and the concurrency notes.
+        let synthesis = if synthesis_decision.run {
+            let action = if self.dispatch_synthesis {
                 let synthesis_config = crate::dispatch_synthesis::SynthesisConfig {
                     enabled: true,
                     event_fanout_cap: self.event_fanout_cap,
@@ -496,97 +630,263 @@ impl Indexer {
                         self.event_denylist.iter().cloned().collect()
                     },
                 };
-
-                // Compute every pass delta against the committed snapshot (no
-                // write lock held), then apply all deltas in one short atomic
-                // unit of work. A mid-pass failure leaves the database
-                // untouched; the apply itself is all-or-nothing. See
-                // `crate::synthesis_pipeline` for the cross-pass overlay and
-                // the concurrency notes.
                 let round = crate::synthesis_pipeline::compute_synthesis_round(
                     &self.db,
                     &synthesis_config,
                     synthesis_gate.first_changed(),
                     synthesis_gate.second_changed(),
                 )?;
-                crate::synthesis_pipeline::apply_synthesis_round(&self.db, &round)?;
+                SynthesisAction::Round(round)
             } else {
-                // If synthesis was enabled in a previous run and is disabled now,
-                // proactively remove stale synthetic edges. The deletion set is
-                // derived from each pass's declared owned kinds/prefixes, so a
-                // new pass is covered here the moment its spec is registered.
-                let mut removed_edges = 0usize;
-                for spec in crate::dispatch_synthesis::registry() {
-                    for kind in spec.owned_call_kinds {
-                        removed_edges += self.db.writes().delete_synthetic_call_edges(kind)?;
-                    }
-                    for prefix in spec.owned_semantic_prefixes {
-                        removed_edges +=
-                            self.db.writes().delete_synthetic_semantic_edges(prefix)?;
-                    }
-                }
-                if removed_edges > 0 {
-                    tracing::info!(
-                        removed_edges,
-                        "dispatch synthesis disabled; removed stale synthetic edges"
-                    );
-                }
-            }
-            Ok(true)
+                // Synthesis disabled after a previous enabled run: the apply
+                // stage removes stale synthetic edges (deletion set derived
+                // from each pass's declared owned kinds/prefixes).
+                SynthesisAction::DisableCleanup
+            };
+            Some(SynthesisStage {
+                action,
+                records: vec![
+                    dispatch_gate.deferred_record()?,
+                    interface_gate.deferred_record()?,
+                ],
+            })
+        } else {
+            None
         };
 
-        let run_community = || -> CcResult<bool> {
-            self.rebuild_communities()?;
-            Ok(true)
+        // Community detection conceptually runs AFTER synthesis: its inputs
+        // include synthetic edges. The staged round has not been applied yet,
+        // so the committed call graph is projected forward in memory (see
+        // `community_edges_with_overlay`) — both the gate signature and the
+        // Louvain input therefore match the post-apply DB state. When the
+        // round was skipped the synthetic edges are unchanged and the
+        // committed state is already the post-round state.
+        let community_edges =
+            self.community_edges_with_overlay(synthesis.as_ref().map(|s| &s.action))?;
+        let community_gate = DbSignatureGate::new(
+            "community",
+            &self.db,
+            "last_community_sig",
+            "last_community_sig_algo",
+            COMMUNITY_SIG_ALGORITHM,
+            forced,
+            || self.community_signature_from_edges(&community_edges),
+        );
+        let community_decision = community_gate.should_run()?;
+        log_gate_decision(&community_gate, community_decision);
+        let community = if community_decision.run {
+            Some(CommunityStage {
+                action: self.compute_community_action(&community_edges)?,
+                record: community_gate.deferred_record()?,
+            })
+        } else {
+            None
         };
 
-        run_gated_passes(&[
-            GatedPass {
-                gate: &synthesis_gate,
-                timing: RecordTiming::Deferred,
-                run: &run_synthesis,
-            },
-            GatedPass {
-                gate: &community_gate,
-                timing: RecordTiming::Immediate,
-                run: &run_community,
-            },
-        ])
+        Ok(PostprocessPlan {
+            test_edges,
+            synthesis,
+            community,
+        })
     }
 
-    /// Phase 8-11: Git co-change, infrastructure, resolver feedback, and ADR indexing.
-    pub(crate) fn phase_analysis(
+    /// Phase 7 (apply half): short DB transactions only — test-edge rebuild,
+    /// synthesis round apply, community update, then the deferred signature
+    /// records. Record ordering preserves the historical `RecordTiming`
+    /// semantics: community records before the synthesis signatures, so a
+    /// community failure leaves no synthesis signature recorded.
+    pub(crate) fn phase_postprocess_apply(&self, plan: &PostprocessPlan) -> CcResult<()> {
+        match &plan.test_edges {
+            TestEdgeRebuild::Full => self.db.writes().rebuild_test_edges()?,
+            TestEdgeRebuild::Files(paths) => {
+                self.db.writes().rebuild_test_edges_for_files(paths)?
+            }
+            TestEdgeRebuild::Skip => {}
+        }
+
+        if let Some(stage) = &plan.synthesis {
+            match &stage.action {
+                // All deltas land in one short atomic unit of work; the apply
+                // is all-or-nothing.
+                SynthesisAction::Round(round) => {
+                    crate::synthesis_pipeline::apply_synthesis_round(&self.db, round)?;
+                }
+                SynthesisAction::DisableCleanup => {
+                    // If synthesis was enabled in a previous run and is
+                    // disabled now, proactively remove stale synthetic edges.
+                    // The deletion set is derived from each pass's declared
+                    // owned kinds/prefixes, so a new pass is covered here the
+                    // moment its spec is registered.
+                    let mut removed_edges = 0usize;
+                    for spec in crate::dispatch_synthesis::registry() {
+                        for kind in spec.owned_call_kinds {
+                            removed_edges += self.db.writes().delete_synthetic_call_edges(kind)?;
+                        }
+                        for prefix in spec.owned_semantic_prefixes {
+                            removed_edges +=
+                                self.db.writes().delete_synthetic_semantic_edges(prefix)?;
+                        }
+                    }
+                    if removed_edges > 0 {
+                        tracing::info!(
+                            removed_edges,
+                            "dispatch synthesis disabled; removed stale synthetic edges"
+                        );
+                    }
+                }
+            }
+        }
+
+        if let Some(stage) = &plan.community {
+            match &stage.action {
+                CommunityAction::Degraded => {
+                    self.db.writes().assign_all_symbols_to_community(0)?;
+                }
+                CommunityAction::Update {
+                    assignments,
+                    labels,
+                } => {
+                    self.db.writes().update_communities(assignments, labels)?;
+                }
+            }
+            stage.record.record(&self.db)?;
+        }
+        if let Some(stage) = &plan.synthesis {
+            for record in &stage.records {
+                record.record(&self.db)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// Louvain (or the OOM-degradation decision) over the projected
+    /// post-apply edge set.
+    fn compute_community_action(&self, edges: &[(String, String)]) -> CcResult<CommunityAction> {
+        // Guard: cap the edge count before running Louvain to prevent OOM.
+        let max_community_edges: usize = std::env::var("CODECORTEX_COMMUNITY_MAX_EDGES")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .unwrap_or(2_000_000);
+
+        if edges.len() > max_community_edges {
+            tracing::warn!(
+                edge_count = edges.len(),
+                max_community_edges,
+                "community detection: edge count exceeds limit, assigning all symbols to community 0"
+            );
+            return Ok(CommunityAction::Degraded);
+        }
+
+        let assignments = louvain_communities(edges, 20);
+        let symbol_names = self.db.reads().symbol_names_by_uid()?;
+        let labels = build_community_labels(&assignments, &symbol_names);
+        Ok(CommunityAction::Update {
+            assignments,
+            labels,
+        })
+    }
+
+    /// Project the committed call graph forward across a staged synthesis
+    /// action: committed (caller_uid, callee_uid) pairs minus the synthetic
+    /// kinds the action deletes, plus the round's in-memory inserts (both-UID
+    /// edges only, mirroring the SQL `NOT NULL` filter). Once the action is
+    /// applied, the DB edge set equals this projection — community detection
+    /// can therefore compute against post-apply state before the apply runs.
+    fn community_edges_with_overlay(
+        &self,
+        action: Option<&SynthesisAction>,
+    ) -> CcResult<Vec<(String, String)>> {
+        let deleted_kinds: Vec<&'static str> = match action {
+            None => Vec::new(),
+            Some(SynthesisAction::Round(round)) => round
+                .deltas
+                .iter()
+                .flat_map(|delta| delta.delete_call_kinds.iter().copied())
+                .collect(),
+            Some(SynthesisAction::DisableCleanup) => crate::dispatch_synthesis::registry()
+                .iter()
+                .flat_map(|spec| spec.owned_call_kinds.iter().copied())
+                .collect(),
+        };
+
+        let mut edges = if deleted_kinds.is_empty() {
+            self.db.reads().call_uid_edges()?
+        } else {
+            let placeholders = (1..=deleted_kinds.len())
+                .map(|i| format!("?{i}"))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql = format!(
+                "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
+                 WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
+                 AND (synthesized_by IS NULL OR synthesized_by NOT IN ({placeholders}))"
+            );
+            let params: Vec<String> = deleted_kinds.iter().map(|kind| kind.to_string()).collect();
+            self.db
+                .reads()
+                .query_json(&sql, &params)?
+                .into_iter()
+                .filter_map(|row| {
+                    let caller = row.get("caller_symbol_uid")?.as_str()?.to_string();
+                    let callee = row.get("callee_symbol_uid")?.as_str()?.to_string();
+                    Some((caller, callee))
+                })
+                .collect()
+        };
+
+        if let Some(SynthesisAction::Round(round)) = action {
+            for delta in &round.deltas {
+                for edge in &delta.insert_call_edges {
+                    if let (Some(caller), Some(callee)) =
+                        (&edge.caller_symbol_uid, &edge.callee_symbol_uid)
+                    {
+                        edges.push((caller.clone(), callee.clone()));
+                    }
+                }
+            }
+        }
+        Ok(edges)
+    }
+
+    /// Phase 8-11 (compute half): git co-change, infrastructure, and ADR
+    /// indexing. Reads git, the filesystem, and the read pool only — no index
+    /// writes, so callers may run it without holding any index lock.
+    pub(crate) fn phase_analysis_compute(
         &self,
         project_path: &Path,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
-    ) -> CcResult<()> {
+    ) -> CcResult<AnalysisPlan> {
         // Phase 8: Git co-change analysis. HEAD-skip: co-change edges only
         // depend on commit history. If HEAD has not advanced since the last
         // successful analysis, the result is unchanged (the `--since=1.year`
         // window drifts but produces equivalent output while HEAD is fixed),
         // so the git log + parse + write can be skipped.
         let cochange_gate =
-            StringCacheGate::new("git_cochange", &self.db, "last_cochange_head", || {
+            StringCacheGate::new("git_cochange", &self.db, COCHANGE_HEAD_KEY, || {
                 crate::git_cochange::current_git_head(project_path)
             });
-        let run_cochange = || -> CcResult<bool> {
+        let cochange_decision = cochange_gate.should_run()?;
+        log_gate_decision(&cochange_gate, cochange_decision);
+        let cochange = if cochange_decision.run {
             match crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500) {
-                Ok(co_changes) => {
-                    if !co_changes.is_empty() {
-                        self.db.writes().insert_co_change_edges_batch(&co_changes)?;
-                        tracing::info!(count = co_changes.len(), "indexed git co-change edges");
-                    }
-                    Ok(true)
-                }
+                Ok(co_changes) => Some(CoChangeStage {
+                    co_changes,
+                    record_head: cochange_gate.record_key(),
+                }),
                 Err(err) => {
                     // Non-fatal: git may not be available or the project may
                     // not be a git repo. The HEAD marker stays unrecorded so a
                     // transient failure never poisons the skip cache.
                     tracing::warn!(error = %err, "skipping git co-change analysis");
-                    Ok(false)
+                    Some(CoChangeStage {
+                        co_changes: Vec::new(),
+                        record_head: None,
+                    })
                 }
             }
+        } else {
+            None
         };
 
         // Phase 9: Infrastructure pass.
@@ -605,7 +905,9 @@ impl Indexer {
             INFRA_SIG_ALGORITHM,
             || crate::infra_pass::infra_signature(project_path),
         );
-        let run_infra = || -> CcResult<bool> {
+        let infra_decision = infra_gate.should_run()?;
+        log_gate_decision(&infra_gate, infra_decision);
+        let infra = if infra_decision.run {
             let (mut infra_nodes, mut infra_edges) =
                 crate::infra_pass::run_infra_pass(project_path);
             if !infra_nodes.is_empty() || !infra_edges.is_empty() {
@@ -618,15 +920,59 @@ impl Indexer {
 
                 // Match binding target URLs to known route nodes
                 crate::infra_pass::match_bindings_to_routes(&mut infra_edges, route_nodes);
+            }
+            Some(InfraStage {
+                nodes: infra_nodes,
+                edges: infra_edges,
+                record: infra_gate.deferred_record(),
+            })
+        } else {
+            None
+        };
 
+        // Phase 10: Architecture Decision Records (ADR) indexing — no skip
+        // condition, rescanned every build.
+        let adr_docs = Self::collect_adr_docs(project_path);
+
+        Ok(AnalysisPlan {
+            cochange,
+            infra,
+            adr_docs,
+        })
+    }
+
+    /// Phase 8-11 (apply half): short DB transactions only. Per-pass record
+    /// ordering matches the historical immediate-record loop: each pass's
+    /// marker is persisted right after its own write, so a later pass failure
+    /// never unrecords an earlier completed pass.
+    pub(crate) fn phase_analysis_apply(&self, plan: &AnalysisPlan) -> CcResult<()> {
+        if let Some(stage) = &plan.cochange {
+            if !stage.co_changes.is_empty() {
                 self.db
                     .writes()
-                    .replace_infra_data(&infra_nodes, &infra_edges)?;
-                let bound_count = infra_nodes
+                    .insert_co_change_edges_batch(&stage.co_changes)?;
+                tracing::info!(
+                    count = stage.co_changes.len(),
+                    "indexed git co-change edges"
+                );
+            }
+            if let Some(head) = &stage.record_head {
+                self.db.writes().set_metadata(COCHANGE_HEAD_KEY, head)?;
+            }
+        }
+
+        if let Some(stage) = &plan.infra {
+            if !stage.nodes.is_empty() || !stage.edges.is_empty() {
+                self.db
+                    .writes()
+                    .replace_infra_data(&stage.nodes, &stage.edges)?;
+                let bound_count = stage
+                    .nodes
                     .iter()
                     .filter(|n| n.bound_symbol_uid.is_some())
                     .count();
-                let binding_count = infra_edges
+                let binding_count = stage
+                    .edges
                     .iter()
                     .filter(|e| {
                         matches!(
@@ -637,109 +983,84 @@ impl Indexer {
                     })
                     .count();
                 tracing::info!(
-                    nodes = infra_nodes.len(),
-                    edges = infra_edges.len(),
+                    nodes = stage.nodes.len(),
+                    edges = stage.edges.len(),
                     bound = bound_count,
                     bindings = binding_count,
                     "indexed infra graph"
                 );
             }
-            Ok(true)
-        };
+            stage.record.record(&self.db)?;
+        }
 
-        // Phase 10: Architecture Decision Records (ADR) indexing
-        let adr_gate = Unconditional::new("adr");
-        let run_adr = || -> CcResult<bool> {
-            let adr_dirs = [
-                "docs/adr",
-                "docs/decisions",
-                "doc/architecture/decisions",
-                "doc/adr",
-            ];
-            let mut adr_docs = Vec::new();
+        if !plan.adr_docs.is_empty() {
+            tracing::info!(count = plan.adr_docs.len(), "indexed ADR documents");
+            self.db.writes().set_metadata(
+                "adr_documents",
+                &serde_json::to_string(&plan.adr_docs).unwrap_or_default(),
+            )?;
+        }
+        Ok(())
+    }
 
-            for dir in &adr_dirs {
-                let adr_path = project_path.join(dir);
-                if adr_path.is_dir() {
-                    if let Ok(entries) = std::fs::read_dir(&adr_path) {
-                        for entry in entries.flatten() {
-                            let path = entry.path();
-                            if path.extension().is_some_and(|e| e == "md") {
-                                if let Ok(content) = std::fs::read_to_string(&path) {
-                                    // Extract MADR-format header
-                                    let mut title = None;
-                                    let mut status = None;
-                                    let mut date = None;
-                                    for line in content.lines().take(20) {
-                                        if title.is_none() && line.starts_with("# ") {
-                                            title = Some(line.trim_start_matches("# ").to_string());
-                                        }
-                                        if line.to_lowercase().starts_with("status:") {
-                                            status = Some(
-                                                line.split(':')
-                                                    .nth(1)
-                                                    .unwrap_or("")
-                                                    .trim()
-                                                    .to_string(),
-                                            );
-                                        }
-                                        if line.to_lowercase().starts_with("date:") {
-                                            date = Some(
-                                                line.split(':')
-                                                    .nth(1)
-                                                    .unwrap_or("")
-                                                    .trim()
-                                                    .to_string(),
-                                            );
-                                        }
+    /// Scan the conventional ADR directories and extract MADR-format headers.
+    /// Pure filesystem read.
+    fn collect_adr_docs(project_path: &Path) -> Vec<serde_json::Value> {
+        let adr_dirs = [
+            "docs/adr",
+            "docs/decisions",
+            "doc/architecture/decisions",
+            "doc/adr",
+        ];
+        let mut adr_docs = Vec::new();
+
+        for dir in &adr_dirs {
+            let adr_path = project_path.join(dir);
+            if adr_path.is_dir() {
+                if let Ok(entries) = std::fs::read_dir(&adr_path) {
+                    for entry in entries.flatten() {
+                        let path = entry.path();
+                        if path.extension().is_some_and(|e| e == "md") {
+                            if let Ok(content) = std::fs::read_to_string(&path) {
+                                // Extract MADR-format header
+                                let mut title = None;
+                                let mut status = None;
+                                let mut date = None;
+                                for line in content.lines().take(20) {
+                                    if title.is_none() && line.starts_with("# ") {
+                                        title = Some(line.trim_start_matches("# ").to_string());
                                     }
-                                    if let Some(t) = title {
-                                        let rel = path
-                                            .strip_prefix(project_path)
-                                            .unwrap_or(&path)
-                                            .to_string_lossy()
-                                            .to_string();
-                                        adr_docs.push(serde_json::json!({
-                                            "file": rel,
-                                            "title": t,
-                                            "status": status,
-                                            "date": date,
-                                        }));
+                                    if line.to_lowercase().starts_with("status:") {
+                                        status = Some(
+                                            line.split(':').nth(1).unwrap_or("").trim().to_string(),
+                                        );
                                     }
+                                    if line.to_lowercase().starts_with("date:") {
+                                        date = Some(
+                                            line.split(':').nth(1).unwrap_or("").trim().to_string(),
+                                        );
+                                    }
+                                }
+                                if let Some(t) = title {
+                                    let rel = path
+                                        .strip_prefix(project_path)
+                                        .unwrap_or(&path)
+                                        .to_string_lossy()
+                                        .to_string();
+                                    adr_docs.push(serde_json::json!({
+                                        "file": rel,
+                                        "title": t,
+                                        "status": status,
+                                        "date": date,
+                                    }));
                                 }
                             }
                         }
                     }
                 }
             }
-
-            if !adr_docs.is_empty() {
-                tracing::info!(count = adr_docs.len(), "indexed ADR documents");
-                self.db.writes().set_metadata(
-                    "adr_documents",
-                    &serde_json::to_string(&adr_docs).unwrap_or_default(),
-                )?;
-            }
-            Ok(true)
-        };
-
-        run_gated_passes(&[
-            GatedPass {
-                gate: &cochange_gate,
-                timing: RecordTiming::Immediate,
-                run: &run_cochange,
-            },
-            GatedPass {
-                gate: &infra_gate,
-                timing: RecordTiming::Immediate,
-                run: &run_infra,
-            },
-            GatedPass {
-                gate: &adr_gate,
-                timing: RecordTiming::Immediate,
-                run: &run_adr,
-            },
-        ])
+        }
+        adr_docs
     }
 
     pub(crate) fn collect_route_nodes(
@@ -775,12 +1096,14 @@ impl Indexer {
         route_nodes
     }
 
-    /// Pure function: build config link units from pre-collected snapshot data.
+    /// Pure function: build config link units from pre-collected snapshot data
+    /// plus pre-scanned raw config tokens (see [`scan_config_tokens`]).
     /// Does not query the database, suitable for use inside temp-db write closure.
     fn build_config_link_units_from_snapshot(
         project_path: &Path,
         symbol_targets: Vec<SymbolTargetRow>,
         indexed_files: &[String],
+        raw_tokens: &[RawConfigToken],
     ) -> CcResult<Vec<FileWriteUnit>> {
         let mut known_symbols = HashSet::new();
         let mut qname_lookup: HashMap<String, (String, Option<String>, String)> = HashMap::new();
@@ -815,7 +1138,7 @@ impl Indexer {
                     .push(file.clone());
             }
         }
-        let links = extract_config_links(project_path, &known_symbols, &known_files)?;
+        let links = resolve_config_links(raw_tokens, &known_symbols, &known_files);
         if links.is_empty() {
             return Ok(Vec::new());
         }
@@ -1064,12 +1387,106 @@ impl Indexer {
         Ok(units)
     }
 
-    /// Compatibility wrapper: queries DB for symbol targets / file paths,
-    /// then delegates to the pure function.
-    fn build_config_link_units(&self, project_path: &Path) -> CcResult<Vec<FileWriteUnit>> {
+    /// Incremental config-link pass behind a file-set signature gate.
+    ///
+    /// The expensive half (project walk + read + tokenize, see
+    /// [`scan_config_tokens`]) only depends on the config files themselves, so
+    /// it is skipped when the config signature (paths + mtime + size) is
+    /// unchanged — the raw tokens are then served from the metadata cache.
+    /// The cheap half (resolving tokens against the symbol/file catalog) must
+    /// still run whenever this build wrote index content, because links
+    /// appear/disappear with the catalog (a removed symbol must not keep its
+    /// link). When the signature is unchanged AND the batch wrote nothing,
+    /// the catalog provably did not change either and the whole pass —
+    /// including the catalog reads — is skipped.
+    fn build_config_link_units_gated(
+        &self,
+        project_path: &Path,
+        batch_empty: bool,
+    ) -> CcResult<Vec<FileWriteUnit>> {
+        let sig = config_files_signature(project_path);
+        let recorded_algo = self
+            .db
+            .reads()
+            .get_metadata(CONFIG_SIG_ALGO_KEY)?
+            .unwrap_or_else(|| "1".to_string());
+        let recorded_sig = self.db.reads().get_metadata(CONFIG_SIG_KEY)?;
+        let unchanged = recorded_algo == CONFIG_SIG_ALGORITHM
+            && recorded_sig.and_then(|s| s.parse::<u64>().ok()) == Some(sig);
+
+        if unchanged && batch_empty {
+            tracing::debug!("config linker: signature unchanged and batch empty, skipping");
+            return Ok(Vec::new());
+        }
+
+        let raw_tokens = if unchanged {
+            // 签名未变：原始 token 与上次一致，优先用缓存，缓存缺失/损坏则重扫。
+            match self
+                .db
+                .reads()
+                .get_metadata(CONFIG_RAW_CACHE_KEY)?
+                .and_then(|json| serde_json::from_str::<Vec<RawConfigToken>>(&json).ok())
+            {
+                Some(tokens) => {
+                    tracing::debug!(
+                        tokens = tokens.len(),
+                        "config linker: scan skipped, resolving cached raw tokens"
+                    );
+                    tokens
+                }
+                None => self.scan_and_record_config_tokens(project_path, sig)?,
+            }
+        } else {
+            self.scan_and_record_config_tokens(project_path, sig)?
+        };
+
         let symbol_targets = self.db.reads().list_symbol_targets()?;
         let indexed_files = self.db.reads().list_file_paths()?;
-        Self::build_config_link_units_from_snapshot(project_path, symbol_targets, &indexed_files)
+        Self::build_config_link_units_from_snapshot(
+            project_path,
+            symbol_targets,
+            &indexed_files,
+            &raw_tokens,
+        )
+    }
+
+    /// Run the config scan and persist the gate state. The cache is written
+    /// before the signature so a mid-write failure can only leave a stale/
+    /// missing signature — which forces a rescan, never a wrong skip.
+    fn scan_and_record_config_tokens(
+        &self,
+        project_path: &Path,
+        sig: u64,
+    ) -> CcResult<Vec<RawConfigToken>> {
+        let raw_tokens = scan_config_tokens(project_path)?;
+        match Self::serialize_raw_token_cache(&raw_tokens) {
+            // 超出缓存上限：清掉旧缓存，避免新签名配上陈旧 token。
+            None => self.db.writes().set_metadata(CONFIG_RAW_CACHE_KEY, "")?,
+            Some(serialized) => self
+                .db
+                .writes()
+                .set_metadata(CONFIG_RAW_CACHE_KEY, &serialized)?,
+        }
+        self.db
+            .writes()
+            .set_metadata(CONFIG_SIG_KEY, &sig.to_string())?;
+        self.db
+            .writes()
+            .set_metadata(CONFIG_SIG_ALGO_KEY, CONFIG_SIG_ALGORITHM)?;
+        Ok(raw_tokens)
+    }
+
+    /// Serialize raw tokens for the metadata cache; `None` when over the cap.
+    fn serialize_raw_token_cache(raw_tokens: &[RawConfigToken]) -> Option<String> {
+        let serialized = serde_json::to_string(raw_tokens).ok()?;
+        if serialized.len() > CONFIG_RAW_CACHE_MAX_BYTES {
+            tracing::debug!(
+                bytes = serialized.len(),
+                "config linker: raw token cache over cap, scan will rerun next build"
+            );
+            return None;
+        }
+        Some(serialized)
     }
 
     /// Collect symbol targets from write_units for config link snapshot.
@@ -1103,15 +1520,23 @@ impl Indexer {
         // rebuild closure (the closure must not query the live DB).
         let symbol_targets = Self::collect_symbol_targets(write_units);
         let indexed_files: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
+        // Full builds always scan. Signature first, scan second: a config
+        // file changing in between leaves a stale signature behind, which
+        // forces a rescan next build — never a wrong skip.
+        let config_sig = config_files_signature(project_path);
+        let raw_tokens = scan_config_tokens(project_path)?;
         let config_units = Self::build_config_link_units_from_snapshot(
             project_path,
             symbol_targets,
             &indexed_files,
+            &raw_tokens,
         )?;
 
         Ok(FullSnapshotPayload {
             config_units,
             recorded_at: chrono::Utc::now().to_rfc3339(),
+            config_sig,
+            config_raw_cache: Self::serialize_raw_token_cache(&raw_tokens),
         })
     }
 
@@ -1123,10 +1548,16 @@ impl Indexer {
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
         payload: &FullSnapshotPayload,
+        chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<()> {
-        // Write main file data
+        // Write main file data (chunk payloads pre-compressed during prepare;
+        // missing entries fall back to the identical in-transaction policy).
         for unit in write_units {
-            IndexDb::insert_file_data(conn, unit)?;
+            IndexDb::insert_file_data_precompressed(
+                conn,
+                unit,
+                chunk_blobs.get(&unit.rel_path).map(Vec::as_slice),
+            )?;
         }
 
         // Write route nodes
@@ -1143,6 +1574,17 @@ impl Indexer {
         IndexDb::set_metadata_on(conn, "last_indexed_at", &payload.recorded_at)?;
         IndexDb::set_metadata_on(conn, "index_version", "1.0.0")?;
 
+        // Config-linker gate state goes into the rebuilt snapshot (the swap
+        // replaces the whole DB file), so the next incremental can skip the
+        // config scan. Cache before signature, same as the incremental path.
+        IndexDb::set_metadata_on(
+            conn,
+            CONFIG_RAW_CACHE_KEY,
+            payload.config_raw_cache.as_deref().unwrap_or(""),
+        )?;
+        IndexDb::set_metadata_on(conn, CONFIG_SIG_KEY, &payload.config_sig.to_string())?;
+        IndexDb::set_metadata_on(conn, CONFIG_SIG_ALGO_KEY, CONFIG_SIG_ALGORITHM)?;
+
         Ok(())
     }
 
@@ -1156,10 +1598,17 @@ impl Indexer {
         project_path: &Path,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
+        chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<Vec<FileWriteUnit>> {
         let payload = self.prepare_full_snapshot_payload(project_path, write_units)?;
         self.db.admin().rebuild_with_temp_db(|conn| {
-            Self::write_full_snapshot_contents(conn, write_units, route_nodes, &payload)
+            Self::write_full_snapshot_contents(
+                conn,
+                write_units,
+                route_nodes,
+                &payload,
+                chunk_blobs,
+            )
         })?;
         Ok(payload.config_units)
     }
@@ -1172,10 +1621,17 @@ impl Indexer {
         project_path: &Path,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
+        chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<Vec<FileWriteUnit>> {
         let payload = self.prepare_full_snapshot_payload(project_path, write_units)?;
         self.db.admin().rebuild_with_direct_writer(|conn| {
-            Self::write_full_snapshot_contents(conn, write_units, route_nodes, &payload)
+            Self::write_full_snapshot_contents(
+                conn,
+                write_units,
+                route_nodes,
+                &payload,
+                chunk_blobs,
+            )
         })?;
         Ok(payload.config_units)
     }
@@ -1321,32 +1777,36 @@ impl Indexer {
         Ok(hasher.finish())
     }
 
-    /// Signature covering community detection inputs.
-    /// Must be computed AFTER synthesis passes, since synthetic edges affect
-    /// community structure.
+    /// Signature covering community detection inputs over the committed DB
+    /// state (no overlay). Production goes through
+    /// [`Self::community_signature_from_edges`] with the staged synthesis
+    /// overlay; this wrapper feeds the signature-coverage tests.
+    #[cfg(test)]
     fn community_signature(&self) -> CcResult<u64> {
+        let edges = self.db.reads().call_uid_edges()?;
+        self.community_signature_from_edges(&edges)
+    }
+
+    /// Community signature over an explicit (caller_uid, callee_uid) edge set
+    /// — ALL call edges including synthetic ones, conceptually computed AFTER
+    /// the synthesis round since synthetic edges affect community structure.
+    ///
+    /// Value-compatible with the historical DB-scan formula: pairs are hashed
+    /// in `(caller, callee)` order — SQLite's default BINARY collation and
+    /// Rust's byte-wise `String` ordering agree — so signatures recorded by
+    /// older builds still match and never force a spurious Louvain rerun.
+    fn community_signature_from_edges(&self, edges: &[(String, String)]) -> CcResult<u64> {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
         let mut hasher = DefaultHasher::new();
 
-        // ALL call edges (including synthetic)
-        let edge_rows = self.db.reads().query_json(
-            "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
-             WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
-             ORDER BY caller_symbol_uid, callee_symbol_uid",
-            &[],
-        )?;
-        edge_rows.len().hash(&mut hasher);
-        for row in &edge_rows {
-            row.get("caller_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-            row.get("callee_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
+        let mut ordered: Vec<&(String, String)> = edges.iter().collect();
+        ordered.sort();
+        edges.len().hash(&mut hasher);
+        for (caller, callee) in ordered {
+            caller.as_str().hash(&mut hasher);
+            callee.as_str().hash(&mut hasher);
         }
 
         // Symbols (uid + name + kind). `container` is intentionally excluded:
@@ -1391,44 +1851,6 @@ impl Indexer {
                     .hash(hasher);
             }
         }
-    }
-
-    fn rebuild_communities(&self) -> CcResult<()> {
-        // Guard: check edge count before loading full graph to prevent OOM
-        let edge_count = self
-            .db
-            .reads()
-            .query_json(
-                "SELECT COUNT(*) AS cnt FROM call_edges \
-                 WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL",
-                &[],
-            )?
-            .first()
-            .and_then(|r| r.get("cnt"))
-            .and_then(|v| v.as_i64())
-            .unwrap_or(0);
-
-        let max_community_edges: i64 = std::env::var("CODECORTEX_COMMUNITY_MAX_EDGES")
-            .ok()
-            .and_then(|v| v.parse::<i64>().ok())
-            .unwrap_or(2_000_000);
-
-        if edge_count > max_community_edges {
-            tracing::warn!(
-                edge_count,
-                max_community_edges,
-                "community detection: edge count exceeds limit, assigning all symbols to community 0"
-            );
-            // Degraded: assign all symbols to a single community
-            self.db.writes().assign_all_symbols_to_community(0)?;
-            return Ok(());
-        }
-
-        let edges = self.db.reads().call_uid_edges()?;
-        let assignments = louvain_communities(&edges, 20);
-        let symbol_names = self.db.reads().symbol_names_by_uid()?;
-        let labels = build_community_labels(&assignments, &symbol_names);
-        self.db.writes().update_communities(&assignments, &labels)
     }
 
     /// Dirty propagation: detect export signature changes and mark importers
@@ -2047,6 +2469,129 @@ mod graph_signature_coverage_tests {
 }
 
 #[cfg(test)]
+mod community_overlay_tests {
+    use super::*;
+    use crate::synthesis_pipeline::{apply_synthesis_round, EdgeDelta, SynthesisRound};
+    use cc_model::config::IndexingConfig;
+    use cc_model::edge::CallEdgeRecord;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    /// Fixture: one real call edge plus one stale synthetic edge of a kind a
+    /// later round replaces.
+    fn setup_indexer() -> (TempDir, Indexer) {
+        let tmp = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("overlay.db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), tmp.path(), &IndexingConfig::default());
+
+        let conn = db.reads().read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');\
+             INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid) \
+                 VALUES('s1','src/x.rs','A','function',1,1,'uA');\
+             INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid) \
+                 VALUES('e1','src/x.rs','B',1,'uA','uB');\
+             INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid,synthesized_by) \
+                 VALUES('synth:old','src/x.rs','Old',2,'uA','uOld','event_emitter');",
+        )
+        .unwrap();
+
+        (tmp, indexer)
+    }
+
+    fn synthetic_edge(edge_id: &str, callee_uid: &str) -> CallEdgeRecord {
+        CallEdgeRecord {
+            edge_id: edge_id.to_string(),
+            file_path: "src/x.rs".to_string(),
+            callee_symbol: callee_uid.to_string(),
+            line: 3,
+            caller_symbol_uid: Some("uA".to_string()),
+            callee_symbol_uid: Some(callee_uid.to_string()),
+            synthesized_by: Some("event_emitter".to_string()),
+            ..Default::default()
+        }
+    }
+
+    /// The staged community overlay (computed BEFORE the synthesis apply)
+    /// must equal the committed edge set AFTER the apply — both as a multiset
+    /// of uid pairs and through the community signature, so the marker the
+    /// apply stage records matches what the next build recomputes from the DB
+    /// (no spurious Louvain rerun, no wrong skip).
+    #[test]
+    fn community_overlay_matches_post_apply_state() {
+        let (_tmp, indexer) = setup_indexer();
+
+        let round = SynthesisRound {
+            deltas: vec![EdgeDelta {
+                delete_call_kinds: vec!["event_emitter"],
+                delete_semantic_prefixes: vec![],
+                insert_call_edges: vec![
+                    synthetic_edge("synth:new1", "uNew1"),
+                    synthetic_edge("synth:new2", "uNew2"),
+                    // No-UID edges are excluded from the community input by
+                    // the SQL NOT NULL filter; the overlay must skip them too.
+                    CallEdgeRecord {
+                        edge_id: "synth:nouid".to_string(),
+                        file_path: "src/x.rs".to_string(),
+                        callee_symbol: "Anon".to_string(),
+                        line: 4,
+                        synthesized_by: Some("event_emitter".to_string()),
+                        ..Default::default()
+                    },
+                ],
+                insert_semantic_edges: vec![],
+            }],
+        };
+        let action = SynthesisAction::Round(round);
+
+        let mut overlay = indexer.community_edges_with_overlay(Some(&action)).unwrap();
+        let overlay_sig = indexer.community_signature_from_edges(&overlay).unwrap();
+
+        // The stale 'event_emitter' edge is projected out, the new edges in.
+        overlay.sort();
+        assert_eq!(
+            overlay,
+            vec![
+                ("uA".to_string(), "uB".to_string()),
+                ("uA".to_string(), "uNew1".to_string()),
+                ("uA".to_string(), "uNew2".to_string()),
+            ],
+            "overlay must replace the deleted kind with the round's inserts"
+        );
+
+        let SynthesisAction::Round(round) = action else {
+            unreachable!()
+        };
+        apply_synthesis_round(&indexer.db, &round).unwrap();
+
+        let mut committed = indexer.db.reads().call_uid_edges().unwrap();
+        committed.sort();
+        assert_eq!(
+            overlay, committed,
+            "pre-apply overlay must equal the post-apply committed edge set"
+        );
+        assert_eq!(
+            overlay_sig,
+            indexer.community_signature().unwrap(),
+            "overlay signature must equal the post-apply DB signature"
+        );
+    }
+
+    /// With no staged synthesis action the overlay is exactly the committed
+    /// edge set (synthetic edges included).
+    #[test]
+    fn community_overlay_without_round_is_committed_state() {
+        let (_tmp, indexer) = setup_indexer();
+        let mut overlay = indexer.community_edges_with_overlay(None).unwrap();
+        let mut committed = indexer.db.reads().call_uid_edges().unwrap();
+        overlay.sort();
+        committed.sort();
+        assert_eq!(overlay, committed);
+    }
+}
+
+#[cfg(test)]
 mod phase_resolve_subphase_tests {
     use super::*;
     use cc_model::config::IndexingConfig;
@@ -2314,6 +2859,190 @@ mod phase_resolve_subphase_tests {
                 .any(|e| e.relation_kind == SemanticRelation::ContainsFile),
             "expected folder→file ContainsFile edge; got {:?}",
             edges
+        );
+    }
+}
+
+#[cfg(test)]
+mod config_linker_gate_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    const INI_LIB: &str = "script = src/lib.py\n";
+    /// Same byte length as [`INI_LIB`], so a swap keeps size (and, with the
+    /// mtime restored, the config-file signature) unchanged.
+    const INI_WIN: &str = "script = src/win.py\n";
+
+    fn setup_project(ini_content: &str) -> (TempDir, Arc<IndexDb>, Indexer) {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::create_dir_all(project.join("src")).unwrap();
+        std::fs::write(
+            project.join("src/lib.py"),
+            "def lib_handler():\n    return 1\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.join("src/win.py"),
+            "def win_handler():\n    return 2\n",
+        )
+        .unwrap();
+        std::fs::write(project.join("settings.ini"), ini_content).unwrap();
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), project, &IndexingConfig::default());
+        (tmp, db, indexer)
+    }
+
+    /// Resolved config-link targets recorded for `settings.ini`, line order.
+    fn config_ref_targets(db: &IndexDb) -> Vec<String> {
+        db.reads()
+            .query_json(
+                "SELECT target_file_path FROM symbol_refs \
+                 WHERE file_path = 'settings.ini' AND target_file_path IS NOT NULL \
+                 ORDER BY line",
+                &[],
+            )
+            .unwrap()
+            .iter()
+            .filter_map(|row| {
+                row.get("target_file_path")
+                    .and_then(|v| v.as_str())
+                    .map(String::from)
+            })
+            .collect()
+    }
+
+    /// Rewrite a file in place, restoring its original mtime so the
+    /// stat-based config signature cannot observe the change (same length
+    /// content keeps the size component identical too).
+    fn rewrite_preserving_mtime(path: &Path, content: &str) {
+        let original_mtime = std::fs::metadata(path).unwrap().modified().unwrap();
+        std::fs::write(path, content).unwrap();
+        let file = std::fs::OpenOptions::new().write(true).open(path).unwrap();
+        file.set_times(std::fs::FileTimes::new().set_modified(original_mtime))
+            .unwrap();
+    }
+
+    /// (a) When the config-file set signature is unchanged, an incremental
+    /// build must skip the config scan and re-resolve the cached raw tokens:
+    /// rewriting the config in a stat-invisible way must NOT be picked up
+    /// (proving the file was never re-read), while the recorded gate
+    /// metadata stays put.
+    #[test]
+    fn incremental_build_with_unchanged_signature_resolves_from_cache() {
+        let (tmp, db, indexer) = setup_project(INI_LIB);
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(config_ref_targets(&db), vec!["src/lib.py"]);
+        let sig = db
+            .reads()
+            .get_metadata(CONFIG_SIG_KEY)
+            .unwrap()
+            .expect("config signature recorded");
+        assert!(
+            !db.reads()
+                .get_metadata(CONFIG_RAW_CACHE_KEY)
+                .unwrap()
+                .expect("raw token cache recorded")
+                .is_empty(),
+            "raw token cache must be persisted"
+        );
+
+        // Stat-invisible rewrite + a source edit so the batch is non-empty
+        // (re-resolution must still run against the current catalog).
+        rewrite_preserving_mtime(&project.join("settings.ini"), INI_WIN);
+        std::fs::write(
+            project.join("src/lib.py"),
+            "def lib_handler():\n    return 1\n\n\ndef lib_extra():\n    return 3\n",
+        )
+        .unwrap();
+        indexer.build_index(project, false).unwrap();
+
+        assert_eq!(
+            config_ref_targets(&db),
+            vec!["src/lib.py"],
+            "scan skipped: links must reflect the cached tokens, not the rewritten file"
+        );
+        assert_eq!(
+            db.reads().get_metadata(CONFIG_SIG_KEY).unwrap().as_deref(),
+            Some(sig.as_str()),
+            "unchanged signature must stay recorded"
+        );
+    }
+
+    /// (b) A visibly modified config file (size change) must be rescanned
+    /// and its links rebuilt from the new content.
+    #[test]
+    fn modified_config_file_is_rescanned_and_relinked() {
+        let (tmp, db, indexer) = setup_project(INI_LIB);
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(config_ref_targets(&db), vec!["src/lib.py"]);
+
+        // Different size → signature changes regardless of mtime resolution.
+        std::fs::write(
+            project.join("settings.ini"),
+            "script = src/win.py\nextra_flag = 1\n",
+        )
+        .unwrap();
+        indexer.build_index(project, false).unwrap();
+
+        assert_eq!(
+            config_ref_targets(&db),
+            vec!["src/win.py"],
+            "changed config file must be re-scanned and re-linked"
+        );
+    }
+
+    /// (c) Full builds always scan, even when the recorded signature matches
+    /// the (stat-invisible) on-disk state.
+    #[test]
+    fn full_build_always_rescans_config_files() {
+        let (tmp, db, indexer) = setup_project(INI_LIB);
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(config_ref_targets(&db), vec!["src/lib.py"]);
+
+        rewrite_preserving_mtime(&project.join("settings.ini"), INI_WIN);
+        indexer.build_index(project, true).unwrap();
+
+        assert_eq!(
+            config_ref_targets(&db),
+            vec!["src/win.py"],
+            "full build must rescan config files unconditionally"
+        );
+    }
+
+    /// (d) Removing a file referenced by a config link must drop that link on
+    /// the next incremental build even though the config scan is skipped —
+    /// re-resolution of the cached raw tokens against the current catalog is
+    /// what keeps links from dangling.
+    #[test]
+    fn removed_link_target_does_not_leave_dangling_config_link() {
+        let (tmp, db, indexer) = setup_project("script = src/lib.py\nhelper = src/win.py\n");
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(
+            config_ref_targets(&db),
+            vec!["src/lib.py", "src/win.py"],
+            "both links must resolve initially"
+        );
+        let sig = db.reads().get_metadata(CONFIG_SIG_KEY).unwrap();
+
+        std::fs::remove_file(project.join("src/win.py")).unwrap();
+        indexer.build_index(project, false).unwrap();
+
+        assert_eq!(
+            config_ref_targets(&db),
+            vec!["src/lib.py"],
+            "the link to the removed file must be gone"
+        );
+        assert_eq!(
+            db.reads().get_metadata(CONFIG_SIG_KEY).unwrap(),
+            sig,
+            "config files did not change: the scan must have been skipped"
         );
     }
 }

@@ -1,0 +1,17 @@
+name = "search_golden_hybrid_validate_email"
+tool = "search"
+description = "Golden: hybrid search for email validation ranks validateEmail in top 5"
+
+[params]
+query = "validate email"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "machine_pack.hits"
+value = "validateEmail"
+min_recall = 1.0

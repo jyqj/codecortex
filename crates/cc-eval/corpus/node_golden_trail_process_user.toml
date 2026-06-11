@@ -1,0 +1,26 @@
+name = "node_golden_trail_process_user"
+tool = "node"
+description = "Golden: node trail of processUser shows its callee formatName and caller getUserRoute"
+
+[params]
+symbol = "processUser"
+include = "trail"
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "callers"
+
+[[assertions]]
+kind = "field_exists"
+field = "callees"
+
+[[assertions]]
+kind = "output_contains"
+value = "formatName"
+
+[[assertions]]
+kind = "output_contains"
+value = "getUserRoute"

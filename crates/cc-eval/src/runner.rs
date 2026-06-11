@@ -1,11 +1,18 @@
-//! Eval runner: CodeIndexBackend wraps CodeIndex and dispatches to facade handlers.
+//! Eval runner: CodeIndexBackend drives the REAL MCP dispatch path.
+//!
+//! 工具调用不再手写 `match tool {...}` 直连 handler，而是通过 in-process duplex
+//! 上的 rmcp JSON-RPC client 调用 `mcp_wire::CodeCortexMcpServer`（与 stdio
+//! wire path 同一份源码）。因此 corpus 的参数会经过真实的 schema 反序列化 +
+//! `sanitize()` 校验 + `spawn_handler!` 派发 + output budget，schema 漂移 /
+//! 新增参数 / 校验规则自动被 eval 覆盖。
 
+use crate::mcp_wire::CodeCortexMcpServer;
 use crate::types::{Assertion, EvalCase, EvalCaseResult};
-use cc_server::engine::CodeIndex;
-use cc_server::handlers::{context, core, facade, graph, output_budget};
+use rmcp::model::{CallToolRequestParams, CallToolResult};
+use rmcp::service::RunningService;
+use rmcp::{RoleClient, ServiceExt};
 use serde_json::Value;
-use std::path::Path;
-use std::sync::{Arc, RwLock};
+use std::path::{Path, PathBuf};
 use std::time::Instant;
 
 const DEFAULT_EXPECTED_SYMBOLS_RECALL_AT_5: f64 = 0.7;
@@ -13,7 +20,11 @@ const DEFAULT_EXPECTED_SYMBOLS_RECALL_AT_5: f64 = 0.7;
 // ── CodeIndexBackend ────────────────────────────────────────────────
 
 pub struct CodeIndexBackend {
-    runtime: Arc<RwLock<CodeIndex>>,
+    project_path: PathBuf,
+    runtime: tokio::runtime::Runtime,
+    /// rmcp client end of the in-process duplex connection. `Option` only so
+    /// `Drop` can take ownership for a graceful `cancel()`.
+    client: Option<RunningService<RoleClient, ()>>,
 }
 
 impl CodeIndexBackend {
@@ -36,7 +47,7 @@ impl CodeIndexBackend {
     /// from the first explicit full/incremental build.
     pub fn new_unindexed(project_path: &Path) -> Result<Self, String> {
         // Clean up any existing index to avoid UNIQUE constraint errors on rebuild.
-        // Must remove before CodeIndex::new() which creates the DB.
+        // Must remove before the server opens the project (which creates the DB).
         let codecortex_dir = project_path.join(".codecortex");
         if codecortex_dir.exists() {
             std::fs::remove_dir_all(&codecortex_dir).map_err(|e| {
@@ -48,257 +59,139 @@ impl CodeIndexBackend {
             })?;
         }
 
-        let index = CodeIndex::new(Some(project_path)).map_err(|e| e.to_string())?;
-        let rt = Arc::new(RwLock::new(index));
-        Ok(Self { runtime: rt })
+        // 确定性保障：关闭 auto_index，避免 `index` 工具触发的 file watcher
+        // 在 eval 修改 fixture 文件时并发执行增量构建（与显式 build 竞争）。
+        // `.codecortex.json` 是隐藏文件，scanner 的 hidden(true) 会跳过它，
+        // 不影响 files_scanned 等计数断言。
+        let config_path = project_path.join(".codecortex.json");
+        if !config_path.exists() {
+            std::fs::write(&config_path, "{\"auto_index\": {\"enabled\": false}}\n")
+                .map_err(|e| format!("failed to write eval config: {}", e))?;
+        }
+
+        let runtime = tokio::runtime::Builder::new_multi_thread()
+            .worker_threads(2)
+            .enable_all()
+            .build()
+            .map_err(|e| format!("failed to build tokio runtime: {}", e))?;
+
+        // In-process duplex: real JSON-RPC framing on both ends, no stdio/child
+        // process. The server side is the same `CodeCortexMcpServer` the binary
+        // serves over stdio.
+        let project = project_path.to_path_buf();
+        let client = runtime.block_on(async {
+            let server = CodeCortexMcpServer::new(Some(&project));
+            let (server_io, client_io) = tokio::io::duplex(1 << 20);
+            tokio::spawn(async move {
+                match rmcp::serve_server(server, server_io).await {
+                    Ok(service) => {
+                        let _ = service.waiting().await;
+                    }
+                    Err(e) => tracing::warn!("eval in-process MCP server failed: {}", e),
+                }
+            });
+            ().serve(client_io)
+                .await
+                .map_err(|e| format!("failed to initialize eval MCP client: {}", e))
+        })?;
+
+        Ok(Self {
+            project_path: project,
+            runtime,
+            client: Some(client),
+        })
+    }
+
+    fn client(&self) -> &RunningService<RoleClient, ()> {
+        self.client
+            .as_ref()
+            .expect("eval MCP client is only taken in Drop")
     }
 
     /// Build the index and return the serialized `IndexReport`.
+    /// Goes through the real `index` tool (schema → sanitize → handler).
     pub fn build_index_report(&self, full: bool) -> Result<Value, String> {
-        core::build_index(self.runtime.clone(), full)
+        self.call_tool("index", &serde_json::json!({ "full": full }))
     }
 
-    /// Dispatch a tool call by name, with JSON params.
+    /// Dispatch a tool call by name, with JSON params, through the real MCP
+    /// dispatch seam (rmcp router → `Parameters<T>` schema deserialization →
+    /// `sanitize()` → handler → output budget).
     ///
-    /// Mirrors the MCP server dispatch: per-tool output budgets are applied
-    /// once at this exit via `output_budget::finalize`.
+    /// Corpus adapter shim: corpus cases are authored project-relative, so the
+    /// `index` tool's `path` param is resolved against the backend's project
+    /// root (and injected when missing). All other params pass through as-is —
+    /// unknown tools and schema-invalid params surface as JSON-RPC errors.
     pub fn call_tool(&self, tool: &str, params: &Value) -> Result<Value, String> {
-        let rt = self.runtime.clone();
-        let result = match tool {
-            "status" => {
-                let aspect = params
-                    .get("aspect")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("all");
-                facade::handle_status(rt, aspect)
+        let mut args = match params {
+            Value::Null => serde_json::Map::new(),
+            Value::Object(map) => map.clone(),
+            other => {
+                return Err(format!("tool params must be a JSON object, got: {}", other));
             }
-            "index" => {
-                let full = params
-                    .get("full")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false);
-                core::build_index(rt, full)
-            }
-            "search" => {
-                let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
-                let mode = params
-                    .get("mode")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("hybrid");
-                let top_k = params.get("top_k").and_then(|v| v.as_u64()).unwrap_or(10) as usize;
-                let exact = params
-                    .get("exact")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false);
-                match mode {
-                    "symbol" => core::find_symbol(rt, query, exact, top_k, false),
-                    _ => context::search_in_context(rt, query, top_k, None),
-                }
-            }
-            "context" => {
-                let task = params.get("task").and_then(|v| v.as_str()).unwrap_or("");
-                let max_symbols = params
-                    .get("max_symbols")
-                    .and_then(|v| v.as_u64())
-                    .map(|n| n as usize);
-                let include_source = params
-                    .get("include_source")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(true);
-                let intent = params.get("intent").and_then(|v| v.as_str());
-                facade::handle_context(rt, task, max_symbols, include_source, intent)
-            }
-            "node" => {
-                let symbol = params.get("symbol").and_then(|v| v.as_str()).unwrap_or("");
-                let include = params
-                    .get("include")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("trail");
-                facade::handle_node(rt, symbol, include)
-            }
-            "explore" => {
-                let symbols: Vec<String> = params
-                    .get("symbols")
-                    .and_then(|v| v.as_array())
-                    .map(|arr| {
-                        arr.iter()
-                            .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                            .collect()
-                    })
-                    .unwrap_or_default();
-                let mode = params
-                    .get("mode")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("symbols");
-                let include_source = params
-                    .get("include_source")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(true);
-                let outline = params
-                    .get("outline")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false);
-                let max_depth = params
-                    .get("max_depth")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(5) as usize;
-                match mode {
-                    "flow" => graph::explore_flow(
-                        rt,
-                        &symbols,
-                        max_depth,
-                        include_source,
-                        None,
-                        None,
-                        None,
-                        None,
-                    ),
-                    _ => context::explore_symbols(
-                        rt,
-                        &symbols,
-                        None,
-                        None,
-                        include_source,
-                        false,
-                        false,
-                        outline,
-                        None,
-                    ),
-                }
-            }
-            "trace" => {
-                let from = params.get("from").and_then(|v| v.as_str()).unwrap_or("");
-                let to = params.get("to").and_then(|v| v.as_str()).unwrap_or("");
-                let max_depth = params
-                    .get("max_depth")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(5) as usize;
-                let include_source = params
-                    .get("include_source")
-                    .and_then(|v| v.as_bool())
-                    .unwrap_or(false);
-                let source_mode = params.get("source_mode").and_then(|v| v.as_str());
-                let from_uid = params.get("from_uid").and_then(|v| v.as_str());
-                let to_uid = params.get("to_uid").and_then(|v| v.as_str());
-                graph::trace_path(
-                    rt,
-                    from,
-                    to,
-                    max_depth,
-                    include_source,
-                    None,
-                    source_mode,
-                    from_uid,
-                    to_uid,
-                )
-            }
-            "relations" => {
-                let symbol = params.get("symbol").and_then(|v| v.as_str()).unwrap_or("");
-                let kind = params
-                    .get("kind")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("both");
-                let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
-                let direction = params
-                    .get("direction")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("both");
-                facade::handle_relations(rt, symbol, kind, limit, direction)
-            }
-            "impact" => {
-                let scope = params
-                    .get("scope")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("changes");
-                let files: Vec<String> = params
-                    .get("files")
-                    .and_then(|v| v.as_array())
-                    .map(|arr| {
-                        arr.iter()
-                            .filter_map(|v| v.as_str().map(|s| s.to_string()))
-                            .collect()
-                    })
-                    .unwrap_or_default();
-                let base_branch = params.get("base_branch").and_then(|v| v.as_str());
-                let granularity = params
-                    .get("granularity")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("file");
-                let file_path = params.get("file_path").and_then(|v| v.as_str());
-                let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
-                let confidence_threshold = params
-                    .get("confidence_threshold")
-                    .and_then(|v| v.as_f64())
-                    .map(|v| v as f32);
-                facade::handle_impact(
-                    rt,
-                    scope,
-                    &files,
-                    base_branch,
-                    granularity,
-                    file_path,
-                    limit,
-                    confidence_threshold,
-                    None,
-                    None,
-                )
-            }
-            "architecture" => {
-                let aspect = params
-                    .get("aspect")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("overview");
-                let filter = params.get("filter").and_then(|v| v.as_str());
-                let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
-                facade::handle_architecture(rt, aspect, filter, limit)
-            }
-            "files" => {
-                let action = params
-                    .get("action")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("list");
-                let path = params.get("path").and_then(|v| v.as_str());
-                let start_line = params
-                    .get("start_line")
-                    .and_then(|v| v.as_u64())
-                    .map(|n| n as u32);
-                let end_line = params
-                    .get("end_line")
-                    .and_then(|v| v.as_u64())
-                    .map(|n| n as u32);
-                let context_lines = params
-                    .get("context_lines")
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(20) as u32;
-                facade::handle_files(rt, action, path, start_line, end_line, context_lines)
-            }
-            "graph_query" => {
-                let query = params.get("query").and_then(|v| v.as_str()).unwrap_or("");
-                graph::graph_query(rt, query)
-            }
-            "ingest_traces" => {
-                let traces: Vec<Value> = params
-                    .get("traces")
-                    .and_then(|v| v.as_array())
-                    .cloned()
-                    .unwrap_or_default();
-                facade::handle_ingest_traces(rt, &traces)
-            }
-            "adr" => {
-                let action = params
-                    .get("action")
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("list");
-                let adr_id = params.get("adr_id").and_then(|v| v.as_str());
-                let title = params.get("title").and_then(|v| v.as_str());
-                let status = params.get("status").and_then(|v| v.as_str());
-                let context = params.get("context").and_then(|v| v.as_str());
-                let decision = params.get("decision").and_then(|v| v.as_str());
-                facade::handle_adr(rt, action, adr_id, title, status, context, decision)
-            }
-            unknown => Err(format!("unknown tool: {}", unknown)),
         };
-        result.map(|v| output_budget::finalize(&self.runtime, tool, v))
+        if tool == "index" {
+            let resolved = match args.get("path").and_then(|v| v.as_str()) {
+                None | Some("") | Some(".") => self.project_path.clone(),
+                Some(p) if !Path::new(p).is_absolute() => self.project_path.join(p),
+                Some(p) => PathBuf::from(p),
+            };
+            args.insert(
+                "path".to_string(),
+                Value::String(resolved.to_string_lossy().into_owned()),
+            );
+        }
+
+        let outcome = self.runtime.block_on(
+            self.client()
+                .call_tool(CallToolRequestParams::new(tool.to_string()).with_arguments(args)),
+        );
+        match outcome {
+            Ok(result) => unwrap_tool_result(result),
+            // JSON-RPC error: handler errors, schema validation failures
+            // (invalid params), and unknown tools all land here. The display
+            // string keeps the original message (e.g. "Mcp error: -32602: ...").
+            Err(e) => Err(e.to_string()),
+        }
+    }
+}
+
+impl Drop for CodeIndexBackend {
+    fn drop(&mut self) {
+        if let Some(client) = self.client.take() {
+            let _ = self.runtime.block_on(client.cancel());
+        }
+    }
+}
+
+/// The ONE place where the MCP content envelope is unwrapped: handlers return
+/// `Json(JsonResult { result })`, which rmcp surfaces to clients as
+/// `CallToolResult.structured_content = {"result": <handler value>}`. Corpus
+/// assertions therefore see exactly the handler JSON a real MCP client gets.
+fn unwrap_tool_result(result: CallToolResult) -> Result<Value, String> {
+    if result.is_error == Some(true) {
+        // Tool-level error result (not used by this server's handlers, which
+        // surface errors as JSON-RPC errors — kept for protocol completeness).
+        let message = result
+            .content
+            .iter()
+            .filter_map(|c| c.raw.as_text().map(|t| t.text.clone()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        return Err(if message.is_empty() {
+            "tool returned an error result".to_string()
+        } else {
+            message
+        });
+    }
+    let structured = result
+        .structured_content
+        .ok_or("tool returned no structured content")?;
+    match structured {
+        Value::Object(mut map) => map
+            .remove("result")
+            .ok_or_else(|| "structured content missing `result` envelope".to_string()),
+        other => Ok(other),
     }
 }
 
@@ -402,7 +295,10 @@ fn check_assertion_raw(output: &Value, assertion: &Assertion) -> bool {
         }
         "expected_symbols" => {
             let (recall_at_5, _mrr) = compute_retrieval_metrics(output, assertion);
-            recall_at_5 >= DEFAULT_EXPECTED_SYMBOLS_RECALL_AT_5
+            let threshold = assertion
+                .min_recall
+                .unwrap_or(DEFAULT_EXPECTED_SYMBOLS_RECALL_AT_5);
+            recall_at_5 >= threshold
         }
         "is_success" => {
             // Always true if we got here (the tool didn't error).

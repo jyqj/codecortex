@@ -1,0 +1,17 @@
+name = "search_golden_hybrid_order"
+tool = "search"
+description = "Golden: hybrid search for order totals surfaces the Rust order functions"
+
+[params]
+query = "process order total price"
+mode = "hybrid"
+top_k = 5
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "expected_symbols"
+field = "machine_pack.hits"
+value = "process_order,create_order"
+min_recall = 1.0

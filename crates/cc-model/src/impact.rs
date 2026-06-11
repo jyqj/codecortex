@@ -82,6 +82,12 @@ pub struct ImpactReport {
     /// result-limit clipping. When `truncated` is true due to a BFS cap, this
     /// is a lower bound on the true blast radius.
     pub total_impacted_discovered: usize,
+    /// Unified explainability envelope (additive): truncation reason
+    /// ("max_nodes"/"max_per_layer"/"result_limit"/"db_error:<op>"...) plus
+    /// any DB read errors degraded to partial results. Absent when there is
+    /// nothing to report.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub graph_explain: Option<crate::graph_explain::GraphExplain>,
 }
 
 /// A community boundary crossing detected during impact analysis.

@@ -1,0 +1,25 @@
+name = "explore_golden_flow_route_chain"
+tool = "explore"
+description = "Golden: flow exploration getUserRoute -> formatName passes through processUser"
+
+[params]
+symbols = ["getUserRoute", "formatName"]
+mode = "flow"
+max_depth = 5
+include_source = false
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "field_exists"
+field = "flow_paths"
+
+[[assertions]]
+kind = "min_results"
+field = "flow_paths"
+value = "1"
+
+[[assertions]]
+kind = "output_contains"
+value = "processUser"

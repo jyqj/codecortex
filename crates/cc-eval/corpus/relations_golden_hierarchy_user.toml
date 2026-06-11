@@ -1,0 +1,21 @@
+name = "relations_golden_hierarchy_user"
+tool = "relations"
+description = "Golden: type hierarchy of User shows BaseModel ancestor and AdminUser descendant"
+
+[params]
+symbol = "User"
+kind = "hierarchy"
+limit = 20
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "ancestors"
+value = "name=BaseModel"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "descendants"
+value = "name=AdminUser"

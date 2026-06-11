@@ -165,7 +165,7 @@ pub struct LatencyStats {
 }
 
 impl LatencyStats {
-    fn from_durations(durations: &[u64]) -> Self {
+    pub fn from_durations(durations: &[u64]) -> Self {
         let mut sorted = durations.to_vec();
         sorted.sort_unstable();
         Self {
@@ -279,6 +279,156 @@ pub fn generate_incremental_markdown(report: &IncrementalBenchReport) -> String 
         ));
     }
     md.push('\n');
+
+    md
+}
+
+// ── Synthetic scale benchmark (1k/10k/50k matrix) ──────────────────
+
+/// Latency for one named tool scenario, measured over repeated identical
+/// calls through the real MCP dispatch path (1 warmup + `iterations`).
+#[derive(Debug, Clone, Serialize)]
+pub struct ScenarioLatency {
+    pub scenario: String,
+    pub tool: String,
+    pub iterations: usize,
+    pub stats: LatencyStats,
+    pub avg_output_bytes: usize,
+}
+
+/// Run one tool scenario `iterations` times (plus 1 warmup) and aggregate
+/// p50/p95/max. Any call failure aborts the scenario with context.
+pub fn measure_tool_scenario(
+    backend: &CodeIndexBackend,
+    scenario: &str,
+    tool: &str,
+    params: &serde_json::Value,
+    iterations: usize,
+) -> Result<ScenarioLatency, String> {
+    let mut durations = Vec::with_capacity(iterations);
+    let mut total_output = 0usize;
+    for iteration in 0..=iterations {
+        let start = Instant::now();
+        let output = backend
+            .call_tool(tool, params)
+            .map_err(|e| format!("scenario '{}' ({}) failed: {}", scenario, tool, e))?;
+        let elapsed_ms = start.elapsed().as_millis() as u64;
+        if iteration >= 1 {
+            durations.push(elapsed_ms);
+            total_output += serde_json::to_string(&output).unwrap_or_default().len();
+        }
+    }
+    Ok(ScenarioLatency {
+        scenario: scenario.to_string(),
+        tool: tool.to_string(),
+        iterations,
+        stats: LatencyStats::from_durations(&durations),
+        avg_output_bytes: total_output / iterations.max(1),
+    })
+}
+
+/// One ground-truth correctness check result at scale.
+#[derive(Debug, Clone, Serialize)]
+pub struct CorrectnessCheck {
+    pub check: String,
+    pub passed: bool,
+    pub detail: String,
+}
+
+/// Full scale benchmark report for one synthetic repo size.
+#[derive(Debug, Clone, Serialize)]
+pub struct ScaleBenchReport {
+    pub generated_at: String,
+    pub scale_label: String,
+    pub seed: u64,
+    pub file_count: usize,
+    pub symbols_total: usize,
+    pub generate_ms: u64,
+    pub cold_index_ms: u64,
+    pub db_bytes: u64,
+    pub incremental_single: IncrementalBenchReport,
+    pub incremental_batch: IncrementalBenchReport,
+    pub batch_touched_files: usize,
+    pub tools: Vec<ScenarioLatency>,
+    pub correctness: Vec<CorrectnessCheck>,
+}
+
+/// Generate a Markdown report for one synthetic scale benchmark, mirroring
+/// the existing benchmark report style.
+pub fn generate_scale_markdown(report: &ScaleBenchReport) -> String {
+    let mut md = String::new();
+
+    md.push_str(&format!(
+        "# Synthetic Scale Benchmark: {}\n\n",
+        report.scale_label
+    ));
+    md.push_str(&format!("Generated: {}\n", report.generated_at));
+    md.push_str(&format!(
+        "Dataset: synthetic {} (seed {:#x})\n",
+        report.scale_label, report.seed
+    ));
+    md.push_str(&format!(
+        "Files: {} | Symbols: {}\n\n",
+        report.file_count, report.symbols_total
+    ));
+
+    md.push_str("## Cold Full Index\n\n");
+    md.push_str("| Metric | Value |\n");
+    md.push_str("|--------|-------|\n");
+    md.push_str(&format!("| generate wall | {}ms |\n", report.generate_ms));
+    md.push_str(&format!(
+        "| cold full index wall | {}ms |\n",
+        report.cold_index_ms
+    ));
+    md.push_str(&format!(
+        "| index db size | {} |\n\n",
+        format_bytes(report.db_bytes as usize)
+    ));
+
+    md.push_str(&generate_incremental_markdown(&report.incremental_single));
+    md.push_str(&generate_incremental_markdown(&report.incremental_batch));
+
+    md.push_str("## Per-Tool Latency\n\n");
+    md.push_str("| Scenario | Tool | Iterations | p50 | p95 | Max | Avg Output |\n");
+    md.push_str("|----------|------|------------|-----|-----|-----|------------|\n");
+    for tool in &report.tools {
+        md.push_str(&format!(
+            "| {} | {} | {} | {}ms | {}ms | {}ms | {} |\n",
+            tool.scenario,
+            tool.tool,
+            tool.iterations,
+            tool.stats.p50_ms,
+            tool.stats.p95_ms,
+            tool.stats.max_ms,
+            format_bytes(tool.avg_output_bytes),
+        ));
+    }
+    md.push('\n');
+
+    md.push_str("## Ground-Truth Correctness\n\n");
+    md.push_str("| Check | Passed | Detail |\n");
+    md.push_str("|-------|--------|--------|\n");
+    for check in &report.correctness {
+        md.push_str(&format!(
+            "| {} | {} | {} |\n",
+            check.check,
+            if check.passed { "YES" } else { "NO" },
+            check.detail,
+        ));
+    }
+    md.push('\n');
+
+    let passed = report.correctness.iter().filter(|c| c.passed).count();
+    md.push_str("## Summary\n\n");
+    md.push_str(&format!(
+        "- Incremental batch touched files: {}\n",
+        report.batch_touched_files
+    ));
+    md.push_str(&format!(
+        "- Ground-truth checks passed: {}/{}\n",
+        passed,
+        report.correctness.len()
+    ));
 
     md
 }

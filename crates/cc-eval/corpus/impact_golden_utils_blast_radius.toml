@@ -1,0 +1,26 @@
+name = "impact_golden_utils_blast_radius"
+tool = "impact"
+description = "Golden: changing utils.js impacts its cross-file callers (processUser via formatName, middleware via Logger)"
+
+[params]
+scope = "changes"
+files = ["utils.js"]
+limit = 20
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "min_results"
+field = "impacted_symbols"
+value = "3"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "impacted_symbols"
+value = "name=formatName"
+
+[[assertions]]
+kind = "array_contains_item"
+field = "impacted_symbols"
+value = "name=processUser"

@@ -72,7 +72,12 @@ pub(crate) struct FastPathConfig {
 impl FastPathConfig {
     pub(crate) const DEFAULT: FastPathConfig = FastPathConfig {
         max_limit: 1000,
-        eligible_edge_kinds: &["CALLS"],
+        // Single source preserved (ADR-0001 R2-D): the eligible set IS the
+        // shared per-tool declaration in the graph catalog — not a third
+        // copy. Catalog membership and `variable_length` support are
+        // asserted by `fast_path_kinds_derive_from_catalog_declaration`
+        // below and by cc-model's tool_graph_subsets tests.
+        eligible_edge_kinds: cc_model::graph_catalog::tool_graph_subsets::CYPHER_FAST_PATH.kinds(),
         seed_eq_columns: &["name", "symbol_uid"],
         projectable_columns: SYMBOL_COLUMNS,
     };
@@ -1781,6 +1786,31 @@ mod tests {
             }))
         );
         assert_eq!(FastPathDecision::NotApplicable.as_metadata(), None);
+    }
+
+    // ── Gate constants vs. shared catalog declaration ────────────
+
+    /// The fast-path eligible set must be exactly the shared declaration and
+    /// stay a subset of catalog kinds with `variable_length` support: the
+    /// fast path serves `*m..n` traversals, so a kind the SQL CTE cannot
+    /// expand recursively must never become gate-eligible.
+    #[test]
+    fn fast_path_kinds_derive_from_catalog_declaration() {
+        use cc_model::graph_catalog::{graph_relationship, tool_graph_subsets};
+
+        assert_eq!(
+            FastPathConfig::DEFAULT.eligible_edge_kinds,
+            tool_graph_subsets::CYPHER_FAST_PATH.kinds(),
+            "FastPathConfig::DEFAULT must reference the shared declaration"
+        );
+        for kind in FastPathConfig::DEFAULT.eligible_edge_kinds {
+            let rel = graph_relationship(kind)
+                .unwrap_or_else(|| panic!("fast-path kind {kind} missing from catalog"));
+            assert!(
+                rel.variable_length,
+                "fast-path kind {kind} lacks catalog variable_length support"
+            );
+        }
     }
 
     // ── Integration: execute() routes through the fast path ─────

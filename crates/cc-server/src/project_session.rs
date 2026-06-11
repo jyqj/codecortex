@@ -115,12 +115,27 @@ impl ProjectSession {
 
     pub async fn set_active_project(&self, project_path: PathBuf) -> CcResult<SharedCodeIndex> {
         let path = normalize_path(&project_path);
-        let services = ProjectServices::new(Some(path.as_path()))?;
+        // Reuse the cached services for this path (same policy as
+        // `index_for_project_path`): every entry point must share ONE
+        // CodeIndex instance per project, otherwise the per-project build
+        // gate cannot serialize manual builds against the auto-index/watcher
+        // builds of a previously created instance on the same DB.
+        let cached = {
+            let mut cache = self.project_cache.lock().await;
+            cache.get(&path).cloned()
+        };
+        let services = match cached {
+            Some(existing) => existing,
+            None => {
+                let created = ProjectServices::new(Some(path.as_path()))?;
+                self.project_cache
+                    .lock()
+                    .await
+                    .put(path.clone(), created.clone());
+                created
+            }
+        };
         let index = services.index();
-        self.project_cache
-            .lock()
-            .await
-            .put(path.clone(), services.clone());
         *self.active.write().await = services;
         self.start_watcher(path);
         Ok(index)
@@ -195,40 +210,32 @@ impl ProjectSession {
             }
 
             let result = tokio::task::spawn_blocking(move || {
-                // Brief read lock: clone the owned build inputs plus the
-                // auto-index file-count gate.
-                let (inputs, file_limit) = match index.read() {
-                    Ok(rt) => {
-                        let cloned = rt
-                            .build_inputs()
-                            .and_then(|inputs| Ok((inputs, rt.auto_index_file_limit()?)));
-                        match cloned {
-                            Ok(pair) => pair,
-                            Err(e) => {
-                                tracing::warn!("auto-index build_inputs failed: {}", e);
-                                return;
-                            }
-                        }
-                    }
+                // Per-project build gate: clone under a brief read lock,
+                // release, then try_lock — never block on the gate from a
+                // path that may later take the write lock while a gated
+                // build is waiting for it. If a manual build is in flight,
+                // skip: that build itself produces the initial index.
+                let build_gate = match index.read() {
+                    Ok(rt) => rt.build_gate(),
                     Err(_) => return,
                 };
-                // Heavy prepare: no CodeIndex lock held, so read queries are
-                // not blocked during scan/parse/resolve. The file-limit gate
-                // (skip oversized repos) fires inside prepare.
-                let prepared = match CodeIndex::prepare_build(&inputs, false, Some(file_limit)) {
-                    Ok(p) => p,
-                    Err(e) => {
-                        tracing::warn!("auto-index failed: {}", e);
+                let _build_permit = match build_gate.try_lock() {
+                    Ok(permit) => permit,
+                    Err(std::sync::TryLockError::WouldBlock) => {
+                        tracing::debug!("auto-index skipped — another build holds the gate");
                         return;
                     }
+                    Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
                 };
-                // Brief write lock: commit (phase_write + postprocess +
-                // bookkeeping) under the lock so readers never see the
-                // non-transactional intermediate write state.
-                if let Ok(mut rt) = index.write() {
-                    if let Err(e) = rt.commit_build(&inputs, false, Some(file_limit), prepared) {
-                        tracing::warn!("auto-index failed: {}", e);
-                    }
+                // Shared split-build driver: brief read lock for inputs (plus
+                // the auto-index file-limit gate, which fires inside the
+                // lock-free prepare), heavy prepare with no CodeIndex lock
+                // held, then the staged commit — write lock only around
+                // phase_write and the delta apply, so readers never see the
+                // non-transactional intermediate write state yet keep running
+                // through the postprocess compute.
+                if let Err(e) = handlers::core::run_split_build(&index, false, true) {
+                    tracing::warn!("auto-index failed: {}", e);
                 }
             })
             .await;
@@ -316,79 +323,53 @@ impl ProjectSession {
                     loop {
                         tokio::time::sleep(poll_interval).await;
 
-                        // Drain pending events from the watcher.
-                        let drain = {
+                        // Cheap peek WITHOUT draining: events stay in the
+                        // pending set until a build slot is secured, so a
+                        // busy tick can never lose them (debounce keeps
+                        // coalescing in the meantime).
+                        let has_pending = {
                             let guard = match watcher_for_task.lock() {
                                 Ok(g) => g,
                                 Err(e) => e.into_inner(),
                             };
                             match guard.as_ref() {
-                                Some(w) => w.drain_pending(),
+                                Some(w) => w.has_pending(),
                                 None => break,
                             }
                         };
-
-                        if drain.is_empty() {
+                        if !has_pending {
                             continue;
                         }
 
-                        tracing::info!(
-                            changed = drain.changed.len(),
-                            removed = drain.removed.len(),
-                            "watcher: file changes detected, triggering incremental index"
-                        );
-
-                        // Skip if another auto-index is already running.
+                        // Acquire-before-drain, part 1: the auto_indexing
+                        // flag. On failure leave events pending and retry on
+                        // the next tick.
                         if auto_indexing
                             .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
                             .is_err()
                         {
                             tracing::debug!(
-                                "watcher: skipping incremental index — already in progress"
+                                "watcher: deferring incremental index — already in progress"
                             );
                             continue;
                         }
 
                         let index = active.read().await.index();
+                        let watcher_for_tick = watcher_for_task.clone();
                         let result = tokio::task::spawn_blocking(move || {
-                            // Brief read lock: clone the owned build inputs.
-                            let inputs = match index.read() {
-                                Ok(rt) => match rt.build_inputs() {
-                                    Ok(i) => i,
-                                    Err(e) => {
-                                        tracing::warn!(
-                                            "watcher: incremental build_inputs failed: {}",
-                                            e
-                                        );
-                                        return;
-                                    }
-                                },
-                                Err(_) => return,
-                            };
-                            // Heavy prepare: no CodeIndex lock held, so read
-                            // queries are not blocked during scan/parse/resolve.
-                            let prepared = match CodeIndex::prepare_build(&inputs, false, None) {
-                                Ok(p) => p,
-                                Err(e) => {
-                                    tracing::warn!("watcher: incremental prepare failed: {}", e);
-                                    return;
-                                }
-                            };
-                            // Brief write lock: commit (phase_write + postprocess
-                            // + bookkeeping) under the lock so readers never see
-                            // the non-transactional intermediate write state.
-                            if let Ok(mut rt) = index.write() {
-                                if let Err(e) = rt.commit_build(&inputs, false, None, prepared) {
-                                    tracing::warn!("watcher: incremental commit failed: {}", e);
-                                }
-                            }
+                            run_watcher_tick(&index, &watcher_for_tick)
                         })
                         .await;
 
-                        if let Err(e) = result {
-                            tracing::warn!("watcher: incremental index task panicked: {}", e);
-                        }
                         auto_indexing.store(false, Ordering::SeqCst);
+
+                        match result {
+                            Ok(WatcherTickOutcome::WatcherGone) => break,
+                            Ok(_) => {}
+                            Err(e) => {
+                                tracing::warn!("watcher: incremental index task panicked: {}", e);
+                            }
+                        }
                     }
                 }
             });
@@ -463,6 +444,72 @@ impl ProjectSession {
     }
 }
 
+/// How one watcher poll tick ended.
+enum WatcherTickOutcome {
+    /// The watcher slot is gone — the poll loop should exit.
+    WatcherGone,
+    /// No build ran this tick (gate busy / nothing pending / lock failure);
+    /// any pending events were left untouched for the next tick.
+    Skipped,
+    /// A drain was followed by an incremental build attempt.
+    Completed,
+}
+
+/// One watcher poll tick, run on a blocking thread. Ordering invariant:
+/// the build gate is acquired BEFORE `drain_pending`, so a drained batch is
+/// always followed by a build attempt — events are never droppable after
+/// drain. (The caller already holds the `auto_indexing` flag.)
+fn run_watcher_tick(
+    index: &SharedCodeIndex,
+    watcher: &Arc<std::sync::Mutex<Option<FileWatcher>>>,
+) -> WatcherTickOutcome {
+    // Acquire-before-drain, part 2: the per-project build gate. Clone it
+    // under a brief read lock, release, then try_lock — a busy manual build
+    // just defers this tick and the pending set stays intact.
+    let build_gate = match index.read() {
+        Ok(rt) => rt.build_gate(),
+        Err(_) => return WatcherTickOutcome::Skipped,
+    };
+    let _build_permit = match build_gate.try_lock() {
+        Ok(permit) => permit,
+        Err(std::sync::TryLockError::WouldBlock) => {
+            tracing::debug!("watcher: deferring incremental index — another build holds the gate");
+            return WatcherTickOutcome::Skipped;
+        }
+        Err(std::sync::TryLockError::Poisoned(poisoned)) => poisoned.into_inner(),
+    };
+
+    // Only now is it safe to drain: both the auto_indexing flag and the
+    // build gate are held, so the drained batch WILL be indexed below.
+    let drain = {
+        let guard = match watcher.lock() {
+            Ok(g) => g,
+            Err(e) => e.into_inner(),
+        };
+        match guard.as_ref() {
+            Some(w) => w.drain_pending(),
+            None => return WatcherTickOutcome::WatcherGone,
+        }
+    };
+    if drain.is_empty() {
+        return WatcherTickOutcome::Skipped;
+    }
+
+    tracing::info!(
+        changed = drain.changed.len(),
+        removed = drain.removed.len(),
+        "watcher: file changes detected, triggering incremental index"
+    );
+
+    // Shared split-build driver: brief read lock for inputs, heavy prepare
+    // and postprocess compute with no CodeIndex lock held, write lock only
+    // around phase_write and the delta apply.
+    if let Err(e) = handlers::core::run_split_build(index, false, false) {
+        tracing::warn!("watcher: incremental index failed: {}", e);
+    }
+    WatcherTickOutcome::Completed
+}
+
 async fn active_idle_timeout_secs(active: &tokio::sync::RwLock<ProjectServices>) -> u64 {
     let index = active.read().await.index();
     index
@@ -509,7 +556,7 @@ mod tests {
     // The split-lock claim itself (prepare runs without the write lock) is
     // guaranteed by structure: `maybe_auto_index` calls the associated
     // `CodeIndex::prepare_build` between a read-lock `build_inputs` clone and
-    // a write-lock `commit_build`, identical to the watcher poll path. This
+    // the staged write-lock commit, identical to the watcher poll path. This
     // test pins the observable behavior around that path: a fresh DB gets
     // built, and a fresh index skips the rebuild.
     #[tokio::test(flavor = "multi_thread")]
@@ -553,5 +600,75 @@ mod tests {
             generation,
             "fresh index must not be rebuilt by a second maybe_auto_index"
         );
+    }
+
+    /// Watcher poll ticks that find the build slot busy must NOT drain (and
+    /// thereby drop) pending events: they stay queued and get indexed once
+    /// the slot frees up. Before the acquire-before-drain fix, a busy tick
+    /// drained first and permanently lost the batch — silent stale index.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn watcher_busy_tick_preserves_pending_events() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+
+        let session = ProjectSession::new(Some(dir.path()));
+        session.maybe_auto_index();
+        assert!(
+            wait_for_auto_index(&session, Duration::from_secs(30)).await,
+            "initial auto-index did not complete"
+        );
+        let index = session.active_index().await;
+        let generation_before = active_generation(&index);
+
+        // Simulate a long-running build: while this flag is held, watcher
+        // ticks must defer WITHOUT draining the pending events.
+        session.auto_indexing.store(true, Ordering::SeqCst);
+
+        session.start_watcher(normalize_path(dir.path()));
+        // Give the watcher task time to subscribe before generating events.
+        tokio::time::sleep(Duration::from_millis(2500)).await;
+
+        // Several writes so a late-starting watcher still observes at least
+        // one; all of them land inside the busy window.
+        for _ in 0..3 {
+            std::fs::write(
+                dir.path().join("extra.rs"),
+                "pub fn extra_marker() -> i32 { 7 }\n",
+            )
+            .unwrap();
+            tokio::time::sleep(Duration::from_millis(700)).await;
+        }
+
+        // Cover at least two busy poll ticks after the debounce flush; before
+        // the fix each of those ticks drained and dropped the pending batch.
+        tokio::time::sleep(Duration::from_secs(4)).await;
+        assert_eq!(
+            active_generation(&index),
+            generation_before,
+            "no build may run while the auto_indexing slot is busy"
+        );
+
+        // Free the slot: the still-pending events must now trigger an
+        // incremental index that picks up extra.rs.
+        session.auto_indexing.store(false, Ordering::SeqCst);
+
+        let deadline = Instant::now() + Duration::from_secs(30);
+        let mut indexed = false;
+        while Instant::now() < deadline {
+            let count = {
+                let rt = index.read().unwrap();
+                rt.index_status().map(|s| s.indexed_files).unwrap_or(0)
+            };
+            if count >= 2 {
+                indexed = true;
+                break;
+            }
+            tokio::time::sleep(Duration::from_millis(200)).await;
+        }
+        assert!(
+            indexed,
+            "pending watcher events were lost while the build slot was busy"
+        );
+        session.shutdown().await;
     }
 }

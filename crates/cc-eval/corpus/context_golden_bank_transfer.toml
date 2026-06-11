@@ -1,0 +1,23 @@
+name = "context_golden_bank_transfer"
+tool = "context"
+description = "Golden: context for bank transfers surfaces the C++ account methods"
+
+[params]
+task = "transfer money between bank accounts"
+max_symbols = 10
+include_source = false
+
+[[assertions]]
+kind = "is_success"
+
+[[assertions]]
+kind = "output_contains"
+value = "transfer"
+
+[[assertions]]
+kind = "output_contains"
+value = "withdraw"
+
+[[assertions]]
+kind = "output_contains"
+value = "account.cpp"

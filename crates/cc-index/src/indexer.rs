@@ -184,7 +184,8 @@ impl Indexer {
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
-    /// [`Indexer::prepare_build`]. Must be called with the same `full`/
+    /// [`Indexer::prepare_build`]. Composes the three commit stages inline
+    /// (single write-lock behavior). Must be called with the same `full`/
     /// `auto_file_limit` used for the matching `prepare_build`.
     pub fn commit_build(
         &self,
@@ -198,6 +199,55 @@ impl Indexer {
             project_path,
             prepared,
         )
+    }
+
+    /// Stage 1 of a staged commit: generation guard + `phase_write`, under
+    /// the caller's write lock. The returned [`WrittenBuild`] is the
+    /// transport into the lock-free [`Indexer::compute_build_postprocess`].
+    /// `full`/`auto_file_limit` must match across the staged calls (and the
+    /// originating `prepare_build`). See `build_plan` for the staging
+    /// contract, including the build-gate requirement.
+    pub fn commit_build_write(
+        &self,
+        project_path: &Path,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        prepared: crate::build_plan::PreparedBuild,
+    ) -> CcResult<crate::build_plan::WrittenBuild> {
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).commit_write(
+            self,
+            project_path,
+            prepared,
+        )
+    }
+
+    /// Stage 2 of a staged commit: postprocess/analysis compute. Reads the
+    /// committed state through the read pool only — safe to run with no index
+    /// lock held while the caller keeps holding the build gate.
+    pub fn compute_build_postprocess(
+        &self,
+        project_path: &Path,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        written: crate::build_plan::WrittenBuild,
+    ) -> CcResult<crate::build_plan::StagedPostprocess> {
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).compute_postprocess(
+            self,
+            project_path,
+            written,
+        )
+    }
+
+    /// Stage 3 of a staged commit: apply the staged deltas (short DB
+    /// transactions) under the caller's write lock and produce the report.
+    pub fn apply_build_postprocess(
+        &self,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        staged: crate::build_plan::StagedPostprocess,
+    ) -> CcResult<IndexReport> {
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
+            .apply_postprocess(self, staged)
     }
 
     // ── Phase helper structs ────────────────────────────────────────────

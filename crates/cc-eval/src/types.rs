@@ -31,6 +31,9 @@ pub struct Assertion {
     /// - `min_results` — array at path has >= N items
     /// - `field_matches_regex` — field value matches a regex pattern
     /// - `array_contains_item` — array at field contains item with sub-field match
+    /// - `expected_symbols` — gold 检索断言：`value` 为逗号分隔的期望符号名，
+    ///   对 `field`（缺省为根）处的结果数组计算 Recall@5 / MRR，Recall@5 低于
+    ///   阈值（`min_recall`，默认 0.7）则失败
     /// - `is_success` — tool didn't error (always implicitly checked)
     pub kind: String,
 
@@ -46,6 +49,12 @@ pub struct Assertion {
     /// normally fail, fails when it would normally pass).
     #[serde(default)]
     pub negate: bool,
+
+    /// `expected_symbols` only: per-case Recall@5 pass threshold (0.0–1.0).
+    /// 缺省 0.7。单符号精确用例可设 1.0；多符号、排名易抖动的用例可放宽
+    /// （成员性断言优于位置断言）。
+    #[serde(default)]
+    pub min_recall: Option<f64>,
 }
 
 impl Assertion {
@@ -100,9 +109,10 @@ impl Assertion {
             }
             "expected_symbols" => {
                 format!(
-                    "expected_symbols(field={:?}, expected={:?})",
+                    "expected_symbols(field={:?}, expected={:?}, min_recall={})",
                     self.field.as_deref().unwrap_or("(root)"),
-                    self.value.as_deref().unwrap_or("(none)")
+                    self.value.as_deref().unwrap_or("(none)"),
+                    self.min_recall.unwrap_or(0.7)
                 )
             }
             other => format!("{}: value={:?}", other, self.value),

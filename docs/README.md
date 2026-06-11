@@ -11,7 +11,7 @@ Start at the project [README](../README.md) for a quick overview, then dive in:
 | [LANGUAGES.md](LANGUAGES.md) | Language extraction tiers and the 16 semantic framework resolvers. |
 | [CYPHER.md](CYPHER.md) | The read-only Cypher subset used by `graph_query`. |
 | [TEST_PLAN.md](TEST_PLAN.md) | Unit test layout, the eval corpus, assertion types, and the fixture project. |
-| [BENCHMARK.md](BENCHMARK.md) | Target metrics and how to run the fixture and real-workspace benchmarks. |
+| [BENCHMARK.md](BENCHMARK.md) | Target metrics and how to run the fixture, real-workspace, and synthetic scale (1k/10k/50k) benchmarks. |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | Build, test, lint, MSRV, and pre-commit commands. |
 
 Generated benchmark reports live under [benchmarks/](benchmarks/).

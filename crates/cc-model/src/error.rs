@@ -22,6 +22,15 @@ pub enum CcError {
     #[error("serialization error: {0}")]
     Serde(#[from] serde_json::Error),
 
+    /// A split-build commit observed a newer index write than the one its
+    /// prepare phase snapshotted: committing would overwrite fresher index
+    /// content with stale data (and bump the epoch so caches trust it).
+    #[error("stale prepared build: prepared at index_epoch {prepared_epoch}, current index_epoch {current_epoch}")]
+    StalePreparedBuild {
+        prepared_epoch: u64,
+        current_epoch: u64,
+    },
+
     #[error("{0}")]
     Other(String),
 }

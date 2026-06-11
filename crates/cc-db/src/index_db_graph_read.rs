@@ -21,16 +21,6 @@ fn db_err(err: impl std::fmt::Display) -> CcError {
     CcError::Database(err.to_string())
 }
 
-fn symbol_lite_from_row(row: &rusqlite::Row<'_>) -> rusqlite::Result<SymbolLiteRow> {
-    Ok(SymbolLiteRow {
-        symbol_uid: row.get::<_, String>(0)?,
-        name: row.get::<_, String>(1)?,
-        file_path: row.get::<_, String>(2)?,
-        kind: row.get::<_, String>(3)?,
-        community_id: row.get::<_, Option<u32>>(4)?,
-    })
-}
-
 /// Render a community id column value the same way the previous JSON
 /// projection did: integers and floats via their JSON representation,
 /// strings verbatim, anything else skipped.
@@ -130,7 +120,7 @@ impl IndexDb {
         let mut symbols = Vec::new();
         for file in files {
             let rows = stmt
-                .query_map(rusqlite::params![file], symbol_lite_from_row)
+                .query_map(rusqlite::params![file], crate::rows::symbol_lite)
                 .map_err(db_err)?;
             for row in rows.flatten() {
                 symbols.push(row);
@@ -199,7 +189,7 @@ impl IndexDb {
             let param_refs: Vec<&dyn rusqlite::types::ToSql> =
                 params.iter().map(|param| param.as_ref()).collect();
             let rows = stmt
-                .query_map(param_refs.as_slice(), symbol_lite_from_row)
+                .query_map(param_refs.as_slice(), crate::rows::symbol_lite)
                 .map_err(db_err)?;
             callers.extend(rows.flatten());
         }

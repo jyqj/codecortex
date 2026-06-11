@@ -1,4 +1,5 @@
 pub mod direct_writer;
+pub mod epoch_rules;
 pub mod fts;
 pub mod index_db;
 mod index_db_arch;
@@ -11,5 +12,6 @@ mod index_db_retrieval;
 
 pub use index_db_graph_read::GraphReads;
 pub mod index_migrate;
+mod rows;
 pub mod sql_util;
 pub mod unit_of_work;

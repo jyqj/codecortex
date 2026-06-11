@@ -67,24 +67,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![callee_uid, limit as i64], |row| {
-                let registered_line: Option<i32> = row.get(12)?;
-                Ok(CallEdgeLite {
-                    file_path: row.get(0)?,
-                    line: row.get(1)?,
-                    caller_symbol: row.get(2)?,
-                    callee_symbol: row.get(3)?,
-                    caller_symbol_uid: row.get(4)?,
-                    callee_symbol_uid: row.get(5)?,
-                    resolution_kind: row.get(6)?,
-                    confidence: row.get(7)?,
-                    dispatch_kind: row.get::<_, Option<String>>(8)?.unwrap_or_default(),
-                    synthesized_by: row.get(9)?,
-                    synthesis_key: row.get(10)?,
-                    registered_file: row.get(11)?,
-                    registered_line: registered_line.map(|v| v as u32),
-                })
-            })
+            .query_map(
+                rusqlite::params![callee_uid, limit as i64],
+                crate::rows::call_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -105,24 +91,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![caller_uid, limit as i64], |row| {
-                let registered_line: Option<i32> = row.get(12)?;
-                Ok(CallEdgeLite {
-                    file_path: row.get(0)?,
-                    line: row.get(1)?,
-                    caller_symbol: row.get(2)?,
-                    callee_symbol: row.get(3)?,
-                    caller_symbol_uid: row.get(4)?,
-                    callee_symbol_uid: row.get(5)?,
-                    resolution_kind: row.get(6)?,
-                    confidence: row.get(7)?,
-                    dispatch_kind: row.get::<_, Option<String>>(8)?.unwrap_or_default(),
-                    synthesized_by: row.get(9)?,
-                    synthesis_key: row.get(10)?,
-                    registered_file: row.get(11)?,
-                    registered_line: registered_line.map(|v| v as u32),
-                })
-            })
+            .query_map(
+                rusqlite::params![caller_uid, limit as i64],
+                crate::rows::call_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -309,11 +281,11 @@ impl IndexDb {
         Ok(map)
     }
 
-    /// Bulk lookup symbol metadata by UIDs. Batches in chunks of 500.
+    /// Bulk lookup symbol metadata by UIDs. Batches in [`IN_BATCH_SIZE`] chunks.
     pub fn symbol_rows_by_uids(&self, uids: &[String]) -> CcResult<HashMap<String, SymbolRow>> {
         let conn = self.read_conn()?;
         let mut result = HashMap::new();
-        for chunk in uids.chunks(500) {
+        for chunk in uids.chunks(IN_BATCH_SIZE) {
             let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
             let sql = format!(
                 "SELECT symbol_id, symbol_uid, name, kind, file_path, container, \
@@ -329,20 +301,7 @@ impl IndexDb {
                 .map(|s| s as &dyn rusqlite::types::ToSql)
                 .collect();
             let rows = stmt
-                .query_map(params.as_slice(), |row| {
-                    Ok(SymbolRow {
-                        symbol_id: row.get(0)?,
-                        symbol_uid: row.get(1)?,
-                        name: row.get(2)?,
-                        kind: row.get(3)?,
-                        file_path: row.get(4)?,
-                        container: row.get(5)?,
-                        start_line: row.get(6)?,
-                        end_line: row.get(7)?,
-                        qname: row.get(8)?,
-                        signature: row.get(9)?,
-                    })
-                })
+                .query_map(params.as_slice(), crate::rows::symbol_row)
                 .map_err(|e| CcError::Database(e.to_string()))?;
             for r in rows.flatten() {
                 if let Some(uid) = r.symbol_uid.clone() {
@@ -544,20 +503,7 @@ impl IndexDb {
         let param_refs: Vec<&dyn rusqlite::types::ToSql> =
             params.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
-            .query_map(param_refs.as_slice(), |row| {
-                Ok(SymbolRow {
-                    symbol_id: row.get(0)?,
-                    symbol_uid: row.get(1)?,
-                    name: row.get(2)?,
-                    kind: row.get(3)?,
-                    file_path: row.get(4)?,
-                    container: row.get(5)?,
-                    start_line: row.get(6)?,
-                    end_line: row.get(7)?,
-                    qname: row.get(8)?,
-                    signature: row.get(9)?,
-                })
-            })
+            .query_map(param_refs.as_slice(), crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -600,20 +546,7 @@ impl IndexDb {
                 params.push(kind);
             }
             let rows = stmt
-                .query_map(params.as_slice(), |row| {
-                    Ok(SymbolRow {
-                        symbol_id: row.get(0)?,
-                        symbol_uid: row.get(1)?,
-                        name: row.get(2)?,
-                        kind: row.get(3)?,
-                        file_path: row.get(4)?,
-                        container: row.get(5)?,
-                        start_line: row.get(6)?,
-                        end_line: row.get(7)?,
-                        qname: row.get(8)?,
-                        signature: row.get(9)?,
-                    })
-                })
+                .query_map(params.as_slice(), crate::rows::symbol_row)
                 .map_err(|e| CcError::Database(e.to_string()))?;
             for row in rows.filter_map(|r| r.ok()) {
                 grouped.entry(row.name.clone()).or_default().push(row);
@@ -1343,20 +1276,7 @@ impl IndexDb {
             .map(|s| s as &dyn rusqlite::types::ToSql)
             .collect();
         let rows = stmt
-            .query_map(params.as_slice(), |row| {
-                Ok(SymbolRow {
-                    symbol_id: row.get(0)?,
-                    symbol_uid: row.get(1)?,
-                    name: row.get(2)?,
-                    kind: row.get(3)?,
-                    file_path: row.get(4)?,
-                    container: row.get(5)?,
-                    start_line: row.get(6)?,
-                    end_line: row.get(7)?,
-                    qname: row.get(8)?,
-                    signature: row.get(9)?,
-                })
-            })
+            .query_map(params.as_slice(), crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -1457,11 +1377,7 @@ mod tests {
         for name in names {
             let single = db.find_symbols_by_name_and_kinds(name, kinds).unwrap();
             let batched = batch.get(*name).cloned().unwrap_or_default();
-            assert_eq!(
-                single.len(),
-                batched.len(),
-                "row count mismatch for {name}"
-            );
+            assert_eq!(single.len(), batched.len(), "row count mismatch for {name}");
             for (s, b) in single.iter().zip(batched.iter()) {
                 assert_eq!(s.symbol_uid, b.symbol_uid, "uid mismatch for {name}");
                 assert_eq!(s.file_path, b.file_path, "file mismatch for {name}");

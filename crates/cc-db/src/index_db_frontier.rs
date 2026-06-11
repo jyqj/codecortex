@@ -22,20 +22,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![route_path, limit as i64], |row| {
-                Ok(RouteEdgeLite {
-                    edge_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    route_path: row.get(2)?,
-                    handler_name: row.get(3)?,
-                    method: row.get(4)?,
-                    line: row.get(5)?,
-                    end_line: row.get(6)?,
-                    handler_symbol_uid: row.get(7)?,
-                    framework: row.get(8)?,
-                    confidence: row.get(9)?,
-                })
-            })
+            .query_map(
+                rusqlite::params![route_path, limit as i64],
+                crate::rows::route_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -57,20 +47,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![handler_uid, limit as i64], |row| {
-                Ok(RouteEdgeLite {
-                    edge_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    route_path: row.get(2)?,
-                    handler_name: row.get(3)?,
-                    method: row.get(4)?,
-                    line: row.get(5)?,
-                    end_line: row.get(6)?,
-                    handler_symbol_uid: row.get(7)?,
-                    framework: row.get(8)?,
-                    confidence: row.get(9)?,
-                })
-            })
+            .query_map(
+                rusqlite::params![handler_uid, limit as i64],
+                crate::rows::route_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -92,19 +72,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![caller_uid, limit as i64], |row| {
-                Ok(HttpCallEdgeLite {
-                    edge_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    caller_symbol_uid: row.get(2)?,
-                    url_or_path: row.get(3)?,
-                    normalized_path: row.get(4)?,
-                    method: row.get(5)?,
-                    call_kind: row.get(6)?,
-                    line: row.get(7)?,
-                    confidence: row.get(8)?,
-                })
-            })
+            .query_map(
+                rusqlite::params![caller_uid, limit as i64],
+                crate::rows::http_call_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -126,19 +97,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![normalized_path, limit as i64], |row| {
-                Ok(HttpCallEdgeLite {
-                    edge_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    caller_symbol_uid: row.get(2)?,
-                    url_or_path: row.get(3)?,
-                    normalized_path: row.get(4)?,
-                    method: row.get(5)?,
-                    call_kind: row.get(6)?,
-                    line: row.get(7)?,
-                    confidence: row.get(8)?,
-                })
-            })
+            .query_map(
+                rusqlite::params![normalized_path, limit as i64],
+                crate::rows::http_call_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -162,19 +124,10 @@ impl IndexDb {
                 )
                 .map_err(|e| CcError::Database(e.to_string()))?;
             let rows = stmt
-                .query_map(rusqlite::params![normalized_path, m, limit as i64], |row| {
-                    Ok(HttpCallEdgeLite {
-                        edge_id: row.get(0)?,
-                        file_path: row.get(1)?,
-                        caller_symbol_uid: row.get(2)?,
-                        url_or_path: row.get(3)?,
-                        normalized_path: row.get(4)?,
-                        method: row.get(5)?,
-                        call_kind: row.get(6)?,
-                        line: row.get(7)?,
-                        confidence: row.get(8)?,
-                    })
-                })
+                .query_map(
+                    rusqlite::params![normalized_path, m, limit as i64],
+                    crate::rows::http_call_edge_lite,
+                )
                 .map_err(|e| CcError::Database(e.to_string()))?;
             let exact: Vec<HttpCallEdgeLite> = rows.filter_map(|r| r.ok()).collect();
             if !exact.is_empty() {
@@ -276,19 +229,10 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![limit as i64], |row| {
-                Ok(HttpCallEdgeLite {
-                    edge_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    caller_symbol_uid: row.get(2)?,
-                    url_or_path: row.get(3)?,
-                    normalized_path: row.get(4)?,
-                    method: row.get(5)?,
-                    call_kind: row.get(6)?,
-                    line: row.get(7)?,
-                    confidence: row.get(8)?,
-                })
-            })
+            .query_map(
+                rusqlite::params![limit as i64],
+                crate::rows::http_call_edge_lite,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }

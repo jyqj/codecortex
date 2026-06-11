@@ -41,20 +41,10 @@ impl IndexDb {
             .prepare(sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![param, top_k as i64], |row| {
-                Ok(SymbolRow {
-                    symbol_id: row.get(0)?,
-                    symbol_uid: row.get(1)?,
-                    name: row.get(2)?,
-                    kind: row.get(3)?,
-                    file_path: row.get(4)?,
-                    container: row.get(5)?,
-                    start_line: row.get(6)?,
-                    end_line: row.get(7)?,
-                    qname: row.get(8)?,
-                    signature: row.get(9)?,
-                })
-            })
+            .query_map(
+                rusqlite::params![param, top_k as i64],
+                crate::rows::symbol_row,
+            )
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }
@@ -75,20 +65,7 @@ impl IndexDb {
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
-            .query_map(rusqlite::params![file_path], |row| {
-                Ok(SymbolRow {
-                    symbol_id: row.get(0)?,
-                    symbol_uid: row.get(1)?,
-                    name: row.get(2)?,
-                    kind: row.get(3)?,
-                    file_path: row.get(4)?,
-                    container: row.get(5)?,
-                    start_line: row.get(6)?,
-                    end_line: row.get(7)?,
-                    qname: row.get(8)?,
-                    signature: row.get(9)?,
-                })
-            })
+            .query_map(rusqlite::params![file_path], crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
         Ok(rows.filter_map(|r| r.ok()).collect())
     }

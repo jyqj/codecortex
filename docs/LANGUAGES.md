@@ -41,6 +41,23 @@ hierarchies.
 | Semantic | 0.85 | Cross-reference resolved |
 | Verified | 0.95 | Runtime-validated (via `ingest_traces`) |
 
+## Extraction capability notes
+
+Edge extraction timing is deliberately asymmetric between the parser layer
+(cc-parsers) and the framework-resolver layer (cc-index):
+
+- **Route edges** are extracted at parse time for Go, Python, and JS/TS
+  (`crates/cc-parsers/src/{go.rs, python/mod.rs, jsts/mod.rs}`). Java has no
+  parse-time route extraction: Spring routes are synthesized entirely by the
+  framework resolver (`crates/cc-index/src/framework_resolvers/spring.rs`).
+  Go routes are additionally enriched by `go_router.rs` (group/mount prefixes,
+  cross-file handler UIDs).
+- **Dispatch sites** are produced only by the Python, JS/TS, and Vue SFC
+  parsers (`python/mod.rs`, `jsts/mod.rs`, `sfc.rs`).
+- **Outbound HTTP call edges** come from AST extraction in Python and JS/TS,
+  and from the shared conservative pattern matcher
+  (`crates/cc-parsers/src/http_call_helpers.rs`) for Go, Java, and Rust.
+
 ## Semantic framework resolvers (16)
 
 Resolvers attach routes and handlers to the code graph and, at the **full** tier,

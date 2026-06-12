@@ -1,115 +1,302 @@
-# MCP Tools
+# MCP 工具参考
 
-All 14 tools are always available — there is no activation step or domain system.
-Parameters below list the most useful options; run `status(aspect="capabilities")`
-for the authoritative runtime surface. Unknown parameter names are rejected with a
-`-32602` invalid-params error naming the field, so typos fail fast instead of
-silently running with defaults.
+14 个工具全部常驻可用——没有激活步骤、没有域系统。本文列出每个工具的
+用途、关键参数、**响应形态**与错误路径；权威的运行时口径以
+`status(aspect="capabilities")` 为准。术语见 [GLOSSARY.md](GLOSSARY.md)。
 
-> **Migration note:** earlier releases silently ignored unrecognized parameter
-> names; every tool now rejects them. The JSON-RPC error message carries the
-> serde diagnostic verbatim, e.g.
-> ``failed to deserialize parameters: unknown field `qurey`, expected one of `query`, `mode`, `top_k`, ...``
-> Clients that relied on the old lenient behavior should rename or drop the
-> offending parameter using the reported field name and `expected one of` list.
+## 通用契约
+
+所有工具共享同一套参数与输出契约（实现：`crates/cc-server/src/tools.rs`、
+`handlers/output_budget.rs`）：
+
+### 参数校验（sanitize）
+
+每个工具的参数在分发前经过 `sanitize()`：
+
+- **未知参数名直接拒绝**：JSON-RPC `-32602` invalid-params，错误信息原样
+  携带 serde 诊断，如
+  ``failed to deserialize parameters: unknown field `qurey`, expected one of `query`, `mode`, `top_k`, ...``
+  ——拼错的参数立刻失败，而不是静默按默认值运行。（早期版本会静默忽略
+  未知参数；依赖旧行为的客户端按报错里的字段名与 `expected one of`
+  清单改名或删除即可。）
+- **字符串钳制**：查询/意图类参数 UTF-8 安全截断到 4096 字节，路径类到
+  1024 字节（永不切在多字节字符中间）。
+- **数值钳制**：`top_k` ∈ [1,200]、`limit` ∈ [1,500]、`max_depth` ∈
+  [1,15]、`confidence_threshold` ∈ [0,1]、BFS 上限 ∈ [1,5000]。
+- **集合上限**：`symbols[]` ≤ 10、文件列表 ≤ 200、`traces[]` ≤ 1000。
+- **枚举校验**：非法枚举值返回 `-32602` 并列出合法值。
+
+### 错误包装
+
+- 参数问题 → JSON-RPC error `-32602`（invalid params）；
+- 运行期失败 → JSON-RPC error `-32603`（internal error），消息为底层
+  错误文本；
+- "查无此物"通常**不是错误**：返回合法响应并携带空结果或
+  `error` 字段（如 `node` 对不存在符号返回
+  `{"query": …, "error": "symbol not found"}`），让 agent 能继续。
+
+### 输出预算
+
+成功结果统一经出口侧 `finalize()` 应用预算（按仓库规模档位取值，见
+[CONFIGURATION.md](CONFIGURATION.md#仓库规模档位)）：
+
+| 出口策略 | 工具 | 行为 |
+|---|---|---|
+| ByteCap | `context`、`node`、`relations`、`impact`、`architecture` | 序列化 JSON 超过档位 `max_output_chars` 时整体替换为截断信封：`{"_truncated": true, "_original_chars", "_max_chars", "partial"}`（`partial` 是 UTF-8 安全的前缀预览） |
+| ItemCap | `files`（仅 `list`） | 顶层数组截到档位 `max_items`，末尾追加 `{"_truncated": true, "_total", "_shown"}` 标记 |
+| Passthrough | 其余 8 个 | 出口不截断——工具在 handler 内部用语义化预算自我约束（如 trace 的 snippet 字符预算、graph_query 的行数信封） |
+
+### 图可解释性（graph_explain）
+
+图读工具在有事可报时附着只增不改的 `graph_explain` 信封：`impact`
+（含 `scope="circular"`）、`trace`、`relations`（含 `kind="hierarchy"`）、
+`graph_query`，以及 `context`/`search` 响应里的图富化摘要。字段：
+`edge_kinds_used`、`declared_edge_kinds`、`synthetic_edge_count` /
+`runtime_evidence_edge_count`、`truncated` + 稳定的 `truncated_reason`
+token、`read_errors`（上限 8）。干净且未截断的运行整体省略该字段。
+逐工具边 kind 矩阵见
+[ARCHITECTURE.md](ARCHITECTURE.md#工具--边-kind-矩阵)。
 
 ## Setup
 
-| Tool | When to use | Key params | Returns |
-|------|-------------|------------|---------|
-| `status` | Check index health before querying | `aspect`: index / capabilities / schema / all | Index stats, available capabilities, graph node/edge schema |
-| `index` | Point at a project and build/update the index | `path`, `full` (bool, default false) | Index build summary with file/symbol/edge counts |
+### `status` —— 查询前先看索引健康度
+
+| 参数 | 说明 |
+|---|---|
+| `aspect` | `index`（默认统计）/ `capabilities` / `schema` / `all` |
+
+响应（按 `aspect`）：
+
+- `index`：`project_path`、`indexed_files` / `indexed_symbols` /
+  `indexed_chunks` / `indexed_call_edges` 等计数、`diagnostics`、
+  `runtime_evidence`（有证据时）；
+- `capabilities`：`has_index`、`has_project`、`capabilities.{search,graph,impact}`；
+- `schema`：`node_types[]`（kind + count）、`edge_types[]`
+  （kind + relationship + count）——写 Cypher 前先看这个；
+- `all`：以上合并为 `{index, capabilities, schema, diagnostics, runtime_evidence?}`。
+
+### `index` —— 指向项目并构建/更新索引
+
+| 参数 | 说明 |
+|---|---|
+| `path` | 项目路径 |
+| `full` | `true` 强制全量重建（默认 `false` 增量） |
+
+响应：`IndexReport` 序列化——`files_scanned` / `files_added` /
+`files_updated` / `files_removed` / `files_skipped`、`symbols_total`、
+`chunks_total`、`parse_errors[]`、`elapsed_ms`、`phase_timing`
+（六阶段毫秒数）、`dirty_propagation`（仅增量：`normal` /
+`partial_closure` / `budget_exceeded` / `disabled`，语义见
+[internals/INDEXING.md](internals/INDEXING.md#dirty-closure脏闭包)）。
+`budget_exceeded` 意味着跨文件引用可能过期，建议 `index(full=true)`。
 
 ## Discovery
 
-| Tool | When to use | Key params | Returns |
-|------|-------------|------------|---------|
-| `search` | Find code by natural language or symbol name | `query`, `mode`: hybrid / symbol, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files`, `path_prefix` | Ranked local search hits with file paths, line ranges, snippets |
-| `context` | Build complete context for a task in one call | `task`, `max_symbols`, `include_source`, `intent` | Relevant symbols, relationships, and source grouped by file |
+### `search` —— 自然语言或符号名找代码
+
+| 参数 | 说明 |
+|---|---|
+| `query` | 查询串 |
+| `mode` | `hybrid`（默认，FTS5+grep+图融合）/ `symbol`（符号名查找） |
+| `top_k`、`intent`、`exact` | 数量、意图（如 `fix`）、精确匹配开关 |
+| `boost_files` / `recent_files` / `pinned_files` / `path_prefix` 等 | 上下文加成与范围限定（见 [CONFIGURATION.md](CONFIGURATION.md#ranking)） |
+
+响应：
+
+- `hybrid`：序列化的 `ContextEnvelope` —— `query`、`intent`、`summary`、
+  `nodes[]`（每个命中：`title`、`file_path`、`start_line`/`end_line`、
+  `score`、`confidence`、`reasons[]`（含 `preselect:<layer>:+<score>`
+  等可审计的排序理由）、`metadata`）、`spans[]`、`token_estimate`、
+  `evidence_summary`（图富化摘要，可含 `graph_explain`）；
+- `symbol`：符号行数组（`name`、`kind`、`file_path`、`start_line`、
+  `qname`、`symbol_uid` …），不带信封。
+
+### `context` —— 一次调用拿到任务的完整上下文
+
+| 参数 | 说明 |
+|---|---|
+| `task` | 任务描述 |
+| `max_symbols`、`include_source`、`intent` | 规模与意图控制 |
+
+响应：`matched_symbols[]` + `symbol_details`（`include_source=true` 时，
+按文件分组的符号源码）+ `query_explanation`。出口 ByteCap。
 
 ## Deep dive
 
-| Tool | When to use | Key params | Returns |
-|------|-------------|------------|---------|
-| `node` | Inspect a single symbol in detail | `symbol`, `include`: trail / source / outline / summary | Symbol metadata, caller/callee trail, source code, or outline |
-| `explore` | Batch-inspect multiple symbols or trace data flow | `symbols[]`, `mode`: symbols / flow, `include_source`, `outline`, `max_depth`; symbols mode adds `max_callers`, `max_callees`, `max_source_per_file`; flow mode adds `max_paths`, `exact`, `file_path`, `max_candidates` | Per-symbol relations and source, or flow paths between symbols |
-| `trace` | Find the call-graph path between two symbols | `from`, `to`, `source_mode`: none / snippet / body / outline, `max_depth`, `max_snippet_lines` | Shortest call path with optional function bodies at each hop |
+### `node` —— 细看单个符号
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 符号名 |
+| `include` | `trail`（默认：callers+callees+源码）/ `source` / `outline` / `summary` |
+
+响应（`trail`）：`source`（`file_path`、行范围、正文）、`callers[]`、
+`callees[]`。符号不存在 → `{"query", "error": "symbol not found"}`；
+多候选歧义 → `{"query", "candidates": [...]}`。
+
+### `explore` —— 批量看多个符号，或追数据流
+
+| 参数 | 说明 |
+|---|---|
+| `symbols[]` | 最多 10 个 |
+| `mode` | `symbols`（默认）/ `flow` |
+| symbols 模式 | `include_source`、`outline`、`max_callers`、`max_callees`、`max_source_per_file` |
+| flow 模式 | `max_depth`、`max_paths`、`exact`、`file_path`、`max_candidates` |
+
+响应：`symbols` 模式 → `files[]`（按文件分组，每符号含
+source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
+`paths[]`（节点+边）、`start_symbols`、`end_symbols`、`total_paths`、
+`truncated`。
+
+### `trace` —— 两个符号间的调用路径
+
+| 参数 | 说明 |
+|---|---|
+| `from`、`to` | 端点符号 |
+| `source_mode` | `none` / `snippet` / `body` / `outline` |
+| `max_depth`、`max_snippet_lines` | 深度与片段控制 |
+
+响应：`found`、`path[]`（每跳：`name`、`uid`、`file_path`、行范围，
+`snippet`/正文按 `source_mode`）、`path_length`；`source_mode="snippet"`
+时另有 `snippet_chars_budget` / `snippet_chars_used`，`"body"` 时每跳带
+`outgoing_calls[]`。无路径 → `found: false` + 空 `path`（不是错误）。
+可含 `graph_explain`（HTTP/异步桥被遍历时 `synthetic_edge_count` 非零）。
 
 ## Analysis
 
-| Tool | When to use | Key params | Returns |
-|------|-------------|------------|---------|
-| `relations` | Get callers, callees, refs, or type hierarchy | `symbol`, `kind`: callers / callees / both / refs / hierarchy, `limit`, `direction` | List of related symbols with edge metadata |
-| `impact` | Understand change blast radius | `scope`: changes / tests / dead_code / circular / dependents, `files`, `base_branch`, `granularity`, `confidence_threshold`, `max_nodes` / `max_per_layer` (changes-scope BFS caps) | Impacted symbols (with `truncated` + `total_impacted_discovered` when the blast-radius BFS is capped), affected tests, dead code list, or dependency cycles |
-| `architecture` | Get high-level project structure | `aspect`: overview / communities / frameworks / routes / services / async / boundaries / env / unresolved, `filter`, `limit` | Architectural view matching the requested aspect |
+### `relations` —— 定向查 callers/callees/引用/类型层级
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 符号名 |
+| `kind` | `callers` / `callees` / `both`（默认）/ `refs` / `hierarchy` |
+| `limit`、`direction` | `direction` 用于 hierarchy：`up` / `down` / `both` |
+
+响应：`callers`/`callees` → 关系数组（`name`、`uid`、`file_path`、
+`line`、`confidence`，caller 侧含 `call_count`）；`refs` → 引用位置数组；
+`hierarchy` → 祖先/后代数组（`relation_type`: supertype/subtype）。
+出口 ByteCap；可含 `graph_explain`。
+
+### `impact` —— 改动前看爆炸半径
+
+| 参数 | 说明 |
+|---|---|
+| `scope` | `changes` / `tests` / `dead_code` / `circular` / `dependents` |
+| `files`、`base_branch` | 显式文件集或 git 基线（默认读工作区 diff） |
+| `granularity`、`confidence_threshold` | 粒度与置信度过滤 |
+| `max_nodes` / `max_per_layer` | changes-scope 的 BFS 上限 |
+
+响应（按 `scope`）：
+
+- `changes`：`changed_files[]`、`impacted_symbols[]`、`impact_count`、
+  `truncated` + `total_impacted_discovered`（BFS 被钳制时）、
+  `confidence_filtered`；
+- `tests`：`impacted_tests[]`、`test_count`；
+- `dead_code`：`dead_code[]`（含 `reason`）、`count`、`total_found`、
+  `truncated`、`scan_limit`；
+- `circular`：`cycles[]`（节点环 + `cycle_length`）、`count`；
+- `dependents`：`file_path`、`dependents[]`、`count`（必须给
+  `files=[一个文件]`）。
+
+出口 ByteCap；可含 `graph_explain`。
+
+### `architecture` —— 高层项目结构
+
+| 参数 | 说明 |
+|---|---|
+| `aspect` | `overview` / `communities` / `frameworks` / `routes` / `services` / `async` / `boundaries` / `env` / `unresolved` |
+| `filter`、`limit` | 按名过滤与数量 |
+
+响应随 `aspect`：`overview` → `packages` / `languages` / `entry_points`；
+`communities` → 社区列表（内部/边界边计数）；`routes` →
+`route_handlers[]`（方法、路径、handler、框架）；`env` → `env_vars[]`
+（键、使用计数、文件）；`unresolved` → 未解析引用列表；等等。
+出口 ByteCap。
 
 ## Utilities
 
-| Tool | When to use | Key params | Returns |
-|------|-------------|------------|---------|
-| `files` | List indexed files or read a code region | `action`: list / region / expand, `path`, `start_line`, `end_line`, `context_lines` | File list, or source code for the requested line range |
-| `graph_query` | Run a Cypher-subset query against the code graph | `query` (Cypher string) | Envelope `{ results, row_count, truncated, truncated_reason, limit_applied }` (see [CYPHER.md](CYPHER.md)) |
-| `ingest_traces` | Feed OTLP runtime traces to validate HTTP edges | `traces[]` (service_name, method, path, status_code) | Validation summary with matched/boosted edge counts |
-| `adr` | Manage Architecture Decision Records | `action`: list / get / store / delete, `adr_id`, `title`, `status`, `context`, `decision` | ADR list or individual record |
+### `files` —— 列文件或读代码区间
 
-## Graph explainability (`graph_explain`)
+| 参数 | 说明 |
+|---|---|
+| `action` | `list` / `region` / `expand` |
+| `path`、`start_line`、`end_line`、`context_lines` | region/expand 用 |
 
-Graph read tools attach an additive `graph_explain` envelope when there is
-something to report: `impact` (incl. `scope="circular"`), `trace`, `relations`
-(incl. `kind="hierarchy"`), `graph_query`, and the graph-enrichment summary
-inside `context`/`search` responses. Fields: `edge_kinds_used` (what was
-actually traversed), `declared_edge_kinds` (the tool's static edge-kind
-contract), `synthetic_edge_count` / `runtime_evidence_edge_count`, `truncated`
-plus a stable `truncated_reason` token naming the first clipping cause, and
-`read_errors` (capped at 8) for DB reads that degraded to partial results
-instead of failing the call. A clean, untruncated run omits the field
-entirely. See [ARCHITECTURE.md](ARCHITECTURE.md#graph-explainability-graphexplain)
-for the per-tool edge-kind matrix.
+响应：`list` → 文件数组（路径、语言、大小、符号数；出口 ItemCap）；
+`region` → `{file_path, start_line, end_line, content, symbols[]}`；
+`expand` → 扩展到符号边界后的同形结构。
 
-## Recommended usage path
+### `graph_query` —— Cypher 子集查询
 
-A typical agent workflow:
+| 参数 | 说明 |
+|---|---|
+| `query` | Cypher 字符串（语法见 [CYPHER.md](CYPHER.md)） |
+
+响应信封：`{results[], row_count, truncated, truncated_reason?,
+limit_applied?, fast_path?, graph_explain?}`。`truncated_reason` 区分
+`default_limit`（默认 LIMIT 50 可能裁了行）与 `output_budget`；
+`fast_path` 仅变长遍历出现（见
+[CYPHER.md](CYPHER.md#fast-path-元数据fast_path)）。
+非法 Cypher → 错误（`-32603`，带解析诊断）。
+
+### `ingest_traces` —— 用 OTLP 运行时痕迹验证 HTTP 边
+
+| 参数 | 说明 |
+|---|---|
+| `traces[]` | 每条：`service_name`、`method`、`path`、`status_code`（≤1000 条/次） |
+
+响应：`{accepted, matched_to_edges, routes_matched, ambiguous,
+unmatched, spans_processed, total_submitted}`。匹配成功的边置信度提升到
+Verified（0.95），只推进 `evidence_epoch`（见
+[internals/STORAGE.md](internals/STORAGE.md#epoch-双时钟)）。
+
+### `adr` —— 架构决策记录管理
+
+| 参数 | 说明 |
+|---|---|
+| `action` | `list` / `get` / `store` / `delete` |
+| `adr_id`、`title`、`status`、`context`、`decision` | store/get/delete 用 |
+
+响应：`list` → `{adrs[]}`；`get` → 单条记录或 `error`；`store` →
+`{stored: adr_id}`；`delete` → `{deleted, adr_id}`。ADR 是仓库元数据
+（存于索引库 `adr` 表），不是 agent 记忆。
+
+## 推荐使用路径
+
+典型 agent 工作流：
 
 ```
 index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) -> graph_query(cypher)
 ```
 
-1. **Start with `context` for any new task.** It returns the most relevant
-   symbols, their relationships, and source in a single call. Prefer it over
-   manual search + node chains.
-2. **Use `explore` instead of multiple `node` calls.** For 3+ symbols, one
-   `explore(symbols)` call returns them all grouped by file. Use `mode="flow"`
-   to discover data/control-flow paths between symbols.
-3. **Use `trace(source_mode='body')` for complete flow understanding.** It
-   returns the full function body and outgoing calls for every hop — one call to
-   understand how A reaches B.
-4. **Use `impact` before editing code.** `impact(scope="changes")` shows the
-   blast radius of your current diff; `impact(scope="tests")` finds affected
-   tests.
-5. **Use `relations` for targeted queries.** When you need just callers or
-   callees of one symbol, `relations` is leaner than `explore`. Use
-   `kind="hierarchy"` for type inheritance trees.
-6. **Fall back to `graph_query` only when structured tools fall short.** Run
-   `status(aspect="schema")` first to discover node and edge types, then write
-   Cypher.
+1. **新任务先 `context`**。一次调用返回最相关符号、关系与源码；优先于
+   手工 search + node 链。
+2. **多符号用 `explore` 而不是循环 `node`**。3 个以上符号时一次
+   `explore(symbols)` 按文件分组全部返回；`mode="flow"` 发现符号间
+   数据/控制流路径。
+3. **完整理解流程用 `trace(source_mode="body")`**。每一跳带完整函数体与
+   出向调用——一次调用看懂 A 如何到达 B。
+4. **改代码前用 `impact`**。`scope="changes"` 看当前 diff 的爆炸半径；
+   `scope="tests"` 找受影响测试。
+5. **定向查询用 `relations`**。只要某符号的 callers 或 callees 时比
+   `explore` 更轻；`kind="hierarchy"` 看类型继承树。
+6. **结构化工具不够再上 `graph_query`**。先 `status(aspect="schema")`
+   发现节点/边类型，再写 Cypher。
 
-## Anti-patterns to avoid
+## 反模式
 
-- Don't grep/find when `search()` is available — it uses ranked FTS5 + grep +
-  preselection fusion with ranking.
-- Don't chain `search` + `node` when you want context — `context(task)` is one
-  round-trip.
-- Don't loop `node()` over many symbols — one `explore(symbols)` call returns
-  them all.
-- Don't use `trace(include_source=true)` for deep understanding — use
-  `trace(source_mode="body")` for complete function bodies.
-- Don't manually re-index after edits — file changes are auto-detected and
-  trigger incremental re-indexing (`auto_index.enabled` in `.codecortex.json`).
+- 有 `search()` 就别 grep/find——它是带排序的 FTS5 + grep + 预选融合。
+- 要上下文别串 `search` + `node`——`context(task)` 一个往返。
+- 别对一堆符号循环 `node()`——一次 `explore(symbols)` 全拿。
+- 深度理解别用 `trace(include_source=true)`——用
+  `trace(source_mode="body")` 拿完整函数体。
+- 编辑后别手工重索引——文件变更自动检测并增量重索引
+  （`.codecortex.json` 的 `auto_index.enabled`）。
 
-## CLI commands
+## CLI 命令
 
 ```
-codecortex mcp [--project-path PATH]   Start MCP stdio server
-codecortex install [--force]           Install MCP config for detected AI agents
-codecortex uninstall                   Remove MCP config from all AI agents
+codecortex mcp [--project-path PATH]   启动 MCP stdio 服务器
+codecortex install [--force]           为检测到的 AI agent 安装 MCP 配置
+codecortex uninstall                   从所有 AI agent 移除 MCP 配置
 ```

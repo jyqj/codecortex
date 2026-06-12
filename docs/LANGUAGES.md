@@ -1,141 +1,134 @@
-# Language & Framework Support
+# 语言与框架支持
 
-CodeCortex recognizes 30 auto-detected language identifiers (plus an `Unknown`
-fallback) across three extraction tiers, and ships 16 semantic framework
-resolvers.
+CodeCortex 自动识别 30 种语言标识符（外加 `Unknown` 兜底），分三个提取
+层级，并内置 16 个语义框架 resolver。
 
-## Extraction tiers
+## 提取层级
 
-### Semantic (confidence 0.85)
+### Semantic（置信度 0.85）
 
-Python, JavaScript, TypeScript, TSX, JSX, Rust
+Python、JavaScript、TypeScript、TSX、JSX、Rust
 
-Full tree-sitter parsing plus richer intra-file semantic extraction (qualified
-names, scopes, receiver/parameter types, dispatch sites, type refs). The tier
-describes parse-time extraction depth only — cross-file resolution happens
-later in cc-index and upgrades `resolution_confidence` separately.
+完整 tree-sitter 解析，外加更深的文件内语义提取（限定名、作用域、
+receiver/参数类型、dispatch sites、type refs）。层级只描述**解析期**的
+提取深度——跨文件解析在 cc-index 中后置进行，单独提升
+`resolution_confidence`。
 
-### TreeSitter (confidence 0.7)
+### TreeSitter（置信度 0.7）
 
-Java, Go, C, C++
+Java、Go、C、C++
 
-Full tree-sitter parsing with the standard symbol / call / import / semantic
-edge extraction, without the deeper intra-file semantic enrichment above.
+完整 tree-sitter 解析，做标准的符号 / 调用 / 导入 / 语义边提取，但没有
+上面那层更深的文件内语义富化。
 
-All ten Semantic and TreeSitter languages extract symbols, call edges, imports,
-data-flow edges (env access + param/return flow), and semantic edges. The
-remaining edge kinds are language-specific:
+全部 10 种 Semantic 与 TreeSitter 语言都提取符号、调用边、导入、数据流边
+（env 访问 + 参数/返回流）和语义边。其余边类型按语言而异：
 
-- **Route edges:** Python, JS/TS, Go at the parser level; Java (Spring) and Rust
-  (Actix / Axum) via framework resolvers.
-- **Outbound HTTP call edges:** Python and JS/TS at the AST level; Go
-  (`net/http`), Java (RestTemplate / WebClient), and Rust (reqwest) via
-  conservative pattern matching guarded by a URL-shape check.
-- **Test edges, dispatch sites, type assignments:** most complete for Python and
-  JS/TS; partial for the other languages.
+- **路由边**：Python、JS/TS、Go 在解析器层提取；Java（Spring）与 Rust
+  （Actix / Axum）经框架 resolver。
+- **出站 HTTP 调用边**：Python 与 JS/TS 在 AST 层；Go（`net/http`）、
+  Java（RestTemplate / WebClient）、Rust（reqwest）经 URL 形态校验守护的
+  保守模式匹配。
+- **test edges、dispatch sites、类型赋值**：Python 与 JS/TS 最完整；
+  其余语言部分支持。
 
-### Heuristic / generic fallback (confidence 0.3 – 0.5)
+### Heuristic / Generic 兜底（置信度 0.3 – 0.5）
 
-C#, PHP, Ruby, Swift, Kotlin, Dart, Scala, Lua, Vue, Svelte, Markdown, SQL,
-YAML, TOML, HCL, Dockerfile, Bash, Protobuf, GraphQL, CMake
+C#、PHP、Ruby、Swift、Kotlin、Dart、Scala、Lua、Vue、Svelte、Markdown、
+SQL、YAML、TOML、HCL、Dockerfile、Bash、Protobuf、GraphQL、CMake
 
-Heuristic extraction captures symbols, imports, and best-effort intra-file call
-edges via pattern matching; it does not resolve cross-file calls or type
-hierarchies.
+启发式提取捕获符号、导入与尽力而为的文件内调用边；不解析跨文件调用或
+类型层级。
 
-### Confidence tiers
+### 置信度分层
 
-| Tier | Default | Source |
-|------|---------|--------|
-| Generic | 0.3 | Regex-based extraction |
-| Heuristic | 0.5 | Pattern matching with language awareness |
-| TreeSitter | 0.7 | Full AST parsing |
-| Semantic | 0.85 | Full AST parsing + richer intra-file semantic extraction |
-| Verified | 0.95 | Runtime-validated (via `ingest_traces`) |
+| 层 | 默认 | 来源 |
+|------|------|------|
+| Generic | 0.3 | 正则提取 |
+| Heuristic | 0.5 | 带语言感知的模式匹配 |
+| TreeSitter | 0.7 | 完整 AST 解析 |
+| Semantic | 0.85 | 完整 AST + 更深的文件内语义提取 |
+| Verified | 0.95 | 运行时验证（经 `ingest_traces`） |
 
-Parser-assigned extraction confidence per element kind is single-sourced in
-`ParserTier::element_confidence` (`crates/cc-model/src/lib.rs`); kinds not
-listed fall back to the tier default above:
+解析器按元素 kind 赋的提取置信度单源化在
+`ParserTier::element_confidence`（`crates/cc-model/src/lib.rs`）；未列出
+的 kind 回落到上面的层默认值：
 
-| Element kind | Semantic | TreeSitter |
-|--------------|----------|------------|
-| Symbol | 0.85 | 0.7 |
-| Call edge / call ref | 0.7 | 0.7 |
-| Identifier ref | 0.6 | 0.6 |
-| Semantic edge (declared) | 0.95 | 0.95 |
-| Type ref (data flow) | 0.85 | — |
-| Route | 0.85 | 0.8 |
-| HTTP call (AST-detected) | — | 0.8 |
-| Dispatch site | 0.85 | — |
+| 元素 kind | Semantic | TreeSitter |
+|-----------|----------|------------|
+| 符号 | 0.85 | 0.7 |
+| 调用边 / 调用引用 | 0.7 | 0.7 |
+| 标识符引用 | 0.6 | 0.6 |
+| 语义边（声明式） | 0.95 | 0.95 |
+| type ref（数据流） | 0.85 | — |
+| 路由 | 0.85 | 0.8 |
+| HTTP 调用（AST 检测） | — | 0.8 |
+| dispatch site | 0.85 | — |
 
-HTTP call edges carry the tier of their detection mechanism: AST-detected ones
-are recorded as TreeSitter (0.8), regex-detected ones via
-`http_call_helpers.rs` as Heuristic (0.7). Env-access data-flow edges are
-always regex-detected and recorded as Heuristic (0.8). Deliberate deviations stay at the
-call site as named constants — e.g. per-framework route calibration (Next.js
-0.92, Express 0.90, NestJS 0.88, middleware 0.80, DRF 0.75, Django urls 0.8),
-JS/TS AST-based call edges (0.85), and throws edges inferred from
-`raise`/`throw` statements (0.9). Resolution-time confidence assigned by the
-cc-index resolver is a separate concept and not covered by this matrix.
+HTTP 调用边携带其**检测机制**的层级：AST 检测的记为 TreeSitter（0.8），
+经 `http_call_helpers.rs` 正则检测的记为 Heuristic（0.7）。env 访问数据流
+边总是正则检测，记为 Heuristic（0.8）。有意的偏离以具名常量留在调用点——
+如按框架的路由校准（Next.js 0.92、Express 0.90、NestJS 0.88、中间件
+0.80、DRF 0.75、Django urls 0.8）、JS/TS AST 调用边（0.85）、从
+`raise`/`throw` 推断的 throws 边（0.9）。cc-index 解析器赋的解析期置信度
+是另一个概念，不在本矩阵内。
 
-## Extraction capability notes
+## 提取能力备注
 
-Edge extraction timing is deliberately asymmetric between the parser layer
-(cc-parsers) and the framework-resolver layer (cc-index):
+边提取的时机在解析器层（cc-parsers）与框架 resolver 层（cc-index）之间
+是刻意不对称的：
 
-- **Route edges** are extracted at parse time for Go, Python, and JS/TS
-  (`crates/cc-parsers/src/{go.rs, python/mod.rs, jsts/mod.rs}`). Java has no
-  parse-time route extraction: Spring routes are synthesized entirely by the
-  framework resolver (`crates/cc-index/src/framework_resolvers/spring.rs`).
-  Go routes are additionally enriched by `go_router.rs` (group/mount prefixes,
-  cross-file handler UIDs).
-- **Dispatch sites** are produced only by the Python, JS/TS, and Vue SFC
-  parsers (`python/mod.rs`, `jsts/mod.rs`, `sfc.rs`).
-- **Outbound HTTP call edges** come from AST extraction in Python and JS/TS,
-  and from the shared conservative pattern matcher
-  (`crates/cc-parsers/src/http_call_helpers.rs`) for Go, Java, and Rust.
+- **路由边**在解析期提取的语言：Go、Python、JS/TS
+  （`crates/cc-parsers/src/{go.rs, python/mod.rs, jsts/mod.rs}`）。Java
+  没有解析期路由提取：Spring 路由完全由框架 resolver 合成
+  （`crates/cc-index/src/framework_resolvers/spring.rs`）。Go 路由另由
+  `go_router.rs` 富化（group/mount 前缀、跨文件 handler UID）。
+- **dispatch sites** 只由 Python、JS/TS 与 Vue SFC 解析器产出
+  （`python/mod.rs`、`jsts/mod.rs`、`sfc.rs`）。
+- **出站 HTTP 调用边**来自 Python 与 JS/TS 的 AST 提取，以及 Go、Java、
+  Rust 的共享保守模式匹配器
+  （`crates/cc-parsers/src/http_call_helpers.rs`）。
 
-## Semantic framework resolvers (16)
+## 语义框架 resolver（16）
 
-Resolvers attach routes and handlers to the code graph and, at the **full** tier,
-resolve handler references across files.
+resolver 把路由与 handler 挂到代码图上；**full** 层级还做跨文件 handler
+引用解析。
 
-### Full (15) — routes + handlers + cross-file resolution
+### Full（15）—— 路由 + handler + 跨文件解析
 
-| Language | Frameworks |
-|----------|-----------|
-| JavaScript / TypeScript | Express, NestJS, Hono, React, Vue, Svelte / SvelteKit |
-| Python | Django, Flask, FastAPI |
-| Go | Gin / Echo / Fiber / Chi / Gorilla (unified) |
+| 语言 | 框架 |
+|------|------|
+| JavaScript / TypeScript | Express、NestJS、Hono、React、Vue、Svelte / SvelteKit |
+| Python | Django、Flask、FastAPI |
+| Go | Gin / Echo / Fiber / Chi / Gorilla（统一实现） |
 | Java | Spring / Spring Boot |
-| Rust | Actix-web, Axum |
+| Rust | Actix-web、Axum |
 | PHP | Laravel |
 | Ruby | Rails |
 
-### Partial (1) — handler UID resolution only
+### Partial（1）—— 仅 handler UID 解析
 
-| Language | Framework |
-|----------|-----------|
+| 语言 | 框架 |
+|------|------|
 | C# | ASP.NET |
 
-### Adding a framework resolver
+### 新增框架 resolver
 
-Create `crates/cc-index/src/framework_resolvers/<framework>.rs`, implement the
-`FrameworkResolver` trait, and register it with one `registry.register(...)`
-line in `default_registry()`
-([`framework_resolvers/mod.rs`](../crates/cc-index/src/framework_resolvers/mod.rs)).
-[`fastapi.rs`](../crates/cc-index/src/framework_resolvers/fastapi.rs) is a
-compact full-tier reference. For HTTP frameworks with mount/prefix semantics
-(routers, blueprints, URL includes), declare a `MountSpec` and delegate
-`resolve_cross_file` to the shared
+创建 `crates/cc-index/src/framework_resolvers/<framework>.rs`，实现
+`FrameworkResolver` trait，在 `default_registry()` 加一行
+`registry.register(...)`
+（[`framework_resolvers/mod.rs`](../crates/cc-index/src/framework_resolvers/mod.rs)）。
+[`fastapi.rs`](../crates/cc-index/src/framework_resolvers/fastapi.rs)
+是紧凑的 full 层参考实现。对有 mount/前缀语义的 HTTP 框架（router、
+blueprint、URL include），声明一个 `MountSpec` 并把 `resolve_cross_file`
+委托给共享的
 [`mount_resolution.rs`](../crates/cc-index/src/framework_resolvers/mount_resolution.rs)
-core instead of hand-writing the collect → prefix → bind-UID steps. See the
-[Extension points](ARCHITECTURE.md#extension-points) catalog in
-ARCHITECTURE.md for the other seams.
+核心，不要手写 collect → 前缀 → 绑 UID 三步。其他缝隙见
+[ARCHITECTURE.md](ARCHITECTURE.md#扩展点) 的扩展点目录。
 
-## Detected framework signals
+## 仅检测的框架信号
 
-Recognized via manifest files and import patterns but without a dedicated
-resolver (detection-only, no semantic enrichment):
+通过 manifest 文件与导入模式识别、但没有专属 resolver（只检测，无语义
+富化）：
 
-Koa, Fastify, Next.js, Nuxt, Angular, Rocket, Remix, Vue Router, net/http
+Koa、Fastify、Next.js、Nuxt、Angular、Rocket、Remix、Vue Router、net/http

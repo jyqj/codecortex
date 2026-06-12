@@ -1,168 +1,125 @@
-# Test Plan
+# 测试计划
 
-## Unit Tests
+最近一次 `cargo test -q --workspace --all-targets`：1107 passed + 11 ignored
+—— 1086 个 crate/单测目标 + 13 个 `type_catalog_bench`、3 个
+`mcp_dispatch_seam`、5 个 `mcp_stdio` 集成测试（11 个 ignored：cc-eval 的
+5 个真实工作区/增量基准、`scale_bench` 的 3 个合成规模基准、cc-db 重建
+压力循环、`type_catalog_bench` / `graph_traversal_bench` 的 2 个
+release-only 微基准）。基线数字与本文档的一致性由
+`scripts/update-doc-baselines.sh` 核对。
 
-1107 passed + 11 ignored in the latest `cargo test -q --workspace --all-targets` —
-1086 crate/unit-target tests + 13 `type_catalog_bench`, 3 `mcp_dispatch_seam`,
-and 5 `mcp_stdio` integration tests (the 11 ignored cases: the 5
-real-workspace/incremental benchmarks in cc-eval, the 3 synthetic scale
-benchmarks in `scale_bench`, the cc-db rebuild stress loop, and the 2
-release-only micro-benchmarks in `type_catalog_bench` /
-`graph_traversal_bench`).
+## 单元测试
 
-| Crate | Tests | Coverage Focus |
-|-------|-------|----------------|
-| cc-db | 116 | Schema v4 rebuild-on-mismatch, chunk text encoding (incl. pre-compressed blob side-car), SQL injection, architecture, ADR, edges, frontier, graph, query, batch export fingerprints |
-| cc-eval | 19 passed + 5 ignored | Assertion types (incl. field_equals, output_not_contains, field_matches_regex, array_contains_item, expected_symbols Recall@5 threshold with per-case `min_recall`, expect_error), corpus loading, fixture integration over the real MCP wire path, synthetic repo generator determinism, ignored real-workspace/incremental benchmark tests |
-| cc-index | 317 | Framework resolvers (16, incl. cross-file), dispatch synthesis, multi-level Louvain community detection, resolver tier aliases, route-resolution provenance, dirty-closure status classification, framework detection signals, export-fingerprint contract, adaptive memory budget, staged-commit generation guard, config-linker signature gate |
-| cc-model | 51 | Route normalization, data structures, enum round-trip, element-confidence matrix baselines, project root discovery, partial config defaults, external cache-dir paths, GraphExplain envelope, tool_graph_subsets catalog consistency + matrix snapshot |
-| cc-parsers | 177 | Tree-sitter parsing for 10 languages, symbol extraction, AST-based Rust/C/C++ call graphs, spec-driven heuristic intra-file call edges, C/C++/Rust param/return data-flow |
-| cc-search | 214 | Cypher parser/executor, variable-length path cap, regex validation, WHERE/Degree identifier validation, FTS5/RRF search, grep SQL scoping, search engine, result-cache Arc reuse, graph-aware result cache (epoch keying, degraded-result exclusion), fast-path kinds derived from catalog, preselect substring recall via trigram |
-| cc-server | 191 | Engine lifecycle, impact analyzer BFS, confidence-threshold filtering, exposed explore/trace params, handler dispatch integration, stdio MCP E2E, output limits, UTF-8-safe truncation, graph trace, cycles, flow, build-gate serialization, watcher acquire-before-drain, graph_explain attachment |
+| Crate | 测试数 | 覆盖重点 |
+|-------|-------|----------|
+| cc-db | 116 | schema v5 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹 |
+| cc-eval | 19 passed + 5 ignored | 断言类型（含 field_equals、output_not_contains、field_matches_regex、array_contains_item、带 per-case `min_recall` 的 expected_symbols Recall@5 阈值、expect_error）、语料加载、走真实 MCP 线路的 fixture 集成、合成仓库生成器确定性、ignored 的真实工作区/增量基准 |
+| cc-index | 317 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门 |
+| cc-model | 51 | 路由归一化、数据结构、枚举往返、元素置信度矩阵基线、项目根发现、部分配置默认值、外部缓存目录路径、GraphExplain 信封、tool_graph_subsets 目录一致性 + 矩阵快照 |
+| cc-parsers | 177 | 10 种语言的 tree-sitter 解析、符号提取、基于 AST 的 Rust/C/C++ 调用图、spec 驱动的启发式文件内调用边、C/C++/Rust 参数/返回数据流 |
+| cc-search | 214 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
+| cc-server | 191 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着 |
 
-## Eval Suite (cc-eval)
+依赖严格单向，每个 crate 都能独立编译测试：`cargo test -p cc-db`、
+`cargo test -p cc-index` 不需要构建整个工作区。
 
-94 corpus cases covering all 14 MCP tools + error paths + boundary conditions, across Python/JS/TS/Rust/Go/Java/C/C++ — 24 of them gold accuracy cases carrying `expected_symbols` retrieval assertions (latest run: Avg Recall@5 1.00, Avg MRR 0.92). Every case is dispatched through the real MCP wire path: an in-process duplex JSON-RPC connection to the same rmcp `CodeCortexMcpServer` served over stdio, so schema deserialization, parameter sanitization, handler dispatch, and output budgeting are all under eval. Run with `cargo test -p cc-eval`.
+## Eval 套件（cc-eval）
 
-### Corpus Cases
+94 个 corpus 用例，覆盖全部 14 个 MCP 工具 + 错误路径 + 边界条件，横跨
+Python/JS/TS/Rust/Go/Java/C/C++ —— 其中 24 个是携带 `expected_symbols`
+检索断言的 gold 准确性用例（最近一轮：Avg Recall@5 1.00、Avg MRR 0.92）。
 
-| Case | Tool | What It Validates |
-|------|------|-------------------|
-| status_basic | status | Index health, capabilities, schema output |
-| index_build | index | Full index build on fixture project |
-| search_hybrid | search | Ranked local fusion search returns relevant hits |
-| search_symbol | search | Symbol-mode exact name lookup |
-| search_rust_function | search | Rust function symbol search |
-| search_go_function | search | Search for Go handler function (handleGetUser) |
-| search_java_controller | search | Search for Spring controller (UserController) |
-| search_golden_js | search | Golden test: search for user processing functions |
-| search_golden_python | search | Golden test: search for user API functions |
-| search_exact_symbol_name | search | Exact symbol search for calculate_total |
-| context_task | context | Task-driven context extraction |
-| context_flask_routes | context | Flask route context building |
-| context_golden_refactor | context | Golden test: context for refactoring formatName |
-| context_with_intent | context | Context query with intent=fix to prioritize bug-fix relevant symbols |
-| context_graph_enriched | context | Context search path returns graph-enriched evidence |
-| node_trail | node | Single symbol trail (callers + callees) |
-| node_source_rust | node | Rust function source inspection |
-| node_outline | node | File outline using include=outline for utils.js symbols |
-| explore_symbols | explore | Batch symbol inspection |
-| explore_flow_js | explore | JS symbol data flow exploration |
-| explore_models_hierarchy | explore | Explore Python model classes (User, AdminUser) |
-| explore_flow_mode | explore | Explore data flow from processUser |
-| trace_path | trace | Call-graph path discovery |
-| trace_cross_file_js | trace | JS cross-file call chain (getUserRoute → formatName) |
-| trace_rust_intra | trace | Rust intra-file call chain |
-| trace_same_symbol | trace | Trace from a symbol to itself (trivial path) |
-| relations_callers | relations | Caller relationship extraction |
-| relations_callees_process | relations | Callee extraction for processUser |
-| relations_cross_file_python | relations | Cross-file callers of get_user in Python |
-| relations_hierarchy | relations | Type hierarchy for User class |
-| impact_dead_code | impact | Dead code detection |
-| impact_dependents_utils | impact | File dependent analysis for utils.js |
-| impact_circular | impact | Circular dependency detection |
-| architecture_overview | architecture | Project structure overview |
-| architecture_routes | architecture | Route extraction from frameworks |
-| architecture_routes_express | architecture | Express route extraction |
-| architecture_frameworks | architecture | Framework detection finds multiple frameworks |
-| architecture_env | architecture | Environment variable references |
-| architecture_services | architecture | Service bindings |
-| files_list | files | File listing from index |
-| graph_query_basic | graph_query | Cypher subset query execution |
-| graph_query_callers | graph_query | Cypher query for callers |
-| graph_query_aggregation | graph_query | COUNT aggregate with AS alias |
-| graph_query_optional_match | graph_query | Anchored OPTIONAL MATCH preserves source on no target |
-| graph_query_regex_regexp | graph_query | `=~` regex via SQLite REGEXP UDF |
-| graph_query_union | graph_query | UNION combines two sub-queries |
-| graph_query_variable_length_calls | graph_query | Variable-length `[:CALLS*1..3]` path traversal |
-| ingest_traces_basic | ingest_traces | Runtime evidence ingestion |
-| adr_list | adr | ADR listing |
-| search_typescript_class | search | TypeScript class search (ItemsService) |
-| node_outline_typescript | node | TypeScript file outline (ItemsController) |
-| search_c_function | search | C function search (compute_area) |
-| trace_c_intra | trace | C intra-file call chain (compute_area → multiply) |
-| relations_callers_c | relations | C callers of multiply |
-| search_cpp_method | search | C++ method search (has_funds) |
-| trace_cpp_method | trace | C++ method call chain (withdraw → has_funds) |
-| relations_callees_cpp | relations | C++ callees of withdraw |
-| error_invalid_cypher | graph_query | Invalid Cypher query returns error |
-| error_node_missing | node | Node lookup for nonexistent symbol returns error |
-| error_trace_missing_symbol | trace | Trace between nonexistent symbols returns error |
-| error_files_invalid_action | files | Invalid files action returns an explicit error contract |
-| error_impact_no_index | impact | Impact with no changed files returns valid response |
-| error_search_empty_query | search | Empty query returns empty or valid response |
-| search_golden_c_compute_area | search | Golden: exact symbol lookup for C function compute_area |
-| search_golden_cpp_transfer | search | Golden: exact symbol lookup for C++ free function banking::transfer |
-| search_golden_fuzzy_calculate | search | Golden: fuzzy symbol lookup 'calculate' finds calculate_total |
-| search_golden_fuzzy_create_user | search | Golden: fuzzy symbol lookup 'create_use' finds create_user (prefix match, not exact) |
-| search_golden_go_handler | search | Golden: exact symbol lookup for Go gin handler handleGetUser |
-| search_golden_java_list_users | search | Golden: exact symbol lookup for Spring controller method listUsers |
-| search_golden_js_middleware | search | Golden: exact symbol lookup for Express middleware authMiddleware |
-| search_golden_py_class_view | search | Golden: exact symbol lookup for Django class-based view UserListView |
-| search_golden_rust_process_order | search | Golden: exact symbol lookup for Rust function process_order |
-| search_golden_ts_items_service | search | Golden: exact symbol lookup for NestJS service class ItemsService |
-| search_golden_hybrid_geometry | search | Golden: hybrid search for rectangle area surfaces both C geometry functions |
-| search_golden_hybrid_graph_caller | search | Golden (graph-flavored): 'who calls formatName' must rank formatName top-5 and surface its caller processUser via the CALLS edge |
-| search_golden_hybrid_logging | search | Golden: hybrid search for logging ranks the log method top-5 |
-| search_golden_hybrid_order | search | Golden: hybrid search for order totals surfaces the Rust order functions |
-| search_golden_hybrid_validate_email | search | Golden: hybrid search for email validation ranks validateEmail in top 5 |
-| search_golden_hybrid_withdraw | search | Golden: hybrid search for withdrawal logic ranks the C++ withdraw method in top 5 |
-| context_golden_bank_transfer | context | Golden: context for bank transfers surfaces the C++ account methods |
-| context_golden_format_user | context | Golden: context for user-name formatting surfaces processUser and formatName |
-| context_golden_order_total | context | Golden: context for order-total calculation surfaces the Rust order chain |
-| node_golden_trail_process_user | node | Golden: node trail of processUser shows its callee formatName and caller getUserRoute |
-| explore_golden_flow_route_chain | explore | Golden: flow exploration getUserRoute → formatName passes through processUser |
-| trace_golden_c_perimeter_multiply | trace | Golden: C call path rectangle_perimeter → multiply exists |
-| trace_golden_cpp_transfer_deposit | trace | Golden: C++ call path transfer → deposit exists with both endpoints |
-| trace_golden_js_route_chain | trace | Golden: cross-file JS path getUserRoute → processUser → formatName, intermediate hop present |
-| trace_golden_rust_order_total | trace | Golden: Rust call path process_order → calculate_total exists |
-| relations_golden_hierarchy_user | relations | Golden: type hierarchy of User shows BaseModel ancestor and AdminUser descendant |
-| relations_golden_py_get_user_callers | relations | Golden: cross-file Python callers of get_user include Flask and Django views |
-| graph_query_golden_multiply_callers | graph_query | Golden: Cypher CALLS query finds both C callers of multiply |
-| impact_golden_dead_code_known | impact | Golden: dead code scan finds the deliberately-unreferenced Go helpers |
-| impact_golden_geometry_callers | impact | Golden: changing geometry.c impacts compute_area and rectangle_perimeter |
-| impact_golden_utils_blast_radius | impact | Golden: changing utils.js impacts its cross-file callers |
+每个用例都经**真实 MCP 线路**分发：进程内 duplex JSON-RPC 连接到与二进制
+stdio 服务完全相同的 rmcp `CodeCortexMcpServer`——schema 反序列化、参数
+`sanitize()` 校验、handler 分发、输出预算全部在 eval 覆盖之下；schema
+漂移会让 eval 失败，而不是只有 E2E 测试能抓到。运行：
+`cargo test -p cc-eval`。
 
-### Assertion Types
+用例的权威清单是 `crates/cc-eval/corpus/` 下的 TOML 文件（每用例一个
+文件，文件名即用例名）。分布概况：
 
-- `is_success` — tool did not error
-- `output_contains` — substring match on serialized output
-- `output_not_contains` — negative substring match (fails if substring is found)
-- `field_exists` — JSON path exists (supports dot-notation and array indices)
-- `field_equals` — exact value match at JSON path (String, Number, Bool, Null)
-- `field_matches_regex` — regex match on string value at JSON path
-- `array_contains_item` — check that an array at a JSON path contains a specific value
-- `min_results` — array at path has >= N items
-- `expected_symbols` — retrieval quality: checks that expected symbol names appear in results; computes Recall@5 and MRR metrics. The per-case pass threshold is `min_recall` (default 0.7; single-symbol exact cases pin it to 1.0)
-- `expect_error` — case-level flag: the tool is expected to return an error; `is_success` assertions are skipped
+- 每个工具至少 2 个用例（基本路径 + 参数变体）；
+- `search` / `context` / `trace` / `relations` / `impact` /
+  `graph_query` 配有跨语言的 gold 用例（精确符号查找、模糊前缀、混合
+  语义查询、跨文件调用链、类型层级、已知死代码）；
+- 6 个 `error_*` 用例锁定错误契约（非法 Cypher、不存在的符号/工具
+  参数、空查询等）。
 
-### Fixture Project
+### 断言类型
 
-- 18 source files across 9 languages and 4+ framework resolvers:
-  - JavaScript (4): routes.js, handler.js, middleware.js, utils.js
-  - Python (4): app.py, api_views.py, models.py, config.py
-  - Rust (2): lib.rs, api_handler.rs
-  - Go (1): main.go
-  - Java (1): UserController.java
-  - TypeScript (2): app_controller.ts, types.ts
-  - C (2): geometry.c, geometry.h
-  - C++ (1): account.cpp
-  - Server/framework (1): server.py
-- Frameworks covered: Express, Flask, Spring, Go routers (Gin/Echo/Fiber/Chi/Gorilla)
-- p95/max latency and output size tracked via `bench::run_benchmark()`
-- Real workspace benchmark: `benchmark_real_workspace` copies the CodeCortex workspace (234 files in latest run) into a temp dir and writes `docs/benchmarks/real_workspace_latest.md` when requested
-- Incremental index report benchmark: `benchmark_incremental_index_report_correctness` is ignored by default and covers full build -> no-op incremental -> one-file incremental update without writing benchmark artifacts
-- Incremental latency benchmarks: `cargo test -p cc-eval bench_incremental -- --ignored --nocapture` runs three ignored scenarios (`bench_incremental_noop`, `bench_incremental_single_file`, `bench_incremental_dirty_closure`) over a synthesized 41-file TypeScript project; each prints p50/p95/max from `IndexReport.elapsed_ms` plus the `phase_timing` breakdown and hard-asserts counters and `dirty_propagation` status (see docs/BENCHMARK.md)
-- Synthetic scale benchmarks: `cc-eval/tests/scale_bench.rs` runs ignored 1k/10k benchmarks (50k gated behind `CODECORTEX_BENCH_50K=1`) over the deterministic generator in `cc-eval/src/synth.rs`; ground-truth call-graph facts double as scale-correctness assertions (see docs/BENCHMARK.md)
-- Recall@5 and MRR implemented via `expected_symbols` assertions (24 gold corpus cases active)
+- `is_success` —— 工具未报错
+- `output_contains` —— 序列化输出的子串匹配
+- `output_not_contains` —— 负向子串匹配（找到即失败）
+- `field_exists` —— JSON 路径存在（支持点路径与数组下标）
+- `field_equals` —— JSON 路径上的精确值匹配（String/Number/Bool/Null）
+- `field_matches_regex` —— JSON 路径上字符串值的正则匹配
+- `array_contains_item` —— JSON 路径上的数组包含指定值
+- `min_results` —— 路径上的数组至少 N 项
+- `expected_symbols` —— 检索质量：期望符号名出现在结果中；计算 Recall@5
+  与 MRR。逐用例通过阈值为 `min_recall`（默认 0.7；单符号精确用例钉为
+  1.0）
+- `expect_error` —— 用例级标志：预期工具返回错误；跳过 `is_success`
 
-## Integration Testing
+### Fixture 项目
 
-MCP server integration has three layers:
-- Eval harness: runs all 94 corpus cases through the REAL MCP wire path — an in-process duplex JSON-RPC connection to the same rmcp `CodeCortexMcpServer` the binary serves over stdio, covering schema deserialization, parameter `sanitize()` validation, handler dispatch, and output budgeting (no stdio/child process).
-- Dispatch seam (3 tests, `mcp_dispatch_seam.rs`): locks the wire-path contract — schema-invalid params are rejected, unknown tools error, and results arrive as unwrapped handler JSON.
-- Stdio E2E (5 tests): launches the `codecortex mcp` binary via rmcp `TokioChildProcess`, lists the 14 tools, then exercises `index`/`status`/`search`, the graph tools (`context`/`node`/`explore`/`trace`/`relations`), the analysis tools (`impact`/`architecture`/`files`/`graph_query`/`adr`), and project-switch cache isolation over the real MCP stdio protocol.
+- 18 个源文件，9 种语言，4+ 框架 resolver：
+  - JavaScript（4）：routes.js、handler.js、middleware.js、utils.js
+  - Python（4）：app.py、api_views.py、models.py、config.py
+  - Rust（2）：lib.rs、api_handler.rs
+  - Go（1）：main.go
+  - Java（1）：UserController.java
+  - TypeScript（2）：app_controller.ts、types.ts
+  - C（2）：geometry.c、geometry.h
+  - C++（1）：account.cpp
+  - 服务端/框架（1）：server.py
+- 覆盖框架：Express、Flask、Spring、Go 路由器（Gin/Echo/Fiber/Chi/Gorilla）
+- p95/max 延迟与输出大小经 `bench::run_benchmark()` 跟踪
 
-## Pre-commit
+## 基准测试
 
-No pre-commit hooks configured. Run `cargo fmt --all -- --check && cargo clippy --workspace --all-targets -- -D warnings && cargo test --workspace --all-targets && cargo test -p cc-eval -- integration_fixtures_and_corpus`. For real-workspace performance, run `CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture`.
+基准的运行方式、最近结果与写阶段优化史见
+[BENCHMARK.md](BENCHMARK.md)。测试侧的入口：
+
+- 真实工作区基准：`benchmark_real_workspace`（ignored）把 CodeCortex
+  工作区拷到临时目录索引并跑 10 个代表性 MCP 用例；
+- 增量正确性：`benchmark_incremental_index_report_correctness`
+  （ignored）覆盖全量 → no-op → 单文件增量的报告计数器；
+- 增量延迟：`cargo test -p cc-eval bench_incremental -- --ignored
+  --nocapture` 跑 3 个场景并硬断言 `dirty_propagation` 状态；
+- 合成规模：`cc-eval/tests/scale_bench.rs` 的 1k/10k（/50k）矩阵，
+  生成器 ground-truth 兼作规模正确性断言。
+
+## 集成测试
+
+MCP 服务器集成分三层：
+
+- **Eval harness**：94 个 corpus 用例全部走真实 MCP 线路（见上）。
+- **分发缝（3 个测试，`mcp_dispatch_seam.rs`）**：锁定线路契约——
+  schema 非法参数被拒、未知工具报错、结果以未包装的 handler JSON 到达。
+- **Stdio E2E（5 个测试）**：经 rmcp `TokioChildProcess` 启动
+  `codecortex mcp` 二进制，列出 14 个工具，然后走真实 MCP stdio 协议
+  依次操练 `index`/`status`/`search`、图工具
+  （`context`/`node`/`explore`/`trace`/`relations`）、分析工具
+  （`impact`/`architecture`/`files`/`graph_query`/`adr`）与项目切换的
+  缓存隔离。
+
+## 提交前检查
+
+未配置 pre-commit 钩子。提交前运行：
+
+```bash
+cargo fmt --all -- --check \
+  && cargo clippy --workspace --all-targets -- -D warnings \
+  && cargo test --workspace --all-targets \
+  && cargo test -p cc-eval -- integration_fixtures_and_corpus
+```
+
+真实工作区性能回归：
+
+```bash
+CODECORTEX_WRITE_REAL_BENCHMARK=1 \
+  cargo test -p cc-eval benchmark_real_workspace -- --ignored --nocapture
+```
+
+改动影响测试数/语料数后，运行 `scripts/update-doc-baselines.sh` 核对本
+文档的基线数字。

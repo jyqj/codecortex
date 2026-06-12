@@ -59,7 +59,7 @@ echo "  cc-server:  ${SERVER_TESTS}"
 EXPECTED_DB=$(grep 'cc-db' docs/TEST_PLAN.md | grep -o '| [0-9]* |' | head -1 | tr -dc '0-9')
 EXPECTED_PASSED=$(head -5 docs/TEST_PLAN.md | grep -o '[0-9]* passed' | head -1 | grep -o '[0-9]*')
 EXPECTED_IGNORED=$(head -5 docs/TEST_PLAN.md | grep -o '[0-9]* ignored' | head -1 | grep -o '[0-9]*')
-EXPECTED_CORPUS=$(grep -o '[0-9]* corpus cases' docs/TEST_PLAN.md | head -1 | grep -o '[0-9]*')
+EXPECTED_CORPUS=$(grep -o '[0-9]* 个 corpus 用例' docs/TEST_PLAN.md | head -1 | grep -o '[0-9]*')
 
 DRIFT=0
 if [ "$DB_TESTS" != "$EXPECTED_DB" ] 2>/dev/null; then

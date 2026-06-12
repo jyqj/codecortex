@@ -1,6 +1,6 @@
 # Synthetic Scale Benchmark: 10k
 
-Generated: 2026-06-12T01:45:25.179225+00:00
+Generated: 2026-06-12T11:48:03.404784+00:00
 Dataset: synthetic 10k (seed 0xc0ffee)
 Files: 10000 | Symbols: 55617
 
@@ -8,9 +8,9 @@ Files: 10000 | Symbols: 55617
 
 | Metric | Value |
 |--------|-------|
-| generate wall | 939ms |
-| cold full index wall | 86126ms |
-| index db size | 256.9 MB |
+| generate wall | 743ms |
+| cold full index wall | 17515ms |
+| index db size | 256.8 MB |
 
 ## Incremental Latency: single_file
 
@@ -18,12 +18,12 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 2221ms | 2271ms | 2271ms |
-| postprocess | 890ms | 981ms | 981ms |
-| write | 819ms | 847ms | 847ms |
-| resolve | 366ms | 372ms | 372ms |
-| analysis | 84ms | 89ms | 89ms |
-| scan_diff | 72ms | 74ms | 74ms |
+| total elapsed | 1128ms | 1149ms | 1149ms |
+| write | 540ms | 542ms | 542ms |
+| resolve | 230ms | 235ms | 235ms |
+| postprocess | 210ms | 211ms | 211ms |
+| analysis | 75ms | 85ms | 85ms |
+| scan_diff | 67ms | 68ms | 68ms |
 | parse | 1ms | 1ms | 1ms |
 
 ## Incremental Latency: five_percent_batch
@@ -32,25 +32,25 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 9428ms | 19576ms | 19576ms |
-| write | 6075ms | 13271ms | 13271ms |
-| postprocess | 1653ms | 4066ms | 4066ms |
-| resolve | 1341ms | 1718ms | 1718ms |
-| analysis | 133ms | 138ms | 138ms |
-| scan_diff | 127ms | 232ms | 232ms |
-| parse | 47ms | 83ms | 83ms |
+| total elapsed | 4797ms | 5292ms | 5292ms |
+| write | 3550ms | 3923ms | 3923ms |
+| resolve | 624ms | 634ms | 634ms |
+| postprocess | 429ms | 521ms | 521ms |
+| analysis | 81ms | 84ms | 84ms |
+| scan_diff | 73ms | 82ms | 82ms |
+| parse | 22ms | 23ms | 23ms |
 
 ## Per-Tool Latency
 
 | Scenario | Tool | Iterations | p50 | p95 | Max | Avg Output |
 |----------|------|------------|-----|-----|-----|------------|
-| search_hybrid_needle_phrase | search | 7 | 0ms | 1ms | 1ms | 8.4 KB |
-| search_hybrid_mixed_terms | search | 7 | 0ms | 1ms | 1ms | 28.9 KB |
+| search_hybrid_needle_phrase | search | 7 | 0ms | 0ms | 0ms | 8.4 KB |
+| search_hybrid_mixed_terms | search | 7 | 0ms | 0ms | 0ms | 28.3 KB |
 | find_symbol_exact_needle | search | 7 | 0ms | 0ms | 0ms | 307 B |
-| find_symbol_fuzzy_prefix | search | 7 | 0ms | 1ms | 1ms | 307 B |
-| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 13.4 KB |
+| find_symbol_fuzzy_prefix | search | 7 | 0ms | 0ms | 0ms | 307 B |
+| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 13.1 KB |
 | graph_query_calls_varlen | graph_query | 7 | 0ms | 0ms | 0ms | 306 B |
-| trace_chain_4_hops | trace | 7 | 0ms | 1ms | 1ms | 2.7 KB |
+| trace_chain_4_hops | trace | 7 | 0ms | 0ms | 0ms | 2.7 KB |
 
 ## Ground-Truth Correctness
 

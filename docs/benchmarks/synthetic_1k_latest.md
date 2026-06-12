@@ -1,6 +1,6 @@
 # Synthetic Scale Benchmark: 1k
 
-Generated: 2026-06-12T01:42:42.059094+00:00
+Generated: 2026-06-12T11:47:00.317240+00:00
 Dataset: synthetic 1k (seed 0xc0ffee)
 Files: 1000 | Symbols: 5568
 
@@ -8,8 +8,8 @@ Files: 1000 | Symbols: 5568
 
 | Metric | Value |
 |--------|-------|
-| generate wall | 144ms |
-| cold full index wall | 1687ms |
+| generate wall | 68ms |
+| cold full index wall | 965ms |
 | index db size | 25.5 MB |
 
 ## Incremental Latency: single_file
@@ -18,12 +18,12 @@ Files: 1000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 158ms | 166ms | 166ms |
-| write | 65ms | 69ms | 69ms |
-| analysis | 34ms | 34ms | 34ms |
-| postprocess | 28ms | 28ms | 28ms |
-| resolve | 19ms | 26ms | 26ms |
-| scan_diff | 8ms | 10ms | 10ms |
+| total elapsed | 130ms | 139ms | 139ms |
+| write | 57ms | 61ms | 61ms |
+| analysis | 35ms | 35ms | 35ms |
+| resolve | 19ms | 22ms | 22ms |
+| postprocess | 13ms | 14ms | 14ms |
+| scan_diff | 7ms | 9ms | 9ms |
 | parse | 0ms | 0ms | 0ms |
 
 ## Incremental Latency: five_percent_batch
@@ -32,13 +32,13 @@ Files: 1000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 526ms | 549ms | 549ms |
-| write | 378ms | 383ms | 383ms |
-| postprocess | 42ms | 49ms | 49ms |
-| resolve | 41ms | 46ms | 46ms |
-| analysis | 37ms | 63ms | 63ms |
-| parse | 10ms | 11ms | 11ms |
-| scan_diff | 9ms | 9ms | 9ms |
+| total elapsed | 438ms | 439ms | 439ms |
+| write | 318ms | 324ms | 324ms |
+| resolve | 37ms | 41ms | 41ms |
+| analysis | 31ms | 33ms | 33ms |
+| postprocess | 25ms | 26ms | 26ms |
+| parse | 8ms | 9ms | 9ms |
+| scan_diff | 7ms | 7ms | 7ms |
 
 ## Per-Tool Latency
 
@@ -48,7 +48,7 @@ Files: 1000 | Measured iterations: 3
 | search_hybrid_mixed_terms | search | 7 | 0ms | 0ms | 0ms | 25.0 KB |
 | find_symbol_exact_needle | search | 7 | 0ms | 0ms | 0ms | 307 B |
 | find_symbol_fuzzy_prefix | search | 7 | 0ms | 0ms | 0ms | 307 B |
-| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 7.9 KB |
+| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 7.7 KB |
 | graph_query_calls_varlen | graph_query | 7 | 0ms | 0ms | 0ms | 306 B |
 | trace_chain_4_hops | trace | 7 | 0ms | 0ms | 0ms | 2.7 KB |
 

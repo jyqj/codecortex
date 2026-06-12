@@ -1013,7 +1013,8 @@ impl IndexDb {
     ///   the insert helpers). Rebuild strategies write into a fresh schema, so
     ///   both models hold automatically — but `build_temp` must populate data
     ///   through the shared insert helpers so the application-maintained FTS
-    ///   tables stay in sync with their base tables.
+    ///   tables stay in sync with their base tables, including the
+    ///   FTS-rowid-equals-base-rowid alignment the indexed deletes rely on.
     fn run_rebuild_protocol(
         &self,
         tmp_path: &Path,
@@ -1281,7 +1282,9 @@ impl IndexDb {
             .map_err(|e| CcError::Database(e.to_string()))?;
         Self::delete_files_fts_batch(&tx, files.iter().map(|f| f.rel_path.as_str()))?;
         for file in files {
-            Self::delete_file_data_base(&tx, &file.rel_path)?;
+            // Replacement keeps the path, so the path-derived test_edges
+            // stay valid (see `delete_file_data_base_keep_test_edges`).
+            Self::delete_file_data_base_keep_test_edges(&tx, &file.rel_path)?;
             Self::insert_file_data(&tx, file)?;
         }
         Self::bump_index_epoch_on(&tx)?;
@@ -1539,7 +1542,9 @@ impl IndexDb {
             Self::delete_file_data_base(&tx, path)?;
         }
         for file in normal_units {
-            Self::delete_file_data_base(&tx, &file.rel_path)?;
+            // Replacement keeps the path, so the path-derived test_edges
+            // stay valid; only removals above cascade into test_edges.
+            Self::delete_file_data_base_keep_test_edges(&tx, &file.rel_path)?;
             Self::insert_file_data_precompressed(
                 &tx,
                 file,
@@ -1582,9 +1587,10 @@ impl IndexDb {
     /// [`Self::delete_file_data_base`] cascades into `symbols` via
     /// `ON DELETE CASCADE`, firing those triggers), while `chunks_fts`,
     /// `files_fts` and `literal_fts` have no triggers and MUST be deleted at
-    /// the application layer, in the same transaction as the base-table
-    /// deletes. Multi-file callers should batch the FTS half via
-    /// [`Self::delete_files_fts_batch`] instead of calling this in a loop.
+    /// the application layer — *before* the base rows, in the same
+    /// transaction (the rowid-aligned FTS delete resolves rowids through the
+    /// still-present base rows). Multi-file callers should batch the FTS half
+    /// via [`Self::delete_files_fts_batch`] instead of calling this in a loop.
     pub(crate) fn delete_file_data(conn: &Connection, rel_path: &str) -> CcResult<()> {
         Self::delete_files_fts_batch(conn, std::iter::once(rel_path))?;
         Self::delete_file_data_base(conn, rel_path)
@@ -1593,11 +1599,16 @@ impl IndexDb {
     /// Delete the app-maintained FTS rows (`chunks_fts`, `files_fts`,
     /// `literal_fts`) for a set of files using chunked `IN (...)` statements.
     ///
-    /// `file_path` is UNINDEXED in these FTS5 tables, so any DELETE on it is
-    /// a full scan of the FTS content table. Batching costs one scan per
-    /// [`IN_BATCH_SIZE`] files per table instead of one scan per file per
-    /// table — measured ~90% of the incremental batch write phase at
-    /// 10k-file scale before batching.
+    /// FTS rowids are aligned with their base-table rowids (schema v5, see
+    /// `index_v1.sql`), so each delete resolves the doomed rowids through the
+    /// base table's `file_path` index and removes the FTS rows by rowid —
+    /// O(log n) per row instead of the full FTS-content-table scan that a
+    /// DELETE on the UNINDEXED `file_path` column degrades to. The `IN (...)`
+    /// list stays chunked at [`IN_BATCH_SIZE`] to respect
+    /// SQLITE_MAX_VARIABLE_NUMBER.
+    ///
+    /// MUST run before the base-table rows are deleted (the rowid subquery
+    /// needs them), in the same transaction as those deletes.
     pub(crate) fn delete_files_fts_batch<'p>(
         conn: &Connection,
         rel_paths: impl IntoIterator<Item = &'p str>,
@@ -1605,12 +1616,17 @@ impl IndexDb {
         let rel_paths: Vec<&str> = rel_paths.into_iter().collect();
         for batch in rel_paths.chunks(IN_BATCH_SIZE) {
             let placeholders = sql_in_placeholders(batch.len());
-            for fts_table in &["chunks_fts", "files_fts", "literal_fts"] {
+            for (fts_table, base_table) in &[
+                ("chunks_fts", "chunks"),
+                ("files_fts", "files"),
+                ("literal_fts", "literal_index"),
+            ] {
                 Self::execute_cached(
                     conn,
                     &format!(
-                        "DELETE FROM {} WHERE file_path IN ({})",
-                        fts_table, placeholders
+                        "DELETE FROM {} WHERE rowid IN \
+                         (SELECT rowid FROM {} WHERE file_path IN ({}))",
+                        fts_table, base_table, placeholders
                     ),
                     rusqlite::params_from_iter(batch.iter()),
                 )?;
@@ -1627,6 +1643,20 @@ impl IndexDb {
             rusqlite::params![rel_path],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::delete_file_data_base_keep_test_edges(conn, rel_path)
+    }
+
+    /// [`Self::delete_file_data_base`] minus the test_edges cascade, for
+    /// replace-in-place writers. Test edges are path-derived: their endpoints
+    /// are file paths and the matching depends only on the path set plus the
+    /// `is_test_file` flag, which every parser computes from the path alone —
+    /// so deleting and re-inserting a file under the SAME path cannot change
+    /// its test edges. New paths have no edges to delete (postprocess builds
+    /// them), and removed paths go through [`Self::delete_file_data_base`].
+    pub(crate) fn delete_file_data_base_keep_test_edges(
+        conn: &Connection,
+        rel_path: &str,
+    ) -> CcResult<()> {
         // Delete file-scoped frameworks
         conn.execute(
             "DELETE FROM frameworks WHERE scope='file' AND scope_id = ?1",
@@ -1688,7 +1718,9 @@ impl IndexDb {
             .take(20000)
             .collect();
 
-        // files + files_fts
+        // files + files_fts (FTS rowid aligned with files.rowid; SQLite
+        // resets last_insert_rowid after the file_paths_fts_ai trigger, so
+        // it reliably names the files row here)
         Self::execute_cached(
             conn,
             "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
@@ -1696,8 +1728,8 @@ impl IndexDb {
         )?;
         Self::execute_cached(
             conn,
-            "INSERT INTO files_fts(file_path,summary,content_excerpt) VALUES(?1,?2,?3)",
-            rusqlite::params![file.rel_path, outcome.summary, excerpt],
+            "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) VALUES(?1,?2,?3,?4)",
+            rusqlite::params![conn.last_insert_rowid(), file.rel_path, outcome.summary, excerpt],
         )?;
 
         // chunks + chunks_fts
@@ -1726,11 +1758,12 @@ impl IndexDb {
                     rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
                 )?;
             }
-            // FTS always receives uncompressed text
+            // FTS always receives uncompressed text (rowid aligned with the
+            // chunks row just inserted)
             Self::execute_cached(
                 conn,
-                "INSERT INTO chunks_fts(chunk_id,file_path,breadcrumb,symbol_name,text) VALUES(?1,?2,?3,?4,?5)",
-                rusqlite::params![c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
+                "INSERT INTO chunks_fts(rowid,chunk_id,file_path,breadcrumb,symbol_name,text) VALUES(?1,?2,?3,?4,?5,?6)",
+                rusqlite::params![conn.last_insert_rowid(), c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
             )?;
         }
 
@@ -1783,12 +1816,20 @@ impl IndexDb {
             )?;
         }
 
-        // literal_index + literal_fts
+        // literal_index + literal_fts (FTS rowid aligned with the base row).
+        // OR IGNORE instead of the previous OR REPLACE: a REPLACE would give
+        // the surviving base row a fresh rowid and orphan the FTS row written
+        // for the first occurrence. literal_id is derived from
+        // (file_path,line,col), so a conflict can only be a duplicate
+        // extraction of the same literal within this outcome — first one wins
+        // and the duplicate is skipped on both sides.
         for l in &outcome.literal_index {
-            Self::execute_cached(conn, "INSERT OR REPLACE INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+            let inserted = Self::execute_cached(conn, "INSERT OR IGNORE INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
                 rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind, l.line, l.container, l.confidence, l.enclosing_symbol_uid, l.key_path],
             )?;
-            Self::execute_cached(conn, "INSERT INTO literal_fts(literal_id,file_path,literal,literal_kind) VALUES(?1,?2,?3,?4)", rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind])?;
+            if inserted > 0 {
+                Self::execute_cached(conn, "INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) VALUES(?1,?2,?3,?4,?5)", rusqlite::params![conn.last_insert_rowid(), l.literal_id, l.file_path, l.literal, l.literal_kind])?;
+            }
         }
 
         // semantic_edges
@@ -2376,6 +2417,133 @@ mod tests {
         for table in ["chunks_fts", "files_fts", "literal_fts", "files"] {
             assert_eq!(count(table), 0, "{table} should be empty after removal");
         }
+    }
+
+    /// 原地替换（同路径 delete+insert）不得级联删除 test_edges：边是纯路径
+    /// 派生的，内容更新不会改变边集；批内 to_remove 与 remove_files_batch
+    /// 的级联删除必须保留。
+    #[test]
+    fn replace_in_place_keeps_test_edges_removal_cascades() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("te.db")).unwrap().0;
+
+        let code = file_unit("src/foo.rs");
+        let mut test = file_unit("tests/foo_test.rs");
+        test.outcome.is_test_file = true;
+        let units = vec![code, test];
+        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+            .unwrap();
+        db.rebuild_test_edges_for_files(&[
+            "src/foo.rs".to_string(),
+            "tests/foo_test.rs".to_string(),
+        ])
+        .unwrap();
+
+        let edge_count = |db: &IndexDb| -> i64 {
+            db.read_conn()
+                .unwrap()
+                .query_row("SELECT COUNT(*) FROM test_edges", [], |r| r.get(0))
+                .unwrap()
+        };
+        assert_eq!(edge_count(&db), 1, "fixture must produce one test edge");
+
+        // Content-only update through both replace paths: the edge survives.
+        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+            .unwrap();
+        assert_eq!(
+            edge_count(&db),
+            1,
+            "in-place incremental replace must keep test_edges"
+        );
+        db.replace_files_batch(&units).unwrap();
+        assert_eq!(
+            edge_count(&db),
+            1,
+            "replace_files_batch must keep test_edges for unchanged paths"
+        );
+
+        // Removal still cascades.
+        db.write_incremental_batch(
+            &["tests/foo_test.rs".to_string()],
+            &[],
+            &[],
+            &[],
+            &PrecompressedChunks::new(),
+        )
+        .unwrap();
+        assert_eq!(edge_count(&db), 0, "removing a path must drop its edges");
+    }
+
+    /// schema v5 不变量：app-maintained FTS 表（chunks_fts / files_fts /
+    /// literal_fts）的 rowid 必须与基表行 rowid 对齐且内容一致——索引化
+    /// 删除（rowid IN 子查询）依赖该对齐。覆盖首次插入与增量替换（基表
+    /// rowid 变化后重新对齐），以及重复 literal_id 不产生 FTS 孤儿行。
+    #[test]
+    fn app_maintained_fts_rowids_align_with_base_tables() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("align.db")).unwrap().0;
+
+        let literal = |path: &str, suffix: &str| cc_model::LiteralRecord {
+            literal_id: format!("lit:{path}:{suffix}"),
+            file_path: path.to_string(),
+            literal: format!("marker {suffix}"),
+            literal_kind: "string".to_string(),
+            line: 1,
+            container: None,
+            confidence: 0.8,
+            enclosing_symbol_uid: None,
+            key_path: None,
+        };
+        let units: Vec<FileWriteUnit> = (0..3)
+            .map(|i| {
+                let path = format!("src/a{i}.rs");
+                let mut unit = file_unit(&path);
+                unit.outcome.chunks = (0..2)
+                    .map(|ci| {
+                        let mut c = chunk(ci, &format!("fn body_{i}_{ci}() {{}}"));
+                        c.chunk_id = format!("chunk:{path}:{ci}");
+                        c.file_path = path.clone();
+                        c
+                    })
+                    .collect();
+                // 同一 literal_id 刻意重复：OR IGNORE 必须跳过重复项的
+                // FTS 写入，而不是留下指向已死 rowid 的孤儿行。
+                unit.outcome.literal_index = vec![literal(&path, "x"), literal(&path, "x")];
+                unit
+            })
+            .collect();
+        db.replace_files_batch(&units).unwrap();
+        // 增量替换：基表行获得新 rowid，FTS 必须随之重新对齐。
+        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+            .unwrap();
+
+        let conn = db.read_conn().unwrap();
+        let count = |sql: &str| -> i64 { conn.query_row(sql, [], |r| r.get(0)).unwrap() };
+        for (fts, base, id_col) in [
+            ("chunks_fts", "chunks", "chunk_id"),
+            ("files_fts", "files", "file_path"),
+            ("literal_fts", "literal_index", "literal_id"),
+        ] {
+            assert_eq!(
+                count(&format!("SELECT COUNT(*) FROM {fts}")),
+                count(&format!("SELECT COUNT(*) FROM {base}")),
+                "{fts} must mirror {base} 1:1 (no stale/orphan rows)"
+            );
+            assert_eq!(
+                count(&format!(
+                    "SELECT COUNT(*) FROM {fts} f JOIN {base} b ON b.rowid = f.rowid \
+                     WHERE b.{id_col} = f.{id_col}"
+                )),
+                count(&format!("SELECT COUNT(*) FROM {base}")),
+                "every {fts} rowid must point at its own {base} row"
+            );
+        }
+        // 对齐删除端到端：按 file_path 删除后 FTS 不留任何行。
+        db.remove_files_batch(&["src/a0.rs".to_string(), "src/a1.rs".to_string()])
+            .unwrap();
+        assert_eq!(count("SELECT COUNT(*) FROM chunks_fts"), 2);
+        assert_eq!(count("SELECT COUNT(*) FROM files_fts"), 1);
+        assert_eq!(count("SELECT COUNT(*) FROM literal_fts"), 1);
     }
 
     #[test]

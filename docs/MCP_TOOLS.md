@@ -6,6 +6,13 @@ for the authoritative runtime surface. Unknown parameter names are rejected with
 `-32602` invalid-params error naming the field, so typos fail fast instead of
 silently running with defaults.
 
+> **Migration note:** earlier releases silently ignored unrecognized parameter
+> names; every tool now rejects them. The JSON-RPC error message carries the
+> serde diagnostic verbatim, e.g.
+> ``failed to deserialize parameters: unknown field `qurey`, expected one of `query`, `mode`, `top_k`, ...``
+> Clients that relied on the old lenient behavior should rename or drop the
+> offending parameter using the reported field name and `expected one of` list.
+
 ## Setup
 
 | Tool | When to use | Key params | Returns |

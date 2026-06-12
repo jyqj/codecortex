@@ -25,6 +25,139 @@ fn test_stem_to_base_clean(test_stem: &str) -> String {
     base_clean.to_string()
 }
 
+/// Candidate fragments for a test-file stem, shared by the incremental SQL
+/// path (wrapped as `LIKE '%fragment%'`) and the in-memory full rebuild.
+///
+/// A pair (test_file, code_file) matches when:
+///   a) code_stem == base_clean          -> same-basename (0.9)
+///   b) code_file.contains(base_clean)   -> path-overlap  (0.7)
+///   c) test_file.contains(code_stem)    -> path-overlap  (0.7)
+///
+/// The `base_clean` fragment covers conditions (a)+(b); the stem
+/// sub-component fragments cover condition (c), where a code-file stem is a
+/// sub-segment of the test file name. Order and dedup are part of the pinned
+/// candidate semantics.
+fn test_stem_candidate_fragments(stem: &str, base_clean: &str) -> Vec<String> {
+    let mut fragments: Vec<String> = Vec::new();
+    if !base_clean.is_empty() {
+        fragments.push(base_clean.to_string());
+    }
+    for part in stem.split('_') {
+        if part.len() >= 3 && part != "test" && !fragments.iter().any(|f| f == part) {
+            fragments.push(part.to_string());
+        }
+    }
+    for part in stem.split('-') {
+        if part.len() >= 3 && part != "test" && !fragments.iter().any(|f| f == part) {
+            fragments.push(part.to_string());
+        }
+    }
+    fragments
+}
+
+/// Compile a SQLite `LIKE '%fragment%'` predicate into a regex matched
+/// against the ASCII-lowercased path: `_` matches any single character, `%`
+/// any run, all other characters literally. SQLite LIKE is case-insensitive
+/// for ASCII only, so lowering both pattern literals and haystack with
+/// `to_ascii_lowercase` reproduces its fold exactly (non-ASCII characters
+/// stay untouched on both sides). `is_match` searches anywhere in the
+/// haystack, which is precisely the leading/trailing `%`.
+fn like_fragment_regex(fragment: &str) -> Option<regex::Regex> {
+    let mut pattern = String::from("(?s)");
+    let mut literal = String::new();
+    for ch in fragment.chars() {
+        if ch == '_' || ch == '%' {
+            if !literal.is_empty() {
+                pattern.push_str(&regex::escape(&literal));
+                literal.clear();
+            }
+            pattern.push_str(if ch == '_' { "." } else { ".*" });
+        } else {
+            literal.push(ch.to_ascii_lowercase());
+        }
+    }
+    if !literal.is_empty() {
+        pattern.push_str(&regex::escape(&literal));
+    }
+    regex::Regex::new(&pattern).ok()
+}
+
+/// A test edge computed by the in-memory full rebuild.
+struct FullTestEdge {
+    test_file_path: String,
+    code_file_path: String,
+    reason: &'static str,
+    confidence: f64,
+}
+
+/// In-memory equivalent of running [`IndexDb::rebuild_test_edges_for_files`]
+/// over the whole file set: for each test file, candidate code files are
+/// those whose path matches at least one `%fragment%` LIKE pattern (see
+/// [`like_fragment_regex`]); candidates then pass the same
+/// same-basename / path-overlap filter. The code-file branch of the
+/// incremental path is intentionally absent — with every file in the changed
+/// set it skips all of its candidate test files, contributing nothing. This
+/// replaces O(files × LIKE table scans) with one in-memory pass; verbatim
+/// equivalence with the SQL path is pinned by
+/// `full_rebuild_matches_incremental_like_semantics`.
+fn compute_test_edges_full(files: &[(String, bool)]) -> Vec<FullTestEdge> {
+    let code_files: Vec<(&str, String, &str)> = files
+        .iter()
+        .filter(|(_, is_test)| !*is_test)
+        .map(|(path, _)| {
+            let stem = Path::new(path)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("");
+            (path.as_str(), path.to_ascii_lowercase(), stem)
+        })
+        .collect();
+
+    let mut regex_cache: std::collections::HashMap<String, Option<regex::Regex>> =
+        std::collections::HashMap::new();
+    let mut edges = Vec::new();
+    for (test_path, _) in files.iter().filter(|(_, is_test)| *is_test) {
+        let stem = Path::new(test_path)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("");
+        let base_clean = test_stem_to_base_clean(stem);
+        let fragments = test_stem_candidate_fragments(stem, &base_clean);
+        for fragment in &fragments {
+            regex_cache
+                .entry(fragment.clone())
+                .or_insert_with(|| like_fragment_regex(fragment));
+        }
+        let matchers: Vec<&regex::Regex> = fragments
+            .iter()
+            .filter_map(|fragment| regex_cache.get(fragment).and_then(|re| re.as_ref()))
+            .collect();
+        if matchers.is_empty() {
+            continue;
+        }
+
+        for (code_path, code_lower, code_stem) in &code_files {
+            if !matchers.iter().any(|re| re.is_match(code_lower)) {
+                continue;
+            }
+            let (confidence, reason) = if *code_stem == base_clean {
+                (0.9, "same-basename")
+            } else if code_path.contains(base_clean.as_str()) || test_path.contains(code_stem) {
+                (0.7, "path-overlap")
+            } else {
+                continue;
+            };
+            edges.push(FullTestEdge {
+                test_file_path: test_path.clone(),
+                code_file_path: code_path.to_string(),
+                reason,
+                confidence,
+            });
+        }
+    }
+    edges
+}
+
 impl IndexDb {
     pub(crate) fn rebuild_test_edges_for_files(&self, changed: &[String]) -> CcResult<()> {
         if changed.is_empty() {
@@ -53,12 +186,19 @@ impl IndexDb {
 
         for fp in changed {
             // Determine if this changed file is a test file or a code file.
+            // A missing row means the path was removed in this batch: its
+            // edges were deleted above and nothing may be rebuilt for it —
+            // matching a dead path would resurrect edges the full rebuild
+            // (which only iterates live files) can never produce.
             let is_test: bool = {
                 let mut stmt = tx
                     .prepare_cached("SELECT is_test_file FROM files WHERE file_path = ?1")
                     .map_err(|e| CcError::Database(e.to_string()))?;
-                stmt.query_row(rusqlite::params![fp], |row| row.get::<_, bool>(0))
-                    .unwrap_or(false)
+                match stmt.query_row(rusqlite::params![fp], |row| row.get::<_, bool>(0)) {
+                    Ok(flag) => flag,
+                    Err(rusqlite::Error::QueryReturnedNoRows) => continue,
+                    Err(e) => return Err(CcError::Database(e.to_string())),
+                }
             };
 
             let stem = Path::new(fp)
@@ -67,42 +207,14 @@ impl IndexDb {
                 .unwrap_or("");
 
             if is_test {
-                // Changed file is a test file; find matching code files.
-                //
-                // A pair (test_file, code_file) matches when:
-                //   a) code_stem == base_clean          -> same-basename (0.9)
-                //   b) code_file.contains(base_clean)   -> path-overlap  (0.7)
-                //   c) test_file.contains(code_stem)    -> path-overlap  (0.7)
-                //
-                // Conditions (a)+(b) are covered by: LIKE '%base_clean%' on code files.
-                // Condition (c) requires finding code files whose stem is a substring
-                // of the test file path. We add LIKE patterns from the test file stem's
-                // sub-components to cover this.
+                // Changed file is a test file; find matching code files via
+                // the shared candidate fragments (see
+                // `test_stem_candidate_fragments` for the match conditions).
                 let base_clean = test_stem_to_base_clean(stem);
-
-                let mut patterns: Vec<String> = Vec::new();
-                // Primary pattern: catches conditions (a)+(b)
-                if !base_clean.is_empty() {
-                    patterns.push(format!("%{}%", base_clean));
-                }
-                // Additional patterns from test stem sub-components: catches condition
-                // (c) where a code file stem is a sub-segment of the test file name.
-                for part in stem.split('_') {
-                    if part.len() >= 3 && part != "test" {
-                        let pat = format!("%{}%", part);
-                        if !patterns.contains(&pat) {
-                            patterns.push(pat);
-                        }
-                    }
-                }
-                for part in stem.split('-') {
-                    if part.len() >= 3 && part != "test" {
-                        let pat = format!("%{}%", part);
-                        if !patterns.contains(&pat) {
-                            patterns.push(pat);
-                        }
-                    }
-                }
+                let patterns: Vec<String> = test_stem_candidate_fragments(stem, &base_clean)
+                    .into_iter()
+                    .map(|fragment| format!("%{}%", fragment))
+                    .collect();
 
                 let mut seen = std::collections::HashSet::new();
                 let mut candidates: Vec<String> = Vec::new();
@@ -237,33 +349,58 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Full rebuild: matching runs entirely in memory over the
+    /// (file_path, is_test_file) set — test edges depend on nothing else —
+    /// then lands in one delete+insert transaction. See
+    /// [`compute_test_edges_full`] for the equivalence contract with the
+    /// incremental SQL path.
     pub(crate) fn rebuild_test_edges(&self) -> CcResult<()> {
-        let all_files: Vec<String> = {
+        let files: Vec<(String, bool)> = {
             let conn = self.read_conn()?;
             let mut stmt = conn
-                .prepare("SELECT file_path FROM files")
+                .prepare("SELECT file_path, is_test_file FROM files")
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            let collected: Vec<String> = stmt
-                .query_map([], |row| row.get::<_, String>(0))
+            let collected: Vec<(String, bool)> = stmt
+                .query_map([], |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, bool>(1)?))
+                })
                 .map_err(|e| CcError::Database(e.to_string()))?
                 .filter_map(|r| r.ok())
                 .collect();
             collected
         };
+        let edges = compute_test_edges_full(&files);
+
+        let mut conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let tx = conn
+            .transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        tx.execute("DELETE FROM test_edges", [])
+            .map_err(|e| CcError::Database(e.to_string()))?;
         {
-            let conn = self
-                .write_conn
-                .lock()
+            let mut stmt = tx
+                .prepare_cached(
+                    "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
+                )
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            let tx = conn
-                .unchecked_transaction()
+            for edge in &edges {
+                let edge_id = format!("test:{}:{}", edge.test_file_path, edge.code_file_path);
+                stmt.execute(rusqlite::params![
+                    edge_id,
+                    edge.test_file_path,
+                    edge.code_file_path,
+                    edge.reason,
+                    edge.confidence
+                ])
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            tx.execute("DELETE FROM test_edges", [])
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            Self::bump_index_epoch_on(&tx)?;
-            tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+            }
         }
-        self.rebuild_test_edges_for_files(&all_files)
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
     }
 
     pub(crate) fn insert_route_nodes_batch(
@@ -1304,6 +1441,122 @@ mod tests {
         // -> path-overlap with confidence 0.7
         assert_eq!(edge.3, "path-overlap");
         assert!((edge.4 - 0.7).abs() < 1e-9);
+    }
+
+    /// 新的内存全量重建必须与旧 LIKE 语义逐字等价。旧全量重建 = 清空表后
+    /// `rebuild_test_edges_for_files(全部路径)`（该 SQL 实现仍服务增量路径，
+    /// 是活着的旧逻辑参照）。路径集合覆盖：同名 0.9 / 路径重叠 0.7、
+    /// `test_`/`_test`/`.test`/`.spec` 前后缀、大小写差异（LIKE 大小写不
+    /// 敏感但终判大小写敏感）、`_` 在 LIKE 中的单字符通配、连字符与短片段
+    /// 边界（len<3 / "test" 排除）、子目录与非 ASCII 路径。
+    #[test]
+    fn full_rebuild_matches_incremental_like_semantics() {
+        let (db, _tmp) = setup();
+
+        let files: &[(&str, bool)] = &[
+            // same-basename 0.9 + the test_ prefix fallback quirk (0.7)
+            ("src/user.py", false),
+            ("tests/user_test.py", true),
+            ("tests/test_user.py", true),
+            // '_' wildcard in LIKE: candidate via %order_service%, no final match
+            ("src/orderXservice.rs", false),
+            ("src/order_service.rs", false),
+            ("tests/order_service_test.rs", true),
+            // case: LIKE-candidate only (no case-sensitive final match)
+            ("src/Widget.ts", false),
+            ("src/widget.ts", false),
+            ("tests/widget.spec.ts", true),
+            // .test suffix, file next to source
+            ("src/area.ts", false),
+            ("src/area.test.ts", true),
+            // hyphen fragments
+            ("src/data-loader.ts", false),
+            ("tests/data-loader_test.ts", true),
+            // short base_clean (< 3 chars still becomes a pattern)
+            ("src/ab.py", false),
+            ("tests/ab_test.py", true),
+            // non-ASCII path (LIKE folds ASCII only)
+            ("src/模块.py", false),
+            ("tests/模块_test.py", true),
+            // code file with "test" inside its name
+            ("src/test_data.py", false),
+        ];
+        {
+            let mut conn = db.write_conn.lock().unwrap();
+            let tx = conn.transaction().unwrap();
+            for (path, is_test) in files {
+                tx.execute(
+                    "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) \
+                     VALUES(?1,'Python','h',1.0,100,'','','tree_sitter',1.0,?2,'2024-01-01T00:00:00Z')",
+                    rusqlite::params![path, *is_test as i32],
+                ).unwrap();
+            }
+            tx.commit().unwrap();
+        }
+
+        let edge_set = |db: &IndexDb| -> std::collections::BTreeSet<(String, String, String, String, String)> {
+            let conn = db.read_conn().unwrap();
+            let mut stmt = conn
+                .prepare("SELECT edge_id, test_file_path, code_file_path, reason, confidence FROM test_edges")
+                .unwrap();
+            stmt.query_map([], |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, String>(3)?,
+                    format!("{:.3}", row.get::<_, f64>(4)?),
+                ))
+            })
+            .unwrap()
+            .filter_map(|r| r.ok())
+            .collect()
+        };
+
+        // Legacy full rebuild: the still-live incremental SQL path over the
+        // whole file set (the table starts empty, matching the old
+        // delete-all + rebuild_for_files sequence).
+        let all_paths: Vec<String> = files.iter().map(|(p, _)| p.to_string()).collect();
+        db.rebuild_test_edges_for_files(&all_paths).unwrap();
+        let legacy = edge_set(&db);
+
+        // New in-memory full rebuild (clears the table itself first).
+        db.rebuild_test_edges().unwrap();
+        let rebuilt = edge_set(&db);
+
+        assert_eq!(
+            legacy, rebuilt,
+            "in-memory full rebuild must reproduce the LIKE-based edge set verbatim"
+        );
+
+        // Spot-check expected positives so the fixture cannot silently
+        // degenerate into an empty intersection.
+        let has = |t: &str, c: &str, reason: &str| {
+            rebuilt
+                .iter()
+                .any(|(_, tf, cf, r, _)| tf == t && cf == c && r == reason)
+        };
+        assert!(has("tests/user_test.py", "src/user.py", "same-basename"));
+        assert!(has("tests/test_user.py", "src/user.py", "path-overlap"));
+        assert!(has(
+            "tests/order_service_test.rs",
+            "src/order_service.rs",
+            "same-basename"
+        ));
+        assert!(has("tests/widget.spec.ts", "src/widget.ts", "same-basename"));
+        assert!(has("src/area.test.ts", "src/area.ts", "same-basename"));
+        assert!(has(
+            "tests/data-loader_test.ts",
+            "src/data-loader.ts",
+            "same-basename"
+        ));
+        assert!(has("tests/ab_test.py", "src/ab.py", "same-basename"));
+        assert!(has("tests/模块_test.py", "src/模块.py", "same-basename"));
+        // Case-sensitive final filter: the LIKE-candidate Widget.ts pair and
+        // the '_'-wildcard orderXservice.rs pair must NOT edge.
+        assert!(!rebuilt
+            .iter()
+            .any(|(_, _, cf, _, _)| cf == "src/Widget.ts" || cf == "src/orderXservice.rs"));
     }
 
     #[test]

@@ -498,12 +498,14 @@ mod tests {
         .unwrap();
     }
 
-    /// Insert a `files` row plus its `files_fts` mirror (application-synced).
+    /// Insert a `files` row plus its `files_fts` mirror (application-synced,
+    /// rowid aligned with the `files` row).
     fn insert_file_with_summary(db: &IndexDb, file_path: &str, summary: &str) {
         insert_file(db, file_path, "2024-01-01T00:00:00Z");
         let conn = db.write_conn.lock().unwrap();
         conn.execute(
-            "INSERT INTO files_fts(file_path,summary,content_excerpt) VALUES(?1,?2,'')",
+            "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) \
+             SELECT rowid, file_path, ?2, '' FROM files WHERE file_path = ?1",
             rusqlite::params![file_path, summary],
         )
         .unwrap();

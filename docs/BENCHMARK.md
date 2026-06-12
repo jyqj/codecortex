@@ -86,10 +86,10 @@ Latest run (release, this machine — see the dated artifacts for full phase bre
 
 | Scale | Cold full index | DB size | Incremental p50 (1 file) | Incremental p50 (5% batch) | Tool queries (p50) | Ground truth |
 |-------|----------------|---------|--------------------------|----------------------------|--------------------|--------------|
-| 1k (5,568 symbols) | 1.7s | 25.5 MB | 158ms | 526ms | 0–4ms | 8/8 |
-| 10k (55,617 symbols) | 86.1s | 256.9 MB | 2221ms | 9.4s | sub-ms | 8/8 |
+| 1k (5,568 symbols) | 0.97s | 25.5 MB | 130ms | 438ms | 0–4ms | 8/8 |
+| 10k (55,617 symbols) | 17.5s | 256.8 MB | 1128ms | 4.8s | sub-ms | 8/8 |
 
-At 10k the 5% batch (480 files) write phase is p50 6.1s after the batched FTS5 delete optimization (was p50 17.8s when per-file deletes full-scanned the three application-maintained FTS tables — `file_path` is an UNINDEXED column there, so non-MATCH predicates cannot use the inverted index); postprocess (~3.4s) is now the co-dominant cost. Single-file incremental is dominated by postprocess + write (p50 ~0.9s + 0.8s). Tool query latency stays flat across scales. Cold full-index wall time varies with machine load across runs (62–105s observed); treat the dated artifacts as the authoritative per-run record.
+Two optimizations landed after the batched FTS5 delete work (which had already cut the 10k 5% batch write phase from p50 17.8s to 6.1s). First, FTS5 deletes are now rowid-aligned: each FTS table's rowid mirrors its base table row, so deletes resolve through the base table's indexed `file_path` instead of scanning the FTS content table (`file_path` is UNINDEXED there) — single-file incremental write dropped from ~14ms to ~2.5ms fixed cost. Second, test-edge maintenance stopped doing wasted work: cold builds match test↔source paths in memory instead of issuing per-file `LIKE` scans (cold full index 86s → 17.5s at 10k), and content-only incremental batches skip the rebuild entirely because test edges are derived purely from the path set. Postprocess signature scans also moved from JSON materialization to typed streaming. Remaining 10k batch profile: write p50 3.6s, resolve 0.6s, postprocess 0.4s. Tool query latency stays flat across scales; treat the dated artifacts as the authoritative per-run record.
 
 ## Comparison Baselines
 

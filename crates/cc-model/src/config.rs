@@ -829,16 +829,19 @@ pub fn load_project_config(project_path: &Path) -> ProjectConfig {
     let mut config = ProjectConfig::default();
     if config_path.exists() {
         match std::fs::read_to_string(&config_path) {
-            Ok(content) => match serde_json::from_str::<ProjectConfig>(&content) {
-                Ok(parsed) => config = parsed,
-                Err(e) => {
-                    tracing::warn!(
-                        path = %config_path.display(),
-                        error = %e,
-                        "Failed to parse project config; falling back to defaults"
-                    );
+            Ok(content) => {
+                warn_unknown_config_keys(&content, &config_path);
+                match serde_json::from_str::<ProjectConfig>(&content) {
+                    Ok(parsed) => config = parsed,
+                    Err(e) => {
+                        tracing::warn!(
+                            path = %config_path.display(),
+                            error = %e,
+                            "Failed to parse project config; falling back to defaults"
+                        );
+                    }
                 }
-            },
+            }
             Err(e) => {
                 tracing::warn!(
                     path = %config_path.display(),
@@ -851,6 +854,68 @@ pub fn load_project_config(project_path: &Path) -> ProjectConfig {
 
     apply_env_overrides(&mut config);
     config
+}
+
+/// Config keys that existed in older releases and were since removed.
+/// Matched against the dotted paths produced by [`collect_unknown_config_keys`].
+const REMOVED_CONFIG_KEYS: &[&str] = &["indexing.parallelism"];
+
+/// Collect unknown key paths in a raw config value by diffing against the
+/// serialized default [`ProjectConfig`] (so the known-key set tracks the
+/// struct definitions and cannot drift). Compares the top level plus one
+/// section level; returns dotted paths like `"serach"` or
+/// `"indexing.parallelism"`.
+fn collect_unknown_config_keys(raw: &serde_json::Value) -> Vec<String> {
+    let known = match serde_json::to_value(ProjectConfig::default()) {
+        Ok(value) => value,
+        Err(_) => return Vec::new(),
+    };
+    let (Some(raw_obj), Some(known_obj)) = (raw.as_object(), known.as_object()) else {
+        return Vec::new();
+    };
+    let mut unknown = Vec::new();
+    for (key, raw_section) in raw_obj {
+        match known_obj.get(key) {
+            None => unknown.push(key.clone()),
+            Some(known_section) => {
+                if let (Some(raw_inner), Some(known_inner)) =
+                    (raw_section.as_object(), known_section.as_object())
+                {
+                    for inner_key in raw_inner.keys() {
+                        if !known_inner.contains_key(inner_key) {
+                            unknown.push(format!("{key}.{inner_key}"));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    unknown
+}
+
+/// Warn (via `tracing`) about unknown keys in the raw config text. Purely
+/// diagnostic: loading stays lenient and unknown keys are still ignored.
+/// Malformed JSON is skipped here — the typed parse reports it.
+fn warn_unknown_config_keys(content: &str, config_path: &Path) {
+    let Ok(raw) = serde_json::from_str::<serde_json::Value>(content) else {
+        return;
+    };
+    for key_path in collect_unknown_config_keys(&raw) {
+        if REMOVED_CONFIG_KEYS.contains(&key_path.as_str()) {
+            tracing::warn!(
+                path = %config_path.display(),
+                key = %key_path,
+                "Config key was removed in a previous release and is ignored; \
+                 please delete it from the config file"
+            );
+        } else {
+            tracing::warn!(
+                path = %config_path.display(),
+                key = %key_path,
+                "Unknown config key is ignored (check for typos or a stale config)"
+            );
+        }
+    }
 }
 
 fn apply_env_overrides(config: &mut ProjectConfig) {
@@ -1003,6 +1068,39 @@ mod tests {
         );
         assert_eq!(config.ranking.symbol_exact_bonus, 0.18);
         assert_eq!(config.ranking.preselect_working_set_scale, 5.0);
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_flags_unknown_top_level_key() {
+        let raw = serde_json::json!({
+            "indexing": { "max_file_bytes": 1024 },
+            "serach": { "lexical_top_k": 8 }
+        });
+        assert_eq!(collect_unknown_config_keys(&raw), vec!["serach".to_string()]);
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_flags_removed_indexing_parallelism() {
+        let raw = serde_json::json!({
+            "indexing": { "parallelism": "auto", "max_file_bytes": 1024 }
+        });
+        let unknown = collect_unknown_config_keys(&raw);
+        assert_eq!(unknown, vec!["indexing.parallelism".to_string()]);
+        assert!(REMOVED_CONFIG_KEYS.contains(&unknown[0].as_str()));
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_empty_for_fully_valid_config() {
+        let raw = serde_json::json!({
+            "indexing": { "max_file_bytes": 1024, "max_concurrent_parse": 4 },
+            "search": { "lexical_top_k": 8 },
+            "ranking": { "overlap_weight": 0.5 },
+            "auto_index": { "enabled": false }
+        });
+        assert!(collect_unknown_config_keys(&raw).is_empty());
+        // Round-tripping the full default config must also be clean.
+        let full = serde_json::to_value(ProjectConfig::default()).unwrap();
+        assert!(collect_unknown_config_keys(&full).is_empty());
     }
 
     #[test]

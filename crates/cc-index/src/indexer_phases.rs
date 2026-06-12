@@ -9,13 +9,13 @@ use rayon::prelude::*;
 use sha2::{Digest, Sha256};
 
 use cc_db::index_db::{
-    compress_chunk_text, FileWriteUnit, IndexDb, PrecompressedChunks, SymbolTargetRow,
+    compress_chunk_text, FileState, FileWriteUnit, IndexDb, PrecompressedChunks, SymbolTargetRow,
 };
 use cc_model::edge::{CoChangeEdgeRecord, ResolutionKind, RouteNodeRecord};
 use cc_model::infra::{InfraEdge, InfraNode};
 use cc_model::parse::ParseOutcome;
 use cc_model::symbol::{SymbolRecord, SymbolRefRecord};
-use cc_model::{CcResult, Language, ParserTier, StableId};
+use cc_model::{CcError, CcResult, Language, ParserTier, StableId};
 
 use crate::community::{build_community_labels, louvain_communities};
 use crate::config_linker::{
@@ -60,29 +60,83 @@ const CONFIG_RAW_CACHE_MAX_BYTES: usize = 4 * 1024 * 1024;
 /// construction (compute) and the deferred record (apply).
 const COCHANGE_HEAD_KEY: &str = "last_cochange_head";
 
-/// Per-build memo of the symbols scan shared by the dispatch and interface
-/// signatures (identical column set and ordering), so a build pays for the
-/// symbols table scan once instead of once per signature. Builds are
-/// single-threaded through the postprocess phase, hence plain interior
-/// mutability.
+/// Typed signature-scan row: each selected column read as TEXT (NULL or
+/// non-text storage → `None`), mirroring `query_json`'s
+/// `as_str().unwrap_or("")` extraction without the per-row
+/// `serde_json::Map` materialization that dominated signature scans.
+type SignatureTextRow<const COLS: usize> = [Option<String>; COLS];
+
+/// Stream a parameter-less `sql` through one pooled read connection into
+/// typed text rows. Hash-value-compatible with the previous
+/// `query_json`-based scans: TEXT yields the string, everything else
+/// (NULL/INTEGER/REAL/BLOB) yields `None`, exactly like `as_str()` on the
+/// corresponding JSON value.
+fn signature_text_rows<const COLS: usize>(
+    db: &IndexDb,
+    sql: &str,
+) -> CcResult<Vec<SignatureTextRow<COLS>>> {
+    let conn = db.reads().read_conn()?;
+    let mut stmt = conn
+        .prepare(sql)
+        .map_err(|e| CcError::Database(e.to_string()))?;
+    let rows = stmt
+        .query_map([], |row| {
+            let mut cols: SignatureTextRow<COLS> = std::array::from_fn(|_| None);
+            for (i, slot) in cols.iter_mut().enumerate() {
+                *slot = match row.get_ref(i)? {
+                    rusqlite::types::ValueRef::Text(text) => {
+                        Some(String::from_utf8_lossy(text).into_owned())
+                    }
+                    _ => None,
+                };
+            }
+            Ok(cols)
+        })
+        .map_err(|e| CcError::Database(e.to_string()))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|e| CcError::Database(e.to_string()))?;
+    Ok(rows)
+}
+
+/// Per-build memo of the symbols scan shared by the dispatch, interface, and
+/// community signatures (identical row set and ordering; community hashes a
+/// column subset), so a build pays for the symbols table scan once instead of
+/// once per signature. Builds are single-threaded through the postprocess
+/// phase, hence plain interior mutability.
 #[derive(Default)]
 struct SymbolRowsCache {
-    rows: std::cell::RefCell<Option<std::rc::Rc<Vec<serde_json::Value>>>>,
+    rows: std::cell::RefCell<Option<std::rc::Rc<Vec<SignatureTextRow<4>>>>>,
 }
 
 impl SymbolRowsCache {
-    fn get(&self, db: &IndexDb) -> CcResult<std::rc::Rc<Vec<serde_json::Value>>> {
+    fn get(&self, db: &IndexDb) -> CcResult<std::rc::Rc<Vec<SignatureTextRow<4>>>> {
         if let Some(rows) = self.rows.borrow().as_ref() {
             return Ok(std::rc::Rc::clone(rows));
         }
-        let rows = std::rc::Rc::new(db.reads().query_json(
+        let rows = std::rc::Rc::new(signature_text_rows::<4>(
+            db,
             "SELECT symbol_uid, name, kind, container FROM symbols \
              WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
-            &[],
         )?);
         *self.rows.borrow_mut() = Some(std::rc::Rc::clone(&rows));
         Ok(rows)
     }
+}
+
+/// Time one postprocess/analysis sub-step and emit a `tracing::debug!` event
+/// with the elapsed milliseconds, so a slow `postprocess_ms`/`analysis_ms`
+/// aggregate can be attributed to a specific sub-step from logs without a
+/// profiler.
+fn time_step<T>(phase: &'static str, step: &'static str, f: impl FnOnce() -> T) -> T {
+    let start = std::time::Instant::now();
+    let result = f();
+    tracing::debug!(
+        phase,
+        step,
+        elapsed_ms = start.elapsed().as_millis() as u64,
+        "sub-phase timing"
+    );
+    result
 }
 
 /// Phase 4a output: the [`SymbolCatalog`] seeded with persisted + freshly
@@ -579,16 +633,31 @@ impl Indexer {
         write_units: &[FileWriteUnit],
         config_units: &[FileWriteUnit],
         to_remove: &[String],
+        pre_batch_files: &HashMap<String, FileState>,
     ) -> CcResult<PostprocessPlan> {
         // Test edges for changed files: the rebuild itself is a cc-db SQL
         // operation, so compute only decides WHICH rebuild apply runs.
+        //
+        // Update-only batches skip the rebuild outright: test edges are
+        // path-derived (endpoints are file paths; matching depends only on
+        // the path set plus the path-derived `is_test_file` flag), and the
+        // write batch no longer cascades test_edges deletes for in-place
+        // replacements — so when the batch removed nothing and every written
+        // path already existed before the batch (`pre_batch_files` is the
+        // scan-time files snapshot, covering dirty-closure and config units
+        // too), the committed edges are already exactly the rebuilt ones.
         let mut changed_paths: Vec<String> =
             write_units.iter().map(|u| u.rel_path.clone()).collect();
         changed_paths.extend(config_units.iter().map(|u| u.rel_path.clone()));
         changed_paths.extend(to_remove.iter().cloned());
+        let path_set_unchanged = to_remove.is_empty()
+            && write_units
+                .iter()
+                .chain(config_units.iter())
+                .all(|u| pre_batch_files.contains_key(&u.rel_path));
         let test_edges = if full {
             TestEdgeRebuild::Full
-        } else if !changed_paths.is_empty() {
+        } else if !changed_paths.is_empty() && !path_set_unchanged {
             TestEdgeRebuild::Files(changed_paths)
         } else {
             TestEdgeRebuild::Skip
@@ -615,7 +684,11 @@ impl Indexer {
             "last_dispatch_sig_algo",
             DISPATCH_SIG_ALGORITHM,
             forced,
-            || self.dispatch_synthesis_signature_from(&symbol_rows),
+            || {
+                time_step("postprocess", "dispatch_signature", || {
+                    self.dispatch_synthesis_signature_from(&symbol_rows)
+                })
+            },
         );
         let interface_gate = DbSignatureGate::new(
             "interface_dispatch",
@@ -624,7 +697,11 @@ impl Indexer {
             "last_interface_sig_algo",
             INTERFACE_SIG_ALGORITHM,
             forced,
-            || self.interface_dispatch_signature_from(&symbol_rows),
+            || {
+                time_step("postprocess", "interface_signature", || {
+                    self.interface_dispatch_signature_from(&symbol_rows)
+                })
+            },
         );
         // The two signatures gate one synthesis round: the round runs when
         // either input changed, and the individual decisions route work to
@@ -649,12 +726,14 @@ impl Indexer {
                         self.event_denylist.iter().cloned().collect()
                     },
                 };
-                let round = crate::synthesis_pipeline::compute_synthesis_round(
-                    &self.db,
-                    &synthesis_config,
-                    synthesis_gate.first_changed(),
-                    synthesis_gate.second_changed(),
-                )?;
+                let round = time_step("postprocess", "synthesis_round", || {
+                    crate::synthesis_pipeline::compute_synthesis_round(
+                        &self.db,
+                        &synthesis_config,
+                        synthesis_gate.first_changed(),
+                        synthesis_gate.second_changed(),
+                    )
+                })?;
                 SynthesisAction::Round(round)
             } else {
                 // Synthesis disabled after a previous enabled run: the apply
@@ -680,8 +759,9 @@ impl Indexer {
         // Louvain input therefore match the post-apply DB state. When the
         // round was skipped the synthetic edges are unchanged and the
         // committed state is already the post-round state.
-        let community_edges =
-            self.community_edges_with_overlay(synthesis.as_ref().map(|s| &s.action))?;
+        let community_edges = time_step("postprocess", "community_edges", || {
+            self.community_edges_with_overlay(synthesis.as_ref().map(|s| &s.action))
+        })?;
         let community_gate = DbSignatureGate::new(
             "community",
             &self.db,
@@ -689,13 +769,19 @@ impl Indexer {
             "last_community_sig_algo",
             COMMUNITY_SIG_ALGORITHM,
             forced,
-            || self.community_signature_from_edges(&community_edges),
+            || {
+                time_step("postprocess", "community_signature", || {
+                    self.community_signature_from_edges(&community_edges, &symbol_rows)
+                })
+            },
         );
         let community_decision = community_gate.should_run()?;
         log_gate_decision(&community_gate, community_decision);
         let community = if community_decision.run {
             Some(CommunityStage {
-                action: self.compute_community_action(&community_edges)?,
+                action: time_step("postprocess", "louvain", || {
+                    self.compute_community_action(&community_edges)
+                })?,
                 record: community_gate.deferred_record()?,
             })
         } else {
@@ -715,20 +801,25 @@ impl Indexer {
     /// semantics: community records before the synthesis signatures, so a
     /// community failure leaves no synthesis signature recorded.
     pub(crate) fn phase_postprocess_apply(&self, plan: &PostprocessPlan) -> CcResult<()> {
-        match &plan.test_edges {
-            TestEdgeRebuild::Full => self.db.writes().rebuild_test_edges()?,
-            TestEdgeRebuild::Files(paths) => {
-                self.db.writes().rebuild_test_edges_for_files(paths)?
+        time_step("postprocess", "test_edges_apply", || {
+            match &plan.test_edges {
+                TestEdgeRebuild::Full => self.db.writes().rebuild_test_edges()?,
+                TestEdgeRebuild::Files(paths) => {
+                    self.db.writes().rebuild_test_edges_for_files(paths)?
+                }
+                TestEdgeRebuild::Skip => {}
             }
-            TestEdgeRebuild::Skip => {}
-        }
+            CcResult::Ok(())
+        })?;
 
         if let Some(stage) = &plan.synthesis {
             match &stage.action {
                 // All deltas land in one short atomic unit of work; the apply
                 // is all-or-nothing.
                 SynthesisAction::Round(round) => {
-                    crate::synthesis_pipeline::apply_synthesis_round(&self.db, round)?;
+                    time_step("postprocess", "synthesis_apply", || {
+                        crate::synthesis_pipeline::apply_synthesis_round(&self.db, round)
+                    })?;
                 }
                 SynthesisAction::DisableCleanup => {
                     // If synthesis was enabled in a previous run and is
@@ -757,17 +848,20 @@ impl Indexer {
         }
 
         if let Some(stage) = &plan.community {
-            match &stage.action {
-                CommunityAction::Degraded => {
-                    self.db.writes().assign_all_symbols_to_community(0)?;
+            time_step("postprocess", "community_apply", || {
+                match &stage.action {
+                    CommunityAction::Degraded => {
+                        self.db.writes().assign_all_symbols_to_community(0)?;
+                    }
+                    CommunityAction::Update {
+                        assignments,
+                        labels,
+                    } => {
+                        self.db.writes().update_communities(assignments, labels)?;
+                    }
                 }
-                CommunityAction::Update {
-                    assignments,
-                    labels,
-                } => {
-                    self.db.writes().update_communities(assignments, labels)?;
-                }
-            }
+                CcResult::Ok(())
+            })?;
             stage.record.record(&self.db)?;
         }
         if let Some(stage) = &plan.synthesis {
@@ -888,7 +982,9 @@ impl Indexer {
         let cochange_decision = cochange_gate.should_run()?;
         log_gate_decision(&cochange_gate, cochange_decision);
         let cochange = if cochange_decision.run {
-            match crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500) {
+            match time_step("analysis", "cochange_scan", || {
+                crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500)
+            }) {
                 Ok(co_changes) => Some(CoChangeStage {
                     co_changes,
                     record_head: cochange_gate.record_key(),
@@ -922,13 +1018,18 @@ impl Indexer {
             "last_infra_sig",
             "last_infra_sig_algo",
             INFRA_SIG_ALGORITHM,
-            || crate::infra_pass::infra_signature(project_path),
+            || {
+                time_step("analysis", "infra_signature", || {
+                    crate::infra_pass::infra_signature(project_path)
+                })
+            },
         );
         let infra_decision = infra_gate.should_run()?;
         log_gate_decision(&infra_gate, infra_decision);
         let infra = if infra_decision.run {
-            let (mut infra_nodes, mut infra_edges) =
-                crate::infra_pass::run_infra_pass(project_path);
+            let (mut infra_nodes, mut infra_edges) = time_step("analysis", "infra_scan", || {
+                crate::infra_pass::run_infra_pass(project_path)
+            });
             if !infra_nodes.is_empty() || !infra_edges.is_empty() {
                 // Bind infra nodes to code symbols before persisting
                 let bind_symbols: Vec<_> = write_units
@@ -951,7 +1052,9 @@ impl Indexer {
 
         // Phase 10: Architecture Decision Records (ADR) indexing — no skip
         // condition, rescanned every build.
-        let adr_docs = Self::collect_adr_docs(project_path);
+        let adr_docs = time_step("analysis", "adr_scan", || {
+            Self::collect_adr_docs(project_path)
+        });
 
         Ok(AnalysisPlan {
             cochange,
@@ -1732,30 +1835,48 @@ impl Indexer {
 
         let mut hasher = DefaultHasher::new();
 
-        // Dispatch sites (input to 6 synthesis passes)
-        let site_rows = self.db.reads().query_json(
-            "SELECT site_kind, key, file_path, line, enclosing_symbol_uid, handler_symbol_uid \
-             FROM dispatch_sites ORDER BY site_id",
-            &[],
-        )?;
+        // Dispatch sites (input to 6 synthesis passes). Typed scan: the five
+        // text columns are hashed in select order, then the line number —
+        // value-compatible with the previous `query_json` scan.
+        let conn = self.db.reads().read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT site_kind, key, file_path, enclosing_symbol_uid, handler_symbol_uid, \
+                 line FROM dispatch_sites ORDER BY site_id",
+            )
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let site_rows = stmt
+            .query_map([], |row| {
+                let mut cols: SignatureTextRow<5> = std::array::from_fn(|_| None);
+                for (i, slot) in cols.iter_mut().enumerate() {
+                    *slot = match row.get_ref(i)? {
+                        rusqlite::types::ValueRef::Text(text) => {
+                            Some(String::from_utf8_lossy(text).into_owned())
+                        }
+                        _ => None,
+                    };
+                }
+                let line = match row.get_ref(5)? {
+                    rusqlite::types::ValueRef::Integer(n) => n,
+                    _ => 0,
+                };
+                Ok((cols, line))
+            })
+            .map_err(|e| CcError::Database(e.to_string()))?
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+
+        // Release the pooled connection before `symbol_rows.get` checks out
+        // its own — holding both would deadlock a size-1 read pool.
+        drop(stmt);
+        drop(conn);
+
         site_rows.len().hash(&mut hasher);
-        for row in &site_rows {
-            for col in [
-                "site_kind",
-                "key",
-                "file_path",
-                "enclosing_symbol_uid",
-                "handler_symbol_uid",
-            ] {
-                row.get(col)
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .hash(&mut hasher);
+        for (cols, line) in &site_rows {
+            for col in cols {
+                col.as_deref().unwrap_or("").hash(&mut hasher);
             }
-            row.get("line")
-                .and_then(|v| v.as_i64())
-                .unwrap_or(0)
-                .hash(&mut hasher);
+            line.hash(&mut hasher);
         }
 
         // Symbol structure (all synthesis passes read symbols)
@@ -1780,41 +1901,33 @@ impl Indexer {
         let mut hasher = DefaultHasher::new();
 
         // Real call edges (synthetic excluded)
-        let edge_rows = self.db.reads().query_json(
+        let edge_rows = signature_text_rows::<2>(
+            &self.db,
             "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
              WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
              AND synthesized_by IS NULL \
              ORDER BY caller_symbol_uid, callee_symbol_uid",
-            &[],
         )?;
         edge_rows.len().hash(&mut hasher);
-        for row in &edge_rows {
-            row.get("caller_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
-            row.get("callee_symbol_uid")
-                .and_then(|v| v.as_str())
-                .unwrap_or("")
-                .hash(&mut hasher);
+        for cols in &edge_rows {
+            for col in cols {
+                col.as_deref().unwrap_or("").hash(&mut hasher);
+            }
         }
 
         // Symbols
         Self::hash_symbol_rows(&symbol_rows.get(&self.db)?, &mut hasher);
 
         // Real semantic edges (synthetic 'synth:%' excluded)
-        let sem_rows = self.db.reads().query_json(
+        let sem_rows = signature_text_rows::<3>(
+            &self.db,
             "SELECT source_symbol_uid, target_symbol_uid, relation_kind FROM semantic_edges \
              WHERE edge_id NOT LIKE 'synth:%' ORDER BY edge_id",
-            &[],
         )?;
         sem_rows.len().hash(&mut hasher);
-        for row in &sem_rows {
-            for col in ["source_symbol_uid", "target_symbol_uid", "relation_kind"] {
-                row.get(col)
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .hash(&mut hasher);
+        for cols in &sem_rows {
+            for col in cols {
+                col.as_deref().unwrap_or("").hash(&mut hasher);
             }
         }
 
@@ -1828,7 +1941,7 @@ impl Indexer {
     #[cfg(test)]
     fn community_signature(&self) -> CcResult<u64> {
         let edges = self.db.reads().call_uid_edges()?;
-        self.community_signature_from_edges(&edges)
+        self.community_signature_from_edges(&edges, &SymbolRowsCache::default())
     }
 
     /// Community signature over an explicit (caller_uid, callee_uid) edge set
@@ -1839,7 +1952,11 @@ impl Indexer {
     /// in `(caller, callee)` order — SQLite's default BINARY collation and
     /// Rust's byte-wise `String` ordering agree — so signatures recorded by
     /// older builds still match and never force a spurious Louvain rerun.
-    fn community_signature_from_edges(&self, edges: &[(String, String)]) -> CcResult<u64> {
+    fn community_signature_from_edges(
+        &self,
+        edges: &[(String, String)],
+        symbol_rows: &SymbolRowsCache,
+    ) -> CcResult<u64> {
         use std::collections::hash_map::DefaultHasher;
         use std::hash::{Hash, Hasher};
 
@@ -1858,18 +1975,14 @@ impl Indexer {
         // built from symbol names by uid, so container is not an input — a
         // container-only change must not force a Louvain rerun. Locked by
         // `community_signature_ignores_container_unlike_synthesis_signatures`.
-        let symbol_rows = self.db.reads().query_json(
-            "SELECT symbol_uid, name, kind FROM symbols \
-             WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
-            &[],
-        )?;
-        symbol_rows.len().hash(&mut hasher);
-        for row in &symbol_rows {
-            for col in ["symbol_uid", "name", "kind"] {
-                row.get(col)
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .hash(&mut hasher);
+        // The rows come from the shared per-build cache (same row set and
+        // ordering); only the first three columns are hashed, so the value
+        // stays identical to the previous dedicated 3-column scan.
+        let rows = symbol_rows.get(&self.db)?;
+        rows.len().hash(&mut hasher);
+        for cols in rows.iter() {
+            for col in &cols[..3] {
+                col.as_deref().unwrap_or("").hash(&mut hasher);
             }
         }
 
@@ -1881,18 +1994,15 @@ impl Indexer {
     /// the rows come from a per-build [`SymbolRowsCache`] so the symbols table
     /// is scanned once even when both signatures are computed.
     fn hash_symbol_rows(
-        rows: &[serde_json::Value],
+        rows: &[SignatureTextRow<4>],
         hasher: &mut std::collections::hash_map::DefaultHasher,
     ) {
         use std::hash::Hash;
 
         rows.len().hash(hasher);
-        for row in rows {
-            for col in ["symbol_uid", "name", "kind", "container"] {
-                row.get(col)
-                    .and_then(|v| v.as_str())
-                    .unwrap_or("")
-                    .hash(hasher);
+        for cols in rows {
+            for col in cols {
+                col.as_deref().unwrap_or("").hash(hasher);
             }
         }
     }
@@ -2479,6 +2589,146 @@ mod graph_signature_coverage_tests {
         );
     }
 
+    /// The typed signature scans must stay value-compatible with the
+    /// historical `query_json`-based formula: signatures recorded by older
+    /// builds must still match after the streaming rewrite, so an upgrade
+    /// never forces a spurious synthesis/Louvain rerun (and never wrongly
+    /// skips). The historical formula is reproduced verbatim here.
+    #[test]
+    fn typed_signature_scans_match_historical_json_formula() {
+        use std::collections::hash_map::DefaultHasher;
+        use std::hash::{Hash, Hasher};
+
+        let (_tmp, indexer) = setup_indexer();
+        let db = &indexer.db;
+
+        // One row per scanned table, including NULL text columns (s1 has no
+        // container; the site has no enclosing/handler uid) so the NULL → ""
+        // mapping participates in the comparison.
+        let conn = db.reads().read_conn().unwrap();
+        conn.execute_batch(
+            "INSERT INTO dispatch_sites(site_id,file_path,line,col,site_kind,key) \
+                 VALUES('ds1','src/x.rs',3,0,'jsx_tag','Foo');\
+             INSERT INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind) \
+                 VALUES('se1','src/x.rs','A','uA','I','uI','implements');",
+        )
+        .unwrap();
+
+        let json_str = |row: &serde_json::Value, col: &str| -> String {
+            row.get(col)
+                .and_then(|v| v.as_str())
+                .unwrap_or("")
+                .to_string()
+        };
+
+        let symbols_json = db
+            .reads()
+            .query_json(
+                "SELECT symbol_uid, name, kind, container FROM symbols \
+                 WHERE symbol_uid IS NOT NULL ORDER BY symbol_uid",
+                &[],
+            )
+            .unwrap();
+        let hash_symbols_json =
+            |hasher: &mut DefaultHasher, cols: &[&str]| {
+                symbols_json.len().hash(hasher);
+                for row in &symbols_json {
+                    for col in cols {
+                        json_str(row, col).hash(hasher);
+                    }
+                }
+            };
+
+        // Historical dispatch formula.
+        let mut hasher = DefaultHasher::new();
+        let site_rows = db
+            .reads()
+            .query_json(
+                "SELECT site_kind, key, file_path, line, enclosing_symbol_uid, handler_symbol_uid \
+                 FROM dispatch_sites ORDER BY site_id",
+                &[],
+            )
+            .unwrap();
+        site_rows.len().hash(&mut hasher);
+        for row in &site_rows {
+            for col in [
+                "site_kind",
+                "key",
+                "file_path",
+                "enclosing_symbol_uid",
+                "handler_symbol_uid",
+            ] {
+                json_str(row, col).hash(&mut hasher);
+            }
+            row.get("line")
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+                .hash(&mut hasher);
+        }
+        hash_symbols_json(&mut hasher, &["symbol_uid", "name", "kind", "container"]);
+        assert_eq!(
+            indexer.dispatch_synthesis_signature().unwrap(),
+            hasher.finish(),
+            "typed dispatch signature must match the historical json formula"
+        );
+
+        // Historical interface formula.
+        let mut hasher = DefaultHasher::new();
+        let edge_rows = db
+            .reads()
+            .query_json(
+                "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
+                 WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
+                 AND synthesized_by IS NULL \
+                 ORDER BY caller_symbol_uid, callee_symbol_uid",
+                &[],
+            )
+            .unwrap();
+        edge_rows.len().hash(&mut hasher);
+        for row in &edge_rows {
+            json_str(row, "caller_symbol_uid").hash(&mut hasher);
+            json_str(row, "callee_symbol_uid").hash(&mut hasher);
+        }
+        hash_symbols_json(&mut hasher, &["symbol_uid", "name", "kind", "container"]);
+        let sem_rows = db
+            .reads()
+            .query_json(
+                "SELECT source_symbol_uid, target_symbol_uid, relation_kind FROM semantic_edges \
+                 WHERE edge_id NOT LIKE 'synth:%' ORDER BY edge_id",
+                &[],
+            )
+            .unwrap();
+        sem_rows.len().hash(&mut hasher);
+        for row in &sem_rows {
+            for col in ["source_symbol_uid", "target_symbol_uid", "relation_kind"] {
+                json_str(row, col).hash(&mut hasher);
+            }
+        }
+        assert_eq!(
+            indexer.interface_dispatch_signature().unwrap(),
+            hasher.finish(),
+            "typed interface signature must match the historical json formula"
+        );
+
+        // Historical community formula (edges part unchanged in production;
+        // the symbols part previously came from a dedicated 3-column scan).
+        let mut hasher = DefaultHasher::new();
+        let edges = db.reads().call_uid_edges().unwrap();
+        let mut ordered: Vec<&(String, String)> = edges.iter().collect();
+        ordered.sort();
+        edges.len().hash(&mut hasher);
+        for (caller, callee) in ordered {
+            caller.as_str().hash(&mut hasher);
+            callee.as_str().hash(&mut hasher);
+        }
+        hash_symbols_json(&mut hasher, &["symbol_uid", "name", "kind"]);
+        assert_eq!(
+            indexer.community_signature().unwrap(),
+            hasher.finish(),
+            "typed community signature must match the historical json formula"
+        );
+    }
+
     /// Per-pass signatures must be independent: changing dispatch_sites only
     /// affects dispatch_synthesis_signature, not interface_dispatch_signature.
     #[test]
@@ -2590,7 +2840,9 @@ mod community_overlay_tests {
         let action = SynthesisAction::Round(round);
 
         let mut overlay = indexer.community_edges_with_overlay(Some(&action)).unwrap();
-        let overlay_sig = indexer.community_signature_from_edges(&overlay).unwrap();
+        let overlay_sig = indexer
+            .community_signature_from_edges(&overlay, &SymbolRowsCache::default())
+            .unwrap();
 
         // The stale 'event_emitter' edge is projected out, the new edges in.
         overlay.sort();
@@ -3525,5 +3777,155 @@ mod dirty_propagation_fixpoint_tests {
             .unwrap();
         assert_eq!(outcome.status, DirtyPropagationStatus::Normal);
         assert_eq!(outcome.marked, 0);
+    }
+}
+
+#[cfg(test)]
+mod test_edge_invariant_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    fn setup(files: &[(&str, &str)]) -> (TempDir, Arc<IndexDb>, Indexer) {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        for (rel, content) in files {
+            let path = project.join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        }
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), project, &IndexingConfig::default());
+        (tmp, db, indexer)
+    }
+
+    /// Sorted (test_file_path, code_file_path, reason) triples.
+    fn edges(db: &IndexDb) -> Vec<(String, String, String)> {
+        let mut rows: Vec<(String, String, String)> = db
+            .reads()
+            .query_json(
+                "SELECT test_file_path, code_file_path, reason FROM test_edges",
+                &[],
+            )
+            .unwrap()
+            .iter()
+            .map(|row| {
+                (
+                    row["test_file_path"].as_str().unwrap().to_string(),
+                    row["code_file_path"].as_str().unwrap().to_string(),
+                    row["reason"].as_str().unwrap().to_string(),
+                )
+            })
+            .collect();
+        rows.sort();
+        rows
+    }
+
+    /// 不变量：仅修改文件内容（路径集合不变）的增量构建跳过 test_edges
+    /// 重建，但边集必须与之后的全量重建完全一致。
+    #[test]
+    fn content_only_incremental_keeps_test_edges_consistent_with_full() {
+        let (tmp, db, indexer) = setup(&[
+            ("src/foo.py", "def foo():\n    return 1\n"),
+            ("tests/foo_test.py", "def check_foo():\n    return 1\n"),
+        ]);
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        let initial = edges(&db);
+        assert!(
+            initial
+                .iter()
+                .any(|(t, c, _)| t == "tests/foo_test.py" && c == "src/foo.py"),
+            "fixture must link tests/foo_test.py to src/foo.py, got {:?}",
+            initial
+        );
+
+        // Content-only edits to both files: the batch adds/removes no paths,
+        // so the rebuild is skipped — edges must survive unchanged.
+        std::fs::write(
+            project.join("src/foo.py"),
+            "def foo():\n    return 2  # edited\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.join("tests/foo_test.py"),
+            "def check_foo():\n    return 2  # edited\n",
+        )
+        .unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(
+            edges(&db),
+            initial,
+            "update-only incremental must leave test_edges identical"
+        );
+
+        // Cross-check against a from-scratch full rebuild.
+        indexer.build_index(project, true).unwrap();
+        assert_eq!(
+            edges(&db),
+            initial,
+            "full rebuild must agree with the incrementally preserved edges"
+        );
+    }
+
+    /// 不变量：新增 / 删除 test 或 source 文件的增量构建仍重建相关边，
+    /// 边随路径集合变化正确出现与消失。
+    #[test]
+    fn added_and_removed_paths_update_test_edges_incrementally() {
+        let (tmp, db, indexer) = setup(&[("src/foo.py", "def foo():\n    return 1\n")]);
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert!(edges(&db).is_empty(), "no test files yet, no edges");
+
+        // Add a test file: the edge must appear in the same incremental build.
+        std::fs::create_dir_all(project.join("tests")).unwrap();
+        std::fs::write(
+            project.join("tests/foo_test.py"),
+            "def check_foo():\n    return 1\n",
+        )
+        .unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            edges(&db)
+                .iter()
+                .any(|(t, c, _)| t == "tests/foo_test.py" && c == "src/foo.py"),
+            "adding a test file must create its edge, got {:?}",
+            edges(&db)
+        );
+
+        // Add a second source file matched by a new test file in one batch.
+        std::fs::write(project.join("src/bar.py"), "def bar():\n    return 1\n").unwrap();
+        std::fs::write(
+            project.join("tests/bar_test.py"),
+            "def check_bar():\n    return 1\n",
+        )
+        .unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            edges(&db)
+                .iter()
+                .any(|(t, c, _)| t == "tests/bar_test.py" && c == "src/bar.py"),
+            "adding source+test in one batch must create the edge, got {:?}",
+            edges(&db)
+        );
+
+        // Remove the test file: its edges must disappear.
+        std::fs::remove_file(project.join("tests/foo_test.py")).unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            !edges(&db).iter().any(|(t, _, _)| t == "tests/foo_test.py"),
+            "removing a test file must drop its edges, got {:?}",
+            edges(&db)
+        );
+
+        // Remove a source file: edges pointing at it must disappear too.
+        std::fs::remove_file(project.join("src/bar.py")).unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            !edges(&db).iter().any(|(_, c, _)| c == "src/bar.py"),
+            "removing a source file must drop edges pointing at it, got {:?}",
+            edges(&db)
+        );
     }
 }

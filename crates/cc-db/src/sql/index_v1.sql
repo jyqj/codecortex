@@ -1,4 +1,12 @@
--- index.sqlite3 — Schema v3 (21 tables + 5 FTS5)
+-- index.sqlite3 — Schema v5 (21 tables + 5 FTS5)
+--
+-- FTS5 rowid alignment (v5): every FTS table's rowid equals the rowid of its
+-- base-table row. symbols_fts and file_paths_fts enforce this via triggers;
+-- chunks_fts, files_fts and literal_fts are application-maintained (insert
+-- helpers in index_db.rs pass last_insert_rowid() explicitly). Deletes by
+-- file_path therefore run as `DELETE FROM x_fts WHERE rowid IN (SELECT rowid
+-- FROM base WHERE file_path IN (...))` — indexed on both sides instead of a
+-- full FTS-content-table scan (file_path is UNINDEXED in FTS5).
 
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
@@ -38,6 +46,7 @@ CREATE TABLE IF NOT EXISTS chunks (
 CREATE INDEX IF NOT EXISTS idx_chunks_file ON chunks(file_path, chunk_index);
 CREATE INDEX IF NOT EXISTS idx_chunks_symbol ON chunks(symbol_name);
 
+-- rowid aligned with chunks.rowid (application-maintained).
 CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
     chunk_id UNINDEXED, file_path UNINDEXED,
     breadcrumb, symbol_name, text,
@@ -232,12 +241,14 @@ CREATE TABLE IF NOT EXISTS literal_index (
 CREATE INDEX IF NOT EXISTS idx_literal_kind ON literal_index(literal_kind);
 CREATE INDEX IF NOT EXISTS idx_literal_file ON literal_index(file_path);
 CREATE INDEX IF NOT EXISTS idx_literal_symbol ON literal_index(enclosing_symbol_uid);
+-- rowid aligned with literal_index.rowid (application-maintained).
 CREATE VIRTUAL TABLE IF NOT EXISTS literal_fts USING fts5(
     literal_id UNINDEXED, file_path UNINDEXED,
     literal, literal_kind,
     tokenize = 'unicode61 remove_diacritics 2'
 );
 
+-- rowid aligned with files.rowid (application-maintained).
 CREATE VIRTUAL TABLE IF NOT EXISTS files_fts USING fts5(
     file_path UNINDEXED, summary, content_excerpt,
     tokenize = 'unicode61 remove_diacritics 2'

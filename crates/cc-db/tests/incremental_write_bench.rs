@@ -208,18 +208,24 @@ impl std::ops::Deref for Buckets {
     }
 }
 
-/// Mirror of the batched FTS delete in `write_incremental_batch` (one
-/// chunked `IN (...)` scan per FTS table), timed per table.
+/// Mirror of the batched FTS delete in `write_incremental_batch`
+/// (rowid-aligned delete through the base table's file_path index, chunked
+/// `IN (...)`), timed per table.
 fn probe_fts_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut Buckets) {
     let paths: Vec<&str> = batch.iter().map(|u| u.rel_path.as_str()).collect();
     for chunk in paths.chunks(cc_db::sql_util::IN_BATCH_SIZE) {
         let placeholders = cc_db::sql_util::sql_in_placeholders(chunk.len());
-        for fts_table in &["chunks_fts", "files_fts", "literal_fts"] {
+        for (fts_table, base_table) in &[
+            ("chunks_fts", "chunks"),
+            ("files_fts", "files"),
+            ("literal_fts", "literal_index"),
+        ] {
             let t = Instant::now();
             conn.execute(
                 &format!(
-                    "DELETE FROM {} WHERE file_path IN ({})",
-                    fts_table, placeholders
+                    "DELETE FROM {} WHERE rowid IN \
+                     (SELECT rowid FROM {} WHERE file_path IN ({}))",
+                    fts_table, base_table, placeholders
                 ),
                 rusqlite::params_from_iter(chunk.iter()),
             )
@@ -233,23 +239,20 @@ fn probe_fts_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut Buc
     }
 }
 
-/// Mirror of `delete_file_data_base` + `insert_file_data_precompressed`,
-/// with per-statement-class timing. Runs inside a probe transaction the
-/// caller rolls back, so it never perturbs the database under measurement.
+/// Mirror of `delete_file_data_base_keep_test_edges` +
+/// `insert_file_data_precompressed` (replace-in-place keeps the path-derived
+/// test_edges; only removals cascade), with per-statement-class timing. Runs
+/// inside a probe transaction the caller rolls back, so it never perturbs
+/// the database under measurement.
 fn probe_one_file(conn: &Connection, unit: &FileWriteUnit, buckets: &mut Buckets) {
     let rel = unit.rel_path.as_str();
     let t = Instant::now();
-    conn.execute(
-        "DELETE FROM test_edges WHERE test_file_path = ?1 OR code_file_path = ?1",
-        rusqlite::params![rel],
-    )
-    .unwrap();
     conn.execute(
         "DELETE FROM frameworks WHERE scope='file' AND scope_id = ?1",
         rusqlite::params![rel],
     )
     .unwrap();
-    buckets.add("del test_edges+frameworks", t.elapsed());
+    buckets.add("del frameworks", t.elapsed());
     let t = Instant::now();
     for table in &[
         "routes",

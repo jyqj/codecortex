@@ -350,6 +350,7 @@ impl IndexBuildPlan {
             &write_units,
             &config_units,
             &carry.scan_result.to_remove,
+            &carry.scan_result.existing,
         )?;
         carry.timing.postprocess_ms += phase_start.elapsed().as_millis() as u64;
 

@@ -5,13 +5,12 @@ pub mod runner;
 pub mod synth;
 pub mod types;
 
-/// 真实 MCP dispatch seam：把 cc-server 二进制的 `mcp.rs`（rmcp `#[tool_router]`
-/// 路由 + `Parameters<T>` schema 反序列化 + `sanitize()` 校验 + `spawn_handler!`
-/// 派发）原样编译进 cc-eval。eval 与 stdio wire path 共享同一份 dispatch 源码 —
+/// 真实 MCP dispatch seam：复用 cc-server lib 的 `mcp` 模块（rmcp
+/// `#[tool_router]` 路由 + `Parameters<T>` schema 反序列化 + `sanitize()` 校验
+/// + `spawn_handler!` 派发）。eval 与 stdio wire path 共享同一份 dispatch 实现 —
 /// 一份实现，两个适配器（stdio transport / in-process duplex）。任何工具新增
 /// 参数或 schema 校验规则都会被 eval 自动覆盖，无需改 runner。
-#[path = "../../cc-server/src/mcp.rs"]
-pub mod mcp_wire;
+pub use cc_server::mcp as mcp_wire;
 
 #[cfg(test)]
 mod tests {

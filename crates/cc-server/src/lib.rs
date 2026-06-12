@@ -2,6 +2,7 @@
 
 pub mod engine;
 pub mod handlers;
+pub mod mcp;
 pub mod project_session;
 pub mod tools;
 

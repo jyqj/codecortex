@@ -86,10 +86,10 @@ Latest run (release, this machine — see the dated artifacts for full phase bre
 
 | Scale | Cold full index | DB size | Incremental p50 (1 file) | Incremental p50 (5% batch) | Tool queries (p50) | Ground truth |
 |-------|----------------|---------|--------------------------|----------------------------|--------------------|--------------|
-| 1k (5,568 symbols) | 1.3s | 25.5 MB | 252ms | 586ms | 0–4ms | 8/8 |
-| 10k (55,617 symbols) | 65.2s | 256.9 MB | 1755ms | 22.2s | sub-ms | 8/8 |
+| 1k (5,568 symbols) | 1.7s | 25.5 MB | 158ms | 526ms | 0–4ms | 8/8 |
+| 10k (55,617 symbols) | 86.1s | 256.9 MB | 2221ms | 9.4s | sub-ms | 8/8 |
 
-At 10k the 5% batch (480 files) is dominated by the write phase (p50 17.8s); single-file incremental cost is dominated by postprocess + write (p50 674ms + 628ms). Tool query latency stays flat across scales.
+At 10k the 5% batch (480 files) write phase is p50 6.1s after the batched FTS5 delete optimization (was p50 17.8s when per-file deletes full-scanned the three application-maintained FTS tables — `file_path` is an UNINDEXED column there, so non-MATCH predicates cannot use the inverted index); postprocess (~3.4s) is now the co-dominant cost. Single-file incremental is dominated by postprocess + write (p50 ~0.9s + 0.8s). Tool query latency stays flat across scales. Cold full-index wall time varies with machine load across runs (62–105s observed); treat the dated artifacts as the authoritative per-run record.
 
 ## Comparison Baselines
 

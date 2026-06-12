@@ -2,7 +2,9 @@
 
 All 14 tools are always available — there is no activation step or domain system.
 Parameters below list the most useful options; run `status(aspect="capabilities")`
-for the authoritative runtime surface.
+for the authoritative runtime surface. Unknown parameter names are rejected with a
+`-32602` invalid-params error naming the field, so typos fail fast instead of
+silently running with defaults.
 
 ## Setup
 

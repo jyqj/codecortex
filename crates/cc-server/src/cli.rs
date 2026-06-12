@@ -45,7 +45,7 @@ fn cmd_serve(project_path: Option<PathBuf>) -> CcResult<()> {
         project_path.or_else(|| cc_model::config::find_project_root_with_marker(None));
     let rt = tokio::runtime::Runtime::new()
         .map_err(|e| CcError::Other(format!("tokio runtime: {}", e)))?;
-    rt.block_on(crate::mcp::run_mcp_server(project_path))
+    rt.block_on(cc_server::mcp::run_mcp_server(project_path))
 }
 
 fn cmd_install(force: bool) -> CcResult<()> {

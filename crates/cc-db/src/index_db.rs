@@ -22,6 +22,7 @@ use cc_model::{CcError, CcResult, Language, ParserTier};
 use crate::index_migrate::{
     migrate_index_db, SchemaStatus, CURRENT_SCHEMA_VERSION, FULL_SCHEMA_SQL,
 };
+use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Read a chunk text column using the explicit `chunks.text_encoding` marker.
 ///
@@ -1278,12 +1279,109 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::delete_files_fts_batch(&tx, files.iter().map(|f| f.rel_path.as_str()))?;
         for file in files {
-            Self::delete_file_data(&tx, &file.rel_path)?;
+            Self::delete_file_data_base(&tx, &file.rel_path)?;
             Self::insert_file_data(&tx, file)?;
         }
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Apply one round of config-linker output (incremental path).
+    ///
+    /// Units whose file already has a `files` row (scanner-visible config
+    /// files like yaml/toml, written as parsed units) only replace that
+    /// file's config refs — the parsed representation (files row, chunks,
+    /// FTS) stays intact. Units without a row are written whole, as before
+    /// (non-scanner config files such as .ini/.env).
+    ///
+    /// `seen_config_files` are the config files covered by this round's scan
+    /// (or token cache): a seen file without a unit resolved to ZERO links,
+    /// so its leftover config refs from earlier rounds are deleted here —
+    /// they would otherwise linger until the next full rebuild.
+    pub(crate) fn apply_config_link_units(
+        &self,
+        units: &[FileWriteUnit],
+        seen_config_files: &[String],
+    ) -> CcResult<()> {
+        if units.is_empty() && seen_config_files.is_empty() {
+            return Ok(());
+        }
+        let mut conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let tx = conn
+            .transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let linked_now: std::collections::HashSet<&str> =
+            units.iter().map(|u| u.rel_path.as_str()).collect();
+        let mut wrote = false;
+        for path in seen_config_files {
+            if linked_now.contains(path.as_str()) {
+                continue;
+            }
+            // 零链接陈旧行清理：本轮没有替换单元的文件，旧 refs 直接删。
+            wrote |= Self::delete_config_link_refs(&tx, path)? > 0;
+        }
+        for unit in units {
+            let parsed_row_exists = {
+                let mut stmt = tx
+                    .prepare_cached("SELECT 1 FROM files WHERE file_path = ?1")
+                    .map_err(|e| CcError::Database(e.to_string()))?;
+                stmt.exists(rusqlite::params![unit.rel_path])
+                    .map_err(|e| CcError::Database(e.to_string()))?
+            };
+            if parsed_row_exists {
+                Self::delete_config_link_refs(&tx, &unit.rel_path)?;
+                Self::insert_symbol_refs_on(&tx, &unit.outcome.symbol_refs)?;
+            } else {
+                Self::delete_file_data(&tx, &unit.rel_path)?;
+                Self::insert_file_data(&tx, unit)?;
+            }
+            wrote = true;
+        }
+        if !wrote {
+            // 真正零变化：丢弃事务，不 bump epoch（保持快速路径零写入语义）。
+            return Ok(());
+        }
+        Self::bump_index_epoch_on(&tx)?;
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Append a config-link unit's refs without touching the file's parsed
+    /// rows. Full-rebuild counterpart of the row-preserving branch in
+    /// [`Self::apply_config_link_units`]: inside the rebuild closure the
+    /// parsed unit was already inserted, so a second `insert_file_data`
+    /// would violate the `files` primary key and lose the parsed chunks.
+    pub fn insert_config_link_refs(conn: &Connection, unit: &FileWriteUnit) -> CcResult<()> {
+        Self::insert_symbol_refs_on(conn, &unit.outcome.symbol_refs)
+    }
+
+    /// Delete the config-linker refs of `rel_path` (parser-produced refs
+    /// untouched). Returns the number of deleted rows.
+    fn delete_config_link_refs(conn: &Connection, rel_path: &str) -> CcResult<usize> {
+        Self::execute_cached(
+            conn,
+            "DELETE FROM symbol_refs WHERE file_path = ?1 \
+             AND ref_kind IN ('config_module','config_file','config_dependency')",
+            rusqlite::params![rel_path],
+        )
+    }
+
+    /// Insert symbol_refs rows (INSERT OR REPLACE on ref_id).
+    fn insert_symbol_refs_on(
+        conn: &Connection,
+        refs: &[cc_model::symbol::SymbolRefRecord],
+    ) -> CcResult<()> {
+        for r in refs {
+            Self::execute_cached(conn, "INSERT OR REPLACE INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)",
+                rusqlite::params![r.ref_id, r.file_path, r.symbol_name, r.container, r.ref_kind, r.line, r.column, r.target_symbol_id, r.target_file_path, r.target_symbol_uid, r.ref_name, r.resolution_kind.as_str(), r.resolution_confidence, r.resolution_strategy, r.ref_end_line, r.ref_end_col, r.parser_tier.as_str(), r.parser_confidence],
+            )?;
+        }
         Ok(())
     }
 
@@ -1428,11 +1526,20 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        // One batched scan per FTS table for the whole batch (file_path is
+        // UNINDEXED there, so per-file deletes would each scan the table).
+        Self::delete_files_fts_batch(
+            &tx,
+            to_remove
+                .iter()
+                .map(String::as_str)
+                .chain(normal_units.iter().map(|f| f.rel_path.as_str())),
+        )?;
         for path in to_remove {
-            Self::delete_file_data(&tx, path)?;
+            Self::delete_file_data_base(&tx, path)?;
         }
         for file in normal_units {
-            Self::delete_file_data(&tx, &file.rel_path)?;
+            Self::delete_file_data_base(&tx, &file.rel_path)?;
             Self::insert_file_data_precompressed(
                 &tx,
                 file,
@@ -1459,8 +1566,9 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::delete_files_fts_batch(&tx, paths.iter().map(String::as_str))?;
         for path in paths {
-            Self::delete_file_data(&tx, path)?;
+            Self::delete_file_data_base(&tx, path)?;
         }
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
@@ -1470,19 +1578,50 @@ impl IndexDb {
     /// Delete every row owned by `rel_path` across content, FTS and edge tables.
     ///
     /// FTS dual-maintenance model: `symbols_fts` and `file_paths_fts` are kept
-    /// in sync by schema triggers (the `DELETE FROM files` below cascades into
-    /// `symbols` via `ON DELETE CASCADE`, firing those triggers), while
-    /// `chunks_fts`, `files_fts` and `literal_fts` have no triggers and MUST
-    /// be deleted here at the application layer, in the same transaction as
-    /// the base-table deletes.
+    /// in sync by schema triggers (the `DELETE FROM files` in
+    /// [`Self::delete_file_data_base`] cascades into `symbols` via
+    /// `ON DELETE CASCADE`, firing those triggers), while `chunks_fts`,
+    /// `files_fts` and `literal_fts` have no triggers and MUST be deleted at
+    /// the application layer, in the same transaction as the base-table
+    /// deletes. Multi-file callers should batch the FTS half via
+    /// [`Self::delete_files_fts_batch`] instead of calling this in a loop.
     pub(crate) fn delete_file_data(conn: &Connection, rel_path: &str) -> CcResult<()> {
-        for fts_table in &["chunks_fts", "files_fts", "literal_fts"] {
-            conn.execute(
-                &format!("DELETE FROM {} WHERE file_path = ?1", fts_table),
-                rusqlite::params![rel_path],
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        Self::delete_files_fts_batch(conn, std::iter::once(rel_path))?;
+        Self::delete_file_data_base(conn, rel_path)
+    }
+
+    /// Delete the app-maintained FTS rows (`chunks_fts`, `files_fts`,
+    /// `literal_fts`) for a set of files using chunked `IN (...)` statements.
+    ///
+    /// `file_path` is UNINDEXED in these FTS5 tables, so any DELETE on it is
+    /// a full scan of the FTS content table. Batching costs one scan per
+    /// [`IN_BATCH_SIZE`] files per table instead of one scan per file per
+    /// table — measured ~90% of the incremental batch write phase at
+    /// 10k-file scale before batching.
+    pub(crate) fn delete_files_fts_batch<'p>(
+        conn: &Connection,
+        rel_paths: impl IntoIterator<Item = &'p str>,
+    ) -> CcResult<()> {
+        let rel_paths: Vec<&str> = rel_paths.into_iter().collect();
+        for batch in rel_paths.chunks(IN_BATCH_SIZE) {
+            let placeholders = sql_in_placeholders(batch.len());
+            for fts_table in &["chunks_fts", "files_fts", "literal_fts"] {
+                Self::execute_cached(
+                    conn,
+                    &format!(
+                        "DELETE FROM {} WHERE file_path IN ({})",
+                        fts_table, placeholders
+                    ),
+                    rusqlite::params_from_iter(batch.iter()),
+                )?;
+            }
         }
+        Ok(())
+    }
+
+    /// Base-table half of [`Self::delete_file_data`]: everything except the
+    /// app-maintained FTS mirrors, which multi-file callers batch separately.
+    pub(crate) fn delete_file_data_base(conn: &Connection, rel_path: &str) -> CcResult<()> {
         conn.execute(
             "DELETE FROM test_edges WHERE test_file_path = ?1 OR code_file_path = ?1",
             rusqlite::params![rel_path],
@@ -1612,11 +1751,7 @@ impl IndexDb {
         }
 
         // symbol_refs
-        for r in &outcome.symbol_refs {
-            Self::execute_cached(conn, "INSERT OR REPLACE INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)",
-                rusqlite::params![r.ref_id, r.file_path, r.symbol_name, r.container, r.ref_kind, r.line, r.column, r.target_symbol_id, r.target_file_path, r.target_symbol_uid, r.ref_name, r.resolution_kind.as_str(), r.resolution_confidence, r.resolution_strategy, r.ref_end_line, r.ref_end_col, r.parser_tier.as_str(), r.parser_confidence],
-            )?;
-        }
+        Self::insert_symbol_refs_on(conn, &outcome.symbol_refs)?;
 
         // call_edges
         for e in &outcome.call_edges {
@@ -1977,6 +2112,18 @@ impl<'a> WriteOps<'a> {
         self.0.replace_files_batch(files)
     }
 
+    /// Apply one round of config-linker output: row-preserving ref replacement
+    /// for files that already have a parsed `files` row, whole-unit writes for
+    /// the rest, and stale-ref cleanup for seen config files that resolved to
+    /// zero links this round.
+    pub fn apply_config_link_units(
+        &self,
+        units: &[FileWriteUnit],
+        seen_config_files: &[String],
+    ) -> CcResult<()> {
+        self.0.apply_config_link_units(units, seen_config_files)
+    }
+
     /// Update only the edge/resolution data for dirty (DirtyResolveOnly) files.
     pub fn replace_reresolved_edges_only(&self, units: &[FileWriteUnit]) -> CcResult<()> {
         self.0.replace_reresolved_edges_only(units)
@@ -2172,6 +2319,63 @@ mod tests {
             )
             .unwrap();
         assert_eq!(restored, big, "decompressed chunk text round-trips");
+    }
+
+    /// 批量 FTS 删除（IN 分块）必须覆盖批内所有路径：替换后 chunks_fts /
+    /// files_fts / literal_fts 无陈旧行，移除后与基表同步清空。文件数刻意
+    /// 超过 IN_BATCH_SIZE，验证分块边界两侧都被删除。
+    #[test]
+    fn batched_fts_deletes_cover_all_paths_across_chunk_boundary() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("fts.db")).unwrap().0;
+
+        let total = IN_BATCH_SIZE + 7;
+        let units: Vec<FileWriteUnit> = (0..total)
+            .map(|i| {
+                let path = format!("src/f{i}.rs");
+                let mut unit = file_unit(&path);
+                let mut c = chunk(0, &format!("fn body_{i}() {{}}"));
+                c.chunk_id = format!("chunk:{path}");
+                c.file_path = path.clone();
+                unit.outcome.chunks = vec![c];
+                unit.outcome.literal_index = vec![cc_model::LiteralRecord {
+                    literal_id: format!("lit:{path}"),
+                    file_path: path,
+                    literal: format!("marker {i}"),
+                    literal_kind: "string".to_string(),
+                    line: 1,
+                    container: None,
+                    confidence: 0.8,
+                    enclosing_symbol_uid: None,
+                    key_path: None,
+                }];
+                unit
+            })
+            .collect();
+        db.replace_files_batch(&units).unwrap();
+
+        let count = |table: &str| -> i64 {
+            db.read_conn()
+                .unwrap()
+                .query_row(&format!("SELECT COUNT(*) FROM {table}"), [], |r| r.get(0))
+                .unwrap()
+        };
+        assert_eq!(count("chunks_fts"), total as i64);
+
+        // Re-replace every file through the incremental batch path: exactly
+        // one FTS row per file must remain (no stale duplicates).
+        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+            .unwrap();
+        assert_eq!(count("chunks_fts"), total as i64);
+        assert_eq!(count("files_fts"), total as i64);
+        assert_eq!(count("literal_fts"), total as i64);
+
+        // Remove every file: FTS mirrors empty out together with base tables.
+        let paths: Vec<String> = units.iter().map(|u| u.rel_path.clone()).collect();
+        db.remove_files_batch(&paths).unwrap();
+        for table in ["chunks_fts", "files_fts", "literal_fts", "files"] {
+            assert_eq!(count(table), 0, "{table} should be empty after removal");
+        }
     }
 
     #[test]

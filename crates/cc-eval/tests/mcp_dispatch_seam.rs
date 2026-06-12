@@ -59,6 +59,37 @@ fn seam_rejects_schema_invalid_params() {
 }
 
 #[test]
+fn seam_rejects_unknown_params() {
+    let (_tmp, backend) = fixture_backend();
+
+    // 未知参数（agent 打错参数名，如 qurey）必须以 -32602 invalid params
+    // 报错并指出字段名，而不是被静默丢弃后按默认值执行。
+    let err = backend
+        .call_tool("search", &json!({"query": "x", "qurey": "typo"}))
+        .expect_err("unknown param must be rejected by schema deserialization");
+    assert!(
+        err.contains("qurey"),
+        "expected error naming the unknown field `qurey`, got: {}",
+        err
+    );
+    assert!(
+        err.contains("-32602") || err.to_lowercase().contains("unknown field"),
+        "expected -32602 invalid-params error, got: {}",
+        err
+    );
+
+    // 全默认参数的工具同样不得吞掉未知字段。
+    let err = backend
+        .call_tool("status", &json!({"nonexistent_param": 1}))
+        .expect_err("unknown param on all-default tool must be rejected");
+    assert!(
+        err.contains("nonexistent_param"),
+        "expected error naming `nonexistent_param`, got: {}",
+        err
+    );
+}
+
+#[test]
 fn seam_rejects_unknown_tool() {
     let (_tmp, backend) = fixture_backend();
     let err = backend

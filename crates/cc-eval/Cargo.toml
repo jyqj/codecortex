@@ -14,7 +14,7 @@ toml = "0.8"
 thiserror = { workspace = true }
 regex = { workspace = true }
 # The eval backend drives the REAL MCP dispatch path in-process:
-# cc-server's mcp.rs is compiled into this crate (see src/lib.rs `mcp_wire`)
+# cc-server's `mcp` module is re-exported as `mcp_wire` (see src/lib.rs)
 # and exercised over an rmcp duplex client↔server JSON-RPC connection.
 tokio = { workspace = true }
 tracing = { workspace = true }

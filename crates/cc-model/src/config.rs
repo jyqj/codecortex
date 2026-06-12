@@ -60,8 +60,6 @@ pub struct IndexingConfig {
     pub chunk_line_budget: u32,
     #[serde(default)]
     pub parse_timeout_micros: Option<u64>,
-    #[serde(default)]
-    pub parallelism: Parallelism,
     /// SQLite read connection pool size. `None` means derive from repo size tier.
     #[serde(default)]
     pub db_read_pool_size: Option<u32>,
@@ -156,7 +154,6 @@ impl Default for IndexingConfig {
             max_file_bytes: default_max_file_bytes(),
             chunk_line_budget: default_chunk_line_budget(),
             parse_timeout_micros: None,
-            parallelism: Parallelism::Auto,
             db_read_pool_size: None,
             dirty_propagation: true,
             dirty_propagation_max_files: 200,
@@ -168,14 +165,6 @@ impl Default for IndexingConfig {
             event_denylist: Vec::new(),
         }
     }
-}
-
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Parallelism {
-    #[default]
-    Auto,
-    Fixed(usize),
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -160,6 +160,7 @@ fn default_action_list() -> String {
 /// Parameters for the `status` tool.
 /// Returns index readiness, capability list, graph schema, or all combined.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct StatusParams {
     /// What aspect of the server to report.
     /// - `"index"` – index build state and statistics
@@ -201,6 +202,7 @@ impl Default for StatusParams {
 /// Parameters for the `index` tool.
 /// Triggers an incremental or full index build.
 #[derive(Default, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct IndexParams {
     /// Absolute or relative path to the project root to index.
     pub path: String,
@@ -225,6 +227,7 @@ impl IndexParams {
 /// Parameters for the `search` tool.
 /// Performs hybrid or symbol-only search across the indexed codebase.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct SearchParams {
     /// The search query string (natural language or symbol name).
     pub query: String,
@@ -339,6 +342,7 @@ impl Default for SearchParams {
 /// Given a task description, returns the most relevant symbols and source
 /// snippets needed to understand or implement the task.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ContextParams {
     /// Natural-language description of the task or question.
     pub task: String,
@@ -391,6 +395,7 @@ impl Default for ContextParams {
 /// Parameters for the `node` tool.
 /// Retrieves detailed information about a single symbol node.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct NodeParams {
     /// Fully-qualified or short symbol name to look up.
     pub symbol: String,
@@ -437,6 +442,7 @@ impl Default for NodeParams {
 /// Parameters for the `explore` tool.
 /// Batch-explores one or more symbols, returning relations, source, and flow paths.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ExploreParams {
     /// One or more symbol names to explore (max 10).
     pub symbols: Vec<String>,
@@ -552,6 +558,7 @@ impl Default for ExploreParams {
 /// Parameters for the `trace` tool.
 /// Finds the shortest call-graph path between two symbols.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct TraceParams {
     /// Starting symbol (caller side).
     pub from: String,
@@ -640,6 +647,7 @@ impl Default for TraceParams {
 /// Parameters for the `relations` tool.
 /// Returns callers, callees, references, or type-hierarchy edges for a symbol.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct RelationsParams {
     /// Symbol name to query relations for.
     pub symbol: String,
@@ -706,6 +714,7 @@ impl Default for RelationsParams {
 /// Parameters for the `impact` tool.
 /// Analyses change impact: affected symbols, tests, dead code, circular deps, or dependents.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ImpactParams {
     /// Analysis scope to run.
     /// - `"changes"` – symbols affected by changed files (default)
@@ -818,6 +827,7 @@ impl Default for ImpactParams {
 /// Parameters for the `architecture` tool.
 /// Returns high-level architectural views of the project.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct ArchitectureParams {
     /// Which architectural aspect to report.
     /// - `"overview"` – top-level package / module structure (default)
@@ -886,6 +896,7 @@ impl Default for ArchitectureParams {
 /// Parameters for the `files` tool.
 /// Lists project files, retrieves a code region, or expands a region with context.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct FilesParams {
     /// Action to perform.
     /// - `"list"` – list files in the project (default)
@@ -945,6 +956,7 @@ impl Default for FilesParams {
 /// Parameters for the `graph_query` tool.
 /// Executes a raw Cypher-like query against the code graph.
 #[derive(Default, Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct GraphQueryParams {
     /// The graph query string (Cypher-like syntax).
     pub query: String,
@@ -969,6 +981,7 @@ impl GraphQueryParams {
 /// Parameters for the `ingest_traces` tool.
 /// Accepts OTLP-style span observations to validate HTTP/async call edges.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct IngestTracesParams {
     /// Array of trace observations. Each entry should have:
     /// `service_name` (string), `method` (string, optional), `path` (string),
@@ -995,6 +1008,7 @@ impl IngestTracesParams {
 /// Parameters for the `adr` tool.
 /// Manage Architecture Decision Records stored in the index.
 #[derive(Deserialize, schemars::JsonSchema)]
+#[serde(deny_unknown_fields)]
 pub struct AdrParams {
     /// Action: `"list"` | `"get"` | `"store"` | `"delete"`.
     #[serde(default = "default_action_list")]

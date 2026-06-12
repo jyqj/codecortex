@@ -95,6 +95,15 @@ struct ResolutionCatalog {
     resolution_contexts: Vec<ResolutionContext>,
 }
 
+/// One non-skipped round of the incremental config-link pass: the units to
+/// write plus the config files the scan (or token cache) covered. A seen
+/// file without a unit resolved to zero links this round — apply uses the
+/// list to clear such files' stale refs from earlier rounds.
+struct ConfigLinkRound {
+    units: Vec<FileWriteUnit>,
+    seen_config_files: Vec<String>,
+}
+
 /// Owned output of the common front half of a full-snapshot write, shared by
 /// the temp-db and DirectWriter paths: the derived config-link units plus the
 /// `last_indexed_at` timestamp recorded inside the rebuilt snapshot, and the
@@ -494,10 +503,20 @@ impl Indexer {
             // connection), so they stay outside the batch transaction. The
             // gate skips the config scan (and, for no-op batches, the whole
             // pass) when the config-file set is unchanged.
-            let config_units = self.build_config_link_units_gated(project_path, batch_empty)?;
-            if !config_units.is_empty() {
-                self.db.writes().replace_files_batch(&config_units)?;
-            }
+            let config_units =
+                match self.build_config_link_units_gated(project_path, batch_empty)? {
+                    // 快速路径保持零写入：签名未变且批次为空，链接不可能变化。
+                    None => Vec::new(),
+                    // resolve 半程跑过就必须走 apply：除了写入新链接，还要清掉
+                    // “上一轮有链接、本轮解析为零链接”的文件的陈旧 refs（这类
+                    // 文件不再产出替换单元，否则会一直挂到下次 full build）。
+                    Some(round) => {
+                        self.db
+                            .writes()
+                            .apply_config_link_units(&round.units, &round.seen_config_files)?;
+                        round.units
+                    }
+                };
 
             // Update metadata (for incremental only; full path sets it inside temp-db)
             let now = chrono::Utc::now().to_rfc3339();
@@ -1398,12 +1417,16 @@ impl Indexer {
     /// appear/disappear with the catalog (a removed symbol must not keep its
     /// link). When the signature is unchanged AND the batch wrote nothing,
     /// the catalog provably did not change either and the whole pass —
-    /// including the catalog reads — is skipped.
+    /// including the catalog reads — is skipped (`None`).
+    ///
+    /// `Some` means the resolve half ran; the caller must hand the round to
+    /// `apply_config_link_units` even when `units` is empty, so that files
+    /// which resolved to zero links this round get their stale refs cleared.
     fn build_config_link_units_gated(
         &self,
         project_path: &Path,
         batch_empty: bool,
-    ) -> CcResult<Vec<FileWriteUnit>> {
+    ) -> CcResult<Option<ConfigLinkRound>> {
         let sig = config_files_signature(project_path);
         let recorded_algo = self
             .db
@@ -1416,7 +1439,7 @@ impl Indexer {
 
         if unchanged && batch_empty {
             tracing::debug!("config linker: signature unchanged and batch empty, skipping");
-            return Ok(Vec::new());
+            return Ok(None);
         }
 
         let raw_tokens = if unchanged {
@@ -1440,14 +1463,27 @@ impl Indexer {
             self.scan_and_record_config_tokens(project_path, sig)?
         };
 
+        // 本轮扫描（或缓存）覆盖到的配置文件：没有产出单元的即为零链接，
+        // apply 时按此清理它们的陈旧 refs。
+        let mut seen_config_files: Vec<String> = raw_tokens
+            .iter()
+            .map(|token| token.config_file.clone())
+            .collect();
+        seen_config_files.sort();
+        seen_config_files.dedup();
+
         let symbol_targets = self.db.reads().list_symbol_targets()?;
         let indexed_files = self.db.reads().list_file_paths()?;
-        Self::build_config_link_units_from_snapshot(
+        let units = Self::build_config_link_units_from_snapshot(
             project_path,
             symbol_targets,
             &indexed_files,
             &raw_tokens,
-        )
+        )?;
+        Ok(Some(ConfigLinkRound {
+            units,
+            seen_config_files,
+        }))
     }
 
     /// Run the config scan and persist the gate state. The cache is written
@@ -1565,9 +1601,17 @@ impl Indexer {
             IndexDb::insert_route_node_into(conn, r)?;
         }
 
-        // Write config link units
+        // Write config link units. Scanner 可见的配置文件（yaml/toml 等）已经
+        // 作为解析单元写入过 files —— 对它们只追加 config refs（二次
+        // insert_file_data 会撞 files 主键，且会丢失解析产物）；其余配置
+        // 文件（.ini/.env 等非 scanner 文件）仍整体写入。
+        let parsed_paths: HashSet<&str> = write_units.iter().map(|u| u.rel_path.as_str()).collect();
         for unit in &payload.config_units {
-            IndexDb::insert_file_data(conn, unit)?;
+            if parsed_paths.contains(unit.rel_path.as_str()) {
+                IndexDb::insert_config_link_refs(conn, unit)?;
+            } else {
+                IndexDb::insert_file_data(conn, unit)?;
+            }
         }
 
         // Write metadata
@@ -3043,6 +3087,190 @@ mod config_linker_gate_tests {
             db.reads().get_metadata(CONFIG_SIG_KEY).unwrap(),
             sig,
             "config files did not change: the scan must have been skipped"
+        );
+    }
+}
+
+#[cfg(test)]
+mod config_link_write_path_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    /// app.yaml 是 scanner 可见的配置文件（Language::Yaml）：同时走解析通道
+    /// （generic chunker 产出 chunks）和 config-link 通道（file-path ref）。
+    fn setup_yaml_project() -> (TempDir, Arc<IndexDb>, Indexer) {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::create_dir_all(project.join("src")).unwrap();
+        std::fs::write(
+            project.join("src/only.py"),
+            "def only_handler():\n    return 1\n",
+        )
+        .unwrap();
+        std::fs::write(project.join("app.yaml"), "script: src/only.py\n").unwrap();
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), project, &IndexingConfig::default());
+        (tmp, db, indexer)
+    }
+
+    fn count(db: &IndexDb, sql: &str) -> i64 {
+        db.reads()
+            .query_json(sql, &[])
+            .unwrap()
+            .first()
+            .and_then(|row| row.get("cnt"))
+            .and_then(|v| v.as_i64())
+            .unwrap_or(0)
+    }
+
+    /// app.yaml 上的 config-link refs 行数。
+    fn config_ref_count(db: &IndexDb) -> i64 {
+        count(
+            db,
+            "SELECT COUNT(*) AS cnt FROM symbol_refs WHERE file_path = 'app.yaml' \
+             AND ref_kind IN ('config_module','config_file','config_dependency')",
+        )
+    }
+
+    fn yaml_files_rows(db: &IndexDb) -> i64 {
+        count(
+            db,
+            "SELECT COUNT(*) AS cnt FROM files WHERE file_path = 'app.yaml'",
+        )
+    }
+
+    fn yaml_chunks(db: &IndexDb) -> i64 {
+        count(
+            db,
+            "SELECT COUNT(*) AS cnt FROM chunks WHERE file_path = 'app.yaml'",
+        )
+    }
+
+    /// 缺陷 A / 变体 (a)：配置文件集未变（签名不变 → cached-token 路径）。
+    /// 删除被引用文件后本轮解析为零链接，不再产出替换单元 —— 旧 refs 必须
+    /// 被显式清理，且 app.yaml 的 files 行保持存在且唯一。
+    #[test]
+    fn zero_link_resolution_clears_stale_refs_via_cached_tokens() {
+        let (tmp, db, indexer) = setup_yaml_project();
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            config_ref_count(&db) > 0,
+            "premise: initial build links app.yaml -> src/only.py"
+        );
+        let sig = db.reads().get_metadata(CONFIG_SIG_KEY).unwrap();
+
+        std::fs::remove_file(project.join("src/only.py")).unwrap();
+        indexer.build_index(project, false).unwrap();
+
+        assert_eq!(
+            db.reads().get_metadata(CONFIG_SIG_KEY).unwrap(),
+            sig,
+            "config files unchanged: this run must take the cached-token path"
+        );
+        assert_eq!(
+            config_ref_count(&db),
+            0,
+            "zero-link resolution must clear the stale config refs"
+        );
+        assert_eq!(
+            yaml_files_rows(&db),
+            1,
+            "app.yaml keeps exactly one files row"
+        );
+    }
+
+    /// 缺陷 A / 变体 (b)：另一个配置文件被改动（签名变化 → fresh-scan 路径），
+    /// 而 app.yaml 本身未变、不会被重新解析 —— 陈旧 refs 同样必须清理。
+    #[test]
+    fn zero_link_resolution_clears_stale_refs_via_fresh_scan() {
+        let (tmp, db, indexer) = setup_yaml_project();
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            config_ref_count(&db) > 0,
+            "premise: initial build links app.yaml -> src/only.py"
+        );
+        let sig = db.reads().get_metadata(CONFIG_SIG_KEY).unwrap();
+
+        std::fs::remove_file(project.join("src/only.py")).unwrap();
+        // 触碰另一个配置文件改变配置集签名，强制 fresh scan。
+        std::fs::write(project.join("settings.ini"), "flag = 1\n").unwrap();
+        indexer.build_index(project, false).unwrap();
+
+        assert_ne!(
+            db.reads().get_metadata(CONFIG_SIG_KEY).unwrap(),
+            sig,
+            "config set changed: this run must take the fresh-scan path"
+        );
+        assert_eq!(
+            config_ref_count(&db),
+            0,
+            "zero-link resolution must clear the stale config refs"
+        );
+        assert_eq!(
+            yaml_files_rows(&db),
+            1,
+            "app.yaml keeps exactly one files row"
+        );
+    }
+
+    /// 缺陷 B：full build 下 scanner 可见的 yaml 既在解析集又产出 config 单元，
+    /// 必须恰好落库一次：解析产物（chunks、yaml language）与 config refs 共存；
+    /// 同一棵树的增量构建收敛到同一状态。
+    #[test]
+    fn full_build_writes_linked_yaml_once_with_parsed_and_config_data() {
+        let (tmp, db, indexer) = setup_yaml_project();
+        let project = tmp.path();
+        indexer
+            .build_index(project, true)
+            .expect("full build over a linked yaml config must succeed");
+
+        let snapshot = |db: &IndexDb| {
+            (
+                yaml_files_rows(db),
+                yaml_chunks(db),
+                config_ref_count(db),
+                db.reads()
+                    .query_json(
+                        "SELECT language FROM files WHERE file_path = 'app.yaml'",
+                        &[],
+                    )
+                    .unwrap()
+                    .first()
+                    .and_then(|row| row.get("language"))
+                    .and_then(|v| v.as_str())
+                    .map(String::from),
+            )
+        };
+        let full_state = snapshot(&db);
+        assert_eq!(full_state.0, 1, "exactly one files row for app.yaml");
+        assert!(full_state.1 > 0, "parsed chunks must be preserved");
+        assert!(full_state.2 > 0, "config refs must be present");
+        assert_eq!(
+            full_state.3.as_deref(),
+            Some("yaml"),
+            "parsed language must be preserved"
+        );
+
+        // 同一 DB 上的增量重建必须收敛（不破坏已合并状态）。
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(
+            snapshot(&db),
+            full_state,
+            "incremental rebuild on the same db must converge"
+        );
+
+        // 同一棵树、全新 DB 的纯增量构建也必须得到同一状态。
+        let db2 = Arc::new(IndexDb::open(&project.join("index2.sqlite3")).unwrap().0);
+        let indexer2 = Indexer::new(db2.clone(), project, &IndexingConfig::default());
+        indexer2.build_index(project, false).unwrap();
+        assert_eq!(
+            snapshot(&db2),
+            full_state,
+            "fresh incremental build must match the full-build state"
         );
     }
 }

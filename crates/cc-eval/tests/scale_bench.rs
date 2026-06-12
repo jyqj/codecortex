@@ -70,12 +70,19 @@ fn touch_file(root: &Path, rel_path: &str, marker: usize) {
 /// `mutate(iteration)` before each build. Returns measured reports only.
 fn run_incremental_iterations(
     backend: &CodeIndexBackend,
+    label: &str,
     iterations: usize,
     mut mutate: impl FnMut(usize),
 ) -> Vec<Value> {
     let mut reports = Vec::with_capacity(iterations);
     for iteration in 0..=iterations {
         mutate(iteration);
+        // Boundary marker so sub-phase debug logs can be attributed to a
+        // specific scenario/iteration (iteration 0 is the warmup).
+        eprintln!(
+            "[scale-bench] incremental build start: scenario={} iteration={}",
+            label, iteration
+        );
         let report = backend
             .build_index_report(false)
             .expect("incremental index build should succeed");
@@ -347,6 +354,15 @@ fn run_tool_scenarios(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<Scena
 // ── Matrix driver ──────────────────────────────────────────────────
 
 fn run_scale_bench(scale_label: &str, target_files: usize) {
+    // Sub-phase attribution: with RUST_LOG set (e.g. `cc_index=debug,cc_db=debug`)
+    // the `time_step` debug events from cc-index / cc-db reach stderr; without
+    // it the bench stays silent as before.
+    if std::env::var("RUST_LOG").is_ok() {
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .with_writer(std::io::stderr)
+            .try_init();
+    }
     let spec = SynthSpec {
         target_files,
         seed: SCALE_BENCH_SEED,
@@ -399,7 +415,7 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
     // Incremental: body-only edit of a single chain-middle file.
     let single_target = repo.ground_truth.chain[1].callee_file.clone();
     let single_reports =
-        run_incremental_iterations(&backend, INCREMENTAL_ITERATIONS, |iteration| {
+        run_incremental_iterations(&backend, "single_file", INCREMENTAL_ITERATIONS, |iteration| {
             touch_file(root, &single_target, iteration);
         });
     for report in &single_reports {
@@ -416,11 +432,16 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
         .step_by(BATCH_STRIDE)
         .cloned()
         .collect();
-    let batch_reports = run_incremental_iterations(&backend, INCREMENTAL_ITERATIONS, |iteration| {
-        for rel_path in &batch {
-            touch_file(root, rel_path, iteration);
-        }
-    });
+    let batch_reports = run_incremental_iterations(
+        &backend,
+        "five_percent_batch",
+        INCREMENTAL_ITERATIONS,
+        |iteration| {
+            for rel_path in &batch {
+                touch_file(root, rel_path, iteration);
+            }
+        },
+    );
     for report in &batch_reports {
         assert_eq!(report_usize(report, "files_parsed"), batch.len());
         assert_eq!(report_usize(report, "files_updated"), batch.len());

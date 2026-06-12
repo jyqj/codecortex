@@ -1,6 +1,6 @@
 # Synthetic Scale Benchmark: 10k
 
-Generated: 2026-06-12T11:48:03.404784+00:00
+Generated: 2026-06-12T14:54:56.886484+00:00
 Dataset: synthetic 10k (seed 0xc0ffee)
 Files: 10000 | Symbols: 55617
 
@@ -8,8 +8,8 @@ Files: 10000 | Symbols: 55617
 
 | Metric | Value |
 |--------|-------|
-| generate wall | 743ms |
-| cold full index wall | 17515ms |
+| generate wall | 681ms |
+| cold full index wall | 20186ms |
 | index db size | 256.8 MB |
 
 ## Incremental Latency: single_file
@@ -18,12 +18,12 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 1128ms | 1149ms | 1149ms |
-| write | 540ms | 542ms | 542ms |
-| resolve | 230ms | 235ms | 235ms |
-| postprocess | 210ms | 211ms | 211ms |
-| analysis | 75ms | 85ms | 85ms |
+| total elapsed | 684ms | 713ms | 713ms |
+| postprocess | 251ms | 255ms | 255ms |
+| resolve | 229ms | 260ms | 260ms |
+| analysis | 75ms | 78ms | 78ms |
 | scan_diff | 67ms | 68ms | 68ms |
+| write | 58ms | 59ms | 59ms |
 | parse | 1ms | 1ms | 1ms |
 
 ## Incremental Latency: five_percent_batch
@@ -32,23 +32,23 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 4797ms | 5292ms | 5292ms |
-| write | 3550ms | 3923ms | 3923ms |
-| resolve | 624ms | 634ms | 634ms |
-| postprocess | 429ms | 521ms | 521ms |
-| analysis | 81ms | 84ms | 84ms |
-| scan_diff | 73ms | 82ms | 82ms |
-| parse | 22ms | 23ms | 23ms |
+| total elapsed | 3597ms | 4223ms | 4223ms |
+| write | 2309ms | 2716ms | 2716ms |
+| resolve | 783ms | 795ms | 795ms |
+| postprocess | 275ms | 544ms | 544ms |
+| scan_diff | 82ms | 106ms | 106ms |
+| analysis | 80ms | 81ms | 81ms |
+| parse | 25ms | 30ms | 30ms |
 
 ## Per-Tool Latency
 
 | Scenario | Tool | Iterations | p50 | p95 | Max | Avg Output |
 |----------|------|------------|-----|-----|-----|------------|
 | search_hybrid_needle_phrase | search | 7 | 0ms | 0ms | 0ms | 8.4 KB |
-| search_hybrid_mixed_terms | search | 7 | 0ms | 0ms | 0ms | 28.3 KB |
+| search_hybrid_mixed_terms | search | 7 | 0ms | 0ms | 0ms | 27.7 KB |
 | find_symbol_exact_needle | search | 7 | 0ms | 0ms | 0ms | 307 B |
 | find_symbol_fuzzy_prefix | search | 7 | 0ms | 0ms | 0ms | 307 B |
-| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 13.1 KB |
+| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 13.6 KB |
 | graph_query_calls_varlen | graph_query | 7 | 0ms | 0ms | 0ms | 306 B |
 | trace_chain_4_hops | trace | 7 | 0ms | 0ms | 0ms | 2.7 KB |
 

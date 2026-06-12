@@ -437,27 +437,9 @@ impl IndexDb {
         Ok(())
     }
 
-    pub(crate) fn insert_semantic_edges_batch(
-        &self,
-        edges: &[cc_model::edge::SemanticEdgeRecord],
-    ) -> CcResult<()> {
-        if edges.is_empty() {
-            return Ok(());
-        }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        Self::insert_semantic_edges_batch_on(&tx, edges)?;
-        Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(())
-    }
-
-    pub(crate) fn insert_semantic_edges_batch_on(
+    /// Insert semantic edges on a caller-owned connection/transaction
+    /// (write batch, unit-of-work, or a full-rebuild temp-db connection).
+    pub fn insert_semantic_edges_batch_on(
         conn: &rusqlite::Connection,
         edges: &[cc_model::edge::SemanticEdgeRecord],
     ) -> CcResult<()> {
@@ -1170,13 +1152,6 @@ impl WriteOps<'_> {
         self.0.insert_route_nodes_batch(routes)
     }
 
-    pub fn insert_semantic_edges_batch(
-        &self,
-        edges: &[cc_model::edge::SemanticEdgeRecord],
-    ) -> CcResult<()> {
-        self.0.insert_semantic_edges_batch(edges)
-    }
-
     pub fn remove_semantic_edges_by_file(&self, file_path: &str) -> CcResult<()> {
         self.0.remove_semantic_edges_by_file(file_path)
     }
@@ -1290,7 +1265,8 @@ mod tests {
         let (db, _tmp) = setup();
         let start = db.generation().unwrap().index_epoch;
 
-        db.insert_semantic_edges_batch(&[cc_model::edge::SemanticEdgeRecord {
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.insert_semantic_edges_batch(&[cc_model::edge::SemanticEdgeRecord {
             edge_id: "sem:gen".to_string(),
             file_path: "src/a.py".to_string(),
             source_symbol: "A".to_string(),
@@ -1303,6 +1279,7 @@ mod tests {
             parser_tier: cc_model::ParserTier::TreeSitter,
         }])
         .unwrap();
+        uow.commit().unwrap();
         let after_semantic = db.generation().unwrap().index_epoch;
         assert!(after_semantic > start);
 
@@ -1628,7 +1605,9 @@ mod tests {
                 parser_tier: cc_model::ParserTier::TreeSitter,
             },
         ];
-        db.insert_semantic_edges_batch(&edges).unwrap();
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.insert_semantic_edges_batch(&edges).unwrap();
+        uow.commit().unwrap();
 
         // Query by source_uid only
         let by_source = db

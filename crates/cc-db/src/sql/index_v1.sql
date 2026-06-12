@@ -2,9 +2,13 @@
 --
 -- FTS5 rowid alignment (v5): every FTS table's rowid equals the rowid of its
 -- base-table row. symbols_fts and file_paths_fts enforce this via triggers;
--- chunks_fts, files_fts and literal_fts are application-maintained (insert
--- helpers in index_db.rs pass last_insert_rowid() explicitly). Deletes by
--- file_path therefore run as `DELETE FROM x_fts WHERE rowid IN (SELECT rowid
+-- chunks_fts, files_fts and literal_fts are application-maintained. chunks_fts
+-- rows are inserted per chunk with an explicit last_insert_rowid() (the base
+-- text column may hold a zstd BLOB while FTS needs plain text); files_fts and
+-- literal_fts are mirrored after the base inserts via `INSERT INTO x_fts(rowid,
+-- ...) SELECT rowid, ... FROM base WHERE file_path IN (...)` (batch writers)
+-- or per row with last_insert_rowid() (single-file writers). Deletes by
+-- file_path run as `DELETE FROM x_fts WHERE rowid IN (SELECT rowid
 -- FROM base WHERE file_path IN (...))` — indexed on both sides instead of a
 -- full FTS-content-table scan (file_path is UNINDEXED in FTS5).
 

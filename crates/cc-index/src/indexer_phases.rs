@@ -127,7 +127,7 @@ impl SymbolRowsCache {
 /// with the elapsed milliseconds, so a slow `postprocess_ms`/`analysis_ms`
 /// aggregate can be attributed to a specific sub-step from logs without a
 /// profiler.
-fn time_step<T>(phase: &'static str, step: &'static str, f: impl FnOnce() -> T) -> T {
+pub(crate) fn time_step<T>(phase: &'static str, step: &'static str, f: impl FnOnce() -> T) -> T {
     let start = std::time::Instant::now();
     let result = f();
     tracing::debug!(
@@ -376,9 +376,15 @@ impl Indexer {
     /// Phase 4b: build the TypeCatalog for type-aware method dispatch
     /// resolution (4b), feed it the parsed type_assigns for variable type
     /// inference (4b-1), and generate hierarchy edges — Defines,
-    /// DefinesMethod, ContainsFile (4b-2). The catalog feed and the hierarchy
-    /// edges consume the same snapshot of all symbols (persisted + freshly
-    /// parsed), which is why they form one sub-phase.
+    /// DefinesMethod, ContainsFile (4b-2). The type catalog consumes the full
+    /// snapshot of all symbols (persisted + freshly parsed); hierarchy edges
+    /// are file-local (every rule in [`crate::hierarchy`] keys on the
+    /// symbol's/file's own path), so they are generated for the batch files
+    /// only — unchanged files keep their stored edges, and the per-file
+    /// deletes in the write batch already cover replaced/dirty/removed files
+    /// (see `dirty_reload_policy` for the reload-side declaration). On full
+    /// builds the batch is the whole project, so this degenerates to the
+    /// historical full regeneration.
     fn resolve_hierarchy(
         catalog: &mut SymbolCatalog,
         persisted_symbols: &[SymbolRecord],
@@ -396,8 +402,11 @@ impl Indexer {
         catalog.build_type_catalog(&all_symbols);
         catalog.add_type_assigns_from_outcomes(write_units);
 
+        // `all_symbols` is persisted ++ batch in that order, so the freshly
+        // parsed batch symbols are exactly the tail slice.
+        let batch_symbols = &all_symbols[persisted_symbols.len()..];
         let file_paths: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
-        crate::hierarchy::generate_hierarchy_edges(&all_symbols, &file_paths)
+        crate::hierarchy::generate_hierarchy_edges(batch_symbols, &file_paths)
     }
 
     /// Phase 4c: resolve call edges, symbol refs and route edges against the
@@ -511,6 +520,7 @@ impl Indexer {
                     project_path,
                     &normal_write_units,
                     route_nodes,
+                    hierarchy_edges,
                     chunk_blobs,
                 ) {
                     Ok(config_units) => {
@@ -526,6 +536,7 @@ impl Indexer {
                             project_path,
                             &normal_write_units,
                             route_nodes,
+                            hierarchy_edges,
                             chunk_blobs,
                         )?
                     }
@@ -535,58 +546,75 @@ impl Indexer {
                     project_path,
                     &normal_write_units,
                     route_nodes,
+                    hierarchy_edges,
                     chunk_blobs,
                 )?
             }
         } else {
-            // Incremental: removals, replacements, dirty re-resolution and
-            // route nodes commit atomically — a crash cannot leave files
-            // deleted with their edges still present.
+            // Incremental: removals, replacements, dirty re-resolution, route
+            // nodes and the batch files' hierarchy edges commit atomically —
+            // a crash cannot leave files deleted with their edges still
+            // present, nor a batch file committed (content_hash persisted, so
+            // never re-batched) with its hierarchy edges missing. The batch
+            // deletes every batch/removed file's semantic_edges rows, so the
+            // in-transaction insert is the sole owner of the batch files'
+            // hierarchy edges; unchanged files keep theirs from earlier
+            // builds (the edges are file-local).
             let batch_empty = to_remove.is_empty()
                 && normal_write_units.is_empty()
                 && dirty_write_units.is_empty();
-            self.db.writes().write_incremental_batch(
-                to_remove,
-                &normal_write_units,
-                &dirty_write_units,
-                route_nodes,
-                chunk_blobs,
-            )?;
+            time_step("write", "incremental_batch", || {
+                self.db.writes().write_incremental_batch(
+                    to_remove,
+                    &normal_write_units,
+                    &dirty_write_units,
+                    route_nodes,
+                    hierarchy_edges,
+                    chunk_blobs,
+                )
+            })?;
 
             // Config links read the just-committed snapshot (separate read
             // connection), so they stay outside the batch transaction. The
             // gate skips the config scan (and, for no-op batches, the whole
             // pass) when the config-file set is unchanged.
-            let config_units =
-                match self.build_config_link_units_gated(project_path, batch_empty)? {
-                    // 快速路径保持零写入：签名未变且批次为空，链接不可能变化。
-                    None => Vec::new(),
-                    // resolve 半程跑过就必须走 apply：除了写入新链接，还要清掉
-                    // “上一轮有链接、本轮解析为零链接”的文件的陈旧 refs（这类
-                    // 文件不再产出替换单元，否则会一直挂到下次 full build）。
-                    Some(round) => {
+            let config_units = match time_step("write", "config_link_compute", || {
+                self.build_config_link_units_gated(project_path, batch_empty)
+            })? {
+                // 快速路径保持零写入：签名未变且批次为空，链接不可能变化。
+                None => Vec::new(),
+                // resolve 半程跑过就必须走 apply：除了写入新链接，还要清掉
+                // “上一轮有链接、本轮解析为零链接”的文件的陈旧 refs（这类
+                // 文件不再产出替换单元，否则会一直挂到下次 full build）。
+                Some(round) => {
+                    time_step("write", "config_link_apply", || {
                         self.db
                             .writes()
-                            .apply_config_link_units(&round.units, &round.seen_config_files)?;
-                        round.units
-                    }
-                };
+                            .apply_config_link_units(&round.units, &round.seen_config_files)
+                    })?;
+                    round.units
+                }
+            };
 
             // Update metadata (for incremental only; full path sets it inside temp-db)
-            let now = chrono::Utc::now().to_rfc3339();
-            self.db.writes().set_metadata("last_indexed_at", &now)?;
-            self.db.writes().set_metadata("index_version", "1.0.0")?;
+            time_step("write", "metadata", || {
+                let now = chrono::Utc::now().to_rfc3339();
+                self.db.writes().set_metadata("last_indexed_at", &now)?;
+                self.db.writes().set_metadata("index_version", "1.0.0")
+            })?;
 
             // Long incremental-only sessions never hit the full-rebuild
             // checkpoint, so reclaim the WAL here once it grows too large.
             const MAX_INCREMENTAL_WAL_BYTES: u64 = 16 * 1024 * 1024;
-            if let Err(e) = self
-                .db
-                .admin()
-                .checkpoint_wal_if_large(MAX_INCREMENTAL_WAL_BYTES)
-            {
-                tracing::warn!(err = %e, "incremental WAL checkpoint failed");
-            }
+            time_step("write", "wal_checkpoint", || {
+                if let Err(e) = self
+                    .db
+                    .admin()
+                    .checkpoint_wal_if_large(MAX_INCREMENTAL_WAL_BYTES)
+                {
+                    tracing::warn!(err = %e, "incremental WAL checkpoint failed");
+                }
+            });
 
             config_units
         };
@@ -602,18 +630,19 @@ impl Indexer {
             .chain(dirty_write_units)
             .collect();
 
-        // Write hierarchy edges (appends to semantic_edges, does not replace)
+        // Hierarchy edges were written inside the incremental batch
+        // transaction / the full-rebuild temp-db (before the swap), so a
+        // crash can never separate a committed file from its edges.
         if !hierarchy_edges.is_empty() {
-            self.db
-                .writes()
-                .insert_semantic_edges_batch(hierarchy_edges)?;
             tracing::info!(count = hierarchy_edges.len(), "generated hierarchy edges");
         }
 
         // Post-processing passes run on the live DB after both paths.
         // Framework detection only needs the files that were actually parsed on
         // incremental builds; full rebuilds still rescan the whole project.
-        self.persist_frameworks(project_path, full, &framework_file_paths, to_remove)?;
+        time_step("write", "frameworks", || {
+            self.persist_frameworks(project_path, full, &framework_file_paths, to_remove)
+        })?;
 
         Ok(WriteResult {
             write_units,
@@ -1522,6 +1551,16 @@ impl Indexer {
     /// the catalog provably did not change either and the whole pass —
     /// including the catalog reads — is skipped (`None`).
     ///
+    /// Second skip (zero-token fast path): when the signature is unchanged
+    /// and the cached raw tokens deserialize to an EMPTY list, the resolve
+    /// half is a provable no-op — zero tokens resolve to zero links AND an
+    /// empty seen-file list, so `apply_config_link_units` would write
+    /// nothing — and the catalog reads are skipped even for non-empty
+    /// batches. This cannot swallow stale-row clearing: a previous round
+    /// that produced links did so from non-empty tokens, and the cache is
+    /// recorded together with the signature, so an unchanged signature
+    /// serves those same non-empty tokens and the fast path does not fire.
+    ///
     /// `Some` means the resolve half ran; the caller must hand the round to
     /// `apply_config_link_units` even when `units` is empty, so that files
     /// which resolved to zero links this round get their stale refs cleared.
@@ -1530,7 +1569,9 @@ impl Indexer {
         project_path: &Path,
         batch_empty: bool,
     ) -> CcResult<Option<ConfigLinkRound>> {
-        let sig = config_files_signature(project_path);
+        let sig = time_step("write", "config_sig_walk", || {
+            config_files_signature(project_path)
+        });
         let recorded_algo = self
             .db
             .reads()
@@ -1547,12 +1588,25 @@ impl Indexer {
 
         let raw_tokens = if unchanged {
             // 签名未变：原始 token 与上次一致，优先用缓存，缓存缺失/损坏则重扫。
-            match self
-                .db
-                .reads()
-                .get_metadata(CONFIG_RAW_CACHE_KEY)?
-                .and_then(|json| serde_json::from_str::<Vec<RawConfigToken>>(&json).ok())
-            {
+            match time_step("write", "config_token_cache", || {
+                self.db
+                    .reads()
+                    .get_metadata(CONFIG_RAW_CACHE_KEY)
+                    .map(|cached| {
+                        cached
+                            .and_then(|json| serde_json::from_str::<Vec<RawConfigToken>>(&json).ok())
+                    })
+            })? {
+                Some(tokens) if tokens.is_empty() => {
+                    // 零 token 快路径：零 token ⇒ 零链接且 seen 为空 ⇒ apply
+                    // 必为 no-op，连 catalog 读取一起跳过。上轮若有链接，其
+                    // token 非空且与签名一同落盘，签名未变时缓存命中的就是
+                    // 那批非空 token —— 不会走到这里，陈旧行清理不受影响。
+                    tracing::debug!(
+                        "config linker: signature unchanged and cached tokens empty, skipping"
+                    );
+                    return Ok(None);
+                }
                 Some(tokens) => {
                     tracing::debug!(
                         tokens = tokens.len(),
@@ -1575,14 +1629,20 @@ impl Indexer {
         seen_config_files.sort();
         seen_config_files.dedup();
 
-        let symbol_targets = self.db.reads().list_symbol_targets()?;
-        let indexed_files = self.db.reads().list_file_paths()?;
-        let units = Self::build_config_link_units_from_snapshot(
-            project_path,
-            symbol_targets,
-            &indexed_files,
-            &raw_tokens,
-        )?;
+        let symbol_targets = time_step("write", "config_symbol_targets", || {
+            self.db.reads().list_symbol_targets()
+        })?;
+        let indexed_files = time_step("write", "config_file_paths", || {
+            self.db.reads().list_file_paths()
+        })?;
+        let units = time_step("write", "config_resolve", || {
+            Self::build_config_link_units_from_snapshot(
+                project_path,
+                symbol_targets,
+                &indexed_files,
+                &raw_tokens,
+            )
+        })?;
         Ok(Some(ConfigLinkRound {
             units,
             seen_config_files,
@@ -1597,7 +1657,9 @@ impl Indexer {
         project_path: &Path,
         sig: u64,
     ) -> CcResult<Vec<RawConfigToken>> {
-        let raw_tokens = scan_config_tokens(project_path)?;
+        let raw_tokens = time_step("write", "config_token_scan", || {
+            scan_config_tokens(project_path)
+        })?;
         match Self::serialize_raw_token_cache(&raw_tokens) {
             // 超出缓存上限：清掉旧缓存，避免新签名配上陈旧 token。
             None => self.db.writes().set_metadata(CONFIG_RAW_CACHE_KEY, "")?,
@@ -1686,6 +1748,7 @@ impl Indexer {
         conn: &rusqlite::Connection,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         payload: &FullSnapshotPayload,
         chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<()> {
@@ -1703,6 +1766,12 @@ impl Indexer {
         for r in route_nodes {
             IndexDb::insert_route_node_into(conn, r)?;
         }
+
+        // Hierarchy edges go into the temp-db before the atomic swap, so the
+        // rebuilt snapshot can never become visible without them (writing
+        // them after the swap would leave a crash window where every file's
+        // content_hash is committed but its hierarchy edges are missing).
+        IndexDb::insert_semantic_edges_batch_on(conn, hierarchy_edges)?;
 
         // Write config link units. Scanner 可见的配置文件（yaml/toml 等）已经
         // 作为解析单元写入过 files —— 对它们只追加 config refs（二次
@@ -1745,17 +1814,23 @@ impl Indexer {
         project_path: &Path,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<Vec<FileWriteUnit>> {
-        let payload = self.prepare_full_snapshot_payload(project_path, write_units)?;
-        self.db.admin().rebuild_with_temp_db(|conn| {
-            Self::write_full_snapshot_contents(
-                conn,
-                write_units,
-                route_nodes,
-                &payload,
-                chunk_blobs,
-            )
+        let payload = time_step("write", "full_prepare_payload", || {
+            self.prepare_full_snapshot_payload(project_path, write_units)
+        })?;
+        time_step("write", "full_rebuild_temp_db", || {
+            self.db.admin().rebuild_with_temp_db(|conn| {
+                Self::write_full_snapshot_contents(
+                    conn,
+                    write_units,
+                    route_nodes,
+                    hierarchy_edges,
+                    &payload,
+                    chunk_blobs,
+                )
+            })
         })?;
         Ok(payload.config_units)
     }
@@ -1768,17 +1843,23 @@ impl Indexer {
         project_path: &Path,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<Vec<FileWriteUnit>> {
-        let payload = self.prepare_full_snapshot_payload(project_path, write_units)?;
-        self.db.admin().rebuild_with_direct_writer(|conn| {
-            Self::write_full_snapshot_contents(
-                conn,
-                write_units,
-                route_nodes,
-                &payload,
-                chunk_blobs,
-            )
+        let payload = time_step("write", "full_prepare_payload", || {
+            self.prepare_full_snapshot_payload(project_path, write_units)
+        })?;
+        time_step("write", "full_rebuild_direct_writer", || {
+            self.db.admin().rebuild_with_direct_writer(|conn| {
+                Self::write_full_snapshot_contents(
+                    conn,
+                    write_units,
+                    route_nodes,
+                    hierarchy_edges,
+                    &payload,
+                    chunk_blobs,
+                )
+            })
         })?;
         Ok(payload.config_units)
     }
@@ -3523,6 +3604,173 @@ mod config_link_write_path_tests {
             snapshot(&db2),
             full_state,
             "fresh incremental build must match the full-build state"
+        );
+    }
+
+    /// C4 边界：上轮有链接 → 本轮配置内容被清空（token 归零）。归零必然改变
+    /// 配置签名，走 fresh-scan 路径清除旧链接（快路径条件 unchanged=false，
+    /// 不可能触发）；其后签名稳定、缓存 token 为空的增量轮走零 token 快路径，
+    /// 既不得遗留也不得复活任何 config refs。
+    #[test]
+    fn zero_token_fast_path_does_not_swallow_link_clearing() {
+        let (tmp, db, indexer) = setup_yaml_project();
+        let project = tmp.path();
+        indexer.build_index(project, false).unwrap();
+        assert!(
+            config_ref_count(&db) > 0,
+            "premise: initial build links app.yaml -> src/only.py"
+        );
+        let sig = db.reads().get_metadata(CONFIG_SIG_KEY).unwrap();
+
+        // 清空链接内容：签名变化 → fresh scan → 零 token，旧链接必须被清除。
+        std::fs::write(project.join("app.yaml"), "note: nothing here\n").unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert_ne!(
+            db.reads().get_metadata(CONFIG_SIG_KEY).unwrap(),
+            sig,
+            "config content changed: this run must take the fresh-scan path"
+        );
+        assert_eq!(
+            config_ref_count(&db),
+            0,
+            "links must be cleared when the config tokens go to zero"
+        );
+        assert_eq!(
+            db.reads()
+                .get_metadata(CONFIG_RAW_CACHE_KEY)
+                .unwrap()
+                .as_deref(),
+            Some("[]"),
+            "premise: the recorded token cache is the empty list (fast-path trigger)"
+        );
+
+        // 快路径轮：签名未变 + 缓存 token 为空 + 批次非空（源码编辑）。
+        let sig = db.reads().get_metadata(CONFIG_SIG_KEY).unwrap();
+        std::fs::write(
+            project.join("src/other.py"),
+            "def other_handler():\n    return 2\n",
+        )
+        .unwrap();
+        indexer.build_index(project, false).unwrap();
+        assert_eq!(
+            db.reads().get_metadata(CONFIG_SIG_KEY).unwrap(),
+            sig,
+            "config files unchanged: the zero-token fast path round keeps the signature"
+        );
+        assert_eq!(
+            config_ref_count(&db),
+            0,
+            "the zero-token fast path must leave zero config refs in place"
+        );
+    }
+}
+
+#[cfg(test)]
+mod hierarchy_incremental_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    /// 全部 hierarchy 边的稳定序列化（edge_id 与 UID 均为内容确定的），
+    /// 排序后用于"增量边集 == 全量重建边集"的等价断言。
+    fn hierarchy_edges(db: &IndexDb) -> Vec<String> {
+        db.reads()
+            .query_json(
+                "SELECT edge_id || '|' || relation_kind || '|' || file_path || '|' || \
+                 source_symbol || '|' || COALESCE(source_symbol_uid,'') || '|' || \
+                 target_symbol || '|' || COALESCE(target_symbol_uid,'') AS row \
+                 FROM semantic_edges \
+                 WHERE relation_kind IN ('defines','defines_method','contains_file') \
+                 ORDER BY row",
+                &[],
+            )
+            .unwrap()
+            .iter()
+            .filter_map(|r| r.get("row").and_then(|v| v.as_str()).map(String::from))
+            .collect()
+    }
+
+    /// C1 不变量：增量构建后的 hierarchy 边集必须等于同内容全量重建的边集。
+    /// 变更场景覆盖：新增文件进新目录（目录"节点"出现）、删除目录最后一个
+    /// 文件（目录"节点"消失）、重命名（旧路径边消失、新路径边出现）。
+    #[test]
+    fn incremental_hierarchy_edges_match_full_rebuild() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::create_dir_all(project.join("src/solo")).unwrap();
+        std::fs::write(
+            project.join("src/lib.py"),
+            "class Accumulator:\n    def add(self):\n        return 1\n",
+        )
+        .unwrap();
+        std::fs::write(project.join("src/main.py"), "def main_handler():\n    return 2\n")
+            .unwrap();
+        std::fs::write(
+            project.join("src/solo/only.py"),
+            "def solo_handler():\n    return 3\n",
+        )
+        .unwrap();
+
+        // 索引库放在项目树之外，避免 db 文件影响扫描结果的可比性。
+        let db_dir = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&db_dir.path().join("index.sqlite3")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), project, &IndexingConfig::default());
+        indexer.build_index(project, false).unwrap();
+        let initial = hierarchy_edges(&db);
+        assert!(
+            initial.iter().any(|row| row.contains("dir::src/solo")),
+            "premise: the initial build materializes the src/solo dir edge; got {initial:?}"
+        );
+        assert!(
+            initial
+                .iter()
+                .any(|row| row.contains("defines_method") && row.contains("Accumulator")),
+            "premise: class->method DefinesMethod edge exists; got {initial:?}"
+        );
+
+        // 变更：新目录新文件 + 删除目录最后一个文件 + 重命名。
+        std::fs::create_dir_all(project.join("src/newdir")).unwrap();
+        std::fs::write(
+            project.join("src/newdir/extra.py"),
+            "def extra_handler():\n    return 4\n",
+        )
+        .unwrap();
+        std::fs::remove_file(project.join("src/solo/only.py")).unwrap();
+        std::fs::rename(project.join("src/main.py"), project.join("src/renamed.py")).unwrap();
+
+        indexer.build_index(project, false).unwrap();
+        let incremental = hierarchy_edges(&db);
+
+        // 同内容全量重建作为基准边集。
+        let db_full = Arc::new(
+            IndexDb::open(&db_dir.path().join("index_full.sqlite3"))
+                .unwrap()
+                .0,
+        );
+        let indexer_full = Indexer::new(db_full.clone(), project, &IndexingConfig::default());
+        indexer_full.build_index(project, true).unwrap();
+        let full = hierarchy_edges(&db_full);
+
+        assert_eq!(
+            incremental, full,
+            "incremental hierarchy edge set must equal a same-content full rebuild"
+        );
+        assert!(
+            incremental.iter().any(|row| row.contains("dir::src/newdir")),
+            "new directory edge must appear; got {incremental:?}"
+        );
+        assert!(
+            !incremental.iter().any(|row| row.contains("src/solo")),
+            "emptied directory must leave no edges behind; got {incremental:?}"
+        );
+        assert!(
+            !incremental.iter().any(|row| row.contains("src/main.py")),
+            "renamed-away path must leave no edges behind; got {incremental:?}"
+        );
+        assert!(
+            incremental.iter().any(|row| row.contains("src/renamed.py")),
+            "renamed-to path must own its edges; got {incremental:?}"
         );
     }
 }

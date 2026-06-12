@@ -243,8 +243,10 @@ pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFram
 ///
 /// Called after indexing completes.
 pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcResult<()> {
+    use crate::indexer_phases::time_step;
+
     // 1. Gather all file paths
-    let file_paths: Vec<String> = {
+    let file_paths: Vec<String> = time_step("write", "fw_list_files", || -> CcResult<_> {
         let conn = db.reads().read_conn()?;
         let mut stmt = conn
             .prepare("SELECT file_path FROM files")
@@ -252,13 +254,14 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
         let rows = stmt
             .query_map([], |row| row.get::<_, String>(0))
             .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.filter_map(|r| r.ok()).collect()
-    };
+        Ok(rows.filter_map(|r| r.ok()).collect())
+    })?;
 
     // 2. Per-file detection — reuse one read connection across all files so each
     //    query is prepared once (cached) rather than re-acquiring a connection
     //    and recompiling 4 statements per file. Scoped so the connection is
     //    released before the write below.
+    let detect_start = std::time::Instant::now();
     let mut file_records: Vec<FileFrameworkRecord> = Vec::new();
     {
         let conn = db.reads().read_conn()?;
@@ -276,12 +279,23 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
             }
         }
     }
+    tracing::debug!(
+        phase = "write",
+        step = "fw_detect_all_files",
+        files = file_paths.len(),
+        elapsed_ms = detect_start.elapsed().as_millis() as u64,
+        "sub-phase timing"
+    );
 
     // 3. Persist file frameworks
-    db.writes().replace_file_frameworks(&file_records)?;
+    time_step("write", "fw_replace_file_frameworks", || {
+        db.writes().replace_file_frameworks(&file_records)
+    })?;
 
     // 4. Repo-level aggregation (depends on file_frameworks being written)
-    refresh_repo_frameworks(db, project_path)?;
+    time_step("write", "fw_refresh_repo", || {
+        refresh_repo_frameworks(db, project_path)
+    })?;
 
     Ok(())
 }
@@ -299,8 +313,18 @@ pub fn refresh_repo_frameworks(db: &IndexDb, project_path: &Path) -> CcResult<()
 
 /// Incremental framework detection: only re-scan changed files.
 ///
-/// For < 20 changed files: only re-detect those files.
-/// For >= 20 changed files: full repo rescan.
+/// Re-detecting exactly the changed files is complete for any changeset size:
+/// every per-file signal (imports, chunks `require()` fallback, routes,
+/// symbols, path patterns) is a pure function of that file's own index rows
+/// plus its path string, so an unchanged file's detection cannot change. The
+/// only global inputs — package manifests and the repo-wide route/file
+/// aggregation — live exclusively at repo scope and are recomputed by the
+/// unconditional [`refresh_repo_frameworks`] call below. (A `>= 20 files =>
+/// full repo rescan` fallback used to live here; it re-ran all 5 signal
+/// queries over every indexed file for no added guarantee.)
+///
+/// Files whose signals all disappeared still get an empty record pushed so
+/// `replace_file_frameworks` deletes their stale rows.
 pub fn detect_and_persist_frameworks_incremental(
     db: &IndexDb,
     project_path: &Path,
@@ -310,46 +334,56 @@ pub fn detect_and_persist_frameworks_incremental(
         return Ok(());
     }
 
-    if changed_files.len() >= 20 {
-        // Large changeset: full rescan
-        return detect_and_persist_frameworks(db, project_path);
-    }
-
-    // Small changeset: per-file incremental update
+    // Per-file incremental update — one pooled read connection across the
+    // loop so `prepare_cached` statements are reused per file (mirrors the
+    // full-scan path). Scoped so the connection is released before the write.
+    let detect_start = std::time::Instant::now();
     let mut file_records: Vec<FileFrameworkRecord> = Vec::new();
-    for &fp in changed_files {
-        // Check the file still exists in the index
-        let exists = {
-            let conn = db.reads().read_conn()?;
-            conn.query_row(
-                "SELECT 1 FROM files WHERE file_path = ?1",
-                rusqlite::params![fp],
-                |_| Ok(()),
-            )
-            .is_ok()
-        };
-        if !exists {
-            continue;
+    {
+        let conn = db.reads().read_conn()?;
+        for &fp in changed_files {
+            // Check the file still exists in the index
+            let exists = conn
+                .prepare_cached("SELECT 1 FROM files WHERE file_path = ?1")
+                .ok()
+                .map(|mut stmt| {
+                    stmt.query_row(rusqlite::params![fp], |_| Ok(())).is_ok()
+                })
+                .unwrap_or(false);
+            if !exists {
+                continue;
+            }
+
+            let detections = detect_file_frameworks_conn(&conn, fp);
+            let signals: Vec<FileFrameworkSignal> = detections
+                .into_iter()
+                .map(|d| {
+                    let evidence = d.signals.join(", ");
+                    (d.framework_key, d.confidence, evidence)
+                })
+                .collect();
+            file_records.push((fp.to_string(), signals));
         }
-
-        let detections = detect_file_frameworks(db, fp);
-        let signals: Vec<FileFrameworkSignal> = detections
-            .into_iter()
-            .map(|d| {
-                let evidence = d.signals.join(", ");
-                (d.framework_key, d.confidence, evidence)
-            })
-            .collect();
-        file_records.push((fp.to_string(), signals));
     }
+    tracing::debug!(
+        phase = "write",
+        step = "fw_detect_changed_files",
+        files = changed_files.len(),
+        elapsed_ms = detect_start.elapsed().as_millis() as u64,
+        "sub-phase timing"
+    );
 
-    db.writes().replace_file_frameworks(&file_records)?;
+    crate::indexer_phases::time_step("write", "fw_replace_file_frameworks", || {
+        db.writes().replace_file_frameworks(&file_records)
+    })?;
 
     // Repo-level aggregation is cheap because it reads the persisted
     // file_frameworks table plus package markers. Keep it current even for
     // small increments; otherwise a fresh incremental build can leave
     // repo_frameworks empty.
-    refresh_repo_frameworks(db, project_path)
+    crate::indexer_phases::time_step("write", "fw_refresh_repo", || {
+        refresh_repo_frameworks(db, project_path)
+    })
 }
 
 // ---------------------------------------------------------------------------
@@ -883,6 +917,47 @@ mod tests {
                 "symbol_pattern:middleware".to_string(),
             ],
             "signal order must follow the scan order (import, route, symbol)"
+        );
+    }
+
+    /// Incremental persistence must clear a file's stale framework rows once
+    /// its signals disappear, for any changeset size. The changeset here has
+    /// 21 entries (1 real file + 20 paths absent from the index) to pin the
+    /// removal of the old `>= 20 files => full repo rescan` fallback: the
+    /// full-scan path only pushes non-empty records, so the fallback would
+    /// have left the stale `express` row behind.
+    #[test]
+    fn test_incremental_clears_stale_rows_when_signals_disappear() {
+        let (tmp, db) = setup_test_db();
+        insert_test_file(&db, "src/app.ts", &["express"]);
+
+        detect_and_persist_frameworks_incremental(&db, tmp.path(), &["src/app.ts"]).unwrap();
+        let fw_map = get_frameworks_for_files(&db, &["src/app.ts"]);
+        assert!(
+            fw_map
+                .get("src/app.ts")
+                .is_some_and(|fws| fws.iter().any(|(key, _)| key == "express")),
+            "express row should be persisted while the import signal exists"
+        );
+
+        // Simulate a re-index where the file lost its only framework signal.
+        {
+            let conn = db.reads().read_conn().unwrap();
+            conn.execute("DELETE FROM imports WHERE file_path = 'src/app.ts'", [])
+                .unwrap();
+        }
+
+        let phantom_paths: Vec<String> = (0..20).map(|n| format!("src/ghost_{}.ts", n)).collect();
+        let mut changed: Vec<&str> = vec!["src/app.ts"];
+        changed.extend(phantom_paths.iter().map(String::as_str));
+        assert!(changed.len() >= 20, "changeset must exercise the large-set path");
+
+        detect_and_persist_frameworks_incremental(&db, tmp.path(), &changed).unwrap();
+        let fw_map = get_frameworks_for_files(&db, &["src/app.ts"]);
+        assert!(
+            fw_map.get("src/app.ts").is_none_or(|fws| fws.is_empty()),
+            "stale framework rows must be cleared when signals disappear, got: {:?}",
+            fw_map.get("src/app.ts")
         );
     }
 

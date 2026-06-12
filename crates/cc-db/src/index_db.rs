@@ -495,6 +495,18 @@ impl IndexDb {
 
     /// Open the database, check schema version, and rebuild if mismatched.
     fn open_and_ensure_schema(path: &Path) -> CcResult<(Connection, SchemaStatus)> {
+        let (conn, status) = Self::open_and_ensure_schema_inner(path)?;
+        // The batch write path cycles through ~20+ distinct prepare_cached
+        // statements per file (inserts across 12 tables plus FTS mirrors and
+        // batched deletes); rusqlite's default capacity of 16 makes that
+        // rotation evict every statement right before its reuse, degrading
+        // every "cached" execute into a full re-prepare. Same fix as the
+        // read pool (see `build_read_pool`).
+        conn.set_prepared_statement_cache_capacity(64);
+        Ok((conn, status))
+    }
+
+    fn open_and_ensure_schema_inner(path: &Path) -> CcResult<(Connection, SchemaStatus)> {
         let pragmas = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
 
         let conn = Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
@@ -1128,6 +1140,9 @@ impl IndexDb {
             tmp_conn
                 .execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
                 .map_err(|e| CcError::Database(format!("temp db pragmas: {}", e)))?;
+            // Same statement-rotation hazard as the main write connection:
+            // the per-file insert helpers keep ~20 cached statements alive.
+            tmp_conn.set_prepared_statement_cache_capacity(64);
 
             // Apply full schema
             tmp_conn
@@ -1280,13 +1295,15 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Self::delete_files_fts_batch(&tx, files.iter().map(|f| f.rel_path.as_str()))?;
+        let rel_paths: Vec<&str> = files.iter().map(|f| f.rel_path.as_str()).collect();
+        Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
+        // Replacement keeps the path, so the path-derived test_edges
+        // stay valid (see `delete_files_data_base_keep_test_edges_batch`).
+        Self::delete_files_data_base_keep_test_edges_batch(&tx, &rel_paths)?;
         for file in files {
-            // Replacement keeps the path, so the path-derived test_edges
-            // stay valid (see `delete_file_data_base_keep_test_edges`).
-            Self::delete_file_data_base_keep_test_edges(&tx, &file.rel_path)?;
-            Self::insert_file_data(&tx, file)?;
+            Self::insert_file_data_deferred_fts(&tx, file, None)?;
         }
+        Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
@@ -1504,21 +1521,26 @@ impl IndexDb {
     }
 
     /// Write one incremental index batch atomically: file removals, full file
-    /// replacements, dirty-file edge re-resolution, and route nodes share a
-    /// single transaction, so a crash cannot leave files deleted with their
-    /// edges still present (and the batch costs one WAL sync instead of four).
+    /// replacements, dirty-file edge re-resolution, route nodes and the batch
+    /// files' hierarchy edges share a single transaction, so a crash cannot
+    /// leave files deleted with their edges still present — nor leave a batch
+    /// file committed (content_hash persisted, so never re-batched) with its
+    /// hierarchy edges missing (and the batch costs one WAL sync instead of
+    /// four).
     pub(crate) fn write_incremental_batch(
         &self,
         to_remove: &[String],
         normal_units: &[FileWriteUnit],
         dirty_units: &[FileWriteUnit],
         route_nodes: &[cc_model::edge::RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         precompressed: &PrecompressedChunks,
     ) -> CcResult<()> {
         if to_remove.is_empty()
             && normal_units.is_empty()
             && dirty_units.is_empty()
             && route_nodes.is_empty()
+            && hierarchy_edges.is_empty()
         {
             return Ok(());
         }
@@ -1529,8 +1551,21 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
+        // Per-section timing: emitted as `tracing::debug!` "sub-phase timing"
+        // events (same field style as cc-index's `time_step`) so a slow
+        // `write.incremental_batch` aggregate can be attributed from logs.
+        fn section_ms(step: &'static str, count: usize, start: std::time::Instant) {
+            tracing::debug!(
+                phase = "write",
+                step,
+                count,
+                elapsed_ms = start.elapsed().as_millis() as u64,
+                "sub-phase timing"
+            );
+        }
         // One batched scan per FTS table for the whole batch (file_path is
         // UNINDEXED there, so per-file deletes would each scan the table).
+        let section_start = std::time::Instant::now();
         Self::delete_files_fts_batch(
             &tx,
             to_remove
@@ -1538,25 +1573,53 @@ impl IndexDb {
                 .map(String::as_str)
                 .chain(normal_units.iter().map(|f| f.rel_path.as_str())),
         )?;
-        for path in to_remove {
-            Self::delete_file_data_base(&tx, path)?;
-        }
+        section_ms(
+            "db_fts_delete",
+            to_remove.len() + normal_units.len(),
+            section_start,
+        );
+        let section_start = std::time::Instant::now();
+        let remove_paths: Vec<&str> = to_remove.iter().map(String::as_str).collect();
+        Self::delete_files_data_base_batch(&tx, &remove_paths)?;
+        section_ms("db_remove_files", to_remove.len(), section_start);
+        // Replacement keeps the path, so the path-derived test_edges
+        // stay valid; only removals above cascade into test_edges.
+        // Deletes run batched for the whole replacement set before any
+        // insert: no inserted row is keyed by another batch file's path, so
+        // the old per-file delete/insert interleaving carried no semantics.
+        let section_start = std::time::Instant::now();
+        let replace_paths: Vec<&str> = normal_units.iter().map(|f| f.rel_path.as_str()).collect();
+        Self::delete_files_data_base_keep_test_edges_batch(&tx, &replace_paths)?;
+        section_ms("db_replace_delete", normal_units.len(), section_start);
+        let section_start = std::time::Instant::now();
         for file in normal_units {
-            // Replacement keeps the path, so the path-derived test_edges
-            // stay valid; only removals above cascade into test_edges.
-            Self::delete_file_data_base_keep_test_edges(&tx, &file.rel_path)?;
-            Self::insert_file_data_precompressed(
+            Self::insert_file_data_deferred_fts(
                 &tx,
                 file,
                 precompressed.get(&file.rel_path).map(Vec::as_slice),
             )?;
         }
+        Self::insert_files_literal_fts_batch(&tx, &replace_paths)?;
+        section_ms("db_replace_insert", normal_units.len(), section_start);
+        let section_start = std::time::Instant::now();
         for file in dirty_units {
             Self::replace_reresolved_edges_for_file(&tx, file)?;
         }
+        section_ms("db_dirty_rewrite", dirty_units.len(), section_start);
+        // Hierarchy edges for the batch files, inside the same transaction.
+        // Must run after the dirty rewrite above: its per-file delete clears
+        // each dirty file's semantic_edges rows, which include the hierarchy
+        // edges being re-inserted here.
+        let section_start = std::time::Instant::now();
+        Self::insert_semantic_edges_batch_on(&tx, hierarchy_edges)?;
+        section_ms("db_hierarchy_edges", hierarchy_edges.len(), section_start);
+        let section_start = std::time::Instant::now();
         Self::insert_route_nodes_on(&tx, route_nodes)?;
         Self::bump_index_epoch_on(&tx)?;
+        section_ms("db_routes_epoch", route_nodes.len(), section_start);
+        let section_start = std::time::Instant::now();
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        section_ms("db_commit", 0, section_start);
         Ok(())
     }
 
@@ -1571,10 +1634,9 @@ impl IndexDb {
         let tx = conn
             .transaction()
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Self::delete_files_fts_batch(&tx, paths.iter().map(String::as_str))?;
-        for path in paths {
-            Self::delete_file_data_base(&tx, path)?;
-        }
+        let rel_paths: Vec<&str> = paths.iter().map(String::as_str).collect();
+        Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
+        Self::delete_files_data_base_batch(&tx, &rel_paths)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(paths.len())
@@ -1638,31 +1700,75 @@ impl IndexDb {
     /// Base-table half of [`Self::delete_file_data`]: everything except the
     /// app-maintained FTS mirrors, which multi-file callers batch separately.
     pub(crate) fn delete_file_data_base(conn: &Connection, rel_path: &str) -> CcResult<()> {
-        conn.execute(
-            "DELETE FROM test_edges WHERE test_file_path = ?1 OR code_file_path = ?1",
-            rusqlite::params![rel_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
-        Self::delete_file_data_base_keep_test_edges(conn, rel_path)
+        Self::delete_files_data_base_batch(conn, &[rel_path])
     }
 
-    /// [`Self::delete_file_data_base`] minus the test_edges cascade, for
-    /// replace-in-place writers. Test edges are path-derived: their endpoints
-    /// are file paths and the matching depends only on the path set plus the
-    /// `is_test_file` flag, which every parser computes from the path alone —
-    /// so deleting and re-inserting a file under the SAME path cannot change
-    /// its test edges. New paths have no edges to delete (postprocess builds
-    /// them), and removed paths go through [`Self::delete_file_data_base`].
-    pub(crate) fn delete_file_data_base_keep_test_edges(
+    /// Batched [`Self::delete_file_data_base`]: one chunked `IN (...)` DELETE
+    /// per table for the whole removal set instead of per-file statements.
+    /// The `OR`-predicate tables (`test_edges`, `co_change_edges`) split into
+    /// one DELETE per endpoint column so each runs on its own index.
+    pub(crate) fn delete_files_data_base_batch(
         conn: &Connection,
-        rel_path: &str,
+        rel_paths: &[&str],
     ) -> CcResult<()> {
-        // Delete file-scoped frameworks
-        conn.execute(
-            "DELETE FROM frameworks WHERE scope='file' AND scope_id = ?1",
-            rusqlite::params![rel_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        for batch in rel_paths.chunks(IN_BATCH_SIZE) {
+            let placeholders = sql_in_placeholders(batch.len());
+            for column in &["test_file_path", "code_file_path"] {
+                Self::execute_cached(
+                    conn,
+                    &format!(
+                        "DELETE FROM test_edges WHERE {} IN ({})",
+                        column, placeholders
+                    ),
+                    rusqlite::params_from_iter(batch.iter()),
+                )?;
+            }
+            Self::delete_files_data_chunk_keep_test_edges(conn, batch, &placeholders)?;
+        }
+        Ok(())
+    }
+
+    /// [`Self::delete_files_data_base_batch`] minus the test_edges cascade,
+    /// for replace-in-place writers. Test edges are path-derived: their
+    /// endpoints are file paths and the matching depends only on the path set
+    /// plus the `is_test_file` flag, which every parser computes from the
+    /// path alone — so deleting and re-inserting a file under the SAME path
+    /// cannot change its test edges. New paths have no edges to delete
+    /// (postprocess builds them), and removed paths go through
+    /// [`Self::delete_files_data_base_batch`]. Chunked at [`IN_BATCH_SIZE`]
+    /// like the FTS half (which MUST run first — see
+    /// [`Self::delete_files_fts_batch`]).
+    pub(crate) fn delete_files_data_base_keep_test_edges_batch(
+        conn: &Connection,
+        rel_paths: &[&str],
+    ) -> CcResult<()> {
+        for batch in rel_paths.chunks(IN_BATCH_SIZE) {
+            let placeholders = sql_in_placeholders(batch.len());
+            Self::delete_files_data_chunk_keep_test_edges(conn, batch, &placeholders)?;
+        }
+        Ok(())
+    }
+
+    /// One `IN (...)` chunk of the keep-test-edges delete: every per-file
+    /// DELETE the old loop issued, as one statement per table. The `files`
+    /// DELETE still cascades per row into chunks/symbols/imports/symbol_refs/
+    /// call_edges/literal_index and fires the `symbols_fts` /
+    /// `file_paths_fts` triggers row-by-row, exactly as before — no table's
+    /// rows reference another file in the batch, so the per-file interleaving
+    /// order carried no semantics.
+    fn delete_files_data_chunk_keep_test_edges(
+        conn: &Connection,
+        batch: &[&str],
+        placeholders: &str,
+    ) -> CcResult<()> {
+        Self::execute_cached(
+            conn,
+            &format!(
+                "DELETE FROM frameworks WHERE scope='file' AND scope_id IN ({})",
+                placeholders
+            ),
+            rusqlite::params_from_iter(batch.iter()),
+        )?;
         for table in &[
             "routes",
             "data_flow_edges",
@@ -1670,22 +1776,27 @@ impl IndexDb {
             "semantic_edges",
             "dispatch_sites",
         ] {
-            conn.execute(
-                &format!("DELETE FROM {} WHERE file_path = ?1", table),
-                rusqlite::params![rel_path],
-            )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            Self::execute_cached(
+                conn,
+                &format!("DELETE FROM {} WHERE file_path IN ({})", table, placeholders),
+                rusqlite::params_from_iter(batch.iter()),
+            )?;
         }
-        conn.execute(
-            "DELETE FROM co_change_edges WHERE file_a = ?1 OR file_b = ?1",
-            rusqlite::params![rel_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute(
-            "DELETE FROM files WHERE file_path = ?1",
-            rusqlite::params![rel_path],
-        )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        for column in &["file_a", "file_b"] {
+            Self::execute_cached(
+                conn,
+                &format!(
+                    "DELETE FROM co_change_edges WHERE {} IN ({})",
+                    column, placeholders
+                ),
+                rusqlite::params_from_iter(batch.iter()),
+            )?;
+        }
+        Self::execute_cached(
+            conn,
+            &format!("DELETE FROM files WHERE file_path IN ({})", placeholders),
+            rusqlite::params_from_iter(batch.iter()),
+        )?;
         Ok(())
     }
 
@@ -1705,6 +1816,74 @@ impl IndexDb {
         file: &FileWriteUnit,
         chunk_blobs: Option<&[Option<Vec<u8>>]>,
     ) -> CcResult<()> {
+        Self::insert_file_data_impl(conn, file, chunk_blobs, false)
+    }
+
+    /// [`Self::insert_file_data_precompressed`] minus the per-row `files_fts`
+    /// / `literal_fts` mirror inserts, for multi-file writers that mirror
+    /// those tables afterwards in one shot via
+    /// [`Self::insert_files_literal_fts_batch`]. `chunks_fts` stays per-row in
+    /// both modes: its base column may hold a zstd BLOB while FTS needs the
+    /// plain text, so a SELECT-based mirror would require a decompression UDF
+    /// for no measurable gain.
+    ///
+    /// Public for rebuild closures and the write-path micro-benchmark; always
+    /// pair with [`Self::insert_files_literal_fts_batch`] in the same
+    /// transaction.
+    pub fn insert_file_data_deferred_fts(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+    ) -> CcResult<()> {
+        Self::insert_file_data_impl(conn, file, chunk_blobs, true)
+    }
+
+    /// Mirror freshly inserted `files` / `literal_index` rows into their FTS
+    /// tables by selecting straight from the base tables, one chunked
+    /// `IN (...)` statement per table — rowid alignment by construction, no
+    /// per-row `last_insert_rowid()` round-trips. Selecting from the base
+    /// table also inherits the literal `OR IGNORE` first-wins semantics:
+    /// only the surviving base rows exist to be mirrored.
+    ///
+    /// MUST run inside the same transaction after every base-row insert for
+    /// `rel_paths`, and only over paths whose previous rows were deleted in
+    /// this batch (otherwise pre-existing rows would be mirrored twice).
+    pub fn insert_files_literal_fts_batch(
+        conn: &Connection,
+        rel_paths: &[&str],
+    ) -> CcResult<()> {
+        for batch in rel_paths.chunks(IN_BATCH_SIZE) {
+            let placeholders = sql_in_placeholders(batch.len());
+            Self::execute_cached(
+                conn,
+                &format!(
+                    "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) \
+                     SELECT rowid,file_path,summary,content_excerpt FROM files \
+                     WHERE file_path IN ({})",
+                    placeholders
+                ),
+                rusqlite::params_from_iter(batch.iter()),
+            )?;
+            Self::execute_cached(
+                conn,
+                &format!(
+                    "INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) \
+                     SELECT rowid,literal_id,file_path,literal,literal_kind FROM literal_index \
+                     WHERE file_path IN ({})",
+                    placeholders
+                ),
+                rusqlite::params_from_iter(batch.iter()),
+            )?;
+        }
+        Ok(())
+    }
+
+    fn insert_file_data_impl(
+        conn: &Connection,
+        file: &FileWriteUnit,
+        chunk_blobs: Option<&[Option<Vec<u8>>]>,
+        defer_files_literal_fts: bool,
+    ) -> CcResult<()> {
         let outcome = &file.outcome;
         let now = chrono::Utc::now().to_rfc3339();
         let excerpt: String = outcome
@@ -1720,17 +1899,20 @@ impl IndexDb {
 
         // files + files_fts (FTS rowid aligned with files.rowid; SQLite
         // resets last_insert_rowid after the file_paths_fts_ai trigger, so
-        // it reliably names the files row here)
+        // it reliably names the files row here). Batch writers defer the
+        // files_fts mirror to `insert_files_literal_fts_batch`.
         Self::execute_cached(
             conn,
             "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
             rusqlite::params![file.rel_path, file.language.as_str(), file.content_hash, file.mtime, file.size as i64, outcome.summary, excerpt, outcome.parser_tier.as_str(), outcome.parser_confidence, outcome.is_test_file as i32, now],
         )?;
-        Self::execute_cached(
-            conn,
-            "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) VALUES(?1,?2,?3,?4)",
-            rusqlite::params![conn.last_insert_rowid(), file.rel_path, outcome.summary, excerpt],
-        )?;
+        if !defer_files_literal_fts {
+            Self::execute_cached(
+                conn,
+                "INSERT INTO files_fts(rowid,file_path,summary,content_excerpt) VALUES(?1,?2,?3,?4)",
+                rusqlite::params![conn.last_insert_rowid(), file.rel_path, outcome.summary, excerpt],
+            )?;
+        }
 
         // chunks + chunks_fts
         for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
@@ -1822,12 +2004,13 @@ impl IndexDb {
         // for the first occurrence. literal_id is derived from
         // (file_path,line,col), so a conflict can only be a duplicate
         // extraction of the same literal within this outcome — first one wins
-        // and the duplicate is skipped on both sides.
+        // and the duplicate is skipped on both sides. Batch writers defer the
+        // FTS mirror; selecting from the base table preserves first-wins.
         for l in &outcome.literal_index {
             let inserted = Self::execute_cached(conn, "INSERT OR IGNORE INTO literal_index(literal_id,file_path,literal,literal_kind,line,container,confidence,enclosing_symbol_uid,key_path) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
                 rusqlite::params![l.literal_id, l.file_path, l.literal, l.literal_kind, l.line, l.container, l.confidence, l.enclosing_symbol_uid, l.key_path],
             )?;
-            if inserted > 0 {
+            if !defer_files_literal_fts && inserted > 0 {
                 Self::execute_cached(conn, "INSERT INTO literal_fts(rowid,literal_id,file_path,literal,literal_kind) VALUES(?1,?2,?3,?4,?5)", rusqlite::params![conn.last_insert_rowid(), l.literal_id, l.file_path, l.literal, l.literal_kind])?;
             }
         }
@@ -2171,7 +2354,8 @@ impl<'a> WriteOps<'a> {
     }
 
     /// Write one incremental index batch atomically: file removals, full file
-    /// replacements, dirty re-resolution and route nodes in one transaction.
+    /// replacements, dirty re-resolution, route nodes and the batch files'
+    /// hierarchy edges in one transaction.
     /// `precompressed` carries chunk payloads compressed during prepare (off
     /// the write lock); units without an entry compress inside the
     /// transaction with the same policy.
@@ -2181,6 +2365,7 @@ impl<'a> WriteOps<'a> {
         normal_units: &[FileWriteUnit],
         dirty_units: &[FileWriteUnit],
         route_nodes: &[cc_model::edge::RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         precompressed: &PrecompressedChunks,
     ) -> CcResult<()> {
         self.0.write_incremental_batch(
@@ -2188,6 +2373,7 @@ impl<'a> WriteOps<'a> {
             normal_units,
             dirty_units,
             route_nodes,
+            hierarchy_edges,
             precompressed,
         )
     }
@@ -2322,7 +2508,7 @@ mod tests {
             .collect();
         let mut precompressed = PrecompressedChunks::new();
         precompressed.insert("src/c.rs".to_string(), blobs);
-        db_b.write_incremental_batch(&[], std::slice::from_ref(&unit), &[], &[], &precompressed)
+        db_b.write_incremental_batch(&[], std::slice::from_ref(&unit), &[], &[], &[], &precompressed)
             .unwrap();
 
         let chunk_rows = |db: &IndexDb| -> Vec<(i64, rusqlite::types::Value, String)> {
@@ -2405,7 +2591,7 @@ mod tests {
 
         // Re-replace every file through the incremental batch path: exactly
         // one FTS row per file must remain (no stale duplicates).
-        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+        db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
             .unwrap();
         assert_eq!(count("chunks_fts"), total as i64);
         assert_eq!(count("files_fts"), total as i64);
@@ -2431,7 +2617,7 @@ mod tests {
         let mut test = file_unit("tests/foo_test.rs");
         test.outcome.is_test_file = true;
         let units = vec![code, test];
-        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+        db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
             .unwrap();
         db.rebuild_test_edges_for_files(&[
             "src/foo.rs".to_string(),
@@ -2448,7 +2634,7 @@ mod tests {
         assert_eq!(edge_count(&db), 1, "fixture must produce one test edge");
 
         // Content-only update through both replace paths: the edge survives.
-        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+        db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
             .unwrap();
         assert_eq!(
             edge_count(&db),
@@ -2465,6 +2651,7 @@ mod tests {
         // Removal still cascades.
         db.write_incremental_batch(
             &["tests/foo_test.rs".to_string()],
+            &[],
             &[],
             &[],
             &[],
@@ -2514,7 +2701,7 @@ mod tests {
             .collect();
         db.replace_files_batch(&units).unwrap();
         // 增量替换：基表行获得新 rowid，FTS 必须随之重新对齐。
-        db.write_incremental_batch(&[], &units, &[], &[], &PrecompressedChunks::new())
+        db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
             .unwrap();
 
         let conn = db.read_conn().unwrap();
@@ -2608,6 +2795,7 @@ mod tests {
             &[],
             &[],
             &[],
+            &[],
             &PrecompressedChunks::new(),
         )
         .unwrap();
@@ -2616,7 +2804,7 @@ mod tests {
         assert_eq!(after_batch.evidence_epoch, 0);
 
         // An empty incremental batch writes nothing and must not bump.
-        db.write_incremental_batch(&[], &[], &[], &[], &PrecompressedChunks::new())
+        db.write_incremental_batch(&[], &[], &[], &[], &[], &PrecompressedChunks::new())
             .unwrap();
         assert_eq!(db.generation().unwrap(), after_batch);
     }

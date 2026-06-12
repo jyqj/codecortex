@@ -239,58 +239,79 @@ fn probe_fts_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut Buc
     }
 }
 
-/// Mirror of `delete_file_data_base_keep_test_edges` +
-/// `insert_file_data_precompressed` (replace-in-place keeps the path-derived
-/// test_edges; only removals cascade), with per-statement-class timing. Runs
-/// inside a probe transaction the caller rolls back, so it never perturbs
-/// the database under measurement.
-fn probe_one_file(conn: &Connection, unit: &FileWriteUnit, buckets: &mut Buckets) {
-    let rel = unit.rel_path.as_str();
-    let t = Instant::now();
-    conn.execute(
-        "DELETE FROM frameworks WHERE scope='file' AND scope_id = ?1",
-        rusqlite::params![rel],
-    )
-    .unwrap();
-    buckets.add("del frameworks", t.elapsed());
-    let t = Instant::now();
-    for table in &[
-        "routes",
-        "data_flow_edges",
-        "http_call_edges",
-        "semantic_edges",
-        "dispatch_sites",
-    ] {
+/// Mirror of `delete_files_data_base_keep_test_edges_batch` (replace-in-place
+/// keeps the path-derived test_edges; only removals cascade): one chunked
+/// `IN (...)` DELETE per table for the whole batch, timed per table class.
+/// Runs inside a probe transaction the caller rolls back, so it never
+/// perturbs the database under measurement.
+fn probe_delete_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut Buckets) {
+    let paths: Vec<&str> = batch.iter().map(|u| u.rel_path.as_str()).collect();
+    for chunk in paths.chunks(cc_db::sql_util::IN_BATCH_SIZE) {
+        let placeholders = cc_db::sql_util::sql_in_placeholders(chunk.len());
+        let t = Instant::now();
         conn.execute(
-            &format!("DELETE FROM {} WHERE file_path = ?1", table),
-            rusqlite::params![rel],
+            &format!(
+                "DELETE FROM frameworks WHERE scope='file' AND scope_id IN ({})",
+                placeholders
+            ),
+            rusqlite::params_from_iter(chunk.iter()),
         )
         .unwrap();
+        buckets.add("del frameworks (batched)", t.elapsed());
+        let t = Instant::now();
+        for table in &[
+            "routes",
+            "data_flow_edges",
+            "http_call_edges",
+            "semantic_edges",
+            "dispatch_sites",
+        ] {
+            conn.execute(
+                &format!("DELETE FROM {} WHERE file_path IN ({})", table, placeholders),
+                rusqlite::params_from_iter(chunk.iter()),
+            )
+            .unwrap();
+        }
+        for column in &["file_a", "file_b"] {
+            conn.execute(
+                &format!(
+                    "DELETE FROM co_change_edges WHERE {} IN ({})",
+                    column, placeholders
+                ),
+                rusqlite::params_from_iter(chunk.iter()),
+            )
+            .unwrap();
+        }
+        buckets.add("del edge tables (batched)", t.elapsed());
+        let t = Instant::now();
+        conn.execute(
+            &format!("DELETE FROM files WHERE file_path IN ({})", placeholders),
+            rusqlite::params_from_iter(chunk.iter()),
+        )
+        .unwrap();
+        buckets.add("del files (cascade+triggers)", t.elapsed());
     }
-    conn.execute(
-        "DELETE FROM co_change_edges WHERE file_a = ?1 OR file_b = ?1",
-        rusqlite::params![rel],
-    )
-    .unwrap();
-    buckets.add("del edge tables", t.elapsed());
-    let t = Instant::now();
-    conn.execute(
-        "DELETE FROM files WHERE file_path = ?1",
-        rusqlite::params![rel],
-    )
-    .unwrap();
-    buckets.add("del files (cascade+triggers)", t.elapsed());
+}
 
-    // ── inserts (via the production helper, timed as one bucket) ──
-    let blobs: Vec<Option<Vec<u8>>> = unit
-        .outcome
-        .chunks
-        .iter()
-        .map(|c| compress_chunk_text(&c.text))
-        .collect();
+/// Mirror of the batch insert path: per-file base rows + chunks_fts via the
+/// production deferred-FTS helper, then the batched files_fts / literal_fts
+/// `INSERT .. SELECT` mirrors.
+fn probe_insert_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut Buckets) {
+    for unit in batch {
+        let blobs: Vec<Option<Vec<u8>>> = unit
+            .outcome
+            .chunks
+            .iter()
+            .map(|c| compress_chunk_text(&c.text))
+            .collect();
+        let t = Instant::now();
+        IndexDb::insert_file_data_deferred_fts(conn, unit, Some(&blobs)).unwrap();
+        buckets.add("insert base rows (per file)", t.elapsed());
+    }
+    let paths: Vec<&str> = batch.iter().map(|u| u.rel_path.as_str()).collect();
     let t = Instant::now();
-    IndexDb::insert_file_data_precompressed(conn, unit, Some(&blobs)).unwrap();
-    buckets.add("insert_file_data (all)", t.elapsed());
+    IndexDb::insert_files_literal_fts_batch(conn, &paths).unwrap();
+    buckets.add("insert files/literal fts (batched)", t.elapsed());
 }
 
 #[test]
@@ -333,7 +354,7 @@ fn bench_incremental_batch_write_10k() {
     for round in 1..=2 {
         let t = Instant::now();
         db.writes()
-            .write_incremental_batch(&[], &batch, &[], &[], &precompressed)
+            .write_incremental_batch(&[], &batch, &[], &[], &[], &precompressed)
             .unwrap();
         eprintln!(
             "write_incremental_batch round {} ({} files): {:?}",
@@ -348,7 +369,7 @@ fn bench_incremental_batch_write_10k() {
     for round in 1..=3 {
         let t = Instant::now();
         db.writes()
-            .write_incremental_batch(&[], single, &[], &[], &precompressed)
+            .write_incremental_batch(&[], single, &[], &[], &[], &precompressed)
             .unwrap();
         eprintln!(
             "write_incremental_batch single-file round {}: {:?}",
@@ -367,9 +388,8 @@ fn bench_incremental_batch_write_10k() {
     let mut buckets = Buckets::new();
     let t = Instant::now();
     probe_fts_batch(&probe, &batch, &mut buckets);
-    for unit in &batch {
-        probe_one_file(&probe, unit, &mut buckets);
-    }
+    probe_delete_batch(&probe, &batch, &mut buckets);
+    probe_insert_batch(&probe, &batch, &mut buckets);
     let probe_elapsed = t.elapsed();
     probe.execute_batch("ROLLBACK").unwrap();
     buckets.print(&format!(

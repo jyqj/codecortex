@@ -40,6 +40,10 @@ impl DirectWriter {
         write_fn: impl FnOnce(&rusqlite::Transaction) -> Result<(), String>,
     ) -> Result<(), String> {
         let conn = Connection::open(path).map_err(|e| format!("open: {}", e))?;
+        // The per-file insert helpers rotate ~20 distinct prepare_cached
+        // statements; the default capacity of 16 would re-prepare each one
+        // on every file (see `IndexDb::open_and_ensure_schema`).
+        conn.set_prepared_statement_cache_capacity(64);
 
         conn.execute_batch(
             "PRAGMA page_size = 65536;

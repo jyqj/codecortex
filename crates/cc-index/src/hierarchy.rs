@@ -14,6 +14,15 @@ use cc_model::ParserTier;
 /// 1. File -> top-level Function/Class/Interface/Enum/Constant -> Defines edge
 /// 2. Class/Interface -> Method -> DefinesMethod edge
 /// 3. Folder -> File -> ContainsFile edge (based on file_path hierarchy)
+///
+/// Every rule is file-local: Defines/DefinesMethod endpoints live in the
+/// symbol's own file (the container index is keyed by `(file_path, name)`),
+/// and ContainsFile links a file's immediate parent directory to the file
+/// itself. Incremental builds therefore pass only the batch files' symbols
+/// and paths — the resulting edges are exactly those files' edges, and the
+/// per-file `semantic_edges` deletes in the write batch keep the stored set
+/// consistent (a directory "node" exists only through its files' edges, so
+/// it appears/disappears with the first/last file in it).
 pub fn generate_hierarchy_edges(
     symbols: &[SymbolRecord],
     file_paths: &[String],

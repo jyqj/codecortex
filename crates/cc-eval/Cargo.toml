@@ -22,3 +22,6 @@ rmcp = { workspace = true, features = ["client"] }
 
 [dev-dependencies]
 tempfile = "3"
+# Scale-bench sub-phase attribution: RUST_LOG-gated subscriber so the
+# `time_step` debug events from cc-index / cc-db reach stderr.
+tracing-subscriber = { workspace = true }

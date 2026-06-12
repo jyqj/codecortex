@@ -29,10 +29,14 @@ pub(crate) enum DirtyReloadPolicy {
     /// so all resolved targets of this category — same-file and cross-file
     /// alike — are cleared unconditionally for phase 4a re-resolution.
     ClearResolvedTargets,
-    /// Edges of this category are regenerated from scratch each indexing run
-    /// (synthesis overwrites them), so stale stored UIDs are never consumed
-    /// and the loaded values are kept untouched.
-    RegeneratedEachRun,
+    /// Edges of this category are regenerated for every file in the write
+    /// batch (phase 4b hierarchy generation overwrites them, and a
+    /// dirty-reloaded file is by definition in the batch), so stale stored
+    /// UIDs are never consumed and the loaded values are kept untouched.
+    /// They are also file-local — source and target live in the edge's own
+    /// file — so files outside the batch keep their stored edges verbatim
+    /// without any regeneration.
+    RegeneratedForBatchFiles,
     /// Stored values are file-local (or resolved in-memory during synthesis)
     /// and remain valid verbatim for a content-unchanged file.
     KeepAsIs,
@@ -67,11 +71,12 @@ pub(crate) fn dirty_reload_policy(category: ReloadedEdgeCategory) -> DirtyReload
         // be reused as-is for content-unchanged files.
         ReloadedEdgeCategory::DispatchSites => KeepAsIs,
         ReloadedEdgeCategory::SemanticEdge(relation) => match relation {
-            // Hierarchy relations are regenerated each run by synthesis.
+            // Hierarchy relations are file-local and regenerated for every
+            // batch file by phase 4b (dirty-reloaded files are batch files).
             SemanticRelation::Defines
             | SemanticRelation::DefinesMethod
             | SemanticRelation::ContainsFile
-            | SemanticRelation::ContainsModule => RegeneratedEachRun,
+            | SemanticRelation::ContainsModule => RegeneratedForBatchFiles,
             // Resolver-resolved relations point at symbols in other files
             // whose UIDs may have changed.
             SemanticRelation::Inherits
@@ -192,7 +197,7 @@ mod tests {
     }
 
     #[test]
-    fn hierarchy_relations_are_regenerated_each_run() {
+    fn hierarchy_relations_are_regenerated_for_batch_files() {
         for relation in [
             SemanticRelation::Defines,
             SemanticRelation::DefinesMethod,
@@ -201,8 +206,9 @@ mod tests {
         ] {
             assert_eq!(
                 dirty_reload_policy(ReloadedEdgeCategory::SemanticEdge(relation)),
-                DirtyReloadPolicy::RegeneratedEachRun,
-                "{relation:?} is regenerated each run and must not be cleared"
+                DirtyReloadPolicy::RegeneratedForBatchFiles,
+                "{relation:?} is file-local and regenerated for every batch file; \
+                 it must not be cleared"
             );
         }
     }

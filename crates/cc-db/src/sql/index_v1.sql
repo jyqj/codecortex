@@ -1,6 +1,6 @@
--- index.sqlite3 — Schema v5 (21 tables + 5 FTS5)
+-- index.sqlite3 — Schema v6 (21 tables + 5 FTS5)
 --
--- FTS5 rowid alignment (v5): every FTS table's rowid equals the rowid of its
+-- FTS5 rowid alignment (v6): every FTS table's rowid equals the rowid of its
 -- base-table row. symbols_fts and file_paths_fts enforce this via triggers;
 -- chunks_fts, files_fts and literal_fts are application-maintained. chunks_fts
 -- rows are inserted per chunk with an explicit last_insert_rowid() (the base
@@ -145,7 +145,6 @@ CREATE TABLE IF NOT EXISTS symbol_refs (
 );
 CREATE INDEX IF NOT EXISTS idx_refs_symbol ON symbol_refs(symbol_name);
 CREATE INDEX IF NOT EXISTS idx_refs_file ON symbol_refs(file_path);
-CREATE INDEX IF NOT EXISTS idx_refs_target ON symbol_refs(target_file_path, target_symbol_id);
 CREATE INDEX IF NOT EXISTS idx_refs_target_uid ON symbol_refs(target_symbol_uid);
 
 CREATE TABLE IF NOT EXISTS call_edges (
@@ -180,7 +179,6 @@ CREATE TABLE IF NOT EXISTS call_edges (
     registered_file    TEXT,
     registered_line    INTEGER
 );
-CREATE INDEX IF NOT EXISTS idx_ce_caller ON call_edges(caller_symbol);
 CREATE INDEX IF NOT EXISTS idx_ce_callee ON call_edges(callee_symbol);
 CREATE INDEX IF NOT EXISTS idx_ce_file ON call_edges(file_path);
 CREATE INDEX IF NOT EXISTS idx_ce_caller_uid ON call_edges(caller_symbol_uid);
@@ -342,8 +340,6 @@ CREATE TABLE IF NOT EXISTS http_call_edges (
 CREATE INDEX IF NOT EXISTS idx_hce_file ON http_call_edges(file_path);
 CREATE INDEX IF NOT EXISTS idx_hce_caller ON http_call_edges(caller_symbol_uid);
 CREATE INDEX IF NOT EXISTS idx_hce_norm_path ON http_call_edges(normalized_path);
-CREATE INDEX IF NOT EXISTS idx_hce_kind ON http_call_edges(call_kind);
-CREATE INDEX IF NOT EXISTS idx_hce_broker ON http_call_edges(broker_type);
 
 -- semantic edges (inheritance, implementation, decoration, etc.)
 CREATE TABLE IF NOT EXISTS semantic_edges (

@@ -66,6 +66,42 @@ type ResultCache = LruCache<(u64, u64), Arc<[SearchHit]>>;
 /// from [`SearchEngine::search_with_graph_context`].
 type GraphResultCache = LruCache<(u64, u64, u64), Arc<(Vec<SearchHit>, GraphEnrichment)>>;
 
+/// Snapshot of search result-cache hit/miss counters.
+///
+/// `result_*` covers [`SearchEngine::search`]; `graph_*` covers
+/// [`SearchEngine::search_with_graph_context`]. Both LRUs are keyed by the
+/// persisted epoch(s), so a hit means an identical query was served without
+/// recomputation. The hit rate quantifies how often the warm cache path is
+/// taken vs a cold recompute — the gap `bench` reports as warm/cold latency.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct CacheStats {
+    pub result_hits: u64,
+    pub result_misses: u64,
+    pub graph_hits: u64,
+    pub graph_misses: u64,
+}
+
+impl CacheStats {
+    /// `result_hits / (result_hits + result_misses)`, or `0.0` when empty.
+    pub fn result_hit_rate(&self) -> f64 {
+        let total = self.result_hits + self.result_misses;
+        if total == 0 {
+            0.0
+        } else {
+            self.result_hits as f64 / total as f64
+        }
+    }
+    /// `graph_hits / (graph_hits + graph_misses)`, or `0.0` when empty.
+    pub fn graph_hit_rate(&self) -> f64 {
+        let total = self.graph_hits + self.graph_misses;
+        if total == 0 {
+            0.0
+        } else {
+            self.graph_hits as f64 / total as f64
+        }
+    }
+}
+
 pub struct SearchEngine {
     pub(crate) db: Arc<IndexDb>,
     pub(crate) config: SearchConfig,
@@ -107,6 +143,14 @@ pub struct SearchEngine {
     ranking_fingerprint: u64,
     /// LRU cache of decompressed chunk text keyed by `chunk_id`.
     chunk_text_cache: Mutex<LruCache<String, Arc<str>>>,
+    /// Hit/miss counters for `result_cache` and `graph_result_cache`,
+    /// snapshot via [`Self::cache_stats`] (Relaxed atomic reads). Quantify
+    /// the warm vs cold split that `bench` reports as per-tool warm/cold
+    /// latency. Monotonic over the engine's lifetime; never reset.
+    result_cache_hits: AtomicU64,
+    result_cache_misses: AtomicU64,
+    graph_cache_hits: AtomicU64,
+    graph_cache_misses: AtomicU64,
 }
 
 impl SearchEngine {
@@ -137,6 +181,10 @@ impl SearchEngine {
                 "CODECORTEX_SEARCH_CHUNK_CACHE_SIZE",
                 CHUNK_TEXT_CACHE_CAPACITY,
             ))),
+            result_cache_hits: AtomicU64::new(0),
+            result_cache_misses: AtomicU64::new(0),
+            graph_cache_hits: AtomicU64::new(0),
+            graph_cache_misses: AtomicU64::new(0),
         }
     }
 
@@ -154,6 +202,21 @@ impl SearchEngine {
         }
         if let Ok(mut cache) = self.chunk_text_cache.lock() {
             cache.clear();
+        }
+    }
+
+    /// Snapshot of result-cache hit/miss counters (Relaxed atomic loads).
+    ///
+    /// Counters are monotonic over the engine's lifetime — they accumulate
+    /// cache hits/misses and are NOT reset by [`Self::invalidate_cache`]
+    /// (only a fresh [`SearchEngine`] zeroes them). Use to quantify the
+    /// warm/cold split behind per-tool warm vs cold latency.
+    pub fn cache_stats(&self) -> CacheStats {
+        CacheStats {
+            result_hits: self.result_cache_hits.load(Ordering::Relaxed),
+            result_misses: self.result_cache_misses.load(Ordering::Relaxed),
+            graph_hits: self.graph_cache_hits.load(Ordering::Relaxed),
+            graph_misses: self.graph_cache_misses.load(Ordering::Relaxed),
         }
     }
 
@@ -292,6 +355,7 @@ impl SearchEngine {
         let cache_key = (index_epoch, qhash);
         if let Ok(mut cache) = self.result_cache.lock() {
             if let Some(cached) = cache.get(&cache_key) {
+                self.result_cache_hits.fetch_add(1, Ordering::Relaxed);
                 tracing::debug!(
                     query = %request.query,
                     "search cache hit (index_epoch={}, hash={})",
@@ -301,6 +365,7 @@ impl SearchEngine {
                 return Ok(Arc::clone(cached));
             }
         }
+        self.result_cache_misses.fetch_add(1, Ordering::Relaxed);
 
         let results: Arc<[SearchHit]> = self.search_internal(request, true)?.into();
 
@@ -347,6 +412,7 @@ impl SearchEngine {
         let cache_key = (generation.index_epoch, generation.evidence_epoch, qhash);
         if let Ok(mut cache) = self.graph_result_cache.lock() {
             if let Some(cached) = cache.get(&cache_key) {
+                self.graph_cache_hits.fetch_add(1, Ordering::Relaxed);
                 tracing::debug!(
                     query = %request.query,
                     "graph search cache hit (index_epoch={}, evidence_epoch={}, hash={})",
@@ -357,6 +423,7 @@ impl SearchEngine {
                 return Ok(Arc::clone(cached));
             }
         }
+        self.graph_cache_misses.fetch_add(1, Ordering::Relaxed);
 
         let mut hits = self.search_internal(request, false)?;
 
@@ -748,6 +815,48 @@ mod tests {
                 "fused_scores must match"
             );
         }
+    }
+
+    #[test]
+    fn cache_stats_counts_hits_and_misses() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "fn alpha_handler() { process() }",
+        );
+
+        let request = SearchRequest {
+            query: "alpha".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+
+        // Fresh engine: counters start at zero.
+        let before = engine.cache_stats();
+        assert_eq!(before.result_hits, 0);
+        assert_eq!(before.result_misses, 0);
+
+        // First search computes and stores — a miss.
+        let _ = engine.search(&request).unwrap();
+        let after_first = engine.cache_stats();
+        assert_eq!(after_first.result_hits, 0, "first search must miss");
+        assert_eq!(after_first.result_misses, 1);
+
+        // Second identical search serves from cache — a hit.
+        let _ = engine.search(&request).unwrap();
+        let after_second = engine.cache_stats();
+        assert_eq!(
+            after_second.result_hits, 1,
+            "second identical search must hit"
+        );
+        assert_eq!(after_second.result_misses, 1);
+        assert!(
+            (after_second.result_hit_rate() - 0.5).abs() < f64::EPSILON,
+            "hit rate must be 0.5 after one hit and one miss"
+        );
     }
 
     #[test]

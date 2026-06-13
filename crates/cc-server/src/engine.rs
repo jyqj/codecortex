@@ -195,7 +195,17 @@ impl CodeIndex {
         );
 
         if auto_index {
-            let _ = self.build_auto_index(false);
+            // set_project itself succeeded (project/db/engine are all set);
+            // surface the auto-index failure instead of silently dropping it.
+            // Don't fail the whole call: the project is usable, and auto-index
+            // skips oversized repos (auto_index.file_limit) by design — those
+            // expected skips shouldn't make set_project look like it failed.
+            if let Err(e) = self.build_auto_index(false) {
+                tracing::warn!(
+                    error = %e,
+                    "auto-index after set_project failed; project is set, run `index` to build manually"
+                );
+            }
         }
         Ok(())
     }

@@ -32,6 +32,31 @@ pub(crate) const MIN_FILES_FOR_PARALLEL: usize = 50;
 /// Best-effort safeguard: emit a warning when parsing a single file takes too long.
 const SLOW_PARSE_WARN_MS: u128 = 1_500;
 
+/// Read a file for the incremental scan, returning `None` (with a traced
+/// warning) on failure instead of silently dropping it. A file that vanished
+/// between the directory scan and the read (concurrent delete / rename race)
+/// is skipped at debug level; any other IO error (permission, encoding,
+/// transient) is warned so the file isn't silently omitted from the index.
+/// Returning `None` lets the caller's `filter_map` skip that one file
+/// without aborting the whole parallel scan.
+fn read_for_scan(path: &Path) -> Option<Vec<u8>> {
+    match std::fs::read(path) {
+        Ok(content) => Some(content),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
+            tracing::debug!(path = %path.display(), "file vanished during scan, skipping");
+            None
+        }
+        Err(e) => {
+            tracing::warn!(
+                path = %path.display(),
+                error = %e,
+                "failed to read file during incremental scan, skipping"
+            );
+            None
+        }
+    }
+}
+
 /// What to do with a scanned file.
 #[derive(Debug, Clone, Copy)]
 pub enum FileAction {
@@ -298,7 +323,10 @@ impl Indexer {
                         (old.content_hash.clone(), FileAction::Skip)
                     }
                     Some(old) => {
-                        let content = std::fs::read(&file.abs_path).ok()?;
+                        let content = match read_for_scan(&file.abs_path) {
+                            Some(c) => c,
+                            None => return None,
+                        };
                         let hash = format!("{:x}", Sha256::digest(&content));
                         if hash == old.content_hash {
                             (hash, FileAction::Skip)
@@ -307,7 +335,10 @@ impl Indexer {
                         }
                     }
                     None => {
-                        let content = std::fs::read(&file.abs_path).ok()?;
+                        let content = match read_for_scan(&file.abs_path) {
+                            Some(c) => c,
+                            None => return None,
+                        };
                         (format!("{:x}", Sha256::digest(&content)), FileAction::Add)
                     }
                 };

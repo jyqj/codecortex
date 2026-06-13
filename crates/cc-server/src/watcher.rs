@@ -610,3 +610,58 @@ pub fn should_track(rel_path: &str) -> bool {
 // ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_track_accepts_plain_source_paths() {
+        assert!(should_track("src/main.rs"));
+        assert!(should_track("lib/index.ts"));
+        assert!(should_track("a/b/c/util.py"));
+    }
+
+    #[test]
+    fn should_track_rejects_empty() {
+        assert!(!should_track(""));
+    }
+
+    #[test]
+    fn should_track_rejects_skip_listed_directories() {
+        // a skip-listed dir on any non-leaf segment is rejected
+        assert!(!should_track("node_modules/pkg/index.js"));
+        assert!(!should_track("src/.git/config"));
+        assert!(!should_track("target/debug/x.json"));
+        assert!(!should_track("app/__pycache__/m.pyc"));
+        assert!(!should_track("dist/bundle.js"));
+    }
+
+    #[test]
+    fn should_track_allows_skip_dir_name_as_leaf_filename() {
+        // a leaf entry literally named like a skip dir is a file, not a dir
+        assert!(should_track("src/build"));
+        assert!(should_track("docs/venv"));
+    }
+
+    #[test]
+    fn should_track_rejects_hidden_directories_beyond_root() {
+        // non-leaf segment starting with '.' (len > 1) is a hidden directory
+        assert!(!should_track("src/.hidden/mod.rs"));
+        assert!(!should_track(".config/settings.json"));
+        assert!(!should_track("app/.cache/data.json"));
+    }
+
+    #[test]
+    fn should_track_keeps_leaf_hidden_files() {
+        // a leaf hidden filename has no hidden directory segment
+        assert!(should_track(".env"));
+        assert!(should_track("src/.envrc"));
+    }
+
+    #[test]
+    fn should_track_rejects_known_non_indexable_filenames() {
+        assert!(!should_track(".DS_Store"));
+        assert!(!should_track("src/Thumbs.db"));
+    }
+}

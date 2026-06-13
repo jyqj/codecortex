@@ -94,12 +94,13 @@ impl<'db> UnitOfWork<'db> {
         IndexDb::delete_synthetic_semantic_edges_on(&self.conn, edge_id_prefix)
     }
 
-    /// Insert (or replace) a batch of semantic edges.
+    /// Insert (or replace) a batch of semantic edges (signature-aggregate
+    /// maintained — see `signature_agg`).
     pub fn insert_semantic_edges_batch(
         &self,
         edges: &[cc_model::edge::SemanticEdgeRecord],
     ) -> CcResult<()> {
-        IndexDb::insert_semantic_edges_batch_on(&self.conn, edges)
+        IndexDb::insert_semantic_edges_batch_maintained_on(&self.conn, edges)
     }
 
     // ── Transaction-local reads ──────────────────────────────────
@@ -130,7 +131,10 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("uow.sqlite3")).unwrap().0;
         // Satisfy the call_edges → files foreign key for sample edges.
-        db.read_conn()
+        // Seeded through the write connection: the pooled read connections
+        // are query_only, and this fixture does not depend on epoch bumps.
+        db.write_conn
+            .lock()
             .unwrap()
             .execute(
                 "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \

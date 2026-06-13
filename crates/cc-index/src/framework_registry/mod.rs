@@ -346,9 +346,7 @@ pub fn detect_and_persist_frameworks_incremental(
             let exists = conn
                 .prepare_cached("SELECT 1 FROM files WHERE file_path = ?1")
                 .ok()
-                .map(|mut stmt| {
-                    stmt.query_row(rusqlite::params![fp], |_| Ok(())).is_ok()
-                })
+                .map(|mut stmt| stmt.query_row(rusqlite::params![fp], |_| Ok(())).is_ok())
                 .unwrap_or(false);
             if !exists {
                 continue;
@@ -575,7 +573,7 @@ mod tests {
 
     /// Helper: insert a file + import records into the test DB for detection.
     fn insert_test_file(db: &IndexDb, file_path: &str, imports: &[&str]) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'typescript', 'abc', 0.0, 100, '2025-01-01')",
@@ -848,7 +846,7 @@ mod tests {
         // --- require() fallback: marker only inside chunk text, no import rows ---
         insert_test_file(&db, "src/legacy_server.js", &[]);
         {
-            let conn = db.reads().read_conn().unwrap();
+            let conn = crate::test_seed::seed_conn(&db);
             conn.execute(
                 "INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, text) \
                  VALUES('ck_legacy', 'src/legacy_server.js', 'javascript', 0, 1, 10, ?1)",
@@ -867,7 +865,7 @@ mod tests {
         //     framework; a lone symbol signal stays below threshold ---
         insert_test_file(&db, "src/combined_api.ts", &["express"]);
         {
-            let conn = db.reads().read_conn().unwrap();
+            let conn = crate::test_seed::seed_conn(&db);
             conn.execute(
                 "INSERT INTO chunks(chunk_id, file_path, language, chunk_index, start_line, end_line, text) \
                  VALUES('ck_combined', 'src/combined_api.ts', 'typescript', 0, 1, 10, ?1)",
@@ -942,7 +940,7 @@ mod tests {
 
         // Simulate a re-index where the file lost its only framework signal.
         {
-            let conn = db.reads().read_conn().unwrap();
+            let conn = crate::test_seed::seed_conn(&db);
             conn.execute("DELETE FROM imports WHERE file_path = 'src/app.ts'", [])
                 .unwrap();
         }
@@ -950,7 +948,10 @@ mod tests {
         let phantom_paths: Vec<String> = (0..20).map(|n| format!("src/ghost_{}.ts", n)).collect();
         let mut changed: Vec<&str> = vec!["src/app.ts"];
         changed.extend(phantom_paths.iter().map(String::as_str));
-        assert!(changed.len() >= 20, "changeset must exercise the large-set path");
+        assert!(
+            changed.len() >= 20,
+            "changeset must exercise the large-set path"
+        );
 
         detect_and_persist_frameworks_incremental(&db, tmp.path(), &changed).unwrap();
         let fw_map = get_frameworks_for_files(&db, &["src/app.ts"]);

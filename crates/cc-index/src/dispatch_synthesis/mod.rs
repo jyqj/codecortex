@@ -191,7 +191,7 @@ mod tests {
 
     /// Insert a symbol into the DB for resolution during synthesis.
     fn insert_symbol(db: &IndexDb, file_path: &str, name: &str, kind: &str, uid: &str) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'vue', 'abc', 0.0, 100, '2025-01-01')",
@@ -352,7 +352,7 @@ mod tests {
         uid: &str,
         container: &str,
     ) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'ts', 'abc', 0.0, 100, '2025-01-01')",
@@ -384,7 +384,7 @@ mod tests {
         target_uid: &str,
         relation_kind: &str,
     ) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT INTO semantic_edges(edge_id, file_path, source_symbol, source_symbol_uid, \
              target_symbol, target_symbol_uid, relation_kind, line, confidence, parser_tier) \
@@ -403,7 +403,7 @@ mod tests {
         callee_uid: &str,
         callee_symbol: &str,
     ) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR REPLACE INTO call_edges(edge_id, file_path, callee_symbol, line, start_col, end_col, \
              caller_symbol_uid, callee_symbol_uid, dispatch_kind, call_kind, \

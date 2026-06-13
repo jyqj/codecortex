@@ -85,8 +85,11 @@ watcher 带自适应去抖、突发退避、gitignore 过滤和 git 脏态轮询
 - **空闲驱逐**：每 30 秒检查一次，MCP 无活动超过
   `auto_index.idle_timeout_secs`（默认 60）即对活动项目调用 `close()`——
   释放 DB 句柄、清空 `index_db`/`engine`，保留 `project_path` 与 build
-  gate。下一次调用经 `reopen_active_index_if_closed()` 透明重开（读锁
-  探测 `is_closed`，需要时升级写锁走 `set_project` 重初始化）。
+  gate。透明重开（读锁探测 `is_closed`，需要时升级写锁走 `set_project`
+  重初始化）不只覆盖 active 项目，被驱逐后转为非 active 的缓存实例同样
+  恢复：每次工具调用入口走 `reopen_active_index_if_closed()`；
+  `index_for_project_path` 的 LRU 命中路径与 `set_active_project` 复用
+  缓存实例时同样检查 `is_closed` 重开——而不是报 ProjectNotSet。
 - **PPID watchdog**（Unix）：每 `CODECORTEX_PPID_POLL_MS`（默认 5000，
   0 关闭）轮询父进程；PPID 变化或变为 1 即触发优雅关停——MCP 客户端死掉
   时服务器不会变成孤儿进程。

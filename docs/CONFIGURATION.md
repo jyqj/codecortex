@@ -22,6 +22,7 @@
   "search": {
     "lexical_top_k": 24,
     "grep_top_k": 12,
+    "grep_scan_cap": 20000,
     "rrf_k": 50,
     "lexical_weight": 1.1,
     "grep_weight": 0.8,
@@ -71,6 +72,7 @@ trigram 支撑的文件预选。通道结果经 RRF（Reciprocal Rank Fusion）�
 |------|------|------|
 | `lexical_top_k` | `24` | FTS5 词法通道每查询的最大候选数。 |
 | `grep_top_k` | `12` | regex 符号 grep 通道每查询的最大候选数。 |
+| `grep_scan_cap` | `20000` | grep 通道单次查询最多解压扫描的 chunk 行数。预算耗尽即截断（日志有提示），调大可换召回。 |
 | `rrf_k` | `50` | RRF 平滑常数 `k`（`1 / (k + rank)`）。越大排名差异越平。 |
 | `lexical_weight` | `1.1` | FTS5 全文通道的 RRF 权重。 |
 | `grep_weight` | `0.8` | regex 符号 grep 通道的 RRF 权重。 |

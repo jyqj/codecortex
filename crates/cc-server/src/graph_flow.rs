@@ -280,7 +280,7 @@ mod tests {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
 
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
 
         conn.execute(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
@@ -386,7 +386,7 @@ mod tests {
         let (_tmp, db) = setup_abcd_graph();
 
         // Insert a second symbol with the same name but different file
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         conn.execute(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
              VALUES('src/other.rs','Rust','h2',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
@@ -426,7 +426,7 @@ mod tests {
         let (_tmp, db) = setup_abcd_graph();
 
         // Insert another isolated symbol E
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         conn.execute(
             "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line,
               start_col, end_col, signature, doc, parser_tier, parser_confidence, qname,

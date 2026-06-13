@@ -44,7 +44,9 @@ fn uid(i: usize) -> String {
 /// chains, fan-out hubs (degree 50-200), and uniform random edges.
 fn build_synthetic_db(dir: &std::path::Path) -> IndexDb {
     let db = IndexDb::open(&dir.join("bench.db")).unwrap().0;
-    let conn = db.reads().read_conn().unwrap();
+    // Seed through a dedicated writable connection: the read pool is
+    // query_only, and this synthetic fixture does not depend on epoch bumps.
+    let conn = rusqlite::Connection::open(db.admin().db_path()).unwrap();
 
     conn.execute(
         "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)

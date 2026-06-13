@@ -392,6 +392,7 @@ pub fn generate(root: &Path, spec: &SynthSpec) -> Result<SynthRepo, String> {
 /// - slot 1: hub call (on hub-caller files) or local compute
 /// - slot 2: local compute with filler words
 /// - slot 3: bridge to the next same-language file's slot 0 (chain edge)
+///
 /// plus optional hub / needle / cycle / class extras.
 #[allow(clippy::too_many_arguments)]
 fn code_file(
@@ -406,7 +407,7 @@ fn code_file(
     let next = files.get(lang_pos + 1);
     let hub_file = &files[0].1;
     let is_hub = lang_pos == 0;
-    let is_hub_caller = !is_hub && lang_pos % hub_step(files.len()) == 0;
+    let is_hub_caller = !is_hub && lang_pos.is_multiple_of(hub_step(files.len()));
     let has_cycle = lang_pos % CYCLE_EVERY == CYCLE_OFFSET;
     let has_class = slot % 4 == 1;
     let label = format!(
@@ -678,8 +679,8 @@ fn config_yaml(slot: usize, rng: &mut SplitMix64) -> String {
         slot,
         8000 + slot % 1000,
         500 + rng.next_u64() % 4500,
-        rng.next_u64() % 2 == 0,
-        rng.next_u64() % 2 == 0,
+        rng.next_u64().is_multiple_of(2),
+        rng.next_u64().is_multiple_of(2),
     )
 }
 

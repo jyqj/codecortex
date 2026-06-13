@@ -69,7 +69,8 @@ CodeCortex 文档与代码共用的术语。按主题分组，括号内是代码
 - **合成边（synthetic edge）**：非源码直接声明、由派发合成或桥接产生的
   边（如 `http_bridge`）。
 - **运行时证据（runtime evidence）**：经 `ingest_traces` 摄入的 OTLP
-  痕迹；匹配的 HTTP 边置信度提升到 Verified（0.95）。
+  痕迹；每次匹配给 HTTP 边的数值置信度 +0.15（封顶 1.0），不改变
+  解析层级（`parser_tier`）。
 - **fast path**：Cypher 变长 `CALLS` 遍历的惰性 BFS 快路径
   （[ADR-0001](adr/0001-cypher-traversal-lazy-bfs-fast-path.md)）；
   不合格时回落递归 CTE，原因见响应的 `fast_path.reason`。

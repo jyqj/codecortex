@@ -72,7 +72,8 @@ impl IndexDb {
                 Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Path-token substring match via the trigram `file_paths_fts` mirror,
@@ -122,7 +123,9 @@ impl IndexDb {
                         |row| row.get::<_, String>(0),
                     )
                     .map_err(|e| CcError::Database(e.to_string()))?;
-                hits.extend(rows.filter_map(|r| r.ok()));
+                for row in rows {
+                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                }
             } else {
                 let mut stmt = conn
                     .prepare_cached(
@@ -137,7 +140,9 @@ impl IndexDb {
                         |row| row.get::<_, String>(0),
                     )
                     .map_err(|e| CcError::Database(e.to_string()))?;
-                hits.extend(rows.filter_map(|r| r.ok()));
+                for row in rows {
+                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                }
             }
             results.push(hits);
         }
@@ -196,7 +201,9 @@ impl IndexDb {
                         |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
                     )
                     .map_err(|e| CcError::Database(e.to_string()))?;
-                hits.extend(rows.filter_map(|r| r.ok()));
+                for row in rows {
+                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                }
             } else {
                 let mut stmt = conn
                     .prepare_cached(
@@ -213,7 +220,9 @@ impl IndexDb {
                         |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
                     )
                     .map_err(|e| CcError::Database(e.to_string()))?;
-                hits.extend(rows.filter_map(|r| r.ok()));
+                for row in rows {
+                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                }
             }
             results.push(hits);
         }
@@ -231,7 +240,8 @@ impl IndexDb {
                 row.get::<_, String>(0)
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Batch-fetch full chunk rows by chunk id, queried in
@@ -282,7 +292,9 @@ impl IndexDb {
                     })
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            results.extend(rows.filter_map(|r| r.ok()));
+            for row in rows {
+                results.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+            }
         }
         Ok(results)
     }
@@ -319,7 +331,8 @@ impl IndexDb {
                 |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
@@ -355,7 +368,8 @@ impl IndexDb {
         let rows = stmt
             .query_map(param_refs.as_slice(), |row| row.get::<_, String>(0))
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
@@ -390,7 +404,8 @@ impl IndexDb {
                     ))
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.flatten() {
+            for row in rows {
+                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
                 let (file, chunk_id, start, end) = row;
                 by_file
                     .entry(file)

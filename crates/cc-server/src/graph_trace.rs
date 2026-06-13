@@ -383,7 +383,7 @@ mod tests {
         let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
 
         // Use the read pool connection for inserts (WAL mode allows this).
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
 
         // Insert a file record (needed for foreign key / indexed checks).
         conn.execute(

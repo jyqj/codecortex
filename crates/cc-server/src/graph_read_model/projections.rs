@@ -39,19 +39,20 @@ impl GraphReadModel {
     ///
     /// Returns the mutex guard so callers can query `by_source` / `by_target`
     /// without a second lock acquisition.
-    fn ensure_semantic_loaded(&self) -> std::sync::MutexGuard<'_, SemanticAdjPair> {
+    fn ensure_semantic_loaded(
+        &self,
+        explain: &mut cc_model::GraphExplainCollector,
+    ) -> std::sync::MutexGuard<'_, SemanticAdjPair> {
         let mut guard = self.shared_semantic.lock().unwrap();
         if guard.by_source.is_empty() && guard.by_target.is_empty() {
             // A failed load degrades to "no semantic edges" for this request
             // (and is retried on the next access since the pair stays empty);
-            // log instead of swallowing the error silently.
+            // recorded into the explain envelope so consumers can distinguish
+            // "no hierarchy relations" from "read failed".
             let edges = match self.reads().query_semantic_edges(None, None, None) {
                 Ok(edges) => edges,
                 Err(err) => {
-                    tracing::warn!(
-                        error = %err,
-                        "semantic edge load failed; degrading to empty semantic adjacency"
-                    );
+                    explain.record_read_error("query_semantic_edges", &err);
                     Vec::new()
                 }
             };
@@ -85,13 +86,28 @@ impl GraphReadModel {
 
     /// Get semantic edges originating from `source_uid` (e.g. for ancestor BFS).
     pub(crate) fn semantic_edges_from(&self, source_uid: &str) -> Vec<SemanticEdgeLite> {
-        let guard = self.ensure_semantic_loaded();
+        // Degradation is still logged by the discarded collector
+        // (`record_read_error` always emits a tracing::warn).
+        let mut explain = cc_model::GraphExplainCollector::new();
+        self.semantic_edges_from_with_explain(source_uid, &mut explain)
+    }
+
+    /// Like [`Self::semantic_edges_from`] but records a failed semantic-edge
+    /// load into `explain` instead of silently degrading to no edges.
+    pub(crate) fn semantic_edges_from_with_explain(
+        &self,
+        source_uid: &str,
+        explain: &mut cc_model::GraphExplainCollector,
+    ) -> Vec<SemanticEdgeLite> {
+        let guard = self.ensure_semantic_loaded(explain);
         guard.by_source.get(source_uid).cloned().unwrap_or_default()
     }
 
     /// Get semantic edges pointing to `target_uid` (e.g. for descendant BFS).
     pub(crate) fn semantic_edges_to(&self, target_uid: &str) -> Vec<SemanticEdgeLite> {
-        let guard = self.ensure_semantic_loaded();
+        // Degradation is still logged by the discarded collector.
+        let mut explain = cc_model::GraphExplainCollector::new();
+        let guard = self.ensure_semantic_loaded(&mut explain);
         guard.by_target.get(target_uid).cloned().unwrap_or_default()
     }
 
@@ -124,6 +140,14 @@ impl GraphReadModel {
         uid: &str,
         explain: &mut cc_model::GraphExplainCollector,
     ) -> Vec<EdgeLite> {
+        // The bridge index may have been clipped at load time
+        // (CODECORTEX_BRIDGE_EDGE_LIMIT): any caller can then be missing
+        // synthesized edges — including ones absent from the map — so the
+        // load-time fact is surfaced on every bridged adjacency query,
+        // before the cache fast path.
+        if self.http_bridges.truncated {
+            explain.mark_truncated("bridge_cap");
+        }
         // Fast path: check if the UID is already cached.
         {
             let adj = self.shared_adjacency.lock().unwrap();
@@ -134,15 +158,22 @@ impl GraphReadModel {
         // Slow path: query DB *without* holding the adjacency lock. A failure
         // degrades to "no outgoing edges" for this UID (same graceful
         // behavior as before), but is recorded for the explain envelope.
-        let mut edges = match self.reads().call_edges_from_uid_lite(uid) {
-            Ok(edges) => edges,
+        let (mut edges, read_failed) = match self.reads().call_edges_from_uid_lite(uid) {
+            Ok(edges) => (edges, false),
             Err(err) => {
                 explain.record_read_error("call_edges_from_uid_lite", &err);
-                Vec::new()
+                (Vec::new(), true)
             }
         };
-        if let Some(bridges) = self.http_bridges.get(uid) {
+        if let Some(bridges) = self.http_bridges.by_caller.get(uid) {
             edges.extend(bridges.iter().cloned());
+        }
+        if read_failed {
+            // Serve the degraded adjacency to THIS caller only. Caching it
+            // would pin the UID as isolated for the whole generation and
+            // silence the read_error on every later cache-hit call; skipping
+            // the insert makes the next call retry and re-record the failure.
+            return edges;
         }
         // Insert and return.
         let mut adj = self.shared_adjacency.lock().unwrap();

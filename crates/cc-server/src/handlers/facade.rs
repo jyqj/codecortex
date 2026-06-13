@@ -332,6 +332,18 @@ struct IngestTraceStats {
     unmatched: u32,
     routes_matched: u32,
     spans_processed: u32,
+    /// Evidence writes that failed and were skipped (one count per failed
+    /// write). A single observation keeps processing — and the batch keeps
+    /// going — but the client sees that persisted state lags the submission.
+    write_errors: u32,
+}
+
+impl IngestTraceStats {
+    /// Count a failed evidence write without aborting the observation.
+    fn record_write_error(&mut self, op: &str, err: &dyn std::fmt::Display) {
+        tracing::warn!(op, error = %err, "ingest_traces evidence write failed");
+        self.write_errors += 1;
+    }
 }
 
 struct TraceObservation<'a> {
@@ -360,16 +372,22 @@ fn ingest_observation(
         None => format!("{}:{}:{}", obs.service, obs.method.unwrap_or("*"), obs.path),
     };
 
-    if db
-        .writes()
-        .upsert_runtime_evidence(&eid, obs.service, obs.method, obs.path, obs.status, now)
-        .is_ok()
-    {
-        stats.accepted += 1;
+    match db.writes().upsert_runtime_evidence(
+        &eid,
+        obs.service,
+        obs.method,
+        obs.path,
+        obs.status,
+        now,
+    ) {
+        Ok(()) => stats.accepted += 1,
+        Err(e) => stats.record_write_error("upsert_runtime_evidence", &e),
     }
 
     if let Some(dur) = obs.duration_ms {
-        let _ = db.writes().update_evidence_p95(&eid, dur);
+        if let Err(e) = db.writes().update_evidence_p95(&eid, dur) {
+            stats.record_write_error("update_evidence_p95", &e);
+        }
     }
 
     let norm = cc_model::route_normalize::normalize_route_path(obs.path);
@@ -380,9 +398,25 @@ fn ingest_observation(
         .map_err(|e| e.to_string())?;
 
     if let Some(ref eid_db) = edge_id {
-        let _ = db.writes().link_evidence_to_edge(&eid, eid_db);
-        let _ = db.writes().boost_http_edge_confidence(eid_db, 0.15);
-        stats.matched += 1;
+        // `matched` only counts observations whose key writes (link + boost)
+        // both landed, so the client-side count matches persisted state.
+        let link_ok = match db.writes().link_evidence_to_edge(&eid, eid_db) {
+            Ok(()) => true,
+            Err(e) => {
+                stats.record_write_error("link_evidence_to_edge", &e);
+                false
+            }
+        };
+        let boost_ok = match db.writes().boost_http_edge_confidence(eid_db, 0.15) {
+            Ok(()) => true,
+            Err(e) => {
+                stats.record_write_error("boost_http_edge_confidence", &e);
+                false
+            }
+        };
+        if link_ok && boost_ok {
+            stats.matched += 1;
+        }
         if candidate_count > 1 {
             stats.ambiguous += 1;
         }
@@ -396,7 +430,11 @@ fn ingest_observation(
         .map_err(|e| e.to_string())?;
 
     if let Some(ref rid) = route_id {
-        let _ = db.writes().update_evidence_route_id(&eid, rid);
+        // `routes_matched` reports the (read-side) route match; a failed
+        // write-back is reflected in `write_errors`.
+        if let Err(e) = db.writes().update_evidence_route_id(&eid, rid) {
+            stats.record_write_error("update_evidence_route_id", &e);
+        }
         stats.routes_matched += 1;
     }
 
@@ -483,6 +521,7 @@ pub fn handle_ingest_traces(
         "ambiguous": stats.ambiguous,
         "unmatched": stats.unmatched,
         "spans_processed": stats.spans_processed,
+        "write_errors": stats.write_errors,
         "total_submitted": traces.len(),
     }))
 }
@@ -619,6 +658,70 @@ mod tests {
         )
         .unwrap();
         assert!(result.is_object() || result.is_array());
+    }
+
+    // ── ingest_traces write-failure accounting ──────────────────────
+
+    /// A matched observation whose key evidence writes (link + boost) fail
+    /// must NOT count as matched, and every skipped write lands in
+    /// `write_errors`, so the client statistics track persisted state.
+    #[test]
+    fn handle_ingest_traces_gates_matched_on_writes_and_counts_failures() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let idx = crate::engine::CodeIndex::new(Some(tmp.path())).unwrap();
+        let db = idx.index_db().unwrap().clone();
+        {
+            let conn = crate::test_seed::seed_conn(&db);
+            conn.execute(
+                "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
+                 VALUES('src/client.ts','TypeScript','h1',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,normalized_path,method,call_kind,line,confidence,parser_tier)
+                 VALUES('http_get_users','src/client.ts','caller_uid','/api/users','/api/users','GET','http',20,0.88,'tree_sitter')",
+                [],
+            )
+            .unwrap();
+            conn.execute(
+                "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
+                 VALUES('route_get_users','src/client.ts','/api/users','GET','handler_uid','get_users','express',10,12,'/api/users',0.91,'tree_sitter','route_get_users')",
+                [],
+            )
+            .unwrap();
+        }
+        let rt: SharedCodeIndex = std::sync::Arc::new(std::sync::RwLock::new(idx));
+
+        let traces = vec![json!({
+            "service_name": "svc",
+            "path": "/api/users",
+            "method": "GET",
+            "duration_ms": 12.5,
+        })];
+
+        // Healthy run: the observation matches and every write lands.
+        let healthy = handle_ingest_traces(rt.clone(), &traces).unwrap();
+        assert_eq!(healthy["accepted"], 1);
+        assert_eq!(healthy["matched_to_edges"], 1);
+        assert_eq!(healthy["routes_matched"], 1);
+        assert_eq!(healthy["write_errors"], 0);
+
+        // Break the evidence table: the edge/route matches (reads) still
+        // succeed, but every evidence write fails.
+        crate::test_seed::seed_conn(&db)
+            .execute("DROP TABLE runtime_evidence", [])
+            .unwrap();
+        let degraded = handle_ingest_traces(rt, &traces).unwrap();
+        assert_eq!(degraded["accepted"], 0);
+        assert_eq!(
+            degraded["matched_to_edges"], 0,
+            "matched must require link+boost to land, not just an edge match"
+        );
+        // upsert + p95 + link + route-id write-back all failed and were counted.
+        assert_eq!(degraded["write_errors"], 4);
+        // A failing observation still completes (batch semantics preserved).
+        assert_eq!(degraded["spans_processed"], 1);
     }
 
     #[test]

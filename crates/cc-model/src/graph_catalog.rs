@@ -588,7 +588,7 @@ impl EdgeKindSet {
     }
 
     pub fn contains(self, kind: &str) -> bool {
-        self.kinds.iter().any(|declared| *declared == kind)
+        self.kinds.contains(&kind)
     }
 
     pub fn iter(self) -> impl Iterator<Item = &'static str> {

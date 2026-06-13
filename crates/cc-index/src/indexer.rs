@@ -835,7 +835,7 @@ mod dirty_reload_tests {
     #[test]
     fn dirty_reload_clears_stale_semantic_target_uids() {
         let (_tmp, indexer) = setup_indexer();
-        let conn = indexer.db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&indexer.db);
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/a.py','Python','h',1.0,1,'2024-01-01');\

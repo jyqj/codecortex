@@ -173,6 +173,11 @@ pub struct SearchConfig {
     pub lexical_top_k: usize,
     #[serde(default = "default_grep_top_k")]
     pub grep_top_k: usize,
+    /// Maximum number of chunk rows the grep lane decompresses per search.
+    /// Bounds the worst case (no-match / rare-term queries) which would
+    /// otherwise zstd-decode every chunk in the repository.
+    #[serde(default = "default_grep_scan_cap")]
+    pub grep_scan_cap: usize,
     #[serde(default = "default_rrf_k")]
     pub rrf_k: usize,
     #[serde(default = "default_lexical_weight")]
@@ -192,6 +197,13 @@ fn default_lexical_top_k() -> usize {
 }
 fn default_grep_top_k() -> usize {
     12
+}
+fn default_grep_scan_cap() -> usize {
+    // ~20k chunks ≈ a few hundred ms of zstd+regex worst case.  Preselect
+    // normally scopes grep to ≤ ~400 files (≪ 20k chunks), so the cap only
+    // binds on unscoped scans, where it covers the ~700 most recently
+    // indexed files instead of the whole table (~280k chunks at 10k files).
+    20_000
 }
 fn default_rrf_k() -> usize {
     50
@@ -217,6 +229,7 @@ impl Default for SearchConfig {
         Self {
             lexical_top_k: default_lexical_top_k(),
             grep_top_k: default_grep_top_k(),
+            grep_scan_cap: default_grep_scan_cap(),
             rrf_k: default_rrf_k(),
             lexical_weight: default_lexical_weight(),
             grep_weight: default_grep_weight(),
@@ -1076,7 +1089,10 @@ mod tests {
             "indexing": { "max_file_bytes": 1024 },
             "serach": { "lexical_top_k": 8 }
         });
-        assert_eq!(collect_unknown_config_keys(&raw), vec!["serach".to_string()]);
+        assert_eq!(
+            collect_unknown_config_keys(&raw),
+            vec!["serach".to_string()]
+        );
     }
 
     #[test]

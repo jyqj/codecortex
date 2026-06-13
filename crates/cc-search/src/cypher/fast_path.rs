@@ -895,7 +895,7 @@ mod tests {
         let tmp = tempfile::TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("fastpath.db")).unwrap().0;
         {
-            let conn = db.reads().read_conn().unwrap();
+            let conn = crate::test_seed::seed_conn(&db);
             conn.execute_batch(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');",

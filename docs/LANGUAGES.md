@@ -50,6 +50,10 @@ SQL、YAML、TOML、HCL、Dockerfile、Bash、Protobuf、GraphQL、CMake
 | Semantic | 0.85 | 完整 AST + 更深的文件内语义提取 |
 | Verified | 0.95 | 运行时验证（经 `ingest_traces`） |
 
+注：`ingest_traces` 的证据 boost 只做数值置信度提升（每次匹配 +0.15、
+封顶 1.0），不会把边迁移到 Verified 层；当前唯一写入 Verified 层的是
+目录包含边（`cc-index/src/hierarchy.rs` 的 `ContainsFile`）。
+
 解析器按元素 kind 赋的提取置信度单源化在
 `ParserTier::element_confidence`（`crates/cc-model/src/lib.rs`）；未列出
 的 kind 回落到上面的层默认值：

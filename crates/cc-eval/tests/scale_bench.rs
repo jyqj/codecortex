@@ -9,9 +9,12 @@
 //! ```
 //!
 //! Each run measures, per scale: cold full index wall time + index DB size,
-//! incremental rebuild latency (single file and a 5% batch), and p50/p95
-//! tool latency for search / find_symbol / impact / graph_query / trace —
-//! all through the real MCP dispatch path. The generator's ground-truth
+//! incremental rebuild latency (single file and a 5% batch), and cold/warm
+//! tool latency (µs) for search / find_symbol / impact / graph_query /
+//! trace — all through the real MCP dispatch path. Cold = a fresh MCP
+//! session per iteration (new IndexDb identity → cold graph/page caches,
+//! empty search LRUs; OS file cache retained); warm = repeated identical
+//! calls in one session (cache-hit path). The generator's ground-truth
 //! facts double as scale-correctness assertions (needle ranks top-5, hub
 //! impact surfaces known callers, the call chain traces, cycles close).
 //!
@@ -30,6 +33,9 @@ use std::time::Instant;
 
 const SCALE_BENCH_SEED: u64 = 0x00C0_FFEE;
 const TOOL_ITERATIONS: usize = 7;
+/// Fewer cold iterations than warm: each one rebuilds a full MCP session,
+/// which bounds total bench time while still giving a p50 over 3 samples.
+const COLD_TOOL_ITERATIONS: usize = 3;
 const INCREMENTAL_ITERATIONS: usize = 3;
 /// Every 20th code file → 5% incremental batch.
 const BATCH_STRIDE: usize = 20;
@@ -297,7 +303,11 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
 
 // ── Tool latency scenarios ─────────────────────────────────────────
 
-fn run_tool_scenarios(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<ScenarioLatency> {
+fn run_tool_scenarios(
+    backend: &CodeIndexBackend,
+    root: &Path,
+    gt: &GroundTruth,
+) -> Vec<ScenarioLatency> {
     let chain_from = &gt.chain[0].caller;
     let chain_to = &gt.chain[3].callee;
     let fuzzy_prefix = &gt.needle_symbol[..10]; // "needle_fn_"
@@ -345,8 +355,16 @@ fn run_tool_scenarios(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<Scena
     scenarios
         .into_iter()
         .map(|(scenario, tool, params)| {
-            measure_tool_scenario(backend, scenario, tool, &params, TOOL_ITERATIONS)
-                .unwrap_or_else(|e| panic!("tool scenario failed: {}", e))
+            measure_tool_scenario(
+                backend,
+                root,
+                scenario,
+                tool,
+                &params,
+                COLD_TOOL_ITERATIONS,
+                TOOL_ITERATIONS,
+            )
+            .unwrap_or_else(|e| panic!("tool scenario failed: {}", e))
         })
         .collect()
 }
@@ -410,14 +428,18 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
 
     // Ground-truth correctness + tool latency on the pristine index.
     let correctness = run_correctness_checks(&backend, &repo.ground_truth);
-    let tools = run_tool_scenarios(&backend, &repo.ground_truth);
+    let tools = run_tool_scenarios(&backend, root, &repo.ground_truth);
 
     // Incremental: body-only edit of a single chain-middle file.
     let single_target = repo.ground_truth.chain[1].callee_file.clone();
-    let single_reports =
-        run_incremental_iterations(&backend, "single_file", INCREMENTAL_ITERATIONS, |iteration| {
+    let single_reports = run_incremental_iterations(
+        &backend,
+        "single_file",
+        INCREMENTAL_ITERATIONS,
+        |iteration| {
             touch_file(root, &single_target, iteration);
-        });
+        },
+    );
     for report in &single_reports {
         assert_eq!(report_usize(report, "files_parsed"), 1);
         assert_eq!(report_usize(report, "files_updated"), 1);

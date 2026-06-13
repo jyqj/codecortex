@@ -668,8 +668,7 @@ mod tests {
     }
 
     fn insert_file(db: &cc_db::index_db::IndexDb, file_path: &str) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
                  VALUES(?1,'TypeScript',?2,1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
@@ -679,9 +678,7 @@ mod tests {
     }
 
     fn insert_import(db: &cc_db::index_db::IndexDb, file_path: &str, resolved_path: &str) {
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO imports(file_path, import_string, resolved_path) VALUES(?1, ?2, ?3)",
                 rusqlite::params![file_path, format!("import:{resolved_path}"), resolved_path],
@@ -696,8 +693,7 @@ mod tests {
         kind: &str,
         file_path: &str,
     ) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO symbols(symbol_id, symbol_uid, name, kind, file_path, start_line, end_line)
                  VALUES(?1, ?2, ?3, ?4, ?5, 1, 10)",
@@ -713,8 +709,7 @@ mod tests {
         caller_uid: Option<&str>,
         callee_uid: &str,
     ) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
                  VALUES(?1, ?2, 'callee', 5, ?3, ?4)",
@@ -730,8 +725,7 @@ mod tests {
         target_uid: &str,
         container: Option<&str>,
     ) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO symbol_refs(ref_id, file_path, symbol_name, container, ref_kind, line, target_symbol_uid)
                  VALUES(?1, ?2, 'ref', ?3, 'call', 7, ?4)",
@@ -749,8 +743,7 @@ mod tests {
         handler_name: &str,
         framework: &str,
     ) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO routes(edge_id, file_path, route_path, method, handler_name, framework, line, normalized_path, route_id)
                  VALUES(?1, ?2, ?3, ?4, ?5, ?6, 10, ?3, ?1)",
@@ -766,9 +759,7 @@ mod tests {
         kind: &str,
         name: &str,
     ) {
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO infra_nodes(node_id, file_path, kind, name) VALUES(?1, ?2, ?3, ?4)",
                 rusqlite::params![node_id, file_path, kind, name],
@@ -784,9 +775,7 @@ mod tests {
         kind: &str,
         properties: &str,
     ) {
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO infra_edges(edge_id, source_node_id, target_node_id, kind, properties)
                  VALUES(?1, ?2, ?3, ?4, ?5)",

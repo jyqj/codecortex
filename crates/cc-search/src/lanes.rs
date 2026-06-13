@@ -78,8 +78,9 @@ pub(crate) struct LaneContext<'a> {
     pub(crate) db: &'a IndexDb,
     pub(crate) config: &'a SearchConfig,
     /// Decompressed chunk-text cache owned by the engine.  Lanes that
-    /// already decompress chunk text (grep) populate it so the later
-    /// batch-fetch step can skip a second zstd decode.
+    /// already decompress chunk text (grep) populate it for their *matched*
+    /// chunks so the later batch-fetch step can skip a second zstd decode;
+    /// scan-only rows must stay out so a cold scan can't flush the LRU.
     pub(crate) chunk_text_cache: &'a Mutex<LruCache<String, Arc<str>>>,
 }
 
@@ -278,8 +279,16 @@ impl RetrievalLane for LexicalLane {
 
 /// Grep search — regex match on chunk text with file-level filtering.
 ///
-/// Side effect: caches the decompressed text of every scanned chunk in
-/// `chunk_text_cache` so the batch-fetch step can reuse it.
+/// Side effect: caches the decompressed text of every *matched* chunk in
+/// `chunk_text_cache` so the batch-fetch step can reuse it.  Non-matching
+/// scanned chunks deliberately stay out of the cache: a cold scan would
+/// otherwise rotate the whole LRU and evict hot entries.
+///
+/// Scan work is bounded by `search.grep_scan_cap` decompressed rows; an
+/// exhausted budget is reported via a `tracing::debug!` line (the lane has
+/// no structured truncation outlet) and the lane returns whatever matched
+/// within budget, deterministically (the unscoped scan is recency-ordered
+/// by `grep_chunk_scope_sql`).
 pub(crate) struct GrepLane;
 
 impl RetrievalLane for GrepLane {
@@ -332,8 +341,19 @@ impl RetrievalLane for GrepLane {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
 
+        // Scan budget: every fetched row costs a zstd decode, so cap the
+        // number of rows pulled instead of decompressing the whole scope
+        // when matches are rare or absent.
+        let scan_cap = context.config.grep_scan_cap;
+        let mut scanned = 0usize;
+        let mut truncated = false;
         let mut matches = Vec::new();
         for row in rows {
+            if scanned >= scan_cap {
+                truncated = true;
+                break;
+            }
+            scanned += 1;
             let (cid, file_path, language_name, text) =
                 row.map_err(|e| CcError::Database(e.to_string()))?;
             let language = parse_language_name(&language_name);
@@ -342,18 +362,29 @@ impl RetrievalLane for GrepLane {
                 continue;
             }
 
-            // Cache the decompressed text so batch-fetch can reuse it.
-            let text_arc: Arc<str> = Arc::from(text.as_str());
-            if let Ok(mut cache) = context.chunk_text_cache.lock() {
-                cache.put(cid.clone(), Arc::clone(&text_arc));
-            }
-
             if re.is_match(&text) {
+                // Only matches enter the chunk text cache — they are exactly
+                // the rows the batch-fetch step re-reads.  Caching every
+                // scanned chunk would let one cold scan rotate the whole LRU
+                // and evict hot entries.
+                if let Ok(mut cache) = context.chunk_text_cache.lock() {
+                    cache.put(cid.clone(), Arc::from(text.as_str()));
+                }
                 matches.push(cid);
                 if matches.len() >= limit {
                     break;
                 }
             }
+        }
+        if truncated {
+            tracing::info!(
+                query = %plan.grep_query(),
+                scanned,
+                scan_cap,
+                matches = matches.len(),
+                "grep lane scan budget exhausted; remaining chunks not scanned \
+                 (raise search.grep_scan_cap to widen)"
+            );
         }
         Ok(rank_scored(matches))
     }

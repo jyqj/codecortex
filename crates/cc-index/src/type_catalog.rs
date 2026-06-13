@@ -51,8 +51,11 @@ pub struct TypeCatalog {
 }
 
 impl TypeCatalog {
-    /// Build a TypeCatalog from a slice of parsed symbols.
-    pub fn build_from_symbols(symbols: &[SymbolRecord]) -> Self {
+    /// Build a TypeCatalog from parsed symbols (any iterable of references).
+    pub fn build_from_symbols<'a, I>(symbols: I) -> Self
+    where
+        I: IntoIterator<Item = &'a SymbolRecord>,
+    {
         let mut method_index: HashMap<String, Vec<MethodEntry>> = HashMap::new();
         let mut type_index_by_qname: HashMap<String, TypeInfo> = HashMap::new();
         let mut short_to_qnames: HashMap<String, Vec<String>> = HashMap::new();

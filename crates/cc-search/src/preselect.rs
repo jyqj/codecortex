@@ -732,7 +732,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("preselect_test.db"))
             .unwrap()
             .0;
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
                  VALUES('src/a.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');\
@@ -826,7 +826,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("preselect_path_test.db"))
             .unwrap()
             .0;
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         // Path contains "widget"; symbol names deliberately do not, so the only
         // possible hit is the path-token (file_paths_fts) lookup.
         conn.execute_batch(
@@ -1194,7 +1194,7 @@ mod tests {
     fn db_with_call_graph() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("graph_test.db")).unwrap().0;
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)
                  VALUES('src/caller.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');

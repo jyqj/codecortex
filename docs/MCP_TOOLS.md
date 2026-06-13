@@ -246,9 +246,9 @@ limit_applied?, fast_path?, graph_explain?}`。`truncated_reason` 区分
 | `traces[]` | 每条：`service_name`、`method`、`path`、`status_code`（≤1000 条/次） |
 
 响应：`{accepted, matched_to_edges, routes_matched, ambiguous,
-unmatched, spans_processed, total_submitted}`。匹配成功的边置信度提升到
-Verified（0.95），只推进 `evidence_epoch`（见
-[internals/STORAGE.md](internals/STORAGE.md#epoch-双时钟)）。
+unmatched, spans_processed, total_submitted}`。每次匹配给边的数值
+置信度 +0.15（封顶 1.0，不改变解析层级），只推进 `evidence_epoch`
+（见 [internals/STORAGE.md](internals/STORAGE.md#epoch-双时钟)）。
 
 ### `adr` —— 架构决策记录管理
 

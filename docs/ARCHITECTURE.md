@@ -22,17 +22,20 @@ CodeCortex 是一个纯代码智能引擎：对代码库构建语义索引，通
 ```
 cc-model      数据类型、配置、错误定义（serde、thiserror、blake3）
     |
+cc-parsers    tree-sitter AST 提取 + 框架检测（仅依赖 cc-model）
 cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、21 表 + 5 FTS5、schema v5）
     |
-cc-parsers    tree-sitter AST 提取 + 框架检测
-cc-index      文件扫描、增量索引、Louvain 社区检测
-    |
-cc-search     排序式本地检索（FTS5 + grep + 预选/RRF）、Cypher 子集引擎
+cc-index      文件扫描、增量索引、Louvain 社区检测（依赖 cc-db + cc-parsers）
+cc-search     排序式本地检索（FTS5 + grep + 预选/RRF）、Cypher 子集引擎（依赖 cc-model + cc-db）
     |
 cc-server     MCP 服务器（rmcp）、CLI（clap）、CodeIndex 引擎、ImpactAnalyzer、FileWatcher
     |
 cc-eval       检索质量与延迟的评测套件
 ```
+
+第二层并列：cc-parsers 与 cc-db 都只依赖 cc-model、互不依赖。第三层
+并列：cc-index 依赖 cc-db + cc-parsers，cc-search 只依赖 cc-model 与
+cc-db（不依赖 cc-parsers/cc-index），二者互不依赖，在 cc-server 汇合。
 
 各 crate 的一句话职责：
 
@@ -78,12 +81,15 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
 
 1. **单库**：所有状态在 `index.sqlite3`；索引是缓存，可随时重建
    （schema 不匹配即重建，不做迁移）。
-2. **依赖单向**：crate 只向下依赖；缓存留在 cc-server，cc-db 拥有
-   epoch 向量（ADR-0001 的决定）。
+2. **依赖单向**：crate 只向下依赖；图邻接缓存留在 cc-server、不下沉
+   （cc-db 只拥有持久化 epoch 向量，ADR-0001 的决定）；所有跨请求
+   缓存以 epoch 为键自失效。
 3. **写隔离**：多语句写只经 `UnitOfWork`；commit 恰好推进一次
    `index_epoch`；未 commit 即回滚。
 4. **双时钟失效**：索引内容走 `index_epoch`，运行时证据走
-   `evidence_epoch`；所有缓存以 epoch 为键自失效，没有手工失效钩子。
+   `evidence_epoch`；所有缓存以 epoch 为键自失效，没有常规的手工失效
+   钩子（唯一声明过的防御性例外：RwLock 毒锁恢复路径的
+   `invalidate_search_cache_after_poison`，宁可丢缓存不放大半写状态）。
 5. **构建串行**：每项目一个 build gate 串行化所有构建入口；gate 先于
    RwLock，持 RwLock 不等 gate。
 6. **prepare 无锁、commit 三段**：读者最多被两段短写锁打断；接受
@@ -168,6 +174,10 @@ cc-search 的 `FastPathConfig::DEFAULT.eligible_edge_kinds` 直接引用
 | Semantic | 0.85 | 完整 AST + 更深的文件内语义提取 |
 | Verified | 0.95 | 运行时验证（经 `ingest_traces`） |
 
+注：`ingest_traces` 的证据 boost 只做数值置信度提升（每次匹配 +0.15、
+封顶 1.0），不会把边迁移到 Verified 层；当前唯一写入 Verified 层的是
+目录包含边（`cc-index/src/hierarchy.rs` 的 `ContainsFile`）。
+
 按元素 kind 对层默认值的偏离单源化在
 `ParserTier::element_confidence`（`cc-model/src/lib.rs`）；矩阵见
 [LANGUAGES.md](LANGUAGES.md)。跨文件解析在 cc-index 单独赋
@@ -185,7 +195,7 @@ cc-search 的 `FastPathConfig::DEFAULT.eligible_edge_kinds` 直接引用
 | 框架检测信号 | `FrameworkSignalSpec` | `signal_registry()`（[`cc-index/src/framework_registry/mod.rs`](../crates/cc-index/src/framework_registry/mod.rs)） | [`import_marker.rs`](../crates/cc-index/src/framework_registry/import_marker.rs) |
 | 语言（无 tree-sitter 语法） | `LangSpec` | [`cc-parsers/src/lang_spec.rs`](../crates/cc-parsers/src/lang_spec.rs) + `ParserRegistry`（[`cc-parsers/src/lib.rs`](../crates/cc-parsers/src/lib.rs)） | `CSHARP_SPEC` |
 | 合成边 pass | `SynthesisPassSpec` | `registry()`（[`cc-index/src/dispatch_synthesis/mod.rs`](../crates/cc-index/src/dispatch_synthesis/mod.rs)） | [`event_emitter.rs`](../crates/cc-index/src/dispatch_synthesis/event_emitter.rs) |
-| 后处理跳过门 | `PassGate` | [`cc-index/src/pass_gate.rs`](../crates/cc-index/src/pass_gate.rs)，由 `indexer_phases.rs` 的 compute 阶段消费 | `DbSignatureGate` |
+| 后处理跳过门 | `PassGate` | [`cc-index/src/pass_gate.rs`](../crates/cc-index/src/pass_gate.rs)，由 `indexer_phases/` 的 compute 阶段（postprocess/analysis）消费 | `DbSignatureGate` |
 | 多语句写 | `UnitOfWork` | [`cc-db/src/unit_of_work.rs`](../crates/cc-db/src/unit_of_work.rs)，经 `IndexDb::writes().begin_unit_of_work()` 进入 | [`synthesis_pipeline.rs`](../crates/cc-index/src/synthesis_pipeline.rs) 的合成 apply |
 
 各缝的注意事项（顺序敏感性、门的记账协议等）见对应 internals 文档的

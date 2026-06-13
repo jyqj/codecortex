@@ -18,7 +18,18 @@ use super::projections::SemanticAdjPair;
 
 /// Synthesized HTTP/async bridge edges keyed by caller UID.
 pub(super) type BridgeEdgesByCaller = HashMap<String, Vec<EdgeLite>>;
-pub(super) type SharedBridgeEdges = Arc<BridgeEdgesByCaller>;
+
+/// Bridge edges plus the load-time truncation fact. When the bounded loads
+/// behind `bridge_edges_by_caller` hit `CODECORTEX_BRIDGE_EDGE_LIMIT`, ANY
+/// caller may be missing synthesized edges — consumers surface that as
+/// `truncated_reason = "bridge_cap"` on their explain envelope.
+#[derive(Default)]
+pub(super) struct BridgeIndex {
+    pub(super) by_caller: BridgeEdgesByCaller,
+    pub(super) truncated: bool,
+}
+
+pub(super) type SharedBridgeEdges = Arc<BridgeIndex>;
 
 /// Process-global adjacency cache shared across all `GraphReadModel` instances.
 ///
@@ -109,7 +120,7 @@ static BRIDGED_ADJ_CACHE: GenerationSlot<Mutex<HashMap<String, Vec<EdgeLite>>>> 
 
 /// Process-global bridge edge cache, keyed by `db_identity`. Bridge edge
 /// confidence moves with evidence ingestion, hence evidence-sensitive.
-pub(super) static BRIDGE_CACHE: GenerationSlot<BridgeEdgesByCaller> =
+pub(super) static BRIDGE_CACHE: GenerationSlot<BridgeIndex> =
     GenerationSlot::new(EpochSensitivity::IndexAndEvidence);
 
 /// Process-global semantic edge cache, keyed by `db_identity`.
@@ -139,16 +150,34 @@ pub(crate) struct GraphReadGeneration {
     db_identity: u64,
     index_epoch: u64,
     evidence_epoch: u64,
+    /// True when the persisted epoch vector could not be read. Such a key is
+    /// untrustworthy — defaulting the epochs to 0 would alias a genuinely
+    /// fresh database — so [`generation_cached`] bypasses both cache lookup
+    /// and store for it.
+    epoch_read_failed: bool,
 }
 
 impl GraphReadGeneration {
     pub(super) fn from_db(db: &Arc<IndexDb>) -> Self {
         let reads = GraphReads::new(db);
-        let generation = reads.generation().unwrap_or_default();
+        // A failed epoch read must not silently key the caches as epoch 0:
+        // mark the generation degraded instead, so this read model computes
+        // without the shared caches and the next model retries the read.
+        let (generation, epoch_read_failed) = match reads.generation() {
+            Ok(generation) => (generation, false),
+            Err(err) => {
+                tracing::warn!(
+                    error = %err,
+                    "graph generation read failed; bypassing shared graph caches"
+                );
+                (Default::default(), true)
+            }
+        };
         Self {
             db_identity: reads.instance_id(),
             index_epoch: generation.index_epoch,
             evidence_epoch: generation.evidence_epoch,
+            epoch_read_failed,
         }
     }
 
@@ -174,12 +203,17 @@ impl GraphReadGeneration {
 ///
 /// A failed `compute` is NOT cached — the error is returned and the next call
 /// retries, so per-request degradation at the call site never becomes sticky
-/// for the whole generation.
+/// for the whole generation. A generation whose epoch read failed bypasses
+/// the cache entirely (compute, don't store): its key cannot be trusted not
+/// to alias a real epoch-0 generation.
 pub(super) fn generation_cached<T>(
     slot: &'static GenerationSlot<T>,
     generation: &GraphReadGeneration,
     compute: impl FnOnce() -> CcResult<Arc<T>>,
 ) -> CcResult<Arc<T>> {
+    if generation.epoch_read_failed {
+        return compute();
+    }
     let generation = slot.key_for(generation);
     let cache = slot
         .cell
@@ -247,6 +281,7 @@ mod tests {
             db_identity: 42,
             index_epoch,
             evidence_epoch,
+            epoch_read_failed: false,
         }
     }
 
@@ -277,5 +312,28 @@ mod tests {
         // Index bump: both recompute.
         assert_eq!(*seed(&INDEX_ONLY, &index_bumped, 30), 30);
         assert_eq!(*seed(&FULL, &index_bumped, 30), 30);
+    }
+
+    /// A generation whose epoch read failed must neither be served from the
+    /// cache (its defaulted key would alias a real epoch) nor stored into it.
+    #[test]
+    fn degraded_generation_bypasses_cache_lookup_and_store() {
+        static SLOT: GenerationSlot<u64> = GenerationSlot::new(EpochSensitivity::IndexOnly);
+
+        let healthy = generation(1, 1);
+        let degraded = GraphReadGeneration {
+            epoch_read_failed: true,
+            ..healthy
+        };
+
+        let seed = |generation, value: u64| {
+            generation_cached(&SLOT, generation, || Ok(Arc::new(value))).unwrap()
+        };
+
+        assert_eq!(*seed(&healthy, 10), 10);
+        // Same epochs, but degraded: must compute instead of serving 10 ...
+        assert_eq!(*seed(&degraded, 20), 20);
+        // ... and must not have overwritten the healthy entry.
+        assert_eq!(*seed(&healthy, 30), 10);
     }
 }

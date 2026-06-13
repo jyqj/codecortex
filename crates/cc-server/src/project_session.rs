@@ -8,7 +8,7 @@ use crate::engine::CodeIndex;
 use crate::handlers::{self, SharedCodeIndex};
 use crate::watcher::FileWatcher;
 use cc_model::config::RepoSizeTier;
-use cc_model::CcResult;
+use cc_model::{CcError, CcResult};
 use lru::LruCache;
 use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
@@ -104,6 +104,11 @@ impl ProjectSession {
             let mut cache = self.project_cache.lock().await;
             cache.get(&path).map(ProjectServices::index)
         } {
+            // A cached non-active project may have been idle-evicted (close()
+            // releases the DB handle but keeps project_path and the build
+            // gate). Reopen transparently — same recovery the active index
+            // gets in `call_tool` — instead of failing with ProjectNotSet.
+            Self::reopen_index_if_closed(&index).map_err(CcError::Other)?;
             return Ok(index);
         }
 
@@ -136,6 +141,10 @@ impl ProjectSession {
             }
         };
         let index = services.index();
+        // Same idle-eviction recovery as `index_for_project_path`: a cached
+        // entry may have been closed while non-active — reopen before it
+        // becomes the active index, so the first tool call works directly.
+        Self::reopen_index_if_closed(&index).map_err(CcError::Other)?;
         *self.active.write().await = services;
         self.start_watcher(path);
         Ok(index)
@@ -149,12 +158,20 @@ impl ProjectSession {
 
     pub async fn reopen_active_index_if_closed(&self) -> Result<(), String> {
         let index = self.active_index().await;
+        Self::reopen_index_if_closed(&index)
+    }
+
+    /// Transparently reopen an idle-evicted CodeIndex: read-lock probe of
+    /// `is_closed`, then upgrade to the write lock and re-check before
+    /// reopening (`reopen` re-runs `set_project` without touching the build
+    /// gate, so build serialization survives the close/reopen cycle).
+    fn reopen_index_if_closed(index: &SharedCodeIndex) -> Result<(), String> {
         let need_reopen = {
-            let rt = handlers::lock_index(&index)?;
+            let rt = handlers::lock_index(index)?;
             rt.is_closed()
         };
         if need_reopen {
-            let mut rt = handlers::lock_index_write(&index)?;
+            let mut rt = handlers::lock_index_write(index)?;
             if rt.is_closed() {
                 if let Err(e) = rt.reopen() {
                     tracing::warn!("failed to reopen index after idle eviction: {}", e);
@@ -600,6 +617,86 @@ mod tests {
             generation,
             "fresh index must not be rebuilt by a second maybe_auto_index"
         );
+    }
+
+    /// An idle-evicted NON-active project must reopen transparently when the
+    /// 16-slot LRU serves its cached CodeIndex: before the fix the closed
+    /// instance was returned as-is and every query failed with ProjectNotSet
+    /// until the user manually re-ran `index` on that project.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn cached_project_reopens_transparently_after_idle_eviction() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+        let raw_path = dir.path().to_str().unwrap().to_string();
+
+        let session = ProjectSession::new(Some(dir.path()));
+        let index = session
+            .index_for_project_path(Some(&raw_path))
+            .await
+            .unwrap();
+
+        // Simulate idle eviction on the cached instance (close() releases the
+        // DB handle but keeps project_path and the build gate).
+        {
+            let mut rt = index.write().unwrap();
+            rt.close();
+            assert!(rt.is_closed());
+        }
+
+        // The LRU hit must return the SAME instance, reopened and queryable.
+        let reopened = session
+            .index_for_project_path(Some(&raw_path))
+            .await
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&index, &reopened),
+            "cache hit must reuse the per-project CodeIndex instance"
+        );
+        let rt = reopened.read().unwrap();
+        assert!(!rt.is_closed(), "cached closed index must be reopened");
+        rt.index_status()
+            .expect("reopened index must serve queries directly");
+    }
+
+    /// Switching the active project back onto an idle-evicted cache entry
+    /// must reopen it (same recovery as `index_for_project_path`): A active
+    /// → eviction closes A → switch to B → switch back to A; the returned
+    /// index must serve queries directly instead of failing until a manual
+    /// re-index.
+    #[tokio::test(flavor = "multi_thread")]
+    async fn set_active_project_reopens_evicted_cache_entry() {
+        let dir_a = TempDir::new().unwrap();
+        std::fs::write(dir_a.path().join("lib.rs"), "pub fn a() -> i32 { 1 }\n").unwrap();
+        let dir_b = TempDir::new().unwrap();
+        std::fs::write(dir_b.path().join("lib.rs"), "pub fn b() -> i32 { 2 }\n").unwrap();
+
+        let session = ProjectSession::new(Some(dir_a.path()));
+        let index_a = session.active_index().await;
+
+        // Simulate idle eviction on A, then switch the active project away.
+        {
+            let mut rt = index_a.write().unwrap();
+            rt.close();
+            assert!(rt.is_closed());
+        }
+        session
+            .set_active_project(dir_b.path().to_path_buf())
+            .await
+            .unwrap();
+
+        // Switching back must reuse the cached instance, reopened.
+        let reactivated = session
+            .set_active_project(dir_a.path().to_path_buf())
+            .await
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&index_a, &reactivated),
+            "cache hit must reuse the per-project CodeIndex instance"
+        );
+        let rt = reactivated.read().unwrap();
+        assert!(!rt.is_closed(), "reactivated index must be reopened");
+        rt.index_status()
+            .expect("reactivated index must serve queries directly");
     }
 
     /// Watcher poll ticks that find the build slot busy must NOT drain (and

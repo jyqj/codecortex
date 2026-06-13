@@ -4,7 +4,7 @@
 //! Write: single Mutex<Connection> for exclusive writes.
 //! FTS sync: application-layer, in the same transaction as base table writes.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, RwLock};
@@ -381,6 +381,9 @@ pub struct IndexDb {
     /// counter. Unlike `Arc::as_ptr`, it is never reused after a handle is
     /// dropped, so caches keyed on it cannot alias across project instances.
     instance_id: u64,
+    /// Cross-build resolver seed snapshot, validated against the persisted
+    /// `symbols_seed` aggregate (see `crate::seed_symbol_cache`).
+    pub(crate) seed_cache: Mutex<Option<crate::seed_symbol_cache::SeedSymbolCache>>,
 }
 
 /// Process-wide monotonic source for [`IndexDb::instance_id`].
@@ -460,6 +463,7 @@ impl IndexDb {
                 write_conn: Mutex::new(write_conn),
                 read_pool_size,
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
+                seed_cache: Mutex::new(None),
             },
             schema_status,
         ))
@@ -475,8 +479,14 @@ impl IndexDb {
         read_pool_size: u32,
     ) -> CcResult<Pool<SqliteConnectionManager>> {
         let manager = SqliteConnectionManager::file(path).with_init(|conn| {
+            // `query_only=ON` turns the read pool's type-level write isolation
+            // into a hard guarantee: any INSERT/UPDATE/DELETE/CREATE through a
+            // pooled connection fails with SQLITE_READONLY instead of silently
+            // bypassing the WriteOps epoch bump (which would let epoch-keyed
+            // caches serve stale data). It must stay last in the batch so the
+            // WAL/journal pragmas still apply on a fresh file.
             conn.execute_batch(
-                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;",
+                "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000; PRAGMA query_only=ON;",
             )?;
             register_regexp_function(conn)?;
             // The hot read paths keep ~25+ distinct constant statements alive
@@ -1293,9 +1303,10 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rel_paths: Vec<&str> = files.iter().map(|f| f.rel_path.as_str()).collect();
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
         // Replacement keeps the path, so the path-derived test_edges
         // stay valid (see `delete_files_data_base_keep_test_edges_batch`).
@@ -1304,6 +1315,7 @@ impl IndexDb {
             Self::insert_file_data_deferred_fts(&tx, file, None)?;
         }
         Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
+        crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
@@ -1334,10 +1346,15 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let linked_now: std::collections::HashSet<&str> =
             units.iter().map(|u| u.rel_path.as_str()).collect();
+        // Config refs are not signature-relevant, but the whole-unit branch
+        // below (delete_file_data + insert_file_data) can touch signature
+        // tables — keep the aggregates in sync over the unit paths.
+        let unit_paths: Vec<&str> = units.iter().map(|u| u.rel_path.as_str()).collect();
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &unit_paths)?;
         let mut wrote = false;
         for path in seen_config_files {
             if linked_now.contains(path.as_str()) {
@@ -1367,6 +1384,7 @@ impl IndexDb {
             // 真正零变化：丢弃事务，不 bump epoch（保持快速路径零写入语义）。
             return Ok(());
         }
+        crate::signature_agg::finish_path_update(&tx, &unit_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
@@ -1417,11 +1435,14 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
+        let rel_paths: Vec<&str> = units.iter().map(|u| u.rel_path.as_str()).collect();
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         for file in units {
             Self::replace_reresolved_edges_for_file(&tx, file)?;
         }
+        crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
@@ -1527,6 +1548,11 @@ impl IndexDb {
     /// file committed (content_hash persisted, so never re-batched) with its
     /// hierarchy edges missing (and the batch costs one WAL sync instead of
     /// four).
+    ///
+    /// Signature-aggregate contract: `hierarchy_edges` must belong to batch
+    /// files (`file_path` within `normal_units`/`dirty_units`) — the
+    /// path-scoped aggregate delta (see `signature_agg`) covers exactly the
+    /// batch paths' rows.
     pub(crate) fn write_incremental_batch(
         &self,
         to_remove: &[String],
@@ -1542,6 +1568,10 @@ impl IndexDb {
             && route_nodes.is_empty()
             && hierarchy_edges.is_empty()
         {
+            // No-op batch: still make sure the signature-aggregate baseline
+            // exists, so the postprocess gates stay O(1) on databases written
+            // before the aggregates existed (one-time scan, then never again).
+            self.ensure_signature_aggregates_initialized()?;
             return Ok(());
         }
         let mut conn = self
@@ -1549,8 +1579,28 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
+        // Signature-aggregate maintenance: capture the touched paths' partial
+        // aggregates before any delete (the whole batch is file-scoped, so
+        // the delta against the post-state below covers every mutated row,
+        // including the batch files' hierarchy edges).
+        let touched_paths: Vec<&str> = {
+            let mut seen = HashSet::new();
+            to_remove
+                .iter()
+                .map(String::as_str)
+                .chain(normal_units.iter().map(|f| f.rel_path.as_str()))
+                .chain(dirty_units.iter().map(|f| f.rel_path.as_str()))
+                .filter(|p| seen.insert(*p))
+                .collect()
+        };
+        // Seed-cache basis: the `symbols_seed` aggregate before this batch's
+        // mutations. Re-read after `finish_path_update` below; the pair lets
+        // the post-commit cache update prove its snapshot matches the
+        // pre-batch table state (see `seed_symbol_cache`).
+        let pre_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &touched_paths)?;
         // Per-section timing: emitted as `tracing::debug!` "sub-phase timing"
         // events (same field style as cc-index's `time_step`) so a slow
         // `write.incremental_batch` aggregate can be attributed from logs.
@@ -1615,12 +1665,54 @@ impl IndexDb {
         section_ms("db_hierarchy_edges", hierarchy_edges.len(), section_start);
         let section_start = std::time::Instant::now();
         Self::insert_route_nodes_on(&tx, route_nodes)?;
+        crate::signature_agg::finish_path_update(&tx, &touched_paths, agg_update)?;
+        let post_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
         Self::bump_index_epoch_on(&tx)?;
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         section_ms("db_commit", 0, section_start);
+        // Committed: carry the seed cache across this batch — the same
+        // file-scoped delta the transaction applied to `symbols`.
+        self.seed_cache_apply_batch(
+            pre_seed_agg,
+            post_seed_agg,
+            to_remove,
+            normal_units,
+            dirty_units,
+        );
         Ok(())
+    }
+
+    /// One-time baseline initialization for the graph-signature aggregates:
+    /// when no stored baseline exists (database written before the aggregates
+    /// did), recompute it from the table contents so the postprocess gates
+    /// read O(1) metadata instead of falling back to full scans every build.
+    fn ensure_signature_aggregates_initialized(&self) -> CcResult<()> {
+        let mut conn = self
+            .write_conn
+            .lock()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        if crate::signature_agg::load_on(&conn)?.is_some() {
+            return Ok(());
+        }
+        let tx = conn
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let aggs = crate::signature_agg::scan_on(&tx)?;
+        crate::signature_agg::store_on(&tx, &aggs)?;
+        // Metadata only — index content is unchanged, so no epoch bump.
+        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        Ok(())
+    }
+
+    /// Recompute and persist the graph-signature aggregate baseline from the
+    /// connection's table contents. Full-rebuild writers call this as the
+    /// last step inside the rebuild connection (temp-db / DirectWriter), so a
+    /// rebuilt snapshot always carries a baseline matching its rows.
+    pub fn recompute_graph_signature_aggregates_on(conn: &Connection) -> CcResult<()> {
+        let aggs = crate::signature_agg::scan_on(conn)?;
+        crate::signature_agg::store_on(conn, &aggs)
     }
 
     pub(crate) fn remove_files_batch(&self, paths: &[String]) -> CcResult<usize> {
@@ -1632,11 +1724,13 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rel_paths: Vec<&str> = paths.iter().map(String::as_str).collect();
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
         Self::delete_files_data_base_batch(&tx, &rel_paths)?;
+        crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(paths.len())
@@ -1778,7 +1872,10 @@ impl IndexDb {
         ] {
             Self::execute_cached(
                 conn,
-                &format!("DELETE FROM {} WHERE file_path IN ({})", table, placeholders),
+                &format!(
+                    "DELETE FROM {} WHERE file_path IN ({})",
+                    table, placeholders
+                ),
                 rusqlite::params_from_iter(batch.iter()),
             )?;
         }
@@ -1848,10 +1945,7 @@ impl IndexDb {
     /// MUST run inside the same transaction after every base-row insert for
     /// `rel_paths`, and only over paths whose previous rows were deleted in
     /// this batch (otherwise pre-existing rows would be mirrored twice).
-    pub fn insert_files_literal_fts_batch(
-        conn: &Connection,
-        rel_paths: &[&str],
-    ) -> CcResult<()> {
+    pub fn insert_files_literal_fts_batch(conn: &Connection, rel_paths: &[&str]) -> CcResult<()> {
         for batch in rel_paths.chunks(IN_BATCH_SIZE) {
             let placeholders = sql_in_placeholders(batch.len());
             Self::execute_cached(
@@ -2323,6 +2417,30 @@ impl ReadOps<'_> {
     pub fn stats(&self, project_path: &Path) -> CcResult<ProjectStats> {
         self.0.stats(project_path)
     }
+
+    /// Graph-signature aggregates maintained by the write paths, or `None`
+    /// when no baseline exists yet (see `signature_agg` module docs).
+    pub fn stored_graph_signature_aggregates(
+        &self,
+    ) -> CcResult<Option<crate::GraphSignatureAggregates>> {
+        let conn = self.0.read_conn()?;
+        crate::signature_agg::load_on(&conn)
+    }
+
+    /// Recompute the graph-signature aggregates from the committed table
+    /// contents (ground truth, O(repo)). Fallback for databases without a
+    /// stored baseline; value-identical to the maintained aggregates.
+    pub fn scan_graph_signature_aggregates(&self) -> CcResult<crate::GraphSignatureAggregates> {
+        let conn = self.0.read_conn()?;
+        crate::signature_agg::scan_on(&conn)
+    }
+
+    /// `call_synthetic` partial aggregate for the given `synthesized_by`
+    /// kinds — the committed rows a staged synthesis action would delete.
+    pub fn synthetic_call_kind_aggregate(&self, kinds: &[&str]) -> CcResult<crate::RowAgg> {
+        let conn = self.0.read_conn()?;
+        crate::signature_agg::synthetic_kind_agg_on(&conn, kinds)
+    }
 }
 
 // Write facet delegates (see `IndexDb::writes()`).
@@ -2394,6 +2512,12 @@ impl MaintenanceOps<'_> {
         self.0.instance_id()
     }
 
+    /// Filesystem path of the SQLite database file (maintenance/diagnostics,
+    /// e.g. sidecar inspection or opening a dedicated side connection).
+    pub fn db_path(&self) -> &Path {
+        &self.0.db_path
+    }
+
     /// Force a WAL checkpoint, truncating the WAL file.
     pub fn checkpoint_wal(&self) -> CcResult<()> {
         self.0.checkpoint_wal()
@@ -2453,6 +2577,27 @@ mod tests {
         assert_eq!(db.get_metadata("nonexistent").unwrap(), None);
     }
 
+    /// The read pool is `query_only`: writes through a pooled connection
+    /// must fail instead of silently bypassing the WriteOps epoch bump.
+    #[test]
+    fn read_pool_connections_reject_writes() {
+        let tmp = TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("ro.db")).unwrap().0;
+        let conn = db.reads().read_conn().unwrap();
+        let err = conn
+            .execute("INSERT INTO metadata(key, value) VALUES('rogue', '1')", [])
+            .expect_err("INSERT through a read pool connection must fail");
+        assert!(
+            err.to_string().contains("readonly"),
+            "expected SQLITE_READONLY, got: {err}"
+        );
+        // Reads keep working on the same connection.
+        let count: i64 = conn
+            .query_row("SELECT COUNT(*) FROM files", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(count, 0);
+    }
+
     fn file_unit(rel_path: &str) -> FileWriteUnit {
         FileWriteUnit {
             rel_path: rel_path.to_string(),
@@ -2508,8 +2653,15 @@ mod tests {
             .collect();
         let mut precompressed = PrecompressedChunks::new();
         precompressed.insert("src/c.rs".to_string(), blobs);
-        db_b.write_incremental_batch(&[], std::slice::from_ref(&unit), &[], &[], &[], &precompressed)
-            .unwrap();
+        db_b.write_incremental_batch(
+            &[],
+            std::slice::from_ref(&unit),
+            &[],
+            &[],
+            &[],
+            &precompressed,
+        )
+        .unwrap();
 
         let chunk_rows = |db: &IndexDb| -> Vec<(i64, rusqlite::types::Value, String)> {
             let conn = db.read_conn().unwrap();

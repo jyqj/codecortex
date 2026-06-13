@@ -1,24 +1,24 @@
 # 测试计划
 
-最近一次 `cargo test -q --workspace --all-targets`：1107 passed + 11 ignored
-—— 1086 个 crate/单测目标 + 13 个 `type_catalog_bench`、3 个
-`mcp_dispatch_seam`、5 个 `mcp_stdio` 集成测试（11 个 ignored：cc-eval 的
+最近一次 `cargo test -q --workspace --all-targets`：1153 passed + 12 ignored
+—— 1131 个 crate/单测目标 + 13 个 `type_catalog_bench`、4 个
+`mcp_dispatch_seam`、5 个 `mcp_stdio` 集成测试（12 个 ignored：cc-eval 的
 5 个真实工作区/增量基准、`scale_bench` 的 3 个合成规模基准、cc-db 重建
-压力循环、`type_catalog_bench` / `graph_traversal_bench` 的 2 个
-release-only 微基准）。基线数字与本文档的一致性由
-`scripts/update-doc-baselines.sh` 核对。
+压力循环与 `incremental_write_bench` 写阶段基准、`type_catalog_bench` /
+`graph_traversal_bench` 的 2 个 release-only 微基准）。基线数字与本文档的
+一致性由 `scripts/update-doc-baselines.sh` 核对。
 
 ## 单元测试
 
 | Crate | 测试数 | 覆盖重点 |
 |-------|-------|----------|
-| cc-db | 116 | schema v5 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹 |
-| cc-eval | 19 passed + 5 ignored | 断言类型（含 field_equals、output_not_contains、field_matches_regex、array_contains_item、带 per-case `min_recall` 的 expected_symbols Recall@5 阈值、expect_error）、语料加载、走真实 MCP 线路的 fixture 集成、合成仓库生成器确定性、ignored 的真实工作区/增量基准 |
-| cc-index | 317 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门 |
-| cc-model | 51 | 路由归一化、数据结构、枚举往返、元素置信度矩阵基线、项目根发现、部分配置默认值、外部缓存目录路径、GraphExplain 信封、tool_graph_subsets 目录一致性 + 矩阵快照 |
+| cc-db | 137 | schema v5 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹、签名聚合维护、seed 符号快照缓存 |
+| cc-eval | 18 passed + 5 ignored | 断言类型（含 field_equals、output_not_contains、field_matches_regex、array_contains_item、带 per-case `min_recall` 的 expected_symbols Recall@5 阈值、expect_error）、语料加载、走真实 MCP 线路的 fixture 集成、合成仓库生成器确定性、ignored 的真实工作区/增量基准 |
+| cc-index | 328 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门 |
+| cc-model | 54 | 路由归一化、数据结构、枚举往返、元素置信度矩阵基线、项目根发现、部分配置默认值、外部缓存目录路径、GraphExplain 信封、tool_graph_subsets 目录一致性 + 矩阵快照 |
 | cc-parsers | 177 | 10 种语言的 tree-sitter 解析、符号提取、基于 AST 的 Rust/C/C++ 调用图、spec 驱动的启发式文件内调用边、C/C++/Rust 参数/返回数据流 |
-| cc-search | 214 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
-| cc-server | 191 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着 |
+| cc-search | 216 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
+| cc-server | 201 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着 |
 
 依赖严格单向，每个 crate 都能独立编译测试：`cargo test -p cc-db`、
 `cargo test -p cc-index` 不需要构建整个工作区。

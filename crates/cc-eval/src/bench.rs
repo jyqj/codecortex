@@ -1,13 +1,24 @@
 //! Benchmark runner: measures per-tool latency and output size across eval cases.
 //!
-//! Each case is run 3 times (1 warmup + 2 measured). The faster of the 2
-//! measured runs is used as the "best" duration. Results are aggregated per-tool
-//! with p50/p95/max latency and average output size.
+//! Tool latency is measured in microseconds and split into two columns:
+//!
+//! - **cold**: each iteration times the FIRST call of a brand-new MCP session
+//!   attached to the existing index ([`CodeIndexBackend::open_existing`]). A
+//!   new session means new IndexDb connections → a new `db_identity`, so the
+//!   generation-keyed graph adjacency caches miss, the SQLite per-connection
+//!   page caches start cold, and the per-session SearchEngine LRUs are empty.
+//!   The OS file cache is intentionally retained.
+//! - **warm**: repeated identical calls within one shared session (1 warmup
+//!   discarded), exercising the cache-hit path.
+//!
+//! Corpus-case results are aggregated per-tool; named scale scenarios keep
+//! full p50/p95/max for both columns.
 
 use crate::runner::CodeIndexBackend;
 use crate::types::EvalCase;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::path::Path;
 use std::time::Instant;
 
 // ── Benchmark report types ─────────────────────────────────────────
@@ -25,9 +36,11 @@ pub struct BenchmarkReport {
 pub struct ToolBenchmark {
     pub tool: String,
     pub cases: usize,
-    pub p50_ms: u64,
-    pub p95_ms: u64,
-    pub max_ms: u64,
+    pub cold_p50_us: u64,
+    pub cold_max_us: u64,
+    pub warm_p50_us: u64,
+    pub warm_p95_us: u64,
+    pub warm_max_us: u64,
     pub avg_output_bytes: usize,
 }
 
@@ -36,20 +49,42 @@ pub struct ToolBenchmark {
 #[derive(Debug, Clone)]
 struct CaseMeasurement {
     tool: String,
-    best_ms: u64,
+    cold_us: u64,
+    warm_best_us: u64,
     output_bytes: usize,
 }
 
-/// Run a single eval case 3 times (1 warmup + 2 measured), return the best
-/// measured duration and output size from the last successful run.
-fn measure_case(backend: &CodeIndexBackend, case: &EvalCase) -> CaseMeasurement {
+/// Measure one eval case cold and warm.
+///
+/// Cold: one timed call on a brand-new MCP session attached to the existing
+/// index (see module docs for which cache layers this invalidates). Warm:
+/// 1 warmup + 2 measured calls on the shared session, best of the 2.
+fn measure_case(
+    backend: &CodeIndexBackend,
+    project_path: &Path,
+    case: &EvalCase,
+) -> CaseMeasurement {
+    // Cold: first call of a fresh session. Errors are timed like the warm
+    // path (a failing case fails its assertions in the eval run, not here).
+    let cold_backend = CodeIndexBackend::open_existing(project_path).unwrap_or_else(|e| {
+        panic!(
+            "cold session for case '{}' failed to open: {}",
+            case.name, e
+        )
+    });
+    let start = Instant::now();
+    let _ = cold_backend.call_tool(&case.tool, &case.params);
+    let cold_us = start.elapsed().as_micros() as u64;
+    drop(cold_backend);
+
+    // Warm: shared session, 1 warmup + 2 measured.
     let mut durations = Vec::with_capacity(2);
     let mut last_output_bytes: usize = 0;
 
     for iteration in 0..3 {
         let start = Instant::now();
         let result = backend.call_tool(&case.tool, &case.params);
-        let elapsed_ms = start.elapsed().as_millis() as u64;
+        let elapsed_us = start.elapsed().as_micros() as u64;
 
         let output_bytes = match &result {
             Ok(output) => serde_json::to_string(output).unwrap_or_default().len(),
@@ -58,16 +93,17 @@ fn measure_case(backend: &CodeIndexBackend, case: &EvalCase) -> CaseMeasurement 
 
         if iteration >= 1 {
             // Measured runs (skip iteration 0 = warmup)
-            durations.push(elapsed_ms);
+            durations.push(elapsed_us);
             last_output_bytes = output_bytes;
         }
     }
 
-    let best_ms = durations.iter().copied().min().unwrap_or(0);
+    let warm_best_us = durations.iter().copied().min().unwrap_or(0);
 
     CaseMeasurement {
         tool: case.tool.clone(),
-        best_ms,
+        cold_us,
+        warm_best_us,
         output_bytes: last_output_bytes,
     }
 }
@@ -87,26 +123,31 @@ fn percentile(sorted: &[u64], pct: f64) -> u64 {
 
 /// Run benchmarks for all cases and aggregate results per tool.
 ///
-/// `fixture_files` is the number of source files in the fixture project
-/// (for display in the report header).
+/// `project_path` is the indexed project root, used to open fresh MCP
+/// sessions for the cold column. `fixture_files` is the number of source
+/// files in the fixture project (for display in the report header).
 pub fn run_benchmark(
     backend: &CodeIndexBackend,
+    project_path: &Path,
     cases: &[EvalCase],
     fixture_files: usize,
 ) -> BenchmarkReport {
-    run_benchmark_named(backend, cases, fixture_files, "fixture")
+    run_benchmark_named(backend, project_path, cases, fixture_files, "fixture")
 }
 
 /// Run benchmarks with a dataset label for the generated report.
 pub fn run_benchmark_named(
     backend: &CodeIndexBackend,
+    project_path: &Path,
     cases: &[EvalCase],
     fixture_files: usize,
     dataset_name: &str,
 ) -> BenchmarkReport {
     // Measure each case
-    let measurements: Vec<CaseMeasurement> =
-        cases.iter().map(|c| measure_case(backend, c)).collect();
+    let measurements: Vec<CaseMeasurement> = cases
+        .iter()
+        .map(|c| measure_case(backend, project_path, c))
+        .collect();
 
     // Group by tool
     let mut by_tool: HashMap<String, Vec<&CaseMeasurement>> = HashMap::new();
@@ -120,8 +161,10 @@ pub fn run_benchmark_named(
         .map(|(tool, group)| {
             let cases_count = group.len();
 
-            let mut durations: Vec<u64> = group.iter().map(|m| m.best_ms).collect();
-            durations.sort_unstable();
+            let mut cold: Vec<u64> = group.iter().map(|m| m.cold_us).collect();
+            cold.sort_unstable();
+            let mut warm: Vec<u64> = group.iter().map(|m| m.warm_best_us).collect();
+            warm.sort_unstable();
 
             let total_output: usize = group.iter().map(|m| m.output_bytes).sum();
             let avg_output = if cases_count > 0 {
@@ -130,14 +173,14 @@ pub fn run_benchmark_named(
                 0
             };
 
-            let max_ms = durations.last().copied().unwrap_or(0);
-
             ToolBenchmark {
                 tool,
                 cases: cases_count,
-                p50_ms: percentile(&durations, 0.50),
-                p95_ms: percentile(&durations, 0.95),
-                max_ms,
+                cold_p50_us: percentile(&cold, 0.50),
+                cold_max_us: cold.last().copied().unwrap_or(0),
+                warm_p50_us: percentile(&warm, 0.50),
+                warm_p95_us: percentile(&warm, 0.95),
+                warm_max_us: warm.last().copied().unwrap_or(0),
                 avg_output_bytes: avg_output,
             }
         })
@@ -285,45 +328,99 @@ pub fn generate_incremental_markdown(report: &IncrementalBenchReport) -> String 
 
 // ── Synthetic scale benchmark (1k/10k/50k matrix) ──────────────────
 
-/// Latency for one named tool scenario, measured over repeated identical
-/// calls through the real MCP dispatch path (1 warmup + `iterations`).
+/// p50/p95/max over per-iteration durations in microseconds (tool latency).
+#[derive(Debug, Clone, Serialize)]
+pub struct LatencyStatsUs {
+    pub p50_us: u64,
+    pub p95_us: u64,
+    pub max_us: u64,
+}
+
+impl LatencyStatsUs {
+    pub fn from_durations(durations: &[u64]) -> Self {
+        let mut sorted = durations.to_vec();
+        sorted.sort_unstable();
+        Self {
+            p50_us: percentile(&sorted, 0.50),
+            p95_us: percentile(&sorted, 0.95),
+            max_us: sorted.last().copied().unwrap_or(0),
+        }
+    }
+}
+
+/// Format a microsecond duration human-readably: `450µs`, `1.23ms`, `2.05s`.
+pub fn format_us(us: u64) -> String {
+    if us >= 1_000_000 {
+        format!("{:.2}s", us as f64 / 1_000_000.0)
+    } else if us >= 1_000 {
+        format!("{:.2}ms", us as f64 / 1_000.0)
+    } else {
+        format!("{}µs", us)
+    }
+}
+
+/// Latency for one named tool scenario through the real MCP dispatch path,
+/// split into a cold column (fresh MCP session per iteration) and a warm
+/// column (repeated identical calls in one session, 1 warmup discarded).
 #[derive(Debug, Clone, Serialize)]
 pub struct ScenarioLatency {
     pub scenario: String,
     pub tool: String,
-    pub iterations: usize,
-    pub stats: LatencyStats,
+    pub cold_iterations: usize,
+    pub warm_iterations: usize,
+    pub cold: LatencyStatsUs,
+    pub warm: LatencyStatsUs,
     pub avg_output_bytes: usize,
 }
 
-/// Run one tool scenario `iterations` times (plus 1 warmup) and aggregate
-/// p50/p95/max. Any call failure aborts the scenario with context.
+/// Measure one tool scenario cold and warm.
+///
+/// Cold: each of `cold_iterations` opens a NEW MCP session against the
+/// existing index at `project_path` and times the first call (see module
+/// docs for which cache layers this invalidates). Warm: 1 warmup +
+/// `warm_iterations` repeated calls on the shared `backend` session. Any
+/// call failure aborts the scenario with context.
 pub fn measure_tool_scenario(
     backend: &CodeIndexBackend,
+    project_path: &Path,
     scenario: &str,
     tool: &str,
     params: &serde_json::Value,
-    iterations: usize,
+    cold_iterations: usize,
+    warm_iterations: usize,
 ) -> Result<ScenarioLatency, String> {
-    let mut durations = Vec::with_capacity(iterations);
+    let mut cold_durations = Vec::with_capacity(cold_iterations);
+    for _ in 0..cold_iterations {
+        let cold_backend = CodeIndexBackend::open_existing(project_path)
+            .map_err(|e| format!("scenario '{}' ({}) cold session: {}", scenario, tool, e))?;
+        let start = Instant::now();
+        cold_backend
+            .call_tool(tool, params)
+            .map_err(|e| format!("scenario '{}' ({}) cold call failed: {}", scenario, tool, e))?;
+        cold_durations.push(start.elapsed().as_micros() as u64);
+    }
+
+    let mut warm_durations = Vec::with_capacity(warm_iterations);
     let mut total_output = 0usize;
-    for iteration in 0..=iterations {
+    for iteration in 0..=warm_iterations {
         let start = Instant::now();
         let output = backend
             .call_tool(tool, params)
             .map_err(|e| format!("scenario '{}' ({}) failed: {}", scenario, tool, e))?;
-        let elapsed_ms = start.elapsed().as_millis() as u64;
+        let elapsed_us = start.elapsed().as_micros() as u64;
         if iteration >= 1 {
-            durations.push(elapsed_ms);
+            warm_durations.push(elapsed_us);
             total_output += serde_json::to_string(&output).unwrap_or_default().len();
         }
     }
     Ok(ScenarioLatency {
         scenario: scenario.to_string(),
         tool: tool.to_string(),
-        iterations,
-        stats: LatencyStats::from_durations(&durations),
-        avg_output_bytes: total_output / iterations.max(1),
+        cold_iterations,
+        warm_iterations,
+        cold: LatencyStatsUs::from_durations(&cold_durations),
+        warm: LatencyStatsUs::from_durations(&warm_durations),
+        avg_output_bytes: total_output / warm_iterations.max(1),
     })
 }
 
@@ -389,17 +486,25 @@ pub fn generate_scale_markdown(report: &ScaleBenchReport) -> String {
     md.push_str(&generate_incremental_markdown(&report.incremental_batch));
 
     md.push_str("## Per-Tool Latency\n\n");
-    md.push_str("| Scenario | Tool | Iterations | p50 | p95 | Max | Avg Output |\n");
-    md.push_str("|----------|------|------------|-----|-----|-----|------------|\n");
+    md.push_str(LATENCY_METHODOLOGY_NOTE);
+    md.push_str(
+        "| Scenario | Tool | Iters (cold/warm) | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |\n",
+    );
+    md.push_str(
+        "|----------|------|-------------------|----------|----------|----------|----------|----------|------------|\n",
+    );
     for tool in &report.tools {
         md.push_str(&format!(
-            "| {} | {} | {} | {}ms | {}ms | {}ms | {} |\n",
+            "| {} | {} | {}/{} | {} | {} | {} | {} | {} | {} |\n",
             tool.scenario,
             tool.tool,
-            tool.iterations,
-            tool.stats.p50_ms,
-            tool.stats.p95_ms,
-            tool.stats.max_ms,
+            tool.cold_iterations,
+            tool.warm_iterations,
+            format_us(tool.cold.p50_us),
+            format_us(tool.cold.max_us),
+            format_us(tool.warm.p50_us),
+            format_us(tool.warm.p95_us),
+            format_us(tool.warm.max_us),
             format_bytes(tool.avg_output_bytes),
         ));
     }
@@ -435,6 +540,12 @@ pub fn generate_scale_markdown(report: &ScaleBenchReport) -> String {
 
 // ── Markdown generation ────────────────────────────────────────────
 
+/// Shared methodology note for cold/warm latency tables.
+const LATENCY_METHODOLOGY_NOTE: &str = "Methodology: cold = first call of a fresh MCP session \
+per iteration (new IndexDb identity → cold graph adjacency + SQLite page caches, empty search \
+LRUs; OS file cache retained). warm = repeated identical calls in one shared session after 1 \
+discarded warmup (cache-hit path).\n\n";
+
 /// Format byte counts for human readability.
 fn format_bytes(bytes: usize) -> String {
     if bytes >= 1_048_576 {
@@ -457,17 +568,28 @@ pub fn generate_benchmark_markdown(report: &BenchmarkReport) -> String {
 
     // Per-tool latency table
     md.push_str("## Per-Tool Latency\n\n");
-    md.push_str("| Tool | Cases | p50 | p95 | Max | Avg Output |\n");
-    md.push_str("|------|-------|-----|-----|-----|------------|\n");
+    md.push_str(LATENCY_METHODOLOGY_NOTE);
+    md.push_str(
+        "Per case: cold = 1 fresh-session call, warm = best of 2 measured calls; percentiles \
+         aggregate across cases per tool.\n\n",
+    );
+    md.push_str(
+        "| Tool | Cases | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |\n",
+    );
+    md.push_str(
+        "|------|-------|----------|----------|----------|----------|----------|------------|\n",
+    );
 
     for tb in &report.per_tool {
         md.push_str(&format!(
-            "| {} | {} | {}ms | {}ms | {}ms | {} |\n",
+            "| {} | {} | {} | {} | {} | {} | {} | {} |\n",
             tb.tool,
             tb.cases,
-            tb.p50_ms,
-            tb.p95_ms,
-            tb.max_ms,
+            format_us(tb.cold_p50_us),
+            format_us(tb.cold_max_us),
+            format_us(tb.warm_p50_us),
+            format_us(tb.warm_p95_us),
+            format_us(tb.warm_max_us),
             format_bytes(tb.avg_output_bytes),
         ));
     }
@@ -477,9 +599,9 @@ pub fn generate_benchmark_markdown(report: &BenchmarkReport) -> String {
     md.push_str("## Summary\n\n");
     md.push_str(&format!("- Total cases: {}\n", report.total_cases));
 
-    let all_under_500 = report.per_tool.iter().all(|tb| tb.p95_ms < 500);
+    let all_under_500 = report.per_tool.iter().all(|tb| tb.warm_p95_us < 500_000);
     md.push_str(&format!(
-        "- All tools under 500ms p95: {}\n",
+        "- All tools under 500ms warm p95: {}\n",
         if all_under_500 { "YES" } else { "NO" }
     ));
 

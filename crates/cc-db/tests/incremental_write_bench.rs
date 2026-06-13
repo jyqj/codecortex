@@ -267,7 +267,10 @@ fn probe_delete_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut 
             "dispatch_sites",
         ] {
             conn.execute(
-                &format!("DELETE FROM {} WHERE file_path IN ({})", table, placeholders),
+                &format!(
+                    "DELETE FROM {} WHERE file_path IN ({})",
+                    table, placeholders
+                ),
                 rusqlite::params_from_iter(chunk.iter()),
             )
             .unwrap();

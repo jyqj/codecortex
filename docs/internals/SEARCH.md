@@ -18,7 +18,7 @@
   │
   ├─ 检索通道（lanes，确定性顺序）：
   │     lexical（FTS5 over chunks）
-  │     grep（regex/子串 over symbols）
+  │     grep（regex/子串 over chunks 正文）
   │     graph（种子符号 + 调用图 1 跳扩展）
   │
   ├─ RRF 融合：score = Σ lane_weight × 1/(rrf_k + rank)
@@ -38,11 +38,24 @@ trait，注册在 `default_lanes()`。今天有三条适配器：
 | 通道 | 数据源 | 候选上限 | RRF 权重 |
 |---|---|---|---|
 | lexical | `chunks_fts`（FTS5） | `search.lexical_top_k`（24） | `search.lexical_weight`（1.1） |
-| grep | symbols 表的 regex/子串扫描 | `search.grep_top_k`（12） | `search.grep_weight`（0.8） |
+| grep | chunks 正文（zstd 解压后 regex/子串匹配） | `search.grep_top_k`（12） | `search.grep_weight`（0.8） |
 | graph | 种子符号 + 调用边 1 跳扩展 | `search.graph_top_k`（12） | `search.graph_weight`（0.6；0 关闭） |
 
 注册顺序即确定性的 RRF 融合顺序。新增一条通道只需实现 trait 并追加到
 `default_lanes()`，不需要改 `plan.rs` / `engine.rs`。
+
+grep 通道的每行匹配都要先 zstd 解压，三项行为约束最坏情况：
+
+- **扫描预算**：单次查询最多解压扫描 `search.grep_scan_cap`（默认
+  20000）行 chunk，预算耗尽即截断并返回预算内的命中（tracing 日志
+  提示可调大换召回）——否则无命中/罕见词查询会解压全仓 chunk；
+- **时近性扫描序**：无 file scope（预选空手且调用方未给 `file_paths`）
+  的扫描按 rowid 倒序——chunks 逐次写入只增不改，倒序即最近索引的文件
+  优先，预算花在最新代码上（SQLite 倒走 b-tree，无排序步骤）；有 scope
+  时保持自然探测序；
+- **缓存防刷穿**：仅命中的 chunk 进 chunk_text 缓存（批取阶段恰好要重读
+  它们）；扫描过但未命中的行刻意不进缓存，否则一次冷扫描会把整个 LRU
+  轮转一遍、驱逐热条目。
 
 graph 通道的种子打分与衰减由 `RankingConfig` 控制
 （`graph_seed_exact_score` / `graph_seed_fuzzy_score` /
@@ -94,6 +107,9 @@ graph 通道的种子打分与衰减由 `RankingConfig` 控制
 | 核心结果缓存 | `(index_epoch, query_hash)` | `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`（32） |
 | 图感知结果缓存 | `(index_epoch, evidence_epoch, 请求哈希, GraphEnrichLimits, token 预算, 排序指纹)` | `CODECORTEX_GRAPH_SEARCH_CACHE_SIZE`（32） |
 | chunk 正文缓存 | chunk id | `CODECORTEX_SEARCH_CHUNK_CACHE_SIZE`（512） |
+
+chunk 正文缓存只在批取与 grep **命中**路径写入——grep 扫描过但未命中的
+chunk 刻意不进缓存，防一次冷扫描刷穿 LRU（见上文 grep 通道）。
 
 - 核心结果缓存存的是最终不可变命中列表 `Arc<[SearchHit]>`——
   `SearchEngine::search()` 直接返回这个 Arc，缓存命中是一次指针克隆，

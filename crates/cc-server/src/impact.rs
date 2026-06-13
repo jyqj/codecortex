@@ -724,7 +724,7 @@ mod tests {
 
     /// Helper: insert a minimal file row (needed for FK on symbols/call_edges).
     fn insert_file(db: &IndexDb, file_path: &str) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
              VALUES(?1, 'rust', 'hash', 0.0, 100, '2025-01-01')",
@@ -742,7 +742,7 @@ mod tests {
         kind: &str,
         community_id: Option<u32>,
     ) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR REPLACE INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, symbol_uid, community_id) \
              VALUES(?1, ?2, ?3, ?4, 1, 10, ?5, ?6)",
@@ -766,7 +766,7 @@ mod tests {
         caller_uid: &str,
         callee_uid: &str,
     ) {
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         conn.execute(
             "INSERT OR REPLACE INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid) \
              VALUES(?1, ?2, 'callee', 1, ?3, ?4)",
@@ -1068,7 +1068,7 @@ mod tests {
         assert!(full
             .graph_explain
             .as_ref()
-            .map_or(true, |explain| !explain.truncated));
+            .is_none_or(|explain| !explain.truncated));
         assert_eq!(full.total_impacted_discovered, 11);
         assert_eq!(full.returned_symbol_count, 11);
 
@@ -1218,9 +1218,7 @@ mod tests {
         insert_file(&db, "src/lib.rs");
         insert_symbol(&db, "uid_seed", "Seed", "src/lib.rs", "function", None);
         // Drop call_edges so the reverse_callers layer query fails.
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute("DROP TABLE call_edges", [])
             .unwrap();
 
@@ -1266,7 +1264,7 @@ mod tests {
         insert_file(&db, "src/a.rs");
 
         // Insert a test_edge linking src/a.rs to tests/test_a.rs
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         conn.execute(
             "INSERT INTO test_edges(edge_id, test_file_path, code_file_path, reason) \
              VALUES('te1', 'tests/test_a.rs', 'src/a.rs', 'import')",

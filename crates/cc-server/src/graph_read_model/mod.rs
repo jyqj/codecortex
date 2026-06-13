@@ -29,7 +29,9 @@ use std::sync::Arc;
 use crate::graph_types::{EdgeLite, LabeledPath, TraceEdge, TraceEdgeEvidence};
 
 use bridges::normalize_bridge_method;
-use cache::{GraphReadGeneration, SharedAdjacency, SharedBridgeEdges, SharedSemanticAdj};
+use cache::{
+    BridgeIndex, GraphReadGeneration, SharedAdjacency, SharedBridgeEdges, SharedSemanticAdj,
+};
 
 #[allow(unused_imports)] // re-exported for graph_type_hierarchy
 pub(crate) use projections::SemanticEdgeLite;
@@ -88,7 +90,7 @@ impl GraphReadModel {
             db,
             generation,
             shared_adjacency,
-            http_bridges: Arc::new(HashMap::new()),
+            http_bridges: Arc::new(BridgeIndex::default()),
             shared_semantic,
         }
     }
@@ -133,8 +135,11 @@ impl GraphReadModel {
             bfs_paths_labeled_with(from_uid, to_uid, max_depth, max_paths, |uid| {
                 self.neighbors_with_explain(uid, explain)
             });
-        // First reason wins in the collector; a filled result cap is the
-        // primary cause, depth/expansion clipping secondary.
+        // First reason wins in the collector — and the adjacency provider
+        // has already run, so a load-time `bridge_cap` recorded during the
+        // walk takes precedence over every budget mark below. Among the
+        // budgets themselves, a filled result cap is the primary cause,
+        // depth/expansion clipping secondary.
         if truncation.results_clipped {
             explain.mark_truncated("max_paths");
         }
@@ -422,7 +427,7 @@ mod tests {
     fn setup_bridge_db() -> (TempDir, IndexDb) {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("test.db")).unwrap().0;
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
 
         for file_path in ["src/client.ts", "src/routes.ts"] {
             conn.execute(
@@ -467,8 +472,7 @@ mod tests {
         method: Option<&str>,
         call_kind: &str,
     ) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO http_call_edges(edge_id,file_path,caller_symbol_uid,url_or_path,normalized_path,method,call_kind,line,confidence,parser_tier)
                  VALUES(?1,'src/client.ts',?2,'/api/users','/api/users',?3,?4,20,0.88,'tree_sitter')",
@@ -478,8 +482,7 @@ mod tests {
     }
 
     fn insert_methodless_route(db: &IndexDb, edge_id: &str, handler_uid: &str) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO routes(edge_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier,route_id)
                  VALUES(?1,'src/routes.ts','/api/users',NULL,?2,?2,'express',30,32,'/api/users',0.83,'tree_sitter',?1)",
@@ -587,13 +590,45 @@ mod tests {
         assert_eq!(edge.callee_uid, "handler_get_users");
     }
 
+    /// A bridge index built under a cap that the bounded loads fill must
+    /// record the truncation fact, and any bridged adjacency query on such an
+    /// index must surface it as `truncated_reason = "bridge_cap"`. (The cap
+    /// is injected directly instead of via CODECORTEX_BRIDGE_EDGE_LIMIT so
+    /// parallel tests never observe a mutated environment.)
+    #[test]
+    fn truncated_bridge_index_surfaces_bridge_cap_in_explain() {
+        let (_tmp, db) = setup_mixed_edge_db();
+
+        // 1 http edge / 2 routes against a cap of 1: both loads fill the
+        // bucket, so the index records the (possible) truncation.
+        let truncated_index = GraphReadModel::bridge_index_with_limit(&db, 1).unwrap();
+        assert!(
+            truncated_index.truncated,
+            "cap-filling load must be flagged"
+        );
+
+        let mut grm = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        grm.http_bridges = Arc::new(truncated_index);
+
+        let mut explain = GraphExplainCollector::new();
+        let _ = grm.neighbors_with_explain("caller_get_users", &mut explain);
+        let explain = explain.finish();
+        assert!(explain.truncated);
+        assert_eq!(explain.truncated_reason.as_deref(), Some("bridge_cap"));
+
+        // The default (uncapped) bridged model must NOT report bridge_cap.
+        let bridged = GraphReadModel::new(Arc::clone(&db)).unwrap();
+        let mut clean = GraphExplainCollector::new();
+        let _ = bridged.neighbors_with_explain("caller_get_users", &mut clean);
+        assert!(clean.finish().truncated_reason.is_none());
+    }
+
     /// DB with one file. The process-unique `IndexDb::instance_id` already
     /// guarantees the process-global caches cannot collide across tests.
     fn setup_callee_db() -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("test.db")).unwrap().0);
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute(
                 "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)
                  VALUES('src/app.ts','TypeScript','hash',1.0,100,'','','tree_sitter',1.0,0,'2024-01-01T00:00:00Z')",
@@ -604,14 +639,28 @@ mod tests {
     }
 
     fn insert_callee_edge(db: &IndexDb, edge_id: &str, caller_uid: &str, callee_uid: &str) {
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(db)
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
                  VALUES(?1, 'src/app.ts', 'callee', 5, ?2, ?3)",
                 rusqlite::params![edge_id, caller_uid, callee_uid],
             )
             .unwrap();
+    }
+
+    /// Capture `table`'s CREATE statement, then drop it to force read failures.
+    /// Execute the returned schema to restore the (empty) table.
+    fn drop_table_capturing_schema(db: &IndexDb, table: &str) -> String {
+        let conn = crate::test_seed::seed_conn(db);
+        let schema: String = conn
+            .query_row(
+                "SELECT sql FROM sqlite_master WHERE type='table' AND name=?1",
+                rusqlite::params![table],
+                |row| row.get(0),
+            )
+            .unwrap();
+        conn.execute(&format!("DROP TABLE {table}"), []).unwrap();
+        schema
     }
 
     #[test]
@@ -625,9 +674,7 @@ mod tests {
 
         // Delete the underlying rows: a second call within the same generation
         // must be served from the cache and still see the callee.
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute("DELETE FROM call_edges", [])
             .unwrap();
         let second = grm.callees_with_external_callers();
@@ -653,9 +700,7 @@ mod tests {
                 |row| row.get(0),
             )
             .unwrap();
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute("DROP TABLE call_edges", [])
             .unwrap();
 
@@ -665,9 +710,7 @@ mod tests {
 
         // Restore the table and add an edge: the next call must see it, i.e.
         // the failed (empty) result must NOT have been cached.
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute(&schema, [])
             .unwrap();
         insert_callee_edge(&db, "ce1", "uid_caller", "uid_callee");
@@ -675,6 +718,137 @@ mod tests {
         assert!(
             recovered.contains("uid_callee"),
             "a failed query must not stick an empty set in the generation cache"
+        );
+    }
+
+    #[test]
+    fn neighbors_failure_is_not_cached_and_keeps_reporting_read_errors() {
+        let (_tmp, db) = setup_callee_db();
+        let grm = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        let schema = drop_table_capturing_schema(&db, "call_edges");
+
+        // Failure degrades to an isolated node for this call and is recorded.
+        let mut first_explain = GraphExplainCollector::new();
+        assert!(grm
+            .neighbors_with_explain("uid_caller", &mut first_explain)
+            .is_empty());
+        assert!(!first_explain.finish().read_errors.is_empty());
+
+        // The degraded result must not be served from the shared cache: the
+        // next call retries the query and reports the failure again.
+        let mut second_explain = GraphExplainCollector::new();
+        assert!(grm
+            .neighbors_with_explain("uid_caller", &mut second_explain)
+            .is_empty());
+        assert!(
+            !second_explain.finish().read_errors.is_empty(),
+            "a cached degraded adjacency would silence later read errors"
+        );
+
+        // Restore the table and add an edge: the SAME model must see it.
+        crate::test_seed::seed_conn(&db)
+            .execute(&schema, [])
+            .unwrap();
+        insert_callee_edge(&db, "ce1", "uid_caller", "uid_callee");
+        let mut recovered_explain = GraphExplainCollector::new();
+        let recovered = grm.neighbors_with_explain("uid_caller", &mut recovered_explain);
+        assert_eq!(sorted_callees(&recovered), vec!["uid_callee"]);
+        assert!(recovered_explain.finish().read_errors.is_empty());
+
+        // The successful result IS cached for the generation.
+        crate::test_seed::seed_conn(&db)
+            .execute("DELETE FROM call_edges", [])
+            .unwrap();
+        assert_eq!(
+            sorted_callees(&grm.neighbors("uid_caller")),
+            vec!["uid_callee"]
+        );
+    }
+
+    #[test]
+    fn bridged_neighbors_failure_serves_bridges_without_pinning_them() {
+        let (_tmp, db) = setup_mixed_edge_db();
+        let grm = GraphReadModel::new(Arc::clone(&db)).unwrap();
+        let schema = drop_table_capturing_schema(&db, "call_edges");
+
+        // A degraded call still serves the pre-loaded bridge edges, but must
+        // not pin the bridge-only adjacency into the shared cache.
+        let mut degraded_explain = GraphExplainCollector::new();
+        let degraded = grm.neighbors_with_explain("caller_get_users", &mut degraded_explain);
+        assert_eq!(sorted_callees(&degraded), vec!["handler_get_users"]);
+        assert!(!degraded_explain.finish().read_errors.is_empty());
+
+        // Restore the call edge: the SAME model must see both edge kinds.
+        crate::test_seed::seed_conn(&db)
+            .execute(&schema, [])
+            .unwrap();
+        crate::test_seed::seed_conn(&db)
+            .execute(
+                "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
+                 VALUES('ce_plain', 'src/client.ts', 'helper', 7, 'caller_get_users', 'uid_helper')",
+                [],
+            )
+            .unwrap();
+        let mut recovered_explain = GraphExplainCollector::new();
+        let recovered = grm.neighbors_with_explain("caller_get_users", &mut recovered_explain);
+        assert_eq!(
+            sorted_callees(&recovered),
+            vec!["handler_get_users", "uid_helper"]
+        );
+        assert!(recovered_explain.finish().read_errors.is_empty());
+    }
+
+    #[test]
+    fn generation_read_failure_does_not_alias_epoch_zero_caches() {
+        let (_tmp, db) = setup_callee_db();
+
+        // Fresh DB (epoch vector 0/0): cache "uid_caller has no edges".
+        let fresh_model = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        assert!(fresh_model.neighbors("uid_caller").is_empty());
+
+        // Committed write: bumps index_epoch and adds a real edge.
+        db.writes()
+            .insert_synthetic_call_edges(&[cc_model::CallEdgeRecord {
+                edge_id: "ce_gen".to_string(),
+                file_path: "src/app.ts".to_string(),
+                callee_symbol: "callee".to_string(),
+                line: 5,
+                caller_symbol_uid: Some("uid_caller".to_string()),
+                callee_symbol_uid: Some("uid_callee".to_string()),
+                ..Default::default()
+            }])
+            .unwrap();
+
+        // Break the epoch read: a degraded-generation model must NOT key the
+        // shared caches as epoch 0 and serve the fresh DB's stale empty entry.
+        let schema = drop_table_capturing_schema(&db, "metadata");
+        let degraded_model = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        assert_eq!(
+            sorted_callees(&degraded_model.neighbors("uid_caller")),
+            vec!["uid_callee"],
+            "a failed generation read must bypass the epoch-0 cache entry"
+        );
+
+        // Restore the epoch vector (a committed write re-bumps it from the
+        // recreated empty table): a healthy model computes fresh shared state.
+        crate::test_seed::seed_conn(&db)
+            .execute(&schema, [])
+            .unwrap();
+        db.writes()
+            .insert_synthetic_call_edges(&[cc_model::CallEdgeRecord {
+                edge_id: "ce_gen2".to_string(),
+                file_path: "src/app.ts".to_string(),
+                callee_symbol: "callee2".to_string(),
+                line: 6,
+                caller_symbol_uid: Some("uid_caller".to_string()),
+                callee_symbol_uid: Some("uid_callee2".to_string()),
+                ..Default::default()
+            }])
+            .unwrap();
+        let healthy_model = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        assert_eq!(
+            sorted_callees(&healthy_model.neighbors("uid_caller")),
+            vec!["uid_callee", "uid_callee2"]
         );
     }
 
@@ -778,8 +952,7 @@ mod tests {
             Some("GET"),
             "http",
         );
-        db.reads().read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
                  VALUES('ce_plain', 'src/client.ts', 'helper', 7, 'caller_get_users', 'uid_helper')",

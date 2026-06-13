@@ -41,8 +41,8 @@ impl IndexDb {
         let file_paths: Vec<String> = file_stmt
             .query_map([], |row| row.get::<_, String>(0))
             .map_err(|e| CcError::Database(e.to_string()))?
-            .filter_map(|r| r.ok())
-            .collect();
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         let mut pkg_files: HashMap<String, usize> = HashMap::new();
         for fp in &file_paths {
@@ -56,8 +56,8 @@ impl IndexDb {
         let sym_paths: Vec<String> = sym_stmt
             .query_map([], |row| row.get::<_, String>(0))
             .map_err(|e| CcError::Database(e.to_string()))?
-            .filter_map(|r| r.ok())
-            .collect();
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         let mut pkg_symbols: HashMap<String, usize> = HashMap::new();
         for fp in &sym_paths {
@@ -163,7 +163,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn architecture_routes(
@@ -189,7 +190,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn architecture_hotspots(
@@ -218,7 +220,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn architecture_boundaries(

@@ -14,5 +14,8 @@ pub use index_db::{MaintenanceOps, ReadOps, WriteOps};
 pub use index_db_graph_read::GraphReads;
 pub mod index_migrate;
 mod rows;
+mod seed_symbol_cache;
+pub mod signature_agg;
+pub use signature_agg::{GraphSignatureAggregates, RowAgg};
 pub mod sql_util;
 pub mod unit_of_work;

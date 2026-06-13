@@ -199,9 +199,9 @@ pub struct TypeHierarchyResult {
     pub descendants: Vec<HierarchyNode>,
     pub implementors: Vec<HierarchyNode>,
     pub overrides: Vec<OverrideInfo>,
-    /// Additive contract metadata: the tool's declared graph subset
-    /// (`tool_graph_subsets::TYPE_HIERARCHY`). No dynamic collector, so the
-    /// envelope carries only `declared_edge_kinds`.
+    /// Additive explain envelope: the declared graph subset
+    /// (`tool_graph_subsets::TYPE_HIERARCHY`) plus any semantic-edge load
+    /// failure recorded as a `read_errors` entry.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub graph_explain: Option<cc_model::GraphExplain>,
 }

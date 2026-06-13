@@ -27,7 +27,8 @@ impl IndexDb {
                 crate::rows::route_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn route_rows_by_handler_uid(
@@ -52,7 +53,8 @@ impl IndexDb {
                 crate::rows::route_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn http_calls_by_caller_uid(
@@ -77,7 +79,8 @@ impl IndexDb {
                 crate::rows::http_call_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn http_callers_by_normalized_path(
@@ -102,7 +105,8 @@ impl IndexDb {
                 crate::rows::http_call_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn http_callers_by_normalized_path_and_method(
@@ -129,7 +133,9 @@ impl IndexDb {
                     crate::rows::http_call_edge_lite,
                 )
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            let exact: Vec<HttpCallEdgeLite> = rows.filter_map(|r| r.ok()).collect();
+            let exact: Vec<HttpCallEdgeLite> = rows
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| CcError::Database(e.to_string()))?;
             if !exact.is_empty() {
                 return Ok(exact);
             }
@@ -170,7 +176,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn route_nodes_by_normalized_path_and_method(
@@ -208,7 +215,9 @@ impl IndexDb {
                     })
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            let exact: Vec<RouteNodeLite> = rows.filter_map(|r| r.ok()).collect();
+            let exact: Vec<RouteNodeLite> = rows
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| CcError::Database(e.to_string()))?;
             if !exact.is_empty() {
                 return Ok(exact);
             }
@@ -234,7 +243,8 @@ impl IndexDb {
                 crate::rows::http_call_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn all_route_nodes_lite(&self, limit: usize) -> CcResult<Vec<RouteNodeLite>> {
@@ -266,7 +276,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 }
 

@@ -7,8 +7,10 @@
 
 ## 阶段总览
 
-索引是一条阶段管线（阶段头在 `indexer.rs` / `indexer_phases.rs`，顺序
-不变式在 `build_plan.rs`）：
+索引是一条阶段管线（阶段头在 `indexer.rs` 与 `indexer_phases/` 目录——
+按阶段拆为 `mod` / `resolve` / `write` / `config_link` / `snapshot` /
+`postprocess` / `analysis` / `dirty` 8 个文件；顺序不变式在
+`build_plan.rs`）：
 
 ```
 scan/diff → parse → dirty closure → framework enrichment → resolve
@@ -121,7 +123,20 @@ self-member → scope → same-file → imports → suffix → global-unique
 - 层级边只为本批文件重生成，不做全量重算；
 - 框架检测不再因"变更文件 > 20"回退全仓扫描（file 级信号是文件的纯函数；
   repo 级 manifest pass 本来就每次构建重跑）；
-- 写连接语句缓存 64 槽（默认 16 槽会被批写路径打穿，逐行重 prepare）。
+- 写连接语句缓存 64 槽（默认 16 槽会被批写路径打穿，逐行重 prepare）；
+- **签名门输入是持久化行哈希聚合**（cc-db `signature_agg.rs`，metadata
+  键 `graph_sig_aggregates`：逐组 `(count, 行哈希和)` 的可交换聚合）：
+  dispatch/interface/community 门不再每轮全表扫描四张表。代价是维护
+  契约——凡写 `symbols` / `call_edges` / `semantic_edges` /
+  `dispatch_sites` 的**生产路径必须在同事务维护聚合**（文件域写者按
+  path 差分，全量重建末尾重算基线）；raw-SQL 绕过维护会让聚合过期、
+  腐蚀 gate 决策（无基线的库回退全表扫描，永远不会得到错误值）；
+- **community 门在聚合空间投影决策**：staged 合成动作对聚合做投影
+  （`community_signature_projected`，不载边），只有判为 RUN 才真正载入
+  边表跑 Louvain；
+- **resolver seed 有跨构建缓存**（cc-db `seed_symbol_cache.rs`）：seed
+  符号快照挂在 `IndexDb` 句柄上跨构建复用，以 `symbols_seed` 聚合为
+  token 校验，miss 即回退全量重载。
 
 ## postprocess（写后处理）
 
@@ -199,4 +214,5 @@ apply 都推进 `index_epoch`，epoch 键控缓存随 delta 落地而收敛。
 - 框架路由 resolver：`FrameworkResolver` → `default_registry()`；
 - 框架检测信号：`FrameworkSignalSpec` → `signal_registry()`；
 - 合成边 pass：`SynthesisPassSpec` → `registry()`；
-- 后处理跳过门：`PassGate` → `indexer_phases.rs` 的 compute 阶段。
+- 后处理跳过门：`PassGate` → `indexer_phases/postprocess.rs` 与
+  `indexer_phases/analysis.rs` 的 compute 阶段。

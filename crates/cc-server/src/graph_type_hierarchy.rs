@@ -61,6 +61,19 @@ pub fn type_hierarchy(
         uid: root_uid.clone(),
     };
 
+    // Dynamic explain collector: the declared subset (`tool_graph_subsets::
+    // TYPE_HIERARCHY` — INHERITS/IMPLEMENTS BFS plus DEFINES_METHOD for
+    // method listing) still rides along, and a failed semantic-edge load is
+    // surfaced as a read_error instead of looking like "no hierarchy".
+    let mut explain = cc_model::GraphExplainCollector::new();
+    explain.declare_edge_kinds(cc_model::graph_catalog::tool_graph_subsets::TYPE_HIERARCHY);
+
+    // Prime the shared semantic adjacency through the explain-aware accessor:
+    // the lazy load happens here (at most once per request), so a failure
+    // lands in THIS request's envelope and the BFS below degrades to "no
+    // edges" on the same empty pair.
+    let root_semantic_edges = grm.semantic_edges_from_with_explain(&root_uid, &mut explain);
+
     // ── Step 2: BFS for ancestors / descendants ─────────────────
     let mut ancestors = Vec::new();
     let mut descendants = Vec::new();
@@ -72,8 +85,7 @@ pub fn type_hierarchy(
 
     // Collect root type's methods so override detection can compare root vs descendants.
     if include_methods {
-        let root_methods: Vec<(String, Option<String>)> = grm
-            .semantic_edges_from(&root_uid)
+        let root_methods: Vec<(String, Option<String>)> = root_semantic_edges
             .into_iter()
             .filter(|e| e.relation_kind == SemanticRelation::DefinesMethod)
             .map(|e| {
@@ -137,12 +149,10 @@ pub fn type_hierarchy(
         descendants,
         implementors,
         overrides,
-        // Declared graph subset (`tool_graph_subsets::TYPE_HIERARCHY`):
-        // the BFS keeps only INHERITS/IMPLEMENTS edges; DEFINES_METHOD backs
-        // method listing + override detection. Visibility only.
-        graph_explain: Some(cc_model::GraphExplain::declared_only(
-            cc_model::graph_catalog::tool_graph_subsets::TYPE_HIERARCHY,
-        )),
+        // Always attached: the declared subset is contract metadata, and any
+        // semantic-edge load failure recorded above rides along as a
+        // read_error.
+        graph_explain: Some(explain.finish()),
     };
     serde_json::to_value(result).map_err(CcError::Serde)
 }
@@ -440,7 +450,7 @@ mod tests {
     fn setup_hierarchy() -> (TempDir, Arc<IndexDb>, GraphReadModel) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("hierarchy.db")).unwrap().0);
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
 
         // File record
         conn.execute(
@@ -563,6 +573,40 @@ mod tests {
         );
     }
 
+    /// A failed semantic-edge load must surface in `graph_explain.read_errors`
+    /// so "no hierarchy relations" and "read failed" are distinguishable.
+    #[test]
+    fn hierarchy_semantic_load_failure_surfaces_read_error() {
+        let (_tmp, db, grm) = setup_hierarchy();
+        crate::test_seed::seed_conn(&db)
+            .execute("DROP TABLE semantic_edges", [])
+            .unwrap();
+
+        let result = type_hierarchy(&db, &grm, "B", None, None, "both", 5, true).unwrap();
+        let result: TypeHierarchyResult = serde_json::from_value(result).unwrap();
+
+        // Degraded to an empty hierarchy ...
+        assert!(result.ancestors.is_empty());
+        assert!(result.descendants.is_empty());
+        // ... with the failure recorded instead of silently swallowed.
+        let explain = result.graph_explain.as_ref().expect("envelope attached");
+        assert!(
+            explain
+                .read_errors
+                .iter()
+                .any(|entry| entry.starts_with("query_semantic_edges:")),
+            "semantic load failure must land in read_errors, got {:?}",
+            explain.read_errors
+        );
+        // The declared contract still rides along.
+        assert_eq!(
+            explain.declared_edge_kinds,
+            cc_model::graph_catalog::tool_graph_subsets::TYPE_HIERARCHY
+                .kinds()
+                .to_vec()
+        );
+    }
+
     #[test]
     fn hierarchy_ancestors_only() {
         let (_tmp, db, grm) = setup_hierarchy();
@@ -623,7 +667,7 @@ mod tests {
     fn hierarchy_disambiguation_returns_candidates() {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("disamb.db")).unwrap().0);
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
 
         conn.execute(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, summary, content_excerpt, parser_tier, parser_confidence, is_test_file, indexed_at)

@@ -23,7 +23,10 @@ JSON-RPC 对 rmcp 路由，含 schema 校验与输出预算）：
 | 增量重索引 | 10 个变更文件 <2s | `cargo test -p cc-eval bench_incremental -- --ignored --nocapture` |
 | 内存（峰值 RSS） | 10K 文件仓库 <512 MB | `time -l` 或 `/usr/bin/time -v` |
 
-### MCP 工具延迟（p95）
+### MCP 工具延迟（p95，warm 口径）
+
+下表 p95 目标按 **warm 口径**（同会话缓存命中路径）衡量；cold（新会话
+首查，各级缓存为冷）仅在基准报告中列报，不设门槛。
 
 | 工具 | 目标 | 说明 |
 |------|------|------|
@@ -60,9 +63,12 @@ JSON-RPC 对 rmcp 路由，含 schema 校验与输出预算）：
 CODECORTEX_WRITE_BENCHMARK=1 cargo test -p cc-eval -- benchmark_fixture
 ```
 
-3 轮热身基准（1 热身 + 2 测量取最小值），结果写入
-`docs/benchmarks/latest.md`。不带 `CODECORTEX_WRITE_BENCHMARK` 时测试照
-跑，但不持久化报告。把它当冒烟基线；更大仓库的回归基线是真实工作区基准。
+工具延迟以 µs 粒度分 cold/warm 两列：cold 为每用例新建 MCP 会话后的首次
+调用（新 IndexDb 连接 → 新 db_identity，graph 邻接缓存与 SQLite 页缓存为
+冷、SearchEngine LRU 为空；OS 文件缓存保留），warm 为同会话 1 热身 + 2
+测量取最小值（缓存命中路径）。结果写入 `docs/benchmarks/latest.md`。
+不带 `CODECORTEX_WRITE_BENCHMARK` 时测试照跑，但不持久化报告。把它当
+冒烟基线；更大仓库的回归基线是真实工作区基准。
 
 ### 真实工作区基准
 
@@ -114,21 +120,30 @@ CODECORTEX_BENCH_50K=1 cargo test -p cc-eval --release --test scale_bench bench_
 
 每轮测量冷态全量索引墙钟与 DB 大小、增量重建延迟（单文件正文编辑与 5%
 批量，1 热身 + 3 测量）、search / find_symbol / impact / graph_query /
-trace 的 p50/p95——全部走真实 MCP 分发路径。生成器的 ground-truth 事实
+trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话使各级
+缓存失效后的首查，3 次；warm = 同会话重复相同调用，1 热身 + 7 测量）——
+全部走真实 MCP 分发路径。生成器的 ground-truth 事实
 兼作规模正确性断言（8 项：needle 进前 5、hub 影响面含已知调用者、调用链
 可 trace、环闭合……）。带 `CODECORTEX_WRITE_BENCHMARK=1` 时报告持久化到
 `docs/benchmarks/synthetic_<scale>_latest.md`。
 
-最近一轮（release，本机——完整阶段分解见带日期的产物文件）：
+最近一轮（release，本机——完整阶段分解见各规模的产物文件）：
 
 | 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件） | 增量 p50（5% 批量） | 工具查询（p50） | ground truth |
 |------|--------------|---------|--------------------|--------------------|-----------------|--------------|
-| 1k（5,568 符号） | 0.89s | 25.5 MB | 84ms | 252ms | 0–4ms | 8/8 |
-| 10k（55,617 符号） | 20.2s | 256.8 MB | 684ms | 3.6s | 亚毫秒 | 8/8 |
+| 1k（5,568 符号） | 0.89s | 25.5 MB | 84ms | 252ms | 0–4ms（旧口径，warm） | 8/8 |
+| 10k（55,617 符号） | 17.9s | 249.3 MB | 345ms | 2.98s | cold 0.2–100ms / warm 亚毫秒 | 8/8 |
+| 50k（278,074 符号，首次实测） | 432s | 1247.1 MB | 2.05s | 43.9s（2400 文件） | cold 最大 2.57s（`search_hybrid_mixed_terms`），其余毫秒级 / warm 亚毫秒 | 8/8 |
+
+- 1k 行尚未用 cold/warm 拆分口径重跑：其"工具查询"是旧口径——同会话
+  重复调用（即 warm 缓存命中路径）的 ms 取整值，不代表冷查询延迟。
+  10k/50k 报告以 µs 粒度分列 cold/warm，冷查询延迟以 cold 列为准。
+- 50k 一轮的峰值 RSS 为 1.65 GB（`/usr/bin/time -l`，计的是含 50k 语料
+  生成在内的整个测试进程）。
 
 ## 写阶段优化史（10k 基准）
 
-增量写阶段经历三轮优化，结论沉淀为
+增量写阶段经历四轮优化，结论沉淀为
 [internals/INDEXING.md](internals/INDEXING.md#写阶段性能注记) 的结构性
 约束：
 
@@ -139,11 +154,20 @@ trace 的 p50/p95——全部走真实 MCP 分发路径。生成器的 ground-tr
    全量 ~46k 边）；框架检测不再因 >20 变更文件回退全仓扫描；config-link
    解析在缓存 token 集为空时短路；逐文件 DELETE 合并为逐表批量 `IN`
    删除；写连接语句缓存扩到 64 槽（默认 16 槽被 ~17+ 轮转语句打穿，
-   逐行重 prepare）。
+   逐行重 prepare）；
+4. **签名门聚合化 + seed 缓存**（本轮）：postprocess 签名门输入改为
+   写时维护的行哈希聚合（`graph_sig_aggregates`，不再全表扫描）、
+   community 门在聚合空间投影决策（仅判 RUN 才载边）、resolver seed
+   引入跨构建缓存（`symbols_seed` token 校验）——10k 单文件增量总延迟
+   684ms → 345ms（postprocess 251ms → ~0），5% 批量 3.6s → 2.98s。
 
 10k 净效果：单文件写 p50 540ms → 58ms，5% 批量写 3.55s → 2.3s——残余的
 批量成本是真实的 B-tree/索引/FTS 分词工作，不是分发开销。工具查询延迟
-跨规模持平。
+（warm 口径）跨规模持平。
+
+但 50k 首次实测暴露了**冷态全量索引的显著超线性**：10k 17.9s → 50k
+432s——5 倍文件 24 倍时间，折合 ~116 文件/s，远低于 >500 文件/s 的
+目标。这是下一轮的首要性能课题。
 
 ## 对比基线
 

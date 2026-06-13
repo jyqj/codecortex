@@ -7,7 +7,7 @@ pub mod types;
 
 /// 真实 MCP dispatch seam：复用 cc-server lib 的 `mcp` 模块（rmcp
 /// `#[tool_router]` 路由 + `Parameters<T>` schema 反序列化 + `sanitize()` 校验
-/// + `spawn_handler!` 派发）。eval 与 stdio wire path 共享同一份 dispatch 实现 —
+/// 加 `spawn_handler!` 派发）。eval 与 stdio wire path 共享同一份 dispatch 实现 —
 /// 一份实现，两个适配器（stdio transport / in-process duplex）。任何工具新增
 /// 参数或 schema 校验规则都会被 eval 自动覆盖，无需改 runner。
 pub use cc_server::mcp as mcp_wire;
@@ -495,6 +495,7 @@ value = "formatName"
         let cases = real_workspace_benchmark_cases();
         let report = bench::run_benchmark_named(
             &backend,
+            &bench_root,
             &cases,
             file_count,
             "codecortex-rust workspace copy",
@@ -888,7 +889,7 @@ value = "formatName"
         assert!(!cases.is_empty(), "corpus should have at least one case");
 
         // Run benchmark
-        let report = bench::run_benchmark(&backend, &cases, fixture_files);
+        let report = bench::run_benchmark(&backend, &bench_fixtures, &cases, fixture_files);
 
         // Generate markdown
         let md = bench::generate_benchmark_markdown(&report);
@@ -898,13 +899,16 @@ value = "formatName"
         assert_eq!(report.total_cases, cases.len());
         assert!(!report.per_tool.is_empty(), "should have per-tool results");
 
-        // Performance regression gate: all tools must stay under 500ms p95
+        // Performance regression gate: all tools must stay under 500ms warm
+        // p95 (same-session cache-hit path, matching the historical gate).
+        // The cold column is reported but not gated — fresh-session latency
+        // on shared hardware is too noisy for a hard assertion.
         for tb in &report.per_tool {
             assert!(
-                tb.p95_ms < 500,
-                "perf regression: tool '{}' p95 = {}ms (limit 500ms)",
+                tb.warm_p95_us < 500_000,
+                "perf regression: tool '{}' warm p95 = {} (limit 500ms)",
                 tb.tool,
-                tb.p95_ms,
+                bench::format_us(tb.warm_p95_us),
             );
         }
 

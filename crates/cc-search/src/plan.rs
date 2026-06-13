@@ -465,6 +465,22 @@ impl MaterializedFilters {
             sql.push_str(&clauses.join(" AND "));
         }
 
+        // Without a file scope (preselect found nothing and the caller gave
+        // no file_paths) the scan is unbounded, so order it by recency —
+        // chunks are insert-only per write, so descending rowid puts the
+        // most recently indexed files first and the grep lane's scan budget
+        // (`search.grep_scan_cap`) is spent on the freshest code.  SQLite
+        // walks the table b-tree backwards for this — no sort step.  Scoped
+        // scans keep SQLite's natural probe order, matching prior behaviour.
+        let has_file_scope = self
+            .file_paths
+            .as_ref()
+            .map(|files| !files.is_empty())
+            .unwrap_or(false);
+        if !has_file_scope {
+            sql.push_str(" ORDER BY rowid DESC");
+        }
+
         (sql, params)
     }
 
@@ -747,6 +763,10 @@ mod tests {
         assert!(sql.contains("file_path LIKE ? ESCAPE '\\'"));
         assert!(sql.contains("language IN (?,?)"));
         assert!(sql.contains("file_path IN (?,?)"));
+        assert!(
+            !sql.contains("ORDER BY"),
+            "file-scoped grep scans keep SQLite's natural probe order: {sql}"
+        );
         assert_eq!(
             params,
             vec![
@@ -757,6 +777,26 @@ mod tests {
                 "src/main.py".to_string()
             ]
         );
+    }
+
+    #[test]
+    fn materialized_grep_scope_sql_orders_by_recency_without_file_scope() {
+        // No file_paths scope (preselect empty / no explicit files): the
+        // scan must walk most-recently-indexed chunks first so the grep
+        // lane's scan budget is spent on the freshest code.
+        let (sql, params) = MaterializedFilters::default().grep_chunk_scope_sql();
+        assert!(sql.ends_with("ORDER BY rowid DESC"), "got: {sql}");
+        assert!(params.is_empty());
+
+        // Non-file filters (prefix/language) don't bound cardinality, so
+        // they still get the recency ordering.
+        let request = SearchRequest {
+            path_prefix: Some("src/".into()),
+            languages: Some(vec![Language::Rust]),
+            ..Default::default()
+        };
+        let (sql, _) = MaterializedFilters::from_request(&request).grep_chunk_scope_sql();
+        assert!(sql.ends_with("ORDER BY rowid DESC"), "got: {sql}");
     }
 
     #[test]

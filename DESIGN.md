@@ -19,10 +19,18 @@
 7 crate 工作区，依赖严格单向，无环。
 
 ```
-cc-model -> cc-db -> cc-parsers / cc-index -> cc-search -> cc-server
-                                                              ^
-                                                          cc-eval
+cc-model -+-> cc-parsers ---+
+          |                 |
+          +-> cc-db --+-----+-> cc-index ---+
+                      |                     |
+                      +-> cc-search --------+-> cc-server
+                                                    ^
+                                                cc-eval
 ```
+
+cc-parsers 与 cc-db 都只依赖 cc-model、互不依赖；cc-index 在两者之上
+（cc-db + cc-parsers），cc-search 只依赖 cc-model 与 cc-db（不依赖
+cc-parsers/cc-index），两支在 cc-server 汇合。
 
 | Crate | 职责 |
 |-------|------|

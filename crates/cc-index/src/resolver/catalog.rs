@@ -60,11 +60,16 @@ impl SymbolCatalog {
         }
     }
 
-    /// Build (or rebuild) the TypeCatalog from the given symbols.
+    /// Build (or rebuild) the TypeCatalog from the given symbols (any
+    /// iterable of references — callers can chain persisted and batch
+    /// symbols without materializing an owned concatenation).
     ///
     /// Call this after all symbols have been registered via `add_symbols`,
     /// typically right before resolving call-edges.
-    pub fn build_type_catalog(&mut self, all_symbols: &[SymbolRecord]) {
+    pub fn build_type_catalog<'a, I>(&mut self, all_symbols: I)
+    where
+        I: IntoIterator<Item = &'a SymbolRecord>,
+    {
         let tc = TypeCatalog::build_from_symbols(all_symbols);
         if tc.has_methods() {
             tracing::debug!("TypeCatalog built with method entries");

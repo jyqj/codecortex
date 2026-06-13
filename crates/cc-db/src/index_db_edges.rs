@@ -227,7 +227,8 @@ impl IndexDb {
                     let rows = stmt
                         .query_map(rusqlite::params![pat], |row| row.get::<_, String>(0))
                         .map_err(|e| CcError::Database(e.to_string()))?;
-                    for r in rows.flatten() {
+                    for r in rows {
+                        let r = r.map_err(|e| CcError::Database(e.to_string()))?;
                         if seen.insert(r.clone()) {
                             candidates.push(r);
                         }
@@ -307,7 +308,8 @@ impl IndexDb {
                     let rows = stmt
                         .query_map(rusqlite::params![pat], |row| row.get::<_, String>(0))
                         .map_err(|e| CcError::Database(e.to_string()))?;
-                    for r in rows.flatten() {
+                    for r in rows {
+                        let r = r.map_err(|e| CcError::Database(e.to_string()))?;
                         if seen.insert(r.clone()) {
                             candidates.push(r);
                         }
@@ -365,8 +367,8 @@ impl IndexDb {
                     Ok((row.get::<_, String>(0)?, row.get::<_, bool>(1)?))
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?
-                .filter_map(|r| r.ok())
-                .collect();
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|e| CcError::Database(e.to_string()))?;
             collected
         };
         let edges = compute_test_edges_full(&files);
@@ -452,19 +454,45 @@ impl IndexDb {
         Ok(())
     }
 
+    /// [`Self::insert_semantic_edges_batch_on`] with signature-aggregate
+    /// maintenance, for writers that are not file-scoped (the synthesis unit
+    /// of work). Real-id rows adjust `semantic_real` against the row each
+    /// upsert replaces; `synth:%` ids are outside every aggregate and skip.
+    /// File-scoped writers (incremental batch, full rebuild) must keep using
+    /// the plain variant — their path delta / baseline recompute already
+    /// covers these rows, and double maintenance would corrupt the baseline.
+    pub(crate) fn insert_semantic_edges_batch_maintained_on(
+        conn: &rusqlite::Connection,
+        edges: &[cc_model::edge::SemanticEdgeRecord],
+    ) -> CcResult<()> {
+        let mut aggs = crate::signature_agg::load_on(conn)?;
+        for e in edges {
+            if let Some(aggs) = aggs.as_mut() {
+                crate::signature_agg::adjust_semantic_edge_upsert(conn, aggs, e)?;
+            }
+            Self::insert_semantic_edges_batch_on(conn, std::slice::from_ref(e))?;
+        }
+        if let Some(aggs) = aggs {
+            crate::signature_agg::store_on(conn, &aggs)?;
+        }
+        Ok(())
+    }
+
     pub(crate) fn remove_semantic_edges_by_file(&self, file_path: &str) -> CcResult<()> {
         let mut conn = self
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &[file_path])?;
         tx.execute(
             "DELETE FROM semantic_edges WHERE file_path = ?1",
             rusqlite::params![file_path],
         )
         .map_err(|e| CcError::Database(e.to_string()))?;
+        crate::signature_agg::finish_path_update(&tx, &[file_path], agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
@@ -539,7 +567,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn insert_co_change_edges_batch(
@@ -596,7 +625,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn replace_infra_data(
@@ -658,8 +688,19 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
+        // Aggregate scope covers the deleted path plus every inserted site's
+        // own path (normally identical; rows under other paths would
+        // otherwise escape the delta).
+        let touched: Vec<&str> = {
+            let mut seen = std::collections::HashSet::new();
+            std::iter::once(file_path)
+                .chain(sites.iter().map(|ds| ds.file_path.as_str()))
+                .filter(|p| seen.insert(*p))
+                .collect()
+        };
+        let agg_update = crate::signature_agg::begin_path_update(&tx, &touched)?;
         tx.execute(
             "DELETE FROM dispatch_sites WHERE file_path = ?1",
             rusqlite::params![file_path],
@@ -672,6 +713,7 @@ impl IndexDb {
                 rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
             )?;
         }
+        crate::signature_agg::finish_path_update(&tx, &touched, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
         Ok(())
@@ -762,12 +804,12 @@ impl IndexDb {
     }
 
     pub(crate) fn delete_synthetic_call_edges(&self, synthesized_by: &str) -> CcResult<usize> {
-        let conn = self
+        let mut conn = self
             .write_conn
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .unchecked_transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let count = Self::delete_synthetic_call_edges_on(&tx, synthesized_by)?;
         Self::bump_index_epoch_on(&tx)?;
@@ -779,6 +821,14 @@ impl IndexDb {
         conn: &rusqlite::Connection,
         synthesized_by: &str,
     ) -> CcResult<usize> {
+        // Signature-aggregate maintenance: the deleted kind's uid pairs leave
+        // `call_synthetic` (captured before the delete; no-op without a
+        // stored baseline).
+        if let Some(mut aggs) = crate::signature_agg::load_on(conn)? {
+            let removed = crate::signature_agg::synthetic_kind_agg_on(conn, &[synthesized_by])?;
+            aggs.call_synthetic = aggs.call_synthetic.minus(&removed);
+            crate::signature_agg::store_on(conn, &aggs)?;
+        }
         conn.execute(
             "DELETE FROM call_edges WHERE synthesized_by = ?1",
             rusqlite::params![synthesized_by],
@@ -795,7 +845,7 @@ impl IndexDb {
             .lock()
             .map_err(|e| CcError::Database(e.to_string()))?;
         let tx = conn
-            .transaction()
+            .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(|e| CcError::Database(e.to_string()))?;
         Self::insert_synthetic_call_edges_on(&tx, edges)?;
         Self::bump_index_epoch_on(&tx)?;
@@ -807,7 +857,15 @@ impl IndexDb {
         conn: &rusqlite::Connection,
         edges: &[cc_model::CallEdgeRecord],
     ) -> CcResult<usize> {
+        // Signature-aggregate maintenance: each upsert is adjusted against
+        // the row it replaces (interleaved with the inserts so within-batch
+        // duplicate edge_ids resolve like the OR REPLACE does). No-op
+        // without a stored baseline.
+        let mut aggs = crate::signature_agg::load_on(conn)?;
         for e in edges {
+            if let Some(aggs) = aggs.as_mut() {
+                crate::signature_agg::adjust_call_edge_upsert(conn, aggs, e)?;
+            }
             Self::execute_cached(
                 conn,
                 "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
@@ -825,6 +883,9 @@ impl IndexDb {
                     e.registered_line.map(|v| v as i32)
                 ],
             )?;
+        }
+        if let Some(aggs) = aggs {
+            crate::signature_agg::store_on(conn, &aggs)?;
         }
         Ok(edges.len())
     }
@@ -1070,7 +1131,9 @@ impl IndexDb {
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
         let mut result = std::collections::HashMap::new();
-        for (norm_path, count, last_seen) in rows.flatten() {
+        for row in rows {
+            let (norm_path, count, last_seen) =
+                row.map_err(|e| CcError::Database(e.to_string()))?;
             result.insert(norm_path, (count, last_seen));
         }
         Ok(result)
@@ -1291,7 +1354,9 @@ mod tests {
     #[test]
     fn http_edge_match_prefers_method_then_falls_back_to_path() {
         let (db, _tmp) = setup();
-        let conn = db.read_conn().unwrap();
+        // Seed through the write connection: the pooled read connections are
+        // query_only, and this fixture does not depend on epoch bumps.
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at)
              VALUES('src/client.ts', 'TypeScript', 'hash', 0.0, 100, '2025-01-01')",
@@ -1328,7 +1393,9 @@ mod tests {
     #[test]
     fn route_id_for_normalized_path_returns_first_match() {
         let (db, _tmp) = setup();
-        let conn = db.read_conn().unwrap();
+        // Seed through the write connection: the pooled read connections are
+        // query_only, and this fixture does not depend on epoch bumps.
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at)
              VALUES('src/routes.ts', 'TypeScript', 'hash', 0.0, 100, '2025-01-01')",
@@ -1471,24 +1538,25 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let edge_set = |db: &IndexDb| -> std::collections::BTreeSet<(String, String, String, String, String)> {
-            let conn = db.read_conn().unwrap();
-            let mut stmt = conn
+        let edge_set =
+            |db: &IndexDb| -> std::collections::BTreeSet<(String, String, String, String, String)> {
+                let conn = db.read_conn().unwrap();
+                let mut stmt = conn
                 .prepare("SELECT edge_id, test_file_path, code_file_path, reason, confidence FROM test_edges")
                 .unwrap();
-            stmt.query_map([], |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, String>(3)?,
-                    format!("{:.3}", row.get::<_, f64>(4)?),
-                ))
-            })
-            .unwrap()
-            .filter_map(|r| r.ok())
-            .collect()
-        };
+                stmt.query_map([], |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, String>(2)?,
+                        row.get::<_, String>(3)?,
+                        format!("{:.3}", row.get::<_, f64>(4)?),
+                    ))
+                })
+                .unwrap()
+                .filter_map(|r| r.ok())
+                .collect()
+            };
 
         // Legacy full rebuild: the still-live incremental SQL path over the
         // whole file set (the table starts empty, matching the old
@@ -1520,7 +1588,11 @@ mod tests {
             "src/order_service.rs",
             "same-basename"
         ));
-        assert!(has("tests/widget.spec.ts", "src/widget.ts", "same-basename"));
+        assert!(has(
+            "tests/widget.spec.ts",
+            "src/widget.ts",
+            "same-basename"
+        ));
         assert!(has("src/area.test.ts", "src/area.ts", "same-basename"));
         assert!(has(
             "tests/data-loader_test.ts",

@@ -924,7 +924,7 @@ mod tests {
         let mut idx = CodeIndex::empty();
         idx.set_project(dir.path(), false).unwrap();
         let db = idx.index_db().expect("db initialized");
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         for fp in ["src/a.rs", "src/b.rs"] {
             conn.execute(
                 "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at) \

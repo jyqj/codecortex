@@ -23,15 +23,17 @@ use cc_model::ParserTier;
 /// per-file `semantic_edges` deletes in the write batch keep the stored set
 /// consistent (a directory "node" exists only through its files' edges, so
 /// it appears/disappears with the first/last file in it).
-pub fn generate_hierarchy_edges(
-    symbols: &[SymbolRecord],
-    file_paths: &[String],
-) -> Vec<SemanticEdgeRecord> {
+pub fn generate_hierarchy_edges<'a, I>(symbols: I, file_paths: &[String]) -> Vec<SemanticEdgeRecord>
+where
+    I: IntoIterator<Item = &'a SymbolRecord>,
+    I::IntoIter: Clone,
+{
+    let symbols = symbols.into_iter();
     let mut edges = Vec::new();
 
     // Pre-build container index: (file_path, name) -> &SymbolRecord  [O(n) once]
     let container_index: HashMap<(&str, &str), &SymbolRecord> = symbols
-        .iter()
+        .clone()
         .filter(|s| {
             matches!(
                 s.kind,

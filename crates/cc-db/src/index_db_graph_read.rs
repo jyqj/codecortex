@@ -122,8 +122,8 @@ impl IndexDb {
             let rows = stmt
                 .query_map(rusqlite::params![file], crate::rows::symbol_lite)
                 .map_err(db_err)?;
-            for row in rows.flatten() {
-                symbols.push(row);
+            for row in rows {
+                symbols.push(row.map_err(db_err)?);
             }
         }
         Ok(symbols)
@@ -191,7 +191,9 @@ impl IndexDb {
             let rows = stmt
                 .query_map(param_refs.as_slice(), crate::rows::symbol_lite)
                 .map_err(db_err)?;
-            callers.extend(rows.flatten());
+            for row in rows {
+                callers.push(row.map_err(db_err)?);
+            }
         }
 
         Ok(callers)
@@ -216,7 +218,7 @@ impl IndexDb {
         let rows = stmt
             .query_map(params.as_slice(), |row| row.get::<_, String>(0))
             .map_err(db_err)?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Resolve a batch of symbol UIDs to names (`uid -> name`); UIDs without
@@ -245,7 +247,8 @@ impl IndexDb {
                     Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
                 })
                 .map_err(db_err)?;
-            for (uid, name) in rows.flatten() {
+            for row in rows {
+                let (uid, name) = row.map_err(db_err)?;
                 map.insert(uid, name);
             }
         }
@@ -559,7 +562,7 @@ impl IndexDb {
                 ))
             })
             .map_err(db_err)?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Candidate symbol rows for source retrieval, ranked exact-first.
@@ -1085,9 +1088,12 @@ mod tests {
         (tmp, db)
     }
 
+    // Fixtures seed through the write connection (the pooled read
+    // connections are query_only). This intentionally bypasses WriteOps
+    // and therefore does not bump the epoch vector; none of these tests
+    // depend on epoch-keyed caches.
     fn insert_file(db: &IndexDb, file_path: &str) {
-        db.read_conn()
-            .unwrap()
+        db.write_conn.lock().unwrap()
             .execute(
                 "INSERT OR IGNORE INTO files(file_path, language, content_hash, mtime, size, indexed_at)
                  VALUES(?1, 'rust', 'hash', 0.0, 100, '2025-01-01')",
@@ -1098,8 +1104,7 @@ mod tests {
 
     fn insert_symbol(db: &IndexDb, uid: &str, name: &str, file_path: &str, kind: &str) {
         insert_file(db, file_path);
-        db.read_conn()
-            .unwrap()
+        db.write_conn.lock().unwrap()
             .execute(
                 "INSERT OR REPLACE INTO symbols(symbol_id, file_path, name, kind, start_line, end_line, symbol_uid)
                  VALUES(?1, ?2, ?3, ?4, 1, 10, ?5)",
@@ -1110,8 +1115,7 @@ mod tests {
 
     fn insert_call_edge(db: &IndexDb, edge_id: &str, caller_uid: Option<&str>, callee_uid: &str) {
         insert_file(db, "src/app.rs");
-        db.read_conn()
-            .unwrap()
+        db.write_conn.lock().unwrap()
             .execute(
                 "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid)
                  VALUES(?1, 'src/app.rs', 'callee', 5, ?2, ?3)",
@@ -1122,7 +1126,8 @@ mod tests {
 
     fn insert_import(db: &IndexDb, file_path: &str, import_string: &str, resolved: Option<&str>) {
         insert_file(db, file_path);
-        db.read_conn()
+        db.write_conn
+            .lock()
             .unwrap()
             .execute(
                 "INSERT INTO imports(file_path, import_string, resolved_path) VALUES(?1, ?2, ?3)",
@@ -1163,7 +1168,7 @@ mod tests {
         insert_symbol(&db, "uid_a", "a", "src/a.rs", "function");
         insert_symbol(&db, "uid_b", "b", "src/b.rs", "function");
         insert_symbol(&db, "uid_c", "c", "src/c.rs", "function");
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         for (uid, community) in [("uid_a", 1), ("uid_b", 2), ("uid_c", 1)] {
             conn.execute(
                 "UPDATE symbols SET community_id = ?2 WHERE symbol_uid = ?1",
@@ -1185,7 +1190,8 @@ mod tests {
         insert_symbol(&db, "uid_a", "a", "src/a.rs", "function");
         insert_symbol(&db, "uid_b", "b", "src/b.rs", "function");
         // Symbol without UID in a requested file must be skipped.
-        db.read_conn()
+        db.write_conn
+            .lock()
             .unwrap()
             .execute(
                 "INSERT INTO symbols(symbol_id, file_path, name, kind, start_line, end_line)
@@ -1206,7 +1212,7 @@ mod tests {
         insert_symbol(&db, "uid_callee", "callee", "src/a.rs", "function");
         insert_symbol(&db, "uid_hi", "hi_conf", "src/b.rs", "function");
         insert_symbol(&db, "uid_lo", "lo_conf", "src/c.rs", "function");
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, parser_confidence)
              VALUES('e_hi', 'src/b.rs', 'callee', 1, 'uid_hi', 'uid_callee', 0.9)",
@@ -1241,7 +1247,7 @@ mod tests {
     #[test]
     fn suggested_test_files_distinct_and_ordered() {
         let (_tmp, db) = open_db();
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         for (edge_id, test_file, code_file) in [
             ("t1", "tests/z_test.rs", "src/a.rs"),
             ("t2", "tests/a_test.rs", "src/a.rs"),
@@ -1333,7 +1339,7 @@ mod tests {
     fn symbol_ref_containers_for_targets_returns_uid_container_pairs() {
         let (_tmp, db) = open_db();
         insert_file(&db, "src/a.rs");
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT INTO symbol_refs(ref_id, file_path, symbol_name, container, ref_kind, line, target_symbol_uid)
              VALUES('r1', 'src/a.rs', 'helper', 'other_fn', 'call', 3, 'uid_helper')",
@@ -1363,8 +1369,7 @@ mod tests {
 
     fn insert_route(db: &IndexDb, edge_id: &str, route_path: &str, method: Option<&str>) {
         insert_file(db, "src/routes.ts");
-        db.read_conn()
-            .unwrap()
+        db.write_conn.lock().unwrap()
             .execute(
                 "INSERT INTO routes(edge_id, file_path, route_path, method, handler_name, framework, line, normalized_path, route_id, handler_symbol_uid)
                  VALUES(?1, 'src/routes.ts', ?2, ?3, 'handler', 'express', 10, ?2, ?1, 'uid_handler')",
@@ -1389,7 +1394,7 @@ mod tests {
     #[test]
     fn async_consumer_rows_match_topic_in_name_or_properties() {
         let (_tmp, db) = open_db();
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT INTO infra_nodes(node_id, file_path, kind, name) VALUES('n1', 'infra.yml', 'queue', 'orders-queue')",
             [],
@@ -1417,7 +1422,7 @@ mod tests {
     fn service_binding_rows_match_nodes_routes_and_edges() {
         let (_tmp, db) = open_db();
         insert_route(&db, "r_pay", "/payment/charge", Some("POST"));
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT INTO infra_nodes(node_id, file_path, kind, name) VALUES('n_pay', 'infra.yml', 'service', 'payment-svc')",
             [],
@@ -1441,7 +1446,7 @@ mod tests {
     fn child_symbol_outline_rows_ordered_by_start_line() {
         let (_tmp, db) = open_db();
         insert_file(&db, "src/a.rs");
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         for (sid, name, line, sig) in [
             ("sid_m2", "method_b", 8, Some("fn method_b()")),
             ("sid_m1", "method_a", 3, None),
@@ -1492,7 +1497,7 @@ mod tests {
     fn call_edge_provenance_counts_breakdowns() {
         let (_tmp, db) = open_db();
         insert_file(&db, "src/a.rs");
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         conn.execute(
             "INSERT INTO call_edges(edge_id, file_path, callee_symbol, line, dispatch_kind, resolution_kind)
              VALUES('e1', 'src/a.rs', 'x', 1, 'direct', 'exact')",
@@ -1541,7 +1546,8 @@ mod tests {
         let (_tmp, db) = open_db();
         insert_symbol(&db, "uid_two", "two_params", "src/a.rs", "method");
         insert_symbol(&db, "uid_null", "no_count", "src/a.rs", "method");
-        db.read_conn()
+        db.write_conn
+            .lock()
             .unwrap()
             .execute(
                 "UPDATE symbols SET param_count = 2 WHERE symbol_uid = 'uid_two'",
@@ -1560,7 +1566,7 @@ mod tests {
     #[test]
     fn env_access_rows_filter_by_key_and_file_patterns() {
         let (_tmp, db) = open_db();
-        let conn = db.read_conn().unwrap();
+        let conn = db.write_conn.lock().unwrap();
         for (edge_id, file, key) in [
             ("d1", "src/config.rs", "DATABASE_URL"),
             ("d2", "src/auth.rs", "AUTH_SECRET"),

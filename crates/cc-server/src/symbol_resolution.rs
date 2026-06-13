@@ -213,7 +213,7 @@ mod tests {
     fn setup_db(symbols: &[(&str, &str, &str, &str, &str)]) -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
         let db = Arc::new(IndexDb::open(&tmp.path().join("resolution.db")).unwrap().0);
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
 
         let mut seen_files = std::collections::HashSet::new();
         for (_, _, _, _, file_path) in symbols {

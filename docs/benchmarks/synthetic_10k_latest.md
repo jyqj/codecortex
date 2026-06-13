@@ -1,6 +1,6 @@
 # Synthetic Scale Benchmark: 10k
 
-Generated: 2026-06-12T14:54:56.886484+00:00
+Generated: 2026-06-12T19:40:19.578925+00:00
 Dataset: synthetic 10k (seed 0xc0ffee)
 Files: 10000 | Symbols: 55617
 
@@ -8,9 +8,9 @@ Files: 10000 | Symbols: 55617
 
 | Metric | Value |
 |--------|-------|
-| generate wall | 681ms |
-| cold full index wall | 20186ms |
-| index db size | 256.8 MB |
+| generate wall | 929ms |
+| cold full index wall | 17877ms |
+| index db size | 249.3 MB |
 
 ## Incremental Latency: single_file
 
@@ -18,13 +18,13 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 684ms | 713ms | 713ms |
-| postprocess | 251ms | 255ms | 255ms |
-| resolve | 229ms | 260ms | 260ms |
-| analysis | 75ms | 78ms | 78ms |
-| scan_diff | 67ms | 68ms | 68ms |
-| write | 58ms | 59ms | 59ms |
+| total elapsed | 345ms | 346ms | 346ms |
+| resolve | 135ms | 137ms | 137ms |
+| analysis | 79ms | 79ms | 79ms |
+| scan_diff | 70ms | 85ms | 85ms |
+| write | 58ms | 58ms | 58ms |
 | parse | 1ms | 1ms | 1ms |
+| postprocess | 0ms | 0ms | 0ms |
 
 ## Incremental Latency: five_percent_batch
 
@@ -32,25 +32,27 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 3597ms | 4223ms | 4223ms |
-| write | 2309ms | 2716ms | 2716ms |
-| resolve | 783ms | 795ms | 795ms |
-| postprocess | 275ms | 544ms | 544ms |
-| scan_diff | 82ms | 106ms | 106ms |
-| analysis | 80ms | 81ms | 81ms |
-| parse | 25ms | 30ms | 30ms |
+| total elapsed | 2979ms | 3029ms | 3029ms |
+| write | 2220ms | 2289ms | 2289ms |
+| resolve | 553ms | 581ms | 581ms |
+| scan_diff | 82ms | 94ms | 94ms |
+| analysis | 78ms | 80ms | 80ms |
+| parse | 22ms | 23ms | 23ms |
+| postprocess | 0ms | 0ms | 0ms |
 
 ## Per-Tool Latency
 
-| Scenario | Tool | Iterations | p50 | p95 | Max | Avg Output |
-|----------|------|------------|-----|-----|-----|------------|
-| search_hybrid_needle_phrase | search | 7 | 0ms | 0ms | 0ms | 8.4 KB |
-| search_hybrid_mixed_terms | search | 7 | 0ms | 0ms | 0ms | 27.7 KB |
-| find_symbol_exact_needle | search | 7 | 0ms | 0ms | 0ms | 307 B |
-| find_symbol_fuzzy_prefix | search | 7 | 0ms | 0ms | 0ms | 307 B |
-| impact_changes_hub_file | impact | 7 | 0ms | 0ms | 0ms | 13.6 KB |
-| graph_query_calls_varlen | graph_query | 7 | 0ms | 0ms | 0ms | 306 B |
-| trace_chain_4_hops | trace | 7 | 0ms | 0ms | 0ms | 2.7 KB |
+Methodology: cold = first call of a fresh MCP session per iteration (new IndexDb identity → cold graph adjacency + SQLite page caches, empty search LRUs; OS file cache retained). warm = repeated identical calls in one shared session after 1 discarded warmup (cache-hit path).
+
+| Scenario | Tool | Iters (cold/warm) | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |
+|----------|------|-------------------|----------|----------|----------|----------|----------|------------|
+| search_hybrid_needle_phrase | search | 3/7 | 62.88ms | 65.06ms | 233µs | 297µs | 297µs | 8.4 KB |
+| search_hybrid_mixed_terms | search | 3/7 | 99.63ms | 104.55ms | 663µs | 707µs | 707µs | 27.8 KB |
+| find_symbol_exact_needle | search | 3/7 | 158µs | 177µs | 85µs | 109µs | 109µs | 307 B |
+| find_symbol_fuzzy_prefix | search | 3/7 | 643µs | 771µs | 126µs | 153µs | 153µs | 307 B |
+| impact_changes_hub_file | impact | 3/7 | 2.92ms | 3.66ms | 622µs | 704µs | 704µs | 13.5 KB |
+| graph_query_calls_varlen | graph_query | 3/7 | 774µs | 2.10ms | 178µs | 401µs | 401µs | 306 B |
+| trace_chain_4_hops | trace | 3/7 | 2.33ms | 3.19ms | 174µs | 459µs | 459µs | 2.7 KB |
 
 ## Ground-Truth Correctness
 

@@ -20,9 +20,18 @@
 - **语句缓存**：读写连接均为 64 槽（rusqlite 默认 16 槽会被热路径 ~25+ 条
   常驻 `prepare_cached` 语句、批写路径 ~20+ 条轮转语句打穿，导致逐行重
   prepare —— 这是 10k 规模写阶段优化中实测过的退化点）。
+- **seed 符号快照缓存**（`seed_symbol_cache.rs`）：resolver seed 符号
+  快照的跨构建缓存，挂在 `IndexDb` 句柄上（唯一跨构建存活的宿主）。以
+  写时维护的 `symbols_seed` 聚合（见 `signature_agg.rs`）为有效性
+  token——token 相等即种子行多重集相等，命中省去增量构建逐次全量重载
+  symbols 的 O(repo) 成本；任何改动种子列的写（进程内或跨进程）都会
+  移动 token，下次读取 miss 重载。
 
 连接初始化 PRAGMA：`journal_mode=WAL`、`synchronous=NORMAL`、
-`foreign_keys=ON`、`busy_timeout=5000`。
+`foreign_keys=ON`、`busy_timeout=5000`；读池连接额外加 `query_only=ON`——
+写隔离从"只有 `WriteOps` 暴露写方法"的类型纪律升级为机制保证：经池化
+连接的任何 INSERT/UPDATE/DELETE 直接报 `SQLITE_READONLY`，不可能绕过
+epoch 推进让 epoch 键控缓存读到陈旧数据。
 
 ### 按能力切分的方法面
 
@@ -90,9 +99,11 @@ dispatch synthesis 的 apply 阶段（`cc-index/src/synthesis_pipeline.rs`）。
 | 其他 | `literal_index`, `runtime_evidence`, `adr` | 字面量索引；OTLP 运行时证据；架构决策记录 |
 
 `metadata` 表中的固定键：`index_epoch`、`evidence_epoch`、
-`last_indexed_at`、`index_version`，以及各后处理 pass 的输入签名键
-（如 config-linker 的 `last_config_sig`，见
-[INDEXING.md](INDEXING.md#写入阶段)）。
+`last_indexed_at`、`index_version`、`graph_sig_aggregates`（图签名聚合
+基线：逐组 `(count, 行哈希和)` 的序列化快照，由写路径在同事务内维护，
+是 postprocess 签名门与 seed 缓存 token 的输入，见 `signature_agg.rs`），
+以及各后处理 pass 的输入签名键（如 config-linker 的 `last_config_sig`，
+见 [INDEXING.md](INDEXING.md#写入阶段)）。
 
 ### FTS5 虚拟表：双维护模型
 

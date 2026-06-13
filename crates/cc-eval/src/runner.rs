@@ -69,6 +69,23 @@ impl CodeIndexBackend {
                 .map_err(|e| format!("failed to write eval config: {}", e))?;
         }
 
+        Self::open_existing(project_path)
+    }
+
+    /// Attach a brand-new MCP session to a project whose index already exists
+    /// on disk, WITHOUT deleting or rebuilding it.
+    ///
+    /// Used by cold-latency benchmarks: each new session creates a fresh
+    /// `CodeIndex` (new IndexDb connections → a new process-unique
+    /// `db_identity`, so generation-keyed graph adjacency caches miss and the
+    /// SQLite per-connection page caches start cold) and a fresh
+    /// `SearchEngine` (empty result/graph LRUs). The OS file cache is
+    /// intentionally retained — that is the realistic cold-query baseline.
+    ///
+    /// Assumes the project was set up by a prior `new`/`new_unindexed`
+    /// backend on the same path (so `.codecortex.json` already disables
+    /// auto_index and the index DB exists).
+    pub fn open_existing(project_path: &Path) -> Result<Self, String> {
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()

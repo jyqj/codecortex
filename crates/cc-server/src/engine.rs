@@ -1447,7 +1447,7 @@ mod tests {
             parser_confidence: 1.0,
             ..Default::default()
         };
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         cc_db::index_db::IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -1614,9 +1614,7 @@ mod tests {
         // Drop call_edges so the enrichment's batched adjacency reads fail
         // and degrade to partial graph context (the graph lane swallows its
         // own failures, so the search itself still succeeds).
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute("DROP TABLE call_edges", [])
             .unwrap();
 

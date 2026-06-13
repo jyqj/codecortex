@@ -8,6 +8,7 @@
 use std::collections::HashMap;
 
 use cc_model::{CcError, CcResult};
+use rusqlite::OptionalExtension;
 
 use crate::index_db::{
     CallEdgeLite, EdgeLiteBfs, FileEdgesForReresolve, FileFrameworkRecord, IndexDb, ReadOps,
@@ -48,7 +49,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn caller_rows_by_uid(
@@ -72,7 +74,8 @@ impl IndexDb {
                 crate::rows::call_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn callee_rows_by_uid(
@@ -96,7 +99,8 @@ impl IndexDb {
                 crate::rows::call_edge_lite,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Batched variant of [`Self::caller_rows_by_uid`]: fetch the top
@@ -178,7 +182,8 @@ impl IndexDb {
                     Ok((seed, edge))
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.filter_map(|r| r.ok()) {
+            for row in rows {
+                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
                 let (seed, edge) = row;
                 grouped.entry(seed).or_default().push(edge);
             }
@@ -213,7 +218,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Return a summary of environment variable accesses, ordered by frequency.
@@ -273,7 +279,8 @@ impl IndexDb {
                 Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Return BFS-friendly outgoing edges for a single caller UID.
@@ -312,7 +319,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
@@ -347,7 +355,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
@@ -393,7 +402,8 @@ impl IndexDb {
             let rows = stmt
                 .query_map(params.as_slice(), crate::rows::symbol_row)
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for r in rows.flatten() {
+            for r in rows {
+                let r = r.map_err(|e| CcError::Database(e.to_string()))?;
                 if let Some(uid) = r.symbol_uid.clone() {
                     result.insert(uid, r);
                 }
@@ -489,7 +499,8 @@ impl IndexDb {
                     ))
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.filter_map(|r| r.ok()) {
+            for row in rows {
+                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
                 let (uid, in_degree, caller_count) = row;
                 if let Some(info) = result.get_mut(&uid) {
                     info.in_degree = in_degree;
@@ -515,7 +526,8 @@ impl IndexDb {
                     ))
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.filter_map(|r| r.ok()) {
+            for row in rows {
+                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
                 let (uid, out_degree, callee_count) = row;
                 if let Some(info) = result.get_mut(&uid) {
                     info.out_degree = out_degree;
@@ -537,7 +549,8 @@ impl IndexDb {
                     Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?))
                 })
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.filter_map(|r| r.ok()) {
+            for row in rows {
+                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
                 let (uid, ref_count) = row;
                 if let Some(info) = result.get_mut(&uid) {
                     info.ref_count = ref_count;
@@ -713,7 +726,8 @@ impl IndexDb {
         let rows = stmt
             .query_map(param_refs.as_slice(), crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Batched variant of [`Self::find_symbols_by_name_and_kinds`]: resolves
@@ -756,7 +770,8 @@ impl IndexDb {
             let rows = stmt
                 .query_map(params.as_slice(), crate::rows::symbol_row)
                 .map_err(|e| CcError::Database(e.to_string()))?;
-            for row in rows.filter_map(|r| r.ok()) {
+            for row in rows {
+                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
                 grouped.entry(row.name.clone()).or_default().push(row);
             }
         }
@@ -782,6 +797,14 @@ impl IndexDb {
         conn: &rusqlite::Connection,
         edge_id_prefix: &str,
     ) -> CcResult<usize> {
+        // `synth:%` rows are outside every signature aggregate, so this
+        // delete needs no aggregate maintenance — which is only sound while
+        // the prefix stays within the synthetic id namespace.
+        debug_assert!(
+            edge_id_prefix.starts_with("synth:"),
+            "delete_synthetic_semantic_edges requires a 'synth:' prefix \
+             (real semantic edges are signature-aggregate tracked)"
+        );
         let pattern = format!("{}%", edge_id_prefix);
         conn.execute(
             "DELETE FROM semantic_edges WHERE edge_id LIKE ?1",
@@ -812,7 +835,8 @@ impl IndexDb {
                 rusqlite::params![member_symbol_uid],
                 |row| row.get(0),
             )
-            .ok()
+            .optional()
+            .map_err(|e| CcError::Database(e.to_string()))?
             .flatten();
         let container = match container {
             Some(c) => c,
@@ -824,7 +848,8 @@ impl IndexDb {
                 rusqlite::params![member_symbol_uid],
                 |row| row.get(0),
             )
-            .ok();
+            .optional()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         let file_path = match file_path {
             Some(fp) => fp,
             None => return Ok(None),
@@ -835,7 +860,8 @@ impl IndexDb {
                 rusqlite::params![file_path, container, method_name],
                 |row| row.get(0),
             )
-            .ok()
+            .optional()
+            .map_err(|e| CcError::Database(e.to_string()))?
             .flatten();
         Ok(result)
     }
@@ -894,7 +920,9 @@ impl IndexDb {
                 ))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        for (container, uid, name, file_path, line) in rows.filter_map(|r| r.ok()) {
+        for row in rows {
+            let (container, uid, name, file_path, line) =
+                row.map_err(|e| CcError::Database(e.to_string()))?;
             grouped
                 .entry(container)
                 .or_default()
@@ -948,7 +976,8 @@ impl IndexDb {
                 Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Get the export fingerprint for a file.
@@ -1204,7 +1233,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let symbols: Vec<cc_model::SymbolRecord> = sym_rows.filter_map(|r| r.ok()).collect();
+        let symbols: Vec<cc_model::SymbolRecord> = sym_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         // imports
         let mut imp_stmt = conn
@@ -1228,7 +1259,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let imports: Vec<cc_model::ImportRecord> = imp_rows.filter_map(|r| r.ok()).collect();
+        let imports: Vec<cc_model::ImportRecord> = imp_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         // call_edges
         let mut ce_stmt = conn
@@ -1298,7 +1331,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let call_edges: Vec<cc_model::CallEdgeRecord> = ce_rows.filter_map(|r| r.ok()).collect();
+        let call_edges: Vec<cc_model::CallEdgeRecord> = ce_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         // symbol_refs
         let mut sr_stmt = conn
@@ -1342,7 +1377,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let symbol_refs: Vec<cc_model::SymbolRefRecord> = sr_rows.filter_map(|r| r.ok()).collect();
+        let symbol_refs: Vec<cc_model::SymbolRefRecord> = sr_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         // semantic_edges
         let mut se_stmt = conn
@@ -1386,8 +1423,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let semantic_edges: Vec<cc_model::SemanticEdgeRecord> =
-            se_rows.filter_map(|r| r.ok()).collect();
+        let semantic_edges: Vec<cc_model::SemanticEdgeRecord> = se_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         // dispatch_sites
         let mut ds_stmt = conn
@@ -1415,8 +1453,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let dispatch_sites: Vec<cc_model::DispatchSiteRecord> =
-            ds_rows.filter_map(|r| r.ok()).collect();
+        let dispatch_sites: Vec<cc_model::DispatchSiteRecord> = ds_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         // route_edges
         let mut re_stmt = conn
@@ -1453,8 +1492,9 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let route_edges: Vec<cc_model::edge::RouteEdgeRecord> =
-            re_rows.filter_map(|r| r.ok()).collect();
+        let route_edges: Vec<cc_model::edge::RouteEdgeRecord> = re_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
 
         Ok(FileEdgesForReresolve {
             symbols,
@@ -1491,7 +1531,8 @@ impl IndexDb {
         let rows = stmt
             .query_map(params.as_slice(), crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 }
 
@@ -2307,5 +2348,36 @@ mod tests {
 
         // Empty seed list -> empty map, no SQL issued.
         assert!(db.symbol_degree_details_batch(&[]).unwrap().is_empty());
+    }
+
+    /// Regression: a step-phase execution error must surface as `Err`, never
+    /// be swallowed into `Ok(empty)` by the row iterator (invariant 8: read
+    /// failures are visible). Reproduced by dropping `call_edges` through a
+    /// side connection after the pooled read connection has loaded the
+    /// schema: the stale in-memory schema lets `prepare` succeed while the
+    /// re-prepare at step time fails with "no such table".
+    #[test]
+    fn step_error_after_side_connection_drop_is_err_not_empty_ok() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/main.rs");
+        insert_call_edge(&db, "e1", "uid_a", "uid_b", 5);
+
+        // Warm-up through the read pool so the pooled connection prepares
+        // statements involving `call_edges` against the current schema
+        // (stale in-memory schema precondition).
+        assert_eq!(db.call_edges_from_uid_lite("uid_a").unwrap().len(), 1);
+        assert_eq!(db.caller_rows_by_uid("uid_b", 10).unwrap().len(), 1);
+        assert_eq!(db.caller_rows_by_uids(&["uid_b"], 10).unwrap().len(), 1);
+
+        // Drop the table behind the pool's back.
+        let side = rusqlite::Connection::open(db.admin().db_path()).unwrap();
+        side.execute("DROP TABLE call_edges", []).unwrap();
+
+        // Collect form (point query, cached statement) ...
+        assert!(db.call_edges_from_uid_lite("uid_a").is_err());
+        // ... collect form via the shared row mapper ...
+        assert!(db.caller_rows_by_uid("uid_b", 10).is_err());
+        // ... and for-loop form (batched dynamic-SQL query).
+        assert!(db.caller_rows_by_uids(&["uid_b"], 10).is_err());
     }
 }

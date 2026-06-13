@@ -1,12 +1,10 @@
 //! IndexDb methods: symbol/file queries, search, JSON, listing.
 
 use cc_model::symbol::{SymbolKind, SymbolRecord};
-use cc_model::{CcError, CcResult};
+use cc_model::{CcError, CcResult, ParserTier};
 use serde_json::Value;
 
-use crate::index_db::{
-    parse_parser_tier, CommunityRow, FileInfoRow, IndexDb, ReadOps, SymbolRow, SymbolTargetRow,
-};
+use crate::index_db::{CommunityRow, FileInfoRow, IndexDb, ReadOps, SymbolRow, SymbolTargetRow};
 
 /// `(name, kind, file_path, fan_in, fan_out)` for hotspot symbol queries.
 impl IndexDb {
@@ -51,7 +49,8 @@ impl IndexDb {
                 crate::rows::symbol_row,
             )
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
@@ -72,7 +71,8 @@ impl IndexDb {
         let rows = stmt
             .query_map(rusqlite::params![file_path], crate::rows::symbol_row)
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn list_symbol_targets(&self) -> CcResult<Vec<SymbolTargetRow>> {
@@ -95,16 +95,79 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
+    /// Symbols seeding the resolver's [`SymbolCatalog`]/`TypeCatalog` on
+    /// incremental builds (all persisted symbols outside the re-parsed and
+    /// removed files).
+    ///
+    /// Column contract: the SELECT is trimmed to the fields those two
+    /// consumers actually read — catalog entries (symbol_id, file_path,
+    /// name, kind, container, qname, export_name, is_default_export,
+    /// symbol_uid, start/end_line) plus the type-catalog inputs
+    /// (receiver_type, param_count, base_types, implements). The remaining
+    /// `SymbolRecord` fields (signature, doc, cols, parser tier/confidence,
+    /// parent_symbol_id, framework_role, param/return types) are filled with
+    /// defaults; a consumer that starts reading one of them must add the
+    /// column back here AND extend `seed_symbol_cache::project_seed` plus
+    /// the `symbols_seed` aggregate columns in `signature_agg` in the same
+    /// change.
+    ///
+    /// The full snapshot is served from the cross-build cache on the handle
+    /// when the persisted `symbols_seed` aggregate matches (see
+    /// `crate::seed_symbol_cache`); databases without a stored aggregate
+    /// baseline keep the historical direct load.
     pub(crate) fn resolver_seed_symbols_excluding(
         &self,
         excluded_files: &[String],
     ) -> CcResult<Vec<SymbolRecord>> {
         let conn = self.read_conn()?;
+        // Token read and row load must observe ONE snapshot: in autocommit
+        // mode each statement snapshots independently, so a write committing
+        // between them could pin cache content that does not correspond to
+        // the stored token (ABA). An explicit read transaction pins the
+        // snapshot at the first SELECT — legal on the pool's query_only
+        // connections (BEGIN + SELECT + COMMIT performs no writes; pinned by
+        // `read_pool_supports_explicit_read_transaction`).
+        let tx = conn
+            .unchecked_transaction()
+            .map_err(|e| CcError::Database(e.to_string()))?;
+        let token = match crate::signature_agg::load_on(&tx)? {
+            Some(aggs) => aggs.symbols_seed,
+            None => return Self::load_seed_rows_on(&tx, excluded_files),
+        };
+        if let Some(hit) = self.seed_cache_materialize(token, excluded_files) {
+            return Ok(hit);
+        }
+        // Miss: load the full snapshot (exclusion applied in memory) so it
+        // can seed the cache; the surrounding read transaction guarantees the
+        // rows match `token`.
+        let all = Self::load_seed_rows_on(&tx, &[])?;
+        drop(tx); // read-only: rollback and commit are equivalent
+        self.seed_cache_store(token, &all);
+        if excluded_files.is_empty() {
+            return Ok(all);
+        }
+        let excluded: std::collections::HashSet<&str> =
+            excluded_files.iter().map(String::as_str).collect();
+        Ok(all
+            .into_iter()
+            .filter(|s| !excluded.contains(s.file_path.as_str()))
+            .collect())
+    }
+
+    /// Direct SQL load behind [`Self::resolver_seed_symbols_excluding`].
+    pub(crate) fn load_seed_rows_on(
+        conn: &rusqlite::Connection,
+        excluded_files: &[String],
+    ) -> CcResult<Vec<SymbolRecord>> {
+        const SEED_COLUMNS: &str = "symbol_id,file_path,name,kind,container,start_line,end_line,\
+             qname,export_name,is_default_export,symbol_uid,receiver_type,param_count,\
+             base_types,implements";
         let sql = if excluded_files.is_empty() {
-            "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols ORDER BY file_path,start_line".to_string()
+            format!("SELECT {SEED_COLUMNS} FROM symbols ORDER BY file_path,start_line")
         } else {
             let placeholders = excluded_files
                 .iter()
@@ -112,7 +175,7 @@ impl IndexDb {
                 .collect::<Vec<_>>()
                 .join(",");
             format!(
-                "SELECT symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements FROM symbols WHERE file_path NOT IN ({}) ORDER BY file_path,start_line",
+                "SELECT {SEED_COLUMNS} FROM symbols WHERE file_path NOT IN ({}) ORDER BY file_path,start_line",
                 placeholders
             )
         };
@@ -127,8 +190,7 @@ impl IndexDb {
         let rows = stmt
             .query_map(params.as_slice(), |row| {
                 let kind: String = row.get(3)?;
-                let parser_tier: String = row.get(11)?;
-                let param_count: Option<i64> = row.get(22)?;
+                let param_count: Option<i64> = row.get(12)?;
                 Ok(SymbolRecord {
                     symbol_id: row.get(0)?,
                     file_path: row.get(1)?,
@@ -137,29 +199,30 @@ impl IndexDb {
                     container: row.get(4)?,
                     start_line: row.get(5)?,
                     end_line: row.get(6)?,
-                    start_col: row.get(7)?,
-                    end_col: row.get(8)?,
-                    signature: row.get(9)?,
-                    doc: row.get(10)?,
-                    parser_tier: parse_parser_tier(&parser_tier),
-                    parser_confidence: row.get(12)?,
-                    qname: row.get(13)?,
-                    parent_symbol_id: row.get(14)?,
+                    start_col: 0,
+                    end_col: 0,
+                    signature: None,
+                    doc: None,
+                    parser_tier: ParserTier::Generic,
+                    parser_confidence: 0.0,
+                    qname: row.get(7)?,
+                    parent_symbol_id: None,
                     scope_id: None,
-                    export_name: row.get(15)?,
-                    is_default_export: row.get::<_, i64>(16)? != 0,
-                    symbol_uid: row.get(17)?,
-                    framework_role: row.get(18)?,
-                    receiver_type: row.get(19)?,
-                    param_types: row.get(20)?,
-                    return_type: row.get(21)?,
+                    export_name: row.get(8)?,
+                    is_default_export: row.get::<_, i64>(9)? != 0,
+                    symbol_uid: row.get(10)?,
+                    framework_role: None,
+                    receiver_type: row.get(11)?,
+                    param_types: None,
+                    return_type: None,
                     param_count: param_count.map(|v| v as u32),
-                    base_types: row.get(23)?,
-                    implements: row.get(24)?,
+                    base_types: row.get(13)?,
+                    implements: row.get(14)?,
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
@@ -180,7 +243,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn list_file_paths(&self) -> CcResult<Vec<String>> {
@@ -191,7 +255,8 @@ impl IndexDb {
         let rows = stmt
             .query_map([], |row| row.get::<_, String>(0))
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
@@ -219,7 +284,8 @@ impl IndexDb {
                 })
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
@@ -234,7 +300,8 @@ impl IndexDb {
                 Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     pub(crate) fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
@@ -249,7 +316,8 @@ impl IndexDb {
                 Ok((row.get::<_, String>(0)?, row.get::<_, usize>(1)?))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
     /// Total row count of `table`. The table name must come from a trusted
@@ -384,7 +452,9 @@ impl IndexDb {
                 }))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
-        let frameworks: Vec<Value> = fw_rows.filter_map(|r| r.ok()).collect();
+        let frameworks: Vec<Value> = fw_rows
+            .collect::<Result<Vec<_>, _>>()
+            .map_err(|e| CcError::Database(e.to_string()))?;
         obj.insert("frameworks".into(), Value::Array(frameworks));
 
         Ok(Value::Object(obj))
@@ -485,6 +555,27 @@ mod tests {
         assert_eq!(db.count_table_rows("files").unwrap(), 2);
         assert_eq!(db.count_table_rows("chunks").unwrap(), 0);
         assert!(db.count_table_rows("no_such_table").is_err());
+    }
+
+    /// The seed-cache refill wraps its token read + row load in an explicit
+    /// read transaction on a pooled query_only connection (see
+    /// `resolver_seed_symbols_excluding`). Pin that SQLite accepts
+    /// BEGIN + SELECT + COMMIT there — query_only rejects writes, not
+    /// transactions.
+    #[test]
+    fn read_pool_supports_explicit_read_transaction() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs");
+
+        let conn = db.read_conn().unwrap();
+        let tx = conn
+            .unchecked_transaction()
+            .expect("BEGIN on a query_only connection");
+        let count: i64 = tx
+            .query_row("SELECT COUNT(*) FROM files", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(count, 1);
+        tx.commit().expect("COMMIT on a query_only connection");
     }
 
     #[test]

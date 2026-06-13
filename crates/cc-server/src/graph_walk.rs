@@ -50,6 +50,9 @@ pub(crate) struct WalkTruncation {
     pub expansions_clipped: bool,
 }
 
+/// One enumerated path: node UIDs in walk order plus the edges between them.
+pub(crate) type WalkPath<E> = (Vec<String>, Vec<E>);
+
 /// Enumerate simple paths (no node repeated within a path) from `from` to
 /// `to` in BFS order. Returns up to `budget.max_results` paths as
 /// (node UIDs, edges) pairs.
@@ -60,7 +63,7 @@ pub(crate) fn bfs_simple_paths<E, F, G>(
     budget: &WalkBudget,
     neighbors: F,
     next_of: G,
-) -> Vec<(Vec<String>, Vec<E>)>
+) -> Vec<WalkPath<E>>
 where
     E: Clone,
     F: FnMut(&str) -> Vec<E>,
@@ -77,14 +80,14 @@ pub(crate) fn bfs_simple_paths_explained<E, F, G>(
     budget: &WalkBudget,
     mut neighbors: F,
     mut next_of: G,
-) -> (Vec<(Vec<String>, Vec<E>)>, WalkTruncation)
+) -> (Vec<WalkPath<E>>, WalkTruncation)
 where
     E: Clone,
     F: FnMut(&str) -> Vec<E>,
     G: FnMut(&E) -> Option<&str>,
 {
     let mut truncation = WalkTruncation::default();
-    let mut results: Vec<(Vec<String>, Vec<E>)> = Vec::new();
+    let mut results: Vec<WalkPath<E>> = Vec::new();
     // Each queue entry carries its own visited set so distinct paths through
     // shared intermediate nodes are all discovered (simple-path constraint:
     // no node appears twice within the *same* path).

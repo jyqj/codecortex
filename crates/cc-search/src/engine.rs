@@ -575,7 +575,7 @@ mod tests {
         };
         outcome.is_test_file = false;
 
-        let conn = engine.db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&engine.db);
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -1164,11 +1164,7 @@ mod tests {
         );
         // Drop call_edges so the enrichment's batched adjacency reads fail
         // (the graph lane swallows its own failures, so search still works).
-        engine
-            .db
-            .reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&engine.db)
             .execute("DROP TABLE call_edges", [])
             .unwrap();
 
@@ -1300,7 +1296,7 @@ mod tests {
         };
         outcome.is_test_file = false;
 
-        let conn = engine.db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&engine.db);
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -1354,7 +1350,7 @@ mod tests {
     }
 
     #[test]
-    fn grep_lane_adapter_ranks_matches_and_populates_text_cache() {
+    fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
         let (engine, _tmp) = scoped_test_engine();
         insert_chunk_file(
             &engine,
@@ -1387,11 +1383,76 @@ mod tests {
         let hits = lane.run(&context).unwrap();
         assert_eq!(hits, vec![("chunk:src/g.rs".to_string(), 1.0)]);
 
-        // Side effect: every scanned chunk's decompressed text lands in the
-        // engine's chunk text cache (matching and non-matching alike).
+        // Side effect: only *matched* chunks land in the engine's chunk
+        // text cache.  Scan-only rows stay out so a cold scan over a large
+        // scope can't rotate the LRU and evict hot entries.
         let mut cache = engine.chunk_text_cache.lock().unwrap();
         assert!(cache.get("chunk:src/g.rs").is_some());
-        assert!(cache.get("chunk:src/other.rs").is_some());
+        assert!(
+            cache.get("chunk:src/other.rs").is_none(),
+            "non-matching scanned chunk must not enter the text cache"
+        );
+    }
+
+    #[test]
+    fn grep_lane_scan_budget_truncates_recency_first_and_deterministically() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        let config = ProjectConfig {
+            search: SearchConfig {
+                lexical_top_k: 3,
+                grep_top_k: 10,
+                grep_scan_cap: 2,
+                lexical_weight: 1.0,
+                grep_weight: 0.8,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let engine = SearchEngine::new(Arc::new(db), &config, None);
+
+        // Four matching files, inserted oldest → newest.  With the scan
+        // budget at 2, the unscoped recency-ordered scan only reaches the
+        // two most recently indexed files.
+        for name in ["a", "b", "c", "d"] {
+            insert_chunk_file(
+                &engine,
+                &format!("src/{name}.rs"),
+                Language::Rust,
+                "the scanneedle is here",
+            );
+        }
+
+        // file_preselect_limit=0 empties preselect, so no file scope is
+        // materialized and grep takes the unscoped (budgeted) path.
+        let request = SearchRequest {
+            query: "scanneedle".to_string(),
+            top_k: 10,
+            include_grep: true,
+            file_preselect_limit: Some(0),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let first = GrepLane.run(&context).unwrap();
+        assert_eq!(
+            first,
+            vec![
+                ("chunk:src/d.rs".to_string(), 1.0),
+                ("chunk:src/c.rs".to_string(), 0.5),
+            ],
+            "budget of 2 must cover exactly the two most recently indexed files"
+        );
+
+        // Determinism: same index + same config + same query → same result.
+        let second = GrepLane.run(&context).unwrap();
+        assert_eq!(first, second);
     }
 
     #[test]
@@ -1709,7 +1770,7 @@ mod tests {
             parser_confidence: 1.0,
             ..Default::default()
         };
-        let conn = engine.db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&engine.db);
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -2152,6 +2213,7 @@ mod tests {
                 rerank_window: 5,
                 graph_weight: 0.6,
                 graph_top_k: 12,
+                ..Default::default()
             },
             ..Default::default()
         };
@@ -2288,7 +2350,7 @@ mod tests {
             parser_tier: ParserTier::TreeSitter,
             parser_confidence: 1.0,
         };
-        let conn = engine.db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&engine.db);
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -2404,6 +2466,7 @@ mod tests {
                 rerank_window: 3,
                 graph_weight: 0.6,
                 graph_top_k: 12,
+                ..Default::default()
             },
             ..Default::default()
         };

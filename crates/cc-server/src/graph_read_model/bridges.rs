@@ -10,7 +10,8 @@ use std::sync::Arc;
 use crate::graph_types::{BfsAdj, EdgeLite};
 
 use super::cache::{
-    generation_cached, BridgeEdgesByCaller, GraphReadGeneration, SharedBridgeEdges, BRIDGE_CACHE,
+    generation_cached, BridgeEdgesByCaller, BridgeIndex, GraphReadGeneration, SharedBridgeEdges,
+    BRIDGE_CACHE,
 };
 use super::GraphReadModel;
 
@@ -26,13 +27,26 @@ impl GraphReadModel {
 
     /// Build synthesized caller → route-handler edges from HTTP/async evidence.
     pub(crate) fn bridge_edges_by_caller(db: &IndexDb) -> CcResult<BridgeEdgesByCaller> {
+        Ok(Self::bridge_index(db)?.by_caller)
+    }
+
+    /// Like [`Self::bridge_edges_by_caller`] but keeps the load-time
+    /// truncation fact alongside the edges, under the configured cap.
+    pub(super) fn bridge_index(db: &IndexDb) -> CcResult<BridgeIndex> {
         let limit: usize = std::env::var("CODECORTEX_BRIDGE_EDGE_LIMIT")
             .ok()
             .and_then(|v| v.parse().ok())
             .unwrap_or(10_000);
+        Self::bridge_index_with_limit(db, limit)
+    }
+
+    pub(super) fn bridge_index_with_limit(db: &IndexDb, limit: usize) -> CcResult<BridgeIndex> {
         let reads = GraphReads::new(db);
         let http_edges = reads.all_http_call_edges_lite(limit)?;
         let route_nodes = reads.all_route_nodes_lite(limit)?;
+        // A full bucket means rows beyond the cap were likely dropped; the
+        // flag rides on the index so consumers can report `bridge_cap`.
+        let truncated = http_edges.len() == limit || route_nodes.len() == limit;
         if http_edges.len() == limit {
             tracing::warn!(
                 count = http_edges.len(),
@@ -124,7 +138,10 @@ impl GraphReadModel {
             }
         }
 
-        Ok(http_bridges)
+        Ok(BridgeIndex {
+            by_caller: http_bridges,
+            truncated,
+        })
     }
 
     pub(super) fn cached_bridge_edges_by_caller(
@@ -132,7 +149,7 @@ impl GraphReadModel {
         generation: &GraphReadGeneration,
     ) -> CcResult<SharedBridgeEdges> {
         generation_cached(&BRIDGE_CACHE, generation, || {
-            Ok(Arc::new(Self::bridge_edges_by_caller(db)?))
+            Ok(Arc::new(Self::bridge_index(db)?))
         })
     }
 }

@@ -906,6 +906,105 @@ class Accumulator:
         }
     }
 
+    /// The cross-build seed cache (see `cc_db`'s `seed_symbol_cache`) must
+    /// be content-equivalent to a full DB reload after every incremental
+    /// batch shape: initial add, export-signature modification of an
+    /// imported file (the dirty-closure trigger), file addition, and file
+    /// removal. Ground truth comes from a second `IndexDb` handle on the
+    /// same file, whose first read is always a fresh SQL load.
+    #[test]
+    fn seed_cache_matches_full_reload_across_incremental_builds() {
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        let db_path = dir.path().join("index.sqlite3");
+        std::fs::write(
+            dir.path().join("lib.py"),
+            "def helper(value):\n    return value + 1\n\n\ndef util():\n    return 0\n",
+        )
+        .expect("write lib.py");
+        std::fs::write(
+            dir.path().join("main.py"),
+            "from lib import helper\n\n\ndef main():\n    return helper(1)\n",
+        )
+        .expect("write main.py");
+        std::fs::write(
+            dir.path().join("extra.py"),
+            "def standalone():\n    return 2\n",
+        )
+        .expect("write extra.py");
+
+        let db = open_db(dir.path());
+        let indexer = Indexer::new(db.clone(), dir.path(), &config);
+        let plan = IndexBuildPlan::new(false, None);
+
+        let assert_seed_equivalent = |label: &str| {
+            assert!(
+                db.seed_cache_len().is_some(),
+                "{label}: seed cache must be warm before the equivalence read"
+            );
+            let (fresh, _) =
+                cc_db::index_db::IndexDb::open(&db_path).expect("open ground-truth handle");
+            for excluded in [Vec::new(), vec!["main.py".to_string()]] {
+                let fingerprints = |rows: &[cc_model::symbol::SymbolRecord]| {
+                    let mut keys: Vec<String> = rows
+                        .iter()
+                        .map(|s| serde_json::to_string(s).expect("serialize symbol"))
+                        .collect();
+                    keys.sort();
+                    keys
+                };
+                let cached = db
+                    .reads()
+                    .resolver_seed_symbols_excluding(&excluded)
+                    .expect("cached seed read");
+                let direct = fresh
+                    .reads()
+                    .resolver_seed_symbols_excluding(&excluded)
+                    .expect("direct seed read");
+                assert_eq!(
+                    fingerprints(&cached),
+                    fingerprints(&direct),
+                    "{label}: cached seed rows diverged from a full reload (excluded: {excluded:?})"
+                );
+                assert!(
+                    !cached.is_empty(),
+                    "{label}: fixture must yield persisted seed symbols"
+                );
+            }
+        };
+
+        plan.execute(&indexer, dir.path()).expect("initial build");
+        // Warm the cache through the read path: the initial build runs on a
+        // fresh database whose aggregate baseline is created mid-batch, so
+        // the batch itself cannot prove its pre-state.
+        db.reads()
+            .resolver_seed_symbols_excluding(&[])
+            .expect("warming read");
+        assert_seed_equivalent("after initial build");
+
+        // Export-signature change of an imported file: triggers the dirty
+        // closure (main.py re-resolves) and rewrites lib.py's seed rows.
+        std::fs::write(
+            dir.path().join("lib.py"),
+            "def helper(value, scale):\n    return value * scale\n\n\ndef util():\n    return 0\n",
+        )
+        .expect("modify lib.py");
+        plan.execute(&indexer, dir.path()).expect("modify build");
+        assert_seed_equivalent("after export-signature change");
+
+        std::fs::write(
+            dir.path().join("newcomer.py"),
+            "def newcomer():\n    return 3\n",
+        )
+        .expect("write newcomer.py");
+        plan.execute(&indexer, dir.path()).expect("add build");
+        assert_seed_equivalent("after file addition");
+
+        std::fs::remove_file(dir.path().join("extra.py")).expect("remove extra.py");
+        plan.execute(&indexer, dir.path()).expect("remove build");
+        assert_seed_equivalent("after file removal");
+    }
+
     /// A `PreparedBuild` whose snapshot predates a newer index write must be
     /// rejected at commit time with the typed stale error — otherwise a
     /// later-committing stale prepare would overwrite fresher index content.

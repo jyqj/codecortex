@@ -306,7 +306,7 @@ mod tests {
             parser_confidence: 1.0,
             ..Default::default()
         };
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(db);
         IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
@@ -396,7 +396,7 @@ mod tests {
         );
         {
             // Two refs against uid:alpha feed the ref_count score bonus.
-            let conn = db.reads().read_conn().unwrap();
+            let conn = crate::test_seed::seed_conn(&db);
             for ref_id in ["sr1", "sr2"] {
                 conn.execute(
                     "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,target_symbol_uid,resolution_kind,resolution_confidence,resolution_strategy,parser_tier,parser_confidence)
@@ -500,9 +500,7 @@ mod tests {
         insert_graph_file(&db, "src/a.rs", "alpha", "uid:alpha", vec![alpha_to_beta]);
 
         // Drop call_edges so the degree/caller/callee batch queries fail.
-        db.reads()
-            .read_conn()
-            .unwrap()
+        crate::test_seed::seed_conn(&db)
             .execute("DROP TABLE call_edges", [])
             .unwrap();
 

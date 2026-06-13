@@ -517,7 +517,18 @@ impl IndexDb {
     }
 
     fn open_and_ensure_schema_inner(path: &Path) -> CcResult<(Connection, SchemaStatus)> {
-        let pragmas = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000;";
+        // This is the single incremental write connection (the read pool is
+        // built separately in `build_read_pool`, which keeps the lean default).
+        // Every INSERT/DELETE in a batch navigates the secondary-index B-trees;
+        // on a multi-hundred-MB DB the default 2 MB page cache misses on nearly
+        // every index page, so give this one connection a 64 MB cache plus a
+        // 512 MB mmap window to cut the random-page-read amplification. Bounded
+        // to one connection, so total memory stays predictable. A full rebuild
+        // re-opens through this same path (the bulk pragmas apply only to the
+        // throwaway temp connection), so the cache is never silently dropped.
+        let pragmas = "PRAGMA journal_mode=WAL; PRAGMA synchronous=NORMAL; \
+                       PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000; \
+                       PRAGMA cache_size=-65536; PRAGMA mmap_size=536870912;";
 
         let conn = Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
         conn.execute_batch(pragmas)

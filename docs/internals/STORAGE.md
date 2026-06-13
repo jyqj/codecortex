@@ -27,11 +27,16 @@
   symbols 的 O(repo) 成本；任何改动种子列的写（进程内或跨进程）都会
   移动 token，下次读取 miss 重载。
 
-连接初始化 PRAGMA：`journal_mode=WAL`、`synchronous=NORMAL`、
-`foreign_keys=ON`、`busy_timeout=5000`；读池连接额外加 `query_only=ON`——
-写隔离从"只有 `WriteOps` 暴露写方法"的类型纪律升级为机制保证：经池化
-连接的任何 INSERT/UPDATE/DELETE 直接报 `SQLITE_READONLY`，不可能绕过
-epoch 推进让 epoch 键控缓存读到陈旧数据。
+连接初始化 PRAGMA：
+
+- **写连接**：`journal_mode=WAL`、`synchronous=NORMAL`、`foreign_keys=ON`、
+  `busy_timeout=5000`、`cache_size=-65536`（64 MB）、
+  `mmap_size=536870912`（512 MB）。cache/mmap 强化是多百 MB 库随机索引页
+  命中的关键（50k 5% 批量写 8.66s→5.07s，commit `976a626`）。
+- **读池连接**：以上除 cache/mmap 外，额外加 `query_only=ON`——写隔离从
+  "只有 `WriteOps` 暴露写方法"的类型纪律升级为机制保证：经池化连接的
+  任何 INSERT/UPDATE/DELETE 直接报 `SQLITE_READONLY`，不可能绕过 epoch
+  推进让 epoch 键控缓存读到陈旧数据。
 
 ### 按能力切分的方法面
 
@@ -86,7 +91,7 @@ dispatch synthesis 的 apply 阶段（`cc-index/src/synthesis_pipeline.rs`）。
 
 ## 表结构
 
-21 张基表（schema v5，`index_v1.sql`）：
+21 张基表（schema v6，`index_v1.sql`）：
 
 | 组 | 表 | 内容 |
 |---|---|---|
@@ -161,7 +166,7 @@ SQLite auxiliary data 缓存：常量模式每条语句编译一次，而不是�
 
 ## Schema 版本策略
 
-`user_version` pragma 记录 schema 版本（当前 v5，
+`user_version` pragma 记录 schema 版本（当前 v6，
 `CURRENT_SCHEMA_VERSION` 在 `index_migrate.rs`）。磁盘索引版本不匹配时的
 策略是 **rebuild-on-mismatch**：就地清空（`writable_schema` 重置）后按当前
 schema 重建，不做向后迁移。索引是缓存而非数据源，重建总是安全的。

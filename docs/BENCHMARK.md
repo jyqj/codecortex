@@ -6,7 +6,7 @@ JSON-RPC 对 rmcp 路由，含 schema 校验与输出预算）：
 | 基准 | 规模 | 产物 |
 |------|------|------|
 | fixture 冒烟基准 | 18 文件 | `docs/benchmarks/latest.md` |
-| 真实工作区基准 | 本仓库拷贝（最近一轮 234 文件） | `docs/benchmarks/real_workspace_latest.md` |
+| 真实工作区基准 | 本仓库拷贝（最近一轮 330 文件） | `docs/benchmarks/real_workspace_latest.md` |
 | 增量延迟基准 | 合成 41 文件 TS 项目 | 仅控制台输出 |
 | 合成规模矩阵 | 1k / 10k / 50k 文件 | `docs/benchmarks/synthetic_<scale>_latest.md` |
 
@@ -77,7 +77,7 @@ CODECORTEX_WRITE_REAL_BENCHMARK=1 cargo test -p cc-eval benchmark_real_workspace
 ```
 
 把 CodeCortex 工作区拷贝到临时目录索引，跑 10 个代表性 MCP 用例。最近一轮：
-234 文件，全部工具 p95 < 500ms；见
+330 文件，全部工具 p95 < 500ms；见
 `docs/benchmarks/real_workspace_latest.md`。
 
 ### 增量索引延迟
@@ -133,7 +133,7 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 |------|--------------|---------|--------------------|--------------------|-----------------|--------------|
 | 1k（5,568 符号） | 0.85s | 24.7 MB | 64ms | 218ms | 0.2–21ms / warm 亚毫秒 | 8/8 |
 | 10k（55,617 符号） | 10.0s | 244.0 MB | 345ms | 2.47s | 0.2–100ms / warm 亚毫秒 | 8/8 |
-| 50k（278,074 符号） | 82.7s | 1220.6 MB | 1.82s | 14.3s（2400 文件） | 最大 631ms（`search_hybrid_mixed_terms`），其余毫秒级 / warm 亚毫秒 | 8/8 |
+| 50k（278,074 符号） | 82.7s | 1220.6 MB | 1.82s | 17.1s（2400 文件） | 最大 631ms（`search_hybrid_mixed_terms`），其余毫秒级 / warm 亚毫秒 | 8/8 |
 
 - 三档报告均以 µs 粒度分列 cold/warm（cold = 每次迭代新建 MCP 会话；warm =
   同会话缓存命中），冷查询延迟以 cold 列为准；上表"工具查询"取 cold p50 区间。

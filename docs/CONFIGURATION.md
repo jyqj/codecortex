@@ -46,8 +46,8 @@
 
 | 字段 | 默认 | 含义 |
 |------|------|------|
-| `include` | `[]` | **扩展**（而非收窄）索引范围。已知语言的文件总是被索引；`include` 救援匹配这些 glob 的未知语言文件。 |
-| `ignore` | `[]` | 在 gitignore 感知发现之上额外排除的 glob。 |
+| `include` | 27 项默认 glob | **扩展**（而非收窄）索引范围。已知语言的文件总是被索引；`include` 救援匹配这些 glob 的未知语言文件。设值是**替换**默认集而非追加。 |
+| `ignore` | 15 项默认排除 glob | 在 gitignore 感知发现之上额外排除的 glob（默认含 `.git/**`、`node_modules/**`、`target/**` 等）。设值是**替换**默认集而非追加。 |
 | `max_file_bytes` | `512000` | 超过此大小的文件跳过。 |
 | `chunk_line_budget` | `80` | 符号提取时单个代码 chunk 的最大行数。 |
 | `parse_timeout_micros` | `null` | 单文件解析超时（微秒）。`null` 不超时。 |

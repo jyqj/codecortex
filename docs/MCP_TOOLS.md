@@ -71,8 +71,9 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
   `indexed_chunks` / `indexed_call_edges` 等计数、`diagnostics`、
   `runtime_evidence`（有证据时）；
 - `capabilities`：`has_index`、`has_project`、`capabilities.{search,graph,impact}`；
-- `schema`：`node_types[]`（kind + count）、`edge_types[]`
-  （kind + relationship + count）——写 Cypher 前先看这个；
+- `schema`：`node_kinds[]`（每项 `{kind, count}`）、`edge_counts`（表名→行数）、
+  `relationship_patterns[]`（`{from, edge, to, table, description}`）、
+  `edge_properties`、`example_queries[]`、`next_tool_hints`——写 Cypher 前先看这个；
 - `all`：以上合并为 `{index, capabilities, schema, diagnostics, runtime_evidence?}`。
 
 ### `index` —— 指向项目并构建/更新索引
@@ -118,8 +119,10 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
 | `task` | 任务描述 |
 | `max_symbols`、`include_source`、`intent` | 规模与意图控制 |
 
-响应：`matched_symbols[]` + `symbol_details`（`include_source=true` 时，
-按文件分组的符号源码）+ `query_explanation`。出口 ByteCap。
+响应：`ContextEnvelope`——`task`、`intent`、`query`、`summary`、`nodes[]`
+（命中符号：`title`、`file_path`、行范围、`score`、`confidence`、`reasons[]`、
+`metadata`）、`spans[]`、`token_estimate`、`evidence_summary`，外加
+`include_source=true` 时按文件分组的 `symbol_details`。出口 ByteCap。
 
 ## Deep dive
 
@@ -156,11 +159,12 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 | `source_mode` | `none` / `snippet` / `body` / `outline` |
 | `max_depth`、`max_snippet_lines` | 深度与片段控制 |
 
-响应：`found`、`path[]`（每跳：`name`、`uid`、`file_path`、行范围，
-`snippet`/正文按 `source_mode`）、`path_length`；`source_mode="snippet"`
-时另有 `snippet_chars_budget` / `snippet_chars_used`，`"body"` 时每跳带
-`outgoing_calls[]`。无路径 → `found: false` + 空 `path`（不是错误）。
-可含 `graph_explain`（HTTP/异步桥被遍历时 `synthetic_edge_count` 非零）。
+响应：`TracePathResult`——`paths[]`（每条是一个**名称路径数组**
+`Vec<String>`）、`nodes[]`（`TraceNode`：`uid`/`name`/`kind`/`file_path`/
+行范围/`signature`?/`snippet`?/`outgoing_calls`?，正文按 `source_mode`）、
+`edges[]`（`TraceEdge`）、`path_count`；`from`/`to` 匹配多符号时带
+`disambiguation[]`（用 `from_uid`/`to_uid` 消歧），无路径时带 `diagnostic`
+提示。可含 `graph_explain`（HTTP/异步桥被遍历时 `synthetic_edge_count` 非零）。
 
 ## Analysis
 
@@ -172,8 +176,10 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 | `kind` | `callers` / `callees` / `both`（默认）/ `refs` / `hierarchy` |
 | `limit`、`direction` | `direction` 用于 hierarchy：`up` / `down` / `both` |
 
-响应：`callers`/`callees` → 关系数组（`name`、`uid`、`file_path`、
-`line`、`confidence`，caller 侧含 `call_count`）；`refs` → 引用位置数组；
+响应：`callers`/`callees` → `CallEdgeLite` 数组（`file_path`、`line`、
+`caller_symbol`?/`callee_symbol`、`caller_symbol_uid`?/`callee_symbol_uid`、
+`resolution_kind`、`confidence`、`dispatch_kind`、`synthesized_by`?）；
+`refs` → 引用位置数组；
 `hierarchy` → 祖先/后代数组（`relation_type`: supertype/subtype）。
 出口 ByteCap；可含 `graph_explain`。
 
@@ -188,15 +194,18 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 
 响应（按 `scope`）：
 
-- `changes`：`changed_files[]`、`impacted_symbols[]`、`impact_count`、
-  `truncated` + `total_impacted_discovered`（BFS 被钳制时）、
-  `confidence_filtered`；
+- `changes`：`ImpactReport`——`changed_files[]`、`impacted_symbols[]`、
+  `suggested_tests[]`、`boundary_crossings[]`、`risk_summary`（含
+  `total_impacted`）、`confidence_weighted_risk`、`cross_service_impacts[]`、
+  `historical_impacts[]`、`truncated`、`returned_symbol_count`、
+  `total_impacted_discovered`（BFS 被钳制时的下界）；置信度过滤是输入侧
+  `confidence_threshold` 静默应用，结果不单独标记；
 - `tests`：`impacted_tests[]`、`test_count`；
 - `dead_code`：`dead_code[]`（含 `reason`）、`count`、`total_found`、
   `truncated`、`scan_limit`；
 - `circular`：`cycles[]`（节点环 + `cycle_length`）、`count`；
 - `dependents`：`file_path`、`dependents[]`、`count`（必须给
-  `files=[一个文件]`）。
+  `file_path=[一个文件]`）。
 
 出口 ByteCap；可含 `graph_explain`。
 
@@ -222,7 +231,8 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 | `action` | `list` / `region` / `expand` |
 | `path`、`start_line`、`end_line`、`context_lines` | region/expand 用 |
 
-响应：`list` → 文件数组（路径、语言、大小、符号数；出口 ItemCap）；
+响应：`list` → 文件数组（`file_path`、`language`、`size`、`parser_tier`、
+`indexed_at`；出口 ItemCap）；
 `region` → `{file_path, start_line, end_line, content, symbols[]}`；
 `expand` → 扩展到符号边界后的同形结构。
 
@@ -246,7 +256,7 @@ limit_applied?, fast_path?, graph_explain?}`。`truncated_reason` 区分
 | `traces[]` | 每条：`service_name`、`method`、`path`、`status_code`（≤1000 条/次） |
 
 响应：`{accepted, matched_to_edges, routes_matched, ambiguous,
-unmatched, spans_processed, total_submitted}`。每次匹配给边的数值
+unmatched, spans_processed, total_submitted, write_errors}`。每次匹配给边的数值
 置信度 +0.15（封顶 1.0，不改变解析层级），只推进 `evidence_epoch`
 （见 [internals/STORAGE.md](internals/STORAGE.md#epoch-双时钟)）。
 

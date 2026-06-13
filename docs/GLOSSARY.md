@@ -20,7 +20,7 @@ CodeCortex 文档与代码共用的术语。按主题分组，括号内是代码
   `GraphReadGeneration`。
 - **UnitOfWork**：多语句写事务的唯一入口；持有写连接全程，commit 恰好
   推进一次 `index_epoch`，drop 未提交即回滚。
-- **rebuild-on-mismatch**：schema 版本（`user_version`，当前 v5）不匹配
+- **rebuild-on-mismatch**：schema 版本（`user_version`，当前 v6）不匹配
   时直接重建索引，不做迁移。
 
 ## 索引管线
@@ -34,10 +34,12 @@ CodeCortex 文档与代码共用的术语。按主题分组，括号内是代码
   提升为重解析的不动点循环；结束方式分类为
   `normal` / `partial_closure` / `budget_exceeded` / `disabled`。
 - **pass**：postprocess/analysis 阶段的一个独立工作单元（test edges、
-  各 dispatch 合成、Louvain、git 共变、infra、ADR）。
+  各 dispatch 合成、Louvain、git 共变、infra、ADR）。dispatch 合成 pass
+  声明为 `SynthesisPassSpec`（`dispatch_synthesis/mod.rs` 的 `registry()`）。
 - **PassGate（门）**：pass 的声明式跳过条件（输入签名未变即跳过）；
-  决策在 compute 阶段，签名记账（`DeferredSignatureRecord`）推迟到
-  apply 落库之后。
+  trait `PassGate`（[`pass_gate.rs`](../crates/cc-index/src/pass_gate.rs)），
+  参考实现 `DbSignatureGate`；决策在 compute 阶段，签名记账
+  （`DeferredSignatureRecord`）推迟到 apply 落库之后。
 - **dispatch synthesis（派发合成）**：为动态派发（事件、JSX/Vue 渲染、
   接口派发等）合成调用边的后处理 pass 族，每个声明为
   `SynthesisPassSpec`。

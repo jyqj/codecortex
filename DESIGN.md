@@ -35,7 +35,7 @@ cc-parsers/cc-index），两支在 cc-server 汇合。
 | Crate | 职责 |
 |-------|------|
 | cc-model | 数据类型、配置、错误（serde、thiserror、blake3） |
-| cc-db | SQLite 索引存储：r2d2 池、WAL、FTS5、21 表（+5 FTS5）、schema v5 |
+| cc-db | SQLite 索引存储：r2d2 池、WAL、FTS5、21 表（+5 FTS5）、schema v6 |
 | cc-parsers | tree-sitter AST 提取 + 框架检测 |
 | cc-index | 文件扫描、增量索引、Louvain 社区检测 |
 | cc-search | 排序式本地检索（FTS5 + grep + 预选/RRF）+ Cypher 子集 |

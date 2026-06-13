@@ -32,13 +32,20 @@ Java、Go、C、C++
 - **test edges、dispatch sites、类型赋值**：Python 与 JS/TS 最完整；
   其余语言部分支持。
 
-### Heuristic / Generic 兜底（置信度 0.3 – 0.5）
+### Heuristic 兜底（置信度 0.5）
 
-C#、PHP、Ruby、Swift、Kotlin、Dart、Scala、Lua、Vue、Svelte、Markdown、
-SQL、YAML、TOML、HCL、Dockerfile、Bash、Protobuf、GraphQL、CMake
+C#、PHP、Ruby、Swift、Kotlin、Dart、Scala、Lua、Vue、Svelte
 
-启发式提取捕获符号、导入与尽力而为的文件内调用边；不解析跨文件调用或
-类型层级。
+spec-driven 启发式（`SpecDrivenParser`）与 SFC 解析器（`sfc.rs`）：带语言
+感知的模式匹配，捕获符号、导入与尽力而为的文件内调用边；不解析跨文件
+调用或类型层级。
+
+### Generic 兜底（置信度 0.3）
+
+Markdown、SQL、YAML、TOML、HCL、Dockerfile、Bash、Protobuf、GraphQL、CMake
+
+正则行级分块（`generic.rs`）：仅做基本的符号/结构识别，无调用边或类型
+信息。这些语言主要为检索（FTS5/grep）与文件预选服务。
 
 ### 置信度分层
 

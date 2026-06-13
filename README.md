@@ -4,7 +4,8 @@ Rust 实现的代码图谱索引与分析 MCP 服务器。CodeCortex 为代码�
 索引，通过 14 个 MCP 工具向 AI agent 提供排序搜索、影响面分析、架构透视
 与图查询。
 
-纯代码智能——没有 UI、没有 CLI 产品形态，MCP-first。
+纯代码智能——不提供 UI 或交互式 CLI 产品，MCP-first（CLI 仅用于启动
+MCP 服务器和安装 agent 配置）。
 
 ## 快速开始
 
@@ -71,7 +72,7 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
 ## 亮点
 
 - **30 种语言标识符**，10 种完整 tree-sitter 解析；16 个语义框架
-  resolver（Express、Flask、Spring、Gin、Axum、Rails……）。见
+  resolver（Express、Flask、Spring、Axum、Rails、Django……）。见
   [docs/LANGUAGES.md](docs/LANGUAGES.md)。
 - **排序式本地搜索**——FTS5 + 正则 grep + 文件预选，经 Reciprocal Rank
   Fusion 融合，再按文件路径 / breadcrumb / 时近性加成重排。见

@@ -131,6 +131,13 @@ pub struct FlowResult {
     pub ambiguous: Vec<AmbiguousSymbol>,
     pub disconnected: Vec<DisconnectedSymbol>,
     pub summary: String,
+    /// Unified explainability envelope (additive), mirroring trace: which
+    /// budget clipped the pairwise BFS ("max_depth"/"max_paths") or the output
+    /// trim ("output_budget"), the edge kinds traversed, synthetic/evidence
+    /// edge counts, and any DB read errors degraded to partial results. Absent
+    /// when there is nothing to report.
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub graph_explain: Option<cc_model::GraphExplain>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

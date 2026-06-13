@@ -76,8 +76,14 @@ pub fn explore_flow(
         }
     }
 
-    // 3. Build shared lazy graph read model once.
+    // 3. Build shared lazy graph read model once. The explain collector
+    // records which budget clipped the pairwise BFS and any read errors that
+    // degraded to partial results — same envelope trace surfaces. Declared
+    // subset matches TRACE (CALLS adjacency plus synthesized cross-service
+    // bridges from `GraphReadModel::new`).
     let read_model = GraphReadModel::new(Arc::clone(db))?;
+    let mut explain = cc_model::GraphExplainCollector::new();
+    explain.declare_edge_kinds(cc_model::graph_catalog::tool_graph_subsets::FLOW);
 
     // 4. Pairwise path finding.
     let uid_names = db.reads().symbol_names_by_uid()?;
@@ -91,14 +97,26 @@ pub fn explore_flow(
             let uid_j = &resolved[j].1;
 
             // Forward: i → j
-            let fwd = read_model.paths_between(uid_i, uid_j, max_depth, max_paths_per_pair);
+            let fwd = read_model.paths_between_explained(
+                uid_i,
+                uid_j,
+                max_depth,
+                max_paths_per_pair,
+                &mut explain,
+            );
             for lp in fwd {
                 path_endpoints.push((i, j));
                 all_labeled_paths.push(lp);
             }
 
             // Reverse: j → i
-            let rev = read_model.paths_between(uid_j, uid_i, max_depth, max_paths_per_pair);
+            let rev = read_model.paths_between_explained(
+                uid_j,
+                uid_i,
+                max_depth,
+                max_paths_per_pair,
+                &mut explain,
+            );
             for lp in rev {
                 path_endpoints.push((j, i));
                 all_labeled_paths.push(lp);
@@ -113,11 +131,12 @@ pub fn explore_flow(
             all_uids.insert(uid.clone());
         }
     }
-    let flow_edges = read_model.project_trace_edges(
+    let flow_edges = read_model.project_trace_edges_with_explain(
         all_labeled_paths
             .iter()
             .flat_map(|path| path.edge_lites.iter()),
         false,
+        &mut explain,
     );
 
     let uid_vec: Vec<String> = all_uids.iter().cloned().collect();
@@ -235,6 +254,7 @@ pub fn explore_flow(
 
     // 9. Optionally truncate flow_paths to stay within the output budget.
     let flow_paths = if let Some(budget) = max_output_chars {
+        let original_len = flow_paths.len();
         let mut trimmed = flow_paths;
         loop {
             let candidate = FlowResult {
@@ -245,13 +265,20 @@ pub fn explore_flow(
                 ambiguous: ambiguous.clone(),
                 disconnected: disconnected.clone(),
                 summary: summary.clone(),
+                graph_explain: None,
             };
             let serialized = serde_json::to_string(&candidate).unwrap_or_default();
             if serialized.len() <= budget || trimmed.is_empty() {
-                break trimmed;
+                break;
             }
             trimmed.pop();
         }
+        // Record the output-budget clip so callers can distinguish "few paths"
+        // from "more paths existed but were trimmed to fit the budget".
+        if trimmed.len() < original_len {
+            explain.mark_truncated("output_budget");
+        }
+        trimmed
     } else {
         flow_paths
     };
@@ -265,6 +292,7 @@ pub fn explore_flow(
         ambiguous,
         disconnected,
         summary,
+        graph_explain: explain.finish_non_empty(),
     };
 
     Ok(serde_json::to_value(result).unwrap_or_default())
@@ -357,6 +385,36 @@ mod tests {
         assert_eq!(flow.disconnected.len(), 1);
         assert_eq!(flow.disconnected[0].name, "fn_d");
         assert_eq!(flow.disconnected[0].uid, "uid_d");
+    }
+
+    /// Additive explain envelope, mirroring trace: a complete flow that
+    /// traverses static CALLS edges attaches a `graph_explain` reporting the
+    /// edge kinds used, with no synthetic / evidence / truncation noise.
+    #[test]
+    fn explore_flow_attaches_graph_explain() {
+        let (_tmp, db) = setup_abcd_graph();
+        let result = explore_flow(
+            &db,
+            None,
+            &["fn_a".into(), "fn_c".into()],
+            5,
+            false,
+            10,
+            true,
+            None,
+            10,
+            None,
+        )
+        .unwrap();
+        let flow: FlowResult = serde_json::from_value(result).unwrap();
+        let explain = flow
+            .graph_explain
+            .expect("graph_explain attached after a CALLS traversal");
+        assert_eq!(explain.edge_kinds_used, vec!["static"]);
+        assert_eq!(explain.synthetic_edge_count, 0);
+        assert_eq!(explain.runtime_evidence_edge_count, 0);
+        assert!(!explain.truncated);
+        assert!(explain.read_errors.is_empty());
     }
 
     #[test]

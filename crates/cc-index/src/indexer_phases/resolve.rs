@@ -41,20 +41,29 @@ impl Indexer {
             mut catalog,
             persisted_symbols,
             resolution_contexts,
-        } = self.build_resolution_catalog(full, write_units, to_remove)?;
+        } = super::time_step("resolve", "build_catalog", || {
+            self.build_resolution_catalog(full, write_units, to_remove)
+        })?;
 
         // Phase 4a / 4a-2: semantic edge UIDs + backfill, USES_TYPE derivation.
-        Self::resolve_semantic_edges(&catalog, write_units, &resolution_contexts);
+        super::time_step("resolve", "semantic_edges", || {
+            Self::resolve_semantic_edges(&catalog, write_units, &resolution_contexts)
+        });
 
         // Phase 4b: type catalog (dispatch) + hierarchy edges.
-        let hierarchy_edges =
-            Self::resolve_hierarchy(&mut catalog, &persisted_symbols, write_units);
+        let hierarchy_edges = super::time_step("resolve", "hierarchy", || {
+            Self::resolve_hierarchy(&mut catalog, &persisted_symbols, write_units)
+        });
 
         // Phase 4c: call edges, symbol refs, route edges.
-        Self::resolve_call_edges(&catalog, write_units, &resolution_contexts);
+        super::time_step("resolve", "call_edges", || {
+            Self::resolve_call_edges(&catalog, write_units, &resolution_contexts)
+        });
 
         // Phase 4d: cross-file framework resolution (post-catalog).
-        Self::resolve_framework_cross_file(&catalog, write_units, fw_context);
+        super::time_step("resolve", "framework_cross_file", || {
+            Self::resolve_framework_cross_file(&catalog, write_units, fw_context)
+        });
 
         Ok(ResolveResult { hierarchy_edges })
     }

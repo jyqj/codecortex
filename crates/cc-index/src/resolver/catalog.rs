@@ -19,6 +19,13 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) by_name: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_uid: HashMap<String, usize>,
     pub(in crate::resolver) by_qname: HashMap<String, Vec<usize>>,
+    /// leaf segment (last `.`-token, lowercase) of each qname -> indices.
+    /// Suffix resolution (`try_suffix_match`) only ever matches qnames whose
+    /// final segment equals the query's final segment, so this index replaces
+    /// the per-call O(distinct qnames) scan of `by_qname` with an O(1) probe of
+    /// the leaf bucket — the difference between O(N²) and O(N·k̄) on corpora
+    /// where many files share a method/leaf name.
+    pub(in crate::resolver) by_qname_leaf: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_file: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_export: HashMap<String, HashMap<String, Vec<usize>>>,
     /// file_path -> name_lowercase -> Vec<usize>: nested index for same-file name lookup.
@@ -29,6 +36,14 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) type_catalog: Option<TypeCatalog>,
     /// LRU cache for `resolve_name` results to avoid redundant resolution.
     pub(in crate::resolver) resolve_cache: Mutex<LruCache<u64, Option<ResolveResult>>>,
+    /// Above this many same-named candidates, name-only resolution
+    /// (global-unique / fuzzy import-distance, and the `find_best` fallback)
+    /// is treated as non-resolvable: a name shared by hundreds of symbols —
+    /// typically a function-local variable the parsers also surface globally
+    /// (`left`, `value`, …) — cannot be disambiguated by path heuristics, and
+    /// scanning the whole bucket per reference is the dominant cold-build
+    /// O(N²) cost. Bucket lookups at or below this stay exact.
+    pub(in crate::resolver) max_fuzzy_pool: usize,
 }
 
 impl SymbolCatalog {
@@ -37,11 +52,17 @@ impl SymbolCatalog {
             .ok()
             .and_then(|v| v.parse::<usize>().ok())
             .unwrap_or(8192);
+        let max_fuzzy_pool = std::env::var("CODECORTEX_RESOLVER_MAX_POOL")
+            .ok()
+            .and_then(|v| v.parse::<usize>().ok())
+            .filter(|&v| v > 0)
+            .unwrap_or(256);
         Self {
             entries: Vec::new(),
             by_name: HashMap::new(),
             by_uid: HashMap::new(),
             by_qname: HashMap::new(),
+            by_qname_leaf: HashMap::new(),
             by_file: HashMap::new(),
             by_export: HashMap::new(),
             by_file_name: HashMap::new(),
@@ -50,6 +71,7 @@ impl SymbolCatalog {
             resolve_cache: Mutex::new(LruCache::new(
                 NonZeroUsize::new(cache_size).unwrap_or(NonZeroUsize::new(8192).unwrap()),
             )),
+            max_fuzzy_pool,
         }
     }
 
@@ -134,9 +156,14 @@ impl SymbolCatalog {
                 self.by_uid.insert(uid.clone(), idx);
             }
 
-            // by_qname (lowercase)
+            // by_qname (lowercase) + leaf-segment index for suffix lookup
             if let Some(ref ql) = qname_lower {
                 self.by_qname.entry(ql.clone()).or_default().push(idx);
+                let leaf = ql.rsplit('.').next().unwrap_or(ql.as_str());
+                self.by_qname_leaf
+                    .entry(leaf.to_string())
+                    .or_default()
+                    .push(idx);
             }
 
             // by_file

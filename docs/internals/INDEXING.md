@@ -88,6 +88,14 @@ self-member → scope → same-file → imports → suffix → global-unique
 - `candidate_count` 进入置信度惩罚但不持久化；
 - 解析器目录的 `resolve_name` 有 LRU 缓存
   （`CODECORTEX_RESOLVER_CACHE_SIZE`，默认 8192）。
+- **候选上限**（`CODECORTEX_RESOLVER_MAX_POOL`，默认 256）：当某名字被超过上限个符号共享时，
+  global-unique / fuzzy 阶与 `find_best` 兜底直接判不可解，不再构建/扫描该候选桶。解析器
+  会把函数局部变量（`left`、`value`、`label` 等）也并入全局 `by_name`，在大仓库里这类名字
+  的桶规模随文件数线性增长，逐引用扫桶 + 逐候选 `is_import_reachable` 即冷建 resolve 阶段的
+  O(N²) 主因（10k→50k 实测 resolve 由近线性退化为平方）。上限把这类名义不可消歧的引用早停为
+  未解析——既消除 O(N²)（16k 冷建 resolve 29.1s→1.4s），又提升精度（避免解析到他文件的随机
+  同名局部变量）。`find_best` 的同文件优先则改走 `by_file_name`/`by_file_qname` 嵌套索引做
+  O(1) 命中，suffix 阶用 `by_qname_leaf`（叶段索引）替代整表扫描。
 
 ### 路由 handler 解析的来源记录
 

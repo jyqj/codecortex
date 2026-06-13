@@ -513,6 +513,151 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
     );
 }
 
+// ── Cold-build scaling profiler ─────────────────────────────────────
+
+/// Phase fields of `IndexReport.phase_timing`, in pipeline order.
+const COLD_PROFILE_PHASES: &[&str] = &[
+    "scan_diff_ms",
+    "parse_ms",
+    "resolve_ms",
+    "write_ms",
+    "postprocess_ms",
+    "analysis_ms",
+];
+
+/// Lean cold-build phase-timing profiler across a scale sweep, for localizing
+/// the superlinear cold-index cost (issue: 5× files → 24× wall at 50k). Unlike
+/// `run_scale_bench` this skips incremental/tool/correctness work and only
+/// drives `index(full=true)` at each scale, capturing the report's per-phase
+/// `phase_timing`. Set `RUST_LOG=cc_index=debug` to additionally surface the
+/// `time_step` sub-phase events (synthesis_round / louvain / test_edges_apply /
+/// full_rebuild_direct_writer …) so the dominant phase can be split further.
+///
+/// Run (default sweep 1k→16k):
+/// ```sh
+/// cargo test -p cc-eval --test scale_bench profile_cold_build_scaling -- --ignored --nocapture
+/// ```
+/// Override scales (comma-separated file counts):
+/// ```sh
+/// CODECORTEX_PROFILE_SCALES=2000,8000,32000 RUST_LOG=cc_index=debug \
+///   cargo test -p cc-eval --test scale_bench profile_cold_build_scaling -- --ignored --nocapture
+/// ```
+#[test]
+#[ignore = "cold-build scaling profiler; run explicitly"]
+fn profile_cold_build_scaling() {
+    if std::env::var("RUST_LOG").is_ok() {
+        let _ = tracing_subscriber::fmt()
+            .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+            .with_writer(std::io::stderr)
+            .try_init();
+    }
+
+    let scales: Vec<usize> = std::env::var("CODECORTEX_PROFILE_SCALES")
+        .ok()
+        .map(|raw| {
+            raw.split(',')
+                .filter_map(|tok| tok.trim().parse::<usize>().ok())
+                .collect::<Vec<_>>()
+        })
+        .filter(|v| !v.is_empty())
+        .unwrap_or_else(|| vec![1_000, 2_000, 4_000, 8_000, 16_000]);
+
+    // (files, symbols, wall_ms, [phase_ms; 6]) per scale.
+    let mut samples: Vec<(usize, usize, u64, [u64; 6])> = Vec::new();
+
+    for &target in &scales {
+        let spec = SynthSpec {
+            target_files: target,
+            seed: SCALE_BENCH_SEED,
+        };
+        let tmp = tempfile::tempdir().expect("create tempdir for profile scale");
+        let root = tmp.path();
+        let repo: SynthRepo = generate(root, &spec).expect("synthetic repo generation");
+        let backend = CodeIndexBackend::new_unindexed(root)
+            .expect("backend should initialize without building");
+
+        eprintln!("[profile] cold build start: files={}", repo.files_written);
+        let cold_start = Instant::now();
+        let full = backend
+            .build_index_report(true)
+            .expect("cold full index build should succeed");
+        let wall = cold_start.elapsed().as_millis() as u64;
+
+        let mut phases = [0u64; 6];
+        for (slot, field) in COLD_PROFILE_PHASES.iter().enumerate() {
+            phases[slot] = full
+                .get("phase_timing")
+                .and_then(|timing| timing.get(*field))
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+        }
+        let symbols = report_usize(&full, "symbols_total");
+        eprintln!(
+            "[profile] files={} symbols={} wall={}ms phases(scan_diff/parse/resolve/write/postprocess/analysis)={:?}",
+            repo.files_written, symbols, wall, phases
+        );
+        samples.push((repo.files_written, symbols, wall, phases));
+        drop(backend);
+    }
+
+    // Phase × scale table.
+    eprintln!("\n## Cold Build Phase Scaling\n");
+    eprint!("| files | symbols | wall");
+    for field in COLD_PROFILE_PHASES {
+        eprint!(" | {}", field.trim_end_matches("_ms"));
+    }
+    eprintln!(" |");
+    eprint!("|------|------|------");
+    for _ in COLD_PROFILE_PHASES {
+        eprint!("|------");
+    }
+    eprintln!("|");
+    for (files, symbols, wall, phases) in &samples {
+        eprint!("| {} | {} | {}ms", files, symbols, wall);
+        for ph in phases {
+            eprint!(" | {}ms", ph);
+        }
+        eprintln!(" |");
+    }
+
+    // Per-phase superlinearity factor between the smallest and largest scale:
+    // (t_max / t_min) / (files_max / files_min). ~1 ⇒ linear; >1 ⇒ superlinear.
+    if let (Some(first), Some(last)) = (samples.first(), samples.last()) {
+        let (files_lo, _, wall_lo, ph_lo) = first;
+        let (files_hi, _, wall_hi, ph_hi) = last;
+        let file_ratio = *files_hi as f64 / (*files_lo).max(1) as f64;
+        eprintln!(
+            "\n## Superlinearity Factor (files {}→{}, ratio {:.1}×)\n",
+            files_lo, files_hi, file_ratio
+        );
+        eprintln!("| phase | t_lo | t_hi | time_ratio | superlinearity |");
+        eprintln!("|-------|------|------|------------|----------------|");
+        let factor = |lo: u64, hi: u64| -> (f64, f64) {
+            let time_ratio = hi as f64 / (lo.max(1)) as f64;
+            (time_ratio, time_ratio / file_ratio)
+        };
+        let (wr, wf) = factor(*wall_lo, *wall_hi);
+        eprintln!(
+            "| **wall** | {}ms | {}ms | {:.1}× | {:.2} |",
+            wall_lo, wall_hi, wr, wf
+        );
+        for (slot, field) in COLD_PROFILE_PHASES.iter().enumerate() {
+            let (tr, sf) = factor(ph_lo[slot], ph_hi[slot]);
+            eprintln!(
+                "| {} | {}ms | {}ms | {:.1}× | {:.2} |",
+                field.trim_end_matches("_ms"),
+                ph_lo[slot],
+                ph_hi[slot],
+                tr,
+                sf
+            );
+        }
+        eprintln!(
+            "\nSuperlinearity > 1.3 flags a phase whose per-file cost grows with corpus size."
+        );
+    }
+}
+
 // ── Matrix entry points ────────────────────────────────────────────
 
 #[test]

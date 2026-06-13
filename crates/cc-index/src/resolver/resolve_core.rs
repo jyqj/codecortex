@@ -482,10 +482,18 @@ impl SymbolCatalog {
                 },
                 ResolveStep::GlobalUnique => {
                     let pool = fuzzy_pool.get_or_insert_with(|| {
-                        self.by_name
-                            .get(&leaf.to_lowercase())
-                            .map(|candidates| dedup_by_id(&self.entries, candidates))
-                            .unwrap_or_default()
+                        match self.by_name.get(&leaf.to_lowercase()) {
+                            // Cap before the O(bucket) dedup: a name shared by
+                            // more symbols than `max_fuzzy_pool` cannot be
+                            // resolved by name-only heuristics (the fuzzy
+                            // import-distance pick is noise at that count), and
+                            // scanning the bucket per reference is the cold
+                            // build's dominant O(N²) term.
+                            Some(candidates) if candidates.len() <= self.max_fuzzy_pool => {
+                                dedup_by_id(&self.entries, candidates)
+                            }
+                            _ => Vec::new(),
+                        }
                     });
                     fuzzy_total = pool.len();
                     if pool.len() == 1 {
@@ -743,11 +751,35 @@ impl SymbolCatalog {
         }
         let needle = name.to_lowercase();
         let suffix = format!(".{}", needle);
+        // Any qname matching `q == needle || q.ends_with(".needle")` must end
+        // with the query's final `.`-segment, so only that leaf bucket can
+        // contain a hit. Probing `by_qname_leaf` replaces the historical
+        // O(distinct qnames) scan (with a per-entry `to_lowercase`) by an O(1)
+        // bucket lookup plus an `ends_with` over the (small) leaf-sharing set —
+        // `by_qname` keys are already lowercased, so the result set is
+        // byte-identical to the old full scan.
+        let leaf = needle.rsplit('.').next().unwrap_or(needle.as_str());
         let mut matches: Vec<usize> = Vec::new();
-        for (qname, indices) in &self.by_qname {
-            let q = qname.to_lowercase();
-            if q == needle || q.ends_with(&suffix) {
-                matches.extend(indices.iter().copied());
+        if let Some(candidates) = self.by_qname_leaf.get(leaf) {
+            // Same cap as the fuzzy ladder: a leaf segment shared by more than
+            // `max_fuzzy_pool` qnames is too ambiguous for a suffix heuristic
+            // (the best-import-distance pick is noise), and scanning the bucket
+            // per dotted reference is O(N²) on shared method/leaf names.
+            if candidates.len() > self.max_fuzzy_pool {
+                return None;
+            }
+            for &idx in candidates {
+                let matches_suffix = self.entries[idx]
+                    .qname
+                    .as_deref()
+                    .map(|q| {
+                        let q = q.to_lowercase();
+                        q == needle || q.ends_with(&suffix)
+                    })
+                    .unwrap_or(false);
+                if matches_suffix {
+                    matches.push(idx);
+                }
             }
         }
         let unique = dedup_by_id(&self.entries, &matches);

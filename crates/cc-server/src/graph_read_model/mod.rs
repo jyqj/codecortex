@@ -108,21 +108,10 @@ impl GraphReadModel {
         GraphReads::new(&self.db)
     }
 
-    pub(crate) fn paths_between(
-        &self,
-        from_uid: &str,
-        to_uid: &str,
-        max_depth: usize,
-        max_paths: usize,
-    ) -> Vec<LabeledPath> {
-        // Degradation is still logged by the discarded collector
-        // (`record_read_error` always emits a tracing::warn).
-        let mut explain = GraphExplainCollector::new();
-        self.paths_between_explained(from_uid, to_uid, max_depth, max_paths, &mut explain)
-    }
-
-    /// Like [`Self::paths_between`] but records read errors and the budget
-    /// (max_paths / max_depth / max_expansions) that clipped the walk, if any.
+    /// Enumerate labeled paths between two UIDs, recording read errors and the
+    /// budget (max_paths / max_depth / max_expansions) that clipped the walk
+    /// into `explain`, if any. Callers that do not need the envelope pass a
+    /// throwaway collector (its `record_read_error` still emits a tracing::warn).
     pub(crate) fn paths_between_explained(
         &self,
         from_uid: &str,
@@ -198,22 +187,10 @@ impl GraphReadModel {
     }
 
     /// Project EdgeLite values into public TraceEdge output, optionally adding
-    /// runtime evidence for synthesized HTTP bridge edges.
-    pub(crate) fn project_trace_edges<'a, I>(
-        &self,
-        edge_lites: I,
-        include_runtime_evidence: bool,
-    ) -> Vec<TraceEdge>
-    where
-        I: IntoIterator<Item = &'a EdgeLite>,
-    {
-        // Read errors are still logged by the discarded collector.
-        let mut explain = GraphExplainCollector::new();
-        self.project_trace_edges_with_explain(edge_lites, include_runtime_evidence, &mut explain)
-    }
-
-    /// Like [`Self::project_trace_edges`] but records the edge kinds used,
-    /// synthetic/evidence edge counts, and any evidence-lookup read error.
+    /// runtime evidence for synthesized HTTP bridge edges, and record the edge
+    /// kinds used, synthetic/evidence edge counts, and any evidence-lookup read
+    /// error into `explain`. Callers that do not need the envelope pass a
+    /// throwaway collector.
     pub(crate) fn project_trace_edges_with_explain<'a, I>(
         &self,
         edge_lites: I,

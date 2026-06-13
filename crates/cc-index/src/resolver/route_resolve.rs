@@ -257,12 +257,21 @@ impl SymbolCatalog {
             if indices.len() == 1 {
                 return Some(indices[0]);
             }
-            // Prefer same-file
-            if let Some(&idx) = indices
-                .iter()
-                .find(|&&i| self.entries[i].file_path == current_file)
-            {
+            // Prefer same-file via the nested index (O(1)) instead of scanning
+            // the global qname Vec. The Vec is O(symbols-sharing-this-qname),
+            // so a linear same-file `find` here makes per-edge caller/callee
+            // resolution O(N^2) on corpora where one name (e.g. a `process`
+            // method) is defined across many files. `by_file_qname` is built in
+            // the same insertion order as `by_qname`, so its first entry equals
+            // the first same-file hit the linear scan would have returned.
+            if let Some(idx) = self.same_file_first(&self.by_file_qname, current_file, &lower) {
                 return Some(idx);
+            }
+            // A bucket larger than `max_fuzzy_pool` is too ambiguous to resolve
+            // by path heuristics (same cap as the fuzzy ladder); scanning it
+            // per reference is O(N²) on shared names. Leave it unresolved.
+            if indices.len() > self.max_fuzzy_pool {
+                return None;
             }
             // Fall back to import-distance tie-breaking
             return best_by_import_distance(&self.entries, indices, current_file)
@@ -271,12 +280,12 @@ impl SymbolCatalog {
 
         // Try by name
         if let Some(indices) = self.by_name.get(&lower) {
-            // Prefer same-file
-            if let Some(&idx) = indices
-                .iter()
-                .find(|&&i| self.entries[i].file_path == current_file)
-            {
+            // Prefer same-file via the nested index (O(1)); see the by_qname note.
+            if let Some(idx) = self.same_file_first(&self.by_file_name, current_file, &lower) {
                 return Some(idx);
+            }
+            if indices.len() > self.max_fuzzy_pool {
+                return None;
             }
             // Fall back to import-distance tie-breaking
             return best_by_import_distance(&self.entries, indices, current_file)
@@ -284,6 +293,23 @@ impl SymbolCatalog {
         }
 
         None
+    }
+
+    /// First catalog index in `nested[file][key_lower]`, or `None`. Shared by
+    /// the qname/name tiers of [`Self::find_best`] to take the same-file
+    /// preference through the prebuilt nested index in O(1) rather than a
+    /// linear scan of the global by-name/by-qname Vec.
+    fn same_file_first(
+        &self,
+        nested: &std::collections::HashMap<String, std::collections::HashMap<String, Vec<usize>>>,
+        file: &str,
+        key_lower: &str,
+    ) -> Option<usize> {
+        nested
+            .get(file)
+            .and_then(|m| m.get(key_lower))
+            .and_then(|v| v.first())
+            .copied()
     }
 
     // -----------------------------------------------------------------------

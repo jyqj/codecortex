@@ -647,6 +647,13 @@ pub mod tool_graph_subsets {
     pub const TRACE: EdgeKindSet =
         EdgeKindSet::new(&["CALLS", "HANDLES", "HTTP_CALLS", "ASYNC_CALLS"]);
 
+    /// flow (cc-server `graph_flow.rs`): multi-symbol flow discovery runs the
+    /// same lazy pairwise BFS as trace (`GraphReadModel::new` → CALLS adjacency
+    /// plus synthesized HTTP / async cross-service bridges via
+    /// `paths_between_explained`), so it declares the same subset as `TRACE`.
+    pub const FLOW: EdgeKindSet =
+        EdgeKindSet::new(&["CALLS", "HANDLES", "HTTP_CALLS", "ASYNC_CALLS"]);
+
     /// search graph enrichment (cc-search `enrich.rs`): CALLS backs degree
     /// scoring and caller/callee context nodes, REFERENCES backs the
     /// ref-count score bonus, TESTS backs test-coverage context nodes.
@@ -676,6 +683,7 @@ pub mod tool_graph_subsets {
     pub const ALL: &[(&str, EdgeKindSet)] = &[
         ("CYPHER_FAST_PATH", CYPHER_FAST_PATH),
         ("CYCLES", CYCLES),
+        ("FLOW", FLOW),
         ("IMPACT", IMPACT),
         ("RELATIONS", RELATIONS),
         ("SEARCH_ENRICH", SEARCH_ENRICH),
@@ -788,6 +796,7 @@ mod tests {
             rendered,
             "CYPHER_FAST_PATH: CALLS\n\
              CYCLES: IMPORTS, CALLS\n\
+             FLOW: CALLS, HANDLES, HTTP_CALLS, ASYNC_CALLS\n\
              IMPACT: CALLS, TESTS, HANDLES, HTTP_CALLS, ASYNC_CALLS, CO_CHANGE\n\
              RELATIONS: CALLS, SEMANTIC, REFERENCES\n\
              SEARCH_ENRICH: CALLS, REFERENCES, TESTS\n\

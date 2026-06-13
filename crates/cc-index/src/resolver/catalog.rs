@@ -126,6 +126,19 @@ impl SymbolCatalog {
 
     /// Register all symbols from a parsed file.
     pub fn add_symbols(&mut self, symbols: &[SymbolRecord]) {
+        // Pre-size the symbol-cardinality structures. The single-file
+        // incremental path rebuilds the catalog from every persisted symbol, so
+        // the first `add_symbols` call seeds hundreds of thousands of rows; the
+        // `entries` Vec holds a wide `CatalogEntry` each, and growing it from
+        // zero reallocates ~log2(n) times copying every prior element. The
+        // file-keyed maps stay unreserved (their cardinality is ~file count, so
+        // reserving `n` would over-allocate several-fold).
+        let n = symbols.len();
+        self.entries.reserve(n);
+        self.by_uid.reserve(n);
+        self.by_name.reserve(n);
+        self.by_qname.reserve(n);
+        self.by_qname_leaf.reserve(n);
         for sym in symbols {
             let idx = self.entries.len();
             let name_lower = sym.name.to_lowercase();
@@ -386,6 +399,147 @@ impl SymbolCatalog {
             // scope-chain resolution stays dormant until a producer is wired up.
             scopes: HashMap::new(),
             imports: Self::build_import_bindings(outcome, file_path),
+        }
+    }
+}
+
+/// Focused micro-benchmark of the incremental `resolve` catalog floor: the
+/// single-file path rebuilds the whole catalog from every persisted symbol
+/// (`build_resolution_catalog`), so its cost scales with the project symbol
+/// total, not the changed file. This isolates the in-memory rebuild
+/// (`add_symbols` + `build_type_catalog`) from the same-file lookup hot path so
+/// a structural change can be A/B'd on both axes (build vs lookup) before
+/// touching the resolver.
+///
+/// `#[ignore]`d — run explicitly (release for meaningful numbers):
+///
+/// ```sh
+/// cargo test -p cc-index --release catalog_build_bench -- --ignored --nocapture
+/// ```
+#[cfg(test)]
+mod catalog_build_bench {
+    use super::*;
+    use cc_model::symbol::{SymbolKind, SymbolRecord};
+    use cc_model::ParserTier;
+    use std::time::Instant;
+
+    fn gen_symbols(n: usize, per_file: usize) -> Vec<SymbolRecord> {
+        (0..n)
+            .map(|i| {
+                let file_idx = i / per_file;
+                let sidx = i % per_file;
+                let rel = format!("src/module_{:03}/file_{:05}.rs", file_idx % 200, file_idx);
+                let name = format!("fn_{:05}_{}", file_idx, sidx);
+                SymbolRecord {
+                    symbol_id: format!("sym:{}:{}", rel, i),
+                    file_path: rel,
+                    name: name.clone(),
+                    kind: SymbolKind::Function,
+                    container: None,
+                    start_line: (sidx * 10 + 1) as u32,
+                    end_line: (sidx * 10 + 8) as u32,
+                    start_col: 0,
+                    end_col: 1,
+                    signature: None,
+                    doc: None,
+                    parser_tier: ParserTier::TreeSitter,
+                    parser_confidence: 1.0,
+                    qname: Some(name.clone()),
+                    parent_symbol_id: None,
+                    scope_id: None,
+                    export_name: Some(name),
+                    is_default_export: false,
+                    symbol_uid: Some(format!("uid:{}:{}", file_idx, sidx)),
+                    framework_role: None,
+                    receiver_type: None,
+                    param_types: None,
+                    return_type: None,
+                    param_count: None,
+                    base_types: None,
+                    implements: None,
+                }
+            })
+            .collect()
+    }
+
+    #[test]
+    #[ignore = "catalog build/lookup micro-benchmark; run with --release --nocapture"]
+    fn bench_catalog_build_scaling() {
+        const LOOKUPS: usize = 100_000;
+        // Fixed project size (~50k-file scale); sweep symbols-per-file so the
+        // nested-map vs linear-filter lookup crossover is visible — real files
+        // are not uniformly 5 symbols each, and the linear scan grows with it.
+        const N: usize = 278_000;
+        for &per_file in &[5usize, 10, 25, 50, 100] {
+            let n = N;
+            let syms = gen_symbols(n, per_file);
+            let files = n / per_file;
+
+            // Build: 8-map registration over every persisted symbol.
+            let t = Instant::now();
+            let mut cat = SymbolCatalog::new();
+            cat.add_symbols(&syms);
+            let add = t.elapsed();
+
+            // Second full pass: dispatch/type catalog.
+            let t = Instant::now();
+            cat.build_type_catalog(syms.iter());
+            let tc = t.elapsed();
+
+            // Same-file lookups (the resolve hot path). Keys are pre-generated
+            // so the timed loop measures only `same_file_named`, not formatting.
+            let keys: Vec<(String, String)> = (0..LOOKUPS)
+                .map(|k| {
+                    let fi = k.wrapping_mul(2_654_435_761) % files;
+                    (
+                        format!("src/module_{:03}/file_{:05}.rs", fi % 200, fi),
+                        format!("fn_{:05}_{}", fi, k % per_file),
+                    )
+                })
+                .collect();
+            let t = Instant::now();
+            let mut hits = 0usize;
+            for (file, name) in &keys {
+                hits += cat.same_file_named(file, name).len();
+            }
+            let lookup = t.elapsed();
+
+            // A/B: the lookup cost if the nested `by_file_name`/`by_file_qname`
+            // indices were dropped and same-file lookup fell back to a linear
+            // filter over `by_file` (+ an `entries[idx]` probe per candidate).
+            // This is what "eliminate the nested maps to halve build" would
+            // cost on the resolve hot path — measured, not assumed.
+            let t = Instant::now();
+            let mut hits_lin = 0usize;
+            for (file, name) in &keys {
+                if let Some(idxs) = cat.by_file.get(file) {
+                    for &idx in idxs {
+                        let e = &cat.entries[idx];
+                        if e.name.eq_ignore_ascii_case(name)
+                            || e.qname
+                                .as_deref()
+                                .is_some_and(|q| q.eq_ignore_ascii_case(name))
+                        {
+                            hits_lin += 1;
+                        }
+                    }
+                }
+            }
+            let lookup_lin = t.elapsed();
+
+            eprintln!(
+                "N={} per_file={:>3} files={:>6}: add_symbols={:>9.1?} build_tc={:>8.1?} | \
+                 nested={:>6.0?}/call linear={:>6.0?}/call [hits {}/{}]",
+                n,
+                per_file,
+                files,
+                add,
+                tc,
+                lookup / LOOKUPS as u32,
+                lookup_lin / LOOKUPS as u32,
+                hits,
+                hits_lin,
+            );
         }
     }
 }

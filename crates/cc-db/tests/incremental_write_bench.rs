@@ -19,8 +19,17 @@ use cc_model::{
 use rusqlite::Connection;
 use std::time::{Duration, Instant};
 
-const FILE_COUNT: usize = 10_000;
 const BATCH_STRIDE: usize = 20; // 5% batch, mirrors scale_bench
+
+/// Repository size for the bench. Override with `CODECORTEX_BENCH_FILES`
+/// (e.g. 50000) to measure write-path scaling beyond the 10k default.
+fn file_count() -> usize {
+    std::env::var("CODECORTEX_BENCH_FILES")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .filter(|&n| n > 0)
+        .unwrap_or(10_000)
+}
 
 fn symbol(rel_path: &str, file_idx: usize, sym_idx: usize) -> SymbolRecord {
     let name = format!("fn_{:05}_{}", file_idx, sym_idx);
@@ -103,7 +112,7 @@ fn make_unit(file_idx: usize) -> FileWriteUnit {
         .map(|r| SymbolRefRecord {
             ref_id: format!("ref:{}:{}", rel_path, r),
             file_path: rel_path.clone(),
-            symbol_name: format!("fn_{:05}_{}", (file_idx + r) % FILE_COUNT, r % 5),
+            symbol_name: format!("fn_{:05}_{}", (file_idx + r) % file_count(), r % 5),
             container: None,
             ref_kind: "call".to_string(),
             line: (r * 7 + 2) as u32,
@@ -127,10 +136,10 @@ fn make_unit(file_idx: usize) -> FileWriteUnit {
             edge_id: format!("ce:{}:{}", rel_path, e),
             file_path: rel_path.clone(),
             caller_symbol: Some(format!("fn_{:05}_{}", file_idx, e % 5)),
-            callee_symbol: format!("fn_{:05}_{}", (file_idx + e + 1) % FILE_COUNT, e % 5),
+            callee_symbol: format!("fn_{:05}_{}", (file_idx + e + 1) % file_count(), e % 5),
             line: (e * 9 + 3) as u32,
             caller_symbol_uid: Some(format!("uid:{}:{}", rel_path, e % 5)),
-            callee_symbol_uid: Some(format!("uid:x:{}", (file_idx + e + 1) % FILE_COUNT)),
+            callee_symbol_uid: Some(format!("uid:x:{}", (file_idx + e + 1) % file_count())),
             resolution_confidence: 0.9,
             resolution_strategy: "exact".to_string(),
             parser_tier: ParserTier::TreeSitter,
@@ -324,7 +333,7 @@ fn bench_incremental_batch_write_10k() {
     let db_path = tmp.path().join("index.sqlite3");
     let db = IndexDb::open(&db_path).unwrap().0;
 
-    let units: Vec<FileWriteUnit> = (0..FILE_COUNT).map(make_unit).collect();
+    let units: Vec<FileWriteUnit> = (0..file_count()).map(make_unit).collect();
 
     // Cold population through the full-rebuild path (no per-file deletes).
     let t = Instant::now();
@@ -336,7 +345,7 @@ fn bench_incremental_batch_write_10k() {
             Ok(())
         })
         .unwrap();
-    eprintln!("populate {} files: {:?}", FILE_COUNT, t.elapsed());
+    eprintln!("populate {} files: {:?}", file_count(), t.elapsed());
 
     let batch: Vec<FileWriteUnit> = units.iter().step_by(BATCH_STRIDE).cloned().collect();
     let precompressed: PrecompressedChunks = batch

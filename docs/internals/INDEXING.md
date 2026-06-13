@@ -145,6 +145,16 @@ self-member → scope → same-file → imports → suffix → global-unique
 - **resolver seed 有跨构建缓存**（cc-db `seed_symbol_cache.rs`）：seed
   符号快照挂在 `IndexDb` 句柄上跨构建复用，以 `symbols_seed` 聚合为
   token 校验，miss 即回退全量重载。
+- **FK CASCADE 子表显式批量删除**（cc-db
+  `delete_files_data_chunk_keep_test_edges`）：`DELETE FROM files` 不依赖
+  ON DELETE CASCADE 逐父行触发子表删除，而是先按 `file_path` 批量 DELETE
+  各 CASCADE 子表（`call_edges`/`symbol_refs`/`chunks`/`imports`/
+  `literal_index`/`symbols`；routes 在前序循环里删），再删 files。SQLite 的
+  CASCADE 对每个父行触发一次子表 DELETE（父行数 × 子表数次内部语句 + FK
+  检查），在大库上比"每子表一次批量 `DELETE … WHERE file_path IN`"慢
+  2–5 倍（50k 5% 批量 `db_replace_delete` ~24s → ~10s；索引维护工作量两者
+  相同，省下的是逐父行语句/FK 开销）。维护契约：该列表须覆盖所有
+  `REFERENCES files(file_path) ON DELETE CASCADE` 的表，schema 测试兜底。
 
 ## postprocess（写后处理）
 

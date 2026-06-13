@@ -133,12 +133,13 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 |------|--------------|---------|--------------------|--------------------|-----------------|--------------|
 | 1k（5,568 符号） | 0.85s | 24.7 MB | 64ms | 218ms | 0.2–21ms / warm 亚毫秒 | 8/8 |
 | 10k（55,617 符号） | 10.0s | 244.0 MB | 345ms | 2.47s | 0.2–100ms / warm 亚毫秒 | 8/8 |
-| 50k（278,074 符号） | 121.8s | 1220.6 MB | 2.47s | 45.8s（2400 文件） | 最大 2.57s（`search_hybrid_mixed_terms`），其余毫秒级 / warm 亚毫秒 | 8/8 |
+| 50k（278,074 符号） | 82.7s | 1220.6 MB | 1.82s | 14.3s（2400 文件） | 最大 631ms（`search_hybrid_mixed_terms`），其余毫秒级 / warm 亚毫秒 | 8/8 |
 
 - 三档报告均以 µs 粒度分列 cold/warm（cold = 每次迭代新建 MCP 会话；warm =
   同会话缓存命中），冷查询延迟以 cold 列为准；上表"工具查询"取 cold p50 区间。
-- 冷态全量索引 411–1180 文件/s（50k–1k）：10k 已达 1000 文件/s，超过 >500
-  目标；50k 411 文件/s，残余 gap 在 write 阶段而非 resolve（见下）。
+- 冷态全量索引 604–1180 文件/s（50k–1k）：10k 已达 1000 文件/s，超过 >500
+  目标；50k 604 文件/s，write cascade 已治（见下第五轮），残余 gap 转移到
+  单文件增量的 resolve 地板（`add_symbols` seed O(repo)，见末段）。
 
 ## 写阶段优化史（10k 基准）
 
@@ -163,6 +164,28 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 10k 净效果：单文件写 p50 540ms → 58ms，5% 批量写 3.55s → 2.3s——残余的
 批量成本是真实的 B-tree/索引/FTS 分词工作，不是分发开销。工具查询延迟
 （warm 口径）跨规模持平。
+
+### 50k 写阶段：FK CASCADE 逐父行开销（第五轮）
+
+10k 上残余的批量成本到 50k 暴露一个被 976a626（写连接 cache+mmap）压低
+但仍存在的热点：`db_replace_delete`（替换前删除批文件数据）里的
+`DELETE FROM files` 经 ON DELETE CASCADE 逐父行触发子表删除。SQLite 的
+CASCADE 对每个 files 行触发一次各子表 DELETE（父行数 × 子表数次内部语句
++ FK 检查），在多百 MB 库上比"每子表一次批量 `DELETE … WHERE file_path
+IN`"慢 2–5 倍。50k 5% 批量（2400 文件）实测 `incremental_batch` ~38s，
+其中 `db_replace_delete` ~24s（files cascade 每批 200 文件 0.4–2s）是绝对
+大头；FTS 触发器（`symbols_fts`/`file_paths_fts`）经隔离实验确认只占
+~0.6%（单次 ~12µs × 文件符号数），真正成本是逐父行 CASCADE 的语句/FK
+开销 + 子表索引维护。
+
+修复：`delete_files_data_chunk_keep_test_edges` 在 `DELETE FROM files` 前
+显式批量删除 6 个 CASCADE 子表（`call_edges`/`symbol_refs`/`chunks`/
+`imports`/`literal_index`/`symbols`，routes 已在前序循环），使 CASCADE 无
+行可删。50k 5% 批量 write p50 **~36s → ~14.3s（-60%）**，ground truth 8/8
+不变；10k 上收益小（CASCADE 本就轻）。残余 write 成本集中在
+`db_replace_insert`（symbols/call_edges 行 INSERT + 多索引维护）与
+`db_commit`（WAL fsync），是真实存储引擎工作。详见
+[INDEXING.md](internals/INDEXING.md#写阶段性能注记)。
 
 ## 冷态全量索引：resolve 阶段 O(N²) 定位与修复
 
@@ -192,11 +215,14 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 | 10k | 17.9s → 10.0s（1.78×） | — | 553ms → 155ms（3.5×） |
 | 50k | 432s → 121.8s（3.55×） | — | — |
 
-resolve 不再是瓶颈。**残余超线性集中在 write 阶段**（FTS5 分词 + B-tree，
-50k 冷建 write 占大头；5% 批量写 50k 42.3s）——这是真实存储引擎工作，
-`chunks_fts` external-content 方案本轮评估为 NO-GO（与 rowid 对齐删除路径
-冲突，需删除时解压 chunk 文本，留专轮）。单文件增量 resolve 的 O(catalog)
-地板（50k 1.1s，随 seed 符号数超线性）是下一轮课题。
+resolve 不再是瓶颈。write 阶段的 FK CASCADE 逐父行开销经第五轮修复（见
+写阶段优化史，50k 5% 批量写 ~36s → ~14.3s）；`chunks_fts` external-content
+方案评估为 NO-GO（与 rowid 对齐删除路径冲突，需删除时解压 chunk 文本）。
+**单文件增量 resolve 的 O(catalog) 地板（50k ~0.8s，随 seed 符号数超线性）
+是下一轮课题**：`build_catalog` 的 `add_symbols` 把全部 seed 符号（278k）
+重建进 9 个 catalog map，`seed_symbol_cache` 已缓存 seed Vec 但 catalog map
+每 build 重建；深度优化 = SymbolCatalog 跨 build 复用（增量更新），中等
+复杂度架构改动。
 
 ## 对比基线
 

@@ -1225,10 +1225,7 @@ impl FileParser for PythonParser {
             symbols.len(),
             route_edges.len(),
         );
-        let is_test = file_path.contains("/tests/")
-            || file_path.contains("test_")
-            || file_path.contains("_test.py")
-            || file_path.ends_with("tests.py");
+        let is_test = crate::parse_common::is_test_file(file_path, Language::Python);
 
         Ok(ParseOutcome {
             summary,

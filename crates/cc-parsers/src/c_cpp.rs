@@ -1347,18 +1347,6 @@ impl CCppParser {
         )
     }
 
-    /// Check if a file path looks like a test file.
-    fn is_test_file(file_path: &str) -> bool {
-        let lower = file_path.to_lowercase();
-        lower.ends_with("_test.c")
-            || lower.ends_with("_test.cpp")
-            || lower.ends_with("_test.cc")
-            || lower.ends_with("_test.cxx")
-            || lower.contains("/test_")
-            || lower.contains("/tests/")
-            || lower.contains("_tests.c")
-            || lower.contains("_tests.cpp")
-    }
 }
 
 impl Default for CCppParser {
@@ -1408,7 +1396,14 @@ impl FileParser for CCppParser {
             content.lines().count(),
             symbols.len()
         );
-        let is_test = Self::is_test_file(file_path);
+        let is_test = crate::parse_common::is_test_file(
+            file_path,
+            if self.is_cpp {
+                Language::Cpp
+            } else {
+                Language::C
+            },
+        );
 
         Ok(ParseOutcome {
             summary,

@@ -1991,9 +1991,7 @@ impl FileParser for JsTsParser {
             ast_ctx.symbols.len(),
             route_edges.len(),
         );
-        let is_test = file_path.contains(".test.")
-            || file_path.contains(".spec.")
-            || file_path.contains("__tests__");
+        let is_test = crate::parse_common::is_test_file(file_path, language);
 
         Ok(ParseOutcome {
             summary,

@@ -979,7 +979,7 @@ impl FileParser for RustParser {
             content.lines().count(),
             symbols.len()
         );
-        let is_test = file_path.contains("/tests/") || file_path.ends_with("_test.rs");
+        let is_test = crate::parse_common::is_test_file(file_path, Language::Rust);
 
         Ok(ParseOutcome {
             summary,

@@ -1673,8 +1673,7 @@ impl FileParser for JavaParser {
             symbols.len()
         );
 
-        let file_name = file_path.rsplit('/').next().unwrap_or(file_path);
-        let is_test = file_name.starts_with("Test") || file_name.ends_with("Test.java");
+        let is_test = crate::parse_common::is_test_file(file_path, Language::Java);
 
         Ok(ParseOutcome {
             summary,

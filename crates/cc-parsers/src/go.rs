@@ -1624,7 +1624,7 @@ impl FileParser for GoParser {
             content.lines().count(),
             symbols.len()
         );
-        let is_test = file_path.ends_with("_test.go");
+        let is_test = crate::parse_common::is_test_file(file_path, Language::Go);
 
         Ok(ParseOutcome {
             summary,

@@ -5,8 +5,7 @@ use super::SharedCodeIndex;
 
 /// Execute a graph query (read-only Cypher subset).
 pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::Value, String> {
-    let rt = super::lock_index(&runtime)?;
-    let budget = rt.output_budget("graph_query");
+    let (rt, budget) = super::lock_and_budget(&runtime, "graph_query")?;
     let output = rt.graph().graph_query(query).map_err(|e| e.to_string())?;
 
     let default_limit_applied = output.default_limit_applied;
@@ -82,8 +81,7 @@ pub fn trace_path(
     from_uid: Option<&str>,
     to_uid: Option<&str>,
 ) -> Result<serde_json::Value, String> {
-    let rt = super::lock_index(&runtime)?;
-    let budget = rt.output_budget("trace_path");
+    let (rt, budget) = super::lock_and_budget(&runtime, "trace_path")?;
     let db = rt.index_db().ok_or("no index database")?;
     let project_root = rt.project_path.as_deref();
 
@@ -384,8 +382,7 @@ pub fn explore_flow(
     file_path: Option<&str>,
     max_candidates: Option<usize>,
 ) -> Result<serde_json::Value, String> {
-    let rt = super::lock_index(&runtime)?;
-    let budget = rt.output_budget("explore_flow");
+    let (rt, budget) = super::lock_and_budget(&runtime, "explore_flow")?;
     let db = rt.index_db().ok_or("no index database")?;
     let project_root = rt.project_path.as_deref();
     crate::graph_flow::explore_flow(
@@ -409,8 +406,7 @@ pub fn find_circular_deps(
     granularity: &str,
     limit: Option<usize>,
 ) -> Result<serde_json::Value, String> {
-    let rt = super::lock_index(&runtime)?;
-    let budget = rt.output_budget("circular_deps");
+    let (rt, budget) = super::lock_and_budget(&runtime, "circular_deps")?;
     let db = rt.index_db().ok_or("no index database")?;
     let effective_limit = limit.unwrap_or(budget.max_items);
     let result = crate::graph_cycles::find_circular_deps(db, granularity, effective_limit)

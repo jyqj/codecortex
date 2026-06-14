@@ -46,6 +46,20 @@ pub fn lock_index(index: &SharedCodeIndex) -> Result<RwLockReadGuard<'_, CodeInd
     }
 }
 
+/// Acquire the CodeIndex read lock and its per-handler output budget in one
+/// step —— the common preamble of graph/analysis handlers that need both.
+/// `budget` is an owned `OutputBudget`, so it returns cleanly alongside the
+/// guard; the guard still outlives any later `db` / `project_path` borrows the
+/// caller takes from it.
+pub fn lock_and_budget<'a>(
+    index: &'a SharedCodeIndex,
+    handler: &str,
+) -> Result<(RwLockReadGuard<'a, CodeIndex>, cc_model::config::OutputBudget), String> {
+    let rt = lock_index(index)?;
+    let budget = rt.output_budget(handler);
+    Ok((rt, budget))
+}
+
 /// Acquire a write lock on the CodeIndex, recovering from RwLock poisoning.
 ///
 /// On recovery the search result cache is invalidated: results computed from

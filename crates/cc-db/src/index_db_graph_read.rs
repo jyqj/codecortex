@@ -285,12 +285,14 @@ impl<'a> GraphReads<'a> {
 
     /// All UID-resolved call edges (full-graph adjacency load).
     pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
-        self.db.call_uid_edges_lite()
+        self.db.symbol_graph_reads().call_uid_edges_lite()
     }
 
     /// Outgoing call edges of one caller UID (lazy per-node adjacency).
     pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
-        self.db.call_edges_from_uid_lite(caller_uid)
+        self.db
+            .symbol_graph_reads()
+            .call_edges_from_uid_lite(caller_uid)
     }
 
     /// Distinct callers of any of `callee_uids` (impact reverse BFS).

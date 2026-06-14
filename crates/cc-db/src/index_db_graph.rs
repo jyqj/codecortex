@@ -1,5 +1,18 @@
 //! IndexDb methods: graph traversal, community detection, framework post-processing.
 //!
+//! Symbol/caller 图读查询（symbols_covering / caller-callee 邻接 / 度统计 / 符号名查找 /
+//! 方法-类匹配 / 导出指纹 / 导入者 / re-export / 重解析边加载等 26 读）已从 `impl IndexDb`
+//! 下沉到独立真模块 [`SymbolGraphReads`]，形态对齐 ArchReads/EdgeReads/FrontierReads/
+//! QueryReads：零成本借用 `&IndexDb`，SQL 自持，经 [`IndexDb::symbol_graph_reads`] 工厂暴露。
+//! [`ReadOps`](crate::index_db::ReadOps) facet 仍作 capability boundary，转发委托到本真模块
+//! （调用方 `db.reads().x()` 不变）。受原文件读/写交错影响，读分三组 impl 块（邻接+度 /
+//! 符号名查找 / 方法-类-指纹-导入），语义等价于单一模块。
+//!
+//! 写操作（update_communities / assign_all_symbols_to_community / replace_repo_frameworks /
+//! replace_file_frameworks / delete_synthetic_semantic_edges）紧耦合 write_conn +
+//! `bump_index_epoch_on` 写路径机器，且 `delete_synthetic_semantic_edges_on` 被 UnitOfWork
+//! 直用，留 `impl IndexDb`（[`WriteOps`](crate::index_db::WriteOps) 转发不变）。
+//!
 //! Convention: hot-path point reads with constant SQL string literals use
 //! `prepare_cached`; dynamically built SQL (e.g. variable-arity `IN (...)`
 //! placeholders) must keep using `prepare` so it does not pollute the
@@ -21,13 +34,33 @@ use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 pub(crate) type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
 
 impl IndexDb {
+    /// Symbol/caller 图读模型：邻接/度/符号查询等 26 读。零成本借用，经此工厂暴露。
+    pub fn symbol_graph_reads(&self) -> SymbolGraphReads<'_> {
+        SymbolGraphReads::new(self)
+    }
+}
+
+/// Symbol/caller 图读模型 over [`IndexDb`]：symbols_covering / caller-callee 邻接 /
+/// 度统计 / 符号名查找 / 方法-类匹配 / 导出指纹 / 导入者 / re-export / 重解析边加载等。
+/// 零成本借用，经 [`IndexDb::symbol_graph_reads`] 获取，与 catch-all
+/// [`ReadOps`](crate::index_db::ReadOps) 分立，symbol/caller 查询 SQL 有单一归属。
+pub struct SymbolGraphReads<'a> {
+    db: &'a IndexDb,
+}
+
+impl<'a> SymbolGraphReads<'a> {
+    /// Borrow `db` for symbol/caller graph queries（mirror `ArchReads::new`）.
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
     pub(crate) fn symbols_covering(
         &self,
         file_path: &str,
         line: u32,
         limit: usize,
     ) -> CcResult<Vec<SymbolCoverRow>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT symbol_id, symbol_uid, name, file_path, start_line, end_line
@@ -57,7 +90,7 @@ impl IndexDb {
         callee_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<CallEdgeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line
@@ -81,7 +114,7 @@ impl IndexDb {
         caller_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<CallEdgeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT file_path, line, caller_symbol, callee_symbol, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence, dispatch_kind, synthesized_by, synthesis_key, registered_file, registered_line
@@ -147,7 +180,7 @@ impl IndexDb {
         unique.sort_unstable();
         unique.dedup();
 
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         for chunk in unique.chunks(IN_BATCH_SIZE) {
             let placeholders = sql_in_placeholders(chunk.len());
             let limit_param = chunk.len() + 1;
@@ -191,7 +224,7 @@ impl IndexDb {
         target_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<SymbolRefLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT file_path, line, symbol_name, target_symbol_uid, resolution_kind, resolution_confidence
@@ -220,7 +253,7 @@ impl IndexDb {
     ///
     /// Each tuple: `(env_key, count, comma_separated_file_paths)`.
     pub(crate) fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT env_key, COUNT(*) as cnt, GROUP_CONCAT(DISTINCT file_path) \
@@ -260,7 +293,7 @@ impl IndexDb {
     // ── Graph / framework post-processing ───────────────────────
 
     pub(crate) fn call_uid_edges(&self) -> CcResult<Vec<(String, String)>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT caller_symbol_uid, callee_symbol_uid
@@ -281,7 +314,7 @@ impl IndexDb {
     /// This is the per-node variant of `call_uid_edges_lite`, used by lazy BFS
     /// to avoid loading the full edge set into memory.
     pub(crate) fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT caller_symbol_uid, callee_symbol_uid, dispatch_kind, \
@@ -316,7 +349,7 @@ impl IndexDb {
     }
 
     pub(crate) fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT caller_symbol_uid, callee_symbol_uid, dispatch_kind, \
@@ -351,7 +384,7 @@ impl IndexDb {
     }
 
     pub(crate) fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached("SELECT symbol_uid, name FROM symbols WHERE symbol_uid IS NOT NULL")
             .map_err(db_err)?;
@@ -373,7 +406,7 @@ impl IndexDb {
         &self,
         uids: &[String],
     ) -> CcResult<HashMap<String, SymbolRow>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut result = HashMap::new();
         for chunk in uids.chunks(IN_BATCH_SIZE) {
             let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
@@ -403,7 +436,7 @@ impl IndexDb {
 
     /// Get degree info for a single symbol UID.
     pub(crate) fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT \
@@ -462,7 +495,7 @@ impl IndexDb {
         unique.sort_unstable();
         unique.dedup();
 
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         for chunk in unique.chunks(IN_BATCH_SIZE) {
             let placeholders = sql_in_placeholders(chunk.len());
             let params: Vec<&dyn rusqlite::types::ToSql> = chunk
@@ -542,7 +575,11 @@ impl IndexDb {
         }
         Ok(result)
     }
+}
 
+// 写操作（社区/框架/合成边删除）紧耦合 write_conn + bump_index_epoch_on 写路径，
+// 无既有 Writes 真模块模式，留 impl IndexDb（WriteOps 转发不变）。
+impl IndexDb {
     pub(crate) fn update_communities(
         &self,
         assignments: &HashMap<String, u32>,
@@ -645,14 +682,16 @@ impl IndexDb {
         tx.commit().map_err(db_err)?;
         Ok(())
     }
+}
 
+impl<'a> SymbolGraphReads<'a> {
     /// Find symbols by exact name, filtering to function/class/component kinds.
     pub(crate) fn find_symbols_by_name_and_kinds(
         &self,
         name: &str,
         kinds: &[&str],
     ) -> CcResult<Vec<SymbolRow>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         Self::find_symbols_by_name_and_kinds_on(&conn, name, kinds)
     }
 
@@ -703,7 +742,7 @@ impl IndexDb {
         if names.is_empty() || kinds.is_empty() {
             return Ok(grouped);
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         for batch in names.chunks(IN_BATCH_SIZE) {
             let name_placeholders = sql_in_placeholders(batch.len());
             let kind_placeholders: String = (1..=kinds.len())
@@ -734,7 +773,11 @@ impl IndexDb {
         }
         Ok(grouped)
     }
+}
 
+// delete_synthetic_semantic_edges(_on) 紧耦合 write_conn + bump_index_epoch_on，
+// 且 _on 被 UnitOfWork 直用，留 impl IndexDb（WriteOps 转发不变）。
+impl IndexDb {
     /// Delete synthetic semantic edges whose edge_id starts with a given prefix.
     pub(crate) fn delete_synthetic_semantic_edges(&self, edge_id_prefix: &str) -> CcResult<usize> {
         let conn = self.write_conn.lock().map_err(db_err)?;
@@ -764,7 +807,9 @@ impl IndexDb {
         )
         .map_err(db_err)
     }
+}
 
+impl<'a> SymbolGraphReads<'a> {
     /// Find the symbol_uid of a method named `method_name` contained in the same class
     /// as the given symbol_uid.
     pub(crate) fn find_method_in_same_class(
@@ -772,7 +817,7 @@ impl IndexDb {
         member_symbol_uid: &str,
         method_name: &str,
     ) -> CcResult<Option<String>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         Self::find_method_in_same_class_on(&conn, member_symbol_uid, method_name)
     }
 
@@ -828,7 +873,7 @@ impl IndexDb {
         if containers.is_empty() {
             return Ok(HashMap::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         Self::find_methods_by_containers_on(&conn, containers)
     }
 
@@ -888,7 +933,7 @@ impl IndexDb {
         if method_names.is_empty() {
             return Ok(Vec::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         Self::find_classes_with_method_names_on(&conn, method_names)
     }
 
@@ -928,7 +973,7 @@ impl IndexDb {
 
     /// Get the export fingerprint for a file.
     pub(crate) fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
                 "SELECT symbol_uid, name, COALESCE(signature, '') as sig, COALESCE(export_name, '') as exp
@@ -982,7 +1027,7 @@ impl IndexDb {
         }
 
         const BATCH_SIZE: usize = 500;
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
 
         for chunk in file_paths.chunks(BATCH_SIZE) {
             let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
@@ -1043,7 +1088,7 @@ impl IndexDb {
             return Ok(Vec::new());
         }
         const BATCH_SIZE: usize = 500;
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut result: std::collections::HashSet<String> = std::collections::HashSet::new();
 
         for chunk in resolved_paths.chunks(BATCH_SIZE) {
@@ -1090,7 +1135,7 @@ impl IndexDb {
             return Ok(result);
         }
         const BATCH_SIZE: usize = 500;
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
 
         for chunk in file_paths.chunks(BATCH_SIZE) {
             let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
@@ -1123,7 +1168,7 @@ impl IndexDb {
         &self,
         file_path: &str,
     ) -> CcResult<FileEdgesForReresolve> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
 
         // symbols
         let mut sym_stmt = conn
@@ -1442,7 +1487,7 @@ impl IndexDb {
         if file_paths.is_empty() {
             return Ok(Vec::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let placeholders: Vec<&str> = file_paths.iter().map(|_| "?").collect();
         let sql = format!(
             "SELECT symbol_id, symbol_uid, name, kind, file_path, container, \
@@ -1464,7 +1509,8 @@ impl IndexDb {
     }
 }
 
-// Read-only facet delegates (see `IndexDb::reads()`).
+// Read-only facet delegates (see `IndexDb::reads()`). capability boundary 保留：
+// 26 个 symbol/caller 图读委托到 SymbolGraphReads 真模块。
 impl ReadOps<'_> {
     pub fn symbols_covering(
         &self,
@@ -1472,7 +1518,9 @@ impl ReadOps<'_> {
         line: u32,
         limit: usize,
     ) -> CcResult<Vec<SymbolCoverRow>> {
-        self.0.symbols_covering(file_path, line, limit)
+        self.0
+            .symbol_graph_reads()
+            .symbols_covering(file_path, line, limit)
     }
 
     pub fn caller_rows_by_uid(
@@ -1480,7 +1528,9 @@ impl ReadOps<'_> {
         callee_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<CallEdgeLite>> {
-        self.0.caller_rows_by_uid(callee_uid, limit)
+        self.0
+            .symbol_graph_reads()
+            .caller_rows_by_uid(callee_uid, limit)
     }
 
     pub fn callee_rows_by_uid(
@@ -1488,7 +1538,9 @@ impl ReadOps<'_> {
         caller_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<CallEdgeLite>> {
-        self.0.callee_rows_by_uid(caller_uid, limit)
+        self.0
+            .symbol_graph_reads()
+            .callee_rows_by_uid(caller_uid, limit)
     }
 
     /// Batched variant of [`Self::caller_rows_by_uid`]: fetch the top
@@ -1497,7 +1549,9 @@ impl ReadOps<'_> {
         callee_uids: &[&str],
         per_seed_limit: usize,
     ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
-        self.0.caller_rows_by_uids(callee_uids, per_seed_limit)
+        self.0
+            .symbol_graph_reads()
+            .caller_rows_by_uids(callee_uids, per_seed_limit)
     }
 
     /// Batched variant of [`Self::callee_rows_by_uid`]; see
@@ -1506,7 +1560,9 @@ impl ReadOps<'_> {
         caller_uids: &[&str],
         per_seed_limit: usize,
     ) -> CcResult<HashMap<String, Vec<CallEdgeLite>>> {
-        self.0.callee_rows_by_uids(caller_uids, per_seed_limit)
+        self.0
+            .symbol_graph_reads()
+            .callee_rows_by_uids(caller_uids, per_seed_limit)
     }
 
     pub fn symbol_ref_rows_by_uid(
@@ -1514,12 +1570,14 @@ impl ReadOps<'_> {
         target_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<SymbolRefLite>> {
-        self.0.symbol_ref_rows_by_uid(target_uid, limit)
+        self.0
+            .symbol_graph_reads()
+            .symbol_ref_rows_by_uid(target_uid, limit)
     }
 
     /// Return a summary of environment variable accesses, ordered by frequency.
     pub fn env_var_summary(&self, limit: usize) -> CcResult<Vec<(String, i64, String)>> {
-        self.0.env_var_summary(limit)
+        self.0.symbol_graph_reads().env_var_summary(limit)
     }
 
     /// No-op: resolution_attempts table removed in schema consolidation.
@@ -1529,34 +1587,38 @@ impl ReadOps<'_> {
         _file_path: Option<&str>,
         _kind: Option<&str>,
     ) -> CcResult<Vec<ResolutionAttemptRow>> {
-        self.0.list_resolution_attempts(_limit, _file_path, _kind)
+        self.0
+            .symbol_graph_reads()
+            .list_resolution_attempts(_limit, _file_path, _kind)
     }
 
     pub fn call_uid_edges(&self) -> CcResult<Vec<(String, String)>> {
-        self.0.call_uid_edges()
+        self.0.symbol_graph_reads().call_uid_edges()
     }
 
     /// Return BFS-friendly outgoing edges for a single caller UID.
     pub fn call_edges_from_uid_lite(&self, caller_uid: &str) -> CcResult<Vec<EdgeLiteBfs>> {
-        self.0.call_edges_from_uid_lite(caller_uid)
+        self.0
+            .symbol_graph_reads()
+            .call_edges_from_uid_lite(caller_uid)
     }
 
     pub fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
-        self.0.call_uid_edges_lite()
+        self.0.symbol_graph_reads().call_uid_edges_lite()
     }
 
     pub fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
-        self.0.symbol_names_by_uid()
+        self.0.symbol_graph_reads().symbol_names_by_uid()
     }
 
     /// Bulk lookup symbol metadata by UIDs. Batches in [`IN_BATCH_SIZE`] chunks.
     pub fn symbol_rows_by_uids(&self, uids: &[String]) -> CcResult<HashMap<String, SymbolRow>> {
-        self.0.symbol_rows_by_uids(uids)
+        self.0.symbol_graph_reads().symbol_rows_by_uids(uids)
     }
 
     /// Get degree info for a single symbol UID.
     pub fn symbol_degree_details(&self, uid: &str) -> CcResult<SymbolDegreeInfo> {
-        self.0.symbol_degree_details(uid)
+        self.0.symbol_graph_reads().symbol_degree_details(uid)
     }
 
     /// Batched variant of [`Self::symbol_degree_details`]: every requested
@@ -1568,7 +1630,9 @@ impl ReadOps<'_> {
         &self,
         uids: &[&str],
     ) -> CcResult<HashMap<String, SymbolDegreeInfo>> {
-        self.0.symbol_degree_details_batch(uids)
+        self.0
+            .symbol_graph_reads()
+            .symbol_degree_details_batch(uids)
     }
 
     /// Find symbols by exact name, filtering to function/class/component kinds.
@@ -1577,7 +1641,9 @@ impl ReadOps<'_> {
         name: &str,
         kinds: &[&str],
     ) -> CcResult<Vec<SymbolRow>> {
-        self.0.find_symbols_by_name_and_kinds(name, kinds)
+        self.0
+            .symbol_graph_reads()
+            .find_symbols_by_name_and_kinds(name, kinds)
     }
 
     /// Batched variant of [`Self::find_symbols_by_name_and_kinds`]: resolves
@@ -1586,7 +1652,9 @@ impl ReadOps<'_> {
         names: &[&str],
         kinds: &[&str],
     ) -> CcResult<HashMap<String, Vec<SymbolRow>>> {
-        self.0.find_symbols_by_names_and_kinds(names, kinds)
+        self.0
+            .symbol_graph_reads()
+            .find_symbols_by_names_and_kinds(names, kinds)
     }
 
     /// Find the symbol_uid of a method named `method_name` contained in the same class
@@ -1596,12 +1664,15 @@ impl ReadOps<'_> {
         method_name: &str,
     ) -> CcResult<Option<String>> {
         self.0
+            .symbol_graph_reads()
             .find_method_in_same_class(member_symbol_uid, method_name)
     }
 
     /// Fetch methods for many containers (class/struct names) in a single
     pub fn find_methods_by_containers(&self, containers: &[&str]) -> CcResult<MethodsByContainer> {
-        self.0.find_methods_by_containers(containers)
+        self.0
+            .symbol_graph_reads()
+            .find_methods_by_containers(containers)
     }
 
     /// Find all classes that have methods matching any of the given name patterns.
@@ -1609,12 +1680,16 @@ impl ReadOps<'_> {
         &self,
         method_names: &[&str],
     ) -> CcResult<Vec<(String, String)>> {
-        self.0.find_classes_with_method_names(method_names)
+        self.0
+            .symbol_graph_reads()
+            .find_classes_with_method_names(method_names)
     }
 
     /// Get the export fingerprint for a file.
     pub fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
-        self.0.get_export_fingerprint(file_path)
+        self.0
+            .symbol_graph_reads()
+            .get_export_fingerprint(file_path)
     }
 
     /// Batch variant of [`Self::get_export_fingerprint`]: compute the export
@@ -1622,12 +1697,14 @@ impl ReadOps<'_> {
         &self,
         file_paths: &[String],
     ) -> CcResult<HashMap<String, String>> {
-        self.0.get_export_fingerprints(file_paths)
+        self.0
+            .symbol_graph_reads()
+            .get_export_fingerprints(file_paths)
     }
 
     /// Find all files that import the given resolved paths.
     pub fn find_importers_of(&self, resolved_paths: &[String]) -> CcResult<Vec<String>> {
-        self.0.find_importers_of(resolved_paths)
+        self.0.symbol_graph_reads().find_importers_of(resolved_paths)
     }
 
     /// Resolved re-export targets for many files in one batched query:
@@ -1635,7 +1712,9 @@ impl ReadOps<'_> {
         &self,
         file_paths: &[&str],
     ) -> CcResult<HashMap<String, Vec<String>>> {
-        self.0.reexport_targets_for_files(file_paths)
+        self.0
+            .symbol_graph_reads()
+            .reexport_targets_for_files(file_paths)
     }
 
     /// Load file edge data for re-resolve scenarios.
@@ -1643,11 +1722,15 @@ impl ReadOps<'_> {
         &self,
         file_path: &str,
     ) -> CcResult<FileEdgesForReresolve> {
-        self.0.load_file_edges_for_reresolve(file_path)
+        self.0
+            .symbol_graph_reads()
+            .load_file_edges_for_reresolve(file_path)
     }
 
     pub fn symbols_by_file_paths(&self, file_paths: &[&str]) -> CcResult<Vec<SymbolRow>> {
-        self.0.symbols_by_file_paths(file_paths)
+        self.0
+            .symbol_graph_reads()
+            .symbols_by_file_paths(file_paths)
     }
 }
 
@@ -1733,7 +1816,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let rows = db.symbols_covering("src/main.rs", 15, 10).unwrap();
+        let rows = db.symbol_graph_reads().symbols_covering("src/main.rs", 15, 10).unwrap();
         assert_eq!(rows.len(), 2);
         // Smallest span first: inner (span 20) before outer (span 49)
         assert_eq!(rows[0].name, "inner");
@@ -1769,11 +1852,11 @@ mod tests {
 
         let kinds: &[&str] = &["function", "class", "component", "hook"];
         let names: &[&str] = &["Button", "Modal", "helper", "Missing"];
-        let batch = db.find_symbols_by_names_and_kinds(names, kinds).unwrap();
+        let batch = db.symbol_graph_reads().find_symbols_by_names_and_kinds(names, kinds).unwrap();
 
         // Batch result must equal the per-name query for every name.
         for name in names {
-            let single = db.find_symbols_by_name_and_kinds(name, kinds).unwrap();
+            let single = db.symbol_graph_reads().find_symbols_by_name_and_kinds(name, kinds).unwrap();
             let batched = batch.get(*name).cloned().unwrap_or_default();
             assert_eq!(single.len(), batched.len(), "row count mismatch for {name}");
             for (s, b) in single.iter().zip(batched.iter()) {
@@ -1836,11 +1919,11 @@ mod tests {
             "src/missing.rs".to_string(),
         ];
 
-        let batch = db.get_export_fingerprints(&paths).unwrap();
+        let batch = db.symbol_graph_reads().get_export_fingerprints(&paths).unwrap();
 
         // Batch result must equal the per-file query for every path.
         for path in &paths {
-            let single = db.get_export_fingerprint(path).unwrap();
+            let single = db.symbol_graph_reads().get_export_fingerprint(path).unwrap();
             assert_eq!(
                 batch.get(path).cloned(),
                 single,
@@ -1858,7 +1941,7 @@ mod tests {
     #[test]
     fn test_get_export_fingerprints_empty_input() {
         let (db, _tmp) = setup();
-        let batch = db.get_export_fingerprints(&[]).unwrap();
+        let batch = db.symbol_graph_reads().get_export_fingerprints(&[]).unwrap();
         assert!(batch.is_empty());
     }
 
@@ -1902,6 +1985,7 @@ mod tests {
         insert_import(&db, "src/plain.ts", Some("src/c.ts"), false);
 
         let targets = db
+            .symbol_graph_reads()
             .reexport_targets_for_files(&["src/a.ts", "src/b.ts", "src/plain.ts", "src/missing.ts"])
             .unwrap();
 
@@ -1930,7 +2014,7 @@ mod tests {
     #[test]
     fn test_reexport_targets_for_files_empty_input() {
         let (db, _tmp) = setup();
-        let targets = db.reexport_targets_for_files(&[]).unwrap();
+        let targets = db.symbol_graph_reads().reexport_targets_for_files(&[]).unwrap();
         assert!(targets.is_empty());
     }
 
@@ -1961,13 +2045,13 @@ mod tests {
         }
 
         // caller_rows_by_uid: who calls uid_b?
-        let callers = db.caller_rows_by_uid("uid_b", 10).unwrap();
+        let callers = db.symbol_graph_reads().caller_rows_by_uid("uid_b", 10).unwrap();
         assert_eq!(callers.len(), 2);
         assert_eq!(callers[0].caller_symbol_uid.as_deref(), Some("uid_a"));
         assert_eq!(callers[1].caller_symbol_uid.as_deref(), Some("uid_c"));
 
         // callee_rows_by_uid: what does uid_a call?
-        let callees = db.callee_rows_by_uid("uid_a", 10).unwrap();
+        let callees = db.symbol_graph_reads().callee_rows_by_uid("uid_a", 10).unwrap();
         assert_eq!(callees.len(), 2);
         assert_eq!(callees[0].callee_symbol_uid.as_deref(), Some("uid_b"));
         assert_eq!(callees[1].callee_symbol_uid.as_deref(), Some("uid_d"));
@@ -2025,11 +2109,11 @@ mod tests {
         let seeds = ["uid_a", "uid_b", "uid_c", "uid_a"];
 
         for limit in [1usize, 2, 3, 10] {
-            let batch_callers = db.caller_rows_by_uids(&seeds, limit).unwrap();
-            let batch_callees = db.callee_rows_by_uids(&seeds, limit).unwrap();
+            let batch_callers = db.symbol_graph_reads().caller_rows_by_uids(&seeds, limit).unwrap();
+            let batch_callees = db.symbol_graph_reads().callee_rows_by_uids(&seeds, limit).unwrap();
             for uid in ["uid_a", "uid_b", "uid_c"] {
-                let single_callers = db.caller_rows_by_uid(uid, limit).unwrap();
-                let single_callees = db.callee_rows_by_uid(uid, limit).unwrap();
+                let single_callers = db.symbol_graph_reads().caller_rows_by_uid(uid, limit).unwrap();
+                let single_callees = db.symbol_graph_reads().callee_rows_by_uid(uid, limit).unwrap();
                 assert_eq!(
                     format!("{:?}", batch_callers.get(uid).cloned().unwrap_or_default()),
                     format!("{:?}", single_callers),
@@ -2051,6 +2135,7 @@ mod tests {
         // Tie contract: equal-line rows come back in rowid (insertion)
         // order, on the point query and therefore on the batch as well.
         let tied_callers: Vec<_> = db
+            .symbol_graph_reads()
             .caller_rows_by_uid("uid_a", 10)
             .unwrap()
             .into_iter()
@@ -2058,6 +2143,7 @@ mod tests {
             .collect();
         assert_eq!(tied_callers, ["uid_p2", "uid_p3", "uid_p4", "uid_p1"]);
         let tied_callees: Vec<_> = db
+            .symbol_graph_reads()
             .callee_rows_by_uid("uid_a", 10)
             .unwrap()
             .into_iter()
@@ -2066,6 +2152,7 @@ mod tests {
         assert_eq!(tied_callees, ["uid_y", "uid_z", "uid_w", "uid_x"]);
         // Limit cut inside the line-8 tie group keeps the lower rowid (e8).
         let cut_callers: Vec<_> = db
+            .symbol_graph_reads()
             .caller_rows_by_uid("uid_b", 2)
             .unwrap()
             .into_iter()
@@ -2074,8 +2161,8 @@ mod tests {
         assert_eq!(cut_callers, ["uid_p2", "uid_p1"]);
 
         // Empty seed list -> empty map, no SQL issued.
-        assert!(db.caller_rows_by_uids(&[], 5).unwrap().is_empty());
-        assert!(db.callee_rows_by_uids(&[], 5).unwrap().is_empty());
+        assert!(db.symbol_graph_reads().caller_rows_by_uids(&[], 5).unwrap().is_empty());
+        assert!(db.symbol_graph_reads().callee_rows_by_uids(&[], 5).unwrap().is_empty());
     }
 
     #[test]
@@ -2189,7 +2276,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let info = db.symbol_degree_details("uid_target").unwrap();
+        let info = db.symbol_graph_reads().symbol_degree_details("uid_target").unwrap();
         assert_eq!(info.in_degree, 2); // 2 incoming call edges
         assert_eq!(info.out_degree, 1); // 1 outgoing call edge
         assert_eq!(info.caller_count, 2); // 2 distinct callers
@@ -2246,11 +2333,11 @@ mod tests {
 
         // uid_unknown appears nowhere; uid_a appears twice (duplicate seed).
         let seeds = ["uid_a", "uid_b", "uid_zero", "uid_unknown", "uid_a"];
-        let batch = db.symbol_degree_details_batch(&seeds).unwrap();
+        let batch = db.symbol_graph_reads().symbol_degree_details_batch(&seeds).unwrap();
 
         assert_eq!(batch.len(), 4, "duplicate seeds collapse to one entry");
         for uid in ["uid_a", "uid_b", "uid_zero", "uid_unknown"] {
-            let single = db.symbol_degree_details(uid).unwrap();
+            let single = db.symbol_graph_reads().symbol_degree_details(uid).unwrap();
             let batched = batch.get(uid).expect("every requested UID is present");
             assert_eq!(
                 format!("{:?}", batched),
@@ -2275,7 +2362,7 @@ mod tests {
         assert!(!batch.contains_key("uid_noise2"));
 
         // Empty seed list -> empty map, no SQL issued.
-        assert!(db.symbol_degree_details_batch(&[]).unwrap().is_empty());
+        assert!(db.symbol_graph_reads().symbol_degree_details_batch(&[]).unwrap().is_empty());
     }
 
     /// Regression: a step-phase execution error must surface as `Err`, never
@@ -2293,19 +2380,19 @@ mod tests {
         // Warm-up through the read pool so the pooled connection prepares
         // statements involving `call_edges` against the current schema
         // (stale in-memory schema precondition).
-        assert_eq!(db.call_edges_from_uid_lite("uid_a").unwrap().len(), 1);
-        assert_eq!(db.caller_rows_by_uid("uid_b", 10).unwrap().len(), 1);
-        assert_eq!(db.caller_rows_by_uids(&["uid_b"], 10).unwrap().len(), 1);
+        assert_eq!(db.symbol_graph_reads().call_edges_from_uid_lite("uid_a").unwrap().len(), 1);
+        assert_eq!(db.symbol_graph_reads().caller_rows_by_uid("uid_b", 10).unwrap().len(), 1);
+        assert_eq!(db.symbol_graph_reads().caller_rows_by_uids(&["uid_b"], 10).unwrap().len(), 1);
 
         // Drop the table behind the pool's back.
         let side = rusqlite::Connection::open(db.admin().db_path()).unwrap();
         side.execute("DROP TABLE call_edges", []).unwrap();
 
         // Collect form (point query, cached statement) ...
-        assert!(db.call_edges_from_uid_lite("uid_a").is_err());
+        assert!(db.symbol_graph_reads().call_edges_from_uid_lite("uid_a").is_err());
         // ... collect form via the shared row mapper ...
-        assert!(db.caller_rows_by_uid("uid_b", 10).is_err());
+        assert!(db.symbol_graph_reads().caller_rows_by_uid("uid_b", 10).is_err());
         // ... and for-loop form (batched dynamic-SQL query).
-        assert!(db.caller_rows_by_uids(&["uid_b"], 10).is_err());
+        assert!(db.symbol_graph_reads().caller_rows_by_uids(&["uid_b"], 10).is_err());
     }
 }

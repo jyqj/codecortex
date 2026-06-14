@@ -73,3 +73,15 @@ LIMIT ≤ 1000），其余形态回落原 CTE；语义与 CTE 逐行等价（(ro
   校验：成员必须存在于 graph catalog 且支持 `variable_length`（cc-search 侧
   `fast_path_kinds_derive_from_catalog_declaration` 与 cc-model 侧
   `tool_graph_subsets` 测试双向锁定）。资格门判定语义不变。
+- 2026-06-14 更新（R2-D 实现深化）：上述 R2-D 可见化的**数据来源**从
+  handler 侧重算收口为 executor 数据流出——决策（`FastPathDecision`）在
+  `execute_with_options` 入口由 `fast_path::decide(query)` 算一次，经
+  `CypherResult.fast_path`（`#[serde(skip)]`，非序列化字段）随结果携带，
+  `graph_query` handler 直读该值经 `as_metadata()` 透出，不再在响应边界
+  第二次对 query 串做 tokenize + 资格判定（handler 对
+  `fast_path_decision_for_query` 的调用移除）。UNION 查询恒为
+  `NotApplicable`（每个分支都走 SQL 翻译，`allow_fast_path = false`）。
+  对外契约逐字不变：响应 `fast_path` 字段的取值集合、出现/省略条件、
+  `reason` token 与 R2-D 完全一致；资格门判定语义不变。
+  `fast_path_decision_for_query`（`cypher/mod.rs`）作为持有原始 query 串的
+  convenience 入口保留，供测试/诊断消费；生产响应不再经它第二次解析。

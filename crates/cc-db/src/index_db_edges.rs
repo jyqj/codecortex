@@ -160,6 +160,340 @@ fn compute_test_edges_full(files: &[(String, bool)]) -> Vec<FullTestEdge> {
 }
 
 impl IndexDb {
+    /// 边/派发站点/运行时证据的只读查询模型。零成本借用，经此工厂暴露；SQL 在模型自身。
+    pub fn edge_reads(&self) -> EdgeReads<'_> {
+        EdgeReads::new(self)
+    }
+}
+
+/// Deep 边读模型 over [`IndexDb`]：语义边查询、co-change、派发站点加载、HTTP 边匹配、
+/// 路由 id、运行时证据统计与聚合。零成本借用，经 [`IndexDb::edge_reads`] 获取，与
+/// catch-all [`ReadOps`](crate::index_db::ReadOps) 分立，边读 SQL 有单一归属。写操作
+/// （insert/delete/replace/upsert 边与证据）紧耦合 write_conn + bump_index_epoch_on +
+/// `_on` 关联函数（UnitOfWork 共享），留 `impl IndexDb`。
+pub struct EdgeReads<'a> {
+    db: &'a IndexDb,
+}
+
+impl<'a> EdgeReads<'a> {
+    /// Borrow `db` for edge/dispatch/evidence reads（mirror `RetrievalReadModel::new`）.
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
+    pub(crate) fn query_semantic_edges(
+        &self,
+        source_uid: Option<&str>,
+        target_uid: Option<&str>,
+        relation_kind: Option<&str>,
+    ) -> CcResult<Vec<cc_model::edge::SemanticEdgeRecord>> {
+        let conn = self.db.read_conn()?;
+        let mut sql = String::from(
+            "SELECT edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier FROM semantic_edges WHERE 1=1",
+        );
+        let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
+        if let Some(uid) = source_uid {
+            params.push(Box::new(uid.to_string()));
+            sql.push_str(&format!(" AND source_symbol_uid = ?{}", params.len()));
+        }
+        if let Some(uid) = target_uid {
+            params.push(Box::new(uid.to_string()));
+            sql.push_str(&format!(" AND target_symbol_uid = ?{}", params.len()));
+        }
+        if let Some(kind) = relation_kind {
+            params.push(Box::new(kind.to_string()));
+            sql.push_str(&format!(" AND relation_kind = ?{}", params.len()));
+        }
+        let params_refs: Vec<&dyn rusqlite::types::ToSql> =
+            params.iter().map(|p| p.as_ref()).collect();
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(params_refs.as_slice(), |row| {
+                let relation_str: String = row.get(6)?;
+                let tier_str: String = row.get(9)?;
+                Ok(cc_model::edge::SemanticEdgeRecord {
+                    edge_id: row.get(0)?,
+                    file_path: row.get(1)?,
+                    source_symbol: row.get(2)?,
+                    source_symbol_uid: row.get(3)?,
+                    target_symbol: row.get(4)?,
+                    target_symbol_uid: row.get(5)?,
+                    relation_kind: match relation_str.as_str() {
+                        "inherits" => cc_model::edge::SemanticRelation::Inherits,
+                        "implements" => cc_model::edge::SemanticRelation::Implements,
+                        "decorates" => cc_model::edge::SemanticRelation::Decorates,
+                        "throws" => cc_model::edge::SemanticRelation::Throws,
+                        "uses_type" => cc_model::edge::SemanticRelation::UsesType,
+                        "defines" => cc_model::edge::SemanticRelation::Defines,
+                        "defines_method" => cc_model::edge::SemanticRelation::DefinesMethod,
+                        "contains_file" => cc_model::edge::SemanticRelation::ContainsFile,
+                        "contains_module" => cc_model::edge::SemanticRelation::ContainsModule,
+                        "renders_component" => cc_model::edge::SemanticRelation::RendersComponent,
+                        "injects" => cc_model::edge::SemanticRelation::Injects,
+                        other => {
+                            warn!(kind = %other, "unknown semantic relation_kind in DB, mapping to Unknown");
+                            cc_model::edge::SemanticRelation::Unknown
+                        }
+                    },
+                    line: row.get(7)?,
+                    confidence: row.get(8)?,
+                    parser_tier: match tier_str.as_str() {
+                        "generic" => ParserTier::Generic,
+                        "heuristic" => ParserTier::Heuristic,
+                        "tree_sitter" => ParserTier::TreeSitter,
+                        "semantic" => ParserTier::Semantic,
+                        "verified" => ParserTier::Verified,
+                        _ => ParserTier::Generic,
+                    },
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn get_co_changes_for_file(
+        &self,
+        file_path: &str,
+        min_confidence: f64,
+    ) -> CcResult<Vec<CoChangeLite>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached(
+                "SELECT edge_id, file_a, file_b, co_change_count, total_commits_a, total_commits_b, confidence
+                 FROM co_change_edges
+                 WHERE (file_a = ?1 OR file_b = ?1) AND confidence >= ?2
+                 ORDER BY confidence DESC",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params![file_path, min_confidence], |row| {
+                Ok(CoChangeLite {
+                    edge_id: row.get(0)?,
+                    file_a: row.get(1)?,
+                    file_b: row.get(2)?,
+                    co_change_count: row.get(3)?,
+                    total_commits_a: row.get(4)?,
+                    total_commits_b: row.get(5)?,
+                    confidence: row.get(6)?,
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+        let conn = self.db.read_conn()?;
+        Self::load_all_dispatch_sites_on(&conn)
+    }
+
+    pub(crate) fn load_all_dispatch_sites_on(
+        conn: &rusqlite::Connection,
+    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+        let mut stmt = conn
+            .prepare(
+                "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
+                 site_kind,key,handler_expr,handler_symbol_uid,confidence \
+                 FROM dispatch_sites",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                let kind_str: String = row.get(6)?;
+                Ok(cc_model::DispatchSiteRecord {
+                    site_id: row.get(0)?,
+                    file_path: row.get(1)?,
+                    line: row.get(2)?,
+                    col: row.get(3)?,
+                    enclosing_symbol_uid: row.get(4)?,
+                    receiver_expr: row.get(5)?,
+                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
+                    key: row.get(7)?,
+                    handler_expr: row.get(8)?,
+                    handler_symbol_uid: row.get(9)?,
+                    confidence: row.get(10)?,
+                })
+            })
+            .map_err(db_err)?;
+        let mut result = Vec::new();
+        for r in rows {
+            result.push(r.map_err(db_err)?);
+        }
+        Ok(result)
+    }
+
+    pub(crate) fn load_dispatch_sites_by_kind(
+        &self,
+        kind: &str,
+    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+        let conn = self.db.read_conn()?;
+        Self::load_dispatch_sites_by_kind_on(&conn, kind)
+    }
+
+    pub(crate) fn load_dispatch_sites_by_kind_on(
+        conn: &rusqlite::Connection,
+        kind: &str,
+    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
+        let mut stmt = conn
+            .prepare(
+                "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
+                 site_kind,key,handler_expr,handler_symbol_uid,confidence \
+                 FROM dispatch_sites WHERE site_kind = ?1",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params![kind], |row| {
+                let kind_str: String = row.get(6)?;
+                Ok(cc_model::DispatchSiteRecord {
+                    site_id: row.get(0)?,
+                    file_path: row.get(1)?,
+                    line: row.get(2)?,
+                    col: row.get(3)?,
+                    enclosing_symbol_uid: row.get(4)?,
+                    receiver_expr: row.get(5)?,
+                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
+                    key: row.get(7)?,
+                    handler_expr: row.get(8)?,
+                    handler_symbol_uid: row.get(9)?,
+                    confidence: row.get(10)?,
+                })
+            })
+            .map_err(db_err)?;
+        let mut result = Vec::new();
+        for r in rows {
+            result.push(r.map_err(db_err)?);
+        }
+        Ok(result)
+    }
+
+    /// method-specific match is tried first (when `method` is given), then a
+    /// path-only fallback; lookup misses degrade to `None`/`0`.
+    pub(crate) fn http_edge_match_for_path(
+        &self,
+        normalized_path: &str,
+        method: Option<&str>,
+    ) -> CcResult<(Option<String>, u32)> {
+        let conn = self.db.read_conn()?;
+
+        let edge_id: Option<String> = if let Some(method) = method {
+            conn.query_row(
+                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
+                rusqlite::params![normalized_path, method],
+                |r| r.get(0),
+            )
+            .ok()
+        } else {
+            None
+        };
+
+        let edge_id = edge_id.or_else(|| {
+            conn.query_row(
+                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
+                [normalized_path],
+                |r| r.get(0),
+            )
+            .ok()
+        });
+
+        let candidate_count: u32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
+                [normalized_path],
+                |r| r.get(0),
+            )
+            .unwrap_or(0);
+
+        Ok((edge_id, candidate_count))
+    }
+
+    /// First route id registered under `normalized_path`, if any.
+    pub(crate) fn route_id_for_normalized_path(
+        &self,
+        normalized_path: &str,
+    ) -> CcResult<Option<String>> {
+        let conn = self.db.read_conn()?;
+        Ok(conn
+            .query_row(
+                "SELECT route_id FROM routes WHERE normalized_path = ?1 LIMIT 1",
+                [normalized_path],
+                |r| r.get(0),
+            )
+            .ok())
+    }
+
+    pub(crate) fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
+        let conn = self.db.read_conn()?;
+        let evidence_rows: u32 = conn
+            .query_row("SELECT COUNT(*) FROM runtime_evidence", [], |r| r.get(0))
+            .map_err(db_err)?;
+        let total_observations: u64 = conn
+            .query_row(
+                "SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence",
+                [],
+                |r| r.get(0),
+            )
+            .map_err(db_err)?;
+        let linked_rows: u32 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL",
+                [],
+                |r| r.get(0),
+            )
+            .map_err(db_err)?;
+        let distinct_linked_edges: u32 = conn
+            .query_row("SELECT COUNT(DISTINCT http_edge_id) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
+            .map_err(db_err)?;
+        Ok(serde_json::json!({
+            "evidence_rows": evidence_rows,
+            "total_observations": total_observations,
+            "linked_evidence_rows": linked_rows,
+            "distinct_linked_edges": distinct_linked_edges,
+        }))
+    }
+
+    /// Query aggregated runtime evidence keyed by normalized path.
+    ///
+    /// For each normalized path, returns (total_observed_count, latest_last_seen).
+    /// Matches evidence whose linked http_edge_id has the given normalized_path.
+    pub(crate) fn evidence_for_normalized_paths(
+        &self,
+        paths: &[String],
+    ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
+        if paths.is_empty() {
+            return Ok(std::collections::HashMap::new());
+        }
+        let conn = self.db.read_conn()?;
+        let placeholders: Vec<String> = (1..=paths.len()).map(|i| format!("?{}", i)).collect();
+        let sql = format!(
+            "SELECT hce.normalized_path, SUM(re.observed_count) AS total_count, MAX(re.last_seen) AS latest_seen \
+             FROM runtime_evidence re \
+             JOIN http_call_edges hce ON re.http_edge_id = hce.edge_id \
+             WHERE hce.normalized_path IN ({}) \
+             GROUP BY hce.normalized_path",
+            placeholders.join(",")
+        );
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = paths
+            .iter()
+            .map(|s| s as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| {
+                let norm_path: String = row.get(0)?;
+                let count: u32 = row.get(1)?;
+                let last_seen: String = row.get(2)?;
+                Ok((norm_path, count, last_seen))
+            })
+            .map_err(db_err)?;
+        let mut result = std::collections::HashMap::new();
+        for row in rows {
+            let (norm_path, count, last_seen) = row.map_err(db_err)?;
+            result.insert(norm_path, (count, last_seen));
+        }
+        Ok(result)
+    }
+}
+
+impl IndexDb {
     pub(crate) fn rebuild_test_edges_for_files(&self, changed: &[String]) -> CcResult<()> {
         if changed.is_empty() {
             return Ok(());
@@ -480,76 +814,6 @@ impl IndexDb {
         Ok(())
     }
 
-    pub(crate) fn query_semantic_edges(
-        &self,
-        source_uid: Option<&str>,
-        target_uid: Option<&str>,
-        relation_kind: Option<&str>,
-    ) -> CcResult<Vec<cc_model::edge::SemanticEdgeRecord>> {
-        let conn = self.read_conn()?;
-        let mut sql = String::from(
-            "SELECT edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier FROM semantic_edges WHERE 1=1",
-        );
-        let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
-        if let Some(uid) = source_uid {
-            params.push(Box::new(uid.to_string()));
-            sql.push_str(&format!(" AND source_symbol_uid = ?{}", params.len()));
-        }
-        if let Some(uid) = target_uid {
-            params.push(Box::new(uid.to_string()));
-            sql.push_str(&format!(" AND target_symbol_uid = ?{}", params.len()));
-        }
-        if let Some(kind) = relation_kind {
-            params.push(Box::new(kind.to_string()));
-            sql.push_str(&format!(" AND relation_kind = ?{}", params.len()));
-        }
-        let params_refs: Vec<&dyn rusqlite::types::ToSql> =
-            params.iter().map(|p| p.as_ref()).collect();
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let rows = stmt
-            .query_map(params_refs.as_slice(), |row| {
-                let relation_str: String = row.get(6)?;
-                let tier_str: String = row.get(9)?;
-                Ok(cc_model::edge::SemanticEdgeRecord {
-                    edge_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    source_symbol: row.get(2)?,
-                    source_symbol_uid: row.get(3)?,
-                    target_symbol: row.get(4)?,
-                    target_symbol_uid: row.get(5)?,
-                    relation_kind: match relation_str.as_str() {
-                        "inherits" => cc_model::edge::SemanticRelation::Inherits,
-                        "implements" => cc_model::edge::SemanticRelation::Implements,
-                        "decorates" => cc_model::edge::SemanticRelation::Decorates,
-                        "throws" => cc_model::edge::SemanticRelation::Throws,
-                        "uses_type" => cc_model::edge::SemanticRelation::UsesType,
-                        "defines" => cc_model::edge::SemanticRelation::Defines,
-                        "defines_method" => cc_model::edge::SemanticRelation::DefinesMethod,
-                        "contains_file" => cc_model::edge::SemanticRelation::ContainsFile,
-                        "contains_module" => cc_model::edge::SemanticRelation::ContainsModule,
-                        "renders_component" => cc_model::edge::SemanticRelation::RendersComponent,
-                        "injects" => cc_model::edge::SemanticRelation::Injects,
-                        other => {
-                            warn!(kind = %other, "unknown semantic relation_kind in DB, mapping to Unknown");
-                            cc_model::edge::SemanticRelation::Unknown
-                        }
-                    },
-                    line: row.get(7)?,
-                    confidence: row.get(8)?,
-                    parser_tier: match tier_str.as_str() {
-                        "generic" => ParserTier::Generic,
-                        "heuristic" => ParserTier::Heuristic,
-                        "tree_sitter" => ParserTier::TreeSitter,
-                        "semantic" => ParserTier::Semantic,
-                        "verified" => ParserTier::Verified,
-                        _ => ParserTier::Generic,
-                    },
-                })
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
     pub(crate) fn insert_co_change_edges_batch(
         &self,
         edges: &[cc_model::edge::CoChangeEdgeRecord],
@@ -570,36 +834,6 @@ impl IndexDb {
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(db_err)?;
         Ok(())
-    }
-
-    pub(crate) fn get_co_changes_for_file(
-        &self,
-        file_path: &str,
-        min_confidence: f64,
-    ) -> CcResult<Vec<CoChangeLite>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare_cached(
-                "SELECT edge_id, file_a, file_b, co_change_count, total_commits_a, total_commits_b, confidence
-                 FROM co_change_edges
-                 WHERE (file_a = ?1 OR file_b = ?1) AND confidence >= ?2
-                 ORDER BY confidence DESC",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params![file_path, min_confidence], |row| {
-                Ok(CoChangeLite {
-                    edge_id: row.get(0)?,
-                    file_a: row.get(1)?,
-                    file_b: row.get(2)?,
-                    co_change_count: row.get(3)?,
-                    total_commits_a: row.get(4)?,
-                    total_commits_b: row.get(5)?,
-                    confidence: row.get(6)?,
-                })
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn replace_infra_data(
@@ -682,90 +916,6 @@ impl IndexDb {
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(db_err)?;
         Ok(())
-    }
-
-    pub(crate) fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        let conn = self.read_conn()?;
-        Self::load_all_dispatch_sites_on(&conn)
-    }
-
-    pub(crate) fn load_all_dispatch_sites_on(
-        conn: &rusqlite::Connection,
-    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        let mut stmt = conn
-            .prepare(
-                "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
-                 site_kind,key,handler_expr,handler_symbol_uid,confidence \
-                 FROM dispatch_sites",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                let kind_str: String = row.get(6)?;
-                Ok(cc_model::DispatchSiteRecord {
-                    site_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    line: row.get(2)?,
-                    col: row.get(3)?,
-                    enclosing_symbol_uid: row.get(4)?,
-                    receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
-                    key: row.get(7)?,
-                    handler_expr: row.get(8)?,
-                    handler_symbol_uid: row.get(9)?,
-                    confidence: row.get(10)?,
-                })
-            })
-            .map_err(db_err)?;
-        let mut result = Vec::new();
-        for r in rows {
-            result.push(r.map_err(db_err)?);
-        }
-        Ok(result)
-    }
-
-    pub(crate) fn load_dispatch_sites_by_kind(
-        &self,
-        kind: &str,
-    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        let conn = self.read_conn()?;
-        Self::load_dispatch_sites_by_kind_on(&conn, kind)
-    }
-
-    pub(crate) fn load_dispatch_sites_by_kind_on(
-        conn: &rusqlite::Connection,
-        kind: &str,
-    ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        let mut stmt = conn
-            .prepare(
-                "SELECT site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,\
-                 site_kind,key,handler_expr,handler_symbol_uid,confidence \
-                 FROM dispatch_sites WHERE site_kind = ?1",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params![kind], |row| {
-                let kind_str: String = row.get(6)?;
-                Ok(cc_model::DispatchSiteRecord {
-                    site_id: row.get(0)?,
-                    file_path: row.get(1)?,
-                    line: row.get(2)?,
-                    col: row.get(3)?,
-                    enclosing_symbol_uid: row.get(4)?,
-                    receiver_expr: row.get(5)?,
-                    site_kind: cc_model::DispatchSiteKind::parse_str(&kind_str),
-                    key: row.get(7)?,
-                    handler_expr: row.get(8)?,
-                    handler_symbol_uid: row.get(9)?,
-                    confidence: row.get(10)?,
-                })
-            })
-            .map_err(db_err)?;
-        let mut result = Vec::new();
-        for r in rows {
-            result.push(r.map_err(db_err)?);
-        }
-        Ok(result)
     }
 
     pub(crate) fn delete_synthetic_call_edges(&self, synthesized_by: &str) -> CcResult<usize> {
@@ -940,135 +1090,6 @@ impl IndexDb {
         tx.commit().map_err(db_err)?;
         Ok(())
     }
-
-    /// Match a runtime-evidence observation against indexed HTTP call edges:
-    /// returns `(edge_id, candidate_count)` for `normalized_path`. A
-    /// method-specific match is tried first (when `method` is given), then a
-    /// path-only fallback; lookup misses degrade to `None`/`0`.
-    pub(crate) fn http_edge_match_for_path(
-        &self,
-        normalized_path: &str,
-        method: Option<&str>,
-    ) -> CcResult<(Option<String>, u32)> {
-        let conn = self.read_conn()?;
-
-        let edge_id: Option<String> = if let Some(method) = method {
-            conn.query_row(
-                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 AND method = ?2 LIMIT 1",
-                rusqlite::params![normalized_path, method],
-                |r| r.get(0),
-            )
-            .ok()
-        } else {
-            None
-        };
-
-        let edge_id = edge_id.or_else(|| {
-            conn.query_row(
-                "SELECT edge_id FROM http_call_edges WHERE normalized_path = ?1 LIMIT 1",
-                [normalized_path],
-                |r| r.get(0),
-            )
-            .ok()
-        });
-
-        let candidate_count: u32 = conn
-            .query_row(
-                "SELECT COUNT(*) FROM http_call_edges WHERE normalized_path = ?1",
-                [normalized_path],
-                |r| r.get(0),
-            )
-            .unwrap_or(0);
-
-        Ok((edge_id, candidate_count))
-    }
-
-    /// First route id registered under `normalized_path`, if any.
-    pub(crate) fn route_id_for_normalized_path(
-        &self,
-        normalized_path: &str,
-    ) -> CcResult<Option<String>> {
-        let conn = self.read_conn()?;
-        Ok(conn
-            .query_row(
-                "SELECT route_id FROM routes WHERE normalized_path = ?1 LIMIT 1",
-                [normalized_path],
-                |r| r.get(0),
-            )
-            .ok())
-    }
-
-    pub(crate) fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
-        let conn = self.read_conn()?;
-        let evidence_rows: u32 = conn
-            .query_row("SELECT COUNT(*) FROM runtime_evidence", [], |r| r.get(0))
-            .map_err(db_err)?;
-        let total_observations: u64 = conn
-            .query_row(
-                "SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence",
-                [],
-                |r| r.get(0),
-            )
-            .map_err(db_err)?;
-        let linked_rows: u32 = conn
-            .query_row(
-                "SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL",
-                [],
-                |r| r.get(0),
-            )
-            .map_err(db_err)?;
-        let distinct_linked_edges: u32 = conn
-            .query_row("SELECT COUNT(DISTINCT http_edge_id) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
-            .map_err(db_err)?;
-        Ok(serde_json::json!({
-            "evidence_rows": evidence_rows,
-            "total_observations": total_observations,
-            "linked_evidence_rows": linked_rows,
-            "distinct_linked_edges": distinct_linked_edges,
-        }))
-    }
-
-    /// Query aggregated runtime evidence keyed by normalized path.
-    ///
-    /// For each normalized path, returns (total_observed_count, latest_last_seen).
-    /// Matches evidence whose linked http_edge_id has the given normalized_path.
-    pub(crate) fn evidence_for_normalized_paths(
-        &self,
-        paths: &[String],
-    ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
-        if paths.is_empty() {
-            return Ok(std::collections::HashMap::new());
-        }
-        let conn = self.read_conn()?;
-        let placeholders: Vec<String> = (1..=paths.len()).map(|i| format!("?{}", i)).collect();
-        let sql = format!(
-            "SELECT hce.normalized_path, SUM(re.observed_count) AS total_count, MAX(re.last_seen) AS latest_seen \
-             FROM runtime_evidence re \
-             JOIN http_call_edges hce ON re.http_edge_id = hce.edge_id \
-             WHERE hce.normalized_path IN ({}) \
-             GROUP BY hce.normalized_path",
-            placeholders.join(",")
-        );
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let params: Vec<&dyn rusqlite::types::ToSql> = paths
-            .iter()
-            .map(|s| s as &dyn rusqlite::types::ToSql)
-            .collect();
-        let rows = stmt
-            .query_map(params.as_slice(), |row| {
-                let norm_path: String = row.get(0)?;
-                let count: u32 = row.get(1)?;
-                let last_seen: String = row.get(2)?;
-                Ok((norm_path, count, last_seen))
-            })
-            .map_err(db_err)?;
-        let mut result = std::collections::HashMap::new();
-        for row in rows {
-            let (norm_path, count, last_seen) = row.map_err(db_err)?;
-            result.insert(norm_path, (count, last_seen));
-        }
-        Ok(result)
-    }
 }
 
 // Read-only facet delegates (see `IndexDb::reads()`).
@@ -1080,6 +1101,7 @@ impl ReadOps<'_> {
         relation_kind: Option<&str>,
     ) -> CcResult<Vec<cc_model::edge::SemanticEdgeRecord>> {
         self.0
+            .edge_reads()
             .query_semantic_edges(source_uid, target_uid, relation_kind)
     }
 
@@ -1088,18 +1110,20 @@ impl ReadOps<'_> {
         file_path: &str,
         min_confidence: f64,
     ) -> CcResult<Vec<CoChangeLite>> {
-        self.0.get_co_changes_for_file(file_path, min_confidence)
+        self.0
+            .edge_reads()
+            .get_co_changes_for_file(file_path, min_confidence)
     }
 
     pub fn load_all_dispatch_sites(&self) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        self.0.load_all_dispatch_sites()
+        self.0.edge_reads().load_all_dispatch_sites()
     }
 
     pub fn load_dispatch_sites_by_kind(
         &self,
         kind: &str,
     ) -> CcResult<Vec<cc_model::DispatchSiteRecord>> {
-        self.0.load_dispatch_sites_by_kind(kind)
+        self.0.edge_reads().load_dispatch_sites_by_kind(kind)
     }
 
     /// Match a runtime-evidence observation against indexed HTTP call edges:
@@ -1108,16 +1132,18 @@ impl ReadOps<'_> {
         normalized_path: &str,
         method: Option<&str>,
     ) -> CcResult<(Option<String>, u32)> {
-        self.0.http_edge_match_for_path(normalized_path, method)
+        self.0
+            .edge_reads()
+            .http_edge_match_for_path(normalized_path, method)
     }
 
     /// First route id registered under `normalized_path`, if any.
     pub fn route_id_for_normalized_path(&self, normalized_path: &str) -> CcResult<Option<String>> {
-        self.0.route_id_for_normalized_path(normalized_path)
+        self.0.edge_reads().route_id_for_normalized_path(normalized_path)
     }
 
     pub fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
-        self.0.runtime_evidence_stats()
+        self.0.edge_reads().runtime_evidence_stats()
     }
 
     /// Query aggregated runtime evidence keyed by normalized path.
@@ -1125,7 +1151,7 @@ impl ReadOps<'_> {
         &self,
         paths: &[String],
     ) -> CcResult<std::collections::HashMap<String, (u32, String)>> {
-        self.0.evidence_for_normalized_paths(paths)
+        self.0.edge_reads().evidence_for_normalized_paths(paths)
     }
 }
 
@@ -1305,6 +1331,7 @@ mod tests {
         drop(conn);
 
         let (edge_id, count) = db
+            .edge_reads()
             .http_edge_match_for_path("/api/users", Some("GET"))
             .unwrap();
         assert_eq!(edge_id.as_deref(), Some("e_get"));
@@ -1312,11 +1339,12 @@ mod tests {
 
         // Unknown method falls back to the path-only first match.
         let (fallback, _) = db
+            .edge_reads()
             .http_edge_match_for_path("/api/users", Some("DELETE"))
             .unwrap();
         assert!(fallback.is_some());
 
-        let (missing, missing_count) = db.http_edge_match_for_path("/nope", None).unwrap();
+        let (missing, missing_count) = db.edge_reads().http_edge_match_for_path("/nope", None).unwrap();
         assert!(missing.is_none());
         assert_eq!(missing_count, 0);
     }
@@ -1342,12 +1370,12 @@ mod tests {
         drop(conn);
 
         assert_eq!(
-            db.route_id_for_normalized_path("/api/users")
+            db.edge_reads().route_id_for_normalized_path("/api/users")
                 .unwrap()
                 .as_deref(),
             Some("r1")
         );
-        assert!(db.route_id_for_normalized_path("/nope").unwrap().is_none());
+        assert!(db.edge_reads().route_id_for_normalized_path("/nope").unwrap().is_none());
     }
 
     #[test]
@@ -1566,13 +1594,13 @@ mod tests {
         db.insert_co_change_edges_batch(&edges).unwrap();
 
         // Query all co-changes for file_a with min_confidence 0.0
-        let results = db.get_co_changes_for_file("src/a.rs", 0.0).unwrap();
+        let results = db.edge_reads().get_co_changes_for_file("src/a.rs", 0.0).unwrap();
         assert_eq!(results.len(), 2);
         assert_eq!(results[0].edge_id, "cc:a:b"); // highest confidence first
         assert_eq!(results[1].edge_id, "cc:a:c");
 
         // Query with min_confidence filtering
-        let filtered = db.get_co_changes_for_file("src/a.rs", 0.5).unwrap();
+        let filtered = db.edge_reads().get_co_changes_for_file("src/a.rs", 0.5).unwrap();
         assert_eq!(filtered.len(), 1);
         assert_eq!(filtered[0].edge_id, "cc:a:b");
         assert_eq!(filtered[0].co_change_count, 5);
@@ -1614,6 +1642,7 @@ mod tests {
 
         // Query by source_uid only
         let by_source = db
+            .edge_reads()
             .query_semantic_edges(Some("uid:dog"), None, None)
             .unwrap();
         assert_eq!(by_source.len(), 1);
@@ -1621,17 +1650,18 @@ mod tests {
 
         // Query by relation_kind only
         let by_kind = db
+            .edge_reads()
             .query_semantic_edges(None, None, Some("inherits"))
             .unwrap();
         assert_eq!(by_kind.len(), 2);
 
         // Query all (no filters)
-        let all = db.query_semantic_edges(None, None, None).unwrap();
+        let all = db.edge_reads().query_semantic_edges(None, None, None).unwrap();
         assert_eq!(all.len(), 2);
 
         // Test removal
         db.remove_semantic_edges_by_file("src/animal.py").unwrap();
-        let after_remove = db.query_semantic_edges(None, None, None).unwrap();
+        let after_remove = db.edge_reads().query_semantic_edges(None, None, None).unwrap();
         assert!(after_remove.is_empty());
     }
 
@@ -1650,7 +1680,7 @@ mod tests {
         )
         .unwrap();
 
-        let stats = db.runtime_evidence_stats().unwrap();
+        let stats = db.edge_reads().runtime_evidence_stats().unwrap();
         assert_eq!(stats["evidence_rows"], 1);
         assert_eq!(stats["total_observations"], 1);
 
@@ -1665,7 +1695,7 @@ mod tests {
         )
         .unwrap();
 
-        let stats = db.runtime_evidence_stats().unwrap();
+        let stats = db.edge_reads().runtime_evidence_stats().unwrap();
         assert_eq!(stats["evidence_rows"], 1);
         assert_eq!(stats["total_observations"], 2);
 
@@ -1737,24 +1767,24 @@ mod tests {
         db.replace_dispatch_sites("src/events.ts", &sites).unwrap();
 
         // Load all
-        let all = db.load_all_dispatch_sites().unwrap();
+        let all = db.edge_reads().load_all_dispatch_sites().unwrap();
         assert_eq!(all.len(), 2);
 
         // Load by kind
-        let emits = db.load_dispatch_sites_by_kind("event_emit").unwrap();
+        let emits = db.edge_reads().load_dispatch_sites_by_kind("event_emit").unwrap();
         assert_eq!(emits.len(), 1);
         assert_eq!(emits[0].site_id, "ds:1");
         assert_eq!(emits[0].site_kind, cc_model::DispatchSiteKind::EventEmit);
         assert_eq!(emits[0].key, "user:created");
 
-        let ons = db.load_dispatch_sites_by_kind("event_on").unwrap();
+        let ons = db.edge_reads().load_dispatch_sites_by_kind("event_on").unwrap();
         assert_eq!(ons.len(), 1);
         assert_eq!(ons[0].site_id, "ds:2");
         assert_eq!(ons[0].site_kind, cc_model::DispatchSiteKind::EventOn);
 
         // Replace should clear old data for that file
         db.replace_dispatch_sites("src/events.ts", &[]).unwrap();
-        let after_clear = db.load_all_dispatch_sites().unwrap();
+        let after_clear = db.edge_reads().load_all_dispatch_sites().unwrap();
         assert!(after_clear.is_empty());
     }
 }

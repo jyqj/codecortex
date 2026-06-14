@@ -388,6 +388,7 @@ impl<'a> GraphReads<'a> {
         relation_kind: Option<&str>,
     ) -> CcResult<Vec<cc_model::edge::SemanticEdgeRecord>> {
         self.db
+            .edge_reads()
             .query_semantic_edges(source_uid, target_uid, relation_kind)
     }
 
@@ -808,7 +809,7 @@ impl<'a> GraphReads<'a> {
         &self,
         paths: &[String],
     ) -> CcResult<HashMap<String, (u32, String)>> {
-        self.db.evidence_for_normalized_paths(paths)
+        self.db.edge_reads().evidence_for_normalized_paths(paths)
     }
 }
 

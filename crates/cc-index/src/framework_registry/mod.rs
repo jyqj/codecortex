@@ -975,4 +975,36 @@ mod tests {
         assert_eq!(normalize_route_framework("vue_router"), Some("vue_router"));
         assert_eq!(normalize_route_framework("vue-router"), Some("vue_router"));
     }
+
+    /// normalize 经 cc-model taxonomy 单一源判定成员资格：保留 detection 粒度
+    /// （alias 不坍缩到 canonical），并修复旧手抄表漏收的 canonical 孤儿
+    /// （actix-web：resolver 产的；flask：python 路由 emit 的——两者旧表 `_ => None`
+    /// 丢弃，route_framework detection signal 此前永久缺失）。
+    #[test]
+    fn normalize_route_framework_preserves_alias_granularity_and_fixes_orphan_canonicals() {
+        // Go router alias 族保留为各自 detection key（不坍缩到 canonical gin）。
+        assert_eq!(normalize_route_framework("echo"), Some("echo"));
+        assert_eq!(normalize_route_framework("fiber"), Some("fiber"));
+        assert_eq!(normalize_route_framework("chi"), Some("chi"));
+        assert_eq!(normalize_route_framework("gorilla"), Some("gorilla"));
+        assert_eq!(normalize_route_framework("net_http"), Some("net_http"));
+        // actix 别名保留（不坍缩到 actix-web）。
+        assert_eq!(normalize_route_framework("actix"), Some("actix"));
+        // canonical 保留。
+        assert_eq!(normalize_route_framework("gin"), Some("gin"));
+        assert_eq!(normalize_route_framework("express"), Some("express"));
+        assert_eq!(normalize_route_framework("spring"), Some("spring"));
+        // 双拼写归一后命中 taxonomy 成员。
+        assert_eq!(normalize_route_framework("net/http"), Some("net_http"));
+        assert_eq!(normalize_route_framework("asp.net"), Some("aspnet"));
+        // 孤儿 canonical 修复：旧手抄表漏收，route_framework detection signal 此前永久缺失。
+        assert_eq!(normalize_route_framework("actix-web"), Some("actix-web"));
+        // flask：python 路由 emit 的 canonical，旧表 `_ => None` 丢弃。
+        assert_eq!(normalize_route_framework("flask"), Some("flask"));
+        // 路由专属无 resolver 超集保持自身。
+        assert_eq!(normalize_route_framework("fastify"), Some("fastify"));
+        assert_eq!(normalize_route_framework("koa"), Some("koa"));
+        // 未知 key 丢弃。
+        assert_eq!(normalize_route_framework("unknown-fw"), None);
+    }
 }

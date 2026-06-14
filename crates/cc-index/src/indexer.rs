@@ -670,9 +670,7 @@ impl Indexer {
             let go_router_keys: Vec<&'static str> =
                 crate::framework_resolvers::taxon_for_key("gin")
                     .map(|taxon| {
-                        std::iter::once(taxon.canonical)
-                            .chain(taxon.aliases.iter().copied())
-                            .collect()
+                        crate::framework_resolvers::canonical_aliases(taxon).collect()
                     })
                     .expect("gin taxon must exist in framework_taxonomy");
             let has_go_router = ctx

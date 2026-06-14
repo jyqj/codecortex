@@ -18,31 +18,35 @@ pub(super) const SPEC: FrameworkSignalSpec = FrameworkSignalSpec {
 // ---------------------------------------------------------------------------
 
 pub(super) fn normalize_route_framework(fw: &str) -> Option<&'static str> {
-    match fw.to_lowercase().as_str() {
-        "express" => Some("express"),
+    let owned = fw.to_lowercase();
+    // Layer 2: 双拼写归一（taxonomy 不收录带 '/' 或 '.' 的原始串）。
+    let lower: &str = match owned.as_str() {
+        "net/http" => "net_http",
+        "asp.net" => "aspnet",
+        "vue-router" => "vue_router",
+        other => other,
+    };
+    // Layer 1: taxonomy 成员（canonical 或 alias）—— 从 cc-model 单一声明源判定
+    // 成员资格，返回该 key 自身（取自 taxonomy 的 &'static 字面量）。保留 detection
+    // 粒度：echo 仍是 echo、actix 仍是 actix（不坍缩到 canonical gin/actix-web），
+    // 取代此前手抄的并行 match 表；同时修复 actix-web 孤儿（resolver 产的 canonical
+    // 旧表不收、被 `_ => None` 丢弃的 detection signal）。
+    for taxon in cc_model::framework_taxonomy::framework_taxonomy() {
+        if taxon.canonical == lower {
+            return Some(taxon.canonical);
+        }
+        if let Some(alias) = taxon.aliases.iter().copied().find(|a| *a == lower) {
+            return Some(alias);
+        }
+    }
+    // Layer 3: 路由专属无 resolver 超集（cc-index detection 概念，不进 taxonomy）。
+    match lower {
         "fastify" => Some("fastify"),
-        "django" => Some("django"),
-        "fastapi" => Some("fastapi"),
-        "nestjs" => Some("nestjs"),
         "koa" => Some("koa"),
-        "gin" => Some("gin"),
-        "echo" => Some("echo"),
-        "fiber" => Some("fiber"),
-        "axum" => Some("axum"),
-        "actix" => Some("actix"),
         "rocket" => Some("rocket"),
-        "spring" => Some("spring"),
-        "chi" => Some("chi"),
-        "gorilla" => Some("gorilla"),
-        "net/http" | "net_http" => Some("net_http"),
-        "laravel" => Some("laravel"),
-        "rails" => Some("rails"),
-        "aspnet" | "asp.net" => Some("aspnet"),
-        "sveltekit" => Some("sveltekit"),
-        "vue_router" | "vue-router" => Some("vue_router"),
+        "vue_router" => Some("vue_router"),
         "nuxt" => Some("nuxt"),
         "remix" => Some("remix"),
-        "hono" => Some("hono"),
         _ => None,
     }
 }

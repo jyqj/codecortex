@@ -7,6 +7,7 @@ pub mod diagnostic;
 pub mod dispatch_site;
 pub mod edge;
 pub mod error;
+pub mod framework_taxonomy;
 pub mod graph_catalog;
 pub mod graph_explain;
 pub mod id;

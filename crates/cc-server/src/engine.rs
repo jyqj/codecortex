@@ -53,6 +53,13 @@ pub struct GraphQueryOutput {
     pub row_count: usize,
     pub default_limit_applied: bool,
     pub limit: Option<usize>,
+    /// Pre-serialized fast-path metadata (`{used:true}` / `{used:false,reason}`
+    /// / `None`). Sourced from `CypherResult::fast_path` via
+    /// `FastPathDecision::as_metadata()`, so the value reported at the response
+    /// boundary is exactly what execution produced — no second tokenization of
+    /// the query. `None` (non-traversal queries) means the field is omitted.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub fast_path: Option<serde_json::Value>,
 }
 
 fn estimate_project_file_count(project: &Path) -> usize {
@@ -740,6 +747,11 @@ impl GraphOps<'_> {
         let result = cc_search::cypher::execute_parsed(&parsed, db)?;
         let default_limit_applied = result.default_limit_applied;
         let limit = result.limit;
+        // Carry the fast-path decision the executor already computed, instead of
+        // recomputing the gate against the raw query string at the response
+        // boundary. Pre-serialized so GraphQueryOutput needs no FastPathDecision
+        // dependency.
+        let fast_path = result.fast_path.as_metadata();
         let rows: Vec<serde_json::Value> = result
             .rows
             .into_iter()
@@ -762,6 +774,7 @@ impl GraphOps<'_> {
             row_count,
             default_limit_applied,
             limit,
+            fast_path,
         })
     }
 

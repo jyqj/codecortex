@@ -11,6 +11,7 @@ pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::
 
     let default_limit_applied = output.default_limit_applied;
     let limit_applied = output.limit;
+    let fast_path = output.fast_path;
     let mut rows = output.rows;
     let has_explicit_limit = query.to_uppercase().contains("LIMIT");
 
@@ -43,11 +44,12 @@ pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::
     });
     // Fast-path visibility (ADR-0001): tell the caller which engine served a
     // variable-length traversal and, on fallback, which gate check failed.
-    // The decision is a deterministic mirror of the executor routing, so
-    // recomputing it here reports exactly what execution did. Non-traversal
+    // The value comes straight from the executor's routing decision (carried
+    // through GraphQueryOutput), so what's reported is exactly what ran — no
+    // second tokenization of the query at the response boundary. Non-traversal
     // queries omit the field entirely (None) — absence means "not applicable",
     // never "fell back".
-    if let Some(meta) = cc_search::cypher::fast_path_decision_for_query(query).as_metadata() {
+    if let Some(meta) = fast_path {
         envelope["fast_path"] = meta;
     }
     // Unified explainability envelope (additive): duplicates the legacy

@@ -248,6 +248,13 @@ pub struct CypherResult {
     pub default_limit_applied: bool,
     /// The LIMIT value that actually took effect (explicit or default), if any.
     pub limit: Option<usize>,
+    /// Which engine served this query (lazy-BFS fast path vs SQL CTE). Computed
+    /// once at the top of `execute_with_options` so the response boundary reads
+    /// a value that execution actually produced, instead of recomputing the gate.
+    /// Skipped from serialization: the handler converts it to JSON via
+    /// `FastPathDecision::as_metadata()` and emits it conditionally.
+    #[serde(skip)]
+    pub fast_path: super::fast_path::FastPathDecision,
 }
 
 #[derive(Debug, Clone)]

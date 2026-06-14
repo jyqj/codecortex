@@ -582,6 +582,12 @@ pub(crate) fn execute_with_options(
     db: &IndexDb,
     allow_fast_path: bool,
 ) -> CcResult<CypherResult> {
+    // Decide the fast-path outcome once, up front, so every return path reports
+    // the same value execution actually produced. `decide` mirrors this
+    // function's routing (env toggle + routes_to_varlen + build_plan, same
+    // ordering), and `allow_fast_path = false` (UNION sub-queries) is reflected
+    // by the caller's choice of FastPathDecision below rather than here.
+    let fp_decision = super::fast_path::decide(query);
     // We only support the first MATCH clause's first pattern for now.
     if query.match_clauses.is_empty() || query.match_clauses[0].patterns.is_empty() {
         return Ok(CypherResult {
@@ -590,6 +596,7 @@ pub(crate) fn execute_with_options(
             row_count: 0,
             default_limit_applied: false,
             limit: None,
+            fast_path: fp_decision,
         });
     }
 
@@ -609,7 +616,11 @@ pub(crate) fn execute_with_options(
             translate_single_hop(query, pattern, first_match.is_optional)?
         } else {
             if allow_fast_path && super::fast_path::env_enabled() {
-                if let Some(result) = super::fast_path::try_execute(query, db)? {
+                if let Some(mut result) = super::fast_path::try_execute(query, db)? {
+                    // try_execute success ⟺ the gate accepted the query ⟺
+                    // decide == Used; stamp the precomputed decision so the
+                    // value flows out as data rather than being recomputed.
+                    result.fast_path = fp_decision;
                     return Ok(result);
                 }
             }
@@ -676,6 +687,7 @@ pub(crate) fn execute_with_options(
         row_count,
         default_limit_applied,
         limit,
+        fast_path: fp_decision,
     })
 }
 
@@ -1448,6 +1460,10 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
         row_count,
         default_limit_applied,
         limit,
+        // UNION never routes through the fast path: every branch runs the SQL
+        // translation (allow_fast_path = false above), so this is NotApplicable
+        // regardless of what each sub-query's traversal shape is.
+        fast_path: super::fast_path::FastPathDecision::NotApplicable,
     })
 }
 

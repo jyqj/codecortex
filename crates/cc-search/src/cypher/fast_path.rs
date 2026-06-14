@@ -741,6 +741,12 @@ fn run_bfs(query: &CypherQuery, plan: &FastPlan, db: &IndexDb) -> CcResult<Cyphe
         row_count,
         default_limit_applied: query.limit.is_none(),
         limit: Some(plan.limit),
+        // This constructor only runs when the gate accepted the query, so the
+        // decision is `Used`. The routing caller (execute_with_options)
+        // re-stamps `fp_decision` on this value for clarity, but filling it
+        // here keeps the field self-consistent if try_execute is ever called
+        // through a different entry point.
+        fast_path: FastPathDecision::Used,
     })
 }
 

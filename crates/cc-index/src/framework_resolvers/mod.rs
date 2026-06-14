@@ -119,16 +119,25 @@ impl ProjectFrameworkContext {
     }
 
     pub fn has_framework(&self, key: &str) -> bool {
+        // 单向语义：`key` 是 resolver 视角的查询 key，`k` 是 detection 写入
+        // `repo_frameworks` 的 normalized key。仅当 `key` 恰是某 taxon 的
+        // canonical 时，才把该 taxon 的 canonical+aliases 作为 k 的命中集展开；
+        // 别名（如 "actix"/"echo"）作为查询 key 时不展开，回退到 `k == key`。
+        //
+        // 这逐字恢复了原 `matches!((key, k), ("actix-web","actix") |
+        // ("gin", echo|fiber|chi|gorilla|net_http))` 的单向语义：
+        //   - 原命中对的 key（"actix-web"、"gin"）正是各自 taxon 的 canonical；
+        //   - k 取别名族（"actix"、echo|fiber|...）即 detection 产出的 key。
+        // 因此 key=canonical 时展开覆盖全部原命中对；key=别名 时回退 `k == key`，
+        // 不会出现"repo 存 canonical、查询别名"的反向命中（原 matches! 同样不命中）。
+        // `k == key` 还兼容 taxonomy 之外的 detection key（未注册框架名）。
         self.repo_frameworks.iter().any(|(k, _)| {
             k == key
-                || matches!(
-                    (key, k.as_str()),
-                    // Detection stores the normalized key `actix`, while the
-                    // resolver emits/handles actix-web route metadata.
-                    ("actix-web", "actix")
-                        // The Go resolver handles the common router family.
-                        | ("gin", "echo" | "fiber" | "chi" | "gorilla" | "net_http")
-                )
+                || taxon_for_key(key).is_some_and(|taxon| {
+                    taxon.canonical == key
+                        && (taxon.canonical == k.as_str()
+                            || taxon.aliases.iter().any(|alias| *alias == k.as_str()))
+                })
         })
     }
 }
@@ -249,17 +258,155 @@ pub fn default_registry() -> FrameworkResolverRegistry {
     registry
 }
 
+// ---------------------------------------------------------------------------
+// Framework taxonomy — 单一声明源
+// ---------------------------------------------------------------------------
+//
+// 同一份「框架分类表」历史上散落在三处并行声明，三者必须保持一致却没有任何机制强制：
+//   1. `default_registry()`（哪些 resolver 注册）
+//   2. `resolver_tier_for_key()`（key→tier 的并行 match）
+//   3. `ProjectFrameworkContext::has_framework()`（detection_key→resolver_key 的别名映射）
+//   4. `indexer.rs` 的 `go_router_keys`（go_router resolver 的别名激活集合）
+//
+// 这里收口为单一声明源 [`framework_taxonomy`]：每项给出 canonical key（=对应
+// resolver 的 `framework_key()` 返回值）、别名切片（= detection 侧的同义 key）、
+// 覆盖 tier。下方 `resolver_tier_for_key` / `has_framework` 均从它派生，
+// `indexer` 的 go_router 激活集合也从它取 key。形态参考
+// `cc-server/src/graph_read_model/bridge_spec.rs` 的封闭 registry + 一致性测试。
+//
+// 注意：这**不是**「新增框架只在此处注册即可」。新增框架仍需 resolver module +
+// framework_registry 检测规则 + default_registry 注册 + 测试。这里只解决
+// key / aliases / tier 三者的单一声明。
+
+/// 框架分类条目：canonical key + 别名 + 覆盖 tier。
+///
+/// `canonical` 必须等于对应 resolver 的 `framework_key()` 返回值（由一致性测试
+/// `default_registry_keys_covered_by_taxonomy` 强制）。`aliases` 是 detection 侧
+/// 产生的同义 key（不作为 resolver 的 `framework_key()`）。`tier` 与 resolver 的
+/// `resolver_tier()` 保持一致。
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct FrameworkTaxon {
+    /// 权威 key，等于对应 resolver 的 `framework_key()`。
+    pub canonical: &'static str,
+    /// detection 侧产生的同义 key 集合（不含 canonical 自身）。
+    pub aliases: &'static [&'static str],
+    /// 覆盖 tier，与 resolver 的 `resolver_tier()` 一致。
+    pub tier: &'static str,
+}
+
+/// 框架分类表的单一声明源。返回静态切片，顺序与 `default_registry` 的注册顺序
+/// 对齐，便于一致性测试核对。
+pub fn framework_taxonomy() -> &'static [FrameworkTaxon] {
+    const TAXONOMY: &[FrameworkTaxon] = &[
+        // canonical / aliases / tier —— 顺序与 default_registry() 对齐
+        FrameworkTaxon {
+            canonical: "spring",
+            aliases: &[],
+            tier: "full",
+        },
+        // Go router 族：detection 会对 echo/fiber/chi/gorilla/net_http 分别产 key，
+        // go_router resolver 的 canonical 是 "gin"。这组别名同时被
+        // `has_framework("gin", ...)` 与 indexer 的 `go_router_keys` 消费，因此
+        // 集中在此一处。
+        FrameworkTaxon {
+            canonical: "gin",
+            aliases: &["echo", "fiber", "chi", "gorilla", "net_http"],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "react",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "axum",
+            aliases: &[],
+            tier: "full",
+        },
+        // actix：detection 产 normalized key "actix"，resolver 的 canonical 是
+        // "actix-web"（route metadata 用 actix-web）。保留为别名。
+        FrameworkTaxon {
+            canonical: "actix-web",
+            aliases: &["actix"],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "express",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "nestjs",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "fastapi",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "django",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "flask",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "rails",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "laravel",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "vue",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "sveltekit",
+            aliases: &[],
+            tier: "full",
+        },
+        FrameworkTaxon {
+            canonical: "aspnet",
+            aliases: &[],
+            // AspNetResolver 未 override resolver_tier()，沿用默认 "extraction"。
+            tier: "extraction",
+        },
+        FrameworkTaxon {
+            canonical: "hono",
+            aliases: &[],
+            tier: "full",
+        },
+    ];
+    TAXONOMY
+}
+
+/// 查询 key 所属的 taxon：canonical 或任一 alias 命中即返回。
+pub fn taxon_for_key(key: &str) -> Option<&'static FrameworkTaxon> {
+    framework_taxonomy().iter().find(|taxon| {
+        taxon.canonical == key || taxon.aliases.iter().any(|alias| *alias == key)
+    })
+}
+
 /// Look up the resolver tier for a given `framework_key`.
 ///
 /// Returns `"full"`, `"extraction"`, or `"experimental"`.
 /// If the key is not found in the registry, returns `"unknown"`.
+///
+/// 实现从 [`framework_taxonomy`] 派生，不再维护并行 match。
 pub fn resolver_tier_for_key(framework_key: &str) -> &'static str {
-    match framework_key {
-        "actix" | "actix-web" | "axum" | "django" | "express" | "fastapi" | "flask" | "gin"
-        | "echo" | "fiber" | "chi" | "gorilla" | "net_http" | "hono" | "laravel" | "nestjs"
-        | "rails" | "react" | "spring" | "sveltekit" | "vue" => "full",
-        "aspnet" => "extraction",
-        _ => "unknown",
+    match taxon_for_key(framework_key) {
+        Some(taxon) => taxon.tier,
+        None => "unknown",
     }
 }
 
@@ -286,5 +433,114 @@ mod tests {
         assert!(ctx.has_framework("actix-web"));
         assert!(ctx.has_framework("gin"));
         assert!(!ctx.has_framework("express"));
+        // 单向语义锁定：has_framework 只在「key=canonical、k=该 taxon 任一 key」
+        // 时命中，不产生对称扩展。故 repo 存 canonical、用别名查询时不得命中。
+        let ctx2 = ProjectFrameworkContext {
+            repo_frameworks: vec![("actix-web".to_string(), 0.9), ("gin".to_string(), 0.8)],
+            file_frameworks: Default::default(),
+        };
+        // key=别名("actix")：taxon 命中但 key≠canonical，回退 k==key；
+        // k 是 "actix-web"，不等于 "actix"，故不命中（恢复原 matches! 单向）。
+        assert!(!ctx2.has_framework("actix"));
+        // key=别名("echo")：同上，回退 k==key；k 是 "gin"，不命中。
+        assert!(!ctx2.has_framework("echo"));
+        assert!(!ctx2.has_framework("net_http"));
+        // 不同 taxon 之间不得误命中（修复早期 zip 过宽 bug 的回归锁）。
+        let ctx3 = ProjectFrameworkContext {
+            repo_frameworks: vec![("django".to_string(), 0.9)],
+            file_frameworks: Default::default(),
+        };
+        assert!(!ctx3.has_framework("express"));
+        assert!(!ctx3.has_framework("gin"));
+        // taxonomy 之外的 detection key 仍走 `k == key` 回退（原行为保留）。
+        let ctx4 = ProjectFrameworkContext {
+            repo_frameworks: vec![("customfw".to_string(), 0.5)],
+            file_frameworks: Default::default(),
+        };
+        assert!(ctx4.has_framework("customfw"));
+    }
+
+    /// 锁定 taxonomy 的封闭性 —— 形态参考 bridge_spec.rs 的
+    /// `registry_pins_bridge_kinds`。
+    #[test]
+    fn taxonomy_is_closed_and_unique() {
+        let taxonomy = framework_taxonomy();
+        assert!(!taxonomy.is_empty());
+
+        let mut seen: std::collections::HashSet<&str> = std::collections::HashSet::new();
+        for taxon in taxonomy {
+            // canonical 非空且全局唯一。
+            assert!(!taxon.canonical.is_empty());
+            assert!(seen.insert(taxon.canonical), "duplicate canonical");
+            // tier 取值受限于 resolver_tier 的对外契约。
+            assert!(
+                matches!(taxon.tier, "full" | "extraction" | "experimental"),
+                "invalid tier {:?}",
+                taxon.tier
+            );
+            // alias 非空、不等于 canonical、且全局唯一（不与任何 canonical/alias 重复）。
+            for alias in taxon.aliases {
+                assert!(!alias.is_empty());
+                assert_ne!(*alias, taxon.canonical);
+                assert!(seen.insert(*alias), "duplicate alias/key {}", alias);
+            }
+        }
+    }
+
+    /// default_registry() 注册的每个 resolver，其 framework_key() 必须作为某
+    /// taxon 的 canonical 出现在 taxonomy 中 —— 这是「单一声明源」的核心约束：
+    /// 新增 resolver 若忘记登记 taxonomy，此处立即失败。
+    #[test]
+    fn default_registry_keys_covered_by_taxonomy() {
+        let registry = default_registry();
+        let canonicals: std::collections::HashSet<&str> = framework_taxonomy()
+            .iter()
+            .map(|taxon| taxon.canonical)
+            .collect();
+
+        for resolver in registry.all_resolvers() {
+            let key = resolver.framework_key();
+            assert!(
+                canonicals.contains(key),
+                "resolver framework_key {:?} not declared as canonical in taxonomy",
+                key
+            );
+            // tier 也必须与 resolver 自报的 resolver_tier() 一致 —— 防止 taxonomy
+            // 与 resolver 实现的并行 tier 声明再次漂移。
+            assert_eq!(
+                resolver.resolver_tier(),
+                resolver_tier_for_key(key),
+                "tier mismatch for {:?}: resolver_tier() != taxonomy tier",
+                key
+            );
+        }
+
+        // 反向覆盖：每个 taxon 的 canonical 都应对应 default_registry 中的某个
+        // resolver（taxonomy 不得声明 resolver 不存在的框架）。
+        let resolver_keys: std::collections::HashSet<&str> = registry
+            .all_resolvers()
+            .iter()
+            .map(|r| r.framework_key())
+            .collect();
+        for taxon in framework_taxonomy() {
+            assert!(
+                resolver_keys.contains(taxon.canonical),
+                "taxonomy canonical {:?} has no resolver in default_registry",
+                taxon.canonical
+            );
+        }
+    }
+
+    /// taxon_for_key 必须对 canonical 与每个 alias 都命中、对未知 key 返回 None。
+    #[test]
+    fn taxon_lookup_covers_canonical_and_aliases() {
+        for taxon in framework_taxonomy() {
+            assert_eq!(taxon_for_key(taxon.canonical), Some(taxon));
+            for alias in taxon.aliases {
+                assert_eq!(taxon_for_key(alias), Some(taxon));
+            }
+        }
+        assert_eq!(taxon_for_key("unknown-fw"), None);
+        assert_eq!(taxon_for_key(""), None);
     }
 }

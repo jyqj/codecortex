@@ -663,7 +663,18 @@ impl Indexer {
             };
 
             let registry = crate::framework_resolvers::default_registry();
-            let go_router_keys = ["gin", "echo", "fiber", "chi", "gorilla", "net_http"];
+            // go_router resolver 的激活 key 集合（canonical "gin" + 其 detection
+            // 别名族 echo/fiber/chi/gorilla/net_http）现在从 framework_taxonomy 派生，
+            // 取代此前并行硬编码的 `go_router_keys`。激活逻辑（`&& has_go_router`，
+            // 见下方 filter）保持不变 —— 仅 key 集合的来源收口到 taxonomy 单一声明。
+            let go_router_keys: Vec<&'static str> =
+                crate::framework_resolvers::taxon_for_key("gin")
+                    .map(|taxon| {
+                        std::iter::once(taxon.canonical)
+                            .chain(taxon.aliases.iter().copied())
+                            .collect()
+                    })
+                    .expect("gin taxon must exist in framework_taxonomy");
             let has_go_router = ctx
                 .repo_frameworks
                 .iter()

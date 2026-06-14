@@ -1,4 +1,17 @@
 //! IndexDb methods: architecture analysis, ADR (Architecture Decision Records).
+//!
+//! 架构分析读查询（languages/packages/entry_points/routes/hotspots/boundaries/
+//! communities/get_architecture_info/infra_nodes/adr_list/adr_get）已从 `impl IndexDb`
+//! 下沉到独立真模块 [`ArchReads`]，形态对齐 RetrievalReadModel/FrontierReads/
+//! QueryReads：零成本借用 `&IndexDb`，SQL 自持，经 [`IndexDb::arch`] 工厂暴露。
+//! [`ReadOps`](crate::index_db::ReadOps) facet 仍作 capability boundary，转发委托到
+//! 本真模块（调用方 `db.reads().x()` 不变）。
+//!
+//! `adr_upsert` / `adr_delete`（写）紧耦合 write_conn + `bump_index_epoch_on` 写路径
+//! 机器，且无既有 Writes 真模块模式，留 `impl IndexDb`（[`WriteOps`](crate::index_db::WriteOps)
+//! 转发不变）。get_architecture_info 内调的 architecture_* 兄弟方法随之一并迁入 ArchReads
+//! （同模块互调，self. 不变）；language_distribution/query_json/list_communities/
+//! get_metadata 仍回调 IndexDb（self.db.）。
 
 use std::collections::HashMap;
 
@@ -8,10 +21,30 @@ use crate::index_db::{IndexDb, ReadOps, WriteOps};
 use crate::sql_util::db_err;
 
 impl IndexDb {
+    /// 架构分析读模型：languages/packages/entry_points/routes/hotspots/boundaries/
+    /// communities/infra_nodes/adr_list/adr_get。零成本借用，经此工厂暴露。
+    pub fn arch(&self) -> ArchReads<'_> {
+        ArchReads::new(self)
+    }
+}
+
+/// Deep 架构分析读模型 over [`IndexDb`]：语言/包/入口/路由/热点/边界/社区/基础设施/
+/// ADR 列表与读取。零成本借用，经 [`IndexDb::arch`] 获取，与 catch-all
+/// [`ReadOps`](crate::index_db::ReadOps) 分立，架构分析 SQL 有单一归属。
+pub struct ArchReads<'a> {
+    db: &'a IndexDb,
+}
+
+impl<'a> ArchReads<'a> {
+    /// Borrow `db` for architecture analysis queries（mirror `RetrievalReadModel::new`）.
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
     pub(crate) fn architecture_languages(
         &self,
     ) -> CcResult<Vec<cc_model::architecture::LanguageStat>> {
-        let dist = self.language_distribution()?;
+        let dist = self.db.language_distribution()?;
         let total: usize = dist.iter().map(|(_, c)| c).sum();
         Ok(dist
             .into_iter()
@@ -34,7 +67,7 @@ impl IndexDb {
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::PackageInfo>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
 
         let mut file_stmt = conn
             .prepare("SELECT file_path FROM files")
@@ -67,7 +100,7 @@ impl IndexDb {
         }
 
         // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
-        let cross_file_rows = self.query_json(
+        let cross_file_rows = self.db.query_json(
             "SELECT s1.file_path AS caller_file, s2.file_path AS callee_file \
              FROM call_edges ce \
              JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
@@ -132,7 +165,7 @@ impl IndexDb {
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::EntryPointInfo>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
                 "SELECT name, file_path, kind, start_line FROM symbols
@@ -171,7 +204,7 @@ impl IndexDb {
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::RouteInfo>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
                 "SELECT COALESCE(method, 'GET'), route_path, COALESCE(handler_name, ''), file_path
@@ -197,7 +230,7 @@ impl IndexDb {
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::HotspotInfo>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
                 "SELECT s.name, s.file_path, s.kind,
@@ -227,7 +260,7 @@ impl IndexDb {
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::BoundaryInfo>> {
         // SQL JOIN: fetch only cross-file caller/callee file paths (no full edge materialization)
-        let cross_file_rows = self.query_json(
+        let cross_file_rows = self.db.query_json(
             "SELECT s1.file_path AS caller_file, s2.file_path AS callee_file \
              FROM call_edges ce \
              JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
@@ -273,7 +306,7 @@ impl IndexDb {
     pub(crate) fn architecture_communities(
         &self,
     ) -> CcResult<Vec<cc_model::architecture::CommunityInfo>> {
-        let rows = self.list_communities()?;
+        let rows = self.db.list_communities()?;
         Ok(rows
             .into_iter()
             .map(|c| cc_model::architecture::CommunityInfo {
@@ -354,7 +387,8 @@ impl IndexDb {
                     .collect()
             },
             adr_documents: if all || aspects.contains(&"adr") {
-                self.get_metadata("adr_documents")
+                self.db
+                    .get_metadata("adr_documents")
                     .ok()
                     .flatten()
                     .and_then(|json_str| {
@@ -372,7 +406,7 @@ impl IndexDb {
         &self,
         kind: &str,
     ) -> CcResult<Vec<cc_model::infra::InfraNode>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn.prepare(
             "SELECT node_id, file_path, kind, name, namespace, line, end_line, properties, bound_symbol_uid, binding_confidence \
              FROM infra_nodes WHERE kind = ?1"
@@ -404,7 +438,7 @@ impl IndexDb {
     }
 
     pub(crate) fn adr_list(&self) -> CcResult<Vec<serde_json::Value>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT adr_id, title, status, created_at, updated_at FROM adr ORDER BY created_at DESC")
             .map_err(db_err)?;
@@ -423,7 +457,7 @@ impl IndexDb {
     }
 
     pub(crate) fn adr_get(&self, adr_id: &str) -> CcResult<Option<serde_json::Value>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let result = conn
             .query_row(
                 "SELECT adr_id, title, status, context, decision, created_at, updated_at FROM adr WHERE adr_id = ?1",
@@ -446,7 +480,11 @@ impl IndexDb {
             Err(e) => Err(db_err(e)),
         }
     }
+}
 
+// ADR 写操作（adr_upsert/adr_delete）紧耦合 write_conn + bump_index_epoch_on 写路径，
+// 无既有 Writes 真模块模式，留 impl IndexDb（WriteOps 转发不变）。
+impl IndexDb {
     pub(crate) fn adr_upsert(
         &self,
         adr_id: &str,
@@ -481,49 +519,50 @@ impl IndexDb {
     }
 }
 
-// Read-only facet delegates (see `IndexDb::reads()`).
+// Read-only facet delegates (see `IndexDb::reads()`). capability boundary 保留：
+// 11 个架构读委托到 ArchReads 真模块。
 impl ReadOps<'_> {
     pub fn architecture_languages(&self) -> CcResult<Vec<cc_model::architecture::LanguageStat>> {
-        self.0.architecture_languages()
+        self.0.arch().architecture_languages()
     }
 
     pub fn architecture_packages(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::PackageInfo>> {
-        self.0.architecture_packages(limit)
+        self.0.arch().architecture_packages(limit)
     }
 
     pub fn architecture_entry_points(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::EntryPointInfo>> {
-        self.0.architecture_entry_points(limit)
+        self.0.arch().architecture_entry_points(limit)
     }
 
     pub fn architecture_routes(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::RouteInfo>> {
-        self.0.architecture_routes(limit)
+        self.0.arch().architecture_routes(limit)
     }
 
     pub fn architecture_hotspots(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::HotspotInfo>> {
-        self.0.architecture_hotspots(limit)
+        self.0.arch().architecture_hotspots(limit)
     }
 
     pub fn architecture_boundaries(
         &self,
         limit: usize,
     ) -> CcResult<Vec<cc_model::architecture::BoundaryInfo>> {
-        self.0.architecture_boundaries(limit)
+        self.0.arch().architecture_boundaries(limit)
     }
 
     pub fn architecture_communities(&self) -> CcResult<Vec<cc_model::architecture::CommunityInfo>> {
-        self.0.architecture_communities()
+        self.0.arch().architecture_communities()
     }
 
     pub fn get_architecture_info(
@@ -531,23 +570,24 @@ impl ReadOps<'_> {
         aspects: &[&str],
         limit: usize,
     ) -> CcResult<cc_model::architecture::ArchitectureInfo> {
-        self.0.get_architecture_info(aspects, limit)
+        self.0.arch().get_architecture_info(aspects, limit)
     }
 
     pub fn infra_nodes_by_kind(&self, kind: &str) -> CcResult<Vec<cc_model::infra::InfraNode>> {
-        self.0.infra_nodes_by_kind(kind)
+        self.0.arch().infra_nodes_by_kind(kind)
     }
 
     pub fn adr_list(&self) -> CcResult<Vec<serde_json::Value>> {
-        self.0.adr_list()
+        self.0.arch().adr_list()
     }
 
     pub fn adr_get(&self, adr_id: &str) -> CcResult<Option<serde_json::Value>> {
-        self.0.adr_get(adr_id)
+        self.0.arch().adr_get(adr_id)
     }
 }
 
-// Write facet delegates (see `IndexDb::writes()`).
+// Write facet delegates (see `IndexDb::writes()`). adr_upsert/adr_delete 留 impl IndexDb，
+// 委托不变。
 impl WriteOps<'_> {
     pub fn adr_upsert(
         &self,
@@ -572,6 +612,7 @@ mod tests {
     use tempfile::TempDir;
 
     use crate::index_db::IndexDb;
+    use super::ArchReads;
 
     fn setup() -> (IndexDb, TempDir) {
         let tmp = TempDir::new().unwrap();
@@ -613,7 +654,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let langs = db.architecture_languages().unwrap();
+        let langs = db.arch().architecture_languages().unwrap();
         assert_eq!(langs.len(), 2);
 
         // Sorted by count DESC, so Rust (2 files) first.
@@ -661,7 +702,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let routes = db.architecture_routes(10).unwrap();
+        let routes = db.arch().architecture_routes(10).unwrap();
         assert_eq!(routes.len(), 2);
         // Sorted by route_path: /auth/login < /users
         assert_eq!(routes[0].path, "/auth/login");
@@ -676,18 +717,18 @@ mod tests {
     fn test_extract_package_from_path() {
         // "services/auth/handler.rs" → first non-skip segment = "services"
         assert_eq!(
-            IndexDb::extract_package_from_path("services/auth/handler.rs"),
+            ArchReads::extract_package_from_path("services/auth/handler.rs"),
             "services"
         );
 
         // "src/main.py" → "src" is in skip list, but it's the only directory; fallback to first part = "src"
-        assert_eq!(IndexDb::extract_package_from_path("src/main.py"), "src");
+        assert_eq!(ArchReads::extract_package_from_path("src/main.py"), "src");
 
         // "lib/utils.js" → "lib" is in skip list; fallback to first part = "lib"
-        assert_eq!(IndexDb::extract_package_from_path("lib/utils.js"), "lib");
+        assert_eq!(ArchReads::extract_package_from_path("lib/utils.js"), "lib");
 
         // "single.rs" → only one part, first part is also last (filename), no non-skip dir segment → fallback to "single.rs"
-        assert_eq!(IndexDb::extract_package_from_path("single.rs"), "single.rs");
+        assert_eq!(ArchReads::extract_package_from_path("single.rs"), "single.rs");
     }
 
     #[test]
@@ -707,24 +748,24 @@ mod tests {
         .unwrap();
 
         // List
-        let list = db.adr_list().unwrap();
+        let list = db.arch().adr_list().unwrap();
         assert_eq!(list.len(), 1);
         assert_eq!(list[0]["adr_id"].as_str().unwrap(), "ADR-001");
         assert_eq!(list[0]["title"].as_str().unwrap(), "Use SQLite");
 
         // Get
-        let item = db.adr_get("ADR-001").unwrap().unwrap();
+        let item = db.arch().adr_get("ADR-001").unwrap().unwrap();
         assert_eq!(item["status"].as_str().unwrap(), "accepted");
         assert_eq!(item["context"].as_str().unwrap(), "Need embedded DB");
         assert_eq!(item["decision"].as_str().unwrap(), "Use SQLite for index");
 
         // Get non-existent
-        assert!(db.adr_get("ADR-999").unwrap().is_none());
+        assert!(db.arch().adr_get("ADR-999").unwrap().is_none());
 
         // Delete
         let deleted = db.adr_delete("ADR-001").unwrap();
         assert!(deleted);
-        assert!(db.adr_get("ADR-001").unwrap().is_none());
+        assert!(db.arch().adr_get("ADR-001").unwrap().is_none());
 
         // Delete again returns false
         let deleted_again = db.adr_delete("ADR-001").unwrap();
@@ -743,10 +784,10 @@ mod tests {
             .unwrap();
 
         // Should still be one record, not two.
-        let list = db.adr_list().unwrap();
+        let list = db.arch().adr_list().unwrap();
         assert_eq!(list.len(), 1);
 
-        let item = db.adr_get("ADR-001").unwrap().unwrap();
+        let item = db.arch().adr_get("ADR-001").unwrap().unwrap();
         assert_eq!(item["title"].as_str().unwrap(), "Updated title");
         assert_eq!(item["status"].as_str().unwrap(), "accepted");
         assert_eq!(item["context"].as_str().unwrap(), "ctx2");
@@ -799,7 +840,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let entries = db.architecture_entry_points(10).unwrap();
+        let entries = db.arch().architecture_entry_points(10).unwrap();
         assert_eq!(entries.len(), 2);
 
         // Ordered by start_line: main (line 1) first, handle_request (line 20) second.

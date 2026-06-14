@@ -190,8 +190,9 @@ postprocess/analysis 各门的决策（`synthesis_round` / `community` /
 构建侧对应物——回答"为什么这次合成/社区/git 共变被跳过或降级"。`compute` 阶段
 经 `BuildExplainCollector` 增量收集，`apply` 阶段盖章进 `IndexReport`；门决策
 同时仍发 `tracing`，信封是追加而非替代。**不重复** `dirty_propagation` 与
-`phase_timing`（已在 `IndexReport`）；config-linker 门是写阶段决策，暂未纳入
-（collector 在 compute 阶段创建，早于它）。
+`phase_timing`（已在 `IndexReport`）。config-linker 门的三方决策（整跳 / 复用
+缓存 token / 重扫）也纳入：collector 创建提前到 `commit_write`，穿越 `WrittenBuild`
+到 `compute_postprocess`，与 postprocess/analysis 决策汇合。
 
 
 

@@ -601,6 +601,34 @@ mod tests {
         assert!(clean.finish().truncated_reason.is_none());
     }
 
+    /// HTTP call edges that produced no bridge edge (no caller UID / no
+    /// normalized path / no matching route handler) are counted per category
+    /// at build time and surface as `synthesis_notes` on the explain envelope.
+    #[test]
+    fn unmatched_http_edges_surface_as_synthesis_notes() {
+        let (_tmp, db) = setup_mixed_edge_db();
+
+        // Inject an index with known unmatched counts directly (the cap path
+        // is exercised by the truncation test above).
+        let mut index = GraphReadModel::bridge_index_with_limit(&db, 1000).unwrap();
+        index.unmatched.insert("no_caller_uid".to_string(), 2);
+        index.unmatched.insert("no_route_handler".to_string(), 3);
+
+        let mut grm = GraphReadModel::without_http_bridges(Arc::clone(&db));
+        grm.http_bridges = Arc::new(index);
+
+        let mut explain = GraphExplainCollector::new();
+        let _ = grm.neighbors_with_explain("caller_get_users", &mut explain);
+        let explain = explain.finish();
+        assert_eq!(
+            explain.synthesis_notes,
+            vec![
+                "no_caller_uid: 2".to_string(),
+                "no_route_handler: 3".to_string(),
+            ]
+        );
+    }
+
     /// DB with one file. The process-unique `IndexDb::instance_id` already
     /// guarantees the process-global caches cannot collide across tests.
     fn setup_callee_db() -> (TempDir, Arc<IndexDb>) {

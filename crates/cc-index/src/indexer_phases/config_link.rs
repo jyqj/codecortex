@@ -7,7 +7,7 @@ use cc_db::index_db::{FileWriteUnit, SymbolTargetRow};
 use cc_model::edge::ResolutionKind;
 use cc_model::parse::ParseOutcome;
 use cc_model::symbol::SymbolRefRecord;
-use cc_model::{CcResult, Language, ParserTier, StableId};
+use cc_model::{BuildExplainCollector, CcResult, Language, ParserTier, StableId};
 
 use crate::config_linker::{
     config_files_signature, resolve_config_links, scan_config_tokens, ConfigLinkKind,
@@ -373,6 +373,7 @@ impl Indexer {
         &self,
         project_path: &Path,
         batch_empty: bool,
+        build_explain: &mut BuildExplainCollector,
     ) -> CcResult<Option<ConfigLinkRound>> {
         let sig = time_step("write", "config_sig_walk", || {
             config_files_signature(project_path)
@@ -387,6 +388,11 @@ impl Indexer {
             && recorded_sig.and_then(|s| s.parse::<u64>().ok()) == Some(sig);
 
         if unchanged && batch_empty {
+            build_explain.record_gate(
+                "config_link",
+                false,
+                "signature unchanged and batch empty",
+            );
             tracing::debug!("config linker: signature unchanged and batch empty, skipping");
             return Ok(None);
         }
@@ -408,21 +414,39 @@ impl Indexer {
                     // 必为 no-op，连 catalog 读取一起跳过。上轮若有链接，其
                     // token 非空且与签名一同落盘，签名未变时缓存命中的就是
                     // 那批非空 token —— 不会走到这里，陈旧行清理不受影响。
+                    build_explain.record_gate(
+                        "config_link",
+                        false,
+                        "signature unchanged, cached tokens empty",
+                    );
                     tracing::debug!(
                         "config linker: signature unchanged and cached tokens empty, skipping"
                     );
                     return Ok(None);
                 }
                 Some(tokens) => {
+                    build_explain.record_gate(
+                        "config_link",
+                        true,
+                        "signature unchanged, reused cached tokens",
+                    );
                     tracing::debug!(
                         tokens = tokens.len(),
                         "config linker: scan skipped, resolving cached raw tokens"
                     );
                     tokens
                 }
-                None => self.scan_and_record_config_tokens(project_path, sig)?,
+                None => {
+                    build_explain.record_gate(
+                        "config_link",
+                        true,
+                        "signature unchanged but token cache missing, rescanned",
+                    );
+                    self.scan_and_record_config_tokens(project_path, sig)?
+                }
             }
         } else {
+            build_explain.record_gate("config_link", true, "signature changed, rescanned");
             self.scan_and_record_config_tokens(project_path, sig)?
         };
 

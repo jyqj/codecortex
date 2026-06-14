@@ -17,6 +17,8 @@
 //! own — except for tools without a dynamic collector, which attach a
 //! [`GraphExplain::declared_only`] envelope additively.
 
+use std::collections::BTreeMap;
+
 use crate::graph_catalog::EdgeKindSet;
 use serde::{Deserialize, Serialize};
 
@@ -75,6 +77,12 @@ pub struct GraphExplain {
     /// Number of read errors beyond [`MAX_READ_ERRORS`] (count only).
     #[serde(default, skip_serializing_if = "is_zero")]
     pub read_errors_dropped: usize,
+    /// Categorized synthesis notes — stable `"category: count"` entries for
+    /// synthesized-edge sources that skipped or degraded (e.g. HTTP bridge
+    /// edges dropped to `no_caller_uid` / `no_normalized_path` /
+    /// `no_route_handler`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub synthesis_notes: Vec<String>,
 }
 
 impl GraphExplain {
@@ -104,6 +112,7 @@ impl GraphExplain {
             && self.truncated_reason.is_none()
             && self.read_errors.is_empty()
             && self.read_errors_dropped == 0
+            && self.synthesis_notes.is_empty()
     }
 }
 
@@ -112,6 +121,7 @@ impl GraphExplain {
 #[derive(Debug, Default)]
 pub struct GraphExplainCollector {
     explain: GraphExplain,
+    synthesis_counts: BTreeMap<String, usize>,
 }
 
 impl GraphExplainCollector {
@@ -166,6 +176,17 @@ impl GraphExplainCollector {
         self.explain.runtime_evidence_edge_count += count;
     }
 
+    /// Record a synthesis-side note: `count` edges in `category` were skipped
+    /// or degraded (e.g. an HTTP call that synthesized no bridge edge). The
+    /// first report per category wins (idempotent across the per-node calls of
+    /// one walk); the counts surface as `"category: count"` in
+    /// [`GraphExplain::synthesis_notes`].
+    pub fn note_synthesis(&mut self, category: &str, count: usize) {
+        self.synthesis_counts
+            .entry(category.to_string())
+            .or_insert(count);
+    }
+
     /// Mark the result truncated. The first recorded reason wins (it is the
     /// primary cause); later calls still keep `truncated` set.
     pub fn mark_truncated(&mut self, reason: &str) {
@@ -176,20 +197,30 @@ impl GraphExplainCollector {
     }
 
     pub fn is_empty(&self) -> bool {
-        self.explain.is_empty()
+        self.explain.is_empty() && self.synthesis_counts.is_empty()
+    }
+
+    fn into_explain(mut self) -> GraphExplain {
+        self.explain.synthesis_notes = self
+            .synthesis_counts
+            .into_iter()
+            .map(|(category, count)| format!("{category}: {count}"))
+            .collect();
+        self.explain
     }
 
     pub fn finish(self) -> GraphExplain {
-        self.explain
+        self.into_explain()
     }
 
     /// Finish, returning `None` when there is nothing to report so callers
     /// can skip attaching an empty envelope.
     pub fn finish_non_empty(self) -> Option<GraphExplain> {
-        if self.explain.is_empty() {
+        let explain = self.into_explain();
+        if explain.is_empty() {
             None
         } else {
-            Some(self.explain)
+            Some(explain)
         }
     }
 }
@@ -320,5 +351,23 @@ mod tests {
 
         let roundtrip: GraphExplain = serde_json::from_value(value).unwrap();
         assert_eq!(roundtrip, explain);
+    }
+
+    #[test]
+    fn synthesis_notes_first_count_wins_and_finishes_as_strings() {
+        let mut collector = GraphExplainCollector::new();
+        collector.note_synthesis("no_route_handler", 5);
+        // Idempotent across per-node calls in one walk: no overwrite, no accumulate.
+        collector.note_synthesis("no_route_handler", 5);
+        collector.note_synthesis("no_caller_uid", 2);
+        assert!(!collector.is_empty());
+        let explain = collector.finish();
+        // BTreeMap ordering: alphabetical by category.
+        assert_eq!(
+            explain.synthesis_notes,
+            vec!["no_caller_uid: 2".to_string(), "no_route_handler: 5".to_string()]
+        );
+        // An empty collector still finishes to None.
+        assert!(GraphExplainCollector::new().finish_non_empty().is_none());
     }
 }

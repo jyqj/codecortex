@@ -5,7 +5,7 @@ use rayon::prelude::*;
 
 use cc_db::index_db::{compress_chunk_text, FileWriteUnit, PrecompressedChunks};
 use cc_model::edge::RouteNodeRecord;
-use cc_model::CcResult;
+use cc_model::{BuildExplainCollector, CcResult};
 
 use crate::framework_registry;
 use crate::indexer::{FileAction, Indexer, WriteResult, MIN_FILES_FOR_PARALLEL};
@@ -48,6 +48,7 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
+        build_explain: &mut BuildExplainCollector,
     ) -> CcResult<WriteResult> {
         // Separate dirty write units from normal ones before write.
         let dirty_set: HashSet<String> = actions
@@ -125,7 +126,7 @@ impl Indexer {
             // gate skips the config scan (and, for no-op batches, the whole
             // pass) when the config-file set is unchanged.
             let config_units = match time_step("write", "config_link_compute", || {
-                self.build_config_link_units_gated(project_path, batch_empty)
+                self.build_config_link_units_gated(project_path, batch_empty, build_explain)
             })? {
                 // 快速路径保持零写入：签名未变且批次为空，链接不可能变化。
                 None => Vec::new(),

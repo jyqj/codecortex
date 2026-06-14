@@ -8,7 +8,7 @@ use cc_db::index_db::IndexDb;
 use cc_db::GraphReads;
 use cc_model::CcResult;
 use lru::LruCache;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::num::NonZeroUsize;
 use std::sync::{Arc, Mutex, OnceLock};
 
@@ -27,6 +27,11 @@ pub(super) type BridgeEdgesByCaller = HashMap<String, Vec<EdgeLite>>;
 pub(super) struct BridgeIndex {
     pub(super) by_caller: BridgeEdgesByCaller,
     pub(super) truncated: bool,
+    /// Per-category counts of HTTP call edges that produced no bridge edge
+    /// (`no_caller_uid` / `no_normalized_path` / `no_route_handler`). Surfaces
+    /// as `synthesis_notes` on the explain envelope so a caller can see why
+    /// some HTTP calls did not synthesize a bridge.
+    pub(super) unmatched: BTreeMap<String, usize>,
 }
 
 pub(super) type SharedBridgeEdges = Arc<BridgeIndex>;

@@ -4,7 +4,7 @@
 use cc_db::index_db::IndexDb;
 use cc_db::GraphReads;
 use cc_model::CcResult;
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use crate::graph_types::{BfsAdj, EdgeLite};
@@ -86,14 +86,21 @@ impl GraphReadModel {
         }
 
         let mut http_bridges: HashMap<String, Vec<EdgeLite>> = HashMap::new();
+        let mut unmatched: BTreeMap<String, usize> = BTreeMap::new();
         for hce in &http_edges {
             let caller_uid = match &hce.caller_symbol_uid {
                 Some(uid) => uid,
-                None => continue,
+                None => {
+                    *unmatched.entry("no_caller_uid".to_string()).or_default() += 1;
+                    continue;
+                }
             };
             let norm_path = match &hce.normalized_path {
                 Some(path) => path,
-                None => continue,
+                None => {
+                    *unmatched.entry("no_normalized_path".to_string()).or_default() += 1;
+                    continue;
+                }
             };
             let mut matched_handlers: Vec<&(String, f64)> = Vec::new();
             if let Some(method) = normalize_bridge_method(hce.method.as_deref()) {
@@ -111,6 +118,9 @@ impl GraphReadModel {
             // kinds produced below come from the closed bridge registry: the
             // single source of the call_kind → virtual-kind mapping, so a new
             // bridge kind can't appear here as a literal.
+            if matched_handlers.is_empty() {
+                *unmatched.entry("no_route_handler".to_string()).or_default() += 1;
+            }
             let dispatch_kind = dispatch_kind_for(&hce.call_kind);
             let resolution_kind = resolution_kind_for(dispatch_kind);
             for (handler_uid, handler_confidence) in matched_handlers {
@@ -140,6 +150,7 @@ impl GraphReadModel {
         Ok(BridgeIndex {
             by_caller: http_bridges,
             truncated,
+            unmatched,
         })
     }
 

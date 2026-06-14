@@ -140,6 +140,9 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
   `bridge_cap`、`db_error:<op>` …）；
 - `read_errors`（上限 8，溢出计入 `read_errors_dropped`）—— 被降级为
   部分/空结果而非令调用失败的 DB 读错误。
+- `synthesis_notes` —— 合成边源的 `"分类: 计数"` 笔记（如 bridge 边的
+  `no_caller_uid: 2`），透出"为何某些 HTTP 调用没产生 bridge 边"；首个
+  分类计数幂等（per-walk 内重复透出不累加）。
 
 信封跨 `impact`、`trace`、`graph_query`、`relations`、`type_hierarchy`、
 循环依赖分析与搜索图富化（`context`/`search`）附着；空信封序列化为 `{}`

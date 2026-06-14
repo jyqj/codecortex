@@ -148,6 +148,13 @@ impl GraphReadModel {
         if self.http_bridges.truncated {
             explain.mark_truncated("bridge_cap");
         }
+        // Bridge edges that synthesized nothing (no caller UID / no normalized
+        // path / no matching route handler) surface as synthesis notes. The
+        // collector keeps the first count per category, so repeating this on
+        // every per-node adjacency query stays idempotent within one walk.
+        for (category, count) in &self.http_bridges.unmatched {
+            explain.note_synthesis(category, *count);
+        }
         // Fast path: check if the UID is already cached.
         {
             let adj = self.shared_adjacency.lock().unwrap();

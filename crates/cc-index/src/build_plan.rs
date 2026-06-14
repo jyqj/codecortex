@@ -98,6 +98,10 @@ pub struct WrittenBuild {
     carry: ReportCarry,
     write_units: Vec<FileWriteUnit>,
     config_units: Vec<FileWriteUnit>,
+    /// Build-side explainability collector, started in stage 1 (config-linker
+    /// gate decision) and continued through stage 2 (postprocess/analysis
+    /// gates). Finished into `IndexReport.build_explain` in stage 3.
+    build_explain: BuildExplainCollector,
     /// `index_epoch` observed after the stage-1 writes committed; stage 3
     /// rechecks it before applying deltas. In-process the build gate makes
     /// the recheck a tautology — it exists to surface cross-process writers
@@ -289,6 +293,7 @@ impl IndexBuildPlan {
             });
         }
 
+        let mut build_explain = BuildExplainCollector::new();
         let phase_start = Instant::now();
         let write_result = indexer.phase_write(
             project_path,
@@ -299,6 +304,7 @@ impl IndexBuildPlan {
             &output_snapshot.route_nodes,
             &hierarchy_edges,
             &chunk_blobs,
+            &mut build_explain,
         )?;
         let write_ms = phase_start.elapsed().as_millis() as u64;
 
@@ -324,6 +330,7 @@ impl IndexBuildPlan {
             },
             write_units: write_result.write_units,
             config_units: write_result.config_units,
+            build_explain,
             written_index_epoch,
         })
     }
@@ -342,10 +349,10 @@ impl IndexBuildPlan {
             mut carry,
             write_units,
             config_units,
+            mut build_explain,
             written_index_epoch,
         } = written;
 
-        let mut build_explain = BuildExplainCollector::new();
         let phase_start = Instant::now();
         let postprocess = indexer.phase_postprocess_compute(
             self.mode.is_full(),

@@ -145,6 +145,11 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
 循环依赖分析与搜索图富化（`context`/`search`）附着；空信封序列化为 `{}`
 并整体省略。
 
+**构建侧对偶 `BuildExplain`**（`cc-model/src/build_explain.rs`）：把 postprocess/
+analysis 的签名门决策（run/skip + 原因）与降级信号收进 `IndexReport.build_explain`
+（空则省略）。读侧解释"遍历了什么/为何截断"，构建侧解释"为何合成/社区/git 共变
+被跳过或降级"。见 [internals/INDEXING.md](internals/INDEXING.md#buildexplain构建侧决策信封)。
+
 ### 工具 → 边 kind 矩阵
 
 `tool_graph_subsets`（`cc-model/src/graph_catalog.rs`）是每个工具面消费
@@ -164,6 +169,12 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
 
 cc-search 的 `FastPathConfig::DEFAULT.eligible_edge_kinds` 直接引用
 `CYPHER_FAST_PATH`，门与目录不可能漂移（ADR-0001，2026-06-11 更新）。
+
+读侧**虚拟**桥边（`http_bridge` / `async_bridge`）不在 `tool_graph_subsets`
+里——它们不持久化，按 `GraphReadGeneration` 即时投影自 `http_call_edges` +
+routes。这类虚拟 kind 在 `cc-server/src/graph_read_model/bridge_spec.rs` 的封闭
+`bridge_registry()` 声明（`bridges.rs` 经 `dispatch_kind_for` 消费，单一来源），
+由一致性测试机器校验，是 catalog 封闭集的平行声明点。
 
 ## 置信度分层
 

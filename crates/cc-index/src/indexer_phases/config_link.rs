@@ -356,6 +356,19 @@ impl Indexer {
     /// `Some` means the resolve half ran; the caller must hand the round to
     /// `apply_config_link_units` even when `units` is empty, so that files
     /// which resolved to zero links this round get their stale refs cleared.
+    ///
+    /// Not a `PassGate` adapter, deliberately. The postprocess/analysis gates
+    /// are binary run/skip with deferred signature records (the compute→apply
+    /// seam in `pass_gate.rs`). This is a WRITE-stage gate with a three-way
+    /// outcome (skip-entirely / reuse-cached-tokens / rescan), an *immediate*
+    /// signature record (`scan_and_record_config_tokens` writes through the
+    /// write facet in the same step — there is no deferred-record window), and
+    /// an extra raw-token cache dimension. It shares the algo-versioned
+    /// u64-signature compare *pattern* with `FileSignatureGate` but does not
+    /// fit the deferred-record shape, so forcing it into `PassGate` would
+    /// either distort the seam or encode the three-way outcome in a reason
+    /// string. The signature-compare pattern, not the trait, is what unifies
+    /// them.
     pub(super) fn build_config_link_units_gated(
         &self,
         project_path: &Path,

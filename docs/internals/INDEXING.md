@@ -172,6 +172,29 @@ synthesis → Louvain 社区检测。
 `DeferredSignatureRecord` 随 pass 的类型化 delta 一起走，apply 阶段在对应
 delta 真正落库后才持久化签名——保证"签名已记录但产物没写入"的窗口不存在。
 
+`PassGate` 只覆盖 postprocess/analysis（compute→apply 二元决策 + 延迟记账）。
+写阶段的 **config-linker 签名门**是唯一不套 `PassGate` 的跳过门：它是三方决策
+（整跳 / 复用缓存 token / 重扫）、立即记录、带 raw-token 缓存，与延迟记账模型
+不匹配。它与 `FileSignatureGate` 共享的是"algo 版本化的 u64 签名比较"这一**模式**
+（见 [写入阶段](#写入阶段) 与 `config_link.rs::build_config_link_units_gated`
+的文档），而非 trait。
+
+### BuildExplain：构建侧决策信封
+
+postprocess/analysis 各门的决策（`synthesis_round` / `community` /
+`git_cochange` / `infra` 的 run/skip + 原因）与降级信号
+（`community_edge_cap_exceeded`、`cochange_unavailable`）收集进一个
+`BuildExplain` 信封（`cc-model/src/build_explain.rs`，与读侧
+[`GraphExplain`](../ARCHITECTURE.md#图可解释性graphexplain) 对偶），挂在
+`IndexReport.build_explain`（空则序列化省略）。它是读侧 `GraphExplain` 的
+构建侧对应物——回答"为什么这次合成/社区/git 共变被跳过或降级"。`compute` 阶段
+经 `BuildExplainCollector` 增量收集，`apply` 阶段盖章进 `IndexReport`；门决策
+同时仍发 `tracing`，信封是追加而非替代。**不重复** `dirty_propagation` 与
+`phase_timing`（已在 `IndexReport`）；config-linker 门是写阶段决策，暂未纳入
+（collector 在 compute 阶段创建，早于它）。
+
+
+
 ### dispatch synthesis（派发合成）
 
 为动态派发合成调用边：事件 emitter → handler、JSX/Vue 组件渲染、

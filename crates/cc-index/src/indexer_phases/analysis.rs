@@ -3,7 +3,7 @@ use std::path::Path;
 use cc_db::index_db::FileWriteUnit;
 use cc_model::edge::{CoChangeEdgeRecord, RouteNodeRecord};
 use cc_model::infra::{InfraEdge, InfraNode};
-use cc_model::CcResult;
+use cc_model::{BuildExplainCollector, CcResult};
 
 use crate::indexer::Indexer;
 use crate::pass_gate::{
@@ -46,6 +46,7 @@ impl Indexer {
         project_path: &Path,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
+        build_explain: &mut BuildExplainCollector,
     ) -> CcResult<AnalysisPlan> {
         // Phase 8: Git co-change analysis. HEAD-skip: co-change edges only
         // depend on commit history. If HEAD has not advanced since the last
@@ -58,6 +59,11 @@ impl Indexer {
             });
         let cochange_decision = cochange_gate.should_run()?;
         log_gate_decision(&cochange_gate, cochange_decision);
+        build_explain.record_gate(
+            cochange_gate.id(),
+            cochange_decision.run,
+            cochange_decision.reason,
+        );
         let cochange = if cochange_decision.run {
             match time_step("analysis", "cochange_scan", || {
                 crate::git_cochange::analyze_cochanges(project_path, 2, 0.2, 500)
@@ -71,6 +77,7 @@ impl Indexer {
                     // not be a git repo. The HEAD marker stays unrecorded so a
                     // transient failure never poisons the skip cache.
                     tracing::warn!(error = %err, "skipping git co-change analysis");
+                    build_explain.record_degraded("cochange_unavailable");
                     Some(CoChangeStage {
                         co_changes: Vec::new(),
                         record_head: None,
@@ -103,6 +110,11 @@ impl Indexer {
         );
         let infra_decision = infra_gate.should_run()?;
         log_gate_decision(&infra_gate, infra_decision);
+        build_explain.record_gate(
+            infra_gate.id(),
+            infra_decision.run,
+            infra_decision.reason,
+        );
         let infra = if infra_decision.run {
             let (mut infra_nodes, mut infra_edges) = time_step("analysis", "infra_scan", || {
                 crate::infra_pass::run_infra_pass(project_path)

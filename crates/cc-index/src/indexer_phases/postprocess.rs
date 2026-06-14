@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use cc_db::index_db::{FileState, FileWriteUnit, IndexDb};
-use cc_model::CcResult;
+use cc_model::{BuildExplainCollector, CcResult};
 
 use crate::community::{build_community_labels, louvain_communities};
 use crate::indexer::Indexer;
@@ -111,6 +111,7 @@ impl Indexer {
         config_units: &[FileWriteUnit],
         to_remove: &[String],
         pre_batch_files: &HashMap<String, FileState>,
+        build_explain: &mut BuildExplainCollector,
     ) -> CcResult<PostprocessPlan> {
         // Test edges for changed files: the rebuild itself is a cc-db SQL
         // operation, so compute only decides WHICH rebuild apply runs.
@@ -188,6 +189,11 @@ impl Indexer {
         let synthesis_gate = PairGate::new("synthesis_round", &dispatch_gate, &interface_gate);
         let synthesis_decision = synthesis_gate.should_run()?;
         log_gate_decision(&synthesis_gate, synthesis_decision);
+        build_explain.record_gate(
+            synthesis_gate.id(),
+            synthesis_decision.run,
+            synthesis_decision.reason,
+        );
 
         // Phase 7b–7h: Dynamic dispatch synthesis. Compute every pass delta
         // against the committed snapshot; the apply stage writes all deltas
@@ -257,13 +263,18 @@ impl Indexer {
         );
         let community_decision = community_gate.should_run()?;
         log_gate_decision(&community_gate, community_decision);
+        build_explain.record_gate(
+            community_gate.id(),
+            community_decision.run,
+            community_decision.reason,
+        );
         let community = if community_decision.run {
             let community_edges = time_step("postprocess", "community_edges", || {
                 self.community_edges_with_overlay(synthesis.as_ref().map(|s| &s.action))
             })?;
             Some(CommunityStage {
                 action: time_step("postprocess", "louvain", || {
-                    self.compute_community_action(&community_edges)
+                    self.compute_community_action(&community_edges, build_explain)
                 })?,
                 record: community_gate.deferred_record()?,
             })
@@ -357,7 +368,11 @@ impl Indexer {
 
     /// Louvain (or the OOM-degradation decision) over the projected
     /// post-apply edge set.
-    fn compute_community_action(&self, edges: &[(String, String)]) -> CcResult<CommunityAction> {
+    fn compute_community_action(
+        &self,
+        edges: &[(String, String)],
+        build_explain: &mut BuildExplainCollector,
+    ) -> CcResult<CommunityAction> {
         // Guard: cap the edge count before running Louvain to prevent OOM.
         let max_community_edges: usize = std::env::var("CODECORTEX_COMMUNITY_MAX_EDGES")
             .ok()
@@ -370,6 +385,7 @@ impl Indexer {
                 max_community_edges,
                 "community detection: edge count exceeds limit, assigning all symbols to community 0"
             );
+            build_explain.record_degraded("community_edge_cap_exceeded");
             return Ok(CommunityAction::Degraded);
         }
 

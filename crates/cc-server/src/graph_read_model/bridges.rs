@@ -9,6 +9,7 @@ use std::sync::Arc;
 
 use crate::graph_types::{BfsAdj, EdgeLite};
 
+use super::bridge_spec::{bridge_edge_limit, dispatch_kind_for, resolution_kind_for};
 use super::cache::{
     generation_cached, BridgeEdgesByCaller, BridgeIndex, GraphReadGeneration, SharedBridgeEdges,
     BRIDGE_CACHE,
@@ -33,11 +34,7 @@ impl GraphReadModel {
     /// Like [`Self::bridge_edges_by_caller`] but keeps the load-time
     /// truncation fact alongside the edges, under the configured cap.
     pub(super) fn bridge_index(db: &IndexDb) -> CcResult<BridgeIndex> {
-        let limit: usize = std::env::var("CODECORTEX_BRIDGE_EDGE_LIMIT")
-            .ok()
-            .and_then(|v| v.parse().ok())
-            .unwrap_or(10_000);
-        Self::bridge_index_with_limit(db, limit)
+        Self::bridge_index_with_limit(db, bridge_edge_limit())
     }
 
     pub(super) fn bridge_index_with_limit(db: &IndexDb, limit: usize) -> CcResult<BridgeIndex> {
@@ -109,12 +106,14 @@ impl GraphReadModel {
             } else {
                 matched_handlers.extend(route_path_lookup.get(norm_path).into_iter().flatten());
             }
+            // HTTP calls that matched no route handler produce no bridge edge
+            // (the `no_route_handler` category — see bridge_spec). The edge
+            // kinds produced below come from the closed bridge registry: the
+            // single source of the call_kind → virtual-kind mapping, so a new
+            // bridge kind can't appear here as a literal.
+            let dispatch_kind = dispatch_kind_for(&hce.call_kind);
+            let resolution_kind = resolution_kind_for(dispatch_kind);
             for (handler_uid, handler_confidence) in matched_handlers {
-                let dispatch_kind = if hce.call_kind.eq_ignore_ascii_case("http") {
-                    "http_bridge"
-                } else {
-                    "async_bridge"
-                };
                 let bridge_edge = EdgeLite {
                     caller_uid: caller_uid.clone(),
                     callee_uid: handler_uid.clone(),
@@ -126,7 +125,7 @@ impl GraphReadModel {
                     line: hce.line,
                     registered_file: None,
                     registered_line: None,
-                    resolution_kind: Some("synthesized".to_string()),
+                    resolution_kind: resolution_kind.map(str::to_string),
                     parser_tier: None,
                     resolution_strategy: None,
                     parser_confidence: None,

@@ -16,6 +16,7 @@
 //! [`cc_db::GraphReads`] facet (see `reads()`); this module only orchestrates
 //! caching and in-memory projection.
 
+mod bridge_spec;
 mod bridges;
 mod cache;
 mod projections;

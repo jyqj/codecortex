@@ -1,4 +1,5 @@
 pub mod architecture;
+pub mod build_explain;
 pub mod chunk;
 pub mod config;
 pub mod context;
@@ -32,6 +33,7 @@ pub use edge::{
     SemanticRelation, TestEdgeRecord,
 };
 pub use graph_explain::{GraphExplain, GraphExplainCollector};
+pub use build_explain::{BuildExplain, BuildExplainCollector, GateDecisionRecord};
 pub use id::StableId;
 pub use impact::{
     CrossServiceImpact, HistoricalImpact, ImpactReport, ImpactedSymbol, RiskLevel, RiskSummary,

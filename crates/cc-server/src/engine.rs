@@ -460,12 +460,29 @@ impl CodeIndex {
             .map(|c| c.auto_index.enabled)
             .unwrap_or(true);
 
+        // Search result-cache hit/miss counters (the warm/cold split behind
+        // per-tool latency). `cache_stats()` is a cheap atomic snapshot; the
+        // counters are monotonic over the engine's lifetime. `None` before the
+        // engine is constructed (no build yet) — serializes as null.
+        let search_cache = self.engine.as_ref().map(|engine| {
+            let stats = engine.cache_stats();
+            serde_json::json!({
+                "result_hits": stats.result_hits,
+                "result_misses": stats.result_misses,
+                "result_hit_rate": stats.result_hit_rate(),
+                "graph_hits": stats.graph_hits,
+                "graph_misses": stats.graph_misses,
+                "graph_hit_rate": stats.graph_hit_rate(),
+            })
+        });
+
         serde_json::json!({
             "schema_version": schema_version,
             "db_schema_version": db_schema_version,
             "last_indexed_at": last_indexed,
             "auto_index_enabled": auto_index_enabled,
             "lock_poison_recovered": crate::handlers::poison_recovered(),
+            "search_cache": search_cache,
         })
     }
 }

@@ -246,6 +246,20 @@ async fn stdio_status_capabilities_and_schema() -> Result<(), Box<dyn std::error
         "schema aspect should return an object describing node/edge types: {schema}"
     );
 
+    // The "index" aspect attaches diagnostics, which now surface the search
+    // result-cache hit/miss snapshot (the counters exist on the engine, but
+    // were previously unread by any diagnostic path).
+    let index_aspect = call_result(
+        &client,
+        "status",
+        json!({"aspect": "index", "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        index_aspect["diagnostics"]["search_cache"].is_object(),
+        "status (index) diagnostics should surface search cache hit/miss: {index_aspect}"
+    );
+
     client.cancel().await?;
     Ok(())
 }

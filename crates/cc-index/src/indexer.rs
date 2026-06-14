@@ -99,6 +99,11 @@ pub struct IndexReport {
     /// Per-phase timing breakdown (all in milliseconds).
     #[serde(skip_serializing_if = "Option::is_none")]
     pub phase_timing: Option<PhaseTiming>,
+    /// Build-side decision envelope: signature-gate decisions and degrade
+    /// notes for the postprocess/analysis passes — the build-side counterpart
+    /// of `GraphExplain`. `None` when nothing noteworthy happened.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub build_explain: Option<cc_model::BuildExplain>,
 }
 
 /// Per-phase timing breakdown in milliseconds.

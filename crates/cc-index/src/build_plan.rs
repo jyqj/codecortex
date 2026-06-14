@@ -41,7 +41,7 @@ use std::time::{Duration, Instant};
 
 use cc_db::index_db::{FileState, FileWriteUnit, PrecompressedChunks};
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
-use cc_model::{CcError, CcResult};
+use cc_model::{BuildExplain, BuildExplainCollector, CcError, CcResult};
 
 use crate::dirty_closure::DirtyPropagationStatus;
 use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, PhaseTiming, ScanDiffResult};
@@ -114,6 +114,7 @@ pub struct StagedPostprocess {
     postprocess: PostprocessPlan,
     analysis: AnalysisPlan,
     written_index_epoch: u64,
+    build_explain: Option<BuildExplain>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -344,6 +345,7 @@ impl IndexBuildPlan {
             written_index_epoch,
         } = written;
 
+        let mut build_explain = BuildExplainCollector::new();
         let phase_start = Instant::now();
         let postprocess = indexer.phase_postprocess_compute(
             self.mode.is_full(),
@@ -351,6 +353,7 @@ impl IndexBuildPlan {
             &config_units,
             &carry.scan_result.to_remove,
             &carry.scan_result.existing,
+            &mut build_explain,
         )?;
         carry.timing.postprocess_ms += phase_start.elapsed().as_millis() as u64;
 
@@ -359,14 +362,17 @@ impl IndexBuildPlan {
             project_path,
             &write_units,
             &carry.output_snapshot.route_nodes,
+            &mut build_explain,
         )?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
 
+        let build_explain = build_explain.finish_non_empty();
         Ok(StagedPostprocess {
             carry,
             postprocess,
             analysis,
             written_index_epoch,
+            build_explain,
         })
     }
 
@@ -382,6 +388,7 @@ impl IndexBuildPlan {
             postprocess,
             analysis,
             written_index_epoch,
+            build_explain,
         } = staged;
 
         // Cheap generation recheck: in-process the build gate guarantees
@@ -420,6 +427,7 @@ impl IndexBuildPlan {
             dirty_propagation,
             start.elapsed(),
             Some(timing),
+            build_explain,
         ))
     }
 
@@ -431,6 +439,7 @@ impl IndexBuildPlan {
         dirty_propagation: Option<DirtyPropagationStatus>,
         elapsed: Duration,
         phase_timing: Option<crate::indexer::PhaseTiming>,
+        build_explain: Option<BuildExplain>,
     ) -> IndexReport {
         IndexReport {
             files_scanned: scan_result.files_scanned,
@@ -446,6 +455,7 @@ impl IndexBuildPlan {
             used_parallel_parse: parse_report.used_parallel,
             dirty_propagation,
             phase_timing,
+            build_explain,
         }
     }
 }
@@ -795,6 +805,18 @@ class Accumulator:
         );
         assert_eq!(report_a.chunks_total, report_b.chunks_total, "chunks_total");
         assert!(report_a.symbols_total > 0, "fixture should yield symbols");
+
+        // BuildExplain carries the postprocess/analysis gate decisions — a
+        // first build has no recorded signatures, so every gate runs and the
+        // envelope must be non-empty, and the two paths must agree.
+        let be_a = report_a.build_explain.as_ref().expect("bundled build_explain");
+        let be_b = report_b.build_explain.as_ref().expect("staged build_explain");
+        assert!(
+            !be_a.gate_decisions.is_empty(),
+            "first build records gate decisions"
+        );
+        assert_eq!(be_a.gate_decisions, be_b.gate_decisions, "gate decisions");
+        assert_eq!(be_a.degraded, be_b.degraded, "degrade notes");
 
         // Final persisted graph state must match table by table — this is
         // what catches a staged pass computing against the wrong snapshot

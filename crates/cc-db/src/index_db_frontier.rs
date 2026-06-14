@@ -1,4 +1,17 @@
 //! IndexDb methods: route, HTTP call, diagnostic, and route-node queries (frontier expansion).
+//!
+//! 纯 frontier 扩展查询(route/http/route-node 按 path/uid 查 lite 行)已从
+//! `impl IndexDb` 下沉到独立真模块 [`FrontierReads`]，形态对齐
+//! [`RetrievalReadModel`](crate::index_db_retrieval::RetrievalReadModel) 与
+//! [`GraphReads`](crate::index_db_graph_read::GraphReads)：零成本借用 `&IndexDb`，
+//! SQL 自持（`self.db.read_conn()`），经 [`IndexDb::frontier`] 工厂暴露。
+//! [`ReadOps`](crate::index_db::ReadOps) facet 仍作 capability boundary，转发委托到
+//! 本真模块（调用方 `db.reads().x()` 不变）。
+//!
+//! `all_http_call_edges_lite` / `all_route_nodes_lite` 是图桥接数据源（被
+//! [`GraphReads`](crate::index_db_graph_read::GraphReads) 转发消费，供 HTTP/route 桥
+//! 合成），跨 frontier/graph 两域，暂留 `impl IndexDb` 由 `GraphReads` 直接转发，不
+//! 下沉到本模块（避免 GraphReads→FrontierReads 的跨模块依赖）。
 
 use cc_model::CcResult;
 
@@ -6,12 +19,33 @@ use crate::index_db::{HttpCallEdgeLite, IndexDb, ReadOps, RouteEdgeLite, RouteNo
 use crate::sql_util::db_err;
 
 impl IndexDb {
+    /// Frontier 读模型：route/HTTP/route-node 的 lite 行查询（frontier 扩展用）。
+    /// 零成本借用，经此工厂暴露；SQL 在模型自身，不转发自 `impl IndexDb`。
+    pub fn frontier(&self) -> FrontierReads<'_> {
+        FrontierReads::new(self)
+    }
+}
+
+/// Deep frontier 读模型 over [`IndexDb`]：route/HTTP-call/route-node 的 lite 行
+/// 查询（按 path / handler_uid / caller_uid / normalized_path）。零成本借用，经
+/// [`IndexDb::frontier`] 获取。与 catch-all [`ReadOps`](crate::index_db::ReadOps)
+/// 分立，frontier 扩展 SQL 有单一归属。
+pub struct FrontierReads<'a> {
+    db: &'a IndexDb,
+}
+
+impl<'a> FrontierReads<'a> {
+    /// Borrow `db` for frontier queries（mirror `RetrievalReadModel::new`）.
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
     pub(crate) fn route_rows_by_path(
         &self,
         route_path: &str,
         limit: usize,
     ) -> CcResult<Vec<RouteEdgeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT edge_id, file_path, route_path, handler_name, method, line,
@@ -36,7 +70,7 @@ impl IndexDb {
         handler_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<RouteEdgeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT edge_id, file_path, route_path, handler_name, method, line,
@@ -61,7 +95,7 @@ impl IndexDb {
         caller_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT edge_id, file_path, caller_symbol_uid, url_or_path, normalized_path,
@@ -86,7 +120,7 @@ impl IndexDb {
         normalized_path: &str,
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT edge_id, file_path, caller_symbol_uid, url_or_path, normalized_path,
@@ -113,7 +147,7 @@ impl IndexDb {
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
         if let Some(m) = method {
-            let conn = self.read_conn()?;
+            let conn = self.db.read_conn()?;
             let mut stmt = conn
                 .prepare_cached(
                     "SELECT edge_id, file_path, caller_symbol_uid, url_or_path, normalized_path,
@@ -144,7 +178,7 @@ impl IndexDb {
         normalized_path: &str,
         limit: usize,
     ) -> CcResult<Vec<RouteNodeLite>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached(
                 "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
@@ -182,7 +216,7 @@ impl IndexDb {
         limit: usize,
     ) -> CcResult<Vec<RouteNodeLite>> {
         if let Some(m) = method {
-            let conn = self.read_conn()?;
+            let conn = self.db.read_conn()?;
             let mut stmt = conn
                 .prepare_cached(
                     "SELECT route_id, file_path, route_path, method, handler_symbol_uid,
@@ -217,7 +251,11 @@ impl IndexDb {
         }
         self.route_nodes_by_normalized_path(normalized_path, limit)
     }
+}
 
+// `all_http_call_edges_lite` / `all_route_nodes_lite` 是图桥接数据源（被 GraphReads
+// 转发消费，跨 frontier/graph 两域），暂留 `impl IndexDb`。
+impl IndexDb {
     pub(crate) fn all_http_call_edges_lite(&self, limit: usize) -> CcResult<Vec<HttpCallEdgeLite>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
@@ -272,14 +310,15 @@ impl IndexDb {
     }
 }
 
-// Read-only facet delegates (see `IndexDb::reads()`).
+// Read-only facet delegates (see `IndexDb::reads()`). capability boundary 保留：
+// 7 个 frontier 方法委托到 FrontierReads 真模块；2 个图桥接方法仍委托 IndexDb。
 impl ReadOps<'_> {
     pub fn route_rows_by_path(
         &self,
         route_path: &str,
         limit: usize,
     ) -> CcResult<Vec<RouteEdgeLite>> {
-        self.0.route_rows_by_path(route_path, limit)
+        self.0.frontier().route_rows_by_path(route_path, limit)
     }
 
     pub fn route_rows_by_handler_uid(
@@ -287,7 +326,7 @@ impl ReadOps<'_> {
         handler_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<RouteEdgeLite>> {
-        self.0.route_rows_by_handler_uid(handler_uid, limit)
+        self.0.frontier().route_rows_by_handler_uid(handler_uid, limit)
     }
 
     pub fn http_calls_by_caller_uid(
@@ -295,7 +334,7 @@ impl ReadOps<'_> {
         caller_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
-        self.0.http_calls_by_caller_uid(caller_uid, limit)
+        self.0.frontier().http_calls_by_caller_uid(caller_uid, limit)
     }
 
     pub fn http_callers_by_normalized_path(
@@ -304,6 +343,7 @@ impl ReadOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
         self.0
+            .frontier()
             .http_callers_by_normalized_path(normalized_path, limit)
     }
 
@@ -314,6 +354,7 @@ impl ReadOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
         self.0
+            .frontier()
             .http_callers_by_normalized_path_and_method(normalized_path, method, limit)
     }
 
@@ -323,6 +364,7 @@ impl ReadOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<RouteNodeLite>> {
         self.0
+            .frontier()
             .route_nodes_by_normalized_path(normalized_path, limit)
     }
 
@@ -333,6 +375,7 @@ impl ReadOps<'_> {
         limit: usize,
     ) -> CcResult<Vec<RouteNodeLite>> {
         self.0
+            .frontier()
             .route_nodes_by_normalized_path_and_method(normalized_path, method, limit)
     }
 
@@ -393,7 +436,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let rows = db.route_rows_by_path("/api/users", 10).unwrap();
+        let rows = db.frontier().route_rows_by_path("/api/users", 10).unwrap();
         assert_eq!(rows.len(), 2);
         // Sorted by confidence DESC: 0.9 first, then 0.7
         assert_eq!(rows[0].edge_id, "re1");
@@ -402,7 +445,7 @@ mod tests {
         assert!((rows[1].confidence - 0.7).abs() < 1e-9);
 
         // Different path returns only its own route
-        let posts = db.route_rows_by_path("/api/posts", 10).unwrap();
+        let posts = db.frontier().route_rows_by_path("/api/posts", 10).unwrap();
         assert_eq!(posts.len(), 1);
         assert_eq!(posts[0].edge_id, "re3");
     }
@@ -433,14 +476,20 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let rows = db.http_calls_by_caller_uid("uid_fetch", 10).unwrap();
+        let rows = db
+            .frontier()
+            .http_calls_by_caller_uid("uid_fetch", 10)
+            .unwrap();
         assert_eq!(rows.len(), 2);
         // Sorted by confidence DESC: 0.8 first, then 0.7
         assert_eq!(rows[0].edge_id, "hce2");
         assert_eq!(rows[1].edge_id, "hce1");
 
         // Different caller_uid
-        let other = db.http_calls_by_caller_uid("uid_other", 10).unwrap();
+        let other = db
+            .frontier()
+            .http_calls_by_caller_uid("uid_other", 10)
+            .unwrap();
         assert_eq!(other.len(), 1);
         assert_eq!(other[0].edge_id, "hce3");
     }
@@ -474,7 +523,10 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let rows = db.route_nodes_by_normalized_path("/api/users", 10).unwrap();
+        let rows = db
+            .frontier()
+            .route_nodes_by_normalized_path("/api/users", 10)
+            .unwrap();
         assert_eq!(rows.len(), 2);
         // Sorted by confidence DESC
         assert_eq!(rows[0].route_id, "rn1");
@@ -482,7 +534,10 @@ mod tests {
         assert_eq!(rows[1].route_id, "rn2");
 
         // Different path
-        let posts = db.route_nodes_by_normalized_path("/api/posts", 10).unwrap();
+        let posts = db
+            .frontier()
+            .route_nodes_by_normalized_path("/api/posts", 10)
+            .unwrap();
         assert_eq!(posts.len(), 1);
         assert_eq!(posts[0].route_id, "rn3");
     }

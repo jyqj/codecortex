@@ -1,4 +1,18 @@
 //! IndexDb methods: symbol/file queries, search, JSON, listing.
+//!
+//! 自包含的只读查找/列表查询（符号查找、文件列表、符号目标、计数、影响测试、
+//! 文件摘要）已从 `impl IndexDb` 下沉到独立真模块 [`QueryReads`]，形态对齐
+//! [`RetrievalReadModel`](crate::index_db_retrieval::RetrievalReadModel) /
+//! [`FrontierReads`](crate::index_db_frontier::FrontierReads)：零成本借用 `&IndexDb`，
+//! SQL 自持，经 [`IndexDb::query`] 工厂暴露。[`ReadOps`](crate::index_db::ReadOps)
+//! facet 仍作 capability boundary，转发委托到本真模块（调用方 `db.reads().x()` 不变）。
+//!
+//! **留 `impl IndexDb` 的方法**（有跨模块直接调用者，非自包含）：
+//! - `query_json` / `query_json_on` —— GraphReads（11 处）+ arch（2 处）+ unit_of_work
+//!   写路径直接 `IndexDb::`/`self.db.` 调用，重度共享；
+//! - `list_communities` / `language_distribution` —— arch 直接调用；
+//! - `resolver_seed_symbols_excluding` + `load_seed_rows_on` —— seed-cache 加载热路径，
+//!   被 cc-index build_plan/resolve 与 seed_symbol_cache 直接调用，紧耦合 seed_symbol_cache。
 
 use cc_model::symbol::{SymbolKind, SymbolRecord};
 use cc_model::{CcResult, ParserTier};
@@ -7,15 +21,37 @@ use serde_json::Value;
 use crate::index_db::{CommunityRow, FileInfoRow, IndexDb, ReadOps, SymbolRow, SymbolTargetRow};
 use crate::sql_util::db_err;
 
-/// `(name, kind, file_path, fan_in, fan_out)` for hotspot symbol queries.
 impl IndexDb {
+    /// 通用只读查询模型：符号查找、文件列表、符号目标、计数、影响测试、文件摘要。
+    /// 零成本借用，经此工厂暴露；SQL 在模型自身，不转发自 `impl IndexDb`。
+    pub fn query(&self) -> QueryReads<'_> {
+        QueryReads::new(self)
+    }
+}
+
+/// Deep 只读查询模型 over [`IndexDb`]：符号查找（find_symbol/file_symbols）、
+/// 文件列表与存在性（list_indexed_files/list_file_paths/file_is_indexed）、符号目标
+/// （list_symbol_targets）、repo 框架（list_repo_frameworks）、计数（count_table_rows）、
+/// 影响测试（find_impacted_tests）、文件摘要（file_summary）。零成本借用，经
+/// [`IndexDb::query`] 获取，与 catch-all [`ReadOps`](crate::index_db::ReadOps) 分立，
+/// 自包含查找/列表 SQL 有单一归属。
+pub struct QueryReads<'a> {
+    db: &'a IndexDb,
+}
+
+impl<'a> QueryReads<'a> {
+    /// Borrow `db` for generic queries（mirror `RetrievalReadModel::new`）.
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
     pub(crate) fn find_symbol(
         &self,
         name: &str,
         exact: bool,
         top_k: usize,
     ) -> CcResult<Vec<SymbolRow>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let (sql, param): (&str, String) = if exact {
             (
                 "SELECT symbol_id, symbol_uid, name, kind, file_path, container, start_line, end_line, qname, signature
@@ -52,7 +88,7 @@ impl IndexDb {
     }
 
     pub(crate) fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         Self::file_symbols_on(&conn, file_path)
     }
 
@@ -73,7 +109,7 @@ impl IndexDb {
     }
 
     pub(crate) fn list_symbol_targets(&self) -> CcResult<Vec<SymbolTargetRow>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare(
                 "SELECT symbol_id, symbol_uid, name, qname, file_path
@@ -93,6 +129,197 @@ impl IndexDb {
             })
             .map_err(db_err)?;
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT file_path, language, size, parser_tier, indexed_at FROM files ORDER BY file_path",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(FileInfoRow {
+                    file_path: row.get(0)?,
+                    language: row.get(1)?,
+                    size: row.get::<_, i64>(2)? as u64,
+                    parser_tier: row.get(3)?,
+                    indexed_at: row.get(4)?,
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn list_file_paths(&self) -> CcResult<Vec<String>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare("SELECT file_path FROM files ORDER BY file_path")
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare("SELECT 1 FROM files WHERE file_path = ?1 LIMIT 1")
+            .map_err(db_err)?;
+        stmt.exists(rusqlite::params![file_path]).map_err(db_err)
+    }
+
+    pub(crate) fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT framework_key, confidence FROM frameworks WHERE scope='repo' ORDER BY confidence DESC",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Total row count of `table`. The table name must come from a trusted
+    /// static catalog (it is interpolated, not bound).
+    pub(crate) fn count_table_rows(&self, table: &str) -> CcResult<i64> {
+        let conn = self.db.read_conn()?;
+        conn.query_row(
+            &format!("SELECT COUNT(*) AS cnt FROM {}", table),
+            [],
+            |row| row.get(0),
+        )
+        .map_err(db_err)
+    }
+
+    pub(crate) fn find_impacted_tests(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
+        if file_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.db.read_conn()?;
+        let placeholders: Vec<String> = (1..=file_paths.len()).map(|i| format!("?{}", i)).collect();
+        let sql = format!(
+            "SELECT DISTINCT test_file_path FROM test_edges WHERE code_file_path IN ({})",
+            placeholders.join(",")
+        );
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = file_paths
+            .iter()
+            .map(|p| p as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        let mut tests = Vec::new();
+        for r in rows {
+            tests.push(r.map_err(db_err)?);
+        }
+        Ok(tests)
+    }
+
+    pub(crate) fn file_summary(&self, file_path: &str) -> CcResult<Value> {
+        let conn = self.db.read_conn()?;
+        let file_info = conn.query_row(
+            "SELECT language, size, parser_tier, summary, is_test_file FROM files WHERE file_path=?1",
+            rusqlite::params![file_path],
+            |row| {
+                let mut obj = serde_json::Map::new();
+                obj.insert("file_path".into(), Value::String(file_path.to_string()));
+                obj.insert("language".into(), Value::String(row.get::<_, String>(0)?));
+                obj.insert("size".into(), serde_json::json!(row.get::<_, i64>(1)?));
+                obj.insert("parser_tier".into(), Value::String(row.get::<_, String>(2)?));
+                obj.insert("summary".into(), Value::String(row.get::<_, String>(3).unwrap_or_default()));
+                obj.insert("is_test_file".into(), serde_json::json!(row.get::<_, i32>(4).unwrap_or(0) != 0));
+                Ok(obj)
+            },
+        ).map_err(db_err)?;
+
+        let mut obj = file_info;
+
+        let symbol_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM symbols WHERE file_path=?1",
+                rusqlite::params![file_path],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
+        obj.insert("symbols_count".into(), serde_json::json!(symbol_count));
+
+        let chunk_count: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM chunks WHERE file_path=?1",
+                rusqlite::params![file_path],
+                |row| row.get(0),
+            )
+            .unwrap_or(0);
+        obj.insert("chunks_count".into(), serde_json::json!(chunk_count));
+
+        let mut fw_stmt = conn.prepare(
+            "SELECT framework_key, confidence FROM frameworks WHERE scope='file' AND scope_id=?1 ORDER BY confidence DESC"
+        ).map_err(db_err)?;
+        let fw_rows = fw_stmt
+            .query_map(rusqlite::params![file_path], |row| {
+                Ok(serde_json::json!({
+                    "framework": row.get::<_, String>(0)?,
+                    "confidence": row.get::<_, f64>(1)?
+                }))
+            })
+            .map_err(db_err)?;
+        let frameworks: Vec<Value> = fw_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
+        obj.insert("frameworks".into(), Value::Array(frameworks));
+
+        Ok(Value::Object(obj))
+    }
+}
+
+// 留 `impl IndexDb` 的方法：query_json/query_json_on（GraphReads 11 处 + arch 2 处 +
+// unit_of_work 写路径重度共享）、list_communities/language_distribution（arch 调用）、
+// resolver_seed_symbols_excluding/load_seed_rows_on（seed-cache 热路径，cc-index
+// build_plan/resolve + seed_symbol_cache 直接调用）。
+impl IndexDb {
+    pub(crate) fn list_communities(&self) -> CcResult<Vec<CommunityRow>> {
+        let conn = self.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT community_id, label, member_count FROM communities ORDER BY community_id",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(CommunityRow {
+                    community_id: row.get(0)?,
+                    label: row.get(1)?,
+                    member_count: row.get(2)?,
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
+        let conn = self.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT language, COUNT(*) as cnt FROM files GROUP BY language ORDER BY cnt DESC",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, usize>(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    pub(crate) fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
+        let conn = self.read_conn()?;
+        Self::query_json_on(&conn, sql, params)
     }
 
     /// Symbols seeding the resolver's [`SymbolCatalog`]/`TypeCatalog` on
@@ -216,112 +443,6 @@ impl IndexDb {
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
-    pub(crate) fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT file_path, language, size, parser_tier, indexed_at FROM files ORDER BY file_path",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok(FileInfoRow {
-                    file_path: row.get(0)?,
-                    language: row.get(1)?,
-                    size: row.get::<_, i64>(2)? as u64,
-                    parser_tier: row.get(3)?,
-                    indexed_at: row.get(4)?,
-                })
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    pub(crate) fn list_file_paths(&self) -> CcResult<Vec<String>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare("SELECT file_path FROM files ORDER BY file_path")
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| row.get::<_, String>(0))
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    pub(crate) fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare("SELECT 1 FROM files WHERE file_path = ?1 LIMIT 1")
-            .map_err(db_err)?;
-        stmt.exists(rusqlite::params![file_path]).map_err(db_err)
-    }
-
-    pub(crate) fn list_communities(&self) -> CcResult<Vec<CommunityRow>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT community_id, label, member_count FROM communities ORDER BY community_id",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok(CommunityRow {
-                    community_id: row.get(0)?,
-                    label: row.get(1)?,
-                    member_count: row.get(2)?,
-                })
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    pub(crate) fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT framework_key, confidence FROM frameworks WHERE scope='repo' ORDER BY confidence DESC",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    pub(crate) fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT language, COUNT(*) as cnt FROM files GROUP BY language ORDER BY cnt DESC",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, usize>(1)?))
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Total row count of `table`. The table name must come from a trusted
-    /// static catalog (it is interpolated, not bound).
-    pub(crate) fn count_table_rows(&self, table: &str) -> CcResult<i64> {
-        let conn = self.read_conn()?;
-        conn.query_row(
-            &format!("SELECT COUNT(*) AS cnt FROM {}", table),
-            [],
-            |row| row.get(0),
-        )
-        .map_err(db_err)
-    }
-
-    pub(crate) fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
-        let conn = self.read_conn()?;
-        Self::query_json_on(&conn, sql, params)
-    }
-
     pub(crate) fn query_json_on(
         conn: &rusqlite::Connection,
         sql: &str,
@@ -359,99 +480,22 @@ impl IndexDb {
         }
         Ok(out)
     }
-
-    pub(crate) fn find_impacted_tests(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
-        if file_paths.is_empty() {
-            return Ok(Vec::new());
-        }
-        let conn = self.read_conn()?;
-        let placeholders: Vec<String> = (1..=file_paths.len()).map(|i| format!("?{}", i)).collect();
-        let sql = format!(
-            "SELECT DISTINCT test_file_path FROM test_edges WHERE code_file_path IN ({})",
-            placeholders.join(",")
-        );
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let params: Vec<&dyn rusqlite::types::ToSql> = file_paths
-            .iter()
-            .map(|p| p as &dyn rusqlite::types::ToSql)
-            .collect();
-        let rows = stmt
-            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
-            .map_err(db_err)?;
-        let mut tests = Vec::new();
-        for r in rows {
-            tests.push(r.map_err(db_err)?);
-        }
-        Ok(tests)
-    }
-
-    pub(crate) fn file_summary(&self, file_path: &str) -> CcResult<Value> {
-        let conn = self.read_conn()?;
-        let file_info = conn.query_row(
-            "SELECT language, size, parser_tier, summary, is_test_file FROM files WHERE file_path=?1",
-            rusqlite::params![file_path],
-            |row| {
-                let mut obj = serde_json::Map::new();
-                obj.insert("file_path".into(), Value::String(file_path.to_string()));
-                obj.insert("language".into(), Value::String(row.get::<_, String>(0)?));
-                obj.insert("size".into(), serde_json::json!(row.get::<_, i64>(1)?));
-                obj.insert("parser_tier".into(), Value::String(row.get::<_, String>(2)?));
-                obj.insert("summary".into(), Value::String(row.get::<_, String>(3).unwrap_or_default()));
-                obj.insert("is_test_file".into(), serde_json::json!(row.get::<_, i32>(4).unwrap_or(0) != 0));
-                Ok(obj)
-            },
-        ).map_err(db_err)?;
-
-        let mut obj = file_info;
-
-        let symbol_count: i64 = conn
-            .query_row(
-                "SELECT COUNT(*) FROM symbols WHERE file_path=?1",
-                rusqlite::params![file_path],
-                |row| row.get(0),
-            )
-            .unwrap_or(0);
-        obj.insert("symbols_count".into(), serde_json::json!(symbol_count));
-
-        let chunk_count: i64 = conn
-            .query_row(
-                "SELECT COUNT(*) FROM chunks WHERE file_path=?1",
-                rusqlite::params![file_path],
-                |row| row.get(0),
-            )
-            .unwrap_or(0);
-        obj.insert("chunks_count".into(), serde_json::json!(chunk_count));
-
-        let mut fw_stmt = conn.prepare(
-            "SELECT framework_key, confidence FROM frameworks WHERE scope='file' AND scope_id=?1 ORDER BY confidence DESC"
-        ).map_err(db_err)?;
-        let fw_rows = fw_stmt
-            .query_map(rusqlite::params![file_path], |row| {
-                Ok(serde_json::json!({
-                    "framework": row.get::<_, String>(0)?,
-                    "confidence": row.get::<_, f64>(1)?
-                }))
-            })
-            .map_err(db_err)?;
-        let frameworks: Vec<Value> = fw_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
-        obj.insert("frameworks".into(), Value::Array(frameworks));
-
-        Ok(Value::Object(obj))
-    }
 }
 
-// Read-only facet delegates (see `IndexDb::reads()`).
+// Read-only facet delegates (see `IndexDb::reads()`). capability boundary 保留：
+// 自包含查询委托到 QueryReads 真模块；query_json/list_communities/language_distribution/
+// resolver_seed_symbols_excluding（留 impl IndexDb）委托不变。
 impl ReadOps<'_> {
     pub fn find_symbol(&self, name: &str, exact: bool, top_k: usize) -> CcResult<Vec<SymbolRow>> {
-        self.0.find_symbol(name, exact, top_k)
+        self.0.query().find_symbol(name, exact, top_k)
     }
 
     pub fn file_symbols(&self, file_path: &str) -> CcResult<Vec<SymbolRow>> {
-        self.0.file_symbols(file_path)
+        self.0.query().file_symbols(file_path)
     }
 
     pub fn list_symbol_targets(&self) -> CcResult<Vec<SymbolTargetRow>> {
-        self.0.list_symbol_targets()
+        self.0.query().list_symbol_targets()
     }
 
     pub fn resolver_seed_symbols_excluding(
@@ -462,15 +506,15 @@ impl ReadOps<'_> {
     }
 
     pub fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {
-        self.0.list_indexed_files()
+        self.0.query().list_indexed_files()
     }
 
     pub fn list_file_paths(&self) -> CcResult<Vec<String>> {
-        self.0.list_file_paths()
+        self.0.query().list_file_paths()
     }
 
     pub fn file_is_indexed(&self, file_path: &str) -> CcResult<bool> {
-        self.0.file_is_indexed(file_path)
+        self.0.query().file_is_indexed(file_path)
     }
 
     pub fn list_communities(&self) -> CcResult<Vec<CommunityRow>> {
@@ -478,7 +522,7 @@ impl ReadOps<'_> {
     }
 
     pub fn list_repo_frameworks(&self) -> CcResult<Vec<(String, f64)>> {
-        self.0.list_repo_frameworks()
+        self.0.query().list_repo_frameworks()
     }
 
     pub fn language_distribution(&self) -> CcResult<Vec<(String, usize)>> {
@@ -487,7 +531,7 @@ impl ReadOps<'_> {
 
     /// Total row count of `table`. The table name must come from a trusted
     pub fn count_table_rows(&self, table: &str) -> CcResult<i64> {
-        self.0.count_table_rows(table)
+        self.0.query().count_table_rows(table)
     }
 
     pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
@@ -495,11 +539,11 @@ impl ReadOps<'_> {
     }
 
     pub fn find_impacted_tests(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
-        self.0.find_impacted_tests(file_paths)
+        self.0.query().find_impacted_tests(file_paths)
     }
 
     pub fn file_summary(&self, file_path: &str) -> CcResult<Value> {
-        self.0.file_summary(file_path)
+        self.0.query().file_summary(file_path)
     }
 }
 
@@ -531,9 +575,9 @@ mod tests {
         insert_file(&db, "src/a.rs");
         insert_file(&db, "src/b.rs");
 
-        assert_eq!(db.count_table_rows("files").unwrap(), 2);
-        assert_eq!(db.count_table_rows("chunks").unwrap(), 0);
-        assert!(db.count_table_rows("no_such_table").is_err());
+        assert_eq!(db.query().count_table_rows("files").unwrap(), 2);
+        assert_eq!(db.query().count_table_rows("chunks").unwrap(), 0);
+        assert!(db.query().count_table_rows("no_such_table").is_err());
     }
 
     /// The seed-cache refill wraps its token read + row load in an explicit
@@ -584,19 +628,19 @@ mod tests {
         }
 
         // Exact match
-        let exact = db.find_symbol("process_data", true, 10).unwrap();
+        let exact = db.query().find_symbol("process_data", true, 10).unwrap();
         assert_eq!(exact.len(), 1);
         assert_eq!(exact[0].name, "process_data");
 
         // LIKE match: "process" should match both process_data and process_request
-        let like = db.find_symbol("process", false, 10).unwrap();
+        let like = db.query().find_symbol("process", false, 10).unwrap();
         assert_eq!(like.len(), 2);
         let names: Vec<&str> = like.iter().map(|r| r.name.as_str()).collect();
         assert!(names.contains(&"process_data"));
         assert!(names.contains(&"process_request"));
 
         // Exact match for non-existent returns empty
-        let none = db.find_symbol("process", true, 10).unwrap();
+        let none = db.query().find_symbol("process", true, 10).unwrap();
         assert!(none.is_empty());
     }
 
@@ -626,7 +670,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let syms = db.file_symbols("src/lib.rs").unwrap();
+        let syms = db.query().file_symbols("src/lib.rs").unwrap();
         assert_eq!(syms.len(), 3);
         // Ordered by start_line
         assert_eq!(syms[0].name, "alpha");
@@ -699,7 +743,7 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let summary = db.file_summary("src/main.rs").unwrap();
+        let summary = db.query().file_summary("src/main.rs").unwrap();
         assert_eq!(summary["file_path"], "src/main.rs");
         assert_eq!(summary["language"], "Rust");
         assert_eq!(summary["symbols_count"], 2);

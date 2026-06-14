@@ -3225,7 +3225,10 @@ mod tests {
         }
 
         // 1. Forward: caller_fn_uid → outbound HTTP calls
-        let calls = db.http_calls_by_caller_uid("caller_fn_uid", 10).unwrap();
+        let calls = db
+            .frontier()
+            .http_calls_by_caller_uid("caller_fn_uid", 10)
+            .unwrap();
         assert_eq!(calls.len(), 1, "should find 1 outbound HTTP call");
         assert_eq!(calls[0].normalized_path.as_deref(), Some("/api/users"));
         assert_eq!(calls[0].method.as_deref(), Some("GET"));
@@ -3233,6 +3236,7 @@ mod tests {
 
         // 2. Resolve: normalized path → route handler
         let routes = db
+            .frontier()
             .route_nodes_by_normalized_path_and_method("/api/users", Some("GET"), 10)
             .unwrap();
         assert_eq!(routes.len(), 1, "should find 1 matching route node");
@@ -3245,6 +3249,7 @@ mod tests {
 
         // 3. Reverse: who calls /api/users via HTTP?
         let callers = db
+            .frontier()
             .http_callers_by_normalized_path_and_method("/api/users", Some("GET"), 10)
             .unwrap();
         assert_eq!(callers.len(), 1, "should find 1 HTTP caller");
@@ -3255,10 +3260,14 @@ mod tests {
         assert_eq!(callers[0].file_path, "src/client.ts");
 
         // 4. Negative case: non-existent path returns empty
-        let empty = db.http_calls_by_caller_uid("nonexistent_uid", 10).unwrap();
+        let empty = db
+            .frontier()
+            .http_calls_by_caller_uid("nonexistent_uid", 10)
+            .unwrap();
         assert!(empty.is_empty(), "non-existent caller should return empty");
 
         let empty_routes = db
+            .frontier()
             .route_nodes_by_normalized_path_and_method("/api/nonexistent", Some("GET"), 10)
             .unwrap();
         assert!(
@@ -3276,7 +3285,7 @@ mod tests {
             .unwrap()
             .0;
         // Query with a classic SQL injection payload — should return empty, not panic or corrupt.
-        let result = db.find_symbol("'; DROP TABLE symbols; --", true, 10);
+        let result = db.query().find_symbol("'; DROP TABLE symbols; --", true, 10);
         assert!(result.is_ok(), "injection string should not cause error");
         assert!(result.unwrap().is_empty());
     }
@@ -3287,7 +3296,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("injection_union.db"))
             .unwrap()
             .0;
-        let result = db.find_symbol("' UNION SELECT * FROM sqlite_master --", false, 10);
+        let result = db.query().find_symbol("' UNION SELECT * FROM sqlite_master --", false, 10);
         assert!(result.is_ok(), "UNION injection should not cause error");
         assert!(result.unwrap().is_empty());
     }
@@ -3298,7 +3307,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("injection_null.db"))
             .unwrap()
             .0;
-        let result = db.find_symbol("test\0evil", true, 10);
+        let result = db.query().find_symbol("test\0evil", true, 10);
         assert!(result.is_ok(), "null byte should not cause error");
         assert!(result.unwrap().is_empty());
     }
@@ -3309,7 +3318,7 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("injection_unicode.db"))
             .unwrap()
             .0;
-        let result = db.find_symbol("name\u{200B}; DROP TABLE symbols", true, 10);
+        let result = db.query().find_symbol("name\u{200B}; DROP TABLE symbols", true, 10);
         assert!(result.is_ok(), "unicode injection should not cause error");
         assert!(result.unwrap().is_empty());
     }

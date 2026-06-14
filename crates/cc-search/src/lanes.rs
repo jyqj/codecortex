@@ -525,7 +525,7 @@ impl GraphLane {
             .collect::<std::collections::HashSet<_>>()
             .into_iter()
             .collect();
-        let chunks_by_file = db.reads().chunk_spans_for_files(&candidate_files)?;
+        let chunks_by_file = db.retrieval().chunk_spans_for_files(&candidate_files)?;
 
         let mut best_per_chunk: HashMap<String, f64> = HashMap::new();
         for (file, start, end, score) in candidates {
@@ -579,7 +579,7 @@ fn find_seed_symbol_uids(
                 }
             };
             let uids = db
-                .reads()
+                .retrieval()
                 .symbol_uids_by_exact_names(&[token.as_str(), capitalized.as_str()], 10)?;
             for uid in uids {
                 results
@@ -592,7 +592,7 @@ fn find_seed_symbol_uids(
         // Use trigram-accelerated LIKE via symbols_fts; surface exact name
         // matches first so the 10-row cap doesn't crowd them out with
         // arbitrary substring hits.
-        for (uid, name) in db.reads().symbol_seed_hits(token, 10)? {
+        for (uid, name) in db.retrieval().symbol_seed_hits(token, 10)? {
             // Score: exact match > contains
             let relevance = if name.to_lowercase() == *token {
                 ranking.graph_seed_exact_score

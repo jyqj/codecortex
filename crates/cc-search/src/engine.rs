@@ -550,7 +550,7 @@ impl SearchEngine {
                 candidates.iter().map(|(cid, _)| cid.as_str()).collect();
             let rows = self
                 .db
-                .reads()
+                .retrieval()
                 .chunk_rows_by_ids(&chunk_ids_refs, &cached_texts)?;
             let mut map = HashMap::with_capacity(candidates.len());
             for data in rows {

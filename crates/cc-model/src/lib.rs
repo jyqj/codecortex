@@ -23,6 +23,7 @@ pub mod type_assign;
 pub use config::ProjectConfig;
 pub use error::{CcError, CcResult};
 
+pub use build_explain::{BuildExplain, BuildExplainCollector, GateDecisionRecord};
 pub use chunk::ChunkRecord;
 pub use context::{ContextEnvelope, ContextNode, ContextSpan, NodeType, Role};
 pub use diagnostic::{DiagnosticRecord, LiteralRecord};
@@ -33,7 +34,6 @@ pub use edge::{
     SemanticRelation, TestEdgeRecord,
 };
 pub use graph_explain::{GraphExplain, GraphExplainCollector};
-pub use build_explain::{BuildExplain, BuildExplainCollector, GateDecisionRecord};
 pub use id::StableId;
 pub use impact::{
     CrossServiceImpact, HistoricalImpact, ImpactReport, ImpactedSymbol, RiskLevel, RiskSummary,

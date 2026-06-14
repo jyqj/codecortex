@@ -121,7 +121,10 @@ mod tests {
     fn empty_envelope_serializes_to_empty_object() {
         let explain = BuildExplain::default();
         assert!(explain.is_empty());
-        assert_eq!(serde_json::to_value(&explain).unwrap(), serde_json::json!({}));
+        assert_eq!(
+            serde_json::to_value(&explain).unwrap(),
+            serde_json::json!({})
+        );
     }
 
     #[test]
@@ -147,7 +150,10 @@ mod tests {
         let value = serde_json::to_value(&explain).unwrap();
         assert_eq!(value["gate_decisions"][0]["run"], true);
         assert_eq!(value["gate_decisions"][1]["reason"], "cache key unchanged");
-        assert_eq!(value["degraded"], serde_json::json!(["community_edge_cap_exceeded"]));
+        assert_eq!(
+            value["degraded"],
+            serde_json::json!(["community_edge_cap_exceeded"])
+        );
 
         let roundtrip: BuildExplain = serde_json::from_value(value).unwrap();
         assert_eq!(roundtrip, explain);

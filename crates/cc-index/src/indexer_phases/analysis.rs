@@ -110,11 +110,7 @@ impl Indexer {
         );
         let infra_decision = infra_gate.should_run()?;
         log_gate_decision(&infra_gate, infra_decision);
-        build_explain.record_gate(
-            infra_gate.id(),
-            infra_decision.run,
-            infra_decision.reason,
-        );
+        build_explain.record_gate(infra_gate.id(), infra_decision.run, infra_decision.reason);
         let infra = if infra_decision.run {
             let (mut infra_nodes, mut infra_edges) = time_step("analysis", "infra_scan", || {
                 crate::infra_pass::run_infra_pass(project_path)

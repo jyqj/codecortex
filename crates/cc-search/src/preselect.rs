@@ -296,17 +296,18 @@ impl PreselectLayer for FtsSummaryLayer {
         } else {
             80 + (ctx.limit.saturating_sub(120)) / 3
         };
-        let rows = match ctx
-            .db
-            .reads()
-            .fts_file_summaries(&fts_query, ctx.path_prefix, fts_limit)
-        {
-            Ok(rows) => rows,
-            Err(e) => {
-                tracing::warn!("preselect: FTS summary query failed: {}", e);
-                return Ok(Vec::new());
-            }
-        };
+        let rows =
+            match ctx
+                .db
+                .retrieval()
+                .fts_file_summaries(&fts_query, ctx.path_prefix, fts_limit)
+            {
+                Ok(rows) => rows,
+                Err(e) => {
+                    tracing::warn!("preselect: FTS summary query failed: {}", e);
+                    return Ok(Vec::new());
+                }
+            };
 
         Ok(rows
             .into_iter()
@@ -351,7 +352,7 @@ impl PreselectLayer for TokenSearchLayer {
         // 6a. Path token match (one batched query pass for all tokens)
         match ctx
             .db
-            .reads()
+            .retrieval()
             .path_token_file_hits_many(&candidate_tokens, ctx.path_prefix, 20)
         {
             Ok(per_token) => {
@@ -371,7 +372,7 @@ impl PreselectLayer for TokenSearchLayer {
         // 6b. Symbol name match (one batched query pass for all tokens)
         match ctx
             .db
-            .reads()
+            .retrieval()
             .symbol_token_hits_many(&candidate_tokens, ctx.path_prefix, 24)
         {
             Ok(per_token) => {
@@ -416,7 +417,7 @@ impl PreselectLayer for FallbackLayer {
         if !ctx.current_scores.is_empty() {
             return Ok(Vec::new());
         }
-        let file_paths = match ctx.db.reads().recent_indexed_files(ctx.limit) {
+        let file_paths = match ctx.db.retrieval().recent_indexed_files(ctx.limit) {
             Ok(rows) => rows,
             Err(e) => {
                 tracing::warn!("preselect: fallback query failed: {}", e);

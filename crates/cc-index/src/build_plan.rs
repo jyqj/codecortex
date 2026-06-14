@@ -809,8 +809,14 @@ class Accumulator:
         // BuildExplain carries the postprocess/analysis gate decisions — a
         // first build has no recorded signatures, so every gate runs and the
         // envelope must be non-empty, and the two paths must agree.
-        let be_a = report_a.build_explain.as_ref().expect("bundled build_explain");
-        let be_b = report_b.build_explain.as_ref().expect("staged build_explain");
+        let be_a = report_a
+            .build_explain
+            .as_ref()
+            .expect("bundled build_explain");
+        let be_b = report_b
+            .build_explain
+            .as_ref()
+            .expect("staged build_explain");
         assert!(
             !be_a.gate_decisions.is_empty(),
             "first build records gate decisions"

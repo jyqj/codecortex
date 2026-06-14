@@ -1,25 +1,63 @@
-//! IndexDb methods: retrieval queries used by cc-search (preselect + engine).
+//! Retrieval read model: the raw-SQL retrieval queries (FTS5 bm25 file
+//! summaries, trigram path/symbol token hits, chunk batch fetches, symbol
+//! seed/uid lookups) consumed by cc-search's preselect layer and graph lane.
 //!
-//! These methods absorb the discrete raw-SQL sites that previously lived in
-//! cc-search, so FTS5 table names (`files_fts`, `file_paths_fts`,
-//! `symbols_fts`), bm25 scoring, and LIKE patterns stay behind the cc-db
-//! seam. SQL shape, ordering, and limits follow the original call sites,
-//! with two fixes on top: LIKE metacharacters in user-derived tokens and
-//! path prefixes are escaped (`ESCAPE '\'`), and the `symbols_fts`
-//! path-prefix filter actually filters instead of returning zero rows.
+//! SQL is owned here directly — not forwarded through `impl IndexDb` — so
+//! `IndexDb`'s method surface stays focused on writes/maintenance and
+//! [`RetrievalReadModel`] is a deep read model over a single pooled
+//! connection. The borrow is zero-cost; obtained via [`IndexDb::retrieval()`]
+//! (mirrors the `reads()`/`writes()`/`admin()` facets, but the SQL lives in
+//! the model itself rather than in an `IndexDb` delegate — the shape the
+//! sibling `GraphReads` is being brought to).
+//!
+//! These methods absorb the raw-SQL sites that previously lived in cc-search,
+//! so FTS5 table names (`files_fts`, `file_paths_fts`, `symbols_fts`), bm25
+//! scoring, and LIKE patterns stay behind the cc-db seam. SQL shape, ordering,
+//! and limits follow the original call sites, with two fixes on top: LIKE
+//! metacharacters in user-derived tokens and path prefixes are escaped
+//! (`ESCAPE '\'`), and the `symbols_fts` path-prefix filter actually filters
+//! instead of returning zero rows.
 
 use std::collections::HashMap;
 use std::sync::Arc;
 
 use cc_model::{CcError, CcResult};
 
-use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb, ReadOps};
+use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb};
 use crate::sql_util::{escape_like, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// `(chunk_id, start_line, end_line)` spans grouped by file path.
 pub type ChunkSpansByFile = HashMap<String, Vec<(String, u32, u32)>>;
 
+/// Deep retrieval read model over [`IndexDb`]: owns the raw-SQL retrieval
+/// queries (FTS5 bm25 file summaries, trigram path/symbol token hits, chunk
+/// batch fetches, symbol seed/uid lookups) that cc-search's preselect layer
+/// and graph lane consume. A zero-cost borrow obtained via
+/// [`IndexDb::retrieval()`].
+///
+/// Kept distinct from the catch-all [`ReadOps`](crate::index_db::ReadOps)
+/// facet so cc-search states "retrieval" intent at the call site and the
+/// retrieval SQL has a single home, instead of being one more block on the
+/// 130+-method `impl IndexDb`.
+pub struct RetrievalReadModel<'a> {
+    db: &'a IndexDb,
+}
+
 impl IndexDb {
+    /// Retrieval read model: FTS5/trigram retrieval queries (file summaries,
+    /// path/symbol token hits, chunk fetches, symbol seed/uid lookups) used by
+    /// cc-search. See [`RetrievalReadModel`].
+    pub fn retrieval(&self) -> RetrievalReadModel<'_> {
+        RetrievalReadModel::new(self)
+    }
+}
+
+impl<'a> RetrievalReadModel<'a> {
+    /// Borrow `db` for retrieval queries (mirrors `GraphReads::new`).
+    pub fn new(db: &'a IndexDb) -> Self {
+        Self { db }
+    }
+
     /// FTS file-summary search on `files_fts` with bm25 scoring.
     ///
     /// Returns `(file_path, raw bm25 score)` ordered by score ascending
@@ -28,13 +66,13 @@ impl IndexDb {
     /// Sanitization is the caller's responsibility: `sanitized_query` must
     /// already be a valid FTS5 MATCH expression (see `fts::sanitize_fts_query`),
     /// and callers should skip the call entirely for empty/`""` queries.
-    pub(crate) fn fts_file_summaries(
+    pub fn fts_file_summaries(
         &self,
         sanitized_query: &str,
         path_prefix: Option<&str>,
         limit: usize,
     ) -> CcResult<Vec<(String, f64)>> {
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let (sql, params_vec): (&str, Vec<Box<dyn rusqlite::types::ToSql>>) =
             if let Some(prefix) = path_prefix {
                 (
@@ -90,7 +128,7 @@ impl IndexDb {
     /// SQLite from handing the LIKE constraints to the FTS5 trigram LIKE
     /// optimization, so these queries scan `file_paths_fts` and post-filter
     /// (correct, but no trigram acceleration).
-    pub(crate) fn path_token_file_hits_many(
+    pub fn path_token_file_hits_many(
         &self,
         tokens: &[&str],
         path_prefix: Option<&str>,
@@ -99,7 +137,7 @@ impl IndexDb {
         if tokens.is_empty() {
             return Ok(Vec::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut results = Vec::with_capacity(tokens.len());
         for token in tokens {
             let like_token = format!("%{}%", escape_like(token));
@@ -166,7 +204,7 @@ impl IndexDb {
     /// from routing that LIKE constraint into the FTS5 trigram LIKE
     /// optimization, which cannot serve UNINDEXED columns and used to yield
     /// zero rows; instead it is evaluated as an ordinary post-filter.
-    pub(crate) fn symbol_token_hits_many(
+    pub fn symbol_token_hits_many(
         &self,
         tokens: &[&str],
         path_prefix: Option<&str>,
@@ -175,7 +213,7 @@ impl IndexDb {
         if tokens.is_empty() {
             return Ok(Vec::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut results = Vec::with_capacity(tokens.len());
         for token in tokens {
             let like_token = format!("%{}%", escape_like(token));
@@ -230,8 +268,8 @@ impl IndexDb {
     }
 
     /// Most recently indexed file paths (`files` ordered by `indexed_at` DESC).
-    pub(crate) fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
-        let conn = self.read_conn()?;
+    pub fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
+        let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
             .map_err(|e| CcError::Database(e.to_string()))?;
@@ -251,7 +289,7 @@ impl IndexDb {
     /// `cached_texts` lets callers supply already-decoded text per chunk id
     /// (e.g. from a decompression cache); for those rows the stored text
     /// column is not decoded again. Row order is unspecified (DB order).
-    pub(crate) fn chunk_rows_by_ids(
+    pub fn chunk_rows_by_ids(
         &self,
         chunk_ids: &[&str],
         cached_texts: &HashMap<String, Arc<str>>,
@@ -259,7 +297,7 @@ impl IndexDb {
         if chunk_ids.is_empty() {
             return Ok(Vec::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         let mut results = Vec::with_capacity(chunk_ids.len());
         for batch in chunk_ids.chunks(IN_BATCH_SIZE) {
             let sql = format!(
@@ -307,12 +345,8 @@ impl IndexDb {
     /// excluded. LIKE metacharacters (`%`, `_`, `\`) in `token` are escaped
     /// so they match literally (the `ESCAPE` clause trades the trigram LIKE
     /// acceleration for a scan-and-filter plan).
-    pub(crate) fn symbol_seed_hits(
-        &self,
-        token: &str,
-        limit: usize,
-    ) -> CcResult<Vec<(String, String)>> {
-        let conn = self.read_conn()?;
+    pub fn symbol_seed_hits(&self, token: &str, limit: usize) -> CcResult<Vec<(String, String)>> {
+        let conn = self.db.read_conn()?;
         let like_pattern = format!("%{}%", escape_like(token));
         let mut stmt = conn
             .prepare_cached(
@@ -337,7 +371,7 @@ impl IndexDb {
 
     /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
     /// index-served via `idx_symbols_name`). NULL-uid symbols are excluded.
-    pub(crate) fn symbol_uids_by_exact_names(
+    pub fn symbol_uids_by_exact_names(
         &self,
         names: &[&str],
         limit: usize,
@@ -345,7 +379,7 @@ impl IndexDb {
         if names.is_empty() {
             return Ok(Vec::new());
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         // sql_in_placeholders yields numbered ?1..?N, so the trailing LIMIT
         // bind keeps its explicit ?(N+1) index.
         let sql = format!(
@@ -375,12 +409,12 @@ impl IndexDb {
     /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
     /// keyed by file path. Queried in [`IN_BATCH_SIZE`]-sized `IN (...)`
     /// batches.
-    pub(crate) fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
+    pub fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
         let mut by_file: ChunkSpansByFile = HashMap::new();
         if file_paths.is_empty() {
             return Ok(by_file);
         }
-        let conn = self.read_conn()?;
+        let conn = self.db.read_conn()?;
         for batch in file_paths.chunks(IN_BATCH_SIZE) {
             let sql = format!(
                 "SELECT file_path, chunk_id, start_line, end_line \
@@ -414,75 +448,6 @@ impl IndexDb {
             }
         }
         Ok(by_file)
-    }
-}
-
-// Read-only facet delegates (see `IndexDb::reads()`).
-impl ReadOps<'_> {
-    /// FTS file-summary search on `files_fts` with bm25 scoring.
-    pub fn fts_file_summaries(
-        &self,
-        sanitized_query: &str,
-        path_prefix: Option<&str>,
-        limit: usize,
-    ) -> CcResult<Vec<(String, f64)>> {
-        self.0
-            .fts_file_summaries(sanitized_query, path_prefix, limit)
-    }
-
-    /// Path-token substring match via the trigram `file_paths_fts` mirror,
-    pub fn path_token_file_hits_many(
-        &self,
-        tokens: &[&str],
-        path_prefix: Option<&str>,
-        per_token_limit: usize,
-    ) -> CcResult<Vec<Vec<String>>> {
-        self.0
-            .path_token_file_hits_many(tokens, path_prefix, per_token_limit)
-    }
-
-    /// Symbol-name substring match via the trigram `symbols_fts` mirror,
-    pub fn symbol_token_hits_many(
-        &self,
-        tokens: &[&str],
-        path_prefix: Option<&str>,
-        per_token_limit: usize,
-    ) -> CcResult<Vec<Vec<(String, String)>>> {
-        self.0
-            .symbol_token_hits_many(tokens, path_prefix, per_token_limit)
-    }
-
-    /// Most recently indexed file paths (`files` ordered by `indexed_at` DESC).
-    pub fn recent_indexed_files(&self, limit: usize) -> CcResult<Vec<String>> {
-        self.0.recent_indexed_files(limit)
-    }
-
-    /// Batch-fetch full chunk rows by chunk id, queried in
-    pub fn chunk_rows_by_ids(
-        &self,
-        chunk_ids: &[&str],
-        cached_texts: &HashMap<String, Arc<str>>,
-    ) -> CcResult<Vec<ChunkDetailRow>> {
-        self.0.chunk_rows_by_ids(chunk_ids, cached_texts)
-    }
-
-    /// Graph-lane seed lookup: `(symbol_uid, name)` pairs whose name contains
-    pub fn symbol_seed_hits(&self, token: &str, limit: usize) -> CcResult<Vec<(String, String)>> {
-        self.0.symbol_seed_hits(token, limit)
-    }
-
-    /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
-    pub fn symbol_uids_by_exact_names(
-        &self,
-        names: &[&str],
-        limit: usize,
-    ) -> CcResult<Vec<String>> {
-        self.0.symbol_uids_by_exact_names(names, limit)
-    }
-
-    /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
-    pub fn chunk_spans_for_files(&self, file_paths: &[&str]) -> CcResult<ChunkSpansByFile> {
-        self.0.chunk_spans_for_files(file_paths)
     }
 }
 
@@ -570,7 +535,10 @@ mod tests {
         insert_file_with_summary(&db, "src/b.rs", "alpha filler filler filler");
         insert_file_with_summary(&db, "lib/c.rs", "alpha alpha alpha alpha");
 
-        let hits = db.fts_file_summaries("alpha", None, 10).unwrap();
+        let hits = db
+            .retrieval()
+            .fts_file_summaries("alpha", None, 10)
+            .unwrap();
         assert_eq!(
             hits.len(),
             3,
@@ -600,11 +568,14 @@ mod tests {
         insert_file_with_summary(&db, "src/a.rs", "alpha alpha");
         insert_file_with_summary(&db, "lib/c.rs", "alpha alpha");
 
-        let hits = db.fts_file_summaries("alpha", Some("src/"), 10).unwrap();
+        let hits = db
+            .retrieval()
+            .fts_file_summaries("alpha", Some("src/"), 10)
+            .unwrap();
         assert_eq!(hits.len(), 1);
         assert_eq!(hits[0].0, "src/a.rs");
 
-        let limited = db.fts_file_summaries("alpha", None, 1).unwrap();
+        let limited = db.retrieval().fts_file_summaries("alpha", None, 1).unwrap();
         assert_eq!(limited.len(), 1);
     }
 
@@ -612,7 +583,10 @@ mod tests {
     fn fts_file_summaries_empty_for_no_match() {
         let (db, _tmp) = setup();
         insert_file_with_summary(&db, "src/a.rs", "alpha");
-        let hits = db.fts_file_summaries("zzznonexistent", None, 10).unwrap();
+        let hits = db
+            .retrieval()
+            .fts_file_summaries("zzznonexistent", None, 10)
+            .unwrap();
         assert!(hits.is_empty());
     }
 
@@ -629,6 +603,7 @@ mod tests {
         // One result list per input token, in input order; each list keeps
         // the single-token semantics (substring LIKE, file_path ASC).
         let hits = db
+            .retrieval()
             .path_token_file_hits_many(&["widget", "store", "zzznope"], None, 20)
             .unwrap();
         assert_eq!(hits.len(), 3, "one entry per token");
@@ -651,14 +626,21 @@ mod tests {
         assert!(hits[2].is_empty(), "unmatched token yields an empty list");
 
         let prefixed = db
+            .retrieval()
             .path_token_file_hits_many(&["widget"], Some("vendor/"), 20)
             .unwrap();
         assert_eq!(prefixed, vec![vec!["vendor/widget.rs".to_string()]]);
 
-        let limited = db.path_token_file_hits_many(&["widget"], None, 1).unwrap();
+        let limited = db
+            .retrieval()
+            .path_token_file_hits_many(&["widget"], None, 1)
+            .unwrap();
         assert_eq!(limited[0].len(), 1, "per-token limit applies");
 
-        let empty = db.path_token_file_hits_many(&[], None, 20).unwrap();
+        let empty = db
+            .retrieval()
+            .path_token_file_hits_many(&[], None, 20)
+            .unwrap();
         assert!(empty.is_empty());
     }
 
@@ -675,6 +657,7 @@ mod tests {
         insert_symbol(&db, "s3", "src/b.rs", "createOrder", Some("uid:co"));
 
         let hits = db
+            .retrieval()
             .symbol_token_hits_many(&["user", "order"], None, 24)
             .unwrap();
         assert_eq!(hits.len(), 2, "one entry per token");
@@ -696,6 +679,7 @@ mod tests {
         // defect: SQLite routed the UNINDEXED `file_path` LIKE constraint into
         // the FTS5 trigram LIKE optimization, yielding zero rows).
         let prefixed = db
+            .retrieval()
             .symbol_token_hits_many(&["user"], Some("src/a"), 24)
             .unwrap();
         assert_eq!(
@@ -704,7 +688,10 @@ mod tests {
             "prefixed query must return the in-prefix substring hit"
         );
 
-        let empty = db.symbol_token_hits_many(&[], None, 24).unwrap();
+        let empty = db
+            .retrieval()
+            .symbol_token_hits_many(&[], None, 24)
+            .unwrap();
         assert!(empty.is_empty());
     }
 
@@ -722,6 +709,7 @@ mod tests {
         // exact-name matches first, then file_path ascending — and the
         // out-of-prefix exact match must be excluded.
         let hits = db
+            .retrieval()
             .symbol_token_hits_many(&["user"], Some("src/p/"), 24)
             .unwrap();
         assert_eq!(
@@ -744,7 +732,10 @@ mod tests {
         insert_symbol(&db, "s1", "src/a.rs", "read_conn", Some("uid:rc"));
         insert_symbol(&db, "s2", "src/b.rs", "readxconn", Some("uid:rx"));
 
-        let hits = db.symbol_token_hits_many(&["read_conn"], None, 24).unwrap();
+        let hits = db
+            .retrieval()
+            .symbol_token_hits_many(&["read_conn"], None, 24)
+            .unwrap();
         assert_eq!(
             hits[0],
             vec![("src/a.rs".to_string(), "read_conn".to_string())],
@@ -761,6 +752,7 @@ mod tests {
         insert_file(&db, "myxapp/conn.rs", "2024-01-01");
 
         let token_hits = db
+            .retrieval()
             .path_token_file_hits_many(&["read_conn"], None, 20)
             .unwrap();
         assert_eq!(
@@ -770,6 +762,7 @@ mod tests {
         );
 
         let prefixed = db
+            .retrieval()
             .path_token_file_hits_many(&["conn"], Some("my_app/"), 20)
             .unwrap();
         assert_eq!(
@@ -785,7 +778,10 @@ mod tests {
         insert_file_with_summary(&db, "my_app/a.rs", "alpha alpha");
         insert_file_with_summary(&db, "myxapp/b.rs", "alpha alpha");
 
-        let hits = db.fts_file_summaries("alpha", Some("my_app/"), 10).unwrap();
+        let hits = db
+            .retrieval()
+            .fts_file_summaries("alpha", Some("my_app/"), 10)
+            .unwrap();
         assert_eq!(hits.len(), 1, "prefix 'my_app/' must not match 'myxapp/'");
         assert_eq!(hits[0].0, "my_app/a.rs");
     }
@@ -798,7 +794,7 @@ mod tests {
         insert_symbol(&db, "s1", "src/a.rs", "read_conn", Some("uid:rc"));
         insert_symbol(&db, "s2", "src/b.rs", "readxconn", Some("uid:rx"));
 
-        let hits = db.symbol_seed_hits("read_conn", 10).unwrap();
+        let hits = db.retrieval().symbol_seed_hits("read_conn", 10).unwrap();
         assert_eq!(
             hits,
             vec![("uid:rc".to_string(), "read_conn".to_string())],
@@ -815,7 +811,7 @@ mod tests {
         insert_file(&db, "src/newest.rs", "2024-03-01T00:00:00Z");
         insert_file(&db, "src/mid.rs", "2024-02-01T00:00:00Z");
 
-        let files = db.recent_indexed_files(2).unwrap();
+        let files = db.retrieval().recent_indexed_files(2).unwrap();
         assert_eq!(
             files,
             vec!["src/newest.rs".to_string(), "src/mid.rs".to_string()]
@@ -833,7 +829,10 @@ mod tests {
         insert_chunk(&db, "ch3", "src/a.rs", 11, 15, "fn gamma() {}");
 
         let no_cache: HashMap<String, Arc<str>> = HashMap::new();
-        let rows = db.chunk_rows_by_ids(&["ch1", "ch3"], &no_cache).unwrap();
+        let rows = db
+            .retrieval()
+            .chunk_rows_by_ids(&["ch1", "ch3"], &no_cache)
+            .unwrap();
         assert_eq!(rows.len(), 2);
         let by_id: HashMap<&str, &str> = rows
             .iter()
@@ -858,7 +857,10 @@ mod tests {
 
         let mut cached: HashMap<String, Arc<str>> = HashMap::new();
         cached.insert("ch1".to_string(), Arc::from("CACHED TEXT"));
-        let rows = db.chunk_rows_by_ids(&["ch1", "ch2"], &cached).unwrap();
+        let rows = db
+            .retrieval()
+            .chunk_rows_by_ids(&["ch1", "ch2"], &cached)
+            .unwrap();
         let by_id: HashMap<&str, &str> = rows
             .iter()
             .map(|r| (r.chunk_id.as_str(), r.text.as_str()))
@@ -891,7 +893,10 @@ mod tests {
         let id_refs: Vec<&str> = ids.iter().map(|s| s.as_str()).collect();
 
         let no_cache: HashMap<String, Arc<str>> = HashMap::new();
-        let rows = db.chunk_rows_by_ids(&id_refs, &no_cache).unwrap();
+        let rows = db
+            .retrieval()
+            .chunk_rows_by_ids(&id_refs, &no_cache)
+            .unwrap();
         assert_eq!(rows.len(), total, "all ids across batches must be fetched");
         let last = rows
             .iter()
@@ -904,7 +909,7 @@ mod tests {
     fn chunk_rows_by_ids_empty_input() {
         let (db, _tmp) = setup();
         let no_cache: HashMap<String, Arc<str>> = HashMap::new();
-        let rows = db.chunk_rows_by_ids(&[], &no_cache).unwrap();
+        let rows = db.retrieval().chunk_rows_by_ids(&[], &no_cache).unwrap();
         assert!(rows.is_empty());
     }
 
@@ -920,7 +925,7 @@ mod tests {
         insert_symbol(&db, "s2", "src/b.rs", "getUserById", Some("uid:guid"));
         insert_symbol(&db, "s3", "src/c.rs", "userx", None);
 
-        let hits = db.symbol_seed_hits("user", 10).unwrap();
+        let hits = db.retrieval().symbol_seed_hits("user", 10).unwrap();
         assert_eq!(
             hits,
             vec![
@@ -943,7 +948,7 @@ mod tests {
         // mixed-case token must still rank the exact symbol first.  The SQL
         // compares lower(name) against lower(?2); binding the raw token left
         // the flag permanently false for mixed-case input.
-        let hits = db.symbol_seed_hits("User", 10).unwrap();
+        let hits = db.retrieval().symbol_seed_hits("User", 10).unwrap();
         assert_eq!(
             hits,
             vec![
@@ -968,11 +973,14 @@ mod tests {
         insert_symbol(&db, "s3", "src/c.rs", "door", Some("uid:door"));
         insert_symbol(&db, "s4", "src/d.rs", "do", None);
 
-        let mut uids = db.symbol_uids_by_exact_names(&["do", "Do"], 10).unwrap();
+        let mut uids = db
+            .retrieval()
+            .symbol_uids_by_exact_names(&["do", "Do"], 10)
+            .unwrap();
         uids.sort();
         assert_eq!(uids, vec!["uid:Do".to_string(), "uid:do".to_string()]);
 
-        let empty = db.symbol_uids_by_exact_names(&[], 10).unwrap();
+        let empty = db.retrieval().symbol_uids_by_exact_names(&[], 10).unwrap();
         assert!(empty.is_empty());
     }
 
@@ -988,13 +996,14 @@ mod tests {
         insert_chunk(&db, "ch3", "src/b.rs", 1, 3, "z");
 
         let spans = db
+            .retrieval()
             .chunk_spans_for_files(&["src/a.rs", "src/b.rs", "src/missing.rs"])
             .unwrap();
         assert_eq!(spans.len(), 2);
         assert_eq!(spans["src/a.rs"].len(), 2);
         assert_eq!(spans["src/b.rs"], vec![("ch3".to_string(), 1u32, 3u32)]);
 
-        let empty = db.chunk_spans_for_files(&[]).unwrap();
+        let empty = db.retrieval().chunk_spans_for_files(&[]).unwrap();
         assert!(empty.is_empty());
     }
 }

@@ -45,7 +45,9 @@
 
 | 视图 | 入口 | 内容 |
 |---|---|---|
-| `ReadOps` | `.reads()` | 全部查询：符号/文件/图/检索读取、`generation`、`stats`、`get_metadata`、`get_file_state`、`read_conn`。多符号邻接读取有批量变体（`caller_rows_by_uids` / `callee_rows_by_uids` / `symbol_degree_details_batch`）——cc-search 的图消费方（enrichment、preselect、graph lane）全部走批量接口，一次搜索的图富化只发 3 条查询，而不是每个符号 3 条 |
+| `ReadOps` | `.reads()` | 查询：符号/文件/图读取、`generation`、`stats`、`get_metadata`、`get_file_state`、`read_conn`。多符号邻接读取有批量变体（`caller_rows_by_uids` / `callee_rows_by_uids` / `symbol_degree_details_batch`）——cc-search 的图消费方（enrichment、preselect、graph lane）全部走批量接口，一次搜索的图富化只发 3 条查询，而不是每个符号 3 条 |
+| `RetrievalReadModel` | `.retrieval()` | FTS5/trigram **检索**查询（file-summary bm25、path/symbol token 批量命中、chunk 批量取、symbol seed/uid 查找）——cc-search 的 preselect 与 graph lane 消费。SQL 直接拥有在 `impl RetrievalReadModel`，不经 `impl IndexDb` 转发 |
+| `GraphReads` | `.graph_reads()` / `GraphReads::new` | 任务形态的**图读**查询（邻接/impact/dead-code、imports/communities、HTTP/async 桥、infra 绑定）——cc-server 的 graph/impact/exploration 工具消费。15 个核心 SQL 直接拥有在 `impl GraphReads`（`self.db.read_conn` / `self.db.query_json`），不经 `impl IndexDb` 转发；另有 8 个仍借用 `IndexDb` 通用方法（`call_uid_edges_lite` 等在 `index_db_graph.rs`）。`ReadOps` 的图读 delegate 改转发到 `.graph_reads()`，保留通用读入口 |
 | `WriteOps` | `.writes()` | 所有推进 epoch 的变更：批量写、边/证据写入、`set_metadata`、`begin_unit_of_work`。这是写方法的唯一公开路径（编译期写隔离） |
 | `MaintenanceOps` | `.admin()` | 重建协议（`rebuild_with_temp_db` / `rebuild_with_direct_writer`）、`checkpoint_wal*`、`instance_id` |
 

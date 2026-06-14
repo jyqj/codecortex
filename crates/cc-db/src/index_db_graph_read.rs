@@ -34,511 +34,11 @@ fn community_value_to_string(value: rusqlite::types::Value) -> Option<String> {
 }
 
 impl IndexDb {
-    /// Distinct `(file_path, resolved_path)` import pairs with a resolved
-    /// target. Feeds file/package import adjacency projections.
-    pub(crate) fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT DISTINCT file_path, resolved_path FROM imports WHERE resolved_path IS NOT NULL",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Resolved import rows originating from `file_path`, with the original
-    /// import string (used to report cycle witness edges).
-    pub(crate) fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare_cached(
-                "SELECT resolved_path, import_string FROM imports WHERE file_path = ?1 AND resolved_path IS NOT NULL",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params![file_path], |row| {
-                Ok(ImportWitnessRow {
-                    resolved_path: row.get::<_, String>(0)?,
-                    import_string: row.get::<_, Option<String>>(1)?,
-                })
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Distinct cross-community call pairs `(from_community, to_community)`
-    /// as strings, from call edges whose endpoints live in different
-    /// communities.
-    pub(crate) fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT DISTINCT s1.community_id AS from_community, s2.community_id AS to_community \
-                 FROM call_edges ce \
-                 JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
-                 JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
-                 WHERE s1.community_id IS NOT NULL \
-                   AND s2.community_id IS NOT NULL \
-                   AND s1.community_id != s2.community_id",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| {
-                Ok((
-                    row.get::<_, rusqlite::types::Value>(0)?,
-                    row.get::<_, rusqlite::types::Value>(1)?,
-                ))
-            })
-            .map_err(db_err)?;
-        let mut pairs = Vec::new();
-        for row in rows {
-            let (from_value, to_value) = row.map_err(db_err)?;
-            if let (Some(from), Some(to)) = (
-                community_value_to_string(from_value),
-                community_value_to_string(to_value),
-            ) {
-                pairs.push((from, to));
-            }
-        }
-        Ok(pairs)
-    }
-
-    /// Symbols (with stable UID) living in any of `files`, in file order.
-    pub(crate) fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare_cached(
-                "SELECT symbol_uid, name, file_path, kind, community_id \
-                 FROM symbols WHERE file_path=?1 AND symbol_uid IS NOT NULL",
-            )
-            .map_err(db_err)?;
-        let mut symbols = Vec::new();
-        for file in files {
-            let rows = stmt
-                .query_map(rusqlite::params![file], crate::rows::symbol_lite)
-                .map_err(db_err)?;
-            for row in rows {
-                symbols.push(row.map_err(db_err)?);
-            }
-        }
-        Ok(symbols)
-    }
-
-    /// Distinct callers of any of `callee_uids`, optionally filtered by
-    /// `parser_confidence >= confidence_threshold` and capped with `limit`.
-    ///
-    /// UIDs are batched into IN(...) chunks; the limit applies per batch
-    /// (preserved from the original impact BFS pushdown behavior).
-    pub(crate) fn reverse_callers(
-        &self,
-        callee_uids: &[String],
-        confidence_threshold: Option<f64>,
-        limit: Option<usize>,
-    ) -> CcResult<Vec<SymbolLiteRow>> {
-        let conn = self.read_conn()?;
-        let mut callers = Vec::new();
-
-        for batch in callee_uids.chunks(IN_BATCH_SIZE) {
-            if batch.is_empty() {
-                continue;
-            }
-
-            let placeholders = sql_in_placeholders(batch.len());
-            // Parameter slots after the IN(...) uids: optional confidence
-            // threshold, then optional LIMIT, in that bind order.
-            let mut next_param = batch.len() + 1;
-            let conf_clause = if confidence_threshold.is_some() {
-                let clause = format!("AND ce.parser_confidence >= ?{}", next_param);
-                next_param += 1;
-                clause
-            } else {
-                String::new()
-            };
-            let limit_clause = if limit.is_some() {
-                format!("LIMIT ?{}", next_param)
-            } else {
-                String::new()
-            };
-            let sql = format!(
-                "SELECT DISTINCT ce.caller_symbol_uid, s.name, s.file_path, s.kind, s.community_id \
-                 FROM call_edges ce \
-                 JOIN symbols s ON s.symbol_uid = ce.caller_symbol_uid \
-                 WHERE ce.callee_symbol_uid IN ({}) \
-                 AND ce.caller_symbol_uid IS NOT NULL \
-                 {} \
-                 {}",
-                placeholders, conf_clause, limit_clause
-            );
-
-            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-            let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
-            for uid in batch {
-                params.push(Box::new(uid.clone()));
-            }
-            if let Some(threshold) = confidence_threshold {
-                params.push(Box::new(threshold));
-            }
-            if let Some(cap) = limit {
-                params.push(Box::new(cap as i64));
-            }
-            let param_refs: Vec<&dyn rusqlite::types::ToSql> =
-                params.iter().map(|param| param.as_ref()).collect();
-            let rows = stmt
-                .query_map(param_refs.as_slice(), crate::rows::symbol_lite)
-                .map_err(db_err)?;
-            for row in rows {
-                callers.push(row.map_err(db_err)?);
-            }
-        }
-
-        Ok(callers)
-    }
-
-    /// Distinct test files covering any of `code_files`, ordered by path.
-    pub(crate) fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
-        if code_files.is_empty() {
-            return Ok(Vec::new());
-        }
-        let conn = self.read_conn()?;
-        let sql = format!(
-            "SELECT DISTINCT test_file_path FROM test_edges \
-             WHERE code_file_path IN ({}) ORDER BY test_file_path",
-            sql_in_placeholders(code_files.len())
-        );
-        let params: Vec<&dyn rusqlite::types::ToSql> = code_files
-            .iter()
-            .map(|file| file as &dyn rusqlite::types::ToSql)
-            .collect();
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let rows = stmt
-            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Resolve a batch of symbol UIDs to names (`uid -> name`); UIDs without
-    /// a matching symbol row are absent from the map.
-    pub(crate) fn symbol_names_for_uids(
-        &self,
-        uids: &[String],
-    ) -> CcResult<HashMap<String, String>> {
-        if uids.is_empty() {
-            return Ok(HashMap::new());
-        }
-        let conn = self.read_conn()?;
-        let mut map = HashMap::new();
-        for batch in uids.chunks(IN_BATCH_SIZE) {
-            let sql = format!(
-                "SELECT symbol_uid, name FROM symbols WHERE symbol_uid IN ({})",
-                sql_in_placeholders(batch.len())
-            );
-            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-            let param_refs: Vec<&dyn rusqlite::types::ToSql> = batch
-                .iter()
-                .map(|uid| uid as &dyn rusqlite::types::ToSql)
-                .collect();
-            let rows = stmt
-                .query_map(param_refs.as_slice(), |row| {
-                    Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
-                })
-                .map_err(db_err)?;
-            for row in rows {
-                let (uid, name) = row.map_err(db_err)?;
-                map.insert(uid, name);
-            }
-        }
-        Ok(map)
-    }
-
-    /// Direct importers of `file_path` (self-imports excluded), bounded and
-    /// ordered in SQL.
-    pub(crate) fn direct_importers_of_file(
-        &self,
-        file_path: &str,
-        limit: usize,
-    ) -> CcResult<Vec<String>> {
-        let conn = self.read_conn()?;
-        let mut stmt = conn
-            .prepare_cached(
-                "SELECT DISTINCT file_path FROM imports \
-                 WHERE resolved_path = ?1 AND file_path != ?1 \
-                 ORDER BY file_path LIMIT ?2",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params![file_path, limit as i64], |row| {
-                row.get::<_, String>(0)
-            })
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Files importing any of `resolved_paths`, in a single bounded query
-    /// (used for the 2-hop transitive dependents expansion).
-    pub(crate) fn importers_of_paths(
-        &self,
-        resolved_paths: &[String],
-        limit: usize,
-    ) -> CcResult<Vec<String>> {
-        if resolved_paths.is_empty() {
-            return Ok(Vec::new());
-        }
-        let conn = self.read_conn()?;
-        let sql = format!(
-            "SELECT DISTINCT file_path FROM imports WHERE resolved_path IN ({}) LIMIT {}",
-            sql_in_placeholders(resolved_paths.len()),
-            limit
-        );
-        let params: Vec<&dyn rusqlite::types::ToSql> = resolved_paths
-            .iter()
-            .map(|path| path as &dyn rusqlite::types::ToSql)
-            .collect();
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let rows = stmt
-            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
-            .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Distinct callee UIDs that have at least one non-self caller
-    /// (dead-code detection input), bounded by `limit`.
-    pub(crate) fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
-        let conn = self.read_conn()?;
-        let sql = format!(
-            "SELECT DISTINCT callee_symbol_uid FROM call_edges \
-             WHERE callee_symbol_uid IS NOT NULL \
-               AND (caller_symbol_uid IS NULL OR caller_symbol_uid != callee_symbol_uid) \
-             LIMIT {}",
-            limit
-        );
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let rows = stmt
-            .query_map([], |row| row.get::<_, String>(0))
-            .map_err(db_err)?;
-        // Row errors must propagate: a silently truncated Ok here would be
-        // cached for the whole generation by the server's dead-code path.
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-    }
-
-    /// Raw symbol rows for the dead-code scan. `scope` becomes a
-    /// `%scope%` LIKE filter on file_path; `scan_limit` bounds the scan.
-    /// NULL identity columns degrade to empty strings (callers skip those).
-    pub(crate) fn dead_code_symbol_scan(
-        &self,
-        scope: Option<&str>,
-        scan_limit: usize,
-    ) -> CcResult<Vec<DeadCodeSymbolRow>> {
-        let conn = self.read_conn()?;
-        let map_row = |row: &rusqlite::Row<'_>| -> rusqlite::Result<DeadCodeSymbolRow> {
-            Ok(DeadCodeSymbolRow {
-                name: row.get::<_, Option<String>>(0)?.unwrap_or_default(),
-                symbol_uid: row.get::<_, Option<String>>(1)?.unwrap_or_default(),
-                file_path: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
-                kind: row.get::<_, Option<String>>(3)?.unwrap_or_default(),
-            })
-        };
-        if let Some(prefix) = scope {
-            let pattern = format!("%{}%", prefix);
-            let sql = format!(
-                "SELECT name, symbol_uid, file_path, kind FROM symbols \
-                 WHERE file_path LIKE ?1 LIMIT {}",
-                scan_limit
-            );
-            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-            let rows = stmt
-                .query_map(rusqlite::params![pattern], map_row)
-                .map_err(db_err)?;
-            rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-        } else {
-            let sql = format!(
-                "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT {}",
-                scan_limit
-            );
-            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-            let rows = stmt.query_map([], map_row).map_err(db_err)?;
-            rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
-        }
-    }
-
-    /// `(target_symbol_uid, container)` reference rows for any of
-    /// `target_uids`, batched. A failed batch is skipped silently
-    /// (best-effort, preserved from the previous per-batch degradation).
-    pub(crate) fn symbol_ref_containers_for_targets(
-        &self,
-        target_uids: &[String],
-    ) -> CcResult<Vec<(String, Option<String>)>> {
-        let conn = self.read_conn()?;
-        let mut out = Vec::new();
-        for batch in target_uids.chunks(IN_BATCH_SIZE) {
-            if batch.is_empty() {
-                continue;
-            }
-            let sql = format!(
-                "SELECT target_symbol_uid, container FROM symbol_refs \
-                 WHERE target_symbol_uid IN ({})",
-                sql_in_placeholders(batch.len())
-            );
-            let Ok(mut stmt) = conn.prepare(&sql) else {
-                continue;
-            };
-            let param_refs: Vec<&dyn rusqlite::types::ToSql> = batch
-                .iter()
-                .map(|uid| uid as &dyn rusqlite::types::ToSql)
-                .collect();
-            let Ok(rows) = stmt.query_map(param_refs.as_slice(), |row| {
-                Ok((
-                    row.get::<_, Option<String>>(0)?.unwrap_or_default(),
-                    row.get::<_, Option<String>>(1)?,
-                ))
-            }) else {
-                continue;
-            };
-            out.extend(rows.flatten());
-        }
-        Ok(out)
-    }
-
-    /// HTTP route handler rows, optionally LIKE-filtered by route path
-    /// substring, bounded by `limit`. JSON projection feeds the MCP output.
-    pub(crate) fn route_handler_rows(
-        &self,
-        route_path: Option<&str>,
-        limit: usize,
-    ) -> CcResult<Vec<Value>> {
-        if let Some(pattern) = route_path {
-            let like_pattern = format!("%{}%", pattern);
-            self.query_json(
-                &format!(
-                    "SELECT route_path, method, handler_name, file_path, framework, line \
-                     FROM routes WHERE route_path LIKE ?1 LIMIT {}",
-                    limit
-                ),
-                &[like_pattern],
-            )
-        } else {
-            self.query_json(
-                &format!(
-                    "SELECT route_path, method, handler_name, file_path, framework, line \
-                     FROM routes LIMIT {}",
-                    limit
-                ),
-                &[],
-            )
-        }
-    }
-
-    /// Consumers of a topic/queue: infra edges with kind in
-    /// (binds_topic, consumes_queue) whose source name or properties match.
-    pub(crate) fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
-        let pattern = format!("%{}%", topic_or_queue);
-        self.query_json(
-            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
-                    ie.confidence, ie.properties, \
-                    src.name AS source_name, src.kind AS source_kind, \
-                    src.file_path AS source_file, \
-                    src.bound_symbol_uid AS source_bound_uid, \
-                    CASE \
-                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
-                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
-                        ELSE 'unknown' \
-                    END AS target_type, \
-                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
-                    tgt_infra.kind AS target_kind, \
-                    COALESCE(tgt_infra.file_path, tgt_route.file_path) AS target_file, \
-                    COALESCE(tgt_infra.bound_symbol_uid, tgt_route.handler_symbol_uid) AS target_bound_uid, \
-                    tgt_route.route_path AS target_route_path, \
-                    tgt_route.method AS target_method, \
-                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
-             FROM infra_edges ie \
-             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
-             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
-             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
-             WHERE ie.kind IN ('binds_topic', 'consumes_queue') \
-               AND (src.name LIKE ?1 OR ie.properties LIKE ?1)",
-            &[pattern],
-        )
-    }
-
-    /// Infra bindings for a service or route, matched on two dimensions
-    /// (infra node name/bound UID, route path/handler) plus connecting edges.
-    pub(crate) fn service_binding_rows(
-        &self,
-        service_or_route: &str,
-    ) -> CcResult<ServiceBindingRows> {
-        let pattern = format!("%{}%", service_or_route);
-
-        let matched_infra_nodes = self.query_json(
-            "SELECT node_id, file_path, kind, name, namespace, line, end_line, \
-                    properties, bound_symbol_uid, binding_confidence \
-             FROM infra_nodes \
-             WHERE name LIKE ?1 OR bound_symbol_uid LIKE ?1",
-            std::slice::from_ref(&pattern),
-        )?;
-
-        let infra_node_ids = matched_infra_nodes.iter().filter_map(|node| {
-            node.get("node_id")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string())
-        });
-
-        let matched_routes = self.query_json(
-            "SELECT route_id, file_path, route_path, method, handler_symbol_uid, \
-                    handler_name, framework, line, end_line, normalized_path, confidence \
-             FROM routes \
-             WHERE route_path LIKE ?1 \
-                OR normalized_path LIKE ?1 \
-                OR handler_name LIKE ?1 \
-                OR handler_symbol_uid LIKE ?1",
-            &[pattern],
-        )?;
-
-        let route_ids = matched_routes.iter().filter_map(|route| {
-            route
-                .get("route_id")
-                .and_then(|v| v.as_str())
-                .map(|s| s.to_string())
-        });
-
-        // All matched IDs (infra node_ids + route_ids) feed one edge query.
-        let all_ids: Vec<String> = infra_node_ids.chain(route_ids).collect();
-        let related_edges = if all_ids.is_empty() {
-            Vec::new()
-        } else {
-            let ph_str = sql_in_placeholders(all_ids.len());
-            let sql = format!(
-                "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
-                        ie.confidence, ie.properties, \
-                        src.name AS source_name, src.kind AS source_kind, \
-                        CASE \
-                            WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
-                            WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
-                            ELSE 'unknown' \
-                        END AS target_type, \
-                        COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
-                        COALESCE(tgt_infra.kind, 'route') AS target_kind, \
-                        tgt_route.route_path AS target_route_path, \
-                        tgt_route.method AS target_method, \
-                        tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
-                 FROM infra_edges ie \
-                 LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
-                 LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
-                 LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
-                 WHERE ie.source_node_id IN ({ph}) OR ie.target_node_id IN ({ph})",
-                ph = ph_str,
-            );
-            self.query_json(&sql, &all_ids)?
-        };
-
-        Ok(ServiceBindingRows {
-            matched_infra_nodes,
-            matched_routes,
-            related_edges,
-        })
+    /// Graph read model: task-shaped graph read queries (adjacency, impact,
+    /// dead-code, imports/communities, HTTP/async bridges) consumed by the
+    /// server's graph/impact/exploration tools. See [`GraphReads`].
+    pub fn graph_reads(&self) -> GraphReads<'_> {
+        GraphReads::new(self)
     }
 
     /// `(name, kind, signature)` of direct children of `parent_uid`, in
@@ -804,13 +304,82 @@ impl<'a> GraphReads<'a> {
         confidence_threshold: Option<f64>,
         limit: Option<usize>,
     ) -> CcResult<Vec<SymbolLiteRow>> {
-        self.db
-            .reverse_callers(callee_uids, confidence_threshold, limit)
+        let conn = self.db.read_conn()?;
+        let mut callers = Vec::new();
+
+        for batch in callee_uids.chunks(IN_BATCH_SIZE) {
+            if batch.is_empty() {
+                continue;
+            }
+
+            let placeholders = sql_in_placeholders(batch.len());
+            // Parameter slots after the IN(...) uids: optional confidence
+            // threshold, then optional LIMIT, in that bind order.
+            let mut next_param = batch.len() + 1;
+            let conf_clause = if confidence_threshold.is_some() {
+                let clause = format!("AND ce.parser_confidence >= ?{}", next_param);
+                next_param += 1;
+                clause
+            } else {
+                String::new()
+            };
+            let limit_clause = if limit.is_some() {
+                format!("LIMIT ?{}", next_param)
+            } else {
+                String::new()
+            };
+            let sql = format!(
+                "SELECT DISTINCT ce.caller_symbol_uid, s.name, s.file_path, s.kind, s.community_id \
+                 FROM call_edges ce \
+                 JOIN symbols s ON s.symbol_uid = ce.caller_symbol_uid \
+                 WHERE ce.callee_symbol_uid IN ({}) \
+                 AND ce.caller_symbol_uid IS NOT NULL \
+                 {} \
+                 {}",
+                placeholders, conf_clause, limit_clause
+            );
+
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
+            for uid in batch {
+                params.push(Box::new(uid.clone()));
+            }
+            if let Some(threshold) = confidence_threshold {
+                params.push(Box::new(threshold));
+            }
+            if let Some(cap) = limit {
+                params.push(Box::new(cap as i64));
+            }
+            let param_refs: Vec<&dyn rusqlite::types::ToSql> =
+                params.iter().map(|param| param.as_ref()).collect();
+            let rows = stmt
+                .query_map(param_refs.as_slice(), crate::rows::symbol_lite)
+                .map_err(db_err)?;
+            for row in rows {
+                callers.push(row.map_err(db_err)?);
+            }
+        }
+
+        Ok(callers)
     }
 
     /// Callee UIDs with at least one non-self caller (dead-code input).
     pub fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
-        self.db.callees_with_nonself_callers(limit)
+        let conn = self.db.read_conn()?;
+        let sql = format!(
+            "SELECT DISTINCT callee_symbol_uid FROM call_edges \
+             WHERE callee_symbol_uid IS NOT NULL \
+               AND (caller_symbol_uid IS NULL OR caller_symbol_uid != callee_symbol_uid) \
+             LIMIT {}",
+            limit
+        );
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        // Row errors must propagate: a silently truncated Ok here would be
+        // cached for the whole generation by the server's dead-code path.
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     // ── Semantic edges ──────────────────────────────────────────────────
@@ -830,17 +399,55 @@ impl<'a> GraphReads<'a> {
 
     /// Distinct resolved `(file_path, resolved_path)` import pairs.
     pub fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
-        self.db.file_import_pairs()
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT DISTINCT file_path, resolved_path FROM imports WHERE resolved_path IS NOT NULL",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Resolved import rows from `file_path` (cycle witness edges).
     pub fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
-        self.db.import_witness_rows(file_path)
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached(
+                "SELECT resolved_path, import_string FROM imports WHERE file_path = ?1 AND resolved_path IS NOT NULL",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params![file_path], |row| {
+                Ok(ImportWitnessRow {
+                    resolved_path: row.get::<_, String>(0)?,
+                    import_string: row.get::<_, Option<String>>(1)?,
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Direct importers of `file_path`, bounded.
     pub fn direct_importers_of_file(&self, file_path: &str, limit: usize) -> CcResult<Vec<String>> {
-        self.db.direct_importers_of_file(file_path, limit)
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached(
+                "SELECT DISTINCT file_path FROM imports \
+                 WHERE resolved_path = ?1 AND file_path != ?1 \
+                 ORDER BY file_path LIMIT ?2",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params![file_path, limit as i64], |row| {
+                row.get::<_, String>(0)
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Files importing any of `resolved_paths` (2-hop dependents), bounded.
@@ -849,24 +456,112 @@ impl<'a> GraphReads<'a> {
         resolved_paths: &[String],
         limit: usize,
     ) -> CcResult<Vec<String>> {
-        self.db.importers_of_paths(resolved_paths, limit)
+        if resolved_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.db.read_conn()?;
+        let sql = format!(
+            "SELECT DISTINCT file_path FROM imports WHERE resolved_path IN ({}) LIMIT {}",
+            sql_in_placeholders(resolved_paths.len()),
+            limit
+        );
+        let params: Vec<&dyn rusqlite::types::ToSql> = resolved_paths
+            .iter()
+            .map(|path| path as &dyn rusqlite::types::ToSql)
+            .collect();
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Distinct cross-community call pairs.
     pub fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
-        self.db.community_adjacency_pairs()
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT DISTINCT s1.community_id AS from_community, s2.community_id AS to_community \
+                 FROM call_edges ce \
+                 JOIN symbols s1 ON s1.symbol_uid = ce.caller_symbol_uid \
+                 JOIN symbols s2 ON s2.symbol_uid = ce.callee_symbol_uid \
+                 WHERE s1.community_id IS NOT NULL \
+                   AND s2.community_id IS NOT NULL \
+                   AND s1.community_id != s2.community_id",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok((
+                    row.get::<_, rusqlite::types::Value>(0)?,
+                    row.get::<_, rusqlite::types::Value>(1)?,
+                ))
+            })
+            .map_err(db_err)?;
+        let mut pairs = Vec::new();
+        for row in rows {
+            let (from_value, to_value) = row.map_err(db_err)?;
+            if let (Some(from), Some(to)) = (
+                community_value_to_string(from_value),
+                community_value_to_string(to_value),
+            ) {
+                pairs.push((from, to));
+            }
+        }
+        Ok(pairs)
     }
 
     // ── Symbols / tests ─────────────────────────────────────────────────
 
     /// Symbols (with stable UID) living in any of `files`.
     pub fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
-        self.db.symbols_lite_in_files(files)
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached(
+                "SELECT symbol_uid, name, file_path, kind, community_id \
+                 FROM symbols WHERE file_path=?1 AND symbol_uid IS NOT NULL",
+            )
+            .map_err(db_err)?;
+        let mut symbols = Vec::new();
+        for file in files {
+            let rows = stmt
+                .query_map(rusqlite::params![file], crate::rows::symbol_lite)
+                .map_err(db_err)?;
+            for row in rows {
+                symbols.push(row.map_err(db_err)?);
+            }
+        }
+        Ok(symbols)
     }
 
     /// Batch `uid -> name` resolution.
     pub fn symbol_names_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, String>> {
-        self.db.symbol_names_for_uids(uids)
+        if uids.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let conn = self.db.read_conn()?;
+        let mut map = HashMap::new();
+        for batch in uids.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT symbol_uid, name FROM symbols WHERE symbol_uid IN ({})",
+                sql_in_placeholders(batch.len())
+            );
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let param_refs: Vec<&dyn rusqlite::types::ToSql> = batch
+                .iter()
+                .map(|uid| uid as &dyn rusqlite::types::ToSql)
+                .collect();
+            let rows = stmt
+                .query_map(param_refs.as_slice(), |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                let (uid, name) = row.map_err(db_err)?;
+                map.insert(uid, name);
+            }
+        }
+        Ok(map)
     }
 
     /// Raw symbol rows for the dead-code scan.
@@ -875,7 +570,36 @@ impl<'a> GraphReads<'a> {
         scope: Option<&str>,
         scan_limit: usize,
     ) -> CcResult<Vec<DeadCodeSymbolRow>> {
-        self.db.dead_code_symbol_scan(scope, scan_limit)
+        let conn = self.db.read_conn()?;
+        let map_row = |row: &rusqlite::Row<'_>| -> rusqlite::Result<DeadCodeSymbolRow> {
+            Ok(DeadCodeSymbolRow {
+                name: row.get::<_, Option<String>>(0)?.unwrap_or_default(),
+                symbol_uid: row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                file_path: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                kind: row.get::<_, Option<String>>(3)?.unwrap_or_default(),
+            })
+        };
+        if let Some(prefix) = scope {
+            let pattern = format!("%{}%", prefix);
+            let sql = format!(
+                "SELECT name, symbol_uid, file_path, kind FROM symbols \
+                 WHERE file_path LIKE ?1 LIMIT {}",
+                scan_limit
+            );
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let rows = stmt
+                .query_map(rusqlite::params![pattern], map_row)
+                .map_err(db_err)?;
+            rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+        } else {
+            let sql = format!(
+                "SELECT name, symbol_uid, file_path, kind FROM symbols LIMIT {}",
+                scan_limit
+            );
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let rows = stmt.query_map([], map_row).map_err(db_err)?;
+            rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+        }
     }
 
     /// `(target_symbol_uid, container)` reference rows (dead-code phase 2).
@@ -883,12 +607,57 @@ impl<'a> GraphReads<'a> {
         &self,
         target_uids: &[String],
     ) -> CcResult<Vec<(String, Option<String>)>> {
-        self.db.symbol_ref_containers_for_targets(target_uids)
+        let conn = self.db.read_conn()?;
+        let mut out = Vec::new();
+        for batch in target_uids.chunks(IN_BATCH_SIZE) {
+            if batch.is_empty() {
+                continue;
+            }
+            let sql = format!(
+                "SELECT target_symbol_uid, container FROM symbol_refs \
+                 WHERE target_symbol_uid IN ({})",
+                sql_in_placeholders(batch.len())
+            );
+            let Ok(mut stmt) = conn.prepare(&sql) else {
+                continue;
+            };
+            let param_refs: Vec<&dyn rusqlite::types::ToSql> = batch
+                .iter()
+                .map(|uid| uid as &dyn rusqlite::types::ToSql)
+                .collect();
+            let Ok(rows) = stmt.query_map(param_refs.as_slice(), |row| {
+                Ok((
+                    row.get::<_, Option<String>>(0)?.unwrap_or_default(),
+                    row.get::<_, Option<String>>(1)?,
+                ))
+            }) else {
+                continue;
+            };
+            out.extend(rows.flatten());
+        }
+        Ok(out)
     }
 
     /// Distinct test files covering any of `code_files`.
     pub fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
-        self.db.suggested_test_files(code_files)
+        if code_files.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.db.read_conn()?;
+        let sql = format!(
+            "SELECT DISTINCT test_file_path FROM test_edges \
+             WHERE code_file_path IN ({}) ORDER BY test_file_path",
+            sql_in_placeholders(code_files.len())
+        );
+        let params: Vec<&dyn rusqlite::types::ToSql> = code_files
+            .iter()
+            .map(|file| file as &dyn rusqlite::types::ToSql)
+            .collect();
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     // ── HTTP/async bridges and infra bindings ───────────────────────────
@@ -909,17 +678,130 @@ impl<'a> GraphReads<'a> {
         route_path: Option<&str>,
         limit: usize,
     ) -> CcResult<Vec<Value>> {
-        self.db.route_handler_rows(route_path, limit)
+        if let Some(pattern) = route_path {
+            let like_pattern = format!("%{}%", pattern);
+            self.db.query_json(
+                &format!(
+                    "SELECT route_path, method, handler_name, file_path, framework, line \
+                     FROM routes WHERE route_path LIKE ?1 LIMIT {}",
+                    limit
+                ),
+                &[like_pattern],
+            )
+        } else {
+            self.db.query_json(
+                &format!(
+                    "SELECT route_path, method, handler_name, file_path, framework, line \
+                     FROM routes LIMIT {}",
+                    limit
+                ),
+                &[],
+            )
+        }
     }
 
     /// Consumers of a topic/queue (infra edges).
     pub fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
-        self.db.async_consumer_rows(topic_or_queue)
+        let pattern = format!("%{}%", topic_or_queue);
+        self.db.query_json(
+            "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
+                    ie.confidence, ie.properties, \
+                    src.name AS source_name, src.kind AS source_kind, \
+                    src.file_path AS source_file, \
+                    src.bound_symbol_uid AS source_bound_uid, \
+                    CASE \
+                        WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
+                        WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
+                        ELSE 'unknown' \
+                    END AS target_type, \
+                    COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
+                    tgt_infra.kind AS target_kind, \
+                    COALESCE(tgt_infra.file_path, tgt_route.file_path) AS target_file, \
+                    COALESCE(tgt_infra.bound_symbol_uid, tgt_route.handler_symbol_uid) AS target_bound_uid, \
+                    tgt_route.route_path AS target_route_path, \
+                    tgt_route.method AS target_method, \
+                    tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
+             FROM infra_edges ie \
+             LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
+             LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
+             LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
+             WHERE ie.kind IN ('binds_topic', 'consumes_queue') \
+               AND (src.name LIKE ?1 OR ie.properties LIKE ?1)",
+            &[pattern],
+        )
     }
 
     /// Infra bindings for a service or route, plus connecting edges.
     pub fn service_binding_rows(&self, service_or_route: &str) -> CcResult<ServiceBindingRows> {
-        self.db.service_binding_rows(service_or_route)
+        let pattern = format!("%{}%", service_or_route);
+
+        let matched_infra_nodes = self.db.query_json(
+            "SELECT node_id, file_path, kind, name, namespace, line, end_line, \
+                    properties, bound_symbol_uid, binding_confidence \
+             FROM infra_nodes \
+             WHERE name LIKE ?1 OR bound_symbol_uid LIKE ?1",
+            std::slice::from_ref(&pattern),
+        )?;
+
+        let infra_node_ids = matched_infra_nodes.iter().filter_map(|node| {
+            node.get("node_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        });
+
+        let matched_routes = self.db.query_json(
+            "SELECT route_id, file_path, route_path, method, handler_symbol_uid, \
+                    handler_name, framework, line, end_line, normalized_path, confidence \
+             FROM routes \
+             WHERE route_path LIKE ?1 \
+                OR normalized_path LIKE ?1 \
+                OR handler_name LIKE ?1 \
+                OR handler_symbol_uid LIKE ?1",
+            &[pattern],
+        )?;
+
+        let route_ids = matched_routes.iter().filter_map(|route| {
+            route
+                .get("route_id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        });
+
+        // All matched IDs (infra node_ids + route_ids) feed one edge query.
+        let all_ids: Vec<String> = infra_node_ids.chain(route_ids).collect();
+        let related_edges = if all_ids.is_empty() {
+            Vec::new()
+        } else {
+            let ph_str = sql_in_placeholders(all_ids.len());
+            let sql = format!(
+                "SELECT ie.edge_id, ie.source_node_id, ie.target_node_id, ie.kind, \
+                        ie.confidence, ie.properties, \
+                        src.name AS source_name, src.kind AS source_kind, \
+                        CASE \
+                            WHEN tgt_route.route_id IS NOT NULL THEN 'route' \
+                            WHEN tgt_infra.node_id IS NOT NULL THEN 'infra_node' \
+                            ELSE 'unknown' \
+                        END AS target_type, \
+                        COALESCE(tgt_infra.name, tgt_route.handler_name) AS target_name, \
+                        COALESCE(tgt_infra.kind, 'route') AS target_kind, \
+                        tgt_route.route_path AS target_route_path, \
+                        tgt_route.method AS target_method, \
+                        tgt_route.handler_symbol_uid AS target_handler_symbol_uid \
+                 FROM infra_edges ie \
+                 LEFT JOIN infra_nodes src ON ie.source_node_id = src.node_id \
+                 LEFT JOIN infra_nodes tgt_infra ON ie.target_node_id = tgt_infra.node_id \
+                 LEFT JOIN routes tgt_route ON ie.target_node_id = tgt_route.route_id \
+                 WHERE ie.source_node_id IN ({ph}) OR ie.target_node_id IN ({ph})",
+                ph = ph_str,
+            );
+            self.db.query_json(&sql, &all_ids)?
+        };
+
+        Ok(ServiceBindingRows {
+            matched_infra_nodes,
+            matched_routes,
+            related_edges,
+        })
     }
 
     // ── Runtime evidence ────────────────────────────────────────────────
@@ -938,22 +820,22 @@ impl<'a> GraphReads<'a> {
 impl ReadOps<'_> {
     /// Distinct `(file_path, resolved_path)` import pairs with a resolved
     pub fn file_import_pairs(&self) -> CcResult<Vec<(String, String)>> {
-        self.0.file_import_pairs()
+        self.0.graph_reads().file_import_pairs()
     }
 
     /// Resolved import rows originating from `file_path`, with the original
     pub fn import_witness_rows(&self, file_path: &str) -> CcResult<Vec<ImportWitnessRow>> {
-        self.0.import_witness_rows(file_path)
+        self.0.graph_reads().import_witness_rows(file_path)
     }
 
     /// Distinct cross-community call pairs `(from_community, to_community)`
     pub fn community_adjacency_pairs(&self) -> CcResult<Vec<(String, String)>> {
-        self.0.community_adjacency_pairs()
+        self.0.graph_reads().community_adjacency_pairs()
     }
 
     /// Symbols (with stable UID) living in any of `files`, in file order.
     pub fn symbols_lite_in_files(&self, files: &[String]) -> CcResult<Vec<SymbolLiteRow>> {
-        self.0.symbols_lite_in_files(files)
+        self.0.graph_reads().symbols_lite_in_files(files)
     }
 
     /// Distinct callers of any of `callee_uids`, optionally filtered by
@@ -964,22 +846,25 @@ impl ReadOps<'_> {
         limit: Option<usize>,
     ) -> CcResult<Vec<SymbolLiteRow>> {
         self.0
+            .graph_reads()
             .reverse_callers(callee_uids, confidence_threshold, limit)
     }
 
     /// Distinct test files covering any of `code_files`, ordered by path.
     pub fn suggested_test_files(&self, code_files: &[String]) -> CcResult<Vec<String>> {
-        self.0.suggested_test_files(code_files)
+        self.0.graph_reads().suggested_test_files(code_files)
     }
 
     /// Resolve a batch of symbol UIDs to names (`uid -> name`); UIDs without
     pub fn symbol_names_for_uids(&self, uids: &[String]) -> CcResult<HashMap<String, String>> {
-        self.0.symbol_names_for_uids(uids)
+        self.0.graph_reads().symbol_names_for_uids(uids)
     }
 
     /// Direct importers of `file_path` (self-imports excluded), bounded and
     pub fn direct_importers_of_file(&self, file_path: &str, limit: usize) -> CcResult<Vec<String>> {
-        self.0.direct_importers_of_file(file_path, limit)
+        self.0
+            .graph_reads()
+            .direct_importers_of_file(file_path, limit)
     }
 
     /// Files importing any of `resolved_paths`, in a single bounded query
@@ -988,12 +873,14 @@ impl ReadOps<'_> {
         resolved_paths: &[String],
         limit: usize,
     ) -> CcResult<Vec<String>> {
-        self.0.importers_of_paths(resolved_paths, limit)
+        self.0
+            .graph_reads()
+            .importers_of_paths(resolved_paths, limit)
     }
 
     /// Distinct callee UIDs that have at least one non-self caller
     pub fn callees_with_nonself_callers(&self, limit: usize) -> CcResult<Vec<String>> {
-        self.0.callees_with_nonself_callers(limit)
+        self.0.graph_reads().callees_with_nonself_callers(limit)
     }
 
     /// Raw symbol rows for the dead-code scan. `scope` becomes a
@@ -1002,7 +889,9 @@ impl ReadOps<'_> {
         scope: Option<&str>,
         scan_limit: usize,
     ) -> CcResult<Vec<DeadCodeSymbolRow>> {
-        self.0.dead_code_symbol_scan(scope, scan_limit)
+        self.0
+            .graph_reads()
+            .dead_code_symbol_scan(scope, scan_limit)
     }
 
     /// `(target_symbol_uid, container)` reference rows for any of
@@ -1010,7 +899,9 @@ impl ReadOps<'_> {
         &self,
         target_uids: &[String],
     ) -> CcResult<Vec<(String, Option<String>)>> {
-        self.0.symbol_ref_containers_for_targets(target_uids)
+        self.0
+            .graph_reads()
+            .symbol_ref_containers_for_targets(target_uids)
     }
 
     /// HTTP route handler rows, optionally LIKE-filtered by route path
@@ -1019,17 +910,17 @@ impl ReadOps<'_> {
         route_path: Option<&str>,
         limit: usize,
     ) -> CcResult<Vec<Value>> {
-        self.0.route_handler_rows(route_path, limit)
+        self.0.graph_reads().route_handler_rows(route_path, limit)
     }
 
     /// Consumers of a topic/queue: infra edges with kind in
     pub fn async_consumer_rows(&self, topic_or_queue: &str) -> CcResult<Vec<Value>> {
-        self.0.async_consumer_rows(topic_or_queue)
+        self.0.graph_reads().async_consumer_rows(topic_or_queue)
     }
 
     /// Infra bindings for a service or route, matched on two dimensions
     pub fn service_binding_rows(&self, service_or_route: &str) -> CcResult<ServiceBindingRows> {
-        self.0.service_binding_rows(service_or_route)
+        self.0.graph_reads().service_binding_rows(service_or_route)
     }
 
     /// `(name, kind, signature)` of direct children of `parent_uid`, in
@@ -1143,7 +1034,7 @@ mod tests {
         insert_import(&db, "src/a.rs", "use b again", Some("src/b.rs"));
         insert_import(&db, "src/a.rs", "use ext", None);
 
-        let pairs = db.file_import_pairs().unwrap();
+        let pairs = db.graph_reads().file_import_pairs().unwrap();
         assert_eq!(
             pairs,
             vec![("src/a.rs".to_string(), "src/b.rs".to_string())]
@@ -1156,7 +1047,7 @@ mod tests {
         insert_import(&db, "src/a.rs", "use crate::b", Some("src/b.rs"));
         insert_import(&db, "src/c.rs", "use crate::a", Some("src/a.rs"));
 
-        let rows = db.import_witness_rows("src/a.rs").unwrap();
+        let rows = db.graph_reads().import_witness_rows("src/a.rs").unwrap();
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].resolved_path, "src/b.rs");
         assert_eq!(rows[0].import_string.as_deref(), Some("use crate::b"));
@@ -1180,7 +1071,7 @@ mod tests {
         insert_call_edge(&db, "e1", Some("uid_a"), "uid_b"); // cross 1 -> 2
         insert_call_edge(&db, "e2", Some("uid_a"), "uid_c"); // same community
 
-        let pairs = db.community_adjacency_pairs().unwrap();
+        let pairs = db.graph_reads().community_adjacency_pairs().unwrap();
         assert_eq!(pairs, vec![("1".to_string(), "2".to_string())]);
     }
 
@@ -1200,7 +1091,10 @@ mod tests {
             )
             .unwrap();
 
-        let rows = db.symbols_lite_in_files(&["src/a.rs".to_string()]).unwrap();
+        let rows = db
+            .graph_reads()
+            .symbols_lite_in_files(&["src/a.rs".to_string()])
+            .unwrap();
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0].symbol_uid, "uid_a");
         assert_eq!(rows[0].kind, "function");
@@ -1228,17 +1122,20 @@ mod tests {
         drop(conn);
 
         let all = db
+            .graph_reads()
             .reverse_callers(&["uid_callee".to_string()], None, None)
             .unwrap();
         assert_eq!(all.len(), 2);
 
         let confident = db
+            .graph_reads()
             .reverse_callers(&["uid_callee".to_string()], Some(0.8), None)
             .unwrap();
         assert_eq!(confident.len(), 1);
         assert_eq!(confident[0].symbol_uid, "uid_hi");
 
         let limited = db
+            .graph_reads()
             .reverse_callers(&["uid_callee".to_string()], None, Some(1))
             .unwrap();
         assert_eq!(limited.len(), 1);
@@ -1264,10 +1161,15 @@ mod tests {
         drop(conn);
 
         let tests = db
+            .graph_reads()
             .suggested_test_files(&["src/a.rs".to_string(), "src/b.rs".to_string()])
             .unwrap();
         assert_eq!(tests, vec!["tests/a_test.rs", "tests/z_test.rs"]);
-        assert!(db.suggested_test_files(&[]).unwrap().is_empty());
+        assert!(db
+            .graph_reads()
+            .suggested_test_files(&[])
+            .unwrap()
+            .is_empty());
     }
 
     #[test]
@@ -1276,6 +1178,7 @@ mod tests {
         insert_symbol(&db, "uid_a", "alpha", "src/a.rs", "function");
 
         let map = db
+            .graph_reads()
             .symbol_names_for_uids(&["uid_a".to_string(), "uid_missing".to_string()])
             .unwrap();
         assert_eq!(map.len(), 1);
@@ -1289,9 +1192,15 @@ mod tests {
         insert_import(&db, "src/c.rs", "use a", Some("src/a.rs"));
         insert_import(&db, "src/a.rs", "use self", Some("src/a.rs"));
 
-        let importers = db.direct_importers_of_file("src/a.rs", 200).unwrap();
+        let importers = db
+            .graph_reads()
+            .direct_importers_of_file("src/a.rs", 200)
+            .unwrap();
         assert_eq!(importers, vec!["src/b.rs", "src/c.rs"]);
-        let capped = db.direct_importers_of_file("src/a.rs", 1).unwrap();
+        let capped = db
+            .graph_reads()
+            .direct_importers_of_file("src/a.rs", 1)
+            .unwrap();
         assert_eq!(capped, vec!["src/b.rs"]);
     }
 
@@ -1302,11 +1211,16 @@ mod tests {
         insert_import(&db, "src/y.rs", "use c", Some("src/c.rs"));
 
         let mut importers = db
+            .graph_reads()
             .importers_of_paths(&["src/b.rs".to_string(), "src/c.rs".to_string()], 10000)
             .unwrap();
         importers.sort();
         assert_eq!(importers, vec!["src/x.rs", "src/y.rs"]);
-        assert!(db.importers_of_paths(&[], 10000).unwrap().is_empty());
+        assert!(db
+            .graph_reads()
+            .importers_of_paths(&[], 10000)
+            .unwrap()
+            .is_empty());
     }
 
     #[test]
@@ -1316,7 +1230,10 @@ mod tests {
         insert_call_edge(&db, "e2", Some("uid_self"), "uid_self");
         insert_call_edge(&db, "e3", None, "uid_orphan_caller");
 
-        let mut callees = db.callees_with_nonself_callers(10000).unwrap();
+        let mut callees = db
+            .graph_reads()
+            .callees_with_nonself_callers(10000)
+            .unwrap();
         callees.sort();
         assert_eq!(callees, vec!["uid_called", "uid_orphan_caller"]);
     }
@@ -1327,11 +1244,14 @@ mod tests {
         insert_symbol(&db, "uid_a", "a", "src/core/a.rs", "function");
         insert_symbol(&db, "uid_b", "b", "src/util/b.rs", "function");
 
-        let scoped = db.dead_code_symbol_scan(Some("src/core"), 100).unwrap();
+        let scoped = db
+            .graph_reads()
+            .dead_code_symbol_scan(Some("src/core"), 100)
+            .unwrap();
         assert_eq!(scoped.len(), 1);
         assert_eq!(scoped[0].symbol_uid, "uid_a");
 
-        let all = db.dead_code_symbol_scan(None, 100).unwrap();
+        let all = db.graph_reads().dead_code_symbol_scan(None, 100).unwrap();
         assert_eq!(all.len(), 2);
     }
 
@@ -1355,6 +1275,7 @@ mod tests {
         drop(conn);
 
         let mut rows = db
+            .graph_reads()
             .symbol_ref_containers_for_targets(&["uid_helper".to_string()])
             .unwrap();
         rows.sort();
@@ -1384,10 +1305,13 @@ mod tests {
         insert_route(&db, "r1", "/api/users", Some("GET"));
         insert_route(&db, "r2", "/health", Some("GET"));
 
-        let rows = db.route_handler_rows(Some("users"), 50).unwrap();
+        let rows = db
+            .graph_reads()
+            .route_handler_rows(Some("users"), 50)
+            .unwrap();
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0]["route_path"], "/api/users");
-        let all = db.route_handler_rows(None, 50).unwrap();
+        let all = db.graph_reads().route_handler_rows(None, 50).unwrap();
         assert_eq!(all.len(), 2);
     }
 
@@ -1412,7 +1336,7 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let rows = db.async_consumer_rows("orders").unwrap();
+        let rows = db.graph_reads().async_consumer_rows("orders").unwrap();
         assert_eq!(rows.len(), 1);
         assert_eq!(rows[0]["kind"], "consumes_queue");
         assert_eq!(rows[0]["source_name"], "orders-queue");
@@ -1435,7 +1359,7 @@ mod tests {
         .unwrap();
         drop(conn);
 
-        let bindings = db.service_binding_rows("payment").unwrap();
+        let bindings = db.graph_reads().service_binding_rows("payment").unwrap();
         assert_eq!(bindings.matched_infra_nodes.len(), 1);
         assert_eq!(bindings.matched_routes.len(), 1);
         assert_eq!(bindings.related_edges.len(), 1);

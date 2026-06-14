@@ -12,6 +12,7 @@ mod index_db_retrieval;
 
 pub use index_db::{MaintenanceOps, ReadOps, WriteOps};
 pub use index_db_graph_read::GraphReads;
+pub use index_db_retrieval::RetrievalReadModel;
 pub mod index_migrate;
 mod rows;
 mod seed_symbol_cache;

@@ -160,17 +160,12 @@ pub fn find_impacted_tests(
 
 /// Get files that depend on (import) the given file, including transitive dependents.
 ///
-/// Extracts: `file_path` (required). Delegates to
-/// `GraphReadModel::dependents_of_file` (cached reverse import adjacency).
+/// Delegates to `GraphReadModel::dependents_of_file` (cached reverse import
+/// adjacency). `file_path` 的校验由上游 params struct 负责，handler 收到已解构的类型化参数。
 pub fn get_dependents(
     runtime: SharedCodeIndex,
-    params: serde_json::Value,
+    file_path: &str,
 ) -> Result<serde_json::Value, String> {
-    let file_path = params
-        .get("file_path")
-        .and_then(|v| v.as_str())
-        .ok_or_else(|| "missing required parameter: file_path".to_string())?;
-
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
@@ -187,18 +182,15 @@ pub fn get_dependents(
 
 /// Find symbols that appear to be dead code (no incoming callers or references).
 ///
-/// Extracts: `scope` (optional file_path prefix filter).
-/// Queries all symbols, then checks for incoming call edges and references.
+/// - `scope`: optional file_path 前缀过滤。
+/// - `limit`: 用户显式上限，None 时退回 output_budget("dead_code") 的默认项数。
+///   查询所有符号后，逐个检查是否有入边或引用。
 pub fn find_dead_code(
     runtime: SharedCodeIndex,
-    params: serde_json::Value,
+    scope: Option<&str>,
+    limit: Option<usize>,
 ) -> Result<serde_json::Value, String> {
-    let scope = params.get("scope").and_then(|v| v.as_str());
-
-    let user_limit = params
-        .get("limit")
-        .and_then(|v| v.as_u64())
-        .map(|v| v as usize);
+    let user_limit = limit;
 
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("dead_code");
@@ -245,20 +237,15 @@ pub fn find_dead_code(
 
 /// Get structured architecture overview as JSON.
 ///
-/// Supports optional `aspects` (comma-separated: languages, packages, entry_points, routes,
-/// hotspots, boundaries, communities) and `limit` (default 10) parameters.
-/// When aspects is empty/absent, all aspects are returned.
+/// - `aspects`: 逗号分隔（languages, packages, entry_points, routes, hotspots,
+///   boundaries, communities），trim 后解析；空串表示返回全部。
+/// - `limit`: 各 aspect 返回上限。
 pub fn get_architecture(
     runtime: SharedCodeIndex,
-    params: serde_json::Value,
+    aspects: &str,
+    limit: usize,
 ) -> Result<serde_json::Value, String> {
-    let aspects_str = params
-        .get("aspects")
-        .and_then(|v| v.as_str())
-        .unwrap_or("")
-        .trim()
-        .to_string();
-    let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(10) as usize;
+    let aspects_str = aspects.trim().to_string();
 
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
@@ -280,23 +267,23 @@ pub fn get_architecture(
 
 /// Find HTTP route handlers matching a pattern.
 ///
-/// Extracts: `route_path` (optional pattern), `method`, `framework`, `limit`.
+/// - `route_path`: 可选 LIKE 子串模式。
+/// - `method` / `framework`: 可选大小写无关过滤。
+/// - `limit`: 返回上限。
 /// Delegates to `GraphReadModel::route_handlers`; this handler only shapes the
 /// output rows.
 pub fn find_route_handlers(
     runtime: SharedCodeIndex,
-    params: serde_json::Value,
+    route_path: Option<&str>,
+    method: Option<&str>,
+    framework: Option<&str>,
+    limit: usize,
 ) -> Result<serde_json::Value, String> {
-    let route_path = params.get("route_path").and_then(|v| v.as_str());
-    let method_filter = params.get("method").and_then(|v| v.as_str());
-    let framework_filter = params.get("framework").and_then(|v| v.as_str());
-    let limit = params.get("limit").and_then(|v| v.as_u64()).unwrap_or(20) as usize;
-
     let rt = super::lock_index(&runtime)?;
     let db = rt.index_db().ok_or("no index database")?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
     let rows = grm
-        .route_handlers(route_path, method_filter, framework_filter, limit)
+        .route_handlers(route_path, method, framework, limit)
         .map_err(|e| e.to_string())?;
 
     let shaped: Vec<serde_json::Value> = rows
@@ -797,7 +784,7 @@ mod tests {
         insert_import(&db, "src/c.ts", "src/b.ts"); // 2-hop transitive dependent
         insert_import(&db, "src/d.ts", "src/c.ts"); // 3 hops away: out of reach
 
-        let result = get_dependents(rt, serde_json::json!({"file_path": "src/a.ts"})).unwrap();
+        let result = get_dependents(rt, "src/a.ts").unwrap();
 
         assert_eq!(
             result.get("dependents").unwrap(),
@@ -845,7 +832,7 @@ mod tests {
         // Dead, but outside the "src/" scope filter.
         insert_symbol(&db, "uid_oos", "out_of_scope", "function", "lib/util.ts");
 
-        let scoped = find_dead_code(rt.clone(), serde_json::json!({"scope": "src/"})).unwrap();
+        let scoped = find_dead_code(rt.clone(), Some("src/"), None).unwrap();
         let scoped_names: std::collections::HashSet<String> = scoped["dead_code"]
             .as_array()
             .unwrap()
@@ -864,7 +851,7 @@ mod tests {
             assert_eq!(item["kind"].as_str(), Some("function"));
         }
 
-        let unscoped = find_dead_code(rt, serde_json::json!({})).unwrap();
+        let unscoped = find_dead_code(rt, None, None).unwrap();
         let unscoped_names: std::collections::HashSet<String> = unscoped["dead_code"]
             .as_array()
             .unwrap()
@@ -887,11 +874,11 @@ mod tests {
             let budget = guard.output_budget("dead_code");
             crate::graph_read_model::GraphReadModel::dead_code_scan_limit(budget.max_items)
         };
-        let result = find_dead_code(rt.clone(), serde_json::json!({})).unwrap();
+        let result = find_dead_code(rt.clone(), None, None).unwrap();
         assert_eq!(result["scan_limit"].as_u64(), Some(expected_default as u64));
 
         // Explicit limit param: 1 × 40 = 40 (well below the 5000 ceiling).
-        let result = find_dead_code(rt, serde_json::json!({"limit": 1})).unwrap();
+        let result = find_dead_code(rt, None, Some(1)).unwrap();
         assert_eq!(result["scan_limit"].as_u64(), Some(40));
     }
 
@@ -927,14 +914,11 @@ mod tests {
             "fastify",
         );
 
-        let all = find_route_handlers(rt.clone(), serde_json::json!({})).unwrap();
+        let all = find_route_handlers(rt.clone(), None, None, None, 20).unwrap();
         assert_eq!(all["count"].as_u64(), Some(3));
 
         // Pattern is substring LIKE; method/framework filters are case-insensitive.
-        let filtered = find_route_handlers(
-            rt,
-            serde_json::json!({"route_path": "users", "method": "get", "framework": "EXPRESS"}),
-        )
+        let filtered = find_route_handlers(rt, Some("users"), Some("get"), Some("EXPRESS"), 20)
         .unwrap();
         assert_eq!(filtered["count"].as_u64(), Some(1));
         let row = &filtered["route_handlers"][0];

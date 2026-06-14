@@ -205,18 +205,12 @@ pub fn handle_impact(
                 graph::find_impacted_tests(runtime, files)
             }
         }
-        "dead_code" => {
-            let params = match file_path {
-                Some(fp) => json!({"scope": fp, "limit": limit}),
-                None => json!({"limit": limit}),
-            };
-            graph::find_dead_code(runtime, params)
-        }
+        "dead_code" => graph::find_dead_code(runtime, file_path, Some(limit)),
         "circular" => graph::find_circular_deps(runtime, granularity, Some(limit)),
         "dependents" => {
             let fp = file_path
                 .ok_or_else(|| "file_path is required for 'dependents' scope".to_string())?;
-            graph::get_dependents(runtime, json!({"file_path": fp}))
+            graph::get_dependents(runtime, fp)
         }
         _ => {
             // BFS safety caps for the blast-radius path. `limit` (already
@@ -260,16 +254,7 @@ pub fn handle_architecture(
     match aspect {
         "communities" => core::list_communities(runtime),
         "frameworks" => core::list_frameworks(runtime),
-        "routes" => {
-            let mut params = json!({"limit": limit});
-            if let Some(route_path) = filter {
-                params
-                    .as_object_mut()
-                    .unwrap()
-                    .insert("route_path".to_string(), json!(route_path));
-            }
-            graph::find_route_handlers(runtime, params)
-        }
+        "routes" => graph::find_route_handlers(runtime, filter, None, None, limit),
         "services" => graph::find_service_bindings(runtime, filter.unwrap_or("")),
         "async" => graph::find_async_consumers(runtime, filter.unwrap_or("")),
         "boundaries" => graph::list_package_boundaries(runtime, limit as u32),
@@ -281,7 +266,7 @@ pub fn handle_architecture(
             }
         }
         "unresolved" => graph::list_unresolved_refs(runtime, limit, None, None),
-        _ => graph::get_architecture(runtime, json!({"limit": limit})),
+        _ => graph::get_architecture(runtime, "", limit),
     }
 }
 
@@ -658,6 +643,27 @@ mod tests {
         )
         .unwrap();
         assert!(result.is_object() || result.is_array());
+    }
+
+    /// `dependents` scope 在 facade 层强制要求 `file_path`（与 `handle_files`
+    /// 的 region/expand 必填校验对称），缺省时返回结构化错误。
+    #[test]
+    fn handle_impact_dependents_missing_file_path_returns_err() {
+        let (_tmp, rt) = build_test_index();
+        let result = handle_impact(
+            rt,
+            "dependents",
+            &[],
+            None,
+            "file",
+            None,
+            20,
+            None,
+            None,
+            None,
+        );
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("file_path is required"));
     }
 
     // ── ingest_traces write-failure accounting ──────────────────────

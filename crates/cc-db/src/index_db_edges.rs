@@ -4,9 +4,10 @@ use std::path::Path;
 
 use tracing::warn;
 
-use cc_model::{CcError, CcResult, ParserTier};
+use cc_model::{CcResult, ParserTier};
 
 use crate::index_db::{CoChangeLite, IndexDb, ReadOps, WriteOps};
+use crate::sql_util::db_err;
 
 /// Extract the "base clean" stem from a test file stem for matching against code files.
 ///
@@ -163,20 +164,15 @@ impl IndexDb {
         if changed.is_empty() {
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
 
         for fp in changed {
             tx.execute(
                 "DELETE FROM test_edges WHERE test_file_path = ?1 OR code_file_path = ?1",
                 rusqlite::params![fp],
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         }
 
         // For each changed file, query only candidate matches via SQL LIKE
@@ -193,11 +189,11 @@ impl IndexDb {
             let is_test: bool = {
                 let mut stmt = tx
                     .prepare_cached("SELECT is_test_file FROM files WHERE file_path = ?1")
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 match stmt.query_row(rusqlite::params![fp], |row| row.get::<_, bool>(0)) {
                     Ok(flag) => flag,
                     Err(rusqlite::Error::QueryReturnedNoRows) => continue,
-                    Err(e) => return Err(CcError::Database(e.to_string())),
+                    Err(e) => return Err(db_err(e)),
                 }
             };
 
@@ -223,12 +219,12 @@ impl IndexDb {
                         .prepare_cached(
                             "SELECT file_path FROM files WHERE is_test_file = 0 AND file_path LIKE ?1",
                         )
-                        .map_err(|e| CcError::Database(e.to_string()))?;
+                        .map_err(db_err)?;
                     let rows = stmt
                         .query_map(rusqlite::params![pat], |row| row.get::<_, String>(0))
-                        .map_err(|e| CcError::Database(e.to_string()))?;
+                        .map_err(db_err)?;
                     for r in rows {
-                        let r = r.map_err(|e| CcError::Database(e.to_string()))?;
+                        let r = r.map_err(db_err)?;
                         if seen.insert(r.clone()) {
                             candidates.push(r);
                         }
@@ -253,7 +249,7 @@ impl IndexDb {
                     tx.execute(
                         "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
                         rusqlite::params![edge_id, fp, code_file, reason, confidence],
-                    ).map_err(|e| CcError::Database(e.to_string()))?;
+                    ).map_err(db_err)?;
                 }
             } else {
                 // Changed file is a code file; find matching test files.
@@ -304,12 +300,12 @@ impl IndexDb {
                         .prepare_cached(
                             "SELECT file_path FROM files WHERE is_test_file = 1 AND file_path LIKE ?1",
                         )
-                        .map_err(|e| CcError::Database(e.to_string()))?;
+                        .map_err(db_err)?;
                     let rows = stmt
                         .query_map(rusqlite::params![pat], |row| row.get::<_, String>(0))
-                        .map_err(|e| CcError::Database(e.to_string()))?;
+                        .map_err(db_err)?;
                     for r in rows {
-                        let r = r.map_err(|e| CcError::Database(e.to_string()))?;
+                        let r = r.map_err(db_err)?;
                         if seen.insert(r.clone()) {
                             candidates.push(r);
                         }
@@ -341,13 +337,13 @@ impl IndexDb {
                     tx.execute(
                         "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
                         rusqlite::params![edge_id, test_file, fp, reason, confidence],
-                    ).map_err(|e| CcError::Database(e.to_string()))?;
+                    ).map_err(db_err)?;
                 }
             }
         }
 
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -361,33 +357,27 @@ impl IndexDb {
             let conn = self.read_conn()?;
             let mut stmt = conn
                 .prepare("SELECT file_path, is_test_file FROM files")
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             let collected: Vec<(String, bool)> = stmt
                 .query_map([], |row| {
                     Ok((row.get::<_, String>(0)?, row.get::<_, bool>(1)?))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?
+                .map_err(db_err)?
                 .collect::<Result<Vec<_>, _>>()
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             collected
         };
         let edges = compute_test_edges_full(&files);
 
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        tx.execute("DELETE FROM test_edges", [])
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
+        tx.execute("DELETE FROM test_edges", []).map_err(db_err)?;
         {
             let mut stmt = tx
                 .prepare_cached(
                     "INSERT OR REPLACE INTO test_edges(edge_id,test_file_path,code_file_path,reason,confidence) VALUES(?1,?2,?3,?4,?5)",
                 )
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for edge in &edges {
                 let edge_id = format!("test:{}:{}", edge.test_file_path, edge.code_file_path);
                 stmt.execute(rusqlite::params![
@@ -397,11 +387,11 @@ impl IndexDb {
                     edge.reason,
                     edge.confidence
                 ])
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             }
         }
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -412,16 +402,11 @@ impl IndexDb {
         if routes.is_empty() {
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
         Self::insert_route_nodes_on(&tx, routes)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -434,7 +419,7 @@ impl IndexDb {
             conn.execute(
                 "INSERT OR REPLACE INTO routes(edge_id,route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
                 rusqlite::params![r.route_id, r.route_id, r.file_path, r.route_path, r.method, r.handler_symbol_uid, r.handler_name, r.framework, r.line, r.end_line, r.normalized_path, r.confidence, r.parser_tier.as_str()],
-            ).map_err(|e| CcError::Database(e.to_string()))?;
+            ).map_err(db_err)?;
         }
         Ok(())
     }
@@ -449,7 +434,7 @@ impl IndexDb {
             conn.execute(
                 "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
                 rusqlite::params![e.edge_id, e.file_path, e.source_symbol, e.source_symbol_uid, e.target_symbol, e.target_symbol_uid, e.relation_kind.as_str(), e.line, e.confidence, e.parser_tier.as_str()],
-            ).map_err(|e| CcError::Database(e.to_string()))?;
+            ).map_err(db_err)?;
         }
         Ok(())
     }
@@ -479,22 +464,19 @@ impl IndexDb {
     }
 
     pub(crate) fn remove_semantic_edges_by_file(&self, file_path: &str) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let agg_update = crate::signature_agg::begin_path_update(&tx, &[file_path])?;
         tx.execute(
             "DELETE FROM semantic_edges WHERE file_path = ?1",
             rusqlite::params![file_path],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         crate::signature_agg::finish_path_update(&tx, &[file_path], agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -523,9 +505,7 @@ impl IndexDb {
         }
         let params_refs: Vec<&dyn rusqlite::types::ToSql> =
             params.iter().map(|p| p.as_ref()).collect();
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let rows = stmt
             .query_map(params_refs.as_slice(), |row| {
                 let relation_str: String = row.get(6)?;
@@ -566,9 +546,8 @@ impl IndexDb {
                     },
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn insert_co_change_edges_batch(
@@ -578,23 +557,18 @@ impl IndexDb {
         if edges.is_empty() {
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
         tx.execute("DELETE FROM co_change_edges", [])
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         for e in edges {
             tx.execute(
                 "INSERT INTO co_change_edges(edge_id,file_a,file_b,co_change_count,total_commits_a,total_commits_b,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7)",
                 rusqlite::params![e.edge_id, e.file_a, e.file_b, e.co_change_count, e.total_commits_a, e.total_commits_b, e.confidence],
-            ).map_err(|e| CcError::Database(e.to_string()))?;
+            ).map_err(db_err)?;
         }
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -611,7 +585,7 @@ impl IndexDb {
                  WHERE (file_a = ?1 OR file_b = ?1) AND confidence >= ?2
                  ORDER BY confidence DESC",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![file_path, min_confidence], |row| {
                 Ok(CoChangeLite {
@@ -624,9 +598,8 @@ impl IndexDb {
                     confidence: row.get(6)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn replace_infra_data(
@@ -634,13 +607,8 @@ impl IndexDb {
         nodes: &[cc_model::infra::InfraNode],
         edges: &[cc_model::infra::InfraEdge],
     ) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
         for node in nodes {
             tx.execute(
                 "INSERT OR REPLACE INTO infra_nodes (node_id, file_path, kind, name, namespace, line, end_line, properties, bound_symbol_uid, binding_confidence) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
@@ -657,7 +625,7 @@ impl IndexDb {
                     node.binding_confidence,
                 ],
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         }
         for edge in edges {
             tx.execute(
@@ -671,10 +639,10 @@ impl IndexDb {
                     edge.properties.to_string(),
                 ],
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         }
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -683,13 +651,10 @@ impl IndexDb {
         file_path: &str,
         sites: &[cc_model::DispatchSiteRecord],
     ) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         // Aggregate scope covers the deleted path plus every inserted site's
         // own path (normally identical; rows under other paths would
         // otherwise escape the delta).
@@ -705,7 +670,7 @@ impl IndexDb {
             "DELETE FROM dispatch_sites WHERE file_path = ?1",
             rusqlite::params![file_path],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         for ds in sites {
             Self::execute_cached(
                 &tx,
@@ -715,7 +680,7 @@ impl IndexDb {
         }
         crate::signature_agg::finish_path_update(&tx, &touched, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -733,7 +698,7 @@ impl IndexDb {
                  site_kind,key,handler_expr,handler_symbol_uid,confidence \
                  FROM dispatch_sites",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 let kind_str: String = row.get(6)?;
@@ -751,10 +716,10 @@ impl IndexDb {
                     confidence: row.get(10)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut result = Vec::new();
         for r in rows {
-            result.push(r.map_err(|e| CcError::Database(e.to_string()))?);
+            result.push(r.map_err(db_err)?);
         }
         Ok(result)
     }
@@ -777,7 +742,7 @@ impl IndexDb {
                  site_kind,key,handler_expr,handler_symbol_uid,confidence \
                  FROM dispatch_sites WHERE site_kind = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![kind], |row| {
                 let kind_str: String = row.get(6)?;
@@ -795,25 +760,22 @@ impl IndexDb {
                     confidence: row.get(10)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut result = Vec::new();
         for r in rows {
-            result.push(r.map_err(|e| CcError::Database(e.to_string()))?);
+            result.push(r.map_err(db_err)?);
         }
         Ok(result)
     }
 
     pub(crate) fn delete_synthetic_call_edges(&self, synthesized_by: &str) -> CcResult<usize> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let count = Self::delete_synthetic_call_edges_on(&tx, synthesized_by)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(count)
     }
 
@@ -833,23 +795,20 @@ impl IndexDb {
             "DELETE FROM call_edges WHERE synthesized_by = ?1",
             rusqlite::params![synthesized_by],
         )
-        .map_err(|e| CcError::Database(e.to_string()))
+        .map_err(db_err)
     }
 
     pub(crate) fn insert_synthetic_call_edges(
         &self,
         edges: &[cc_model::CallEdgeRecord],
     ) -> CcResult<usize> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         Self::insert_synthetic_call_edges_on(&tx, edges)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(edges.len())
     }
 
@@ -899,21 +858,16 @@ impl IndexDb {
         status_code: Option<&str>,
         now: &str,
     ) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "INSERT INTO runtime_evidence(evidence_id, service_name, method, path, status_code, observed_count, first_seen, last_seen)
              VALUES(?1, ?2, ?3, ?4, ?5, 1, ?6, ?6)
              ON CONFLICT(evidence_id) DO UPDATE SET observed_count = observed_count + 1, last_seen = ?6",
             rusqlite::params![evidence_id, service_name, method, path, status_code, now],
-        ).map_err(|e| CcError::Database(e.to_string()))?;
+        ).map_err(db_err)?;
         Self::bump_evidence_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -922,31 +876,21 @@ impl IndexDb {
         evidence_id: &str,
         http_edge_id: &str,
     ) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "UPDATE runtime_evidence SET http_edge_id = ?2 WHERE evidence_id = ?1",
             rusqlite::params![evidence_id, http_edge_id],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         Self::bump_evidence_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
     pub(crate) fn update_evidence_p95(&self, evidence_id: &str, duration_ms: f64) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "UPDATE runtime_evidence SET p95_ms = CASE \
                WHEN p95_ms IS NULL THEN ?1 \
@@ -954,9 +898,9 @@ impl IndexDb {
              END WHERE evidence_id = ?2",
             rusqlite::params![duration_ms, evidence_id],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         Self::bump_evidence_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -965,20 +909,15 @@ impl IndexDb {
         evidence_id: &str,
         route_id: &str,
     ) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "UPDATE runtime_evidence SET route_id = ?1 WHERE evidence_id = ?2",
             rusqlite::params![route_id, evidence_id],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         Self::bump_evidence_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -990,20 +929,15 @@ impl IndexDb {
         http_edge_id: &str,
         boost: f64,
     ) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "UPDATE http_call_edges SET confidence = MIN(1.0, confidence + ?2) WHERE edge_id = ?1",
             rusqlite::params![http_edge_id, boost],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         Self::bump_evidence_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -1068,24 +1002,24 @@ impl IndexDb {
         let conn = self.read_conn()?;
         let evidence_rows: u32 = conn
             .query_row("SELECT COUNT(*) FROM runtime_evidence", [], |r| r.get(0))
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let total_observations: u64 = conn
             .query_row(
                 "SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence",
                 [],
                 |r| r.get(0),
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let linked_rows: u32 = conn
             .query_row(
                 "SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL",
                 [],
                 |r| r.get(0),
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let distinct_linked_edges: u32 = conn
             .query_row("SELECT COUNT(DISTINCT http_edge_id) FROM runtime_evidence WHERE http_edge_id IS NOT NULL", [], |r| r.get(0))
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         Ok(serde_json::json!({
             "evidence_rows": evidence_rows,
             "total_observations": total_observations,
@@ -1115,9 +1049,7 @@ impl IndexDb {
              GROUP BY hce.normalized_path",
             placeholders.join(",")
         );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let params: Vec<&dyn rusqlite::types::ToSql> = paths
             .iter()
             .map(|s| s as &dyn rusqlite::types::ToSql)
@@ -1129,11 +1061,10 @@ impl IndexDb {
                 let last_seen: String = row.get(2)?;
                 Ok((norm_path, count, last_seen))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut result = std::collections::HashMap::new();
         for row in rows {
-            let (norm_path, count, last_seen) =
-                row.map_err(|e| CcError::Database(e.to_string()))?;
+            let (norm_path, count, last_seen) = row.map_err(db_err)?;
             result.insert(norm_path, (count, last_seen));
         }
         Ok(result)

@@ -38,6 +38,7 @@ use serde_json::Value;
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::IndexDb;
+use crate::sql_util::db_err;
 
 /// A typed, atomic batch of index writes (plus transaction-local reads).
 pub struct UnitOfWork<'db> {
@@ -52,10 +53,7 @@ impl<'db> UnitOfWork<'db> {
     /// same thread deadlocks (the write mutex is not reentrant) — all data
     /// access inside the unit must go through `UnitOfWork` methods.
     pub(crate) fn begin(db: &'db IndexDb) -> CcResult<Self> {
-        let conn = db
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = db.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("BEGIN IMMEDIATE;")
             .map_err(|e| CcError::Database(format!("begin unit of work: {}", e)))?;
         Ok(Self {

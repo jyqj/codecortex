@@ -7,7 +7,7 @@
 
 use std::collections::HashMap;
 
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 use rusqlite::OptionalExtension;
 
 use crate::index_db::{
@@ -15,7 +15,7 @@ use crate::index_db::{
     RepoFrameworkRecord, ResolutionAttemptRow, SymbolCoverRow, SymbolDegreeInfo, SymbolRefLite,
     SymbolRow, WriteOps,
 };
-use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
+use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Methods grouped by container name: container -> [(symbol_uid, name, file_path, start_line)].
 pub(crate) type MethodsByContainer = HashMap<String, Vec<(String, String, String, u32)>>;
@@ -36,7 +36,7 @@ impl IndexDb {
                  ORDER BY (end_line - start_line) ASC
                  LIMIT ?3",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![file_path, line, limit as i64], |row| {
                 Ok(SymbolCoverRow {
@@ -48,9 +48,8 @@ impl IndexDb {
                     end_line: row.get(5)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn caller_rows_by_uid(
@@ -67,15 +66,14 @@ impl IndexDb {
                  ORDER BY line ASC, rowid ASC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![callee_uid, limit as i64],
                 crate::rows::call_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn callee_rows_by_uid(
@@ -92,15 +90,14 @@ impl IndexDb {
                  ORDER BY line ASC, rowid ASC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![caller_uid, limit as i64],
                 crate::rows::call_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Batched variant of [`Self::caller_rows_by_uid`]: fetch the top
@@ -166,9 +163,7 @@ impl IndexDb {
                  WHERE rn <= ?{limit_param}
                  ORDER BY seed_uid, rn"
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let limit_value = per_seed_limit as i64;
             let mut params: Vec<&dyn rusqlite::types::ToSql> = Vec::with_capacity(chunk.len() + 1);
             for uid in chunk {
@@ -181,9 +176,9 @@ impl IndexDb {
                     let seed: String = row.get(13)?;
                     Ok((seed, edge))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
+                let row = row.map_err(db_err)?;
                 let (seed, edge) = row;
                 grouped.entry(seed).or_default().push(edge);
             }
@@ -205,7 +200,7 @@ impl IndexDb {
                  ORDER BY line ASC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![target_uid, limit as i64], |row| {
                 Ok(SymbolRefLite {
@@ -217,9 +212,8 @@ impl IndexDb {
                     confidence: row.get(5)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Return a summary of environment variable accesses, ordered by frequency.
@@ -236,7 +230,7 @@ impl IndexDb {
              ORDER BY cnt DESC \
              LIMIT ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![limit as i64], |row| {
                 Ok((
@@ -245,10 +239,10 @@ impl IndexDb {
                     row.get::<_, String>(2)?,
                 ))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut result = Vec::new();
         for row in rows {
-            result.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+            result.push(row.map_err(db_err)?);
         }
         Ok(result)
     }
@@ -273,14 +267,13 @@ impl IndexDb {
                  FROM call_edges
                  WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Return BFS-friendly outgoing edges for a single caller UID.
@@ -298,7 +291,7 @@ impl IndexDb {
                  FROM call_edges \
                  WHERE caller_symbol_uid = ?1 AND callee_symbol_uid IS NOT NULL",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![caller_uid], |row| {
                 Ok(EdgeLiteBfs {
@@ -318,9 +311,8 @@ impl IndexDb {
                     parser_confidence: row.get(13).ok(),
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn call_uid_edges_lite(&self) -> CcResult<Vec<EdgeLiteBfs>> {
@@ -334,7 +326,7 @@ impl IndexDb {
                  FROM call_edges \
                  WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok(EdgeLiteBfs {
@@ -354,24 +346,23 @@ impl IndexDb {
                     parser_confidence: row.get(13).ok(),
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn symbol_names_by_uid(&self) -> CcResult<HashMap<String, String>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare_cached("SELECT symbol_uid, name FROM symbols WHERE symbol_uid IS NOT NULL")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut map = HashMap::new();
         for row in rows {
-            let (uid, name) = row.map_err(|e| CcError::Database(e.to_string()))?;
+            let (uid, name) = row.map_err(db_err)?;
             map.insert(uid, name);
         }
         Ok(map)
@@ -392,18 +383,16 @@ impl IndexDb {
                  FROM symbols WHERE symbol_uid IN ({})",
                 placeholders.join(",")
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let params: Vec<&dyn rusqlite::types::ToSql> = chunk
                 .iter()
                 .map(|s| s as &dyn rusqlite::types::ToSql)
                 .collect();
             let rows = stmt
                 .query_map(params.as_slice(), crate::rows::symbol_row)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for r in rows {
-                let r = r.map_err(|e| CcError::Database(e.to_string()))?;
+                let r = r.map_err(db_err)?;
                 if let Some(uid) = r.symbol_uid.clone() {
                     result.insert(uid, r);
                 }
@@ -424,7 +413,7 @@ impl IndexDb {
                     (SELECT COUNT(DISTINCT callee_symbol_uid) FROM call_edges WHERE caller_symbol_uid = ?1) AS callee_count, \
                     (SELECT COUNT(*) FROM symbol_refs WHERE target_symbol_uid = ?1) AS ref_count",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let info = stmt
             .query_row([uid], |row| {
                 Ok(SymbolDegreeInfo {
@@ -435,7 +424,7 @@ impl IndexDb {
                     ref_count: row.get(4)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         Ok(info)
     }
 
@@ -487,9 +476,7 @@ impl IndexDb {
                  FROM call_edges WHERE callee_symbol_uid IN ({placeholders})
                  GROUP BY callee_symbol_uid"
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let rows = stmt
                 .query_map(params.as_slice(), |row| {
                     Ok((
@@ -498,9 +485,9 @@ impl IndexDb {
                         row.get::<_, u32>(2)?,
                     ))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
+                let row = row.map_err(db_err)?;
                 let (uid, in_degree, caller_count) = row;
                 if let Some(info) = result.get_mut(&uid) {
                     info.in_degree = in_degree;
@@ -514,9 +501,7 @@ impl IndexDb {
                  FROM call_edges WHERE caller_symbol_uid IN ({placeholders})
                  GROUP BY caller_symbol_uid"
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let rows = stmt
                 .query_map(params.as_slice(), |row| {
                     Ok((
@@ -525,9 +510,9 @@ impl IndexDb {
                         row.get::<_, u32>(2)?,
                     ))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
+                let row = row.map_err(db_err)?;
                 let (uid, out_degree, callee_count) = row;
                 if let Some(info) = result.get_mut(&uid) {
                     info.out_degree = out_degree;
@@ -541,16 +526,14 @@ impl IndexDb {
                  FROM symbol_refs WHERE target_symbol_uid IN ({placeholders})
                  GROUP BY target_symbol_uid"
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let rows = stmt
                 .query_map(params.as_slice(), |row| {
                     Ok((row.get::<_, String>(0)?, row.get::<_, u32>(1)?))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
+                let row = row.map_err(db_err)?;
                 let (uid, ref_count) = row;
                 if let Some(info) = result.get_mut(&uid) {
                     info.ref_count = ref_count;
@@ -565,27 +548,21 @@ impl IndexDb {
         assignments: &HashMap<String, u32>,
         labels: &HashMap<u32, String>,
     ) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
 
         tx.execute("UPDATE symbols SET community_id = NULL", [])
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        tx.execute("DELETE FROM communities", [])
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        tx.execute("DELETE FROM communities", []).map_err(db_err)?;
 
         let mut member_counts: HashMap<u32, usize> = HashMap::new();
         {
             let mut stmt = tx
                 .prepare_cached("UPDATE symbols SET community_id = ?1 WHERE symbol_uid = ?2")
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for (uid, community_id) in assignments {
                 stmt.execute(rusqlite::params![community_id, uid])
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 *member_counts.entry(*community_id).or_insert(0) += 1;
             }
         }
@@ -597,11 +574,11 @@ impl IndexDb {
                  VALUES(?1,?2,?3,NULL,'[]')",
                 rusqlite::params![community_id, label, member_count as i64],
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         }
 
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -609,33 +586,23 @@ impl IndexDb {
     /// to the given `community_id`. Used when edge count exceeds the threshold
     /// and full Louvain detection would risk OOM.
     pub(crate) fn assign_all_symbols_to_community(&self, community_id: u32) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "UPDATE symbols SET community_id = ?1 WHERE community_id IS NULL",
             rusqlite::params![community_id],
         )
-        .map_err(|e| CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
     pub(crate) fn replace_repo_frameworks(&self, signals: &[RepoFrameworkRecord]) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
         tx.execute("DELETE FROM frameworks WHERE scope='repo'", [])
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let now = chrono::Utc::now().to_rfc3339();
         for (framework_key, confidence, evidences) in signals {
             let signals_json = serde_json::to_string(evidences).unwrap_or_else(|_| "[]".into());
@@ -644,10 +611,10 @@ impl IndexDb {
                  VALUES(?1,'repo','',?2,?3,?4)",
                 rusqlite::params![framework_key, confidence, signals_json, now],
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         }
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -655,19 +622,14 @@ impl IndexDb {
         if by_file.is_empty() {
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.transaction().map_err(db_err)?;
         for (file_path, signals) in by_file {
             tx.execute(
                 "DELETE FROM frameworks WHERE scope='file' AND scope_id = ?1",
                 rusqlite::params![file_path],
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
             for (framework_key, confidence, evidence) in signals {
                 let signals_json =
                     serde_json::to_string(&vec![evidence.clone()]).unwrap_or_else(|_| "[]".into());
@@ -676,11 +638,11 @@ impl IndexDb {
                      VALUES(?1,'file',?2,?3,?4)",
                     rusqlite::params![framework_key, file_path, confidence, signals_json],
                 )
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             }
         }
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -713,9 +675,7 @@ impl IndexDb {
              FROM symbols WHERE name = ?1 AND kind IN ({}) ORDER BY file_path",
             placeholders
         );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
         params.push(Box::new(name.to_string()));
         for kind in kinds {
@@ -725,9 +685,8 @@ impl IndexDb {
             params.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
             .query_map(param_refs.as_slice(), crate::rows::symbol_row)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Batched variant of [`Self::find_symbols_by_name_and_kinds`]: resolves
@@ -756,9 +715,7 @@ impl IndexDb {
                  FROM symbols WHERE name IN ({}) AND kind IN ({}) ORDER BY name, file_path",
                 name_placeholders, kind_placeholders
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let mut params: Vec<&dyn rusqlite::types::ToSql> =
                 Vec::with_capacity(batch.len() + kinds.len());
             for name in batch {
@@ -769,9 +726,9 @@ impl IndexDb {
             }
             let rows = stmt
                 .query_map(params.as_slice(), crate::rows::symbol_row)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
+                let row = row.map_err(db_err)?;
                 grouped.entry(row.name.clone()).or_default().push(row);
             }
         }
@@ -780,16 +737,11 @@ impl IndexDb {
 
     /// Delete synthetic semantic edges whose edge_id starts with a given prefix.
     pub(crate) fn delete_synthetic_semantic_edges(&self, edge_id_prefix: &str) -> CcResult<usize> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         let count = Self::delete_synthetic_semantic_edges_on(&tx, edge_id_prefix)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(count)
     }
 
@@ -810,7 +762,7 @@ impl IndexDb {
             "DELETE FROM semantic_edges WHERE edge_id LIKE ?1",
             rusqlite::params![pattern],
         )
-        .map_err(|e| CcError::Database(e.to_string()))
+        .map_err(db_err)
     }
 
     /// Find the symbol_uid of a method named `method_name` contained in the same class
@@ -836,7 +788,7 @@ impl IndexDb {
                 |row| row.get(0),
             )
             .optional()
-            .map_err(|e| CcError::Database(e.to_string()))?
+            .map_err(db_err)?
             .flatten();
         let container = match container {
             Some(c) => c,
@@ -849,7 +801,7 @@ impl IndexDb {
                 |row| row.get(0),
             )
             .optional()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let file_path = match file_path {
             Some(fp) => fp,
             None => return Ok(None),
@@ -861,7 +813,7 @@ impl IndexDb {
                 |row| row.get(0),
             )
             .optional()
-            .map_err(|e| CcError::Database(e.to_string()))?
+            .map_err(db_err)?
             .flatten();
         Ok(result)
     }
@@ -900,9 +852,7 @@ impl IndexDb {
              ORDER BY file_path, start_line",
             placeholders
         );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let params: Vec<Box<dyn rusqlite::types::ToSql>> = containers
             .iter()
             .map(|c| Box::new(c.to_string()) as Box<dyn rusqlite::types::ToSql>)
@@ -919,10 +869,9 @@ impl IndexDb {
                     row.get::<_, u32>(4)?,
                 ))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         for row in rows {
-            let (container, uid, name, file_path, line) =
-                row.map_err(|e| CcError::Database(e.to_string()))?;
+            let (container, uid, name, file_path, line) = row.map_err(db_err)?;
             grouped
                 .entry(container)
                 .or_default()
@@ -962,9 +911,7 @@ impl IndexDb {
              ORDER BY file_path",
             placeholders
         );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let mut params: Vec<Box<dyn rusqlite::types::ToSql>> = Vec::new();
         for name in method_names {
             params.push(Box::new(name.to_string()));
@@ -975,9 +922,8 @@ impl IndexDb {
             .query_map(param_refs.as_slice(), |row| {
                 Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Get the export fingerprint for a file.
@@ -991,7 +937,7 @@ impl IndexDb {
                    AND (export_name IS NOT NULL OR is_default_export = 1)
                  ORDER BY symbol_uid",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![file_path], |row| {
                 Ok((
@@ -1001,11 +947,11 @@ impl IndexDb {
                     row.get::<_, String>(3)?,
                 ))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
 
         let mut parts: Vec<String> = Vec::new();
         for row in rows {
-            let (uid, name, sig, exp) = row.map_err(|e| CcError::Database(e.to_string()))?;
+            let (uid, name, sig, exp) = row.map_err(db_err)?;
             parts.push(format!("{}|{}|{}|{}", uid, name, sig, exp));
         }
 
@@ -1051,9 +997,7 @@ impl IndexDb {
                  ORDER BY file_path, symbol_uid",
                 placeholders.join(",")
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let params: Vec<&dyn rusqlite::types::ToSql> = chunk
                 .iter()
                 .map(|p| p as &dyn rusqlite::types::ToSql)
@@ -1068,13 +1012,12 @@ impl IndexDb {
                         row.get::<_, String>(4)?,
                     ))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
 
             // Group rows per file (rows are contiguous thanks to ORDER BY).
             let mut grouped: HashMap<String, Vec<String>> = HashMap::new();
             for row in rows {
-                let (file_path, uid, name, sig, exp) =
-                    row.map_err(|e| CcError::Database(e.to_string()))?;
+                let (file_path, uid, name, sig, exp) = row.map_err(db_err)?;
                 grouped
                     .entry(file_path)
                     .or_default()
@@ -1109,18 +1052,16 @@ impl IndexDb {
                 "SELECT DISTINCT file_path FROM imports WHERE resolved_path IN ({})",
                 placeholders.join(",")
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let params: Vec<&dyn rusqlite::types::ToSql> = chunk
                 .iter()
                 .map(|p| p as &dyn rusqlite::types::ToSql)
                 .collect();
             let rows = stmt
                 .query_map(params.as_slice(), |row| row.get::<_, String>(0))
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                result.insert(row.map_err(|e| CcError::Database(e.to_string()))?);
+                result.insert(row.map_err(db_err)?);
             }
         }
 
@@ -1158,9 +1099,7 @@ impl IndexDb {
                  WHERE file_path IN ({}) AND is_reexport = 1 AND resolved_path IS NOT NULL",
                 placeholders.join(",")
             );
-            let mut stmt = conn
-                .prepare(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
             let params: Vec<&dyn rusqlite::types::ToSql> = chunk
                 .iter()
                 .map(|p| p as &dyn rusqlite::types::ToSql)
@@ -1169,10 +1108,9 @@ impl IndexDb {
                 .query_map(params.as_slice(), |row| {
                     Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let (file_path, resolved_path) =
-                    row.map_err(|e| CcError::Database(e.to_string()))?;
+                let (file_path, resolved_path) = row.map_err(db_err)?;
                 result.entry(file_path).or_default().push(resolved_path);
             }
         }
@@ -1196,7 +1134,7 @@ impl IndexDb {
                  param_types,return_type,param_count,base_types,implements \
                  FROM symbols WHERE file_path = ?1 ORDER BY start_line",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let sym_rows = sym_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 let kind: String = row.get(3)?;
@@ -1232,10 +1170,9 @@ impl IndexDb {
                     implements: row.get(24)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let symbols: Vec<cc_model::SymbolRecord> = sym_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let symbols: Vec<cc_model::SymbolRecord> =
+            sym_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         // imports
         let mut imp_stmt = conn
@@ -1244,7 +1181,7 @@ impl IndexDb {
                  is_namespace,is_default,is_reexport \
                  FROM imports WHERE file_path = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let imp_rows = imp_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 Ok(cc_model::ImportRecord {
@@ -1258,10 +1195,9 @@ impl IndexDb {
                     is_reexport: row.get::<_, i64>(7)? != 0,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let imports: Vec<cc_model::ImportRecord> = imp_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let imports: Vec<cc_model::ImportRecord> =
+            imp_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         // call_edges
         let mut ce_stmt = conn
@@ -1273,7 +1209,7 @@ impl IndexDb {
                  parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line \
                  FROM call_edges WHERE file_path = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let ce_rows = ce_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 let dispatch_str: String = row.get(14)?;
@@ -1330,10 +1266,9 @@ impl IndexDb {
                     registered_line: registered_line.map(|v| v as u32),
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let call_edges: Vec<cc_model::CallEdgeRecord> = ce_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let call_edges: Vec<cc_model::CallEdgeRecord> =
+            ce_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         // symbol_refs
         let mut sr_stmt = conn
@@ -1343,7 +1278,7 @@ impl IndexDb {
                  resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence \
                  FROM symbol_refs WHERE file_path = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let sr_rows = sr_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 let resolution_str: String = row.get(11)?;
@@ -1376,10 +1311,9 @@ impl IndexDb {
                     parser_confidence: row.get(17)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let symbol_refs: Vec<cc_model::SymbolRefRecord> = sr_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let symbol_refs: Vec<cc_model::SymbolRefRecord> =
+            sr_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         // semantic_edges
         let mut se_stmt = conn
@@ -1388,7 +1322,7 @@ impl IndexDb {
                  target_symbol_uid,relation_kind,line,confidence,parser_tier \
                  FROM semantic_edges WHERE file_path = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let se_rows = se_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 let relation_str: String = row.get(6)?;
@@ -1422,10 +1356,9 @@ impl IndexDb {
                     parser_tier: crate::index_db::parse_parser_tier(&tier_str),
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let semantic_edges: Vec<cc_model::SemanticEdgeRecord> = se_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let semantic_edges: Vec<cc_model::SemanticEdgeRecord> =
+            se_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         // dispatch_sites
         let mut ds_stmt = conn
@@ -1434,7 +1367,7 @@ impl IndexDb {
                  site_kind,key,handler_expr,handler_symbol_uid,confidence \
                  FROM dispatch_sites WHERE file_path = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let ds_rows = ds_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 let kind_str: String = row.get(6)?;
@@ -1452,10 +1385,9 @@ impl IndexDb {
                     confidence: row.get(10)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let dispatch_sites: Vec<cc_model::DispatchSiteRecord> = ds_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let dispatch_sites: Vec<cc_model::DispatchSiteRecord> =
+            ds_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         // route_edges
         let mut re_stmt = conn
@@ -1465,7 +1397,7 @@ impl IndexDb {
                  route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence \
                  FROM routes WHERE file_path = ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let re_rows = re_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 let tier_str: String = row.get(16)?;
@@ -1491,10 +1423,9 @@ impl IndexDb {
                     resolution_confidence: row.get(18)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let route_edges: Vec<cc_model::edge::RouteEdgeRecord> = re_rows
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
+        let route_edges: Vec<cc_model::edge::RouteEdgeRecord> =
+            re_rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
 
         Ok(FileEdgesForReresolve {
             symbols,
@@ -1521,18 +1452,15 @@ impl IndexDb {
              ORDER BY file_path, start_line",
             placeholders.join(",")
         );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let params: Vec<&dyn rusqlite::types::ToSql> = file_paths
             .iter()
             .map(|s| s as &dyn rusqlite::types::ToSql)
             .collect();
         let rows = stmt
             .query_map(params.as_slice(), crate::rows::symbol_row)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 }
 

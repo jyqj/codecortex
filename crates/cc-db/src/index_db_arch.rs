@@ -2,9 +2,10 @@
 
 use std::collections::HashMap;
 
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 
 use crate::index_db::{IndexDb, ReadOps, WriteOps};
+use crate::sql_util::db_err;
 
 impl IndexDb {
     pub(crate) fn architecture_languages(
@@ -37,12 +38,12 @@ impl IndexDb {
 
         let mut file_stmt = conn
             .prepare("SELECT file_path FROM files")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let file_paths: Vec<String> = file_stmt
             .query_map([], |row| row.get::<_, String>(0))
-            .map_err(|e| CcError::Database(e.to_string()))?
+            .map_err(db_err)?
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
 
         let mut pkg_files: HashMap<String, usize> = HashMap::new();
         for fp in &file_paths {
@@ -52,12 +53,12 @@ impl IndexDb {
 
         let mut sym_stmt = conn
             .prepare("SELECT file_path FROM symbols")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let sym_paths: Vec<String> = sym_stmt
             .query_map([], |row| row.get::<_, String>(0))
-            .map_err(|e| CcError::Database(e.to_string()))?
+            .map_err(db_err)?
             .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
 
         let mut pkg_symbols: HashMap<String, usize> = HashMap::new();
         for fp in &sym_paths {
@@ -141,7 +142,7 @@ impl IndexDb {
                  ORDER BY start_line
                  LIMIT ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![limit as i64], |row| {
                 let name: String = row.get(0)?;
@@ -162,9 +163,8 @@ impl IndexDb {
                     line: row.get::<_, u32>(3).unwrap_or(0),
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn architecture_routes(
@@ -179,7 +179,7 @@ impl IndexDb {
                  ORDER BY route_path
                  LIMIT ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![limit as i64], |row| {
                 Ok(cc_model::architecture::RouteInfo {
@@ -189,9 +189,8 @@ impl IndexDb {
                     file_path: row.get(3)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn architecture_hotspots(
@@ -209,7 +208,7 @@ impl IndexDb {
                  ORDER BY fan_in DESC
                  LIMIT ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![limit as i64], |row| {
                 Ok(cc_model::architecture::HotspotInfo {
@@ -219,9 +218,8 @@ impl IndexDb {
                     fan_in: row.get::<_, usize>(3).unwrap_or(0),
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn architecture_boundaries(
@@ -378,7 +376,7 @@ impl IndexDb {
         let mut stmt = conn.prepare(
             "SELECT node_id, file_path, kind, name, namespace, line, end_line, properties, bound_symbol_uid, binding_confidence \
              FROM infra_nodes WHERE kind = ?1"
-        ).map_err(|e| CcError::Database(e.to_string()))?;
+        ).map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![kind], |row| {
                 let kind_str: String = row.get(2)?;
@@ -401,16 +399,15 @@ impl IndexDb {
                     binding_confidence: row.get(9)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn adr_list(&self) -> CcResult<Vec<serde_json::Value>> {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT adr_id, title, status, created_at, updated_at FROM adr ORDER BY created_at DESC")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok(serde_json::json!({
@@ -421,9 +418,8 @@ impl IndexDb {
                     "updated_at": row.get::<_, String>(4)?,
                 }))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn adr_get(&self, adr_id: &str) -> CcResult<Option<serde_json::Value>> {
@@ -447,7 +443,7 @@ impl IndexDb {
         match result {
             Ok(v) => Ok(Some(v)),
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
-            Err(e) => Err(CcError::Database(e.to_string())),
+            Err(e) => Err(db_err(e)),
         }
     }
 
@@ -460,37 +456,27 @@ impl IndexDb {
         decision: &str,
         now: &str,
     ) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         tx.execute(
             "INSERT INTO adr(adr_id, title, status, context, decision, created_at, updated_at)
              VALUES(?1, ?2, ?3, ?4, ?5, ?6, ?6)
              ON CONFLICT(adr_id) DO UPDATE SET title=?2, status=?3, context=?4, decision=?5, updated_at=?6",
             rusqlite::params![adr_id, title, status, context, decision, now],
-        ).map_err(|e| CcError::Database(e.to_string()))?;
+        ).map_err(db_err)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
     pub(crate) fn adr_delete(&self, adr_id: &str) -> CcResult<bool> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let tx = conn
-            .unchecked_transaction()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        let tx = conn.unchecked_transaction().map_err(db_err)?;
         let affected = tx
             .execute("DELETE FROM adr WHERE adr_id = ?1", [adr_id])
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(affected > 0)
     }
 }

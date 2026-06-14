@@ -1,5 +1,6 @@
 //! Index database schema management (rebuild-on-mismatch strategy).
 
+use crate::sql_util::db_err;
 use cc_model::CcResult;
 use rusqlite::Connection;
 
@@ -16,7 +17,7 @@ pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
     let stored = conn
         .pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
-        .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
 
     if stored == CURRENT_SCHEMA_VERSION {
         return Ok(SchemaStatus::UpToDate);
@@ -39,7 +40,7 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
     conn.execute_batch(FULL_SCHEMA_SQL)
         .map_err(|e| cc_model::CcError::Database(format!("schema init failed: {}", e)))?;
     conn.pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
-        .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+        .map_err(db_err)?;
 
     Ok(SchemaStatus::Initialized)
 }

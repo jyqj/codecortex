@@ -60,9 +60,9 @@ use std::hash::{Hash, Hasher};
 
 use rusqlite::{Connection, OptionalExtension};
 
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 
-use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
+use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Metadata key holding the serialized aggregates.
 pub(crate) const GRAPH_SIG_AGG_KEY: &str = "graph_sig_aggregates";
@@ -320,10 +320,6 @@ fn col_opt_i64(row: &rusqlite::Row<'_>, idx: usize) -> rusqlite::Result<Option<i
         rusqlite::types::ValueRef::Integer(n) => Some(n),
         _ => None,
     })
-}
-
-fn db_err(e: impl std::fmt::Display) -> CcError {
-    CcError::Database(e.to_string())
 }
 
 /// Fold the rows of one table (optionally scoped to a path chunk) into the

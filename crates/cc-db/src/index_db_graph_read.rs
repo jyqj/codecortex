@@ -8,18 +8,14 @@
 
 use std::collections::HashMap;
 
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 use serde_json::Value;
 
 use crate::index_db::{
     CallEdgeProvenanceCounts, DeadCodeSymbolRow, EdgeLiteBfs, HttpCallEdgeLite, ImportWitnessRow,
     IndexDb, IndexGeneration, ReadOps, RouteNodeLite, ServiceBindingRows, SymbolLiteRow,
 };
-use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
-
-fn db_err(err: impl std::fmt::Display) -> CcError {
-    CcError::Database(err.to_string())
-}
+use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Render a community id column value the same way the previous JSON
 /// projection did: integers and floats via their JSON representation,

@@ -21,10 +21,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 
 use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb};
-use crate::sql_util::{escape_like, sql_in_placeholders, IN_BATCH_SIZE};
+use crate::sql_util::{db_err, escape_like, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// `(chunk_id, start_line, end_line)` spans grouped by file path.
 pub type ChunkSpansByFile = HashMap<String, Vec<(String, u32, u32)>>;
@@ -100,18 +100,15 @@ impl<'a> RetrievalReadModel<'a> {
                     ],
                 )
             };
-        let mut stmt = conn
-            .prepare_cached(sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare_cached(sql).map_err(db_err)?;
         let param_refs: Vec<&dyn rusqlite::types::ToSql> =
             params_vec.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
             .query_map(param_refs.as_slice(), |row| {
                 Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Path-token substring match via the trigram `file_paths_fts` mirror,
@@ -150,7 +147,7 @@ impl<'a> RetrievalReadModel<'a> {
                          AND file_path LIKE ?2 ESCAPE '\\' \
                          ORDER BY file_path LIMIT ?3",
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 let rows = stmt
                     .query_map(
                         rusqlite::params![
@@ -160,9 +157,9 @@ impl<'a> RetrievalReadModel<'a> {
                         ],
                         |row| row.get::<_, String>(0),
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 for row in rows {
-                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                    hits.push(row.map_err(db_err)?);
                 }
             } else {
                 let mut stmt = conn
@@ -171,15 +168,15 @@ impl<'a> RetrievalReadModel<'a> {
                          WHERE file_path LIKE ?1 ESCAPE '\\' \
                          ORDER BY file_path LIMIT ?2",
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 let rows = stmt
                     .query_map(
                         rusqlite::params![like_token, per_token_limit as i64],
                         |row| row.get::<_, String>(0),
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 for row in rows {
-                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                    hits.push(row.map_err(db_err)?);
                 }
             }
             results.push(hits);
@@ -227,7 +224,7 @@ impl<'a> RetrievalReadModel<'a> {
                          ORDER BY CASE WHEN lower(name) = lower(?3) THEN 0 ELSE 1 END, file_path \
                          LIMIT ?4",
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 let rows = stmt
                     .query_map(
                         rusqlite::params![
@@ -238,9 +235,9 @@ impl<'a> RetrievalReadModel<'a> {
                         ],
                         |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 for row in rows {
-                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                    hits.push(row.map_err(db_err)?);
                 }
             } else {
                 let mut stmt = conn
@@ -251,15 +248,15 @@ impl<'a> RetrievalReadModel<'a> {
                          ORDER BY CASE WHEN lower(name) = lower(?2) THEN 0 ELSE 1 END, file_path \
                          LIMIT ?3",
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 let rows = stmt
                     .query_map(
                         rusqlite::params![like_token, token, per_token_limit as i64],
                         |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
                     )
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 for row in rows {
-                    hits.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                    hits.push(row.map_err(db_err)?);
                 }
             }
             results.push(hits);
@@ -272,14 +269,13 @@ impl<'a> RetrievalReadModel<'a> {
         let conn = self.db.read_conn()?;
         let mut stmt = conn
             .prepare_cached("SELECT file_path FROM files ORDER BY indexed_at DESC LIMIT ?1")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![limit as i64], |row| {
                 row.get::<_, String>(0)
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Batch-fetch full chunk rows by chunk id, queried in
@@ -306,9 +302,7 @@ impl<'a> RetrievalReadModel<'a> {
                  FROM chunks WHERE chunk_id IN ({})",
                 sql_in_placeholders(batch.len()),
             );
-            let mut stmt = conn
-                .prepare_cached(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
             let rows = stmt
                 .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
                     let chunk_id: String = row.get(0)?;
@@ -329,9 +323,9 @@ impl<'a> RetrievalReadModel<'a> {
                         text,
                     })
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                results.push(row.map_err(|e| CcError::Database(e.to_string()))?);
+                results.push(row.map_err(db_err)?);
             }
         }
         Ok(results)
@@ -358,15 +352,14 @@ impl<'a> RetrievalReadModel<'a> {
                  ORDER BY (lower(s.name) = lower(?2)) DESC, length(s.name) ASC \
                  LIMIT ?3",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![like_pattern, token, limit as i64],
                 |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Symbol uids whose name equals one of `names` exactly (BINARY collation,
@@ -389,9 +382,7 @@ impl<'a> RetrievalReadModel<'a> {
             sql_in_placeholders(names.len()),
             names.len() + 1,
         );
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let mut params_vec: Vec<Box<dyn rusqlite::types::ToSql>> = names
             .iter()
             .map(|name| Box::new(name.to_string()) as Box<dyn rusqlite::types::ToSql>)
@@ -401,9 +392,8 @@ impl<'a> RetrievalReadModel<'a> {
             params_vec.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
             .query_map(param_refs.as_slice(), |row| row.get::<_, String>(0))
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
@@ -421,9 +411,7 @@ impl<'a> RetrievalReadModel<'a> {
                  FROM chunks WHERE file_path IN ({})",
                 sql_in_placeholders(batch.len())
             );
-            let mut stmt = conn
-                .prepare_cached(&sql)
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
             let params: Vec<&dyn rusqlite::types::ToSql> = batch
                 .iter()
                 .map(|path| path as &dyn rusqlite::types::ToSql)
@@ -437,9 +425,9 @@ impl<'a> RetrievalReadModel<'a> {
                         row.get::<_, u32>(3)?,
                     ))
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             for row in rows {
-                let row = row.map_err(|e| CcError::Database(e.to_string()))?;
+                let row = row.map_err(db_err)?;
                 let (file, chunk_id, start, end) = row;
                 by_file
                     .entry(file)

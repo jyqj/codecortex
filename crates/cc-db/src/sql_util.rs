@@ -25,6 +25,16 @@ pub fn escape_like(text: &str) -> String {
     escaped
 }
 
+/// Map any `Display` error (rusqlite / r2d2 / io / lock-poison) into a
+/// `CcError::Database` carrying its string form. The single source of truth
+/// for DB error mapping across cc-db — every `.map_err(db_err)` site used to
+/// spell out `|e| CcError::Database(e.to_string())`. Errors that need
+/// contextual detail (e.g. `read_conn`'s `"pool get: {e}"`) keep their own
+/// closure; only the bare `to_string()` form routes here.
+pub fn db_err(err: impl std::fmt::Display) -> cc_model::CcError {
+    cc_model::CcError::Database(err.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::escape_like;

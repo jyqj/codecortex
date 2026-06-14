@@ -1,8 +1,9 @@
 //! IndexDb methods: route, HTTP call, diagnostic, and route-node queries (frontier expansion).
 
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 
 use crate::index_db::{HttpCallEdgeLite, IndexDb, ReadOps, RouteEdgeLite, RouteNodeLite};
+use crate::sql_util::db_err;
 
 impl IndexDb {
     pub(crate) fn route_rows_by_path(
@@ -20,15 +21,14 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![route_path, limit as i64],
                 crate::rows::route_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn route_rows_by_handler_uid(
@@ -46,15 +46,14 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![handler_uid, limit as i64],
                 crate::rows::route_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn http_calls_by_caller_uid(
@@ -72,15 +71,14 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![caller_uid, limit as i64],
                 crate::rows::http_call_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn http_callers_by_normalized_path(
@@ -98,15 +96,14 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![normalized_path, limit as i64],
                 crate::rows::http_call_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn http_callers_by_normalized_path_and_method(
@@ -126,16 +123,15 @@ impl IndexDb {
                      ORDER BY confidence DESC
                      LIMIT ?3",
                 )
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             let rows = stmt
                 .query_map(
                     rusqlite::params![normalized_path, m, limit as i64],
                     crate::rows::http_call_edge_lite,
                 )
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let exact: Vec<HttpCallEdgeLite> = rows
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
+            let exact: Vec<HttpCallEdgeLite> =
+                rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
             if !exact.is_empty() {
                 return Ok(exact);
             }
@@ -158,7 +154,7 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?2",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![normalized_path, limit as i64], |row| {
                 Ok(RouteNodeLite {
@@ -175,9 +171,8 @@ impl IndexDb {
                     normalized_path: None,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn route_nodes_by_normalized_path_and_method(
@@ -197,7 +192,7 @@ impl IndexDb {
                      ORDER BY confidence DESC
                      LIMIT ?3",
                 )
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
             let rows = stmt
                 .query_map(rusqlite::params![normalized_path, m, limit as i64], |row| {
                     Ok(RouteNodeLite {
@@ -214,10 +209,8 @@ impl IndexDb {
                         normalized_path: None,
                     })
                 })
-                .map_err(|e| CcError::Database(e.to_string()))?;
-            let exact: Vec<RouteNodeLite> = rows
-                .collect::<Result<Vec<_>, _>>()
-                .map_err(|e| CcError::Database(e.to_string()))?;
+                .map_err(db_err)?;
+            let exact: Vec<RouteNodeLite> = rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
             if !exact.is_empty() {
                 return Ok(exact);
             }
@@ -236,15 +229,14 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![limit as i64],
                 crate::rows::http_call_edge_lite,
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
     pub(crate) fn all_route_nodes_lite(&self, limit: usize) -> CcResult<Vec<RouteNodeLite>> {
@@ -258,7 +250,7 @@ impl IndexDb {
                  ORDER BY confidence DESC
                  LIMIT ?1",
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params![limit as i64], |row| {
                 Ok(RouteNodeLite {
@@ -275,9 +267,8 @@ impl IndexDb {
                     normalized_path: row.get(10)?,
                 })
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        rows.collect::<Result<Vec<_>, _>>()
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 }
 

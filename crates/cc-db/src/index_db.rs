@@ -22,7 +22,7 @@ use cc_model::{CcError, CcResult, Language, ParserTier};
 use crate::index_migrate::{
     migrate_index_db, SchemaStatus, CURRENT_SCHEMA_VERSION, FULL_SCHEMA_SQL,
 };
-use crate::sql_util::{sql_in_placeholders, IN_BATCH_SIZE};
+use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Read a chunk text column using the explicit `chunks.text_encoding` marker.
 ///
@@ -500,7 +500,7 @@ impl IndexDb {
             .min_idle(Some(read_pool_size.min(2)))
             .idle_timeout(Some(Duration::from_secs(300)))
             .build(manager)
-            .map_err(|e| CcError::Database(e.to_string()))
+            .map_err(db_err)
     }
 
     /// Open the database, check schema version, and rebuild if mismatched.
@@ -530,9 +530,8 @@ impl IndexDb {
                        PRAGMA foreign_keys=ON; PRAGMA busy_timeout=5000; \
                        PRAGMA cache_size=-65536; PRAGMA mmap_size=536870912;";
 
-        let conn = Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
-        conn.execute_batch(pragmas)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = Connection::open(path).map_err(db_err)?;
+        conn.execute_batch(pragmas).map_err(db_err)?;
 
         match migrate_index_db(&conn)? {
             status @ (SchemaStatus::UpToDate | SchemaStatus::Initialized) => Ok((conn, status)),
@@ -577,11 +576,8 @@ impl IndexDb {
                         shm.push("-shm");
                         let _ = std::fs::remove_file(&wal);
                         let _ = std::fs::remove_file(&shm);
-                        let new_conn =
-                            Connection::open(path).map_err(|e| CcError::Database(e.to_string()))?;
-                        new_conn
-                            .execute_batch(pragmas)
-                            .map_err(|e| CcError::Database(e.to_string()))?;
+                        let new_conn = Connection::open(path).map_err(db_err)?;
+                        new_conn.execute_batch(pragmas).map_err(db_err)?;
                         new_conn
                     }
                 };
@@ -814,16 +810,16 @@ impl IndexDb {
     fn read_generation_on(conn: &Connection) -> CcResult<IndexGeneration> {
         let mut stmt = conn
             .prepare_cached("SELECT key, value FROM metadata WHERE key IN (?1, ?2)")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![INDEX_EPOCH_KEY, EVIDENCE_EPOCH_KEY],
                 |row| Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?)),
             )
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut generation = IndexGeneration::default();
         for row in rows {
-            let (key, value) = row.map_err(|e| CcError::Database(e.to_string()))?;
+            let (key, value) = row.map_err(db_err)?;
             let parsed = value.parse::<u64>().unwrap_or(0);
             match key.as_str() {
                 INDEX_EPOCH_KEY => generation.index_epoch = parsed,
@@ -926,10 +922,7 @@ impl IndexDb {
     /// Call after large writes (e.g. full rebuild) to reclaim WAL disk space
     /// and ensure all data is flushed to the main database file.
     pub(crate) fn checkpoint_wal(&self) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);")
             .map_err(|e| CcError::Database(format!("wal_checkpoint: {}", e)))?;
         Ok(())
@@ -986,11 +979,8 @@ impl IndexDb {
         sql: &str,
         params: P,
     ) -> CcResult<usize> {
-        let mut stmt = conn
-            .prepare_cached(sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        stmt.execute(params)
-            .map_err(|e| CcError::Database(e.to_string()))
+        let mut stmt = conn.prepare_cached(sql).map_err(db_err)?;
+        stmt.execute(params).map_err(db_err)
     }
 
     // ── Full rebuild protocol (shared by both rebuild paths) ────
@@ -1071,10 +1061,7 @@ impl IndexDb {
             // Lock the write connection to prevent concurrent writes.
             // The rename MUST happen inside this scope so no writer can
             // slip in between lock-release and file replacement.
-            let _write_guard = self
-                .write_conn
-                .lock()
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let _write_guard = self.write_conn.lock().map_err(db_err)?;
 
             // Write the final epoch vector now that no further writes can
             // land: max(floor, live) + 1 covers writes committed while the
@@ -1105,10 +1092,7 @@ impl IndexDb {
         // Reopen write connection
         let (new_write_conn, _status) = Self::open_and_ensure_schema(&self.db_path)?;
         {
-            let mut guard = self
-                .write_conn
-                .lock()
-                .map_err(|e| CcError::Database(e.to_string()))?;
+            let mut guard = self.write_conn.lock().map_err(db_err)?;
             *guard = new_write_conn;
         }
 
@@ -1282,7 +1266,7 @@ impl IndexDb {
         let conn = self.read_conn()?;
         let mut stmt = conn
             .prepare("SELECT file_path, content_hash, mtime, size FROM files")
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok((
@@ -1294,10 +1278,10 @@ impl IndexDb {
                     },
                 ))
             })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let mut map = HashMap::new();
         for row in rows {
-            let (path, state) = row.map_err(|e| CcError::Database(e.to_string()))?;
+            let (path, state) = row.map_err(db_err)?;
             map.insert(path, state);
         }
         Ok(map)
@@ -1309,13 +1293,10 @@ impl IndexDb {
         if files.is_empty() {
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rel_paths: Vec<&str> = files.iter().map(|f| f.rel_path.as_str()).collect();
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
@@ -1328,7 +1309,7 @@ impl IndexDb {
         Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -1352,13 +1333,10 @@ impl IndexDb {
         if units.is_empty() && seen_config_files.is_empty() {
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let linked_now: std::collections::HashSet<&str> =
             units.iter().map(|u| u.rel_path.as_str()).collect();
         // Config refs are not signature-relevant, but the whole-unit branch
@@ -1378,9 +1356,9 @@ impl IndexDb {
             let parsed_row_exists = {
                 let mut stmt = tx
                     .prepare_cached("SELECT 1 FROM files WHERE file_path = ?1")
-                    .map_err(|e| CcError::Database(e.to_string()))?;
+                    .map_err(db_err)?;
                 stmt.exists(rusqlite::params![unit.rel_path])
-                    .map_err(|e| CcError::Database(e.to_string()))?
+                    .map_err(db_err)?
             };
             if parsed_row_exists {
                 Self::delete_config_link_refs(&tx, &unit.rel_path)?;
@@ -1397,7 +1375,7 @@ impl IndexDb {
         }
         crate::signature_agg::finish_path_update(&tx, &unit_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -1441,13 +1419,10 @@ impl IndexDb {
     /// Only replaces: symbols, imports, call_edges, symbol_refs, semantic_edges,
     /// dispatch_sites, route_edges.
     pub(crate) fn replace_reresolved_edges_only(&self, units: &[FileWriteUnit]) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rel_paths: Vec<&str> = units.iter().map(|u| u.rel_path.as_str()).collect();
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         for file in units {
@@ -1455,7 +1430,7 @@ impl IndexDb {
         }
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -1585,13 +1560,10 @@ impl IndexDb {
             self.ensure_signature_aggregates_initialized()?;
             return Ok(());
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         // Signature-aggregate maintenance: capture the touched paths' partial
         // aggregates before any delete (the whole batch is file-scoped, so
         // the delta against the post-state below covers every mutated row,
@@ -1681,7 +1653,7 @@ impl IndexDb {
         Self::bump_index_epoch_on(&tx)?;
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         section_ms("db_commit", 0, section_start);
         // Committed: carry the seed cache across this batch — the same
         // file-scoped delta the transaction applied to `symbols`.
@@ -1700,20 +1672,17 @@ impl IndexDb {
     /// did), recompute it from the table contents so the postprocess gates
     /// read O(1) metadata instead of falling back to full scans every build.
     fn ensure_signature_aggregates_initialized(&self) -> CcResult<()> {
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         if crate::signature_agg::load_on(&conn)?.is_some() {
             return Ok(());
         }
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let aggs = crate::signature_agg::scan_on(&tx)?;
         crate::signature_agg::store_on(&tx, &aggs)?;
         // Metadata only — index content is unchanged, so no epoch bump.
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(())
     }
 
@@ -1730,20 +1699,17 @@ impl IndexDb {
         if paths.is_empty() {
             return Ok(0);
         }
-        let mut conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         let rel_paths: Vec<&str> = paths.iter().map(String::as_str).collect();
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
         Self::delete_files_data_base_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
-        tx.commit().map_err(|e| CcError::Database(e.to_string()))?;
+        tx.commit().map_err(db_err)?;
         Ok(paths.len())
     }
 
@@ -2215,12 +2181,9 @@ impl IndexDb {
     }
 
     pub(crate) fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
-        let conn = self
-            .write_conn
-            .lock()
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute("INSERT INTO metadata(key,value) VALUES(?1,?2) ON CONFLICT(key) DO UPDATE SET value=excluded.value", rusqlite::params![key, value])
-            .map_err(|e| CcError::Database(e.to_string()))?;
+            .map_err(db_err)?;
         Ok(())
     }
 

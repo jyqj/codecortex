@@ -1,14 +1,14 @@
 use std::collections::HashSet;
 use std::path::Path;
 
-use cc_db::index_db::{FileWriteUnit, IndexDb, PrecompressedChunks, SymbolTargetRow};
+use cc_db::index_db::{FileWriteUnit, PrecompressedChunks, SymbolTargetRow};
+use cc_db::SnapshotWriteTxn;
 use cc_model::edge::RouteNodeRecord;
 use cc_model::CcResult;
 
 use crate::config_linker::{config_files_signature, scan_config_tokens};
 use crate::indexer::Indexer;
 
-use super::config_link::{CONFIG_RAW_CACHE_KEY, CONFIG_SIG_ALGO_KEY, CONFIG_SIG_KEY};
 use super::{time_step, CONFIG_SIG_ALGORITHM};
 
 /// Owned output of the common front half of a full-snapshot write, shared by
@@ -77,70 +77,46 @@ impl Indexer {
     }
 
     /// Shared rebuild-closure body: writes file data, route nodes, config-link
-    /// units and metadata into the connection handed out by either rebuild
-    /// adapter.
+    /// units and metadata into the snapshot write seam handed out by either
+    /// rebuild adapter. The raw `&Connection` never crosses this interface —
+    /// both wrappers wrap it in a `SnapshotWriteTxn` at the closure entry.
     fn write_full_snapshot_contents(
-        conn: &rusqlite::Connection,
+        txn: &SnapshotWriteTxn,
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         payload: &FullSnapshotPayload,
         chunk_blobs: &PrecompressedChunks,
     ) -> CcResult<()> {
-        // Write main file data (chunk payloads pre-compressed during prepare;
-        // missing entries fall back to the identical in-transaction policy).
-        for unit in write_units {
-            IndexDb::insert_file_data_precompressed(
-                conn,
-                unit,
-                chunk_blobs.get(&unit.rel_path).map(Vec::as_slice),
-            )?;
-        }
+        // Write main file data (chunk payloads pre-compressed during prepare).
+        txn.write_file_data(write_units, chunk_blobs)?;
 
-        // Write route nodes
-        for r in route_nodes {
-            IndexDb::insert_route_node_into(conn, r)?;
-        }
+        // Route nodes.
+        txn.write_route_nodes(route_nodes)?;
 
         // Hierarchy edges go into the temp-db before the atomic swap, so the
         // rebuilt snapshot can never become visible without them (writing
         // them after the swap would leave a crash window where every file's
         // content_hash is committed but its hierarchy edges are missing).
-        IndexDb::insert_semantic_edges_batch_on(conn, hierarchy_edges)?;
+        txn.write_hierarchy_edges(hierarchy_edges)?;
 
-        // Write config link units. Scanner 可见的配置文件（yaml/toml 等）已经
-        // 作为解析单元写入过 files —— 对它们只追加 config refs（二次
-        // insert_file_data 会撞 files 主键，且会丢失解析产物）；其余配置
-        // 文件（.ini/.env 等非 scanner 文件）仍整体写入。
+        // Config-link units: parsed scanner files get refs-only, the rest are
+        // written wholesale (see SnapshotWriteTxn::write_config_units).
         let parsed_paths: HashSet<&str> = write_units.iter().map(|u| u.rel_path.as_str()).collect();
-        for unit in &payload.config_units {
-            if parsed_paths.contains(unit.rel_path.as_str()) {
-                IndexDb::insert_config_link_refs(conn, unit)?;
-            } else {
-                IndexDb::insert_file_data(conn, unit)?;
-            }
-        }
+        txn.write_config_units(&payload.config_units, &parsed_paths)?;
 
-        // Write metadata
-        IndexDb::set_metadata_on(conn, "last_indexed_at", &payload.recorded_at)?;
-        IndexDb::set_metadata_on(conn, "index_version", "1.0.0")?;
-
-        // Config-linker gate state goes into the rebuilt snapshot (the swap
-        // replaces the whole DB file), so the next incremental can skip the
-        // config scan. Cache before signature, same as the incremental path.
-        IndexDb::set_metadata_on(
-            conn,
-            CONFIG_RAW_CACHE_KEY,
-            payload.config_raw_cache.as_deref().unwrap_or(""),
+        // Metadata: schema version + config-linker gate state. Cache before
+        // signature, same as the incremental path.
+        txn.write_snapshot_metadata(
+            &payload.recorded_at,
+            payload.config_raw_cache.as_deref(),
+            payload.config_sig,
+            CONFIG_SIG_ALGORITHM,
         )?;
-        IndexDb::set_metadata_on(conn, CONFIG_SIG_KEY, &payload.config_sig.to_string())?;
-        IndexDb::set_metadata_on(conn, CONFIG_SIG_ALGO_KEY, CONFIG_SIG_ALGORITHM)?;
 
-        // Graph-signature aggregate baseline, recomputed from the rebuilt
-        // tables as the LAST table-derived write: a rebuilt snapshot can
-        // never become visible with a stale baseline, so the first
-        // post-rebuild incremental applies its delta against fresh state.
-        IndexDb::recompute_graph_signature_aggregates_on(conn)?;
+        // Graph-signature baseline: the LAST table-derived write so a rebuilt
+        // snapshot never becomes visible with a stale baseline.
+        txn.recompute_graph_signature_baseline()?;
 
         Ok(())
     }
@@ -163,8 +139,9 @@ impl Indexer {
         })?;
         time_step("write", "full_rebuild_temp_db", || {
             self.db.admin().rebuild_with_temp_db(|conn| {
+                let txn = SnapshotWriteTxn::new(conn);
                 Self::write_full_snapshot_contents(
-                    conn,
+                    &txn,
                     write_units,
                     route_nodes,
                     hierarchy_edges,
@@ -192,8 +169,9 @@ impl Indexer {
         })?;
         time_step("write", "full_rebuild_direct_writer", || {
             self.db.admin().rebuild_with_direct_writer(|conn| {
+                let txn = SnapshotWriteTxn::new(conn);
                 Self::write_full_snapshot_contents(
-                    conn,
+                    &txn,
                     write_units,
                     route_nodes,
                     hierarchy_edges,

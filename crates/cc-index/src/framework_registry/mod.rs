@@ -1,9 +1,15 @@
-//! Framework detection, persistence, and query layer.
+//! 框架检测信号层（framework detection signals）。
 //!
-//! Scans the index database (imports, file paths, route_edges) to detect which
-//! frameworks are used in the repo and per-file.  Results are persisted to
-//! `repo_frameworks` and `file_frameworks` tables so the runtime doesn't
-//! need to re-detect on every context preparation.
+//! 角色：把索引数据（imports / file_path / route_edges / symbol patterns /
+//! 包清单）折算成多信号加权分数，输出 `framework_key` + confidence，持久化到
+//! `repo_frameworks` / `file_frameworks` 表。它回答的是「这个文件/仓库用了哪个
+//! 框架」——即 **检测** 半边。配置面、运行时激活（`compute_active_frameworks`）
+//! 都消费这里的产物。
+//!
+//! 这是 framework 管线的**第一段**：`FrameworkSignalSpec → framework_key`。
+//! 紧随其后的**第二段**是 [`crate::framework_resolvers`]，它消费 framework_key
+//! 解析出路由边（`FrameworkResolver` trait）。两者靠 framework_key 衔接，taxonomy
+//! 单一声明源在 `cc_model::framework_taxonomy`（canonical + aliases + tier）。
 //!
 //! Multi-signal scoring:
 //!   - import marker:     +0.40

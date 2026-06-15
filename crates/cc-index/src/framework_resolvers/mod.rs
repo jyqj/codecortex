@@ -1,4 +1,15 @@
-//! Framework-specific semantic enrichment resolvers.
+//! 框架路由解析层（framework route resolvers）。
+//!
+//! 角色：给定 framework_key，把源码里框架特有的语义（路由声明、装饰器、
+//! JSX 组件等）解析成结构化的路由边（`RouteEdgeRecord`）并尽量绑定到
+//! handler 的 symbol UID。它回答的是「这个框架具体怎么把请求/渲染映射到
+//! 代码」——即 **路由解析** 半边，是图/工具面框架边的主要来源。
+//!
+//! 这是 framework 管线的**第二段**：`framework_key → 路由边`
+//! （`FrameworkResolver` trait）。它的输入 framework_key 由上游检测层
+//! [`crate::framework_registry`] 产出；`ProjectFrameworkContext` 承载检测
+//! 结果，`FrameworkResolverRegistry::active_resolvers` 按检测到的框架筛选
+//! resolver。taxonomy 单一声明源在 `cc_model::framework_taxonomy`。
 //!
 //! Two-phase design:
 //! - `enrich_file`: per-file, runs after parse, can read source text

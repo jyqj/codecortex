@@ -70,6 +70,15 @@ CodeCortex 文档与代码共用的术语。按主题分组，括号内是代码
   证据边计数、`truncated_reason`、`read_errors`。
 - **合成边（synthetic edge）**：非源码直接声明、由派发合成或桥接产生的
   边（如 `http_bridge`）。
+- **框架检测信号层（`framework_registry`）**：framework 管线第一段
+  （`FrameworkSignalSpec → framework_key`）。把索引数据（imports / file_path /
+  route_edges / symbol patterns / 包清单）折算成多信号加权分数，输出
+  `framework_key` + confidence 并持久化，回答「仓库/文件用了哪个框架」。
+  taxonomy 单一声明源在 `cc_model::framework_taxonomy`。
+- **框架路由解析层（`framework_resolvers`）**：framework 管线第二段
+  （`framework_key → 路由边`）。`FrameworkResolver` trait 消费检测层产出的
+  framework_key，把框架特有语义（路由声明、装饰器、JSX 组件等）解析成
+  `RouteEdgeRecord` 并尽量绑定 handler 的 symbol UID，是框架路由边的主要来源。
 - **运行时证据（runtime evidence）**：经 `ingest_traces` 摄入的 OTLP
   痕迹；每次匹配给 HTTP 边的数值置信度 +0.15（封顶 1.0），不改变
   解析层级（`parser_tier`）。

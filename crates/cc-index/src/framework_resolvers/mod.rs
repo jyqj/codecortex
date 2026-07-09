@@ -147,7 +147,7 @@ impl ProjectFrameworkContext {
                 || taxon_for_key(key).is_some_and(|taxon| {
                     taxon.canonical == key
                         && (taxon.canonical == k.as_str()
-                            || taxon.aliases.iter().any(|alias| *alias == k.as_str()))
+                            || taxon.aliases.contains(&k.as_str()))
                 })
         })
     }

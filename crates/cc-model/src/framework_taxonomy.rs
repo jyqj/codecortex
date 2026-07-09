@@ -129,7 +129,7 @@ pub fn framework_taxonomy() -> &'static [FrameworkTaxon] {
 pub fn taxon_for_key(key: &str) -> Option<&'static FrameworkTaxon> {
     framework_taxonomy()
         .iter()
-        .find(|taxon| taxon.canonical == key || taxon.aliases.iter().any(|alias| *alias == key))
+        .find(|taxon| taxon.canonical == key || taxon.aliases.contains(&key))
 }
 
 /// Look up the resolver tier for a given `framework_key`.

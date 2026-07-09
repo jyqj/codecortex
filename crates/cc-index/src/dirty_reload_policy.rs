@@ -123,17 +123,31 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     debug_assert!(!should_clear(ReloadedEdgeCategory::Imports));
     debug_assert!(!should_clear(ReloadedEdgeCategory::DispatchSites));
 
+    // Clearing must cover the whole resolved-target state INCLUDING
+    // `target_symbol_id`: phase 4c's re-resolution skip gate is
+    // `target_symbol_id.is_some()` (see `resolve_outcome_with_context`), so
+    // an edge that keeps its stored id is never re-resolved and would be
+    // written back with the uid cleared to NULL — a silently dangling edge.
+    // Strategy/confidence reset to their pristine parse defaults so the
+    // re-resolved edge is indistinguishable from a freshly parsed one.
     if should_clear(ReloadedEdgeCategory::CallEdges) {
         for edge in &mut call_edges {
+            edge.target_symbol_id = None;
+            edge.target_file_path = None;
             edge.callee_symbol_uid = None;
             edge.resolution_kind = ResolutionKind::Unresolved;
+            edge.resolution_confidence = 0.0;
+            edge.resolution_strategy = String::new();
         }
     }
     if should_clear(ReloadedEdgeCategory::SymbolRefs) {
         for sym_ref in &mut symbol_refs {
             sym_ref.target_symbol_uid = None;
             sym_ref.target_symbol_id = None;
+            sym_ref.target_file_path = None;
             sym_ref.resolution_kind = ResolutionKind::Unresolved;
+            sym_ref.resolution_confidence = 0.0;
+            sym_ref.resolution_strategy = String::new();
         }
     }
     if should_clear(ReloadedEdgeCategory::RouteEdges) {
@@ -266,8 +280,12 @@ mod tests {
             symbols: Vec::new(),
             imports: Vec::new(),
             call_edges: vec![CallEdgeRecord {
+                target_symbol_id: Some("idCallee".into()),
+                target_file_path: Some("lib.py".into()),
                 callee_symbol_uid: Some("uCallee".into()),
                 resolution_kind: ResolutionKind::Exact,
+                resolution_confidence: 1.0,
+                resolution_strategy: "exact".into(),
                 ..Default::default()
             }],
             symbol_refs: vec![SymbolRefRecord {
@@ -334,12 +352,21 @@ mod tests {
         let outcome = parse_outcome_from_reloaded_edges(edges);
 
         let call = &outcome.call_edges[0];
+        assert_eq!(
+            call.target_symbol_id, None,
+            "target_symbol_id gates phase 4c re-resolution; keeping it would \
+             leave the cleared uid dangling"
+        );
+        assert_eq!(call.target_file_path, None);
         assert_eq!(call.callee_symbol_uid, None);
         assert_eq!(call.resolution_kind, ResolutionKind::Unresolved);
+        assert_eq!(call.resolution_confidence, 0.0);
+        assert!(call.resolution_strategy.is_empty());
 
         let sym_ref = &outcome.symbol_refs[0];
         assert_eq!(sym_ref.target_symbol_uid, None);
         assert_eq!(sym_ref.target_symbol_id, None);
+        assert_eq!(sym_ref.target_file_path, None);
         assert_eq!(sym_ref.resolution_kind, ResolutionKind::Unresolved);
 
         let route = &outcome.route_edges[0];

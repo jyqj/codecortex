@@ -268,6 +268,7 @@ pub fn get_architecture(
 /// - `route_path`: 可选 LIKE 子串模式。
 /// - `method` / `framework`: 可选大小写无关过滤。
 /// - `limit`: 返回上限。
+///
 /// Delegates to `GraphReadModel::route_handlers`; this handler only shapes the
 /// output rows.
 pub fn find_route_handlers(

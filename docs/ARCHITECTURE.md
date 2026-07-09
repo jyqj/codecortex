@@ -83,7 +83,10 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
    （schema 不匹配即重建，不做迁移）。
 2. **依赖单向**：crate 只向下依赖；图邻接缓存留在 cc-server、不下沉
    （cc-db 只拥有持久化 epoch 向量，ADR-0001 的决定）；所有跨请求
-   缓存以 epoch 为键自失效。
+   缓存以 epoch 为键自失效。构建侧的两层 seed 派生缓存（seed 快照、
+   resolver 目录停靠槽）同理无手工失效钩子，但以写时维护的
+   `symbols_seed` 聚合 token 为效期证明（内容等价性，而非单调时钟）；
+   目录停靠槽对 cc-db 类型擦除，依赖方向不变。
 3. **写隔离**：多语句写只经 `UnitOfWork`；commit 恰好推进一次
    `index_epoch`；未 commit 即回滚。
 4. **双时钟失效**：索引内容走 `index_epoch`，运行时证据走

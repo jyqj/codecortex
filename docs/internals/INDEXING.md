@@ -97,6 +97,44 @@ self-member → scope → same-file → imports → suffix → global-unique
   同名局部变量）。`find_best` 的同文件优先则改走 `by_file_name`/`by_file_qname` 嵌套索引做
   O(1) 命中，suffix 阶用 `by_qname_leaf`（叶段索引）替代整表扫描。
 
+### 符号目录跨构建缓存（catalog cache）
+
+增量 resolve 历史上每次构建都从全部持久化符号重建 `SymbolCatalog`
+（9 张查找表 + `TypeCatalog`）——即使单文件批也要付 O(仓库符号数) 的地板
+（50k/278k 符号 ~0.8s）。`resolver/catalog_cache.rs` 把这层地板消掉：
+
+- **宿主与有效性**：构建完成的目录停靠在 `IndexDb` 句柄的类型擦除槽上
+  （与 seed 快照缓存同宿主同理由——只有句柄跨构建存活），以
+  `symbols_seed` 聚合 token 为唯一有效性证明：取用时对当前持久化 token
+  校验，折叠存回时携带写事务内读出的 post token
+  （`write_incremental_batch` 返回 `SeedTokenSpan`）。任何批外符号写
+  （全量重建、config-link 符号写、跨进程写）都移动 token → 下次取用
+  miss → 冷加载，不存在过期复用。
+- **取用（4a）**：命中后按文件删除被排除条目（批文件 + 被删文件；
+  `SymbolCatalog::remove_files`，逐 distinct 键批量 retain，联动
+  `TypeCatalog` 的按文件删除），条目槽位打墓碑、永不复用（幸存索引保持
+  有效），然后照常叠加本批全量符号。`TypeCatalog` 的三张类型表为此改为
+  按 `(file, value)` 存多值贡献（读取"最后存活者"），删除一个文件不再抹掉
+  其他文件的同键贡献；变量类型赋值（type_assigns）保持 build-local，
+  复用时清空重喂。
+- **折叠（写后）**：批文件的构建期条目整体替换为**最终写入单元**的行
+  （4d 富化后的版本），按 SQL 执行序（normal→dirty）做
+  `INSERT OR REPLACE` 同语义的 id/uid last-wins 去重，seed 投影
+  （`scope_id = None`）后存回；`live == token.count` 兜底校验。全量构建
+  清槽；纯删除批直接在停靠目录上折叠删除。
+- **发散契约**：复用目录与新载目录是同一条目**多重集**但桶内**顺序**
+  不同（新载按 `(file_path, start_line)`），等分候选的 tie-break 可能选出
+  不同的（同样合法、已受置信度惩罚的）赢家。墓碑超过存活数（含 4096
+  绝对下限）时折叠拒绝停靠，下次构建重建即压实。
+- **容量**：与 seed 缓存共用 `CODECORTEX_SEED_CACHE_MAX_SYMBOLS`
+  （默认 500k，`0` 同时禁两层）。
+
+配套修复：dirty-reload 对 call edges / symbol refs 的清除补齐
+`target_symbol_id` / `target_file_path` / 置信度与策略字段——4c 的重解析
+跳过门是 `target_symbol_id.is_some()`，旧行为只清 UID 不清 id，脏重载边
+永远不会被重新解析，写回后留下悬空目标（uid 为 NULL 但 id 指向已改变的
+符号）。
+
 ### 路由 handler 解析的来源记录
 
 `resolver/route_resolve.rs` 在路由记录上留下自己的层级来源：
@@ -144,7 +182,10 @@ self-member → scope → same-file → imports → suffix → global-unique
   边表跑 Louvain；
 - **resolver seed 有跨构建缓存**（cc-db `seed_symbol_cache.rs`）：seed
   符号快照挂在 `IndexDb` 句柄上跨构建复用，以 `symbols_seed` 聚合为
-  token 校验，miss 即回退全量重载。
+  token 校验，miss 即回退全量重载。其上还有一层**符号目录缓存**
+  （cc-index `resolver/catalog_cache.rs`，见
+  [符号目录跨构建缓存](#符号目录跨构建缓存catalog-cache)）：命中时连
+  seed 物化都省掉，seed 缓存只服务目录缓存 miss 时的快速重建。
 - **FK CASCADE 子表显式批量删除**（cc-db
   `delete_files_data_chunk_keep_test_edges`）：`DELETE FROM files` 不依赖
   ON DELETE CASCADE 逐父行触发子表删除，而是先按 `file_path` 批量 DELETE

@@ -26,6 +26,12 @@
   token——token 相等即种子行多重集相等，命中省去增量构建逐次全量重载
   symbols 的 O(repo) 成本；任何改动种子列的写（进程内或跨进程）都会
   移动 token，下次读取 miss 重载。
+- **resolver 目录停靠槽**（`resolver_catalog_slot`）：同一宿主上还有一个
+  类型擦除槽（`Box<dyn Any + Send>`），cc-index 把构建完成的
+  `SymbolCatalog` 停靠在这里跨构建复用（cc-db 不依赖其具体类型；有效性
+  同样由 `symbols_seed` token 证明，`write_incremental_batch` 为此把事务
+  内观察到的 token 前后值作为 `SeedTokenSpan` 返回给上层折叠）。见
+  [INDEXING.md](INDEXING.md#符号目录跨构建缓存catalog-cache)。
 
 连接初始化 PRAGMA：
 

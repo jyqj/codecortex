@@ -45,6 +45,11 @@ CodeCortex 文档与代码共用的术语。按主题分组，括号内是代码
   `SynthesisPassSpec`。
 - **解析阶梯（RESOLVE_LADDER）**：跨文件名字解析的有序策略列表；命中的
   阶梯步骤名持久化为边上的 `resolution_strategy`。
+- **catalog cache（符号目录跨构建缓存）**：构建完成的 `SymbolCatalog`
+  停靠在 `IndexDb` 句柄的类型擦除槽上跨构建复用，以 `symbols_seed`
+  聚合 token 证明有效性；取用时按文件删除被排除条目，写后折叠存回。
+  消掉增量 resolve 的 O(仓库符号数) 重建地板。见
+  [internals/INDEXING.md](internals/INDEXING.md#符号目录跨构建缓存catalog-cache)。
 - **build gate**：每项目一个的 `Mutex<()>`，串行化所有构建入口；锁序
   规则见 [internals/CONCURRENCY.md](internals/CONCURRENCY.md#锁序规则)。
 

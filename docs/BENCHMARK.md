@@ -127,19 +127,23 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 可 trace、环闭合……）。带 `CODECORTEX_WRITE_BENCHMARK=1` 时报告持久化到
 `docs/benchmarks/synthetic_<scale>_latest.md`。
 
-最近一轮（release，本机——完整阶段分解见各规模的产物文件）：
+最近一轮（release，本机，2026-07-09——完整阶段分解见各规模的产物文件）：
 
-| 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件） | 增量 p50（5% 批量） | 工具查询（cold p50） | ground truth |
+| 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件） | 增量 p50（5% 批量） | 单文件 resolve 子相位 | ground truth |
 |------|--------------|---------|--------------------|--------------------|-----------------|--------------|
-| 1k（5,568 符号） | 0.85s | 24.7 MB | 64ms | 218ms | 0.2–21ms / warm 亚毫秒 | 8/8 |
-| 10k（55,617 符号） | 10.0s | 244.0 MB | 345ms | 2.47s | 0.2–100ms / warm 亚毫秒 | 8/8 |
-| 50k（278,074 符号） | 82.7s | 1220.6 MB | 1.82s | 17.1s（2400 文件） | 最大 631ms（`search_hybrid_mixed_terms`），其余毫秒级 / warm 亚毫秒 | 8/8 |
+| 1k（5,568 符号） | 1.4s | 24.7 MB | 59ms | 220ms | 0ms | 8/8 |
+| 10k（55,617 符号） | 15.8s | 236.6 MB | 443ms | 3.1s | **1ms**（上一轮 139ms） | 8/8 |
+| 50k（278,074 符号） | 135.5s | 1183.3 MB | 1.27s | 25.3s（2400 文件） | **5ms**（上一轮 808ms） | 8/8 |
 
 - 三档报告均以 µs 粒度分列 cold/warm（cold = 每次迭代新建 MCP 会话；warm =
-  同会话缓存命中），冷查询延迟以 cold 列为准；上表"工具查询"取 cold p50 区间。
-- 冷态全量索引 604–1180 文件/s（50k–1k）：10k 已达 1000 文件/s，超过 >500
-  目标；50k 604 文件/s，write cascade 已治（见下第五轮），残余 gap 转移到
-  单文件增量的 resolve 地板（`add_symbols` seed O(repo)，见末段）。
+  同会话缓存命中），冷查询延迟以 cold 列为准；warm 全部亚毫秒。
+- 本轮与上一轮（2026-06-13）跨轮对比需留意机器状态漂移：resolve 之外的
+  各阶段（scan_diff / write / analysis，代码路径本轮未动）绝对值普遍慢
+  1.3–2×（冷建 121.8s→135.5s、50k 5% 批量写 14.3s→22.6s），属环境噪声；
+  本轮的真实变化是 **resolve 地板被 catalog cache 消掉**（见末段），
+  50k 单文件增量总延迟 1.82s→1.27s，瓶颈转移到 scan_diff（~0.5s）。
+- 冷态全量索引 369–714 文件/s（50k–1k，本轮机器状态下）；>500 文件/s 的
+  目标以 10k 档为准（632 文件/s）。
 
 ## 写阶段优化史（10k 基准）
 
@@ -215,14 +219,41 @@ IN`"慢 2–5 倍。50k 5% 批量（2400 文件）实测 `incremental_batch` ~38
 | 10k | 17.9s → 10.0s（1.78×） | — | 553ms → 155ms（3.5×） |
 | 50k | 432s → 121.8s（3.55×） | — | — |
 
-resolve 不再是瓶颈。write 阶段的 FK CASCADE 逐父行开销经第五轮修复（见
-写阶段优化史，50k 5% 批量写 ~36s → ~14.3s）；`chunks_fts` external-content
-方案评估为 NO-GO（与 rowid 对齐删除路径冲突，需删除时解压 chunk 文本）。
-**单文件增量 resolve 的 O(catalog) 地板（50k ~0.8s，随 seed 符号数超线性）
-是下一轮课题**：`build_catalog` 的 `add_symbols` 把全部 seed 符号（278k）
-重建进 9 个 catalog map，`seed_symbol_cache` 已缓存 seed Vec 但 catalog map
-每 build 重建；深度优化 = SymbolCatalog 跨 build 复用（增量更新），中等
-复杂度架构改动。
+resolve 不再是冷建瓶颈。write 阶段的 FK CASCADE 逐父行开销经第五轮修复
+（见写阶段优化史，50k 5% 批量写 ~36s → ~14.3s）；`chunks_fts`
+external-content 方案评估为 NO-GO（与 rowid 对齐删除路径冲突，需删除时
+解压 chunk 文本）。
+
+## 增量 resolve 的 O(catalog) 地板：SymbolCatalog 跨构建复用
+
+上一轮遗留的课题：单文件增量的 resolve 地板（50k ~0.8s，随 seed 符号数
+超线性）——`build_catalog` 每次构建都把全部 seed 符号（278k）物化克隆并
+重建进 9 个 catalog map + TypeCatalog，`seed_symbol_cache` 只缓存了 seed
+Vec，catalog map 仍每 build 重建。微基准（`catalog_build_bench`）实测
+278k 符号 `add_symbols` ~520–840ms、`build_type_catalog` ~95–155ms。
+
+本轮以 `resolver/catalog_cache.rs` 落地"SymbolCatalog 跨 build 复用
+（增量更新）"：构建完成的目录停靠在 `IndexDb` 句柄的类型擦除槽上，以
+`symbols_seed` 聚合 token 证明有效性；命中时按文件删除被排除条目再叠加
+本批（墓碑槽位 + 逐 distinct 键批量 retain），写后把批文件条目替换为
+最终写入行（SQL 序 last-wins 去重 + seed 投影）折叠存回。TypeCatalog
+的三张类型表改为按 `(file, value)` 多值贡献以支持精确按文件删除；
+机制、有效性协议与发散契约详见
+[internals/INDEXING.md](internals/INDEXING.md#符号目录跨构建缓存catalog-cache)。
+
+实测（release，本机，机器状态见上文跨轮噪声注记）：
+
+| 规模 | 单文件增量 resolve（前→后） | 5% 批量 resolve（前→后） | 单文件增量总延迟（前→后） |
+|------|------------------------------|--------------------------|---------------------------|
+| 10k | 139ms → **1ms** | ~155ms → 42ms | 345ms → ~440ms（非 resolve 阶段本轮环境慢 2×） |
+| 50k | 808ms → **5ms**（~160×） | ~1.0s → 236ms | 1.82s → **1.27s** |
+
+正确性背书：全工作区 1189 passed + 14 ignored；缓存生命周期与"缓存路径
+解析产物 == 同内容全量重建"由 `catalog_cache_reuse_matches_full_rebuild`
+断言（含命中计数、纯删除批折叠、全量清槽）；三档规模 ground truth 8/8。
+配套修复了 dirty-reload 只清 UID 不清 `target_symbol_id` 导致脏重载边
+永不重解析的悬空缺陷（见 INDEXING.md）。残余的单文件增量成本已转移到
+scan_diff（50k ~0.5s，50k 文件的 mtime+size 全量对比）与 analysis。
 
 ## 对比基线
 

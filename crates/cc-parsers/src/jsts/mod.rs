@@ -1636,16 +1636,15 @@ impl JsTsParser {
                                                 || prop.kind() == "shorthand_property_identifier"
                                             {
                                                 if let Some(iname) = node_text(&prop, source) {
-                                                    ctx.imports.push(ImportRecord {
-                                                        file_path: file_path.to_string(),
-                                                        import_string: src.clone(),
-                                                        resolved_path: None,
-                                                        imported_name: Some(iname.to_string()),
-                                                        alias: None,
-                                                        is_namespace: false,
-                                                        is_default: false,
-                                                        is_reexport: false,
-                                                    });
+                                                    ctx.imports.push(
+                                                        crate::import_common::make_import(
+                                                            file_path,
+                                                            src.clone(),
+                                                            Some(iname.to_string()),
+                                                            None,
+                                                            false,
+                                                        ),
+                                                    );
                                                 }
                                             } else if prop.kind() == "pair_pattern"
                                                 || prop.kind() == "pair"
@@ -1658,16 +1657,15 @@ impl JsTsParser {
                                                     .child_by_field_name("value")
                                                     .and_then(|v| node_text(&v, source));
                                                 if let (Some(k), Some(v)) = (key, value) {
-                                                    ctx.imports.push(ImportRecord {
-                                                        file_path: file_path.to_string(),
-                                                        import_string: src.clone(),
-                                                        resolved_path: None,
-                                                        imported_name: Some(k.to_string()),
-                                                        alias: Some(v.to_string()),
-                                                        is_namespace: false,
-                                                        is_default: false,
-                                                        is_reexport: false,
-                                                    });
+                                                    ctx.imports.push(
+                                                        crate::import_common::make_import(
+                                                            file_path,
+                                                            src.clone(),
+                                                            Some(k.to_string()),
+                                                            Some(v.to_string()),
+                                                            false,
+                                                        ),
+                                                    );
                                                 }
                                             }
                                         }

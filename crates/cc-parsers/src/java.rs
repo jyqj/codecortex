@@ -449,24 +449,21 @@ impl JavaParser {
         source: &[u8],
         file_path: &str,
     ) -> Vec<ImportRecord> {
-        let mut imports = Vec::new();
-        let root = tree.root_node();
-        let mut cursor = root.walk();
-
-        for child in root.children(&mut cursor) {
-            if child.kind() == "import_declaration" {
-                if let Some(imp) = self.extract_single_import(&child, source, file_path) {
+        crate::import_common::collect_root_imports(
+            &tree.root_node(),
+            source,
+            file_path,
+            "import_declaration",
+            |node, source, file_path, imports| {
+                if let Some(imp) = Self::extract_single_import(node, source, file_path) {
                     imports.push(imp);
                 }
-            }
-        }
-
-        imports
+            },
+        )
     }
 
     /// Extract a single `import_declaration` into an ImportRecord.
     fn extract_single_import(
-        &self,
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
@@ -476,30 +473,27 @@ impl JavaParser {
         let is_static = full_text.contains("static ");
 
         // Extract the path: walk children to find scoped_identifier or identifier
-        let import_path = self.find_import_path(node, source)?;
+        let import_path = Self::find_import_path(node, source)?;
 
         // Last segment is the imported name
-        let imported_name = import_path.rsplit('.').next().map(String::from);
+        let imported_name = crate::import_common::last_segment(&import_path, '.');
 
-        Some(ImportRecord {
-            file_path: file_path.to_string(),
-            import_string: if is_static {
-                format!("static {}", import_path)
-            } else {
-                import_path
-            },
-            resolved_path: None,
+        let import_string = if is_static {
+            format!("static {}", import_path)
+        } else {
+            import_path
+        };
+        Some(crate::import_common::make_import(
+            file_path,
+            import_string,
             imported_name,
-            alias: None,
-            is_namespace: false,
-            is_default: false,
-            is_reexport: false,
-        })
+            None,
+            false,
+        ))
     }
 
     /// Recursively find the import path from an import_declaration's children.
-    #[allow(clippy::only_used_in_recursion)]
-    fn find_import_path(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
+    fn find_import_path(node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
             match child.kind() {
@@ -512,7 +506,7 @@ impl JavaParser {
                 }
                 _ => {
                     // Recurse
-                    if let Some(path) = self.find_import_path(&child, source) {
+                    if let Some(path) = Self::find_import_path(&child, source) {
                         return Some(path);
                     }
                 }

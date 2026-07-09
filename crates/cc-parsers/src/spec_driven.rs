@@ -561,16 +561,13 @@ impl SpecDrivenParser {
                 // Take the first non-None capture group after group 0.
                 let import_string =
                     (1..cap.len()).find_map(|i| cap.get(i).map(|m| m.as_str().to_string()))?;
-                Some(ImportRecord {
-                    file_path: file_path.to_string(),
+                Some(crate::import_common::make_import(
+                    file_path,
                     import_string,
-                    resolved_path: None,
-                    imported_name: None,
-                    alias: None,
-                    is_namespace: false,
-                    is_default: false,
-                    is_reexport: false,
-                })
+                    None,
+                    None,
+                    false,
+                ))
             })
             .collect()
     }

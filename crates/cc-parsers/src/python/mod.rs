@@ -276,16 +276,13 @@ impl PythonParser {
                 // `import pkg.mod` → dotted_name
                 "dotted_name" => {
                     if let Ok(name) = child.utf8_text(source) {
-                        imports.push(ImportRecord {
-                            file_path: file_path.to_string(),
-                            import_string: name.to_string(),
-                            resolved_path: None,
-                            imported_name: Some("*".to_string()),
-                            alias: Some(name.split('.').next().unwrap_or(name).to_string()),
-                            is_namespace: true,
-                            is_default: false,
-                            is_reexport: false,
-                        });
+                        imports.push(crate::import_common::make_import(
+                            file_path,
+                            name.to_string(),
+                            Some("*".to_string()),
+                            Some(name.split('.').next().unwrap_or(name).to_string()),
+                            true,
+                        ));
                     }
                 }
                 // `import pkg as alias` → aliased_import
@@ -295,16 +292,13 @@ impl PythonParser {
                     let name = name_node.and_then(|n| n.utf8_text(source).ok());
                     let alias = alias_node.and_then(|n| n.utf8_text(source).ok());
                     if let Some(name) = name {
-                        imports.push(ImportRecord {
-                            file_path: file_path.to_string(),
-                            import_string: name.to_string(),
-                            resolved_path: None,
-                            imported_name: Some("*".to_string()),
-                            alias: alias.map(|a| a.to_string()),
-                            is_namespace: true,
-                            is_default: false,
-                            is_reexport: false,
-                        });
+                        imports.push(crate::import_common::make_import(
+                            file_path,
+                            name.to_string(),
+                            Some("*".to_string()),
+                            alias.map(|a| a.to_string()),
+                            true,
+                        ));
                     }
                 }
                 _ => {}
@@ -313,16 +307,13 @@ impl PythonParser {
         if imports.is_empty() {
             // Fallback: just use the raw text
             if let Ok(text) = node.utf8_text(source) {
-                imports.push(ImportRecord {
-                    file_path: file_path.to_string(),
-                    import_string: text.to_string(),
-                    resolved_path: None,
-                    imported_name: None,
-                    alias: None,
-                    is_namespace: true,
-                    is_default: false,
-                    is_reexport: false,
-                });
+                imports.push(crate::import_common::make_import(
+                    file_path,
+                    text.to_string(),
+                    None,
+                    None,
+                    true,
+                ));
             }
         }
         imports
@@ -379,16 +370,13 @@ impl PythonParser {
                 match kind {
                     "dotted_name" => {
                         if let Ok(name) = child.utf8_text(source) {
-                            imports.push(ImportRecord {
-                                file_path: file_path.to_string(),
-                                import_string: module_path.clone(),
-                                resolved_path: None,
-                                imported_name: Some(name.to_string()),
-                                alias: Some(name.to_string()),
-                                is_namespace: false,
-                                is_default: false,
-                                is_reexport: false,
-                            });
+                            imports.push(crate::import_common::make_import(
+                                file_path,
+                                module_path.clone(),
+                                Some(name.to_string()),
+                                Some(name.to_string()),
+                                false,
+                            ));
                         }
                     }
                     "aliased_import" => {
@@ -397,31 +385,25 @@ impl PythonParser {
                         let name = name_node.and_then(|n| n.utf8_text(source).ok());
                         let alias = alias_node.and_then(|n| n.utf8_text(source).ok());
                         if let Some(name) = name {
-                            imports.push(ImportRecord {
-                                file_path: file_path.to_string(),
-                                import_string: module_path.clone(),
-                                resolved_path: None,
-                                imported_name: Some(name.to_string()),
-                                alias: alias
+                            imports.push(crate::import_common::make_import(
+                                file_path,
+                                module_path.clone(),
+                                Some(name.to_string()),
+                                alias
                                     .map(|a| a.to_string())
                                     .or_else(|| Some(name.to_string())),
-                                is_namespace: false,
-                                is_default: false,
-                                is_reexport: false,
-                            });
+                                false,
+                            ));
                         }
                     }
                     "wildcard_import" => {
-                        imports.push(ImportRecord {
-                            file_path: file_path.to_string(),
-                            import_string: module_path.clone(),
-                            resolved_path: None,
-                            imported_name: Some("*".to_string()),
-                            alias: None,
-                            is_namespace: true,
-                            is_default: false,
-                            is_reexport: false,
-                        });
+                        imports.push(crate::import_common::make_import(
+                            file_path,
+                            module_path.clone(),
+                            Some("*".to_string()),
+                            None,
+                            true,
+                        ));
                     }
                     "import_list" => {
                         // from x import (a, b, c) — iterate children of the import_list
@@ -430,16 +412,13 @@ impl PythonParser {
                             match list_child.kind() {
                                 "dotted_name" => {
                                     if let Ok(name) = list_child.utf8_text(source) {
-                                        imports.push(ImportRecord {
-                                            file_path: file_path.to_string(),
-                                            import_string: module_path.clone(),
-                                            resolved_path: None,
-                                            imported_name: Some(name.to_string()),
-                                            alias: Some(name.to_string()),
-                                            is_namespace: false,
-                                            is_default: false,
-                                            is_reexport: false,
-                                        });
+                                        imports.push(crate::import_common::make_import(
+                                            file_path,
+                                            module_path.clone(),
+                                            Some(name.to_string()),
+                                            Some(name.to_string()),
+                                            false,
+                                        ));
                                     }
                                 }
                                 "aliased_import" => {
@@ -448,18 +427,15 @@ impl PythonParser {
                                     let name = name_node.and_then(|n| n.utf8_text(source).ok());
                                     let alias = alias_node.and_then(|n| n.utf8_text(source).ok());
                                     if let Some(name) = name {
-                                        imports.push(ImportRecord {
-                                            file_path: file_path.to_string(),
-                                            import_string: module_path.clone(),
-                                            resolved_path: None,
-                                            imported_name: Some(name.to_string()),
-                                            alias: alias
+                                        imports.push(crate::import_common::make_import(
+                                            file_path,
+                                            module_path.clone(),
+                                            Some(name.to_string()),
+                                            alias
                                                 .map(|a| a.to_string())
                                                 .or_else(|| Some(name.to_string())),
-                                            is_namespace: false,
-                                            is_default: false,
-                                            is_reexport: false,
-                                        });
+                                            false,
+                                        ));
                                     }
                                 }
                                 _ => {}
@@ -474,16 +450,13 @@ impl PythonParser {
         if imports.is_empty() {
             // Fallback: raw text
             if let Ok(text) = node.utf8_text(source) {
-                imports.push(ImportRecord {
-                    file_path: file_path.to_string(),
-                    import_string: text.to_string(),
-                    resolved_path: None,
-                    imported_name: None,
-                    alias: None,
-                    is_namespace: false,
-                    is_default: false,
-                    is_reexport: false,
-                });
+                imports.push(crate::import_common::make_import(
+                    file_path,
+                    text.to_string(),
+                    None,
+                    None,
+                    false,
+                ));
             }
         }
         imports

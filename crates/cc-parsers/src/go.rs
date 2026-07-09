@@ -464,22 +464,19 @@ impl GoParser {
         source: &[u8],
         file_path: &str,
     ) -> Vec<ImportRecord> {
-        let mut imports = Vec::new();
-        let root = tree.root_node();
-        let mut cursor = root.walk();
-
-        for child in root.children(&mut cursor) {
-            if child.kind() == "import_declaration" {
-                self.extract_import_declaration(&child, source, file_path, &mut imports);
-            }
-        }
-
-        imports
+        crate::import_common::collect_root_imports(
+            &tree.root_node(),
+            source,
+            file_path,
+            "import_declaration",
+            |node, source, file_path, imports| {
+                Self::extract_import_declaration(node, source, file_path, imports);
+            },
+        )
     }
 
     /// Extract import specs from a single `import_declaration`.
     fn extract_import_declaration(
-        &self,
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
@@ -489,7 +486,7 @@ impl GoParser {
         for child in node.children(&mut cursor) {
             match child.kind() {
                 "import_spec" => {
-                    if let Some(imp) = self.extract_import_spec(&child, source, file_path) {
+                    if let Some(imp) = Self::extract_import_spec(&child, source, file_path) {
                         imports.push(imp);
                     }
                 }
@@ -497,7 +494,7 @@ impl GoParser {
                     let mut list_cursor = child.walk();
                     for spec in child.children(&mut list_cursor) {
                         if spec.kind() == "import_spec" {
-                            if let Some(imp) = self.extract_import_spec(&spec, source, file_path) {
+                            if let Some(imp) = Self::extract_import_spec(&spec, source, file_path) {
                                 imports.push(imp);
                             }
                         }
@@ -510,7 +507,6 @@ impl GoParser {
 
     /// Extract a single `import_spec` into an ImportRecord.
     fn extract_import_spec(
-        &self,
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
@@ -530,18 +526,15 @@ impl GoParser {
             .map(String::from);
 
         // Last segment of path is the imported package name
-        let imported_name = import_path.rsplit('/').next().map(String::from);
+        let imported_name = crate::import_common::last_segment(import_path, '/');
 
-        Some(ImportRecord {
-            file_path: file_path.to_string(),
-            import_string: import_path.to_string(),
-            resolved_path: None,
+        Some(crate::import_common::make_import(
+            file_path,
+            import_path.to_string(),
             imported_name,
             alias,
-            is_namespace: false,
-            is_default: false,
-            is_reexport: false,
-        })
+            false,
+        ))
     }
 
     // =========================================================================

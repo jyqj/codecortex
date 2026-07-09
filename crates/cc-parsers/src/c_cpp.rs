@@ -651,24 +651,21 @@ impl CCppParser {
         source: &[u8],
         file_path: &str,
     ) -> Vec<ImportRecord> {
-        let mut imports = Vec::new();
-        let root = tree.root_node();
-        let mut cursor = root.walk();
-
-        for child in root.children(&mut cursor) {
-            if child.kind() == "preproc_include" {
-                if let Some(imp) = self.extract_include(&child, source, file_path) {
+        crate::import_common::collect_root_imports(
+            &tree.root_node(),
+            source,
+            file_path,
+            "preproc_include",
+            |node, source, file_path, imports| {
+                if let Some(imp) = Self::extract_include(node, source, file_path) {
                     imports.push(imp);
                 }
-            }
-        }
-
-        imports
+            },
+        )
     }
 
     /// Extract a single `preproc_include` into an ImportRecord.
     fn extract_include(
-        &self,
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
@@ -688,18 +685,15 @@ impl CCppParser {
             .to_string();
 
         // Extract the file name as the imported name
-        let imported_name = import_path.rsplit('/').next().map(String::from);
+        let imported_name = crate::import_common::last_segment(&import_path, '/');
 
-        Some(ImportRecord {
-            file_path: file_path.to_string(),
-            import_string: import_path,
-            resolved_path: None,
+        Some(crate::import_common::make_import(
+            file_path,
+            import_path,
             imported_name,
-            alias: None,
-            is_namespace: is_system,
-            is_default: false,
-            is_reexport: false,
-        })
+            None,
+            is_system,
+        ))
     }
 
     // =========================================================================

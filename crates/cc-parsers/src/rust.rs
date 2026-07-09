@@ -267,16 +267,13 @@ impl RustParser {
             .trim_end_matches(';')
             .trim()
             .to_string();
-        Some(ImportRecord {
-            file_path: file_path.to_string(),
+        Some(crate::import_common::make_import(
+            file_path,
             import_string,
-            resolved_path: None,
-            imported_name: None,
-            alias: None,
-            is_namespace: false,
-            is_default: false,
-            is_reexport: false,
-        })
+            None,
+            None,
+            false,
+        ))
     }
 
     fn impl_container_name(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {

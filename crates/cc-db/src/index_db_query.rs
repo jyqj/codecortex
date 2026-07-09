@@ -346,6 +346,21 @@ impl IndexDb {
         &self,
         excluded_files: &[String],
     ) -> CcResult<Vec<SymbolRecord>> {
+        Ok(self
+            .resolver_seed_symbols_with_token_excluding(excluded_files)?
+            .1)
+    }
+
+    /// [`Self::resolver_seed_symbols_excluding`] plus the `symbols_seed`
+    /// token the returned rows correspond to (`None` when the database has
+    /// no aggregate baseline). The token is read inside the same snapshot as
+    /// the rows, so consumers can key derived caches (the cross-build
+    /// resolver catalog) on it with the same equal-token ⇒ equal-content
+    /// guarantee the seed cache itself relies on.
+    pub(crate) fn resolver_seed_symbols_with_token_excluding(
+        &self,
+        excluded_files: &[String],
+    ) -> CcResult<(Option<crate::signature_agg::RowAgg>, Vec<SymbolRecord>)> {
         let conn = self.read_conn()?;
         // Token read and row load must observe ONE snapshot: in autocommit
         // mode each statement snapshots independently, so a write committing
@@ -357,10 +372,10 @@ impl IndexDb {
         let tx = conn.unchecked_transaction().map_err(db_err)?;
         let token = match crate::signature_agg::load_on(&tx)? {
             Some(aggs) => aggs.symbols_seed,
-            None => return Self::load_seed_rows_on(&tx, excluded_files),
+            None => return Ok((None, Self::load_seed_rows_on(&tx, excluded_files)?)),
         };
         if let Some(hit) = self.seed_cache_materialize(token, excluded_files) {
-            return Ok(hit);
+            return Ok((Some(token), hit));
         }
         // Miss: load the full snapshot (exclusion applied in memory) so it
         // can seed the cache; the surrounding read transaction guarantees the
@@ -369,14 +384,24 @@ impl IndexDb {
         drop(tx); // read-only: rollback and commit are equivalent
         self.seed_cache_store(token, &all);
         if excluded_files.is_empty() {
-            return Ok(all);
+            return Ok((Some(token), all));
         }
         let excluded: std::collections::HashSet<&str> =
             excluded_files.iter().map(String::as_str).collect();
-        Ok(all
-            .into_iter()
-            .filter(|s| !excluded.contains(s.file_path.as_str()))
-            .collect())
+        Ok((
+            Some(token),
+            all.into_iter()
+                .filter(|s| !excluded.contains(s.file_path.as_str()))
+                .collect(),
+        ))
+    }
+
+    /// The currently stored `symbols_seed` aggregate (`None` when the
+    /// database has no baseline). Single-statement read; used to validate a
+    /// cached derivative against the persisted state.
+    pub(crate) fn current_seed_token(&self) -> CcResult<Option<crate::signature_agg::RowAgg>> {
+        let conn = self.read_conn()?;
+        Ok(crate::signature_agg::load_on(&conn)?.map(|aggs| aggs.symbols_seed))
     }
 
     /// Direct SQL load behind [`Self::resolver_seed_symbols_excluding`].
@@ -503,6 +528,22 @@ impl ReadOps<'_> {
         excluded_files: &[String],
     ) -> CcResult<Vec<SymbolRecord>> {
         self.0.resolver_seed_symbols_excluding(excluded_files)
+    }
+
+    /// Seed rows plus the `symbols_seed` token they correspond to (`None`
+    /// token when no aggregate baseline is stored).
+    pub fn resolver_seed_symbols_with_token_excluding(
+        &self,
+        excluded_files: &[String],
+    ) -> CcResult<(Option<crate::signature_agg::RowAgg>, Vec<SymbolRecord>)> {
+        self.0
+            .resolver_seed_symbols_with_token_excluding(excluded_files)
+    }
+
+    /// The currently stored `symbols_seed` aggregate; validates cached
+    /// seed-derived state against the persisted symbol multiset.
+    pub fn seed_token(&self) -> CcResult<Option<crate::signature_agg::RowAgg>> {
+        self.0.current_seed_token()
     }
 
     pub fn list_indexed_files(&self) -> CcResult<Vec<FileInfoRow>> {

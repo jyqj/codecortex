@@ -186,6 +186,19 @@ pub struct FileWriteUnit {
 /// on-disk bytes are identical whether or not a side-car entry is present.
 pub type PrecompressedChunks = HashMap<String, Vec<Option<Vec<u8>>>>;
 
+/// The `symbols_seed` aggregate observed inside one incremental batch
+/// transaction, before and after its mutations. `None` halves mean the
+/// database carries no aggregate baseline (or the batch was a no-op that
+/// never opened a transaction); consumers must treat that as "no proof".
+/// Returned by [`WriteOps::write_incremental_batch`] so seed-derived caches
+/// layered above cc-db can validate their fold basis the same way the
+/// in-crate seed cache does.
+#[derive(Debug, Clone, Copy)]
+pub struct SeedTokenSpan {
+    pub pre: Option<crate::signature_agg::RowAgg>,
+    pub post: Option<crate::signature_agg::RowAgg>,
+}
+
 /// Deterministic chunk compression policy: zstd level 3, only for payloads
 /// larger than 128 bytes, and only when compression actually saves space.
 /// Returns `None` when the chunk should be stored as plain text. Shared by
@@ -384,6 +397,13 @@ pub struct IndexDb {
     /// Cross-build resolver seed snapshot, validated against the persisted
     /// `symbols_seed` aggregate (see `crate::seed_symbol_cache`).
     pub(crate) seed_cache: Mutex<Option<crate::seed_symbol_cache::SeedSymbolCache>>,
+    /// Cross-build resolver *catalog* slot: cc-index parks its built
+    /// `SymbolCatalog` here between builds (same host rationale as
+    /// `seed_cache` — the handle is the only object that survives across
+    /// builds). Type-erased because cc-db must not depend on cc-index; the
+    /// owner validates content against the persisted `symbols_seed`
+    /// aggregate exactly like the seed cache does.
+    pub(crate) resolver_catalog_slot: Mutex<Option<Box<dyn std::any::Any + Send>>>,
 }
 
 /// Process-wide monotonic source for [`IndexDb::instance_id`].
@@ -464,6 +484,7 @@ impl IndexDb {
                 read_pool_size,
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
                 seed_cache: Mutex::new(None),
+                resolver_catalog_slot: Mutex::new(None),
             },
             schema_status,
         ))
@@ -1539,6 +1560,11 @@ impl IndexDb {
     /// files (`file_path` within `normal_units`/`dirty_units`) — the
     /// path-scoped aggregate delta (see `signature_agg`) covers exactly the
     /// batch paths' rows.
+    ///
+    /// Returns the `symbols_seed` aggregate span observed inside the
+    /// transaction, so seed-derived caches above cc-db (the resolver catalog
+    /// cache) can prove their fold basis the same way the in-crate seed
+    /// cache does.
     pub(crate) fn write_incremental_batch(
         &self,
         to_remove: &[String],
@@ -1547,7 +1573,7 @@ impl IndexDb {
         route_nodes: &[cc_model::edge::RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         precompressed: &PrecompressedChunks,
-    ) -> CcResult<()> {
+    ) -> CcResult<SeedTokenSpan> {
         if to_remove.is_empty()
             && normal_units.is_empty()
             && dirty_units.is_empty()
@@ -1558,7 +1584,10 @@ impl IndexDb {
             // exists, so the postprocess gates stay O(1) on databases written
             // before the aggregates existed (one-time scan, then never again).
             self.ensure_signature_aggregates_initialized()?;
-            return Ok(());
+            return Ok(SeedTokenSpan {
+                pre: None,
+                post: None,
+            });
         }
         let mut conn = self.write_conn.lock().map_err(db_err)?;
         let tx = conn
@@ -1664,7 +1693,10 @@ impl IndexDb {
             normal_units,
             dirty_units,
         );
-        Ok(())
+        Ok(SeedTokenSpan {
+            pre: pre_seed_agg,
+            post: post_seed_agg,
+        })
     }
 
     /// One-time baseline initialization for the graph-signature aggregates:
@@ -2482,6 +2514,8 @@ impl<'a> WriteOps<'a> {
     /// `precompressed` carries chunk payloads compressed during prepare (off
     /// the write lock); units without an entry compress inside the
     /// transaction with the same policy.
+    /// Returns the in-transaction `symbols_seed` token span (see
+    /// [`SeedTokenSpan`]).
     pub fn write_incremental_batch(
         &self,
         to_remove: &[String],
@@ -2490,7 +2524,7 @@ impl<'a> WriteOps<'a> {
         route_nodes: &[cc_model::edge::RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         precompressed: &PrecompressedChunks,
-    ) -> CcResult<()> {
+    ) -> CcResult<SeedTokenSpan> {
         self.0.write_incremental_batch(
             to_remove,
             normal_units,

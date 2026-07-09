@@ -65,8 +65,11 @@ pub(crate) struct SeedSymbolCache {
     total: usize,
 }
 
-/// Cache capacity in symbols; `0` disables the cache entirely.
-fn seed_cache_max_symbols() -> usize {
+/// Cache capacity in symbols; `0` disables the cache entirely. Shared knob:
+/// the resolver's cross-build catalog cache (hosted on the same handle,
+/// validated by the same `symbols_seed` token) applies the identical cap so
+/// one env var governs both layers of seed-derived memory.
+pub fn seed_cache_max_symbols() -> usize {
     std::env::var("CODECORTEX_SEED_CACHE_MAX_SYMBOLS")
         .ok()
         .and_then(|v| v.parse::<usize>().ok())
@@ -282,6 +285,41 @@ impl IndexDb {
     #[doc(hidden)]
     pub fn seed_cache_len(&self) -> Option<usize> {
         self.seed_cache.lock().ok()?.as_ref().map(|c| c.total)
+    }
+
+    /// Take the cross-build resolver catalog parked on this handle, leaving
+    /// the slot empty. cc-index owns the concrete type (the slot is
+    /// type-erased so cc-db stays independent of it); the taker must
+    /// validate the payload against the persisted `symbols_seed` aggregate
+    /// before trusting it — exactly the seed cache's own contract.
+    pub fn take_resolver_catalog(&self) -> Option<Box<dyn std::any::Any + Send>> {
+        self.resolver_catalog_slot.lock().ok()?.take()
+    }
+
+    /// Park a cross-build resolver catalog on this handle (replacing any
+    /// previous occupant).
+    pub fn store_resolver_catalog(&self, catalog: Box<dyn std::any::Any + Send>) {
+        if let Ok(mut guard) = self.resolver_catalog_slot.lock() {
+            *guard = Some(catalog);
+        }
+    }
+
+    /// Drop any parked resolver catalog (full rebuilds replace the whole
+    /// symbol table, so a stale catalog would only waste memory waiting to
+    /// fail its token check).
+    pub fn clear_resolver_catalog(&self) {
+        if let Ok(mut guard) = self.resolver_catalog_slot.lock() {
+            *guard = None;
+        }
+    }
+
+    /// Whether a resolver catalog is currently parked (tests / diagnostics).
+    #[doc(hidden)]
+    pub fn resolver_catalog_parked(&self) -> bool {
+        self.resolver_catalog_slot
+            .lock()
+            .map(|g| g.is_some())
+            .unwrap_or(false)
     }
 }
 

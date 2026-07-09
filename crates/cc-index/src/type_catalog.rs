@@ -5,10 +5,21 @@
 //! This is **not** a full type system — it only indexes information
 //! directly visible in declarations (receiver types, parameter counts,
 //! base types) and uses it for disambiguation during resolution.
+//!
+//! # Incremental maintenance
+//!
+//! The catalog supports per-file removal ([`TypeCatalog::remove_files`]) and
+//! per-symbol addition ([`TypeCatalog::add_symbol`]) so the resolver's
+//! cross-build catalog cache can delta-maintain it instead of rebuilding
+//! from every persisted symbol each build. To make removal exact, the three
+//! type maps store one contribution per *(file, value)* pair instead of a
+//! last-writer-wins scalar: reads take the last live contribution, which
+//! preserves the historical "later insert wins" semantics while letting a
+//! removed file's contribution disappear without erasing another file's.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
-use cc_model::symbol::SymbolRecord;
+use cc_model::symbol::{SymbolKind, SymbolRecord};
 use cc_model::type_assign::TypeAssignRecord;
 
 // ---------------------------------------------------------------------------
@@ -30,6 +41,18 @@ struct TypeInfo {
     implements: Vec<String>,
 }
 
+/// The identity facets of a symbol that key its type-catalog contributions.
+/// Borrowed view so removal can be driven from any entry-like store (the
+/// resolver's `CatalogEntry`) without cloning the whole record. The owning
+/// file is not part of the meta — removal is always file-scoped, so the
+/// caller passes the removed-file set separately.
+pub(crate) struct SymbolKeyMeta<'a> {
+    pub(crate) name: &'a str,
+    pub(crate) qname: Option<&'a str>,
+    pub(crate) kind: SymbolKind,
+    pub(crate) symbol_uid: Option<&'a str>,
+}
+
 /// A lightweight type catalog for method dispatch resolution.
 ///
 /// Built from parsed [`SymbolRecord`]s, it provides:
@@ -40,107 +63,189 @@ struct TypeInfo {
 pub struct TypeCatalog {
     /// method_name (lowercase) -> list of method entries
     method_index: HashMap<String, Vec<MethodEntry>>,
-    /// canonical qname (lowercase) -> TypeInfo
-    type_index_by_qname: HashMap<String, TypeInfo>,
-    /// short name (lowercase) -> list of canonical qnames (lowercase)
-    short_to_qnames: HashMap<String, Vec<String>>,
-    /// alias_name (lowercase) -> canonical_name (lowercase)
-    type_aliases: HashMap<String, String>,
+    /// canonical qname (lowercase) -> per-file contributions; the *last*
+    /// entry is the live TypeInfo (matches the historical insert-overwrite).
+    type_index_by_qname: HashMap<String, Vec<(String, TypeInfo)>>,
+    /// short name (lowercase) -> (file, canonical qname lowercase) pairs.
+    /// Readers reduce to the distinct qname set.
+    short_to_qnames: HashMap<String, Vec<(String, String)>>,
+    /// alias_name (lowercase) -> per-file (file, canonical lowercase) pairs;
+    /// the last entry is the live alias target.
+    type_aliases: HashMap<String, Vec<(String, String)>>,
     /// Maps (file_path, var_name_lowercase) -> type_name for local variable type inference.
     type_assign_index: HashMap<(String, String), String>,
 }
 
 impl TypeCatalog {
+    fn empty() -> Self {
+        Self {
+            method_index: HashMap::new(),
+            type_index_by_qname: HashMap::new(),
+            short_to_qnames: HashMap::new(),
+            type_aliases: HashMap::new(),
+            type_assign_index: HashMap::new(),
+        }
+    }
+
     /// Build a TypeCatalog from parsed symbols (any iterable of references).
     pub fn build_from_symbols<'a, I>(symbols: I) -> Self
     where
         I: IntoIterator<Item = &'a SymbolRecord>,
     {
-        let mut method_index: HashMap<String, Vec<MethodEntry>> = HashMap::new();
-        let mut type_index_by_qname: HashMap<String, TypeInfo> = HashMap::new();
-        let mut short_to_qnames: HashMap<String, Vec<String>> = HashMap::new();
-        let mut type_aliases: HashMap<String, String> = HashMap::new();
-
+        let mut catalog = Self::empty();
         for sym in symbols {
-            let uid = match sym.symbol_uid.as_ref() {
-                Some(u) => u.clone(),
-                None => continue,
-            };
+            catalog.add_symbol(sym);
+        }
+        catalog
+    }
 
-            match sym.kind {
-                cc_model::symbol::SymbolKind::Method | cc_model::symbol::SymbolKind::Function => {
-                    let entry = MethodEntry {
-                        symbol_uid: uid,
-                        receiver_type: sym.receiver_type.clone(),
-                        param_count: sym.param_count,
-                    };
-                    method_index
-                        .entry(sym.name.to_lowercase())
-                        .or_default()
-                        .push(entry);
-                }
-                cc_model::symbol::SymbolKind::Class
-                | cc_model::symbol::SymbolKind::Interface
-                | cc_model::symbol::SymbolKind::Enum => {
-                    let base = sym
-                        .base_types
-                        .as_deref()
-                        .map(|s| {
-                            s.split(',')
-                                .map(|t| t.trim().to_string())
-                                .filter(|t| !t.is_empty())
-                                .collect()
-                        })
-                        .unwrap_or_default();
-                    let impls = sym
-                        .implements
-                        .as_deref()
-                        .map(|s| {
-                            s.split(',')
-                                .map(|t| t.trim().to_string())
-                                .filter(|t| !t.is_empty())
-                                .collect()
-                        })
-                        .unwrap_or_default();
+    /// Register one symbol's contributions (methods, type hierarchy, alias).
+    /// The insertion-order semantics match the historical
+    /// `build_from_symbols` loop exactly.
+    pub(crate) fn add_symbol(&mut self, sym: &SymbolRecord) {
+        let uid = match sym.symbol_uid.as_ref() {
+            Some(u) => u.clone(),
+            None => return,
+        };
 
-                    // Use qname as the canonical key (fallback to name)
-                    let canonical_key = sym.qname.as_ref().unwrap_or(&sym.name).to_lowercase();
+        match sym.kind {
+            SymbolKind::Method | SymbolKind::Function => {
+                let entry = MethodEntry {
+                    symbol_uid: uid,
+                    receiver_type: sym.receiver_type.clone(),
+                    param_count: sym.param_count,
+                };
+                self.method_index
+                    .entry(sym.name.to_lowercase())
+                    .or_default()
+                    .push(entry);
+            }
+            SymbolKind::Class | SymbolKind::Interface | SymbolKind::Enum => {
+                let base = sym
+                    .base_types
+                    .as_deref()
+                    .map(|s| {
+                        s.split(',')
+                            .map(|t| t.trim().to_string())
+                            .filter(|t| !t.is_empty())
+                            .collect()
+                    })
+                    .unwrap_or_default();
+                let impls = sym
+                    .implements
+                    .as_deref()
+                    .map(|s| {
+                        s.split(',')
+                            .map(|t| t.trim().to_string())
+                            .filter(|t| !t.is_empty())
+                            .collect()
+                    })
+                    .unwrap_or_default();
 
-                    type_index_by_qname.insert(
-                        canonical_key.clone(),
+                // Use qname as the canonical key (fallback to name)
+                let canonical_key = sym.qname.as_ref().unwrap_or(&sym.name).to_lowercase();
+
+                self.type_index_by_qname
+                    .entry(canonical_key.clone())
+                    .or_default()
+                    .push((
+                        sym.file_path.clone(),
                         TypeInfo {
                             base_types: base,
                             implements: impls,
                         },
-                    );
+                    ));
 
-                    // Maintain short name -> qnames mapping
-                    let short_key = sym.name.to_lowercase();
-                    let qnames = short_to_qnames.entry(short_key).or_default();
-                    if !qnames.contains(&canonical_key) {
-                        qnames.push(canonical_key);
+                // Maintain short name -> qnames mapping
+                self.short_to_qnames
+                    .entry(sym.name.to_lowercase())
+                    .or_default()
+                    .push((sym.file_path.clone(), canonical_key));
+            }
+            SymbolKind::TypeAlias => {
+                // For type aliases, if we have base_types, use the first as the canonical
+                if let Some(ref bt) = sym.base_types {
+                    let first = bt.split(',').next().unwrap_or("").trim();
+                    if !first.is_empty() {
+                        self.type_aliases
+                            .entry(sym.name.to_lowercase())
+                            .or_default()
+                            .push((sym.file_path.clone(), first.to_lowercase()));
                     }
                 }
-                cc_model::symbol::SymbolKind::TypeAlias => {
-                    // For type aliases, if we have base_types, use the first as the canonical
-                    if let Some(ref bt) = sym.base_types {
-                        let first = bt.split(',').next().unwrap_or("").trim();
-                        if !first.is_empty() {
-                            type_aliases.insert(sym.name.to_lowercase(), first.to_lowercase());
-                        }
-                    }
+            }
+            _ => {}
+        }
+    }
+
+    /// Remove the contributions of symbols that lived in `removed_files`.
+    /// `removed` carries the key facets of every removed symbol so only the
+    /// affected buckets are probed (batched: each bucket is scanned once
+    /// regardless of how many removed symbols share its key).
+    pub(crate) fn remove_files(&mut self, removed: &[SymbolKeyMeta<'_>], removed_files: &HashSet<String>) {
+        let mut removed_uids: HashSet<&str> = HashSet::new();
+        let mut method_keys: HashSet<String> = HashSet::new();
+        let mut type_keys: HashSet<(String, String)> = HashSet::new(); // (canonical, short)
+        let mut alias_keys: HashSet<String> = HashSet::new();
+        for meta in removed {
+            if meta.symbol_uid.is_none() {
+                continue; // uid-less symbols never entered the catalog
+            }
+            match meta.kind {
+                SymbolKind::Method | SymbolKind::Function => {
+                    removed_uids.insert(meta.symbol_uid.unwrap_or_default());
+                    method_keys.insert(meta.name.to_lowercase());
+                }
+                SymbolKind::Class | SymbolKind::Interface | SymbolKind::Enum => {
+                    let canonical = meta.qname.unwrap_or(meta.name).to_lowercase();
+                    type_keys.insert((canonical, meta.name.to_lowercase()));
+                }
+                SymbolKind::TypeAlias => {
+                    alias_keys.insert(meta.name.to_lowercase());
                 }
                 _ => {}
             }
         }
 
-        Self {
-            method_index,
-            type_index_by_qname,
-            short_to_qnames,
-            type_aliases,
-            type_assign_index: HashMap::new(),
+        for key in &method_keys {
+            if let Some(bucket) = self.method_index.get_mut(key) {
+                bucket.retain(|e| !removed_uids.contains(e.symbol_uid.as_str()));
+                if bucket.is_empty() {
+                    self.method_index.remove(key);
+                }
+            }
         }
+        for (canonical, short) in &type_keys {
+            if let Some(bucket) = self.type_index_by_qname.get_mut(canonical) {
+                bucket.retain(|(file, _)| !removed_files.contains(file));
+                if bucket.is_empty() {
+                    self.type_index_by_qname.remove(canonical);
+                }
+            }
+            if let Some(bucket) = self.short_to_qnames.get_mut(short) {
+                bucket.retain(|(file, _)| !removed_files.contains(file));
+                if bucket.is_empty() {
+                    self.short_to_qnames.remove(short);
+                }
+            }
+        }
+        for key in &alias_keys {
+            if let Some(bucket) = self.type_aliases.get_mut(key) {
+                bucket.retain(|(file, _)| !removed_files.contains(file));
+                if bucket.is_empty() {
+                    self.type_aliases.remove(key);
+                }
+            }
+        }
+        // type_assign_index is build-local (reset each build); no file cleanup.
+    }
+
+    /// Discard variable type assignments. They are derived from the current
+    /// batch's parse outcomes only (persisted files' assigns are never
+    /// reloaded), so a reused catalog must reset them each build to keep
+    /// fresh-build semantics.
+    pub(crate) fn reset_type_assigns(&mut self) {
+        self.type_assign_index.clear();
     }
 
     /// Normalize a type name for comparison:
@@ -167,19 +272,26 @@ impl TypeCatalog {
         // Resolve alias
         let resolved = self.resolve_alias(&lower);
 
-        // Map short name to qname if unique
-        if let Some(qnames) = self.short_to_qnames.get(resolved) {
-            if qnames.len() == 1 {
-                return qnames[0].clone();
+        // Map short name to qname if unambiguous (a single distinct qname
+        // across all live contributions).
+        if let Some(pairs) = self.short_to_qnames.get(resolved) {
+            if let Some((_, first)) = pairs.first() {
+                if pairs.iter().all(|(_, q)| q == first) {
+                    return first.clone();
+                }
             }
         }
 
-        // Check if it's already a qname in the index
-        if self.type_index_by_qname.contains_key(resolved) {
-            return resolved.to_string();
-        }
-
         resolved.to_string()
+    }
+
+    /// The live TypeInfo for a canonical key: the last contribution wins,
+    /// mirroring the historical insert-overwrite semantics.
+    fn type_info(&self, canonical: &str) -> Option<&TypeInfo> {
+        self.type_index_by_qname
+            .get(canonical)
+            .and_then(|pairs| pairs.last())
+            .map(|(_, info)| info)
     }
 
     /// Resolve a method by matching the receiver expression against known receiver types.
@@ -334,7 +446,12 @@ impl TypeCatalog {
     pub fn resolve_alias<'a>(&'a self, type_name: &'a str) -> &'a str {
         let mut current = type_name;
         for _ in 0..16 {
-            match self.type_aliases.get(current) {
+            let next = self
+                .type_aliases
+                .get(current)
+                .and_then(|pairs| pairs.last())
+                .map(|(_, canonical)| canonical.as_str());
+            match next {
                 Some(next) if next != current => current = next,
                 _ => break,
             }
@@ -350,7 +467,7 @@ impl TypeCatalog {
         if child_norm == parent_norm {
             return true;
         }
-        if let Some(info) = self.type_index_by_qname.get(&child_norm) {
+        if let Some(info) = self.type_info(&child_norm) {
             for base in &info.base_types {
                 let base_norm = self.normalize_type_name(base);
                 if base_norm == parent_norm {
@@ -740,4 +857,131 @@ mod tests {
         assert!(catalog.is_subtype("FileReader", "Readable"));
         assert!(!catalog.is_subtype("Readable", "FileReader"));
     }
+
+    // ----- Incremental maintenance (cross-build catalog cache) -----
+
+    fn key_meta(sym: &SymbolRecord) -> SymbolKeyMeta<'_> {
+        SymbolKeyMeta {
+            name: &sym.name,
+            qname: sym.qname.as_deref(),
+            kind: sym.kind,
+            symbol_uid: sym.symbol_uid.as_deref(),
+        }
+    }
+
+    /// remove_files + add_symbol must be equivalent to a fresh rebuild over
+    /// the surviving symbol set, across all four contribution maps.
+    #[test]
+    fn incremental_removal_matches_fresh_rebuild() {
+        let mut removed_class = make_class("Dog", "uid-dog", Some("Animal"));
+        removed_class.file_path = "dogs.go".to_string();
+        let mut removed_method = make_method("bark", "uid-bark", Some("Dog"), Some(0));
+        removed_method.file_path = "dogs.go".to_string();
+        let kept_class = make_class("Animal", "uid-animal", None);
+        let kept_method = make_method("feed", "uid-feed", Some("Animal"), Some(1));
+
+        let all = vec![
+            kept_class.clone(),
+            removed_class.clone(),
+            kept_method.clone(),
+            removed_method.clone(),
+        ];
+        let mut catalog = TypeCatalog::build_from_symbols(&all);
+        assert!(catalog.is_subtype("Dog", "Animal"));
+
+        let removed_files: HashSet<String> = ["dogs.go".to_string()].into();
+        catalog.remove_files(
+            &[key_meta(&removed_class), key_meta(&removed_method)],
+            &removed_files,
+        );
+
+        // Subtype edge through the removed class is gone; kept data intact.
+        assert!(!catalog.is_subtype("Dog", "Animal"));
+        assert!(catalog.method_param_count("feed", "uid-feed").is_some());
+        assert!(catalog.method_param_count("bark", "uid-bark").is_none());
+
+        // Bucket-level equivalence with a fresh rebuild over the survivors.
+        let fresh = TypeCatalog::build_from_symbols([&kept_class, &kept_method]);
+        assert_eq!(
+            catalog.method_index.keys().collect::<HashSet<_>>(),
+            fresh.method_index.keys().collect::<HashSet<_>>()
+        );
+        assert_eq!(
+            catalog.type_index_by_qname.keys().collect::<HashSet<_>>(),
+            fresh.type_index_by_qname.keys().collect::<HashSet<_>>()
+        );
+        assert_eq!(
+            catalog.short_to_qnames.keys().collect::<HashSet<_>>(),
+            fresh.short_to_qnames.keys().collect::<HashSet<_>>()
+        );
+    }
+
+    /// Removing one file's contribution must not erase another file's
+    /// same-key contribution (the multimap exactness this refactor exists for).
+    #[test]
+    fn removal_keeps_same_key_contribution_from_other_file() {
+        let mut cfg_a = make_class_with_qname("Config", "uid-cfg-a", Some("BaseA"), Some("Config"));
+        cfg_a.file_path = "a.py".to_string();
+        let mut cfg_b = make_class_with_qname("Config", "uid-cfg-b", Some("BaseB"), Some("Config"));
+        cfg_b.file_path = "b.py".to_string();
+        let base_a = make_class("BaseA", "uid-base-a", None);
+        let base_b = make_class("BaseB", "uid-base-b", None);
+
+        let mut catalog =
+            TypeCatalog::build_from_symbols([&base_a, &base_b, &cfg_a, &cfg_b]);
+        // Last writer (b.py) is live.
+        assert!(catalog.is_subtype("Config", "BaseB"));
+
+        let removed_files: HashSet<String> = ["b.py".to_string()].into();
+        catalog.remove_files(&[key_meta(&cfg_b)], &removed_files);
+
+        // a.py's contribution becomes live instead of vanishing.
+        assert!(catalog.is_subtype("Config", "BaseA"));
+        assert!(!catalog.is_subtype("Config", "BaseB"));
+    }
+
+    /// Alias removal restores the surviving file's alias target.
+    #[test]
+    fn alias_removal_restores_prior_contribution() {
+        let mut alias_a = make_class("Ignored", "uid-x", None);
+        alias_a.kind = SymbolKind::TypeAlias;
+        alias_a.name = "Handle".to_string();
+        alias_a.qname = Some("Handle".to_string());
+        alias_a.base_types = Some("RealA".to_string());
+        alias_a.file_path = "a.rs".to_string();
+        let mut alias_b = alias_a.clone();
+        alias_b.symbol_uid = Some("uid-y".to_string());
+        alias_b.base_types = Some("RealB".to_string());
+        alias_b.file_path = "b.rs".to_string();
+
+        let mut catalog = TypeCatalog::build_from_symbols([&alias_a, &alias_b]);
+        assert_eq!(catalog.resolve_alias("handle"), "realb");
+
+        let removed_files: HashSet<String> = ["b.rs".to_string()].into();
+        catalog.remove_files(&[key_meta(&alias_b)], &removed_files);
+        assert_eq!(catalog.resolve_alias("handle"), "reala");
+    }
+
+    /// reset_type_assigns drops variable inferences without touching the
+    /// declaration-derived maps.
+    #[test]
+    fn reset_type_assigns_is_scoped() {
+        let symbols = vec![make_method("run", "uid-run", Some("Job"), Some(0))];
+        let mut catalog = TypeCatalog::build_from_symbols(&symbols);
+        catalog.add_type_assigns(&[TypeAssignRecord {
+            file_path: "main.py".to_string(),
+            enclosing_symbol_uid: None,
+            var_name: "job".to_string(),
+            type_name: "Job".to_string(),
+            line: 3,
+            confidence: 0.9,
+            source: cc_model::type_assign::TypeAssignSource::Constructor,
+        }]);
+        assert_eq!(catalog.resolve_var_type("main.py", "job"), Some("Job"));
+
+        catalog.reset_type_assigns();
+        assert_eq!(catalog.resolve_var_type("main.py", "job"), None);
+        assert!(catalog.has_methods());
+    }
+
 }

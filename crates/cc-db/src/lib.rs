@@ -17,6 +17,7 @@ pub use snapshot_write_txn::SnapshotWriteTxn;
 pub mod index_migrate;
 mod rows;
 mod seed_symbol_cache;
+pub use seed_symbol_cache::seed_cache_max_symbols;
 pub mod signature_agg;
 pub use signature_agg::{GraphSignatureAggregates, RowAgg};
 pub mod sql_util;

@@ -7,6 +7,7 @@
 
 pub mod cargo_workspace;
 pub(crate) mod catalog;
+pub(crate) mod catalog_cache;
 pub(crate) mod helpers;
 pub(crate) mod resolve_core;
 pub(crate) mod resolve_outcome;
@@ -1995,5 +1996,81 @@ mod tests {
         // Should still resolve correctly after cache clear
         let result = catalog.resolve_name("foo", "a.py", 1, &scopes, &imports, None);
         assert!(result.is_some(), "Should resolve after cache clear");
+    }
+
+    // ------------------------------------------------------------------
+    // remove_files (cross-build catalog cache delta)
+    // ------------------------------------------------------------------
+
+    /// After removing a file, every lookup surface must behave as if the
+    /// file's symbols had never been registered: name buckets, uid map,
+    /// same-file indices, and the global-unique resolution step.
+    #[test]
+    fn test_remove_files_prunes_every_lookup_surface() {
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[
+            make_distinct_symbol("alpha_fn", "a.py", "uid:a1"),
+            make_distinct_symbol("beta_fn", "b.py", "uid:b1"),
+            make_distinct_symbol("shared_fn", "a.py", "uid:a2"),
+            make_distinct_symbol("shared_fn", "b.py", "uid:b2"),
+        ]);
+        assert_eq!(catalog.live_len(), 4);
+
+        let removed: std::collections::HashSet<String> = ["b.py".to_string()].into();
+        catalog.remove_files(&removed);
+        assert_eq!(catalog.live_len(), 2);
+
+        let scopes = HashMap::new();
+        // beta_fn lived only in b.py: no longer resolvable.
+        assert!(
+            catalog
+                .resolve_name("beta_fn", "c.py", 1, &scopes, &[], None)
+                .is_none(),
+            "removed file's unique symbol must not resolve"
+        );
+        // alpha_fn is untouched.
+        let alpha = catalog
+            .resolve_name("alpha_fn", "c.py", 1, &scopes, &[], None)
+            .expect("alpha_fn resolves");
+        assert_eq!(
+            catalog.entry(alpha.catalog_index).symbol_uid.as_deref(),
+            Some("uid:a1")
+        );
+        // shared_fn collapsed from ambiguous to globally unique (a.py).
+        let shared = catalog
+            .resolve_name("shared_fn", "c.py", 1, &scopes, &[], None)
+            .expect("shared_fn resolves");
+        assert_eq!(shared.resolution_kind, InternalResKind::GlobalUnique);
+        assert_eq!(catalog.entry(shared.catalog_index).file_path, "a.py");
+        // Same-file and uid surfaces are clean.
+        assert!(catalog.same_file_named("b.py", "beta_fn").is_empty());
+        assert!(catalog.canonical_name_for_uid("uid:b1").is_none());
+        assert!(catalog.canonical_name_for_uid("uid:a2").is_some());
+    }
+
+    /// Removal must be equivalent to a fresh catalog over the survivors:
+    /// re-adding the removed file afterwards restores resolution.
+    #[test]
+    fn test_remove_files_then_readd_restores_resolution() {
+        let mut catalog = SymbolCatalog::new();
+        let b_sym = make_distinct_symbol("beta_fn", "b.py", "uid:b1");
+        catalog.add_symbols(&[
+            make_distinct_symbol("alpha_fn", "a.py", "uid:a1"),
+            b_sym.clone(),
+        ]);
+
+        let removed: std::collections::HashSet<String> = ["b.py".to_string()].into();
+        catalog.remove_files(&removed);
+        catalog.add_symbols(&[b_sym]);
+
+        let result = catalog
+            .resolve_name("beta_fn", "c.py", 1, &HashMap::new(), &[], None)
+            .expect("re-added symbol resolves again");
+        assert_eq!(
+            catalog.entry(result.catalog_index).symbol_uid.as_deref(),
+            Some("uid:b1")
+        );
+        // One tombstone from the removal; live count reflects the re-add.
+        assert_eq!(catalog.live_len(), 2);
     }
 }

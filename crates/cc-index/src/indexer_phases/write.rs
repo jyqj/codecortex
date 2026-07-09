@@ -60,6 +60,7 @@ impl Indexer {
             .into_iter()
             .partition(|u| dirty_set.contains(&u.rel_path));
 
+        let mut seed_tokens = None;
         let config_units = if full {
             // Full rebuild: temp-db + atomic swap
             if self.use_direct_writer {
@@ -110,7 +111,7 @@ impl Indexer {
             let batch_empty = to_remove.is_empty()
                 && normal_write_units.is_empty()
                 && dirty_write_units.is_empty();
-            time_step("write", "incremental_batch", || {
+            seed_tokens = Some(time_step("write", "incremental_batch", || {
                 self.db.writes().write_incremental_batch(
                     to_remove,
                     &normal_write_units,
@@ -119,7 +120,7 @@ impl Indexer {
                     hierarchy_edges,
                     chunk_blobs,
                 )
-            })?;
+            })?);
 
             // Config links read the just-committed snapshot (separate read
             // connection), so they stay outside the batch transaction. The
@@ -194,6 +195,7 @@ impl Indexer {
         Ok(WriteResult {
             write_units,
             config_units,
+            seed_tokens,
         })
     }
 

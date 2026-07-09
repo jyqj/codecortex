@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::Path;
 
 use rayon::prelude::*;
@@ -9,16 +10,26 @@ use cc_model::symbol::SymbolRecord;
 use cc_model::{CcResult, StableId};
 
 use crate::indexer::{Indexer, ResolveResult, MIN_FILES_FOR_PARALLEL};
+use crate::resolver::catalog_cache::{self, CatalogCarry};
 use crate::resolver::{ResolutionContext, SymbolCatalog};
 
 /// Phase 4a output: the [`SymbolCatalog`] seeded with persisted + freshly
 /// parsed symbols, the persisted symbols themselves (consumed again by the
-/// hierarchy sub-phase), and one pre-built [`ResolutionContext`] per write
+/// hierarchy sub-phase; empty when the catalog was reused from the
+/// cross-build cache), and one pre-built [`ResolutionContext`] per write
 /// unit (index-aligned with the write units they were built from).
 struct ResolutionCatalog {
     catalog: SymbolCatalog,
     persisted_symbols: Vec<SymbolRecord>,
     resolution_contexts: Vec<ResolutionContext>,
+    /// The `symbols_seed` token the persisted part corresponds to, when this
+    /// build is eligible to fold the catalog back into the cross-build cache
+    /// (incremental, non-empty batch, aggregate baseline present).
+    cache_basis: Option<cc_db::RowAgg>,
+    /// `true` when the catalog (its `TypeCatalog` included) came from the
+    /// cross-build cache: phase 4b must delta-add the batch's type
+    /// contributions instead of rebuilding from a persisted snapshot.
+    type_catalog_reused: bool,
 }
 
 impl Indexer {
@@ -41,6 +52,8 @@ impl Indexer {
             mut catalog,
             persisted_symbols,
             resolution_contexts,
+            cache_basis,
+            type_catalog_reused,
         } = super::time_step("resolve", "build_catalog", || {
             self.build_resolution_catalog(full, write_units, to_remove)
         })?;
@@ -52,7 +65,12 @@ impl Indexer {
 
         // Phase 4b: type catalog (dispatch) + hierarchy edges.
         let hierarchy_edges = super::time_step("resolve", "hierarchy", || {
-            Self::resolve_hierarchy(&mut catalog, &persisted_symbols, write_units)
+            Self::resolve_hierarchy(
+                &mut catalog,
+                &persisted_symbols,
+                write_units,
+                type_catalog_reused,
+            )
         });
 
         // Phase 4c: call edges, symbol refs, route edges.
@@ -65,35 +83,86 @@ impl Indexer {
             Self::resolve_framework_cross_file(&catalog, write_units, fw_context)
         });
 
-        Ok(ResolveResult { hierarchy_edges })
+        Ok(ResolveResult {
+            hierarchy_edges,
+            catalog_carry: cache_basis.map(|basis| CatalogCarry { basis, catalog }),
+        })
     }
 
     /// Phase 4a (input construction): seed the [`SymbolCatalog`] with symbols
     /// persisted in the DB (incremental builds only — excluding files being
     /// re-parsed or removed) plus the freshly parsed symbols, and pre-build
     /// one [`ResolutionContext`] per write unit.
+    ///
+    /// Incremental non-empty batches first try the cross-build catalog cache
+    /// (see [`crate::resolver::catalog_cache`]): on a token-validated hit the
+    /// excluded files' entries are removed from the reused catalog instead of
+    /// reloading and re-registering every persisted symbol.
     fn build_resolution_catalog(
         &self,
         full: bool,
         write_units: &[FileWriteUnit],
         to_remove: &[String],
     ) -> CcResult<ResolutionCatalog> {
+        let resolution_contexts = |units: &[FileWriteUnit]| -> Vec<ResolutionContext> {
+            units
+                .iter()
+                .map(|unit| SymbolCatalog::build_resolution_context(&unit.outcome, &unit.rel_path))
+                .collect()
+        };
+
+        // Full builds seed from the batch alone. Empty incremental batches
+        // (nothing parsed, nothing dirty) have nothing to resolve either:
+        // every resolution sub-phase iterates `write_units`, so the
+        // persisted snapshot would feed no consumer — skip the load (and
+        // leave any parked cross-build catalog in place).
+        if full || write_units.is_empty() {
+            let mut catalog = SymbolCatalog::new();
+            for unit in write_units.iter() {
+                catalog.add_symbols(&unit.outcome.symbols);
+            }
+            return Ok(ResolutionCatalog {
+                catalog,
+                persisted_symbols: Vec::new(),
+                resolution_contexts: resolution_contexts(write_units),
+                cache_basis: None,
+                type_catalog_reused: false,
+            });
+        }
+
         let resolver_excluded_files: Vec<String> = write_units
             .iter()
             .map(|u| u.rel_path.clone())
             .chain(to_remove.iter().cloned())
             .collect();
-        // Full builds seed from the batch alone. Empty incremental batches
-        // (nothing parsed, nothing dirty) have nothing to resolve either:
-        // every resolution sub-phase iterates `write_units`, so the
-        // persisted snapshot would feed no consumer — skip the load.
-        let persisted_symbols = if full || write_units.is_empty() {
-            Vec::new()
-        } else {
-            self.db
-                .reads()
-                .resolver_seed_symbols_excluding(&resolver_excluded_files)?
-        };
+
+        if let Some((basis, mut catalog)) = catalog_cache::take_validated(&self.db) {
+            let excluded_set: HashSet<String> =
+                resolver_excluded_files.iter().cloned().collect();
+            catalog.remove_files(&excluded_set);
+            catalog.reset_type_assigns();
+            for unit in write_units.iter() {
+                catalog.add_symbols(&unit.outcome.symbols);
+            }
+            tracing::debug!(
+                phase = "resolve",
+                step = "catalog_cache",
+                live = catalog.live_len(),
+                "reused cross-build resolver catalog"
+            );
+            return Ok(ResolutionCatalog {
+                catalog,
+                persisted_symbols: Vec::new(),
+                resolution_contexts: resolution_contexts(write_units),
+                cache_basis: Some(basis),
+                type_catalog_reused: true,
+            });
+        }
+
+        let (seed_token, persisted_symbols) = self
+            .db
+            .reads()
+            .resolver_seed_symbols_with_token_excluding(&resolver_excluded_files)?;
 
         let mut catalog = SymbolCatalog::new();
         catalog.add_symbols(&persisted_symbols);
@@ -101,15 +170,12 @@ impl Indexer {
             catalog.add_symbols(&unit.outcome.symbols);
         }
 
-        let resolution_contexts: Vec<ResolutionContext> = write_units
-            .iter()
-            .map(|unit| SymbolCatalog::build_resolution_context(&unit.outcome, &unit.rel_path))
-            .collect();
-
         Ok(ResolutionCatalog {
+            resolution_contexts: resolution_contexts(write_units),
             catalog,
             persisted_symbols,
-            resolution_contexts,
+            cache_basis: seed_token,
+            type_catalog_reused: false,
         })
     }
 
@@ -171,16 +237,27 @@ impl Indexer {
     /// (see `dirty_reload_policy` for the reload-side declaration). On full
     /// builds the batch is the whole project, so this degenerates to the
     /// historical full regeneration.
+    ///
+    /// When the catalog was reused from the cross-build cache
+    /// (`type_catalog_reused`), its TypeCatalog already holds every persisted
+    /// file's contributions (excluded files removed in 4a), so only the
+    /// batch's contributions are delta-added — at the same pipeline point as
+    /// the fresh rebuild, so both paths see the 4a-backfilled symbols.
     fn resolve_hierarchy(
         catalog: &mut SymbolCatalog,
         persisted_symbols: &[SymbolRecord],
         write_units: &[FileWriteUnit],
+        type_catalog_reused: bool,
     ) -> Vec<cc_model::edge::SemanticEdgeRecord> {
         // Borrow persisted ++ batch instead of materializing an owned
         // concatenation: both consumers iterate references, so the full
         // snapshot is never deep-cloned (it scales with the whole repo).
         let batch_symbols = || write_units.iter().flat_map(|u| u.outcome.symbols.iter());
-        catalog.build_type_catalog(persisted_symbols.iter().chain(batch_symbols()));
+        if type_catalog_reused {
+            catalog.type_catalog_add_symbols(batch_symbols());
+        } else {
+            catalog.build_type_catalog(persisted_symbols.iter().chain(batch_symbols()));
+        }
         catalog.add_type_assigns_from_outcomes(write_units);
 
         let file_paths: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
@@ -532,7 +609,7 @@ mod phase_resolve_subphase_tests {
             },
         )];
 
-        let edges = Indexer::resolve_hierarchy(&mut catalog, &[], &units);
+        let edges = Indexer::resolve_hierarchy(&mut catalog, &[], &units, false);
 
         assert!(
             edges.iter().any(|e| {

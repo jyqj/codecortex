@@ -155,12 +155,20 @@ pub(crate) struct ParseResult {
 /// Intermediate result for Phase 4 (resolve).
 pub(crate) struct ResolveResult {
     pub(crate) hierarchy_edges: Vec<cc_model::edge::SemanticEdgeRecord>,
+    /// The resolution catalog plus its seed-token basis, carried to the
+    /// commit so the post-write fold can park it for the next build
+    /// (see `resolver::catalog_cache`). `None` when this build is not
+    /// cache-eligible (full build, empty batch, no aggregate baseline).
+    pub(crate) catalog_carry: Option<crate::resolver::catalog_cache::CatalogCarry>,
 }
 
 /// Intermediate result for Phase 6 (write).
 pub(crate) struct WriteResult {
     pub(crate) write_units: Vec<FileWriteUnit>,
     pub(crate) config_units: Vec<FileWriteUnit>,
+    /// The incremental batch's in-transaction `symbols_seed` token span;
+    /// `None` on the full-rebuild path.
+    pub(crate) seed_tokens: Option<cc_db::index_db::SeedTokenSpan>,
 }
 
 impl Indexer {

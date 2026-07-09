@@ -44,6 +44,10 @@ pub struct SymbolCatalog {
     /// scanning the whole bucket per reference is the dominant cold-build
     /// O(N²) cost. Bucket lookups at or below this stay exact.
     pub(in crate::resolver) max_fuzzy_pool: usize,
+    /// Tombstoned `entries` slots left behind by [`Self::remove_files`].
+    /// Slots are never reused (surviving indices stay valid); the cross-build
+    /// cache uses the dead/live ratio as its compaction policy.
+    pub(in crate::resolver) dead: usize,
 }
 
 impl SymbolCatalog {
@@ -72,7 +76,27 @@ impl SymbolCatalog {
                 NonZeroUsize::new(cache_size).unwrap_or(NonZeroUsize::new(8192).unwrap()),
             )),
             max_fuzzy_pool,
+            dead: 0,
         }
+    }
+
+    /// Number of live (non-tombstoned) entries.
+    pub(crate) fn live_len(&self) -> usize {
+        self.entries.len() - self.dead
+    }
+
+    /// Whether tombstoned slots outweigh live entries — the cross-build
+    /// cache's signal to drop this catalog and rebuild fresh instead of
+    /// carrying ever-growing dead weight (compaction by reconstruction).
+    ///
+    /// The absolute floor keeps the policy a *memory* bound rather than a
+    /// ratio fetish: on small repositories a single batch can touch most
+    /// files (dead briefly exceeds live), but a few thousand tombstones are
+    /// ~1 MB — not worth forfeiting reuse over. At scale the ratio term
+    /// dominates and bounds the catalog at ~2× its live size.
+    pub(crate) fn should_compact(&self) -> bool {
+        const TOMBSTONE_FLOOR: usize = 4096;
+        self.dead > self.live_len().max(TOMBSTONE_FLOOR)
     }
 
     /// Clear the resolve_name LRU cache.
@@ -121,6 +145,139 @@ impl SymbolCatalog {
             if !unit.outcome.type_assigns.is_empty() {
                 self.add_type_assigns(&unit.outcome.type_assigns);
             }
+        }
+    }
+
+    /// Remove every entry belonging to `files` from all lookup maps, driving
+    /// the same removal through the embedded [`TypeCatalog`] (when built).
+    ///
+    /// `entries` slots are tombstoned, never reused, so surviving indices —
+    /// including those captured in earlier [`ResolveResult`]s — stay valid;
+    /// the resolve LRU is cleared because its cached results may point at
+    /// removed entries. Global-bucket cleanup is batched per distinct key:
+    /// each bucket is scanned once regardless of how many removed entries
+    /// share its key (a hot name like `value` costs one retain, not one per
+    /// removed local).
+    pub(crate) fn remove_files(&mut self, files: &HashSet<String>) {
+        self.clear_resolve_cache();
+
+        let mut removed_indices: Vec<usize> = Vec::new();
+        for file in files {
+            if let Some(indices) = self.by_file.remove(file) {
+                removed_indices.extend(indices);
+            }
+            self.by_file_name.remove(file);
+            self.by_file_qname.remove(file);
+            self.by_export.remove(file);
+        }
+        if removed_indices.is_empty() {
+            return;
+        }
+        let removed_set: HashSet<usize> = removed_indices.iter().copied().collect();
+
+        // Distinct global-bucket keys contributed by the removed entries.
+        let mut name_keys: HashSet<String> = HashSet::new();
+        let mut qname_keys: HashSet<String> = HashSet::new();
+        let mut leaf_keys: HashSet<String> = HashSet::new();
+        for &idx in &removed_indices {
+            let entry = &self.entries[idx];
+            name_keys.insert(entry.name.to_lowercase());
+            if let Some(ref q) = entry.qname {
+                let ql = q.to_lowercase();
+                leaf_keys.insert(ql.rsplit('.').next().unwrap_or(&ql).to_string());
+                qname_keys.insert(ql);
+            }
+            if let Some(ref uid) = entry.symbol_uid {
+                // uid is file-scoped, so the current mapping (last-wins)
+                // necessarily points at an entry of the same removed file.
+                if self.by_uid.get(uid).is_some_and(|i| removed_set.contains(i)) {
+                    self.by_uid.remove(uid);
+                }
+            }
+        }
+        for key in &name_keys {
+            if let Some(bucket) = self.by_name.get_mut(key) {
+                bucket.retain(|i| !removed_set.contains(i));
+                if bucket.is_empty() {
+                    self.by_name.remove(key);
+                }
+            }
+        }
+        for key in &qname_keys {
+            if let Some(bucket) = self.by_qname.get_mut(key) {
+                bucket.retain(|i| !removed_set.contains(i));
+                if bucket.is_empty() {
+                    self.by_qname.remove(key);
+                }
+            }
+        }
+        for key in &leaf_keys {
+            if let Some(bucket) = self.by_qname_leaf.get_mut(key) {
+                bucket.retain(|i| !removed_set.contains(i));
+                if bucket.is_empty() {
+                    self.by_qname_leaf.remove(key);
+                }
+            }
+        }
+
+        // Mirror the removal into the type catalog before tombstoning (the
+        // key facets are read from the still-live entries).
+        if let Some(mut tc) = self.type_catalog.take() {
+            let metas: Vec<crate::type_catalog::SymbolKeyMeta<'_>> = removed_indices
+                .iter()
+                .map(|&idx| {
+                    let e = &self.entries[idx];
+                    crate::type_catalog::SymbolKeyMeta {
+                        name: &e.name,
+                        qname: e.qname.as_deref(),
+                        kind: e.kind,
+                        symbol_uid: e.symbol_uid.as_deref(),
+                    }
+                })
+                .collect();
+            tc.remove_files(&metas, files);
+            drop(metas);
+            self.type_catalog = Some(tc);
+        }
+
+        for idx in removed_indices {
+            self.entries[idx] = CatalogEntry {
+                symbol_id: String::new(),
+                symbol_uid: None,
+                name: String::new(),
+                file_path: String::new(),
+                kind: SymbolKind::Variable,
+                container: None,
+                qname: None,
+                is_default_export: false,
+                start_line: 0,
+                end_line: 0,
+                scope_id: None,
+            };
+            self.dead += 1;
+        }
+    }
+
+    /// Feed the current batch's symbols into the already-built
+    /// [`TypeCatalog`] — the delta counterpart of `build_type_catalog` used
+    /// when the catalog (type catalog included) was reused from the
+    /// cross-build cache and only the batch's contributions are missing.
+    pub(crate) fn type_catalog_add_symbols<'a, I>(&mut self, symbols: I)
+    where
+        I: IntoIterator<Item = &'a SymbolRecord>,
+    {
+        if let Some(ref mut tc) = self.type_catalog {
+            for sym in symbols {
+                tc.add_symbol(sym);
+            }
+        }
+    }
+
+    /// Reset build-local variable type assignments on a reused type catalog
+    /// (fresh builds start empty; a cached catalog must match).
+    pub(crate) fn reset_type_assigns(&mut self) {
+        if let Some(ref mut tc) = self.type_catalog {
+            tc.reset_type_assigns();
         }
     }
 

@@ -37,7 +37,7 @@
 
 use std::collections::HashMap;
 use std::path::Path;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use cc_db::index_db::{FileState, FileWriteUnit, PrecompressedChunks};
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
@@ -72,6 +72,10 @@ pub struct PreparedBuild {
     /// generation pair: `evidence_epoch` is bumped concurrently by
     /// runtime-evidence ingestion and would false-positive.
     prepared_index_epoch: u64,
+    /// The resolution catalog + seed-token basis, folded back into the
+    /// cross-build cache after a successful incremental write (see
+    /// `resolver::catalog_cache`).
+    catalog_carry: Option<crate::resolver::catalog_cache::CatalogCarry>,
     start: Instant,
     scan_diff_ms: u64,
     parse_ms: u64,
@@ -235,6 +239,7 @@ impl IndexBuildPlan {
             parse_report,
             dirty_propagation,
             prepared_index_epoch,
+            catalog_carry: resolve_result.catalog_carry,
             start,
             scan_diff_ms,
             parse_ms,
@@ -276,6 +281,7 @@ impl IndexBuildPlan {
             parse_report,
             dirty_propagation,
             prepared_index_epoch,
+            catalog_carry,
             start,
             scan_diff_ms,
             parse_ms,
@@ -307,6 +313,18 @@ impl IndexBuildPlan {
             &mut build_explain,
         )?;
         let write_ms = phase_start.elapsed().as_millis() as u64;
+
+        // Every phase_write write has committed: fold the resolution catalog
+        // into the cross-build cache (or clear it — full rebuilds and
+        // unprovable bases must not leave a stale catalog parked).
+        crate::resolver::catalog_cache::after_write(
+            &indexer.db,
+            self.mode.is_full(),
+            catalog_carry,
+            &write_result.write_units,
+            &scan_result.to_remove,
+            write_result.seed_tokens,
+        );
 
         // Baseline for the stage-3 recheck, read after every stage-1 write
         // committed.
@@ -419,6 +437,10 @@ impl IndexBuildPlan {
         indexer.phase_analysis_apply(&analysis)?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
 
+        Ok(self.report(carry, build_explain))
+    }
+
+    fn report(&self, carry: ReportCarry, build_explain: Option<BuildExplain>) -> IndexReport {
         let ReportCarry {
             scan_result,
             output_snapshot,
@@ -427,27 +449,6 @@ impl IndexBuildPlan {
             start,
             timing,
         } = carry;
-        Ok(self.report(
-            scan_result,
-            parse_report,
-            output_snapshot,
-            dirty_propagation,
-            start.elapsed(),
-            Some(timing),
-            build_explain,
-        ))
-    }
-
-    fn report(
-        &self,
-        scan_result: ScanDiffResult,
-        parse_report: ParseReport,
-        output_snapshot: OutputSnapshot,
-        dirty_propagation: Option<DirtyPropagationStatus>,
-        elapsed: Duration,
-        phase_timing: Option<crate::indexer::PhaseTiming>,
-        build_explain: Option<BuildExplain>,
-    ) -> IndexReport {
         IndexReport {
             files_scanned: scan_result.files_scanned,
             files_added: scan_result.files_added,
@@ -457,11 +458,11 @@ impl IndexBuildPlan {
             symbols_total: output_snapshot.symbols_total,
             chunks_total: output_snapshot.chunks_total,
             parse_errors: parse_report.parse_errors,
-            elapsed_ms: elapsed.as_millis() as u64,
+            elapsed_ms: start.elapsed().as_millis() as u64,
             files_parsed: parse_report.files_to_parse,
             used_parallel_parse: parse_report.used_parallel,
             dirty_propagation,
-            phase_timing,
+            phase_timing: Some(timing),
             build_explain,
         }
     }
@@ -1038,6 +1039,149 @@ class Accumulator:
         std::fs::remove_file(dir.path().join("extra.py")).expect("remove extra.py");
         plan.execute(&indexer, dir.path()).expect("remove build");
         assert_seed_equivalent("after file removal");
+    }
+
+    /// Cross-build resolver catalog cache lifecycle: an incremental build
+    /// with a provable token basis parks the folded catalog, the next build
+    /// takes it (observed via the per-handle hit counter), removal-only
+    /// batches fold in place, full rebuilds clear the slot — and throughout,
+    /// the resolved call-edge rows (UIDs included, not just counts) stay
+    /// identical to a same-content full rebuild on a fresh handle.
+    ///
+    /// TypeScript fixture on purpose: the dirty closure keys on export
+    /// fingerprints, which only exported symbols contribute to — a lib.ts
+    /// signature change must promote main.ts to DirtyResolveOnly and push
+    /// the dirty-reload path through the reused catalog.
+    #[test]
+    fn catalog_cache_reuse_matches_full_rebuild() {
+        use crate::resolver::catalog_cache;
+
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        let project = dir.path();
+        std::fs::write(
+            project.join("lib.ts"),
+            "export function helper(value: number): number {\n    return value + 1;\n}\n\nexport function utilFn(): number {\n    return 0;\n}\n",
+        )
+        .expect("write lib.ts");
+        std::fs::write(
+            project.join("main.ts"),
+            "import { helper } from './lib';\n\nexport function mainEntry(): number {\n    return helper(1);\n}\n",
+        )
+        .expect("write main.ts");
+        std::fs::write(
+            project.join("extra.ts"),
+            "export function standaloneFn(): number {\n    return 2;\n}\n",
+        )
+        .expect("write extra.ts");
+
+        let db_dir = tempfile::tempdir().expect("db dir");
+        let db = Arc::new(
+            IndexDb::open(&db_dir.path().join("index.sqlite3"))
+                .expect("open db")
+                .0,
+        );
+        let indexer = Indexer::new(db.clone(), project, &config);
+        let plan = IndexBuildPlan::new(false, None);
+
+        // Build 1: fresh database — the aggregate baseline is created
+        // mid-batch, so the fold cannot prove its pre-state; nothing parks.
+        plan.execute(&indexer, project).expect("build 1");
+
+        // Build 2 (edit main.ts): the seed load carries a token now; the
+        // post-write fold must park the catalog.
+        std::fs::write(
+            project.join("main.ts"),
+            "import { helper } from './lib';\n\nexport function mainEntry(): number {\n    return helper(2);\n}\n\nexport function secondEntry(): number {\n    return helper(3);\n}\n",
+        )
+        .expect("edit main.ts");
+        plan.execute(&indexer, project).expect("build 2");
+        assert!(
+            catalog_cache::parked_live_len(&db).is_some(),
+            "build 2 must park the folded catalog"
+        );
+
+        // Build 3: export-signature change in lib.ts — helper's uid moves,
+        // the dirty closure promotes main.ts, and the dirty re-resolution
+        // must run against the reused catalog.
+        let hits_before = catalog_cache::cache_hits(&db);
+        std::fs::write(
+            project.join("lib.ts"),
+            "export function helper(value: number, scale: number): number {\n    return value * scale;\n}\n\nexport function utilFn(): number {\n    return 0;\n}\n",
+        )
+        .expect("edit lib.ts");
+        plan.execute(&indexer, project).expect("build 3");
+        assert_eq!(
+            catalog_cache::cache_hits(&db),
+            hits_before + 1,
+            "build 3 must reuse the parked catalog"
+        );
+        assert!(
+            catalog_cache::parked_live_len(&db).is_some(),
+            "build 3 must re-park after its fold"
+        );
+
+        // Removal-only batch (nothing parsed): folds the removal into the
+        // parked catalog without taking it through a resolve.
+        let live_before = catalog_cache::parked_live_len(&db).expect("parked before removal");
+        std::fs::remove_file(project.join("extra.ts")).expect("remove extra.ts");
+        plan.execute(&indexer, project).expect("removal build");
+        let live_after =
+            catalog_cache::parked_live_len(&db).expect("removal must keep the catalog parked");
+        assert!(
+            live_after < live_before,
+            "removal fold must shrink live entries ({live_before} -> {live_after})"
+        );
+
+        // Resolution equivalence against a same-content full rebuild: the
+        // fixture is ambiguity-free, so resolved rows must match exactly.
+        // This is what catches a stale reused catalog: a dangling old uid on
+        // main.ts's helper calls would differ from the rebuilt rows.
+        let resolved_rows = |db: &IndexDb| -> Vec<String> {
+            db.reads()
+                .query_json(
+                    "SELECT file_path || '|' || callee_symbol || '|' || \
+                     COALESCE(callee_symbol_uid,'') || '|' || COALESCE(target_file_path,'') \
+                     AS row FROM call_edges ORDER BY row",
+                    &[],
+                )
+                .expect("call edge rows")
+                .iter()
+                .filter_map(|r| r.get("row").and_then(|v| v.as_str()).map(String::from))
+                .collect()
+        };
+        let incremental_edges = resolved_rows(&db);
+        assert!(
+            incremental_edges
+                .iter()
+                .any(|row| row.contains("helper|") && row.contains("lib.ts")),
+            "cross-file helper call must resolve to lib.ts; got {incremental_edges:?}"
+        );
+
+        let db_full = Arc::new(
+            IndexDb::open(&db_dir.path().join("index_full.sqlite3"))
+                .expect("open full db")
+                .0,
+        );
+        let indexer_full = Indexer::new(db_full.clone(), project, &config);
+        IndexBuildPlan::new(true, None)
+            .execute(&indexer_full, project)
+            .expect("full rebuild");
+        assert_eq!(
+            incremental_edges,
+            resolved_rows(&db_full),
+            "cached-path resolution must match a same-content full rebuild"
+        );
+
+        // A full rebuild on the caching handle replaces the whole symbol
+        // table — the slot must be cleared, not left to rot.
+        IndexBuildPlan::new(true, None)
+            .execute(&indexer, project)
+            .expect("full build on caching handle");
+        assert!(
+            catalog_cache::parked_live_len(&db).is_none(),
+            "full rebuild must clear the parked catalog"
+        );
     }
 
     /// A `PreparedBuild` whose snapshot predates a newer index write must be

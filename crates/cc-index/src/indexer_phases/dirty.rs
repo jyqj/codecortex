@@ -16,6 +16,7 @@ impl Indexer {
         &self,
         actions: &mut HashMap<String, FileAction>,
         write_units: &[FileWriteUnit],
+        removed_files: &[String],
     ) -> CcResult<DirtyPropagationOutcome> {
         if !self.dirty_propagation {
             return Ok(DirtyPropagationOutcome {
@@ -31,8 +32,9 @@ impl Indexer {
             .map(|(p, _)| p.clone())
             .collect();
 
-        // Nothing changed: the closure is trivially converged.
-        if changed_files.is_empty() {
+        // Nothing changed and nothing removed: the closure is trivially
+        // converged.
+        if changed_files.is_empty() && removed_files.is_empty() {
             return Ok(DirtyPropagationOutcome {
                 marked: 0,
                 status: DirtyPropagationStatus::Normal,
@@ -63,6 +65,14 @@ impl Indexer {
                 export_changed_files.push(file_path.clone());
             }
         }
+
+        // Removed (or renamed-away) files: their export surface went to nothing,
+        // so any file that still imports them must re-resolve — otherwise its
+        // call edges keep a `target_symbol_id` pointing at now-deleted symbols
+        // and its `IMPORTS` edge points at a file that no longer exists. The
+        // closure seeds from these paths (still present in importers' stored
+        // `imports.resolved_path` at this point) and promotes the importers.
+        export_changed_files.extend(removed_files.iter().cloned());
 
         if export_changed_files.is_empty() {
             return Ok(DirtyPropagationOutcome {
@@ -465,7 +475,7 @@ mod dirty_propagation_fixpoint_tests {
         );
 
         let outcome = indexer
-            .run_dirty_propagation(&mut actions, &parse.write_units)
+            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
             .unwrap();
 
         assert!(
@@ -556,7 +566,7 @@ mod dirty_propagation_fixpoint_tests {
         );
 
         let outcome = indexer
-            .run_dirty_propagation(&mut actions, &parse.write_units)
+            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
             .unwrap();
 
         assert!(
@@ -570,6 +580,78 @@ mod dirty_propagation_fixpoint_tests {
             actions.get("c.ts")
         );
         assert_eq!(outcome.marked, 2, "exactly a.ts and c.ts are promoted");
+    }
+
+    /// Removing a dependency must promote its importers for re-resolution:
+    /// `a.ts` imports `beta` from `b.ts`; deleting `b.ts` has to mark `a.ts`
+    /// `DirtyResolveOnly` so its now-dangling call/import edges get cleared and
+    /// re-resolved against a catalog that no longer contains `b.ts`.
+    #[test]
+    fn removed_dependency_promotes_importer() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        std::fs::write(
+            project.join("b.ts"),
+            "export function beta(): number { return 1; }\n",
+        )
+        .unwrap();
+        std::fs::write(
+            project.join("a.ts"),
+            "import { beta } from './b';\nexport function useBeta(): number { return beta(); }\n",
+        )
+        .unwrap();
+
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let config = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), project, &config);
+        indexer.build_index(project, true).unwrap();
+
+        // Premise: a.ts's import must resolve to b.ts so the importer lookup
+        // (keyed on imports.resolved_path) can find it after removal.
+        let imports = db
+            .reads()
+            .query_json(
+                "SELECT resolved_path FROM imports WHERE file_path = 'a.ts'",
+                &[],
+            )
+            .unwrap();
+        assert!(
+            imports
+                .iter()
+                .any(|row| row.get("resolved_path").and_then(|v| v.as_str()) == Some("b.ts")),
+            "a.ts must import a resolved b.ts; got {:?}",
+            imports
+        );
+
+        // Delete b.ts and run the incremental diff/parse/propagation pipeline.
+        std::fs::remove_file(project.join("b.ts")).unwrap();
+
+        let mut scan = indexer.phase_scan_and_diff(project, false, None).unwrap();
+        assert!(
+            scan.to_remove.contains(&"b.ts".to_string()),
+            "deleted b.ts must land in to_remove; got {:?}",
+            scan.to_remove
+        );
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        let parse = indexer.phase_parse(project, to_parse).unwrap();
+        let mut actions =
+            indexer.build_actions_map(&parse.write_units, &scan.existing, &scan.scanned_paths);
+        assert!(
+            matches!(actions.get("a.ts"), Some(FileAction::Skip)),
+            "unchanged a.ts starts as Skip; got {:?}",
+            actions.get("a.ts")
+        );
+
+        let outcome = indexer
+            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
+            .unwrap();
+
+        assert!(
+            matches!(actions.get("a.ts"), Some(FileAction::DirtyResolveOnly)),
+            "a.ts imports the removed b.ts and must be promoted; got {:?}",
+            actions.get("a.ts")
+        );
+        assert_eq!(outcome.marked, 1, "exactly a.ts is promoted");
     }
 
     /// A round-1 budget bail must surface as `budget_exceeded` on the
@@ -633,14 +715,14 @@ mod dirty_propagation_fixpoint_tests {
         };
         let disabled_indexer = Indexer::new(db.clone(), project, &disabled_config);
         let outcome = disabled_indexer
-            .run_dirty_propagation(&mut HashMap::new(), &[])
+            .run_dirty_propagation(&mut HashMap::new(), &[], &[])
             .unwrap();
         assert_eq!(outcome.status, DirtyPropagationStatus::Disabled);
         assert_eq!(outcome.marked, 0);
 
         let enabled_indexer = Indexer::new(db, project, &IndexingConfig::default());
         let outcome = enabled_indexer
-            .run_dirty_propagation(&mut HashMap::new(), &[])
+            .run_dirty_propagation(&mut HashMap::new(), &[], &[])
             .unwrap();
         assert_eq!(outcome.status, DirtyPropagationStatus::Normal);
         assert_eq!(outcome.marked, 0);

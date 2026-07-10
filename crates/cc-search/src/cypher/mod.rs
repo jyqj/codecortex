@@ -1230,6 +1230,169 @@ mod tests {
         );
     }
 
+    /// Seed a tiny in-memory graph: A calls B, both functions.
+    #[cfg(test)]
+    fn seed_two_functions_one_call(db: &IndexDb) {
+        let conn = crate::test_seed::seed_conn(db);
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');\
+             INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid) VALUES \
+                 ('a','src/x.rs','A','function',1,1,'uA'),\
+                 ('b','src/x.rs','B','function',2,2,'uB');\
+             INSERT INTO call_edges(edge_id,file_path,callee_symbol,line,caller_symbol_uid,callee_symbol_uid) VALUES \
+                 ('e1','src/x.rs','B',1,'uA','uB');",
+        )
+        .unwrap();
+    }
+
+    /// Regression (2.2): a lone `OPTIONAL MATCH` with a destination `WHERE`
+    /// must preserve source rows (LEFT JOIN semantics). Before the fix the
+    /// destination predicate sat in the outer WHERE and filtered the NULL
+    /// rows, collapsing it into an inner join.
+    #[test]
+    fn optional_match_with_dst_where_preserves_source() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("opt.db")).unwrap().0;
+        seed_two_functions_one_call(&db);
+
+        let result = cypher_query(
+            "OPTIONAL MATCH (a:Function)-[:CALLS]->(b:Function) \
+             WHERE b.name = 'zzz' RETURN a.name",
+            &db,
+        )
+        .unwrap();
+        let names: Vec<String> = result
+            .rows
+            .iter()
+            .filter_map(|r| r.first().and_then(|v| v.as_str()).map(String::from))
+            .collect();
+        assert!(
+            names.contains(&"A".to_string()),
+            "OPTIONAL MATCH must preserve source A even when the dst filter \
+             matches nothing; got {names:?}"
+        );
+    }
+
+    /// The anchored two-clause OPTIONAL form must still execute (not be caught
+    /// by the multi-clause guard added for silently-ignored clauses).
+    #[test]
+    fn anchored_two_clause_optional_still_executes() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("opt2.db")).unwrap().0;
+        seed_two_functions_one_call(&db);
+
+        let result = cypher_query(
+            "MATCH (a:Function) OPTIONAL MATCH (a)-[:CALLS]->(b:Function) RETURN a.name",
+            &db,
+        )
+        .unwrap();
+        assert!(!result.rows.is_empty(), "anchored optional must return rows");
+    }
+
+    /// Regression (2.1): extra MATCH clauses are no longer silently ignored.
+    #[test]
+    fn multiple_plain_match_clauses_are_rejected() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("g1.db")).unwrap().0;
+        let err = cypher_query("MATCH (a:Function) MATCH (b:Class) RETURN a.name", &db)
+            .unwrap_err()
+            .to_string();
+        assert!(err.contains("MATCH"), "expected multi-MATCH rejection, got: {err}");
+    }
+
+    /// Regression (2.1): comma-separated patterns in one MATCH are rejected
+    /// instead of executing only the first pattern.
+    #[test]
+    fn comma_separated_patterns_are_rejected() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("g2.db")).unwrap().0;
+        let err = cypher_query("MATCH (a:Function), (b:Class) RETURN a.name", &db)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            err.contains("comma-separated") || err.contains("pattern"),
+            "expected comma-pattern rejection, got: {err}"
+        );
+    }
+
+    /// Regression (2.3): a WHERE predicate that mixes source and destination
+    /// variables (e.g. via OR) can't be split into per-side fragments, so it
+    /// must error rather than silently drop one side's constraint.
+    #[test]
+    fn cross_variable_or_predicate_errors() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("g3.db")).unwrap().0;
+        let err = cypher_query(
+            "OPTIONAL MATCH (a:Function)-[:CALLS]->(b:Function) \
+             WHERE a.name = 'x' OR b.name = 'y' RETURN a.name",
+            &db,
+        )
+        .unwrap_err()
+        .to_string();
+        assert!(
+            err.contains("mixes source and destination"),
+            "expected mixed-variable rejection, got: {err}"
+        );
+    }
+
+    /// Regression (2.4): `CONTAINS` must escape LIKE metacharacters and bind
+    /// with `ESCAPE '\'` so a literal `%`/`_` matches verbatim.
+    #[test]
+    fn contains_escapes_like_wildcards() {
+        let tokens =
+            tokenize("MATCH (f:File) WHERE f.file_path CONTAINS '50%_x' RETURN f.file_path")
+                .unwrap();
+        let ast = parse(&tokens).unwrap();
+        let pattern = &ast.match_clause().patterns[0];
+        let translated = translate_single_node(&ast, pattern).unwrap();
+        assert!(
+            translated.sql.contains("ESCAPE '\\'"),
+            "LIKE must carry an ESCAPE clause, got: {}",
+            translated.sql
+        );
+        assert!(
+            translated.params.contains(&"%50\\%\\_x%".to_string()),
+            "LIKE metacharacters must be escaped, got: {:?}",
+            translated.params
+        );
+    }
+
+    /// Regression (3d): a UNION must honour a single global limit rather than
+    /// returning up to the sum of the per-branch limits.
+    #[test]
+    fn union_applies_global_limit() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let db = IndexDb::open(&tmp.path().join("union.db")).unwrap().0;
+        let conn = crate::test_seed::seed_conn(&db);
+        conn.execute_batch(
+            "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
+                 VALUES('src/x.rs','Rust','h',1.0,1,'2024-01-01');\
+             INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line,symbol_uid) VALUES \
+                 ('f1','src/x.rs','F1','function',1,1,'uF1'),\
+                 ('f2','src/x.rs','F2','function',2,2,'uF2'),\
+                 ('f3','src/x.rs','F3','function',3,3,'uF3'),\
+                 ('c1','src/x.rs','C1','class',4,4,'uC1'),\
+                 ('c2','src/x.rs','C2','class',5,5,'uC2'),\
+                 ('c3','src/x.rs','C3','class',6,6,'uC3');",
+        )
+        .unwrap();
+        drop(conn);
+
+        let result = cypher_query(
+            "MATCH (f:Function) RETURN f.name LIMIT 2 \
+             UNION MATCH (c:Class) RETURN c.name LIMIT 2",
+            &db,
+        )
+        .unwrap();
+        assert!(
+            result.row_count <= 2,
+            "UNION must cap the merged result at the global limit (2), got {}",
+            result.row_count
+        );
+        assert_eq!(result.limit, Some(2), "reported limit must be the global bound");
+    }
+
     #[test]
     fn parse_return_distinct() {
         let tokens = tokenize("MATCH (f:Function) RETURN DISTINCT f.file_path").unwrap();

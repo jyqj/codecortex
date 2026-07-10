@@ -59,7 +59,11 @@ pub(crate) enum ReloadedEdgeCategory {
 pub(crate) fn dirty_reload_policy(category: ReloadedEdgeCategory) -> DirtyReloadPolicy {
     use DirtyReloadPolicy::*;
     match category {
-        // Symbols and imports carry no cross-file resolution state to clear.
+        // Symbols carry no cross-file resolution state to clear. Imports keep
+        // their rows here, but their `resolved_path` is recomputed from the
+        // current filesystem in `phase_dirty_reload` (a dependency may have
+        // moved/vanished while this file's content stayed the same), so nothing
+        // needs clearing at this layer.
         ReloadedEdgeCategory::Symbols => KeepAsIs,
         ReloadedEdgeCategory::Imports => KeepAsIs,
         // Resolver-resolved targets: clear so phase 4a re-resolves.

@@ -410,6 +410,10 @@ impl SearchPlan {
             b.rerank_score
                 .partial_cmp(&a.rerank_score)
                 .unwrap_or(std::cmp::Ordering::Equal)
+                // Deterministic tie-break on chunk id so equal rerank scores
+                // (or NaN, which compares Equal) yield a stable order instead
+                // of depending on prior fusion/HashMap ordering.
+                .then_with(|| a.chunk_id.cmp(&b.chunk_id))
         });
         results.truncate(limit);
     }

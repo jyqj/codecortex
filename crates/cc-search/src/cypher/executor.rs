@@ -74,6 +74,23 @@ pub(crate) fn validate_sql_ident(ident: &str) -> CcResult<()> {
     }
 }
 
+/// Escape SQL `LIKE` metacharacters (`%`, `_`, and the `\` escape char itself)
+/// in a user-supplied literal so `CONTAINS`/`STARTS WITH`/`ENDS WITH` match the
+/// substring verbatim. Callers must pair the bound value with `ESCAPE '\'`.
+pub(crate) fn escape_like(value: &str) -> String {
+    let mut out = String::with_capacity(value.len());
+    for ch in value.chars() {
+        match ch {
+            '\\' | '%' | '_' => {
+                out.push('\\');
+                out.push(ch);
+            }
+            _ => out.push(ch),
+        }
+    }
+    out
+}
+
 /// Map node label to DB table name.
 pub(crate) fn label_table(label: &str) -> &'static str {
     match label {
@@ -212,20 +229,20 @@ pub(crate) fn expr_to_sql(expr: &Expr, params: &mut Vec<String>) -> CcResult<Str
         Expr::Contains { left, value } => {
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
-            params.push(format!("%{value}%"));
-            Ok(format!("{col} LIKE ?{idx}"))
+            params.push(format!("%{}%", escape_like(value)));
+            Ok(format!("{col} LIKE ?{idx} ESCAPE '\\'"))
         }
         Expr::StartsWith { left, value } => {
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
-            params.push(format!("{value}%"));
-            Ok(format!("{col} LIKE ?{idx}"))
+            params.push(format!("{}%", escape_like(value)));
+            Ok(format!("{col} LIKE ?{idx} ESCAPE '\\'"))
         }
         Expr::EndsWith { left, value } => {
             let col = prop_to_sql_col(left);
             let idx = params.len() + 1;
-            params.push(format!("%{value}"));
-            Ok(format!("{col} LIKE ?{idx}"))
+            params.push(format!("%{}", escape_like(value)));
+            Ok(format!("{col} LIKE ?{idx} ESCAPE '\\'"))
         }
         Expr::And(l, r) => {
             let ls = expr_to_sql(l, params)?;
@@ -605,6 +622,29 @@ pub(crate) fn execute_with_options(
 
     let two_clause_optional = detect_two_clause_optional(query);
 
+    // Guard against silently ignored clauses/patterns: the executor only
+    // consumes the first MATCH's first pattern (plus the recognised anchored
+    // two-clause OPTIONAL form). Anything else would run as if the extra
+    // clauses/patterns did not exist, so reject it rather than return results
+    // that quietly violate the query's graph semantics.
+    if two_clause_optional.is_none() {
+        if query.match_clauses.len() > 1 {
+            return Err(CcError::Search(
+                "multiple MATCH clauses are only supported as a single MATCH followed by one \
+                 anchored OPTIONAL MATCH sharing the source variable; \
+                 rewrite as a single MATCH or use UNION"
+                    .into(),
+            ));
+        }
+        if first_match.patterns.len() > 1 {
+            return Err(CcError::Search(
+                "comma-separated patterns in a single MATCH are not supported; \
+                 use one relationship pattern per query (or UNION)"
+                    .into(),
+            ));
+        }
+    }
+
     let translated = if let Some(m1) = two_clause_optional {
         translate_optional_match(query, pattern.nodes[0].label.as_deref(), &m1.patterns[0])?
     } else if pattern.rels.is_empty() {
@@ -613,7 +653,17 @@ pub(crate) fn execute_with_options(
     } else if pattern.rels.len() == 1 {
         let rel = &pattern.rels[0];
         if rel.min_hops == 1 && rel.max_hops == 1 {
-            translate_single_hop(query, pattern, first_match.is_optional)?
+            if first_match.is_optional {
+                // A lone `OPTIONAL MATCH (a)-[:R]->(b)` is source-anchored:
+                // preserve `a` rows when no edge/target matches. Route it
+                // through the anchored translator (which pushes destination
+                // predicates into the LEFT JOIN `ON` instead of the outer
+                // WHERE) so a `WHERE b.…` filter cannot collapse it into an
+                // inner join.
+                translate_optional_match(query, pattern.nodes[0].label.as_deref(), pattern)?
+            } else {
+                translate_single_hop(query, pattern, false)?
+            }
         } else {
             if allow_fast_path && super::fast_path::env_enabled() {
                 if let Some(mut result) = super::fast_path::try_execute(query, db)? {
@@ -830,6 +880,80 @@ pub(crate) fn translate_single_hop(
     let join_kw = if is_optional { "LEFT JOIN" } else { "JOIN" };
     let distinct_kw = "SELECT DISTINCT";
 
+    // For a required (inner JOIN) hop, every predicate goes to the outer
+    // WHERE. For an OPTIONAL (LEFT JOIN) hop, predicates that reference the
+    // destination node must instead ride in the dst JOIN `ON` clause: a dst
+    // predicate left in the WHERE filters out the NULL rows a LEFT JOIN
+    // produces, silently collapsing OPTIONAL into an inner join.
+    let route_dst_to_on = is_optional && !skip_dst_join;
+
+    let mut where_parts: Vec<String> = Vec::new();
+    let mut dst_on_extra: Vec<String> = Vec::new();
+
+    // Kind filters from labels (skip for sides whose JOIN was omitted). Push
+    // src before dst so the inner-join parameter ordering is unchanged.
+    if !skip_src_join {
+        if let Some(label) = src_node.label.as_deref() {
+            if let Some(kind) = label_kind_filter(label) {
+                where_parts.push(format!("{src_alias}.kind = ?{}", params.len() + 1));
+                params.push(kind.to_string());
+            }
+        }
+    }
+    if !skip_dst_join {
+        if let Some(label) = dst_node.label.as_deref() {
+            if let Some(kind) = label_kind_filter(label) {
+                let pred = format!("{dst_alias}.kind = ?{}", params.len() + 1);
+                params.push(kind.to_string());
+                if route_dst_to_on {
+                    dst_on_extra.push(pred);
+                } else {
+                    where_parts.push(pred);
+                }
+            }
+        }
+    }
+
+    // Edge-level extra filter (e.g. call_kind discrimination). The edge is the
+    // FROM table, never NULL, so it belongs in the WHERE either way.
+    if let Some(filter) = edge_info.extra_filter {
+        where_parts.push(format!("{edge_alias}.{filter}"));
+    }
+
+    // Inline properties (src node first, then dst node, preserving param order).
+    for (key, val) in &src_node.props {
+        where_parts.push(format!("{src_alias}.{key} = ?{}", params.len() + 1));
+        params.push(val.clone());
+    }
+    for (key, val) in &dst_node.props {
+        let pred = format!("{dst_alias}.{key} = ?{}", params.len() + 1);
+        params.push(val.clone());
+        if route_dst_to_on {
+            dst_on_extra.push(pred);
+        } else {
+            where_parts.push(pred);
+        }
+    }
+
+    // WHERE clause. When optional, split it so destination predicates move to
+    // the dst JOIN `ON` and only source predicates stay in the outer WHERE.
+    if let Some(wc) = &query.where_clause {
+        if route_dst_to_on {
+            let (src_where, dst_where) =
+                split_where_by_var(&wc.expr, src_alias, dst_alias, &mut params)?;
+            if !src_where.is_empty() && src_where != "1=1" {
+                where_parts.push(src_where);
+            }
+            if let Some(dw) = dst_where {
+                dst_on_extra.push(dw);
+            }
+        } else {
+            where_parts.push(expr_to_sql(&wc.expr, &mut params)?);
+        }
+    }
+
+    // Assemble: FROM edge, then src/dst JOINs (the dst `ON` folds in the
+    // optional destination predicates), then the outer WHERE.
     let mut sql = format!(
         "{distinct_kw} {select_cols} FROM {} AS {edge_alias}",
         edge_info.table
@@ -860,7 +984,7 @@ pub(crate) fn translate_single_hop(
     }
 
     if !skip_dst_join {
-        let on_clause = if let Some(tmpl) = edge_info.dst_join_on {
+        let mut on_clause = if let Some(tmpl) = edge_info.dst_join_on {
             tmpl.replace("{src}", src_alias)
                 .replace("{dst}", dst_alias)
                 .replace("{e}", edge_alias)
@@ -877,46 +1001,13 @@ pub(crate) fn translate_single_hop(
                 edge_info.dst_col
             )
         };
+        for extra in &dst_on_extra {
+            on_clause.push_str(" AND ");
+            on_clause.push_str(extra);
+        }
         sql.push_str(&format!(
             " {join_kw} {dst_table} AS {dst_alias} ON {on_clause}"
         ));
-    }
-
-    let mut where_parts: Vec<String> = Vec::new();
-
-    // Kind filters from labels (skip for sides whose JOIN was omitted).
-    for (alias, label_opt, skipped) in [
-        (src_alias, src_node.label.as_deref(), skip_src_join),
-        (dst_alias, dst_node.label.as_deref(), skip_dst_join),
-    ] {
-        if skipped {
-            continue;
-        }
-        if let Some(label) = label_opt {
-            if let Some(kind) = label_kind_filter(label) {
-                where_parts.push(format!("{alias}.kind = ?{}", params.len() + 1));
-                params.push(kind.to_string());
-            }
-        }
-    }
-
-    // Edge-level extra filter (e.g. call_kind discrimination).
-    if let Some(filter) = edge_info.extra_filter {
-        where_parts.push(format!("{edge_alias}.{filter}"));
-    }
-
-    // Inline properties.
-    for node in &pattern.nodes {
-        let na = node.var.as_deref().unwrap_or("n");
-        for (key, val) in &node.props {
-            where_parts.push(format!("{na}.{key} = ?{}", params.len() + 1));
-            params.push(val.clone());
-        }
-    }
-
-    // WHERE clause.
-    if let Some(wc) = &query.where_clause {
-        where_parts.push(expr_to_sql(&wc.expr, &mut params)?);
     }
 
     if !where_parts.is_empty() {
@@ -1388,11 +1479,28 @@ fn split_where_by_var(
             Ok((src, dst))
         }
         _ => {
+            // A leaf predicate (or a non-AND compound like `OR`) is only
+            // splittable when it references at most one side. `expr_to_sql`
+            // pushes params, so build the SQL once and classify by which
+            // aliases it mentions.
             let sql = expr_to_sql(expr, params)?;
-            if sql.contains(&format!("{dst_var}.")) {
-                Ok(("1=1".to_string(), Some(sql)))
-            } else {
-                Ok((sql, None))
+            let refs_src = sql.contains(&format!("{src_var}."));
+            let refs_dst = sql.contains(&format!("{dst_var}."));
+            match (refs_src, refs_dst) {
+                // References both sides (e.g. `f.name = 'a' OR g.name = 'b'`):
+                // it cannot be split into an independent source-seed fragment
+                // and a destination-filter fragment without changing meaning.
+                // Silently pushing it to one side drops the other side's
+                // constraint, so fail loudly instead of returning wrong rows.
+                (true, true) => Err(CcError::Search(
+                    "WHERE predicate mixes source and destination variables across a \
+                     relationship (e.g. via OR); split it into per-variable AND clauses"
+                        .into(),
+                )),
+                // Destination-only → belongs to the target filter / JOIN ON.
+                (false, true) => Ok(("1=1".to_string(), Some(sql))),
+                // Source-only (or references neither) → stays on the source side.
+                _ => Ok((sql, None)),
             }
         }
     }
@@ -1409,9 +1517,21 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
     // single-query traversals only).
     let first_result = execute_with_options(&uq.queries[0], db, false)?;
     let columns = first_result.columns.clone();
-    let default_limit_applied = first_result.default_limit_applied;
-    let limit = first_result.limit;
     let mut all_rows: Vec<Vec<serde_json::Value>> = first_result.rows;
+
+    // The merged result must honour a single global bound; each branch only
+    // caps its own rows, so without this a two-branch UNION could return up to
+    // 2× the limit. Use the largest branch limit so no branch is unfairly cut,
+    // and report that same value as the envelope's `limit`.
+    let global_limit = uq
+        .queries
+        .iter()
+        .map(|q| q.limit.unwrap_or(DEFAULT_CYPHER_LIMIT))
+        .max()
+        .unwrap_or(DEFAULT_CYPHER_LIMIT);
+    // `default_limit_applied` only when EVERY branch omitted an explicit LIMIT.
+    let default_limit_applied = uq.queries.iter().all(|q| q.limit.is_none());
+    let limit = Some(global_limit);
 
     // Execute remaining sub-queries and merge.
     for (i, query) in uq.queries.iter().enumerate().skip(1) {
@@ -1452,6 +1572,10 @@ pub fn execute_union(uq: &CypherUnionQuery, db: &IndexDb) -> CcResult<CypherResu
             }
         }
     }
+
+    // Bound the merged set to the global limit (applied after dedup so the
+    // returned rows are distinct, matching single-query semantics).
+    all_rows.truncate(global_limit);
 
     let row_count = all_rows.len();
     Ok(CypherResult {

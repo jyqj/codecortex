@@ -205,7 +205,12 @@ impl IndexBuildPlan {
         // framework-specific edges.
         let dirty_closed = DirtyClosed::compute(indexer, self.mode, &scan_result, &write_units)?;
         let dirty_propagation = dirty_closed.dirty_propagation;
-        let reloaded = dirty_closed.reload(indexer, &mut write_units, &scan_result.existing)?;
+        let reloaded = dirty_closed.reload(
+            indexer,
+            project_path,
+            &mut write_units,
+            &scan_result.existing,
+        )?;
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
@@ -503,9 +508,14 @@ impl DirtyClosed {
         );
 
         // Full builds never promote skipped files; incremental builds may
-        // close over importers whose dependency exports changed.
+        // close over importers whose dependency exports changed OR whose
+        // dependency was removed/renamed away.
         let (dirty_count, dirty_propagation) = if mode.is_incremental() {
-            let outcome = indexer.run_dirty_propagation(&mut actions, write_units)?;
+            let outcome = indexer.run_dirty_propagation(
+                &mut actions,
+                write_units,
+                &scan_result.to_remove,
+            )?;
             (outcome.marked, Some(outcome.status))
         } else {
             (0, None)
@@ -521,10 +531,17 @@ impl DirtyClosed {
     fn reload(
         self,
         indexer: &Indexer,
+        project_path: &Path,
         write_units: &mut Vec<FileWriteUnit>,
         existing: &HashMap<String, FileState>,
     ) -> CcResult<Reloaded> {
-        indexer.phase_dirty_reload(write_units, &self.actions, existing, self.dirty_count)?;
+        indexer.phase_dirty_reload(
+            project_path,
+            write_units,
+            &self.actions,
+            existing,
+            self.dirty_count,
+        )?;
         Ok(Reloaded {
             actions: self.actions,
         })

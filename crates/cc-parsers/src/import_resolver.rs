@@ -64,11 +64,15 @@ fn resolve_js_relative(project_root: &Path, from_file: &str, import_str: &str) -
     let target = from_dir.join(import_str);
 
     // Normalize path (resolve .. and .)
-    let mut normalized = Vec::new();
+    let mut normalized: Vec<String> = Vec::new();
     for component in target.components() {
         match component {
             std::path::Component::ParentDir => {
-                normalized.pop();
+                // A `..` with nothing left to pop escapes above the project
+                // root. Returning None (unresolvable) is correct; silently
+                // dropping it would collapse `../../../etc` to `etc` and forge
+                // a bogus intra-project import edge.
+                normalized.pop()?;
             }
             std::path::Component::CurDir => {}
             c => normalized.push(c.as_os_str().to_string_lossy().to_string()),
@@ -126,5 +130,21 @@ mod tests {
 
         let result = resolve_import(root, "src/main.ts", "./utils/helper");
         assert_eq!(result, Some("src/utils/helper.ts".to_string()));
+    }
+
+    /// A relative import with more `..` than the from-file's depth escapes the
+    /// project root and must be unresolvable, not collapse to a bogus
+    /// in-project path (e.g. `../../etc` from `src/a.ts` → `etc`).
+    #[test]
+    fn resolve_js_relative_rejects_escape_above_root() {
+        let tmp = TempDir::new().unwrap();
+        let root = tmp.path();
+        std::fs::write(root.join("etc"), "").unwrap();
+
+        let result = resolve_import(root, "src/a.ts", "../../etc");
+        assert_eq!(
+            result, None,
+            "an import escaping above the project root must not resolve"
+        );
     }
 }

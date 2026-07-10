@@ -427,6 +427,13 @@ fn ingest_observation(
     Ok(())
 }
 
+/// Upper bound on span observations ingested in a single `ingest_traces` call.
+/// The parameter layer caps the number of top-level traces, but each trace may
+/// carry an arbitrarily large `spans` array, and every span drives DB writes —
+/// so bound the total work here to keep a single call from amplifying into an
+/// unbounded write storm.
+const MAX_INGEST_OBSERVATIONS: u32 = 100_000;
+
 pub fn handle_ingest_traces(
     runtime: SharedCodeIndex,
     traces: &[serde_json::Value],
@@ -436,8 +443,9 @@ pub fn handle_ingest_traces(
     drop(rt);
     let now = chrono::Utc::now().to_rfc3339();
     let mut stats = IngestTraceStats::default();
+    let mut truncated = false;
 
-    for trace in traces {
+    'ingest: for trace in traces {
         if let Some(spans) = trace.get("spans").and_then(|v| v.as_array()) {
             let service = trace
                 .get("resource")
@@ -447,6 +455,10 @@ pub fn handle_ingest_traces(
                 .unwrap_or("unknown");
 
             for span in spans {
+                if stats.spans_processed >= MAX_INGEST_OBSERVATIONS {
+                    truncated = true;
+                    break 'ingest;
+                }
                 let Some(path) = span.get("path").and_then(|v| v.as_str()) else {
                     continue;
                 };
@@ -475,6 +487,10 @@ pub fn handle_ingest_traces(
             continue;
         }
 
+        if stats.spans_processed >= MAX_INGEST_OBSERVATIONS {
+            truncated = true;
+            break 'ingest;
+        }
         let Some(path) = trace.get("path").and_then(|v| v.as_str()) else {
             continue;
         };
@@ -508,6 +524,9 @@ pub fn handle_ingest_traces(
         "spans_processed": stats.spans_processed,
         "write_errors": stats.write_errors,
         "total_submitted": traces.len(),
+        // True when the per-call observation budget was hit and later spans
+        // were dropped; callers can resubmit the remainder in a fresh call.
+        "truncated": truncated,
     }))
 }
 

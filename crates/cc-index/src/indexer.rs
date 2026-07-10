@@ -588,6 +588,7 @@ impl Indexer {
     /// Phase 3.6: Load dirty files' edge data for re-resolution.
     pub(crate) fn phase_dirty_reload(
         &self,
+        project_path: &Path,
         write_units: &mut Vec<FileWriteUnit>,
         actions: &HashMap<String, FileAction>,
         existing: &HashMap<String, FileState>,
@@ -598,6 +599,14 @@ impl Indexer {
             .filter(|(_, a)| matches!(a, FileAction::DirtyResolveOnly))
             .map(|(p, _)| p.clone())
             .collect();
+
+        // Dirty files are not re-parsed, but the tree may have shifted under
+        // them (a dependency removed, renamed, or newly shadowing) — so their
+        // import `resolved_path`s are recomputed from the current filesystem,
+        // mirroring `phase_parse`. Skipping this would leave IMPORTS edges (and
+        // the resolution context they feed) pointing at files that moved or
+        // vanished. The Cargo alias map is cheap and read once for the batch.
+        let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
 
         for dirty_path in &dirty_files {
             let edges = self.db.reads().load_file_edges_for_reresolve(dirty_path)?;
@@ -612,7 +621,24 @@ impl Indexer {
             // The conversion clears potentially-stale resolution state per
             // the central policy declared in `dirty_reload_policy`; its
             // complete destructuring keeps every reload field policed.
-            let outcome = parse_outcome_from_reloaded_edges(edges);
+            let mut outcome = parse_outcome_from_reloaded_edges(edges);
+
+            // Re-resolve import targets against the current tree. `resolve_import`
+            // keys off the from-file/import-string (unchanged for a dirty file),
+            // so a moved/removed dependency now yields the correct new path or
+            // `None`. Language is `Unknown` on reload, so gate the Rust
+            // workspace fallback on the extension instead.
+            let is_rust = dirty_path.ends_with(".rs");
+            for import in &mut outcome.imports {
+                import.resolved_path =
+                    resolve_import(project_path, dirty_path, &import.import_string);
+                if import.resolved_path.is_none() && is_rust && !workspace_aliases.is_empty() {
+                    import.resolved_path = crate::resolver::resolve_rust_workspace_import(
+                        &import.import_string,
+                        &workspace_aliases,
+                    );
+                }
+            }
 
             write_units.push(FileWriteUnit {
                 rel_path: dirty_path.clone(),
@@ -887,7 +913,7 @@ mod dirty_reload_tests {
     /// assertions).
     #[test]
     fn dirty_reload_clears_stale_semantic_target_uids() {
-        let (_tmp, indexer) = setup_indexer();
+        let (tmp, indexer) = setup_indexer();
         let conn = crate::test_seed::seed_conn(&indexer.db);
         conn.execute_batch(
             "INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at) \
@@ -906,7 +932,7 @@ mod dirty_reload_tests {
         let existing: HashMap<String, FileState> = HashMap::new();
 
         indexer
-            .phase_dirty_reload(&mut write_units, &actions, &existing, 1)
+            .phase_dirty_reload(tmp.path(), &mut write_units, &actions, &existing, 1)
             .unwrap();
 
         assert_eq!(write_units.len(), 1);

@@ -517,6 +517,10 @@ impl SearchEngine {
             b.1.total
                 .partial_cmp(&a.1.total)
                 .unwrap_or(std::cmp::Ordering::Equal)
+                // Deterministic tie-break on chunk id so equal fused scores (or
+                // NaN, which compares Equal) produce a stable order across runs
+                // and platforms instead of depending on HashMap iteration order.
+                .then_with(|| a.0.cmp(&b.0))
         });
         candidates.truncate(limits.rerank_window);
 

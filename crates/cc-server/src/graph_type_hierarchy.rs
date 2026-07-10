@@ -51,7 +51,7 @@ pub fn type_hierarchy(
     let root_uid = root
         .symbol_uid
         .as_deref()
-        .ok_or_else(|| CcError::Other("root symbol has no UID".into()))?
+        .ok_or_else(|| CcError::NotFound("root symbol has no UID".into()))?
         .to_string();
 
     let type_info = TypeNodeInfo {
@@ -176,7 +176,7 @@ fn resolve_root_symbol(
         if let Some(row) = map.into_values().next() {
             return Ok(ResolveResult::Single(row));
         }
-        return Err(CcError::Other(format!("no symbol with uid '{}'", uid)));
+        return Err(CcError::NotFound(format!("no symbol with uid '{}'", uid)));
     }
 
     // 2. By name: exact match, then file filter (if given) or type-kind filter.
@@ -188,17 +188,18 @@ fn resolve_root_symbol(
         Resolution::Unique(row) => Ok(ResolveResult::Single(row)),
         Resolution::Ambiguous(rows) => Ok(ResolveResult::Candidates(rows)),
         Resolution::Unresolved(UnresolvedReason::NotFound) => {
-            Err(CcError::Other(format!("no symbol named '{}'", type_name)))
+            Err(CcError::NotFound(format!("no symbol named '{}'", type_name)))
         }
-        Resolution::Unresolved(UnresolvedReason::FilteredByFile) => Err(CcError::Other(format!(
-            "no symbol named '{}' in file '{}'",
-            type_name,
-            file_path.unwrap_or_default()
-        ))),
-        Resolution::Unresolved(UnresolvedReason::FilteredByKind) => Err(CcError::Other(format!(
-            "no class/interface/enum named '{}'",
-            type_name
-        ))),
+        Resolution::Unresolved(UnresolvedReason::FilteredByFile) => Err(CcError::NotFound(
+            format!(
+                "no symbol named '{}' in file '{}'",
+                type_name,
+                file_path.unwrap_or_default()
+            ),
+        )),
+        Resolution::Unresolved(UnresolvedReason::FilteredByKind) => Err(CcError::NotFound(
+            format!("no class/interface/enum named '{}'", type_name),
+        )),
     }
 }
 

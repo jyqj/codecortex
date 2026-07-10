@@ -1,14 +1,16 @@
 //! Projection builders over cc-db typed queries: call adjacency, semantic
 //! edges, file-import and community adjacency, and the dead-code caller set.
 
+#[cfg(test)]
 use cc_db::index_db::IndexDb;
+#[cfg(test)]
 use cc_db::GraphReads;
 use cc_model::edge::SemanticRelation;
 use cc_model::CcResult;
 use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use crate::graph_types::{BfsAdj, EdgeLite, InternalEdge};
+use crate::graph_types::{EdgeLite, InternalEdge};
 
 use super::cache::{
     generation_cached, SharedCalleeSet, CALLEES_WITH_CALLERS_CACHE, COMMUNITY_ADJ_CACHE,
@@ -17,6 +19,8 @@ use super::cache::{
 use super::{DeadCodeCandidate, GraphReadModel};
 
 /// Lightweight projection of `SemanticEdgeRecord` for in-memory caching.
+/// Deliberately omits fields no consumer reads (confidence lives on the
+/// persisted record; re-add here only when a read path needs it).
 #[derive(Debug, Clone)]
 pub(crate) struct SemanticEdgeLite {
     pub source_symbol_uid: String,
@@ -24,8 +28,6 @@ pub(crate) struct SemanticEdgeLite {
     pub source_symbol: String,
     pub target_symbol: String,
     pub relation_kind: SemanticRelation,
-    #[allow(dead_code)]
-    pub confidence: f64,
 }
 
 #[derive(Default)]
@@ -43,7 +45,15 @@ impl GraphReadModel {
         &self,
         explain: &mut cc_model::GraphExplainCollector,
     ) -> std::sync::MutexGuard<'_, SemanticAdjPair> {
-        let mut guard = self.shared_semantic.lock().unwrap();
+        // Poison recovery (same policy as the CodeIndex locks in
+        // handlers/mod.rs): a panic mid-fill can leave the pair partially
+        // populated, so recover the lock but drop the half-written state —
+        // the reload below rebuilds it from the committed snapshot.
+        let mut guard = self.shared_semantic.lock().unwrap_or_else(|poisoned| {
+            let mut guard = poisoned.into_inner();
+            *guard = SemanticAdjPair::default();
+            guard
+        });
         if guard.by_source.is_empty() && guard.by_target.is_empty() {
             // A failed load degrades to "no semantic edges" for this request
             // (and is retried on the next access since the pair stays empty);
@@ -63,7 +73,6 @@ impl GraphReadModel {
                     source_symbol: e.source_symbol.clone(),
                     target_symbol: e.target_symbol.clone(),
                     relation_kind: e.relation_kind,
-                    confidence: e.confidence,
                 };
                 if !lite.source_symbol_uid.is_empty() {
                     guard
@@ -112,13 +121,16 @@ impl GraphReadModel {
     }
 
     /// Build edge-labeled call adjacency from persisted call edges.
-    pub(crate) fn call_adjacency(db: &IndexDb) -> CcResult<BfsAdj> {
+    /// Production walks use the lazily filled `neighbors` cache; this
+    /// materialized form only backs test helpers.
+    #[cfg(test)]
+    pub(crate) fn call_adjacency(db: &IndexDb) -> CcResult<crate::graph_types::BfsAdj> {
         let edges = GraphReads::new(db).call_uid_edges_lite()?;
         let mut adj: HashMap<String, Vec<EdgeLite>> = HashMap::new();
         for edge in edges {
             adj.entry(edge.caller_uid.clone()).or_default().push(edge);
         }
-        Ok(BfsAdj { adj })
+        Ok(crate::graph_types::BfsAdj { adj })
     }
 
     /// Return outgoing edges for a caller UID, backed by a process-global cache.
@@ -155,9 +167,15 @@ impl GraphReadModel {
         for (category, count) in &self.http_bridges.unmatched {
             explain.note_synthesis(category, *count);
         }
-        // Fast path: check if the UID is already cached.
+        // Fast path: check if the UID is already cached. Poison recovery is
+        // safe here: entries are inserted whole (the Vec is fully built
+        // before the insert), so a panic elsewhere cannot leave a partially
+        // written value visible.
         {
-            let adj = self.shared_adjacency.lock().unwrap();
+            let adj = self
+                .shared_adjacency
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
             if let Some(edges) = adj.get(uid) {
                 return edges.clone();
             }
@@ -183,7 +201,10 @@ impl GraphReadModel {
             return edges;
         }
         // Insert and return.
-        let mut adj = self.shared_adjacency.lock().unwrap();
+        let mut adj = self
+            .shared_adjacency
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
         // Another thread may have inserted between our read and write; use the
         // existing entry if present so callers see a consistent snapshot.
         adj.entry(uid.to_string()).or_insert(edges).clone()

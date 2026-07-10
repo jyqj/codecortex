@@ -26,11 +26,13 @@ rmcp.workspace = true
 tokio-util = { version = "0.7", features = ["rt"] }
 dirs.workspace = true
 notify.workspace = true
-rusqlite.workspace = true
 regex.workspace = true
 chrono.workspace = true
 lru.workspace = true
 
 [dev-dependencies]
 rmcp = { workspace = true, features = ["client", "transport-child-process"] }
+# Tests seed the index DB with raw SQL through their own connections;
+# production code reads exclusively through cc-db's typed facets.
+rusqlite.workspace = true
 tempfile = "3"

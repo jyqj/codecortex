@@ -2,7 +2,8 @@
 
 ## 最低 Rust 版本
 
-1.88（2021 edition）。与当前依赖下限一致，CI 强制。
+1.95（2021 edition）。由 rusqlite 0.40（libsqlite3-sys 0.38 使用
+`cfg_select!`，1.95 才稳定）决定，CI 强制。
 
 ## 构建
 

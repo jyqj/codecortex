@@ -296,7 +296,7 @@ impl JavaParser {
             .child_by_field_name("type")
             .and_then(|n| n.utf8_text(source).ok())
             .map(|s| s.to_string())
-            .and_then(|s| if s == "void" { None } else { Some(s) });
+            .filter(|s| s != "void");
 
         let params_node = node.child_by_field_name("parameters");
         let (param_types, param_count) = self.extract_param_types(&params_node, source);

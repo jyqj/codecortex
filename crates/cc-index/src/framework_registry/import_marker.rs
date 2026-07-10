@@ -8,8 +8,6 @@
 
 use std::collections::HashMap;
 
-use cc_db::index_db::read_chunk_text_with_encoding;
-
 use super::{detection_entry, FileFrameworkDetection, FrameworkSignalSpec, SignalContext};
 
 pub(super) const SPEC: FrameworkSignalSpec = FrameworkSignalSpec {
@@ -101,18 +99,7 @@ fn detect_import_markers(
     detections: &mut HashMap<String, FileFrameworkDetection>,
 ) {
     // --- Declared imports from the imports table ---
-    let import_strings: Vec<String> = ctx
-        .conn
-        .prepare_cached("SELECT import_string FROM imports WHERE file_path = ?1")
-        .ok()
-        .and_then(|mut stmt| {
-            stmt.query_map(rusqlite::params![ctx.file_path], |row| {
-                row.get::<_, String>(0)
-            })
-            .ok()
-            .map(|rows| rows.filter_map(|r| r.ok()).collect())
-        })
-        .unwrap_or_default();
+    let import_strings = ctx.scan.file_import_strings(ctx.file_path);
 
     let import_lower: Vec<String> = import_strings.iter().map(|s| s.to_lowercase()).collect();
 
@@ -137,23 +124,8 @@ fn detect_import_markers(
     //     snapshot covers exactly the declared-import matches above. ---
     let already_detected: Vec<String> = detections.keys().cloned().collect();
     let chunk_text: String = ctx
-        .conn
-        .prepare_cached(
-            "SELECT text, text_encoding FROM chunks WHERE file_path = ?1 ORDER BY chunk_index LIMIT 3",
-        )
-        .ok()
-        .and_then(|mut stmt| {
-            stmt.query_map(rusqlite::params![ctx.file_path], |row| {
-                read_chunk_text_with_encoding(row, 0, 1)
-            })
-                .ok()
-                .map(|rows| {
-                    rows.filter_map(|r| r.ok())
-                        .collect::<Vec<String>>()
-                        .join(" ")
-                })
-        })
-        .unwrap_or_default()
+        .scan
+        .file_head_chunk_text(ctx.file_path, 3)
         .to_lowercase();
 
     if !chunk_text.is_empty() {

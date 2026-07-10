@@ -5,7 +5,7 @@ use crate::engine::CodeIndex;
 use cc_index::IndexReport;
 use cc_model::{CcError, CcResult};
 
-pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::Value, String> {
+pub fn build_index(runtime: SharedCodeIndex, full: bool) -> CcResult<serde_json::Value> {
     // Per-project build gate: clone the Arc under a brief read lock and DROP
     // the read lock before blocking on the gate (lock-ordering rule: never
     // block on the gate while holding the CodeIndex RwLock). Manual builds
@@ -18,8 +18,8 @@ pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::V
     let _build_permit = build_gate
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    let report = run_split_build(&runtime, full, false).map_err(|e| e.to_string())?;
-    serde_json::to_value(report).map_err(|e| e.to_string())
+    let report = run_split_build(&runtime, full, false, cc_index::BuildScope::FullTree)?;
+    Ok(serde_json::to_value(report)?)
 }
 
 /// Shared split-build driver for every gated entry point (manual `index`,
@@ -37,11 +37,12 @@ pub(crate) fn run_split_build(
     runtime: &SharedCodeIndex,
     full: bool,
     use_auto_file_limit: bool,
+    scope: cc_index::BuildScope,
 ) -> CcResult<IndexReport> {
-    match split_build_once(runtime, full, use_auto_file_limit) {
+    match split_build_once(runtime, full, use_auto_file_limit, scope.clone()) {
         Err(stale @ CcError::StalePreparedBuild { .. }) => {
             tracing::warn!("stale prepared build detected, retrying once: {}", stale);
-            split_build_once(runtime, full, use_auto_file_limit)
+            split_build_once(runtime, full, use_auto_file_limit, scope)
         }
         other => other,
     }
@@ -51,11 +52,12 @@ fn split_build_once(
     runtime: &SharedCodeIndex,
     full: bool,
     use_auto_file_limit: bool,
+    scope: cc_index::BuildScope,
 ) -> CcResult<IndexReport> {
     // Brief read lock: clone the owned build inputs (plus the auto-index
     // file-count gate when requested), then release.
     let (inputs, auto_file_limit) = {
-        let rt = super::lock_index(runtime).map_err(CcError::Other)?;
+        let rt = super::lock_index(runtime)?;
         let limit = if use_auto_file_limit {
             Some(rt.auto_index_file_limit()?)
         } else {
@@ -64,11 +66,11 @@ fn split_build_once(
         (rt.build_inputs()?, limit)
     };
     // Heavy prepare phase runs with NO lock held — read queries are not blocked.
-    let prepared = CodeIndex::prepare_build(&inputs, full, auto_file_limit)?;
+    let prepared = CodeIndex::prepare_build(&inputs, full, auto_file_limit, scope)?;
     // Stage 1 — write lock scoped to `phase_write` only (the generation guard
     // runs inside, under this lock).
     let written = {
-        let mut rt = super::lock_index_write(runtime).map_err(CcError::Other)?;
+        let mut rt = super::lock_index_write(runtime)?;
         rt.commit_build_write(&inputs, full, auto_file_limit, prepared)?
     };
     // Stage 2 — postprocess/analysis compute with NO lock held: signature
@@ -77,14 +79,14 @@ fn split_build_once(
     // The build gate (held by our caller) keeps the DB stable until stage 3.
     let staged = CodeIndex::compute_postprocess(&inputs, full, auto_file_limit, written)?;
     // Stage 3 — short write lock: apply the typed deltas + bookkeeping.
-    let mut rt = super::lock_index_write(runtime).map_err(CcError::Other)?;
+    let mut rt = super::lock_index_write(runtime)?;
     rt.apply_postprocess(&inputs, full, auto_file_limit, staged)
 }
 
-pub fn index_status(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
+pub fn index_status(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let stats = rt.index_status().map_err(|e| e.to_string())?;
-    serde_json::to_value(stats).map_err(|e| e.to_string())
+    let stats = rt.index_status()?;
+    Ok(serde_json::to_value(stats)?)
 }
 
 pub fn find_symbol(
@@ -93,30 +95,28 @@ pub fn find_symbol(
     exact: bool,
     top_k: usize,
     include_metrics: bool,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    rt.graph()
-        .find_symbol(name, exact, top_k, include_metrics)
-        .map_err(|e| e.to_string())
+    rt.graph().find_symbol(name, exact, top_k, include_metrics)
 }
 
-pub fn list_files(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
+pub fn list_files(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let files = rt.graph().list_indexed_files().map_err(|e| e.to_string())?;
-    serde_json::to_value(files).map_err(|e| e.to_string())
+    let files = rt.graph().list_indexed_files()?;
+    Ok(serde_json::to_value(files)?)
 }
 
-pub fn list_communities(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
+pub fn list_communities(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.graph().list_communities().map_err(|e| e.to_string())?;
-    serde_json::to_value(rows).map_err(|e| e.to_string())
+    let rows = rt.graph().list_communities()?;
+    Ok(serde_json::to_value(rows)?)
 }
 
-pub fn list_frameworks(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
+pub fn list_frameworks(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     use cc_index::framework_resolvers::resolver_tier_for_key;
 
     let rt = super::lock_index(&runtime)?;
-    let rows = rt.graph().list_frameworks().map_err(|e| e.to_string())?;
+    let rows = rt.graph().list_frameworks()?;
 
     // Enrich each framework entry with its resolver coverage tier.
     let enriched: Vec<serde_json::Value> = rows
@@ -131,10 +131,10 @@ pub fn list_frameworks(runtime: SharedCodeIndex) -> Result<serde_json::Value, St
         })
         .collect();
 
-    serde_json::to_value(enriched).map_err(|e| e.to_string())
+    Ok(serde_json::to_value(enriched)?)
 }
 
-pub fn index_capabilities(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
+pub fn index_capabilities(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
     let status = rt.index_status();
     let has_index = status.is_ok();
@@ -156,85 +156,71 @@ pub fn callers(
     runtime: SharedCodeIndex,
     symbol: &str,
     limit: usize,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt
-        .graph()
-        .callers(symbol, limit)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(rows).map_err(|e| e.to_string())
+    let rows = rt.graph().callers(symbol, limit)?;
+    Ok(serde_json::to_value(rows)?)
 }
 
 pub fn callees(
     runtime: SharedCodeIndex,
     symbol: &str,
     limit: usize,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let rows = rt
-        .graph()
-        .callees(symbol, limit)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(rows).map_err(|e| e.to_string())
+    let rows = rt.graph().callees(symbol, limit)?;
+    Ok(serde_json::to_value(rows)?)
 }
 
-#[allow(clippy::too_many_arguments)]
+/// Blast-radius impact analysis. BFS caps (result/node/layer) come from the
+/// caller-supplied [`crate::impact::ImpactOptions`]; the confidence filter is
+/// read from the same options object.
 pub fn analyze_impact(
     runtime: SharedCodeIndex,
     files: &[String],
     base_branch: Option<&str>,
-    confidence_threshold: Option<f32>,
-    result_limit: Option<usize>,
-    max_nodes: Option<usize>,
-    max_per_layer: Option<usize>,
-) -> Result<serde_json::Value, String> {
+    opts: &crate::impact::ImpactOptions,
+) -> CcResult<serde_json::Value> {
+    let confidence_threshold = opts.confidence_threshold.map(|v| v as f32);
     let rt = super::lock_index(&runtime)?;
     let report = if files.is_empty() {
         rt.impact().analyze_impact_capped(
             base_branch,
             confidence_threshold,
-            result_limit,
-            max_nodes,
-            max_per_layer,
+            opts.result_limit,
+            opts.max_nodes,
+            opts.max_per_layer,
         )
     } else {
         rt.impact().detect_impact_capped(
             files,
             confidence_threshold,
-            result_limit,
-            max_nodes,
-            max_per_layer,
+            opts.result_limit,
+            opts.max_nodes,
+            opts.max_per_layer,
         )
-    }
-    .map_err(|e| e.to_string())?;
-    serde_json::to_value(report).map_err(|e| e.to_string())
+    }?;
+    Ok(serde_json::to_value(report)?)
 }
 
 pub fn git_changed_files(
     runtime: SharedCodeIndex,
     base_branch: Option<&str>,
-) -> Result<Vec<String>, String> {
+) -> CcResult<Vec<String>> {
     let rt = super::lock_index(&runtime)?;
-    rt.impact()
-        .git_changed_files(base_branch)
-        .map_err(|e| e.to_string())
+    rt.impact().git_changed_files(base_branch)
 }
 
 /// Get a summary of a single file.
-pub fn summarize_file(
-    runtime: SharedCodeIndex,
-    file_path: &str,
-) -> Result<serde_json::Value, String> {
+pub fn summarize_file(runtime: SharedCodeIndex, file_path: &str) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    rt.graph()
-        .summarize_file(file_path)
-        .map_err(|e| e.to_string())
+    rt.graph().summarize_file(file_path)
 }
 
 /// Show available node kinds, edge types, and their counts in the index.
-pub fn graph_schema(runtime: SharedCodeIndex) -> Result<serde_json::Value, String> {
+pub fn graph_schema(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    rt.graph().graph_schema().map_err(|e| e.to_string())
+    rt.graph().graph_schema()
 }
 
 #[cfg(test)]
@@ -303,7 +289,9 @@ mod tests {
             let rt = super::super::lock_index(&runtime).unwrap();
             rt.build_inputs().unwrap()
         };
-        let prepared = CodeIndex::prepare_build(&inputs, false, None).unwrap();
+        let prepared =
+            CodeIndex::prepare_build(&inputs, false, None, cc_index::BuildScope::FullTree)
+                .unwrap();
 
         // Stage 1: write lock scoped to phase_write.
         let written = {

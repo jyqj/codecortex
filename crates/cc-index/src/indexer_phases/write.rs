@@ -199,6 +199,28 @@ impl Indexer {
         })
     }
 
+    /// Commit half of a staged full rebuild: atomic swap only. The staging
+    /// file was written during prepare (lock-free); this runs under the write
+    /// lock and must not rewrite the payload.
+    pub(crate) fn commit_full_rebuild_staging(
+        &self,
+        project_path: &Path,
+        generation_floor: cc_db::index_db::IndexGeneration,
+        to_remove: &[String],
+    ) -> CcResult<WriteResult> {
+        time_step("write", "full_staging_swap", || {
+            self.db.admin().swap_rebuild_staging(generation_floor)
+        })?;
+        time_step("write", "frameworks", || {
+            self.persist_frameworks(project_path, true, &[], to_remove)
+        })?;
+        Ok(WriteResult {
+            write_units: Vec::new(),
+            config_units: Vec::new(),
+            seed_tokens: None,
+        })
+    }
+
     fn persist_frameworks(
         &self,
         project_path: &Path,

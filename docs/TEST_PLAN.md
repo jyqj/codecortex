@@ -1,6 +1,6 @@
 # 测试计划
 
-最近一次 `cargo test --workspace --all-targets`：1189 passed + 14 ignored
+最近一次 `cargo test --workspace --all-targets`：1206 passed + 14 ignored
 （14 个 ignored：cc-eval 的 5 个真实工作区/增量基准、`scale_bench` 的 4 个
 合成规模/冷建相位基准、cc-db 的 `incremental_write_bench` 写阶段基准与
 重建压力循环、cc-index 的 `type_catalog_bench`/`catalog_bench` 与
@@ -11,13 +11,13 @@ cc-server 的 `graph_traversal_bench` 共 3 个 release-only 微基准）。基�
 
 | Crate | 测试数 | 覆盖重点 |
 |-------|-------|----------|
-| cc-db | 137 | schema v6 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹、签名聚合维护、seed 符号快照缓存 |
+| cc-db | 142 | schema v6 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹、签名聚合维护、seed 符号快照缓存、file-state 快照缓存 |
 | cc-eval | 18 passed + 5 ignored | 断言类型（含 field_equals、output_not_contains、field_matches_regex、array_contains_item、带 per-case `min_recall` 的 expected_symbols Recall@5 阈值、expect_error）、语料加载、走真实 MCP 线路的 fixture 集成、合成仓库生成器确定性、ignored 的真实工作区/增量基准 |
-| cc-index | 336 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、dirty-reload 清除策略、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门、跨构建 catalog cache（remove_files 精确性、TypeCatalog 增量删除/复位、缓存命中/折叠/清槽生命周期与全量重建等价） |
+| cc-index | 340 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、dirty-reload 清除策略、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门、targeted scan 定向构建、全量 staging 提交、跨构建 catalog cache（remove_files 精确性、TypeCatalog 增量删除/复位、缓存命中/折叠/清槽生命周期与全量重建等价） |
 | cc-model | 62 | 路由归一化、数据结构、枚举往返、元素置信度矩阵基线、项目根发现、部分配置默认值、外部缓存目录路径、GraphExplain 信封、tool_graph_subsets 目录一致性 + 矩阵快照 |
-| cc-parsers | 179 | 10 种语言的 tree-sitter 解析、符号提取、基于 AST 的 Rust/C/C++ 调用图、spec 驱动的启发式文件内调用边、C/C++/Rust 参数/返回数据流、共享 import 提取缝（import_common） |
-| cc-search | 217 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
-| cc-server | 214 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着 |
+| cc-parsers | 180 | 10 种语言的 tree-sitter 解析、符号提取、基于 AST 的 Rust/C/C++ 调用图、spec 驱动的启发式文件内调用边、C/C++/Rust 参数/返回数据流、共享 import 提取缝（import_common） |
+| cc-search | 222 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
+| cc-server | 216 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着 |
 
 依赖严格单向，每个 crate 都能独立编译测试：`cargo test -p cc-db`、
 `cargo test -p cc-index` 不需要构建整个工作区。

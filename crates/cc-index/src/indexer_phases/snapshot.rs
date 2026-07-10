@@ -121,6 +121,36 @@ impl Indexer {
         Ok(())
     }
 
+    /// Write all index data to the rebuild staging file without swapping.
+    /// Used during full-build prepare so `PreparedBuild` can drop the in-memory
+    /// write units before commit.
+    pub(crate) fn write_full_snapshot_build_staging(
+        &self,
+        project_path: &Path,
+        write_units: &[FileWriteUnit],
+        route_nodes: &[RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
+        chunk_blobs: &PrecompressedChunks,
+    ) -> CcResult<(Vec<FileWriteUnit>, cc_db::index_db::IndexGeneration)> {
+        let payload = time_step("write", "full_prepare_payload", || {
+            self.prepare_full_snapshot_payload(project_path, write_units)
+        })?;
+        let generation_floor = time_step("write", "full_build_staging", || {
+            self.db.admin().build_temp_db_staging(|conn| {
+                let txn = SnapshotWriteTxn::new(conn);
+                Self::write_full_snapshot_contents(
+                    &txn,
+                    write_units,
+                    route_nodes,
+                    hierarchy_edges,
+                    &payload,
+                    chunk_blobs,
+                )
+            })
+        })?;
+        Ok((payload.config_units, generation_floor))
+    }
+
     /// Write all index data via temp-db + atomic swap (full rebuild only).
     /// All main data (files, route_nodes, config_units, metadata) is written
     /// inside the temp-db transaction. Post-processing passes (frameworks,

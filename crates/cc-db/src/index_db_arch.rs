@@ -140,7 +140,7 @@ impl<'a> ArchReads<'a> {
                 file_count,
             })
             .collect();
-        pkgs.sort_by(|a, b| b.file_count.cmp(&a.file_count));
+        pkgs.sort_by_key(|p| std::cmp::Reverse(p.file_count));
         pkgs.truncate(limit);
         Ok(pkgs)
     }
@@ -248,7 +248,7 @@ impl<'a> ArchReads<'a> {
                     name: row.get(0)?,
                     file_path: row.get(1)?,
                     kind: row.get(2)?,
-                    fan_in: row.get::<_, usize>(3).unwrap_or(0),
+                    fan_in: row.get::<_, i64>(3).unwrap_or(0) as usize,
                 })
             })
             .map_err(db_err)?;
@@ -298,7 +298,7 @@ impl<'a> ArchReads<'a> {
                 }
             })
             .collect();
-        boundaries.sort_by(|a, b| b.call_count.cmp(&a.call_count));
+        boundaries.sort_by_key(|b| std::cmp::Reverse(b.call_count));
         boundaries.truncate(limit);
         Ok(boundaries)
     }
@@ -611,8 +611,8 @@ impl WriteOps<'_> {
 mod tests {
     use tempfile::TempDir;
 
-    use crate::index_db::IndexDb;
     use super::ArchReads;
+    use crate::index_db::IndexDb;
 
     fn setup() -> (IndexDb, TempDir) {
         let tmp = TempDir::new().unwrap();
@@ -728,7 +728,10 @@ mod tests {
         assert_eq!(ArchReads::extract_package_from_path("lib/utils.js"), "lib");
 
         // "single.rs" → only one part, first part is also last (filename), no non-skip dir segment → fallback to "single.rs"
-        assert_eq!(ArchReads::extract_package_from_path("single.rs"), "single.rs");
+        assert_eq!(
+            ArchReads::extract_package_from_path("single.rs"),
+            "single.rs"
+        );
     }
 
     #[test]

@@ -218,6 +218,13 @@ impl CodeIndex {
     }
 
     pub fn close(&mut self) {
+        // The db_identity is process-unique and never reused, so this
+        // handle's process-global graph cache entries can never be hit again
+        // after the handle drops — evict them now instead of letting them
+        // linger until 16 other identities push them out of each slot's LRU.
+        if let Some(db) = &self.index_db {
+            crate::graph_read_model::evict_project(db.admin().instance_id());
+        }
         self.engine = None;
         self.index_db = None;
     }
@@ -255,9 +262,7 @@ impl CodeIndex {
     ) -> CcResult<std::sync::MutexGuard<'_, ()>> {
         match gate.try_lock() {
             Ok(permit) => Ok(permit),
-            Err(std::sync::TryLockError::WouldBlock) => Err(CcError::Other(
-                "index build already in progress".to_string(),
-            )),
+            Err(std::sync::TryLockError::WouldBlock) => Err(CcError::BuildBusy),
             // The gate guards no data — only build ordering — so a poisoned
             // gate is safe to recover.
             Err(std::sync::TryLockError::Poisoned(poisoned)) => Ok(poisoned.into_inner()),
@@ -309,7 +314,8 @@ impl CodeIndex {
         let _build_permit = Self::try_acquire_build_gate(&gate)?;
         let file_limit = self.auto_index_file_limit()?;
         let inputs = self.build_inputs()?;
-        let prepared = Self::prepare_build(&inputs, full, Some(file_limit))?;
+        let prepared =
+            Self::prepare_build(&inputs, full, Some(file_limit), cc_index::BuildScope::FullTree)?;
         self.commit_build(&inputs, full, Some(file_limit), prepared)
     }
 
@@ -337,14 +343,16 @@ impl CodeIndex {
     /// associated function (no `self`) by design: the caller holds the inputs
     /// across the unlocked window and passes the resulting `PreparedBuild` to
     /// [`CodeIndex::commit_build`]. `full`/`auto_file_limit` must match the
-    /// paired `commit_build` call.
+    /// paired `commit_build` call. `scope` selects the scan walk (full tree
+    /// vs. watcher-targeted paths); commit stages never consult it.
     pub fn prepare_build(
         inputs: &BuildInputs,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: cc_index::BuildScope,
     ) -> CcResult<PreparedBuild> {
         let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
-        indexer.prepare_build(&inputs.project, full, auto_file_limit)
+        indexer.prepare_build(&inputs.project, full, auto_file_limit, scope)
     }
 
     /// Commit a previously prepared build under the caller's write lock. Runs
@@ -450,11 +458,10 @@ impl CodeIndex {
     pub fn diagnostics_info(&self) -> serde_json::Value {
         let schema_version = cc_db::index_migrate::CURRENT_SCHEMA_VERSION;
 
-        let db_schema_version = self.index_db.as_ref().and_then(|db| {
-            let conn = db.reads().read_conn().ok()?;
-            conn.pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
-                .ok()
-        });
+        let db_schema_version = self
+            .index_db
+            .as_ref()
+            .and_then(|db| db.reads().schema_version().ok());
 
         let last_indexed = self
             .index_db
@@ -1235,7 +1242,7 @@ mod tests {
         // The gate fires inside the lock-free prepare half, so split callers
         // skip oversized repos without ever taking the write lock.
         let inputs = idx.build_inputs().unwrap();
-        match CodeIndex::prepare_build(&inputs, false, Some(1)) {
+        match CodeIndex::prepare_build(&inputs, false, Some(1), cc_index::BuildScope::FullTree) {
             Ok(_) => panic!("prepare must be gated by the auto-index file limit"),
             Err(err) => assert!(
                 err.to_string().contains("auto-index skipped"),

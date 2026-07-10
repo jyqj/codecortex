@@ -429,9 +429,9 @@ impl<'a> EdgeReads<'a> {
             .query_row(
                 "SELECT COALESCE(SUM(observed_count), 0) FROM runtime_evidence",
                 [],
-                |r| r.get(0),
+                |r| r.get::<_, i64>(0),
             )
-            .map_err(db_err)?;
+            .map_err(db_err)? as u64;
         let linked_rows: u32 = conn
             .query_row(
                 "SELECT COUNT(*) FROM runtime_evidence WHERE http_edge_id IS NOT NULL",
@@ -1139,7 +1139,9 @@ impl ReadOps<'_> {
 
     /// First route id registered under `normalized_path`, if any.
     pub fn route_id_for_normalized_path(&self, normalized_path: &str) -> CcResult<Option<String>> {
-        self.0.edge_reads().route_id_for_normalized_path(normalized_path)
+        self.0
+            .edge_reads()
+            .route_id_for_normalized_path(normalized_path)
     }
 
     pub fn runtime_evidence_stats(&self) -> CcResult<serde_json::Value> {
@@ -1344,7 +1346,10 @@ mod tests {
             .unwrap();
         assert!(fallback.is_some());
 
-        let (missing, missing_count) = db.edge_reads().http_edge_match_for_path("/nope", None).unwrap();
+        let (missing, missing_count) = db
+            .edge_reads()
+            .http_edge_match_for_path("/nope", None)
+            .unwrap();
         assert!(missing.is_none());
         assert_eq!(missing_count, 0);
     }
@@ -1370,12 +1375,17 @@ mod tests {
         drop(conn);
 
         assert_eq!(
-            db.edge_reads().route_id_for_normalized_path("/api/users")
+            db.edge_reads()
+                .route_id_for_normalized_path("/api/users")
                 .unwrap()
                 .as_deref(),
             Some("r1")
         );
-        assert!(db.edge_reads().route_id_for_normalized_path("/nope").unwrap().is_none());
+        assert!(db
+            .edge_reads()
+            .route_id_for_normalized_path("/nope")
+            .unwrap()
+            .is_none());
     }
 
     #[test]
@@ -1594,13 +1604,19 @@ mod tests {
         db.insert_co_change_edges_batch(&edges).unwrap();
 
         // Query all co-changes for file_a with min_confidence 0.0
-        let results = db.edge_reads().get_co_changes_for_file("src/a.rs", 0.0).unwrap();
+        let results = db
+            .edge_reads()
+            .get_co_changes_for_file("src/a.rs", 0.0)
+            .unwrap();
         assert_eq!(results.len(), 2);
         assert_eq!(results[0].edge_id, "cc:a:b"); // highest confidence first
         assert_eq!(results[1].edge_id, "cc:a:c");
 
         // Query with min_confidence filtering
-        let filtered = db.edge_reads().get_co_changes_for_file("src/a.rs", 0.5).unwrap();
+        let filtered = db
+            .edge_reads()
+            .get_co_changes_for_file("src/a.rs", 0.5)
+            .unwrap();
         assert_eq!(filtered.len(), 1);
         assert_eq!(filtered[0].edge_id, "cc:a:b");
         assert_eq!(filtered[0].co_change_count, 5);
@@ -1656,12 +1672,18 @@ mod tests {
         assert_eq!(by_kind.len(), 2);
 
         // Query all (no filters)
-        let all = db.edge_reads().query_semantic_edges(None, None, None).unwrap();
+        let all = db
+            .edge_reads()
+            .query_semantic_edges(None, None, None)
+            .unwrap();
         assert_eq!(all.len(), 2);
 
         // Test removal
         db.remove_semantic_edges_by_file("src/animal.py").unwrap();
-        let after_remove = db.edge_reads().query_semantic_edges(None, None, None).unwrap();
+        let after_remove = db
+            .edge_reads()
+            .query_semantic_edges(None, None, None)
+            .unwrap();
         assert!(after_remove.is_empty());
     }
 
@@ -1771,13 +1793,19 @@ mod tests {
         assert_eq!(all.len(), 2);
 
         // Load by kind
-        let emits = db.edge_reads().load_dispatch_sites_by_kind("event_emit").unwrap();
+        let emits = db
+            .edge_reads()
+            .load_dispatch_sites_by_kind("event_emit")
+            .unwrap();
         assert_eq!(emits.len(), 1);
         assert_eq!(emits[0].site_id, "ds:1");
         assert_eq!(emits[0].site_kind, cc_model::DispatchSiteKind::EventEmit);
         assert_eq!(emits[0].key, "user:created");
 
-        let ons = db.edge_reads().load_dispatch_sites_by_kind("event_on").unwrap();
+        let ons = db
+            .edge_reads()
+            .load_dispatch_sites_by_kind("event_on")
+            .unwrap();
         assert_eq!(ons.len(), 1);
         assert_eq!(ons[0].site_id, "ds:2");
         assert_eq!(ons[0].site_kind, cc_model::DispatchSiteKind::EventOn);

@@ -1340,7 +1340,6 @@ impl CCppParser {
             },
         )
     }
-
 }
 
 impl Default for CCppParser {

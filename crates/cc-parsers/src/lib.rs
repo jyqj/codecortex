@@ -1,3 +1,9 @@
+//! Symbol/edge extraction for 30 language identifiers: full tree-sitter AST
+//! parsing for 10 languages, `LangSpec`-driven heuristics for 8 more, and a
+//! generic regex fallback — dispatched through `ParserRegistry`. Also owns
+//! chunking, import extraction, HTTP-call and dataflow helpers. Confidence
+//! tiers per language: `docs/LANGUAGES.md`.
+
 pub mod broker_patterns;
 pub mod c_cpp;
 pub mod chunker;

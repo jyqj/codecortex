@@ -59,21 +59,13 @@ fn detect_route_frameworks(
     ctx: &SignalContext,
     detections: &mut HashMap<String, FileFrameworkDetection>,
 ) {
-    if let Ok(mut stmt) = ctx.conn.prepare_cached(
-        "SELECT DISTINCT framework FROM routes WHERE file_path = ?1 AND framework IS NOT NULL AND framework != ''",
-    ) {
-        if let Ok(rows) =
-            stmt.query_map(rusqlite::params![ctx.file_path], |row| row.get::<_, String>(0))
-        {
-            for row in rows.flatten() {
-                if let Some(fw_key) = normalize_route_framework(&row) {
-                    let det = detection_entry(detections, fw_key);
-                    let signal = format!("route_framework:{}", row);
-                    if !det.signals.contains(&signal) {
-                        det.confidence += super::WEIGHT_ROUTE_FRAMEWORK;
-                        det.signals.push(signal);
-                    }
-                }
+    for row in ctx.scan.file_route_frameworks(ctx.file_path) {
+        if let Some(fw_key) = normalize_route_framework(&row) {
+            let det = detection_entry(detections, fw_key);
+            let signal = format!("route_framework:{}", row);
+            if !det.signals.contains(&signal) {
+                det.confidence += super::WEIGHT_ROUTE_FRAMEWORK;
+                det.signals.push(signal);
             }
         }
     }

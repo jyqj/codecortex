@@ -93,6 +93,9 @@ RRF 融合 + 重排  -->  ContextEnvelope  -->  MCP 工具响应
    `evidence_epoch`；所有缓存以 epoch 为键自失效，没有常规的手工失效
    钩子（唯一声明过的防御性例外：RwLock 毒锁恢复路径的
    `invalidate_search_cache_after_poison`，宁可丢缓存不放大半写状态）。
+   `CodeIndex::close()` 对进程级图缓存的按 `db_identity` 清除
+   （`graph_read_model::evict_project`）是内存卫生而非正确性失效：
+   identity 永不复用，被清的条目本就不可能再命中。
 5. **构建串行**：每项目一个 build gate 串行化所有构建入口；gate 先于
    RwLock，持 RwLock 不等 gate。
 6. **prepare 无锁、commit 三段**：读者最多被两段短写锁打断；接受

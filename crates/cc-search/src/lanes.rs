@@ -23,9 +23,9 @@ use std::sync::{Arc, Mutex};
 use lru::LruCache;
 
 use cc_db::fts::sanitize_fts_query;
-use cc_db::index_db::{read_chunk_text_with_encoding, IndexDb};
+use cc_db::index_db::IndexDb;
 use cc_model::config::SearchConfig;
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 
 use crate::plan::{language_from_path, parse_language_name, SearchPlan};
 
@@ -246,27 +246,14 @@ impl RetrievalLane for LexicalLane {
         if fts_q == r#""""# {
             return Ok(Vec::new());
         }
-        let (sql, mut params) = plan.lexical_scope_sql(limit);
-        params.insert(0, fts_q);
-        let conn = context.db.reads().read_conn()?;
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, f64>(3)?,
-                ))
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
+        let candidates =
+            context
+                .db
+                .retrieval()
+                .fts_chunk_candidates(&fts_q, &plan.chunk_scope(), limit)?;
 
         let mut results = Vec::new();
-        for row in rows {
-            let (cid, file_path, language_name, _score) =
-                row.map_err(|e| CcError::Database(e.to_string()))?;
+        for (cid, file_path, language_name) in candidates {
             let language = parse_language_name(&language_name);
             if !plan.passes_filters(&file_path, language) {
                 continue;
@@ -288,7 +275,7 @@ impl RetrievalLane for LexicalLane {
 /// exhausted budget is reported via a `tracing::debug!` line (the lane has
 /// no structured truncation outlet) and the lane returns whatever matched
 /// within budget, deterministically (the unscoped scan is recency-ordered
-/// by `grep_chunk_scope_sql`).
+/// by cc-db's `scan_chunks_for_grep`).
 pub(crate) struct GrepLane;
 
 impl RetrievalLane for GrepLane {
@@ -325,57 +312,43 @@ impl RetrievalLane for GrepLane {
             Err(_) => return Ok(Vec::new()),
         };
 
-        let (sql, params) = plan.grep_scope_sql();
-        let conn = context.db.reads().read_conn()?;
-        let mut stmt = conn
-            .prepare(&sql)
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    read_chunk_text_with_encoding(row, 3, 4)?,
-                ))
-            })
-            .map_err(|e| CcError::Database(e.to_string()))?;
-
-        // Scan budget: every fetched row costs a zstd decode, so cap the
+        // Scan budget: every visited row costs a zstd decode, so cap the
         // number of rows pulled instead of decompressing the whole scope
         // when matches are rare or absent.
         let scan_cap = context.config.grep_scan_cap;
         let mut scanned = 0usize;
         let mut truncated = false;
         let mut matches = Vec::new();
-        for row in rows {
-            if scanned >= scan_cap {
-                truncated = true;
-                break;
-            }
-            scanned += 1;
-            let (cid, file_path, language_name, text) =
-                row.map_err(|e| CcError::Database(e.to_string()))?;
-            let language = parse_language_name(&language_name);
-            // File-level filtering: path_prefix, languages, file_paths
-            if !plan.passes_filters(&file_path, language) {
-                continue;
-            }
+        context
+            .db
+            .retrieval()
+            .scan_chunks_for_grep(&plan.chunk_scope(), |row| {
+                if scanned >= scan_cap {
+                    truncated = true;
+                    return false;
+                }
+                scanned += 1;
+                let language = parse_language_name(&row.language_name);
+                // File-level filtering: path_prefix, languages, file_paths
+                if !plan.passes_filters(&row.file_path, language) {
+                    return true;
+                }
 
-            if re.is_match(&text) {
-                // Only matches enter the chunk text cache — they are exactly
-                // the rows the batch-fetch step re-reads.  Caching every
-                // scanned chunk would let one cold scan rotate the whole LRU
-                // and evict hot entries.
-                if let Ok(mut cache) = context.chunk_text_cache.lock() {
-                    cache.put(cid.clone(), Arc::from(text.as_str()));
+                if re.is_match(&row.text) {
+                    // Only matches enter the chunk text cache — they are
+                    // exactly the rows the batch-fetch step re-reads.
+                    // Caching every scanned chunk would let one cold scan
+                    // rotate the whole LRU and evict hot entries.
+                    if let Ok(mut cache) = context.chunk_text_cache.lock() {
+                        cache.put(row.chunk_id.clone(), Arc::from(row.text.as_str()));
+                    }
+                    matches.push(row.chunk_id);
+                    if matches.len() >= limit {
+                        return false;
+                    }
                 }
-                matches.push(cid);
-                if matches.len() >= limit {
-                    break;
-                }
-            }
-        }
+                true
+            })?;
         if truncated {
             tracing::info!(
                 query = %plan.grep_query(),

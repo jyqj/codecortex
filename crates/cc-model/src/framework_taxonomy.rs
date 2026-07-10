@@ -212,9 +212,15 @@ mod tests {
     fn canonical_aliases_covers_canonical_then_aliases() {
         let gin = taxon_for_key("gin").expect("gin taxon exists");
         let keys: Vec<&str> = canonical_aliases(gin).collect();
-        assert_eq!(keys, vec!["gin", "echo", "fiber", "chi", "gorilla", "net_http"]);
+        assert_eq!(
+            keys,
+            vec!["gin", "echo", "fiber", "chi", "gorilla", "net_http"]
+        );
 
         let spring = taxon_for_key("spring").expect("spring taxon exists");
-        assert_eq!(canonical_aliases(spring).collect::<Vec<_>>(), vec!["spring"]);
+        assert_eq!(
+            canonical_aliases(spring).collect::<Vec<_>>(),
+            vec!["spring"]
+        );
     }
 }

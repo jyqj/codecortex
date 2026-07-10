@@ -7,8 +7,10 @@ use std::path::Path;
 use std::sync::Arc;
 
 use crate::graph_read_model::GraphReadModel;
+#[cfg(test)]
+use crate::graph_types::BfsAdj;
 use crate::graph_types::{
-    BfsAdj, DisambiguationCandidate, DisambiguationInfo, LabeledPath, TraceNode, TracePathResult,
+    DisambiguationCandidate, DisambiguationInfo, LabeledPath, TraceNode, TracePathResult,
 };
 use crate::symbol_resolution::{resolve, Resolution, ResolutionOpts};
 
@@ -16,15 +18,6 @@ use crate::symbol_resolution::{resolve, Resolution, ResolutionOpts};
 #[cfg(test)]
 pub fn build_bfs_adj(db: &IndexDb) -> CcResult<BfsAdj> {
     GraphReadModel::call_adjacency(db)
-}
-
-/// Build edge-labeled adjacency augmented with cross-service HTTP/async bridge edges.
-///
-/// Starts from the base call_edges adjacency, then loads http_call_edges and route_nodes
-/// to synthesize edges that connect HTTP callers to route handler symbols.
-#[allow(dead_code)]
-pub fn build_bfs_adj_full(db: &IndexDb) -> CcResult<BfsAdj> {
-    GraphReadModel::call_adjacency_with_bridges(db)
 }
 
 /// BFS returning labeled paths (node UIDs + edge data).

@@ -1,3 +1,9 @@
+//! Deterministic, offline retrieval: FTS5 + grep + graph lanes fused by
+//! Reciprocal Rank Fusion over a file-preselect stage, reranked by
+//! `RankingConfig` signals — plus the read-only Cypher subset engine with
+//! its lazy-BFS fast path (ADR-0001). Purely lexical/structural: no network,
+//! no model. Deep dive: `docs/internals/SEARCH.md`; syntax: `docs/CYPHER.md`.
+
 pub mod cypher;
 pub mod dsl;
 pub mod engine;

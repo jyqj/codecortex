@@ -17,9 +17,16 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
         → write → postprocess → analysis
 ```
 
-全量与增量构建共享同一套编排（`build_plan.rs`）：`prepare` 半程只读
-（scan → parse → resolve → chunk 压缩 → 快照），产出自有的
+全量与增量构建共享同一套编排（`build_plan.rs`）：`prepare` 半程不写
+索引（scan → parse → resolve → chunk 压缩 → 快照），产出自有的
 `PreparedBuild`；commit 半程消费它。两种模式因此不可能漂移。
+
+全量构建在 prepare 末尾多做一步：把完整快照直接写进 staging 临时库
+（`build_temp_db_staging`，只触碰 `.sqlite3.tmp`，不违反锁契约），随后
+丢弃内存中的 write_units/chunk blob——`PreparedBuild` 只保留文件路径
+清单、config-link 单元与 epoch floor，commit 阶段仅做原子换库
+（`swap_rebuild_staging`）。这消掉了全量构建"解析产物全量驻留到
+commit"的 O(仓库) RSS 峰值；增量路径不变。
 
 每个阶段的耗时记录在 `IndexReport.phase_timing`
 （`scan_diff_ms` / `parse_ms` / `resolve_ms` / `write_ms` /
@@ -153,7 +160,8 @@ self-member → scope → same-file → imports → suffix → global-unique
 
 - **chunk 压缩前置**：chunk 正文在 `prepare`（无锁阶段）zstd 压缩，作为
   `PreparedBuild` 的边车（`chunk_blobs`）携带——写事务只绑定预先算好的
-  blob。事务内压缩回退仍保留，兜底边车缺失的 chunk。
+  blob。事务内压缩回退仍保留，兜底边车缺失的 chunk。全量构建的边车在
+  prepare 末尾随 staging 写入一起消费并释放，不携带到 commit。
 - **config-linker 签名门**：昂贵的扫描半程（`scan_config_tokens`：项目
   遍历 + 分词）在配置文件集签名（路径 + mtime + size，持久化为
   `last_config_sig`）未变时跳过——缓存的原始 token 直接对当前符号/文件

@@ -5,11 +5,12 @@
 
 use super::{context, core, graph, SharedCodeIndex};
 use cc_db::index_db::IndexDb;
+use cc_model::{CcError, CcResult};
 use serde_json::{json, Value};
 
 // ── 1. handle_status ────────────────────────────────────────────────
 
-pub fn handle_status(runtime: SharedCodeIndex, aspect: &str) -> Result<Value, String> {
+pub fn handle_status(runtime: SharedCodeIndex, aspect: &str) -> CcResult<Value> {
     match aspect {
         "index" => {
             let mut result = core::index_status(runtime.clone())?;
@@ -71,7 +72,7 @@ pub fn handle_context(
     max_symbols: Option<usize>,
     include_source: bool,
     intent: Option<&str>,
-) -> Result<Value, String> {
+) -> CcResult<Value> {
     let mut result = context::task_symbols(runtime.clone(), task, max_symbols, Some(1), intent)?;
 
     if include_source {
@@ -91,13 +92,12 @@ pub fn handle_context(
                 let details = context::explore_symbols(
                     runtime,
                     &names,
-                    Some(3),
-                    Some(3),
-                    true,
-                    false,
-                    false,
-                    false,
-                    None,
+                    &crate::engine_query::ExploreOptions {
+                        max_callers: Some(3),
+                        max_callees: Some(3),
+                        include_source: true,
+                        ..Default::default()
+                    },
                 )?;
                 if let Some(obj) = result.as_object_mut() {
                     obj.insert("symbol_details".to_string(), details);
@@ -111,7 +111,7 @@ pub fn handle_context(
 
 // ── 3. handle_node ──────────────────────────────────────────────────
 
-pub fn handle_node(runtime: SharedCodeIndex, symbol: &str, include: &str) -> Result<Value, String> {
+pub fn handle_node(runtime: SharedCodeIndex, symbol: &str, include: &str) -> CcResult<Value> {
     let relation_limit = {
         let rt = super::lock_index(&runtime)?;
         rt.repo_size_tier().explore_max_symbols()
@@ -121,13 +121,11 @@ pub fn handle_node(runtime: SharedCodeIndex, symbol: &str, include: &str) -> Res
         "outline" => context::explore_symbols(
             runtime,
             &[symbol.to_string()],
-            None,
-            None,
-            true,
-            false,
-            false,
-            true,
-            None,
+            &crate::engine_query::ExploreOptions {
+                include_source: true,
+                outline: true,
+                ..Default::default()
+            },
         ),
         "summary" => core::summarize_file(runtime, symbol),
         _ => {
@@ -151,7 +149,7 @@ pub fn handle_relations(
     kind: &str,
     limit: usize,
     direction: &str,
-) -> Result<Value, String> {
+) -> CcResult<Value> {
     let max_limit = {
         let rt = super::lock_index(&runtime)?;
         rt.output_budget("relations").max_items
@@ -178,38 +176,44 @@ pub fn handle_relations(
 
 // ── 5. handle_impact ────────────────────────────────────────────────
 
-#[allow(clippy::too_many_arguments)]
-pub fn handle_impact(
-    runtime: SharedCodeIndex,
-    scope: &str,
-    files: &[String],
-    base_branch: Option<&str>,
-    granularity: &str,
-    file_path: Option<&str>,
-    limit: usize,
-    confidence_threshold: Option<f32>,
-    max_nodes: Option<usize>,
-    max_per_layer: Option<usize>,
-) -> Result<Value, String> {
+/// Wire arguments of the `impact` tool (already sanitized), grouped so the
+/// dispatch chain passes one object instead of nine positional values.
+#[derive(Debug, Clone, Default)]
+pub struct ImpactArgs {
+    pub scope: String,
+    pub files: Vec<String>,
+    pub base_branch: Option<String>,
+    pub granularity: String,
+    pub file_path: Option<String>,
+    pub limit: usize,
+    pub confidence_threshold: Option<f32>,
+    pub max_nodes: Option<usize>,
+    pub max_per_layer: Option<usize>,
+}
+
+pub fn handle_impact(runtime: SharedCodeIndex, args: &ImpactArgs) -> CcResult<Value> {
     let max_limit = {
         let rt = super::lock_index(&runtime)?;
         rt.output_budget("impact").max_items
     };
-    let limit = limit.min(max_limit);
-    match scope {
+    let limit = args.limit.min(max_limit);
+    let base_branch = args.base_branch.as_deref();
+    let file_path = args.file_path.as_deref();
+    match args.scope.as_str() {
         "tests" => {
-            if files.is_empty() {
+            if args.files.is_empty() {
                 let auto_files = core::git_changed_files(runtime.clone(), base_branch)?;
                 graph::find_impacted_tests(runtime, &auto_files)
             } else {
-                graph::find_impacted_tests(runtime, files)
+                graph::find_impacted_tests(runtime, &args.files)
             }
         }
         "dead_code" => graph::find_dead_code(runtime, file_path, Some(limit)),
-        "circular" => graph::find_circular_deps(runtime, granularity, Some(limit)),
+        "circular" => graph::find_circular_deps(runtime, &args.granularity, Some(limit)),
         "dependents" => {
-            let fp = file_path
-                .ok_or_else(|| "file_path is required for 'dependents' scope".to_string())?;
+            let fp = file_path.ok_or_else(|| {
+                CcError::InvalidParams("file_path is required for 'dependents' scope".to_string())
+            })?;
             graph::get_dependents(runtime, fp)
         }
         _ => {
@@ -221,19 +225,11 @@ pub fn handle_impact(
             // callers share the exact same defaults.
             let opts = crate::impact::ImpactOptions::default_for(
                 limit,
-                confidence_threshold.map(f64::from),
-                max_nodes,
-                max_per_layer,
+                args.confidence_threshold.map(f64::from),
+                args.max_nodes,
+                args.max_per_layer,
             );
-            core::analyze_impact(
-                runtime,
-                files,
-                base_branch,
-                confidence_threshold,
-                opts.result_limit,
-                opts.max_nodes,
-                opts.max_per_layer,
-            )
+            core::analyze_impact(runtime, &args.files, base_branch, &opts)
         }
     }
 }
@@ -245,7 +241,7 @@ pub fn handle_architecture(
     aspect: &str,
     filter: Option<&str>,
     limit: usize,
-) -> Result<Value, String> {
+) -> CcResult<Value> {
     let max_limit = {
         let rt = super::lock_index(&runtime)?;
         rt.output_budget("architecture").max_items
@@ -279,31 +275,37 @@ pub fn handle_files(
     start_line: Option<u32>,
     end_line: Option<u32>,
     context_lines: u32,
-) -> Result<Value, String> {
+) -> CcResult<Value> {
+    let required = |value: Option<&str>, name: &str, action: &str| {
+        value.map(str::to_string).ok_or_else(|| {
+            CcError::InvalidParams(format!("{} is required for '{}' action", name, action))
+        })
+    };
+    let required_line = |value: Option<u32>, name: &str, action: &str| {
+        value.ok_or_else(|| {
+            CcError::InvalidParams(format!("{} is required for '{}' action", name, action))
+        })
+    };
     match action {
         "region" => {
-            let p = path.ok_or_else(|| "path is required for 'region' action".to_string())?;
-            let sl = start_line
-                .ok_or_else(|| "start_line is required for 'region' action".to_string())?;
-            let el =
-                end_line.ok_or_else(|| "end_line is required for 'region' action".to_string())?;
-            context::prepare_edit_region(runtime, p, sl, el)
+            let p = required(path, "path", "region")?;
+            let sl = required_line(start_line, "start_line", "region")?;
+            let el = required_line(end_line, "end_line", "region")?;
+            context::prepare_edit_region(runtime, &p, sl, el)
         }
         "expand" => {
-            let p = path.ok_or_else(|| "path is required for 'expand' action".to_string())?;
-            let sl = start_line
-                .ok_or_else(|| "start_line is required for 'expand' action".to_string())?;
-            let el =
-                end_line.ok_or_else(|| "end_line is required for 'expand' action".to_string())?;
-            context::expand_code_region(runtime, p, sl, el, context_lines)
+            let p = required(path, "path", "expand")?;
+            let sl = required_line(start_line, "start_line", "expand")?;
+            let el = required_line(end_line, "end_line", "expand")?;
+            context::expand_code_region(runtime, &p, sl, el, context_lines)
         }
         // The "files" item cap (output_budget("files").max_items) is applied
         // at the dispatch exit by output_budget::finalize.
         "list" => core::list_files(runtime),
-        other => Err(format!(
+        other => Err(CcError::InvalidParams(format!(
             "unknown files action {:?}; expected \"list\", \"region\", or \"expand\"",
             other
-        )),
+        ))),
     }
 }
 
@@ -345,7 +347,7 @@ fn ingest_observation(
     obs: TraceObservation<'_>,
     now: &str,
     stats: &mut IngestTraceStats,
-) -> Result<(), String> {
+) -> CcResult<()> {
     let eid = match obs.source {
         Some(source) => format!(
             "{}:{}:{}:{}",
@@ -377,10 +379,7 @@ fn ingest_observation(
 
     let norm = cc_model::route_normalize::normalize_route_path(obs.path);
 
-    let (edge_id, candidate_count) = db
-        .reads()
-        .http_edge_match_for_path(&norm, obs.method)
-        .map_err(|e| e.to_string())?;
+    let (edge_id, candidate_count) = db.reads().http_edge_match_for_path(&norm, obs.method)?;
 
     if let Some(ref eid_db) = edge_id {
         // `matched` only counts observations whose key writes (link + boost)
@@ -409,10 +408,7 @@ fn ingest_observation(
         stats.unmatched += 1;
     }
 
-    let route_id = db
-        .reads()
-        .route_id_for_normalized_path(&norm)
-        .map_err(|e| e.to_string())?;
+    let route_id = db.reads().route_id_for_normalized_path(&norm)?;
 
     if let Some(ref rid) = route_id {
         // `routes_matched` reports the (read-side) route match; a failed
@@ -437,9 +433,9 @@ const MAX_INGEST_OBSERVATIONS: u32 = 100_000;
 pub fn handle_ingest_traces(
     runtime: SharedCodeIndex,
     traces: &[serde_json::Value],
-) -> Result<Value, String> {
+) -> CcResult<Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().cloned().ok_or("no index database")?;
+    let db = rt.index_db().cloned().ok_or(CcError::IndexUnavailable)?;
     drop(rt);
     let now = chrono::Utc::now().to_rfc3339();
     let mut stats = IngestTraceStats::default();
@@ -540,41 +536,48 @@ pub fn handle_adr(
     status: Option<&str>,
     context: Option<&str>,
     decision: Option<&str>,
-) -> Result<Value, String> {
+) -> CcResult<Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
+
+    let required_id = |action: &str| {
+        adr_id.ok_or_else(|| {
+            CcError::InvalidParams(format!("adr_id is required for '{}'", action))
+        })
+    };
 
     match action {
         "list" => {
-            let records = db.reads().adr_list().map_err(|e| e.to_string())?;
+            let records = db.reads().adr_list()?;
             Ok(json!({ "adrs": records }))
         }
         "get" => {
-            let id = adr_id.ok_or("adr_id is required for 'get'")?;
-            let record = db.reads().adr_get(id).map_err(|e| e.to_string())?;
+            let id = required_id("get")?;
+            let record = db.reads().adr_get(id)?;
             match record {
                 Some(v) => Ok(v),
                 None => Ok(json!({ "error": format!("ADR '{}' not found", id) })),
             }
         }
         "store" => {
-            let id = adr_id.ok_or("adr_id is required for 'store'")?;
+            let id = required_id("store")?;
             let t = title.unwrap_or("Untitled");
             let s = status.unwrap_or("accepted");
             let c = context.unwrap_or("");
             let d = decision.unwrap_or("");
             let now = chrono::Utc::now().to_rfc3339();
-            db.writes()
-                .adr_upsert(id, t, s, c, d, &now)
-                .map_err(|e| e.to_string())?;
+            db.writes().adr_upsert(id, t, s, c, d, &now)?;
             Ok(json!({ "stored": id }))
         }
         "delete" => {
-            let id = adr_id.ok_or("adr_id is required for 'delete'")?;
-            let deleted = db.writes().adr_delete(id).map_err(|e| e.to_string())?;
+            let id = required_id("delete")?;
+            let deleted = db.writes().adr_delete(id)?;
             Ok(json!({ "deleted": deleted, "adr_id": id }))
         }
-        _ => Err(format!("unknown adr action: {}", action)),
+        _ => Err(CcError::InvalidParams(format!(
+            "unknown adr action: {}",
+            action
+        ))),
     }
 }
 
@@ -626,16 +629,18 @@ mod tests {
     fn handle_files_invalid_action_returns_error() {
         let (_tmp, rt) = build_test_index();
         let result = handle_files(rt, "bogus_action", None, None, None, 20);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("unknown files action"));
+        let err = result.unwrap_err();
+        assert!(matches!(err, CcError::InvalidParams(_)));
+        assert!(err.to_string().contains("unknown files action"));
     }
 
     #[test]
     fn handle_files_region_without_path_returns_error() {
         let (_tmp, rt) = build_test_index();
         let result = handle_files(rt, "region", None, Some(1), Some(5), 20);
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("path is required"));
+        let err = result.unwrap_err();
+        assert!(matches!(err, CcError::InvalidParams(_)));
+        assert!(err.to_string().contains("path is required"));
     }
 
     #[test]
@@ -650,15 +655,12 @@ mod tests {
         let (_tmp, rt) = build_test_index();
         let result = handle_impact(
             rt,
-            "dead_code",
-            &[],
-            None,
-            "file",
-            None,
-            20,
-            None,
-            None,
-            None,
+            &ImpactArgs {
+                scope: "dead_code".into(),
+                granularity: "file".into(),
+                limit: 20,
+                ..Default::default()
+            },
         )
         .unwrap();
         assert!(result.is_object() || result.is_array());
@@ -671,18 +673,16 @@ mod tests {
         let (_tmp, rt) = build_test_index();
         let result = handle_impact(
             rt,
-            "dependents",
-            &[],
-            None,
-            "file",
-            None,
-            20,
-            None,
-            None,
-            None,
+            &ImpactArgs {
+                scope: "dependents".into(),
+                granularity: "file".into(),
+                limit: 20,
+                ..Default::default()
+            },
         );
-        assert!(result.is_err());
-        assert!(result.unwrap_err().contains("file_path is required"));
+        let err = result.unwrap_err();
+        assert!(matches!(err, CcError::InvalidParams(_)));
+        assert!(err.to_string().contains("file_path is required"));
     }
 
     // ── ingest_traces write-failure accounting ──────────────────────

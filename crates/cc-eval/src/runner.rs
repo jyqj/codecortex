@@ -192,7 +192,7 @@ fn unwrap_tool_result(result: CallToolResult) -> Result<Value, String> {
         let message = result
             .content
             .iter()
-            .filter_map(|c| c.raw.as_text().map(|t| t.text.clone()))
+            .filter_map(|c| c.as_text().map(|t| t.text.clone()))
             .collect::<Vec<_>>()
             .join("\n");
         return Err(if message.is_empty() {

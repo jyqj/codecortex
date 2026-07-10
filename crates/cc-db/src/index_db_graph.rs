@@ -1704,7 +1704,9 @@ impl ReadOps<'_> {
 
     /// Find all files that import the given resolved paths.
     pub fn find_importers_of(&self, resolved_paths: &[String]) -> CcResult<Vec<String>> {
-        self.0.symbol_graph_reads().find_importers_of(resolved_paths)
+        self.0
+            .symbol_graph_reads()
+            .find_importers_of(resolved_paths)
     }
 
     /// Resolved re-export targets for many files in one batched query:
@@ -1816,7 +1818,10 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let rows = db.symbol_graph_reads().symbols_covering("src/main.rs", 15, 10).unwrap();
+        let rows = db
+            .symbol_graph_reads()
+            .symbols_covering("src/main.rs", 15, 10)
+            .unwrap();
         assert_eq!(rows.len(), 2);
         // Smallest span first: inner (span 20) before outer (span 49)
         assert_eq!(rows[0].name, "inner");
@@ -1852,11 +1857,17 @@ mod tests {
 
         let kinds: &[&str] = &["function", "class", "component", "hook"];
         let names: &[&str] = &["Button", "Modal", "helper", "Missing"];
-        let batch = db.symbol_graph_reads().find_symbols_by_names_and_kinds(names, kinds).unwrap();
+        let batch = db
+            .symbol_graph_reads()
+            .find_symbols_by_names_and_kinds(names, kinds)
+            .unwrap();
 
         // Batch result must equal the per-name query for every name.
         for name in names {
-            let single = db.symbol_graph_reads().find_symbols_by_name_and_kinds(name, kinds).unwrap();
+            let single = db
+                .symbol_graph_reads()
+                .find_symbols_by_name_and_kinds(name, kinds)
+                .unwrap();
             let batched = batch.get(*name).cloned().unwrap_or_default();
             assert_eq!(single.len(), batched.len(), "row count mismatch for {name}");
             for (s, b) in single.iter().zip(batched.iter()) {
@@ -1919,11 +1930,17 @@ mod tests {
             "src/missing.rs".to_string(),
         ];
 
-        let batch = db.symbol_graph_reads().get_export_fingerprints(&paths).unwrap();
+        let batch = db
+            .symbol_graph_reads()
+            .get_export_fingerprints(&paths)
+            .unwrap();
 
         // Batch result must equal the per-file query for every path.
         for path in &paths {
-            let single = db.symbol_graph_reads().get_export_fingerprint(path).unwrap();
+            let single = db
+                .symbol_graph_reads()
+                .get_export_fingerprint(path)
+                .unwrap();
             assert_eq!(
                 batch.get(path).cloned(),
                 single,
@@ -1941,7 +1958,10 @@ mod tests {
     #[test]
     fn test_get_export_fingerprints_empty_input() {
         let (db, _tmp) = setup();
-        let batch = db.symbol_graph_reads().get_export_fingerprints(&[]).unwrap();
+        let batch = db
+            .symbol_graph_reads()
+            .get_export_fingerprints(&[])
+            .unwrap();
         assert!(batch.is_empty());
     }
 
@@ -2014,7 +2034,10 @@ mod tests {
     #[test]
     fn test_reexport_targets_for_files_empty_input() {
         let (db, _tmp) = setup();
-        let targets = db.symbol_graph_reads().reexport_targets_for_files(&[]).unwrap();
+        let targets = db
+            .symbol_graph_reads()
+            .reexport_targets_for_files(&[])
+            .unwrap();
         assert!(targets.is_empty());
     }
 
@@ -2045,13 +2068,19 @@ mod tests {
         }
 
         // caller_rows_by_uid: who calls uid_b?
-        let callers = db.symbol_graph_reads().caller_rows_by_uid("uid_b", 10).unwrap();
+        let callers = db
+            .symbol_graph_reads()
+            .caller_rows_by_uid("uid_b", 10)
+            .unwrap();
         assert_eq!(callers.len(), 2);
         assert_eq!(callers[0].caller_symbol_uid.as_deref(), Some("uid_a"));
         assert_eq!(callers[1].caller_symbol_uid.as_deref(), Some("uid_c"));
 
         // callee_rows_by_uid: what does uid_a call?
-        let callees = db.symbol_graph_reads().callee_rows_by_uid("uid_a", 10).unwrap();
+        let callees = db
+            .symbol_graph_reads()
+            .callee_rows_by_uid("uid_a", 10)
+            .unwrap();
         assert_eq!(callees.len(), 2);
         assert_eq!(callees[0].callee_symbol_uid.as_deref(), Some("uid_b"));
         assert_eq!(callees[1].callee_symbol_uid.as_deref(), Some("uid_d"));
@@ -2109,11 +2138,23 @@ mod tests {
         let seeds = ["uid_a", "uid_b", "uid_c", "uid_a"];
 
         for limit in [1usize, 2, 3, 10] {
-            let batch_callers = db.symbol_graph_reads().caller_rows_by_uids(&seeds, limit).unwrap();
-            let batch_callees = db.symbol_graph_reads().callee_rows_by_uids(&seeds, limit).unwrap();
+            let batch_callers = db
+                .symbol_graph_reads()
+                .caller_rows_by_uids(&seeds, limit)
+                .unwrap();
+            let batch_callees = db
+                .symbol_graph_reads()
+                .callee_rows_by_uids(&seeds, limit)
+                .unwrap();
             for uid in ["uid_a", "uid_b", "uid_c"] {
-                let single_callers = db.symbol_graph_reads().caller_rows_by_uid(uid, limit).unwrap();
-                let single_callees = db.symbol_graph_reads().callee_rows_by_uid(uid, limit).unwrap();
+                let single_callers = db
+                    .symbol_graph_reads()
+                    .caller_rows_by_uid(uid, limit)
+                    .unwrap();
+                let single_callees = db
+                    .symbol_graph_reads()
+                    .callee_rows_by_uid(uid, limit)
+                    .unwrap();
                 assert_eq!(
                     format!("{:?}", batch_callers.get(uid).cloned().unwrap_or_default()),
                     format!("{:?}", single_callers),
@@ -2161,8 +2202,16 @@ mod tests {
         assert_eq!(cut_callers, ["uid_p2", "uid_p1"]);
 
         // Empty seed list -> empty map, no SQL issued.
-        assert!(db.symbol_graph_reads().caller_rows_by_uids(&[], 5).unwrap().is_empty());
-        assert!(db.symbol_graph_reads().callee_rows_by_uids(&[], 5).unwrap().is_empty());
+        assert!(db
+            .symbol_graph_reads()
+            .caller_rows_by_uids(&[], 5)
+            .unwrap()
+            .is_empty());
+        assert!(db
+            .symbol_graph_reads()
+            .callee_rows_by_uids(&[], 5)
+            .unwrap()
+            .is_empty());
     }
 
     #[test]
@@ -2276,7 +2325,10 @@ mod tests {
             tx.commit().unwrap();
         }
 
-        let info = db.symbol_graph_reads().symbol_degree_details("uid_target").unwrap();
+        let info = db
+            .symbol_graph_reads()
+            .symbol_degree_details("uid_target")
+            .unwrap();
         assert_eq!(info.in_degree, 2); // 2 incoming call edges
         assert_eq!(info.out_degree, 1); // 1 outgoing call edge
         assert_eq!(info.caller_count, 2); // 2 distinct callers
@@ -2333,7 +2385,10 @@ mod tests {
 
         // uid_unknown appears nowhere; uid_a appears twice (duplicate seed).
         let seeds = ["uid_a", "uid_b", "uid_zero", "uid_unknown", "uid_a"];
-        let batch = db.symbol_graph_reads().symbol_degree_details_batch(&seeds).unwrap();
+        let batch = db
+            .symbol_graph_reads()
+            .symbol_degree_details_batch(&seeds)
+            .unwrap();
 
         assert_eq!(batch.len(), 4, "duplicate seeds collapse to one entry");
         for uid in ["uid_a", "uid_b", "uid_zero", "uid_unknown"] {
@@ -2362,7 +2417,11 @@ mod tests {
         assert!(!batch.contains_key("uid_noise2"));
 
         // Empty seed list -> empty map, no SQL issued.
-        assert!(db.symbol_graph_reads().symbol_degree_details_batch(&[]).unwrap().is_empty());
+        assert!(db
+            .symbol_graph_reads()
+            .symbol_degree_details_batch(&[])
+            .unwrap()
+            .is_empty());
     }
 
     /// Regression: a step-phase execution error must surface as `Err`, never
@@ -2380,19 +2439,46 @@ mod tests {
         // Warm-up through the read pool so the pooled connection prepares
         // statements involving `call_edges` against the current schema
         // (stale in-memory schema precondition).
-        assert_eq!(db.symbol_graph_reads().call_edges_from_uid_lite("uid_a").unwrap().len(), 1);
-        assert_eq!(db.symbol_graph_reads().caller_rows_by_uid("uid_b", 10).unwrap().len(), 1);
-        assert_eq!(db.symbol_graph_reads().caller_rows_by_uids(&["uid_b"], 10).unwrap().len(), 1);
+        assert_eq!(
+            db.symbol_graph_reads()
+                .call_edges_from_uid_lite("uid_a")
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(
+            db.symbol_graph_reads()
+                .caller_rows_by_uid("uid_b", 10)
+                .unwrap()
+                .len(),
+            1
+        );
+        assert_eq!(
+            db.symbol_graph_reads()
+                .caller_rows_by_uids(&["uid_b"], 10)
+                .unwrap()
+                .len(),
+            1
+        );
 
         // Drop the table behind the pool's back.
         let side = rusqlite::Connection::open(db.admin().db_path()).unwrap();
         side.execute("DROP TABLE call_edges", []).unwrap();
 
         // Collect form (point query, cached statement) ...
-        assert!(db.symbol_graph_reads().call_edges_from_uid_lite("uid_a").is_err());
+        assert!(db
+            .symbol_graph_reads()
+            .call_edges_from_uid_lite("uid_a")
+            .is_err());
         // ... collect form via the shared row mapper ...
-        assert!(db.symbol_graph_reads().caller_rows_by_uid("uid_b", 10).is_err());
+        assert!(db
+            .symbol_graph_reads()
+            .caller_rows_by_uid("uid_b", 10)
+            .is_err());
         // ... and for-loop form (batched dynamic-SQL query).
-        assert!(db.symbol_graph_reads().caller_rows_by_uids(&["uid_b"], 10).is_err());
+        assert!(db
+            .symbol_graph_reads()
+            .caller_rows_by_uids(&["uid_b"], 10)
+            .is_err());
     }
 }

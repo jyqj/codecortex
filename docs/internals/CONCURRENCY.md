@@ -50,7 +50,10 @@ gate 生效的前提是每个项目全进程只有一个 `CodeIndex` 实例：
 | 2 `compute_postprocess` | **无锁** | postprocess/analysis 计算，经读池读阶段 1 的快照 |
 | 3 `apply_postprocess` | 写锁（短） | 小事务 apply 类型化 delta |
 
-- prepare（scan→parse→resolve→压缩）本就在锁外。
+- prepare（scan→parse→resolve→压缩）本就在锁外。全量构建的 staging
+  写入（`build_temp_db_staging`）也在 prepare 内完成——只写 `.sqlite3.tmp`
+  临时文件，不触碰活库，锁契约不变；阶段 1 的换库
+  （`swap_rebuild_staging`）在 cc-db 写连接 Mutex 下做 finalize+rename。
 - `StalePreparedBuild`（阶段 1 或 3 发现 `index_epoch` 不匹配）触发整体
   重跑 prepare+commit，**最多一次**。同进程内不会发生（gate 串行化了
   构建）；这是给跨进程写者的防线。
@@ -83,13 +86,18 @@ watcher 带自适应去抖、突发退避、gitignore 过滤和 git 脏态轮询
 ## 会话生命周期
 
 - **空闲驱逐**：每 30 秒检查一次，MCP 无活动超过
-  `auto_index.idle_timeout_secs`（默认 60）即对活动项目调用 `close()`——
-  释放 DB 句柄、清空 `index_db`/`engine`，保留 `project_path` 与 build
-  gate。透明重开（读锁探测 `is_closed`，需要时升级写锁走 `set_project`
-  重初始化）不只覆盖 active 项目，被驱逐后转为非 active 的缓存实例同样
-  恢复：每次工具调用入口走 `reopen_active_index_if_closed()`；
-  `index_for_project_path` 的 LRU 命中路径与 `set_active_project` 复用
-  缓存实例时同样检查 `is_closed` 重开——而不是报 ProjectNotSet。
+  `auto_index.idle_timeout_secs`（默认 60）即对**会话持有的全部实例**
+  （active + 16 槽 LRU 里缓存的非 active 项目）调用 `close()`——释放 DB
+  句柄、清空 `index_db`/`engine`，保留 `project_path` 与 build gate。
+  空闲是会话级事实（`last_activity` 被每次工具调用刷新），只关活动项目
+  会让缓存的非 active 实例无限期持有读池/写连接与 seed/目录缓存。
+  `close()` 同时按 `db_identity` 清除该实例在进程级图缓存的全部槽位
+  （identity 永不复用，残留条目不可能再命中）。透明重开（读锁探测
+  `is_closed`，需要时升级写锁走 `set_project` 重初始化）不只覆盖 active
+  项目，被驱逐的缓存实例同样恢复：每次工具调用入口走
+  `reopen_active_index_if_closed()`；`index_for_project_path` 的 LRU
+  命中路径与 `set_active_project` 复用缓存实例时同样检查 `is_closed`
+  重开——而不是报 ProjectNotSet。
 - **PPID watchdog**（Unix）：每 `CODECORTEX_PPID_POLL_MS`（默认 5000，
   0 关闭）轮询父进程；PPID 变化或变为 1 即触发优雅关停——MCP 客户端死掉
   时服务器不会变成孤儿进程。

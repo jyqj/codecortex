@@ -2,11 +2,12 @@
 //! dependents, dead code, references, and route handlers.
 
 use super::SharedCodeIndex;
+use cc_model::{CcError, CcResult};
 
 /// Execute a graph query (read-only Cypher subset).
-pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::Value, String> {
+pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> CcResult<serde_json::Value> {
     let (rt, budget) = super::lock_and_budget(&runtime, "graph_query")?;
-    let output = rt.graph().graph_query(query).map_err(|e| e.to_string())?;
+    let output = rt.graph().graph_query(query)?;
 
     let default_limit_applied = output.default_limit_applied;
     let limit_applied = output.limit;
@@ -58,40 +59,45 @@ pub fn graph_query(runtime: SharedCodeIndex, query: &str) -> Result<serde_json::
         let mut explain = cc_model::GraphExplainCollector::new();
         explain.mark_truncated(reason);
         if let Some(graph_explain) = explain.finish_non_empty() {
-            envelope["graph_explain"] =
-                serde_json::to_value(graph_explain).map_err(|e| e.to_string())?;
+            envelope["graph_explain"] = serde_json::to_value(graph_explain)?;
         }
     }
     Ok(envelope)
 }
 
+/// Wire arguments of the `trace` tool (already sanitized), grouped so the
+/// dispatch chain passes one object instead of eight positional values.
+#[derive(Debug, Clone, Default)]
+pub struct TraceArgs {
+    pub from: String,
+    pub to: String,
+    pub max_depth: usize,
+    /// Legacy snippet toggle; only consulted when `source_mode` is `None`
+    /// (true→"snippet", false→"none").
+    pub include_source: bool,
+    pub max_snippet_lines: Option<usize>,
+    /// `"none"` | `"snippet"` | `"body"` | `"outline"` | None.
+    pub source_mode: Option<String>,
+    pub from_uid: Option<String>,
+    pub to_uid: Option<String>,
+}
+
 /// Trace call path between two symbols (rich version with optional snippets).
-///
-/// `source_mode`: `"none"` | `"snippet"` | `"body"` | `"outline"` | None.
-/// When None, falls back to `include_snippets`: true→snippet, false→none.
-#[allow(clippy::too_many_arguments)]
-pub fn trace_path(
-    runtime: SharedCodeIndex,
-    from: &str,
-    to: &str,
-    max_depth: usize,
-    include_snippets: bool,
-    max_snippet_lines: Option<usize>,
-    source_mode: Option<&str>,
-    from_uid: Option<&str>,
-    to_uid: Option<&str>,
-) -> Result<serde_json::Value, String> {
+pub fn trace_path(runtime: SharedCodeIndex, args: &TraceArgs) -> CcResult<serde_json::Value> {
     let (rt, budget) = super::lock_and_budget(&runtime, "trace_path")?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let project_root = rt.project_path.as_deref();
 
-    let effective_mode = source_mode.unwrap_or(if include_snippets { "snippet" } else { "none" });
+    let effective_mode = args
+        .source_mode
+        .as_deref()
+        .unwrap_or(if args.include_source { "snippet" } else { "none" });
     let (do_snippets, snippet_lines, snippet_budget, include_outgoing) = match effective_mode {
         "body" => (true, usize::MAX, 128 * 1024, true),
         "outline" => (false, 0, 0, false),
         "snippet" => (
             true,
-            max_snippet_lines.unwrap_or(3),
+            args.max_snippet_lines.unwrap_or(3),
             budget.max_snippet_chars,
             false,
         ),
@@ -101,18 +107,17 @@ pub fn trace_path(
     let result = crate::graph_trace::trace_path_rich(
         db,
         project_root,
-        from,
-        to,
-        max_depth,
+        &args.from,
+        &args.to,
+        args.max_depth,
         do_snippets,
         snippet_lines,
         Some(snippet_budget),
         include_outgoing,
-        from_uid,
-        to_uid,
-    )
-    .map_err(|e| e.to_string())?;
-    serde_json::to_value(result).map_err(|e| e.to_string())
+        args.from_uid.as_deref(),
+        args.to_uid.as_deref(),
+    )?;
+    Ok(serde_json::to_value(result)?)
 }
 
 /// Find references to a symbol.
@@ -120,13 +125,10 @@ pub fn symbol_refs(
     runtime: SharedCodeIndex,
     symbol: &str,
     limit: usize,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let refs = rt
-        .graph()
-        .symbol_refs(symbol, limit)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(refs).map_err(|e| e.to_string())
+    let refs = rt.graph().symbol_refs(symbol, limit)?;
+    Ok(serde_json::to_value(refs)?)
 }
 
 pub fn list_unresolved_refs(
@@ -134,24 +136,19 @@ pub fn list_unresolved_refs(
     limit: usize,
     file_path: Option<&str>,
     kind: Option<&str>,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    rt.graph()
-        .list_unresolved_refs(limit, file_path, kind)
-        .map_err(|e| e.to_string())
+    rt.graph().list_unresolved_refs(limit, file_path, kind)
 }
 
 /// Find tests impacted by the given set of files.
 pub fn find_impacted_tests(
     runtime: SharedCodeIndex,
     files: &[String],
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let tests = rt
-        .impact()
-        .find_impacted_tests(files)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(tests).map_err(|e| e.to_string())
+    let tests = rt.impact().find_impacted_tests(files)?;
+    Ok(serde_json::to_value(tests)?)
 }
 
 // ── New handlers ────────────────────────────────────────────────────
@@ -160,16 +157,11 @@ pub fn find_impacted_tests(
 ///
 /// Delegates to `GraphReadModel::dependents_of_file` (cached reverse import
 /// adjacency). `file_path` 的校验由上游 params struct 负责，handler 收到已解构的类型化参数。
-pub fn get_dependents(
-    runtime: SharedCodeIndex,
-    file_path: &str,
-) -> Result<serde_json::Value, String> {
+pub fn get_dependents(runtime: SharedCodeIndex, file_path: &str) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
-    let dependents = grm
-        .dependents_of_file(file_path)
-        .map_err(|e| e.to_string())?;
+    let dependents = grm.dependents_of_file(file_path)?;
 
     Ok(serde_json::json!({
         "file_path": file_path,
@@ -187,13 +179,13 @@ pub fn find_dead_code(
     runtime: SharedCodeIndex,
     scope: Option<&str>,
     limit: Option<usize>,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let user_limit = limit;
 
     let rt = super::lock_index(&runtime)?;
     let budget = rt.output_budget("dead_code");
     let effective_limit = user_limit.unwrap_or(budget.max_items).min(budget.max_items);
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
 
     // Adaptive scan limit: 40x the desired dead_code item cap, capped at
     // 5000 — policy owned by `GraphReadModel::dead_code_scan_limit` so direct
@@ -201,9 +193,7 @@ pub fn find_dead_code(
     let scan_limit = crate::graph_read_model::GraphReadModel::dead_code_scan_limit(effective_limit);
 
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
-    let candidates = grm
-        .dead_code_candidates(scope, scan_limit)
-        .map_err(|e| e.to_string())?;
+    let candidates = grm.dead_code_candidates(scope, scan_limit)?;
 
     let mut dead_items: Vec<serde_json::Value> = candidates
         .iter()
@@ -242,11 +232,11 @@ pub fn get_architecture(
     runtime: SharedCodeIndex,
     aspects: &str,
     limit: usize,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let aspects_str = aspects.trim().to_string();
 
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
 
     // Parse aspects list; empty means all
     let aspect_vec: Vec<&str> = if aspects_str.is_empty() {
@@ -255,12 +245,9 @@ pub fn get_architecture(
         aspects_str.split(',').map(|s| s.trim()).collect()
     };
 
-    let info = db
-        .reads()
-        .get_architecture_info(&aspect_vec, limit)
-        .map_err(|e| e.to_string())?;
+    let info = db.reads().get_architecture_info(&aspect_vec, limit)?;
 
-    serde_json::to_value(info).map_err(|e| e.to_string())
+    Ok(serde_json::to_value(info)?)
 }
 
 /// Find HTTP route handlers matching a pattern.
@@ -277,13 +264,11 @@ pub fn find_route_handlers(
     method: Option<&str>,
     framework: Option<&str>,
     limit: usize,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
-    let rows = grm
-        .route_handlers(route_path, method, framework, limit)
-        .map_err(|e| e.to_string())?;
+    let rows = grm.route_handlers(route_path, method, framework, limit)?;
 
     let shaped: Vec<serde_json::Value> = rows
         .into_iter()
@@ -312,13 +297,11 @@ pub fn find_route_handlers(
 pub fn find_async_consumers(
     runtime: SharedCodeIndex,
     topic_or_queue: &str,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
-    let rows = grm
-        .async_consumers(topic_or_queue)
-        .map_err(|e| e.to_string())?;
+    let rows = grm.async_consumers(topic_or_queue)?;
 
     Ok(serde_json::json!({
         "topic_or_queue": topic_or_queue,
@@ -334,13 +317,11 @@ pub fn find_async_consumers(
 pub fn find_service_bindings(
     runtime: SharedCodeIndex,
     service_or_route: &str,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
-    let bindings = grm
-        .service_bindings(service_or_route)
-        .map_err(|e| e.to_string())?;
+    let bindings = grm.service_bindings(service_or_route)?;
 
     Ok(serde_json::json!({
         "service_or_route": service_or_route,
@@ -357,12 +338,11 @@ pub fn find_service_bindings(
 pub fn list_package_boundaries(
     runtime: SharedCodeIndex,
     limit: u32,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
 
-    let mut boundaries =
-        crate::engine::compute_package_boundaries(db).map_err(|e| e.to_string())?;
+    let mut boundaries = crate::engine::compute_package_boundaries(db)?;
     boundaries.truncate(limit as usize);
 
     Ok(serde_json::json!({
@@ -371,34 +351,41 @@ pub fn list_package_boundaries(
     }))
 }
 
+/// Wire arguments of the `explore` tool's flow mode (already sanitized),
+/// beyond the runtime handle and symbol list.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct FlowArgs<'a> {
+    pub max_depth: usize,
+    pub include_source: bool,
+    pub max_paths: Option<usize>,
+    pub exact: Option<bool>,
+    pub file_path: Option<&'a str>,
+    pub max_candidates: Option<usize>,
+}
+
 /// Discover call flow paths connecting multiple symbols.
-#[allow(clippy::too_many_arguments)]
 pub fn explore_flow(
     runtime: SharedCodeIndex,
     symbols: &[String],
-    max_depth: usize,
-    include_source: bool,
-    max_paths: Option<usize>,
-    exact: Option<bool>,
-    file_path: Option<&str>,
-    max_candidates: Option<usize>,
-) -> Result<serde_json::Value, String> {
+    args: &FlowArgs<'_>,
+) -> CcResult<serde_json::Value> {
     let (rt, budget) = super::lock_and_budget(&runtime, "explore_flow")?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let project_root = rt.project_path.as_deref();
     crate::graph_flow::explore_flow(
         db,
         project_root,
         symbols,
-        max_depth,
-        include_source,
-        max_paths.unwrap_or(3),
-        exact.unwrap_or(true),
-        file_path,
-        max_candidates.unwrap_or(5),
-        Some(budget.max_output_chars),
+        &crate::graph_flow::FlowOptions {
+            max_depth: args.max_depth,
+            include_source: args.include_source,
+            max_paths_per_pair: args.max_paths.unwrap_or(3),
+            exact: args.exact.unwrap_or(true),
+            file_path_filter: args.file_path,
+            max_candidates: args.max_candidates.unwrap_or(5),
+            max_output_chars: Some(budget.max_output_chars),
+        },
     )
-    .map_err(|e| e.to_string())
 }
 
 /// Find circular dependencies via Tarjan SCC.
@@ -406,23 +393,19 @@ pub fn find_circular_deps(
     runtime: SharedCodeIndex,
     granularity: &str,
     limit: Option<usize>,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let (rt, budget) = super::lock_and_budget(&runtime, "circular_deps")?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let effective_limit = limit.unwrap_or(budget.max_items);
-    let result = crate::graph_cycles::find_circular_deps(db, granularity, effective_limit)
-        .map_err(|e| e.to_string())?;
-    serde_json::to_value(result).map_err(|e| e.to_string())
+    let result = crate::graph_cycles::find_circular_deps(db, granularity, effective_limit)?;
+    Ok(serde_json::to_value(result)?)
 }
 
 /// List all environment variables referenced in the codebase with usage counts.
-pub fn list_env_vars(runtime: SharedCodeIndex, limit: usize) -> Result<serde_json::Value, String> {
+pub fn list_env_vars(runtime: SharedCodeIndex, limit: usize) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
-    let summary = db
-        .reads()
-        .env_var_summary(limit)
-        .map_err(|e| e.to_string())?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
+    let summary = db.reads().env_var_summary(limit)?;
     let items: Vec<serde_json::Value> = summary
         .iter()
         .map(|(key, count, files)| {
@@ -446,9 +429,9 @@ pub fn search_env_vars(
     pattern: &str,
     file_path: Option<&str>,
     limit: usize,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
 
     let like_pattern = if pattern.contains('%') || pattern.contains('_') {
         pattern.to_string()
@@ -459,8 +442,7 @@ pub fn search_env_vars(
     let file_pattern = file_path.map(|fp| format!("%{}%", fp));
     let rows = db
         .reads()
-        .env_access_rows(&like_pattern, file_pattern.as_deref(), limit)
-        .map_err(|e| e.to_string())?;
+        .env_access_rows(&like_pattern, file_pattern.as_deref(), limit)?;
     let total = rows.len();
     Ok(serde_json::json!({
         "pattern": pattern,
@@ -478,9 +460,9 @@ pub fn type_hierarchy(
     direction: &str,
     max_depth: usize,
     include_methods: bool,
-) -> Result<serde_json::Value, String> {
+) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let db = rt.index_db().ok_or("no index database")?;
+    let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
     let grm = crate::graph_read_model::GraphReadModel::without_http_bridges(db.clone());
     crate::graph_type_hierarchy::type_hierarchy(
         db,
@@ -492,7 +474,6 @@ pub fn type_hierarchy(
         max_depth,
         include_methods,
     )
-    .map_err(|e| e.to_string())
 }
 
 #[cfg(test)]
@@ -618,8 +599,16 @@ mod tests {
 
         // alpha→beta→gamma needs depth 2; max_depth=1 clips the walk, and the
         // response must say so instead of looking like "no path exists".
-        let result =
-            trace_path(rt, "alpha_fn", "gamma_fn", 1, false, None, None, None, None).unwrap();
+        let result = trace_path(
+            rt,
+            &TraceArgs {
+                from: "alpha_fn".into(),
+                to: "gamma_fn".into(),
+                max_depth: 1,
+                ..Default::default()
+            },
+        )
+        .unwrap();
         assert_eq!(result["path_count"].as_u64(), Some(0));
         assert_eq!(result["graph_explain"]["truncated"].as_bool(), Some(true));
         assert_eq!(
@@ -915,8 +904,8 @@ mod tests {
         assert_eq!(all["count"].as_u64(), Some(3));
 
         // Pattern is substring LIKE; method/framework filters are case-insensitive.
-        let filtered = find_route_handlers(rt, Some("users"), Some("get"), Some("EXPRESS"), 20)
-        .unwrap();
+        let filtered =
+            find_route_handlers(rt, Some("users"), Some("get"), Some("EXPRESS"), 20).unwrap();
         assert_eq!(filtered["count"].as_u64(), Some(1));
         let row = &filtered["route_handlers"][0];
         assert_eq!(row["handler"].as_str(), Some("getUsers"));

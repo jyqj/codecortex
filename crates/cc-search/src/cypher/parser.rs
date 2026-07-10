@@ -368,9 +368,17 @@ impl Parser {
                         rp.max_hops = max;
                     }
                     Token::IntLit(_) => {
+                        // Guarded by the peek above, but user Cypher flows
+                        // through here — return a syntax error instead of
+                        // panicking if the guard and consumption ever drift.
                         let min = match self.advance()? {
                             Token::IntLit(n) => n as usize,
-                            _ => unreachable!(),
+                            other => {
+                                return Err(CcError::Search(format!(
+                                    "expected integer after '*', got {:?}",
+                                    other
+                                )))
+                            }
                         };
                         if self.at(&Token::DotDot) {
                             self.advance()?;
@@ -781,12 +789,19 @@ impl Parser {
             || self.at(&Token::Min)
             || self.at(&Token::Max)
         {
+            // Guarded by the `at()` checks above, but user Cypher flows
+            // through here — fail as a syntax error rather than panicking.
             let func_name = match self.peek() {
                 Token::Sum => "SUM",
                 Token::Avg => "AVG",
                 Token::Min => "MIN",
                 Token::Max => "MAX",
-                _ => unreachable!(),
+                other => {
+                    return Err(CcError::Search(format!(
+                        "expected aggregate function keyword, got {:?}",
+                        other
+                    )))
+                }
             };
             self.advance()?;
             self.expect(&Token::LParen)?;

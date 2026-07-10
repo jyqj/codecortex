@@ -105,7 +105,10 @@ pub struct LabeledPath {
     pub edge_lites: Vec<cc_db::index_db::EdgeLiteBfs>,
 }
 
-/// Adjacency map for edge-labeled BFS.
+/// Adjacency map for edge-labeled BFS. Production walks stream adjacency
+/// through `GraphReadModel::neighbors` instead; this materialized form only
+/// backs test helpers.
+#[cfg(test)]
 #[derive(Debug)]
 pub struct BfsAdj {
     pub adj: std::collections::HashMap<String, Vec<cc_db::index_db::EdgeLiteBfs>>,

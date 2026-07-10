@@ -162,11 +162,16 @@ struct PendingEvents {
 pub struct WatcherDrain {
     pub changed: Vec<String>,
     pub removed: Vec<String>,
+    /// The OS reported dropped events since the last drain (kernel queue
+    /// overflow). The event lists above are then incomplete, and the
+    /// consuming build must fall back to a full-tree scan instead of a
+    /// targeted diff.
+    pub rescan_needed: bool,
 }
 
 impl WatcherDrain {
     pub fn is_empty(&self) -> bool {
-        self.changed.is_empty() && self.removed.is_empty()
+        self.changed.is_empty() && self.removed.is_empty() && !self.rescan_needed
     }
 }
 
@@ -220,6 +225,9 @@ pub struct FileWatcher {
     _watcher: notify::RecommendedWatcher,
     pending: Arc<Mutex<PendingEvents>>,
     stopped: Arc<AtomicBool>,
+    /// Set when the OS signals dropped events (`notify` rescan flag);
+    /// consumed by the next [`FileWatcher::drain_pending`].
+    rescan_needed: Arc<AtomicBool>,
     debounce_handle: Option<std::thread::JoinHandle<()>>,
     git_poll_handle: Option<std::thread::JoinHandle<()>>,
 }
@@ -265,14 +273,26 @@ impl FileWatcher {
         // can temporarily inflate it during burst backoff.
         let effective_debounce_ms = Arc::new(AtomicU64::new(base_debounce_ms.max(50)));
 
+        let rescan_needed = Arc::new(AtomicBool::new(false));
+
         // Clone references for the notify callback.
         let staging_cb = staging.clone();
         let last_event_cb = last_event_time.clone();
         let burst_cb = burst_tracker.clone();
+        let rescan_cb = rescan_needed.clone();
         let project = project_path.to_path_buf();
 
         let watcher = notify::recommended_watcher(move |res: Result<Event, notify::Error>| {
             if let Ok(event) = res {
+                // The OS dropped events (queue overflow): the accumulated
+                // path set is incomplete, so flag the next drain to force a
+                // full-tree scan.
+                if event.need_rescan() {
+                    rescan_cb.store(true, Ordering::Relaxed);
+                    if let Ok(mut ts) = last_event_cb.lock() {
+                        *ts = Some(Instant::now());
+                    }
+                }
                 let mut staging = match staging_cb.lock() {
                     Ok(g) => g,
                     Err(e) => e.into_inner(),
@@ -421,6 +441,7 @@ impl FileWatcher {
             _watcher: watcher,
             pending,
             stopped,
+            rescan_needed,
             debounce_handle: Some(debounce_handle),
             git_poll_handle,
         })
@@ -430,6 +451,9 @@ impl FileWatcher {
     /// consuming them. Lets the poll loop secure a build slot before calling
     /// [`FileWatcher::drain_pending`], so a busy tick never loses events.
     pub fn has_pending(&self) -> bool {
+        if self.rescan_needed.load(Ordering::Relaxed) {
+            return true;
+        }
         let pending = self.pending.lock().unwrap_or_else(|e| e.into_inner());
         !(pending.changed.is_empty() && pending.removed.is_empty())
     }
@@ -437,13 +461,15 @@ impl FileWatcher {
     /// Drain all pending events accumulated since the last call.
     ///
     /// Returns a [`WatcherDrain`] with separate `changed` and `removed` lists
-    /// of relative paths (forward-slash separated).
+    /// of relative paths (forward-slash separated), plus the rescan flag
+    /// (consumed atomically with the drain).
     pub fn drain_pending(&self) -> WatcherDrain {
         let mut pending = self.pending.lock().unwrap_or_else(|e| e.into_inner());
         let events = std::mem::take(&mut *pending);
         WatcherDrain {
             changed: events.changed.into_iter().collect(),
             removed: events.removed.into_iter().collect(),
+            rescan_needed: self.rescan_needed.swap(false, Ordering::Relaxed),
         }
     }
 

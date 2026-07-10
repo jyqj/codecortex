@@ -39,12 +39,13 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::time::Instant;
 
-use cc_db::index_db::{FileState, FileWriteUnit, PrecompressedChunks};
+use cc_db::index_db::{FileState, FileWriteUnit, IndexGeneration, PrecompressedChunks};
 use cc_model::edge::{RouteNodeRecord, SemanticEdgeRecord};
 use cc_model::{BuildExplain, BuildExplainCollector, CcError, CcResult};
 
 use crate::dirty_closure::DirtyPropagationStatus;
 use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, PhaseTiming, ScanDiffResult};
+use crate::indexer_phases::time_step;
 use crate::indexer_phases::{AnalysisPlan, PostprocessPlan};
 
 /// Owned, read-only output of the prepare phase.
@@ -59,6 +60,7 @@ pub struct PreparedBuild {
     write_units: Vec<FileWriteUnit>,
     /// Chunk payloads zstd-compressed during prepare (lock-free), so the
     /// commit-side write transaction only binds pre-computed blobs.
+    /// Empty when [`Self::full_rebuild_staging_floor`] is set.
     chunk_blobs: PrecompressedChunks,
     actions: HashMap<String, FileAction>,
     output_snapshot: OutputSnapshot,
@@ -72,6 +74,14 @@ pub struct PreparedBuild {
     /// generation pair: `evidence_epoch` is bumped concurrently by
     /// runtime-evidence ingestion and would false-positive.
     prepared_index_epoch: u64,
+    /// When set, prepare already wrote the full snapshot to `.sqlite3.tmp`;
+    /// commit only performs the atomic swap and drops in-memory payloads.
+    full_rebuild_staging_floor: Option<IndexGeneration>,
+    /// Config-link units produced during staging (full builds only).
+    staged_config_units: Vec<FileWriteUnit>,
+    /// Parsed file paths retained when in-memory write units were dropped
+    /// after staging (full builds only).
+    staged_parsed_paths: Vec<String>,
     /// The resolution catalog + seed-token basis, folded back into the
     /// cross-build cache after a successful incremental write (see
     /// `resolver::catalog_cache`).
@@ -102,6 +112,9 @@ pub struct WrittenBuild {
     carry: ReportCarry,
     write_units: Vec<FileWriteUnit>,
     config_units: Vec<FileWriteUnit>,
+    /// Parsed paths when commit dropped in-memory units after a staged full
+    /// rebuild. Empty for incremental builds.
+    parsed_file_paths: Vec<String>,
     /// Build-side explainability collector, started in stage 1 (config-linker
     /// gate decision) and continued through stage 2 (postprocess/analysis
     /// gates). Finished into `IndexReport.build_explain` in stage 3.
@@ -149,10 +162,13 @@ impl IndexBuildMode {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub(crate) struct IndexBuildPlan {
     mode: IndexBuildMode,
     auto_file_limit: Option<usize>,
+    /// Scan walk selection for the prepare phase; commit stages never
+    /// consult it, so mismatched values across staged calls are harmless.
+    scope: crate::indexer::BuildScope,
 }
 
 impl IndexBuildPlan {
@@ -160,7 +176,13 @@ impl IndexBuildPlan {
         Self {
             mode: IndexBuildMode::from_full(full),
             auto_file_limit,
+            scope: crate::indexer::BuildScope::FullTree,
         }
+    }
+
+    pub(crate) fn with_scope(mut self, scope: crate::indexer::BuildScope) -> Self {
+        self.scope = scope;
+        self
     }
 
     pub(crate) fn execute(&self, indexer: &Indexer, project_path: &Path) -> CcResult<IndexReport> {
@@ -185,8 +207,12 @@ impl IndexBuildPlan {
         let prepared_index_epoch = indexer.db.reads().generation()?.index_epoch;
 
         let phase_start = Instant::now();
-        let mut scan_result =
-            indexer.phase_scan_and_diff(project_path, self.mode.is_full(), self.auto_file_limit)?;
+        let mut scan_result = indexer.phase_scan_and_diff(
+            project_path,
+            self.mode.is_full(),
+            self.auto_file_limit,
+            &self.scope,
+        )?;
         let scan_diff_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
@@ -234,16 +260,59 @@ impl IndexBuildPlan {
         // instead of inside the commit-side write transaction.
         let chunk_blobs = Indexer::precompress_chunks(&write_units);
 
+        let hierarchy_edges = resolve_result.hierarchy_edges;
+        let (
+            write_units,
+            chunk_blobs,
+            full_rebuild_staging_floor,
+            staged_config_units,
+            staged_parsed_paths,
+        ) = if self.mode.is_full() {
+            let staged_parsed_paths: Vec<String> =
+                write_units.iter().map(|u| u.rel_path.clone()).collect();
+            let (staged_config_units, generation_floor) = time_step(
+                "prepare",
+                "full_build_staging",
+                || {
+                    indexer.write_full_snapshot_build_staging(
+                        project_path,
+                        &write_units,
+                        &output_snapshot.route_nodes,
+                        &hierarchy_edges,
+                        &chunk_blobs,
+                    )
+                },
+            )?;
+            (
+                Vec::new(),
+                PrecompressedChunks::new(),
+                Some(generation_floor),
+                staged_config_units,
+                staged_parsed_paths,
+            )
+        } else {
+            (
+                write_units,
+                chunk_blobs,
+                None,
+                Vec::new(),
+                Vec::new(),
+            )
+        };
+
         Ok(PreparedBuild {
             scan_result,
             write_units,
             chunk_blobs,
             actions: reloaded.into_actions(),
             output_snapshot,
-            hierarchy_edges: resolve_result.hierarchy_edges,
+            hierarchy_edges,
             parse_report,
             dirty_propagation,
             prepared_index_epoch,
+            full_rebuild_staging_floor,
+            staged_config_units,
+            staged_parsed_paths,
             catalog_carry: resolve_result.catalog_carry,
             start,
             scan_diff_ms,
@@ -286,6 +355,9 @@ impl IndexBuildPlan {
             parse_report,
             dirty_propagation,
             prepared_index_epoch,
+            full_rebuild_staging_floor,
+            staged_config_units,
+            staged_parsed_paths,
             catalog_carry,
             start,
             scan_diff_ms,
@@ -306,18 +378,41 @@ impl IndexBuildPlan {
 
         let mut build_explain = BuildExplainCollector::new();
         let phase_start = Instant::now();
-        let write_result = indexer.phase_write(
-            project_path,
-            self.mode.is_full(),
-            write_units,
-            &actions,
-            &scan_result.to_remove,
-            &output_snapshot.route_nodes,
-            &hierarchy_edges,
-            &chunk_blobs,
-            &mut build_explain,
-        )?;
+        let write_result = if let Some(generation_floor) = full_rebuild_staging_floor {
+            indexer.commit_full_rebuild_staging(
+                project_path,
+                generation_floor,
+                &scan_result.to_remove,
+            )?
+        } else {
+            indexer.phase_write(
+                project_path,
+                self.mode.is_full(),
+                write_units,
+                &actions,
+                &scan_result.to_remove,
+                &output_snapshot.route_nodes,
+                &hierarchy_edges,
+                &chunk_blobs,
+                &mut build_explain,
+            )?
+        };
         let write_ms = phase_start.elapsed().as_millis() as u64;
+
+        let config_units = if staged_config_units.is_empty() {
+            write_result.config_units
+        } else {
+            staged_config_units
+        };
+        let parsed_file_paths = if staged_parsed_paths.is_empty() {
+            write_result
+                .write_units
+                .iter()
+                .map(|u| u.rel_path.clone())
+                .collect()
+        } else {
+            staged_parsed_paths
+        };
 
         // Every phase_write write has committed: fold the resolution catalog
         // into the cross-build cache (or clear it — full rebuilds and
@@ -352,7 +447,8 @@ impl IndexBuildPlan {
                 },
             },
             write_units: write_result.write_units,
-            config_units: write_result.config_units,
+            config_units,
+            parsed_file_paths,
             build_explain,
             written_index_epoch,
         })
@@ -372,6 +468,7 @@ impl IndexBuildPlan {
             mut carry,
             write_units,
             config_units,
+            parsed_file_paths,
             mut build_explain,
             written_index_epoch,
         } = written;
@@ -381,6 +478,7 @@ impl IndexBuildPlan {
             self.mode.is_full(),
             &write_units,
             &config_units,
+            &parsed_file_paths,
             &carry.scan_result.to_remove,
             &carry.scan_result.existing,
             &mut build_explain,
@@ -390,7 +488,9 @@ impl IndexBuildPlan {
         let phase_start = Instant::now();
         let analysis = indexer.phase_analysis_compute(
             project_path,
+            self.mode.is_full(),
             &write_units,
+            &parsed_file_paths,
             &carry.output_snapshot.route_nodes,
             &mut build_explain,
         )?;
@@ -511,11 +611,8 @@ impl DirtyClosed {
         // close over importers whose dependency exports changed OR whose
         // dependency was removed/renamed away.
         let (dirty_count, dirty_propagation) = if mode.is_incremental() {
-            let outcome = indexer.run_dirty_propagation(
-                &mut actions,
-                write_units,
-                &scan_result.to_remove,
-            )?;
+            let outcome =
+                indexer.run_dirty_propagation(&mut actions, write_units, &scan_result.to_remove)?;
             (outcome.marked, Some(outcome.status))
         } else {
             (0, None)
@@ -875,7 +972,7 @@ class Accumulator:
         );
 
         let chunk_rows = |db: &IndexDb| -> Vec<(String, i64, rusqlite::types::Value, String)> {
-            let conn = db.reads().read_conn().expect("read conn");
+            let conn = crate::test_seed::seed_conn(db);
             let mut stmt = conn
                 .prepare(
                     "SELECT file_path, chunk_index, text, text_encoding FROM chunks \
@@ -936,7 +1033,7 @@ class Accumulator:
 
         // Read path restores the original text from the compressed blob:
         // every chunk of big.py must decode to a slice of the source.
-        let conn = db_a.reads().read_conn().expect("read conn");
+        let conn = crate::test_seed::seed_conn(&db_a);
         let mut stmt = conn
             .prepare(
                 "SELECT text, text_encoding FROM chunks \

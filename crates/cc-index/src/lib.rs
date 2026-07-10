@@ -1,3 +1,10 @@
+//! The indexing pipeline: scan/diff → parse → dirty closure → framework
+//! enrichment → resolve → write → postprocess (test edges, dispatch
+//! synthesis, Louvain communities) → analysis (git co-change, infra, ADR).
+//! `build_plan` owns the ordering invariants and the three-stage staged
+//! commit (ADR-0002); `PassGate` declares postprocess/analysis skipping.
+//! Deep dive: `docs/internals/INDEXING.md`.
+
 pub(crate) mod build_plan;
 pub(crate) mod community;
 pub(crate) mod config_linker;
@@ -25,7 +32,7 @@ pub(crate) mod type_catalog;
 pub use build_plan::{PreparedBuild, StagedPostprocess, WrittenBuild};
 pub use dirty_closure::DirtyPropagationStatus;
 pub use framework_registry::FileFrameworkDetection;
-pub use indexer::{IndexReport, Indexer};
+pub use indexer::{BuildScope, IndexReport, Indexer, TargetedChanges};
 pub use scanner::{ScannedFile, Scanner};
 
 /// Test-only seeding support shared by this crate's unit-test fixtures.

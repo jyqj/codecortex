@@ -326,7 +326,9 @@ impl ReadOps<'_> {
         handler_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<RouteEdgeLite>> {
-        self.0.frontier().route_rows_by_handler_uid(handler_uid, limit)
+        self.0
+            .frontier()
+            .route_rows_by_handler_uid(handler_uid, limit)
     }
 
     pub fn http_calls_by_caller_uid(
@@ -334,7 +336,9 @@ impl ReadOps<'_> {
         caller_uid: &str,
         limit: usize,
     ) -> CcResult<Vec<HttpCallEdgeLite>> {
-        self.0.frontier().http_calls_by_caller_uid(caller_uid, limit)
+        self.0
+            .frontier()
+            .http_calls_by_caller_uid(caller_uid, limit)
     }
 
     pub fn http_callers_by_normalized_path(

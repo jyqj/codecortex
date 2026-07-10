@@ -365,7 +365,10 @@ mod tests {
         // BTreeMap ordering: alphabetical by category.
         assert_eq!(
             explain.synthesis_notes,
-            vec!["no_caller_uid: 2".to_string(), "no_route_handler: 5".to_string()]
+            vec![
+                "no_caller_uid: 2".to_string(),
+                "no_route_handler: 5".to_string()
+            ]
         );
         // An empty collector still finishes to None.
         assert!(GraphExplainCollector::new().finish_non_empty().is_none());

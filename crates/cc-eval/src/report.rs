@@ -137,7 +137,7 @@ pub fn generate_markdown(report: &EvalReport) -> String {
         md.push_str("| Tool | Cases | Passed | Failed | Avg Duration | p95 | Max |\n");
         md.push_str("|------|-------|--------|--------|-------------|-----|-----|\n");
         let mut tools: Vec<_> = report.summary.per_tool.iter().collect();
-        tools.sort_by(|(a, _), (b, _)| a.cmp(b));
+        tools.sort_by_key(|(a, _)| *a);
         for (tool, summary) in tools {
             md.push_str(&format!(
                 "| {} | {} | {} | {} | {}ms | {}ms | {}ms |\n",

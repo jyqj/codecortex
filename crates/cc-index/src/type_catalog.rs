@@ -182,7 +182,11 @@ impl TypeCatalog {
     /// `removed` carries the key facets of every removed symbol so only the
     /// affected buckets are probed (batched: each bucket is scanned once
     /// regardless of how many removed symbols share its key).
-    pub(crate) fn remove_files(&mut self, removed: &[SymbolKeyMeta<'_>], removed_files: &HashSet<String>) {
+    pub(crate) fn remove_files(
+        &mut self,
+        removed: &[SymbolKeyMeta<'_>],
+        removed_files: &HashSet<String>,
+    ) {
         let mut removed_uids: HashSet<&str> = HashSet::new();
         let mut method_keys: HashSet<String> = HashSet::new();
         let mut type_keys: HashSet<(String, String)> = HashSet::new(); // (canonical, short)
@@ -927,8 +931,7 @@ mod tests {
         let base_a = make_class("BaseA", "uid-base-a", None);
         let base_b = make_class("BaseB", "uid-base-b", None);
 
-        let mut catalog =
-            TypeCatalog::build_from_symbols([&base_a, &base_b, &cfg_a, &cfg_b]);
+        let mut catalog = TypeCatalog::build_from_symbols([&base_a, &base_b, &cfg_a, &cfg_b]);
         // Last writer (b.py) is live.
         assert!(catalog.is_subtype("Config", "BaseB"));
 
@@ -983,5 +986,4 @@ mod tests {
         assert_eq!(catalog.resolve_var_type("main.py", "job"), None);
         assert!(catalog.has_methods());
     }
-
 }

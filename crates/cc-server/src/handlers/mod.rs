@@ -7,6 +7,7 @@ pub mod graph;
 pub mod output_budget;
 
 use crate::engine::CodeIndex;
+use cc_model::CcResult;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock, RwLockReadGuard, RwLockWriteGuard};
 
@@ -35,7 +36,7 @@ pub fn poison_recovered() -> bool {
 /// the inner value; the recovery is recorded so diagnostics can flag the
 /// runtime as degraded (a panic mid-write may have left partial in-memory
 /// state).
-pub fn lock_index(index: &SharedCodeIndex) -> Result<RwLockReadGuard<'_, CodeIndex>, String> {
+pub fn lock_index(index: &SharedCodeIndex) -> CcResult<RwLockReadGuard<'_, CodeIndex>> {
     match index.read() {
         Ok(guard) => Ok(guard),
         Err(poisoned) => {
@@ -54,7 +55,10 @@ pub fn lock_index(index: &SharedCodeIndex) -> Result<RwLockReadGuard<'_, CodeInd
 pub fn lock_and_budget<'a>(
     index: &'a SharedCodeIndex,
     handler: &str,
-) -> Result<(RwLockReadGuard<'a, CodeIndex>, cc_model::config::OutputBudget), String> {
+) -> CcResult<(
+    RwLockReadGuard<'a, CodeIndex>,
+    cc_model::config::OutputBudget,
+)> {
     let rt = lock_index(index)?;
     let budget = rt.output_budget(handler);
     Ok((rt, budget))
@@ -64,9 +68,7 @@ pub fn lock_and_budget<'a>(
 ///
 /// On recovery the search result cache is invalidated: results computed from
 /// a half-mutated CodeIndex must not be served after recovery.
-pub fn lock_index_write(
-    index: &SharedCodeIndex,
-) -> Result<RwLockWriteGuard<'_, CodeIndex>, String> {
+pub fn lock_index_write(index: &SharedCodeIndex) -> CcResult<RwLockWriteGuard<'_, CodeIndex>> {
     match index.write() {
         Ok(guard) => Ok(guard),
         Err(poisoned) => {

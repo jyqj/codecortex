@@ -132,13 +132,37 @@ pub struct Indexer {
     pub(crate) event_denylist: Vec<String>,
 }
 
+/// Which files the scan/diff phase examines.
+#[derive(Debug, Clone, Default)]
+pub enum BuildScope {
+    /// Walk the whole project tree (manual builds, full rebuilds,
+    /// auto-index).
+    #[default]
+    FullTree,
+    /// Diff only the event-reported paths (watcher increments): `changed`
+    /// paths re-enter the scanner through the exact same ignore/type/size
+    /// filters (pruned walk); `removed` paths are dropped from the index if
+    /// present. Ignored for full builds.
+    Targeted(TargetedChanges),
+}
+
+/// The watcher-reported change set driving a [`BuildScope::Targeted`] build.
+#[derive(Debug, Clone, Default)]
+pub struct TargetedChanges {
+    pub changed: Vec<String>,
+    pub removed: Vec<String>,
+}
+
 /// Intermediate result for Phase 1+2 (scan and diff).
 pub(crate) struct ScanDiffResult {
     pub(crate) files_scanned: usize,
     pub(crate) files_added: usize,
     pub(crate) files_updated: usize,
     pub(crate) files_skipped: usize,
-    pub(crate) existing: HashMap<String, FileState>,
+    /// Shared snapshot of the persisted file state (see cc-db's
+    /// `file_state_cache`): a cache hit hands out the same allocation, so
+    /// holding it across the build costs one `Arc`.
+    pub(crate) existing: std::sync::Arc<HashMap<String, FileState>>,
     pub(crate) scanned_paths: HashSet<String>,
     pub(crate) to_remove: Vec<String>,
     pub(crate) to_parse: Vec<PendingFile>,
@@ -212,13 +236,18 @@ impl Indexer {
     /// write lock and then hand the result to [`Indexer::commit_build`] under a
     /// brief write lock. `full`/`auto_file_limit` must match the values passed to
     /// the paired `commit_build` call so both halves share the same build mode.
+    /// `scope` selects the scan walk (see [`BuildScope`]); commit stages are
+    /// scope-independent.
     pub fn prepare_build(
         &self,
         project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: BuildScope,
     ) -> CcResult<crate::build_plan::PreparedBuild> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare(self, project_path)
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
+            .with_scope(scope)
+            .prepare(self, project_path)
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
@@ -291,14 +320,29 @@ impl Indexer {
     // ── Phase helper structs ────────────────────────────────────────────
 
     /// Phase 1+2: Scan files and compute diff against existing DB state.
+    ///
+    /// `scope` selects the walk: `FullTree` scans the whole project;
+    /// `Targeted` (incremental only) prunes the walk to the event-reported
+    /// paths, replacing the O(repo) tree walk with an O(events) probe while
+    /// keeping every diff decision (mtime+size fast path, hash confirm,
+    /// `CODECORTEX_STRICT_HASH`) identical.
     pub(crate) fn phase_scan_and_diff(
         &self,
         _project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: &BuildScope,
     ) -> CcResult<ScanDiffResult> {
+        let targeted = match scope {
+            BuildScope::Targeted(changes) if !full => Some(changes),
+            _ => None,
+        };
+
         // Phase 1: Scan
-        let scanned = self.scanner.scan();
+        let scanned = match targeted {
+            None => self.scanner.scan(),
+            Some(changes) => self.scanner.scan_paths(&changes.changed),
+        };
         let files_scanned = scanned.len();
         if let Some(limit) = auto_file_limit {
             if files_scanned > limit {
@@ -311,11 +355,11 @@ impl Indexer {
 
         // Phase 2: Diff
         let existing = if full {
-            HashMap::new()
+            std::sync::Arc::new(HashMap::new())
         } else {
             self.db.reads().get_file_state()?
         };
-        let scanned_paths: std::collections::HashSet<String> =
+        let yielded_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
         let strict_hash = std::env::var("CODECORTEX_STRICT_HASH")
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
@@ -376,19 +420,51 @@ impl Indexer {
             .filter(|p| matches!(p.action, FileAction::Skip))
             .count();
 
-        // Files to remove
-        let to_remove: Vec<String> = existing
-            .keys()
-            .filter(|p| !scanned_paths.contains(p.as_str()))
-            .cloned()
-            .collect();
+        // Removals + the "present after this build" set. A full-tree walk
+        // derives removals from absence; a targeted diff derives them from
+        // the event list — a removed event whose file is indexed, or a
+        // changed file that vanished / stopped being indexable (oversized,
+        // ignored) before the scan reached it.
+        let (scanned_paths, to_remove) = match targeted {
+            None => {
+                let to_remove: Vec<String> = existing
+                    .keys()
+                    .filter(|p| !yielded_paths.contains(p.as_str()))
+                    .cloned()
+                    .collect();
+                (yielded_paths, to_remove)
+            }
+            Some(changes) => {
+                let mut removed: HashSet<String> = changes
+                    .removed
+                    .iter()
+                    .filter(|p| existing.contains_key(p.as_str()))
+                    .cloned()
+                    .collect();
+                for path in &changes.changed {
+                    if existing.contains_key(path.as_str()) && !yielded_paths.contains(path) {
+                        removed.insert(path.clone());
+                    }
+                }
+                // Dirty propagation must still see every present file (Skip
+                // actions are its promotion candidates), so reconstruct the
+                // present set from the persisted state instead of a walk.
+                let mut present: HashSet<String> = existing
+                    .keys()
+                    .filter(|p| !removed.contains(p.as_str()))
+                    .cloned()
+                    .collect();
+                present.extend(yielded_paths.iter().cloned());
+                (present, removed.into_iter().collect())
+            }
+        };
 
         // Filter and sort non-skip files for parsing (large files first)
         let mut to_parse: Vec<PendingFile> = pending
             .into_iter()
             .filter(|pf| !matches!(pf.action, FileAction::Skip))
             .collect();
-        to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));
+        to_parse.sort_by_key(|pf| std::cmp::Reverse(pf.scanned.size));
 
         Ok(ScanDiffResult {
             files_scanned,
@@ -703,9 +779,7 @@ impl Indexer {
             // 见下方 filter）保持不变 —— 仅 key 集合的来源收口到 taxonomy 单一声明。
             let go_router_keys: Vec<&'static str> =
                 crate::framework_resolvers::taxon_for_key("gin")
-                    .map(|taxon| {
-                        crate::framework_resolvers::canonical_aliases(taxon).collect()
-                    })
+                    .map(|taxon| crate::framework_resolvers::canonical_aliases(taxon).collect())
                     .expect("gin taxon must exist in framework_taxonomy");
             let has_go_router = ctx
                 .repo_frameworks

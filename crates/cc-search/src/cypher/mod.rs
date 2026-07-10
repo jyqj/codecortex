@@ -1287,7 +1287,10 @@ mod tests {
             &db,
         )
         .unwrap();
-        assert!(!result.rows.is_empty(), "anchored optional must return rows");
+        assert!(
+            !result.rows.is_empty(),
+            "anchored optional must return rows"
+        );
     }
 
     /// Regression (2.1): extra MATCH clauses are no longer silently ignored.
@@ -1298,7 +1301,10 @@ mod tests {
         let err = cypher_query("MATCH (a:Function) MATCH (b:Class) RETURN a.name", &db)
             .unwrap_err()
             .to_string();
-        assert!(err.contains("MATCH"), "expected multi-MATCH rejection, got: {err}");
+        assert!(
+            err.contains("MATCH"),
+            "expected multi-MATCH rejection, got: {err}"
+        );
     }
 
     /// Regression (2.1): comma-separated patterns in one MATCH are rejected
@@ -1390,7 +1396,11 @@ mod tests {
             "UNION must cap the merged result at the global limit (2), got {}",
             result.row_count
         );
-        assert_eq!(result.limit, Some(2), "reported limit must be the global bound");
+        assert_eq!(
+            result.limit,
+            Some(2),
+            "reported limit must be the global bound"
+        );
     }
 
     #[test]

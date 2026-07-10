@@ -232,7 +232,7 @@ impl SymbolCatalog {
             })
             .collect();
 
-        scored.sort_by(|a, b| b.1.cmp(&a.1));
+        scored.sort_by_key(|entry| std::cmp::Reverse(entry.1));
 
         // Only return if the top score is distinctly better, or there's just one winner
         if scored.len() >= 2 && scored[0].1 == scored[1].1 {

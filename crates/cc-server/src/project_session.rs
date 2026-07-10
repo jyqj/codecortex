@@ -8,7 +8,7 @@ use crate::engine::CodeIndex;
 use crate::handlers::{self, SharedCodeIndex};
 use crate::watcher::FileWatcher;
 use cc_model::config::RepoSizeTier;
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 use lru::LruCache;
 use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
@@ -108,7 +108,7 @@ impl ProjectSession {
             // releases the DB handle but keeps project_path and the build
             // gate). Reopen transparently — same recovery the active index
             // gets in `call_tool` — instead of failing with ProjectNotSet.
-            Self::reopen_index_if_closed(&index).map_err(CcError::Other)?;
+            Self::reopen_index_if_closed(&index)?;
             return Ok(index);
         }
 
@@ -144,7 +144,7 @@ impl ProjectSession {
         // Same idle-eviction recovery as `index_for_project_path`: a cached
         // entry may have been closed while non-active — reopen before it
         // becomes the active index, so the first tool call works directly.
-        Self::reopen_index_if_closed(&index).map_err(CcError::Other)?;
+        Self::reopen_index_if_closed(&index)?;
         *self.active.write().await = services;
         self.start_watcher(path);
         Ok(index)
@@ -156,7 +156,7 @@ impl ProjectSession {
         }
     }
 
-    pub async fn reopen_active_index_if_closed(&self) -> Result<(), String> {
+    pub async fn reopen_active_index_if_closed(&self) -> CcResult<()> {
         let index = self.active_index().await;
         Self::reopen_index_if_closed(&index)
     }
@@ -165,7 +165,7 @@ impl ProjectSession {
     /// `is_closed`, then upgrade to the write lock and re-check before
     /// reopening (`reopen` re-runs `set_project` without touching the build
     /// gate, so build serialization survives the close/reopen cycle).
-    fn reopen_index_if_closed(index: &SharedCodeIndex) -> Result<(), String> {
+    fn reopen_index_if_closed(index: &SharedCodeIndex) -> CcResult<()> {
         let need_reopen = {
             let rt = handlers::lock_index(index)?;
             rt.is_closed()
@@ -251,7 +251,9 @@ impl ProjectSession {
                 // phase_write and the delta apply, so readers never see the
                 // non-transactional intermediate write state yet keep running
                 // through the postprocess compute.
-                if let Err(e) = handlers::core::run_split_build(&index, false, true) {
+                if let Err(e) =
+                    handlers::core::run_split_build(&index, false, true, cc_index::BuildScope::FullTree)
+                {
                     tracing::warn!("auto-index failed: {}", e);
                 }
             })
@@ -426,6 +428,7 @@ impl ProjectSession {
     pub async fn start_idle_eviction(&self) {
         let last_activity = self.last_activity.clone();
         let active = self.active.clone();
+        let project_cache = self.project_cache.clone();
         let idle_timeout_secs = active_idle_timeout_secs(&active).await;
         tokio::spawn(async move {
             let idle_timeout = std::time::Duration::from_secs(idle_timeout_secs);
@@ -437,14 +440,13 @@ impl ProjectSession {
                     .map(|ts| ts.elapsed())
                     .unwrap_or_default();
                 if elapsed >= idle_timeout {
-                    let index = active.read().await.index();
-                    let mut guard = match index.write() {
-                        Ok(g) => g,
-                        Err(_) => continue,
-                    };
-                    if guard.project_path.is_some() && !guard.is_closed() {
-                        tracing::info!("idle eviction: closing after {}s", elapsed.as_secs());
-                        guard.close();
+                    let closed = close_idle_instances(&active, &project_cache).await;
+                    if closed > 0 {
+                        tracing::info!(
+                            closed,
+                            "idle eviction: closed after {}s",
+                            elapsed.as_secs()
+                        );
                     }
                 }
             }
@@ -515,16 +517,61 @@ fn run_watcher_tick(
     tracing::info!(
         changed = drain.changed.len(),
         removed = drain.removed.len(),
+        rescan = drain.rescan_needed,
         "watcher: file changes detected, triggering incremental index"
     );
+
+    // Targeted scope: diff exactly the event-reported paths instead of
+    // walking the whole tree (the scan/diff O(repo) floor). The OS rescan
+    // flag (dropped events) falls back to the full walk, and any drift a
+    // targeted diff cannot see (e.g. a `.gitignore` edit un-indexing other
+    // files) heals on the next manual or full build.
+    let scope = if drain.rescan_needed {
+        cc_index::BuildScope::FullTree
+    } else {
+        cc_index::BuildScope::Targeted(cc_index::TargetedChanges {
+            changed: drain.changed,
+            removed: drain.removed,
+        })
+    };
 
     // Shared split-build driver: brief read lock for inputs, heavy prepare
     // and postprocess compute with no CodeIndex lock held, write lock only
     // around phase_write and the delta apply.
-    if let Err(e) = handlers::core::run_split_build(index, false, false) {
+    if let Err(e) = handlers::core::run_split_build(index, false, false, scope) {
         tracing::warn!("watcher: incremental index failed: {}", e);
     }
     WatcherTickOutcome::Completed
+}
+
+/// Close every open `CodeIndex` the session holds: the active instance AND
+/// every LRU-cached one. Idle applies to the whole session (`last_activity`
+/// is touched by every tool call), and a non-active LRU entry would otherwise
+/// keep its DB pool, write connection, and seed/catalog caches alive until 16
+/// other projects pushed it out of the cache. Entries stay in the LRU
+/// (`close()` keeps `project_path` and the build gate) and reopen
+/// transparently on the next use. Returns how many instances were closed.
+async fn close_idle_instances(
+    active: &Arc<tokio::sync::RwLock<ProjectServices>>,
+    project_cache: &Arc<tokio::sync::Mutex<LruCache<PathBuf, ProjectServices>>>,
+) -> usize {
+    let mut indexes: Vec<SharedCodeIndex> = vec![active.read().await.index()];
+    {
+        let cache = project_cache.lock().await;
+        indexes.extend(cache.iter().map(|(_, services)| services.index()));
+    }
+    let mut closed = 0usize;
+    for index in indexes {
+        let mut guard = match index.write() {
+            Ok(g) => g,
+            Err(_) => continue,
+        };
+        if guard.project_path.is_some() && !guard.is_closed() {
+            guard.close();
+            closed += 1;
+        }
+    }
+    closed
 }
 
 async fn active_idle_timeout_secs(active: &tokio::sync::RwLock<ProjectServices>) -> u64 {
@@ -617,6 +664,53 @@ mod tests {
             generation,
             "fresh index must not be rebuilt by a second maybe_auto_index"
         );
+    }
+
+    /// Idle eviction must close EVERY cached instance, not just the active
+    /// one: before the fix, a non-active project parked in the 16-slot LRU
+    /// kept its DB pool, write connection, and seed/catalog caches alive
+    /// indefinitely (idle eviction only ever touched the active index).
+    #[tokio::test(flavor = "multi_thread")]
+    async fn close_idle_instances_closes_cached_non_active_projects() {
+        let dir_a = TempDir::new().unwrap();
+        std::fs::write(dir_a.path().join("lib.rs"), "pub fn a() -> i32 { 1 }\n").unwrap();
+        let dir_b = TempDir::new().unwrap();
+        std::fs::write(dir_b.path().join("lib.rs"), "pub fn b() -> i32 { 2 }\n").unwrap();
+
+        // A is created first, then B becomes active; A stays cached non-active.
+        let session = ProjectSession::new(Some(dir_a.path()));
+        let index_a = session.active_index().await;
+        session
+            .set_active_project(dir_b.path().to_path_buf())
+            .await
+            .unwrap();
+        let index_b = session.active_index().await;
+        assert!(!Arc::ptr_eq(&index_a, &index_b), "B must be a new instance");
+
+        let closed = close_idle_instances(&session.active, &session.project_cache).await;
+        assert_eq!(
+            closed, 2,
+            "both active B and cached non-active A must close"
+        );
+        assert!(
+            index_a.read().unwrap().is_closed(),
+            "cached A must be closed"
+        );
+        assert!(
+            index_b.read().unwrap().is_closed(),
+            "active B must be closed"
+        );
+
+        // The cached entry must still reopen transparently on the next use.
+        let reopened = session
+            .index_for_project_path(Some(dir_a.path().to_str().unwrap()))
+            .await
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&index_a, &reopened),
+            "LRU must reuse instance A"
+        );
+        assert!(!reopened.read().unwrap().is_closed(), "A must be reopened");
     }
 
     /// An idle-evicted NON-active project must reopen transparently when the

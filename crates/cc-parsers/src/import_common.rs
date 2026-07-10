@@ -101,10 +101,7 @@ mod tests {
     #[test]
     fn last_segment_splits_on_separator() {
         assert_eq!(last_segment("java.util.List", '.').as_deref(), Some("List"));
-        assert_eq!(
-            last_segment("encoding/json", '/').as_deref(),
-            Some("json")
-        );
+        assert_eq!(last_segment("encoding/json", '/').as_deref(), Some("json"));
         // No separator: whole string is the last segment.
         assert_eq!(last_segment("fmt", '/').as_deref(), Some("fmt"));
         // Empty string still yields Some("") to match rsplit(..).next().

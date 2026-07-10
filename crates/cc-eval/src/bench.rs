@@ -167,11 +167,7 @@ pub fn run_benchmark_named(
             warm.sort_unstable();
 
             let total_output: usize = group.iter().map(|m| m.output_bytes).sum();
-            let avg_output = if cases_count > 0 {
-                total_output / cases_count
-            } else {
-                0
-            };
+            let avg_output = total_output.checked_div(cases_count).unwrap_or(0);
 
             ToolBenchmark {
                 tool,

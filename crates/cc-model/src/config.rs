@@ -829,10 +829,7 @@ pub fn find_project_root_with_marker(start: Option<&Path>) -> Option<PathBuf> {
         if candidate.join(".git").exists() || candidate.join(CONFIG_FILE_NAME).exists() {
             return Some(candidate.to_path_buf());
         }
-        match candidate.parent() {
-            Some(parent) => candidate = parent,
-            None => return None,
-        }
+        candidate = candidate.parent()?;
     }
 }
 

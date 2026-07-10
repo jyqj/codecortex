@@ -30,7 +30,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use cc_db::index_db::{FileFrameworkRecord, FileFrameworkSignal, IndexDb, RepoFrameworkRecord};
-use cc_model::{CcError, CcResult};
+use cc_model::CcResult;
 
 mod activation;
 mod file_path;
@@ -80,8 +80,12 @@ pub struct FileFrameworkDetection {
 // ---------------------------------------------------------------------------
 
 /// Read-only inputs shared by every per-file detection signal scan.
+///
+/// `scan` is a cc-db [`FrameworkScanSession`]: one pooled connection whose
+/// `prepare_cached` statements survive across the whole multi-file loop, so
+/// per-file signal queries never recompile (see the session docs in cc-db).
 pub(crate) struct SignalContext<'a> {
-    pub(crate) conn: &'a rusqlite::Connection,
+    pub(crate) scan: &'a cc_db::FrameworkScanSession,
     pub(crate) file_path: &'a str,
 }
 
@@ -138,24 +142,25 @@ fn detection_entry<'a>(
 /// Detect frameworks for a single file by querying its imports, file path,
 /// route_edges, and symbol patterns from the index database.
 pub fn detect_file_frameworks(db: &IndexDb, file_path: &str) -> Vec<FileFrameworkDetection> {
-    let conn = match db.reads().read_conn() {
-        Ok(c) => c,
+    let scan = match db.framework_scan() {
+        Ok(s) => s,
         Err(_) => return Vec::new(),
     };
-    detect_file_frameworks_conn(&conn, file_path)
+    detect_file_frameworks_scan(&scan, file_path)
 }
 
-/// Detect frameworks for a single file using an existing read connection.
+/// Detect frameworks for a single file using an existing scan session.
 ///
-/// Split out from [`detect_file_frameworks`] so the full-repo scan can reuse one
-/// pooled connection and `prepare_cached` statements across all files, instead
-/// of re-acquiring a connection and recompiling 4 queries per file.
-fn detect_file_frameworks_conn(
-    conn: &rusqlite::Connection,
+/// Split out from [`detect_file_frameworks`] so the full-repo scan can reuse
+/// one session (pooled connection + `prepare_cached` statements) across all
+/// files, instead of re-acquiring a connection and recompiling 4 queries per
+/// file.
+fn detect_file_frameworks_scan(
+    scan: &cc_db::FrameworkScanSession,
     file_path: &str,
 ) -> Vec<FileFrameworkDetection> {
     let mut detections: HashMap<String, FileFrameworkDetection> = HashMap::new();
-    let ctx = SignalContext { conn, file_path };
+    let ctx = SignalContext { scan, file_path };
 
     for spec in signal_registry() {
         (spec.detect)(&ctx, &mut detections);
@@ -173,57 +178,32 @@ fn detect_file_frameworks_conn(
 
 /// Aggregate per-file detections + repo-level signals into a repo framework set.
 pub fn detect_repo_frameworks(db: &IndexDb, project_path: &Path) -> Vec<FileFrameworkDetection> {
-    let conn = match db.reads().read_conn() {
-        Ok(c) => c,
-        Err(_) => return Vec::new(),
-    };
-
     let mut repo_scores: HashMap<String, FileFrameworkDetection> = HashMap::new();
 
     // 1. Aggregate from frameworks (file scope) already persisted
-    if let Ok(mut stmt) = conn.prepare(
-        "SELECT framework_key, COUNT(*) as cnt, MAX(confidence) as max_conf \
-         FROM frameworks WHERE scope='file' GROUP BY framework_key",
-    ) {
-        if let Ok(rows) = stmt.query_map([], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                row.get::<_, i64>(1)?,
-                row.get::<_, f64>(2)?,
-            ))
-        }) {
-            for row in rows.flatten() {
-                let (fw_key, count, max_conf) = row;
-                // Repo confidence: max file confidence + breadth bonus
-                let breadth_bonus = (count as f64 * 0.05).min(0.25);
-                let confidence = (max_conf + breadth_bonus).min(0.95);
-                repo_scores.insert(
-                    fw_key.clone(),
-                    FileFrameworkDetection {
-                        framework_key: fw_key,
-                        confidence,
-                        signals: vec![
-                            format!("file_count:{}", count),
-                            format!("max_file_conf:{:.2}", max_conf),
-                        ],
-                    },
-                );
-            }
-        }
+    for (fw_key, count, max_conf) in db.reads().file_framework_aggregates().unwrap_or_default() {
+        // Repo confidence: max file confidence + breadth bonus
+        let breadth_bonus = (count as f64 * 0.05).min(0.25);
+        let confidence = (max_conf + breadth_bonus).min(0.95);
+        repo_scores.insert(
+            fw_key.clone(),
+            FileFrameworkDetection {
+                framework_key: fw_key,
+                confidence,
+                signals: vec![
+                    format!("file_count:{}", count),
+                    format!("max_file_conf:{:.2}", max_conf),
+                ],
+            },
+        );
     }
 
     // 2. Route-edge framework signal
-    if let Ok(mut stmt) = conn.prepare(
-        "SELECT DISTINCT framework FROM routes WHERE framework IS NOT NULL AND framework != ''",
-    ) {
-        if let Ok(rows) = stmt.query_map([], |row| row.get::<_, String>(0)) {
-            for fw in rows.flatten() {
-                if let Some(fw_key) = normalize_route_framework(&fw) {
-                    let det = detection_entry(&mut repo_scores, fw_key);
-                    det.confidence = (det.confidence + WEIGHT_ROUTE_FRAMEWORK).min(0.95);
-                    det.signals.push(format!("route_framework:{}", fw));
-                }
-            }
+    for fw in db.reads().distinct_route_frameworks().unwrap_or_default() {
+        if let Some(fw_key) = normalize_route_framework(&fw) {
+            let det = detection_entry(&mut repo_scores, fw_key);
+            det.confidence = (det.confidence + WEIGHT_ROUTE_FRAMEWORK).min(0.95);
+            det.signals.push(format!("route_framework:{}", fw));
         }
     }
 
@@ -252,27 +232,19 @@ pub fn detect_and_persist_frameworks(db: &IndexDb, project_path: &Path) -> CcRes
     use crate::indexer_phases::time_step;
 
     // 1. Gather all file paths
-    let file_paths: Vec<String> = time_step("write", "fw_list_files", || -> CcResult<_> {
-        let conn = db.reads().read_conn()?;
-        let mut stmt = conn
-            .prepare("SELECT file_path FROM files")
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        let rows = stmt
-            .query_map([], |row| row.get::<_, String>(0))
-            .map_err(|e| CcError::Database(e.to_string()))?;
-        Ok(rows.filter_map(|r| r.ok()).collect())
-    })?;
+    let file_paths: Vec<String> =
+        time_step("write", "fw_list_files", || db.reads().list_file_paths())?;
 
-    // 2. Per-file detection — reuse one read connection across all files so each
-    //    query is prepared once (cached) rather than re-acquiring a connection
-    //    and recompiling 4 statements per file. Scoped so the connection is
-    //    released before the write below.
+    // 2. Per-file detection — one scan session across all files so each
+    //    query is prepared once (cached) rather than re-acquiring a
+    //    connection and recompiling 4 statements per file. Scoped so the
+    //    pooled connection is released before the write below.
     let detect_start = std::time::Instant::now();
     let mut file_records: Vec<FileFrameworkRecord> = Vec::new();
     {
-        let conn = db.reads().read_conn()?;
+        let scan = db.framework_scan()?;
         for fp in &file_paths {
-            let detections = detect_file_frameworks_conn(&conn, fp);
+            let detections = detect_file_frameworks_scan(&scan, fp);
             if !detections.is_empty() {
                 let signals: Vec<FileFrameworkSignal> = detections
                     .into_iter()
@@ -340,25 +312,21 @@ pub fn detect_and_persist_frameworks_incremental(
         return Ok(());
     }
 
-    // Per-file incremental update — one pooled read connection across the
-    // loop so `prepare_cached` statements are reused per file (mirrors the
-    // full-scan path). Scoped so the connection is released before the write.
+    // Per-file incremental update — one scan session across the loop so
+    // `prepare_cached` statements are reused per file (mirrors the
+    // full-scan path). Scoped so the pooled connection is released before
+    // the write.
     let detect_start = std::time::Instant::now();
     let mut file_records: Vec<FileFrameworkRecord> = Vec::new();
     {
-        let conn = db.reads().read_conn()?;
+        let scan = db.framework_scan()?;
         for &fp in changed_files {
             // Check the file still exists in the index
-            let exists = conn
-                .prepare_cached("SELECT 1 FROM files WHERE file_path = ?1")
-                .ok()
-                .map(|mut stmt| stmt.query_row(rusqlite::params![fp], |_| Ok(())).is_ok())
-                .unwrap_or(false);
-            if !exists {
+            if !scan.file_is_indexed(fp) {
                 continue;
             }
 
-            let detections = detect_file_frameworks_conn(&conn, fp);
+            let detections = detect_file_frameworks_scan(&scan, fp);
             let signals: Vec<FileFrameworkSignal> = detections
                 .into_iter()
                 .map(|d| {
@@ -404,44 +372,9 @@ pub fn get_frameworks_for_files(
     db: &IndexDb,
     file_paths: &[&str],
 ) -> HashMap<String, Vec<(String, f64)>> {
-    if file_paths.is_empty() {
-        return HashMap::new();
-    }
-    let conn = match db.reads().read_conn() {
-        Ok(c) => c,
-        Err(_) => return HashMap::new(),
-    };
-    let placeholders: String = file_paths.iter().map(|_| "?").collect::<Vec<_>>().join(",");
-    let sql = format!(
-        "SELECT scope_id, framework_key, confidence FROM frameworks \
-         WHERE scope='file' AND scope_id IN ({}) ORDER BY confidence DESC",
-        placeholders
-    );
-    let mut stmt = match conn.prepare(&sql) {
-        Ok(s) => s,
-        Err(_) => return HashMap::new(),
-    };
-    let params: Vec<&dyn rusqlite::types::ToSql> = file_paths
-        .iter()
-        .map(|p| p as &dyn rusqlite::types::ToSql)
-        .collect();
-    let rows = match stmt.query_map(params.as_slice(), |row| {
-        Ok((
-            row.get::<_, String>(0)?,
-            row.get::<_, String>(1)?,
-            row.get::<_, f64>(2)?,
-        ))
-    }) {
-        Ok(r) => r,
-        Err(_) => return HashMap::new(),
-    };
-
-    let mut result: HashMap<String, Vec<(String, f64)>> = HashMap::new();
-    for row in rows.flatten() {
-        let (fp, fw_key, conf) = row;
-        result.entry(fp).or_default().push((fw_key, conf));
-    }
-    result
+    db.reads()
+        .frameworks_for_files(file_paths)
+        .unwrap_or_default()
 }
 
 /// Return just the framework keys detected at repo level.

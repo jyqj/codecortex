@@ -404,7 +404,8 @@ pub struct NodeParams {
     /// - `"trail"` – caller / callee edges and metrics (default)
     /// - `"source"` – full source code of the symbol
     /// - `"outline"` – signature and member list without body
-    /// - `"summary"` – AI-generated one-paragraph summary
+    /// - `"summary"` – heuristic one-paragraph file summary computed at
+    ///   index time (no model involved)
     #[serde(default = "default_include_trail")]
     pub include: String,
 
@@ -733,8 +734,8 @@ pub struct ImpactParams {
     #[serde(default)]
     pub base_branch: Option<String>,
 
-    /// Granularity of the analysis: `"file"`, `"symbol"`, `"package"`, or `"community"`.
-    /// Default `"file"`.
+    /// Cycle-detection granularity, consumed by `scope="circular"` only:
+    /// `"file"`, `"package"`, or `"community"`. Default `"file"`.
     #[serde(default = "default_granularity")]
     pub granularity: String,
 
@@ -799,6 +800,14 @@ impl ImpactParams {
             &self.scope,
             &["changes", "tests", "dead_code", "circular", "dependents"],
             "scope",
+        )?;
+        // Only scope="circular" consumes granularity, but validating it
+        // unconditionally keeps typos failing fast (-32602 with the legal
+        // values) instead of surfacing later as an internal error.
+        validate_enum(
+            &self.granularity,
+            &["file", "package", "community"],
+            "granularity",
         )
     }
 }

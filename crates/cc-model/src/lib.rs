@@ -1,3 +1,9 @@
+//! Shared data types for the CodeCortex workspace: symbols/edges/chunks,
+//! `ProjectConfig` + `IndexPaths`, the `CcError`/`CcResult` error surface,
+//! the graph catalog (`tool_graph_subsets`), and the `GraphExplain` /
+//! `BuildExplain` explainability envelopes. Depends on no other workspace
+//! crate — everything else composes on top of it (see `DESIGN.md`).
+
 pub mod architecture;
 pub mod build_explain;
 pub mod chunk;

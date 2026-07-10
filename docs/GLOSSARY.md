@@ -101,10 +101,29 @@ CodeCortex 文档与代码共用的术语。按主题分组，括号内是代码
 - **输出预算（output budget）**：工具响应的出口侧限额；三种策略
   （ByteCap / ItemCap / Passthrough）见
   [MCP_TOOLS.md](MCP_TOOLS.md#输出预算)。
-- **空闲驱逐（idle eviction）**：MCP 无活动超时后关闭活动项目的 DB
-  句柄，下次调用透明重开。
+- **空闲驱逐（idle eviction）**：MCP 无活动超时后关闭会话持有的全部
+  项目实例（active + LRU 缓存）的 DB 句柄，下次调用透明重开。
 - **acquire-before-drain**：watcher 先抢到构建席位再消费事件队列的
   无损协议。
 - **置信度分层（confidence tier）**：提取来源的可信度档
   （Generic 0.3 → Verified 0.95），与解析期的
   `resolution_confidence` 是两个独立概念。
+
+## 版本命名空间
+
+仓库里有四套互相独立、各管一事的版本号，彼此不联动：
+
+| 版本号 | 当前值 | 含义 | 位置 |
+|---|---|---|---|
+| Cargo workspace 版本 | `1.0.0` | 发布的 crate 版本 | 根 `Cargo.toml` `workspace.package` |
+| 设计文档修订号 | `2.4` | `DESIGN.md` 自身的修订版本 | `DESIGN.md` 头部 |
+| schema 版本 | `v6` | SQLite 表结构版本（`user_version`），不匹配即重建 | `cc-db/src/index_migrate.rs` `CURRENT_SCHEMA_VERSION` |
+| `index_version` | `1.0.0` | 写进 `metadata` 表的索引产物语义版本 | `indexer_phases/write.rs` |
+
+## 哈希分工
+
+两个哈希库并存是分工而非重复：**blake3** 负责语义/ID 域（`StableId`、
+导出指纹、合成边 ID），**sha2 (SHA-256)** 负责文件内容哈希（scan/diff
+的变更确认、config-linker 的内容签名），与外部工具的 digest 习惯一致；
+`signature_agg` 的行哈希聚合另用 std `DefaultHasher`（进程内比较，不需
+密码学强度）。

@@ -549,7 +549,7 @@ impl PythonParser {
                         "diag:{}:{}:{}",
                         file_path,
                         line,
-                        &StableId::edge_id(
+                        StableId::edge_id(
                             "diag",
                             file_path,
                             line,

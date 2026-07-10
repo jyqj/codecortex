@@ -388,11 +388,7 @@ impl Indexer {
             && recorded_sig.and_then(|s| s.parse::<u64>().ok()) == Some(sig);
 
         if unchanged && batch_empty {
-            build_explain.record_gate(
-                "config_link",
-                false,
-                "signature unchanged and batch empty",
-            );
+            build_explain.record_gate("config_link", false, "signature unchanged and batch empty");
             tracing::debug!("config linker: signature unchanged and batch empty, skipping");
             return Ok(None);
         }

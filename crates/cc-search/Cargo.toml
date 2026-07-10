@@ -5,7 +5,10 @@ edition.workspace = true
 
 [features]
 default = ["regexp-udf"]
-regexp-udf = ["rusqlite/functions"]
+# Historical toggle kept for CLI compatibility. The REGEXP UDF is registered
+# unconditionally by cc-db on every read-pool connection (its rusqlite dep
+# always carries the `functions` feature), so this forwards to nothing.
+regexp-udf = []
 
 [dependencies]
 cc-model = { path = "../cc-model" }
@@ -14,8 +17,10 @@ regex.workspace = true
 tracing.workspace = true
 serde.workspace = true
 serde_json.workspace = true
-rusqlite.workspace = true
 lru.workspace = true
 
 [dev-dependencies]
+# Tests seed the index DB with raw SQL through their own connections;
+# production code reads exclusively through cc-db's typed facets.
+rusqlite.workspace = true
 tempfile = "3"

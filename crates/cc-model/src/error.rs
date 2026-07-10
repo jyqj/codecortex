@@ -31,8 +31,41 @@ pub enum CcError {
         current_epoch: u64,
     },
 
+    /// A structural index build is already running for this project. The
+    /// request is safe to retry after the in-flight build completes.
+    #[error("index build already in progress")]
+    BuildBusy,
+
+    /// Client-supplied arguments failed handler-level validation (missing
+    /// required parameter, unknown action, malformed path, …). Mapped to
+    /// JSON-RPC `-32602` invalid-params at the MCP exit; the payload is the
+    /// full human-readable message.
+    #[error("{0}")]
+    InvalidParams(String),
+
+    /// An explicit lookup (symbol / type / uid) matched nothing. Only used
+    /// where the tool contract treats a miss as an error — most tools return
+    /// an Ok envelope with an `error` field instead (see MCP_TOOLS.md). The
+    /// payload is the full human-readable message.
+    #[error("{0}")]
+    NotFound(String),
+
+    /// The runtime has no open index database (project not set, or the
+    /// handle was closed by idle eviction and not yet reopened).
+    #[error("no index database")]
+    IndexUnavailable,
+
     #[error("{0}")]
     Other(String),
+}
+
+impl CcError {
+    /// Whether the operation is safe to retry as-is once the transient
+    /// condition (concurrent build / stale prepare) clears. Surfaced to MCP
+    /// clients as `data.retryable` on the JSON-RPC error.
+    pub fn is_retryable(&self) -> bool {
+        matches!(self, CcError::BuildBusy | CcError::StalePreparedBuild { .. })
+    }
 }
 
 pub type CcResult<T> = Result<T, CcError>;

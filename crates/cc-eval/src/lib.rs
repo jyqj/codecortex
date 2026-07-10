@@ -1,3 +1,10 @@
+//! Retrieval-quality and latency evaluation harness. Drives the real MCP
+//! wire path (in-process duplex JSON-RPC against the rmcp router, schema
+//! validation and output budgets included) over fixture projects, a 94-case
+//! corpus, and deterministic synthetic repositories (`synth`). Produces the
+//! reports under `docs/benchmarks/`. See `docs/TEST_PLAN.md` and
+//! `docs/BENCHMARK.md`.
+
 pub mod bench;
 pub mod corpus;
 pub mod report;

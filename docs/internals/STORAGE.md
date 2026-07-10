@@ -32,6 +32,10 @@
   同样由 `symbols_seed` token 证明，`write_incremental_batch` 为此把事务
   内观察到的 token 前后值作为 `SeedTokenSpan` 返回给上层折叠）。见
   [INDEXING.md](INDEXING.md#符号目录跨构建缓存catalog-cache)。
+- **file-state 快照缓存**（`file_state_cache.rs`）：scan/diff 用的
+  `files` 表元数据（hash/mtime/size）跨构建缓存，同一宿主、同一模式——
+  以写时维护的 `files_state` 聚合为有效性 token，命中省去每次增量构建
+  全表重载 `get_file_state` 的 O(repo) 成本；增量批提交后原位应用差分。
 
 连接初始化 PRAGMA：
 
@@ -55,7 +59,7 @@
 | `RetrievalReadModel` | `.retrieval()` | FTS5/trigram **检索**查询（file-summary bm25、path/symbol token 批量命中、chunk 批量取、symbol seed/uid 查找）——cc-search 的 preselect 与 graph lane 消费。SQL 直接拥有在 `impl RetrievalReadModel`，不经 `impl IndexDb` 转发 |
 | `GraphReads` | `.graph_reads()` / `GraphReads::new` | 任务形态的**图读**查询（邻接/impact/dead-code、imports/communities、HTTP/async 桥、infra 绑定）——cc-server 的 graph/impact/exploration 工具消费。15 个核心 SQL 直接拥有在 `impl GraphReads`（`self.db.read_conn` / `self.db.query_json`），不经 `impl IndexDb` 转发；另有 8 个仍借用 `IndexDb` 通用方法（`call_uid_edges_lite` 等在 `index_db_graph.rs`）。`ReadOps` 的图读 delegate 改转发到 `.graph_reads()`，保留通用读入口 |
 | `WriteOps` | `.writes()` | 所有推进 epoch 的变更：批量写、边/证据写入、`set_metadata`、`begin_unit_of_work`。这是写方法的唯一公开路径（编译期写隔离） |
-| `MaintenanceOps` | `.admin()` | 重建协议（`rebuild_with_temp_db` / `rebuild_with_direct_writer`）、`checkpoint_wal*`、`instance_id` |
+| `MaintenanceOps` | `.admin()` | 重建协议（`rebuild_with_temp_db` / `rebuild_with_direct_writer`，及拆半程的 `build_temp_db_staging` + `swap_rebuild_staging`）、`checkpoint_wal*`、`instance_id` |
 
 ### UnitOfWork：多语句写的唯一缝
 
@@ -157,6 +161,14 @@ SQLite auxiliary data 缓存：常量模式每条语句编译一次，而不是�
 
 `max(floor, live) + 1` 保证重建期间并发落地的增量写不会让 epoch 倒退，
 下游 epoch 键控缓存不会读到"回到过去"的版本号。
+
+协议本身由两个可独立调用的半程组成：`build_temp_db_staging`（步骤
+1–2，产出 staging 文件并返回 epoch floor）与 `swap_rebuild_staging`
+（步骤 3）。cc-index 的全量构建在 prepare 阶段（不持索引写锁）就完成
+staging 写入，commit 阶段只做换库——`PreparedBuild` 因此无需把全部
+write_units/chunk blob 驻留内存到 commit（见 INDEXING.md）。staging
+写入只触碰临时文件，不违反"prepare 不写索引"的锁契约；换库前
+`swap_rebuild_staging` 校验 staging 文件仍存在。
 
 ### 批量重建的 PRAGMA 切换
 

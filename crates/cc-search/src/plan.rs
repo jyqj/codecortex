@@ -173,12 +173,11 @@ impl SearchPlan {
         self.filters.passes(file_path, language)
     }
 
-    pub(crate) fn grep_scope_sql(&self) -> (String, Vec<String>) {
-        self.filters.grep_chunk_scope_sql()
-    }
-
-    pub(crate) fn lexical_scope_sql(&self, limit: usize) -> (String, Vec<String>) {
-        self.filters.fts_chunk_scope_sql(limit)
+    /// Structured chunk-scan scope for the lexical/grep lanes; the scope SQL
+    /// itself is owned by cc-db (`RetrievalReadModel::fts_chunk_candidates` /
+    /// `scan_chunks_for_grep`).
+    pub(crate) fn chunk_scope(&self) -> cc_db::ChunkScope {
+        self.filters.chunk_scope()
     }
 
     pub(crate) fn lane_ranks<'a>(&self, outcomes: &'a [LaneOutcome]) -> LaneRanks<'a> {
@@ -456,87 +455,18 @@ impl MaterializedFilters {
         true
     }
 
-    pub(crate) fn grep_chunk_scope_sql(&self) -> (String, Vec<String>) {
-        let mut sql =
-            "SELECT chunk_id, file_path, language, text, text_encoding FROM chunks".to_string();
-        let mut clauses: Vec<String> = Vec::new();
-        let mut params = Vec::new();
-
-        self.push_chunk_scope_clauses(&mut clauses, &mut params, "file_path", "language");
-
-        if !clauses.is_empty() {
-            sql.push_str(" WHERE ");
-            sql.push_str(&clauses.join(" AND "));
-        }
-
-        // Without a file scope (preselect found nothing and the caller gave
-        // no file_paths) the scan is unbounded, so order it by recency —
-        // chunks are insert-only per write, so descending rowid puts the
-        // most recently indexed files first and the grep lane's scan budget
-        // (`search.grep_scan_cap`) is spent on the freshest code.  SQLite
-        // walks the table b-tree backwards for this — no sort step.  Scoped
-        // scans keep SQLite's natural probe order, matching prior behaviour.
-        let has_file_scope = self
-            .file_paths
-            .as_ref()
-            .map(|files| !files.is_empty())
-            .unwrap_or(false);
-        if !has_file_scope {
-            sql.push_str(" ORDER BY rowid DESC");
-        }
-
-        (sql, params)
-    }
-
-    pub(crate) fn fts_chunk_scope_sql(&self, limit: usize) -> (String, Vec<String>) {
-        let mut sql =
-            "SELECT chunks_fts.chunk_id, chunks.file_path, chunks.language, bm25(chunks_fts, 1.0, 1.0, 2.0) AS score
-             FROM chunks_fts
-             JOIN chunks ON chunks.chunk_id = chunks_fts.chunk_id
-             WHERE chunks_fts MATCH ?"
-                .to_string();
-        let mut clauses: Vec<String> = Vec::new();
-        let mut params = Vec::new();
-
-        self.push_chunk_scope_clauses(
-            &mut clauses,
-            &mut params,
-            "chunks.file_path",
-            "chunks.language",
-        );
-
-        if !clauses.is_empty() {
-            sql.push_str(" AND ");
-            sql.push_str(&clauses.join(" AND "));
-        }
-        sql.push_str(" ORDER BY score LIMIT ");
-        sql.push_str(&limit.to_string());
-
-        (sql, params)
-    }
-
-    fn push_chunk_scope_clauses(
-        &self,
-        clauses: &mut Vec<String>,
-        params: &mut Vec<String>,
-        file_path_column: &str,
-        language_column: &str,
-    ) {
-        if let Some(prefix) = self.path_prefix.as_ref().filter(|p| !p.is_empty()) {
-            clauses.push(format!("{file_path_column} LIKE ? ESCAPE '\\'"));
-            params.push(format!("{}%", escape_like(prefix)));
-        }
-
-        if let Some(languages) = self.languages.as_ref().filter(|v| !v.is_empty()) {
-            let placeholders = sql_placeholders(languages.len());
-            clauses.push(format!("{language_column} IN ({placeholders})"));
-            params.extend(languages.iter().map(|lang| lang.as_str().to_string()));
-        }
-
-        if let Some(files) = self.file_paths.as_ref().filter(|v| !v.is_empty()) {
-            let placeholders = sql_placeholders(files.len());
-            clauses.push(format!("{file_path_column} IN ({placeholders})"));
-            params.extend(files.iter().cloned());
+    /// Structured scope for cc-db's chunk-scan queries: same filters the
+    /// in-memory `passes` check applies, expressed as data instead of SQL.
+    /// Language filters are converted to their stored string form
+    /// (`Language::as_str()`).
+    pub(crate) fn chunk_scope(&self) -> cc_db::ChunkScope {
+        cc_db::ChunkScope {
+            path_prefix: self.path_prefix.clone(),
+            languages: self
+                .languages
+                .as_ref()
+                .map(|langs| langs.iter().map(|lang| lang.as_str().to_string()).collect()),
+            file_paths: self.file_paths.clone(),
         }
     }
 
@@ -668,17 +598,6 @@ fn dedupe_reasons(reasons: &mut Vec<String>) {
     reasons.retain(|r| seen.insert(r.clone()));
 }
 
-fn sql_placeholders(count: usize) -> String {
-    vec!["?"; count].join(",")
-}
-
-fn escape_like(value: &str) -> String {
-    value
-        .replace('\\', "\\\\")
-        .replace('%', "\\%")
-        .replace('_', "\\_")
-}
-
 pub(crate) fn parse_language_name(value: &str) -> Language {
     Language::from_name(value)
 }
@@ -753,8 +672,12 @@ mod tests {
         assert_eq!(default_preselect_limit(3, None), 60); // 60.max(3*12=36) => 60
     }
 
+    /// The structured [`cc_db::ChunkScope`] handed to cc-db must carry
+    /// exactly the request filters, with languages converted to their stored
+    /// string form. (Scope→SQL rendering — LIKE escaping, IN placeholders,
+    /// recency ordering — is pinned by cc-db's own retrieval tests.)
     #[test]
-    fn materialized_grep_scope_sql_pushes_filters_into_db_query() {
+    fn materialized_filters_map_to_chunk_scope() {
         let request = SearchRequest {
             path_prefix: Some("src/%special".into()),
             languages: Some(vec![Language::Rust, Language::Python]),
@@ -762,73 +685,21 @@ mod tests {
             ..Default::default()
         };
 
-        let (sql, params) = MaterializedFilters::from_request(&request).grep_chunk_scope_sql();
-
-        assert!(sql.contains("file_path LIKE ? ESCAPE '\\'"));
-        assert!(sql.contains("language IN (?,?)"));
-        assert!(sql.contains("file_path IN (?,?)"));
-        assert!(
-            !sql.contains("ORDER BY"),
-            "file-scoped grep scans keep SQLite's natural probe order: {sql}"
+        let scope = MaterializedFilters::from_request(&request).chunk_scope();
+        assert_eq!(scope.path_prefix.as_deref(), Some("src/%special"));
+        assert_eq!(
+            scope.languages,
+            Some(vec!["rust".to_string(), "python".to_string()])
         );
         assert_eq!(
-            params,
-            vec![
-                "src/\\%special%".to_string(),
-                "rust".to_string(),
-                "python".to_string(),
-                "src/lib.rs".to_string(),
-                "src/main.py".to_string()
-            ]
+            scope.file_paths,
+            Some(vec!["src/lib.rs".to_string(), "src/main.py".to_string()])
         );
-    }
 
-    #[test]
-    fn materialized_grep_scope_sql_orders_by_recency_without_file_scope() {
-        // No file_paths scope (preselect empty / no explicit files): the
-        // scan must walk most-recently-indexed chunks first so the grep
-        // lane's scan budget is spent on the freshest code.
-        let (sql, params) = MaterializedFilters::default().grep_chunk_scope_sql();
-        assert!(sql.ends_with("ORDER BY rowid DESC"), "got: {sql}");
-        assert!(params.is_empty());
-
-        // Non-file filters (prefix/language) don't bound cardinality, so
-        // they still get the recency ordering.
-        let request = SearchRequest {
-            path_prefix: Some("src/".into()),
-            languages: Some(vec![Language::Rust]),
-            ..Default::default()
-        };
-        let (sql, _) = MaterializedFilters::from_request(&request).grep_chunk_scope_sql();
-        assert!(sql.ends_with("ORDER BY rowid DESC"), "got: {sql}");
-    }
-
-    #[test]
-    fn materialized_fts_scope_sql_pushes_filters_before_limit() {
-        let request = SearchRequest {
-            path_prefix: Some("src/%special".into()),
-            languages: Some(vec![Language::Rust, Language::Python]),
-            file_paths: Some(vec!["src/lib.rs".into(), "src/main.py".into()]),
-            ..Default::default()
-        };
-
-        let (sql, params) = MaterializedFilters::from_request(&request).fts_chunk_scope_sql(7);
-
-        assert!(sql.contains("WHERE chunks_fts MATCH ? AND"));
-        assert!(sql.contains("chunks.file_path LIKE ? ESCAPE '\\'"));
-        assert!(sql.contains("chunks.language IN (?,?)"));
-        assert!(sql.contains("chunks.file_path IN (?,?)"));
-        assert!(sql.ends_with("ORDER BY score LIMIT 7"));
-        assert_eq!(
-            params,
-            vec![
-                "src/\\%special%".to_string(),
-                "rust".to_string(),
-                "python".to_string(),
-                "src/lib.rs".to_string(),
-                "src/main.py".to_string()
-            ]
-        );
+        let empty = MaterializedFilters::default().chunk_scope();
+        assert_eq!(empty.path_prefix, None);
+        assert_eq!(empty.languages, None);
+        assert_eq!(empty.file_paths, None);
     }
 
     #[test]

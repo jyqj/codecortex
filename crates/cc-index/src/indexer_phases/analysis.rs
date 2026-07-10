@@ -44,7 +44,9 @@ impl Indexer {
     pub(crate) fn phase_analysis_compute(
         &self,
         project_path: &Path,
+        full: bool,
         write_units: &[FileWriteUnit],
+        _parsed_file_paths: &[String],
         route_nodes: &[RouteNodeRecord],
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<AnalysisPlan> {
@@ -117,10 +119,14 @@ impl Indexer {
             });
             if !infra_nodes.is_empty() || !infra_edges.is_empty() {
                 // Bind infra nodes to code symbols before persisting
-                let bind_symbols: Vec<_> = write_units
-                    .iter()
-                    .flat_map(|u| u.outcome.symbols.iter().cloned())
-                    .collect();
+                let bind_symbols: Vec<_> = if full {
+                    self.db.retrieval().symbol_records_for_infra_binding()?
+                } else {
+                    write_units
+                        .iter()
+                        .flat_map(|u| u.outcome.symbols.iter().cloned())
+                        .collect()
+                };
                 crate::infra_pass::bind_infra_to_symbols(&mut infra_nodes, &bind_symbols);
 
                 // Match binding target URLs to known route nodes

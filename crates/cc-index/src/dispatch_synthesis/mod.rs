@@ -304,7 +304,7 @@ mod tests {
         assert_eq!(count, 1, "should produce 1 call edge");
 
         // Verify the synthetic call edge via SQL.
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         let mut stmt = conn
             .prepare(
                 "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, synthesized_by, call_kind \
@@ -483,7 +483,7 @@ mod tests {
         assert_eq!(count, 1, "should produce 1 synthetic edge");
 
         // Verify the synthetic edge.
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         let mut stmt = conn
             .prepare(
                 "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, synthesized_by, dispatch_kind \
@@ -578,7 +578,7 @@ mod tests {
         assert_eq!(count, 0, "should skip due to fanout cap");
 
         // Verify no synthetic edges were created.
-        let conn = db.reads().read_conn().unwrap();
+        let conn = crate::test_seed::seed_conn(&db);
         let count: i64 = conn
             .query_row(
                 "SELECT COUNT(*) FROM call_edges WHERE synthesized_by = 'interface_dispatch'",

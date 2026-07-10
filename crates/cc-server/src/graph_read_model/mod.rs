@@ -37,6 +37,10 @@ use cache::{
 #[allow(unused_imports)] // re-exported for graph_type_hierarchy
 pub(crate) use projections::SemanticEdgeLite;
 
+/// Re-export: drop all process-global graph cache entries for one project
+/// identity (consumed by `CodeIndex::close`).
+pub(crate) use cache::evict_project;
+
 /// Lightweight symbol row used across impact/graph projections.
 pub(crate) use cc_db::index_db::SymbolLiteRow as GraphSymbolLite;
 
@@ -96,7 +100,9 @@ impl GraphReadModel {
         }
     }
 
-    #[allow(dead_code)]
+    /// Cache-identity accessor, used by tests asserting epoch-keyed
+    /// invalidation behavior.
+    #[cfg(test)]
     pub(crate) fn generation(&self) -> &GraphReadGeneration {
         &self.generation
     }
@@ -696,10 +702,7 @@ mod tests {
         let grm = GraphReadModel::without_http_bridges(Arc::clone(&db));
 
         // Capture the table schema, then drop it to force a query failure.
-        let schema: String = db
-            .reads()
-            .read_conn()
-            .unwrap()
+        let schema: String = crate::test_seed::seed_conn(&db)
             .query_row(
                 "SELECT sql FROM sqlite_master WHERE type='table' AND name='call_edges'",
                 [],

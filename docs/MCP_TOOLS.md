@@ -26,14 +26,33 @@
 - **集合上限**：`symbols[]` ≤ 10、文件列表 ≤ 200、`traces[]` ≤ 1000。
 - **枚举校验**：非法枚举值返回 `-32602` 并列出合法值。
 
+### 通用参数：`project_path`
+
+除 `index`（用 `path` 设定活动项目）外，所有工具都接受可选的
+`project_path`：给定时该次调用针对指定项目执行（命中项目会话的 16 槽
+LRU，必要时透明重开），不改变活动项目；省略时作用于当前活动项目。
+下文各工具的参数表不再重复列出。
+
 ### 错误包装
 
-- 参数问题 → JSON-RPC error `-32602`（invalid params）；
+Handler 全链路使用类型化错误（`cc_model::CcError`），仅在 MCP 出口
+（`mcp.rs` 的 `handler_error_data`）统一映射 JSON-RPC 错误码：
+
+- 参数问题 → JSON-RPC error `-32602`（invalid params）。包括 schema 层
+  `sanitize()` 失败，以及 handler 层的参数校验
+  （`CcError::InvalidParams`：缺必填参数、未知 action、路径越界等）；
 - 运行期失败 → JSON-RPC error `-32603`（internal error），消息为底层
   错误文本；
+- **瞬态可重试错误**额外携带 `data: {"retryable": true}`：
+  `CcError::BuildBusy`（"index build already in progress"，构建门被占）
+  与 `CcError::StalePreparedBuild`（跨进程写者抢先提交）。客户端可据此
+  程序化区分"稍后重试"与永久失败；其余错误不带 `data`；
 - "查无此物"通常**不是错误**：返回合法响应并携带空结果或
   `error` 字段（如 `node` 对不存在符号返回
   `{"query": …, "error": "symbol not found"}`），让 agent 能继续。
+  例外是显式定位类查询（如 `relations(kind="hierarchy")` 对不存在的
+  类型）：以 `CcError::NotFound` 报 `-32603`，消息以 "no symbol named …"
+  说明未命中原因。
 
 ### 输出预算
 
@@ -100,7 +119,8 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
 | `query` | 查询串 |
 | `mode` | `hybrid`（默认，FTS5+grep+图融合）/ `symbol`（符号名查找） |
 | `top_k`、`intent`、`exact` | 数量、意图（如 `fix`）、精确匹配开关 |
-| `boost_files` / `recent_files` / `pinned_files` / `path_prefix` 等 | 上下文加成与范围限定（见 [CONFIGURATION.md](CONFIGURATION.md#ranking)） |
+| `boost_files` / `recent_files` / `pinned_files` / `overlay_files` / `path_prefix` | 上下文加成与范围限定（见 [CONFIGURATION.md](CONFIGURATION.md#ranking)；`overlay_files` 是编辑器脏缓冲文件） |
+| `conversation_queries` / `file_preselect_limit` | 会话内先前查询（时近性加成）与文件预选数量上限 |
 
 响应：
 
@@ -131,7 +151,7 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
 | 参数 | 说明 |
 |---|---|
 | `symbol` | 符号名 |
-| `include` | `trail`（默认：callers+callees+源码）/ `source` / `outline` / `summary` |
+| `include` | `trail`（默认：callers+callees+源码）/ `source` / `outline` / `summary`（索引期启发式生成的文件摘要，非模型产物） |
 
 响应（`trail`）：`source`（`file_path`、行范围、正文）、`callers[]`、
 `callees[]`。符号不存在 → `{"query", "error": "symbol not found"}`；
@@ -156,8 +176,9 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 | 参数 | 说明 |
 |---|---|
 | `from`、`to` | 端点符号 |
+| `from_uid`、`to_uid` | 端点 UID（多候选歧义时按 `disambiguation[]` 提示精确指定） |
 | `source_mode` | `none` / `snippet` / `body` / `outline` |
-| `max_depth`、`max_snippet_lines` | 深度与片段控制 |
+| `max_depth`、`max_snippet_lines`、`include_source` | 深度与片段控制（`include_source` 是 `source_mode=snippet` 的旧式开关） |
 
 响应：`TracePathResult`——`paths[]`（每条是一个**名称路径数组**
 `Vec<String>`）、`nodes[]`（`TraceNode`：`uid`/`name`/`kind`/`file_path`/
@@ -174,7 +195,7 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 |---|---|
 | `symbol` | 符号名 |
 | `kind` | `callers` / `callees` / `both`（默认）/ `refs` / `hierarchy` |
-| `limit`、`direction` | `direction` 用于 hierarchy：`up` / `down` / `both` |
+| `limit`、`direction` | `direction` 用于 hierarchy：`up` / `down` / `both`（`ancestors` / `descendants` 是 up/down 的别名） |
 
 响应：`callers`/`callees` → `CallEdgeLite` 数组（`file_path`、`line`、
 `caller_symbol`?/`callee_symbol`、`caller_symbol_uid`?/`callee_symbol_uid`、
@@ -189,7 +210,9 @@ source/callers/callees）、`total_symbols`、`truncated`；`flow` 模式 →
 |---|---|
 | `scope` | `changes` / `tests` / `dead_code` / `circular` / `dependents` |
 | `files`、`base_branch` | 显式文件集或 git 基线（默认读工作区 diff） |
-| `granularity`、`confidence_threshold` | 粒度与置信度过滤 |
+| `granularity`、`confidence_threshold` | `granularity` 仅 `circular` 消费：`file`（默认）/ `package` / `community`；置信度过滤 |
+| `limit` | 返回符号数上限（受档位 `max_items` 再钳制；也是 dead_code / circular 的结果上限） |
+| `file_path` | `dead_code` 的范围过滤；`dependents` 的必填目标文件 |
 | `max_nodes` / `max_per_layer` | changes-scope 的 BFS 上限 |
 
 响应（按 `scope`）：

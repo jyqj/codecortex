@@ -190,7 +190,11 @@ impl SymbolCatalog {
             if let Some(ref uid) = entry.symbol_uid {
                 // uid is file-scoped, so the current mapping (last-wins)
                 // necessarily points at an entry of the same removed file.
-                if self.by_uid.get(uid).is_some_and(|i| removed_set.contains(i)) {
+                if self
+                    .by_uid
+                    .get(uid)
+                    .is_some_and(|i| removed_set.contains(i))
+                {
                     self.by_uid.remove(uid);
                 }
             }

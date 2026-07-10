@@ -33,12 +33,37 @@ impl CodeCortexMcpServer {
         self.project_session
             .index_for_project_path(project_path)
             .await
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))
+            .map_err(handler_error_data)
+    }
+}
+
+/// The single seam mapping typed handler errors ([`cc_model::CcError`]) to
+/// JSON-RPC errors, preserving the documented contract (MCP_TOOLS.md):
+///
+/// - client-input problems → `-32602` invalid params;
+/// - everything else → `-32603` internal error, message = the underlying
+///   error text.
+///
+/// Transient errors additionally carry `data.retryable = true`
+/// ([`CcError::is_retryable`]) so clients can programmatically distinguish
+/// retry-after-build errors from permanent failures.
+fn handler_error_data(e: cc_model::CcError) -> rmcp::ErrorData {
+    use cc_model::CcError;
+    match &e {
+        CcError::InvalidParams(_) => rmcp::ErrorData::invalid_params(e.to_string(), None),
+        _ if e.is_retryable() => rmcp::ErrorData::internal_error(
+            e.to_string(),
+            Some(serde_json::json!({ "retryable": true })),
+        ),
+        _ => rmcp::ErrorData::internal_error(e.to_string(), None),
     }
 }
 
 /// Run a tool handler on the blocking pool and apply the tool's output
 /// budget policy at this single dispatch exit (`output_budget::finalize`).
+/// Typed handler errors are mapped to JSON-RPC errors by
+/// [`handler_error_data`] — the only place error classification becomes wire
+/// codes.
 macro_rules! spawn_handler {
     ($index:expr, $tool:expr, $body:expr) => {{
         let index = $index;
@@ -54,14 +79,14 @@ macro_rules! spawn_handler {
                         },
                     };
                     tracing::error!("handler panic caught: {}", msg);
-                    Err(format!("internal error: {}", msg))
+                    Err(cc_model::CcError::Other(format!("internal error: {}", msg)))
                 })
                 .map(|v| handlers::output_budget::finalize(&budget_index, $tool, v))
         })
         .await
         .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?
         .map(|v| Json(JsonResult { result: v }))
-        .map_err(|e| rmcp::ErrorData::internal_error(e, None))
+        .map_err(handler_error_data)
     }};
 }
 
@@ -111,7 +136,7 @@ impl CodeCortexMcpServer {
             .project_session
             .set_active_project(path)
             .await
-            .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
+            .map_err(handler_error_data)?;
         let full = p.full;
         spawn_handler!(index, "index", move |rt| handlers::core::build_index(
             rt, full
@@ -274,12 +299,14 @@ impl CodeCortexMcpServer {
                 spawn_handler!(index, "explore", move |rt| handlers::graph::explore_flow(
                     rt,
                     &symbols,
-                    max_depth,
-                    include_source,
-                    max_paths,
-                    exact,
-                    flow_file_path.as_deref(),
-                    max_candidates,
+                    &handlers::graph::FlowArgs {
+                        max_depth,
+                        include_source,
+                        max_paths,
+                        exact,
+                        file_path: flow_file_path.as_deref(),
+                        max_candidates,
+                    },
                 ))
             }
             _ => {
@@ -287,13 +314,15 @@ impl CodeCortexMcpServer {
                     handlers::context::explore_symbols(
                         rt,
                         &symbols,
-                        max_callers,
-                        max_callees,
-                        include_source,
-                        true,
-                        false,
-                        outline,
-                        max_source_per_file,
+                        &crate::engine_query::ExploreOptions {
+                            max_callers,
+                            max_callees,
+                            include_source,
+                            include_relations: true,
+                            include_metrics: false,
+                            outline,
+                            max_source_per_file,
+                        },
                     )
                 })
             }
@@ -316,24 +345,18 @@ impl CodeCortexMcpServer {
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
-        let from = p.from;
-        let to = p.to;
-        let max_depth = p.max_depth;
-        let include_source = p.include_source;
-        let source_mode = p.source_mode;
-        let from_uid = p.from_uid;
-        let to_uid = p.to_uid;
-        let max_snippet_lines = p.max_snippet_lines;
+        let args = handlers::graph::TraceArgs {
+            from: p.from,
+            to: p.to,
+            max_depth: p.max_depth,
+            include_source: p.include_source,
+            max_snippet_lines: p.max_snippet_lines,
+            source_mode: p.source_mode,
+            from_uid: p.from_uid,
+            to_uid: p.to_uid,
+        };
         spawn_handler!(index, "trace", move |rt| handlers::graph::trace_path(
-            rt,
-            &from,
-            &to,
-            max_depth,
-            include_source,
-            max_snippet_lines,
-            source_mode.as_deref(),
-            from_uid.as_deref(),
-            to_uid.as_deref(),
+            rt, &args
         ))
     }
 
@@ -378,26 +401,19 @@ impl CodeCortexMcpServer {
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
-        let scope = p.scope;
-        let files = p.files;
-        let base_branch = p.base_branch;
-        let granularity = p.granularity;
-        let file_path = p.file_path;
-        let limit = p.limit;
-        let confidence_threshold = p.confidence_threshold;
-        let max_nodes = p.max_nodes;
-        let max_per_layer = p.max_per_layer;
+        let args = handlers::facade::ImpactArgs {
+            scope: p.scope,
+            files: p.files,
+            base_branch: p.base_branch,
+            granularity: p.granularity,
+            file_path: p.file_path,
+            limit: p.limit,
+            confidence_threshold: p.confidence_threshold,
+            max_nodes: p.max_nodes,
+            max_per_layer: p.max_per_layer,
+        };
         spawn_handler!(index, "impact", move |rt| handlers::facade::handle_impact(
-            rt,
-            &scope,
-            &files,
-            base_branch.as_deref(),
-            &granularity,
-            file_path.as_deref(),
-            limit,
-            confidence_threshold,
-            max_nodes,
-            max_per_layer,
+            rt, &args
         ))
     }
 
@@ -714,7 +730,7 @@ index(path) → search(query) → context(task)
             self.project_session
                 .reopen_active_index_if_closed()
                 .await
-                .map_err(|e| rmcp::ErrorData::internal_error(e, None))?;
+                .map_err(handler_error_data)?;
             let ctx = ToolCallContext::new(self, request, context);
             self.tool_router.call(ctx).await
         }

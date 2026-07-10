@@ -99,8 +99,7 @@ pub fn tarjan_scc(adj: &HashMap<String, Vec<String>>) -> Vec<Vec<String>> {
                 if v_lowlink == v_index {
                     // v is an SCC root — pop the SCC.
                     let mut component: Vec<String> = Vec::new();
-                    loop {
-                        let Some(w) = scc_stack.pop() else { break };
+                    while let Some(w) = scc_stack.pop() {
                         if let Some(ws) = state.get_mut(w) {
                             ws.on_stack = false;
                         }
@@ -202,7 +201,7 @@ pub fn find_circular_deps(
         "file" => find_circular_deps_file(db, limit),
         "package" => find_circular_deps_package(db, limit),
         "community" => find_circular_deps_community(db, limit),
-        other => Err(CcError::Other(format!(
+        other => Err(CcError::InvalidParams(format!(
             "unknown granularity: {other}; expected file|package|community"
         ))),
     }

@@ -88,6 +88,33 @@ impl<T> GenerationSlot<T> {
             EpochSensitivity::IndexAndEvidence => *generation,
         }
     }
+
+    /// Drop this slot's entry for one project identity, if present.
+    fn evict(&'static self, db_identity: u64) {
+        let Some(cache) = self.cell.get() else {
+            return;
+        };
+        if let Ok(mut guard) = cache.lock() {
+            guard.pop(&db_identity);
+        }
+    }
+}
+
+/// Drop every process-global graph cache entry for one project identity.
+///
+/// Called when a `CodeIndex` closes its `IndexDb` handle (idle eviction or
+/// project switch): `db_identity` is process-unique and never reused, so the
+/// closed handle's entries can never be hit again — without this hook they
+/// would linger as unreachable garbage until 16 other identities pushed them
+/// out of each slot's LRU.
+pub(crate) fn evict_project(db_identity: u64) {
+    PLAIN_ADJ_CACHE.evict(db_identity);
+    BRIDGED_ADJ_CACHE.evict(db_identity);
+    BRIDGE_CACHE.evict(db_identity);
+    SEMANTIC_CACHE.evict(db_identity);
+    IMPORT_ADJ_CACHE.evict(db_identity);
+    COMMUNITY_ADJ_CACHE.evict(db_identity);
+    CALLEES_WITH_CALLERS_CACHE.evict(db_identity);
 }
 
 /// Per-project capacity for the process-global graph caches. Aligned with the
@@ -317,6 +344,33 @@ mod tests {
         // Index bump: both recompute.
         assert_eq!(*seed(&INDEX_ONLY, &index_bumped, 30), 30);
         assert_eq!(*seed(&FULL, &index_bumped, 30), 30);
+    }
+
+    /// `evict` must drop exactly the given project identity's entry: after a
+    /// `CodeIndex::close` the identity can never be hit again (identities are
+    /// never reused), so keeping the entry would only hold memory hostage
+    /// until 16 other projects pushed it out of the slot's LRU.
+    #[test]
+    fn evict_drops_only_the_given_identity() {
+        static SLOT: GenerationSlot<u64> = GenerationSlot::new(EpochSensitivity::IndexOnly);
+
+        let closing = generation(1, 1);
+        let surviving = GraphReadGeneration {
+            db_identity: 43,
+            ..generation(1, 1)
+        };
+        let seed = |generation, value: u64| {
+            generation_cached(&SLOT, generation, || Ok(Arc::new(value))).unwrap()
+        };
+
+        assert_eq!(*seed(&closing, 10), 10);
+        assert_eq!(*seed(&surviving, 20), 20);
+
+        SLOT.evict(closing.db_identity);
+
+        // The evicted identity recomputes; the other project's entry survives.
+        assert_eq!(*seed(&closing, 30), 30);
+        assert_eq!(*seed(&surviving, 40), 20);
     }
 
     /// A generation whose epoch read failed must neither be served from the

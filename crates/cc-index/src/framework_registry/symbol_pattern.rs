@@ -45,24 +45,16 @@ fn detect_symbol_patterns(
     ctx: &SignalContext,
     detections: &mut HashMap<String, FileFrameworkDetection>,
 ) {
-    if let Ok(mut stmt) = ctx.conn.prepare_cached(
-        "SELECT framework_role FROM symbols WHERE file_path = ?1 AND framework_role IS NOT NULL",
-    ) {
-        if let Ok(rows) = stmt.query_map(rusqlite::params![ctx.file_path], |row| {
-            row.get::<_, String>(0)
-        }) {
-            for role in rows.flatten() {
-                for &(r, fw_key) in role_to_framework() {
-                    if role == r {
-                        let det = detection_entry(detections, fw_key);
-                        let signal = format!("symbol_pattern:{}", role);
-                        if !det.signals.contains(&signal) {
-                            det.confidence += super::WEIGHT_SYMBOL_PATTERN;
-                            det.signals.push(signal);
-                        }
-                        break;
-                    }
+    for role in ctx.scan.file_symbol_roles(ctx.file_path) {
+        for &(r, fw_key) in role_to_framework() {
+            if role == r {
+                let det = detection_entry(detections, fw_key);
+                let signal = format!("symbol_pattern:{}", role);
+                if !det.signals.contains(&signal) {
+                    det.confidence += super::WEIGHT_SYMBOL_PATTERN;
+                    det.signals.push(signal);
                 }
+                break;
             }
         }
     }

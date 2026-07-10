@@ -104,11 +104,13 @@ impl Indexer {
     /// so callers may run it without holding any index lock. The signature
     /// gates decide in this stage; their records travel inside the plan and
     /// are persisted by [`Self::phase_postprocess_apply`].
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn phase_postprocess_compute(
         &self,
         full: bool,
         write_units: &[FileWriteUnit],
         config_units: &[FileWriteUnit],
+        parsed_file_paths: &[String],
         to_remove: &[String],
         pre_batch_files: &HashMap<String, FileState>,
         build_explain: &mut BuildExplainCollector,
@@ -124,15 +126,27 @@ impl Indexer {
         // path already existed before the batch (`pre_batch_files` is the
         // scan-time files snapshot, covering dirty-closure and config units
         // too), the committed edges are already exactly the rebuilt ones.
-        let mut changed_paths: Vec<String> =
-            write_units.iter().map(|u| u.rel_path.clone()).collect();
+        let mut changed_paths: Vec<String> = if parsed_file_paths.is_empty() {
+            write_units.iter().map(|u| u.rel_path.clone()).collect()
+        } else {
+            parsed_file_paths.to_vec()
+        };
         changed_paths.extend(config_units.iter().map(|u| u.rel_path.clone()));
         changed_paths.extend(to_remove.iter().cloned());
         let path_set_unchanged = to_remove.is_empty()
-            && write_units
-                .iter()
-                .chain(config_units.iter())
-                .all(|u| pre_batch_files.contains_key(&u.rel_path));
+            && (if parsed_file_paths.is_empty() {
+                write_units
+                    .iter()
+                    .map(|u| u.rel_path.as_str())
+                    .chain(config_units.iter().map(|u| u.rel_path.as_str()))
+                    .all(|p| pre_batch_files.contains_key(p))
+            } else {
+                parsed_file_paths
+                    .iter()
+                    .map(String::as_str)
+                    .chain(config_units.iter().map(|u| u.rel_path.as_str()))
+                    .all(|p| pre_batch_files.contains_key(p))
+            });
         let test_edges = if full {
             TestEdgeRebuild::Full
         } else if !changed_paths.is_empty() && !path_set_unchanged {

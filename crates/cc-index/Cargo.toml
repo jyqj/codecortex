@@ -15,10 +15,12 @@ tracing.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 chrono.workspace = true
-rusqlite.workspace = true
 blake3.workspace = true
 regex.workspace = true
 lru.workspace = true
 
 [dev-dependencies]
+# Tests seed the index DB with raw SQL through their own connections;
+# production code reads exclusively through cc-db's typed facets.
+rusqlite.workspace = true
 tempfile = "3"

@@ -14,23 +14,38 @@ use crate::graph_types::{
 };
 use crate::symbol_resolution::{resolve, Resolution, ResolutionOpts};
 
-/// Discover call flow paths connecting multiple symbols.
+/// Traversal/output knobs for [`explore_flow`], grouped so callers pass one
+/// object instead of seven positional values.
 ///
 /// `max_output_chars` – if `Some(n)`, truncate `flow_paths` so the serialized
 /// JSON result stays within `n` characters.
-#[allow(clippy::too_many_arguments)]
+#[derive(Debug, Clone, Copy)]
+pub struct FlowOptions<'a> {
+    pub max_depth: usize,
+    pub include_source: bool,
+    pub max_paths_per_pair: usize,
+    pub exact: bool,
+    pub file_path_filter: Option<&'a str>,
+    pub max_candidates: usize,
+    pub max_output_chars: Option<usize>,
+}
+
+/// Discover call flow paths connecting multiple symbols.
 pub fn explore_flow(
     db: &Arc<IndexDb>,
     project_root: Option<&Path>,
     symbols: &[String],
-    max_depth: usize,
-    include_source: bool,
-    max_paths_per_pair: usize,
-    exact: bool,
-    file_path_filter: Option<&str>,
-    max_candidates: usize,
-    max_output_chars: Option<usize>,
+    opts: &FlowOptions<'_>,
 ) -> CcResult<serde_json::Value> {
+    let FlowOptions {
+        max_depth,
+        include_source,
+        max_paths_per_pair,
+        exact,
+        file_path_filter,
+        max_candidates,
+        max_output_chars,
+    } = *opts;
     // 1. Cap symbols to 10.
     let symbols = &symbols[..symbols.len().min(10)];
 
@@ -303,6 +318,20 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
 
+    /// Shared traversal options for the fixture graph: depth 5, no source,
+    /// 10 paths/pair, exact resolution, no file filter, 10 candidates.
+    fn test_flow_opts() -> FlowOptions<'static> {
+        FlowOptions {
+            max_depth: 5,
+            include_source: false,
+            max_paths_per_pair: 10,
+            exact: true,
+            file_path_filter: None,
+            max_candidates: 10,
+            max_output_chars: None,
+        }
+    }
+
     /// Helper: create an IndexDb and insert symbols + call_edges for A→B→C, with D isolated.
     fn setup_abcd_graph() -> (TempDir, Arc<IndexDb>) {
         let tmp = TempDir::new().unwrap();
@@ -357,13 +386,7 @@ mod tests {
             &db,
             None,
             &["fn_a".into(), "fn_c".into(), "fn_d".into()],
-            5,
-            false,
-            10,
-            true,
-            None,
-            10,
-            None,
+            &test_flow_opts(),
         )
         .unwrap();
 
@@ -397,13 +420,7 @@ mod tests {
             &db,
             None,
             &["fn_a".into(), "fn_c".into()],
-            5,
-            false,
-            10,
-            true,
-            None,
-            10,
-            None,
+            &test_flow_opts(),
         )
         .unwrap();
         let flow: FlowResult = serde_json::from_value(result).unwrap();
@@ -424,13 +441,7 @@ mod tests {
             &db,
             None,
             &["NonExistent".into()],
-            5,
-            false,
-            10,
-            true,
-            None,
-            10,
-            None,
+            &test_flow_opts(),
         )
         .unwrap();
 
@@ -463,13 +474,7 @@ mod tests {
             &db,
             None,
             &["fn_a".into()],
-            5,
-            false,
-            10,
-            true,
-            None,
-            10,
-            None,
+            &test_flow_opts(),
         )
         .unwrap();
 
@@ -498,13 +503,7 @@ mod tests {
             &db,
             None,
             &["fn_d".into(), "fn_e".into()],
-            5,
-            false,
-            10,
-            true,
-            None,
-            10,
-            None,
+            &test_flow_opts(),
         )
         .unwrap();
 

@@ -179,6 +179,7 @@ CodeCortex 检测项目规模并自动调整输出预算：
 | `CODECORTEX_STRICT_HASH` | 关 | `1`/`true`/`yes` 时增量扫描对每个文件做哈希，不走 mtime+size 快路径 |
 | `CODECORTEX_RESOLVER_CACHE_SIZE` | `8192` | 解析器目录 `resolve_name` 的 LRU 容量 |
 | `CODECORTEX_RESOLVER_MAX_POOL` | `256` | 名字解析候选上限：同名符号数超过此值时，按名解析（global-unique / fuzzy import-distance 与 `find_best` 兜底）直接判为不可解。被数百符号共享的名字（典型是解析器也并入全局目录的函数局部变量，如 `left`/`value`）无法靠路径启发式消歧，逐引用扫该桶是冷建 resolve 阶段 O(N²) 的主因；上限同时消除该开销并提升精度（这类引用从"跨文件随机同名"变为未解析） |
+| `CODECORTEX_SEED_CACHE_MAX_SYMBOLS` | `500000` | seed 符号快照与 resolver 目录两层跨构建缓存共用的符号数上限（`0` 同时禁用两层）；超限的仓库回退每次构建直接重载，见 [internals/INDEXING.md](internals/INDEXING.md#符号目录跨构建缓存catalog-cache) |
 | `CODECORTEX_COMMUNITY_MAX_EDGES` | `2000000` | Louvain 社区检测的边数上限；超限跳过检测，所有符号归社区 0，避免 OOM |
 
 ### 搜索与图缓存
@@ -205,3 +206,5 @@ CodeCortex 检测项目规模并自动调整输出预算：
 | `CODECORTEX_WRITE_BENCHMARK` | 关 | `1` 时 fixture 与合成规模基准把报告持久化到 `docs/benchmarks/` |
 | `CODECORTEX_WRITE_REAL_BENCHMARK` | 关 | `1` 时被 ignore 的真实工作区基准写 `docs/benchmarks/real_workspace_latest.md` |
 | `CODECORTEX_BENCH_50K` | 关 | `1` 时启用默认跳过的 50k 文件合成规模基准（`bench_synthetic_50k`） |
+| `CODECORTEX_BENCH_FILES` | `10000` | 增量写基准（`incremental_write_bench`）的合成仓文件数 |
+| `CODECORTEX_PROFILE_SCALES` | `1000,2000,4000,8000,16000` | 冷建缩放 profiler（`profile_cold_build_scaling`）的规模列表 |

@@ -21,13 +21,72 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use cc_model::CcResult;
+use cc_model::symbol::{SymbolKind, SymbolRecord};
+use cc_model::{CcResult, ParserTier};
 
 use crate::index_db::{read_chunk_text_with_encoding, ChunkDetailRow, IndexDb};
 use crate::sql_util::{db_err, escape_like, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// `(chunk_id, start_line, end_line)` spans grouped by file path.
 pub type ChunkSpansByFile = HashMap<String, Vec<(String, u32, u32)>>;
+
+/// File-scope filter for chunk-level retrieval scans — the structured form
+/// of what cc-search used to render as raw scope SQL (path-prefix LIKE,
+/// language IN, file-path IN). Empty strings / empty lists are treated as
+/// "no filter" for that dimension.
+#[derive(Debug, Clone, Default)]
+pub struct ChunkScope {
+    pub path_prefix: Option<String>,
+    /// Language names as stored in `chunks.language` (`Language::as_str()`).
+    pub languages: Option<Vec<String>>,
+    pub file_paths: Option<Vec<String>>,
+}
+
+impl ChunkScope {
+    /// Append the scope's WHERE clauses and their string params.
+    fn push_clauses(
+        &self,
+        clauses: &mut Vec<String>,
+        params: &mut Vec<String>,
+        file_path_column: &str,
+        language_column: &str,
+    ) {
+        if let Some(prefix) = self.path_prefix.as_ref().filter(|p| !p.is_empty()) {
+            clauses.push(format!("{file_path_column} LIKE ? ESCAPE '\\'"));
+            params.push(format!("{}%", escape_like(prefix)));
+        }
+
+        if let Some(languages) = self.languages.as_ref().filter(|v| !v.is_empty()) {
+            let placeholders = vec!["?"; languages.len()].join(",");
+            clauses.push(format!("{language_column} IN ({placeholders})"));
+            params.extend(languages.iter().cloned());
+        }
+
+        if let Some(files) = self.file_paths.as_ref().filter(|v| !v.is_empty()) {
+            let placeholders = vec!["?"; files.len()].join(",");
+            clauses.push(format!("{file_path_column} IN ({placeholders})"));
+            params.extend(files.iter().cloned());
+        }
+    }
+
+    /// Whether the scope pins an explicit file set (bounds scan cardinality).
+    fn has_file_scope(&self) -> bool {
+        self.file_paths
+            .as_ref()
+            .map(|files| !files.is_empty())
+            .unwrap_or(false)
+    }
+}
+
+/// One decoded chunk row visited by [`RetrievalReadModel::scan_chunks_for_grep`].
+#[derive(Debug)]
+pub struct GrepChunkRow {
+    pub chunk_id: String,
+    pub file_path: String,
+    pub language_name: String,
+    /// Chunk text, already decoded from its storage encoding (zstd/plain).
+    pub text: String,
+}
 
 /// Deep retrieval read model over [`IndexDb`]: owns the raw-SQL retrieval
 /// queries (FTS5 bm25 file summaries, trigram path/symbol token hits, chunk
@@ -109,6 +168,111 @@ impl<'a> RetrievalReadModel<'a> {
             })
             .map_err(db_err)?;
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Chunk candidates for the lexical lane: `chunks_fts` MATCH with bm25
+    /// scoring (weights 1.0/1.0/2.0), scope-filtered, best score first.
+    ///
+    /// Returns `(chunk_id, file_path, language_name)` in score order.
+    /// `sanitized_query` must already be a valid FTS5 MATCH expression
+    /// (see `fts::sanitize_fts_query`); callers should skip the call for
+    /// empty/`""` queries.
+    pub fn fts_chunk_candidates(
+        &self,
+        sanitized_query: &str,
+        scope: &ChunkScope,
+        limit: usize,
+    ) -> CcResult<Vec<(String, String, String)>> {
+        let mut sql =
+            "SELECT chunks_fts.chunk_id, chunks.file_path, chunks.language, bm25(chunks_fts, 1.0, 1.0, 2.0) AS score
+             FROM chunks_fts
+             JOIN chunks ON chunks.chunk_id = chunks_fts.chunk_id
+             WHERE chunks_fts MATCH ?"
+                .to_string();
+        let mut clauses: Vec<String> = Vec::new();
+        let mut params: Vec<String> = vec![sanitized_query.to_string()];
+
+        scope.push_clauses(
+            &mut clauses,
+            &mut params,
+            "chunks.file_path",
+            "chunks.language",
+        );
+
+        if !clauses.is_empty() {
+            sql.push_str(" AND ");
+            sql.push_str(&clauses.join(" AND "));
+        }
+        sql.push_str(" ORDER BY score LIMIT ");
+        sql.push_str(&limit.to_string());
+
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                ))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Streaming scan over decoded chunk text for the grep lane, in scope.
+    ///
+    /// Without an explicit file scope the walk is recency-ordered
+    /// (`ORDER BY rowid DESC`): chunks are insert-only per write, so
+    /// descending rowid puts the most recently indexed files first and a
+    /// caller's scan budget is spent on the freshest code — SQLite walks the
+    /// table b-tree backwards for this, no sort step. File-scoped scans keep
+    /// SQLite's natural probe order.
+    ///
+    /// `visit` receives each decoded row and returns `false` to stop the
+    /// scan (budget exhausted / enough matches). Each visited row costs one
+    /// text decode; rows are decoded lazily, so stopping early skips the
+    /// remaining decodes.
+    pub fn scan_chunks_for_grep(
+        &self,
+        scope: &ChunkScope,
+        mut visit: impl FnMut(GrepChunkRow) -> bool,
+    ) -> CcResult<()> {
+        let mut sql =
+            "SELECT chunk_id, file_path, language, text, text_encoding FROM chunks".to_string();
+        let mut clauses: Vec<String> = Vec::new();
+        let mut params: Vec<String> = Vec::new();
+
+        scope.push_clauses(&mut clauses, &mut params, "file_path", "language");
+
+        if !clauses.is_empty() {
+            sql.push_str(" WHERE ");
+            sql.push_str(&clauses.join(" AND "));
+        }
+        if !scope.has_file_scope() {
+            sql.push_str(" ORDER BY rowid DESC");
+        }
+
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                Ok(GrepChunkRow {
+                    chunk_id: row.get::<_, String>(0)?,
+                    file_path: row.get::<_, String>(1)?,
+                    language_name: row.get::<_, String>(2)?,
+                    text: read_chunk_text_with_encoding(row, 3, 4)?,
+                })
+            })
+            .map_err(db_err)?;
+
+        for row in rows {
+            let row = row.map_err(db_err)?;
+            if !visit(row) {
+                break;
+            }
+        }
+        Ok(())
     }
 
     /// Path-token substring match via the trigram `file_paths_fts` mirror,
@@ -396,6 +560,52 @@ impl<'a> RetrievalReadModel<'a> {
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
+    /// All symbols with UIDs for infra-to-code binding after a full rebuild
+    /// when in-memory write units were dropped at prepare time.
+    pub fn symbol_records_for_infra_binding(&self) -> CcResult<Vec<SymbolRecord>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT symbol_id, file_path, name, kind, symbol_uid \
+                 FROM symbols WHERE symbol_uid IS NOT NULL",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                let kind: String = row.get(3)?;
+                Ok(SymbolRecord {
+                    symbol_id: row.get(0)?,
+                    file_path: row.get(1)?,
+                    name: row.get(2)?,
+                    kind: SymbolKind::from_str_lenient(&kind).unwrap_or(SymbolKind::Variable),
+                    container: None,
+                    start_line: 0,
+                    end_line: 0,
+                    start_col: 0,
+                    end_col: 0,
+                    signature: None,
+                    doc: None,
+                    parser_tier: ParserTier::Generic,
+                    parser_confidence: 0.0,
+                    qname: None,
+                    parent_symbol_id: None,
+                    scope_id: None,
+                    export_name: None,
+                    is_default_export: false,
+                    symbol_uid: row.get(4)?,
+                    framework_role: None,
+                    receiver_type: None,
+                    param_types: None,
+                    return_type: None,
+                    param_count: None,
+                    base_types: None,
+                    implements: None,
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
     /// Batch-load `(chunk_id, start_line, end_line)` spans for a set of files,
     /// keyed by file path. Queried in [`IN_BATCH_SIZE`]-sized `IN (...)`
     /// batches.
@@ -444,6 +654,7 @@ mod tests {
     use std::collections::HashMap;
     use std::sync::Arc;
 
+    use super::ChunkScope;
     use crate::index_db::IndexDb;
     use tempfile::TempDir;
 
@@ -512,6 +723,167 @@ mod tests {
             rusqlite::params![chunk_id, file_path, start_line, end_line, text],
         )
         .unwrap();
+    }
+
+    /// Mirror a chunk row into chunks_fts (application-maintained,
+    /// rowid-aligned with the base `chunks` row).
+    fn mirror_chunk_fts(db: &IndexDb, chunk_id: &str) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "INSERT INTO chunks_fts(rowid,chunk_id,file_path,breadcrumb,symbol_name,text) \
+             SELECT rowid, chunk_id, file_path, breadcrumb, NULL, text FROM chunks WHERE chunk_id = ?1",
+            rusqlite::params![chunk_id],
+        )
+        .unwrap();
+    }
+
+    fn set_chunk_language(db: &IndexDb, chunk_id: &str, language: &str) {
+        let conn = db.write_conn.lock().unwrap();
+        conn.execute(
+            "UPDATE chunks SET language = ?2 WHERE chunk_id = ?1",
+            rusqlite::params![chunk_id, language],
+        )
+        .unwrap();
+    }
+
+    // ── fts_chunk_candidates ───────────────────────────────────
+
+    /// The lexical lane's scope push-down: path prefix (LIKE-escaped),
+    /// language IN, file_paths IN, and LIMIT — moved here from cc-search's
+    /// former scope-SQL builders.
+    #[test]
+    fn fts_chunk_candidates_applies_scope_and_limit() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/a.rs", "2024-01-01");
+        insert_file(&db, "lib/b.py", "2024-01-01");
+        insert_chunk(&db, "ck_a", "src/a.rs", 1, 5, "alpha token here");
+        insert_chunk(&db, "ck_b", "lib/b.py", 1, 5, "alpha token there");
+        set_chunk_language(&db, "ck_b", "python");
+        mirror_chunk_fts(&db, "ck_a");
+        mirror_chunk_fts(&db, "ck_b");
+
+        let all = db
+            .retrieval()
+            .fts_chunk_candidates("alpha", &ChunkScope::default(), 10)
+            .unwrap();
+        assert_eq!(all.len(), 2);
+
+        let prefixed = db
+            .retrieval()
+            .fts_chunk_candidates(
+                "alpha",
+                &ChunkScope {
+                    path_prefix: Some("src/".into()),
+                    ..Default::default()
+                },
+                10,
+            )
+            .unwrap();
+        assert_eq!(prefixed.len(), 1);
+        assert_eq!(prefixed[0].0, "ck_a");
+        assert_eq!(prefixed[0].1, "src/a.rs");
+        assert_eq!(prefixed[0].2, "rust");
+
+        let by_language = db
+            .retrieval()
+            .fts_chunk_candidates(
+                "alpha",
+                &ChunkScope {
+                    languages: Some(vec!["python".into()]),
+                    ..Default::default()
+                },
+                10,
+            )
+            .unwrap();
+        assert_eq!(by_language.len(), 1);
+        assert_eq!(by_language[0].0, "ck_b");
+
+        let by_files = db
+            .retrieval()
+            .fts_chunk_candidates(
+                "alpha",
+                &ChunkScope {
+                    file_paths: Some(vec!["lib/b.py".into()]),
+                    ..Default::default()
+                },
+                10,
+            )
+            .unwrap();
+        assert_eq!(by_files.len(), 1);
+        assert_eq!(by_files[0].0, "ck_b");
+
+        let limited = db
+            .retrieval()
+            .fts_chunk_candidates("alpha", &ChunkScope::default(), 1)
+            .unwrap();
+        assert_eq!(limited.len(), 1, "LIMIT applies");
+    }
+
+    // ── scan_chunks_for_grep ───────────────────────────────────
+
+    /// Unscoped grep scans walk newest-rowid first (scan budget is spent on
+    /// the freshest code) and the visitor's `false` stops the scan early;
+    /// LIKE metacharacters in the path prefix match literally.
+    #[test]
+    fn scan_chunks_for_grep_recency_order_early_stop_and_prefix_escaping() {
+        let (db, _tmp) = setup();
+        insert_file(&db, "src/old.rs", "2024-01-01");
+        insert_file(&db, "src/%special/new.rs", "2024-01-02");
+        insert_chunk(&db, "ck_old", "src/old.rs", 1, 5, "needle one");
+        insert_chunk(&db, "ck_new", "src/%special/new.rs", 1, 5, "needle two");
+
+        // Recency: ck_new was inserted after ck_old → visited first.
+        let mut visited = Vec::new();
+        db.retrieval()
+            .scan_chunks_for_grep(&ChunkScope::default(), |row| {
+                visited.push(row.chunk_id);
+                true
+            })
+            .unwrap();
+        assert_eq!(visited, vec!["ck_new".to_string(), "ck_old".to_string()]);
+
+        // Early stop: returning false after the first row ends the scan.
+        let mut count = 0;
+        db.retrieval()
+            .scan_chunks_for_grep(&ChunkScope::default(), |_| {
+                count += 1;
+                false
+            })
+            .unwrap();
+        assert_eq!(count, 1);
+
+        // Prefix escaping: "src/%special" must match the literal directory,
+        // not act as a wildcard swallowing src/old.rs.
+        let mut scoped = Vec::new();
+        db.retrieval()
+            .scan_chunks_for_grep(
+                &ChunkScope {
+                    path_prefix: Some("src/%special".into()),
+                    ..Default::default()
+                },
+                |row| {
+                    scoped.push(row.chunk_id);
+                    true
+                },
+            )
+            .unwrap();
+        assert_eq!(scoped, vec!["ck_new".to_string()]);
+
+        // File-scoped scans visit exactly the scoped file's chunks.
+        let mut file_scoped = Vec::new();
+        db.retrieval()
+            .scan_chunks_for_grep(
+                &ChunkScope {
+                    file_paths: Some(vec!["src/old.rs".into()]),
+                    ..Default::default()
+                },
+                |row| {
+                    file_scoped.push(row.chunk_id);
+                    true
+                },
+            )
+            .unwrap();
+        assert_eq!(file_scoped, vec!["ck_old".to_string()]);
     }
 
     // ── fts_file_summaries ─────────────────────────────────────

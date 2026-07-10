@@ -7,26 +7,21 @@ use cc_model::CcResult;
 use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
-use crate::graph_types::{BfsAdj, EdgeLite};
+use crate::graph_types::EdgeLite;
 
 use super::bridge_spec::{bridge_edge_limit, dispatch_kind_for, resolution_kind_for};
+#[cfg(test)]
+use super::cache::BridgeEdgesByCaller;
 use super::cache::{
-    generation_cached, BridgeEdgesByCaller, BridgeIndex, GraphReadGeneration, SharedBridgeEdges,
-    BRIDGE_CACHE,
+    generation_cached, BridgeIndex, GraphReadGeneration, SharedBridgeEdges, BRIDGE_CACHE,
 };
 use super::GraphReadModel;
 
 impl GraphReadModel {
-    /// Build edge-labeled call adjacency including bounded HTTP bridge edges.
-    pub(crate) fn call_adjacency_with_bridges(db: &IndexDb) -> CcResult<BfsAdj> {
-        let mut bfs = Self::call_adjacency(db)?;
-        for (caller_uid, bridge_edges) in Self::bridge_edges_by_caller(db)? {
-            bfs.adj.entry(caller_uid).or_default().extend(bridge_edges);
-        }
-        Ok(bfs)
-    }
-
-    /// Build synthesized caller → route-handler edges from HTTP/async evidence.
+    /// Build synthesized caller → route-handler edges from HTTP/async
+    /// evidence. Production reads go through the cached `bridge_index`; this
+    /// direct form only backs test assertions.
+    #[cfg(test)]
     pub(crate) fn bridge_edges_by_caller(db: &IndexDb) -> CcResult<BridgeEdgesByCaller> {
         Ok(Self::bridge_index(db)?.by_caller)
     }
@@ -98,7 +93,9 @@ impl GraphReadModel {
             let norm_path = match &hce.normalized_path {
                 Some(path) => path,
                 None => {
-                    *unmatched.entry("no_normalized_path".to_string()).or_default() += 1;
+                    *unmatched
+                        .entry("no_normalized_path".to_string())
+                        .or_default() += 1;
                     continue;
                 }
             };

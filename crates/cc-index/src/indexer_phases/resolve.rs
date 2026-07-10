@@ -137,8 +137,7 @@ impl Indexer {
             .collect();
 
         if let Some((basis, mut catalog)) = catalog_cache::take_validated(&self.db) {
-            let excluded_set: HashSet<String> =
-                resolver_excluded_files.iter().cloned().collect();
+            let excluded_set: HashSet<String> = resolver_excluded_files.iter().cloned().collect();
             catalog.remove_files(&excluded_set);
             catalog.reset_type_assigns();
             for unit in write_units.iter() {

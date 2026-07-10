@@ -232,18 +232,26 @@ impl CodeIndex {
     }
 }
 
+/// Per-symbol detail switches of the `explore` / `node` / `context` surfaces,
+/// grouped so the handler chain passes one object instead of seven positional
+/// flags. `Default` is the minimal projection: tier-default caller/callee
+/// limits, no source, no relations, no metrics.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct ExploreOptions {
+    pub max_callers: Option<usize>,
+    pub max_callees: Option<usize>,
+    pub include_source: bool,
+    pub include_relations: bool,
+    pub include_metrics: bool,
+    pub outline: bool,
+    pub max_source_per_file: Option<usize>,
+}
+
 impl GraphOps<'_> {
-    #[allow(clippy::too_many_arguments)]
     pub fn explore_symbols(
         &self,
         names: &[String],
-        max_callers: Option<usize>,
-        max_callees: Option<usize>,
-        include_source: bool,
-        include_relations: bool,
-        include_metrics: bool,
-        outline: bool,
-        max_source_per_file: Option<usize>,
+        opts: &ExploreOptions,
     ) -> CcResult<serde_json::Value> {
         let capped = if names.len() > 10 {
             &names[..10]
@@ -251,9 +259,11 @@ impl GraphOps<'_> {
             names
         };
         let tier = self.0.repo_size_tier();
-        let caller_limit = max_callers.unwrap_or(tier.explore_max_symbols());
-        let callee_limit = max_callees.unwrap_or(tier.explore_max_symbols());
-        let max_src_chars = max_source_per_file.unwrap_or(tier.max_source_chars_per_symbol());
+        let caller_limit = opts.max_callers.unwrap_or(tier.explore_max_symbols());
+        let callee_limit = opts.max_callees.unwrap_or(tier.explore_max_symbols());
+        let max_src_chars = opts
+            .max_source_per_file
+            .unwrap_or(tier.max_source_chars_per_symbol());
         let db = self.0.ensure_db()?.clone();
 
         let mut results = Vec::with_capacity(capped.len());
@@ -364,8 +374,8 @@ impl GraphOps<'_> {
             entry["callees"] = serde_json::json!(callees_json);
 
             // Source — use strict path guard to only read indexed files
-            if include_source {
-                if outline {
+            if opts.include_source {
+                if opts.outline {
                     // Outline mode: return signature + child symbol names instead of full source
                     let mut outline_parts = Vec::new();
                     if let Some(ref sig) = sym.signature {
@@ -420,7 +430,7 @@ impl GraphOps<'_> {
             }
 
             // Semantic relations
-            if include_relations {
+            if opts.include_relations {
                 let mut relations = Vec::new();
                 if let Ok(edges) = db.reads().query_semantic_edges(Some(uid), None, None) {
                     for edge in &edges {
@@ -450,7 +460,7 @@ impl GraphOps<'_> {
             }
 
             // Metrics
-            if include_metrics {
+            if opts.include_metrics {
                 if let Ok(info) = db.reads().symbol_degree_details(uid) {
                     let hint = centrality_hint(&info);
                     entry["metrics"] = serde_json::json!({
@@ -490,7 +500,7 @@ impl GraphOps<'_> {
         grouped["graph_explain"] = serde_json::to_value(cc_model::GraphExplain::declared_only(
             cc_model::graph_catalog::tool_graph_subsets::RELATIONS,
         ))
-        .map_err(|e| CcError::Other(e.to_string()))?;
+        .map_err(CcError::Serde)?;
 
         if by_file.len() > 1 {
             let file_summary: Vec<serde_json::Value> = by_file
@@ -556,17 +566,15 @@ impl GraphOps<'_> {
         let file_path = row
             .get("file_path")
             .and_then(|v| v.as_str())
-            .ok_or_else(|| CcError::Other("symbol row missing file_path".to_string()))?;
+            .ok_or_else(|| CcError::Database("symbol row missing file_path".to_string()))?;
         let start_line = row.get("start_line").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
         let end_line = row
             .get("end_line")
             .and_then(|v| v.as_u64())
             .unwrap_or(start_line as u64) as u32;
 
-        let full_path = crate::path_guard::resolve_indexed_path_strict(&project, file_path, &db)
-            .map_err(CcError::Other)?;
-        let content = std::fs::read_to_string(&full_path)
-            .map_err(|e| CcError::Other(format!("read source: {}", e)))?;
+        let full_path = crate::path_guard::resolve_indexed_path_strict(&project, file_path, &db)?;
+        let content = std::fs::read_to_string(&full_path).map_err(CcError::Io)?;
         let source = slice_lines(
             &content,
             start_line,
@@ -718,7 +726,7 @@ impl GraphOps<'_> {
             runtime_evidence_edges,
             next_tool_hints,
         })
-        .map_err(|e| CcError::Other(e.to_string()))
+        .map_err(CcError::Serde)
     }
 
     /// Compute edge provenance breakdown from call_edges table.
@@ -907,7 +915,7 @@ pub fn compute_package_boundaries(db: &IndexDb) -> CcResult<Vec<PackageBoundary>
             call_count: count,
         })
         .collect();
-    boundaries.sort_by(|a, b| b.call_count.cmp(&a.call_count));
+    boundaries.sort_by_key(|b| std::cmp::Reverse(b.call_count));
     boundaries.truncate(10);
     Ok(boundaries)
 }
@@ -1005,13 +1013,11 @@ mod tests {
             .graph()
             .explore_symbols(
                 &["A".to_string()],
-                None,
-                None,
-                false,
-                true,
-                true,
-                false,
-                None,
+                &ExploreOptions {
+                    include_relations: true,
+                    include_metrics: true,
+                    ..Default::default()
+                },
             )
             .unwrap();
 

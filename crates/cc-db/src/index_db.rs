@@ -7,7 +7,7 @@
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::Duration;
 
 use r2d2::Pool;
@@ -404,6 +404,9 @@ pub struct IndexDb {
     /// owner validates content against the persisted `symbols_seed`
     /// aggregate exactly like the seed cache does.
     pub(crate) resolver_catalog_slot: Mutex<Option<Box<dyn std::any::Any + Send>>>,
+    /// Cross-build file-state snapshot for scan/diff, validated against the
+    /// persisted `files_state` aggregate (see `crate::file_state_cache`).
+    pub(crate) file_state_cache: Mutex<Option<crate::file_state_cache::FileStateCache>>,
 }
 
 /// Process-wide monotonic source for [`IndexDb::instance_id`].
@@ -485,6 +488,7 @@ impl IndexDb {
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
                 seed_cache: Mutex::new(None),
                 resolver_catalog_slot: Mutex::new(None),
+                file_state_cache: Mutex::new(None),
             },
             schema_status,
         ))
@@ -776,7 +780,7 @@ impl IndexDb {
                         ev["method"].as_str(),
                         ev["path"].as_str().unwrap_or_default(),
                         ev["status_code"].as_str(),
-                        ev["observed_count"].as_u64().unwrap_or(1),
+                        ev["observed_count"].as_i64().unwrap_or(1),
                         ev["first_seen"].as_str().unwrap_or_default(),
                         ev["last_seen"].as_str().unwrap_or_default(),
                     ],
@@ -1015,67 +1019,46 @@ impl IndexDb {
         PathBuf::from(os)
     }
 
-    /// Shared full-rebuild protocol behind [`Self::rebuild_with_temp_db`] and
-    /// [`Self::rebuild_with_direct_writer`].
-    ///
-    /// The strategy-specific part is `build_temp`: it must leave a fully
-    /// written, closed SQLite database file at `tmp_path`, or return an error
-    /// (cleaning up after itself if it wants to — the protocol only sweeps
-    /// stale temp artifacts at the *start* of the next rebuild). The protocol
-    /// runs the invariant-bearing steps in order:
-    ///
-    /// 1. Snapshot the epoch floor.
-    /// 2. Remove stale temp artifacts left by a previous crashed run.
-    /// 3. `build_temp(tmp_path)` — produce the replacement database.
-    /// 4. Under the write lock: finalize the generation into the temp file,
-    ///    remove the live WAL/SHM sidecars, atomically rename temp → main,
-    ///    remove the temp sidecars.
-    /// 5. Reopen the write connection, rebuild the read pool, checkpoint the
-    ///    fresh WAL (non-fatal on failure).
-    ///
-    /// # Invariants
-    ///
-    /// - **Epoch floor.** The generation snapshotted in step 1 is only a
-    ///   *floor*: writers (including other processes) may advance the live
-    ///   epochs while `build_temp` runs. The final epoch vector is therefore
-    ///   written at swap time, under the write lock, as `max(floor, live) + 1`
-    ///   per epoch (see [`Self::finalize_rebuild_generation`]), so a rebuild
-    ///   can never produce a "same generation, different content" collision
-    ///   with values observed before or during the rebuild.
-    /// - **Lock scope / no reentrancy.** The `write_conn` mutex is held for
-    ///   the entire finalize + rename window so no writer can commit between
-    ///   epoch finalization and the file swap. The mutex is not reentrant:
-    ///   `build_temp` (and any `write_fn` it wraps) writes only to the temp
-    ///   file and must never take the write lock or call back into either
-    ///   rebuild method on the same thread. Concurrent writes from *other*
-    ///   threads during `build_temp` are allowed — the epoch floor exists
-    ///   precisely to absorb them.
-    /// - **FTS dual maintenance.** `symbols_fts` and `file_paths_fts` are
-    ///   maintained by schema triggers on `symbols`/`files`, while
-    ///   `chunks_fts`, `files_fts` and `literal_fts` have no triggers and are
-    ///   maintained at the application layer ([`Self::delete_file_data`] and
-    ///   the insert helpers). Rebuild strategies write into a fresh schema, so
-    ///   both models hold automatically — but `build_temp` must populate data
-    ///   through the shared insert helpers so the application-maintained FTS
-    ///   tables stay in sync with their base tables, including the
-    ///   FTS-rowid-equals-base-rowid alignment the indexed deletes rely on.
-    fn run_rebuild_protocol(
-        &self,
-        tmp_path: &Path,
-        label: &str,
-        build_temp: impl FnOnce(&Path) -> CcResult<()>,
-    ) -> CcResult<()> {
-        // Floor snapshot of the epoch vector; the final value is written at
-        // swap time (under the write lock) as max(floor, live) + 1.
-        let generation_floor = self.generation().unwrap_or_default();
+    /// Path used by the standard temp-db full rebuild staging file.
+    pub(crate) fn rebuild_staging_path(&self) -> PathBuf {
+        self.db_path.with_extension("sqlite3.tmp")
+    }
 
-        // Clean up any stale temp artifacts from a previous crashed run.
+    /// Remove stale staging sidecars before writing a fresh temp database.
+    fn cleanup_rebuild_staging_artifacts(tmp_path: &Path) {
         let _ = std::fs::remove_file(tmp_path);
         let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-wal"));
         let _ = std::fs::remove_file(Self::sidecar_path(tmp_path, "-shm"));
+    }
 
-        // Produce the replacement database (strategy-specific).
+    /// Produce a fully written replacement database at `tmp_path` without
+    /// swapping it into place. Returns the epoch floor snapshot taken before
+    /// the build so a later [`Self::swap_rebuild_staging`] can finalize under
+    /// the write lock.
+    pub(crate) fn build_rebuild_staging(
+        &self,
+        tmp_path: &Path,
+        build_temp: impl FnOnce(&Path) -> CcResult<()>,
+    ) -> CcResult<IndexGeneration> {
+        let generation_floor = self.generation().unwrap_or_default();
+        Self::cleanup_rebuild_staging_artifacts(tmp_path);
         build_temp(tmp_path)?;
+        Ok(generation_floor)
+    }
+
+    /// Finalize and atomically swap a staged rebuild database into place.
+    pub(crate) fn swap_rebuild_staging(
+        &self,
+        tmp_path: &Path,
+        generation_floor: IndexGeneration,
+        label: &str,
+    ) -> CcResult<()> {
+        if !tmp_path.exists() {
+            return Err(CcError::Database(format!(
+                "rebuild staging file missing: {}",
+                tmp_path.display()
+            )));
+        }
 
         // Acquire write lock, do atomic swap while lock is held
         {
@@ -1135,6 +1118,132 @@ impl IndexDb {
         Ok(())
     }
 
+    /// Shared temp-db build strategy: open a fresh schema, bulk-insert via
+    /// `write_fn`, recreate indexes, restore pragmas. Used by both the bundled
+    /// rebuild path and the prepare-time staging path.
+    pub(crate) fn execute_temp_db_staging_build<F>(tmp_path: &Path, write_fn: F) -> CcResult<()>
+    where
+        F: FnOnce(&Connection) -> CcResult<()>,
+    {
+        tracing::info!(
+            tmp = %tmp_path.display(),
+            "full rebuild: creating temp database"
+        );
+
+        let tmp_conn = Connection::open(tmp_path)
+            .map_err(|e| CcError::Database(format!("open temp db: {}", e)))?;
+        tmp_conn
+            .execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
+            .map_err(|e| CcError::Database(format!("temp db pragmas: {}", e)))?;
+        tmp_conn.set_prepared_statement_cache_capacity(64);
+
+        tmp_conn
+            .execute_batch(FULL_SCHEMA_SQL)
+            .map_err(|e| CcError::Database(format!("temp db schema init failed: {}", e)))?;
+        tmp_conn
+            .pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
+            .map_err(|e| CcError::Database(format!("temp db set version: {}", e)))?;
+
+        Self::set_bulk_rebuild_pragmas(&tmp_conn)?;
+
+        tmp_conn
+            .execute_batch(&crate::direct_writer::drop_index_statements(
+                FULL_SCHEMA_SQL,
+            ))
+            .map_err(|e| CcError::Database(format!("temp db drop indexes: {}", e)))?;
+
+        tracing::info!("full rebuild: writing data to temp database");
+
+        {
+            let tx_result = (|| -> CcResult<()> {
+                let tx = tmp_conn
+                    .unchecked_transaction()
+                    .map_err(|e| CcError::Database(format!("temp db transaction: {}", e)))?;
+                write_fn(&tx)?;
+                tx.commit()
+                    .map_err(|e| CcError::Database(format!("temp db commit: {}", e)))?;
+                Ok(())
+            })();
+
+            if let Err(e) = tx_result {
+                tracing::warn!(err = %e, "full rebuild failed, cleaning up temp db");
+                drop(tmp_conn);
+                let _ = std::fs::remove_file(tmp_path);
+                return Err(e);
+            }
+        }
+
+        tracing::info!("full rebuild: recreating indexes");
+        tmp_conn
+            .execute_batch(&crate::direct_writer::extract_index_statements(
+                FULL_SCHEMA_SQL,
+            ))
+            .map_err(|e| CcError::Database(format!("temp db recreate indexes: {}", e)))?;
+
+        Self::restore_normal_pragmas(&tmp_conn)?;
+        drop(tmp_conn);
+
+        tracing::info!("full rebuild: temp database ready for swap");
+        Ok(())
+    }
+
+    /// Shared full-rebuild protocol behind [`Self::rebuild_with_temp_db`] and
+    /// [`Self::rebuild_with_direct_writer`], composed from
+    /// [`Self::build_rebuild_staging`] + [`Self::swap_rebuild_staging`] so the
+    /// prepare-time staging path (staging during build prepare, swap at
+    /// commit) shares exactly this implementation.
+    ///
+    /// The strategy-specific part is `build_temp`: it must leave a fully
+    /// written, closed SQLite database file at `tmp_path`, or return an error
+    /// (cleaning up after itself if it wants to — the protocol only sweeps
+    /// stale temp artifacts at the *start* of the next rebuild). The protocol
+    /// runs the invariant-bearing steps in order:
+    ///
+    /// 1. Snapshot the epoch floor.
+    /// 2. Remove stale temp artifacts left by a previous crashed run.
+    /// 3. `build_temp(tmp_path)` — produce the replacement database.
+    /// 4. Under the write lock: finalize the generation into the temp file,
+    ///    remove the live WAL/SHM sidecars, atomically rename temp → main,
+    ///    remove the temp sidecars.
+    /// 5. Reopen the write connection, rebuild the read pool, checkpoint the
+    ///    fresh WAL (non-fatal on failure).
+    ///
+    /// # Invariants
+    ///
+    /// - **Epoch floor.** The generation snapshotted in step 1 is only a
+    ///   *floor*: writers (including other processes) may advance the live
+    ///   epochs while `build_temp` runs. The final epoch vector is therefore
+    ///   written at swap time, under the write lock, as `max(floor, live) + 1`
+    ///   per epoch (see [`Self::finalize_rebuild_generation`]), so a rebuild
+    ///   can never produce a "same generation, different content" collision
+    ///   with values observed before or during the rebuild.
+    /// - **Lock scope / no reentrancy.** The `write_conn` mutex is held for
+    ///   the entire finalize + rename window so no writer can commit between
+    ///   epoch finalization and the file swap. The mutex is not reentrant:
+    ///   `build_temp` (and any `write_fn` it wraps) writes only to the temp
+    ///   file and must never take the write lock or call back into either
+    ///   rebuild method on the same thread. Concurrent writes from *other*
+    ///   threads during `build_temp` are allowed — the epoch floor exists
+    ///   precisely to absorb them.
+    /// - **FTS dual maintenance.** `symbols_fts` and `file_paths_fts` are
+    ///   maintained by schema triggers on `symbols`/`files`, while
+    ///   `chunks_fts`, `files_fts` and `literal_fts` have no triggers and are
+    ///   maintained at the application layer ([`Self::delete_file_data`] and
+    ///   the insert helpers). Rebuild strategies write into a fresh schema, so
+    ///   both models hold automatically — but `build_temp` must populate data
+    ///   through the shared insert helpers so the application-maintained FTS
+    ///   tables stay in sync with their base tables, including the
+    ///   FTS-rowid-equals-base-rowid alignment the indexed deletes rely on.
+    fn run_rebuild_protocol(
+        &self,
+        tmp_path: &Path,
+        label: &str,
+        build_temp: impl FnOnce(&Path) -> CcResult<()>,
+    ) -> CcResult<()> {
+        let generation_floor = self.build_rebuild_staging(tmp_path, build_temp)?;
+        self.swap_rebuild_staging(tmp_path, generation_floor, label)
+    }
+
     /// Perform a full rebuild using a temporary database file, then atomically
     /// swap it into place. This avoids WAL contention and allows aggressive
     /// pragmas without risk to the live database.
@@ -1155,78 +1264,7 @@ impl IndexDb {
     {
         let tmp_path = self.db_path.with_extension("sqlite3.tmp");
         self.run_rebuild_protocol(&tmp_path, "full rebuild", |tmp_path| {
-            tracing::info!(
-                tmp = %tmp_path.display(),
-                "full rebuild: creating temp database"
-            );
-
-            // 1. Open temp db and apply schema
-            let tmp_conn = Connection::open(tmp_path)
-                .map_err(|e| CcError::Database(format!("open temp db: {}", e)))?;
-            tmp_conn
-                .execute_batch("PRAGMA journal_mode=WAL; PRAGMA foreign_keys=ON;")
-                .map_err(|e| CcError::Database(format!("temp db pragmas: {}", e)))?;
-            // Same statement-rotation hazard as the main write connection:
-            // the per-file insert helpers keep ~20 cached statements alive.
-            tmp_conn.set_prepared_statement_cache_capacity(64);
-
-            // Apply full schema
-            tmp_conn
-                .execute_batch(FULL_SCHEMA_SQL)
-                .map_err(|e| CcError::Database(format!("temp db schema init failed: {}", e)))?;
-            tmp_conn
-                .pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
-                .map_err(|e| CcError::Database(format!("temp db set version: {}", e)))?;
-
-            // 2. Apply bulk pragmas
-            Self::set_bulk_rebuild_pragmas(&tmp_conn)?;
-
-            // 3. Drop non-PK indexes for faster bulk insert (derived from the schema
-            //    so the set always matches index_v1.sql)
-            tmp_conn
-                .execute_batch(&crate::direct_writer::drop_index_statements(
-                    FULL_SCHEMA_SQL,
-                ))
-                .map_err(|e| CcError::Database(format!("temp db drop indexes: {}", e)))?;
-
-            tracing::info!("full rebuild: writing data to temp database");
-
-            // 4. Write all data inside a single transaction
-            {
-                let tx_result = (|| -> CcResult<()> {
-                    let tx = tmp_conn
-                        .unchecked_transaction()
-                        .map_err(|e| CcError::Database(format!("temp db transaction: {}", e)))?;
-                    write_fn(&tx)?;
-                    tx.commit()
-                        .map_err(|e| CcError::Database(format!("temp db commit: {}", e)))?;
-                    Ok(())
-                })();
-
-                if let Err(e) = tx_result {
-                    tracing::warn!(err = %e, "full rebuild failed, cleaning up temp db");
-                    drop(tmp_conn);
-                    let _ = std::fs::remove_file(tmp_path);
-                    return Err(e);
-                }
-            }
-
-            // 5. Recreate indexes (same schema-derived set as the drop above)
-            tracing::info!("full rebuild: recreating indexes");
-            tmp_conn
-                .execute_batch(&crate::direct_writer::extract_index_statements(
-                    FULL_SCHEMA_SQL,
-                ))
-                .map_err(|e| CcError::Database(format!("temp db recreate indexes: {}", e)))?;
-
-            // Restore normal pragmas before closing
-            Self::restore_normal_pragmas(&tmp_conn)?;
-
-            // 6. Close temp connection
-            drop(tmp_conn);
-
-            tracing::info!("full rebuild: swapping temp database into place");
-            Ok(())
+            Self::execute_temp_db_staging_build(tmp_path, write_fn)
         })?;
 
         tracing::info!("full rebuild: temp-db swap complete");
@@ -1283,8 +1321,35 @@ impl IndexDb {
 
     // ── File state ───────────────────────────────────────────────
 
-    pub(crate) fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
+    /// The scan/diff file-state map, served from the cross-build snapshot
+    /// cache when the persisted `files_state` aggregate matches (see
+    /// `crate::file_state_cache`); falls back to the full-table load and
+    /// re-warms the cache when the token was stable across the load.
+    pub(crate) fn get_file_state(&self) -> CcResult<Arc<HashMap<String, FileState>>> {
         let conn = self.read_conn()?;
+        let pre_token = crate::signature_agg::load_on(&conn)?.map(|aggs| aggs.files_state);
+        if let Some(token) = pre_token {
+            if let Some(cached) = self.file_state_cache_materialize(token) {
+                return Ok(cached);
+            }
+        }
+        let map = Arc::new(Self::load_file_state_on(&conn)?);
+        // Only cache a load whose token was provably stable across it (a
+        // concurrent writer between the token read and the SELECT would
+        // otherwise pin a torn snapshot under a valid token).
+        let post_token = crate::signature_agg::load_on(&conn)?.map(|aggs| aggs.files_state);
+        if let (Some(pre), Some(post)) = (pre_token, post_token) {
+            if pre == post {
+                self.file_state_cache_store(post, Arc::clone(&map));
+            }
+        }
+        Ok(map)
+    }
+
+    /// Direct SQL load of the file-state map (the historical O(repo) path).
+    pub(crate) fn load_file_state_on(
+        conn: &Connection,
+    ) -> CcResult<HashMap<String, FileState>> {
         let mut stmt = conn
             .prepare("SELECT file_path, content_hash, mtime, size FROM files")
             .map_err(db_err)?;
@@ -1607,11 +1672,14 @@ impl IndexDb {
                 .filter(|p| seen.insert(*p))
                 .collect()
         };
-        // Seed-cache basis: the `symbols_seed` aggregate before this batch's
-        // mutations. Re-read after `finish_path_update` below; the pair lets
-        // the post-commit cache update prove its snapshot matches the
-        // pre-batch table state (see `seed_symbol_cache`).
-        let pre_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        // Cache bases: the `symbols_seed` / `files_state` aggregates before
+        // this batch's mutations. Re-read after `finish_path_update` below;
+        // each pair lets the post-commit cache update prove its snapshot
+        // matches the pre-batch table state (see `seed_symbol_cache` /
+        // `file_state_cache`).
+        let pre_aggs = crate::signature_agg::load_on(&tx)?;
+        let pre_seed_agg = pre_aggs.map(|aggs| aggs.symbols_seed);
+        let pre_files_agg = pre_aggs.map(|aggs| aggs.files_state);
         let agg_update = crate::signature_agg::begin_path_update(&tx, &touched_paths)?;
         // Per-section timing: emitted as `tracing::debug!` "sub-phase timing"
         // events (same field style as cc-index's `time_step`) so a slow
@@ -1678,14 +1746,17 @@ impl IndexDb {
         let section_start = std::time::Instant::now();
         Self::insert_route_nodes_on(&tx, route_nodes)?;
         crate::signature_agg::finish_path_update(&tx, &touched_paths, agg_update)?;
-        let post_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        let post_aggs = crate::signature_agg::load_on(&tx)?;
+        let post_seed_agg = post_aggs.map(|aggs| aggs.symbols_seed);
+        let post_files_agg = post_aggs.map(|aggs| aggs.files_state);
         Self::bump_index_epoch_on(&tx)?;
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();
         tx.commit().map_err(db_err)?;
         section_ms("db_commit", 0, section_start);
-        // Committed: carry the seed cache across this batch — the same
-        // file-scoped delta the transaction applied to `symbols`.
+        // Committed: carry the seed and file-state caches across this batch
+        // — the same file-scoped delta the transaction applied to `symbols`
+        // and `files`.
         self.seed_cache_apply_batch(
             pre_seed_agg,
             post_seed_agg,
@@ -1693,6 +1764,7 @@ impl IndexDb {
             normal_units,
             dirty_units,
         );
+        self.file_state_cache_apply_batch(pre_files_agg, post_files_agg, to_remove, normal_units);
         Ok(SeedTokenSpan {
             pre: pre_seed_agg,
             post: post_seed_agg,
@@ -2225,9 +2297,9 @@ impl IndexDb {
         let conn = self.read_conn()?;
         let count = |table: &str| -> usize {
             conn.query_row(&format!("SELECT COUNT(*) FROM {}", table), [], |r| {
-                r.get::<_, usize>(0)
+                r.get::<_, i64>(0)
             })
-            .unwrap_or(0)
+            .unwrap_or(0) as usize
         };
         Ok(ProjectStats {
             project_path: project_path.display().to_string(),
@@ -2263,51 +2335,6 @@ pub(crate) fn parse_parser_tier(s: &str) -> ParserTier {
         "verified" => ParserTier::Verified,
         _ => ParserTier::Generic,
     }
-}
-
-#[allow(dead_code)]
-pub(crate) fn is_actionable_reference_name(name: &str) -> bool {
-    if name.len() < 2 || name == "_" {
-        return false;
-    }
-    const BUILTINS: &[&str] = &[
-        "Ok",
-        "Err",
-        "Some",
-        "None",
-        "Result",
-        "Option",
-        "String",
-        "Vec",
-        "HashMap",
-        "HashSet",
-        "Self",
-        "self",
-        "super",
-        "crate",
-        "true",
-        "false",
-        "null",
-        "undefined",
-        "console",
-        "require",
-        "module",
-        "exports",
-        "Promise",
-        "Object",
-        "Array",
-        "Number",
-        "Boolean",
-        "str",
-        "int",
-        "float",
-        "bool",
-        "dict",
-        "list",
-        "set",
-        "tuple",
-    ];
-    !BUILTINS.contains(&name)
 }
 
 /// Lightweight route edge row for frontier expansion.
@@ -2438,12 +2465,25 @@ impl ReadOps<'_> {
         self.0.generation()
     }
 
-    /// Get a read connection from the pool.
-    pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
-        self.0.read_conn()
+    /// The on-disk schema version (`PRAGMA user_version`) of this database.
+    pub fn schema_version(&self) -> CcResult<u32> {
+        let conn = self.0.read_conn()?;
+        conn.pragma_query_value(None, "user_version", |row| row.get::<_, u32>(0))
+            .map_err(|e| CcError::Database(e.to_string()))
     }
 
-    pub fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
+    // NOTE: there is deliberately no `read_conn()` delegate here. Handing a
+    // raw pooled connection upward would let upper crates write ad-hoc SQL
+    // against the schema, eroding the typed read-model seam (and the
+    // aggregate/signature maintenance that depends on it — see STORAGE.md).
+    // Upper-crate reads go through the typed facets (`ReadOps` methods,
+    // `RetrievalReadModel`, `GraphReads`, `FrameworkScanSession`); tests
+    // open their own seed connections.
+
+    /// The scan/diff file-state map (`{file_path: hash/mtime/size}`),
+    /// served from the cross-build snapshot cache when valid — a hit is one
+    /// `Arc` clone instead of an O(repo) table load.
+    pub fn get_file_state(&self) -> CcResult<Arc<HashMap<String, FileState>>> {
         self.0.get_file_state()
     }
 
@@ -2582,6 +2622,29 @@ impl MaintenanceOps<'_> {
     {
         self.0.rebuild_with_direct_writer(write_fn)
     }
+
+    /// Standard temp-db staging path (`.sqlite3.tmp` beside the live db).
+    pub fn rebuild_staging_path(&self) -> PathBuf {
+        self.0.rebuild_staging_path()
+    }
+
+    /// Write a replacement database to the staging path without swapping.
+    pub fn build_temp_db_staging<F>(&self, write_fn: F) -> CcResult<IndexGeneration>
+    where
+        F: FnOnce(&Connection) -> CcResult<()>,
+    {
+        let tmp_path = self.rebuild_staging_path();
+        self.0.build_rebuild_staging(&tmp_path, |tmp_path| {
+            IndexDb::execute_temp_db_staging_build(tmp_path, write_fn)
+        })
+    }
+
+    /// Atomically swap a previously staged rebuild database into place.
+    pub fn swap_rebuild_staging(&self, generation_floor: IndexGeneration) -> CcResult<()> {
+        let tmp_path = self.rebuild_staging_path();
+        self.0
+            .swap_rebuild_staging(&tmp_path, generation_floor, "full rebuild")
+    }
 }
 
 #[cfg(test)]
@@ -2622,7 +2685,7 @@ mod tests {
     fn read_pool_connections_reject_writes() {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("ro.db")).unwrap().0;
-        let conn = db.reads().read_conn().unwrap();
+        let conn = db.read_conn().unwrap();
         let err = conn
             .execute("INSERT INTO metadata(key, value) VALUES('rogue', '1')", [])
             .expect_err("INSERT through a read pool connection must fail");
@@ -3319,7 +3382,9 @@ mod tests {
             .unwrap()
             .0;
         // Query with a classic SQL injection payload — should return empty, not panic or corrupt.
-        let result = db.query().find_symbol("'; DROP TABLE symbols; --", true, 10);
+        let result = db
+            .query()
+            .find_symbol("'; DROP TABLE symbols; --", true, 10);
         assert!(result.is_ok(), "injection string should not cause error");
         assert!(result.unwrap().is_empty());
     }
@@ -3330,7 +3395,9 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("injection_union.db"))
             .unwrap()
             .0;
-        let result = db.query().find_symbol("' UNION SELECT * FROM sqlite_master --", false, 10);
+        let result = db
+            .query()
+            .find_symbol("' UNION SELECT * FROM sqlite_master --", false, 10);
         assert!(result.is_ok(), "UNION injection should not cause error");
         assert!(result.unwrap().is_empty());
     }
@@ -3352,7 +3419,9 @@ mod tests {
         let db = IndexDb::open(&tmp.path().join("injection_unicode.db"))
             .unwrap()
             .0;
-        let result = db.query().find_symbol("name\u{200B}; DROP TABLE symbols", true, 10);
+        let result = db
+            .query()
+            .find_symbol("name\u{200B}; DROP TABLE symbols", true, 10);
         assert!(result.is_ok(), "unicode injection should not cause error");
         assert!(result.unwrap().is_empty());
     }

@@ -263,7 +263,7 @@ impl Indexer {
         let pool = rayon::ThreadPoolBuilder::new()
             .num_threads(num_threads)
             .build()
-            .map_err(|e| CcError::Other(format!("rayon pool: {}", e)))?;
+            .map_err(|e| CcError::Other(format!("rayon pool: {e}")))?;
         // A concurrent initializer winning the race is fine: use theirs.
         let _ = self.parse_pool.set(pool);
         Ok(self.parse_pool.get().expect("parse pool just initialized"))
@@ -519,7 +519,7 @@ impl Indexer {
         let dir_prefixes: Vec<String> = event_paths
             .iter()
             .filter(|p| !admitted.contains(p.as_str()))
-            .map(|p| format!("{}/", p))
+            .map(|p| format!("{p}/"))
             .collect();
         let to_remove: Vec<String> = existing
             .keys()
@@ -548,8 +548,7 @@ impl Indexer {
         if let Some(limit) = auto_file_limit {
             if files_scanned > limit {
                 return Err(CcError::Config(format!(
-                    "auto-index skipped: indexable file count {} exceeds auto_index.file_limit {}",
-                    files_scanned, limit
+                    "auto-index skipped: indexable file count {files_scanned} exceeds auto_index.file_limit {limit}"
                 )));
             }
         }
@@ -764,6 +763,10 @@ impl Indexer {
 
         const DEFAULT_BATCH_SIZE: usize = 200;
 
+        /// Per-file parse result: the write unit plus its source text (kept
+        /// for enrichment), or `(rel_path, error)` on failure.
+        type ParseOneResult = Result<(FileWriteUnit, Arc<str>), (String, String)>;
+
         let files_to_parse = to_parse.len();
         let used_parallel = files_to_parse >= MIN_FILES_FOR_PARALLEL;
 
@@ -795,7 +798,7 @@ impl Indexer {
                 let batch = &to_parse[offset..end];
 
                 // Parallel parse for this batch.
-                let batch_results: Vec<Result<(FileWriteUnit, Arc<str>), (String, String)>> =
+                let batch_results: Vec<ParseOneResult> =
                     pool.install(|| batch.par_iter().map(&parse_one).collect());
 
                 for result in batch_results {

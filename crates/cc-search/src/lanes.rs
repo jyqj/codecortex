@@ -163,6 +163,10 @@ pub(crate) struct LaneOutcome {
 /// the first failing lane in slice order aborts the search (later lanes may
 /// have run — they are side-effect-free beyond the engine caches).
 ///
+/// Per-lane result slot: `None` for disabled lanes (they yield an empty
+/// outcome below), `Some` for lanes that ran.
+type LaneHitSlot = Option<CcResult<Vec<(String, f64)>>>;
+
 /// Disabled lanes are skipped before any work but still yield an empty
 /// outcome, so downstream rank maps stay uniformly keyed by lane id.
 pub(crate) fn run_lanes(
@@ -170,8 +174,7 @@ pub(crate) fn run_lanes(
     context: &LaneContext<'_>,
 ) -> CcResult<Vec<LaneOutcome>> {
     let enabled: Vec<bool> = lanes.iter().map(|lane| lane.is_enabled(context)).collect();
-    let mut hit_results: Vec<Option<CcResult<Vec<(String, f64)>>>> =
-        (0..lanes.len()).map(|_| None).collect();
+    let mut hit_results: Vec<LaneHitSlot> = (0..lanes.len()).map(|_| None).collect();
 
     if enabled.iter().filter(|e| **e).count() <= 1 {
         // Zero or one enabled lane: no concurrency to gain, skip the spawns.

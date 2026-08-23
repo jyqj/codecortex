@@ -490,8 +490,7 @@ fn bench_concurrent_reads_during_incremental_writes() {
         round_times
     );
     eprintln!(
-        "readers: {} threads, {} reads completed during the write window",
-        READER_THREADS, total_reads
+        "readers: {READER_THREADS} threads, {total_reads} reads completed during the write window"
     );
     for (class, label) in [
         (0usize, "files COUNT(*)"),

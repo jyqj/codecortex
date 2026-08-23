@@ -148,7 +148,7 @@ impl Scanner {
             if path.is_dir() {
                 if let Some(ovr) = &overrides {
                     if ovr.matched(&rel_path, true).is_ignore() {
-                        ignored_dir_prefixes.push(format!("{}/", rel_path));
+                        ignored_dir_prefixes.push(format!("{rel_path}/"));
                     }
                 }
                 continue;
@@ -276,7 +276,7 @@ impl Scanner {
                 continue;
             }
             if self.project_path.join(rel).is_dir() {
-                subtree_prefixes.push(format!("{}/", rel));
+                subtree_prefixes.push(format!("{rel}/"));
                 descend_dirs.insert(rel.to_string());
             } else {
                 want_files.insert(rel.to_string());
@@ -361,8 +361,8 @@ impl Scanner {
             let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
             let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
             let glob_match = self.config.include.iter().any(|p| {
-                p.ends_with(&format!("*.{}", ext))
-                    || p.ends_with(&format!("/{}", file_name))
+                p.ends_with(&format!("*.{ext}"))
+                    || p.ends_with(&format!("/{file_name}"))
                     || p.ends_with(file_name)
             });
             if !glob_match {

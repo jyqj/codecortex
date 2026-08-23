@@ -2411,8 +2411,7 @@ mod tests {
         };
         assert!(
             err.to_string().contains("lane-b failed"),
-            "first failing lane in slice order must win, got: {}",
-            err
+            "first failing lane in slice order must win, got: {err}"
         );
     }
 

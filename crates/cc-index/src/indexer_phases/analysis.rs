@@ -332,7 +332,7 @@ fn adr_files_signature(project_path: &Path) -> u64 {
         };
         for entry in entries.flatten() {
             let path = entry.path();
-            if !path.extension().is_some_and(|e| e == "md") {
+            if path.extension().is_none_or(|e| e != "md") {
                 continue;
             }
             let Ok(metadata) = path.metadata() else {

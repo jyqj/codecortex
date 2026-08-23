@@ -6,6 +6,20 @@ use cc_index::IndexReport;
 use cc_model::{CcError, CcResult};
 
 pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::Value, String> {
+    build_index_scoped(runtime, full, None)
+}
+
+/// [`build_index`] with an optional event-scoped hint from the MCP `index`
+/// tool's `changed_paths`/`removed_paths` params: callers that know exactly
+/// which files they touched (agents that just edited them, editor
+/// integrations) get the same stat-only scan/diff path as watcher ticks.
+/// The scope is a hint — every safety fallback to the full tree walk is
+/// decided inside the scan/diff phase.
+pub fn build_index_scoped(
+    runtime: SharedCodeIndex,
+    full: bool,
+    scope: Option<cc_index::BuildScope>,
+) -> Result<serde_json::Value, String> {
     // Per-project build gate: clone the Arc under a brief read lock and DROP
     // the read lock before blocking on the gate (lock-ordering rule: never
     // block on the gate while holding the CodeIndex RwLock). Manual builds
@@ -18,7 +32,8 @@ pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::V
     let _build_permit = build_gate
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    let report = run_split_build(&runtime, full, false, None).map_err(|e| e.to_string())?;
+    let report =
+        run_split_build(&runtime, full, false, scope.as_ref()).map_err(|e| e.to_string())?;
     serde_json::to_value(report).map_err(|e| e.to_string())
 }
 

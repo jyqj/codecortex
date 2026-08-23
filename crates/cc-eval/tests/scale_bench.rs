@@ -78,7 +78,24 @@ fn run_incremental_iterations(
     backend: &CodeIndexBackend,
     label: &str,
     iterations: usize,
+    mutate: impl FnMut(usize),
+) -> Vec<Value> {
+    run_incremental_iterations_with(backend, label, iterations, mutate, |backend| {
+        backend
+            .build_index_report(false)
+            .expect("incremental index build should succeed")
+    })
+}
+
+/// [`run_incremental_iterations`] with a custom build driver, so scenarios
+/// can exercise the event-scoped incremental path (`changed_paths` on the
+/// `index` tool) alongside the default unscoped full-tree diff.
+fn run_incremental_iterations_with(
+    backend: &CodeIndexBackend,
+    label: &str,
+    iterations: usize,
     mut mutate: impl FnMut(usize),
+    mut build: impl FnMut(&CodeIndexBackend) -> Value,
 ) -> Vec<Value> {
     let mut reports = Vec::with_capacity(iterations);
     for iteration in 0..=iterations {
@@ -89,9 +106,7 @@ fn run_incremental_iterations(
             "[scale-bench] incremental build start: scenario={} iteration={}",
             label, iteration
         );
-        let report = backend
-            .build_index_report(false)
-            .expect("incremental index build should succeed");
+        let report = build(backend);
         if iteration >= 1 {
             reports.push(report);
         }
@@ -447,6 +462,36 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
     let incremental_single =
         summarize_incremental_reports("single_file", repo.files_written, &single_reports);
 
+    // Incremental (event-scoped): the same single-file body edit, but driven
+    // through the `index` tool's `changed_paths` hint — the watcher-tick
+    // path that stats/hashes only the event paths instead of walking the
+    // tree. Measures the actual watcher-driven single-file latency.
+    let scoped_changed = vec![single_target.clone()];
+    let scoped_reports = run_incremental_iterations_with(
+        &backend,
+        "single_file_scoped",
+        INCREMENTAL_ITERATIONS,
+        |iteration| {
+            // Offset markers so scoped edits never reproduce a content hash
+            // the unscoped scenario already recorded.
+            touch_file(root, &single_target, 100 + iteration);
+        },
+        |backend| {
+            backend
+                .build_index_report_scoped(&scoped_changed)
+                .expect("scoped incremental index build should succeed")
+        },
+    );
+    for report in &scoped_reports {
+        assert_eq!(report_usize(report, "files_parsed"), 1);
+        assert_eq!(report_usize(report, "files_updated"), 1);
+    }
+    let incremental_single_scoped = summarize_incremental_reports(
+        "single_file_scoped",
+        repo.files_written,
+        &scoped_reports,
+    );
+
     // Incremental: body-only edits across 5% of code files per iteration.
     let batch: Vec<String> = repo
         .code_file_paths
@@ -481,6 +526,7 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
         cold_index_ms,
         db_bytes,
         incremental_single,
+        incremental_single_scoped,
         incremental_batch,
         batch_touched_files: batch.len(),
         tools,

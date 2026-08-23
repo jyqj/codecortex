@@ -278,10 +278,19 @@ pub(in crate::resolver) struct CatalogEntry {
 /// the resolution, so hashing them keeps cache hits for repeated identical
 /// call sites without ever serving a signal-narrowed result to a
 /// signal-free caller (or vice versa).
+///
+/// `scoped_line` is the call-site line *only when the caller has a non-empty
+/// scope map* (`(!scopes.is_empty()).then_some(line)`). The line influences
+/// resolution exclusively through scope lookups (`scope_for_line` and the
+/// scope-distance ranking in `best_same_file_candidate`); with an empty scope
+/// map every line produces the identical result, so hashing the line would
+/// only fragment the cache — one entry per call site instead of one per
+/// distinct (name, file, container, signals) query. Guarded by
+/// `resolve_cache_line_key_guard` tests in `resolver::mod`.
 pub(in crate::resolver) fn resolve_key_hash(
     name: &str,
     file_path: &str,
-    line: u32,
+    scoped_line: Option<u32>,
     container: Option<&str>,
     signals: CallSiteSignals<'_>,
 ) -> u64 {
@@ -289,7 +298,7 @@ pub(in crate::resolver) fn resolve_key_hash(
     let mut hasher = std::collections::hash_map::DefaultHasher::new();
     name.hash(&mut hasher);
     file_path.hash(&mut hasher);
-    line.hash(&mut hasher);
+    scoped_line.hash(&mut hasher);
     container.hash(&mut hasher);
     signals.arg_count.hash(&mut hasher);
     signals.receiver.hash(&mut hasher);

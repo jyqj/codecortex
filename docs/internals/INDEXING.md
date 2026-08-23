@@ -32,7 +32,20 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
   已知语言文件总是被索引，include 只救援匹配 glob 的未知语言文件）。
 - 变更检测走 **mtime+size 快路径 + 哈希确认**：mtime+size 都没变的文件跳过
   哈希；`CODECORTEX_STRICT_HASH=1` 禁用快路径，每个文件都做 blake3。
+  哈希带 `b3:` 算法前缀；早期版本落盘的无前缀 SHA-256 行**惰性迁移**——
+  快路径命中时原值保留，首次 stat 变化触发一次重哈希 + 重解析并改写为
+  新格式（哈希只做相等比较，两种格式可长期共存）。
 - 超过 `indexing.max_file_bytes`（默认 512000）的文件跳过。
+- **作用域 scan/diff**（watcher 增量路径）：增量构建可带一个相对路径集
+  scope（watcher drain 的 changed+removed），`Scanner::scan_paths` 只走
+  候选路径及其祖先目录（同一 WalkBuilder + 准入规则，逐路径判定与全量
+  scan 一致），只有范围内路径会被删除判定，范围外 DB 已知文件作为隐式
+  Skip 进入 action 映射——脏传播照常跨范围提升导入者。全量构建忽略
+  scope；回退策略见 CONCURRENCY.md 的 FileWatcher 一节。
+- **单读管线**：diff 为哈希读取的内容（Add/Update）随 `PendingFile`
+  携带进 parse，enrichment 再复用（`ParseResult::sources`），受
+  `MemoryBudget::content_carry_budget`（总预算 1/8）软上限约束，超限或
+  非 UTF-8 回退读盘。
 
 ## parse
 
@@ -86,8 +99,10 @@ self-member → scope → same-file → imports → suffix → global-unique
 - 每个结果的 `winning_step` 决定持久化在边/引用上的
   `resolution_strategy`（如 `fuzzy_arg_count`、`...:upgraded_from=...`）；
 - `candidate_count` 进入置信度惩罚但不持久化；
-- 解析器目录的 `resolve_name` 有 LRU 缓存
-  （`CODECORTEX_RESOLVER_CACHE_SIZE`，默认 8192）。
+- 解析器目录的 `resolve_name` 有 **16 片分片锁 LRU 缓存**
+  （`CODECORTEX_RESOLVER_CACHE_SIZE`，默认 8192，均分到分片），并行
+  resolve 不再在单一互斥锁上串行化；缓存键在无作用域绑定时不含行号
+  （行号只通过 scope 距离排序影响结果），避免同名逐行引用打散缓存。
 - **候选上限**（`CODECORTEX_RESOLVER_MAX_POOL`，默认 256）：当某名字被超过上限个符号共享时，
   global-unique / fuzzy 阶与 `find_best` 兜底直接判不可解，不再构建/扫描该候选桶。解析器
   会把函数局部变量（`left`、`value`、`label` 等）也并入全局 `by_name`，在大仓库里这类名字

@@ -1,19 +1,27 @@
-//! Incremental indexer pipeline.
+//! Incremental indexer pipeline. Phase numbering (the same labels the
+//! per-phase comments and `indexer_phases/` docs use):
 //!
-//! Phase 1: Scan → Vec<ScannedFile>
+//! Phase 1: Scan → Vec<ScannedFile> (optionally scoped to a watcher drain)
 //! Phase 2: Diff (mtime+size fast-skip → hash confirm) → Vec<PendingFile>
-//! Phase 3: Parallel parse (rayon) → Vec<IndexedFile>
-//! Phase 4: Symbol resolution (cross-file)
-//! Phase 5: Batch write to SQLite
-//! Phase 6: Post-processing (test edges, communities, frameworks)
-//! Phase 7: Git co-change analysis
+//! Phase 3: Parallel parse (rayon) → write units
+//!   3.5: dirty closure (export-fingerprint propagation, `dirty_closure.rs`)
+//!   3.6: dirty reload (re-resolve-only units loaded from the DB)
+//!   3.7: framework resolver enrichment  3.8: C/C++ include resolution
+//! Phase 4: Symbol resolution (4a semantic-edge UIDs, 4b type catalog,
+//!   4c call edges/refs, 4d cross-file framework resolution)
+//! Phase 5: (reserved — snapshot/compression happen inside prepare)
+//! Phase 6: Batch write to SQLite (+ config-link units)
+//! Phase 7: Post-processing (test edges, dispatch synthesis, communities)
+//! Phase 8+: Analysis (git co-change, infra, ADR)
+//!
+//! Orchestration order and the full/incremental invariants live in
+//! `build_plan.rs`; the staged-commit lock contract in ADR-0002.
 
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use sha2::{Digest, Sha256};
 
 use crate::dirty_reload_policy::parse_outcome_from_reloaded_edges;
 use crate::memory_budget::MemoryBudget;
@@ -31,6 +39,20 @@ use crate::scanner::{ScannedFile, Scanner};
 pub(crate) const MIN_FILES_FOR_PARALLEL: usize = 50;
 /// Best-effort safeguard: emit a warning when parsing a single file takes too long.
 const SLOW_PARSE_WARN_MS: u128 = 1_500;
+
+/// Content-confirmation hash for the scan/diff phase and the config-link
+/// units, blake3 with an algorithm-versioning prefix.
+///
+/// The `b3:` prefix distinguishes fresh hashes from legacy unprefixed
+/// SHA-256 rows persisted by earlier builds. The hash is only ever compared
+/// for equality, so migration is self-healing and lazy: a legacy row served
+/// by the mtime+size fast path keeps its stored value untouched, and the
+/// first time a legacy file's stat changes, the freshly computed `b3:` hash
+/// cannot equal the legacy hex — the file is re-parsed once and rewritten
+/// with the new format.
+pub(crate) fn content_confirmation_hash(content: &[u8]) -> String {
+    format!("b3:{}", blake3::hash(content).to_hex())
+}
 
 /// Read a file for the incremental scan, returning `None` (with a traced
 /// warning) on failure instead of silently dropping it. A file that vanished
@@ -73,6 +95,12 @@ pub struct PendingFile {
     pub scanned: ScannedFile,
     pub content_hash: String,
     pub action: FileAction,
+    /// Content already read (and hashed) by the diff, carried forward so the
+    /// parse phase doesn't hit the disk a second time. `None` when the diff
+    /// took the mtime+size fast path, the bytes weren't valid UTF-8, or the
+    /// carry budget ([`MemoryBudget::content_carry_budget`]) was exhausted —
+    /// parse then falls back to its own read.
+    pub content: Option<std::sync::Arc<str>>,
 }
 
 /// Index report.
@@ -150,6 +178,10 @@ pub(crate) struct ParseResult {
     pub(crate) parse_errors: Vec<String>,
     pub(crate) files_to_parse: usize,
     pub(crate) used_parallel: bool,
+    /// Carried source text by rel_path (only files whose diff-phase read was
+    /// within the carry budget), for framework enrichment to reuse instead
+    /// of a third disk read. Dropped after enrichment.
+    pub(crate) sources: HashMap<String, std::sync::Arc<str>>,
 }
 
 /// Intermediate result for Phase 4 (resolve).
@@ -212,13 +244,21 @@ impl Indexer {
     /// write lock and then hand the result to [`Indexer::commit_build`] under a
     /// brief write lock. `full`/`auto_file_limit` must match the values passed to
     /// the paired `commit_build` call so both halves share the same build mode.
+    ///
+    /// `scope`: optional scan/diff restriction to the named relative paths
+    /// (a watcher drain); `None` scans the whole tree. Full builds ignore it.
     pub fn prepare_build(
         &self,
         project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: Option<&HashSet<String>>,
     ) -> CcResult<crate::build_plan::PreparedBuild> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare(self, project_path)
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare_scoped(
+            self,
+            project_path,
+            scope,
+        )
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
@@ -291,20 +331,36 @@ impl Indexer {
     // ── Phase helper structs ────────────────────────────────────────────
 
     /// Phase 1+2: Scan files and compute diff against existing DB state.
+    ///
+    /// `scope`, when given on an incremental build, restricts the filesystem
+    /// walk and diff to the named relative paths (a watcher drain): only
+    /// those paths are stat'ed/hashed/parsed, only those paths can land in
+    /// `to_remove`, and every other DB-known file is carried as an implicit
+    /// Skip — so dirty propagation still sees the full action map and can
+    /// promote unscoped importers to `DirtyResolveOnly`. Admission fidelity
+    /// is [`Scanner::scan_paths`]'s guarantee. Full builds ignore the scope.
     pub(crate) fn phase_scan_and_diff(
         &self,
         _project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: Option<&HashSet<String>>,
     ) -> CcResult<ScanDiffResult> {
-        // Phase 1: Scan
-        let scanned = self.scanner.scan();
-        let files_scanned = scanned.len();
+        let scope = if full { None } else { scope };
+
+        // Phase 1: Scan (full tree, or just the scoped paths' spine)
+        let scanned = match scope {
+            Some(paths) => self.scanner.scan_paths(paths),
+            None => self.scanner.scan(),
+        };
         if let Some(limit) = auto_file_limit {
-            if files_scanned > limit {
+            // The auto-index gate is meaningful for tree-sized scans only;
+            // scoped batches are already bounded by the watcher's drain cap.
+            if scope.is_none() && scanned.len() > limit {
                 return Err(CcError::Config(format!(
                     "auto-index skipped: indexable file count {} exceeds auto_index.file_limit {}",
-                    files_scanned, limit
+                    scanned.len(),
+                    limit
                 )));
             }
         }
@@ -315,16 +371,34 @@ impl Indexer {
         } else {
             self.db.reads().get_file_state()?
         };
-        let scanned_paths: std::collections::HashSet<String> =
+        let mut scanned_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
         let strict_hash = std::env::var("CODECORTEX_STRICT_HASH")
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
             .unwrap_or(false);
 
+        // Single-read pipeline: the bytes read for hashing are carried into
+        // parse for Add/Update files, capped by the carry budget (racy
+        // overshoot by at most one in-flight batch of files is acceptable —
+        // this is a soft memory bound, not a correctness bound).
+        let carry_budget = self.memory_budget.content_carry_budget();
+        let carried_bytes = std::sync::atomic::AtomicU64::new(0);
+        let carry = |content: Vec<u8>| -> Option<std::sync::Arc<str>> {
+            let len = content.len() as u64;
+            if carried_bytes.load(std::sync::atomic::Ordering::Relaxed) + len > carry_budget {
+                return None;
+            }
+            // Non-UTF-8 content cannot be carried; parse's own read will
+            // surface the encoding error through its normal error path.
+            let text = String::from_utf8(content).ok()?;
+            carried_bytes.fetch_add(len, std::sync::atomic::Ordering::Relaxed);
+            Some(std::sync::Arc::<str>::from(text))
+        };
+
         let pending: Vec<PendingFile> = scanned
             .into_par_iter()
             .filter_map(|file| {
-                let (hash, action) = match existing.get(&file.rel_path) {
+                let (hash, action, content) = match existing.get(&file.rel_path) {
                     Some(old)
                         if !strict_hash
                             && (file.mtime - old.mtime).abs() < 0.001
@@ -333,18 +407,18 @@ impl Indexer {
                         // Fast path: unchanged mtime + size means we can avoid reading and
                         // hashing the file during incremental scans. The size guard catches
                         // common same-mtime edits on coarse-grained filesystems.
-                        (old.content_hash.clone(), FileAction::Skip)
+                        (old.content_hash.clone(), FileAction::Skip, None)
                     }
                     Some(old) => {
                         let content = match read_for_scan(&file.abs_path) {
                             Some(c) => c,
                             None => return None,
                         };
-                        let hash = format!("{:x}", Sha256::digest(&content));
+                        let hash = content_confirmation_hash(&content);
                         if hash == old.content_hash {
-                            (hash, FileAction::Skip)
+                            (hash, FileAction::Skip, None)
                         } else {
-                            (hash, FileAction::Update)
+                            (hash, FileAction::Update, carry(content))
                         }
                     }
                     None => {
@@ -352,13 +426,15 @@ impl Indexer {
                             Some(c) => c,
                             None => return None,
                         };
-                        (format!("{:x}", Sha256::digest(&content)), FileAction::Add)
+                        let hash = content_confirmation_hash(&content);
+                        (hash, FileAction::Add, carry(content))
                     }
                 };
                 Some(PendingFile {
                     scanned: file,
                     content_hash: hash,
                     action,
+                    content,
                 })
             })
             .collect();
@@ -371,17 +447,37 @@ impl Indexer {
             .iter()
             .filter(|p| matches!(p.action, FileAction::Update))
             .count();
-        let files_skipped = pending
+        let mut files_skipped = pending
             .iter()
             .filter(|p| matches!(p.action, FileAction::Skip))
             .count();
 
-        // Files to remove
-        let to_remove: Vec<String> = existing
-            .keys()
-            .filter(|p| !scanned_paths.contains(p.as_str()))
-            .cloned()
-            .collect();
+        // Files to remove. Unscoped: everything the DB knows that the walk
+        // no longer sees. Scoped: only scoped paths can be removed (the walk
+        // deliberately saw nothing else), and every unscoped DB-known file
+        // joins `scanned_paths` as an implicit Skip so downstream action
+        // mapping and dirty propagation see the whole project.
+        let to_remove: Vec<String> = match scope {
+            None => existing
+                .keys()
+                .filter(|p| !scanned_paths.contains(p.as_str()))
+                .cloned()
+                .collect(),
+            Some(paths) => {
+                let removed: Vec<String> = paths
+                    .iter()
+                    .filter(|p| existing.contains_key(p.as_str()) && !scanned_paths.contains(*p))
+                    .cloned()
+                    .collect();
+                for path in existing.keys() {
+                    if !paths.contains(path) && scanned_paths.insert(path.clone()) {
+                        files_skipped += 1;
+                    }
+                }
+                removed
+            }
+        };
+        let files_scanned = scanned_paths.len();
 
         // Filter and sort non-skip files for parsing (large files first)
         let mut to_parse: Vec<PendingFile> = pending
@@ -413,7 +509,8 @@ impl Indexer {
         // Pre-compute Cargo workspace alias map for Rust crate import resolution
         let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
 
-        let parse_one = |pf: &PendingFile| -> Result<(FileWriteUnit, String), (String, String)> {
+        type ParsedUnit = (FileWriteUnit, Option<std::sync::Arc<str>>);
+        let parse_one = |pf: &PendingFile| -> Result<ParsedUnit, (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
             let language = pf.scanned.language;
@@ -422,8 +519,16 @@ impl Indexer {
             let size = pf.scanned.size;
             let parse_started = std::time::Instant::now();
 
-            let content = std::fs::read_to_string(&abs_path)
-                .map_err(|e| (rel_path.clone(), e.to_string()))?;
+            // Single-read pipeline: reuse the content the diff already read
+            // and hashed; fall back to disk only when the carry budget (or
+            // UTF-8 validation) dropped it.
+            let carried = pf.content.clone();
+            let content: std::sync::Arc<str> = match carried.clone() {
+                Some(text) => text,
+                None => std::fs::read_to_string(&abs_path)
+                    .map_err(|e| (rel_path.clone(), e.to_string()))?
+                    .into(),
+            };
             let mut outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 self.parsers.parse_with_timeout(
                     &rel_path,
@@ -480,7 +585,7 @@ impl Indexer {
                     size,
                     outcome,
                 },
-                content,
+                carried,
             ))
         };
 
@@ -490,6 +595,19 @@ impl Indexer {
         let used_parallel = files_to_parse >= MIN_FILES_FOR_PARALLEL;
 
         let mut write_units: Vec<FileWriteUnit> = Vec::with_capacity(files_to_parse);
+        let mut sources: HashMap<String, std::sync::Arc<str>> = HashMap::new();
+        let mut collect = |result: Result<ParsedUnit, (String, String)>| match result {
+            Ok((unit, source)) => {
+                if let Some(text) = source {
+                    sources.insert(unit.rel_path.clone(), text);
+                }
+                write_units.push(unit);
+            }
+            Err((file, error)) => {
+                tracing::warn!(file = %file, error = %error, "parse error");
+                parse_errors.push(format!("{}: {}", file, error));
+            }
+        };
 
         if used_parallel {
             // Build a controlled thread pool capped by max_concurrent_parse config.
@@ -512,19 +630,11 @@ impl Indexer {
                 let batch = &to_parse[offset..end];
 
                 // Parallel parse for this batch.
-                let batch_results: Vec<Result<(FileWriteUnit, String), (String, String)>> =
+                let batch_results: Vec<Result<ParsedUnit, (String, String)>> =
                     pool.install(|| batch.par_iter().map(&parse_one).collect());
 
                 for result in batch_results {
-                    match result {
-                        Ok((unit, _source)) => {
-                            write_units.push(unit);
-                        }
-                        Err((file, error)) => {
-                            tracing::warn!(file = %file, error = %error, "parse error");
-                            parse_errors.push(format!("{}: {}", file, error));
-                        }
-                    }
+                    collect(result);
                 }
 
                 tracing::debug!(
@@ -540,15 +650,7 @@ impl Indexer {
         } else {
             // Small file count: sequential processing.
             for pf in &to_parse {
-                match parse_one(pf) {
-                    Ok((unit, _source)) => {
-                        write_units.push(unit);
-                    }
-                    Err((file, error)) => {
-                        tracing::warn!(file = %file, error = %error, "parse error");
-                        parse_errors.push(format!("{}: {}", file, error));
-                    }
-                }
+                collect(parse_one(pf));
             }
         }
 
@@ -557,6 +659,7 @@ impl Indexer {
             parse_errors,
             files_to_parse,
             used_parallel,
+            sources,
         })
     }
 
@@ -665,6 +768,7 @@ impl Indexer {
         &self,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        sources: &HashMap<String, std::sync::Arc<str>>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
         // Phase 3.7: Framework resolver enrichment (before resolution)
         let fw_context = {
@@ -735,13 +839,19 @@ impl Indexer {
                         continue;
                     }
 
-                    // Read source on demand only for framework-relevant files.
-                    // The file was just read during Phase 3 parsing, so the OS
-                    // page cache is still warm and this re-read is cheap.
-                    let full_path = project_path.join(&unit.rel_path);
-                    let source = match std::fs::read_to_string(&full_path) {
-                        Ok(s) => s,
-                        Err(_) => continue,
+                    // Source for framework-relevant files: reuse the content
+                    // carried from the diff-phase read when available; fall
+                    // back to disk for uncarried units (budget-dropped, or
+                    // dirty-reloaded units that were never parsed this build).
+                    let source: std::sync::Arc<str> = match sources.get(&unit.rel_path) {
+                        Some(text) => text.clone(),
+                        None => {
+                            let full_path = project_path.join(&unit.rel_path);
+                            match std::fs::read_to_string(&full_path) {
+                                Ok(s) => s.into(),
+                                Err(_) => continue,
+                            }
+                        }
                     };
 
                     for resolver in &applicable {
@@ -887,6 +997,188 @@ mod import_marker_dedup_tests {
             scores.contains_key("nextjs"),
             "nextjs was missing from the removed inline tables; it must now be \
              detected via the authoritative table"
+        );
+    }
+}
+
+#[cfg(test)]
+mod content_hash_migration_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use tempfile::TempDir;
+
+    fn stored_hash(db: &IndexDb, path: &str) -> String {
+        db.reads()
+            .query_json(
+                "SELECT content_hash FROM files WHERE file_path = ?1",
+                &[path.to_string()],
+            )
+            .unwrap()
+            .first()
+            .and_then(|row| row.get("content_hash"))
+            .and_then(|v| v.as_str())
+            .map(String::from)
+            .expect("files row present")
+    }
+
+    /// Fresh builds persist the blake3 `b3:`-prefixed confirmation hash.
+    #[test]
+    fn fresh_build_stores_blake3_prefixed_hash() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("lib.py"), "def f():\n    return 1\n").unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("i.db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), tmp.path(), &IndexingConfig::default());
+        indexer.build_index(tmp.path(), false).unwrap();
+        assert!(
+            stored_hash(&db, "lib.py").starts_with("b3:"),
+            "fresh hashes must carry the b3: prefix"
+        );
+    }
+
+    /// Legacy (unprefixed SHA-256) rows migrate lazily: the mtime+size fast
+    /// path keeps them untouched (no spurious re-parse), and the first stat
+    /// change re-hashes the file — the legacy value cannot equal the new
+    /// `b3:` hash, so the file is re-parsed once and rewritten in the new
+    /// format even when its content did not change.
+    #[test]
+    fn legacy_sha256_rows_migrate_on_first_stat_change() {
+        let tmp = TempDir::new().unwrap();
+        let source = "def f():\n    return 1\n";
+        std::fs::write(tmp.path().join("lib.py"), source).unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("i.db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), tmp.path(), &IndexingConfig::default());
+        indexer.build_index(tmp.path(), false).unwrap();
+
+        // Simulate a database written by a pre-blake3 build: unprefixed
+        // SHA-256-shaped hex in the files row.
+        let legacy = "a".repeat(64);
+        let conn = crate::test_seed::seed_conn(&db);
+        conn.execute(
+            "UPDATE files SET content_hash = ?1 WHERE file_path = 'lib.py'",
+            [legacy.as_str()],
+        )
+        .unwrap();
+        drop(conn);
+
+        // Round 1: stat unchanged — the fast path must skip without reading
+        // (the legacy hash stays in place, no re-parse storm on upgrade).
+        let report = indexer.build_index(tmp.path(), false).unwrap();
+        assert_eq!(report.files_updated, 0, "stat-unchanged file must skip");
+        assert_eq!(
+            stored_hash(&db, "lib.py"),
+            legacy,
+            "fast-path skip must not rewrite the legacy hash"
+        );
+
+        // Round 2: touch the file (same content, new mtime) — the recomputed
+        // b3: hash mismatches the legacy value and triggers one re-hash +
+        // re-parse that migrates the row.
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        std::fs::write(tmp.path().join("lib.py"), source).unwrap();
+        let report = indexer.build_index(tmp.path(), false).unwrap();
+        assert_eq!(
+            report.files_updated, 1,
+            "legacy-hash mismatch must re-parse the touched file once"
+        );
+        let migrated = stored_hash(&db, "lib.py");
+        assert!(
+            migrated.starts_with("b3:"),
+            "migrated row must carry the b3: prefix, got {migrated}"
+        );
+        assert_eq!(migrated, content_confirmation_hash(source.as_bytes()));
+
+        // Round 3: converged — the same touch trick now fast-skips again
+        // after an mtime-preserving no-op build.
+        let report = indexer.build_index(tmp.path(), false).unwrap();
+        assert_eq!(report.files_updated, 0, "migrated row must be stable");
+    }
+}
+
+#[cfg(test)]
+mod single_read_pipeline_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use tempfile::TempDir;
+
+    fn setup(tmp: &TempDir) -> Indexer {
+        let db = Arc::new(IndexDb::open(&tmp.path().join("i.db")).unwrap().0);
+        Indexer::new(db, tmp.path(), &IndexingConfig::default())
+    }
+
+    /// The diff phase must carry the content it read for hashing, and parse
+    /// must actually use it. Proof: delete the file from disk between diff
+    /// and parse — a parse that re-read would fail, one that reuses the
+    /// carried content still produces the file's symbols.
+    #[test]
+    fn parse_reuses_diff_read_content_without_touching_disk() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("lib.py"), "def carried():\n    return 1\n").unwrap();
+        let indexer = setup(&tmp);
+
+        let mut scan = indexer
+            .phase_scan_and_diff(tmp.path(), false, None, None)
+            .unwrap();
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        assert_eq!(to_parse.len(), 1);
+        assert!(
+            to_parse[0].content.is_some(),
+            "Add within the carry budget must carry its content"
+        );
+
+        std::fs::remove_file(tmp.path().join("lib.py")).unwrap();
+
+        let parsed = indexer.phase_parse(tmp.path(), to_parse).unwrap();
+        assert!(
+            parsed.parse_errors.is_empty(),
+            "carried content must make the parse disk-independent: {:?}",
+            parsed.parse_errors
+        );
+        assert!(
+            parsed.write_units[0]
+                .outcome
+                .symbols
+                .iter()
+                .any(|s| s.name == "carried"),
+            "symbols must come from the carried content"
+        );
+        assert!(
+            parsed.sources.contains_key("lib.py"),
+            "carried source must flow on to enrichment"
+        );
+    }
+
+    /// With a zero carry budget every file falls back to the disk-read path:
+    /// nothing is carried, parse re-reads, and the result is identical.
+    #[test]
+    fn zero_carry_budget_falls_back_to_disk_read() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("lib.py"), "def fallback():\n    return 2\n").unwrap();
+        let mut indexer = setup(&tmp);
+        indexer.memory_budget = MemoryBudget::with_rss_source(0, || 0);
+
+        let mut scan = indexer
+            .phase_scan_and_diff(tmp.path(), false, None, None)
+            .unwrap();
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        assert_eq!(to_parse.len(), 1);
+        assert!(
+            to_parse[0].content.is_none(),
+            "zero budget must carry nothing"
+        );
+
+        let parsed = indexer.phase_parse(tmp.path(), to_parse).unwrap();
+        assert!(parsed.parse_errors.is_empty());
+        assert!(
+            parsed.write_units[0]
+                .outcome
+                .symbols
+                .iter()
+                .any(|s| s.name == "fallback"),
+            "disk fallback must still parse the file"
+        );
+        assert!(
+            parsed.sources.is_empty(),
+            "uncarried files must not extend content lifetime into enrichment"
         );
     }
 }

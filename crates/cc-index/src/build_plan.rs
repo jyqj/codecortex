@@ -177,6 +177,21 @@ impl IndexBuildPlan {
         indexer: &Indexer,
         project_path: &Path,
     ) -> CcResult<PreparedBuild> {
+        self.prepare_scoped(indexer, project_path, None)
+    }
+
+    /// [`IndexBuildPlan::prepare`] with an optional scan/diff scope: a set of
+    /// relative paths (a watcher drain) to which the filesystem walk and diff
+    /// are restricted. `None` (and every full build) scans the whole tree.
+    /// The scope affects ONLY which files are stat'ed/hashed/re-parsed and
+    /// which can be removed; downstream phases (dirty closure, resolution,
+    /// write, postprocess) see the same shapes either way.
+    pub(crate) fn prepare_scoped(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+        scope: Option<&std::collections::HashSet<String>>,
+    ) -> CcResult<PreparedBuild> {
         let start = Instant::now();
 
         // Generation snapshot must precede every DB read in this prepare
@@ -185,8 +200,12 @@ impl IndexBuildPlan {
         let prepared_index_epoch = indexer.db.reads().generation()?.index_epoch;
 
         let phase_start = Instant::now();
-        let mut scan_result =
-            indexer.phase_scan_and_diff(project_path, self.mode.is_full(), self.auto_file_limit)?;
+        let mut scan_result = indexer.phase_scan_and_diff(
+            project_path,
+            self.mode.is_full(),
+            self.auto_file_limit,
+            scope,
+        )?;
         let scan_diff_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
@@ -195,6 +214,7 @@ impl IndexBuildPlan {
         let ParsedBuildState {
             mut write_units,
             parse_report,
+            sources,
         } = ParsedBuildState::from(parse_result);
 
         // Ordering invariant, enforced by types: the dirty closure must be
@@ -214,7 +234,11 @@ impl IndexBuildPlan {
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
-        let fw_context = reloaded.enrich_frameworks(indexer, project_path, &mut write_units)?;
+        let fw_context =
+            reloaded.enrich_frameworks(indexer, project_path, &mut write_units, &sources)?;
+        // Last consumer of the carried source text — release the memory
+        // before the (long) resolve/write/postprocess tail.
+        drop(sources);
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -558,8 +582,9 @@ impl Reloaded {
         indexer: &Indexer,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        sources: &HashMap<String, std::sync::Arc<str>>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
-        indexer.phase_framework_enrichment(project_path, write_units)
+        indexer.phase_framework_enrichment(project_path, write_units, sources)
     }
 
     fn into_actions(self) -> HashMap<String, FileAction> {
@@ -570,6 +595,9 @@ impl Reloaded {
 struct ParsedBuildState {
     write_units: Vec<FileWriteUnit>,
     parse_report: ParseReport,
+    /// Carried source text for framework enrichment (single-read pipeline);
+    /// dropped right after enrichment.
+    sources: HashMap<String, std::sync::Arc<str>>,
 }
 
 impl From<ParseResult> for ParsedBuildState {
@@ -581,6 +609,7 @@ impl From<ParseResult> for ParsedBuildState {
                 files_to_parse: parse_result.files_to_parse,
                 used_parallel: parse_result.used_parallel,
             },
+            sources: parse_result.sources,
         }
     }
 }
@@ -1199,6 +1228,152 @@ class Accumulator:
             catalog_cache::parked_live_len(&db).is_none(),
             "full rebuild must clear the parked catalog"
         );
+    }
+
+    /// A scoped incremental build (scan/diff restricted to the watcher's
+    /// drained paths) must land in exactly the same DB state as an unscoped
+    /// incremental build over the same mutation, for every batch shape:
+    /// export-signature modification (dirty closure promotes an importer
+    /// that is NOT in the scope), file addition (plus a phantom scope entry
+    /// that never existed), file removal, and a no-op scope. Ground truth is
+    /// a parallel DB driven through unscoped builds, compared on files,
+    /// symbols, and call edges.
+    #[test]
+    fn scoped_incremental_build_matches_unscoped() {
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        let project = dir.path();
+        std::fs::write(
+            project.join("lib.ts"),
+            "export function helper(value: number): number {\n    return value + 1;\n}\n",
+        )
+        .expect("write lib.ts");
+        std::fs::write(
+            project.join("main.ts"),
+            "import { helper } from './lib';\n\nexport function mainEntry(): number {\n    return helper(1);\n}\n",
+        )
+        .expect("write main.ts");
+        std::fs::write(
+            project.join("extra.ts"),
+            "export function standaloneFn(): number {\n    return 2;\n}\n",
+        )
+        .expect("write extra.ts");
+
+        let db_dir = tempfile::tempdir().expect("db dir");
+        let open = |name: &str| {
+            Arc::new(
+                IndexDb::open(&db_dir.path().join(name))
+                    .expect("open db")
+                    .0,
+            )
+        };
+        let db_scoped = open("scoped.sqlite3");
+        let db_unscoped = open("unscoped.sqlite3");
+        let indexer_scoped = Indexer::new(db_scoped.clone(), project, &config);
+        let indexer_unscoped = Indexer::new(db_unscoped.clone(), project, &config);
+        let plan = IndexBuildPlan::new(false, None);
+
+        plan.execute(&indexer_scoped, project)
+            .expect("scoped-side initial build");
+        plan.execute(&indexer_unscoped, project)
+            .expect("unscoped-side initial build");
+
+        // Full comparable state: files (minus wall-clock indexed_at),
+        // symbols (uid included), resolved call edges.
+        let dump = |db: &IndexDb| -> Vec<String> {
+            let rows = |sql: &str| -> Vec<String> {
+                db.reads()
+                    .query_json(sql, &[])
+                    .expect("dump query")
+                    .iter()
+                    .filter_map(|r| r.get("row").and_then(|v| v.as_str()).map(String::from))
+                    .collect()
+            };
+            let mut out = rows(
+                "SELECT file_path || '|' || language || '|' || content_hash || '|' || size \
+                 AS row FROM files ORDER BY row",
+            );
+            out.extend(rows(
+                "SELECT file_path || '|' || name || '|' || kind || '|' || start_line || '|' \
+                 || COALESCE(signature,'') || '|' || COALESCE(symbol_uid,'') \
+                 AS row FROM symbols ORDER BY row",
+            ));
+            out.extend(rows(
+                "SELECT file_path || '|' || callee_symbol || '|' \
+                 || COALESCE(callee_symbol_uid,'') || '|' || COALESCE(target_file_path,'') \
+                 AS row FROM call_edges ORDER BY row",
+            ));
+            out
+        };
+        assert_eq!(
+            dump(&db_scoped),
+            dump(&db_unscoped),
+            "identical initial builds must produce identical state"
+        );
+
+        let run_pair = |label: &str, scope: &[&str]| -> crate::IndexReport {
+            let scope: std::collections::HashSet<String> =
+                scope.iter().map(|s| s.to_string()).collect();
+            let prepared = plan
+                .prepare_scoped(&indexer_scoped, project, Some(&scope))
+                .unwrap_or_else(|e| panic!("{label}: scoped prepare failed: {e}"));
+            let report = plan
+                .commit(&indexer_scoped, project, prepared)
+                .unwrap_or_else(|e| panic!("{label}: scoped commit failed: {e}"));
+            plan.execute(&indexer_unscoped, project)
+                .unwrap_or_else(|e| panic!("{label}: unscoped build failed: {e}"));
+            assert_eq!(
+                dump(&db_scoped),
+                dump(&db_unscoped),
+                "{label}: scoped build state diverged from unscoped"
+            );
+            report
+        };
+
+        // Export-signature change: helper's uid moves, so the dirty closure
+        // must promote main.ts even though main.ts is OUTSIDE the scope —
+        // the load-bearing case for implicit-Skip carrying of unscoped files.
+        std::fs::write(
+            project.join("lib.ts"),
+            "export function helper(value: number, scale: number): number {\n    return value * scale;\n}\n",
+        )
+        .expect("edit lib.ts");
+        let report = run_pair("export-signature change", &["lib.ts"]);
+        assert_eq!(report.files_updated, 1, "only lib.ts is re-hashed");
+        let helper_edges: Vec<String> = db_scoped
+            .reads()
+            .query_json(
+                "SELECT file_path || '>' || COALESCE(target_file_path,'') AS row \
+                 FROM call_edges WHERE callee_symbol LIKE '%helper%'",
+                &[],
+            )
+            .expect("helper edges")
+            .iter()
+            .filter_map(|r| r.get("row").and_then(|v| v.as_str()).map(String::from))
+            .collect();
+        assert!(
+            helper_edges.iter().any(|r| r == "main.ts>lib.ts"),
+            "out-of-scope importer main.ts must re-resolve to the new helper uid; got {helper_edges:?}"
+        );
+
+        // Addition, plus a phantom path that never existed (a watcher may
+        // report a path that was deleted again before the tick).
+        std::fs::write(
+            project.join("newcomer.ts"),
+            "export function newcomerFn(): number {\n    return 3;\n}\n",
+        )
+        .expect("write newcomer.ts");
+        let report = run_pair("file addition", &["newcomer.ts", "phantom.ts"]);
+        assert_eq!(report.files_added, 1);
+
+        // Removal.
+        std::fs::remove_file(project.join("extra.ts")).expect("remove extra.ts");
+        let report = run_pair("file removal", &["extra.ts"]);
+        assert_eq!(report.files_removed, 1);
+
+        // No-op scope: an unchanged file diffs to Skip.
+        let report = run_pair("no-op scope", &["main.ts"]);
+        assert_eq!(report.files_parsed, 0, "unchanged scope must parse nothing");
     }
 
     /// A `PreparedBuild` whose snapshot predates a newer index write must be

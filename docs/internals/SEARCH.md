@@ -16,7 +16,7 @@
   │
   ├─ 文件预选（preselect）：给候选文件打分，收窄 chunk 级检索范围
   │
-  ├─ 检索通道（lanes，确定性顺序）：
+  ├─ 检索通道（lanes，rayon 并行执行，按注册序融合）：
   │     lexical（FTS5 over chunks）
   │     grep（regex/子串 over chunks 正文）
   │     graph（种子符号 + 调用图 1 跳扩展）
@@ -41,7 +41,10 @@ trait，注册在 `default_lanes()`。今天有三条适配器：
 | grep | chunks 正文（zstd 解压后 regex/子串匹配） | `search.grep_top_k`（12） | `search.grep_weight`（0.8） |
 | graph | 种子符号 + 调用边 1 跳扩展 | `search.graph_top_k`（12） | `search.graph_weight`（0.6；0 关闭） |
 
-注册顺序即确定性的 RRF 融合顺序。新增一条通道只需实现 trait 并追加到
+注册顺序即确定性的 RRF 融合顺序。三条通道在 rayon 池上**并行执行**
+（各自从读池 checkout 连接，唯一副作用是互斥锁保护的 chunk 文本缓存），
+结果按注册序收集——RRF 累加与 tie-break 与串行执行逐位一致。新增一条
+通道只需实现 trait（`Sync`，内建通道都是无状态单元结构体）并追加到
 `default_lanes()`，不需要改 `plan.rs` / `engine.rs`。
 
 grep 通道的每行匹配都要先 zstd 解压，三项行为约束最坏情况：

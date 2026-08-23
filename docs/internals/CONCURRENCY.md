@@ -63,9 +63,11 @@ gate 生效的前提是每个项目全进程只有一个 `CodeIndex` 实例：
 ## FileWatcher acquire-before-drain
 
 `watcher.rs` + `project_session.rs::run_watcher_tick`。`notify` 驱动的
-watcher 带自适应去抖、突发退避、gitignore 过滤和 git 脏态轮询兜底。
-由 `.codecortex.json` 的 `auto_index.enabled`（默认 `true`）控制，连接时
-随项目发现启动，`index()` 切换项目路径时重启。
+watcher 带自适应去抖、突发退避、扫描器对齐的忽略过滤（`cc_index::IgnoreRules`：
+根 `.gitignore`（仅 git 仓库内）+ `.codecortex.json` 的 `indexing.ignore`，
+被忽略路径不进 pending 集）和 git 脏态轮询兜底。由 `.codecortex.json` 的
+`auto_index.enabled`（默认 `true`）控制，连接时随项目发现启动，`index()`
+切换项目路径时重启。
 
 关键参数（`watcher.rs` 常量）：
 
@@ -79,6 +81,12 @@ watcher 带自适应去抖、突发退避、gitignore 过滤和 git 脏态轮询
 先 CAS `auto_indexing` 标志，再 `try_lock` build gate——两者都成功才调用
 `drain_pending` 消费事件批。gate 忙则事件留在队列里（`has_pending` 只
 窥视不消费），下一个 tick 再索引，**不会丢**。
+
+**作用域 scan/diff**：drain 出的 changed+removed 路径作为 scope 传入
+`run_split_build` → `phase_scan_and_diff`——只 stat/哈希/重解析这些路径
+（`Scanner::scan_paths` 限定走查，准入规则与全量 scan 逐路径一致），
+范围外 DB 已知文件作为隐式 Skip 参与脏传播。两个全树回退兜漂移：
+批量超过 256 条路径，或距上次全树 diff 超过 10 分钟。
 
 ## 会话生命周期
 

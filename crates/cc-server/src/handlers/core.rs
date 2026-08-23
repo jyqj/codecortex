@@ -4,6 +4,7 @@ use super::SharedCodeIndex;
 use crate::engine::CodeIndex;
 use cc_index::IndexReport;
 use cc_model::{CcError, CcResult};
+use std::collections::HashSet;
 
 pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::Value, String> {
     // Per-project build gate: clone the Arc under a brief read lock and DROP
@@ -18,7 +19,7 @@ pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::V
     let _build_permit = build_gate
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    let report = run_split_build(&runtime, full, false).map_err(|e| e.to_string())?;
+    let report = run_split_build(&runtime, full, false, None).map_err(|e| e.to_string())?;
     serde_json::to_value(report).map_err(|e| e.to_string())
 }
 
@@ -33,15 +34,19 @@ pub fn build_index(runtime: SharedCodeIndex, full: bool) -> Result<serde_json::V
 /// defends future ungated callers and cross-process writers. Callers must
 /// already hold the build gate — stage-2 correctness (no concurrent build
 /// mutating the DB between write and apply) relies on it.
+///
+/// `scope`: optional scan/diff restriction (the watcher's drained paths);
+/// `None` — and every full build — scans the whole tree.
 pub(crate) fn run_split_build(
     runtime: &SharedCodeIndex,
     full: bool,
     use_auto_file_limit: bool,
+    scope: Option<&HashSet<String>>,
 ) -> CcResult<IndexReport> {
-    match split_build_once(runtime, full, use_auto_file_limit) {
+    match split_build_once(runtime, full, use_auto_file_limit, scope) {
         Err(stale @ CcError::StalePreparedBuild { .. }) => {
             tracing::warn!("stale prepared build detected, retrying once: {}", stale);
-            split_build_once(runtime, full, use_auto_file_limit)
+            split_build_once(runtime, full, use_auto_file_limit, scope)
         }
         other => other,
     }
@@ -51,6 +56,7 @@ fn split_build_once(
     runtime: &SharedCodeIndex,
     full: bool,
     use_auto_file_limit: bool,
+    scope: Option<&HashSet<String>>,
 ) -> CcResult<IndexReport> {
     // Brief read lock: clone the owned build inputs (plus the auto-index
     // file-count gate when requested), then release.
@@ -64,7 +70,7 @@ fn split_build_once(
         (rt.build_inputs()?, limit)
     };
     // Heavy prepare phase runs with NO lock held — read queries are not blocked.
-    let prepared = CodeIndex::prepare_build(&inputs, full, auto_file_limit)?;
+    let prepared = CodeIndex::prepare_build(&inputs, full, auto_file_limit, scope)?;
     // Stage 1 — write lock scoped to `phase_write` only (the generation guard
     // runs inside, under this lock).
     let written = {
@@ -303,7 +309,7 @@ mod tests {
             let rt = super::super::lock_index(&runtime).unwrap();
             rt.build_inputs().unwrap()
         };
-        let prepared = CodeIndex::prepare_build(&inputs, false, None).unwrap();
+        let prepared = CodeIndex::prepare_build(&inputs, false, None, None).unwrap();
 
         // Stage 1: write lock scoped to phase_write.
         let written = {

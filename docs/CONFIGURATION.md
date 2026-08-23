@@ -179,7 +179,7 @@ CodeCortex 检测项目规模并自动调整输出预算：
 | `CODECORTEX_STRICT_HASH` | 关 | `1`/`true`/`yes` 时增量扫描对每个文件做哈希，不走 mtime+size 快路径 |
 | `CODECORTEX_RESOLVER_CACHE_SIZE` | `8192` | 解析器目录 `resolve_name` 的 LRU 容量 |
 | `CODECORTEX_RESOLVER_MAX_POOL` | `256` | 名字解析候选上限：同名符号数超过此值时，按名解析（global-unique / fuzzy import-distance 与 `find_best` 兜底）直接判为不可解。被数百符号共享的名字（典型是解析器也并入全局目录的函数局部变量，如 `left`/`value`）无法靠路径启发式消歧，逐引用扫该桶是冷建 resolve 阶段 O(N²) 的主因；上限同时消除该开销并提升精度（这类引用从"跨文件随机同名"变为未解析） |
-| `CODECORTEX_COMMUNITY_MAX_EDGES` | `2000000` | Louvain 社区检测的边数上限；超限跳过检测，所有符号归社区 0，避免 OOM |
+| `CODECORTEX_COMMUNITY_MAX_EDGES` | `2000000` | Louvain 社区检测的边数上限；超限时按权重裁剪到上限（保留最重的调用点对）再检测，避免 OOM |
 
 ### 搜索与图缓存
 

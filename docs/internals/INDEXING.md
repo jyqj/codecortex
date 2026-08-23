@@ -33,6 +33,20 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
 - 变更检测走 **mtime+size 快路径 + 哈希确认**：mtime+size 都没变的文件跳过
   哈希；`CODECORTEX_STRICT_HASH=1` 禁用快路径，每个文件都做 blake3。
 - 超过 `indexing.max_file_bytes`（默认 512000）的文件跳过。
+- **事件域扫描（scoped scan）**：watcher tick 把变更/删除路径集
+  （`BuildScope`）穿过 cc-server 传给增量 prepare，扫描只 stat/哈希这些
+  路径（根锚定的 `filter_entry` 遍历，gitignore/配置忽略规则与全树扫描
+  同源），未触及的文件从持久化 files 快照直接判 Unchanged。回退全树
+  扫描的情形：首次构建、watcher 溢出、git poll 回填、显式全量重建、
+  手动 `index()`（无事件集）。scope 内命中的删除仍走同一 diff 路径，
+  脏闭包/epoch 守卫语义不变。
+- **单次共享树遍历（`WalkManifest`）**：全树扫描的遍历结果作为
+  `WalkManifest` 随 `PreparedBuild` 携带，config-linker 的配置文件集
+  签名与 infra 候选签名直接消费它——一次构建至多一次树遍历，不再各
+  pass 自己重走。ADR 扫描同样上了文件集签名门（`FileSignatureGate`）。
+- 扫描哈希是 **blake3**（hex 编码，与旧 SHA-256 同宽）；算法切换随
+  schema 版本号一起 bump，旧库按既有的 rebuild-on-mismatch 策略整体
+  重建，不做跨算法哈希比较。
 
 ## parse
 
@@ -64,7 +78,7 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
 |---|---|---|
 | `normal` | 不动点收敛 | 无 |
 | `partial_closure` | 第 1 轮之后命中轮次上限或预算 | 保留了闭包的完整轮前缀，更深的传递引用可能过期 |
-| `budget_exceeded` | 第 1 轮的直接导入者就超出预算 | 什么都没重解析，跨文件引用可能过期，**建议全量重建** |
+| `budget_exceeded` | 第 1 轮的直接导入者就超出预算 | 应用**预算大小的确定性前缀**（排序后截断，不再是历史上的完全不动），前缀外的导入者跨文件引用可能过期，**建议全量重建** |
 | `disabled` | 配置关闭（`indexing.dirty_propagation=false`） | 跨文件引用不维护 |
 
 ## enrichment 与 resolve
@@ -166,6 +180,17 @@ self-member → scope → same-file → imports → suffix → global-unique
 留下的结构性约束值得知晓：
 
 - FTS5 删除必须 rowid 对齐批量化（见 STORAGE.md），禁止逐文件 DELETE；
+- **多行 INSERT 批量化**（cc-db `index_db_multi_insert.rs`）：增量批写
+  与全量重建的行写入走分级多行 `INSERT INTO … VALUES (…),(…)`
+  （64/8/1 行三档，尾数落到小档，语句缓存里每表至多三条 SQL），消掉
+  逐行语句的绑定/执行开销；`chunks_fts` 的 rowid 对齐靠先插基表、再按
+  `chunk_id` 回读新 rowid、带显式 rowid 多行插镜像（基表列可能是 zstd
+  BLOB，不能 SELECT 镜像）；
+- **files 表快照缓存**（cc-db `file_state_cache.rs`）：`get_file_state()`
+  的 O(仓库文件数) 全表加载挂在 `IndexDb` 句柄上跨构建复用，以 files
+  表的行哈希聚合为 token（并入 `graph_sig_aggregates`，格式版本 3）；
+  批写在同事务差分维护聚合并折叠快照，token 不匹配（全量重建、跨进程
+  写）即丢弃重载——与 seed/目录缓存同一"聚合 token 即有效性证明"模式；
 - 层级边只为本批文件重生成，不做全量重算；
 - 框架检测不再因"变更文件 > 20"回退全仓扫描（file 级信号是文件的纯函数；
   repo 级 manifest pass 本来就每次构建重跑）；
@@ -179,7 +204,11 @@ self-member → scope → same-file → imports → suffix → global-unique
   腐蚀 gate 决策（无基线的库回退全表扫描，永远不会得到错误值）；
 - **community 门在聚合空间投影决策**：staged 合成动作对聚合做投影
   （`community_signature_projected`，不载边），只有判为 RUN 才真正载入
-  边表跑 Louvain；
+  边表跑 Louvain；边数超过 `CODECORTEX_COMMUNITY_MAX_EDGES`（默认
+  200 万）时不再整体放弃（全归社区 0），而是按权重裁剪
+  （`community.rs::prune_edges_by_weight`：无序点对按出现次数降序、字典
+  序破平，保留最重的点对至预算）后照跑 Louvain，降级信号记为
+  `community_edge_cap_pruned`；
 - **resolver seed 有跨构建缓存**（cc-db `seed_symbol_cache.rs`）：seed
   符号快照挂在 `IndexDb` 句柄上跨构建复用，以 `symbols_seed` 聚合为
   token 校验，miss 即回退全量重载。其上还有一层**符号目录缓存**
@@ -224,7 +253,7 @@ delta 真正落库后才持久化签名——保证"签名已记录但产物没�
 
 postprocess/analysis 各门的决策（`synthesis_round` / `community` /
 `git_cochange` / `infra` 的 run/skip + 原因）与降级信号
-（`community_edge_cap_exceeded`、`cochange_unavailable`）收集进一个
+（`community_edge_cap_pruned`、`cochange_unavailable`）收集进一个
 `BuildExplain` 信封（`cc-model/src/build_explain.rs`，与读侧
 [`GraphExplain`](../ARCHITECTURE.md#图可解释性graphexplain) 对偶），挂在
 `IndexReport.build_explain`（空则序列化省略）。它是读侧 `GraphExplain` 的

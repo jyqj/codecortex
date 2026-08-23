@@ -1,6 +1,6 @@
 # Synthetic Scale Benchmark: 10k
 
-Generated: 2026-08-23T17:57:42.631481046+00:00
+Generated: 2026-08-23T18:15:42.201217262+00:00
 Dataset: synthetic 10k (seed 0xc0ffee)
 Files: 10000 | Symbols: 55617
 
@@ -8,9 +8,9 @@ Files: 10000 | Symbols: 55617
 
 | Metric | Value |
 |--------|-------|
-| generate wall | 224ms |
-| cold full index wall | 8400ms |
-| index db size | 236.5 MB |
+| generate wall | 300ms |
+| cold full index wall | 8272ms |
+| index db size | 236.4 MB |
 
 ## Incremental Latency: single_file
 
@@ -18,11 +18,11 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 59ms | 64ms | 64ms |
-| scan_diff | 46ms | 51ms | 51ms |
+| total elapsed | 62ms | 70ms | 70ms |
+| scan_diff | 50ms | 56ms | 56ms |
 | analysis | 4ms | 4ms | 4ms |
 | write | 4ms | 5ms | 5ms |
-| parse | 2ms | 2ms | 2ms |
+| parse | 1ms | 2ms | 2ms |
 | postprocess | 0ms | 0ms | 0ms |
 | resolve | 0ms | 0ms | 0ms |
 
@@ -32,10 +32,10 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 64ms | 65ms | 65ms |
-| write | 26ms | 27ms | 27ms |
-| analysis | 25ms | 26ms | 26ms |
+| total elapsed | 17ms | 17ms | 17ms |
 | scan_diff | 8ms | 8ms | 8ms |
+| write | 3ms | 3ms | 3ms |
+| analysis | 2ms | 2ms | 2ms |
 | parse | 1ms | 1ms | 1ms |
 | postprocess | 0ms | 0ms | 0ms |
 | resolve | 0ms | 0ms | 0ms |
@@ -46,11 +46,11 @@ Files: 10000 | Measured iterations: 3
 
 | Phase | p50 | p95 | Max |
 |-------|-----|-----|-----|
-| total elapsed | 816ms | 823ms | 823ms |
-| write | 677ms | 687ms | 687ms |
-| scan_diff | 54ms | 56ms | 56ms |
+| total elapsed | 875ms | 877ms | 877ms |
+| write | 725ms | 728ms | 728ms |
+| scan_diff | 59ms | 60ms | 60ms |
 | parse | 30ms | 31ms | 31ms |
-| resolve | 21ms | 21ms | 21ms |
+| resolve | 26ms | 27ms | 27ms |
 | analysis | 5ms | 5ms | 5ms |
 | postprocess | 0ms | 0ms | 0ms |
 
@@ -60,13 +60,13 @@ Methodology: cold = first call of a fresh MCP session per iteration (new IndexDb
 
 | Scenario | Tool | Iters (cold/warm) | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |
 |----------|------|-------------------|----------|----------|----------|----------|----------|------------|
-| search_hybrid_needle_phrase | search | 3/7 | 61.37ms | 61.38ms | 841µs | 1.34ms | 1.34ms | 8.4 KB |
-| search_hybrid_mixed_terms | search | 3/7 | 72.42ms | 74.23ms | 1.64ms | 2.00ms | 2.00ms | 27.8 KB |
-| find_symbol_exact_needle | search | 3/7 | 366µs | 648µs | 98µs | 226µs | 226µs | 307 B |
-| find_symbol_fuzzy_prefix | search | 3/7 | 991µs | 1.16ms | 272µs | 643µs | 643µs | 307 B |
-| impact_changes_hub_file | impact | 3/7 | 2.20ms | 2.76ms | 1.31ms | 1.44ms | 1.44ms | 13.2 KB |
-| graph_query_calls_varlen | graph_query | 3/7 | 663µs | 950µs | 240µs | 559µs | 559µs | 306 B |
-| trace_chain_4_hops | trace | 3/7 | 2.03ms | 2.06ms | 280µs | 464µs | 464µs | 2.7 KB |
+| search_hybrid_needle_phrase | search | 3/7 | 59.50ms | 61.36ms | 692µs | 1.11ms | 1.11ms | 8.4 KB |
+| search_hybrid_mixed_terms | search | 3/7 | 73.00ms | 111.48ms | 1.67ms | 1.87ms | 1.87ms | 28.3 KB |
+| find_symbol_exact_needle | search | 3/7 | 402µs | 454µs | 182µs | 490µs | 490µs | 307 B |
+| find_symbol_fuzzy_prefix | search | 3/7 | 1.15ms | 1.26ms | 144µs | 223µs | 223µs | 307 B |
+| impact_changes_hub_file | impact | 3/7 | 3.60ms | 4.34ms | 1.56ms | 1.77ms | 1.77ms | 13.5 KB |
+| graph_query_calls_varlen | graph_query | 3/7 | 885µs | 977µs | 259µs | 768µs | 768µs | 306 B |
+| trace_chain_4_hops | trace | 3/7 | 2.37ms | 2.44ms | 386µs | 777µs | 777µs | 2.7 KB |
 
 ## Ground-Truth Correctness
 

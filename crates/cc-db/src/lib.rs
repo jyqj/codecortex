@@ -15,6 +15,7 @@ pub use index_db_graph_read::GraphReads;
 pub use index_db_retrieval::RetrievalReadModel;
 pub use snapshot_write_txn::SnapshotWriteTxn;
 pub mod index_migrate;
+mod file_state_cache;
 mod rows;
 mod seed_symbol_cache;
 pub use seed_symbol_cache::seed_cache_max_symbols;

@@ -404,6 +404,10 @@ pub struct IndexDb {
     /// owner validates content against the persisted `symbols_seed`
     /// aggregate exactly like the seed cache does.
     pub(crate) resolver_catalog_slot: Mutex<Option<Box<dyn std::any::Any + Send>>>,
+    /// Cross-build `files` snapshot for the scan/diff phase, validated
+    /// against the persisted `files_state` aggregate (see
+    /// `crate::file_state_cache`).
+    pub(crate) file_state_cache: Mutex<Option<crate::file_state_cache::FileStateCache>>,
 }
 
 /// Process-wide monotonic source for [`IndexDb::instance_id`].
@@ -485,6 +489,7 @@ impl IndexDb {
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
                 seed_cache: Mutex::new(None),
                 resolver_catalog_slot: Mutex::new(None),
+                file_state_cache: Mutex::new(None),
             },
             schema_status,
         ))
@@ -1607,11 +1612,14 @@ impl IndexDb {
                 .filter(|p| seen.insert(*p))
                 .collect()
         };
-        // Seed-cache basis: the `symbols_seed` aggregate before this batch's
-        // mutations. Re-read after `finish_path_update` below; the pair lets
-        // the post-commit cache update prove its snapshot matches the
-        // pre-batch table state (see `seed_symbol_cache`).
-        let pre_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        // Cache basis: the `symbols_seed` / `files_state` aggregates before
+        // this batch's mutations. Re-read after `finish_path_update` below;
+        // each pair lets the post-commit cache update prove its snapshot
+        // matches the pre-batch table state (see `seed_symbol_cache` /
+        // `file_state_cache`).
+        let pre_aggs = crate::signature_agg::load_on(&tx)?;
+        let pre_seed_agg = pre_aggs.map(|aggs| aggs.symbols_seed);
+        let pre_files_agg = pre_aggs.map(|aggs| aggs.files_state);
         let agg_update = crate::signature_agg::begin_path_update(&tx, &touched_paths)?;
         // Per-section timing: emitted as `tracing::debug!` "sub-phase timing"
         // events (same field style as cc-index's `time_step`) so a slow
@@ -1678,7 +1686,9 @@ impl IndexDb {
         let section_start = std::time::Instant::now();
         Self::insert_route_nodes_on(&tx, route_nodes)?;
         crate::signature_agg::finish_path_update(&tx, &touched_paths, agg_update)?;
-        let post_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        let post_aggs = crate::signature_agg::load_on(&tx)?;
+        let post_seed_agg = post_aggs.map(|aggs| aggs.symbols_seed);
+        let post_files_agg = post_aggs.map(|aggs| aggs.files_state);
         Self::bump_index_epoch_on(&tx)?;
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();
@@ -1693,6 +1703,9 @@ impl IndexDb {
             normal_units,
             dirty_units,
         );
+        // …and the file-state cache — dirty units never touch `files` rows
+        // (`replace_reresolved_edges_for_file` rewrites edge tables only).
+        self.file_state_cache_apply_batch(pre_files_agg, post_files_agg, to_remove, normal_units);
         Ok(SeedTokenSpan {
             pre: pre_seed_agg,
             post: post_seed_agg,
@@ -2445,6 +2458,14 @@ impl ReadOps<'_> {
 
     pub fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
         self.0.get_file_state()
+    }
+
+    /// The file-state snapshot behind an `Arc`, served from the cross-build
+    /// cache when the persisted `files_state` aggregate proves it current
+    /// (see `crate::file_state_cache`). Content-identical to
+    /// [`ReadOps::get_file_state`].
+    pub fn get_file_state_snapshot(&self) -> CcResult<std::sync::Arc<HashMap<String, FileState>>> {
+        self.0.get_file_state_snapshot()
     }
 
     pub fn get_metadata(&self, key: &str) -> CcResult<Option<String>> {

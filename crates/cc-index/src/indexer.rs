@@ -183,7 +183,10 @@ pub(crate) struct ScanDiffResult {
     pub(crate) files_added: usize,
     pub(crate) files_updated: usize,
     pub(crate) files_skipped: usize,
-    pub(crate) existing: HashMap<String, FileState>,
+    /// Pre-batch file-state snapshot, shared with the cross-build cache on
+    /// the `IndexDb` handle (`Arc`: the cache advances copy-on-write, so
+    /// this build's view is stable).
+    pub(crate) existing: Arc<HashMap<String, FileState>>,
     pub(crate) scanned_paths: HashSet<String>,
     pub(crate) to_remove: Vec<String>,
     pub(crate) to_parse: Vec<PendingFile>,
@@ -417,9 +420,9 @@ impl Indexer {
 
         // Phase 2: Diff
         let existing = if full {
-            HashMap::new()
+            Arc::new(HashMap::new())
         } else {
-            self.db.reads().get_file_state()?
+            self.db.reads().get_file_state_snapshot()?
         };
         let scanned_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
@@ -499,7 +502,7 @@ impl Indexer {
             return Ok(None);
         }
 
-        let existing = self.db.reads().get_file_state()?;
+        let existing = self.db.reads().get_file_state_snapshot()?;
         if existing.is_empty() {
             // Effectively a first build: the event set cannot describe the
             // whole tree.

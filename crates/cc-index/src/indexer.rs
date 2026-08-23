@@ -163,6 +163,10 @@ pub(crate) struct ScanDiffResult {
     pub(crate) scanned_paths: HashSet<String>,
     pub(crate) to_remove: Vec<String>,
     pub(crate) to_parse: Vec<PendingFile>,
+    /// The shared walk manifest for the config/infra signature consumers.
+    /// `None` when this build did not walk the tree (event-scoped prepare),
+    /// in which case those consumers fall back to their own walks.
+    pub(crate) walk_manifest: Option<Arc<crate::scanner::WalkManifest>>,
 }
 
 /// Intermediate result for Phase 3 (parse).
@@ -342,8 +346,10 @@ impl Indexer {
         full: bool,
         auto_file_limit: Option<usize>,
     ) -> CcResult<ScanDiffResult> {
-        // Phase 1: Scan
-        let scanned = self.scanner.scan();
+        // Phase 1: Scan (single shared walk: indexable set + manifest for the
+        // config/infra signature consumers).
+        let (scanned, walk_manifest) = self.scanner.scan_with_manifest();
+        let walk_manifest = Some(Arc::new(walk_manifest));
         let files_scanned = scanned.len();
         if let Some(limit) = auto_file_limit {
             if files_scanned > limit {
@@ -461,6 +467,7 @@ impl Indexer {
             scanned_paths,
             to_remove,
             to_parse,
+            walk_manifest,
         })
     }
 

@@ -102,6 +102,9 @@ pub struct WrittenBuild {
     carry: ReportCarry,
     write_units: Vec<FileWriteUnit>,
     config_units: Vec<FileWriteUnit>,
+    /// The shared walk manifest carried forward for the stage-2 infra
+    /// signature/scan (`None` on walk-free scoped builds).
+    walk_manifest: Option<std::sync::Arc<crate::scanner::WalkManifest>>,
     /// Build-side explainability collector, started in stage 1 (config-linker
     /// gate decision) and continued through stage 2 (postprocess/analysis
     /// gates). Finished into `IndexReport.build_explain` in stage 3.
@@ -310,6 +313,7 @@ impl IndexBuildPlan {
         }
 
         let mut build_explain = BuildExplainCollector::new();
+        let walk_manifest = scan_result.walk_manifest.clone();
         let phase_start = Instant::now();
         let write_result = indexer.phase_write(
             project_path,
@@ -320,6 +324,7 @@ impl IndexBuildPlan {
             &output_snapshot.route_nodes,
             &hierarchy_edges,
             &chunk_blobs,
+            walk_manifest.as_deref(),
             &mut build_explain,
         )?;
         let write_ms = phase_start.elapsed().as_millis() as u64;
@@ -358,6 +363,7 @@ impl IndexBuildPlan {
             },
             write_units: write_result.write_units,
             config_units: write_result.config_units,
+            walk_manifest,
             build_explain,
             written_index_epoch,
         })
@@ -377,6 +383,7 @@ impl IndexBuildPlan {
             mut carry,
             write_units,
             config_units,
+            walk_manifest,
             mut build_explain,
             written_index_epoch,
         } = written;
@@ -397,6 +404,7 @@ impl IndexBuildPlan {
             project_path,
             &write_units,
             &carry.output_snapshot.route_nodes,
+            walk_manifest.as_deref(),
             &mut build_explain,
         )?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;

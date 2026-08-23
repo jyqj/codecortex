@@ -48,6 +48,7 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<WriteResult> {
         // Separate dirty write units from normal ones before write.
@@ -70,6 +71,7 @@ impl Indexer {
                     route_nodes,
                     hierarchy_edges,
                     chunk_blobs,
+                    walk_manifest,
                 ) {
                     Ok(config_units) => {
                         tracing::info!("full rebuild completed via direct writer");
@@ -86,6 +88,7 @@ impl Indexer {
                             route_nodes,
                             hierarchy_edges,
                             chunk_blobs,
+                            walk_manifest,
                         )?
                     }
                 }
@@ -96,6 +99,7 @@ impl Indexer {
                     route_nodes,
                     hierarchy_edges,
                     chunk_blobs,
+                    walk_manifest,
                 )?
             }
         } else {
@@ -127,7 +131,12 @@ impl Indexer {
             // gate skips the config scan (and, for no-op batches, the whole
             // pass) when the config-file set is unchanged.
             let config_units = match time_step("write", "config_link_compute", || {
-                self.build_config_link_units_gated(project_path, batch_empty, build_explain)
+                self.build_config_link_units_gated(
+                    project_path,
+                    batch_empty,
+                    walk_manifest,
+                    build_explain,
+                )
             })? {
                 // 快速路径保持零写入：签名未变且批次为空，链接不可能变化。
                 None => Vec::new(),

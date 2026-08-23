@@ -371,10 +371,14 @@ impl Indexer {
         &self,
         project_path: &Path,
         batch_empty: bool,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<Option<ConfigLinkRound>> {
-        let sig = time_step("write", "config_sig_walk", || {
-            config_files_signature(project_path)
+        let sig = time_step("write", "config_sig_walk", || match walk_manifest {
+            // Shared-walk manifest: signature without another tree walk
+            // (value-equal to the walk fallback for the same tree).
+            Some(manifest) => crate::config_linker::config_files_signature_from_manifest(manifest),
+            None => config_files_signature(project_path),
         });
         let recorded_algo = self
             .db
@@ -440,12 +444,12 @@ impl Indexer {
                         true,
                         "signature unchanged but token cache missing, rescanned",
                     );
-                    self.scan_and_record_config_tokens(project_path, sig)?
+                    self.scan_and_record_config_tokens(project_path, walk_manifest, sig)?
                 }
             }
         } else {
             build_explain.record_gate("config_link", true, "signature changed, rescanned");
-            self.scan_and_record_config_tokens(project_path, sig)?
+            self.scan_and_record_config_tokens(project_path, walk_manifest, sig)?
         };
 
         // 本轮扫描（或缓存）覆盖到的配置文件：没有产出单元的即为零链接，
@@ -483,10 +487,15 @@ impl Indexer {
     fn scan_and_record_config_tokens(
         &self,
         project_path: &Path,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
         sig: u64,
     ) -> CcResult<Vec<RawConfigToken>> {
-        let raw_tokens = time_step("write", "config_token_scan", || {
-            scan_config_tokens(project_path)
+        let raw_tokens = time_step("write", "config_token_scan", || match walk_manifest {
+            Some(manifest) => crate::config_linker::scan_config_tokens_from_manifest(
+                project_path,
+                manifest,
+            ),
+            None => scan_config_tokens(project_path),
         })?;
         match Self::serialize_raw_token_cache(&raw_tokens) {
             // 超出缓存上限：清掉旧缓存，避免新签名配上陈旧 token。

@@ -27,7 +27,35 @@ pub enum InfraFileType {
     CompileCommands,
 }
 
+/// Name-based strong-feature classification shared by the walk and manifest
+/// discovery paths. `path` is only read for the K8s content sniff.
+fn classify_infra_file(file_name: &str, path: &Path) -> Option<InfraFileType> {
+    if file_name.starts_with("Dockerfile") {
+        Some(InfraFileType::Dockerfile)
+    } else if file_name.starts_with("docker-compose")
+        && (file_name.ends_with(".yml") || file_name.ends_with(".yaml"))
+    {
+        Some(InfraFileType::DockerCompose)
+    } else if file_name == "kustomization.yaml" || file_name == "kustomization.yml" {
+        Some(InfraFileType::Kustomize)
+    } else if file_name.ends_with(".tf") {
+        Some(InfraFileType::Terraform)
+    } else if file_name == "compile_commands.json" {
+        Some(InfraFileType::CompileCommands)
+    } else if (file_name.ends_with(".yaml") || file_name.ends_with(".yml"))
+        && is_k8s_manifest(path)
+    {
+        // Generic YAML with apiVersion + kind — likely K8s manifest
+        Some(InfraFileType::K8sManifest)
+    } else {
+        None
+    }
+}
+
 /// Discover infra files using strong-feature filtering (not blanket *.yaml).
+///
+/// Fallback path for builds without a shared walk manifest; manifest-carrying
+/// builds use [`discover_infra_files_from_manifest`] and skip this walk.
 pub fn discover_infra_files(project_path: &Path) -> Vec<InfraCandidate> {
     let mut candidates = Vec::new();
 
@@ -35,6 +63,7 @@ pub fn discover_infra_files(project_path: &Path) -> Vec<InfraCandidate> {
     let walker = ignore::WalkBuilder::new(project_path)
         .hidden(true)
         .git_ignore(true)
+        .git_global(false)
         .build();
 
     for entry in walker.flatten() {
@@ -48,32 +77,11 @@ pub fn discover_infra_files(project_path: &Path) -> Vec<InfraCandidate> {
             None => continue,
         };
         let rel_path = match path.strip_prefix(project_path) {
-            Ok(r) => r.to_string_lossy().to_string(),
+            Ok(r) => r.to_string_lossy().replace('\\', "/"),
             Err(_) => continue,
         };
 
-        let file_type = if file_name.starts_with("Dockerfile") {
-            Some(InfraFileType::Dockerfile)
-        } else if file_name.starts_with("docker-compose")
-            && (file_name.ends_with(".yml") || file_name.ends_with(".yaml"))
-        {
-            Some(InfraFileType::DockerCompose)
-        } else if file_name == "kustomization.yaml" || file_name == "kustomization.yml" {
-            Some(InfraFileType::Kustomize)
-        } else if file_name.ends_with(".tf") {
-            Some(InfraFileType::Terraform)
-        } else if file_name == "compile_commands.json" {
-            Some(InfraFileType::CompileCommands)
-        } else if (file_name.ends_with(".yaml") || file_name.ends_with(".yml"))
-            && is_k8s_manifest(path)
-        {
-            // Generic YAML with apiVersion + kind — likely K8s manifest
-            Some(InfraFileType::K8sManifest)
-        } else {
-            None
-        };
-
-        if let Some(ft) = file_type {
+        if let Some(ft) = classify_infra_file(file_name, path) {
             candidates.push(InfraCandidate {
                 rel_path,
                 abs_path: path.to_path_buf(),
@@ -81,6 +89,32 @@ pub fn discover_infra_files(project_path: &Path) -> Vec<InfraCandidate> {
             });
         }
     }
+    candidates
+}
+
+/// Discover infra files from the shared walk manifest (no additional walk).
+/// Hidden paths are excluded, matching the walk-based discovery's
+/// `hidden(true)`. Candidates are sorted by path (the signature contract).
+pub fn discover_infra_files_from_manifest(
+    project_path: &Path,
+    manifest: &crate::scanner::WalkManifest,
+) -> Vec<InfraCandidate> {
+    let mut candidates = Vec::new();
+    for file in &manifest.files {
+        if file.hidden {
+            continue;
+        }
+        let file_name = file.rel_path.rsplit('/').next().unwrap_or(&file.rel_path);
+        let abs_path = project_path.join(&file.rel_path);
+        if let Some(ft) = classify_infra_file(file_name, &abs_path) {
+            candidates.push(InfraCandidate {
+                rel_path: file.rel_path.clone(),
+                abs_path,
+                file_type: ft,
+            });
+        }
+    }
+    candidates.sort_by(|a, b| a.rel_path.cmp(&b.rel_path));
     candidates
 }
 
@@ -182,13 +216,75 @@ pub(crate) fn infra_signature(project_path: &Path) -> u64 {
     hasher.finish()
 }
 
+/// Same signature contract as [`infra_signature`], computed from the shared
+/// walk manifest — must stay value-equal for the same tree so the gate never
+/// flaps between manifest-carrying and fallback builds.
+pub(crate) fn infra_signature_from_manifest(
+    project_path: &Path,
+    manifest: &crate::scanner::WalkManifest,
+) -> u64 {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+
+    let candidates = discover_infra_files_from_manifest(project_path, manifest);
+    let stat_by_rel: std::collections::HashMap<&str, (u64, u64)> = manifest
+        .files
+        .iter()
+        .map(|f| (f.rel_path.as_str(), (f.size, f.mtime_secs)))
+        .collect();
+
+    let mut hasher = DefaultHasher::new();
+    candidates.len().hash(&mut hasher);
+    for candidate in &candidates {
+        candidate.rel_path.hash(&mut hasher);
+        if let Some((size, mtime_secs)) = stat_by_rel.get(candidate.rel_path.as_str()) {
+            size.hash(&mut hasher);
+            mtime_secs.hash(&mut hasher);
+        }
+    }
+    hasher.finish()
+}
+
 /// Run the full infra pass: discover -> parse -> return nodes + edges.
+///
+/// Fallback path for builds without a shared walk manifest.
 pub fn run_infra_pass(project_path: &Path) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let candidates = discover_infra_files(project_path);
+    let (mut all_nodes, mut all_edges) = parse_infra_candidates(&candidates);
+
+    // Scan all YAML/JSON config files for topic/queue → endpoint bindings
+    extract_infra_bindings(project_path, &mut all_nodes, &mut all_edges);
+
+    (all_nodes, all_edges)
+}
+
+/// Run the full infra pass from the shared walk manifest (no additional
+/// walks: candidates and binding-scan files both come from the manifest).
+pub fn run_infra_pass_with_manifest(
+    project_path: &Path,
+    manifest: &crate::scanner::WalkManifest,
+) -> (Vec<InfraNode>, Vec<InfraEdge>) {
+    let candidates = discover_infra_files_from_manifest(project_path, manifest);
+    let (mut all_nodes, mut all_edges) = parse_infra_candidates(&candidates);
+
+    let binding_files = manifest.files.iter().filter_map(|f| {
+        if f.hidden {
+            return None;
+        }
+        binding_scan_rel_filter(&f.rel_path)
+            .then(|| (f.rel_path.clone(), project_path.join(&f.rel_path)))
+    });
+    extract_infra_bindings_from_files(binding_files, &mut all_nodes, &mut all_edges);
+
+    (all_nodes, all_edges)
+}
+
+/// Parse each discovered candidate into infra nodes/edges.
+fn parse_infra_candidates(candidates: &[InfraCandidate]) -> (Vec<InfraNode>, Vec<InfraEdge>) {
     let mut all_nodes = Vec::new();
     let mut all_edges = Vec::new();
 
-    for candidate in &candidates {
+    for candidate in candidates {
         let content = match std::fs::read_to_string(&candidate.abs_path) {
             Ok(c) => c,
             Err(_) => continue,
@@ -206,9 +302,6 @@ pub fn run_infra_pass(project_path: &Path) -> (Vec<InfraNode>, Vec<InfraEdge>) {
         all_nodes.extend(nodes);
         all_edges.extend(edges);
     }
-
-    // Scan all YAML/JSON config files for topic/queue → endpoint bindings
-    extract_infra_bindings(project_path, &mut all_nodes, &mut all_edges);
 
     (all_nodes, all_edges)
 }
@@ -253,8 +346,23 @@ struct RawBinding {
     source_line: u32,
 }
 
+/// Rel-path filter for the binding scan: YAML/JSON files outside directories
+/// that are unlikely to contain IaC config.
+fn binding_scan_rel_filter(rel_path: &str) -> bool {
+    let ext = Path::new(rel_path)
+        .extension()
+        .and_then(|e| e.to_str())
+        .unwrap_or("");
+    matches!(ext, "yaml" | "yml" | "json")
+        && !rel_path.contains("node_modules")
+        && !rel_path.contains("vendor")
+        && !rel_path.contains(".git/")
+}
+
 /// Scan YAML config files for topic/queue → endpoint bindings and produce
 /// `InfraNode` + `InfraEdge` entries.
+///
+/// Fallback path for builds without a shared walk manifest.
 fn extract_infra_bindings(
     project_path: &Path,
     infra_nodes: &mut Vec<InfraNode>,
@@ -263,30 +371,32 @@ fn extract_infra_bindings(
     let walker = ignore::WalkBuilder::new(project_path)
         .hidden(true)
         .git_ignore(true)
+        .git_global(false)
         .build();
 
-    for entry in walker.flatten() {
+    let files = walker.flatten().filter_map(|entry| {
         let path = entry.path();
         if !path.is_file() {
-            continue;
+            return None;
         }
-        let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-        if !matches!(ext, "yaml" | "yml" | "json") {
-            continue;
-        }
-        // Skip directories that are unlikely to contain IaC config
-        let path_str = path.to_string_lossy();
-        if path_str.contains("node_modules")
-            || path_str.contains("vendor")
-            || path_str.contains(".git/")
-        {
-            continue;
-        }
-        let rel_path = match path.strip_prefix(project_path) {
-            Ok(r) => r.to_string_lossy().to_string(),
-            Err(_) => continue,
-        };
-        let content = match std::fs::read_to_string(path) {
+        let rel_path = path
+            .strip_prefix(project_path)
+            .ok()?
+            .to_string_lossy()
+            .replace('\\', "/");
+        binding_scan_rel_filter(&rel_path).then(|| (rel_path, path.to_path_buf()))
+    });
+    extract_infra_bindings_from_files(files, infra_nodes, infra_edges);
+}
+
+/// Shared binding-extraction core over pre-filtered candidate files.
+fn extract_infra_bindings_from_files(
+    files: impl Iterator<Item = (String, std::path::PathBuf)>,
+    infra_nodes: &mut Vec<InfraNode>,
+    infra_edges: &mut Vec<InfraEdge>,
+) {
+    for (rel_path, abs_path) in files {
+        let content = match std::fs::read_to_string(&abs_path) {
             Ok(c) => c,
             Err(_) => continue,
         };

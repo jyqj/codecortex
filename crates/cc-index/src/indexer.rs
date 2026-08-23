@@ -654,7 +654,6 @@ impl Indexer {
             }
         }
 
-        drop(collect);
         Ok(ParseResult {
             write_units,
             parse_errors,

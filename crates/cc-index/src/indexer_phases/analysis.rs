@@ -63,6 +63,7 @@ impl Indexer {
         write_units: &[FileWriteUnit],
         route_nodes: &[RouteNodeRecord],
         walk_manifest: Option<&crate::scanner::WalkManifest>,
+        scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<AnalysisPlan> {
         // Phase 8: Git co-change analysis. HEAD-skip: co-change edges only
@@ -130,7 +131,17 @@ impl Indexer {
                 })
             },
         );
-        let infra_decision = infra_gate.should_run()?;
+        // Event-scoped fast path: a walk-free build whose event set provably
+        // contains no infra candidate cannot have changed the infra
+        // signature — skip the fallback walk when a comparable record
+        // exists (first build / algo upgrades still run).
+        let scoped_infra_unaffected =
+            walk_manifest.is_none() && scope_hints.is_some_and(|h| h.infra_files_unaffected);
+        let infra_decision = if scoped_infra_unaffected {
+            infra_gate.should_run_assuming_unchanged("scoped: no infra candidate events")?
+        } else {
+            infra_gate.should_run()?
+        };
         log_gate_decision(&infra_gate, infra_decision);
         build_explain.record_gate(infra_gate.id(), infra_decision.run, infra_decision.reason);
         let infra = if infra_decision.run {

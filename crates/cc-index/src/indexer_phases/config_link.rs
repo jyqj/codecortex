@@ -372,22 +372,49 @@ impl Indexer {
         project_path: &Path,
         batch_empty: bool,
         walk_manifest: Option<&crate::scanner::WalkManifest>,
+        scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<Option<ConfigLinkRound>> {
-        let sig = time_step("write", "config_sig_walk", || match walk_manifest {
-            // Shared-walk manifest: signature without another tree walk
-            // (value-equal to the walk fallback for the same tree).
-            Some(manifest) => crate::config_linker::config_files_signature_from_manifest(manifest),
-            None => config_files_signature(project_path),
-        });
         let recorded_algo = self
             .db
             .reads()
             .get_metadata(CONFIG_SIG_ALGO_KEY)?
             .unwrap_or_else(|| "1".to_string());
-        let recorded_sig = self.db.reads().get_metadata(CONFIG_SIG_KEY)?;
-        let unchanged = recorded_algo == CONFIG_SIG_ALGORITHM
-            && recorded_sig.and_then(|s| s.parse::<u64>().ok()) == Some(sig);
+        let recorded_sig = self
+            .db
+            .reads()
+            .get_metadata(CONFIG_SIG_KEY)?
+            .and_then(|s| s.parse::<u64>().ok());
+
+        // Event-scoped fast path: a walk-free build whose event set provably
+        // contains no config-linker candidate cannot have changed the config
+        // signature — reuse the recorded one instead of running the fallback
+        // walk. Requires a comparable record (matching algo + present sig);
+        // otherwise fall through to the compute so the gate behaves exactly
+        // like the unscoped path on first build / algo upgrades.
+        let scoped_reuse = walk_manifest.is_none()
+            && scope_hints.is_some_and(|h| h.config_files_unaffected)
+            && recorded_algo == CONFIG_SIG_ALGORITHM
+            && recorded_sig.is_some();
+
+        let (sig, unchanged) = if scoped_reuse {
+            tracing::debug!(
+                "config linker: scoped build touched no config candidates, reusing recorded signature"
+            );
+            (recorded_sig.unwrap_or_default(), true)
+        } else {
+            let sig = time_step("write", "config_sig_walk", || match walk_manifest {
+                // Shared-walk manifest: signature without another tree walk
+                // (value-equal to the walk fallback for the same tree).
+                Some(manifest) => {
+                    crate::config_linker::config_files_signature_from_manifest(manifest)
+                }
+                None => config_files_signature(project_path),
+            });
+            let unchanged =
+                recorded_algo == CONFIG_SIG_ALGORITHM && recorded_sig == Some(sig);
+            (sig, unchanged)
+        };
 
         if unchanged && batch_empty {
             build_explain.record_gate(

@@ -65,6 +65,10 @@ impl Scanner {
         }
     }
 
+    pub(crate) fn project_path(&self) -> &Path {
+        &self.project_path
+    }
+
     /// Scan the project directory and return all indexable files.
     pub fn scan(&self) -> Vec<ScannedFile> {
         self.scan_with_manifest().0

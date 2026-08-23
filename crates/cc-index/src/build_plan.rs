@@ -342,6 +342,7 @@ impl IndexBuildPlan {
             &hierarchy_edges,
             &chunk_blobs,
             walk_manifest.as_deref(),
+            scan_result.scope_hints.as_ref(),
             &mut build_explain,
         )?;
         let write_ms = phase_start.elapsed().as_millis() as u64;
@@ -422,6 +423,7 @@ impl IndexBuildPlan {
             &write_units,
             &carry.output_snapshot.route_nodes,
             walk_manifest.as_deref(),
+            carry.scan_result.scope_hints.as_ref(),
             &mut build_explain,
         )?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
@@ -1440,6 +1442,114 @@ class Accumulator:
         assert_eq!(
             report.files_updated, 1,
             "dot-path events must force the full walk (off-scope edit observed)"
+        );
+    }
+
+    /// Scoped signature-gate hints: a walk-free scoped build whose event set
+    /// contains only code files must skip the config-linker and infra
+    /// fallback walks (their signatures provably did not change under the
+    /// scope's trust model) — off-scope config/infra changes are NOT
+    /// observed until a later unscoped build converges them. A scoped build
+    /// whose event set touches a yaml file must recompute both signatures
+    /// and run the passes.
+    #[test]
+    fn scoped_build_hints_gate_config_and_infra_walks() {
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        let project = dir.path();
+        write_fixture(project);
+
+        let db = open_db(project);
+        let indexer = Indexer::new(db.clone(), project, &config);
+        let plan = IndexBuildPlan::new(false, None);
+        plan.execute(&indexer, project).expect("initial build");
+
+        let count = |sql: &str| -> i64 {
+            db.reads()
+                .query_json(sql, &[])
+                .expect("count query")
+                .first()
+                .and_then(|row| row.get("cnt"))
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+        };
+        let gate = |report: &crate::IndexReport, pass: &str| -> (bool, String) {
+            report
+                .build_explain
+                .as_ref()
+                .and_then(|explain| {
+                    explain
+                        .gate_decisions
+                        .iter()
+                        .find(|g| g.pass == pass)
+                        .map(|g| (g.run, g.reason.clone()))
+                })
+                .unwrap_or_else(|| panic!("missing {pass} gate decision"))
+        };
+
+        // An infra file (also a config-linker candidate) lands on disk AFTER
+        // the initial build recorded both signatures — off scope.
+        std::fs::write(
+            project.join("deploy.yaml"),
+            "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: scoped-hint-svc\n",
+        )
+        .expect("write deploy.yaml");
+
+        // Code-only scoped build: both fallback walks must be skipped, so
+        // the off-scope yaml is not observed.
+        std::fs::write(
+            project.join(FIXTURE_FILE),
+            format!("{FIXTURE_SOURCE}\n\n# scoped edit\n"),
+        )
+        .expect("edit fixture");
+        let scope = crate::indexer::BuildScope {
+            changed: vec![FIXTURE_FILE.to_string()],
+            removed: vec![],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare");
+        let report = plan
+            .commit(&indexer, project, prepared)
+            .expect("scoped commit");
+
+        let (infra_ran, infra_reason) = gate(&report, "infra");
+        assert!(
+            !infra_ran && infra_reason == "scoped: no infra candidate events",
+            "code-only scoped build must skip the infra walk: run={infra_ran} reason={infra_reason}"
+        );
+        let (config_ran, config_reason) = gate(&report, "config_link");
+        assert!(
+            !config_ran,
+            "code-only scoped build must not rescan config files: reason={config_reason}"
+        );
+        assert_eq!(
+            count("SELECT COUNT(*) AS cnt FROM infra_nodes"),
+            0,
+            "off-scope infra file must stay unobserved by a code-only scoped build"
+        );
+
+        // Scoped build whose event set includes the yaml: hints must force
+        // both signature recomputes, and the infra pass must run.
+        let scope = crate::indexer::BuildScope {
+            changed: vec!["deploy.yaml".to_string()],
+            removed: vec![],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare with yaml event");
+        let report = plan
+            .commit(&indexer, project, prepared)
+            .expect("scoped commit with yaml event");
+
+        let (infra_ran, infra_reason) = gate(&report, "infra");
+        assert!(
+            infra_ran,
+            "yaml-event scoped build must recompute and run the infra pass: reason={infra_reason}"
+        );
+        assert!(
+            count("SELECT COUNT(*) AS cnt FROM infra_nodes WHERE name = 'scoped-hint-svc'") >= 1,
+            "the scoped-in yaml's infra node must be indexed"
         );
     }
 

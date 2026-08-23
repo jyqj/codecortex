@@ -49,6 +49,7 @@ impl Indexer {
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
         walk_manifest: Option<&crate::scanner::WalkManifest>,
+        scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<WriteResult> {
         // Separate dirty write units from normal ones before write.
@@ -135,6 +136,7 @@ impl Indexer {
                     project_path,
                     batch_empty,
                     walk_manifest,
+                    scope_hints,
                     build_explain,
                 )
             })? {

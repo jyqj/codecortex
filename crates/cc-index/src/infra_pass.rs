@@ -27,6 +27,19 @@ pub enum InfraFileType {
     CompileCommands,
 }
 
+/// Name-only superset of [`classify_infra_file`]: `true` whenever a file of
+/// this NAME could classify as an infra candidate under any content. Used by
+/// scoped-build gating (`ScopeSignatureHints`) to prove an event set cannot
+/// change the infra candidate set without the content sniff or a walk. Must
+/// stay a superset: `classify_infra_file(name, _) == Some(_)` ⇒ `true`.
+pub(crate) fn may_be_infra_candidate_name(file_name: &str) -> bool {
+    file_name.starts_with("Dockerfile")
+        || file_name.ends_with(".tf")
+        || file_name == "compile_commands.json"
+        || file_name.ends_with(".yaml")
+        || file_name.ends_with(".yml")
+}
+
 /// Name-based strong-feature classification shared by the walk and manifest
 /// discovery paths. `path` is only read for the K8s content sniff.
 fn classify_infra_file(file_name: &str, path: &Path) -> Option<InfraFileType> {

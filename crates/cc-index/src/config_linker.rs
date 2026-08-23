@@ -344,7 +344,7 @@ fn push_link(links: &mut Vec<ConfigLink>, seen: &mut HashSet<String>, link: Conf
     }
 }
 
-fn is_config_path(path: &Path) -> bool {
+pub(crate) fn is_config_path(path: &Path) -> bool {
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
     let filename = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
     matches!(

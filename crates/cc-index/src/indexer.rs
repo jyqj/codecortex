@@ -94,6 +94,30 @@ impl BuildScope {
 /// is both cheaper and safer than hundreds of point stats.
 const SCOPED_SCAN_MAX_EVENTS: usize = 512;
 
+/// Signature-gate hints derived from an event scope. A scoped build runs no
+/// tree walk, so the walk-manifest consumers (config-linker and infra
+/// signature gates) would each fall back to their own walk — costing more
+/// than the scoped scan saved. When the event set provably contains no
+/// candidate of a consumer's input class, that consumer's signature cannot
+/// have changed (the scope's trust model: only the event paths changed on
+/// disk since the last build), so the gate may reuse its recorded signature
+/// without walking.
+///
+/// A flag is only `true` when EVERY event path exists as a regular file
+/// whose name cannot classify as a candidate of that input class. Missing
+/// paths (removals — indistinguishable from removed directories whose
+/// subtree may have held candidates) and directories clear both flags.
+#[derive(Debug, Clone, Copy, Default)]
+pub(crate) struct ScopeSignatureHints {
+    /// No event path can be a config-linker candidate
+    /// (`config_linker::is_config_path`).
+    pub(crate) config_files_unaffected: bool,
+    /// No event path can be an infra candidate
+    /// (`infra_pass::may_be_infra_candidate_name` — a name-only superset of
+    /// the discovery classifier, so the content sniff is never needed).
+    pub(crate) infra_files_unaffected: bool,
+}
+
 /// What to do with a scanned file.
 #[derive(Debug, Clone, Copy)]
 pub enum FileAction {
@@ -194,6 +218,10 @@ pub(crate) struct ScanDiffResult {
     /// `None` when this build did not walk the tree (event-scoped prepare),
     /// in which case those consumers fall back to their own walks.
     pub(crate) walk_manifest: Option<Arc<crate::scanner::WalkManifest>>,
+    /// Event-scope signature hints (`Some` only for event-scoped scans):
+    /// lets the config/infra signature gates skip their fallback walks when
+    /// the event set provably contains no candidate of their input class.
+    pub(crate) scope_hints: Option<ScopeSignatureHints>,
 }
 
 /// Intermediate result for Phase 3 (parse).
@@ -458,6 +486,7 @@ impl Indexer {
             to_remove,
             to_parse: Self::pending_to_parse(pending),
             walk_manifest,
+            scope_hints: None,
         })
     }
 
@@ -566,11 +595,15 @@ impl Indexer {
         // skipped, exactly as an unscoped incremental would classify them.
         let files_skipped = files_scanned.saturating_sub(files_added + files_updated);
 
+        let scope_hints = self.classify_scope_events(&event_paths);
+
         tracing::debug!(
             events = event_paths.len(),
             added = files_added,
             updated = files_updated,
             removed = to_remove.len(),
+            config_files_unaffected = scope_hints.config_files_unaffected,
+            infra_files_unaffected = scope_hints.infra_files_unaffected,
             "event-scoped scan/diff (no tree walk)"
         );
 
@@ -583,10 +616,42 @@ impl Indexer {
             scanned_paths,
             to_remove,
             to_parse: Self::pending_to_parse(pending),
-            // No tree walk ran: config/infra signature consumers fall back
-            // to their own (stat-only) walks behind their gates.
+            // No tree walk ran: config/infra signature consumers either use
+            // the scope hints (no candidate events → recorded signature
+            // reusable) or fall back to their own walks behind their gates.
             walk_manifest: None,
+            scope_hints: Some(scope_hints),
         }))
+    }
+
+    /// Derive [`ScopeSignatureHints`] from a scoped scan's event paths: a
+    /// consumer's flag stays `true` only when every event path exists as a
+    /// regular file whose NAME cannot classify as one of its candidates.
+    /// Missing paths (removals — could have been directories holding
+    /// candidates) and directories conservatively clear both flags. Cost is
+    /// at most one `stat` per event path (≤ [`SCOPED_SCAN_MAX_EVENTS`]),
+    /// versus the tree walk each consumer would otherwise run.
+    fn classify_scope_events(&self, event_paths: &[String]) -> ScopeSignatureHints {
+        let mut hints = ScopeSignatureHints {
+            config_files_unaffected: true,
+            infra_files_unaffected: true,
+        };
+        for rel in event_paths {
+            let is_regular_file = std::fs::metadata(self.scanner.project_path().join(rel))
+                .map(|md| md.is_file())
+                .unwrap_or(false);
+            if !is_regular_file {
+                return ScopeSignatureHints::default();
+            }
+            let file_name = rel.rsplit('/').next().unwrap_or(rel);
+            if crate::config_linker::is_config_path(Path::new(rel)) {
+                hints.config_files_unaffected = false;
+            }
+            if crate::infra_pass::may_be_infra_candidate_name(file_name) {
+                hints.infra_files_unaffected = false;
+            }
+        }
+        hints
     }
 
     /// Shared Phase-2 diff: mtime+size fast-skip → blake3 hash confirm, with

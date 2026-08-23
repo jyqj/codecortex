@@ -97,7 +97,10 @@ pub(crate) struct LaneContext<'a> {
 ///   and return an empty list instead.
 /// - Side effects are limited to the engine caches exposed through
 ///   [`LaneContext`] (currently `chunk_text_cache`).
-pub(crate) trait RetrievalLane {
+/// - `Sync` is a supertrait because [`run_lanes`] executes lanes in
+///   parallel; lanes hold no per-search state (the built-ins are unit
+///   structs), so this costs nothing.
+pub(crate) trait RetrievalLane: Sync {
     /// Stable lane identifier used to key rank maps, reasons, and stats.
     fn lane_id(&self) -> &'static str;
 
@@ -149,7 +152,15 @@ pub(crate) struct LaneOutcome {
     pub(crate) hits: Vec<(String, f64)>,
 }
 
-/// Execute lanes in the given (deterministic) order.
+/// Execute lanes in parallel, returning outcomes in registration order.
+///
+/// Each lane is independent (separate read-pool connections, side effects
+/// limited to the mutex-guarded `chunk_text_cache`), so they run on the
+/// rayon pool; the indexed collect keeps the outcome vector — and therefore
+/// RRF accumulation and tie-breaking — in the exact registration order the
+/// sequential loop produced. A lane error still aborts the whole search;
+/// with parallel execution the other lanes may have already run, which is
+/// safe because their only side effect is warming the chunk-text cache.
 ///
 /// Disabled lanes are skipped before any work but still yield an empty
 /// outcome, so downstream rank maps stay uniformly keyed by lane id.
@@ -157,22 +168,27 @@ pub(crate) fn run_lanes(
     lanes: &[&dyn RetrievalLane],
     context: &LaneContext<'_>,
 ) -> CcResult<Vec<LaneOutcome>> {
-    let mut outcomes = Vec::with_capacity(lanes.len());
-    for lane in lanes {
-        let hits = if lane.is_enabled(context) {
-            lane.run(context)?
-        } else {
-            Vec::new()
-        };
-        outcomes.push(LaneOutcome {
-            lane_id: lane.lane_id(),
-            weight: lane.weight(context.config),
-            annotates_hits: lane.annotates_hits(),
-            score_slot: lane.score_slot(),
-            hits,
-        });
-    }
-    Ok(outcomes)
+    use rayon::prelude::*;
+    let results: Vec<CcResult<LaneOutcome>> = lanes
+        .par_iter()
+        .map(|lane| {
+            let hits = if lane.is_enabled(context) {
+                lane.run(context)?
+            } else {
+                Vec::new()
+            };
+            Ok(LaneOutcome {
+                lane_id: lane.lane_id(),
+                weight: lane.weight(context.config),
+                annotates_hits: lane.annotates_hits(),
+                score_slot: lane.score_slot(),
+                hits,
+            })
+        })
+        .collect();
+    // Sequence in registration order so the surfaced error (when several
+    // lanes fail) is deterministic — the same one the sequential loop chose.
+    results.into_iter().collect()
 }
 
 /// Attach the shared rank-position score (`1/(i+1)`) to an ordered list of

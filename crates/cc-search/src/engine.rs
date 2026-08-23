@@ -1568,6 +1568,95 @@ mod tests {
         assert_eq!(first, second);
     }
 
+    /// The FTS prefilter phrase mirrors unicode61 tokenization: alphanumeric
+    /// runs, quoted as a phrase, with a trailing `*` when the literal ends
+    /// mid-token. Punctuation-only literals yield no phrase (full scan only).
+    #[test]
+    fn grep_prefilter_phrase_tokenizes_like_unicode61() {
+        use crate::lanes::grep_prefilter_phrase;
+        assert_eq!(
+            grep_prefilter_phrase("getUserById"),
+            Some("\"getUserById\"*".to_string())
+        );
+        assert_eq!(
+            grep_prefilter_phrase("get_user_by_id"),
+            Some("\"get user by id\"*".to_string())
+        );
+        assert_eq!(
+            grep_prefilter_phrase("read(&mut buf)"),
+            Some("\"read mut buf\"".to_string()),
+            "literal ending at a token boundary needs no prefix star"
+        );
+        assert_eq!(
+            grep_prefilter_phrase("->"),
+            None,
+            "punctuation-only literal has no tokenizable content"
+        );
+        assert_eq!(
+            grep_prefilter_phrase("a"),
+            None,
+            "single-character tokens alone are too noisy to prefilter"
+        );
+    }
+
+    /// The unscoped grep scan must still find matches the FTS tokenizer
+    /// cannot see (a mid-token substring like `UserById` inside
+    /// `getUserById`): stage 1's prefilter misses them, stage 2's full scan
+    /// covers them. Token-boundary matches keep working too.
+    #[test]
+    fn grep_lane_prefilter_keeps_midtoken_matches_via_full_scan() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/svc.rs",
+            Language::Rust,
+            "fn getUserById(id: u64) {}",
+        );
+        insert_chunk_file(&engine, "src/other.rs", Language::Rust, "nothing here");
+
+        // Unscoped (empty preselect): the prefilter stage runs. The query is
+        // a mid-token substring — FTS sees only the token `getuserbyid`, so
+        // `\"userbyid\"*` matches nothing and stage 2 must find the hit.
+        let request = SearchRequest {
+            query: "UserById".to_string(),
+            top_k: 5,
+            include_grep: true,
+            file_preselect_limit: Some(0),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+        let hits = GrepLane.run(&context).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:src/svc.rs".to_string(), 1.0)],
+            "mid-token substring must survive the prefilter via stage-2 full scan"
+        );
+
+        // Token-boundary query (prefilter-visible) finds the same chunk.
+        let request = SearchRequest {
+            query: "getUserById".to_string(),
+            top_k: 5,
+            include_grep: true,
+            file_preselect_limit: Some(0),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+        let hits = GrepLane.run(&context).unwrap();
+        assert_eq!(hits, vec![("chunk:src/svc.rs".to_string(), 1.0)]);
+    }
+
     #[test]
     fn grep_lane_disabled_when_request_excludes_grep() {
         let (engine, _tmp) = scoped_test_engine();

@@ -17,7 +17,7 @@
 //!   field projection lives in one place in `plan.rs::hit_from_chunk` and
 //!   never needs a new arm (the slot set mirrors the fixed cc-model schema).
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, Mutex};
 
 use lru::LruCache;
@@ -340,7 +340,50 @@ impl RetrievalLane for LexicalLane {
 /// no structured truncation outlet) and the lane returns whatever matched
 /// within budget, deterministically (the unscoped scan is recency-ordered
 /// by `grep_chunk_scope_sql`).
+///
+/// Unscoped scans run in two stages to avoid decompressing the whole scope:
+/// stage 1 pulls candidates from a `chunks_fts` MATCH prefilter derived from
+/// the grep literal (see [`grep_prefilter_phrase`] — matches at token
+/// boundaries are a superset of the FTS phrase hits), stage 2 falls back to
+/// the full recency-ordered scan for matches the tokenizer cannot see
+/// (mid-token substrings), skipping rows stage 1 already decompressed.
+/// Matches from both stages merge in recency (rowid-descending) order, so
+/// when the budget covers the scope the result equals the single-pass scan
+/// exactly; under budget pressure the prefilter *finds more matches sooner*.
+/// File-scoped scans (bounded cardinality) keep the single-pass behaviour.
 pub(crate) struct GrepLane;
+
+/// Build the `chunks_fts` MATCH phrase for the grep literal, or `None` when
+/// the literal has no tokenizable content (all punctuation).
+///
+/// The literal's alphanumeric runs appear as adjacent tokens in any text
+/// containing the literal at a token boundary (unicode61 separates on
+/// non-alphanumerics and case-folds, matching the lane's case-insensitive
+/// regex), so a quoted phrase of those runs — with a trailing `*` when the
+/// literal ends mid-token — selects a candidate superset of all
+/// token-boundary matches. Mid-token starts (e.g. querying `UserById`
+/// against `getUserById`) are invisible to the tokenizer; the caller must
+/// keep a full-scan stage for those.
+pub(crate) fn grep_prefilter_phrase(query: &str) -> Option<String> {
+    let tokens: Vec<&str> = query
+        .split(|ch: char| !ch.is_alphanumeric())
+        .filter(|t| !t.is_empty())
+        .collect();
+    // Single-character tokens alone are pure noise as a prefilter (nearly
+    // every chunk matches) — require at least one token of length >= 2.
+    if !tokens.iter().any(|t| t.chars().count() >= 2) {
+        return None;
+    }
+    let prefix = query
+        .chars()
+        .next_back()
+        .is_some_and(|ch| ch.is_alphanumeric());
+    Some(format!(
+        "\"{}\"{}",
+        tokens.join(" "),
+        if prefix { "*" } else { "" }
+    ))
+}
 
 impl RetrievalLane for GrepLane {
     fn lane_id(&self) -> &'static str {
@@ -376,37 +419,155 @@ impl RetrievalLane for GrepLane {
             Err(_) => return Ok(Vec::new()),
         };
 
-        let (sql, params) = plan.grep_scope_sql();
+        // Scan budget: every fetched row costs a zstd decode, so cap the
+        // number of rows pulled instead of decompressing the whole scope
+        // when matches are rare or absent. Shared across both stages.
+        let scan_cap = context.config.grep_scan_cap;
+        let mut scan = GrepScanState {
+            scanned: 0,
+            truncated: false,
+            matches: Vec::new(),
+        };
+        let mut prefiltered: HashSet<String> = HashSet::new();
+
+        // Stage 1 — FTS prefilter (unscoped scans only; file-scoped scans
+        // are cardinality-bounded and keep the single-pass behaviour).
+        let prefilter_phrase = if plan.has_file_scope() {
+            None
+        } else {
+            grep_prefilter_phrase(plan.grep_query())
+        };
+        if let Some(phrase) = &prefilter_phrase {
+            let (sql, mut params) = plan.grep_prefilter_sql(scan_cap);
+            params.insert(0, phrase.clone());
+            if let Err(e) = Self::scan_stage(
+                context,
+                &re,
+                limit,
+                scan_cap,
+                &sql,
+                &params,
+                None,
+                Some(&mut prefiltered),
+                &mut scan,
+            ) {
+                // A MATCH the tokenizer rejects must not fail the lane —
+                // fall back to the plain full scan.
+                tracing::debug!(
+                    phrase = %phrase,
+                    error = %e,
+                    "grep prefilter query failed; falling back to full scan"
+                );
+                prefiltered.clear();
+                scan = GrepScanState {
+                    scanned: 0,
+                    truncated: false,
+                    matches: Vec::new(),
+                };
+            }
+        }
+
+        // Stage 2 — full scoped scan for matches the tokenizer cannot see
+        // (mid-token substrings), skipping rows stage 1 already decompressed.
+        if scan.matches.len() < limit && !scan.truncated {
+            let (sql, params) = plan.grep_scope_sql();
+            let skip = if prefiltered.is_empty() {
+                None
+            } else {
+                Some(&prefiltered)
+            };
+            Self::scan_stage(
+                context, &re, limit, scan_cap, &sql, &params, skip, None, &mut scan,
+            )?;
+        }
+
+        if scan.truncated {
+            tracing::info!(
+                query = %plan.grep_query(),
+                scanned = scan.scanned,
+                scan_cap,
+                matches = scan.matches.len(),
+                "grep lane scan budget exhausted; remaining chunks not scanned \
+                 (raise search.grep_scan_cap to widen)"
+            );
+        }
+        // Merge the stages in recency order (matches carry their base-table
+        // rowid). Unscoped single-stage results are already rowid-descending
+        // so this is a no-op there; scoped scans never run stage 1 and keep
+        // SQLite's natural probe order untouched.
+        if prefilter_phrase.is_some() {
+            scan.matches.sort_by(|a, b| b.0.cmp(&a.0));
+            scan.matches.truncate(limit);
+        }
+        Ok(rank_scored(
+            scan.matches.into_iter().map(|(_, cid)| cid).collect(),
+        ))
+    }
+}
+
+/// Mutable scan state shared by the grep lane's two stages: rows
+/// decompressed so far (the budget), whether the budget ran out, and the
+/// matches as `(chunks.rowid, chunk_id)` for the recency merge.
+struct GrepScanState {
+    scanned: usize,
+    truncated: bool,
+    matches: Vec<(i64, String)>,
+}
+
+impl GrepLane {
+    /// Run one scan stage: fetch rows from `sql`, decompress, filter, regex
+    /// match. `skip` rows are passed over before the decode (they were
+    /// already decompressed by an earlier stage); `seen_out` records every
+    /// row this stage decodes so a later stage can skip it.
+    #[allow(clippy::too_many_arguments)]
+    fn scan_stage(
+        context: &LaneContext<'_>,
+        re: &regex::Regex,
+        limit: usize,
+        scan_cap: usize,
+        sql: &str,
+        params: &[String],
+        skip: Option<&HashSet<String>>,
+        mut seen_out: Option<&mut HashSet<String>>,
+        scan: &mut GrepScanState,
+    ) -> CcResult<()> {
+        let plan = context.plan;
         let conn = context.db.reads().read_conn()?;
         let mut stmt = conn
-            .prepare(&sql)
+            .prepare(sql)
             .map_err(|e| CcError::Database(e.to_string()))?;
         let rows = stmt
             .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                Ok((
-                    row.get::<_, String>(0)?,
+                let cid = row.get::<_, String>(0)?;
+                if skip.is_some_and(|seen| seen.contains(&cid)) {
+                    // Already decoded by the prefilter stage: skip before
+                    // the zstd decode so it costs no scan budget.
+                    return Ok(None);
+                }
+                Ok(Some((
+                    cid,
                     row.get::<_, String>(1)?,
                     row.get::<_, String>(2)?,
                     read_chunk_text_with_encoding(row, 3, 4)?,
-                ))
+                    row.get::<_, i64>(5)?,
+                )))
             })
             .map_err(|e| CcError::Database(e.to_string()))?;
 
-        // Scan budget: every fetched row costs a zstd decode, so cap the
-        // number of rows pulled instead of decompressing the whole scope
-        // when matches are rare or absent.
-        let scan_cap = context.config.grep_scan_cap;
-        let mut scanned = 0usize;
-        let mut truncated = false;
-        let mut matches = Vec::new();
         for row in rows {
-            if scanned >= scan_cap {
-                truncated = true;
+            if scan.scanned >= scan_cap {
+                scan.truncated = true;
                 break;
             }
-            scanned += 1;
-            let (cid, file_path, language_name, text) =
-                row.map_err(|e| CcError::Database(e.to_string()))?;
+            let Some((cid, file_path, language_name, text, rowid)) =
+                row.map_err(|e| CcError::Database(e.to_string()))?
+            else {
+                continue;
+            };
+            scan.scanned += 1;
+            if let Some(seen) = seen_out.as_deref_mut() {
+                seen.insert(cid.clone());
+            }
             let language = parse_language_name(&language_name);
             // File-level filtering: path_prefix, languages, file_paths
             if !plan.passes_filters(&file_path, language) {
@@ -421,23 +582,13 @@ impl RetrievalLane for GrepLane {
                 if let Ok(mut cache) = context.chunk_text_cache.lock() {
                     cache.put(cid.clone(), Arc::from(text.as_str()));
                 }
-                matches.push(cid);
-                if matches.len() >= limit {
+                scan.matches.push((rowid, cid));
+                if scan.matches.len() >= limit {
                     break;
                 }
             }
         }
-        if truncated {
-            tracing::info!(
-                query = %plan.grep_query(),
-                scanned,
-                scan_cap,
-                matches = matches.len(),
-                "grep lane scan budget exhausted; remaining chunks not scanned \
-                 (raise search.grep_scan_cap to widen)"
-            );
-        }
-        Ok(rank_scored(matches))
+        Ok(())
     }
 }
 

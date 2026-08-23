@@ -177,6 +177,14 @@ impl SearchPlan {
         self.filters.grep_chunk_scope_sql()
     }
 
+    pub(crate) fn grep_prefilter_sql(&self, scan_cap: usize) -> (String, Vec<String>) {
+        self.filters.grep_prefilter_scope_sql(scan_cap)
+    }
+
+    pub(crate) fn has_file_scope(&self) -> bool {
+        self.filters.has_file_scope()
+    }
+
     pub(crate) fn lexical_scope_sql(&self, limit: usize) -> (String, Vec<String>) {
         self.filters.fts_chunk_scope_sql(limit)
     }
@@ -456,9 +464,18 @@ impl MaterializedFilters {
         true
     }
 
+    /// Whether the request carries an explicit file-paths scope (which
+    /// bounds the grep scan's cardinality).
+    pub(crate) fn has_file_scope(&self) -> bool {
+        self.file_paths
+            .as_ref()
+            .map(|files| !files.is_empty())
+            .unwrap_or(false)
+    }
+
     pub(crate) fn grep_chunk_scope_sql(&self) -> (String, Vec<String>) {
-        let mut sql =
-            "SELECT chunk_id, file_path, language, text, text_encoding FROM chunks".to_string();
+        let mut sql = "SELECT chunk_id, file_path, language, text, text_encoding, rowid FROM chunks"
+            .to_string();
         let mut clauses: Vec<String> = Vec::new();
         let mut params = Vec::new();
 
@@ -476,14 +493,41 @@ impl MaterializedFilters {
         // (`search.grep_scan_cap`) is spent on the freshest code.  SQLite
         // walks the table b-tree backwards for this — no sort step.  Scoped
         // scans keep SQLite's natural probe order, matching prior behaviour.
-        let has_file_scope = self
-            .file_paths
-            .as_ref()
-            .map(|files| !files.is_empty())
-            .unwrap_or(false);
-        if !has_file_scope {
+        if !self.has_file_scope() {
             sql.push_str(" ORDER BY rowid DESC");
         }
+
+        (sql, params)
+    }
+
+    /// FTS-prefiltered variant of [`Self::grep_chunk_scope_sql`]: same
+    /// columns and scope clauses, but candidates come from a `chunks_fts`
+    /// MATCH (the `?1` parameter) joined back to `chunks` via the schema-v6
+    /// rowid alignment, instead of a full table walk. Used by the grep
+    /// lane's stage-1 scan; recency order and the scan-cap LIMIT keep its
+    /// budget semantics identical to the unscoped full scan.
+    pub(crate) fn grep_prefilter_scope_sql(&self, scan_cap: usize) -> (String, Vec<String>) {
+        let mut sql = "SELECT chunks.chunk_id, chunks.file_path, chunks.language, chunks.text, \
+                       chunks.text_encoding, chunks.rowid \
+                       FROM chunks_fts JOIN chunks ON chunks.rowid = chunks_fts.rowid \
+                       WHERE chunks_fts MATCH ?"
+            .to_string();
+        let mut clauses: Vec<String> = Vec::new();
+        let mut params = Vec::new();
+
+        self.push_chunk_scope_clauses(
+            &mut clauses,
+            &mut params,
+            "chunks.file_path",
+            "chunks.language",
+        );
+
+        if !clauses.is_empty() {
+            sql.push_str(" AND ");
+            sql.push_str(&clauses.join(" AND "));
+        }
+        sql.push_str(" ORDER BY chunks.rowid DESC LIMIT ");
+        sql.push_str(&scan_cap.to_string());
 
         (sql, params)
     }

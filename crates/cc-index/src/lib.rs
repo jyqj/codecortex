@@ -25,7 +25,7 @@ pub(crate) mod type_catalog;
 pub use build_plan::{PreparedBuild, StagedPostprocess, WrittenBuild};
 pub use dirty_closure::DirtyPropagationStatus;
 pub use framework_registry::FileFrameworkDetection;
-pub use indexer::{IndexReport, Indexer};
+pub use indexer::{BuildScope, IndexReport, Indexer};
 pub use scanner::{ScannedFile, Scanner};
 
 /// Test-only seeding support shared by this crate's unit-test fixtures.

@@ -463,7 +463,7 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None).unwrap();
+        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -554,7 +554,7 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None).unwrap();
+        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -626,7 +626,7 @@ mod dirty_propagation_fixpoint_tests {
         // Delete b.ts and run the incremental diff/parse/propagation pipeline.
         std::fs::remove_file(project.join("b.ts")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None).unwrap();
+        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
         assert!(
             scan.to_remove.contains(&"b.ts".to_string()),
             "deleted b.ts must land in to_remove; got {:?}",

@@ -343,8 +343,20 @@ impl CodeIndex {
         full: bool,
         auto_file_limit: Option<usize>,
     ) -> CcResult<PreparedBuild> {
+        Self::prepare_build_scoped(inputs, full, auto_file_limit, None)
+    }
+
+    /// [`CodeIndex::prepare_build`] with an event-scoped hint: watcher ticks
+    /// pass their drained change set so the scan/diff phase can stat/hash
+    /// only those paths instead of walking the whole tree.
+    pub fn prepare_build_scoped(
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        scope: Option<&cc_index::BuildScope>,
+    ) -> CcResult<PreparedBuild> {
         let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
-        indexer.prepare_build(&inputs.project, full, auto_file_limit)
+        indexer.prepare_build_scoped(&inputs.project, full, auto_file_limit, scope)
     }
 
     /// Commit a previously prepared build under the caller's write lock. Runs

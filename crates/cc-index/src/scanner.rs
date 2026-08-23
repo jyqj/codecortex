@@ -224,6 +224,294 @@ impl Scanner {
 
         (indexable, WalkManifest { files: walk_files })
     }
+
+    /// Event-scoped scan: stat only the given rel paths (plus the contents
+    /// of any that are directories), applying the exact same admission rules
+    /// as the full tree walk. Implemented as ONE root-anchored walk whose
+    /// `filter_entry` only descends the ancestor directories of the requested
+    /// paths — so every gitignore rule (root, nested, `.git/info/exclude`) is
+    /// evaluated at the same directory level as the full walk, including
+    /// rules that prune a requested path's ancestor. Cost is O(entries of
+    /// traversed directories), not O(tree). Paths missing on disk or failing
+    /// admission are simply absent from the result (the caller treats them
+    /// as removals against the DB state).
+    pub fn scan_paths(&self, rel_paths: &[String]) -> Vec<ScannedFile> {
+        let overrides = self.build_overrides();
+
+        // Admission pre-filter shared with the tree walk: hidden components
+        // and user-ignore matches (file itself or any ancestor directory,
+        // mirroring walker-level directory pruning).
+        let admissible = |rel: &str| -> bool {
+            if rel.is_empty() || rel.split('/').any(|c| c.starts_with('.')) {
+                return false;
+            }
+            if let Some(ovr) = &overrides {
+                if ovr.matched(rel, false).is_ignore() {
+                    return false;
+                }
+                let mut prefix = String::new();
+                let components: Vec<&str> = rel.split('/').collect();
+                for dir in &components[..components.len().saturating_sub(1)] {
+                    if !prefix.is_empty() {
+                        prefix.push('/');
+                    }
+                    prefix.push_str(dir);
+                    if ovr.matched(&prefix, true).is_ignore() {
+                        return false;
+                    }
+                }
+            }
+            true
+        };
+
+        // Requested files, requested directory subtrees (dir-level watcher
+        // events, e.g. a folder move), and the ancestor-dir chain the walker
+        // needs to descend to reach them.
+        let mut want_files: std::collections::HashSet<String> = std::collections::HashSet::new();
+        let mut subtree_prefixes: Vec<String> = Vec::new();
+        let mut descend_dirs: std::collections::HashSet<String> = std::collections::HashSet::new();
+        for raw in rel_paths {
+            let rel = raw.trim_end_matches('/');
+            if !admissible(rel) {
+                continue;
+            }
+            if self.project_path.join(rel).is_dir() {
+                subtree_prefixes.push(format!("{}/", rel));
+                descend_dirs.insert(rel.to_string());
+            } else {
+                want_files.insert(rel.to_string());
+            }
+            let components: Vec<&str> = rel.split('/').collect();
+            let mut prefix = String::new();
+            for dir in &components[..components.len().saturating_sub(1)] {
+                if !prefix.is_empty() {
+                    prefix.push('/');
+                }
+                prefix.push_str(dir);
+                descend_dirs.insert(prefix.clone());
+            }
+        }
+        if want_files.is_empty() && subtree_prefixes.is_empty() {
+            return Vec::new();
+        }
+
+        let mut builder = ignore::WalkBuilder::new(&self.project_path);
+        builder.hidden(true).git_ignore(true).git_global(false);
+
+        let root = self.project_path.clone();
+        let want_files_filter = want_files;
+        let subtree_prefixes_filter = subtree_prefixes;
+        let descend_dirs_filter = descend_dirs;
+        builder.filter_entry(move |entry| {
+            let rel = match entry.path().strip_prefix(&root) {
+                Ok(r) => r,
+                Err(_) => return false,
+            };
+            if rel.as_os_str().is_empty() {
+                return true;
+            }
+            let rel = rel.to_string_lossy().replace('\\', "/");
+            let under_subtree = subtree_prefixes_filter
+                .iter()
+                .any(|prefix| rel.starts_with(prefix.as_str()));
+            if entry.file_type().is_some_and(|t| t.is_dir()) {
+                under_subtree || descend_dirs_filter.contains(&rel)
+            } else {
+                under_subtree || want_files_filter.contains(&rel)
+            }
+        });
+
+        let mut out = Vec::new();
+        for entry in builder.build().flatten() {
+            let path = entry.path();
+            if !path.is_file() {
+                continue;
+            }
+            let rel = match path.strip_prefix(&self.project_path) {
+                Ok(r) => r.to_string_lossy().replace('\\', "/"),
+                Err(_) => continue,
+            };
+            // User-override dir-prune parity for files inside requested
+            // subtrees (requested paths were pre-checked above).
+            if !admissible(&rel) {
+                continue;
+            }
+            self.admit_scanned(path, &mut out);
+        }
+        out
+    }
+
+    /// Final admission for one on-disk file: size cap + language/include
+    /// filter (identical to the tree-walk indexable filters); pushes the
+    /// resulting [`ScannedFile`].
+    fn admit_scanned(&self, path: &Path, out: &mut Vec<ScannedFile>) {
+        let rel_path = match path.strip_prefix(&self.project_path) {
+            Ok(r) => r.to_string_lossy().replace('\\', "/"),
+            Err(_) => return,
+        };
+        let metadata = match path.metadata() {
+            Ok(m) => m,
+            Err(_) => return,
+        };
+        if metadata.len() > self.config.max_file_bytes {
+            return;
+        }
+        let language = detect_language(&rel_path);
+        if language == Language::Unknown {
+            let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+            let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+            let glob_match = self.config.include.iter().any(|p| {
+                p.ends_with(&format!("*.{}", ext))
+                    || p.ends_with(&format!("/{}", file_name))
+                    || p.ends_with(file_name)
+            });
+            if !glob_match {
+                return;
+            }
+        }
+        let mtime = metadata
+            .modified()
+            .ok()
+            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+            .map(|d| d.as_secs_f64())
+            .unwrap_or(0.0);
+        out.push(ScannedFile {
+            rel_path,
+            abs_path: path.to_path_buf(),
+            language,
+            size: metadata.len(),
+            mtime,
+        });
+    }
+}
+
+#[cfg(test)]
+mod scoped_scan_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+
+    fn write(root: &Path, rel: &str, content: &str) {
+        let path = root.join(rel);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, content).unwrap();
+    }
+
+    /// `scan_paths` must agree with the full tree walk on admission for every
+    /// requested path: gitignore at any ancestor level (root and nested),
+    /// user `indexing.ignore` directory pruning, the size cap, and the
+    /// language filter. This is the membership contract event-scoped builds
+    /// rely on — drift here would make a scoped build admit (or drop) a file
+    /// the next full walk classifies differently.
+    #[test]
+    fn scoped_scan_matches_full_walk_admission() {
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path();
+        // The ignore crate only applies gitignore rules inside a git repo.
+        std::fs::create_dir(root.join(".git")).unwrap();
+        write(root, ".gitignore", "logs/\n");
+        write(root, "src/main.py", "def main():\n    return 1\n");
+        write(root, "src/nested/.gitignore", "secret.py\n");
+        write(root, "src/nested/secret.py", "def secret():\n    return 2\n");
+        write(root, "src/nested/open.py", "def open_fn():\n    return 3\n");
+        // Ancestor directory gitignored at the ROOT level: a walk rooted at
+        // `logs/` would never see the pruning rule — the regression this
+        // test pins.
+        write(root, "logs/app.py", "def logged():\n    return 4\n");
+        write(root, "vendor/lib.py", "def vendored():\n    return 5\n");
+        write(root, "notes.xyz", "not a source language\n");
+        write(root, "big.py", &"# padding\n".repeat(64));
+
+        let mut config = IndexingConfig::default();
+        config.ignore.push("vendor".to_string());
+        config.max_file_bytes = 128;
+        let scanner = Scanner::new(root, &config);
+
+        let full: std::collections::HashSet<String> = scanner
+            .scan()
+            .into_iter()
+            .map(|f| f.rel_path)
+            .collect();
+
+        let requested: Vec<String> = [
+            "src/main.py",
+            "src/nested/secret.py",
+            "src/nested/open.py",
+            "logs/app.py",
+            "vendor/lib.py",
+            "notes.xyz",
+            "big.py",
+            "missing.py",
+        ]
+        .iter()
+        .map(|s| s.to_string())
+        .collect();
+        let scoped: std::collections::HashSet<String> = scanner
+            .scan_paths(&requested)
+            .into_iter()
+            .map(|f| f.rel_path)
+            .collect();
+
+        let expected: std::collections::HashSet<String> = requested
+            .iter()
+            .filter(|p| full.contains(p.as_str()))
+            .cloned()
+            .collect();
+        assert_eq!(
+            scoped, expected,
+            "scoped admission must equal full-walk admission on the requested set"
+        );
+        assert!(scoped.contains("src/main.py"));
+        assert!(scoped.contains("src/nested/open.py"));
+        assert!(
+            !scoped.contains("logs/app.py"),
+            "root-level gitignore of an ancestor dir must prune the scoped scan"
+        );
+        assert!(
+            !scoped.contains("src/nested/secret.py"),
+            "nested .gitignore must apply to the scoped scan"
+        );
+        assert!(!scoped.contains("vendor/lib.py"), "user ignore dir prune");
+        assert!(!scoped.contains("notes.xyz"), "language/include filter");
+        assert!(!scoped.contains("big.py"), "size cap");
+    }
+
+    /// A requested directory expands to its admissible subtree, matching the
+    /// full walk's membership under that prefix; stat fields agree with the
+    /// full walk for the same file.
+    #[test]
+    fn scoped_scan_expands_directory_events() {
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path();
+        std::fs::create_dir(root.join(".git")).unwrap();
+        write(root, "src/a.py", "def a():\n    return 1\n");
+        write(root, "src/sub/b.py", "def b():\n    return 2\n");
+        write(root, "src/.gitignore", "skipped.py\n");
+        write(root, "src/skipped.py", "def s():\n    return 3\n");
+        write(root, "other/c.py", "def c():\n    return 4\n");
+
+        let scanner = Scanner::new(root, &IndexingConfig::default());
+        let full: Vec<ScannedFile> = scanner.scan();
+        let full_under_src: std::collections::HashSet<String> = full
+            .iter()
+            .filter(|f| f.rel_path.starts_with("src/"))
+            .map(|f| f.rel_path.clone())
+            .collect();
+
+        let scoped = scanner.scan_paths(&["src".to_string()]);
+        let scoped_paths: std::collections::HashSet<String> =
+            scoped.iter().map(|f| f.rel_path.clone()).collect();
+        assert_eq!(
+            scoped_paths, full_under_src,
+            "directory event must expand to the full walk's membership under the prefix"
+        );
+        assert!(!scoped_paths.contains("other/c.py"));
+
+        let scoped_a = scoped.iter().find(|f| f.rel_path == "src/a.py").unwrap();
+        let full_a = full.iter().find(|f| f.rel_path == "src/a.py").unwrap();
+        assert_eq!(scoped_a.size, full_a.size);
+        assert_eq!(scoped_a.language, full_a.language);
+        assert_eq!(scoped_a.mtime, full_a.mtime);
+    }
 }
 
 #[cfg(test)]

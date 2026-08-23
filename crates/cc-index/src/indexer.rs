@@ -70,6 +70,30 @@ fn read_for_scan(path: &Path) -> Option<Vec<u8>> {
     }
 }
 
+/// Event-scoped build hint: the `/`-normalized rel paths a watcher tick
+/// observed as changed (created/modified) or removed since the last build.
+/// An incremental prepare carrying a non-empty scope stats/hashes only these
+/// paths instead of walking the whole tree; every fallback to the full walk
+/// (first build, oversized event set, dot-path events that can change
+/// admission rules) is decided inside the scan/diff phase.
+#[derive(Debug, Clone, Default)]
+pub struct BuildScope {
+    pub changed: Vec<String>,
+    pub removed: Vec<String>,
+}
+
+impl BuildScope {
+    pub fn is_empty(&self) -> bool {
+        self.changed.is_empty() && self.removed.is_empty()
+    }
+}
+
+/// Above this many distinct event paths a scoped scan falls back to the full
+/// tree walk: bulk operations (branch checkout, generated-code refresh,
+/// watcher overflow backfill) touch enough of the tree that one shared walk
+/// is both cheaper and safer than hundreds of point stats.
+const SCOPED_SCAN_MAX_EVENTS: usize = 512;
+
 /// What to do with a scanned file.
 #[derive(Debug, Clone, Copy)]
 pub enum FileAction {
@@ -267,7 +291,23 @@ impl Indexer {
         full: bool,
         auto_file_limit: Option<usize>,
     ) -> CcResult<crate::build_plan::PreparedBuild> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare(self, project_path)
+        self.prepare_build_scoped(project_path, full, auto_file_limit, None)
+    }
+
+    /// [`Indexer::prepare_build`] with an event-scoped hint: when `scope`
+    /// carries watcher events, the scan/diff phase stats/hashes only those
+    /// paths instead of walking the whole tree (with documented safety
+    /// fallbacks — see [`BuildScope`]). Commit-side semantics are unchanged;
+    /// the same `full`/`auto_file_limit` pairing rules apply.
+    pub fn prepare_build_scoped(
+        &self,
+        project_path: &Path,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        scope: Option<&BuildScope>,
+    ) -> CcResult<crate::build_plan::PreparedBuild> {
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
+            .prepare_scoped(self, project_path, scope)
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
@@ -340,12 +380,27 @@ impl Indexer {
     // ── Phase helper structs ────────────────────────────────────────────
 
     /// Phase 1+2: Scan files and compute diff against existing DB state.
+    ///
+    /// An incremental build carrying a non-empty [`BuildScope`] takes the
+    /// event-scoped path (stat/hash only the event paths); everything else —
+    /// full builds, scope-less manual/auto builds, and scoped builds whose
+    /// event set trips a safety fallback — runs the shared tree walk.
     pub(crate) fn phase_scan_and_diff(
         &self,
         _project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: Option<&BuildScope>,
     ) -> CcResult<ScanDiffResult> {
+        if !full {
+            if let Some(scope) = scope.filter(|s| !s.is_empty()) {
+                if let Some(result) = self.scoped_scan_and_diff(scope, auto_file_limit)? {
+                    return Ok(result);
+                }
+                tracing::debug!("scoped scan fell back to the full tree walk");
+            }
+        }
+
         // Phase 1: Scan (single shared walk: indexable set + manifest for the
         // config/infra signature consumers).
         let (scanned, walk_manifest) = self.scanner.scan_with_manifest();
@@ -368,6 +423,178 @@ impl Indexer {
         };
         let scanned_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
+        let pending = self.diff_scanned_files(scanned, &existing);
+
+        let files_added = pending
+            .iter()
+            .filter(|p| matches!(p.action, FileAction::Add))
+            .count();
+        let files_updated = pending
+            .iter()
+            .filter(|p| matches!(p.action, FileAction::Update))
+            .count();
+        let files_skipped = pending
+            .iter()
+            .filter(|p| matches!(p.action, FileAction::Skip))
+            .count();
+
+        // Files to remove
+        let to_remove: Vec<String> = existing
+            .keys()
+            .filter(|p| !scanned_paths.contains(p.as_str()))
+            .cloned()
+            .collect();
+
+        Ok(ScanDiffResult {
+            files_scanned,
+            files_added,
+            files_updated,
+            files_skipped,
+            existing,
+            scanned_paths,
+            to_remove,
+            to_parse: Self::pending_to_parse(pending),
+            walk_manifest,
+        })
+    }
+
+    /// Event-scoped Phase 1+2: stat/hash only the scope's event paths and
+    /// diff them against the full DB file state. Returns `Ok(None)` when the
+    /// scope cannot safely describe the build, so the caller falls back to
+    /// the full tree walk:
+    /// - a dot-path event (`.gitignore`, `.codecortex.json`, `.env`, …) can
+    ///   change admission rules or config-linker inputs for OTHER files;
+    /// - an oversized event set (bulk checkout / overflow backfill) makes
+    ///   one shared walk cheaper and safer than hundreds of point stats;
+    /// - an empty DB file state means this is effectively a first build.
+    ///
+    /// Correctness notes: `existing` is still the FULL file-state snapshot,
+    /// so the dirty closure can promote any importer in the repo, and
+    /// `scanned_paths` covers every surviving DB file so promoted importers
+    /// exist in the actions map as `Skip`. Removals are derived strictly from
+    /// the event set: an event path (or an indexed file under an event
+    /// directory prefix) that the scoped scan did not re-admit.
+    fn scoped_scan_and_diff(
+        &self,
+        scope: &BuildScope,
+        auto_file_limit: Option<usize>,
+    ) -> CcResult<Option<ScanDiffResult>> {
+        let mut event_paths: Vec<String> = Vec::new();
+        let mut event_set: HashSet<String> = HashSet::new();
+        for raw in scope.changed.iter().chain(scope.removed.iter()) {
+            let rel = raw.replace('\\', "/");
+            let rel = rel.trim_matches('/');
+            if rel.is_empty() {
+                continue;
+            }
+            if rel.split('/').any(|c| c.starts_with('.')) {
+                tracing::debug!(path = %raw, "scoped scan: dot-path event may change admission rules");
+                return Ok(None);
+            }
+            if event_set.insert(rel.to_string()) {
+                event_paths.push(rel.to_string());
+            }
+        }
+        if event_paths.is_empty() || event_paths.len() > SCOPED_SCAN_MAX_EVENTS {
+            return Ok(None);
+        }
+
+        let existing = self.db.reads().get_file_state()?;
+        if existing.is_empty() {
+            // Effectively a first build: the event set cannot describe the
+            // whole tree.
+            return Ok(None);
+        }
+
+        let scanned = self.scanner.scan_paths(&event_paths);
+        let admitted: HashSet<String> = scanned.iter().map(|f| f.rel_path.clone()).collect();
+        let pending = self.diff_scanned_files(scanned, &existing);
+
+        // Removals: an event path that is indexed but no longer admitted, or
+        // an indexed file under an event directory prefix (a removed/renamed
+        // directory arrives as one dir-level event) that was not re-admitted.
+        let dir_prefixes: Vec<String> = event_paths
+            .iter()
+            .filter(|p| !admitted.contains(p.as_str()))
+            .map(|p| format!("{}/", p))
+            .collect();
+        let to_remove: Vec<String> = existing
+            .keys()
+            .filter(|path| {
+                !admitted.contains(path.as_str())
+                    && (event_set.contains(path.as_str())
+                        || dir_prefixes
+                            .iter()
+                            .any(|prefix| path.starts_with(prefix.as_str())))
+            })
+            .cloned()
+            .collect();
+        let removed_set: HashSet<&str> = to_remove.iter().map(|p| p.as_str()).collect();
+
+        // The actions universe: every surviving DB file is a Skip candidate
+        // (dirty propagation may promote any of them), plus the admitted
+        // event files (covers adds).
+        let mut scanned_paths: HashSet<String> = existing
+            .keys()
+            .filter(|p| !removed_set.contains(p.as_str()))
+            .cloned()
+            .collect();
+        scanned_paths.extend(admitted);
+
+        let files_scanned = scanned_paths.len();
+        if let Some(limit) = auto_file_limit {
+            if files_scanned > limit {
+                return Err(CcError::Config(format!(
+                    "auto-index skipped: indexable file count {} exceeds auto_index.file_limit {}",
+                    files_scanned, limit
+                )));
+            }
+        }
+
+        let files_added = pending
+            .iter()
+            .filter(|p| matches!(p.action, FileAction::Add))
+            .count();
+        let files_updated = pending
+            .iter()
+            .filter(|p| matches!(p.action, FileAction::Update))
+            .count();
+        // Keep the report invariant scanned == added + updated + skipped:
+        // files outside the event set were never touched and count as
+        // skipped, exactly as an unscoped incremental would classify them.
+        let files_skipped = files_scanned.saturating_sub(files_added + files_updated);
+
+        tracing::debug!(
+            events = event_paths.len(),
+            added = files_added,
+            updated = files_updated,
+            removed = to_remove.len(),
+            "event-scoped scan/diff (no tree walk)"
+        );
+
+        Ok(Some(ScanDiffResult {
+            files_scanned,
+            files_added,
+            files_updated,
+            files_skipped,
+            existing,
+            scanned_paths,
+            to_remove,
+            to_parse: Self::pending_to_parse(pending),
+            // No tree walk ran: config/infra signature consumers fall back
+            // to their own (stat-only) walks behind their gates.
+            walk_manifest: None,
+        }))
+    }
+
+    /// Shared Phase-2 diff: mtime+size fast-skip → blake3 hash confirm, with
+    /// source-text retention for files that will be parsed (see
+    /// [`PendingFile::content`]).
+    fn diff_scanned_files(
+        &self,
+        scanned: Vec<ScannedFile>,
+        existing: &HashMap<String, FileState>,
+    ) -> Vec<PendingFile> {
         let strict_hash = std::env::var("CODECORTEX_STRICT_HASH")
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
             .unwrap_or(false);
@@ -387,7 +614,7 @@ impl Indexer {
             }
         };
 
-        let pending: Vec<PendingFile> = scanned
+        scanned
             .into_par_iter()
             .filter_map(|file| {
                 let (hash, action, content) = match existing.get(&file.rel_path) {
@@ -429,46 +656,17 @@ impl Indexer {
                     content,
                 })
             })
-            .collect();
+            .collect()
+    }
 
-        let files_added = pending
-            .iter()
-            .filter(|p| matches!(p.action, FileAction::Add))
-            .count();
-        let files_updated = pending
-            .iter()
-            .filter(|p| matches!(p.action, FileAction::Update))
-            .count();
-        let files_skipped = pending
-            .iter()
-            .filter(|p| matches!(p.action, FileAction::Skip))
-            .count();
-
-        // Files to remove
-        let to_remove: Vec<String> = existing
-            .keys()
-            .filter(|p| !scanned_paths.contains(p.as_str()))
-            .cloned()
-            .collect();
-
-        // Filter and sort non-skip files for parsing (large files first)
+    /// Filter and sort non-skip files for parsing (large files first).
+    fn pending_to_parse(pending: Vec<PendingFile>) -> Vec<PendingFile> {
         let mut to_parse: Vec<PendingFile> = pending
             .into_iter()
             .filter(|pf| !matches!(pf.action, FileAction::Skip))
             .collect();
         to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));
-
-        Ok(ScanDiffResult {
-            files_scanned,
-            files_added,
-            files_updated,
-            files_skipped,
-            existing,
-            scanned_paths,
-            to_remove,
-            to_parse,
-            walk_manifest,
-        })
+        to_parse
     }
 
     /// Phase 3: Parallel (or sequential) parsing of pending files.

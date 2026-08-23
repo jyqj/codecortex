@@ -251,7 +251,7 @@ impl ProjectSession {
                 // phase_write and the delta apply, so readers never see the
                 // non-transactional intermediate write state yet keep running
                 // through the postprocess compute.
-                if let Err(e) = handlers::core::run_split_build(&index, false, true) {
+                if let Err(e) = handlers::core::run_split_build(&index, false, true, None) {
                     tracing::warn!("auto-index failed: {}", e);
                 }
             })
@@ -520,8 +520,15 @@ fn run_watcher_tick(
 
     // Shared split-build driver: brief read lock for inputs, heavy prepare
     // and postprocess compute with no CodeIndex lock held, write lock only
-    // around phase_write and the delta apply.
-    if let Err(e) = handlers::core::run_split_build(index, false, false) {
+    // around phase_write and the delta apply. The drained event set rides
+    // along as the build scope, so the prepare stats/hashes only the touched
+    // paths instead of walking the whole tree (safety fallbacks to the full
+    // walk are decided inside the scan/diff phase).
+    let scope = cc_index::BuildScope {
+        changed: drain.changed,
+        removed: drain.removed,
+    };
+    if let Err(e) = handlers::core::run_split_build(index, false, false, Some(&scope)) {
         tracing::warn!("watcher: incremental index failed: {}", e);
     }
     WatcherTickOutcome::Completed

@@ -1920,7 +1920,7 @@ mod tests {
         lane_weight: f64,
         annotates: bool,
         hits: Vec<(String, f64)>,
-        ran: std::cell::Cell<bool>,
+        ran: std::sync::atomic::AtomicBool,
     }
 
     impl RetrievalLane for FakeLane {
@@ -1937,7 +1937,7 @@ mod tests {
             self.annotates
         }
         fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
-            self.ran.set(true);
+            self.ran.store(true, std::sync::atomic::Ordering::SeqCst);
             Ok(self.hits.clone())
         }
     }
@@ -1982,7 +1982,7 @@ mod tests {
             lane_weight: 1.0,
             annotates: true,
             hits: vec![("chunk:src/x.rs".to_string(), 1.0)],
-            ran: std::cell::Cell::new(false),
+            ran: std::sync::atomic::AtomicBool::new(false),
         };
         let fifth = FakeLane {
             id: "fifth",
@@ -1993,7 +1993,7 @@ mod tests {
                 ("chunk:other".to_string(), 1.0),
                 ("chunk:src/x.rs".to_string(), 0.5),
             ],
-            ran: std::cell::Cell::new(false),
+            ran: std::sync::atomic::AtomicBool::new(false),
         };
 
         let lanes: [&dyn RetrievalLane; 2] = [&fourth, &fifth];
@@ -2128,7 +2128,7 @@ mod tests {
             lane_weight: 1.0,
             annotates: false,
             hits: vec![("chunk:src/x.rs".to_string(), 1.0)],
-            ran: std::cell::Cell::new(false),
+            ran: std::sync::atomic::AtomicBool::new(false),
         };
 
         let lanes: [&dyn RetrievalLane; 1] = [&silent];
@@ -2178,7 +2178,7 @@ mod tests {
             lane_weight: 1.0,
             annotates: false,
             hits: vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
-            ran: std::cell::Cell::new(false),
+            ran: std::sync::atomic::AtomicBool::new(false),
         };
         let disabled = FakeLane {
             id: "fake-disabled",
@@ -2186,15 +2186,18 @@ mod tests {
             lane_weight: 0.0,
             annotates: false,
             hits: vec![("z".to_string(), 1.0)],
-            ran: std::cell::Cell::new(false),
+            ran: std::sync::atomic::AtomicBool::new(false),
         };
 
         let lanes: [&dyn RetrievalLane; 2] = [&active, &disabled];
         let outcomes = run_lanes(&lanes, &context).unwrap();
 
-        assert!(active.ran.get(), "enabled lane must run");
         assert!(
-            !disabled.ran.get(),
+            active.ran.load(std::sync::atomic::Ordering::SeqCst),
+            "enabled lane must run"
+        );
+        assert!(
+            !disabled.ran.load(std::sync::atomic::Ordering::SeqCst),
             "disabled lane must be skipped before work"
         );
         assert_eq!(
@@ -2206,6 +2209,121 @@ mod tests {
         assert!(
             outcomes[1].hits.is_empty(),
             "skipped lane contributes nothing"
+        );
+    }
+
+    /// Parallel lane execution (3+ enabled lanes → scoped threads) must
+    /// preserve outcome order (= slice order) and run every enabled lane —
+    /// RRF fusion and tie-breaking depend on that order being deterministic.
+    #[test]
+    fn run_lanes_parallel_preserves_slice_order_and_runs_all() {
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let mk = |id: &'static str, hit: &str| FakeLane {
+            id,
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: false,
+            hits: vec![(hit.to_string(), 1.0)],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+        let a = mk("lane-a", "hit-a");
+        let b = mk("lane-b", "hit-b");
+        let c = mk("lane-c", "hit-c");
+
+        let lanes: [&dyn RetrievalLane; 3] = [&a, &b, &c];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+
+        for lane in [&a, &b, &c] {
+            assert!(
+                lane.ran.load(std::sync::atomic::Ordering::SeqCst),
+                "every enabled lane must run"
+            );
+        }
+        assert_eq!(
+            outcomes.iter().map(|o| o.lane_id).collect::<Vec<_>>(),
+            vec!["lane-a", "lane-b", "lane-c"],
+            "outcome order must follow slice order regardless of completion order"
+        );
+        assert_eq!(outcomes[0].hits[0].0, "hit-a");
+        assert_eq!(outcomes[1].hits[0].0, "hit-b");
+        assert_eq!(outcomes[2].hits[0].0, "hit-c");
+    }
+
+    /// A failing lane aborts the whole search even when lanes run
+    /// concurrently, and the error surfaced is the first failure in slice
+    /// order (deterministic regardless of thread scheduling).
+    #[test]
+    fn run_lanes_parallel_propagates_first_error_in_slice_order() {
+        struct FailLane {
+            id: &'static str,
+        }
+        impl RetrievalLane for FailLane {
+            fn lane_id(&self) -> &'static str {
+                self.id
+            }
+            fn weight(&self, _config: &SearchConfig) -> f64 {
+                1.0
+            }
+            fn is_enabled(&self, _context: &LaneContext<'_>) -> bool {
+                true
+            }
+            fn annotates_hits(&self) -> bool {
+                false
+            }
+            fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
+                Err(cc_model::CcError::Search(format!("{} failed", self.id)))
+            }
+        }
+
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let ok = FakeLane {
+            id: "lane-ok",
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: false,
+            hits: vec![],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+        let fail_b = FailLane { id: "lane-b" };
+        let fail_c = FailLane { id: "lane-c" };
+
+        let lanes: [&dyn RetrievalLane; 3] = [&ok, &fail_b, &fail_c];
+        let err = match run_lanes(&lanes, &context) {
+            Err(e) => e,
+            Ok(_) => panic!("failing lane must abort the search"),
+        };
+        assert!(
+            err.to_string().contains("lane-b failed"),
+            "first failing lane in slice order must win, got: {}",
+            err
         );
     }
 

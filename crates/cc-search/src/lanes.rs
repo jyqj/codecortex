@@ -97,7 +97,9 @@ pub(crate) struct LaneContext<'a> {
 ///   and return an empty list instead.
 /// - Side effects are limited to the engine caches exposed through
 ///   [`LaneContext`] (currently `chunk_text_cache`).
-pub(crate) trait RetrievalLane {
+/// - `Sync` because [`run_lanes`] executes independent lanes concurrently
+///   (each checks its own pooled connection out inside `run`).
+pub(crate) trait RetrievalLane: Sync {
     /// Stable lane identifier used to key rank maps, reasons, and stats.
     fn lane_id(&self) -> &'static str;
 
@@ -149,7 +151,17 @@ pub(crate) struct LaneOutcome {
     pub(crate) hits: Vec<(String, f64)>,
 }
 
-/// Execute lanes in the given (deterministic) order.
+/// Execute lanes concurrently, returning outcomes in the given
+/// (deterministic) order.
+///
+/// Lanes are independent by contract (side effects limited to the engine
+/// caches behind their own locks; each lane checks its own read-pool
+/// connection out inside `run`), so enabled lanes run on scoped threads
+/// while the first enabled lane runs on the calling thread. Outcomes are
+/// collected in slice order, so RRF fusion and tie-breaking see exactly the
+/// sequence the old sequential loop produced. Error semantics match too:
+/// the first failing lane in slice order aborts the search (later lanes may
+/// have run — they are side-effect-free beyond the engine caches).
 ///
 /// Disabled lanes are skipped before any work but still yield an empty
 /// outcome, so downstream rank maps stay uniformly keyed by lane id.
@@ -157,12 +169,51 @@ pub(crate) fn run_lanes(
     lanes: &[&dyn RetrievalLane],
     context: &LaneContext<'_>,
 ) -> CcResult<Vec<LaneOutcome>> {
+    let enabled: Vec<bool> = lanes.iter().map(|lane| lane.is_enabled(context)).collect();
+    let mut hit_results: Vec<Option<CcResult<Vec<(String, f64)>>>> =
+        (0..lanes.len()).map(|_| None).collect();
+
+    if enabled.iter().filter(|e| **e).count() <= 1 {
+        // Zero or one enabled lane: no concurrency to gain, skip the spawns.
+        for (idx, lane) in lanes.iter().enumerate() {
+            if enabled[idx] {
+                hit_results[idx] = Some(lane.run(context));
+            }
+        }
+    } else {
+        std::thread::scope(|scope| {
+            let mut first_enabled = None;
+            let mut handles: Vec<(usize, std::thread::ScopedJoinHandle<'_, _>)> = Vec::new();
+            for (idx, lane) in lanes.iter().enumerate() {
+                if !enabled[idx] {
+                    continue;
+                }
+                if first_enabled.is_none() {
+                    first_enabled = Some(idx);
+                    continue;
+                }
+                handles.push((idx, scope.spawn(move || lane.run(context))));
+            }
+            if let Some(idx) = first_enabled {
+                hit_results[idx] = Some(lanes[idx].run(context));
+            }
+            for (idx, handle) in handles {
+                hit_results[idx] = Some(match handle.join() {
+                    Ok(result) => result,
+                    Err(_) => Err(CcError::Search(format!(
+                        "retrieval lane '{}' panicked",
+                        lanes[idx].lane_id()
+                    ))),
+                });
+            }
+        });
+    }
+
     let mut outcomes = Vec::with_capacity(lanes.len());
-    for lane in lanes {
-        let hits = if lane.is_enabled(context) {
-            lane.run(context)?
-        } else {
-            Vec::new()
+    for (idx, lane) in lanes.iter().enumerate() {
+        let hits = match hit_results[idx].take() {
+            Some(result) => result?,
+            None => Vec::new(),
         };
         outcomes.push(LaneOutcome {
             lane_id: lane.lane_id(),

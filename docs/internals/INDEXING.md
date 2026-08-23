@@ -36,14 +36,28 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
 - **事件域扫描（scoped scan）**：watcher tick 把变更/删除路径集
   （`BuildScope`）穿过 cc-server 传给增量 prepare，扫描只 stat/哈希这些
   路径（根锚定的 `filter_entry` 遍历，gitignore/配置忽略规则与全树扫描
-  同源），未触及的文件从持久化 files 快照直接判 Unchanged。回退全树
-  扫描的情形：首次构建、watcher 溢出、git poll 回填、显式全量重建、
-  手动 `index()`（无事件集）。scope 内命中的删除仍走同一 diff 路径，
-  脏闭包/epoch 守卫语义不变。
-- **单次共享树遍历（`WalkManifest`）**：全树扫描的遍历结果作为
+  同源），未触及的文件从持久化 files 快照直接判 Unchanged。MCP
+  `index()` 也可通过可选的 `changed_paths` / `removed_paths` 参数携带
+  事件集（与 `full=true` 互斥；合计超过 10k 路径自动清空退回全树）。
+  回退全树扫描的情形：首次构建、watcher 溢出、git poll 回填、显式全量
+  重建、无事件集的手动 `index()`。scope 内命中的删除仍走同一 diff
+  路径，脏闭包/epoch 守卫语义不变。
+- **事件域签名提示（`ScopeSignatureHints`）**：事件域构建没有
+  `WalkManifest`，config-linker / infra 的文件集签名原本各自回退整树
+  遍历。`scoped_scan_and_diff` 现按名字分类事件路径（config 候选判定
+  `is_config_path`、infra 候选名超集 `may_be_infra_candidate_name`；
+  目录或已删除路径保守清零两个提示），证明"事件集不含候选"时两个门
+  经 `should_run_assuming_unchanged` 直接复用已记录签名，跳过整树
+  遍历。信任模型与事件域扫描一致：域外的候选文件变化在下一次全树
+  构建收敛。
+- **单次共享树遍历（`WalkManifest`，并行）**：全树扫描的遍历结果作为
   `WalkManifest` 随 `PreparedBuild` 携带，config-linker 的配置文件集
   签名与 infra 候选签名直接消费它——一次构建至多一次树遍历，不再各
   pass 自己重走。ADR 扫描同样上了文件集签名门（`FileSignatureGate`）。
+  遍历本身用 `ignore::WalkBuilder::build_parallel`（线程数 =
+  min(CPU, 12)）并行收集 readdir/stat/gitignore 原始条目，再按相对
+  路径排序（父目录先于子项）做串行分类，保持 override 目录剪枝的
+  顺序依赖与串行版语义一致，manifest 顺序确定。
 - 扫描哈希是 **blake3**（hex 编码，与旧 SHA-256 同宽）；算法切换随
   schema 版本号一起 bump，旧库按既有的 rebuild-on-mismatch 策略整体
   重建，不做跨算法哈希比较。

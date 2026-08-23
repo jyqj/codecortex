@@ -118,8 +118,9 @@ cargo test -p cc-eval --release --test scale_bench bench_synthetic_10k -- --igno
 CODECORTEX_BENCH_50K=1 cargo test -p cc-eval --release --test scale_bench bench_synthetic_50k -- --ignored --nocapture
 ```
 
-每轮测量冷态全量索引墙钟与 DB 大小、增量重建延迟（单文件正文编辑与 5%
-批量，1 热身 + 3 测量）、search / find_symbol / impact / graph_query /
+每轮测量冷态全量索引墙钟与 DB 大小、增量重建延迟（单文件正文编辑——
+未带事件集与带 `changed_paths` 事件集两种、5% 批量，各 1 热身 + 3 测量）、
+search / find_symbol / impact / graph_query /
 trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话使各级
 缓存失效后的首查，3 次；warm = 同会话重复相同调用，1 热身 + 7 测量）——
 全部走真实 MCP 分发路径。生成器的 ground-truth 事实
@@ -127,23 +128,26 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 可 trace、环闭合……）。带 `CODECORTEX_WRITE_BENCHMARK=1` 时报告持久化到
 `docs/benchmarks/synthetic_<scale>_latest.md`。
 
-最近一轮（release，本机，2026-07-09——完整阶段分解见各规模的产物文件）：
+最近一轮（release，本机，2026-08-23——完整阶段分解见各规模的产物文件）：
 
-| 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件） | 增量 p50（5% 批量） | 单文件 resolve 子相位 | ground truth |
-|------|--------------|---------|--------------------|--------------------|-----------------|--------------|
-| 1k（5,568 符号） | 1.4s | 24.7 MB | 59ms | 220ms | 0ms | 8/8 |
-| 10k（55,617 符号） | 15.8s | 236.6 MB | 443ms | 3.1s | **1ms**（上一轮 139ms） | 8/8 |
-| 50k（278,074 符号） | 135.5s | 1183.3 MB | 1.27s | 25.3s（2400 文件） | **5ms**（上一轮 808ms） | 8/8 |
+| 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件） | 增量 p50（1 文件，事件域） | 增量 p50（5% 批量） | ground truth |
+|------|--------------|---------|--------------------|---------------------------|--------------------|--------------|
+| 1k（5,568 符号） | 0.78s | 24.0 MB | 11ms | **6ms** | 81ms | 8/8 |
+| 10k（55,617 符号） | 8.3s | 236.5 MB | 31ms | **18ms** | 824ms | 8/8 |
+| 50k（278,074 符号） | 49.6s | 1182.6 MB | 145ms | **77ms** | 6.0s（2400 文件） | 8/8 |
 
 - 三档报告均以 µs 粒度分列 cold/warm（cold = 每次迭代新建 MCP 会话；warm =
   同会话缓存命中），冷查询延迟以 cold 列为准；warm 全部亚毫秒。
-- 本轮与上一轮（2026-06-13）跨轮对比需留意机器状态漂移：resolve 之外的
-  各阶段（scan_diff / write / analysis，代码路径本轮未动）绝对值普遍慢
-  1.3–2×（冷建 121.8s→135.5s、50k 5% 批量写 14.3s→22.6s），属环境噪声；
-  本轮的真实变化是 **resolve 地板被 catalog cache 消掉**（见末段），
-  50k 单文件增量总延迟 1.82s→1.27s，瓶颈转移到 scan_diff（~0.5s）。
-- 冷态全量索引 369–714 文件/s（50k–1k，本轮机器状态下）；>500 文件/s 的
-  目标以 10k 档为准（632 文件/s）。
+- "事件域"列 = 通过 `index(changed_paths=[...])` 走 `BuildScope` 事件域
+  扫描（watcher 驱动路径的等价物），本轮新增测量；"1 文件"列 = 不带事件集
+  的手动增量（全树 scan_diff）。
+- 与上一轮（2026-07-09，cold 135.5s / 单文件 1.27s / 5% 批量 25.3s）相比：
+  冷建 **2.7×**、单文件增量 **8.8×**（事件域 **16×**）、5% 批量 **4.2×**。
+  提速来源见下文"事件域构建与并行遍历"一节；机器亦不同代（跨轮绝对值
+  对比仍需留意环境漂移，但本轮 336ms→104ms 级别的相位内对比在同机同轮
+  完成，可信）。
+- 冷态全量索引 1008–1282 文件/s（50k–1k，本轮机器状态下），三档均已
+  越过 >500 文件/s 的目标。
 
 ## 写阶段优化史（10k 基准）
 
@@ -252,8 +256,53 @@ Vec，catalog map 仍每 build 重建。微基准（`catalog_build_bench`）实�
 解析产物 == 同内容全量重建"由 `catalog_cache_reuse_matches_full_rebuild`
 断言（含命中计数、纯删除批折叠、全量清槽）；三档规模 ground truth 8/8。
 配套修复了 dirty-reload 只清 UID 不清 `target_symbol_id` 导致脏重载边
-永不重解析的悬空缺陷（见 INDEXING.md）。残余的单文件增量成本已转移到
-scan_diff（50k ~0.5s，50k 文件的 mtime+size 全量对比）与 analysis。
+永不重解析的悬空缺陷（见 INDEXING.md）。残余的单文件增量成本当时转移到
+scan_diff（50k ~0.5s，50k 文件的 mtime+size 全量对比）与 analysis——由
+下一节（事件域构建与并行遍历）接手解决。
+
+## 事件域构建与并行遍历（第八轮，2026-08-23）
+
+上一轮遗留的 scan_diff 地板（50k 单文件 ~0.5s）分三步拆掉：
+
+1. **MCP `index()` 暴露事件域**：`changed_paths` / `removed_paths` 可选
+   参数直达 `BuildScope`（watcher 之外，知道自己改了哪些文件的调用方
+   ——agent、编辑器插件——也能走事件域路径）；`full=true` 与事件集互斥，
+   超过 10k 路径自动退回全树扫描。scale_bench 借此新增
+   `single_file_scoped` 场景，事件域路径首次有了官方数字。
+2. **事件域签名门（scope hints）**：事件域构建没有 `WalkManifest`，
+   config-linker 配置文件集签名与 infra 候选签名原本各自回退整树遍历
+   ——省下的 scan_diff 时间被 analysis/write 吃回。现在
+   `scoped_scan_and_diff` 按名字分类事件路径（config 候选 /
+   infra 候选名超集 / 目录与删除保守清零），证明"事件集不含候选"时
+   直接复用已记录签名（`ScopeSignatureHints` →
+   `should_run_assuming_unchanged`），10k 事件域单文件 64ms → 17ms。
+3. **共享树遍历并行化**：`scan_with_manifest` 改用
+   `ignore::WalkBuilder::build_parallel`（线程数 = min(CPU, 12)），
+   并行半程只做 readdir/stat/gitignore 收集原始条目，随后按相对路径排序
+   （父目录字典序先于子项，保持 override 目录剪枝的顺序依赖）做串行
+   分类——manifest 语义与串行版逐字节一致，且排序后顺序确定性反而更强。
+   50k 全树 scan_diff 336ms → **104ms**，冷建 54.9s → 49.6s。
+
+50k 实测（release，本机同轮）：
+
+| 场景 | 上一轮 | 本轮 | 提速 |
+|------|--------|------|------|
+| 冷态全量索引 | 135.5s | **49.6s** | 2.7× |
+| 单文件增量（无事件集） | 1.27s（scan_diff ~0.5s） | **145ms**（scan_diff 104ms） | 8.8× |
+| 单文件增量（事件域） | 未测 | **77ms**（scan_diff 54ms） | 16×（对上一轮无事件集） |
+| 5% 批量（2400 文件） | 25.3s（write 22.6s） | **6.0s**（write 5.4s） | 4.2× |
+
+正确性背书：三档 ground truth 8/8；
+`scoped_build_hints_gate_config_and_infra_walks` 断言 hints 门的
+跳过/重算两侧行为（纯代码事件集跳过两个回退遍历、含候选事件集强制重算
+并与全树构建收敛）；扫描器并行/串行等价由既有 scanner 测试覆盖。
+
+残余瓶颈（按成本序）：5% 批量 write 5.4s 为真实存储引擎工作（批量
+INSERT + FTS 分词 + WAL fsync，pragma 已调优，见写阶段优化史）；事件域
+scan_diff 的 ~54ms 地板来自根目录 dirent 枚举（50k 仓库根下 2,500 个
+模块目录，walker 需逐项调 `filter_entry` 才能只降入目标子树）；冷建
+49.6s 中 temp-db 全量写占大头（实验性 direct writer
+`CODECORTEX_USE_DIRECT_WRITER=1` 是候选，未默认启用）。
 
 ## 对比基线
 

@@ -13,7 +13,6 @@ use std::path::Path;
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use sha2::{Digest, Sha256};
 
 use crate::dirty_reload_policy::parse_outcome_from_reloaded_edges;
 use crate::memory_budget::MemoryBudget;
@@ -31,6 +30,20 @@ use crate::scanner::{ScannedFile, Scanner};
 pub(crate) const MIN_FILES_FOR_PARALLEL: usize = 50;
 /// Best-effort safeguard: emit a warning when parsing a single file takes too long.
 const SLOW_PARSE_WARN_MS: u128 = 1_500;
+
+/// Content-confirmation hash for the scan/diff phase and the config-link
+/// units, blake3 with an algorithm-versioning prefix.
+///
+/// The `b3:` prefix distinguishes fresh hashes from legacy unprefixed
+/// SHA-256 rows persisted by earlier builds. The hash is only ever compared
+/// for equality, so migration is self-healing and lazy: a legacy row served
+/// by the mtime+size fast path keeps its stored value untouched, and the
+/// first time a legacy file's stat changes, the freshly computed `b3:` hash
+/// cannot equal the legacy hex — the file is re-parsed once and rewritten
+/// with the new format.
+pub(crate) fn content_confirmation_hash(content: &[u8]) -> String {
+    format!("b3:{}", blake3::hash(content).to_hex())
+}
 
 /// Read a file for the incremental scan, returning `None` (with a traced
 /// warning) on failure instead of silently dropping it. A file that vanished
@@ -340,7 +353,7 @@ impl Indexer {
                             Some(c) => c,
                             None => return None,
                         };
-                        let hash = format!("{:x}", Sha256::digest(&content));
+                        let hash = content_confirmation_hash(&content);
                         if hash == old.content_hash {
                             (hash, FileAction::Skip)
                         } else {
@@ -352,7 +365,7 @@ impl Indexer {
                             Some(c) => c,
                             None => return None,
                         };
-                        (format!("{:x}", Sha256::digest(&content)), FileAction::Add)
+                        (content_confirmation_hash(&content), FileAction::Add)
                     }
                 };
                 Some(PendingFile {
@@ -888,6 +901,99 @@ mod import_marker_dedup_tests {
             "nextjs was missing from the removed inline tables; it must now be \
              detected via the authoritative table"
         );
+    }
+}
+
+#[cfg(test)]
+mod content_hash_migration_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use tempfile::TempDir;
+
+    fn stored_hash(db: &IndexDb, path: &str) -> String {
+        db.reads()
+            .query_json(
+                "SELECT content_hash FROM files WHERE file_path = ?1",
+                &[path.to_string()],
+            )
+            .unwrap()
+            .first()
+            .and_then(|row| row.get("content_hash"))
+            .and_then(|v| v.as_str())
+            .map(String::from)
+            .expect("files row present")
+    }
+
+    /// Fresh builds persist the blake3 `b3:`-prefixed confirmation hash.
+    #[test]
+    fn fresh_build_stores_blake3_prefixed_hash() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("lib.py"), "def f():\n    return 1\n").unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("i.db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), tmp.path(), &IndexingConfig::default());
+        indexer.build_index(tmp.path(), false).unwrap();
+        assert!(
+            stored_hash(&db, "lib.py").starts_with("b3:"),
+            "fresh hashes must carry the b3: prefix"
+        );
+    }
+
+    /// Legacy (unprefixed SHA-256) rows migrate lazily: the mtime+size fast
+    /// path keeps them untouched (no spurious re-parse), and the first stat
+    /// change re-hashes the file — the legacy value cannot equal the new
+    /// `b3:` hash, so the file is re-parsed once and rewritten in the new
+    /// format even when its content did not change.
+    #[test]
+    fn legacy_sha256_rows_migrate_on_first_stat_change() {
+        let tmp = TempDir::new().unwrap();
+        let source = "def f():\n    return 1\n";
+        std::fs::write(tmp.path().join("lib.py"), source).unwrap();
+        let db = Arc::new(IndexDb::open(&tmp.path().join("i.db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), tmp.path(), &IndexingConfig::default());
+        indexer.build_index(tmp.path(), false).unwrap();
+
+        // Simulate a database written by a pre-blake3 build: unprefixed
+        // SHA-256-shaped hex in the files row.
+        let legacy = "a".repeat(64);
+        let conn = crate::test_seed::seed_conn(&db);
+        conn.execute(
+            "UPDATE files SET content_hash = ?1 WHERE file_path = 'lib.py'",
+            [legacy.as_str()],
+        )
+        .unwrap();
+        drop(conn);
+
+        // Round 1: stat unchanged — the fast path must skip without reading
+        // (the legacy hash stays in place, no re-parse storm on upgrade).
+        let report = indexer.build_index(tmp.path(), false).unwrap();
+        assert_eq!(report.files_updated, 0, "stat-unchanged file must skip");
+        assert_eq!(
+            stored_hash(&db, "lib.py"),
+            legacy,
+            "fast-path skip must not rewrite the legacy hash"
+        );
+
+        // Round 2: touch the file (same content, new mtime) — the recomputed
+        // b3: hash mismatches the legacy value and triggers one re-hash +
+        // re-parse that migrates the row.
+        std::thread::sleep(std::time::Duration::from_millis(20));
+        std::fs::write(tmp.path().join("lib.py"), source).unwrap();
+        let report = indexer.build_index(tmp.path(), false).unwrap();
+        assert_eq!(
+            report.files_updated, 1,
+            "legacy-hash mismatch must re-parse the touched file once"
+        );
+        let migrated = stored_hash(&db, "lib.py");
+        assert!(
+            migrated.starts_with("b3:"),
+            "migrated row must carry the b3: prefix, got {migrated}"
+        );
+        assert_eq!(migrated, content_confirmation_hash(source.as_bytes()));
+
+        // Round 3: converged — the same touch trick now fast-skips again
+        // after an mtime-preserving no-op build.
+        let report = indexer.build_index(tmp.path(), false).unwrap();
+        assert_eq!(report.files_updated, 0, "migrated row must be stable");
     }
 }
 

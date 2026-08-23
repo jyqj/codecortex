@@ -32,6 +32,9 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
   已知语言文件总是被索引，include 只救援匹配 glob 的未知语言文件）。
 - 变更检测走 **mtime+size 快路径 + 哈希确认**：mtime+size 都没变的文件跳过
   哈希；`CODECORTEX_STRICT_HASH=1` 禁用快路径，每个文件都做 blake3。
+  哈希带 `b3:` 算法前缀；早期版本落盘的无前缀 SHA-256 行**惰性迁移**——
+  快路径命中时原值保留，首次 stat 变化触发一次重哈希 + 重解析并改写为
+  新格式（哈希只做相等比较，两种格式可长期共存）。
 - 超过 `indexing.max_file_bytes`（默认 512000）的文件跳过。
 
 ## parse

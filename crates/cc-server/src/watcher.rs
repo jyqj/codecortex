@@ -5,7 +5,9 @@
 //! - Adaptive debounce: interval scales with repository file count
 //! - Burst backoff: doubles debounce when event rate spikes (e.g. git checkout)
 //! - Git dirty sanity poll: low-frequency `git status` fallback
-//! - `should_track` filtering to skip non-indexable paths
+//! - `should_track` filtering to skip non-indexable paths, aligned with the
+//!   scanner via [`cc_index::IgnoreRules`] (root gitignore + `.codecortex.json`
+//!   ignore patterns) so ignored paths don't trigger pointless build ticks
 
 use cc_model::CcResult;
 use notify::{Event, EventKind, RecursiveMode, Watcher};
@@ -233,6 +235,15 @@ impl FileWatcher {
 
     /// Start with full configuration control.
     pub fn start_with_config(project_path: &Path, config: WatcherConfig) -> CcResult<Self> {
+        // Scanner-aligned ignore rules: events under gitignored or
+        // config-ignored paths never enter the pending set, so they can't
+        // trigger build ticks the scan would discard anyway. `is_ignored ==
+        // true` is authoritative for the scan walk (see IgnoreRules docs),
+        // so dropping the event here cannot cause staleness.
+        let ignore_rules = Arc::new(cc_index::IgnoreRules::load(
+            project_path,
+            &cc_model::config::load_project_config(project_path).indexing,
+        ));
         // --- Compute debounce interval ---
         let base_debounce_ms = if let Some(ms) = config.debounce_ms {
             ms
@@ -269,6 +280,7 @@ impl FileWatcher {
         let staging_cb = staging.clone();
         let last_event_cb = last_event_time.clone();
         let burst_cb = burst_tracker.clone();
+        let ignore_cb = ignore_rules.clone();
         let project = project_path.to_path_buf();
 
         let watcher = notify::recommended_watcher(move |res: Result<Event, notify::Error>| {
@@ -285,7 +297,7 @@ impl FileWatcher {
                         Err(_) => continue,
                     };
                     let rel_str = rel.to_string_lossy().replace('\\', "/");
-                    if !should_track(&rel_str) {
+                    if !should_track(&rel_str) || ignore_cb.is_ignored(&rel_str) {
                         continue;
                     }
 
@@ -404,12 +416,13 @@ impl FileWatcher {
         let git_poll_handle = if config.git_sanity_poll {
             let pending_git = pending.clone();
             let stopped_git = stopped.clone();
+            let ignore_git = ignore_rules.clone();
             let project_git = project_path.to_path_buf();
 
             let handle = std::thread::Builder::new()
                 .name("watcher-git-poll".into())
                 .spawn(move || {
-                    git_sanity_poll_loop(&project_git, &pending_git, &stopped_git);
+                    git_sanity_poll_loop(&project_git, &pending_git, &stopped_git, &ignore_git);
                 })
                 .map_err(|e| cc_model::CcError::Other(format!("spawn git poll thread: {e}")))?;
             Some(handle)
@@ -475,6 +488,7 @@ fn git_sanity_poll_loop(
     project_path: &Path,
     pending: &Arc<Mutex<PendingEvents>>,
     stopped: &Arc<AtomicBool>,
+    ignore_rules: &cc_index::IgnoreRules,
 ) {
     // Use a shorter sleep granularity so we can react to `stopped` faster
     // than every 30 seconds.
@@ -502,7 +516,7 @@ fn git_sanity_poll_loop(
         let mut pending = pending.lock().unwrap_or_else(|e| e.into_inner());
         let mut backfilled = 0usize;
         for file in dirty_files {
-            if !should_track(&file) {
+            if !should_track(&file) || ignore_rules.is_ignored(&file) {
                 continue;
             }
             if !pending.changed.contains(&file) && !pending.removed.contains(&file) {
@@ -663,5 +677,42 @@ mod tests {
     fn should_track_rejects_known_non_indexable_filenames() {
         assert!(!should_track(".DS_Store"));
         assert!(!should_track("src/Thumbs.db"));
+    }
+
+    /// The watcher's combined filter (`should_track` + scanner-aligned
+    /// [`cc_index::IgnoreRules`]) must reject gitignored and
+    /// `.codecortex.json`-ignored paths that `should_track` alone admits —
+    /// those events used to trigger build ticks the scan discarded anyway.
+    #[test]
+    fn ignore_rules_reject_gitignored_and_config_ignored_events() {
+        let tmp = tempfile::TempDir::new().unwrap();
+        let root = tmp.path();
+        std::fs::write(root.join(".gitignore"), "gen/\n").unwrap();
+        std::fs::write(
+            root.join(".codecortex.json"),
+            r#"{"indexing": {"ignore": ["vendored/**"]}}"#,
+        )
+        .unwrap();
+        std::process::Command::new("git")
+            .args(["init", "-q"])
+            .current_dir(root)
+            .status()
+            .unwrap();
+
+        let rules = cc_index::IgnoreRules::load(
+            root,
+            &cc_model::config::load_project_config(root).indexing,
+        );
+
+        let tracks = |rel: &str| should_track(rel) && !rules.is_ignored(rel);
+        assert!(tracks("src/main.py"), "plain source paths stay tracked");
+        assert!(
+            should_track("gen/generated.py") && !tracks("gen/generated.py"),
+            "gitignored path must be dropped by the aligned rules"
+        );
+        assert!(
+            should_track("vendored/pkg/mod.py") && !tracks("vendored/pkg/mod.py"),
+            "config-ignored path must be dropped by the aligned rules"
+        );
     }
 }

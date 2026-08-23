@@ -19,6 +19,85 @@ pub struct Scanner {
     config: IndexingConfig,
 }
 
+/// Event-path ignore filter aligned with the scan walk, for event-driven
+/// callers (the file watcher) that judge one path at a time instead of
+/// walking directories.
+///
+/// Mirrors the two configurable walk filters per path:
+/// - the root `.gitignore` (only when the project is a git repository, same
+///   as the walker's `require_git` gate). The walker additionally honors
+///   nested `.gitignore` files; a path only a nested file would ignore can
+///   pass here — harmless, because every admitted path still goes through
+///   the scan walk, which drops it.
+/// - `.codecortex.json` `indexing.ignore` patterns, built with exactly the
+///   negated-override construction [`Scanner`]'s walker uses, checked
+///   against the path and its ancestor directories (the walker prunes
+///   ignored directories during descent).
+///
+/// So: `is_ignored == true` is authoritative (the walk would filter it);
+/// `false` is advisory (the walk may still filter it for other reasons).
+pub struct IgnoreRules {
+    gitignore: Option<ignore::gitignore::Gitignore>,
+    overrides: Option<ignore::overrides::Override>,
+}
+
+impl IgnoreRules {
+    pub fn load(project_path: &Path, config: &IndexingConfig) -> Self {
+        // The walker applies .gitignore only inside a git repository
+        // (`require_git` default); match that so non-git projects are not
+        // over-filtered by a stray .gitignore file.
+        let gitignore = if project_path.join(".git").exists() {
+            let mut builder = ignore::gitignore::GitignoreBuilder::new(project_path);
+            builder.add(project_path.join(".gitignore"));
+            builder.build().ok()
+        } else {
+            None
+        };
+
+        let mut overrides = ignore::overrides::OverrideBuilder::new(project_path);
+        for pattern in &config.ignore {
+            let neg = format!("!{}", pattern);
+            if let Err(e) = overrides.add(&neg) {
+                tracing::warn!(pattern = %pattern, err = %e, "skipping invalid ignore pattern");
+            }
+        }
+        let overrides = overrides.build().ok().filter(|o| !o.is_empty());
+
+        Self {
+            gitignore,
+            overrides,
+        }
+    }
+
+    /// Whether the scan walk would filter this relative file path via
+    /// gitignore or configured ignore patterns.
+    pub fn is_ignored(&self, rel_path: &str) -> bool {
+        if let Some(gitignore) = &self.gitignore {
+            if gitignore
+                .matched_path_or_any_parents(rel_path, false)
+                .is_ignore()
+            {
+                return true;
+            }
+        }
+        if let Some(overrides) = &self.overrides {
+            if overrides.matched(rel_path, false).is_ignore() {
+                return true;
+            }
+            // Directory patterns ("gen/", "vendored/**"): the walker prunes
+            // the directory itself, so check the path's ancestors as dirs.
+            let mut ancestor = rel_path;
+            while let Some(pos) = ancestor.rfind('/') {
+                ancestor = &ancestor[..pos];
+                if overrides.matched(ancestor, true).is_ignore() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+}
+
 impl Scanner {
     pub fn new(project_path: &Path, config: &IndexingConfig) -> Self {
         Self {
@@ -242,5 +321,91 @@ mod scoped_scan_tests {
         write(tmp.path(), "src/a.py", "def a():\n    return 1\n");
         let scanner = Scanner::new(tmp.path(), &IndexingConfig::default());
         assert!(scanner.scan_paths(&HashSet::new()).is_empty());
+    }
+
+    /// Alignment contract for [`IgnoreRules`] (the watcher's event filter):
+    /// `is_ignored == true` must imply the scan walk filters the path too —
+    /// dropping such an event can never cause index staleness — and paths
+    /// the walk admits must never be reported as ignored.
+    #[test]
+    fn ignore_rules_align_with_scan_walk() {
+        let tmp = TempDir::new().unwrap();
+        let root = tmp.path();
+        write(root, ".gitignore", "gen/\n*.log.py\n");
+        write(root, "src/a.py", "def a():\n    return 1\n");
+        write(root, "gen/generated.py", "def g():\n    return 3\n");
+        write(root, "src/trace.log.py", "def t():\n    return 4\n");
+        write(root, "vendored/c.py", "def c():\n    return 5\n");
+        write(root, "vendored/deep/d.py", "def d():\n    return 6\n");
+        std::process::Command::new("git")
+            .args(["init", "-q"])
+            .current_dir(root)
+            .status()
+            .unwrap();
+
+        let config = IndexingConfig {
+            ignore: vec!["vendored/**".to_string()],
+            ..IndexingConfig::default()
+        };
+        let rules = IgnoreRules::load(root, &config);
+        let scanned: HashSet<String> = Scanner::new(root, &config)
+            .scan()
+            .into_iter()
+            .map(|f| f.rel_path)
+            .collect();
+
+        for path in [
+            "src/a.py",
+            "gen/generated.py",
+            "src/trace.log.py",
+            "vendored/c.py",
+            "vendored/deep/d.py",
+        ] {
+            if rules.is_ignored(path) {
+                assert!(
+                    !scanned.contains(path),
+                    "{path}: is_ignored must be authoritative — the walk admitted it"
+                );
+            }
+            if scanned.contains(path) {
+                assert!(
+                    !rules.is_ignored(path),
+                    "{path}: walk-admitted paths must not be reported ignored"
+                );
+            }
+        }
+        // The interesting verdicts, pinned explicitly.
+        assert!(!rules.is_ignored("src/a.py"));
+        assert!(rules.is_ignored("gen/generated.py"), "gitignored dir");
+        assert!(rules.is_ignored("src/trace.log.py"), "gitignored glob");
+        assert!(rules.is_ignored("vendored/c.py"), "config-ignored");
+        assert!(
+            rules.is_ignored("vendored/deep/d.py"),
+            "config-ignored via ancestor dir"
+        );
+    }
+
+    /// Without a git repository the walker does not honor .gitignore, and
+    /// neither must the rules (over-filtering would starve the watcher).
+    #[test]
+    fn ignore_rules_skip_gitignore_outside_git_repos() {
+        let tmp = TempDir::new().unwrap();
+        write(tmp.path(), ".gitignore", "gen/\n");
+        write(tmp.path(), "gen/generated.py", "def g():\n    return 1\n");
+        let config = IndexingConfig::default();
+        let rules = IgnoreRules::load(tmp.path(), &config);
+        assert!(
+            !rules.is_ignored("gen/generated.py"),
+            "no git repo: .gitignore must not apply (walker parity)"
+        );
+        let scanned: Vec<String> = Scanner::new(tmp.path(), &config)
+            .scan()
+            .into_iter()
+            .map(|f| f.rel_path)
+            .collect();
+        assert!(
+            scanned.contains(&"gen/generated.py".to_string()),
+            "walker must admit the file without a git repo"
+        );
     }
 }

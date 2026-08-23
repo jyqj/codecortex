@@ -106,14 +106,11 @@ impl Indexer {
             },
         )?;
 
-        // Budget bail (warn already emitted inside the closure): degrade to no
-        // propagation, the user should do a full rebuild instead.
-        if closure_result.budget_exceeded {
-            return Ok(DirtyPropagationOutcome {
-                marked: 0,
-                status: DirtyPropagationStatus::BudgetExceeded,
-            });
-        }
+        // Budget overflow (warn already emitted inside the closure): the
+        // closure returns a budget-sized partial promotion set instead of a
+        // no-op, so it is applied like any other result below; the
+        // BudgetExceeded status (from `closure_result.status()`) still tells
+        // the caller to consider a full rebuild for the dropped remainder.
 
         // Step 4: Promote Skip → DirtyResolveOnly
         let marked = closure_result.promoted.len();

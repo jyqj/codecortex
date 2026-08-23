@@ -174,6 +174,52 @@ fn aggregate(graph: &WeightedGraph, community: &[usize], num_comms: usize) -> We
     }
 }
 
+/// Prune an oversized edge list to at most `max_occurrences` edge
+/// occurrences, keeping the *heaviest* node pairs.
+///
+/// Duplicate occurrences of the same unordered pair act as multi-edge
+/// weight in [`louvain_communities`], so the pruning unit is the aggregated
+/// pair: pairs are ranked by occurrence count descending (ties broken
+/// lexicographically for determinism) and emitted with their full
+/// multiplicity until the budget is reached — the last pair admitted is
+/// truncated to the remaining budget. This preserves the strongest
+/// community structure instead of dropping the graph wholesale.
+pub fn prune_edges_by_weight(
+    edges: &[(String, String)],
+    max_occurrences: usize,
+) -> Vec<(String, String)> {
+    if edges.len() <= max_occurrences {
+        return edges.to_vec();
+    }
+    // Aggregate unordered pairs (Louvain treats each occurrence as an
+    // undirected unit-weight edge, so (a,b) and (b,a) are the same pair).
+    let mut weights: HashMap<(&str, &str), usize> = HashMap::new();
+    for (a, b) in edges {
+        let pair = if a <= b {
+            (a.as_str(), b.as_str())
+        } else {
+            (b.as_str(), a.as_str())
+        };
+        *weights.entry(pair).or_insert(0) += 1;
+    }
+    let mut ranked: Vec<((&str, &str), usize)> = weights.into_iter().collect();
+    ranked.sort_by(|(pair_a, w_a), (pair_b, w_b)| w_b.cmp(w_a).then_with(|| pair_a.cmp(pair_b)));
+
+    let mut pruned = Vec::with_capacity(max_occurrences);
+    let mut budget = max_occurrences;
+    for ((a, b), weight) in ranked {
+        if budget == 0 {
+            break;
+        }
+        let keep = weight.min(budget);
+        for _ in 0..keep {
+            pruned.push((a.to_string(), b.to_string()));
+        }
+        budget -= keep;
+    }
+    pruned
+}
+
 /// Run multi-level Louvain modularity-maximizing community detection.
 ///
 /// `edges`: pairs of (symbol_uid_a, symbol_uid_b) representing call relationships.
@@ -326,6 +372,70 @@ mod tests {
     fn empty_graph() {
         let result = louvain_communities(&[], 10);
         assert!(result.is_empty());
+    }
+
+    fn edge(a: &str, b: &str) -> (String, String) {
+        (a.to_string(), b.to_string())
+    }
+
+    /// Under the cap the input passes through unchanged (no aggregation
+    /// side effects, order preserved).
+    #[test]
+    fn prune_edges_noop_under_cap() {
+        let edges = vec![edge("a", "b"), edge("b", "a"), edge("c", "d")];
+        assert_eq!(prune_edges_by_weight(&edges, 3), edges);
+    }
+
+    /// Over the cap the heaviest unordered pairs win deterministically; the
+    /// last admitted pair is truncated to the remaining budget.
+    #[test]
+    fn prune_edges_keeps_heaviest_pairs_deterministically() {
+        // Pair weights: (a,b)=3 (one occurrence reversed), (c,d)=2, (e,f)=1.
+        let edges = vec![
+            edge("e", "f"),
+            edge("a", "b"),
+            edge("c", "d"),
+            edge("b", "a"),
+            edge("c", "d"),
+            edge("a", "b"),
+        ];
+        let pruned = prune_edges_by_weight(&edges, 4);
+        assert_eq!(
+            pruned,
+            vec![edge("a", "b"), edge("a", "b"), edge("a", "b"), edge("c", "d")],
+            "heaviest pair keeps full multiplicity; next pair truncated to the budget"
+        );
+        // Determinism across repeated calls (HashMap aggregation must not leak).
+        assert_eq!(pruned, prune_edges_by_weight(&edges, 4));
+
+        // Weight ties break lexicographically.
+        let tied = vec![edge("x", "y"), edge("p", "q")];
+        assert_eq!(prune_edges_by_weight(&tied, 1), vec![edge("p", "q")]);
+    }
+
+    /// Louvain over the pruned graph still finds the strongly connected
+    /// cluster — the point of pruning instead of flattening to community 0.
+    #[test]
+    fn prune_edges_preserves_strong_cluster_for_louvain() {
+        let mut edges = Vec::new();
+        // Strong triangle a-b-c, weight 5 per pair.
+        for _ in 0..5 {
+            edges.push(edge("a", "b"));
+            edges.push(edge("b", "c"));
+            edges.push(edge("a", "c"));
+        }
+        // Weak noise pairs, weight 1 each.
+        for i in 0..10 {
+            edges.push(edge(&format!("n{i}"), &format!("m{i}")));
+        }
+        let pruned = prune_edges_by_weight(&edges, 15);
+        assert_eq!(pruned.len(), 15, "budget respected");
+        let communities = louvain_communities(&pruned, 10);
+        assert_eq!(
+            communities["a"], communities["b"],
+            "strong cluster survives pruning"
+        );
+        assert_eq!(communities["b"], communities["c"]);
     }
 
     #[test]

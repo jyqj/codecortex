@@ -52,7 +52,7 @@ pub struct BuildExplain {
     #[serde(default, skip_serializing_if = "is_empty_vec")]
     pub gate_decisions: Vec<GateDecisionRecord>,
     /// Degrade notes — stable tokens for passes that produced a degraded
-    /// result rather than skipping (e.g. `"community_edge_cap_exceeded"`,
+    /// result rather than skipping (e.g. `"community_edge_cap_pruned"`,
     /// `"cochange_unavailable"`).
     #[serde(default, skip_serializing_if = "is_empty_str_vec")]
     pub degraded: Vec<String>,

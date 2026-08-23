@@ -531,16 +531,21 @@ impl Indexer {
             return Ok(None);
         }
 
-        let existing = self.db.reads().get_file_state_snapshot()?;
+        let existing = crate::indexer_phases::time_step("scan_diff", "scoped_file_state", || {
+            self.db.reads().get_file_state_snapshot()
+        })?;
         if existing.is_empty() {
             // Effectively a first build: the event set cannot describe the
             // whole tree.
             return Ok(None);
         }
 
-        let scanned = self.scanner.scan_paths(&event_paths);
-        let admitted: HashSet<String> = scanned.iter().map(|f| f.rel_path.clone()).collect();
-        let pending = self.diff_scanned_files(scanned, &existing);
+        let (admitted, pending) = crate::indexer_phases::time_step("scan_diff", "scoped_stat", || {
+            let scanned = self.scanner.scan_paths(&event_paths);
+            let admitted: HashSet<String> = scanned.iter().map(|f| f.rel_path.clone()).collect();
+            let pending = self.diff_scanned_files(scanned, &existing);
+            (admitted, pending)
+        });
 
         // Removals: an event path that is indexed but no longer admitted, or
         // an indexed file under an event directory prefix (a removed/renamed
@@ -566,11 +571,14 @@ impl Indexer {
         // The actions universe: every surviving DB file is a Skip candidate
         // (dirty propagation may promote any of them), plus the admitted
         // event files (covers adds).
-        let mut scanned_paths: HashSet<String> = existing
-            .keys()
-            .filter(|p| !removed_set.contains(p.as_str()))
-            .cloned()
-            .collect();
+        let mut scanned_paths: HashSet<String> =
+            crate::indexer_phases::time_step("scan_diff", "scoped_universe", || {
+                existing
+                    .keys()
+                    .filter(|p| !removed_set.contains(p.as_str()))
+                    .cloned()
+                    .collect()
+            });
         scanned_paths.extend(admitted);
 
         let files_scanned = scanned_paths.len();

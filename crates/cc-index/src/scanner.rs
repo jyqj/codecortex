@@ -99,12 +99,36 @@ impl Scanner {
     /// - user `indexing.ignore` overrides apply to the indexable set only,
     ///   including directory pruning semantics (a matched directory excludes
     ///   its whole subtree), but not to the manifest.
+    ///
+    /// The filesystem half (readdir + stat + gitignore evaluation) runs on
+    /// the `ignore` crate's parallel walker; the entries are then sorted by
+    /// rel path and classified sequentially with the exact single-walk
+    /// semantics. Path order guarantees a directory sorts before everything
+    /// in its subtree (a proper path prefix orders first), so the override
+    /// directory-prune state is complete before any contained file is
+    /// classified — same invariant the sequential walk relied on.
     pub fn scan_with_manifest(&self) -> (Vec<ScannedFile>, WalkManifest) {
+        // ── Parallel filesystem half ─────────────────────────────────────
+        struct RawEntry {
+            rel_path: String,
+            abs_path: PathBuf,
+            is_dir: bool,
+            size: u64,
+            mtime: f64,
+            mtime_secs: u64,
+        }
+
         let mut builder = ignore::WalkBuilder::new(&self.project_path);
         builder
             .hidden(false)
             .git_ignore(true)
-            .git_global(false);
+            .git_global(false)
+            .threads(
+                std::thread::available_parallelism()
+                    .map(|n| n.get())
+                    .unwrap_or(1)
+                    .min(12),
+            );
 
         // Prune hidden subtrees beyond the config-linker depth budget: only
         // the config pass consumes hidden paths, and it never looked deeper.
@@ -129,6 +153,75 @@ impl Scanner {
             }
         });
 
+        let (tx, rx) = std::sync::mpsc::channel::<RawEntry>();
+        let project_path = self.project_path.clone();
+        builder.build_parallel().run(|| {
+            let tx = tx.clone();
+            let project_path = project_path.clone();
+            Box::new(move |result| {
+                let Ok(entry) = result else {
+                    return ignore::WalkState::Continue;
+                };
+                let path = entry.path();
+                let rel_path = match path.strip_prefix(&project_path) {
+                    Ok(r) => r.to_string_lossy().replace('\\', "/"),
+                    Err(_) => return ignore::WalkState::Continue,
+                };
+                if rel_path.is_empty() {
+                    return ignore::WalkState::Continue;
+                }
+
+                // Symlinks resolve through follow-metadata, matching the
+                // sequential walk's `path.is_dir()` / `path.is_file()`;
+                // regular entries trust the dirent type and pay one stat
+                // (files only, for size/mtime).
+                let file_type = entry.file_type();
+                let needs_follow = file_type.is_none_or(|t| t.is_symlink());
+                let (is_dir, metadata) = if needs_follow {
+                    match std::fs::metadata(path) {
+                        Ok(m) if m.is_dir() => (true, None),
+                        Ok(m) if m.is_file() => (false, Some(m)),
+                        _ => return ignore::WalkState::Continue,
+                    }
+                } else if file_type.is_some_and(|t| t.is_dir()) {
+                    (true, None)
+                } else {
+                    match path.metadata() {
+                        Ok(m) if m.is_file() => (false, Some(m)),
+                        _ => return ignore::WalkState::Continue,
+                    }
+                };
+
+                let (size, mtime, mtime_secs) = match &metadata {
+                    Some(m) => {
+                        let mtime_duration = m
+                            .modified()
+                            .ok()
+                            .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok());
+                        (
+                            m.len(),
+                            mtime_duration.map(|d| d.as_secs_f64()).unwrap_or(0.0),
+                            mtime_duration.map(|d| d.as_secs()).unwrap_or(0),
+                        )
+                    }
+                    None => (0, 0.0, 0),
+                };
+                let _ = tx.send(RawEntry {
+                    rel_path,
+                    abs_path: path.to_path_buf(),
+                    is_dir,
+                    size,
+                    mtime,
+                    mtime_secs,
+                });
+                ignore::WalkState::Continue
+            })
+        });
+        drop(tx);
+        let mut entries: Vec<RawEntry> = rx.try_iter().collect();
+        entries.sort_unstable_by(|a, b| a.rel_path.cmp(&b.rel_path));
+
+        // ── Sequential classification half (order-dependent state) ──────
         let overrides = self.build_overrides();
         // Directory prefixes (with trailing '/') matched by an ignore
         // override: their whole subtree is excluded from the indexable set,
@@ -137,19 +230,10 @@ impl Scanner {
 
         let mut indexable = Vec::new();
         let mut walk_files = Vec::new();
-        for entry in builder.build().flatten() {
-            let path = entry.path();
+        for entry in entries {
+            let rel_path = entry.rel_path;
 
-            // Get relative path
-            let rel_path = match path.strip_prefix(&self.project_path) {
-                Ok(r) => r.to_string_lossy().replace('\\', "/"),
-                Err(_) => continue,
-            };
-            if rel_path.is_empty() {
-                continue;
-            }
-
-            if path.is_dir() {
+            if entry.is_dir {
                 if let Some(ovr) = &overrides {
                     if ovr.matched(&rel_path, true).is_ignore() {
                         ignored_dir_prefixes.push(format!("{rel_path}/"));
@@ -157,29 +241,15 @@ impl Scanner {
                 }
                 continue;
             }
-            if !path.is_file() {
-                continue;
-            }
-
-            let metadata = match path.metadata() {
-                Ok(m) => m,
-                Err(_) => continue,
-            };
-            let mtime_duration = metadata
-                .modified()
-                .ok()
-                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok());
-            let mtime = mtime_duration.map(|d| d.as_secs_f64()).unwrap_or(0.0);
-            let mtime_secs = mtime_duration.map(|d| d.as_secs()).unwrap_or(0);
 
             let hidden = rel_path.split('/').any(|c| c.starts_with('.'));
             let depth = rel_path.split('/').count();
 
             walk_files.push(WalkedFile {
                 rel_path: rel_path.clone(),
-                size: metadata.len(),
-                mtime,
-                mtime_secs,
+                size: entry.size,
+                mtime: entry.mtime,
+                mtime_secs: entry.mtime_secs,
                 depth,
                 hidden,
             });
@@ -197,7 +267,7 @@ impl Scanner {
                     continue;
                 }
             }
-            if metadata.len() > self.config.max_file_bytes {
+            if entry.size > self.config.max_file_bytes {
                 continue;
             }
 
@@ -205,8 +275,16 @@ impl Scanner {
             let language = detect_language(&rel_path);
             if language == Language::Unknown {
                 // Check if extension matches any include pattern
-                let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
-                let file_name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
+                let ext = entry
+                    .abs_path
+                    .extension()
+                    .and_then(|e| e.to_str())
+                    .unwrap_or("");
+                let file_name = entry
+                    .abs_path
+                    .file_name()
+                    .and_then(|n| n.to_str())
+                    .unwrap_or("");
                 let glob_match = self.config.include.iter().any(|p| {
                     p.ends_with(&format!("*.{}", ext))
                         || p.ends_with(&format!("/{}", file_name))
@@ -219,10 +297,10 @@ impl Scanner {
 
             indexable.push(ScannedFile {
                 rel_path,
-                abs_path: path.to_path_buf(),
+                abs_path: entry.abs_path,
                 language,
-                size: metadata.len(),
-                mtime,
+                size: entry.size,
+                mtime: entry.mtime,
             });
         }
 

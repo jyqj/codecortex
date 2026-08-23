@@ -13,7 +13,6 @@ use std::path::Path;
 use std::sync::Arc;
 
 use rayon::prelude::*;
-use sha2::{Digest, Sha256};
 
 use crate::dirty_reload_policy::parse_outcome_from_reloaded_edges;
 use crate::memory_budget::MemoryBudget;
@@ -31,6 +30,20 @@ use crate::scanner::{ScannedFile, Scanner};
 pub(crate) const MIN_FILES_FOR_PARALLEL: usize = 50;
 /// Best-effort safeguard: emit a warning when parsing a single file takes too long.
 const SLOW_PARSE_WARN_MS: u128 = 1_500;
+/// Upper bound on the total bytes of source text retained in memory to avoid
+/// re-reading files across scan → parse → framework enrichment. Beyond this
+/// budget the pipeline falls back to per-phase reads (the pre-optimization
+/// behavior), keeping peak RSS bounded on huge full builds.
+const SOURCE_RETAIN_MAX_TOTAL_BYTES: usize = 128 * 1024 * 1024;
+
+/// Content hash used by the scan/diff confirm step (hex-encoded blake3, same
+/// 64-hex-char width as the previous SHA-256 encoding). The schema version was
+/// bumped alongside the algorithm switch, so pre-blake3 databases rebuild via
+/// the standard rebuild-on-mismatch policy instead of comparing hashes across
+/// algorithms.
+pub(crate) fn content_hash_hex(content: &[u8]) -> String {
+    blake3::hash(content).to_hex().to_string()
+}
 
 /// Read a file for the incremental scan, returning `None` (with a traced
 /// warning) on failure instead of silently dropping it. A file that vanished
@@ -73,6 +86,11 @@ pub struct PendingFile {
     pub scanned: ScannedFile,
     pub content_hash: String,
     pub action: FileAction,
+    /// Source text captured by the diff hash-confirm read, so Phase 3 parse
+    /// does not re-read the file from disk. `None` when the fast path skipped
+    /// the read, the content was not valid UTF-8, or the retention budget
+    /// (see [`SOURCE_RETAIN_MAX_TOTAL_BYTES`]) was exhausted.
+    pub content: Option<Arc<str>>,
 }
 
 /// Index report.
@@ -130,6 +148,9 @@ pub struct Indexer {
     pub(crate) dispatch_synthesis: bool,
     pub(crate) event_fanout_cap: usize,
     pub(crate) event_denylist: Vec<String>,
+    /// Parse-phase rayon pool, built once and reused across builds (thread
+    /// spawn/teardown per build was measurable on watcher-tick cadence).
+    parse_pool: std::sync::OnceLock<rayon::ThreadPool>,
 }
 
 /// Intermediate result for Phase 1+2 (scan and diff).
@@ -150,6 +171,11 @@ pub(crate) struct ParseResult {
     pub(crate) parse_errors: Vec<String>,
     pub(crate) files_to_parse: usize,
     pub(crate) used_parallel: bool,
+    /// Source text of successfully parsed files, keyed by rel path, so
+    /// framework enrichment can avoid re-reading from disk. Bounded by
+    /// [`SOURCE_RETAIN_MAX_TOTAL_BYTES`]; enrichment falls back to a
+    /// filesystem read for paths not present.
+    pub(crate) sources: HashMap<String, Arc<str>>,
 }
 
 /// Intermediate result for Phase 4 (resolve).
@@ -190,7 +216,26 @@ impl Indexer {
             dispatch_synthesis: config.dispatch_synthesis,
             event_fanout_cap: config.event_fanout_cap,
             event_denylist: config.event_denylist.clone(),
+            parse_pool: std::sync::OnceLock::new(),
         }
+    }
+
+    /// The shared parse-phase rayon pool, built on first use with the
+    /// configured `max_concurrent_parse` cap and reused across builds.
+    fn parse_pool(&self) -> CcResult<&rayon::ThreadPool> {
+        if let Some(pool) = self.parse_pool.get() {
+            return Ok(pool);
+        }
+        let num_threads = self
+            .max_concurrent_parse
+            .unwrap_or_else(rayon::current_num_threads);
+        let pool = rayon::ThreadPoolBuilder::new()
+            .num_threads(num_threads)
+            .build()
+            .map_err(|e| CcError::Other(format!("rayon pool: {}", e)))?;
+        // A concurrent initializer winning the race is fine: use theirs.
+        let _ = self.parse_pool.set(pool);
+        Ok(self.parse_pool.get().expect("parse pool just initialized"))
     }
 
     pub fn build_index(&self, project_path: &Path, full: bool) -> CcResult<IndexReport> {
@@ -321,10 +366,25 @@ impl Indexer {
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
             .unwrap_or(false);
 
+        // Shared retention budget for source text carried from the hash-confirm
+        // read into Phase 3 parse (see `PendingFile::content`).
+        let retain_budget = std::sync::atomic::AtomicUsize::new(0);
+        let retain_source = |content: Vec<u8>| -> Option<Arc<str>> {
+            let len = content.len();
+            let prev = retain_budget.fetch_add(len, std::sync::atomic::Ordering::Relaxed);
+            if prev + len > SOURCE_RETAIN_MAX_TOTAL_BYTES {
+                return None;
+            }
+            match String::from_utf8(content) {
+                Ok(s) => Some(Arc::from(s)),
+                Err(_) => None,
+            }
+        };
+
         let pending: Vec<PendingFile> = scanned
             .into_par_iter()
             .filter_map(|file| {
-                let (hash, action) = match existing.get(&file.rel_path) {
+                let (hash, action, content) = match existing.get(&file.rel_path) {
                     Some(old)
                         if !strict_hash
                             && (file.mtime - old.mtime).abs() < 0.001
@@ -333,18 +393,18 @@ impl Indexer {
                         // Fast path: unchanged mtime + size means we can avoid reading and
                         // hashing the file during incremental scans. The size guard catches
                         // common same-mtime edits on coarse-grained filesystems.
-                        (old.content_hash.clone(), FileAction::Skip)
+                        (old.content_hash.clone(), FileAction::Skip, None)
                     }
                     Some(old) => {
                         let content = match read_for_scan(&file.abs_path) {
                             Some(c) => c,
                             None => return None,
                         };
-                        let hash = format!("{:x}", Sha256::digest(&content));
+                        let hash = content_hash_hex(&content);
                         if hash == old.content_hash {
-                            (hash, FileAction::Skip)
+                            (hash, FileAction::Skip, None)
                         } else {
-                            (hash, FileAction::Update)
+                            (hash, FileAction::Update, retain_source(content))
                         }
                     }
                     None => {
@@ -352,13 +412,15 @@ impl Indexer {
                             Some(c) => c,
                             None => return None,
                         };
-                        (format!("{:x}", Sha256::digest(&content)), FileAction::Add)
+                        let hash = content_hash_hex(&content);
+                        (hash, FileAction::Add, retain_source(content))
                     }
                 };
                 Some(PendingFile {
                     scanned: file,
                     content_hash: hash,
                     action,
+                    content,
                 })
             })
             .collect();
@@ -406,14 +468,15 @@ impl Indexer {
     pub(crate) fn phase_parse(
         &self,
         project_path: &Path,
-        to_parse: Vec<PendingFile>,
+        mut to_parse: Vec<PendingFile>,
     ) -> CcResult<ParseResult> {
         let mut parse_errors = Vec::new();
 
         // Pre-compute Cargo workspace alias map for Rust crate import resolution
         let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
 
-        let parse_one = |pf: &PendingFile| -> Result<(FileWriteUnit, String), (String, String)> {
+        let parse_one =
+            |pf: &PendingFile| -> Result<(FileWriteUnit, Arc<str>), (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
             let language = pf.scanned.language;
@@ -422,8 +485,15 @@ impl Indexer {
             let size = pf.scanned.size;
             let parse_started = std::time::Instant::now();
 
-            let content = std::fs::read_to_string(&abs_path)
-                .map_err(|e| (rel_path.clone(), e.to_string()))?;
+            // Reuse the source captured by the scan hash-confirm read; fall
+            // back to a filesystem read when it was not retained.
+            let content: Arc<str> = match pf.content.clone() {
+                Some(c) => c,
+                None => Arc::from(
+                    std::fs::read_to_string(&abs_path)
+                        .map_err(|e| (rel_path.clone(), e.to_string()))?,
+                ),
+            };
             let mut outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 self.parsers.parse_with_timeout(
                     &rel_path,
@@ -490,16 +560,21 @@ impl Indexer {
         let used_parallel = files_to_parse >= MIN_FILES_FOR_PARALLEL;
 
         let mut write_units: Vec<FileWriteUnit> = Vec::with_capacity(files_to_parse);
+        let mut sources: HashMap<String, Arc<str>> = HashMap::new();
+        // Enrichment-side retention budget: sources beyond the cap are dropped
+        // and re-read from disk on demand during framework enrichment.
+        let mut retained_bytes = 0usize;
+        let mut retain =
+            |sources: &mut HashMap<String, Arc<str>>, rel_path: &str, source: Arc<str>| {
+                if retained_bytes + source.len() <= SOURCE_RETAIN_MAX_TOTAL_BYTES {
+                    retained_bytes += source.len();
+                    sources.insert(rel_path.to_string(), source);
+                }
+            };
 
         if used_parallel {
-            // Build a controlled thread pool capped by max_concurrent_parse config.
-            let num_threads = self
-                .max_concurrent_parse
-                .unwrap_or_else(rayon::current_num_threads);
-            let pool = rayon::ThreadPoolBuilder::new()
-                .num_threads(num_threads)
-                .build()
-                .map_err(|e| CcError::Other(format!("rayon pool: {}", e)))?;
+            // Reuse the cached thread pool capped by max_concurrent_parse config.
+            let pool = self.parse_pool()?;
 
             let mut offset = 0;
             while offset < to_parse.len() {
@@ -512,12 +587,13 @@ impl Indexer {
                 let batch = &to_parse[offset..end];
 
                 // Parallel parse for this batch.
-                let batch_results: Vec<Result<(FileWriteUnit, String), (String, String)>> =
+                let batch_results: Vec<Result<(FileWriteUnit, Arc<str>), (String, String)>> =
                     pool.install(|| batch.par_iter().map(&parse_one).collect());
 
                 for result in batch_results {
                     match result {
-                        Ok((unit, _source)) => {
+                        Ok((unit, source)) => {
+                            retain(&mut sources, &unit.rel_path, source);
                             write_units.push(unit);
                         }
                         Err((file, error)) => {
@@ -535,13 +611,21 @@ impl Indexer {
                     "parse batch complete"
                 );
 
+                // The scan-carried content has served its purpose for this
+                // batch; drop it so peak memory stays bounded to one batch
+                // plus the enrichment retention budget.
+                for pf in &mut to_parse[offset..end] {
+                    pf.content = None;
+                }
+
                 offset = end;
             }
         } else {
             // Small file count: sequential processing.
             for pf in &to_parse {
                 match parse_one(pf) {
-                    Ok((unit, _source)) => {
+                    Ok((unit, source)) => {
+                        retain(&mut sources, &unit.rel_path, source);
                         write_units.push(unit);
                     }
                     Err((file, error)) => {
@@ -557,6 +641,7 @@ impl Indexer {
             parse_errors,
             files_to_parse,
             used_parallel,
+            sources,
         })
     }
 
@@ -661,10 +746,14 @@ impl Indexer {
     }
 
     /// Phase 3.7+3.8: Framework resolver enrichment and C/C++ include resolution.
+    ///
+    /// `sources` carries the parse-phase file contents (bounded, see
+    /// [`ParseResult::sources`]); files absent from it are read from disk.
     pub(crate) fn phase_framework_enrichment(
         &self,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        sources: &HashMap<String, Arc<str>>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
         // Phase 3.7: Framework resolver enrichment (before resolution)
         let fw_context = {
@@ -735,13 +824,18 @@ impl Indexer {
                         continue;
                     }
 
-                    // Read source on demand only for framework-relevant files.
-                    // The file was just read during Phase 3 parsing, so the OS
-                    // page cache is still warm and this re-read is cheap.
-                    let full_path = project_path.join(&unit.rel_path);
-                    let source = match std::fs::read_to_string(&full_path) {
-                        Ok(s) => s,
-                        Err(_) => continue,
+                    // Prefer the parse-phase source carried in memory; fall
+                    // back to an on-demand read (page cache still warm from
+                    // Phase 3) when it was not retained.
+                    let source: Arc<str> = match sources.get(&unit.rel_path) {
+                        Some(s) => Arc::clone(s),
+                        None => {
+                            let full_path = project_path.join(&unit.rel_path);
+                            match std::fs::read_to_string(&full_path) {
+                                Ok(s) => Arc::from(s),
+                                Err(_) => continue,
+                            }
+                        }
                     };
 
                     for resolver in &applicable {

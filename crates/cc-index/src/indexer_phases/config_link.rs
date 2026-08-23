@@ -1,8 +1,6 @@
 use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
-use sha2::{Digest, Sha256};
-
 use cc_db::index_db::{FileWriteUnit, SymbolTargetRow};
 use cc_model::edge::ResolutionKind;
 use cc_model::parse::ParseOutcome;
@@ -309,7 +307,7 @@ impl Indexer {
                 ..Default::default()
             };
 
-            let content_hash = format!("{:x}", Sha256::digest(content.as_bytes()));
+            let content_hash = crate::indexer::content_hash_hex(content.as_bytes());
             let mtime = metadata
                 .modified()
                 .ok()

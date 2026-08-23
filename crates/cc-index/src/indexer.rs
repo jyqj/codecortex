@@ -1,12 +1,21 @@
-//! Incremental indexer pipeline.
+//! Incremental indexer pipeline. Phase numbering (the same labels the
+//! per-phase comments and `indexer_phases/` docs use):
 //!
-//! Phase 1: Scan → Vec<ScannedFile>
+//! Phase 1: Scan → Vec<ScannedFile> (optionally scoped to a watcher drain)
 //! Phase 2: Diff (mtime+size fast-skip → hash confirm) → Vec<PendingFile>
-//! Phase 3: Parallel parse (rayon) → Vec<IndexedFile>
-//! Phase 4: Symbol resolution (cross-file)
-//! Phase 5: Batch write to SQLite
-//! Phase 6: Post-processing (test edges, communities, frameworks)
-//! Phase 7: Git co-change analysis
+//! Phase 3: Parallel parse (rayon) → write units
+//!   3.5: dirty closure (export-fingerprint propagation, `dirty_closure.rs`)
+//!   3.6: dirty reload (re-resolve-only units loaded from the DB)
+//!   3.7: framework resolver enrichment  3.8: C/C++ include resolution
+//! Phase 4: Symbol resolution (4a semantic-edge UIDs, 4b type catalog,
+//!   4c call edges/refs, 4d cross-file framework resolution)
+//! Phase 5: (reserved — snapshot/compression happen inside prepare)
+//! Phase 6: Batch write to SQLite (+ config-link units)
+//! Phase 7: Post-processing (test edges, dispatch synthesis, communities)
+//! Phase 8+: Analysis (git co-change, infra, ADR)
+//!
+//! Orchestration order and the full/incremental invariants live in
+//! `build_plan.rs`; the staged-commit lock contract in ADR-0002.
 
 use std::collections::{HashMap, HashSet};
 use std::path::Path;

@@ -214,6 +214,7 @@ impl IndexBuildPlan {
         let ParsedBuildState {
             mut write_units,
             parse_report,
+            sources,
         } = ParsedBuildState::from(parse_result);
 
         // Ordering invariant, enforced by types: the dirty closure must be
@@ -233,7 +234,11 @@ impl IndexBuildPlan {
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
-        let fw_context = reloaded.enrich_frameworks(indexer, project_path, &mut write_units)?;
+        let fw_context =
+            reloaded.enrich_frameworks(indexer, project_path, &mut write_units, &sources)?;
+        // Last consumer of the carried source text — release the memory
+        // before the (long) resolve/write/postprocess tail.
+        drop(sources);
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -577,8 +582,9 @@ impl Reloaded {
         indexer: &Indexer,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        sources: &HashMap<String, std::sync::Arc<str>>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
-        indexer.phase_framework_enrichment(project_path, write_units)
+        indexer.phase_framework_enrichment(project_path, write_units, sources)
     }
 
     fn into_actions(self) -> HashMap<String, FileAction> {
@@ -589,6 +595,9 @@ impl Reloaded {
 struct ParsedBuildState {
     write_units: Vec<FileWriteUnit>,
     parse_report: ParseReport,
+    /// Carried source text for framework enrichment (single-read pipeline);
+    /// dropped right after enrichment.
+    sources: HashMap<String, std::sync::Arc<str>>,
 }
 
 impl From<ParseResult> for ParsedBuildState {
@@ -600,6 +609,7 @@ impl From<ParseResult> for ParsedBuildState {
                 files_to_parse: parse_result.files_to_parse,
                 used_parallel: parse_result.used_parallel,
             },
+            sources: parse_result.sources,
         }
     }
 }

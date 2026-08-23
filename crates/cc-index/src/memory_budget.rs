@@ -86,6 +86,15 @@ impl MemoryBudget {
         self.over_budget.load(Ordering::Relaxed)
     }
 
+    /// Byte cap for file content carried from the scan/diff phase into
+    /// parse/enrichment (the single-read pipeline). One eighth of the total
+    /// budget: the carried set peaks alongside parse allocations (tree-sitter
+    /// trees, symbol/chunk vectors), which the remaining budget must absorb.
+    /// Files past this cap simply fall back to a disk re-read in parse.
+    pub fn content_carry_budget(&self) -> u64 {
+        self.total_budget / 8
+    }
+
     /// Get last observed RSS in bytes.
     pub fn current_rss(&self) -> u64 {
         self.current_rss.load(Ordering::Relaxed)
@@ -118,7 +127,7 @@ impl MemoryBudget {
                     }
                 }
             }
-            return 0;
+            0
         }
 
         #[cfg(target_os = "macos")]

@@ -86,6 +86,12 @@ pub struct PendingFile {
     pub scanned: ScannedFile,
     pub content_hash: String,
     pub action: FileAction,
+    /// Content already read (and hashed) by the diff, carried forward so the
+    /// parse phase doesn't hit the disk a second time. `None` when the diff
+    /// took the mtime+size fast path, the bytes weren't valid UTF-8, or the
+    /// carry budget ([`MemoryBudget::content_carry_budget`]) was exhausted —
+    /// parse then falls back to its own read.
+    pub content: Option<std::sync::Arc<str>>,
 }
 
 /// Index report.
@@ -163,6 +169,10 @@ pub(crate) struct ParseResult {
     pub(crate) parse_errors: Vec<String>,
     pub(crate) files_to_parse: usize,
     pub(crate) used_parallel: bool,
+    /// Carried source text by rel_path (only files whose diff-phase read was
+    /// within the carry budget), for framework enrichment to reuse instead
+    /// of a third disk read. Dropped after enrichment.
+    pub(crate) sources: HashMap<String, std::sync::Arc<str>>,
 }
 
 /// Intermediate result for Phase 4 (resolve).
@@ -358,10 +368,28 @@ impl Indexer {
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
             .unwrap_or(false);
 
+        // Single-read pipeline: the bytes read for hashing are carried into
+        // parse for Add/Update files, capped by the carry budget (racy
+        // overshoot by at most one in-flight batch of files is acceptable —
+        // this is a soft memory bound, not a correctness bound).
+        let carry_budget = self.memory_budget.content_carry_budget();
+        let carried_bytes = std::sync::atomic::AtomicU64::new(0);
+        let carry = |content: Vec<u8>| -> Option<std::sync::Arc<str>> {
+            let len = content.len() as u64;
+            if carried_bytes.load(std::sync::atomic::Ordering::Relaxed) + len > carry_budget {
+                return None;
+            }
+            // Non-UTF-8 content cannot be carried; parse's own read will
+            // surface the encoding error through its normal error path.
+            let text = String::from_utf8(content).ok()?;
+            carried_bytes.fetch_add(len, std::sync::atomic::Ordering::Relaxed);
+            Some(std::sync::Arc::<str>::from(text))
+        };
+
         let pending: Vec<PendingFile> = scanned
             .into_par_iter()
             .filter_map(|file| {
-                let (hash, action) = match existing.get(&file.rel_path) {
+                let (hash, action, content) = match existing.get(&file.rel_path) {
                     Some(old)
                         if !strict_hash
                             && (file.mtime - old.mtime).abs() < 0.001
@@ -370,7 +398,7 @@ impl Indexer {
                         // Fast path: unchanged mtime + size means we can avoid reading and
                         // hashing the file during incremental scans. The size guard catches
                         // common same-mtime edits on coarse-grained filesystems.
-                        (old.content_hash.clone(), FileAction::Skip)
+                        (old.content_hash.clone(), FileAction::Skip, None)
                     }
                     Some(old) => {
                         let content = match read_for_scan(&file.abs_path) {
@@ -379,9 +407,9 @@ impl Indexer {
                         };
                         let hash = content_confirmation_hash(&content);
                         if hash == old.content_hash {
-                            (hash, FileAction::Skip)
+                            (hash, FileAction::Skip, None)
                         } else {
-                            (hash, FileAction::Update)
+                            (hash, FileAction::Update, carry(content))
                         }
                     }
                     None => {
@@ -389,13 +417,15 @@ impl Indexer {
                             Some(c) => c,
                             None => return None,
                         };
-                        (content_confirmation_hash(&content), FileAction::Add)
+                        let hash = content_confirmation_hash(&content);
+                        (hash, FileAction::Add, carry(content))
                     }
                 };
                 Some(PendingFile {
                     scanned: file,
                     content_hash: hash,
                     action,
+                    content,
                 })
             })
             .collect();
@@ -470,7 +500,8 @@ impl Indexer {
         // Pre-compute Cargo workspace alias map for Rust crate import resolution
         let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
 
-        let parse_one = |pf: &PendingFile| -> Result<(FileWriteUnit, String), (String, String)> {
+        type ParsedUnit = (FileWriteUnit, Option<std::sync::Arc<str>>);
+        let parse_one = |pf: &PendingFile| -> Result<ParsedUnit, (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
             let language = pf.scanned.language;
@@ -479,8 +510,16 @@ impl Indexer {
             let size = pf.scanned.size;
             let parse_started = std::time::Instant::now();
 
-            let content = std::fs::read_to_string(&abs_path)
-                .map_err(|e| (rel_path.clone(), e.to_string()))?;
+            // Single-read pipeline: reuse the content the diff already read
+            // and hashed; fall back to disk only when the carry budget (or
+            // UTF-8 validation) dropped it.
+            let carried = pf.content.clone();
+            let content: std::sync::Arc<str> = match carried.clone() {
+                Some(text) => text,
+                None => std::fs::read_to_string(&abs_path)
+                    .map_err(|e| (rel_path.clone(), e.to_string()))?
+                    .into(),
+            };
             let mut outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 self.parsers.parse_with_timeout(
                     &rel_path,
@@ -537,7 +576,7 @@ impl Indexer {
                     size,
                     outcome,
                 },
-                content,
+                carried,
             ))
         };
 
@@ -547,6 +586,19 @@ impl Indexer {
         let used_parallel = files_to_parse >= MIN_FILES_FOR_PARALLEL;
 
         let mut write_units: Vec<FileWriteUnit> = Vec::with_capacity(files_to_parse);
+        let mut sources: HashMap<String, std::sync::Arc<str>> = HashMap::new();
+        let mut collect = |result: Result<ParsedUnit, (String, String)>| match result {
+            Ok((unit, source)) => {
+                if let Some(text) = source {
+                    sources.insert(unit.rel_path.clone(), text);
+                }
+                write_units.push(unit);
+            }
+            Err((file, error)) => {
+                tracing::warn!(file = %file, error = %error, "parse error");
+                parse_errors.push(format!("{}: {}", file, error));
+            }
+        };
 
         if used_parallel {
             // Build a controlled thread pool capped by max_concurrent_parse config.
@@ -569,19 +621,11 @@ impl Indexer {
                 let batch = &to_parse[offset..end];
 
                 // Parallel parse for this batch.
-                let batch_results: Vec<Result<(FileWriteUnit, String), (String, String)>> =
+                let batch_results: Vec<Result<ParsedUnit, (String, String)>> =
                     pool.install(|| batch.par_iter().map(&parse_one).collect());
 
                 for result in batch_results {
-                    match result {
-                        Ok((unit, _source)) => {
-                            write_units.push(unit);
-                        }
-                        Err((file, error)) => {
-                            tracing::warn!(file = %file, error = %error, "parse error");
-                            parse_errors.push(format!("{}: {}", file, error));
-                        }
-                    }
+                    collect(result);
                 }
 
                 tracing::debug!(
@@ -597,23 +641,17 @@ impl Indexer {
         } else {
             // Small file count: sequential processing.
             for pf in &to_parse {
-                match parse_one(pf) {
-                    Ok((unit, _source)) => {
-                        write_units.push(unit);
-                    }
-                    Err((file, error)) => {
-                        tracing::warn!(file = %file, error = %error, "parse error");
-                        parse_errors.push(format!("{}: {}", file, error));
-                    }
-                }
+                collect(parse_one(pf));
             }
         }
 
+        drop(collect);
         Ok(ParseResult {
             write_units,
             parse_errors,
             files_to_parse,
             used_parallel,
+            sources,
         })
     }
 
@@ -722,6 +760,7 @@ impl Indexer {
         &self,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        sources: &HashMap<String, std::sync::Arc<str>>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
         // Phase 3.7: Framework resolver enrichment (before resolution)
         let fw_context = {
@@ -792,13 +831,19 @@ impl Indexer {
                         continue;
                     }
 
-                    // Read source on demand only for framework-relevant files.
-                    // The file was just read during Phase 3 parsing, so the OS
-                    // page cache is still warm and this re-read is cheap.
-                    let full_path = project_path.join(&unit.rel_path);
-                    let source = match std::fs::read_to_string(&full_path) {
-                        Ok(s) => s,
-                        Err(_) => continue,
+                    // Source for framework-relevant files: reuse the content
+                    // carried from the diff-phase read when available; fall
+                    // back to disk for uncarried units (budget-dropped, or
+                    // dirty-reloaded units that were never parsed this build).
+                    let source: std::sync::Arc<str> = match sources.get(&unit.rel_path) {
+                        Some(text) => text.clone(),
+                        None => {
+                            let full_path = project_path.join(&unit.rel_path);
+                            match std::fs::read_to_string(&full_path) {
+                                Ok(s) => s.into(),
+                                Err(_) => continue,
+                            }
+                        }
                     };
 
                     for resolver in &applicable {
@@ -1038,6 +1083,95 @@ mod content_hash_migration_tests {
         // after an mtime-preserving no-op build.
         let report = indexer.build_index(tmp.path(), false).unwrap();
         assert_eq!(report.files_updated, 0, "migrated row must be stable");
+    }
+}
+
+#[cfg(test)]
+mod single_read_pipeline_tests {
+    use super::*;
+    use cc_model::config::IndexingConfig;
+    use tempfile::TempDir;
+
+    fn setup(tmp: &TempDir) -> Indexer {
+        let db = Arc::new(IndexDb::open(&tmp.path().join("i.db")).unwrap().0);
+        Indexer::new(db, tmp.path(), &IndexingConfig::default())
+    }
+
+    /// The diff phase must carry the content it read for hashing, and parse
+    /// must actually use it. Proof: delete the file from disk between diff
+    /// and parse — a parse that re-read would fail, one that reuses the
+    /// carried content still produces the file's symbols.
+    #[test]
+    fn parse_reuses_diff_read_content_without_touching_disk() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("lib.py"), "def carried():\n    return 1\n").unwrap();
+        let indexer = setup(&tmp);
+
+        let mut scan = indexer
+            .phase_scan_and_diff(tmp.path(), false, None, None)
+            .unwrap();
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        assert_eq!(to_parse.len(), 1);
+        assert!(
+            to_parse[0].content.is_some(),
+            "Add within the carry budget must carry its content"
+        );
+
+        std::fs::remove_file(tmp.path().join("lib.py")).unwrap();
+
+        let parsed = indexer.phase_parse(tmp.path(), to_parse).unwrap();
+        assert!(
+            parsed.parse_errors.is_empty(),
+            "carried content must make the parse disk-independent: {:?}",
+            parsed.parse_errors
+        );
+        assert!(
+            parsed.write_units[0]
+                .outcome
+                .symbols
+                .iter()
+                .any(|s| s.name == "carried"),
+            "symbols must come from the carried content"
+        );
+        assert!(
+            parsed.sources.contains_key("lib.py"),
+            "carried source must flow on to enrichment"
+        );
+    }
+
+    /// With a zero carry budget every file falls back to the disk-read path:
+    /// nothing is carried, parse re-reads, and the result is identical.
+    #[test]
+    fn zero_carry_budget_falls_back_to_disk_read() {
+        let tmp = TempDir::new().unwrap();
+        std::fs::write(tmp.path().join("lib.py"), "def fallback():\n    return 2\n").unwrap();
+        let mut indexer = setup(&tmp);
+        indexer.memory_budget = MemoryBudget::with_rss_source(0, || 0);
+
+        let mut scan = indexer
+            .phase_scan_and_diff(tmp.path(), false, None, None)
+            .unwrap();
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        assert_eq!(to_parse.len(), 1);
+        assert!(
+            to_parse[0].content.is_none(),
+            "zero budget must carry nothing"
+        );
+
+        let parsed = indexer.phase_parse(tmp.path(), to_parse).unwrap();
+        assert!(parsed.parse_errors.is_empty());
+        assert!(
+            parsed.write_units[0]
+                .outcome
+                .symbols
+                .iter()
+                .any(|s| s.name == "fallback"),
+            "disk fallback must still parse the file"
+        );
+        assert!(
+            parsed.sources.is_empty(),
+            "uncarried files must not extend content lifetime into enrichment"
+        );
     }
 }
 

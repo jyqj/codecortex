@@ -225,13 +225,21 @@ impl Indexer {
     /// write lock and then hand the result to [`Indexer::commit_build`] under a
     /// brief write lock. `full`/`auto_file_limit` must match the values passed to
     /// the paired `commit_build` call so both halves share the same build mode.
+    ///
+    /// `scope`: optional scan/diff restriction to the named relative paths
+    /// (a watcher drain); `None` scans the whole tree. Full builds ignore it.
     pub fn prepare_build(
         &self,
         project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: Option<&HashSet<String>>,
     ) -> CcResult<crate::build_plan::PreparedBuild> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare(self, project_path)
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare_scoped(
+            self,
+            project_path,
+            scope,
+        )
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
@@ -304,20 +312,36 @@ impl Indexer {
     // ── Phase helper structs ────────────────────────────────────────────
 
     /// Phase 1+2: Scan files and compute diff against existing DB state.
+    ///
+    /// `scope`, when given on an incremental build, restricts the filesystem
+    /// walk and diff to the named relative paths (a watcher drain): only
+    /// those paths are stat'ed/hashed/parsed, only those paths can land in
+    /// `to_remove`, and every other DB-known file is carried as an implicit
+    /// Skip — so dirty propagation still sees the full action map and can
+    /// promote unscoped importers to `DirtyResolveOnly`. Admission fidelity
+    /// is [`Scanner::scan_paths`]'s guarantee. Full builds ignore the scope.
     pub(crate) fn phase_scan_and_diff(
         &self,
         _project_path: &Path,
         full: bool,
         auto_file_limit: Option<usize>,
+        scope: Option<&HashSet<String>>,
     ) -> CcResult<ScanDiffResult> {
-        // Phase 1: Scan
-        let scanned = self.scanner.scan();
-        let files_scanned = scanned.len();
+        let scope = if full { None } else { scope };
+
+        // Phase 1: Scan (full tree, or just the scoped paths' spine)
+        let scanned = match scope {
+            Some(paths) => self.scanner.scan_paths(paths),
+            None => self.scanner.scan(),
+        };
         if let Some(limit) = auto_file_limit {
-            if files_scanned > limit {
+            // The auto-index gate is meaningful for tree-sized scans only;
+            // scoped batches are already bounded by the watcher's drain cap.
+            if scope.is_none() && scanned.len() > limit {
                 return Err(CcError::Config(format!(
                     "auto-index skipped: indexable file count {} exceeds auto_index.file_limit {}",
-                    files_scanned, limit
+                    scanned.len(),
+                    limit
                 )));
             }
         }
@@ -328,7 +352,7 @@ impl Indexer {
         } else {
             self.db.reads().get_file_state()?
         };
-        let scanned_paths: std::collections::HashSet<String> =
+        let mut scanned_paths: std::collections::HashSet<String> =
             scanned.iter().map(|f| f.rel_path.clone()).collect();
         let strict_hash = std::env::var("CODECORTEX_STRICT_HASH")
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
@@ -384,17 +408,37 @@ impl Indexer {
             .iter()
             .filter(|p| matches!(p.action, FileAction::Update))
             .count();
-        let files_skipped = pending
+        let mut files_skipped = pending
             .iter()
             .filter(|p| matches!(p.action, FileAction::Skip))
             .count();
 
-        // Files to remove
-        let to_remove: Vec<String> = existing
-            .keys()
-            .filter(|p| !scanned_paths.contains(p.as_str()))
-            .cloned()
-            .collect();
+        // Files to remove. Unscoped: everything the DB knows that the walk
+        // no longer sees. Scoped: only scoped paths can be removed (the walk
+        // deliberately saw nothing else), and every unscoped DB-known file
+        // joins `scanned_paths` as an implicit Skip so downstream action
+        // mapping and dirty propagation see the whole project.
+        let to_remove: Vec<String> = match scope {
+            None => existing
+                .keys()
+                .filter(|p| !scanned_paths.contains(p.as_str()))
+                .cloned()
+                .collect(),
+            Some(paths) => {
+                let removed: Vec<String> = paths
+                    .iter()
+                    .filter(|p| existing.contains_key(p.as_str()) && !scanned_paths.contains(*p))
+                    .cloned()
+                    .collect();
+                for path in existing.keys() {
+                    if !paths.contains(path) && scanned_paths.insert(path.clone()) {
+                        files_skipped += 1;
+                    }
+                }
+                removed
+            }
+        };
+        let files_scanned = scanned_paths.len();
 
         // Filter and sort non-skip files for parsing (large files first)
         let mut to_parse: Vec<PendingFile> = pending

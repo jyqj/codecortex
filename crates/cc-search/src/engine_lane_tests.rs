@@ -552,7 +552,7 @@ struct FakeLane {
     lane_weight: f64,
     annotates: bool,
     hits: Vec<(String, f64)>,
-    ran: std::cell::Cell<bool>,
+    ran: std::sync::atomic::AtomicBool,
 }
 
 impl RetrievalLane for FakeLane {
@@ -569,7 +569,7 @@ impl RetrievalLane for FakeLane {
         self.annotates
     }
     fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
-        self.ran.set(true);
+        self.ran.store(true, std::sync::atomic::Ordering::SeqCst);
         Ok(self.hits.clone())
     }
 }
@@ -614,7 +614,7 @@ fn new_lane_opting_into_annotation_gets_generic_hit_reasons() {
         lane_weight: 1.0,
         annotates: true,
         hits: vec![("chunk:src/x.rs".to_string(), 1.0)],
-        ran: std::cell::Cell::new(false),
+        ran: std::sync::atomic::AtomicBool::new(false),
     };
     let fifth = FakeLane {
         id: "fifth",
@@ -625,7 +625,7 @@ fn new_lane_opting_into_annotation_gets_generic_hit_reasons() {
             ("chunk:other".to_string(), 1.0),
             ("chunk:src/x.rs".to_string(), 0.5),
         ],
-        ran: std::cell::Cell::new(false),
+        ran: std::sync::atomic::AtomicBool::new(false),
     };
 
     let lanes: [&dyn RetrievalLane; 2] = [&fourth, &fifth];
@@ -760,7 +760,7 @@ fn lane_opting_out_of_annotation_stays_fusion_only() {
         lane_weight: 1.0,
         annotates: false,
         hits: vec![("chunk:src/x.rs".to_string(), 1.0)],
-        ran: std::cell::Cell::new(false),
+        ran: std::sync::atomic::AtomicBool::new(false),
     };
 
     let lanes: [&dyn RetrievalLane; 1] = [&silent];
@@ -810,7 +810,7 @@ fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
         lane_weight: 1.0,
         annotates: false,
         hits: vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
-        ran: std::cell::Cell::new(false),
+        ran: std::sync::atomic::AtomicBool::new(false),
     };
     let disabled = FakeLane {
         id: "fake-disabled",
@@ -818,15 +818,15 @@ fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
         lane_weight: 0.0,
         annotates: false,
         hits: vec![("z".to_string(), 1.0)],
-        ran: std::cell::Cell::new(false),
+        ran: std::sync::atomic::AtomicBool::new(false),
     };
 
     let lanes: [&dyn RetrievalLane; 2] = [&active, &disabled];
     let outcomes = run_lanes(&lanes, &context).unwrap();
 
-    assert!(active.ran.get(), "enabled lane must run");
+    assert!(active.ran.load(std::sync::atomic::Ordering::SeqCst), "enabled lane must run");
     assert!(
-        !disabled.ran.get(),
+        !disabled.ran.load(std::sync::atomic::Ordering::SeqCst),
         "disabled lane must be skipped before work"
     );
     assert_eq!(

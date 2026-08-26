@@ -86,6 +86,8 @@ pub struct GrepChunkRow {
     pub language_name: String,
     /// Chunk text, already decoded from its storage encoding (zstd/plain).
     pub text: String,
+    /// Base-table rowid, for recency merges across scan stages.
+    pub rowid: i64,
 }
 
 /// Deep retrieval read model over [`IndexDb`]: owns the raw-SQL retrieval
@@ -232,14 +234,18 @@ impl<'a> RetrievalReadModel<'a> {
     /// `visit` receives each decoded row and returns `false` to stop the
     /// scan (budget exhausted / enough matches). Each visited row costs one
     /// text decode; rows are decoded lazily, so stopping early skips the
-    /// remaining decodes.
+    /// remaining decodes. Chunk ids in `skip` are passed over before the
+    /// decode (they were already decompressed by an earlier stage, e.g. the
+    /// FTS prefilter) and cost no scan budget.
     pub fn scan_chunks_for_grep(
         &self,
         scope: &ChunkScope,
+        skip: Option<&std::collections::HashSet<String>>,
         mut visit: impl FnMut(GrepChunkRow) -> bool,
     ) -> CcResult<()> {
         let mut sql =
-            "SELECT chunk_id, file_path, language, text, text_encoding FROM chunks".to_string();
+            "SELECT chunk_id, file_path, language, text, text_encoding, rowid FROM chunks"
+                .to_string();
         let mut clauses: Vec<String> = Vec::new();
         let mut params: Vec<String> = Vec::new();
 
@@ -257,11 +263,77 @@ impl<'a> RetrievalReadModel<'a> {
         let mut stmt = conn.prepare(&sql).map_err(db_err)?;
         let rows = stmt
             .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                let cid = row.get::<_, String>(0)?;
+                if skip.is_some_and(|seen| seen.contains(&cid)) {
+                    return Ok(None);
+                }
+                Ok(Some(GrepChunkRow {
+                    chunk_id: cid,
+                    file_path: row.get::<_, String>(1)?,
+                    language_name: row.get::<_, String>(2)?,
+                    text: read_chunk_text_with_encoding(row, 3, 4)?,
+                    rowid: row.get::<_, i64>(5)?,
+                }))
+            })
+            .map_err(db_err)?;
+
+        for row in rows {
+            let Some(row) = row.map_err(db_err)? else {
+                continue;
+            };
+            if !visit(row) {
+                break;
+            }
+        }
+        Ok(())
+    }
+
+    /// FTS-prefiltered variant of [`Self::scan_chunks_for_grep`]: same
+    /// columns and scope clauses, but candidates come from a `chunks_fts`
+    /// MATCH (the `phrase` parameter, a token-boundary superset of the grep
+    /// literal — see cc-search's `grep_prefilter_phrase`) joined back to
+    /// `chunks`, instead of a full table walk. Used by the grep lane's
+    /// stage-1 scan; the recency order and `scan_cap` LIMIT keep its budget
+    /// semantics identical to the unscoped full scan.
+    pub fn scan_chunks_for_grep_prefiltered(
+        &self,
+        phrase: &str,
+        scan_cap: usize,
+        scope: &ChunkScope,
+        mut visit: impl FnMut(GrepChunkRow) -> bool,
+    ) -> CcResult<()> {
+        let mut sql = "SELECT chunks.chunk_id, chunks.file_path, chunks.language, chunks.text, \
+                       chunks.text_encoding, chunks.rowid \
+                       FROM chunks_fts JOIN chunks ON chunks.chunk_id = chunks_fts.chunk_id \
+                       WHERE chunks_fts MATCH ?"
+            .to_string();
+        let mut clauses: Vec<String> = Vec::new();
+        let mut params: Vec<String> = vec![phrase.to_string()];
+
+        scope.push_clauses(
+            &mut clauses,
+            &mut params,
+            "chunks.file_path",
+            "chunks.language",
+        );
+
+        if !clauses.is_empty() {
+            sql.push_str(" AND ");
+            sql.push_str(&clauses.join(" AND "));
+        }
+        sql.push_str(" ORDER BY chunks.rowid DESC LIMIT ");
+        sql.push_str(&scan_cap.to_string());
+
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
                 Ok(GrepChunkRow {
                     chunk_id: row.get::<_, String>(0)?,
                     file_path: row.get::<_, String>(1)?,
                     language_name: row.get::<_, String>(2)?,
                     text: read_chunk_text_with_encoding(row, 3, 4)?,
+                    rowid: row.get::<_, i64>(5)?,
                 })
             })
             .map_err(db_err)?;
@@ -835,7 +907,7 @@ mod tests {
         // Recency: ck_new was inserted after ck_old → visited first.
         let mut visited = Vec::new();
         db.retrieval()
-            .scan_chunks_for_grep(&ChunkScope::default(), |row| {
+            .scan_chunks_for_grep(&ChunkScope::default(), None, |row| {
                 visited.push(row.chunk_id);
                 true
             })
@@ -845,7 +917,7 @@ mod tests {
         // Early stop: returning false after the first row ends the scan.
         let mut count = 0;
         db.retrieval()
-            .scan_chunks_for_grep(&ChunkScope::default(), |_| {
+            .scan_chunks_for_grep(&ChunkScope::default(), None, |_| {
                 count += 1;
                 false
             })
@@ -861,6 +933,7 @@ mod tests {
                     path_prefix: Some("src/%special".into()),
                     ..Default::default()
                 },
+                None,
                 |row| {
                     scoped.push(row.chunk_id);
                     true
@@ -877,6 +950,7 @@ mod tests {
                     file_paths: Some(vec!["src/old.rs".into()]),
                     ..Default::default()
                 },
+                None,
                 |row| {
                     file_scoped.push(row.chunk_id);
                     true

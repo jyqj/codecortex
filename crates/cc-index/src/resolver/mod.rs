@@ -1999,6 +1999,146 @@ mod tests {
     }
 
     // ------------------------------------------------------------------
+    // resolve_cache_line_key_guard: the cache key includes the call-site
+    // line ONLY when the scope map is non-empty (the line influences
+    // resolution exclusively through scope lookups).
+    // ------------------------------------------------------------------
+
+    /// Key-level guard: with no scopes, all lines of a query share one key
+    /// (one entry per distinct query instead of one per call site); with a
+    /// scoped line, distinct lines produce distinct keys.
+    #[test]
+    fn resolve_cache_line_key_guard_key_level() {
+        use types::resolve_key_hash;
+        let signals = CallSiteSignals::default();
+
+        let scope_free_a = resolve_key_hash("foo", "a.py", None, None, signals);
+        let scope_free_b = resolve_key_hash("foo", "a.py", None, None, signals);
+        assert_eq!(
+            scope_free_a, scope_free_b,
+            "scope-free keys must be line-independent"
+        );
+
+        let scoped_l5 = resolve_key_hash("foo", "a.py", Some(5), None, signals);
+        let scoped_l15 = resolve_key_hash("foo", "a.py", Some(15), None, signals);
+        assert_ne!(
+            scoped_l5, scoped_l15,
+            "scoped keys must distinguish call-site lines"
+        );
+        assert_ne!(
+            scope_free_a, scoped_l5,
+            "a scope-free key must not collide with a scoped key at the same site"
+        );
+    }
+
+    /// Behavioral guard: with a NON-empty scope map, two calls at different
+    /// lines that bind the same name to different symbols must each get
+    /// their own (correct) result — the second call must not be served the
+    /// first call's cached entry. This is what forbids dropping the line
+    /// from the key unconditionally.
+    #[test]
+    fn resolve_cache_line_key_guard_scoped_lines_not_cross_served() {
+        let mut catalog = SymbolCatalog::new();
+        catalog.add_symbols(&[
+            make_simple_symbol("target_a", "main.py", Some("uid:a")),
+            make_simple_symbol("target_b", "main.py", Some("uid:b")),
+        ]);
+
+        // Two sibling scopes covering disjoint line ranges, each binding the
+        // SAME local name `x` to a different symbol.
+        let mut scopes = HashMap::new();
+        scopes.insert(
+            "s1".to_string(),
+            make_scope(
+                "s1",
+                None,
+                "fn_one",
+                "main.py",
+                1,
+                10,
+                vec![ScopeBinding {
+                    name: "x".to_string(),
+                    kind: "variable".to_string(),
+                    symbol_uid: Some("uid:a".to_string()),
+                }],
+            ),
+        );
+        scopes.insert(
+            "s2".to_string(),
+            make_scope(
+                "s2",
+                None,
+                "fn_two",
+                "main.py",
+                11,
+                20,
+                vec![ScopeBinding {
+                    name: "x".to_string(),
+                    kind: "variable".to_string(),
+                    symbol_uid: Some("uid:b".to_string()),
+                }],
+            ),
+        );
+
+        let imports = vec![];
+        let first = catalog
+            .resolve_name("x", "main.py", 5, &scopes, &imports, None)
+            .expect("x resolves in scope s1");
+        assert_eq!(
+            catalog.entry(first.catalog_index).symbol_uid.as_deref(),
+            Some("uid:a"),
+            "line 5 sits in s1, so x must bind to uid:a"
+        );
+
+        // Same name/file/container, different line, different scope: must
+        // NOT be served the line-5 cache entry.
+        let second = catalog
+            .resolve_name("x", "main.py", 15, &scopes, &imports, None)
+            .expect("x resolves in scope s2");
+        assert_eq!(
+            catalog.entry(second.catalog_index).symbol_uid.as_deref(),
+            Some("uid:b"),
+            "line 15 sits in s2, so x must bind to uid:b (not the cached s1 result)"
+        );
+    }
+
+    /// The sharded cache serves concurrent resolvers without cross-serving
+    /// wrong entries: many threads resolving distinct names against one
+    /// shared catalog all observe their own correct result.
+    #[test]
+    fn resolve_cache_sharded_concurrent_access_stays_correct() {
+        let mut catalog = SymbolCatalog::new();
+        let symbols: Vec<cc_model::symbol::SymbolRecord> = (0..64)
+            .map(|i| make_simple_symbol(&format!("fn_{i}"), "lib.py", Some(&format!("uid:{i}"))))
+            .collect();
+        catalog.add_symbols(&symbols);
+        let catalog = std::sync::Arc::new(catalog);
+
+        let handles: Vec<_> = (0..8)
+            .map(|t| {
+                let catalog = catalog.clone();
+                std::thread::spawn(move || {
+                    let scopes = HashMap::new();
+                    for round in 0..200 {
+                        let i = (t * 8 + round) % 64;
+                        let result = catalog
+                            .resolve_name(&format!("fn_{i}"), "main.py", 1, &scopes, &[], None)
+                            .expect("unique name resolves");
+                        assert_eq!(
+                            catalog.entry(result.catalog_index).symbol_uid.as_deref(),
+                            Some(format!("uid:{i}").as_str()),
+                            "concurrent cached resolution must stay correct"
+                        );
+                    }
+                })
+            })
+            .collect();
+        for handle in handles {
+            handle.join().expect("resolver thread panicked");
+        }
+    }
+
+    // ------------------------------------------------------------------
     // remove_files (cross-build catalog cache delta)
     // ------------------------------------------------------------------
 

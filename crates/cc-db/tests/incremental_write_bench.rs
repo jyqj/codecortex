@@ -326,6 +326,190 @@ fn probe_insert_batch(conn: &Connection, batch: &[FileWriteUnit], buckets: &mut 
     buckets.add("insert files/literal fts (batched)", t.elapsed());
 }
 
+/// Concurrent read-during-write benchmark: while a writer thread applies
+/// incremental batches through the single write connection, reader threads
+/// run representative queries off the read pool (WAL keeps them on
+/// consistent snapshots). Asserts every read succeeds and observes a
+/// consistent snapshot (the batch replaces files in place, so `files`
+/// cardinality is invariant), and prints per-class latency percentiles.
+///
+/// ```sh
+/// cargo test -p cc-db --release --test incremental_write_bench -- \
+///     bench_concurrent_reads_during_incremental_writes --ignored --nocapture
+/// ```
+#[test]
+#[ignore = "read-during-write micro-benchmark; run explicitly with --release"]
+fn bench_concurrent_reads_during_incremental_writes() {
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::sync::Arc;
+
+    let tmp = tempfile::TempDir::new().unwrap();
+    let db_path = tmp.path().join("index.sqlite3");
+    let db = Arc::new(IndexDb::open(&db_path).unwrap().0);
+
+    let units: Vec<FileWriteUnit> = (0..file_count()).map(make_unit).collect();
+    db.admin()
+        .rebuild_with_temp_db(|conn| {
+            for unit in &units {
+                IndexDb::insert_file_data(conn, unit)?;
+            }
+            Ok(())
+        })
+        .unwrap();
+
+    let batch: Vec<FileWriteUnit> = units.iter().step_by(BATCH_STRIDE).cloned().collect();
+    let precompressed: PrecompressedChunks = batch
+        .iter()
+        .map(|u| {
+            (
+                u.rel_path.clone(),
+                u.outcome
+                    .chunks
+                    .iter()
+                    .map(|c| compress_chunk_text(&c.text))
+                    .collect(),
+            )
+        })
+        .collect();
+
+    const WRITE_ROUNDS: usize = 5;
+    const READER_THREADS: usize = 3;
+    let stop = Arc::new(AtomicBool::new(false));
+    let expected_files = file_count();
+
+    let write_elapsed = std::thread::scope(|scope| {
+        let writer = {
+            let db = Arc::clone(&db);
+            let stop = Arc::clone(&stop);
+            let batch = &batch;
+            let precompressed = &precompressed;
+            scope.spawn(move || {
+                let mut round_times = Vec::with_capacity(WRITE_ROUNDS);
+                for _ in 0..WRITE_ROUNDS {
+                    let t = Instant::now();
+                    db.writes()
+                        .write_incremental_batch(&[], batch, &[], &[], &[], precompressed)
+                        .unwrap();
+                    round_times.push(t.elapsed());
+                }
+                stop.store(true, Ordering::SeqCst);
+                round_times
+            })
+        };
+
+        let readers: Vec<_> = (0..READER_THREADS)
+            .map(|thread_idx| {
+                let db = Arc::clone(&db);
+                let stop = Arc::clone(&stop);
+                scope.spawn(move || {
+                    // Per-class latencies: (files count, FTS match, symbol point lookup)
+                    let mut latencies: [Vec<Duration>; 3] =
+                        [Vec::new(), Vec::new(), Vec::new()];
+                    let mut iterations = 0usize;
+                    while !stop.load(Ordering::SeqCst) {
+                        let class = iterations % 3;
+                        iterations += 1;
+                        let t = Instant::now();
+                        let conn = db.read_conn().unwrap();
+                        match class {
+                            0 => {
+                                let count: i64 = conn
+                                    .query_row("SELECT COUNT(*) FROM files", [], |r| r.get(0))
+                                    .unwrap();
+                                assert_eq!(
+                                    count as usize, expected_files,
+                                    "in-place batch replacement must keep files cardinality \
+                                     invariant on every WAL snapshot"
+                                );
+                            }
+                            1 => {
+                                let mut stmt = conn
+                                    .prepare_cached(
+                                        "SELECT chunk_id FROM chunks_fts \
+                                         WHERE chunks_fts MATCH '\"module marker\"' LIMIT 10",
+                                    )
+                                    .unwrap();
+                                let rows: Vec<String> = stmt
+                                    .query_map([], |r| r.get(0))
+                                    .unwrap()
+                                    .collect::<Result<_, _>>()
+                                    .unwrap();
+                                assert!(!rows.is_empty(), "FTS must see indexed content");
+                            }
+                            _ => {
+                                let name = format!("fn_{:05}_0", (iterations * 97) % expected_files);
+                                let mut stmt = conn
+                                    .prepare_cached(
+                                        "SELECT file_path FROM symbols WHERE name = ?1 LIMIT 1",
+                                    )
+                                    .unwrap();
+                                let _row: Option<String> = stmt
+                                    .query_map(rusqlite::params![name], |r| r.get(0))
+                                    .unwrap()
+                                    .next()
+                                    .transpose()
+                                    .unwrap();
+                            }
+                        }
+                        latencies[class].push(t.elapsed());
+                    }
+                    (thread_idx, iterations, latencies)
+                })
+            })
+            .collect();
+
+        let round_times = writer.join().expect("writer thread must not panic");
+        let mut merged: [Vec<Duration>; 3] = [Vec::new(), Vec::new(), Vec::new()];
+        let mut total_reads = 0usize;
+        for reader in readers {
+            let (_, iterations, latencies) = reader.join().expect("reader thread must not panic");
+            total_reads += iterations;
+            for (class, mut samples) in latencies.into_iter().enumerate() {
+                merged[class].append(&mut samples);
+            }
+        }
+        assert!(
+            total_reads > 0,
+            "readers must have completed reads during the write window"
+        );
+        (round_times, merged, total_reads)
+    });
+
+    let (round_times, merged, total_reads) = write_elapsed;
+    let percentile = |sorted: &[Duration], p: f64| -> Duration {
+        if sorted.is_empty() {
+            return Duration::ZERO;
+        }
+        let idx = ((sorted.len() as f64 - 1.0) * p).round() as usize;
+        sorted[idx]
+    };
+    eprintln!(
+        "writer: {} rounds of {} files: {:?}",
+        WRITE_ROUNDS,
+        batch.len(),
+        round_times
+    );
+    eprintln!(
+        "readers: {READER_THREADS} threads, {total_reads} reads completed during the write window"
+    );
+    for (class, label) in [
+        (0usize, "files COUNT(*)"),
+        (1, "chunks_fts MATCH"),
+        (2, "symbol point lookup"),
+    ] {
+        let mut sorted = merged[class].clone();
+        sorted.sort();
+        eprintln!(
+            "  {:<20} n={:<6} p50={:>10.1?} p95={:>10.1?} max={:>10.1?}",
+            label,
+            sorted.len(),
+            percentile(&sorted, 0.50),
+            percentile(&sorted, 0.95),
+            percentile(&sorted, 1.0),
+        );
+    }
+}
+
 #[test]
 #[ignore = "write-path micro-benchmark; run explicitly with --release"]
 fn bench_incremental_batch_write_10k() {

@@ -53,13 +53,14 @@ pub(crate) struct DirtyPropagationOutcome {
 #[derive(Debug)]
 pub(crate) struct DirtyClosureResult {
     /// Files to promote Skip → DirtyResolveOnly, in promotion order.
-    /// Empty when `budget_exceeded` is set (bail = promote nothing,
-    /// matching the historical single-round behavior).
+    /// When `budget_exceeded` is set this is a budget-sized deterministic
+    /// prefix of the round-1 importers (partial apply — strictly less
+    /// staleness than the historical promote-nothing bail).
     pub(crate) promoted: Vec<String>,
     /// Number of importer-expansion rounds actually run.
     pub(crate) rounds_run: usize,
     /// Round-1 direct importers alone exceeded the budget; propagation
-    /// degraded to a no-op (legacy single-hop bail).
+    /// degraded to a budget-sized partial apply of round 1.
     pub(crate) budget_exceeded: bool,
     /// The closure stopped early (round cap hit, or the budget was exceeded
     /// after round 1 and later rounds were dropped); `promoted` is a valid
@@ -88,9 +89,10 @@ impl DirtyClosureResult {
 ///   (already parsed this build; never promoted themselves).
 /// * `max_promoted_files` — GLOBAL budget across all rounds, strictly
 ///   greater-than like the legacy single-round check. If round 1 alone
-///   exceeds it, everything is discarded (`budget_exceeded`, legacy bail);
-///   if a LATER round would exceed it, the promotions from completed rounds
-///   are kept and the result is marked `partial`.
+///   exceeds it, a budget-sized deterministic prefix of round 1 is kept and
+///   the result is marked `budget_exceeded` (partial apply); if a LATER
+///   round would exceed it, the promotions from completed rounds are kept
+///   and the result is marked `partial`.
 /// * `max_rounds` — hard cap on iteration rounds (safety valve).
 /// * `importers_of` — resolves the importers of a set of files.
 /// * `is_promotable` — whether a candidate is currently `Skip` (only those
@@ -161,16 +163,24 @@ where
         // legacy single-round check.
         if promoted.len() + newly_promoted.len() > max_promoted_files {
             if rounds_run == 1 {
-                // Round 1 alone over budget: even direct importers don't fit,
-                // so degrade to no propagation exactly like the legacy
-                // single-hop code and let the caller advise a full rebuild.
+                // Round 1 alone over budget: even direct importers don't
+                // fit. Instead of the historical no-op bail (leaving EVERY
+                // importer with stale resolution until a full rebuild),
+                // promote a deterministic prefix of the sorted round-1
+                // importers up to the budget and stop expanding — strictly
+                // less staleness for the same bounded cost. Still reported
+                // as `budget_exceeded` so callers keep advising a rebuild.
+                let dropped = newly_promoted.len() - max_promoted_files;
+                newly_promoted.truncate(max_promoted_files);
                 tracing::warn!(
-                    dirty_count = newly_promoted.len(),
+                    kept = newly_promoted.len(),
+                    dropped,
                     max = max_promoted_files,
-                    "dirty propagation: too many affected files, skipping (consider full rebuild)"
+                    "dirty propagation: direct importers exceed budget; \
+                     promoting a budget-sized prefix (consider full rebuild)"
                 );
                 return Ok(DirtyClosureResult {
-                    promoted: Vec::new(),
+                    promoted: newly_promoted,
                     rounds_run,
                     budget_exceeded: true,
                     partial: false,
@@ -337,9 +347,11 @@ mod tests {
             result.budget_exceeded,
             "3 direct importers must exceed budget 2"
         );
-        assert!(
-            result.promoted.is_empty(),
-            "round-1 budget bail must discard all promotions"
+        assert_eq!(
+            result.promoted,
+            vec!["a1.ts".to_string(), "a2.ts".to_string()],
+            "round-1 overflow must keep a budget-sized deterministic prefix \
+             instead of discarding everything"
         );
         assert_eq!(result.status(), DirtyPropagationStatus::BudgetExceeded);
     }

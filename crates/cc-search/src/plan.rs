@@ -180,6 +180,12 @@ impl SearchPlan {
         self.filters.chunk_scope()
     }
 
+    /// Whether the request carries an explicit file-paths scope (which
+    /// bounds the grep scan's cardinality).
+    pub(crate) fn has_file_scope(&self) -> bool {
+        self.filters.has_file_scope()
+    }
+
     pub(crate) fn lane_ranks<'a>(&self, outcomes: &'a [LaneOutcome]) -> LaneRanks<'a> {
         LaneRanks::from_outcomes(outcomes)
     }
@@ -468,6 +474,15 @@ impl MaterializedFilters {
                 .map(|langs| langs.iter().map(|lang| lang.as_str().to_string()).collect()),
             file_paths: self.file_paths.clone(),
         }
+    }
+
+    /// Whether the request carries an explicit file-paths scope (which
+    /// bounds the grep scan's cardinality).
+    pub(crate) fn has_file_scope(&self) -> bool {
+        self.file_paths
+            .as_ref()
+            .map(|files| !files.is_empty())
+            .unwrap_or(false)
     }
 
     fn path_prefix(&self) -> Option<&str> {

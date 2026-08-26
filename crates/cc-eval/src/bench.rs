@@ -456,6 +456,10 @@ pub struct ScaleBenchReport {
     pub cold_index_ms: u64,
     pub db_bytes: u64,
     pub incremental_single: IncrementalBenchReport,
+    /// Same single-file edit driven through the event-scoped path
+    /// (`changed_paths` on the `index` tool → BuildScope): stat-only
+    /// scan/diff, no tree walk — the watcher-tick latency.
+    pub incremental_single_scoped: IncrementalBenchReport,
     pub incremental_batch: IncrementalBenchReport,
     /// Watcher-parity incremental: same single-file edit, but scanned with
     /// `BuildScope::Targeted` (the production watcher path) instead of the
@@ -503,6 +507,9 @@ pub fn generate_scale_markdown(report: &ScaleBenchReport) -> String {
     ));
 
     md.push_str(&generate_incremental_markdown(&report.incremental_single));
+    md.push_str(&generate_incremental_markdown(
+        &report.incremental_single_scoped,
+    ));
     md.push_str(&generate_incremental_markdown(&report.incremental_batch));
     if let Some(targeted) = &report.incremental_targeted {
         md.push_str(&generate_incremental_markdown(targeted));

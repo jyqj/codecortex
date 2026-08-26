@@ -33,9 +33,7 @@ impl IndexDb {
         // Replacement keeps the path, so the path-derived test_edges
         // stay valid (see `delete_files_data_base_keep_test_edges_batch`).
         Self::delete_files_data_base_keep_test_edges_batch(&tx, &rel_paths)?;
-        for file in files {
-            Self::insert_file_data_deferred_fts(&tx, file, None)?;
-        }
+        Self::insert_file_units_batch(&tx, files, &PrecompressedChunks::new())?;
         Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
@@ -366,19 +364,11 @@ impl IndexDb {
         Self::delete_files_data_base_keep_test_edges_batch(&tx, &replace_paths)?;
         section_ms("db_replace_delete", normal_units.len(), section_start);
         let section_start = std::time::Instant::now();
-        for file in normal_units {
-            Self::insert_file_data_deferred_fts(
-                &tx,
-                file,
-                precompressed.get(&file.rel_path).map(Vec::as_slice),
-            )?;
-        }
+        Self::insert_file_units_batch(&tx, normal_units, precompressed)?;
         Self::insert_files_literal_fts_batch(&tx, &replace_paths)?;
         section_ms("db_replace_insert", normal_units.len(), section_start);
         let section_start = std::time::Instant::now();
-        for file in dirty_units {
-            Self::replace_reresolved_edges_for_file(&tx, file)?;
-        }
+        Self::replace_reresolved_edges_batch(&tx, dirty_units)?;
         section_ms("db_dirty_rewrite", dirty_units.len(), section_start);
         // Hierarchy edges for the batch files, inside the same transaction.
         // Must run after the dirty rewrite above: its per-file delete clears

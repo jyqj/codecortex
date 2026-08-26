@@ -102,6 +102,8 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
 |---|---|
 | `path` | 项目路径 |
 | `full` | `true` 强制全量重建（默认 `false` 增量） |
+| `changed_paths` | 可选：已知变更的相对路径集，增量构建走事件域扫描（只 stat/哈希这些路径，见 [internals/INDEXING.md](internals/INDEXING.md#scandiff)）。与 `full=true` 互斥；两集合合计超过 10,000 条时忽略并退回全树扫描 |
+| `removed_paths` | 可选：已知删除的相对路径集，语义同上 |
 
 响应：`IndexReport` 序列化——`files_scanned` / `files_added` /
 `files_updated` / `files_removed` / `files_skipped`、`symbols_total`、

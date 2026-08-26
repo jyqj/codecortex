@@ -251,12 +251,7 @@ impl ProjectSession {
                 // phase_write and the delta apply, so readers never see the
                 // non-transactional intermediate write state yet keep running
                 // through the postprocess compute.
-                if let Err(e) = handlers::core::run_split_build(
-                    &index,
-                    false,
-                    true,
-                    cc_index::BuildScope::FullTree,
-                ) {
+                if let Err(e) = handlers::core::run_split_build(&index, false, true, None) {
                     tracing::warn!("auto-index failed: {}", e);
                 }
             })
@@ -524,24 +519,17 @@ fn run_watcher_tick(
         "watcher: file changes detected, triggering incremental index"
     );
 
-    // Targeted scope: diff exactly the event-reported paths instead of
-    // walking the whole tree (the scan/diff O(repo) floor). The OS rescan
-    // flag (dropped events) falls back to the full walk, and any drift a
-    // targeted diff cannot see (e.g. a `.gitignore` edit un-indexing other
-    // files) heals on the next manual or full build.
-    let scope = if drain.rescan_needed {
-        cc_index::BuildScope::FullTree
-    } else {
-        cc_index::BuildScope::Targeted(cc_index::TargetedChanges {
-            changed: drain.changed,
-            removed: drain.removed,
-        })
-    };
-
     // Shared split-build driver: brief read lock for inputs, heavy prepare
     // and postprocess compute with no CodeIndex lock held, write lock only
-    // around phase_write and the delta apply.
-    if let Err(e) = handlers::core::run_split_build(index, false, false, scope) {
+    // around phase_write and the delta apply. The drained event set rides
+    // along as the build scope, so the prepare stats/hashes only the touched
+    // paths instead of walking the whole tree (safety fallbacks to the full
+    // walk are decided inside the scan/diff phase).
+    let scope = cc_index::BuildScope {
+        changed: drain.changed,
+        removed: drain.removed,
+    };
+    if let Err(e) = handlers::core::run_split_build(index, false, false, Some(&scope)) {
         tracing::warn!("watcher: incremental index failed: {}", e);
     }
     WatcherTickOutcome::Completed

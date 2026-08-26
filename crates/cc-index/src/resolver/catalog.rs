@@ -13,6 +13,62 @@ use crate::type_catalog::TypeCatalog;
 
 use super::types::*;
 
+/// Number of independently locked shards in [`ShardedResolveCache`]. Must be
+/// a power of two (the shard is selected by masking the key's low bits).
+const RESOLVE_CACHE_SHARDS: usize = 16;
+
+/// Sharded LRU cache for `resolve_name` results.
+///
+/// The resolve phase runs one rayon worker per write unit
+/// (`indexer_phases::resolve`), and every worker funnels its lookups through
+/// this cache. A single `Mutex<LruCache>` serialized those workers on one
+/// global lock; splitting the key space over [`RESOLVE_CACHE_SHARDS`]
+/// independently locked shards keeps the same total capacity and hit
+/// semantics (keys are pre-hashed u64s, so the low bits pick a shard
+/// uniformly) while letting parallel resolvers proceed contention-free.
+pub(in crate::resolver) struct ShardedResolveCache {
+    shards: Vec<Mutex<LruCache<u64, Option<ResolveResult>>>>,
+}
+
+impl ShardedResolveCache {
+    pub(in crate::resolver) fn new(total_capacity: usize) -> Self {
+        let per_shard = (total_capacity / RESOLVE_CACHE_SHARDS).max(1);
+        let per_shard = NonZeroUsize::new(per_shard).expect("per-shard capacity >= 1");
+        Self {
+            shards: (0..RESOLVE_CACHE_SHARDS)
+                .map(|_| Mutex::new(LruCache::new(per_shard)))
+                .collect(),
+        }
+    }
+
+    fn shard(&self, key: u64) -> &Mutex<LruCache<u64, Option<ResolveResult>>> {
+        &self.shards[(key as usize) & (RESOLVE_CACHE_SHARDS - 1)]
+    }
+
+    /// Outer `Option`: cache hit or miss. Inner `Option`: the cached
+    /// resolution outcome (misses are cached too).
+    pub(in crate::resolver) fn get(&self, key: u64) -> Option<Option<ResolveResult>> {
+        match self.shard(key).lock() {
+            Ok(mut cache) => cache.get(&key).cloned(),
+            Err(_) => None,
+        }
+    }
+
+    pub(in crate::resolver) fn put(&self, key: u64, value: Option<ResolveResult>) {
+        if let Ok(mut cache) = self.shard(key).lock() {
+            cache.put(key, value);
+        }
+    }
+
+    pub(in crate::resolver) fn clear(&self) {
+        for shard in &self.shards {
+            if let Ok(mut cache) = shard.lock() {
+                cache.clear();
+            }
+        }
+    }
+}
+
 /// Cross-file symbol directory used during indexing to resolve references.
 pub struct SymbolCatalog {
     pub(in crate::resolver) entries: Vec<CatalogEntry>,
@@ -34,8 +90,9 @@ pub struct SymbolCatalog {
     pub(in crate::resolver) by_file_qname: HashMap<String, HashMap<String, Vec<usize>>>,
     /// Lightweight type catalog for method dispatch resolution.
     pub(in crate::resolver) type_catalog: Option<TypeCatalog>,
-    /// LRU cache for `resolve_name` results to avoid redundant resolution.
-    pub(in crate::resolver) resolve_cache: Mutex<LruCache<u64, Option<ResolveResult>>>,
+    /// Sharded LRU cache for `resolve_name` results to avoid redundant
+    /// resolution (see [`ShardedResolveCache`] for the sharding rationale).
+    pub(in crate::resolver) resolve_cache: ShardedResolveCache,
     /// Above this many same-named candidates, name-only resolution
     /// (global-unique / fuzzy import-distance, and the `find_best` fallback)
     /// is treated as non-resolvable: a name shared by hundreds of symbols —
@@ -72,9 +129,7 @@ impl SymbolCatalog {
             by_file_name: HashMap::new(),
             by_file_qname: HashMap::new(),
             type_catalog: None,
-            resolve_cache: Mutex::new(LruCache::new(
-                NonZeroUsize::new(cache_size).unwrap_or(NonZeroUsize::new(8192).unwrap()),
-            )),
+            resolve_cache: ShardedResolveCache::new(cache_size.max(1)),
             max_fuzzy_pool,
             dead: 0,
         }
@@ -101,9 +156,7 @@ impl SymbolCatalog {
 
     /// Clear the resolve_name LRU cache.
     pub fn clear_resolve_cache(&self) {
-        if let Ok(mut cache) = self.resolve_cache.lock() {
-            cache.clear();
-        }
+        self.resolve_cache.clear();
     }
 
     /// Build (or rebuild) the TypeCatalog from the given symbols (any

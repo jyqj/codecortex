@@ -135,6 +135,16 @@ pub trait PreselectLayer: Sync {
     /// Stable layer identifier used in reasons, `layer_scores`, and stats.
     fn name(&self) -> &'static str;
 
+    /// Whether this layer's `score` reads the scores accumulated by earlier
+    /// layers (`ctx.current_scores`). Defaults to `true` (the safe choice
+    /// for new layers). Layers that return `false` may be executed
+    /// concurrently with adjacent independent layers — the driver still
+    /// merges their hits in registry order, so scores, reasons, and the
+    /// per-layer bill are byte-identical to sequential execution.
+    fn reads_prior_scores(&self) -> bool {
+        true
+    }
+
     /// Score candidate files for this layer.
     fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>>;
 }
@@ -257,6 +267,10 @@ impl PreselectLayer for RankDecayLayer {
         }
     }
 
+    fn reads_prior_scores(&self) -> bool {
+        false
+    }
+
     fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
         let Some(paths) = self.paths(ctx) else {
             return Ok(Vec::new());
@@ -283,6 +297,10 @@ struct FtsSummaryLayer;
 impl PreselectLayer for FtsSummaryLayer {
     fn name(&self) -> &'static str {
         LAYER_FTS_SUMMARY
+    }
+
+    fn reads_prior_scores(&self) -> bool {
+        false
     }
 
     fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
@@ -332,6 +350,10 @@ struct TokenSearchLayer;
 impl PreselectLayer for TokenSearchLayer {
     fn name(&self) -> &'static str {
         LAYER_TOKEN_SEARCH
+    }
+
+    fn reads_prior_scores(&self) -> bool {
+        false
     }
 
     fn score(&self, ctx: &LayerCtx<'_>) -> CcResult<Vec<LayerHit>> {
@@ -607,40 +629,88 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     let mut layer_scores: HashMap<String, Vec<(&'static str, f64)>> = HashMap::new();
     let mut lane_stats = LaneStats::default();
 
-    for layer in default_preselect_layers() {
+    // Walk the registry in groups: a maximal run of consecutive layers that
+    // do not read prior scores (`reads_prior_scores() == false`) executes
+    // concurrently — today that is layers 1-6, whose DB-bound members (FTS
+    // summary + token search) each check their own read-pool connection out.
+    // Every group member scores against the same prior-score snapshot (which
+    // none of them reads), and the driver merges hits in registry order, so
+    // scores, reasons, and the per-layer bill are identical to sequential
+    // execution. Score-dependent layers (fallback, graph-neighbor) run
+    // sequentially after the group's merge, exactly as before.
+    let layers = default_preselect_layers();
+    let mut idx = 0;
+    while idx < layers.len() {
+        let group_end = if layers[idx].reads_prior_scores() {
+            idx + 1
+        } else {
+            let mut end = idx + 1;
+            while end < layers.len() && !layers[end].reads_prior_scores() {
+                end += 1;
+            }
+            end
+        };
+        let group = &layers[idx..group_end];
+        idx = group_end;
+
         // Mirror of FallbackLayer's gate: record that fallback fired even if
-        // its DB query then returns nothing (historical semantics).
-        if layer.name() == LAYER_FALLBACK && scores.is_empty() {
+        // its DB query then returns nothing (historical semantics). Safe to
+        // check per group: fallback always reads prior scores, so it is a
+        // single-layer group.
+        if group.len() == 1 && group[0].name() == LAYER_FALLBACK && scores.is_empty() {
             lane_stats.used_fallback = true;
         }
-        let hits = {
-            let ctx = LayerCtx {
-                db,
-                query: req.query,
-                path_prefix: req.path_prefix,
-                limit: req.limit,
-                ranking: req.ranking,
-                boost_paths: req.boost_paths,
-                recent_paths: req.recent_paths,
-                pinned_paths: req.pinned_paths,
-                overlay_paths: req.overlay_paths,
-                current_scores: &scores,
-            };
-            layer.score(&ctx)?
+
+        let ctx = LayerCtx {
+            db,
+            query: req.query,
+            path_prefix: req.path_prefix,
+            limit: req.limit,
+            ranking: req.ranking,
+            boost_paths: req.boost_paths,
+            recent_paths: req.recent_paths,
+            pinned_paths: req.pinned_paths,
+            overlay_paths: req.overlay_paths,
+            current_scores: &scores,
         };
-        match layer.name() {
-            LAYER_FTS_SUMMARY => lane_stats.fts_hits = hits.len(),
-            LAYER_TOKEN_SEARCH => lane_stats.token_hits = hits.len(),
-            _ => {}
-        }
-        for hit in hits {
-            merge_layer_hit(
-                &mut scores,
-                &mut reasons,
-                &mut layer_scores,
-                layer.name(),
-                hit,
-            );
+        let group_hits: Vec<CcResult<Vec<LayerHit>>> = if group.len() <= 1 {
+            group.iter().map(|layer| layer.score(&ctx)).collect()
+        } else {
+            let ctx = &ctx;
+            std::thread::scope(|scope| {
+                let handles: Vec<_> = group[1..]
+                    .iter()
+                    .map(|layer| scope.spawn(move || layer.score(ctx)))
+                    .collect();
+                let mut results = vec![group[0].score(ctx)];
+                for (handle, layer) in handles.into_iter().zip(&group[1..]) {
+                    results.push(match handle.join() {
+                        Ok(result) => result,
+                        Err(_) => Err(cc_model::CcError::Search(format!(
+                            "preselect layer '{}' panicked",
+                            layer.name()
+                        ))),
+                    });
+                }
+                results
+            })
+        };
+        for (layer, hits) in group.iter().zip(group_hits) {
+            let hits = hits?;
+            match layer.name() {
+                LAYER_FTS_SUMMARY => lane_stats.fts_hits = hits.len(),
+                LAYER_TOKEN_SEARCH => lane_stats.token_hits = hits.len(),
+                _ => {}
+            }
+            for hit in hits {
+                merge_layer_hit(
+                    &mut scores,
+                    &mut reasons,
+                    &mut layer_scores,
+                    layer.name(),
+                    hit,
+                );
+            }
         }
     }
 

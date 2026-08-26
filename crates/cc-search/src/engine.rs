@@ -291,10 +291,12 @@ mod tests {
 
     use cc_db::index_db::{FileWriteUnit, IndexDb};
     use cc_model::config::{ProjectConfig, SearchConfig};
-    use cc_model::{CallEdgeRecord, ChunkRecord, Language, ParseOutcome, ParserTier};
+    use cc_model::{CallEdgeRecord, ChunkRecord, Language, ParseOutcome, ParserTier, SymbolRecord};
     use std::sync::Arc;
 
-    use crate::engine_test_support::{insert_chunk_file, insert_graph_file, scoped_test_engine};
+    use crate::engine_test_support::{
+        chunk_write_unit, insert_chunk_file, insert_graph_file, scoped_test_engine,
+    };
 
     #[test]
     fn search_completes_with_read_pool_size_one() {
@@ -391,6 +393,1362 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["src/in_scope/target.rs"]
         );
+    }
+
+    #[test]
+    fn cache_key_includes_context_fields() {
+        let base = SearchRequest {
+            query: "foo".into(),
+            top_k: 10,
+            ..Default::default()
+        };
+
+        let with_conv = SearchRequest {
+            conversation_queries: Some(vec!["bar".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_conv)
+        );
+
+        let with_pinned = SearchRequest {
+            pinned_file_paths: Some(vec!["a.rs".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_pinned)
+        );
+
+        let with_recent = SearchRequest {
+            recent_file_paths: Some(vec!["b.rs".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_recent)
+        );
+
+        let with_overlay = SearchRequest {
+            overlay_file_paths: Some(vec!["c.rs".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&base),
+            SearchEngine::query_hash(&with_overlay)
+        );
+
+        // 集合语义: pinned=[a,b] == pinned=[b,a]
+        let pinned_ab = SearchRequest {
+            pinned_file_paths: Some(vec!["a.rs".into(), "b.rs".into()]),
+            ..base.clone()
+        };
+        let pinned_ba = SearchRequest {
+            pinned_file_paths: Some(vec!["b.rs".into(), "a.rs".into()]),
+            ..base.clone()
+        };
+        assert_eq!(
+            SearchEngine::query_hash(&pinned_ab),
+            SearchEngine::query_hash(&pinned_ba)
+        );
+
+        // 顺序敏感: conversation_queries=[a,b] != [b,a]
+        let conv_ab = SearchRequest {
+            conversation_queries: Some(vec!["a".into(), "b".into()]),
+            ..base.clone()
+        };
+        let conv_ba = SearchRequest {
+            conversation_queries: Some(vec!["b".into(), "a".into()]),
+            ..base.clone()
+        };
+        assert_ne!(
+            SearchEngine::query_hash(&conv_ab),
+            SearchEngine::query_hash(&conv_ba)
+        );
+    }
+
+    // ── graph-aware result cache (search_with_graph_context) ──────────
+
+    fn graph_cache_request() -> SearchRequest {
+        SearchRequest {
+            query: "cached_marker".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn graph_search_cache_hit_returns_shared_arc() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(!first.0.is_empty(), "fixture must produce hits");
+        assert!(
+            Arc::ptr_eq(&first, &second),
+            "second identical request must be served from the graph-aware cache"
+        );
+    }
+
+    #[test]
+    fn graph_search_cache_misses_on_index_epoch_bump() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(first.0[0].text.contains("alpha_one"));
+
+        // Committed reindex of the same file bumps index_epoch inside the
+        // cc-db write transaction — no manual invalidation call.
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_two() }",
+            )])
+            .unwrap();
+
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &second),
+            "index epoch bump must miss the graph-aware cache"
+        );
+        assert!(
+            second.0[0].text.contains("alpha_two"),
+            "stale enriched results served after index write: {}",
+            second.0[0].text
+        );
+    }
+
+    #[test]
+    fn graph_search_cache_misses_on_evidence_epoch_bump() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+
+        // Runtime-evidence ingestion bumps evidence_epoch WITHOUT touching
+        // index content; enrichment consumes evidence-boosted confidence, so
+        // cached enriched results must not survive the bump.
+        engine
+            .db
+            .writes()
+            .boost_http_edge_confidence("missing-edge", 0.1)
+            .unwrap();
+
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &second),
+            "evidence epoch bump must miss the graph-aware cache"
+        );
+
+        // The recomputed result is cached under the new epoch pair.
+        let third = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&second, &third),
+            "post-bump result must be cached under the new epoch pair"
+        );
+    }
+
+    #[test]
+    fn graph_search_cache_key_covers_budget_and_limits() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/cached.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let base = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+
+        // Different token_budget → different key → miss (recompute).
+        let other_budget = engine
+            .search_with_graph_context(&request, &limits, 8000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&base, &other_budget),
+            "a different token_budget must not reuse the cached entry"
+        );
+
+        // Different GraphEnrichLimits → different key → miss.
+        let mut other_limits = RepoSizeTier::Small.graph_enrich_limits();
+        other_limits.callers_per_sym += 1;
+        let other = engine
+            .search_with_graph_context(&request, &other_limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&base, &other),
+            "different GraphEnrichLimits must not reuse the cached entry"
+        );
+
+        // The original key is still cached, untouched by the misses above.
+        let again = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            Arc::ptr_eq(&base, &again),
+            "the original (budget, limits) entry must still be served"
+        );
+    }
+
+    #[test]
+    fn graph_search_degraded_result_is_not_cached() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn cached_marker() {}",
+            "cached_marker",
+            "uid:cached_marker",
+            vec![],
+        );
+        // Drop call_edges so the enrichment's batched adjacency reads fail
+        // (the graph lane swallows its own failures, so search still works).
+        crate::test_seed::seed_conn(&engine.db)
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+
+        let request = graph_cache_request();
+        let limits = RepoSizeTier::Small.graph_enrich_limits();
+        let first = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !first.1.graph_explain.read_errors.is_empty(),
+            "fixture must produce a degraded enrichment"
+        );
+        assert_eq!(
+            engine.graph_result_cache.lock().unwrap().len(),
+            0,
+            "degraded results must not be stored in the cache"
+        );
+        let second = engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        assert!(
+            !Arc::ptr_eq(&first, &second),
+            "degraded result must be recomputed, never served from cache"
+        );
+    }
+
+    #[test]
+    fn graph_search_returns_empty_for_no_symbols() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "fn alpha_handler() { process() }",
+        );
+
+        // GraphLane::search on an empty symbol table should return empty, not error
+        let plan = SearchPlan::build(
+            &engine.db,
+            &engine.config,
+            &engine.ranking,
+            &SearchRequest {
+                query: "alpha".to_string(),
+                top_k: 5,
+                include_grep: false,
+                ..Default::default()
+            },
+            None,
+        )
+        .unwrap();
+        let graph_hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12);
+        // Should succeed (possibly empty — no symbols indexed yet)
+        assert!(graph_hits.is_ok());
+    }
+
+    // ── Lane seam (RetrievalLane trait) ────────────────────────
+
+    use crate::lanes::{
+        fuse_outcomes, run_lanes, FusedScore, GraphLane, GrepLane, LaneContext, LaneOutcome,
+        LexicalLane, RetrievalLane, ScoreSlot, LANE_GRAPH, LANE_GREP, LANE_LEXICAL,
+    };
+    fn build_plan(engine: &SearchEngine, request: &SearchRequest) -> SearchPlan {
+        SearchPlan::build(&engine.db, &engine.config, &engine.ranking, request, None).unwrap()
+    }
+
+
+    #[test]
+    fn lexical_lane_adapter_matches_inline_ranking() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/alpha.rs",
+            Language::Rust,
+            "alphatoken appears here",
+        );
+
+        let request = SearchRequest {
+            query: "alphatoken".to_string(),
+            top_k: 5,
+            include_grep: false,
+            file_paths: Some(vec!["src/alpha.rs".to_string()]),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let lane = LexicalLane;
+        assert_eq!(lane.lane_id(), LANE_LEXICAL);
+        assert!(lane.is_enabled(&context), "lexical lane always runs");
+        assert_eq!(
+            lane.weight(&engine.config),
+            engine.config.lexical_weight,
+            "lexical lane weight comes from lexical_weight"
+        );
+
+        let hits = lane.run(&context).unwrap();
+        assert_eq!(hits, vec![("chunk:src/alpha.rs".to_string(), 1.0)]);
+    }
+
+    #[test]
+    fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/g.rs",
+            Language::Rust,
+            "the needle is right here",
+        );
+        insert_chunk_file(&engine, "src/other.rs", Language::Rust, "nothing relevant");
+
+        let request = SearchRequest {
+            query: "needle".to_string(),
+            top_k: 5,
+            include_grep: true,
+            file_paths: Some(vec!["src/g.rs".to_string(), "src/other.rs".to_string()]),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let lane = GrepLane;
+        assert_eq!(lane.lane_id(), LANE_GREP);
+        assert!(lane.is_enabled(&context), "include_grep=true enables grep");
+        assert_eq!(lane.weight(&engine.config), engine.config.grep_weight);
+
+        let hits = lane.run(&context).unwrap();
+        assert_eq!(hits, vec![("chunk:src/g.rs".to_string(), 1.0)]);
+
+        // Side effect: only *matched* chunks land in the engine's chunk
+        // text cache.  Scan-only rows stay out so a cold scan over a large
+        // scope can't rotate the LRU and evict hot entries.
+        let mut cache = engine.chunk_text_cache.lock().unwrap();
+        assert!(cache.get("chunk:src/g.rs").is_some());
+        assert!(
+            cache.get("chunk:src/other.rs").is_none(),
+            "non-matching scanned chunk must not enter the text cache"
+        );
+    }
+
+    #[test]
+    fn grep_lane_scan_budget_truncates_recency_first_and_deterministically() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        let config = ProjectConfig {
+            search: SearchConfig {
+                lexical_top_k: 3,
+                grep_top_k: 10,
+                grep_scan_cap: 2,
+                lexical_weight: 1.0,
+                grep_weight: 0.8,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let engine = SearchEngine::new(Arc::new(db), &config, None);
+
+        // Four matching files, inserted oldest → newest.  With the scan
+        // budget at 2, the unscoped recency-ordered scan only reaches the
+        // two most recently indexed files.
+        for name in ["a", "b", "c", "d"] {
+            insert_chunk_file(
+                &engine,
+                &format!("src/{name}.rs"),
+                Language::Rust,
+                "the scanneedle is here",
+            );
+        }
+
+        // file_preselect_limit=0 empties preselect, so no file scope is
+        // materialized and grep takes the unscoped (budgeted) path.
+        let request = SearchRequest {
+            query: "scanneedle".to_string(),
+            top_k: 10,
+            include_grep: true,
+            file_preselect_limit: Some(0),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let first = GrepLane.run(&context).unwrap();
+        assert_eq!(
+            first,
+            vec![
+                ("chunk:src/d.rs".to_string(), 1.0),
+                ("chunk:src/c.rs".to_string(), 0.5),
+            ],
+            "budget of 2 must cover exactly the two most recently indexed files"
+        );
+
+        // Determinism: same index + same config + same query → same result.
+        let second = GrepLane.run(&context).unwrap();
+        assert_eq!(first, second);
+    }
+
+    /// The FTS prefilter phrase mirrors unicode61 tokenization: alphanumeric
+    /// runs, quoted as a phrase, with a trailing `*` when the literal ends
+    /// mid-token. Punctuation-only literals yield no phrase (full scan only).
+    #[test]
+    fn grep_prefilter_phrase_tokenizes_like_unicode61() {
+        use crate::lanes::grep_prefilter_phrase;
+        assert_eq!(
+            grep_prefilter_phrase("getUserById"),
+            Some("\"getUserById\"*".to_string())
+        );
+        assert_eq!(
+            grep_prefilter_phrase("get_user_by_id"),
+            Some("\"get user by id\"*".to_string())
+        );
+        assert_eq!(
+            grep_prefilter_phrase("read(&mut buf)"),
+            Some("\"read mut buf\"".to_string()),
+            "literal ending at a token boundary needs no prefix star"
+        );
+        assert_eq!(
+            grep_prefilter_phrase("->"),
+            None,
+            "punctuation-only literal has no tokenizable content"
+        );
+        assert_eq!(
+            grep_prefilter_phrase("a"),
+            None,
+            "single-character tokens alone are too noisy to prefilter"
+        );
+    }
+
+    /// The unscoped grep scan must still find matches the FTS tokenizer
+    /// cannot see (a mid-token substring like `UserById` inside
+    /// `getUserById`): stage 1's prefilter misses them, stage 2's full scan
+    /// covers them. Token-boundary matches keep working too.
+    #[test]
+    fn grep_lane_prefilter_keeps_midtoken_matches_via_full_scan() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/svc.rs",
+            Language::Rust,
+            "fn getUserById(id: u64) {}",
+        );
+        insert_chunk_file(&engine, "src/other.rs", Language::Rust, "nothing here");
+
+        // Unscoped (empty preselect): the prefilter stage runs. The query is
+        // a mid-token substring — FTS sees only the token `getuserbyid`, so
+        // `\"userbyid\"*` matches nothing and stage 2 must find the hit.
+        let request = SearchRequest {
+            query: "UserById".to_string(),
+            top_k: 5,
+            include_grep: true,
+            file_preselect_limit: Some(0),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+        let hits = GrepLane.run(&context).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:src/svc.rs".to_string(), 1.0)],
+            "mid-token substring must survive the prefilter via stage-2 full scan"
+        );
+
+        // Token-boundary query (prefilter-visible) finds the same chunk.
+        let request = SearchRequest {
+            query: "getUserById".to_string(),
+            top_k: 5,
+            include_grep: true,
+            file_preselect_limit: Some(0),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+        let hits = GrepLane.run(&context).unwrap();
+        assert_eq!(hits, vec![("chunk:src/svc.rs".to_string(), 1.0)]);
+    }
+
+    #[test]
+    fn grep_lane_disabled_when_request_excludes_grep() {
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "needle".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+        assert!(!GrepLane.is_enabled(&context));
+    }
+
+    #[test]
+    fn graph_lane_adapter_ranks_seed_above_one_hop_neighbor() {
+        let (engine, _tmp) = scoped_test_engine();
+        let process_to_helper = CallEdgeRecord {
+            edge_id: "edge:process->helper".to_string(),
+            file_path: "src/a.rs".to_string(),
+            caller_symbol: Some("process".to_string()),
+            callee_symbol: "helper".to_string(),
+            line: 1,
+            caller_symbol_uid: Some("uid:process".to_string()),
+            callee_symbol_uid: Some("uid:helper".to_string()),
+            ..Default::default()
+        };
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn process() { helper() }",
+            "process",
+            "uid:process",
+            vec![process_to_helper],
+        );
+        insert_graph_file(
+            &engine,
+            "src/b.rs",
+            "fn helper() {}",
+            "helper",
+            "uid:helper",
+            vec![],
+        );
+
+        let request = SearchRequest {
+            query: "process".to_string(),
+            top_k: 5,
+            include_grep: false,
+            file_paths: Some(vec!["src/a.rs".to_string(), "src/b.rs".to_string()]),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let lane = GraphLane;
+        assert_eq!(lane.lane_id(), LANE_GRAPH);
+        assert_eq!(lane.weight(&engine.config), engine.config.graph_weight);
+
+        let hits = lane.run(&context).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("chunk:src/a.rs".to_string(), 1.0),
+                ("chunk:src/b.rs".to_string(), 0.5),
+            ],
+            "seed symbol chunk first, 1-hop callee chunk at half score"
+        );
+    }
+
+    #[test]
+    fn graph_lane_respects_languages_filter_by_file_extension() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn process() {}",
+            "process",
+            "uid:process",
+            vec![],
+        );
+
+        let request = SearchRequest {
+            query: "process".to_string(),
+            top_k: 5,
+            include_grep: false,
+            languages: Some(vec![Language::Rust]),
+            file_paths: Some(vec!["src/a.rs".to_string()]),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+
+        // Symbols live in a .rs file, the filter asks for Rust — the graph
+        // lane must keep the seed hit instead of misclassifying the file as
+        // Language::Unknown (regression: a file *path* was passed where a
+        // language *name* was expected).
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:src/a.rs".to_string(), 1.0)],
+            "languages=[Rust] must not drop the Rust seed symbol's chunk"
+        );
+    }
+
+    #[test]
+    fn graph_lane_disabled_when_weight_is_zero() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        let config = ProjectConfig {
+            search: SearchConfig {
+                graph_weight: 0.0,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let engine = SearchEngine::new(Arc::new(db), &config, None);
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+        assert!(
+            !GraphLane.is_enabled(&context),
+            "graph lane must short-circuit before any work when weight is 0"
+        );
+    }
+
+    #[test]
+    fn graph_lane_expands_caller_direction_at_decay() {
+        // Mirror of the callee-direction golden test: the query matches the
+        // CALLEE, and the caller must be pulled in at graph_neighbor_decay.
+        let (engine, _tmp) = scoped_test_engine();
+        let process_to_helper = CallEdgeRecord {
+            edge_id: "edge:process->helper".to_string(),
+            file_path: "src/a.rs".to_string(),
+            caller_symbol: Some("process".to_string()),
+            callee_symbol: "helper".to_string(),
+            line: 1,
+            caller_symbol_uid: Some("uid:process".to_string()),
+            callee_symbol_uid: Some("uid:helper".to_string()),
+            ..Default::default()
+        };
+        insert_graph_file(
+            &engine,
+            "src/a.rs",
+            "fn process() { helper() }",
+            "process",
+            "uid:process",
+            vec![process_to_helper],
+        );
+        insert_graph_file(
+            &engine,
+            "src/b.rs",
+            "fn helper() {}",
+            "helper",
+            "uid:helper",
+            vec![],
+        );
+
+        let request = SearchRequest {
+            query: "helper".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("chunk:src/b.rs".to_string(), 1.0),
+                ("chunk:src/a.rs".to_string(), 0.5),
+            ],
+            "seed (callee) chunk first, 1-hop caller chunk at decay score"
+        );
+    }
+
+    #[test]
+    fn graph_lane_scores_fuzzy_seed_below_exact_seed() {
+        // Exact name match seeds at graph_seed_exact_score (1.0); a substring
+        // match seeds at graph_seed_fuzzy_score (0.5).
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(
+            &engine,
+            "src/exact.rs",
+            "fn process() {}",
+            "process",
+            "uid:process",
+            vec![],
+        );
+        insert_graph_file(
+            &engine,
+            "src/fuzzy.rs",
+            "fn process_batch() {}",
+            "process_batch",
+            "uid:process_batch",
+            vec![],
+        );
+
+        let request = SearchRequest {
+            query: "process".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![
+                ("chunk:src/exact.rs".to_string(), 1.0),
+                ("chunk:src/fuzzy.rs".to_string(), 0.5),
+            ],
+            "exact-name seed must outrank substring seed"
+        );
+    }
+
+    #[test]
+    fn graph_lane_seeds_short_tokens_by_exact_name() {
+        // Tokens under 3 chars cannot use the trigram table; they seed via
+        // exact-name equality (both common casings) instead of being dropped.
+        let (engine, _tmp) = scoped_test_engine();
+        insert_graph_file(&engine, "src/ok.rs", "fn ok() {}", "ok", "uid:ok", vec![]);
+
+        let request = SearchRequest {
+            query: "ok".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:src/ok.rs".to_string(), 1.0)],
+            "a 2-char exact symbol name must still seed the graph lane"
+        );
+    }
+
+    #[test]
+    fn graph_lane_maps_symbol_to_smallest_containing_chunk() {
+        // A file with a wide chunk and a narrow chunk that both contain the
+        // symbol span: the lane must pick the narrowest container.
+        let (engine, _tmp) = scoped_test_engine();
+        let make_chunk = |chunk_id: &str, index: i64, start: u32, end: u32| ChunkRecord {
+            chunk_id: chunk_id.to_string(),
+            file_path: "src/wide.rs".to_string(),
+            language: Language::Rust,
+            chunk_index: index as u32,
+            start_line: start,
+            end_line: end,
+            breadcrumb: "root".to_string(),
+            text: "fn narrow_fn() {}".to_string(),
+            symbol_name: None,
+            symbol_kind: None,
+            token_estimate: 8,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+        };
+        let symbol = SymbolRecord {
+            symbol_id: "sym:src/wide.rs:narrow_fn".to_string(),
+            file_path: "src/wide.rs".to_string(),
+            name: "narrow_fn".to_string(),
+            kind: cc_model::SymbolKind::Function,
+            container: None,
+            start_line: 2,
+            end_line: 3,
+            start_col: 0,
+            end_col: 0,
+            signature: None,
+            doc: None,
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+            qname: None,
+            parent_symbol_id: None,
+            scope_id: None,
+            export_name: None,
+            is_default_export: false,
+            symbol_uid: Some("uid:narrow_fn".to_string()),
+            framework_role: None,
+            receiver_type: None,
+            param_types: None,
+            return_type: None,
+            param_count: None,
+            base_types: None,
+            implements: None,
+        };
+        let outcome = ParseOutcome {
+            summary: "fixture".to_string(),
+            chunks: vec![
+                make_chunk("chunk:wide", 0, 1, 50),
+                make_chunk("chunk:narrow", 1, 1, 5),
+            ],
+            symbols: vec![symbol],
+            parser_tier: ParserTier::TreeSitter,
+            parser_confidence: 1.0,
+            ..Default::default()
+        };
+        let conn = crate::test_seed::seed_conn(&engine.db);
+        IndexDb::insert_file_data(
+            &conn,
+            &FileWriteUnit {
+                rel_path: "src/wide.rs".to_string(),
+                language: Language::Rust,
+                content_hash: "hash-wide".to_string(),
+                mtime: 0.0,
+                size: 10,
+                outcome,
+            },
+        )
+        .unwrap();
+        drop(conn);
+
+        let request = SearchRequest {
+            query: "narrow_fn".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let hits = GraphLane::search(&engine.db, &plan, plan.query_tokens(), 12).unwrap();
+        assert_eq!(
+            hits,
+            vec![("chunk:narrow".to_string(), 1.0)],
+            "the smallest chunk containing the symbol span must win"
+        );
+    }
+
+    /// Synthetic lane for exercising the generic lane loop.
+    struct FakeLane {
+        id: &'static str,
+        enabled: bool,
+        lane_weight: f64,
+        annotates: bool,
+        hits: Vec<(String, f64)>,
+        ran: std::sync::atomic::AtomicBool,
+    }
+
+    impl RetrievalLane for FakeLane {
+        fn lane_id(&self) -> &'static str {
+            self.id
+        }
+        fn weight(&self, _config: &SearchConfig) -> f64 {
+            self.lane_weight
+        }
+        fn is_enabled(&self, _context: &LaneContext<'_>) -> bool {
+            self.enabled
+        }
+        fn annotates_hits(&self) -> bool {
+            self.annotates
+        }
+        fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
+            self.ran.store(true, std::sync::atomic::Ordering::SeqCst);
+            Ok(self.hits.clone())
+        }
+    }
+
+    fn fake_candidate_chunk() -> CandidateChunk {
+        CandidateChunk {
+            chunk_id: "chunk:src/x.rs".to_string(),
+            file_path: "src/x.rs".to_string(),
+            language_name: "rust".to_string(),
+            start_line: 1,
+            end_line: 2,
+            breadcrumb: "root".to_string(),
+            symbol_name: None,
+            symbol_kind: None,
+            text: "fn x() {}".to_string(),
+        }
+    }
+
+    #[test]
+    fn new_lane_opting_into_annotation_gets_generic_hit_reasons() {
+        // Extensibility guarantee: a brand-new lane that opts into per-hit
+        // annotation (`annotates_hits() == true`) must surface `{lane_id}@{rank}`
+        // reasons WITHOUT any edits to plan.rs lane-id whitelists.
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let fourth = FakeLane {
+            id: "fourth",
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: true,
+            hits: vec![("chunk:src/x.rs".to_string(), 1.0)],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+        let fifth = FakeLane {
+            id: "fifth",
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: true,
+            hits: vec![
+                ("chunk:other".to_string(), 1.0),
+                ("chunk:src/x.rs".to_string(), 0.5),
+            ],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+
+        let lanes: [&dyn RetrievalLane; 2] = [&fourth, &fifth];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+        let lane_ranks = plan.lane_ranks(&outcomes);
+
+        let hit = plan
+            .hit_from_chunk(
+                fake_candidate_chunk(),
+                &FusedScore {
+                    total: 0.5,
+                    by_lane: vec![],
+                },
+                &lane_ranks,
+            )
+            .unwrap();
+
+        assert_eq!(
+            hit.reasons,
+            vec!["fourth@1".to_string(), "fifth@2".to_string()],
+            "annotating lanes must contribute {{lane_id}}@{{rank}} reasons in lane order"
+        );
+        // Lanes without a declared ScoreSlot have no dedicated score field
+        // in SearchHit (cc-model fields are fixed); built-ins stay 0.0.
+        assert_eq!(hit.lexical_score, 0.0);
+        assert_eq!(hit.grep_score, 0.0);
+        assert_eq!(hit.graph_score, 0.0);
+    }
+
+    #[test]
+    fn new_lane_declaring_score_slot_projects_without_plan_edits() {
+        // Extensibility guarantee: a brand-new lane that declares an
+        // existing ScoreSlot gets its rank-derived score projected into the
+        // matching SearchHit field purely via trait impl + registration —
+        // no lane-id match arm anywhere in plan.rs or engine.rs.
+        struct SlottedLane;
+        impl RetrievalLane for SlottedLane {
+            fn lane_id(&self) -> &'static str {
+                "semantic"
+            }
+            fn weight(&self, _config: &SearchConfig) -> f64 {
+                1.0
+            }
+            fn is_enabled(&self, _context: &LaneContext<'_>) -> bool {
+                true
+            }
+            fn annotates_hits(&self) -> bool {
+                true
+            }
+            fn score_slot(&self) -> Option<ScoreSlot> {
+                Some(ScoreSlot::Graph)
+            }
+            fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
+                Ok(vec![
+                    ("chunk:other".to_string(), 1.0),
+                    ("chunk:src/x.rs".to_string(), 0.5),
+                ])
+            }
+        }
+
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let slotted = SlottedLane;
+        let lanes: [&dyn RetrievalLane; 1] = [&slotted];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+        let lane_ranks = plan.lane_ranks(&outcomes);
+
+        let hit = plan
+            .hit_from_chunk(
+                fake_candidate_chunk(),
+                &FusedScore {
+                    total: 0.5,
+                    by_lane: vec![],
+                },
+                &lane_ranks,
+            )
+            .unwrap();
+
+        assert_eq!(hit.reasons, vec!["semantic@2".to_string()]);
+        assert_eq!(
+            hit.graph_score, 0.5,
+            "declared slot must receive the lane's rank-derived score (1/rank)"
+        );
+        assert_eq!(hit.lexical_score, 0.0);
+        assert_eq!(hit.grep_score, 0.0);
+    }
+
+    #[test]
+    fn default_lanes_registry_keeps_fusion_order() {
+        // The registry is the single registration point; its order is the
+        // deterministic RRF fusion order.
+        let lanes = crate::lanes::default_lanes();
+        let ids: Vec<&str> = lanes.iter().map(|lane| lane.lane_id()).collect();
+        assert_eq!(ids, vec![LANE_LEXICAL, LANE_GREP, LANE_GRAPH]);
+    }
+
+    #[test]
+    fn lane_opting_out_of_annotation_stays_fusion_only() {
+        // A lane with annotates_hits() == false (like the graph lane) must
+        // still feed RRF fusion but contribute no per-hit reason.
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let silent = FakeLane {
+            id: "silent",
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: false,
+            hits: vec![("chunk:src/x.rs".to_string(), 1.0)],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+
+        let lanes: [&dyn RetrievalLane; 1] = [&silent];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+
+        let fused = fuse_outcomes(&outcomes, 50);
+        assert!(
+            fused.contains_key("chunk:src/x.rs"),
+            "opted-out lane must still contribute to RRF fusion"
+        );
+
+        let lane_ranks = plan.lane_ranks(&outcomes);
+        let hit = plan
+            .hit_from_chunk(
+                fake_candidate_chunk(),
+                &fused["chunk:src/x.rs"],
+                &lane_ranks,
+            )
+            .unwrap();
+        assert!(
+            hit.reasons.is_empty(),
+            "fusion-only lane must produce no per-hit reasons, got {:?}",
+            hit.reasons
+        );
+    }
+
+    #[test]
+    fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let active = FakeLane {
+            id: "fake-active",
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: false,
+            hits: vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+        let disabled = FakeLane {
+            id: "fake-disabled",
+            enabled: false,
+            lane_weight: 0.0,
+            annotates: false,
+            hits: vec![("z".to_string(), 1.0)],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+
+        let lanes: [&dyn RetrievalLane; 2] = [&active, &disabled];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+
+        assert!(
+            active.ran.load(std::sync::atomic::Ordering::SeqCst),
+            "enabled lane must run"
+        );
+        assert!(
+            !disabled.ran.load(std::sync::atomic::Ordering::SeqCst),
+            "disabled lane must be skipped before work"
+        );
+        assert_eq!(
+            outcomes.iter().map(|o| o.lane_id).collect::<Vec<_>>(),
+            vec!["fake-active", "fake-disabled"],
+            "outcome order must follow lane collection order"
+        );
+        assert_eq!(outcomes[0].hits.len(), 2);
+        assert!(
+            outcomes[1].hits.is_empty(),
+            "skipped lane contributes nothing"
+        );
+    }
+
+    /// Parallel lane execution (3+ enabled lanes → scoped threads) must
+    /// preserve outcome order (= slice order) and run every enabled lane —
+    /// RRF fusion and tie-breaking depend on that order being deterministic.
+    #[test]
+    fn run_lanes_parallel_preserves_slice_order_and_runs_all() {
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let mk = |id: &'static str, hit: &str| FakeLane {
+            id,
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: false,
+            hits: vec![(hit.to_string(), 1.0)],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+        let a = mk("lane-a", "hit-a");
+        let b = mk("lane-b", "hit-b");
+        let c = mk("lane-c", "hit-c");
+
+        let lanes: [&dyn RetrievalLane; 3] = [&a, &b, &c];
+        let outcomes = run_lanes(&lanes, &context).unwrap();
+
+        for lane in [&a, &b, &c] {
+            assert!(
+                lane.ran.load(std::sync::atomic::Ordering::SeqCst),
+                "every enabled lane must run"
+            );
+        }
+        assert_eq!(
+            outcomes.iter().map(|o| o.lane_id).collect::<Vec<_>>(),
+            vec!["lane-a", "lane-b", "lane-c"],
+            "outcome order must follow slice order regardless of completion order"
+        );
+        assert_eq!(outcomes[0].hits[0].0, "hit-a");
+        assert_eq!(outcomes[1].hits[0].0, "hit-b");
+        assert_eq!(outcomes[2].hits[0].0, "hit-c");
+    }
+
+    /// A failing lane aborts the whole search even when lanes run
+    /// concurrently, and the error surfaced is the first failure in slice
+    /// order (deterministic regardless of thread scheduling).
+    #[test]
+    fn run_lanes_parallel_propagates_first_error_in_slice_order() {
+        struct FailLane {
+            id: &'static str,
+        }
+        impl RetrievalLane for FailLane {
+            fn lane_id(&self) -> &'static str {
+                self.id
+            }
+            fn weight(&self, _config: &SearchConfig) -> f64 {
+                1.0
+            }
+            fn is_enabled(&self, _context: &LaneContext<'_>) -> bool {
+                true
+            }
+            fn annotates_hits(&self) -> bool {
+                false
+            }
+            fn run(&self, _context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
+                Err(cc_model::CcError::Search(format!("{} failed", self.id)))
+            }
+        }
+
+        let (engine, _tmp) = scoped_test_engine();
+        let request = SearchRequest {
+            query: "anything".to_string(),
+            top_k: 5,
+            include_grep: false,
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let context = LaneContext {
+            plan: &plan,
+            db: &engine.db,
+            config: &engine.config,
+            chunk_text_cache: &engine.chunk_text_cache,
+        };
+
+        let ok = FakeLane {
+            id: "lane-ok",
+            enabled: true,
+            lane_weight: 1.0,
+            annotates: false,
+            hits: vec![],
+            ran: std::sync::atomic::AtomicBool::new(false),
+        };
+        let fail_b = FailLane { id: "lane-b" };
+        let fail_c = FailLane { id: "lane-c" };
+
+        let lanes: [&dyn RetrievalLane; 3] = [&ok, &fail_b, &fail_c];
+        let err = match run_lanes(&lanes, &context) {
+            Err(e) => e,
+            Ok(_) => panic!("failing lane must abort the search"),
+        };
+        assert!(
+            err.to_string().contains("lane-b failed"),
+            "first failing lane in slice order must win, got: {err}"
+        );
+    }
+
+    #[test]
+    fn fuse_outcomes_accumulates_rrf_generically() {
+        let outcomes = vec![
+            LaneOutcome {
+                lane_id: "fake-a",
+                weight: 1.0,
+                annotates_hits: false,
+                score_slot: None,
+                hits: vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
+            },
+            LaneOutcome {
+                lane_id: "fake-b",
+                weight: 0.5,
+                annotates_hits: false,
+                score_slot: None,
+                hits: vec![("y".to_string(), 1.0)],
+            },
+        ];
+        let fused = fuse_outcomes(&outcomes, 50);
+
+        // score(d) = sum over lanes of weight / (k + rank)
+        assert!((fused["x"].total - 1.0 / 51.0).abs() < 1e-12);
+        assert!((fused["y"].total - (1.0 / 52.0 + 0.5 / 51.0)).abs() < 1e-12);
+
+        // Per-lane breakdown is preserved in lane-accumulation order and
+        // sums (left-to-right) to the fused total bit-for-bit.
+        assert_eq!(fused["x"].by_lane, vec![("fake-a", 1.0 / 51.0)]);
+        assert_eq!(
+            fused["y"].by_lane,
+            vec![("fake-a", 1.0 / 52.0), ("fake-b", 0.5 / 51.0)]
+        );
+        for fused_score in fused.values() {
+            let component_sum: f64 = fused_score.by_lane.iter().map(|(_, v)| v).sum();
+            assert_eq!(component_sum, fused_score.total);
+        }
     }
 
     // ── score trace invariant: sum(components) == rerank_score ─────────

@@ -51,6 +51,7 @@ impl Indexer {
         &self,
         project_path: &Path,
         write_units: &[FileWriteUnit],
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
     ) -> CcResult<FullSnapshotPayload> {
         // Pre-collect snapshot data for config links before entering the
         // rebuild closure (the closure must not query the live DB).
@@ -58,9 +59,18 @@ impl Indexer {
         let indexed_files: Vec<String> = write_units.iter().map(|u| u.rel_path.clone()).collect();
         // Full builds always scan. Signature first, scan second: a config
         // file changing in between leaves a stale signature behind, which
-        // forces a rescan next build — never a wrong skip.
-        let config_sig = config_files_signature(project_path);
-        let raw_tokens = scan_config_tokens(project_path)?;
+        // forces a rescan next build — never a wrong skip. With a shared-walk
+        // manifest both halves come from the same snapshot, no extra walks.
+        let (config_sig, raw_tokens) = match walk_manifest {
+            Some(manifest) => (
+                crate::config_linker::config_files_signature_from_manifest(manifest),
+                crate::config_linker::scan_config_tokens_from_manifest(project_path, manifest)?,
+            ),
+            None => (
+                config_files_signature(project_path),
+                scan_config_tokens(project_path)?,
+            ),
+        };
         let config_units = Self::build_config_link_units_from_snapshot(
             project_path,
             symbol_targets,
@@ -131,9 +141,10 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
     ) -> CcResult<(Vec<FileWriteUnit>, cc_db::index_db::IndexGeneration)> {
         let payload = time_step("write", "full_prepare_payload", || {
-            self.prepare_full_snapshot_payload(project_path, write_units)
+            self.prepare_full_snapshot_payload(project_path, write_units, walk_manifest)
         })?;
         let generation_floor = time_step("write", "full_build_staging", || {
             self.db.admin().build_temp_db_staging(|conn| {
@@ -163,9 +174,10 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
     ) -> CcResult<Vec<FileWriteUnit>> {
         let payload = time_step("write", "full_prepare_payload", || {
-            self.prepare_full_snapshot_payload(project_path, write_units)
+            self.prepare_full_snapshot_payload(project_path, write_units, walk_manifest)
         })?;
         time_step("write", "full_rebuild_temp_db", || {
             self.db.admin().rebuild_with_temp_db(|conn| {
@@ -193,9 +205,10 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
     ) -> CcResult<Vec<FileWriteUnit>> {
         let payload = time_step("write", "full_prepare_payload", || {
-            self.prepare_full_snapshot_payload(project_path, write_units)
+            self.prepare_full_snapshot_payload(project_path, write_units, walk_manifest)
         })?;
         time_step("write", "full_rebuild_direct_writer", || {
             self.db.admin().rebuild_with_direct_writer(|conn| {

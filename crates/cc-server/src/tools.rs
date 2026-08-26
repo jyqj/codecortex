@@ -212,11 +212,53 @@ pub struct IndexParams {
     /// Default is `false` (incremental).
     #[serde(default)]
     pub full: bool,
+
+    /// Optional event-scoped hint for incremental builds: project-relative
+    /// paths known to have been created or modified since the last build.
+    /// When present, the scan/diff phase stats/hashes only these paths
+    /// instead of walking the whole tree (the same scoped path watcher
+    /// ticks use). Safety fallbacks to the full walk are decided inside
+    /// the build (first build, oversized event set, dot-path events).
+    /// Only valid with `full=false`.
+    #[serde(default)]
+    pub changed_paths: Option<Vec<String>>,
+
+    /// Optional event-scoped hint: project-relative paths known to have
+    /// been removed since the last build. See `changed_paths`.
+    #[serde(default)]
+    pub removed_paths: Option<Vec<String>>,
 }
+
+/// Above this many combined scope paths the hint is dropped (unscoped
+/// incremental build) instead of truncated — dropping individual entries
+/// would silently miss changes, while an unscoped build is always correct.
+/// The indexer's own oversized-event fallback (512) triggers the full walk
+/// well before this bound; this cap only bounds request memory.
+const MAX_SCOPE_PATHS: usize = 10_000;
 
 impl IndexParams {
     pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.path, MAX_PATH_LEN);
+        let scope_len = self.changed_paths.as_ref().map_or(0, |v| v.len())
+            + self.removed_paths.as_ref().map_or(0, |v| v.len());
+        if scope_len > 0 && self.full {
+            return Err(CcError::Other(
+                "changed_paths/removed_paths only apply to incremental builds (full=false)"
+                    .to_string(),
+            ));
+        }
+        if scope_len > MAX_SCOPE_PATHS {
+            self.changed_paths = None;
+            self.removed_paths = None;
+        }
+        for list in [&mut self.changed_paths, &mut self.removed_paths]
+            .into_iter()
+            .flatten()
+        {
+            for p in list.iter_mut() {
+                clamp_str(p, MAX_PATH_LEN);
+            }
+        }
         Ok(())
     }
 }
@@ -1072,6 +1114,50 @@ mod tests {
             assert!(s.starts_with(prefix));
             assert!(prefix.len() <= max);
         }
+    }
+
+    #[test]
+    fn index_params_scope_rejected_on_full_build() {
+        let mut params = IndexParams {
+            path: ".".into(),
+            full: true,
+            changed_paths: Some(vec!["src/lib.rs".into()]),
+            removed_paths: None,
+        };
+        let err = params.sanitize().unwrap_err();
+        assert!(
+            err.to_string().contains("full=false"),
+            "unexpected error: {err}"
+        );
+    }
+
+    #[test]
+    fn index_params_oversized_scope_dropped_not_truncated() {
+        let mut params = IndexParams {
+            path: ".".into(),
+            full: false,
+            changed_paths: Some((0..MAX_SCOPE_PATHS).map(|i| format!("f{i}.rs")).collect()),
+            removed_paths: Some(vec!["gone.rs".into()]),
+        };
+        params.sanitize().unwrap();
+        // Over the cap: the whole hint is dropped (unscoped incremental is
+        // always correct) — never truncated, which could miss changes.
+        assert!(params.changed_paths.is_none());
+        assert!(params.removed_paths.is_none());
+    }
+
+    #[test]
+    fn index_params_scope_within_cap_kept_and_clamped() {
+        let mut params = IndexParams {
+            path: ".".into(),
+            full: false,
+            changed_paths: Some(vec!["x".repeat(MAX_PATH_LEN + 10)]),
+            removed_paths: None,
+        };
+        params.sanitize().unwrap();
+        let kept = params.changed_paths.unwrap();
+        assert_eq!(kept.len(), 1);
+        assert_eq!(kept[0].len(), MAX_PATH_LEN);
     }
 
     #[test]

@@ -76,8 +76,6 @@ struct SynthesisStage {
 }
 
 enum CommunityAction {
-    /// 边数超限的降级路径：未分配社区的符号全部归入 community 0。
-    Degraded,
     Update {
         assignments: HashMap<String, u32>,
         labels: HashMap<u32, String>,
@@ -357,17 +355,11 @@ impl Indexer {
 
         if let Some(stage) = &plan.community {
             time_step("postprocess", "community_apply", || {
-                match &stage.action {
-                    CommunityAction::Degraded => {
-                        self.db.writes().assign_all_symbols_to_community(0)?;
-                    }
-                    CommunityAction::Update {
-                        assignments,
-                        labels,
-                    } => {
-                        self.db.writes().update_communities(assignments, labels)?;
-                    }
-                }
+                let CommunityAction::Update {
+                    assignments,
+                    labels,
+                } = &stage.action;
+                self.db.writes().update_communities(assignments, labels)?;
                 CcResult::Ok(())
             })?;
             stage.record.record(&self.db)?;
@@ -393,17 +385,29 @@ impl Indexer {
             .and_then(|v| v.parse::<usize>().ok())
             .unwrap_or(2_000_000);
 
-        if edges.len() > max_community_edges {
+        // Over-cap graphs are pruned to the heaviest node pairs (multi-edge
+        // weight) instead of the historical cliff edge that flattened every
+        // symbol into community 0: Louvain still runs within the memory
+        // budget and keeps the strongest community structure. Symbols whose
+        // edges were all pruned simply keep no assignment, same as symbols
+        // without call edges.
+        let pruned;
+        let community_edges = if edges.len() > max_community_edges {
+            pruned = crate::community::prune_edges_by_weight(edges, max_community_edges);
             tracing::warn!(
                 edge_count = edges.len(),
+                retained = pruned.len(),
                 max_community_edges,
-                "community detection: edge count exceeds limit, assigning all symbols to community 0"
+                "community detection: edge count exceeds limit; pruning to the \
+                 heaviest pairs before Louvain"
             );
-            build_explain.record_degraded("community_edge_cap_exceeded");
-            return Ok(CommunityAction::Degraded);
-        }
+            build_explain.record_degraded("community_edge_cap_pruned");
+            pruned.as_slice()
+        } else {
+            edges
+        };
 
-        let assignments = louvain_communities(edges, 20);
+        let assignments = louvain_communities(community_edges, 20);
         let symbol_names = self.db.reads().symbol_names_by_uid()?;
         let labels = build_community_labels(&assignments, &symbol_names);
         Ok(CommunityAction::Update {

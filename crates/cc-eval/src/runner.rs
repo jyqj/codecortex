@@ -132,6 +132,17 @@ impl CodeIndexBackend {
         self.call_tool("index", &serde_json::json!({ "full": full }))
     }
 
+    /// Incremental build with an event-scoped hint (the `index` tool's
+    /// `changed_paths` param): the scan/diff phase stats/hashes only the
+    /// given project-relative paths instead of walking the whole tree —
+    /// the same scoped path watcher ticks use.
+    pub fn build_index_report_scoped(&self, changed_paths: &[String]) -> CcResult<Value> {
+        self.call_tool(
+            "index",
+            &serde_json::json!({ "full": false, "changed_paths": changed_paths }),
+        )
+    }
+
     /// Dispatch a tool call by name, with JSON params, through the real MCP
     /// dispatch seam (rmcp router → `Parameters<T>` schema deserialization →
     /// `sanitize()` → handler → output budget).

@@ -691,7 +691,7 @@ impl IndexDb {
     }
 
     /// Get a read connection from the pool.
-    pub(crate) fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
+    pub fn read_conn(&self) -> CcResult<r2d2::PooledConnection<SqliteConnectionManager>> {
         let pool = self
             .pool
             .read()

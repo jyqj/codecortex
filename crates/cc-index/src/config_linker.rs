@@ -79,12 +79,17 @@ pub enum RawTokenKind {
 /// 扫描半程：walk 项目、读取每个配置文件并逐行提取候选 token。
 /// 与 catalog 无关，输出顺序与原 `extract_config_links` 的链接产出顺序一致
 /// （逐文件 → 逐行 → dotted → file-like → dependency）。
+///
+/// Fallback path for builds without a shared walk manifest (event-scoped
+/// prepares); manifest-carrying builds use
+/// [`scan_config_tokens_from_manifest`] and skip this walk.
 pub fn scan_config_tokens(project_root: &Path) -> CcResult<Vec<RawConfigToken>> {
     let mut tokens = Vec::new();
 
     for entry in ignore::WalkBuilder::new(project_root)
         .hidden(false)
-        .max_depth(Some(5))
+        .git_global(false)
+        .max_depth(Some(crate::scanner::CONFIG_WALK_MAX_DEPTH))
         .build()
         .flatten()
     {
@@ -98,48 +103,106 @@ pub fn scan_config_tokens(project_root: &Path) -> CcResult<Vec<RawConfigToken>> 
             Err(_) => continue,
         };
         let rel_path = path.strip_prefix(project_root).unwrap_or(path);
-        let rel_string = rel_path.to_string_lossy().to_string();
-        let is_dependency_manifest = is_dependency_manifest_path(path);
-
-        for (line_num, line) in content.lines().enumerate() {
-            let line_no = (line_num + 1) as u32;
-            let config_key = extract_key_from_line(line);
-
-            for word in extract_dotted_paths(line) {
-                tokens.push(RawConfigToken {
-                    config_file: rel_string.clone(),
-                    config_key: config_key.clone(),
-                    value: word,
-                    line: line_no,
-                    kind: RawTokenKind::Dotted,
-                });
-            }
-
-            for word in extract_file_like_tokens(line) {
-                tokens.push(RawConfigToken {
-                    config_file: rel_string.clone(),
-                    config_key: config_key.clone(),
-                    value: word,
-                    line: line_no,
-                    kind: RawTokenKind::FileLike,
-                });
-            }
-
-            if is_dependency_manifest {
-                for dep in extract_dependency_specs(line) {
-                    tokens.push(RawConfigToken {
-                        config_file: rel_string.clone(),
-                        config_key: config_key.clone(),
-                        value: dep,
-                        line: line_no,
-                        kind: RawTokenKind::DependencySpec,
-                    });
-                }
-            }
-        }
+        let rel_string = rel_path.to_string_lossy().replace('\\', "/");
+        tokenize_config_file(&rel_string, &content, &mut tokens);
     }
 
     Ok(tokens)
+}
+
+/// Scan half over the shared walk manifest: read each config candidate and
+/// extract raw tokens, without another project walk. Candidates are sorted
+/// by path for deterministic output order.
+pub fn scan_config_tokens_from_manifest(
+    project_root: &Path,
+    manifest: &crate::scanner::WalkManifest,
+) -> CcResult<Vec<RawConfigToken>> {
+    let mut tokens = Vec::new();
+    for file in config_candidates(manifest) {
+        let content = match std::fs::read_to_string(project_root.join(&file.rel_path)) {
+            Ok(c) => c,
+            Err(_) => continue,
+        };
+        tokenize_config_file(&file.rel_path, &content, &mut tokens);
+    }
+    Ok(tokens)
+}
+
+/// Per-file tokenize step shared by the walk and manifest scan halves
+/// (逐行 → dotted → file-like → dependency).
+fn tokenize_config_file(rel_string: &str, content: &str, tokens: &mut Vec<RawConfigToken>) {
+    let is_dependency_manifest = is_dependency_manifest_path(Path::new(rel_string));
+
+    for (line_num, line) in content.lines().enumerate() {
+        let line_no = (line_num + 1) as u32;
+        let config_key = extract_key_from_line(line);
+
+        for word in extract_dotted_paths(line) {
+            tokens.push(RawConfigToken {
+                config_file: rel_string.to_string(),
+                config_key: config_key.clone(),
+                value: word,
+                line: line_no,
+                kind: RawTokenKind::Dotted,
+            });
+        }
+
+        for word in extract_file_like_tokens(line) {
+            tokens.push(RawConfigToken {
+                config_file: rel_string.to_string(),
+                config_key: config_key.clone(),
+                value: word,
+                line: line_no,
+                kind: RawTokenKind::FileLike,
+            });
+        }
+
+        if is_dependency_manifest {
+            for dep in extract_dependency_specs(line) {
+                tokens.push(RawConfigToken {
+                    config_file: rel_string.to_string(),
+                    config_key: config_key.clone(),
+                    value: dep,
+                    line: line_no,
+                    kind: RawTokenKind::DependencySpec,
+                });
+            }
+        }
+    }
+}
+
+/// Config candidates from the shared walk manifest: config-typed files within
+/// the historical depth budget, sorted by path (the signature contract).
+fn config_candidates(
+    manifest: &crate::scanner::WalkManifest,
+) -> Vec<&crate::scanner::WalkedFile> {
+    let mut candidates: Vec<&crate::scanner::WalkedFile> = manifest
+        .files
+        .iter()
+        .filter(|f| {
+            f.depth <= crate::scanner::CONFIG_WALK_MAX_DEPTH
+                && is_config_path(Path::new(&f.rel_path))
+        })
+        .collect();
+    candidates.sort_by(|a, b| a.rel_path.cmp(&b.rel_path));
+    candidates
+}
+
+/// Same signature contract as [`config_files_signature`], computed from the
+/// shared walk manifest (no additional walk, no re-stat).
+pub fn config_files_signature_from_manifest(manifest: &crate::scanner::WalkManifest) -> u64 {
+    use std::collections::hash_map::DefaultHasher;
+    use std::hash::{Hash, Hasher};
+
+    let candidates = config_candidates(manifest);
+    let mut hasher = DefaultHasher::new();
+    candidates.len().hash(&mut hasher);
+    for file in &candidates {
+        file.rel_path.hash(&mut hasher);
+        file.size.hash(&mut hasher);
+        file.mtime_secs.hash(&mut hasher);
+    }
+    hasher.finish()
 }
 
 /// 解析半程：对照当前符号/文件 catalog 过滤原始 token，产出与原
@@ -222,6 +285,9 @@ pub fn resolve_config_links(
 /// 配置文件集签名：与 `infra_pass::infra_signature` 同款契约 —— 候选路径 +
 /// mtime + size 的稳定哈希。walker 参数与 `scan_config_tokens` 完全一致，
 /// 任何配置文件的增删改都会改变签名并强制重扫。
+///
+/// Fallback path for builds without a shared walk manifest; must stay
+/// value-equal to [`config_files_signature_from_manifest`] for the same tree.
 pub fn config_files_signature(project_root: &Path) -> u64 {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -229,7 +295,8 @@ pub fn config_files_signature(project_root: &Path) -> u64 {
     let mut candidates: Vec<(String, std::path::PathBuf)> = Vec::new();
     for entry in ignore::WalkBuilder::new(project_root)
         .hidden(false)
-        .max_depth(Some(5))
+        .git_global(false)
+        .max_depth(Some(crate::scanner::CONFIG_WALK_MAX_DEPTH))
         .build()
         .flatten()
     {
@@ -241,7 +308,7 @@ pub fn config_files_signature(project_root: &Path) -> u64 {
             .strip_prefix(project_root)
             .unwrap_or(path)
             .to_string_lossy()
-            .to_string();
+            .replace('\\', "/");
         candidates.push((rel, path.to_path_buf()));
     }
     candidates.sort_by(|a, b| a.0.cmp(&b.0));
@@ -277,7 +344,7 @@ fn push_link(links: &mut Vec<ConfigLink>, seen: &mut HashSet<String>, link: Conf
     }
 }
 
-fn is_config_path(path: &Path) -> bool {
+pub(crate) fn is_config_path(path: &Path) -> bool {
     let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
     let filename = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
     matches!(

@@ -40,7 +40,9 @@
 //! no per-build copy. The write-path delta uses `Arc::make_mut`, which
 //! clones only while an in-flight build still holds the previous snapshot.
 //! One entry is ~100 bytes (path + 64-hex hash + metadata): ~10 MB at 50k
-//! files — small enough to skip a capacity knob.
+//! files; repositories above the capacity knob
+//! (`CODECORTEX_FILE_STATE_CACHE_MAX_FILES`, default 1_000_000, `0`
+//! disables) skip the cache and keep the per-build direct load.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -52,6 +54,14 @@ use crate::signature_agg::RowAgg;
 pub(crate) struct FileStateCache {
     token: RowAgg,
     map: Arc<HashMap<String, FileState>>,
+}
+
+/// Cache capacity in files; `0` disables the cache entirely.
+fn file_state_cache_max_files() -> usize {
+    std::env::var("CODECORTEX_FILE_STATE_CACHE_MAX_FILES")
+        .ok()
+        .and_then(|v| v.parse::<usize>().ok())
+        .unwrap_or(1_000_000)
 }
 
 impl IndexDb {
@@ -71,11 +81,15 @@ impl IndexDb {
 
     /// Populate the cache from a full direct load whose token was verified
     /// stable across the load (caller re-reads the stored aggregate).
+    /// Snapshots above the capacity knob are not retained.
     pub(crate) fn file_state_cache_store(
         &self,
         token: RowAgg,
         map: Arc<HashMap<String, FileState>>,
     ) {
+        if map.len() > file_state_cache_max_files() {
+            return;
+        }
         if let Ok(mut guard) = self.file_state_cache.lock() {
             *guard = Some(FileStateCache { token, map });
         }
@@ -137,7 +151,9 @@ impl IndexDb {
             );
         }
         cache.token = post;
-        *guard = Some(cache);
+        if cache.map.len() <= file_state_cache_max_files() {
+            *guard = Some(cache);
+        }
     }
 
     /// Cached file count, for tests asserting the cache is engaged.
@@ -272,5 +288,32 @@ mod tests {
             Arc::ptr_eq(&first, &second),
             "consecutive hits must share one snapshot allocation"
         );
+    }
+
+    /// A snapshot Arc held across a batch (an in-flight build) must keep its
+    /// pre-batch content while the cache advances (clone-on-write).
+    #[test]
+    fn held_snapshot_is_immutable_across_batches() {
+        let (_tmp, db) = open_db();
+        write_batch(&db, &[], &[]);
+        write_batch(&db, &[], &[unit("a.rs", "hash-a1", 1.0, 100)]);
+        let held = db.get_file_state().unwrap();
+        assert_eq!(
+            held.get("a.rs").map(|s| s.content_hash.as_str()),
+            Some("hash-a1")
+        );
+
+        write_batch(&db, &[], &[unit("a.rs", "hash-a2", 2.0, 110)]);
+        assert_eq!(
+            held.get("a.rs").map(|s| s.content_hash.as_str()),
+            Some("hash-a1"),
+            "held snapshot must not observe the later batch"
+        );
+        let fresh = db.get_file_state().unwrap();
+        assert_eq!(
+            fresh.get("a.rs").map(|s| s.content_hash.as_str()),
+            Some("hash-a2")
+        );
+        assert_cache_equals_direct(&db, "after held-arc batch");
     }
 }

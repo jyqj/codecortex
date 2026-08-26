@@ -6,6 +6,20 @@ use cc_index::IndexReport;
 use cc_model::{CcError, CcResult};
 
 pub fn build_index(runtime: SharedCodeIndex, full: bool) -> CcResult<serde_json::Value> {
+    build_index_scoped(runtime, full, None)
+}
+
+/// [`build_index`] with an optional event-scoped hint from the MCP `index`
+/// tool's `changed_paths`/`removed_paths` params: callers that know exactly
+/// which files they touched (agents that just edited them, editor
+/// integrations) get the same stat-only scan/diff path as watcher ticks.
+/// The scope is a hint — every safety fallback to the full tree walk is
+/// decided inside the scan/diff phase.
+pub fn build_index_scoped(
+    runtime: SharedCodeIndex,
+    full: bool,
+    scope: Option<cc_index::BuildScope>,
+) -> CcResult<serde_json::Value> {
     // Per-project build gate: clone the Arc under a brief read lock and DROP
     // the read lock before blocking on the gate (lock-ordering rule: never
     // block on the gate while holding the CodeIndex RwLock). Manual builds
@@ -18,7 +32,7 @@ pub fn build_index(runtime: SharedCodeIndex, full: bool) -> CcResult<serde_json:
     let _build_permit = build_gate
         .lock()
         .unwrap_or_else(|poisoned| poisoned.into_inner());
-    let report = run_split_build(&runtime, full, false, cc_index::BuildScope::FullTree)?;
+    let report = run_split_build(&runtime, full, false, scope.as_ref())?;
     Ok(serde_json::to_value(report)?)
 }
 
@@ -33,13 +47,18 @@ pub fn build_index(runtime: SharedCodeIndex, full: bool) -> CcResult<serde_json:
 /// defends future ungated callers and cross-process writers. Callers must
 /// already hold the build gate — stage-2 correctness (no concurrent build
 /// mutating the DB between write and apply) relies on it.
+///
+/// `scope` carries the watcher tick's drained event set so the prepare can
+/// stat/hash only those paths; the stale retry re-prepares with the SAME
+/// scope (the events still describe exactly what changed — the re-prepare
+/// re-reads the now-current DB state underneath them).
 pub(crate) fn run_split_build(
     runtime: &SharedCodeIndex,
     full: bool,
     use_auto_file_limit: bool,
-    scope: cc_index::BuildScope,
+    scope: Option<&cc_index::BuildScope>,
 ) -> CcResult<IndexReport> {
-    match split_build_once(runtime, full, use_auto_file_limit, scope.clone()) {
+    match split_build_once(runtime, full, use_auto_file_limit, scope) {
         Err(stale @ CcError::StalePreparedBuild { .. }) => {
             tracing::warn!("stale prepared build detected, retrying once: {}", stale);
             split_build_once(runtime, full, use_auto_file_limit, scope)
@@ -52,7 +71,7 @@ fn split_build_once(
     runtime: &SharedCodeIndex,
     full: bool,
     use_auto_file_limit: bool,
-    scope: cc_index::BuildScope,
+    scope: Option<&cc_index::BuildScope>,
 ) -> CcResult<IndexReport> {
     // Brief read lock: clone the owned build inputs (plus the auto-index
     // file-count gate when requested), then release.
@@ -66,7 +85,7 @@ fn split_build_once(
         (rt.build_inputs()?, limit)
     };
     // Heavy prepare phase runs with NO lock held — read queries are not blocked.
-    let prepared = CodeIndex::prepare_build(&inputs, full, auto_file_limit, scope)?;
+    let prepared = CodeIndex::prepare_build_scoped(&inputs, full, auto_file_limit, scope)?;
     // Stage 1 — write lock scoped to `phase_write` only (the generation guard
     // runs inside, under this lock).
     let written = {
@@ -289,8 +308,7 @@ mod tests {
             let rt = super::super::lock_index(&runtime).unwrap();
             rt.build_inputs().unwrap()
         };
-        let prepared =
-            CodeIndex::prepare_build(&inputs, false, None, cc_index::BuildScope::FullTree).unwrap();
+        let prepared = CodeIndex::prepare_build(&inputs, false, None).unwrap();
 
         // Stage 1: write lock scoped to phase_write.
         let written = {

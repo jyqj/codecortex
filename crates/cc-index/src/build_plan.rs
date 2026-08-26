@@ -115,6 +115,9 @@ pub struct WrittenBuild {
     /// Parsed paths when commit dropped in-memory units after a staged full
     /// rebuild. Empty for incremental builds.
     parsed_file_paths: Vec<String>,
+    /// The shared walk manifest carried forward for the stage-2 infra
+    /// signature/scan (`None` on walk-free scoped builds).
+    walk_manifest: Option<std::sync::Arc<crate::scanner::WalkManifest>>,
     /// Build-side explainability collector, started in stage 1 (config-linker
     /// gate decision) and continued through stage 2 (postprocess/analysis
     /// gates). Finished into `IndexReport.build_explain` in stage 3.
@@ -166,9 +169,6 @@ impl IndexBuildMode {
 pub(crate) struct IndexBuildPlan {
     mode: IndexBuildMode,
     auto_file_limit: Option<usize>,
-    /// Scan walk selection for the prepare phase; commit stages never
-    /// consult it, so mismatched values across staged calls are harmless.
-    scope: crate::indexer::BuildScope,
 }
 
 impl IndexBuildPlan {
@@ -176,13 +176,7 @@ impl IndexBuildPlan {
         Self {
             mode: IndexBuildMode::from_full(full),
             auto_file_limit,
-            scope: crate::indexer::BuildScope::FullTree,
         }
-    }
-
-    pub(crate) fn with_scope(mut self, scope: crate::indexer::BuildScope) -> Self {
-        self.scope = scope;
-        self
     }
 
     pub(crate) fn execute(&self, indexer: &Indexer, project_path: &Path) -> CcResult<IndexReport> {
@@ -199,6 +193,19 @@ impl IndexBuildPlan {
         indexer: &Indexer,
         project_path: &Path,
     ) -> CcResult<PreparedBuild> {
+        self.prepare_scoped(indexer, project_path, None)
+    }
+
+    /// [`IndexBuildPlan::prepare`] with an optional event scope: watcher
+    /// ticks pass their drained change set so the scan/diff phase can skip
+    /// the tree walk (see `Indexer::scoped_scan_and_diff` for the fallback
+    /// conditions). All later phases are scope-agnostic.
+    pub(crate) fn prepare_scoped(
+        &self,
+        indexer: &Indexer,
+        project_path: &Path,
+        scope: Option<&crate::indexer::BuildScope>,
+    ) -> CcResult<PreparedBuild> {
         let start = Instant::now();
 
         // Generation snapshot must precede every DB read in this prepare
@@ -211,7 +218,7 @@ impl IndexBuildPlan {
             project_path,
             self.mode.is_full(),
             self.auto_file_limit,
-            &self.scope,
+            scope,
         )?;
         let scan_diff_ms = phase_start.elapsed().as_millis() as u64;
 
@@ -221,6 +228,7 @@ impl IndexBuildPlan {
         let ParsedBuildState {
             mut write_units,
             parse_report,
+            sources,
         } = ParsedBuildState::from(parse_result);
 
         // Ordering invariant, enforced by types: the dirty closure must be
@@ -240,7 +248,11 @@ impl IndexBuildPlan {
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
-        let fw_context = reloaded.enrich_frameworks(indexer, project_path, &mut write_units)?;
+        let fw_context =
+            reloaded.enrich_frameworks(indexer, project_path, &mut write_units, &sources)?;
+        // Enrichment was the last consumer of the retained sources; free them
+        // before the (potentially long-lived) resolve/write stages.
+        drop(sources);
 
         let resolve_result = indexer.phase_resolve(
             project_path,
@@ -278,6 +290,7 @@ impl IndexBuildPlan {
                         &output_snapshot.route_nodes,
                         &hierarchy_edges,
                         &chunk_blobs,
+                        scan_result.walk_manifest.as_deref(),
                     )
                 })?;
             (
@@ -368,6 +381,7 @@ impl IndexBuildPlan {
         }
 
         let mut build_explain = BuildExplainCollector::new();
+        let walk_manifest = scan_result.walk_manifest.clone();
         let phase_start = Instant::now();
         let write_result = if let Some(generation_floor) = full_rebuild_staging_floor {
             indexer.commit_full_rebuild_staging(
@@ -385,6 +399,8 @@ impl IndexBuildPlan {
                 &output_snapshot.route_nodes,
                 &hierarchy_edges,
                 &chunk_blobs,
+                walk_manifest.as_deref(),
+                scan_result.scope_hints.as_ref(),
                 &mut build_explain,
             )?
         };
@@ -440,6 +456,7 @@ impl IndexBuildPlan {
             write_units: write_result.write_units,
             config_units,
             parsed_file_paths,
+            walk_manifest,
             build_explain,
             written_index_epoch,
         })
@@ -460,6 +477,7 @@ impl IndexBuildPlan {
             write_units,
             config_units,
             parsed_file_paths,
+            walk_manifest,
             mut build_explain,
             written_index_epoch,
         } = written;
@@ -483,6 +501,8 @@ impl IndexBuildPlan {
             &write_units,
             &parsed_file_paths,
             &carry.output_snapshot.route_nodes,
+            walk_manifest.as_deref(),
+            carry.scan_result.scope_hints.as_ref(),
             &mut build_explain,
         )?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
@@ -646,8 +666,9 @@ impl Reloaded {
         indexer: &Indexer,
         project_path: &Path,
         write_units: &mut [FileWriteUnit],
+        sources: &std::collections::HashMap<String, std::sync::Arc<str>>,
     ) -> CcResult<crate::framework_resolvers::ProjectFrameworkContext> {
-        indexer.phase_framework_enrichment(project_path, write_units)
+        indexer.phase_framework_enrichment(project_path, write_units, sources)
     }
 
     fn into_actions(self) -> HashMap<String, FileAction> {
@@ -658,6 +679,7 @@ impl Reloaded {
 struct ParsedBuildState {
     write_units: Vec<FileWriteUnit>,
     parse_report: ParseReport,
+    sources: std::collections::HashMap<String, std::sync::Arc<str>>,
 }
 
 impl From<ParseResult> for ParsedBuildState {
@@ -669,6 +691,7 @@ impl From<ParseResult> for ParsedBuildState {
                 files_to_parse: parse_result.files_to_parse,
                 used_parallel: parse_result.used_parallel,
             },
+            sources: parse_result.sources,
         }
     }
 }
@@ -1286,6 +1309,323 @@ class Accumulator:
         assert!(
             catalog_cache::parked_live_len(&db).is_none(),
             "full rebuild must clear the parked catalog"
+        );
+    }
+
+    /// Event-scoped prepare, end to end. One scoped build must:
+    /// (1) stat/hash only the event paths — an off-scope on-disk edit is NOT
+    ///     picked up (proof that no tree walk ran) until a later unscoped
+    ///     build converges it;
+    /// (2) preserve removal semantics (a removed event path lands in
+    ///     `files_removed`) and the dirty closure (an export-signature change
+    ///     re-resolves the importer, which is nowhere in the event set);
+    /// (3) after the follow-up unscoped build, match a same-content full
+    ///     rebuild row for row on resolved call edges.
+    #[test]
+    fn scoped_build_scopes_work_and_preserves_dirty_closure() {
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        let project = dir.path();
+        std::fs::write(
+            project.join("lib.ts"),
+            "export function helper(value: number): number {\n    return value + 1;\n}\n",
+        )
+        .expect("write lib.ts");
+        std::fs::write(
+            project.join("main.ts"),
+            "import { helper } from './lib';\n\nexport function mainEntry(): number {\n    return helper(1);\n}\n",
+        )
+        .expect("write main.ts");
+        std::fs::write(
+            project.join("extra.ts"),
+            "export function standaloneFn(): number {\n    return 2;\n}\n",
+        )
+        .expect("write extra.ts");
+        std::fs::write(
+            project.join("side.ts"),
+            "export function sideFn(): number {\n    return 3;\n}\n",
+        )
+        .expect("write side.ts");
+
+        let db_dir = tempfile::tempdir().expect("db dir");
+        let db = Arc::new(
+            IndexDb::open(&db_dir.path().join("index.sqlite3"))
+                .expect("open db")
+                .0,
+        );
+        let indexer = Indexer::new(db.clone(), project, &config);
+        let plan = IndexBuildPlan::new(false, None);
+        plan.execute(&indexer, project).expect("initial build");
+
+        // Edits: export-signature change (dirty-closure trigger), a removal,
+        // an addition — all in scope — plus one OFF-scope edit.
+        std::fs::write(
+            project.join("lib.ts"),
+            "export function helper(value: number, scale: number): number {\n    return value * scale;\n}\n",
+        )
+        .expect("edit lib.ts");
+        std::fs::remove_file(project.join("extra.ts")).expect("remove extra.ts");
+        std::fs::write(
+            project.join("newcomer.ts"),
+            "export function newcomerFn(): number {\n    return 4;\n}\n",
+        )
+        .expect("write newcomer.ts");
+        std::fs::write(
+            project.join("side.ts"),
+            "export function sideFn(): number {\n    return 3;\n}\n\nexport function offScopeFn(): number {\n    return 5;\n}\n",
+        )
+        .expect("edit side.ts off scope");
+
+        let scope = crate::indexer::BuildScope {
+            changed: vec!["lib.ts".to_string(), "newcomer.ts".to_string()],
+            removed: vec!["extra.ts".to_string()],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare");
+        let report = plan
+            .commit(&indexer, project, prepared)
+            .expect("scoped commit");
+
+        assert_eq!(report.files_updated, 1, "lib.ts only");
+        assert_eq!(report.files_added, 1, "newcomer.ts only");
+        assert_eq!(report.files_removed, 1, "extra.ts only");
+        // lib, main, side, newcomer survive: 4 files in the index universe.
+        assert_eq!(report.files_scanned, 4, "scoped universe after removal");
+        assert_eq!(
+            report.dirty_propagation,
+            Some(crate::dirty_closure::DirtyPropagationStatus::Normal),
+            "scoped incremental must run the dirty closure"
+        );
+
+        let count = |sql: &str| -> i64 {
+            db.reads()
+                .query_json(sql, &[])
+                .expect("count query")
+                .first()
+                .and_then(|row| row.get("cnt"))
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+        };
+        assert_eq!(
+            count("SELECT COUNT(*) AS cnt FROM symbols WHERE file_path = 'side.ts' AND name = 'offScopeFn'"),
+            0,
+            "off-scope edit must not be indexed by a scoped build (no tree walk ran)"
+        );
+        assert_eq!(
+            count("SELECT COUNT(*) AS cnt FROM files WHERE file_path = 'extra.ts'"),
+            0,
+            "removed event path must be deleted from the index"
+        );
+        assert_eq!(
+            count("SELECT COUNT(*) AS cnt FROM symbols WHERE file_path = 'newcomer.ts'"),
+            1,
+            "added event path must be indexed"
+        );
+
+        // Dirty closure through the scoped build: main.ts (not in the event
+        // set) must have re-resolved its helper call against the NEW uid.
+        let resolved_rows = |db: &IndexDb| -> Vec<String> {
+            db.reads()
+                .query_json(
+                    "SELECT file_path || '|' || callee_symbol || '|' || \
+                     COALESCE(callee_symbol_uid,'') || '|' || COALESCE(target_file_path,'') \
+                     AS row FROM call_edges ORDER BY row",
+                    &[],
+                )
+                .expect("call edge rows")
+                .iter()
+                .filter_map(|r| r.get("row").and_then(|v| v.as_str()).map(String::from))
+                .collect()
+        };
+
+        // Converge the off-scope edit with a normal unscoped incremental,
+        // then require row-for-row equality with a same-content full rebuild.
+        let followup = plan.execute(&indexer, project).expect("unscoped follow-up");
+        assert_eq!(
+            followup.files_updated, 1,
+            "unscoped follow-up must pick up the off-scope side.ts edit"
+        );
+
+        let db_full = Arc::new(
+            IndexDb::open(&db_dir.path().join("index_full.sqlite3"))
+                .expect("open full db")
+                .0,
+        );
+        let indexer_full = Indexer::new(db_full.clone(), project, &config);
+        IndexBuildPlan::new(true, None)
+            .execute(&indexer_full, project)
+            .expect("full rebuild");
+        let scoped_edges = resolved_rows(&db);
+        assert!(
+            scoped_edges
+                .iter()
+                .any(|row| row.starts_with("main.ts|helper|") && row.contains("lib.ts")),
+            "main.ts's helper call must stay resolved to lib.ts; got {scoped_edges:?}"
+        );
+        assert_eq!(
+            scoped_edges,
+            resolved_rows(&db_full),
+            "scoped+follow-up resolution must match a same-content full rebuild"
+        );
+    }
+
+    /// Scoped-prepare safety fallbacks: a dot-path event (admission rules may
+    /// have changed) and a first build (empty DB) must both take the full
+    /// tree walk — observable because the full walk picks up files that were
+    /// never in the event set.
+    #[test]
+    fn scoped_build_falls_back_to_full_walk_when_unsafe() {
+        let config = IndexingConfig::default();
+
+        // Case 1: first build with a scope — empty DB forces the full walk.
+        let dir = tempfile::tempdir().expect("tempdir");
+        let project = dir.path();
+        write_fixture(project);
+        std::fs::write(project.join("other.py"), "def other():\n    return 2\n")
+            .expect("write other.py");
+        let db = open_db(project);
+        let indexer = Indexer::new(db.clone(), project, &config);
+        let plan = IndexBuildPlan::new(false, None);
+        let scope = crate::indexer::BuildScope {
+            changed: vec![FIXTURE_FILE.to_string()],
+            removed: vec![],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare on empty db");
+        let report = plan.commit(&indexer, project, prepared).expect("commit");
+        assert_eq!(
+            report.files_added, 2,
+            "first build must full-walk regardless of the scope"
+        );
+
+        // Case 2: a dot-path event set — the full walk must observe an
+        // off-scope edit a scoped scan would have skipped.
+        std::fs::write(
+            project.join("other.py"),
+            "def other():\n    return 2\n\n\ndef other_two():\n    return 3\n",
+        )
+        .expect("edit other.py");
+        let scope = crate::indexer::BuildScope {
+            changed: vec![".gitignore".to_string()],
+            removed: vec![],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare with dot-path event");
+        let report = plan.commit(&indexer, project, prepared).expect("commit");
+        assert_eq!(
+            report.files_updated, 1,
+            "dot-path events must force the full walk (off-scope edit observed)"
+        );
+    }
+
+    /// Scoped signature-gate hints: a walk-free scoped build whose event set
+    /// contains only code files must skip the config-linker and infra
+    /// fallback walks (their signatures provably did not change under the
+    /// scope's trust model) — off-scope config/infra changes are NOT
+    /// observed until a later unscoped build converges them. A scoped build
+    /// whose event set touches a yaml file must recompute both signatures
+    /// and run the passes.
+    #[test]
+    fn scoped_build_hints_gate_config_and_infra_walks() {
+        let config = IndexingConfig::default();
+        let dir = tempfile::tempdir().expect("tempdir");
+        let project = dir.path();
+        write_fixture(project);
+
+        let db = open_db(project);
+        let indexer = Indexer::new(db.clone(), project, &config);
+        let plan = IndexBuildPlan::new(false, None);
+        plan.execute(&indexer, project).expect("initial build");
+
+        let count = |sql: &str| -> i64 {
+            db.reads()
+                .query_json(sql, &[])
+                .expect("count query")
+                .first()
+                .and_then(|row| row.get("cnt"))
+                .and_then(|v| v.as_i64())
+                .unwrap_or(0)
+        };
+        let gate = |report: &crate::IndexReport, pass: &str| -> (bool, String) {
+            report
+                .build_explain
+                .as_ref()
+                .and_then(|explain| {
+                    explain
+                        .gate_decisions
+                        .iter()
+                        .find(|g| g.pass == pass)
+                        .map(|g| (g.run, g.reason.clone()))
+                })
+                .unwrap_or_else(|| panic!("missing {pass} gate decision"))
+        };
+
+        // An infra file (also a config-linker candidate) lands on disk AFTER
+        // the initial build recorded both signatures — off scope.
+        std::fs::write(
+            project.join("deploy.yaml"),
+            "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: scoped-hint-svc\n",
+        )
+        .expect("write deploy.yaml");
+
+        // Code-only scoped build: both fallback walks must be skipped, so
+        // the off-scope yaml is not observed.
+        std::fs::write(
+            project.join(FIXTURE_FILE),
+            format!("{FIXTURE_SOURCE}\n\n# scoped edit\n"),
+        )
+        .expect("edit fixture");
+        let scope = crate::indexer::BuildScope {
+            changed: vec![FIXTURE_FILE.to_string()],
+            removed: vec![],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare");
+        let report = plan
+            .commit(&indexer, project, prepared)
+            .expect("scoped commit");
+
+        let (infra_ran, infra_reason) = gate(&report, "infra");
+        assert!(
+            !infra_ran && infra_reason == "scoped: no infra candidate events",
+            "code-only scoped build must skip the infra walk: run={infra_ran} reason={infra_reason}"
+        );
+        let (config_ran, config_reason) = gate(&report, "config_link");
+        assert!(
+            !config_ran,
+            "code-only scoped build must not rescan config files: reason={config_reason}"
+        );
+        assert_eq!(
+            count("SELECT COUNT(*) AS cnt FROM infra_nodes"),
+            0,
+            "off-scope infra file must stay unobserved by a code-only scoped build"
+        );
+
+        // Scoped build whose event set includes the yaml: hints must force
+        // both signature recomputes, and the infra pass must run.
+        let scope = crate::indexer::BuildScope {
+            changed: vec!["deploy.yaml".to_string()],
+            removed: vec![],
+        };
+        let prepared = plan
+            .prepare_scoped(&indexer, project, Some(&scope))
+            .expect("scoped prepare with yaml event");
+        let report = plan
+            .commit(&indexer, project, prepared)
+            .expect("scoped commit with yaml event");
+
+        let (infra_ran, infra_reason) = gate(&report, "infra");
+        assert!(
+            infra_ran,
+            "yaml-event scoped build must recompute and run the infra pass: reason={infra_reason}"
+        );
+        assert!(
+            count("SELECT COUNT(*) AS cnt FROM infra_nodes WHERE name = 'scoped-hint-svc'") >= 1,
+            "the scoped-in yaml's infra node must be indexed"
         );
     }
 

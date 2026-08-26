@@ -71,7 +71,11 @@ impl IndexDb {
 
     /// Populate the cache from a full direct load whose token was verified
     /// stable across the load (caller re-reads the stored aggregate).
-    pub(crate) fn file_state_cache_store(&self, token: RowAgg, map: Arc<HashMap<String, FileState>>) {
+    pub(crate) fn file_state_cache_store(
+        &self,
+        token: RowAgg,
+        map: Arc<HashMap<String, FileState>>,
+    ) {
         if let Ok(mut guard) = self.file_state_cache.lock() {
             *guard = Some(FileStateCache { token, map });
         }

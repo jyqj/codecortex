@@ -3,6 +3,10 @@
 在项目根目录创建 `.codecortex.json` 自定义行为。所有字段都可省略——默认值
 适用于大多数项目。
 
+未知键只在日志告警、不会导致加载失败；历史版本已移除的键（如
+`indexing.parallelism`）会提示删除，迁移对照见
+[TROUBLESHOOTING.md](TROUBLESHOOTING.md#配置迁移)。
+
 ```json
 {
   "indexing": {
@@ -208,3 +212,5 @@ CodeCortex 检测项目规模并自动调整输出预算：
 | `CODECORTEX_BENCH_50K` | 关 | `1` 时启用默认跳过的 50k 文件合成规模基准（`bench_synthetic_50k`） |
 | `CODECORTEX_BENCH_FILES` | `10000` | 增量写基准（`incremental_write_bench`）的合成仓文件数 |
 | `CODECORTEX_PROFILE_SCALES` | `1000,2000,4000,8000,16000` | 冷建缩放 profiler（`profile_cold_build_scaling`）的规模列表 |
+| `CODECORTEX_SOAK_SECS` | `60` | RSS soak（`soak_mcp_session_rss`，ignored）的运行时长（秒） |
+| `CODECORTEX_SOAK_FILES` | `1000` | RSS soak 的合成仓文件数 |

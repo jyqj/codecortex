@@ -28,9 +28,18 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
 （`swap_rebuild_staging`）。这消掉了全量构建"解析产物全量驻留到
 commit"的 O(仓库) RSS 峰值；增量路径不变。
 
-每个阶段的耗时记录在 `IndexReport.phase_timing`
-（`scan_diff_ms` / `parse_ms` / `resolve_ms` / `write_ms` /
-`postprocess_ms` / `analysis_ms`），MCP `index()` 响应原样携带。
+耗时记录在 `IndexReport.phase_timing`，MCP `index()` 响应原样携带。
+**8 步逻辑管线聚合为 6 项计时**——dirty closure 计入 `parse_ms`、
+framework enrichment 计入 `resolve_ms`，其余一一对应：
+
+| 计时项 | 覆盖的逻辑步骤 |
+|--------|----------------|
+| `scan_diff_ms` | scan/diff |
+| `parse_ms` | parse + dirty closure |
+| `resolve_ms` | framework enrichment + resolve |
+| `write_ms` | write |
+| `postprocess_ms` | postprocess |
+| `analysis_ms` | analysis |
 
 ## scan/diff
 

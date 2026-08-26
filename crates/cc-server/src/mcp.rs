@@ -107,8 +107,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::StatusParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -129,8 +128,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::IndexParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let path = normalize_project_path(&p.path);
         let index = self
             .project_session
@@ -154,8 +152,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::SearchParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -221,8 +218,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::ContextParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -254,8 +250,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::NodeParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -277,8 +272,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::ExploreParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -340,8 +334,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::TraceParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -371,8 +364,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::RelationsParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -396,8 +388,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::ImpactParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -428,8 +419,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::ArchitectureParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -452,8 +442,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::FilesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -483,8 +472,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::GraphQueryParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -507,8 +495,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::IngestTracesParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
@@ -529,8 +516,7 @@ impl CodeCortexMcpServer {
         Parameters(p): Parameters<crate::tools::AdrParams>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
-        p.sanitize()
-            .map_err(|e| rmcp::ErrorData::invalid_params(e, None))?;
+        p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;

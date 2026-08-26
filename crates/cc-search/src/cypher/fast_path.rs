@@ -83,9 +83,6 @@ impl FastPathConfig {
     };
 }
 
-/// Chunk size for batched `symbol_uid IN (...)` resolution.
-const SYMBOL_BATCH: usize = 400;
-
 /// Columns the SQL path can project from `symbols` (mirrors `table_json_expr`).
 const SYMBOL_COLUMNS: &[&str] = &[
     "symbol_id",
@@ -595,21 +592,20 @@ struct QueryMemo {
 fn run_bfs(query: &CypherQuery, plan: &FastPlan, db: &IndexDb) -> CcResult<CypherResult> {
     // Seed exactly like the CTE base case: every symbols row matching the
     // source-side WHERE conjunction. NULL UIDs are inert in the CTE (they can
-    // neither expand nor join), so filter them out up front.
-    let mut seed_sql = String::from("SELECT symbol_uid FROM symbols WHERE symbol_uid IS NOT NULL");
-    let mut params: Vec<String> = Vec::new();
-    for (column, value) in &plan.seed_conds {
-        seed_sql.push_str(&format!(" AND {column} = ?{}", params.len() + 1));
-        params.push(value.clone());
-    }
-    let seed_rows = db.reads().query_json(&seed_sql, &params)?;
+    // neither expand nor join), so filter them out up front. The typed seed
+    // read enforces the same column allowlist as `FastPathConfig`'s
+    // `seed_eq_columns` gate.
+    let conds: Vec<(&str, &str)> = plan
+        .seed_conds
+        .iter()
+        .map(|(column, value)| (*column, value.as_str()))
+        .collect();
+    let seed_uids = db.symbol_graph_reads().symbol_uids_by_eq(&conds)?;
     let mut roots: Vec<String> = Vec::new();
     let mut seen_roots: HashSet<String> = HashSet::new();
-    for row in &seed_rows {
-        if let Some(uid) = row.get("symbol_uid").and_then(|v| v.as_str()) {
-            if seen_roots.insert(uid.to_string()) {
-                roots.push(uid.to_string());
-            }
+    for uid in seed_uids {
+        if seen_roots.insert(uid.clone()) {
+            roots.push(uid);
         }
     }
 
@@ -804,6 +800,18 @@ fn emit_tuple(
     Ok(())
 }
 
+/// Convert a typed [`cc_db::index_db::SymbolRow`] into the JSON map shape the
+/// projection code reads (`map.get(prop)`), matching `query_json`'s output for
+/// the same SELECT: TEXT → String, INTEGER → Number, NULL → Null.
+fn symbol_row_to_map(
+    row: &cc_db::index_db::SymbolRow,
+) -> Option<serde_json::Map<String, JsonValue>> {
+    match serde_json::to_value(row) {
+        Ok(JsonValue::Object(map)) => Some(map),
+        _ => None,
+    }
+}
+
 /// Resolve a batch of symbol rows by UID into the memo with chunked
 /// `IN (...)` queries. UIDs with no symbols row are memoized as `None`.
 fn batch_resolve_symbols(db: &IndexDb, memo: &mut QueryMemo, uids: &[String]) -> CcResult<()> {
@@ -814,24 +822,8 @@ fn batch_resolve_symbols(db: &IndexDb, memo: &mut QueryMemo, uids: &[String]) ->
             missing.push(uid.clone());
         }
     }
-    for chunk in missing.chunks(SYMBOL_BATCH) {
-        let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{i}")).collect();
-        let sql = format!(
-            "SELECT {} FROM symbols WHERE symbol_uid IN ({})",
-            SYMBOL_COLUMNS.join(", "),
-            placeholders.join(",")
-        );
-        for value in db.reads().query_json(&sql, chunk)? {
-            if let JsonValue::Object(map) = value {
-                let uid = map
-                    .get("symbol_uid")
-                    .and_then(|v| v.as_str())
-                    .map(str::to_string);
-                if let Some(uid) = uid {
-                    memo.symbols.insert(uid, Some(map));
-                }
-            }
-        }
+    for (uid, row) in db.reads().symbol_rows_by_uids(&missing)? {
+        memo.symbols.insert(uid, symbol_row_to_map(&row));
     }
     for uid in missing {
         memo.symbols.entry(uid).or_insert(None);
@@ -847,16 +839,14 @@ fn symbol_row<'m>(
     uid: &str,
 ) -> CcResult<Option<&'m serde_json::Map<String, JsonValue>>> {
     if !memo.symbols.contains_key(uid) {
-        let sql = format!(
-            "SELECT {} FROM symbols WHERE symbol_uid = ?1",
-            SYMBOL_COLUMNS.join(", ")
-        );
-        let result = db.reads().query_json(&sql, &[uid.to_string()])?;
-        let row = result.into_iter().next().and_then(|value| match value {
-            JsonValue::Object(map) => Some(map),
-            _ => None,
-        });
-        memo.symbols.insert(uid.to_string(), row);
+        let key = uid.to_string();
+        let row = db
+            .reads()
+            .symbol_rows_by_uids(std::slice::from_ref(&key))?
+            .remove(uid)
+            .as_ref()
+            .and_then(symbol_row_to_map);
+        memo.symbols.insert(key, row);
     }
     Ok(memo.symbols[uid].as_ref())
 }

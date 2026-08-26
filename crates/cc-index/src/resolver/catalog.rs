@@ -287,6 +287,18 @@ impl SymbolCatalog {
 
     /// Register all symbols from a parsed file.
     pub fn add_symbols(&mut self, symbols: &[SymbolRecord]) {
+        self.add_symbols_iter(symbols.len(), symbols.iter());
+    }
+
+    /// [`Self::add_symbols`] over any reference iterator, so callers holding
+    /// a shared seed snapshot ([`cc_db::SeedRows`]) can register the rows
+    /// without materializing an owned concatenation. `n` pre-sizes the
+    /// symbol-cardinality structures (pass the exact count).
+    pub fn add_symbols_iter<'a>(
+        &mut self,
+        n: usize,
+        symbols: impl Iterator<Item = &'a SymbolRecord>,
+    ) {
         // Pre-size the symbol-cardinality structures. The single-file
         // incremental path rebuilds the catalog from every persisted symbol, so
         // the first `add_symbols` call seeds hundreds of thousands of rows; the
@@ -294,7 +306,6 @@ impl SymbolCatalog {
         // zero reallocates ~log2(n) times copying every prior element. The
         // file-keyed maps stay unreserved (their cardinality is ~file count, so
         // reserving `n` would over-allocate several-fold).
-        let n = symbols.len();
         self.entries.reserve(n);
         self.by_uid.reserve(n);
         self.by_name.reserve(n);

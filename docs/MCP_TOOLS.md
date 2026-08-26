@@ -13,12 +13,13 @@
 
 每个工具的参数在分发前经过 `sanitize()`：
 
-- **未知参数名直接拒绝**：JSON-RPC `-32602` invalid-params，错误信息原样
-  携带 serde 诊断，如
-  ``failed to deserialize parameters: unknown field `qurey`, expected one of `query`, `mode`, `top_k`, ...``
+- **未知参数名直接拒绝**：schema 反序列化失败（未知字段、类型不匹配、
+  缺必填字段）经 rmcp 以**工具级错误结果**返回（`CallToolResult.is_error
+  = true`，文本原样携带 serde 诊断，如
+  ``failed to deserialize parameters: unknown field `qurey`, expected one of `query`, `mode`, `top_k`, ...``）
   ——拼错的参数立刻失败，而不是静默按默认值运行。（早期版本会静默忽略
   未知参数；依赖旧行为的客户端按报错里的字段名与 `expected one of`
-  清单改名或删除即可。）
+  清单改名或删除即可。）由 stdio E2E 与分发缝测试锁定。
 - **字符串钳制**：查询/意图类参数 UTF-8 安全截断到 4096 字节，路径类到
   1024 字节（永不切在多字节字符中间）。
 - **数值钳制**：`top_k` ∈ [1,200]、`limit` ∈ [1,500]、`max_depth` ∈

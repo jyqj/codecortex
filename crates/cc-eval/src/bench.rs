@@ -428,6 +428,22 @@ pub struct CorrectnessCheck {
     pub detail: String,
 }
 
+/// A labeled process-RSS reading taken at a bench milestone.
+#[derive(Debug, Clone, Serialize)]
+pub struct RssSample {
+    pub label: String,
+    pub rss_bytes: u64,
+}
+
+/// Sample the current process RSS under a milestone label (0 bytes when the
+/// platform reader fails; the report shows the raw value either way).
+pub fn sample_rss(label: &str) -> RssSample {
+    RssSample {
+        label: label.to_string(),
+        rss_bytes: cc_index::process_rss_bytes(),
+    }
+}
+
 /// Full scale benchmark report for one synthetic repo size.
 #[derive(Debug, Clone, Serialize)]
 pub struct ScaleBenchReport {
@@ -441,9 +457,17 @@ pub struct ScaleBenchReport {
     pub db_bytes: u64,
     pub incremental_single: IncrementalBenchReport,
     pub incremental_batch: IncrementalBenchReport,
+    /// Watcher-parity incremental: same single-file edit, but scanned with
+    /// `BuildScope::Targeted` (the production watcher path) instead of the
+    /// full-tree walk the MCP `index` tool performs.
+    pub incremental_targeted: Option<IncrementalBenchReport>,
     pub batch_touched_files: usize,
     pub tools: Vec<ScenarioLatency>,
     pub correctness: Vec<CorrectnessCheck>,
+    /// Process RSS at bench milestones (this process runs generator, MCP
+    /// server, and harness together — read as an upper bound, not a serving
+    /// footprint).
+    pub rss_samples: Vec<RssSample>,
 }
 
 /// Generate a Markdown report for one synthetic scale benchmark, mirroring
@@ -480,6 +504,14 @@ pub fn generate_scale_markdown(report: &ScaleBenchReport) -> String {
 
     md.push_str(&generate_incremental_markdown(&report.incremental_single));
     md.push_str(&generate_incremental_markdown(&report.incremental_batch));
+    if let Some(targeted) = &report.incremental_targeted {
+        md.push_str(&generate_incremental_markdown(targeted));
+        md.push_str(
+            "Targeted = watcher-parity `BuildScope::Targeted` scan (event-reported paths \
+             only), driven directly through `Indexer::prepare_build`/`commit_build`; total \
+             elapsed is harness wall time across both halves.\n\n",
+        );
+    }
 
     md.push_str("## Per-Tool Latency\n\n");
     md.push_str(LATENCY_METHODOLOGY_NOTE);
@@ -518,6 +550,24 @@ pub fn generate_scale_markdown(report: &ScaleBenchReport) -> String {
         ));
     }
     md.push('\n');
+
+    if !report.rss_samples.is_empty() {
+        md.push_str("## Process RSS\n\n");
+        md.push_str(
+            "Single-process harness (generator + in-process MCP server + bench driver): \
+             an upper bound on the serving footprint, tracked for regression trends.\n\n",
+        );
+        md.push_str("| Milestone | RSS |\n");
+        md.push_str("|-----------|-----|\n");
+        for sample in &report.rss_samples {
+            md.push_str(&format!(
+                "| {} | {} |\n",
+                sample.label,
+                format_bytes(sample.rss_bytes as usize)
+            ));
+        }
+        md.push('\n');
+    }
 
     let passed = report.correctness.iter().filter(|c| c.passed).count();
     md.push_str("## Summary\n\n");

@@ -437,13 +437,7 @@ mod tests {
     #[test]
     fn explore_flow_unresolved_symbol() {
         let (_tmp, db) = setup_abcd_graph();
-        let result = explore_flow(
-            &db,
-            None,
-            &["NonExistent".into()],
-            &test_flow_opts(),
-        )
-        .unwrap();
+        let result = explore_flow(&db, None, &["NonExistent".into()], &test_flow_opts()).unwrap();
 
         let flow: FlowResult = serde_json::from_value(result).unwrap();
         assert_eq!(flow.unresolved.len(), 1);
@@ -470,13 +464,7 @@ mod tests {
             rusqlite::params![],
         ).unwrap();
 
-        let result = explore_flow(
-            &db,
-            None,
-            &["fn_a".into()],
-            &test_flow_opts(),
-        )
-        .unwrap();
+        let result = explore_flow(&db, None, &["fn_a".into()], &test_flow_opts()).unwrap();
 
         let flow: FlowResult = serde_json::from_value(result).unwrap();
         assert_eq!(flow.ambiguous.len(), 1);

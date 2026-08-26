@@ -47,6 +47,7 @@
 //! the cache and keep the per-build direct load.
 
 use std::collections::{BTreeMap, HashMap, HashSet};
+use std::sync::Arc;
 
 use cc_model::symbol::{SymbolKind, SymbolRecord};
 use cc_model::ParserTier;
@@ -54,14 +55,108 @@ use cc_model::ParserTier;
 use crate::index_db::{FileWriteUnit, IndexDb};
 use crate::signature_agg::RowAgg;
 
+/// Seed-symbol rows handed to the resolver, in the seed query's
+/// `ORDER BY file_path, start_line` order.
+///
+/// The `Shared` variant is the cache-hit shape: one `Arc` per file cloned out
+/// of the snapshot, zero row clones — consumers only ever iterate the rows by
+/// reference, so materializing an owned `Vec<SymbolRecord>` per build (an
+/// O(all-symbols) deep clone) bought nothing. `Owned` is the direct-SQL shape
+/// (cache miss / no aggregate baseline).
+pub enum SeedRows {
+    Owned(Vec<SymbolRecord>),
+    Shared(Vec<Arc<Vec<SymbolRecord>>>),
+}
+
+impl SeedRows {
+    pub fn empty() -> Self {
+        SeedRows::Owned(Vec::new())
+    }
+
+    pub fn iter(&self) -> impl Iterator<Item = &SymbolRecord> + Clone {
+        match self {
+            SeedRows::Owned(rows) => itertools_either::Either::Left(rows.iter()),
+            SeedRows::Shared(files) => {
+                itertools_either::Either::Right(files.iter().flat_map(|rows| rows.iter()))
+            }
+        }
+    }
+
+    pub fn len(&self) -> usize {
+        match self {
+            SeedRows::Owned(rows) => rows.len(),
+            SeedRows::Shared(files) => files.iter().map(|rows| rows.len()).sum(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// Flatten into an owned `Vec` (test helpers and the legacy
+    /// `resolver_seed_symbols_excluding` contract).
+    pub fn into_vec(self) -> Vec<SymbolRecord> {
+        match self {
+            SeedRows::Owned(rows) => rows,
+            SeedRows::Shared(files) => {
+                let mut out = Vec::with_capacity(files.iter().map(|rows| rows.len()).sum());
+                for rows in files {
+                    out.extend(rows.iter().cloned());
+                }
+                out
+            }
+        }
+    }
+}
+
+/// Minimal local stand-in for `itertools::Either` so the two `iter()` arms
+/// can unify without an extra dependency.
+mod itertools_either {
+    pub enum Either<L, R> {
+        Left(L),
+        Right(R),
+    }
+
+    impl<L, R, T> Iterator for Either<L, R>
+    where
+        L: Iterator<Item = T>,
+        R: Iterator<Item = T>,
+    {
+        type Item = T;
+        fn next(&mut self) -> Option<T> {
+            match self {
+                Either::Left(iter) => iter.next(),
+                Either::Right(iter) => iter.next(),
+            }
+        }
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            match self {
+                Either::Left(iter) => iter.size_hint(),
+                Either::Right(iter) => iter.size_hint(),
+            }
+        }
+    }
+
+    impl<L: Clone, R: Clone> Clone for Either<L, R> {
+        fn clone(&self) -> Self {
+            match self {
+                Either::Left(iter) => Either::Left(iter.clone()),
+                Either::Right(iter) => Either::Right(iter.clone()),
+            }
+        }
+    }
+}
+
 /// Cached seed snapshot: rows grouped per file (map order = `file_path`
 /// byte order = SQLite `ORDER BY file_path` order), each file's rows in
 /// `start_line` order — materialization reproduces the seed query's
-/// `ORDER BY file_path, start_line`.
+/// `ORDER BY file_path, start_line`. Per-file vectors are `Arc`-shared with
+/// cache hits handed out earlier; batch maintenance copies-on-write only the
+/// touched files (`Arc::make_mut`).
 pub(crate) struct SeedSymbolCache {
     /// The `symbols_seed` aggregate this snapshot corresponds to.
     token: RowAgg,
-    by_file: BTreeMap<String, Vec<SymbolRecord>>,
+    by_file: BTreeMap<String, Arc<Vec<SymbolRecord>>>,
     total: usize,
 }
 
@@ -121,32 +216,36 @@ impl SeedSymbolCache {
         if rows.len() > cap {
             return None;
         }
-        let mut by_file: BTreeMap<String, Vec<SymbolRecord>> = BTreeMap::new();
+        let mut grouped: BTreeMap<String, Vec<SymbolRecord>> = BTreeMap::new();
         for row in rows {
-            by_file
+            grouped
                 .entry(row.file_path.clone())
                 .or_default()
                 .push(row.clone());
         }
         Some(Self {
             token,
-            by_file,
+            by_file: grouped
+                .into_iter()
+                .map(|(path, rows)| (path, Arc::new(rows)))
+                .collect(),
             total: rows.len(),
         })
     }
 
     /// Materialize the snapshot minus `excluded_files`, in the seed query's
-    /// `ORDER BY file_path, start_line` order.
-    fn materialize(&self, excluded_files: &[String]) -> Vec<SymbolRecord> {
+    /// `ORDER BY file_path, start_line` order. Shares the per-file vectors —
+    /// one `Arc` clone per file, zero row clones.
+    fn materialize(&self, excluded_files: &[String]) -> SeedRows {
         let excluded: HashSet<&str> = excluded_files.iter().map(String::as_str).collect();
-        let mut out = Vec::with_capacity(self.total);
+        let mut files = Vec::with_capacity(self.by_file.len());
         for (file_path, rows) in &self.by_file {
             if excluded.contains(file_path.as_str()) {
                 continue;
             }
-            out.extend(rows.iter().cloned());
+            files.push(Arc::clone(rows));
         }
-        out
+        SeedRows::Shared(files)
     }
 
     /// Apply the file-scoped delta of one committed incremental batch:
@@ -193,20 +292,24 @@ impl SeedSymbolCache {
         let mut touched: HashSet<String> = HashSet::new();
         for row in kept.into_iter().flatten() {
             touched.insert(row.file_path.clone());
-            self.by_file
-                .entry(row.file_path.clone())
-                .or_default()
-                .push(row);
+            // Copy-on-write: only the touched file's vector is cloned when a
+            // previous cache hit still shares it.
+            Arc::make_mut(
+                self.by_file
+                    .entry(row.file_path.clone())
+                    .or_insert_with(|| Arc::new(Vec::new())),
+            )
+            .push(row);
         }
         // Restore per-file start_line order (stable: ties keep insert order,
         // matching the rowid order a fresh load would observe — a folded
         // row's rowid stems from its last, surviving insert).
         for path in &touched {
             if let Some(rows) = self.by_file.get_mut(path) {
-                rows.sort_by_key(|s| s.start_line);
+                Arc::make_mut(rows).sort_by_key(|s| s.start_line);
             }
         }
-        self.total = self.by_file.values().map(Vec::len).sum();
+        self.total = self.by_file.values().map(|rows| rows.len()).sum();
         self.token = post_token;
         self.total <= cap
     }
@@ -214,11 +317,12 @@ impl SeedSymbolCache {
 
 impl IndexDb {
     /// Serve a seed load from the cache when the persisted token matches.
+    /// The hit shares the snapshot's per-file vectors (no row clones).
     pub(crate) fn seed_cache_materialize(
         &self,
         token: RowAgg,
         excluded_files: &[String],
-    ) -> Option<Vec<SymbolRecord>> {
+    ) -> Option<SeedRows> {
         let guard = self.seed_cache.lock().ok()?;
         let cache = guard.as_ref()?;
         if cache.token != token {
@@ -382,7 +486,7 @@ mod tests {
         );
         let filtered = cache.materialize(&["a.rs".to_string()]);
         assert_eq!(filtered.len(), 1);
-        assert_eq!(filtered[0].file_path, "b.rs");
+        assert_eq!(filtered.iter().next().unwrap().file_path, "b.rs");
     }
 
     fn open_db() -> (tempfile::TempDir, IndexDb) {

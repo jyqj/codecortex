@@ -599,6 +599,585 @@ async fn stdio_analysis_tools_smoke() -> Result<(), Box<dyn std::error::Error>> 
 }
 
 // ───────────────────────────────────────────────────────────────────────
+// Envelope tools: search (hybrid) / context / impact (changes blast radius)
+// ───────────────────────────────────────────────────────────────────────
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn stdio_hybrid_search_context_envelope_and_impact_blast_radius(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let tmp = TempDir::new()?;
+    let project = tmp.path();
+    write_fixture(project)?;
+
+    let client = spawn_client(project).await?;
+    index_fixture(&client, project).await?;
+    let pp = project.to_string_lossy();
+
+    // search (mode="hybrid", the default mode): serialized ContextEnvelope
+    // with ranked nodes, a human-readable summary, and a token estimate.
+    let hybrid = call_result(
+        &client,
+        "search",
+        json!({"query": "validate payload", "mode": "hybrid", "top_k": 5, "project_path": pp}),
+    )
+    .await?;
+    let nodes = hybrid["nodes"]
+        .as_array()
+        .expect("hybrid search should return a nodes array");
+    assert!(
+        !nodes.is_empty(),
+        "hybrid search should rank at least one node: {hybrid}"
+    );
+    assert!(
+        nodes.iter().any(|n| n["file_path"] == json!("src/lib.rs")),
+        "hybrid hits should point at the fixture source file: {hybrid}"
+    );
+    assert!(
+        hybrid["summary"].as_str().is_some_and(|s| !s.is_empty()),
+        "hybrid envelope should carry a non-empty summary: {hybrid}"
+    );
+    assert!(
+        hybrid["token_estimate"].as_u64().unwrap_or(0) > 0,
+        "hybrid envelope should estimate its token cost: {hybrid}"
+    );
+    assert!(
+        hybrid["evidence_summary"]["search_hits"]
+            .as_u64()
+            .unwrap_or(0)
+            >= 1,
+        "hybrid envelope should report search hits in evidence_summary: {hybrid}"
+    );
+
+    // context: a task naming three fixture symbols takes the symbol-matched
+    // path and returns matched symbols + expanded call edges + source details
+    // in one envelope.
+    let context = call_result(
+        &client,
+        "context",
+        json!({
+            "task": "trace how handle_request calls validate_payload and parse_field",
+            "max_symbols": 5,
+            "project_path": pp
+        }),
+    )
+    .await?;
+    let matched = context["matched_symbols"]
+        .as_array()
+        .expect("context should return matched_symbols for a symbol-rich task");
+    assert!(
+        matched.len() >= 3,
+        "context should match the three symbols named in the task: {context}"
+    );
+    assert!(
+        matched
+            .iter()
+            .any(|s| s["name"] == json!("validate_payload")),
+        "context matched_symbols should include validate_payload: {context}"
+    );
+    assert!(
+        context["expanded_callers"]
+            .as_array()
+            .is_some_and(|edges| !edges.is_empty()),
+        "context should expand caller edges for matched symbols: {context}"
+    );
+    assert!(
+        context["relevant_files"]
+            .as_array()
+            .is_some_and(|files| files.iter().any(|f| f == "src/lib.rs")),
+        "context should list the fixture file as relevant: {context}"
+    );
+    assert!(
+        context.get("symbol_details").is_some(),
+        "context (include_source default) should attach symbol_details: {context}"
+    );
+
+    // impact (scope="changes"): blast radius for an explicit changed-file set.
+    // All four functions in src/lib.rs sit on one call chain, so the report
+    // must cover the whole chain.
+    let impact = call_result(
+        &client,
+        "impact",
+        json!({"scope": "changes", "files": ["src/lib.rs"], "limit": 20, "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        impact["changed_files"]
+            .as_array()
+            .is_some_and(|files| files.iter().any(|f| f == "src/lib.rs")),
+        "impact(changes) should echo the changed file: {impact}"
+    );
+    let impacted = impact["impacted_symbols"]
+        .as_array()
+        .expect("impact(changes) should return impacted_symbols");
+    for name in ["validate_payload", "entrypoint"] {
+        assert!(
+            impacted.iter().any(|s| s["name"] == json!(name)),
+            "impact(changes) blast radius should include {name}: {impact}"
+        );
+    }
+    assert!(
+        impact["risk_summary"]["total_impacted"]
+            .as_u64()
+            .unwrap_or(0)
+            >= 4,
+        "impact(changes) should count the full fixture call chain: {impact}"
+    );
+    assert_eq!(
+        impact["truncated"],
+        json!(false),
+        "impact(changes) on the tiny fixture must not truncate: {impact}"
+    );
+
+    client.cancel().await?;
+    Ok(())
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Structured views: architecture aspects / files region+expand /
+// node outline+summary / relations refs+both
+// ───────────────────────────────────────────────────────────────────────
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn stdio_architecture_files_node_and_relations_views(
+) -> Result<(), Box<dyn std::error::Error>> {
+    let tmp = TempDir::new()?;
+    let project = tmp.path();
+    write_fixture(project)?;
+
+    let client = spawn_client(project).await?;
+    index_fixture(&client, project).await?;
+    let pp = project.to_string_lossy();
+
+    // architecture overview: languages + packages for the mixed-language fixture.
+    let overview = call_result(
+        &client,
+        "architecture",
+        json!({"aspect": "overview", "limit": 20, "project_path": pp}),
+    )
+    .await?;
+    let languages = overview["languages"]
+        .as_array()
+        .expect("architecture(overview) should return a languages array");
+    for lang in ["rust", "python"] {
+        assert!(
+            languages.iter().any(|l| l["language"] == json!(lang)),
+            "architecture(overview) languages should include {lang}: {overview}"
+        );
+    }
+    assert!(
+        overview["packages"]
+            .as_array()
+            .is_some_and(|pkgs| !pkgs.is_empty()),
+        "architecture(overview) should list at least one package: {overview}"
+    );
+
+    // architecture communities: detected module communities with member counts.
+    let communities = call_result(
+        &client,
+        "architecture",
+        json!({"aspect": "communities", "project_path": pp}),
+    )
+    .await?;
+    let communities_arr = communities
+        .as_array()
+        .expect("architecture(communities) should return an array");
+    assert!(
+        !communities_arr.is_empty(),
+        "fixture call chain should form at least one community: {communities}"
+    );
+    assert!(
+        communities_arr
+            .iter()
+            .all(|c| c["member_count"].as_u64().unwrap_or(0) >= 1),
+        "every community should have members: {communities}"
+    );
+
+    // architecture routes: the Flask handler with framework + handler fields.
+    let routes = call_result(
+        &client,
+        "architecture",
+        json!({"aspect": "routes", "limit": 20, "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        routes["count"].as_u64().unwrap_or(0) >= 1,
+        "architecture(routes) should find the Flask route: {routes}"
+    );
+    let handlers = routes["route_handlers"]
+        .as_array()
+        .expect("architecture(routes) should return route_handlers");
+    assert!(
+        handlers.iter().any(|h| h["handler"] == json!("get_user")
+            && h["framework"] == json!("flask")
+            && h["route_path"] == json!("/users/<uid>")),
+        "route_handlers should contain the fixture Flask handler: {routes}"
+    );
+
+    // files region: exact line range plus the symbols overlapping it.
+    let region = call_result(
+        &client,
+        "files",
+        json!({
+            "action": "region",
+            "path": "src/lib.rs",
+            "start_line": 1,
+            "end_line": 3,
+            "project_path": pp
+        }),
+    )
+    .await?;
+    assert!(
+        region["content"]
+            .as_str()
+            .is_some_and(|c| c.contains("parse_field")),
+        "files(region) content should contain the parse_field source: {region}"
+    );
+    assert!(
+        region["symbols"]
+            .as_array()
+            .is_some_and(|syms| syms.iter().any(|s| s["name"] == json!("parse_field"))),
+        "files(region) should list parse_field among region symbols: {region}"
+    );
+
+    // files expand: the range widened by context_lines on both sides.
+    let expand = call_result(
+        &client,
+        "files",
+        json!({
+            "action": "expand",
+            "path": "src/lib.rs",
+            "start_line": 5,
+            "end_line": 7,
+            "context_lines": 2,
+            "project_path": pp
+        }),
+    )
+    .await?;
+    assert_eq!(
+        expand["start_line"],
+        json!(3),
+        "files(expand) should widen start_line by context_lines: {expand}"
+    );
+    assert_eq!(
+        expand["end_line"],
+        json!(9),
+        "files(expand) should widen end_line by context_lines: {expand}"
+    );
+    assert!(
+        expand["content"]
+            .as_str()
+            .is_some_and(|c| c.contains("validate_payload")),
+        "files(expand) content should cover the requested symbol: {expand}"
+    );
+
+    // node include="outline": signature-only view with relations attached.
+    let outline = call_result(
+        &client,
+        "node",
+        json!({"symbol": "handle_request", "include": "outline", "project_path": pp}),
+    )
+    .await?;
+    let outline_syms = outline["symbols"]
+        .as_array()
+        .expect("node(outline) should return a symbols array");
+    assert!(
+        outline_syms.first().is_some_and(|s| s["outline"]
+            .as_str()
+            .is_some_and(|o| o.contains("handle_request"))),
+        "node(outline) should return the handle_request signature: {outline}"
+    );
+    assert!(
+        outline_syms
+            .first()
+            .is_some_and(|s| s["callers"].as_array().is_some_and(|c| !c.is_empty())),
+        "node(outline) should attach caller edges: {outline}"
+    );
+
+    // node include="summary": heuristic per-file summary keyed by file path.
+    let summary = call_result(
+        &client,
+        "node",
+        json!({"symbol": "src/lib.rs", "include": "summary", "project_path": pp}),
+    )
+    .await?;
+    assert_eq!(
+        summary["language"],
+        json!("rust"),
+        "node(summary) should report the file language: {summary}"
+    );
+    assert!(
+        summary["symbols_count"].as_u64().unwrap_or(0) >= 4,
+        "node(summary) should count the fixture functions: {summary}"
+    );
+
+    // relations kind="refs": reference sites for a symbol.
+    let refs = call_result(
+        &client,
+        "relations",
+        json!({"symbol": "validate_payload", "kind": "refs", "limit": 20, "project_path": pp}),
+    )
+    .await?;
+    let refs_arr = refs
+        .as_array()
+        .expect("relations(refs) should return an array of reference sites");
+    assert!(
+        !refs_arr.is_empty(),
+        "validate_payload is called by handle_request, so refs must not be empty: {refs}"
+    );
+    assert!(
+        refs_arr
+            .iter()
+            .all(|r| r["file_path"].is_string() && r["line"].is_u64()),
+        "every reference site should carry file_path and line: {refs}"
+    );
+
+    // relations kind="both" (the default): callers and callees in one call.
+    let both = call_result(
+        &client,
+        "relations",
+        json!({"symbol": "validate_payload", "kind": "both", "limit": 20, "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        both["callers"]
+            .as_array()
+            .is_some_and(|edges| !edges.is_empty()),
+        "relations(both) should list callers: {both}"
+    );
+    assert!(
+        both["callees"]
+            .as_array()
+            .is_some_and(|edges| !edges.is_empty()),
+        "relations(both) should list callees: {both}"
+    );
+
+    client.cancel().await?;
+    Ok(())
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// ingest_traces: runtime observations land as evidence and match the
+// fixture route; adr delete completes the ADR lifecycle.
+// ───────────────────────────────────────────────────────────────────────
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn stdio_ingest_traces_and_adr_delete() -> Result<(), Box<dyn std::error::Error>> {
+    let tmp = TempDir::new()?;
+    let project = tmp.path();
+    write_fixture(project)?;
+
+    let client = spawn_client(project).await?;
+    index_fixture(&client, project).await?;
+    let pp = project.to_string_lossy();
+
+    // Two observations for the Flask route: one flat OTLP-ish record and one
+    // wrapped in a spans array. Both normalize to /users/* and must match the
+    // indexed route.
+    let ingest = call_result(
+        &client,
+        "ingest_traces",
+        json!({
+            "traces": [
+                {
+                    "service_name": "api",
+                    "method": "GET",
+                    "path": "/users/{uid}",
+                    "status_code": "200"
+                },
+                {
+                    "service_name": "api",
+                    "spans": [{
+                        "method": "GET",
+                        "path": "/users/<uid>",
+                        "status_code": "200",
+                        "kind": "server"
+                    }]
+                }
+            ],
+            "project_path": pp
+        }),
+    )
+    .await?;
+    assert_eq!(
+        ingest["accepted"],
+        json!(2),
+        "both observations should be accepted as evidence: {ingest}"
+    );
+    assert_eq!(
+        ingest["spans_processed"],
+        json!(2),
+        "both observations should be processed: {ingest}"
+    );
+    assert_eq!(
+        ingest["total_submitted"],
+        json!(2),
+        "total_submitted should echo the trace count: {ingest}"
+    );
+    assert_eq!(
+        ingest["routes_matched"],
+        json!(2),
+        "both observations should match the indexed Flask route: {ingest}"
+    );
+    assert_eq!(
+        ingest["write_errors"],
+        json!(0),
+        "evidence writes should succeed on a healthy index: {ingest}"
+    );
+
+    // The ingested evidence must be visible through status(aspect="index").
+    let status = call_result(
+        &client,
+        "status",
+        json!({"aspect": "index", "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        status["runtime_evidence"]["evidence_rows"]
+            .as_u64()
+            .unwrap_or(0)
+            >= 1,
+        "status(index) should surface the stored runtime evidence: {status}"
+    );
+    assert!(
+        status["runtime_evidence"]["total_observations"]
+            .as_u64()
+            .unwrap_or(0)
+            >= 2,
+        "status(index) should count both ingested observations: {status}"
+    );
+
+    // adr delete: store a record, delete it, and verify get/list no longer
+    // return it (get reports not-found in-band, not as a JSON-RPC error).
+    let stored = call_result(
+        &client,
+        "adr",
+        json!({
+            "action": "store",
+            "adr_id": "ADR-100",
+            "title": "Temporary decision",
+            "status": "proposed",
+            "decision": "To be deleted by this test.",
+            "project_path": pp
+        }),
+    )
+    .await?;
+    assert_eq!(
+        stored["stored"],
+        json!("ADR-100"),
+        "adr(store) should confirm the stored id: {stored}"
+    );
+
+    let deleted = call_result(
+        &client,
+        "adr",
+        json!({"action": "delete", "adr_id": "ADR-100", "project_path": pp}),
+    )
+    .await?;
+    assert_eq!(
+        deleted["deleted"],
+        json!(true),
+        "adr(delete) should report the record as deleted: {deleted}"
+    );
+    assert_eq!(
+        deleted["adr_id"],
+        json!("ADR-100"),
+        "adr(delete) should echo the deleted id: {deleted}"
+    );
+
+    let got = call_result(
+        &client,
+        "adr",
+        json!({"action": "get", "adr_id": "ADR-100", "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        got["error"].as_str().is_some_and(|e| e.contains("ADR-100")),
+        "adr(get) after delete should report not-found in-band: {got}"
+    );
+
+    let listed = call_result(
+        &client,
+        "adr",
+        json!({"action": "list", "project_path": pp}),
+    )
+    .await?;
+    assert!(
+        !listed.to_string().contains("ADR-100"),
+        "adr(list) must not return the deleted record: {listed}"
+    );
+
+    client.cancel().await?;
+    Ok(())
+}
+
+// ───────────────────────────────────────────────────────────────────────
+// Error contract: invalid enum values must surface as JSON-RPC -32602
+// (invalid params) listing the legal values, per docs/MCP_TOOLS.md.
+// ───────────────────────────────────────────────────────────────────────
+
+/// Call `tool` with `args` and return the JSON-RPC error it produces,
+/// panicking if the call unexpectedly succeeds or fails at transport level.
+async fn expect_rpc_error(
+    client: &RunningService<RoleClient, ()>,
+    tool: &str,
+    args: Value,
+) -> rmcp::model::ErrorData {
+    let result = client
+        .call_tool(CallToolRequestParams::new(tool.to_string()).with_arguments(json_args(args)))
+        .await;
+    match result {
+        Err(rmcp::ServiceError::McpError(err)) => err,
+        other => panic!("expected a JSON-RPC error from {tool}, got: {other:?}"),
+    }
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn stdio_invalid_enum_value_maps_to_invalid_params() -> Result<(), Box<dyn std::error::Error>>
+{
+    let tmp = TempDir::new()?;
+    let project = tmp.path();
+    write_fixture(project)?;
+
+    // Sanitization runs before any index access, so no indexing is needed.
+    let client = spawn_client(project).await?;
+    let pp = project.to_string_lossy();
+
+    let relations_err = expect_rpc_error(
+        &client,
+        "relations",
+        json!({"symbol": "validate_payload", "kind": "sideways", "project_path": pp}),
+    )
+    .await;
+    assert_eq!(
+        relations_err.code.0, -32602,
+        "invalid relations kind must map to JSON-RPC invalid params: {relations_err:?}"
+    );
+    assert!(
+        relations_err.message.contains("invalid kind") && relations_err.message.contains("callers"),
+        "the error should name the parameter and list legal values: {relations_err:?}"
+    );
+
+    let architecture_err = expect_rpc_error(
+        &client,
+        "architecture",
+        json!({"aspect": "bogus", "project_path": pp}),
+    )
+    .await;
+    assert_eq!(
+        architecture_err.code.0, -32602,
+        "invalid architecture aspect must map to JSON-RPC invalid params: {architecture_err:?}"
+    );
+    assert!(
+        architecture_err.message.contains("invalid aspect")
+            && architecture_err.message.contains("overview"),
+        "the error should name the parameter and list legal values: {architecture_err:?}"
+    );
+
+    client.cancel().await?;
+    Ok(())
+}
+
+// ───────────────────────────────────────────────────────────────────────
 // Project switching: the LRU project cache must isolate two distinct roots
 // while keying tool calls by `project_path`.
 // ───────────────────────────────────────────────────────────────────────

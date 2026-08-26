@@ -10,7 +10,7 @@ CodeCortex 是一个纯代码智能引擎：对代码库构建语义索引，通
 | 深入文档 | 内容 |
 |---|---|
 | [internals/STORAGE.md](internals/STORAGE.md) | cc-db：连接模型、UnitOfWork、epoch 双时钟、21 张表、FTS5 双维护、重建协议 |
-| [internals/INDEXING.md](internals/INDEXING.md) | cc-index：八阶段管线、脏闭包、解析阶梯、PassGate、dispatch 合成、三段提交 |
+| [internals/INDEXING.md](internals/INDEXING.md) | cc-index：八步管线（计时聚合为 6 项）、脏闭包、解析阶梯、PassGate、dispatch 合成、三段提交 |
 | [internals/SEARCH.md](internals/SEARCH.md) | cc-search：检索通道、文件预选、RRF/重排、缓存、Cypher fast path |
 | [internals/CONCURRENCY.md](internals/CONCURRENCY.md) | 锁清单与锁序、一致性窗口、watcher、会话生命周期、epoch 失效协议 |
 

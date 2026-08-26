@@ -22,13 +22,14 @@
 //! `docs/benchmarks/synthetic_<scale>_latest.md` (existing env convention).
 
 use cc_eval::bench::{
-    generate_scale_markdown, measure_tool_scenario, summarize_incremental_reports,
+    generate_scale_markdown, measure_tool_scenario, sample_rss, summarize_incremental_reports,
     CorrectnessCheck, ScaleBenchReport, ScenarioLatency,
 };
 use cc_eval::runner::CodeIndexBackend;
 use cc_eval::synth::{generate, GroundTruth, SynthRepo, SynthSpec};
 use serde_json::{json, Value};
 use std::path::Path;
+use std::sync::Arc;
 use std::time::Instant;
 
 const SCALE_BENCH_SEED: u64 = 0x00C0_FFEE;
@@ -107,6 +108,49 @@ fn check(name: &str, passed: bool, detail: String) -> CorrectnessCheck {
     }
 }
 
+/// Watcher-parity targeted incremental: 1 warmup + `iterations` measured
+/// single-file builds through `BuildScope::Targeted` (the production watcher
+/// scan), driven directly on a fresh `Indexer` over the existing index.
+/// `elapsed_ms` in each returned report is overwritten with the harness wall
+/// time across prepare+commit so it is comparable to the MCP-path scenarios.
+fn run_targeted_iterations(root: &Path, rel_path: &str, iterations: usize) -> Vec<Value> {
+    let db_path = root.join(".codecortex").join("index.sqlite3");
+    let db = Arc::new(
+        cc_db::index_db::IndexDb::open(&db_path)
+            .expect("open existing index for targeted bench")
+            .0,
+    );
+    let config = cc_model::config::IndexingConfig::default();
+    let indexer = cc_index::Indexer::new(db, root, &config);
+
+    let mut reports = Vec::with_capacity(iterations);
+    for iteration in 0..=iterations {
+        touch_file(root, rel_path, 1000 + iteration);
+        eprintln!(
+            "[scale-bench] targeted incremental build start: iteration={}",
+            iteration
+        );
+        let scope = cc_index::BuildScope::Targeted(cc_index::TargetedChanges {
+            changed: vec![rel_path.to_string()],
+            removed: Vec::new(),
+        });
+        let start = Instant::now();
+        let prepared = indexer
+            .prepare_build(root, false, None, scope)
+            .expect("targeted prepare should succeed");
+        let report = indexer
+            .commit_build(root, false, None, prepared)
+            .expect("targeted commit should succeed");
+        let wall_ms = start.elapsed().as_millis() as u64;
+        if iteration >= 1 {
+            let mut value = serde_json::to_value(&report).expect("serialize IndexReport");
+            value["elapsed_ms"] = json!(wall_ms);
+            reports.push(value);
+        }
+    }
+    reports
+}
+
 /// `graph_query` result rows: collect every string cell for membership tests.
 fn graph_result_values(output: &Value) -> Vec<String> {
     output
@@ -152,7 +196,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("rank = {:?}", rank),
             ));
         }
-        Err(e) => checks.push(check("search_symbol_needle_top5", false, e)),
+        Err(e) => checks.push(check("search_symbol_needle_top5", false, e.to_string())),
     }
 
     // 2. Hybrid search on the needle's distinctive body phrase.
@@ -170,7 +214,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("phrase '{}' surfaced needle: {}", gt.needle_phrase, hit),
             ));
         }
-        Err(e) => checks.push(check("search_hybrid_needle_phrase", false, e)),
+        Err(e) => checks.push(check("search_hybrid_needle_phrase", false, e.to_string())),
     }
 
     // 3. Impact of the hub file must include known hub callers.
@@ -191,7 +235,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("{}/{} probed hub callers in blast radius", found, probed),
             ));
         }
-        Err(e) => checks.push(check("impact_hub_known_callers", false, e)),
+        Err(e) => checks.push(check("impact_hub_known_callers", false, e.to_string())),
     }
 
     // 4. Var-length CALLS traversal reaches 2 hops down the chain.
@@ -217,7 +261,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 ),
             ));
         }
-        Err(e) => checks.push(check("graph_query_varlen_chain", false, e)),
+        Err(e) => checks.push(check("graph_query_varlen_chain", false, e.to_string())),
     }
 
     // 5. The 3-cycle closes: cyc_a reaches itself within 3 CALLS hops.
@@ -237,7 +281,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("cycle legs reachable: {:?}", values),
             ));
         }
-        Err(e) => checks.push(check("graph_query_cycle_closes", false, e)),
+        Err(e) => checks.push(check("graph_query_cycle_closes", false, e.to_string())),
     }
 
     // 6. Trace finds the 4-hop cross-file chain path.
@@ -259,7 +303,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("paths found: {}, via {}", has_paths, mid_hop),
             ));
         }
-        Err(e) => checks.push(check("trace_chain_path", false, e)),
+        Err(e) => checks.push(check("trace_chain_path", false, e.to_string())),
     }
 
     // 7. Python cross-file resolution: hub callers visible via relations.
@@ -276,7 +320,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("expect caller {}", py_caller),
             ));
         }
-        Err(e) => checks.push(check("relations_py_hub_callers", false, e)),
+        Err(e) => checks.push(check("relations_py_hub_callers", false, e.to_string())),
     }
 
     // 8. Rust same-file fan-out edge exists in the graph.
@@ -295,7 +339,7 @@ fn run_correctness_checks(backend: &CodeIndexBackend, gt: &GroundTruth) -> Vec<C
                 format!("expect {} -> {}", gt.rs_intra.caller, gt.rs_intra.callee),
             ));
         }
-        Err(e) => checks.push(check("graph_query_rs_intra_edge", false, e)),
+        Err(e) => checks.push(check("graph_query_rs_intra_edge", false, e.to_string())),
     }
 
     checks
@@ -389,10 +433,12 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
     let root = tmp.path();
 
     // Generate the synthetic repo (deterministic from seed + size).
+    let mut rss_samples = Vec::new();
     let gen_start = Instant::now();
     let repo: SynthRepo = generate(root, &spec).expect("synthetic repo generation");
     let generate_ms = gen_start.elapsed().as_millis() as u64;
     assert_eq!(repo.files_written, target_files);
+    rss_samples.push(sample_rss("after repo generation"));
 
     // Cold full index through the real `index` tool.
     let backend =
@@ -403,6 +449,7 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
         .expect("cold full index build should succeed");
     let cold_index_ms = cold_start.elapsed().as_millis() as u64;
     let db_bytes = index_db_bytes(root);
+    rss_samples.push(sample_rss("after cold full index"));
 
     assert_eq!(
         report_usize(&full, "files_added"),
@@ -429,6 +476,7 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
     // Ground-truth correctness + tool latency on the pristine index.
     let correctness = run_correctness_checks(&backend, &repo.ground_truth);
     let tools = run_tool_scenarios(&backend, root, &repo.ground_truth);
+    rss_samples.push(sample_rss("after tool scenarios"));
 
     // Incremental: body-only edit of a single chain-middle file.
     let single_target = repo.ground_truth.chain[1].callee_file.clone();
@@ -470,6 +518,22 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
     }
     let incremental_batch =
         summarize_incremental_reports("five_percent_batch", repo.files_written, &batch_reports);
+    rss_samples.push(sample_rss("after incremental scenarios"));
+
+    // Watcher-parity targeted scan on the same single file. The MCP session
+    // is dropped first so the direct Indexer is the only writer.
+    drop(backend);
+    let targeted_reports = run_targeted_iterations(root, &single_target, INCREMENTAL_ITERATIONS);
+    for report in &targeted_reports {
+        assert_eq!(report_usize(report, "files_parsed"), 1);
+        assert_eq!(report_usize(report, "files_updated"), 1);
+    }
+    let incremental_targeted = summarize_incremental_reports(
+        "targeted_single_file (watcher parity)",
+        repo.files_written,
+        &targeted_reports,
+    );
+    rss_samples.push(sample_rss("after targeted scenario"));
 
     let report = ScaleBenchReport {
         generated_at: chrono::Utc::now().to_rfc3339(),
@@ -482,9 +546,11 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
         db_bytes,
         incremental_single,
         incremental_batch,
+        incremental_targeted: Some(incremental_targeted),
         batch_touched_files: batch.len(),
         tools,
         correctness,
+        rss_samples,
     };
     let md = generate_scale_markdown(&report);
     eprintln!("{}", md);

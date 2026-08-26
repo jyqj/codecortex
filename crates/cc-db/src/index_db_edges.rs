@@ -251,6 +251,32 @@ impl<'a> EdgeReads<'a> {
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
+    /// `(source_symbol_uid, target_symbol_uid)` pairs of semantic edges with
+    /// the given `relation_kind` where BOTH endpoint UIDs are present. Lean
+    /// projection for graph passes that only join on UIDs (e.g. interface
+    /// dispatch reading `implements`).
+    pub fn semantic_uid_pairs_by_relation(
+        &self,
+        relation_kind: &str,
+    ) -> CcResult<Vec<(String, String)>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached(
+                "SELECT source_symbol_uid, target_symbol_uid \
+                 FROM semantic_edges \
+                 WHERE relation_kind = ?1 \
+                   AND source_symbol_uid IS NOT NULL \
+                   AND target_symbol_uid IS NOT NULL",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params![relation_kind], |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
     pub(crate) fn get_co_changes_for_file(
         &self,
         file_path: &str,

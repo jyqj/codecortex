@@ -541,9 +541,7 @@ pub fn handle_adr(
     let db = rt.index_db().ok_or(CcError::IndexUnavailable)?;
 
     let required_id = |action: &str| {
-        adr_id.ok_or_else(|| {
-            CcError::InvalidParams(format!("adr_id is required for '{}'", action))
-        })
+        adr_id.ok_or_else(|| CcError::InvalidParams(format!("adr_id is required for '{}'", action)))
     };
 
     match action {

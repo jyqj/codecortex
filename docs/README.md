@@ -14,6 +14,7 @@
 | [CYPHER.md](CYPHER.md) | `graph_query` 的只读 Cypher 子集与 fast path 元数据。 |
 | [LANGUAGES.md](LANGUAGES.md) | 语言提取层级、置信度矩阵、16 个框架 resolver。 |
 | [GLOSSARY.md](GLOSSARY.md) | 术语表（epoch、lane、PassGate、三段提交……）。 |
+| [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | 按症状排障、配置迁移（已移除键 / 行为变更）、稳定性口径。 |
 
 ## 深入实现（internals/）
 
@@ -21,7 +22,7 @@
 |------|------|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | 地图：crate 布局、数据流、**关键不变式**、扩展点目录。 |
 | [internals/STORAGE.md](internals/STORAGE.md) | cc-db：连接模型、UnitOfWork、epoch 双时钟、21 张表、FTS5 双维护、重建协议。 |
-| [internals/INDEXING.md](internals/INDEXING.md) | cc-index：八阶段管线、脏闭包、解析阶梯、PassGate、dispatch 合成、三段提交。 |
+| [internals/INDEXING.md](internals/INDEXING.md) | cc-index：八步管线（计时聚合为 6 项）、脏闭包、解析阶梯、PassGate、dispatch 合成、三段提交。 |
 | [internals/SEARCH.md](internals/SEARCH.md) | cc-search：检索通道、文件预选、RRF/重排、缓存、Cypher fast path。 |
 | [internals/CONCURRENCY.md](internals/CONCURRENCY.md) | 锁清单与锁序、一致性窗口、watcher、会话生命周期、epoch 失效协议。 |
 

@@ -314,8 +314,12 @@ impl CodeIndex {
         let _build_permit = Self::try_acquire_build_gate(&gate)?;
         let file_limit = self.auto_index_file_limit()?;
         let inputs = self.build_inputs()?;
-        let prepared =
-            Self::prepare_build(&inputs, full, Some(file_limit), cc_index::BuildScope::FullTree)?;
+        let prepared = Self::prepare_build(
+            &inputs,
+            full,
+            Some(file_limit),
+            cc_index::BuildScope::FullTree,
+        )?;
         self.commit_build(&inputs, full, Some(file_limit), prepared)
     }
 

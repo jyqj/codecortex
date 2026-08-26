@@ -7,6 +7,10 @@ license.workspace = true
 [dependencies]
 cc-server = { path = "../cc-server" }
 cc-model = { path = "../cc-model" }
+# RSS sampling (bench/soak) + the watcher-parity Targeted incremental
+# scenario drive cc-index directly; cc-db opens the handle for it.
+cc-index = { path = "../cc-index" }
+cc-db = { path = "../cc-db" }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }

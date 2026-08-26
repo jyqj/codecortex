@@ -33,7 +33,8 @@ struct InfraStage {
 pub(crate) struct AnalysisPlan {
     cochange: Option<CoChangeStage>,
     infra: Option<InfraStage>,
-    /// ADR docs are re-scanned unconditionally; an empty list writes nothing.
+    /// ADR docs are re-scanned unconditionally; an empty list clears any
+    /// previously stored metadata (deleting the last ADR must un-index it).
     adr_docs: Vec<serde_json::Value>,
 }
 
@@ -212,6 +213,17 @@ impl Indexer {
                 "adr_documents",
                 &serde_json::to_string(&plan.adr_docs).unwrap_or_default(),
             )?;
+        } else if self
+            .db
+            .reads()
+            .get_metadata("adr_documents")?
+            .is_some_and(|stored| stored != "[]")
+        {
+            // The scan is unconditional, so an empty result means the project
+            // has no ADR docs anymore — clear the stale metadata instead of
+            // serving deleted ADRs forever.
+            tracing::info!("clearing stale ADR document metadata (no ADR docs found)");
+            self.db.writes().set_metadata("adr_documents", "[]")?;
         }
         Ok(())
     }
@@ -274,5 +286,395 @@ impl Indexer {
             }
         }
         adr_docs
+    }
+}
+
+#[cfg(test)]
+mod analysis_phase_tests {
+    use super::*;
+    use cc_db::index_db::IndexDb;
+    use cc_model::config::IndexingConfig;
+    use std::sync::Arc;
+    use tempfile::TempDir;
+
+    /// Fixture project on disk plus an `IndexDb` in a separate tempdir, so
+    /// the analysis filesystem walks (infra, ADR) never see DB/WAL files.
+    fn setup(files: &[(&str, &str)]) -> (TempDir, TempDir, Arc<IndexDb>, Indexer) {
+        let project = TempDir::new().unwrap();
+        for (rel, content) in files {
+            let path = project.path().join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        }
+        let db_dir = TempDir::new().unwrap();
+        let db = Arc::new(IndexDb::open(&db_dir.path().join("analysis.db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), project.path(), &IndexingConfig::default());
+        (project, db_dir, db, indexer)
+    }
+
+    /// Incremental compute with an empty batch — the shape a no-change
+    /// build hands to phase 8-11.
+    fn compute(
+        indexer: &Indexer,
+        project: &Path,
+        build_explain: &mut BuildExplainCollector,
+    ) -> AnalysisPlan {
+        indexer
+            .phase_analysis_compute(project, false, &[], &[], &[], build_explain)
+            .unwrap()
+    }
+
+    fn count(db: &IndexDb, sql: &str) -> i64 {
+        db.reads()
+            .query_json(sql, &[])
+            .unwrap()
+            .first()
+            .and_then(|row| row.get("cnt"))
+            .and_then(|v| v.as_i64())
+            .unwrap_or(0)
+    }
+
+    fn gate<'a>(
+        explain: &'a cc_model::BuildExplain,
+        pass: &str,
+    ) -> &'a cc_model::GateDecisionRecord {
+        explain
+            .gate_decisions
+            .iter()
+            .find(|g| g.pass == pass)
+            .unwrap_or_else(|| panic!("gate decision for '{pass}' must be recorded"))
+    }
+
+    fn git(project: &Path, args: &[&str]) {
+        let out = std::process::Command::new("git")
+            .arg("-C")
+            .arg(project)
+            .args(args)
+            .output()
+            .expect("git must be runnable in the test environment");
+        assert!(
+            out.status.success(),
+            "git {:?} failed: {}",
+            args,
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+
+    fn git_commit(project: &Path, message: &str) {
+        git(
+            project,
+            &[
+                "-c",
+                "user.name=cc-test",
+                "-c",
+                "user.email=cc@test",
+                "-c",
+                "commit.gpgsign=false",
+                "commit",
+                "-q",
+                "-m",
+                message,
+            ],
+        );
+    }
+
+    /// (a) A project without a git repository must not fail the analysis
+    /// phase: the HEAD gate reads as unavailable (so the pass runs), the
+    /// scan yields no edges, and — crucially — nothing is recorded, so the
+    /// next build retries instead of permanently skipping. The gate
+    /// decision lands in build_explain with the unavailable reason.
+    #[test]
+    fn missing_git_repo_skips_cochange_gracefully_without_error() {
+        let (project, _db_dir, db, indexer) = setup(&[("src/a.py", "def a():\n    return 1\n")]);
+        let mut build_explain = BuildExplainCollector::new();
+
+        let plan = compute(&indexer, project.path(), &mut build_explain);
+
+        let stage = plan
+            .cochange
+            .as_ref()
+            .expect("unavailable HEAD must run the pass, never skip it");
+        assert!(
+            stage.co_changes.is_empty(),
+            "no git history can produce no co-change edges"
+        );
+        assert_eq!(
+            stage.record_head, None,
+            "no HEAD marker may be recorded when git is unavailable"
+        );
+
+        let explain = build_explain.finish();
+        let decision = gate(&explain, "git_cochange");
+        assert!(
+            decision.run,
+            "the pass runs when the cache key is unavailable"
+        );
+        assert_eq!(decision.reason, "cache key unavailable");
+
+        indexer.phase_analysis_apply(&plan).unwrap();
+        assert_eq!(
+            db.reads().get_metadata(COCHANGE_HEAD_KEY).unwrap(),
+            None,
+            "apply must not poison the skip cache with a marker"
+        );
+        assert_eq!(
+            count(&db, "SELECT COUNT(*) AS cnt FROM co_change_edges"),
+            0,
+            "no co-change rows may be written"
+        );
+    }
+
+    /// (b) The infra pass must produce persisted `infra_nodes`/`infra_edges`
+    /// rows for every supported infra file type — Dockerfile, docker-compose,
+    /// K8s manifest, terraform — and record its file-set signature after the
+    /// apply so the next unchanged build can skip.
+    #[test]
+    fn infra_pass_persists_nodes_and_edges_for_all_infra_file_types() {
+        let (project, _db_dir, db, indexer) = setup(&[
+            ("Dockerfile", "FROM python:3.11\nEXPOSE 8080\n"),
+            (
+                "docker-compose.yml",
+                "services:\n  api:\n    image: redis:7\n",
+            ),
+            (
+                "deploy/app.yaml",
+                "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: web-api\nspec:\n  replicas: 1\n",
+            ),
+            (
+                "main.tf",
+                "resource \"aws_s3_bucket\" \"assets\" {\n  bucket = \"cc-assets\"\n}\n",
+            ),
+        ]);
+        let mut build_explain = BuildExplainCollector::new();
+
+        let plan = compute(&indexer, project.path(), &mut build_explain);
+        assert!(
+            plan.infra.is_some(),
+            "no recorded signature: the infra pass must run"
+        );
+        indexer.phase_analysis_apply(&plan).unwrap();
+
+        let nodes: Vec<(String, String, String)> = db
+            .reads()
+            .query_json(
+                "SELECT file_path, kind, name FROM infra_nodes ORDER BY file_path, kind, name",
+                &[],
+            )
+            .unwrap()
+            .iter()
+            .map(|row| {
+                (
+                    row["file_path"].as_str().unwrap().to_string(),
+                    row["kind"].as_str().unwrap().to_string(),
+                    row["name"].as_str().unwrap().to_string(),
+                )
+            })
+            .collect();
+        for expected in [
+            ("Dockerfile", "docker_image", "python:3.11"),
+            ("Dockerfile", "docker_stage", "stage-0"),
+            ("Dockerfile", "docker_expose", "8080"),
+            ("docker-compose.yml", "compose_service", "api"),
+            ("docker-compose.yml", "docker_image", "redis:7"),
+            ("deploy/app.yaml", "k8s_deployment", "web-api"),
+            ("main.tf", "terraform_resource", "aws_s3_bucket.assets"),
+        ] {
+            assert!(
+                nodes
+                    .iter()
+                    .any(|(f, k, n)| { (f.as_str(), k.as_str(), n.as_str()) == expected }),
+                "expected infra node {expected:?} in {nodes:?}"
+            );
+        }
+
+        let edge_kinds: Vec<String> = db
+            .reads()
+            .query_json("SELECT DISTINCT kind FROM infra_edges ORDER BY kind", &[])
+            .unwrap()
+            .iter()
+            .map(|row| row["kind"].as_str().unwrap().to_string())
+            .collect();
+        for kind in ["depends_on", "exposes_port", "uses_image"] {
+            assert!(
+                edge_kinds.iter().any(|k| k == kind),
+                "expected infra edge kind '{kind}' in {edge_kinds:?}"
+            );
+        }
+
+        assert!(
+            db.reads().get_metadata("last_infra_sig").unwrap().is_some(),
+            "apply must record the infra signature"
+        );
+        assert_eq!(
+            db.reads()
+                .get_metadata("last_infra_sig_algo")
+                .unwrap()
+                .as_deref(),
+            Some(INFRA_SIG_ALGORITHM),
+            "apply must record the signature algorithm version"
+        );
+    }
+
+    /// (c) MADR-style documents under docs/adr are indexed into the
+    /// `adr_documents` metadata blob with file/title/status/date extracted;
+    /// an .md file without a `# ` title line is excluded.
+    #[test]
+    fn adr_docs_with_madr_headers_are_indexed_into_metadata() {
+        let (project, _db_dir, db, indexer) = setup(&[
+            (
+                "docs/adr/0001-use-sqlite.md",
+                "# Use SQLite for the index store\n\nStatus: accepted\nDate: 2024-03-01\n\n## Context\n...\n",
+            ),
+            (
+                "docs/adr/0002-no-title.md",
+                "just some notes without a heading\n\nStatus: draft\n",
+            ),
+        ]);
+        let mut build_explain = BuildExplainCollector::new();
+
+        let plan = compute(&indexer, project.path(), &mut build_explain);
+        assert_eq!(
+            plan.adr_docs.len(),
+            1,
+            "only documents with a title heading are indexed"
+        );
+        indexer.phase_analysis_apply(&plan).unwrap();
+
+        let raw = db
+            .reads()
+            .get_metadata("adr_documents")
+            .unwrap()
+            .expect("apply must persist the ADR metadata blob");
+        let docs: Vec<serde_json::Value> = serde_json::from_str(&raw).unwrap();
+        assert_eq!(docs.len(), 1);
+        assert_eq!(
+            docs[0]["file"].as_str(),
+            Some("docs/adr/0001-use-sqlite.md")
+        );
+        assert_eq!(
+            docs[0]["title"].as_str(),
+            Some("Use SQLite for the index store")
+        );
+        assert_eq!(docs[0]["status"].as_str(), Some("accepted"));
+        assert_eq!(docs[0]["date"].as_str(), Some("2024-03-01"));
+
+        // Deleting the last ADR doc must un-index it: the next apply with an
+        // empty scan clears the stored metadata instead of serving stale ADRs.
+        std::fs::remove_file(project.path().join("docs/adr/0001-use-sqlite.md")).unwrap();
+        let mut build_explain = BuildExplainCollector::new();
+        let plan = compute(&indexer, project.path(), &mut build_explain);
+        assert!(plan.adr_docs.is_empty());
+        indexer.phase_analysis_apply(&plan).unwrap();
+        assert_eq!(
+            db.reads().get_metadata("adr_documents").unwrap().as_deref(),
+            Some("[]"),
+            "empty ADR scan must clear previously stored metadata"
+        );
+    }
+
+    /// (d) Gate behavior across two same-content builds: the first build
+    /// runs git co-change (two commits touching a.py+b.py produce a
+    /// persisted edge) and the infra pass, and records both markers on
+    /// apply; the second build's compute must skip both passes (HEAD
+    /// unchanged, infra signature unchanged) while ADR scanning — which has
+    /// no skip condition by design — still reruns. Applying the skip plan
+    /// leaves the persisted artifacts intact.
+    #[test]
+    fn unchanged_content_second_build_skips_cochange_and_infra_gates() {
+        let (project, _db_dir, db, indexer) = setup(&[
+            ("a.py", "def a():\n    return 1\n"),
+            ("b.py", "def b():\n    return 1\n"),
+            ("Dockerfile", "FROM python:3.11\nEXPOSE 8080\n"),
+            (
+                "docs/adr/0001-use-sqlite.md",
+                "# Use SQLite\n\nStatus: accepted\nDate: 2024-03-01\n",
+            ),
+        ]);
+        let root = project.path();
+
+        // Two commits both touching a.py and b.py: pair count 2 with
+        // confidence 1.0 clears the analyzer thresholds (2, 0.2).
+        git(root, &["init", "-q"]);
+        git(root, &["add", "."]);
+        git_commit(root, "c1");
+        std::fs::write(root.join("a.py"), "def a():\n    return 2\n").unwrap();
+        std::fs::write(root.join("b.py"), "def b():\n    return 2\n").unwrap();
+        git(root, &["add", "."]);
+        git_commit(root, "c2");
+        let head = crate::git_cochange::current_git_head(root)
+            .expect("fixture repo must expose a HEAD sha");
+
+        // Build 1: both gates run, artifacts and markers land on apply.
+        let mut explain1 = BuildExplainCollector::new();
+        let plan1 = compute(&indexer, root, &mut explain1);
+        let stage = plan1.cochange.as_ref().expect("first build runs co-change");
+        assert!(
+            stage
+                .co_changes
+                .iter()
+                .any(|e| e.file_a == "a.py" && e.file_b == "b.py" && e.co_change_count == 2),
+            "two shared commits must yield the a.py/b.py edge; got {:?}",
+            stage.co_changes
+        );
+        assert_eq!(stage.record_head.as_deref(), Some(head.as_str()));
+        assert!(plan1.infra.is_some(), "first build runs the infra pass");
+        assert!(!plan1.adr_docs.is_empty(), "ADR docs are collected");
+        indexer.phase_analysis_apply(&plan1).unwrap();
+
+        assert_eq!(
+            count(&db, "SELECT COUNT(*) AS cnt FROM co_change_edges"),
+            1,
+            "exactly the a.py/b.py pair clears the thresholds"
+        );
+        assert_eq!(
+            db.reads()
+                .get_metadata(COCHANGE_HEAD_KEY)
+                .unwrap()
+                .as_deref(),
+            Some(head.as_str()),
+            "apply must record the analyzed HEAD"
+        );
+        let infra_nodes_after_first = count(&db, "SELECT COUNT(*) AS cnt FROM infra_nodes");
+        assert!(
+            infra_nodes_after_first > 0,
+            "Dockerfile produces infra nodes"
+        );
+
+        // Build 2 (same content): both gated passes must skip; ADR rescans.
+        let mut explain2 = BuildExplainCollector::new();
+        let plan2 = compute(&indexer, root, &mut explain2);
+        assert!(
+            plan2.cochange.is_none(),
+            "unchanged HEAD must skip the co-change pass"
+        );
+        assert!(
+            plan2.infra.is_none(),
+            "unchanged infra file set must skip the infra pass"
+        );
+        assert!(
+            !plan2.adr_docs.is_empty(),
+            "ADR indexing has no skip condition and must rescan"
+        );
+
+        let explain2 = explain2.finish();
+        let cochange_decision = gate(&explain2, "git_cochange");
+        assert!(!cochange_decision.run);
+        assert_eq!(cochange_decision.reason, "cache key unchanged");
+        let infra_decision = gate(&explain2, "infra");
+        assert!(!infra_decision.run);
+        assert_eq!(infra_decision.reason, "signature unchanged");
+
+        // Applying the skip plan is a no-op for the persisted artifacts.
+        indexer.phase_analysis_apply(&plan2).unwrap();
+        assert_eq!(
+            count(&db, "SELECT COUNT(*) AS cnt FROM co_change_edges"),
+            1,
+            "skipped pass must leave the co-change rows intact"
+        );
+        assert_eq!(
+            count(&db, "SELECT COUNT(*) AS cnt FROM infra_nodes"),
+            infra_nodes_after_first,
+            "skipped pass must leave the infra rows intact"
+        );
     }
 }

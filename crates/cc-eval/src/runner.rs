@@ -8,6 +8,7 @@
 
 use crate::mcp_wire::CodeCortexMcpServer;
 use crate::types::{Assertion, EvalCase, EvalCaseResult};
+use cc_model::{CcError, CcResult};
 use rmcp::model::{CallToolRequestParams, CallToolResult};
 use rmcp::service::RunningService;
 use rmcp::{RoleClient, ServiceExt};
@@ -35,7 +36,7 @@ impl CodeIndexBackend {
     /// under `project_path` before rebuilding. This is by design for fixture /
     /// eval mode where we always want a clean index. Do NOT use this constructor
     /// against a user's real project directory — it will destroy their cached index.
-    pub fn new(project_path: &Path) -> Result<Self, String> {
+    pub fn new(project_path: &Path) -> CcResult<Self> {
         let backend = Self::new_unindexed(project_path)?;
         backend.build_index_report(false)?;
         Ok(backend)
@@ -45,17 +46,17 @@ impl CodeIndexBackend {
     ///
     /// This is intended for eval tests that need to inspect the `IndexReport`
     /// from the first explicit full/incremental build.
-    pub fn new_unindexed(project_path: &Path) -> Result<Self, String> {
+    pub fn new_unindexed(project_path: &Path) -> CcResult<Self> {
         // Clean up any existing index to avoid UNIQUE constraint errors on rebuild.
         // Must remove before the server opens the project (which creates the DB).
         let codecortex_dir = project_path.join(".codecortex");
         if codecortex_dir.exists() {
             std::fs::remove_dir_all(&codecortex_dir).map_err(|e| {
-                format!(
+                CcError::Other(format!(
                     "failed to remove stale index at {}: {}",
                     codecortex_dir.display(),
                     e
-                )
+                ))
             })?;
         }
 
@@ -66,7 +67,7 @@ impl CodeIndexBackend {
         let config_path = project_path.join(".codecortex.json");
         if !config_path.exists() {
             std::fs::write(&config_path, "{\"auto_index\": {\"enabled\": false}}\n")
-                .map_err(|e| format!("failed to write eval config: {}", e))?;
+                .map_err(|e| CcError::Other(format!("failed to write eval config: {}", e)))?;
         }
 
         Self::open_existing(project_path)
@@ -85,12 +86,12 @@ impl CodeIndexBackend {
     /// Assumes the project was set up by a prior `new`/`new_unindexed`
     /// backend on the same path (so `.codecortex.json` already disables
     /// auto_index and the index DB exists).
-    pub fn open_existing(project_path: &Path) -> Result<Self, String> {
+    pub fn open_existing(project_path: &Path) -> CcResult<Self> {
         let runtime = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
             .build()
-            .map_err(|e| format!("failed to build tokio runtime: {}", e))?;
+            .map_err(|e| CcError::Other(format!("failed to build tokio runtime: {}", e)))?;
 
         // In-process duplex: real JSON-RPC framing on both ends, no stdio/child
         // process. The server side is the same `CodeCortexMcpServer` the binary
@@ -109,7 +110,7 @@ impl CodeIndexBackend {
             });
             ().serve(client_io)
                 .await
-                .map_err(|e| format!("failed to initialize eval MCP client: {}", e))
+                .map_err(|e| CcError::Other(format!("failed to initialize eval MCP client: {}", e)))
         })?;
 
         Ok(Self {
@@ -127,7 +128,7 @@ impl CodeIndexBackend {
 
     /// Build the index and return the serialized `IndexReport`.
     /// Goes through the real `index` tool (schema → sanitize → handler).
-    pub fn build_index_report(&self, full: bool) -> Result<Value, String> {
+    pub fn build_index_report(&self, full: bool) -> CcResult<Value> {
         self.call_tool("index", &serde_json::json!({ "full": full }))
     }
 
@@ -139,12 +140,15 @@ impl CodeIndexBackend {
     /// `index` tool's `path` param is resolved against the backend's project
     /// root (and injected when missing). All other params pass through as-is —
     /// unknown tools and schema-invalid params surface as JSON-RPC errors.
-    pub fn call_tool(&self, tool: &str, params: &Value) -> Result<Value, String> {
+    pub fn call_tool(&self, tool: &str, params: &Value) -> CcResult<Value> {
         let mut args = match params {
             Value::Null => serde_json::Map::new(),
             Value::Object(map) => map.clone(),
             other => {
-                return Err(format!("tool params must be a JSON object, got: {}", other));
+                return Err(CcError::InvalidParams(format!(
+                    "tool params must be a JSON object, got: {}",
+                    other
+                )));
             }
         };
         if tool == "index" {
@@ -168,7 +172,7 @@ impl CodeIndexBackend {
             // JSON-RPC error: handler errors, schema validation failures
             // (invalid params), and unknown tools all land here. The display
             // string keeps the original message (e.g. "Mcp error: -32602: ...").
-            Err(e) => Err(e.to_string()),
+            Err(e) => Err(CcError::Other(e.to_string())),
         }
     }
 }
@@ -185,7 +189,7 @@ impl Drop for CodeIndexBackend {
 /// `Json(JsonResult { result })`, which rmcp surfaces to clients as
 /// `CallToolResult.structured_content = {"result": <handler value>}`. Corpus
 /// assertions therefore see exactly the handler JSON a real MCP client gets.
-fn unwrap_tool_result(result: CallToolResult) -> Result<Value, String> {
+fn unwrap_tool_result(result: CallToolResult) -> CcResult<Value> {
     if result.is_error == Some(true) {
         // Tool-level error result (not used by this server's handlers, which
         // surface errors as JSON-RPC errors — kept for protocol completeness).
@@ -195,19 +199,19 @@ fn unwrap_tool_result(result: CallToolResult) -> Result<Value, String> {
             .filter_map(|c| c.as_text().map(|t| t.text.clone()))
             .collect::<Vec<_>>()
             .join("\n");
-        return Err(if message.is_empty() {
+        return Err(CcError::Other(if message.is_empty() {
             "tool returned an error result".to_string()
         } else {
             message
-        });
+        }));
     }
     let structured = result
         .structured_content
-        .ok_or("tool returned no structured content")?;
+        .ok_or_else(|| CcError::Other("tool returned no structured content".to_string()))?;
     match structured {
-        Value::Object(mut map) => map
-            .remove("result")
-            .ok_or_else(|| "structured content missing `result` envelope".to_string()),
+        Value::Object(mut map) => map.remove("result").ok_or_else(|| {
+            CcError::Other("structured content missing `result` envelope".to_string())
+        }),
         other => Ok(other),
     }
 }
@@ -431,7 +435,7 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
             Err(err) => {
                 // Tool errored as expected — check non-is_success assertions
                 // against the error message string (wrapped as a JSON string value).
-                let error_output = Value::String(err.clone());
+                let error_output = Value::String(err.to_string());
                 for assertion in &case.assertions {
                     if assertion.kind == "is_success" {
                         // is_success is irrelevant for expect_error cases; skip it.
@@ -498,7 +502,7 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
         output_size_bytes,
         assertions_passed,
         assertions_failed,
-        error: result.err(),
+        error: result.err().map(|e| e.to_string()),
         recall_at_5,
         mrr,
     }

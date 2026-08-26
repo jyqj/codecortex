@@ -64,7 +64,10 @@ impl CcError {
     /// condition (concurrent build / stale prepare) clears. Surfaced to MCP
     /// clients as `data.retryable` on the JSON-RPC error.
     pub fn is_retryable(&self) -> bool {
-        matches!(self, CcError::BuildBusy | CcError::StalePreparedBuild { .. })
+        matches!(
+            self,
+            CcError::BuildBusy | CcError::StalePreparedBuild { .. }
+        )
     }
 }
 

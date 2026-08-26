@@ -251,9 +251,12 @@ impl ProjectSession {
                 // phase_write and the delta apply, so readers never see the
                 // non-transactional intermediate write state yet keep running
                 // through the postprocess compute.
-                if let Err(e) =
-                    handlers::core::run_split_build(&index, false, true, cc_index::BuildScope::FullTree)
-                {
+                if let Err(e) = handlers::core::run_split_build(
+                    &index,
+                    false,
+                    true,
+                    cc_index::BuildScope::FullTree,
+                ) {
                     tracing::warn!("auto-index failed: {}", e);
                 }
             })

@@ -67,50 +67,16 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     for prior in prior_deltas {
         excluded_kinds.extend(prior.delete_call_kinds.iter().copied());
     }
-    let placeholders = (1..=excluded_kinds.len())
-        .map(|i| format!("?{}", i))
-        .collect::<Vec<_>>()
-        .join(",");
-    let sql = format!(
-        "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, file_path, line \
-         FROM call_edges \
-         WHERE callee_symbol_uid IS NOT NULL AND caller_symbol_uid IS NOT NULL \
-           AND (synthesized_by IS NULL OR synthesized_by NOT IN ({placeholders}))"
-    );
-    let params: Vec<String> = excluded_kinds.iter().map(|k| k.to_string()).collect();
-    let committed_rows = db.reads().query_json(&sql, &params)?;
-
-    struct CallEdgeRowLite {
-        edge_id: String,
-        caller_uid: String,
-        callee_uid: String,
-        file_path: String,
-        line: u32,
-    }
-
-    let mut call_edge_rows: Vec<CallEdgeRowLite> = committed_rows
-        .iter()
-        .map(|row| CallEdgeRowLite {
-            edge_id: row["edge_id"].as_str().unwrap_or_default().to_string(),
-            caller_uid: row["caller_symbol_uid"]
-                .as_str()
-                .unwrap_or_default()
-                .to_string(),
-            callee_uid: row["callee_symbol_uid"]
-                .as_str()
-                .unwrap_or_default()
-                .to_string(),
-            file_path: row["file_path"].as_str().unwrap_or_default().to_string(),
-            line: row["line"].as_i64().unwrap_or(0) as u32,
-        })
-        .collect();
+    let mut call_edge_rows = db
+        .symbol_graph_reads()
+        .dispatch_call_edges_excluding_synthesized(&excluded_kinds)?;
     // Overlay the call edges synthesized earlier in this round.
     for prior in prior_deltas {
         for edge in &prior.insert_call_edges {
             if let (Some(caller_uid), Some(callee_uid)) =
                 (&edge.caller_symbol_uid, &edge.callee_symbol_uid)
             {
-                call_edge_rows.push(CallEdgeRowLite {
+                call_edge_rows.push(cc_db::index_db::DispatchCallEdgeRow {
                     edge_id: edge.edge_id.clone(),
                     caller_uid: caller_uid.clone(),
                     callee_uid: callee_uid.clone(),
@@ -127,12 +93,7 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     // 3a. Load all symbols to build:
     //     - uid → (container, kind, name)
     //     - a set of interface/trait UIDs
-    let symbol_rows = db.reads().query_json(
-        "SELECT symbol_uid, name, kind, container \
-         FROM symbols \
-         WHERE symbol_uid IS NOT NULL",
-        &[],
-    )?;
+    let symbol_rows = db.symbol_graph_reads().symbol_dispatch_rows()?;
 
     // Map: symbol_uid → (container_uid_or_name, kind, name)
     // The `container` column stores the container name (not UID), so we need an
@@ -141,25 +102,20 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     // Map: (name, kind) for quick lookup — name → uid for containers
     let mut name_to_container_uid: HashMap<String, Vec<String>> = HashMap::new();
 
-    for row in &symbol_rows {
-        let uid = row["symbol_uid"].as_str().unwrap_or_default().to_string();
-        let name = row["name"].as_str().unwrap_or_default().to_string();
-        let kind = row["kind"].as_str().unwrap_or_default().to_string();
-        let container = row["container"].as_str().map(|s| s.to_string());
-
-        if uid.is_empty() {
+    for row in symbol_rows {
+        if row.symbol_uid.is_empty() {
             continue;
         }
 
         // Track all non-method symbols by name → UID for container resolution
-        if kind != "method" {
+        if row.kind != "method" {
             name_to_container_uid
-                .entry(name.clone())
+                .entry(row.name.clone())
                 .or_default()
-                .push(uid.clone());
+                .push(row.symbol_uid.clone());
         }
 
-        uid_to_info.insert(uid, (container, kind, name));
+        uid_to_info.insert(row.symbol_uid, (row.container, row.kind, row.name));
     }
 
     // 3b. Identify interface/trait UIDs.
@@ -174,32 +130,17 @@ pub(crate) fn compute_interface_dispatch_synthesis(
     }
 
     // 3c. Load implements edges: source = implementor, target = interface.
-    let implements_rows = db.reads().query_json(
-        "SELECT source_symbol_uid, target_symbol_uid \
-         FROM semantic_edges \
-         WHERE relation_kind = 'implements' \
-           AND source_symbol_uid IS NOT NULL \
-           AND target_symbol_uid IS NOT NULL",
-        &[],
-    )?;
+    let implements_rows = db
+        .edge_reads()
+        .semantic_uid_pairs_by_relation("implements")?;
 
     // Map: interface_uid → [implementor_uid, ...]
     let mut interface_to_implementors: HashMap<String, Vec<String>> = HashMap::new();
-    for row in &implements_rows {
-        let impl_uid = row["source_symbol_uid"]
-            .as_str()
-            .unwrap_or_default()
-            .to_string();
-        let iface_uid = row["target_symbol_uid"]
-            .as_str()
-            .unwrap_or_default()
-            .to_string();
-        if !impl_uid.is_empty() && !iface_uid.is_empty() {
-            interface_to_implementors
-                .entry(iface_uid)
-                .or_default()
-                .push(impl_uid);
-        }
+    for (impl_uid, iface_uid) in implements_rows {
+        interface_to_implementors
+            .entry(iface_uid)
+            .or_default()
+            .push(impl_uid);
     }
 
     if interface_to_implementors.is_empty() {

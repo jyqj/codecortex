@@ -424,30 +424,10 @@ impl Indexer {
     ) -> CcResult<Vec<(String, String)>> {
         let deleted_kinds = Self::overlay_deleted_kinds(action);
 
-        let mut edges = if deleted_kinds.is_empty() {
-            self.db.reads().call_uid_edges()?
-        } else {
-            let placeholders = (1..=deleted_kinds.len())
-                .map(|i| format!("?{i}"))
-                .collect::<Vec<_>>()
-                .join(",");
-            let sql = format!(
-                "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
-                 WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
-                 AND (synthesized_by IS NULL OR synthesized_by NOT IN ({placeholders}))"
-            );
-            let params: Vec<String> = deleted_kinds.iter().map(|kind| kind.to_string()).collect();
-            self.db
-                .reads()
-                .query_json(&sql, &params)?
-                .into_iter()
-                .filter_map(|row| {
-                    let caller = row.get("caller_symbol_uid")?.as_str()?.to_string();
-                    let callee = row.get("callee_symbol_uid")?.as_str()?.to_string();
-                    Some((caller, callee))
-                })
-                .collect()
-        };
+        let mut edges = self
+            .db
+            .symbol_graph_reads()
+            .call_uid_edges_excluding_synthesized(&deleted_kinds)?;
 
         if let Some(SynthesisAction::Round(round)) = action {
             for delta in &round.deltas {

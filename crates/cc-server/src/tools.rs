@@ -1,5 +1,6 @@
 //! Tool parameter types and shared result type for the consolidated MCP tool surface.
 
+use cc_model::{CcError, CcResult};
 use rmcp::schemars;
 use serde::{Deserialize, Serialize};
 
@@ -81,16 +82,16 @@ fn is_valid_branch_name(s: &str) -> bool {
         .all(|b| b.is_ascii_alphanumeric() || b == b'_' || b == b'.' || b == b'/' || b == b'-')
 }
 
-fn validate_enum(value: &str, valid: &[&str], param_name: &str) -> Result<(), String> {
+fn validate_enum(value: &str, valid: &[&str], param_name: &str) -> CcResult<()> {
     if valid.contains(&value) {
         Ok(())
     } else {
-        Err(format!(
+        Err(CcError::InvalidParams(format!(
             "invalid {}: '{}' (valid: {})",
             param_name,
             value,
             valid.join(", ")
-        ))
+        )))
     }
 }
 
@@ -176,7 +177,7 @@ pub struct StatusParams {
 }
 
 impl StatusParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
         validate_enum(
             &self.aspect,
@@ -214,7 +215,7 @@ pub struct IndexParams {
 }
 
 impl IndexParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.path, MAX_PATH_LEN);
         Ok(())
     }
@@ -292,7 +293,7 @@ pub struct SearchParams {
 }
 
 impl SearchParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         self.top_k = self.top_k.clamp(1, MAX_TOP_K);
         clamp_opt_str(&mut self.intent, MAX_QUERY_LEN);
@@ -365,7 +366,7 @@ pub struct ContextParams {
 }
 
 impl ContextParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.task, MAX_QUERY_LEN);
         if let Some(ref mut n) = self.max_symbols {
             *n = (*n).clamp(1, MAX_SYMBOLS);
@@ -415,7 +416,7 @@ pub struct NodeParams {
 }
 
 impl NodeParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.symbol, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
         validate_enum(
@@ -505,7 +506,7 @@ pub struct ExploreParams {
 }
 
 impl ExploreParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         self.symbols.truncate(MAX_SYMBOL_ITEMS);
         for s in &mut self.symbols {
             clamp_str(s, MAX_QUERY_LEN);
@@ -608,7 +609,7 @@ pub struct TraceParams {
 }
 
 impl TraceParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.from, MAX_QUERY_LEN);
         clamp_str(&mut self.to, MAX_QUERY_LEN);
         self.max_depth = self.max_depth.clamp(1, MAX_DEPTH);
@@ -679,7 +680,7 @@ pub struct RelationsParams {
 }
 
 impl RelationsParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.symbol, MAX_QUERY_LEN);
         self.limit = self.limit.clamp(1, MAX_LIMIT);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
@@ -773,7 +774,7 @@ pub struct ImpactParams {
 }
 
 impl ImpactParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         self.files.truncate(MAX_FILE_ITEMS);
         for f in &mut self.files {
             clamp_str(f, MAX_PATH_LEN);
@@ -865,7 +866,7 @@ pub struct ArchitectureParams {
 }
 
 impl ArchitectureParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_opt_str(&mut self.filter, MAX_QUERY_LEN);
         self.limit = self.limit.clamp(1, MAX_LIMIT);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
@@ -937,7 +938,7 @@ pub struct FilesParams {
 }
 
 impl FilesParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_opt_str(&mut self.path, MAX_PATH_LEN);
         self.context_lines = self.context_lines.min(MAX_CONTEXT_LINES);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
@@ -976,7 +977,7 @@ pub struct GraphQueryParams {
 }
 
 impl GraphQueryParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
         Ok(())
@@ -1003,7 +1004,7 @@ pub struct IngestTracesParams {
 }
 
 impl IngestTracesParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         self.traces.truncate(MAX_TRACE_ITEMS);
         clamp_opt_str(&mut self.project_path, MAX_PATH_LEN);
         Ok(())
@@ -1049,7 +1050,7 @@ pub struct AdrParams {
 }
 
 impl AdrParams {
-    pub fn sanitize(&mut self) -> Result<(), String> {
+    pub fn sanitize(&mut self) -> CcResult<()> {
         clamp_opt_str(&mut self.adr_id, MAX_QUERY_LEN);
         clamp_opt_str(&mut self.title, MAX_ADR_TEXT_LEN);
         clamp_opt_str(&mut self.context, MAX_ADR_TEXT_LEN);

@@ -17,7 +17,14 @@
 
 use std::path::Path;
 
+use cc_model::{CcError, CcResult};
 use rusqlite::Connection;
+
+/// Wrap a rusqlite error with a stage label, preserving the message shape the
+/// String-error era produced (`"<stage>: <sqlite error>"`).
+fn stage_err(stage: &str) -> impl Fn(rusqlite::Error) -> CcError + '_ {
+    move |e| CcError::Database(format!("{stage}: {e}"))
+}
 
 pub struct DirectWriter;
 
@@ -37,9 +44,9 @@ impl DirectWriter {
     pub fn write_db(
         path: &Path,
         schema_sql: &str,
-        write_fn: impl FnOnce(&rusqlite::Transaction) -> Result<(), String>,
-    ) -> Result<(), String> {
-        let conn = Connection::open(path).map_err(|e| format!("open: {}", e))?;
+        write_fn: impl FnOnce(&rusqlite::Transaction) -> CcResult<()>,
+    ) -> CcResult<()> {
+        let conn = Connection::open(path).map_err(stage_err("open"))?;
         // The per-file insert helpers rotate ~20 distinct prepare_cached
         // statements; the default capacity of 16 would re-prepare each one
         // on every file (see `IndexDb::open_and_ensure_schema`).
@@ -54,24 +61,24 @@ impl DirectWriter {
              PRAGMA temp_store = MEMORY;
              PRAGMA mmap_size = 0;",
         )
-        .map_err(|e| format!("pragmas: {}", e))?;
+        .map_err(stage_err("pragmas"))?;
 
         let table_sql = extract_table_statements(schema_sql);
         conn.execute_batch(&table_sql)
-            .map_err(|e| format!("schema tables: {}", e))?;
+            .map_err(stage_err("schema tables"))?;
 
         {
             let tx = conn
                 .unchecked_transaction()
-                .map_err(|e| format!("transaction: {}", e))?;
+                .map_err(stage_err("transaction"))?;
             write_fn(&tx)?;
-            tx.commit().map_err(|e| format!("commit: {}", e))?;
+            tx.commit().map_err(stage_err("commit"))?;
         }
 
         let index_sql = extract_index_statements(schema_sql);
         if !index_sql.trim().is_empty() && index_sql.trim() != ";" {
             conn.execute_batch(&index_sql)
-                .map_err(|e| format!("indexes: {}", e))?;
+                .map_err(stage_err("indexes"))?;
         }
 
         conn.execute_batch(
@@ -79,24 +86,27 @@ impl DirectWriter {
              PRAGMA synchronous = NORMAL;
              PRAGMA locking_mode = NORMAL;",
         )
-        .map_err(|e| format!("restore pragmas: {}", e))?;
+        .map_err(stage_err("restore pragmas"))?;
 
         let integrity: String = conn
             .query_row("PRAGMA integrity_check", [], |row| row.get(0))
-            .map_err(|e| format!("integrity: {}", e))?;
+            .map_err(stage_err("integrity"))?;
 
         if integrity != "ok" {
-            return Err(format!("integrity check failed: {}", integrity));
+            return Err(CcError::Database(format!(
+                "integrity check failed: {}",
+                integrity
+            )));
         }
 
         Ok(())
     }
 
-    pub fn verify(path: &Path) -> Result<bool, String> {
-        let conn = Connection::open(path).map_err(|e| format!("open for verify: {}", e))?;
+    pub fn verify(path: &Path) -> CcResult<bool> {
+        let conn = Connection::open(path).map_err(stage_err("open for verify"))?;
         let result: String = conn
             .query_row("PRAGMA integrity_check", [], |row| row.get(0))
-            .map_err(|e| format!("integrity_check: {}", e))?;
+            .map_err(stage_err("integrity_check"))?;
         Ok(result == "ok")
     }
 }
@@ -322,9 +332,9 @@ mod tests {
              CREATE INDEX idx_test_name ON test(name);",
             |tx| {
                 tx.execute("INSERT INTO test VALUES (1, 'hello')", [])
-                    .map_err(|e| e.to_string())?;
+                    .map_err(stage_err("insert"))?;
                 tx.execute("INSERT INTO test VALUES (2, 'world')", [])
-                    .map_err(|e| e.to_string())?;
+                    .map_err(stage_err("insert"))?;
                 Ok(())
             },
         )
@@ -358,12 +368,12 @@ mod tests {
                 "INSERT INTO docs VALUES (1, 'Rust', 'A systems language')",
                 [],
             )
-            .map_err(|e| e.to_string())?;
+            .map_err(stage_err("insert"))?;
             tx.execute(
                 "INSERT INTO docs_fts VALUES ('Rust', 'A systems language')",
                 [],
             )
-            .map_err(|e| e.to_string())?;
+            .map_err(stage_err("insert"))?;
             Ok(())
         })
         .unwrap();
@@ -389,11 +399,14 @@ mod tests {
         let result = DirectWriter::write_db(
             &db_path,
             "CREATE TABLE test (id INTEGER PRIMARY KEY);",
-            |_tx| Err("intentional error".to_string()),
+            |_tx| Err(CcError::Database("intentional error".to_string())),
         );
 
         assert!(result.is_err());
-        assert!(result.unwrap_err().contains("intentional error"));
+        assert!(result
+            .unwrap_err()
+            .to_string()
+            .contains("intentional error"));
     }
 
     #[test]
@@ -408,10 +421,10 @@ mod tests {
             |tx| {
                 let mut stmt = tx
                     .prepare_cached("INSERT INTO items VALUES (?1, ?2)")
-                    .map_err(|e| e.to_string())?;
+                    .map_err(stage_err("prepare"))?;
                 for i in 0..10_000 {
                     stmt.execute(rusqlite::params![i, format!("item_{}", i)])
-                        .map_err(|e| e.to_string())?;
+                        .map_err(stage_err("insert"))?;
                 }
                 Ok(())
             },

@@ -1,8 +1,8 @@
 # Benchmark Results
 
-Generated: 2026-07-10T07:29:41.479234+00:00
+Generated: 2026-07-11T18:43:23.726210+00:00
 Dataset: codecortex-rust workspace copy
-Files: 672
+Files: 680
 
 ## Per-Tool Latency
 
@@ -12,15 +12,15 @@ Per case: cold = 1 fresh-session call, warm = best of 2 measured calls; percenti
 
 | Tool | Cases | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |
 |------|-------|----------|----------|----------|----------|----------|------------|
-| architecture | 1 | 356.68ms | 356.68ms | 229.53ms | 229.53ms | 229.53ms | 10.5 KB |
-| context | 1 | 7.88ms | 7.88ms | 1.42ms | 1.42ms | 1.42ms | 1.2 KB |
-| files | 1 | 295µs | 295µs | 177µs | 177µs | 177µs | 0 B |
-| graph_query | 1 | 1.12ms | 1.12ms | 810µs | 810µs | 810µs | 1.6 KB |
-| impact | 1 | 19.65ms | 19.65ms | 5.02ms | 5.02ms | 5.02ms | 3.1 KB |
-| node | 1 | 3.31ms | 3.31ms | 933µs | 933µs | 933µs | 352 B |
-| relations | 1 | 797µs | 797µs | 447µs | 447µs | 447µs | 413 B |
-| search | 2 | 1.21ms | 110.58ms | 576µs | 64.79ms | 64.79ms | 103.9 KB |
-| status | 1 | 36.54ms | 36.54ms | 34.78ms | 34.78ms | 34.78ms | 10.3 KB |
+| architecture | 1 | 102.44ms | 102.44ms | 104.44ms | 104.44ms | 104.44ms | 10.8 KB |
+| context | 1 | 1.36ms | 1.36ms | 299µs | 299µs | 299µs | 1.2 KB |
+| files | 1 | 74µs | 74µs | 41µs | 41µs | 41µs | 0 B |
+| graph_query | 1 | 278µs | 278µs | 151µs | 151µs | 151µs | 1.7 KB |
+| impact | 1 | 10.10ms | 10.10ms | 1.30ms | 1.30ms | 1.30ms | 3.3 KB |
+| node | 1 | 2.01ms | 2.01ms | 265µs | 265µs | 265µs | 352 B |
+| relations | 1 | 1.36ms | 1.36ms | 271µs | 271µs | 271µs | 413 B |
+| search | 2 | 1.36ms | 43.76ms | 177µs | 1.90ms | 1.90ms | 103.4 KB |
+| status | 1 | 19.77ms | 19.77ms | 20.71ms | 20.71ms | 20.71ms | 10.3 KB |
 
 ## Summary
 

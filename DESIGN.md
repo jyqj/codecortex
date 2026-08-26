@@ -64,5 +64,7 @@ cc-parsers/cc-index），两支在 cc-server 汇合。
 - 不做记忆/知识/技能系统（ADR 是仓库元数据，不是 agent 记忆）
 - 不做 UI 的 pin/working-set/overlay 命令
 - 不做学习/策略优化
-- 不做遥测持久化
+- 不做遥测持久化（不落盘服务器自身的使用统计。`ingest_traces` 摄入的
+  运行时证据是**索引内容**——用户主动提交、写入 `runtime_evidence` 表、
+  为边做置信度验证——不属于遥测）
 - 没有 `runtime.sqlite3`（只有 `index.sqlite3`）

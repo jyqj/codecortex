@@ -187,16 +187,17 @@ fn resolve_root_symbol(
     )? {
         Resolution::Unique(row) => Ok(ResolveResult::Single(row)),
         Resolution::Ambiguous(rows) => Ok(ResolveResult::Candidates(rows)),
-        Resolution::Unresolved(UnresolvedReason::NotFound) => {
-            Err(CcError::NotFound(format!("no symbol named '{}'", type_name)))
-        }
-        Resolution::Unresolved(UnresolvedReason::FilteredByFile) => Err(CcError::NotFound(
-            format!(
+        Resolution::Unresolved(UnresolvedReason::NotFound) => Err(CcError::NotFound(format!(
+            "no symbol named '{}'",
+            type_name
+        ))),
+        Resolution::Unresolved(UnresolvedReason::FilteredByFile) => {
+            Err(CcError::NotFound(format!(
                 "no symbol named '{}' in file '{}'",
                 type_name,
                 file_path.unwrap_or_default()
-            ),
-        )),
+            )))
+        }
         Resolution::Unresolved(UnresolvedReason::FilteredByKind) => Err(CcError::NotFound(
             format!("no class/interface/enum named '{}'", type_name),
         )),

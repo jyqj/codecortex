@@ -67,6 +67,7 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
 | [docs/GLOSSARY.md](docs/GLOSSARY.md) | 术语表 |
 | [docs/TEST_PLAN.md](docs/TEST_PLAN.md) | 测试套件与 eval 语料 |
 | [docs/BENCHMARK.md](docs/BENCHMARK.md) | 基准指标与运行方法 |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | 排障、配置迁移、稳定性口径 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | 构建、测试、lint、MSRV |
 
 ## 亮点

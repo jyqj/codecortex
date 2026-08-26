@@ -290,8 +290,7 @@ mod tests {
             rt.build_inputs().unwrap()
         };
         let prepared =
-            CodeIndex::prepare_build(&inputs, false, None, cc_index::BuildScope::FullTree)
-                .unwrap();
+            CodeIndex::prepare_build(&inputs, false, None, cc_index::BuildScope::FullTree).unwrap();
 
         // Stage 1: write lock scoped to phase_write.
         let written = {

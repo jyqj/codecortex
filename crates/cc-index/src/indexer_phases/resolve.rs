@@ -6,7 +6,6 @@ use rayon::prelude::*;
 use cc_db::index_db::FileWriteUnit;
 use cc_model::edge::RouteNodeRecord;
 use cc_model::parse::ParseOutcome;
-use cc_model::symbol::SymbolRecord;
 use cc_model::{CcResult, StableId};
 
 use crate::indexer::{Indexer, ResolveResult, MIN_FILES_FOR_PARALLEL};
@@ -20,7 +19,7 @@ use crate::resolver::{ResolutionContext, SymbolCatalog};
 /// unit (index-aligned with the write units they were built from).
 struct ResolutionCatalog {
     catalog: SymbolCatalog,
-    persisted_symbols: Vec<SymbolRecord>,
+    persisted_symbols: cc_db::SeedRows,
     resolution_contexts: Vec<ResolutionContext>,
     /// The `symbols_seed` token the persisted part corresponds to, when this
     /// build is eligible to fold the catalog back into the cross-build cache
@@ -123,7 +122,7 @@ impl Indexer {
             }
             return Ok(ResolutionCatalog {
                 catalog,
-                persisted_symbols: Vec::new(),
+                persisted_symbols: cc_db::SeedRows::empty(),
                 resolution_contexts: resolution_contexts(write_units),
                 cache_basis: None,
                 type_catalog_reused: false,
@@ -151,7 +150,7 @@ impl Indexer {
             );
             return Ok(ResolutionCatalog {
                 catalog,
-                persisted_symbols: Vec::new(),
+                persisted_symbols: cc_db::SeedRows::empty(),
                 resolution_contexts: resolution_contexts(write_units),
                 cache_basis: Some(basis),
                 type_catalog_reused: true,
@@ -164,7 +163,7 @@ impl Indexer {
             .resolver_seed_symbols_with_token_excluding(&resolver_excluded_files)?;
 
         let mut catalog = SymbolCatalog::new();
-        catalog.add_symbols(&persisted_symbols);
+        catalog.add_symbols_iter(persisted_symbols.len(), persisted_symbols.iter());
         for unit in write_units.iter() {
             catalog.add_symbols(&unit.outcome.symbols);
         }
@@ -244,7 +243,7 @@ impl Indexer {
     /// the fresh rebuild, so both paths see the 4a-backfilled symbols.
     fn resolve_hierarchy(
         catalog: &mut SymbolCatalog,
-        persisted_symbols: &[SymbolRecord],
+        persisted_symbols: &cc_db::SeedRows,
         write_units: &[FileWriteUnit],
         type_catalog_reused: bool,
     ) -> Vec<cc_model::edge::SemanticEdgeRecord> {
@@ -608,7 +607,8 @@ mod phase_resolve_subphase_tests {
             },
         )];
 
-        let edges = Indexer::resolve_hierarchy(&mut catalog, &[], &units, false);
+        let edges =
+            Indexer::resolve_hierarchy(&mut catalog, &cc_db::SeedRows::empty(), &units, false);
 
         assert!(
             edges.iter().any(|e| {

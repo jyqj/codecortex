@@ -127,23 +127,53 @@ trace 的 cold/warm 延迟（µs 粒度；cold = 每次迭代新建 MCP 会话�
 可 trace、环闭合……）。带 `CODECORTEX_WRITE_BENCHMARK=1` 时报告持久化到
 `docs/benchmarks/synthetic_<scale>_latest.md`。
 
-最近一轮（release，本机，2026-07-09——完整阶段分解见各规模的产物文件）：
+每轮另附两节：
 
-| 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件） | 增量 p50（5% 批量） | 单文件 resolve 子相位 | ground truth |
-|------|--------------|---------|--------------------|--------------------|-----------------|--------------|
-| 1k（5,568 符号） | 1.4s | 24.7 MB | 59ms | 220ms | 0ms | 8/8 |
-| 10k（55,617 符号） | 15.8s | 236.6 MB | 443ms | 3.1s | **1ms**（上一轮 139ms） | 8/8 |
-| 50k（278,074 符号） | 135.5s | 1183.3 MB | 1.27s | 25.3s（2400 文件） | **5ms**（上一轮 808ms） | 8/8 |
+- **targeted_single_file（watcher parity）**：同一单文件编辑改以
+  `BuildScope::Targeted` 扫描（生产 watcher 路径——只 diff 事件上报的
+  路径，不做全树遍历），直接经 `Indexer::prepare_build`/`commit_build`
+  驱动。与 `single_file`（MCP `index` 工具的 FullTree 路径）对照可读出
+  scan_diff 的全树地板在 watcher 路径上省掉多少。
+- **Process RSS**：各里程碑（生成后 / 冷建后 / 工具场景后 / 增量后 /
+  targeted 后）的进程 RSS 采样（`cc_index::process_rss_bytes`，与索引
+  管线内存预算同一读数）。单进程 harness（生成器 + 进程内 MCP 服务器 +
+  驱动）的上界口径，用于回归趋势而非精确的常驻足迹。
+
+### 长驻 RSS soak
+
+```sh
+CODECORTEX_SOAK_SECS=3600 \
+  cargo test -p cc-eval --release --test soak soak_mcp_session_rss -- --ignored --nocapture
+```
+
+模拟长驻 agent 会话：单个进程内 MCP 会话上持续交替 search / graph_query
+流量与单文件增量重建（`CODECORTEX_SOAK_FILES` 控制合成仓规模，默认
+1000），每轮采样 RSS。以"预热后第二个四分位窗口的中位数"为平台基线，
+**尾段中位数超出平台 25%+32MB 即失败**——无界缓存的回归信号。45 秒冒烟
+轮（300 文件，~1100 轮）实测 warmed/tail 中位数 60.9/60.2 MB，无漂移。
+
+最近一轮（release，本机，2026-07-11——完整阶段分解见各规模的产物文件）：
+
+| 规模 | 冷态全量索引 | DB 大小 | 增量 p50（1 文件，FullTree） | 增量 p50（1 文件，Targeted） | 增量 p50（5% 批量） | ground truth |
+|------|--------------|---------|------------------------------|------------------------------|--------------------|--------------|
+| 1k（5,568 符号） | 0.92s | 24.0 MB | 47ms | 45ms（scan_diff 3ms） | 181ms | 8/8 |
+| 10k（55,617 符号） | 10.2s | 236.5 MB | 202ms | 200ms（scan_diff 29ms） | 1.6s | 8/8 |
+| 50k（278,074 符号） | 74.9s | 1183.3 MB | 1.03s | 0.97s（scan_diff 172ms） | 12.1s（2400 文件） | 8/8 |
 
 - 三档报告均以 µs 粒度分列 cold/warm（cold = 每次迭代新建 MCP 会话；warm =
   同会话缓存命中），冷查询延迟以 cold 列为准；warm 全部亚毫秒。
-- 本轮与上一轮（2026-06-13）跨轮对比需留意机器状态漂移：resolve 之外的
-  各阶段（scan_diff / write / analysis，代码路径本轮未动）绝对值普遍慢
-  1.3–2×（冷建 121.8s→135.5s、50k 5% 批量写 14.3s→22.6s），属环境噪声；
-  本轮的真实变化是 **resolve 地板被 catalog cache 消掉**（见末段），
-  50k 单文件增量总延迟 1.82s→1.27s，瓶颈转移到 scan_diff（~0.5s）。
-- 冷态全量索引 369–714 文件/s（50k–1k，本轮机器状态下）；>500 文件/s 的
-  目标以 10k 档为准（632 文件/s）。
+- 与上一轮（2026-07-09）对比的真实变化来自 file-state 快照跨构建缓存 +
+  全量构建 staging 直写 + watcher 定向扫描三项优化落地：50k 冷建
+  135.5s→74.9s、5% 批量 25.3s→12.1s（write 22.6s→10.7s）、单文件
+  FullTree scan_diff 500ms→371ms；**Targeted（watcher 生产路径）进一步把
+  scan_diff 压到 172ms**——O(repo) 全树对比只剩手动 `index` 路径。
+- 单文件增量的剩余大头已从 scan_diff 转为 analysis（50k ~0.4s）与
+  write（~0.3s）。
+- 冷态全量索引 668–1087 文件/s（50k–1k）；>500 文件/s 的目标三档全部
+  达标（10k 档 980 文件/s）。
+- 50k 档基准进程 RSS 峰值 911 MB（冷建后 796 MB）——注意这是"生成器 +
+  进程内 MCP 服务器 + 驱动"单进程上界，纯服务进程的常驻以 soak 口径
+  为准。
 
 ## 写阶段优化史（10k 基准）
 

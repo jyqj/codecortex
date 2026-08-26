@@ -235,14 +235,16 @@ impl GraphReadModel {
         Ok(adj)
     }
 
-    pub(crate) fn file_import_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        let shared = generation_cached(&IMPORT_ADJ_CACHE, &self.generation, || {
+    /// Full-repo file-import adjacency, shared per generation. Returns the
+    /// cached `Arc` directly — hot callers (cycle detection) only read it, so
+    /// cloning the whole map per call would be pure allocator churn.
+    pub(crate) fn file_import_adjacency(&self) -> CcResult<Arc<HashMap<String, Vec<String>>>> {
+        generation_cached(&IMPORT_ADJ_CACHE, &self.generation, || {
             // Compute via identity projection.
             Ok(Arc::new(
                 self.projected_import_adjacency(|path| path.to_string())?,
             ))
-        })?;
-        Ok(HashMap::clone(&shared))
+        })
     }
 
     pub(crate) fn file_import_witness_edges(&self, scc: &[String]) -> CcResult<Vec<InternalEdge>> {
@@ -265,8 +267,10 @@ impl GraphReadModel {
         Ok(edges)
     }
 
-    pub(crate) fn community_call_adjacency(&self) -> CcResult<HashMap<String, Vec<String>>> {
-        let shared = generation_cached(&COMMUNITY_ADJ_CACHE, &self.generation, || {
+    /// Community-projected call adjacency, shared per generation. Returns the
+    /// cached `Arc` directly (see [`Self::file_import_adjacency`]).
+    pub(crate) fn community_call_adjacency(&self) -> CcResult<Arc<HashMap<String, Vec<String>>>> {
+        generation_cached(&COMMUNITY_ADJ_CACHE, &self.generation, || {
             let pairs = self.reads().community_adjacency_pairs()?;
 
             let mut adj: HashMap<String, Vec<String>> = HashMap::new();
@@ -280,8 +284,7 @@ impl GraphReadModel {
                 targets.dedup();
             }
             Ok(Arc::new(adj))
-        })?;
-        Ok(HashMap::clone(&shared))
+        })
     }
 
     pub(crate) fn internal_edges_from_adjacency(

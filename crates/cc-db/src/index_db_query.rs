@@ -238,7 +238,16 @@ impl<'a> QueryReads<'a> {
                 obj.insert("is_test_file".into(), serde_json::json!(row.get::<_, i32>(4).unwrap_or(0) != 0));
                 Ok(obj)
             },
-        ).map_err(db_err)?;
+        ).map_err(|e| match e {
+            // A summary needs a `files` row keyed by path; a miss is a
+            // caller-facing lookup failure, not an opaque DB error (the
+            // common trap: passing a symbol name where a file path is
+            // expected).
+            rusqlite::Error::QueryReturnedNoRows => cc_model::CcError::NotFound(format!(
+                "no indexed file at path {file_path:?} (file_summary expects a file path, not a symbol name)"
+            )),
+            other => db_err(other),
+        })?;
 
         let mut obj = file_info;
 
@@ -348,7 +357,8 @@ impl IndexDb {
     ) -> CcResult<Vec<SymbolRecord>> {
         Ok(self
             .resolver_seed_symbols_with_token_excluding(excluded_files)?
-            .1)
+            .1
+            .into_vec())
     }
 
     /// [`Self::resolver_seed_symbols_excluding`] plus the `symbols_seed`
@@ -360,7 +370,7 @@ impl IndexDb {
     pub(crate) fn resolver_seed_symbols_with_token_excluding(
         &self,
         excluded_files: &[String],
-    ) -> CcResult<(Option<crate::signature_agg::RowAgg>, Vec<SymbolRecord>)> {
+    ) -> CcResult<(Option<crate::signature_agg::RowAgg>, crate::SeedRows)> {
         let conn = self.read_conn()?;
         // Token read and row load must observe ONE snapshot: in autocommit
         // mode each statement snapshots independently, so a write committing
@@ -372,7 +382,12 @@ impl IndexDb {
         let tx = conn.unchecked_transaction().map_err(db_err)?;
         let token = match crate::signature_agg::load_on(&tx)? {
             Some(aggs) => aggs.symbols_seed,
-            None => return Ok((None, Self::load_seed_rows_on(&tx, excluded_files)?)),
+            None => {
+                return Ok((
+                    None,
+                    crate::SeedRows::Owned(Self::load_seed_rows_on(&tx, excluded_files)?),
+                ))
+            }
         };
         if let Some(hit) = self.seed_cache_materialize(token, excluded_files) {
             return Ok((Some(token), hit));
@@ -384,15 +399,17 @@ impl IndexDb {
         drop(tx); // read-only: rollback and commit are equivalent
         self.seed_cache_store(token, &all);
         if excluded_files.is_empty() {
-            return Ok((Some(token), all));
+            return Ok((Some(token), crate::SeedRows::Owned(all)));
         }
         let excluded: std::collections::HashSet<&str> =
             excluded_files.iter().map(String::as_str).collect();
         Ok((
             Some(token),
-            all.into_iter()
-                .filter(|s| !excluded.contains(s.file_path.as_str()))
-                .collect(),
+            crate::SeedRows::Owned(
+                all.into_iter()
+                    .filter(|s| !excluded.contains(s.file_path.as_str()))
+                    .collect(),
+            ),
         ))
     }
 
@@ -531,11 +548,12 @@ impl ReadOps<'_> {
     }
 
     /// Seed rows plus the `symbols_seed` token they correspond to (`None`
-    /// token when no aggregate baseline is stored).
+    /// token when no aggregate baseline is stored). Cache hits return the
+    /// [`crate::SeedRows::Shared`] shape (per-file `Arc`s, no row clones).
     pub fn resolver_seed_symbols_with_token_excluding(
         &self,
         excluded_files: &[String],
-    ) -> CcResult<(Option<crate::signature_agg::RowAgg>, Vec<SymbolRecord>)> {
+    ) -> CcResult<(Option<crate::signature_agg::RowAgg>, crate::SeedRows)> {
         self.0
             .resolver_seed_symbols_with_token_excluding(excluded_files)
     }
@@ -575,6 +593,14 @@ impl ReadOps<'_> {
         self.0.query().count_table_rows(table)
     }
 
+    /// Execute a caller-built read-only SQL string and return JSON rows.
+    ///
+    /// Contract: this is the raw escape hatch for the ONE production consumer
+    /// that genuinely composes SQL — the Cypher translator
+    /// (`cc-search/src/cypher/executor.rs`) — plus test seeding/assertion
+    /// helpers. Every other production read belongs on a typed facet method
+    /// (`reads()` / `graph_reads()` / `edge_reads()` / …) so the table/column
+    /// contract stays inside cc-db. Do not add new production call sites.
     pub fn query_json(&self, sql: &str, params: &[String]) -> CcResult<Vec<Value>> {
         self.0.query_json(sql, params)
     }

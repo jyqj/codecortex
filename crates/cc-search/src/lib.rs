@@ -7,6 +7,12 @@
 pub mod cypher;
 pub mod dsl;
 pub mod engine;
+mod engine_cache;
+mod engine_graph;
+#[cfg(test)]
+mod engine_lane_tests;
+#[cfg(test)]
+pub(crate) mod engine_test_support;
 mod enrich;
 mod lanes;
 mod plan;

@@ -401,6 +401,130 @@ impl<'a> SymbolGraphReads<'a> {
         Ok(map)
     }
 
+    /// [`Self::call_uid_edges`] minus edges whose `synthesized_by` is in
+    /// `excluded_kinds`. Postprocess uses this to project the committed call
+    /// graph forward across a staged synthesis round (the excluded kinds are
+    /// regenerated in-memory this round). Empty `excluded_kinds` degrades to
+    /// the plain variant.
+    pub fn call_uid_edges_excluding_synthesized(
+        &self,
+        excluded_kinds: &[&str],
+    ) -> CcResult<Vec<(String, String)>> {
+        if excluded_kinds.is_empty() {
+            return self.call_uid_edges();
+        }
+        let conn = self.db.read_conn()?;
+        let placeholders = sql_in_placeholders(excluded_kinds.len());
+        let sql = format!(
+            "SELECT caller_symbol_uid, callee_symbol_uid FROM call_edges \
+             WHERE caller_symbol_uid IS NOT NULL AND callee_symbol_uid IS NOT NULL \
+             AND (synthesized_by IS NULL OR synthesized_by NOT IN ({placeholders}))"
+        );
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = excluded_kinds
+            .iter()
+            .map(|kind| kind as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Dispatch-synthesis projection of `call_edges`: every edge with BOTH
+    /// endpoint UIDs present, minus edges whose `synthesized_by` is in
+    /// `excluded_kinds` (never-synthesized edges always pass). The interface
+    /// dispatch pass reads its committed-state view through this.
+    pub fn dispatch_call_edges_excluding_synthesized(
+        &self,
+        excluded_kinds: &[&str],
+    ) -> CcResult<Vec<crate::index_db::DispatchCallEdgeRow>> {
+        let conn = self.db.read_conn()?;
+        let filter = if excluded_kinds.is_empty() {
+            String::new()
+        } else {
+            format!(
+                " AND (synthesized_by IS NULL OR synthesized_by NOT IN ({}))",
+                sql_in_placeholders(excluded_kinds.len())
+            )
+        };
+        let sql = format!(
+            "SELECT edge_id, caller_symbol_uid, callee_symbol_uid, file_path, line \
+             FROM call_edges \
+             WHERE callee_symbol_uid IS NOT NULL AND caller_symbol_uid IS NOT NULL{filter}"
+        );
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = excluded_kinds
+            .iter()
+            .map(|kind| kind as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| {
+                Ok(crate::index_db::DispatchCallEdgeRow {
+                    edge_id: row.get(0)?,
+                    caller_uid: row.get(1)?,
+                    callee_uid: row.get(2)?,
+                    file_path: row.get(3)?,
+                    line: row.get::<_, Option<u32>>(4)?.unwrap_or(0),
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// `(symbol_uid, name, kind, container)` for every symbols row with a
+    /// UID — the lookup-table input of dispatch synthesis.
+    pub fn symbol_dispatch_rows(&self) -> CcResult<Vec<crate::index_db::SymbolDispatchRow>> {
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn
+            .prepare_cached(
+                "SELECT symbol_uid, name, kind, container FROM symbols \
+                 WHERE symbol_uid IS NOT NULL",
+            )
+            .map_err(db_err)?;
+        let rows = stmt
+            .query_map([], |row| {
+                Ok(crate::index_db::SymbolDispatchRow {
+                    symbol_uid: row.get(0)?,
+                    name: row.get::<_, Option<String>>(1)?.unwrap_or_default(),
+                    kind: row.get::<_, Option<String>>(2)?.unwrap_or_default(),
+                    container: row.get(3)?,
+                })
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Seed lookup for the Cypher lazy-BFS fast path: `symbol_uid`s of rows
+    /// matching an AND-conjunction of `column = value` equalities. Column
+    /// names must come from the fixed seed allowlist (`name`, `symbol_uid`);
+    /// anything else is rejected so no caller can smuggle SQL through the
+    /// identifier position.
+    pub fn symbol_uids_by_eq(&self, conds: &[(&str, &str)]) -> CcResult<Vec<String>> {
+        const ALLOWED: &[&str] = &["name", "symbol_uid"];
+        let mut sql = String::from("SELECT symbol_uid FROM symbols WHERE symbol_uid IS NOT NULL");
+        for (idx, (column, _)) in conds.iter().enumerate() {
+            if !ALLOWED.contains(column) {
+                return Err(cc_model::CcError::Database(format!(
+                    "symbol_uids_by_eq: column not in seed allowlist: {column:?}"
+                )));
+            }
+            sql.push_str(&format!(" AND {column} = ?{}", idx + 1));
+        }
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let params: Vec<&dyn rusqlite::types::ToSql> = conds
+            .iter()
+            .map(|(_, value)| value as &dyn rusqlite::types::ToSql)
+            .collect();
+        let rows = stmt
+            .query_map(params.as_slice(), |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
     /// Bulk lookup symbol metadata by UIDs. Batches in [`IN_BATCH_SIZE`] chunks.
     pub(crate) fn symbol_rows_by_uids(
         &self,

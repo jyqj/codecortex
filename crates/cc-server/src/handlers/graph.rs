@@ -91,7 +91,11 @@ pub fn trace_path(runtime: SharedCodeIndex, args: &TraceArgs) -> CcResult<serde_
     let effective_mode = args
         .source_mode
         .as_deref()
-        .unwrap_or(if args.include_source { "snippet" } else { "none" });
+        .unwrap_or(if args.include_source {
+            "snippet"
+        } else {
+            "none"
+        });
     let (do_snippets, snippet_lines, snippet_budget, include_outgoing) = match effective_mode {
         "body" => (true, usize::MAX, 128 * 1024, true),
         "outline" => (false, 0, 0, false),

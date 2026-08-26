@@ -12,6 +12,13 @@ use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 /// falling back below it.
 type RssSource = Box<dyn Fn() -> u64 + Send + Sync>;
 
+/// Current process resident set size in bytes (0 when the platform reader
+/// fails). Public so benchmark/soak harnesses (cc-eval) can sample the same
+/// reading the indexing pipeline's budget controller uses.
+pub fn process_rss_bytes() -> u64 {
+    MemoryBudget::current_rss_bytes()
+}
+
 /// RSS-based memory budget controller.
 pub struct MemoryBudget {
     total_budget: u64,

@@ -270,10 +270,8 @@ impl IndexBuildPlan {
         ) = if self.mode.is_full() {
             let staged_parsed_paths: Vec<String> =
                 write_units.iter().map(|u| u.rel_path.clone()).collect();
-            let (staged_config_units, generation_floor) = time_step(
-                "prepare",
-                "full_build_staging",
-                || {
+            let (staged_config_units, generation_floor) =
+                time_step("prepare", "full_build_staging", || {
                     indexer.write_full_snapshot_build_staging(
                         project_path,
                         &write_units,
@@ -281,8 +279,7 @@ impl IndexBuildPlan {
                         &hierarchy_edges,
                         &chunk_blobs,
                     )
-                },
-            )?;
+                })?;
             (
                 Vec::new(),
                 PrecompressedChunks::new(),
@@ -291,13 +288,7 @@ impl IndexBuildPlan {
                 staged_parsed_paths,
             )
         } else {
-            (
-                write_units,
-                chunk_blobs,
-                None,
-                Vec::new(),
-                Vec::new(),
-            )
+            (write_units, chunk_blobs, None, Vec::new(), Vec::new())
         };
 
         Ok(PreparedBuild {

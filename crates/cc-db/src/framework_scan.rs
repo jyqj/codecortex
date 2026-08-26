@@ -113,7 +113,10 @@ impl FrameworkScanSession {
         self.conn
             .prepare_cached("SELECT 1 FROM files WHERE file_path = ?1")
             .ok()
-            .map(|mut stmt| stmt.query_row(rusqlite::params![file_path], |_| Ok(())).is_ok())
+            .map(|mut stmt| {
+                stmt.query_row(rusqlite::params![file_path], |_| Ok(()))
+                    .is_ok()
+            })
             .unwrap_or(false)
     }
 }

@@ -32,7 +32,7 @@ fn seam_rejects_schema_invalid_params() {
         .call_tool("search", &json!({"query": "x", "mode": "bogus_mode"}))
         .expect_err("invalid enum value must be rejected by sanitize()");
     assert!(
-        err.contains("invalid mode"),
+        err.to_string().contains("invalid mode"),
         "expected sanitize() enum error, got: {}",
         err
     );
@@ -42,7 +42,7 @@ fn seam_rejects_schema_invalid_params() {
         .call_tool("search", &json!({"query": "x", "top_k": "five"}))
         .expect_err("type-mismatched param must fail schema deserialization");
     assert!(
-        err.contains("-32602") || err.to_lowercase().contains("invalid"),
+        err.to_string().contains("-32602") || err.to_string().to_lowercase().contains("invalid"),
         "expected schema deserialization error, got: {}",
         err
     );
@@ -52,7 +52,7 @@ fn seam_rejects_schema_invalid_params() {
         .call_tool("search", &json!({"mode": "symbol"}))
         .expect_err("missing required param must fail schema deserialization");
     assert!(
-        err.contains("query"),
+        err.to_string().contains("query"),
         "expected missing-field error mentioning `query`, got: {}",
         err
     );
@@ -68,12 +68,13 @@ fn seam_rejects_unknown_params() {
         .call_tool("search", &json!({"query": "x", "qurey": "typo"}))
         .expect_err("unknown param must be rejected by schema deserialization");
     assert!(
-        err.contains("qurey"),
+        err.to_string().contains("qurey"),
         "expected error naming the unknown field `qurey`, got: {}",
         err
     );
     assert!(
-        err.contains("-32602") || err.to_lowercase().contains("unknown field"),
+        err.to_string().contains("-32602")
+            || err.to_string().to_lowercase().contains("unknown field"),
         "expected -32602 invalid-params error, got: {}",
         err
     );
@@ -83,7 +84,7 @@ fn seam_rejects_unknown_params() {
         .call_tool("status", &json!({"nonexistent_param": 1}))
         .expect_err("unknown param on all-default tool must be rejected");
     assert!(
-        err.contains("nonexistent_param"),
+        err.to_string().contains("nonexistent_param"),
         "expected error naming `nonexistent_param`, got: {}",
         err
     );
@@ -96,7 +97,7 @@ fn seam_rejects_unknown_tool() {
         .call_tool("definitely_not_a_tool", &json!({}))
         .expect_err("unknown tool must surface a router error");
     assert!(
-        err.contains("tool not found") || err.contains("-32602"),
+        err.to_string().contains("tool not found") || err.to_string().contains("-32602"),
         "expected rmcp router 'tool not found' error, got: {}",
         err
     );

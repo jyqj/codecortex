@@ -397,21 +397,21 @@ impl SymbolCatalog {
             return None;
         }
 
-        let key = resolve_key_hash(trimmed, file, line, container, signals);
+        // The line participates in the key only when scopes can make it
+        // matter (see `resolve_key_hash`): with an empty scope map, all
+        // lines of a file share one cache entry per (name, container,
+        // signals) query.
+        let scoped_line = (!scopes.is_empty()).then_some(line);
+        let key = resolve_key_hash(trimmed, file, scoped_line, container, signals);
 
-        // Check cache
-        if let Ok(mut cache) = self.resolve_cache.lock() {
-            if let Some(cached) = cache.get(&key) {
-                return cached.clone();
-            }
+        if let Some(cached) = self.resolve_cache.get(key) {
+            return cached;
         }
 
         let result =
             self.resolve_name_inner(trimmed, file, line, scopes, imports, container, signals);
 
-        if let Ok(mut cache) = self.resolve_cache.lock() {
-            cache.put(key, result.clone());
-        }
+        self.resolve_cache.put(key, result.clone());
         result
     }
 

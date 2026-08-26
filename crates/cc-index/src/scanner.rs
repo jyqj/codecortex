@@ -52,6 +52,85 @@ pub struct WalkManifest {
     pub files: Vec<WalkedFile>,
 }
 
+/// Event-path ignore filter aligned with the scan walk, for event-driven
+/// callers (the file watcher) that judge one path at a time instead of
+/// walking directories.
+///
+/// Mirrors the two configurable walk filters per path:
+/// - the root `.gitignore` (only when the project is a git repository, same
+///   as the walker's `require_git` gate). The walker additionally honors
+///   nested `.gitignore` files; a path only a nested file would ignore can
+///   pass here — harmless, because every admitted path still goes through
+///   the scan walk, which drops it.
+/// - `.codecortex.json` `indexing.ignore` patterns, built with exactly the
+///   negated-override construction [`Scanner`]'s walker uses, checked
+///   against the path and its ancestor directories (the walker prunes
+///   ignored directories during descent).
+///
+/// So: `is_ignored == true` is authoritative (the walk would filter it);
+/// `false` is advisory (the walk may still filter it for other reasons).
+pub struct IgnoreRules {
+    gitignore: Option<ignore::gitignore::Gitignore>,
+    overrides: Option<ignore::overrides::Override>,
+}
+
+impl IgnoreRules {
+    pub fn load(project_path: &Path, config: &IndexingConfig) -> Self {
+        // The walker applies .gitignore only inside a git repository
+        // (`require_git` default); match that so non-git projects are not
+        // over-filtered by a stray .gitignore file.
+        let gitignore = if project_path.join(".git").exists() {
+            let mut builder = ignore::gitignore::GitignoreBuilder::new(project_path);
+            builder.add(project_path.join(".gitignore"));
+            builder.build().ok()
+        } else {
+            None
+        };
+
+        let mut overrides = ignore::overrides::OverrideBuilder::new(project_path);
+        for pattern in &config.ignore {
+            let neg = format!("!{}", pattern);
+            if let Err(e) = overrides.add(&neg) {
+                tracing::warn!(pattern = %pattern, err = %e, "skipping invalid ignore pattern");
+            }
+        }
+        let overrides = overrides.build().ok().filter(|o| !o.is_empty());
+
+        Self {
+            gitignore,
+            overrides,
+        }
+    }
+
+    /// Whether the scan walk would filter this relative file path via
+    /// gitignore or configured ignore patterns.
+    pub fn is_ignored(&self, rel_path: &str) -> bool {
+        if let Some(gitignore) = &self.gitignore {
+            if gitignore
+                .matched_path_or_any_parents(rel_path, false)
+                .is_ignore()
+            {
+                return true;
+            }
+        }
+        if let Some(overrides) = &self.overrides {
+            if overrides.matched(rel_path, false).is_ignore() {
+                return true;
+            }
+            // Directory patterns ("gen/", "vendored/**"): the walker prunes
+            // the directory itself, so check the path's ancestors as dirs.
+            let mut ancestor = rel_path;
+            while let Some(pos) = ancestor.rfind('/') {
+                ancestor = &ancestor[..pos];
+                if overrides.matched(ancestor, true).is_ignore() {
+                    return true;
+                }
+            }
+        }
+        false
+    }
+}
+
 pub struct Scanner {
     project_path: PathBuf,
     config: IndexingConfig,

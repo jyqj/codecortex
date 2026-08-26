@@ -159,13 +159,18 @@ impl Indexer {
     /// `export { x } from './b'`) AND for two-step forwarding via ES imports
     /// (`import { x } from './b'; export { x };`, including `as` aliasing and
     /// `export default x` of an imported binding), so surface changes flowing
-    /// through such files promote their importers.
+    /// through such files promote their importers. The Rust extractor sets it
+    /// for visibility-qualified `use` (`pub use`, `pub(crate) use`, …);
+    /// since no non-JS/TS parser sets `export_name`, Rust export
+    /// fingerprints are constant and the flag currently matters for
+    /// removal-seeded closures (a re-exported crate file deleted/renamed
+    /// promotes the facade's importers transitively).
     ///
     /// Known remaining gaps: CommonJS forwarding
     /// (`const { x } = require('./b'); module.exports = { x }` or mixed
-    /// `export { x }`) is still stored as a plain import, and other language
-    /// extractors never set the flag (e.g. Python `from b import *` /
-    /// `__init__.py` star re-exports, Rust `pub use`), so equivalent
+    /// `export { x }`) is still stored as a plain import, and the remaining
+    /// language extractors never set the flag (e.g. Python
+    /// `from b import *` / `__init__.py` star re-exports), so equivalent
     /// forwarding in those languages is still missed.
     fn promoted_export_surfaces_changed(
         &self,
@@ -577,6 +582,113 @@ mod dirty_propagation_fixpoint_tests {
             actions.get("c.ts")
         );
         assert_eq!(outcome.marked, 2, "exactly a.ts and c.ts are promoted");
+    }
+
+    /// Rust `pub use` re-export chain: workspace crate_b's lib.rs forwards
+    /// crate_a's surface (`pub use crate_a::alpha;`), crate_c imports
+    /// through crate_b. Removing crate_a's lib.rs must promote BOTH
+    /// crate_b/src/lib.rs (direct importer) and crate_c/src/lib.rs
+    /// (transitive, through the re-export flag). Before the parser fix the
+    /// `pub use` row kept the literal string `pub use crate_a::alpha` —
+    /// unresolvable against the workspace alias map — so neither promotion
+    /// ever happened.
+    ///
+    /// (Rust surface *edits* still don't seed the closure: no non-JS/TS
+    /// parser sets `export_name`, so Rust export fingerprints are constant.
+    /// Removal-seeded closures are the path this fix makes work end-to-end.)
+    #[test]
+    fn rust_pub_use_chain_promotes_transitive_importer_on_removal() {
+        let tmp = TempDir::new().unwrap();
+        let project = tmp.path();
+        let write = |rel: &str, content: &str| {
+            let path = project.join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, content).unwrap();
+        };
+        write(
+            "Cargo.toml",
+            "[workspace]\nmembers = [\"crate_a\", \"crate_b\", \"crate_c\"]\n",
+        );
+        write(
+            "crate_a/Cargo.toml",
+            "[package]\nname = \"crate_a\"\nversion = \"0.1.0\"\n",
+        );
+        write(
+            "crate_a/src/lib.rs",
+            "pub fn alpha() -> i32 {\n    1\n}\n",
+        );
+        write(
+            "crate_b/Cargo.toml",
+            "[package]\nname = \"crate_b\"\nversion = \"0.1.0\"\n",
+        );
+        write("crate_b/src/lib.rs", "pub use crate_a::alpha;\n");
+        write(
+            "crate_c/Cargo.toml",
+            "[package]\nname = \"crate_c\"\nversion = \"0.1.0\"\n",
+        );
+        write(
+            "crate_c/src/lib.rs",
+            "use crate_b::alpha;\n\npub fn gamma() -> i32 {\n    alpha() + 1\n}\n",
+        );
+
+        let db = Arc::new(IndexDb::open(&project.join("index.sqlite3")).unwrap().0);
+        let config = IndexingConfig::default();
+        let indexer = Indexer::new(db.clone(), project, &config);
+        indexer.build_index(project, true).unwrap();
+
+        // Premise: the pub use row must be persisted as a resolved re-export
+        // pointing at crate_a's entry point.
+        let reexports = db
+            .reads()
+            .query_json(
+                "SELECT import_string, resolved_path FROM imports \
+                 WHERE file_path = 'crate_b/src/lib.rs' AND is_reexport = 1",
+                &[],
+            )
+            .unwrap();
+        assert!(
+            reexports.iter().any(|row| {
+                row.get("import_string").and_then(|v| v.as_str()) == Some("crate_a::alpha")
+                    && row.get("resolved_path").and_then(|v| v.as_str())
+                        == Some("crate_a/src/lib.rs")
+            }),
+            "pub use must persist as a resolved re-export; got {reexports:?}"
+        );
+
+        // Remove the re-export target and run the incremental pipeline.
+        std::fs::remove_file(project.join("crate_a/src/lib.rs")).unwrap();
+
+        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        assert!(
+            scan.to_remove.contains(&"crate_a/src/lib.rs".to_string()),
+            "deleted lib.rs must land in to_remove; got {:?}",
+            scan.to_remove
+        );
+        let to_parse = std::mem::take(&mut scan.to_parse);
+        let parse = indexer.phase_parse(project, to_parse).unwrap();
+        let mut actions =
+            indexer.build_actions_map(&parse.write_units, &scan.existing, &scan.scanned_paths);
+
+        indexer
+            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
+            .unwrap();
+
+        assert!(
+            matches!(
+                actions.get("crate_b/src/lib.rs"),
+                Some(FileAction::DirtyResolveOnly)
+            ),
+            "crate_b re-exports the removed crate_a and must be promoted; got {:?}",
+            actions.get("crate_b/src/lib.rs")
+        );
+        assert!(
+            matches!(
+                actions.get("crate_c/src/lib.rs"),
+                Some(FileAction::DirtyResolveOnly)
+            ),
+            "crate_c imports through crate_b's re-export and must be promoted; got {:?}",
+            actions.get("crate_c/src/lib.rs")
+        );
     }
 
     /// Removing a dependency must promote its importers for re-resolution:

@@ -26,7 +26,7 @@ pub use build_plan::{PreparedBuild, StagedPostprocess, WrittenBuild};
 pub use dirty_closure::DirtyPropagationStatus;
 pub use framework_registry::FileFrameworkDetection;
 pub use indexer::{BuildScope, IndexReport, Indexer};
-pub use scanner::{ScannedFile, Scanner};
+pub use scanner::{IgnoreRules, ScannedFile, Scanner};
 
 /// Test-only seeding support shared by this crate's unit-test fixtures.
 #[cfg(test)]

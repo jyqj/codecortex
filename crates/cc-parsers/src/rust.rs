@@ -254,26 +254,47 @@ impl RustParser {
         ))
     }
 
+    /// Extract a `use_declaration` into an [`ImportRecord`].
+    ///
+    /// The import string is read from the grammar's `argument` field (the use
+    /// tree itself), so visibility modifiers never leak into it — the old
+    /// text-munging (`trim_start_matches("use ")`) left `pub use foo::Bar`
+    /// as the literal string `pub use foo::Bar`, which could never resolve
+    /// against the workspace alias map.
+    ///
+    /// A visibility modifier (`pub use`, `pub(crate) use`, …) marks the
+    /// record `is_reexport`: the file forwards (part of) another module's
+    /// export surface, so dirty propagation must promote this file's
+    /// importers when the re-export target's exports change — the same
+    /// contract the jsts extractor implements for `export … from`.
     fn extract_import(
         &self,
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
     ) -> Option<ImportRecord> {
-        let text = node.utf8_text(source).ok()?;
-        let import_string = text
-            .trim()
-            .trim_start_matches("use ")
-            .trim_end_matches(';')
-            .trim()
-            .to_string();
-        Some(crate::import_common::make_import(
-            file_path,
-            import_string,
-            None,
-            None,
-            false,
-        ))
+        let import_string = match node.child_by_field_name("argument") {
+            Some(argument) => argument.utf8_text(source).ok()?.trim().to_string(),
+            // Field missing (grammar drift): fall back to text munging that
+            // also strips a leading visibility modifier.
+            None => {
+                let text = node.utf8_text(source).ok()?;
+                let trimmed = text.trim().trim_end_matches(';').trim();
+                match trimmed.find("use ") {
+                    Some(pos) => trimmed[pos + 4..].trim().to_string(),
+                    None => trimmed.to_string(),
+                }
+            }
+        };
+        let mut cursor = node.walk();
+        let is_reexport = node
+            .children(&mut cursor)
+            .any(|child| child.kind() == "visibility_modifier");
+
+        let mut import =
+            crate::import_common::make_import(file_path, import_string, None, None, false);
+        import.is_reexport = is_reexport;
+        Some(import)
     }
 
     fn impl_container_name(&self, node: &tree_sitter::Node, source: &[u8]) -> Option<String> {
@@ -1031,6 +1052,49 @@ fn top_level() {}
         assert!(names.contains(&"top_level"));
         assert!(!outcome.imports.is_empty());
         assert!(!outcome.chunks.is_empty());
+    }
+
+    /// `pub use` (any visibility flavor) is a re-export and must be marked
+    /// `is_reexport` with a clean, resolvable import string — the old text
+    /// munging left the literal `pub use foo::Bar`, which could never match
+    /// the workspace alias map, so dirty propagation never saw Rust
+    /// re-export forwarding.
+    #[test]
+    fn pub_use_is_extracted_as_reexport_with_clean_import_string() {
+        let p = RustParser::new();
+        let code = r#"
+use std::fmt;
+pub use crate::engine::Engine;
+pub(crate) use cc_model::parse::ParseOutcome;
+pub(super) use super::helpers::helper_fn;
+"#;
+        let outcome = p.parse("src/lib.rs", code, Language::Rust).unwrap();
+        let by_string: std::collections::HashMap<&str, bool> = outcome
+            .imports
+            .iter()
+            .map(|imp| (imp.import_string.as_str(), imp.is_reexport))
+            .collect();
+
+        assert_eq!(
+            by_string.get("std::fmt"),
+            Some(&false),
+            "plain use stays a non-reexport import; got {by_string:?}"
+        );
+        assert_eq!(
+            by_string.get("crate::engine::Engine"),
+            Some(&true),
+            "pub use must be a re-export with the modifier stripped; got {by_string:?}"
+        );
+        assert_eq!(
+            by_string.get("cc_model::parse::ParseOutcome"),
+            Some(&true),
+            "pub(crate) use must be a re-export; got {by_string:?}"
+        );
+        assert_eq!(
+            by_string.get("super::helpers::helper_fn"),
+            Some(&true),
+            "pub(super) use must be a re-export; got {by_string:?}"
+        );
     }
 
     #[test]

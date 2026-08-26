@@ -138,6 +138,27 @@ impl SignatureStore<'_> {
         }
     }
 
+    /// [`SignatureStore::decide`] when the caller can prove the signature
+    /// inputs did not change since the last record (e.g. an event-scoped
+    /// build whose event set contains no candidate of this gate's input
+    /// class): skip when the recorded state is comparable — WITHOUT invoking
+    /// the signature compute — and run otherwise (first build, algorithm
+    /// upgrade), exactly as the full comparison would.
+    fn decide_assuming_unchanged(&self, reason: &'static str) -> CcResult<GateDecision> {
+        let recorded_algo = self
+            .db
+            .reads()
+            .get_metadata(self.algo_key)?
+            .unwrap_or_else(|| LEGACY_ALGORITHM_VERSION.to_string());
+        if recorded_algo != self.algo_version {
+            return Ok(GateDecision::run("signature algorithm changed"));
+        }
+        if self.db.reads().get_metadata(self.sig_key)?.is_none() {
+            return Ok(GateDecision::run("no recorded signature"));
+        }
+        Ok(GateDecision::skip(reason))
+    }
+
     fn deferred_record(&self, value: u64) -> DeferredSignatureRecord {
         DeferredSignatureRecord {
             sig_key: self.sig_key,
@@ -259,6 +280,18 @@ impl<'a, F: Fn() -> u64> FileSignatureGate<'a, F> {
     /// with `should_run`).
     pub(crate) fn deferred_record(&self) -> DeferredSignatureRecord {
         self.store.deferred_record(self.signature())
+    }
+
+    /// Gate decision when the caller can prove this gate's signature inputs
+    /// did not change since the last record (event-scoped build with no
+    /// candidate events): skip when the recorded state is comparable — the
+    /// compute closure (typically a tree walk) is never invoked — and run
+    /// otherwise (first build, algorithm upgrade).
+    pub(crate) fn should_run_assuming_unchanged(
+        &self,
+        reason: &'static str,
+    ) -> CcResult<GateDecision> {
+        self.store.decide_assuming_unchanged(reason)
     }
 }
 

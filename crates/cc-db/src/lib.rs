@@ -7,6 +7,7 @@ mod index_db_edges;
 mod index_db_frontier;
 mod index_db_graph;
 mod index_db_graph_read;
+mod index_db_multi_insert;
 mod index_db_query;
 mod index_db_retrieval;
 
@@ -15,6 +16,7 @@ pub use index_db_graph_read::GraphReads;
 pub use index_db_retrieval::RetrievalReadModel;
 pub use snapshot_write_txn::SnapshotWriteTxn;
 pub mod index_migrate;
+mod file_state_cache;
 mod rows;
 mod seed_symbol_cache;
 pub use seed_symbol_cache::seed_cache_max_symbols;

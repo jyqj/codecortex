@@ -307,10 +307,7 @@ impl Indexer {
                 ..Default::default()
             };
 
-            // Same algorithm (and `b3:` prefix) as the scan/diff phase, so a
-            // scanner-visible config file (e.g. yaml) written through this
-            // path stays hash-consistent with the next incremental diff.
-            let content_hash = crate::indexer::content_confirmation_hash(content.as_bytes());
+            let content_hash = crate::indexer::content_hash_hex(content.as_bytes());
             let mtime = metadata
                 .modified()
                 .ok()
@@ -374,19 +371,50 @@ impl Indexer {
         &self,
         project_path: &Path,
         batch_empty: bool,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
+        scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<Option<ConfigLinkRound>> {
-        let sig = time_step("write", "config_sig_walk", || {
-            config_files_signature(project_path)
-        });
         let recorded_algo = self
             .db
             .reads()
             .get_metadata(CONFIG_SIG_ALGO_KEY)?
             .unwrap_or_else(|| "1".to_string());
-        let recorded_sig = self.db.reads().get_metadata(CONFIG_SIG_KEY)?;
-        let unchanged = recorded_algo == CONFIG_SIG_ALGORITHM
-            && recorded_sig.and_then(|s| s.parse::<u64>().ok()) == Some(sig);
+        let recorded_sig = self
+            .db
+            .reads()
+            .get_metadata(CONFIG_SIG_KEY)?
+            .and_then(|s| s.parse::<u64>().ok());
+
+        // Event-scoped fast path: a walk-free build whose event set provably
+        // contains no config-linker candidate cannot have changed the config
+        // signature — reuse the recorded one instead of running the fallback
+        // walk. Requires a comparable record (matching algo + present sig);
+        // otherwise fall through to the compute so the gate behaves exactly
+        // like the unscoped path on first build / algo upgrades.
+        let scoped_reuse = walk_manifest.is_none()
+            && scope_hints.is_some_and(|h| h.config_files_unaffected)
+            && recorded_algo == CONFIG_SIG_ALGORITHM
+            && recorded_sig.is_some();
+
+        let (sig, unchanged) = if scoped_reuse {
+            tracing::debug!(
+                "config linker: scoped build touched no config candidates, reusing recorded signature"
+            );
+            (recorded_sig.unwrap_or_default(), true)
+        } else {
+            let sig = time_step("write", "config_sig_walk", || match walk_manifest {
+                // Shared-walk manifest: signature without another tree walk
+                // (value-equal to the walk fallback for the same tree).
+                Some(manifest) => {
+                    crate::config_linker::config_files_signature_from_manifest(manifest)
+                }
+                None => config_files_signature(project_path),
+            });
+            let unchanged =
+                recorded_algo == CONFIG_SIG_ALGORITHM && recorded_sig == Some(sig);
+            (sig, unchanged)
+        };
 
         if unchanged && batch_empty {
             build_explain.record_gate(
@@ -443,12 +471,12 @@ impl Indexer {
                         true,
                         "signature unchanged but token cache missing, rescanned",
                     );
-                    self.scan_and_record_config_tokens(project_path, sig)?
+                    self.scan_and_record_config_tokens(project_path, walk_manifest, sig)?
                 }
             }
         } else {
             build_explain.record_gate("config_link", true, "signature changed, rescanned");
-            self.scan_and_record_config_tokens(project_path, sig)?
+            self.scan_and_record_config_tokens(project_path, walk_manifest, sig)?
         };
 
         // 本轮扫描（或缓存）覆盖到的配置文件：没有产出单元的即为零链接，
@@ -486,10 +514,15 @@ impl Indexer {
     fn scan_and_record_config_tokens(
         &self,
         project_path: &Path,
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
         sig: u64,
     ) -> CcResult<Vec<RawConfigToken>> {
-        let raw_tokens = time_step("write", "config_token_scan", || {
-            scan_config_tokens(project_path)
+        let raw_tokens = time_step("write", "config_token_scan", || match walk_manifest {
+            Some(manifest) => crate::config_linker::scan_config_tokens_from_manifest(
+                project_path,
+                manifest,
+            ),
+            None => scan_config_tokens(project_path),
         })?;
         match Self::serialize_raw_token_cache(&raw_tokens) {
             // 超出缓存上限：清掉旧缓存，避免新签名配上陈旧 token。

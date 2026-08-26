@@ -24,11 +24,17 @@ pub(crate) use postprocess::PostprocessPlan;
 /// `cc_db::signature_agg`), turning the gate decision from O(repo) into
 /// O(1) metadata reads. Same input coverage per gate; different hash formula,
 /// hence the bump.
+/// Version "2" (infra/config): the candidate walks were unified into the
+/// scanner's shared walk manifest — rel paths are now `/`-normalized and the
+/// global gitignore is excluded everywhere (`git_global(false)`), so the
+/// candidate set may differ from version "1" on some setups. Bumped to force
+/// exactly one recompute after upgrade.
 const DISPATCH_SIG_ALGORITHM: &str = "2";
 const INTERFACE_SIG_ALGORITHM: &str = "2";
 const COMMUNITY_SIG_ALGORITHM: &str = "2";
-const INFRA_SIG_ALGORITHM: &str = "1";
-const CONFIG_SIG_ALGORITHM: &str = "1";
+const INFRA_SIG_ALGORITHM: &str = "2";
+const CONFIG_SIG_ALGORITHM: &str = "2";
+const ADR_SIG_ALGORITHM: &str = "1";
 
 /// Time one postprocess/analysis sub-step and emit a `tracing::debug!` event
 /// with the elapsed milliseconds, so a slow `postprocess_ms`/`analysis_ms`

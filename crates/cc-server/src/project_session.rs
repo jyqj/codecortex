@@ -19,16 +19,6 @@ use std::time::Instant;
 const PROJECT_CACHE_CAPACITY: usize = 16;
 const DEFAULT_IDLE_TIMEOUT_SECS: u64 = 60;
 
-/// Above this many drained watcher paths a scoped diff loses its edge over a
-/// full-tree scan (the walk cost is dominated by the batch itself) — fall
-/// back to the unscoped diff, which also self-corrects any drift.
-const WATCHER_SCOPED_MAX_PATHS: usize = 256;
-
-/// Even a healthy stream of scoped ticks periodically yields to one unscoped
-/// scan so drift (missed notify events, paths filtered before enqueue) is
-/// bounded in time.
-const WATCHER_UNSCOPED_INTERVAL: std::time::Duration = std::time::Duration::from_secs(600);
-
 #[derive(Clone)]
 struct ProjectServices {
     index: SharedCodeIndex,
@@ -347,10 +337,6 @@ impl ProjectSession {
                 let auto_indexing = auto_indexing.clone();
                 async move {
                     let poll_interval = tokio::time::Duration::from_secs(2);
-                    // Drift bound for scoped ticks: when this much time has
-                    // passed since the last unscoped scan, the next tick runs
-                    // a full-tree diff regardless of drain size.
-                    let mut last_unscoped_scan = Instant::now();
                     loop {
                         tokio::time::sleep(poll_interval).await;
 
@@ -387,10 +373,8 @@ impl ProjectSession {
 
                         let index = active.read().await.index();
                         let watcher_for_tick = watcher_for_task.clone();
-                        let force_unscoped =
-                            last_unscoped_scan.elapsed() >= WATCHER_UNSCOPED_INTERVAL;
                         let result = tokio::task::spawn_blocking(move || {
-                            run_watcher_tick(&index, &watcher_for_tick, force_unscoped)
+                            run_watcher_tick(&index, &watcher_for_tick)
                         })
                         .await;
 
@@ -398,9 +382,6 @@ impl ProjectSession {
 
                         match result {
                             Ok(WatcherTickOutcome::WatcherGone) => break,
-                            Ok(WatcherTickOutcome::Completed { unscoped: true }) => {
-                                last_unscoped_scan = Instant::now();
-                            }
                             Ok(_) => {}
                             Err(e) => {
                                 tracing::warn!("watcher: incremental index task panicked: {}", e);
@@ -487,26 +468,17 @@ enum WatcherTickOutcome {
     /// No build ran this tick (gate busy / nothing pending / lock failure);
     /// any pending events were left untouched for the next tick.
     Skipped,
-    /// A drain was followed by an incremental build attempt. `unscoped` is
-    /// true when the build diffed the whole tree (drift is now bounded), so
-    /// the poll loop can reset its drift timer.
-    Completed { unscoped: bool },
+    /// A drain was followed by an incremental build attempt.
+    Completed,
 }
 
 /// One watcher poll tick, run on a blocking thread. Ordering invariant:
 /// the build gate is acquired BEFORE `drain_pending`, so a drained batch is
 /// always followed by a build attempt — events are never droppable after
 /// drain. (The caller already holds the `auto_indexing` flag.)
-///
-/// The drained changed+removed paths become the scan/diff scope, so the
-/// build stats/hashes/re-parses only those paths instead of walking the
-/// whole tree. Fallback to an unscoped full-tree diff when `force_unscoped`
-/// is set (periodic drift bound) or the batch exceeds
-/// [`WATCHER_SCOPED_MAX_PATHS`].
 fn run_watcher_tick(
     index: &SharedCodeIndex,
     watcher: &Arc<std::sync::Mutex<Option<FileWatcher>>>,
-    force_unscoped: bool,
 ) -> WatcherTickOutcome {
     // Acquire-before-drain, part 2: the per-project build gate. Clone it
     // under a brief read lock, release, then try_lock — a busy manual build
@@ -540,35 +512,26 @@ fn run_watcher_tick(
         return WatcherTickOutcome::Skipped;
     }
 
-    // Changed and removed paths both belong in the scope: the scoped diff
-    // re-derives each path's fate from the filesystem (a "removed" path that
-    // reappeared is an update; a "changed" path that vanished is a removal),
-    // so the two lists need no separate treatment here.
-    let scope: std::collections::HashSet<String> = drain
-        .changed
-        .iter()
-        .chain(drain.removed.iter())
-        .cloned()
-        .collect();
-    let use_scope = !force_unscoped && scope.len() <= WATCHER_SCOPED_MAX_PATHS;
-
     tracing::info!(
         changed = drain.changed.len(),
         removed = drain.removed.len(),
-        scoped = use_scope,
         "watcher: file changes detected, triggering incremental index"
     );
 
     // Shared split-build driver: brief read lock for inputs, heavy prepare
     // and postprocess compute with no CodeIndex lock held, write lock only
-    // around phase_write and the delta apply.
-    let scope_arg = use_scope.then_some(&scope);
-    if let Err(e) = handlers::core::run_split_build(index, false, false, scope_arg) {
+    // around phase_write and the delta apply. The drained event set rides
+    // along as the build scope, so the prepare stats/hashes only the touched
+    // paths instead of walking the whole tree (safety fallbacks to the full
+    // walk are decided inside the scan/diff phase).
+    let scope = cc_index::BuildScope {
+        changed: drain.changed,
+        removed: drain.removed,
+    };
+    if let Err(e) = handlers::core::run_split_build(index, false, false, Some(&scope)) {
         tracing::warn!("watcher: incremental index failed: {}", e);
     }
-    WatcherTickOutcome::Completed {
-        unscoped: !use_scope,
-    }
+    WatcherTickOutcome::Completed
 }
 
 async fn active_idle_timeout_secs(active: &tokio::sync::RwLock<ProjectServices>) -> u64 {

@@ -16,7 +16,7 @@
   │
   ├─ 文件预选（preselect）：给候选文件打分，收窄 chunk 级检索范围
   │
-  ├─ 检索通道（lanes，rayon 并行执行，按注册序融合）：
+  ├─ 检索通道（lanes，并发执行、确定性融合序）：
   │     lexical（FTS5 over chunks）
   │     grep（regex/子串 over chunks 正文）
   │     graph（种子符号 + 调用图 1 跳扩展）
@@ -41,13 +41,16 @@ trait，注册在 `default_lanes()`。今天有三条适配器：
 | grep | chunks 正文（zstd 解压后 regex/子串匹配） | `search.grep_top_k`（12） | `search.grep_weight`（0.8） |
 | graph | 种子符号 + 调用边 1 跳扩展 | `search.graph_top_k`（12） | `search.graph_weight`（0.6；0 关闭） |
 
-注册顺序即确定性的 RRF 融合顺序。三条通道在 rayon 池上**并行执行**
-（各自从读池 checkout 连接，唯一副作用是互斥锁保护的 chunk 文本缓存），
-结果按注册序收集——RRF 累加与 tie-break 与串行执行逐位一致。新增一条
-通道只需实现 trait（`Sync`，内建通道都是无状态单元结构体）并追加到
+注册顺序即确定性的 RRF 融合顺序。新增一条通道只需实现 trait 并追加到
 `default_lanes()`，不需要改 `plan.rs` / `engine.rs`。
 
-grep 通道的每行匹配都要先 zstd 解压，三项行为约束最坏情况：
+启用的通道**并发执行**（`run_lanes`，`std::thread::scope`：首条启用
+通道跑在调用线程上，其余各开一条 scoped 线程；每条通道在 `run` 内自取
+读池连接，副作用限于各自锁后的引擎缓存）。结果按注册序收集，RRF 融合
+与 tie-break 看到的序列与旧串行循环逐字节一致；错误语义同样按注册序取
+首个错误。`RetrievalLane` 因此要求 `Sync`。
+
+grep 通道的每行匹配都要先 zstd 解压，四项行为约束最坏情况：
 
 - **扫描预算**：单次查询最多解压扫描 `search.grep_scan_cap`（默认
   20000）行 chunk，预算耗尽即截断并返回预算内的命中（tracing 日志
@@ -58,7 +61,15 @@ grep 通道的每行匹配都要先 zstd 解压，三项行为约束最坏情况
   时保持自然探测序；
 - **缓存防刷穿**：仅命中的 chunk 进 chunk_text 缓存（批取阶段恰好要重读
   它们）；扫描过但未命中的行刻意不进缓存，否则一次冷扫描会把整个 LRU
-  轮转一遍、驱逐热条目。
+  轮转一遍、驱逐热条目；
+- **FTS 预过滤（两段扫描）**：无 scope 的扫描先从 grep 字面量导出
+  `chunks_fts` MATCH 短语（`grep_prefilter_phrase`；token 边界匹配是
+  FTS 短语命中的超集）拉候选做第 1 段，第 2 段回退全量时近序扫描，
+  补 tokenizer 看不见的 token 中缝子串命中（如以 `UserById` 查
+  `getUserById`），跳过第 1 段已解压的行；两段命中按 rowid 倒序合并——
+  预算够覆盖时结果与单趟扫描完全一致，预算吃紧时预过滤**更早找到更多
+  命中**。有 file scope（基数有界）保持单趟。MATCH 报错（tokenizer 拒收
+  的短语）静默降级为纯全扫。
 
 graph 通道的种子打分与衰减由 `RankingConfig` 控制
 （`graph_seed_exact_score` / `graph_seed_fuzzy_score` /
@@ -85,6 +96,12 @@ graph 通道的种子打分与衰减由 `RankingConfig` 控制
 `RankingConfig`（`preselect_*` 字段，见
 [CONFIGURATION.md](../CONFIGURATION.md#ranking)）。显式限定文件
 （`file_paths`）拿短路分 `preselect_explicit_scope_score`（10.0）。
+
+**独立层并发**：不读先前层得分的层（`reads_prior_scores() == false`，
+今天是层 1–6）按注册表中的连续段并发执行（DB 绑定的 FTS summary 与
+token search 各自取读池连接），命中按注册序合并——得分、理由、逐层
+明细与串行逐字节一致。读分层（fallback 门、graph-neighbor 以前层结果
+为种子）仍在合并后串行执行。新增层默认 `true`（安全侧）。
 
 `PreselectResult` 携带逐层得分明细（`layer_scores`），并以
 `preselect:<layer>:+<score>` 的形式进入命中理由——任何文件为什么被预选
@@ -150,8 +167,10 @@ ORDER BY / LIMIT / UNION，编译到 SQLite SQL 执行。语法面与有意为�
 
 ## 扩展点
 
-- **新增检索通道**：实现 `RetrievalLane`，追加到 `default_lanes()`。
-  顺序即融合顺序。
+- **新增检索通道**：实现 `RetrievalLane`（需 `Sync`；通道间并发执行），
+  追加到 `default_lanes()`。顺序即融合顺序。
 - **新增预选层**：实现 `PreselectLayer`，追加到
-  `default_preselect_layers()`。顺序即执行顺序——fallback 门读取更早层的
-  得分，graph-neighbor 以它之前的一切为种子。
+  `default_preselect_layers()`。顺序即（逻辑）执行顺序——fallback 门读取
+  更早层的得分，graph-neighbor 以它之前的一切为种子。不读先前层得分的
+  层可覆写 `reads_prior_scores()` 返回 `false` 以加入并发段（默认
+  `true`，安全侧）。

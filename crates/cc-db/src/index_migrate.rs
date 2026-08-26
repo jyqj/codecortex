@@ -4,7 +4,12 @@ use crate::sql_util::db_err;
 use cc_model::CcResult;
 use rusqlite::Connection;
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 6;
+/// v7: scan/diff content hashes switched from SHA-256 to blake3 (hex width
+/// unchanged). Stored hashes are not comparable across algorithms, so the
+/// version bump routes pre-blake3 databases through the standard
+/// rebuild-on-mismatch reset instead of letting every file re-hash as
+/// "changed" on the first incremental build.
+pub const CURRENT_SCHEMA_VERSION: u32 = 7;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 

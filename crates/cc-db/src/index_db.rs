@@ -404,6 +404,10 @@ pub struct IndexDb {
     /// owner validates content against the persisted `symbols_seed`
     /// aggregate exactly like the seed cache does.
     pub(crate) resolver_catalog_slot: Mutex<Option<Box<dyn std::any::Any + Send>>>,
+    /// Cross-build `files` snapshot for the scan/diff phase, validated
+    /// against the persisted `files_state` aggregate (see
+    /// `crate::file_state_cache`).
+    pub(crate) file_state_cache: Mutex<Option<crate::file_state_cache::FileStateCache>>,
 }
 
 /// Process-wide monotonic source for [`IndexDb::instance_id`].
@@ -485,6 +489,7 @@ impl IndexDb {
                 instance_id: NEXT_INSTANCE_ID.fetch_add(1, Ordering::Relaxed),
                 seed_cache: Mutex::new(None),
                 resolver_catalog_slot: Mutex::new(None),
+                file_state_cache: Mutex::new(None),
             },
             schema_status,
         ))
@@ -1324,9 +1329,7 @@ impl IndexDb {
         // Replacement keeps the path, so the path-derived test_edges
         // stay valid (see `delete_files_data_base_keep_test_edges_batch`).
         Self::delete_files_data_base_keep_test_edges_batch(&tx, &rel_paths)?;
-        for file in files {
-            Self::insert_file_data_deferred_fts(&tx, file, None)?;
-        }
+        Self::insert_file_units_batch(&tx, files, &PrecompressedChunks::new())?;
         Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
@@ -1446,105 +1449,10 @@ impl IndexDb {
             .map_err(db_err)?;
         let rel_paths: Vec<&str> = units.iter().map(|u| u.rel_path.as_str()).collect();
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
-        for file in units {
-            Self::replace_reresolved_edges_for_file(&tx, file)?;
-        }
+        Self::replace_reresolved_edges_batch(&tx, units)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
         tx.commit().map_err(db_err)?;
-        Ok(())
-    }
-
-    /// Per-file body of [`Self::replace_reresolved_edges_only`], usable inside
-    /// a caller-owned transaction.
-    pub(crate) fn replace_reresolved_edges_for_file(
-        tx: &Connection,
-        file: &FileWriteUnit,
-    ) -> CcResult<()> {
-        {
-            let rel = file.rel_path.as_str();
-            let outcome = &file.outcome;
-
-            // Delete only the re-resolvable tables
-            for table in &[
-                "call_edges",
-                "symbol_refs",
-                "symbols",
-                "imports",
-                "semantic_edges",
-                "dispatch_sites",
-                "routes",
-            ] {
-                Self::execute_cached(
-                    tx,
-                    &format!("DELETE FROM {} WHERE file_path = ?1", table),
-                    rusqlite::params![rel],
-                )?;
-            }
-
-            // Re-insert symbols
-            for s in &outcome.symbols {
-                Self::execute_cached(
-                    tx,
-                    "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25)",
-                    rusqlite::params![s.symbol_id, s.file_path, s.name, s.kind.as_str(), s.container, s.start_line, s.end_line, s.start_col, s.end_col, s.signature, s.doc, s.parser_tier.as_str(), s.parser_confidence, s.qname, s.parent_symbol_id, s.export_name, s.is_default_export as i32, s.symbol_uid, s.framework_role, s.receiver_type, s.param_types, s.return_type, s.param_count, s.base_types, s.implements],
-                )?;
-            }
-
-            // Re-insert imports
-            for i in &outcome.imports {
-                Self::execute_cached(
-                    tx,
-                    "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
-                    rusqlite::params![i.file_path, i.import_string, i.resolved_path, i.imported_name, i.alias, i.is_namespace as i32, i.is_default as i32, i.is_reexport as i32],
-                )?;
-            }
-
-            // Re-insert symbol_refs
-            for r in &outcome.symbol_refs {
-                Self::execute_cached(
-                    tx,
-                    "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18)",
-                    rusqlite::params![r.ref_id, r.file_path, r.symbol_name, r.container, r.ref_kind, r.line, r.column, r.target_symbol_id, r.target_file_path, r.target_symbol_uid, r.ref_name, r.resolution_kind.as_str(), r.resolution_confidence, r.resolution_strategy, r.ref_end_line, r.ref_end_col, r.parser_tier.as_str(), r.parser_confidence],
-                )?;
-            }
-
-            // Re-insert call_edges
-            for e in &outcome.call_edges {
-                Self::execute_cached(
-                    tx,
-                    "INSERT OR REPLACE INTO call_edges(edge_id,file_path,caller_symbol,callee_symbol,line,start_col,end_line,end_col,target_symbol_id,target_file_path,caller_symbol_id,callee_ref_id,caller_symbol_uid,callee_symbol_uid,dispatch_kind,call_kind,resolution_kind,resolution_confidence,resolution_strategy,receiver_expr,arg_count,is_optional_chain,is_awaited,is_constructor,parser_tier,parser_confidence,synthesized_by,synthesis_key,registered_file,registered_line) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19,?20,?21,?22,?23,?24,?25,?26,?27,?28,?29,?30)",
-                    rusqlite::params![e.edge_id, e.file_path, e.caller_symbol, e.callee_symbol, e.line, e.start_col, e.end_line, e.end_col, e.target_symbol_id, e.target_file_path, e.caller_symbol_id, e.callee_ref_id, e.caller_symbol_uid, e.callee_symbol_uid, e.dispatch_kind.as_str(), e.call_kind, e.resolution_kind.as_str(), e.resolution_confidence, e.resolution_strategy, e.receiver_expr, e.arg_count.map(|v| v as i32), e.is_optional_chain as i32, e.is_awaited as i32, e.is_constructor as i32, e.parser_tier.as_str(), e.parser_confidence, e.synthesized_by, e.synthesis_key, e.registered_file, e.registered_line.map(|v| v as i32)],
-                )?;
-            }
-
-            // Re-insert semantic_edges
-            for se in &outcome.semantic_edges {
-                Self::execute_cached(
-                    tx,
-                    "INSERT OR REPLACE INTO semantic_edges(edge_id,file_path,source_symbol,source_symbol_uid,target_symbol,target_symbol_uid,relation_kind,line,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10)",
-                    rusqlite::params![se.edge_id, se.file_path, se.source_symbol, se.source_symbol_uid, se.target_symbol, se.target_symbol_uid, se.relation_kind.as_str(), se.line, se.confidence, se.parser_tier.as_str()],
-                )?;
-            }
-
-            // Re-insert dispatch_sites
-            for ds in &outcome.dispatch_sites {
-                Self::execute_cached(
-                    tx,
-                    "INSERT OR REPLACE INTO dispatch_sites(site_id,file_path,line,col,enclosing_symbol_uid,receiver_expr,site_kind,key,handler_expr,handler_symbol_uid,confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
-                    rusqlite::params![ds.site_id, ds.file_path, ds.line, ds.col, ds.enclosing_symbol_uid, ds.receiver_expr, ds.site_kind.as_str(), ds.key, ds.handler_expr, ds.handler_symbol_uid, ds.confidence],
-                )?;
-            }
-
-            // Re-insert route_edges
-            for r in &outcome.route_edges {
-                Self::execute_cached(
-                    tx,
-                    "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15,?16,?17,?18,?19)",
-                    rusqlite::params![r.edge_id, r.file_path, r.route_path, r.handler_name, r.method, r.line, r.start_col, r.end_line, r.end_col, r.handler_symbol_id, r.handler_symbol_uid, r.handler_expr, r.router_symbol_uid, r.framework, r.route_kind, r.confidence, r.parser_tier.as_str(), r.resolution_strategy, r.resolution_confidence],
-                )?;
-            }
-        }
         Ok(())
     }
 
@@ -1607,11 +1515,14 @@ impl IndexDb {
                 .filter(|p| seen.insert(*p))
                 .collect()
         };
-        // Seed-cache basis: the `symbols_seed` aggregate before this batch's
-        // mutations. Re-read after `finish_path_update` below; the pair lets
-        // the post-commit cache update prove its snapshot matches the
-        // pre-batch table state (see `seed_symbol_cache`).
-        let pre_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        // Cache basis: the `symbols_seed` / `files_state` aggregates before
+        // this batch's mutations. Re-read after `finish_path_update` below;
+        // each pair lets the post-commit cache update prove its snapshot
+        // matches the pre-batch table state (see `seed_symbol_cache` /
+        // `file_state_cache`).
+        let pre_aggs = crate::signature_agg::load_on(&tx)?;
+        let pre_seed_agg = pre_aggs.map(|aggs| aggs.symbols_seed);
+        let pre_files_agg = pre_aggs.map(|aggs| aggs.files_state);
         let agg_update = crate::signature_agg::begin_path_update(&tx, &touched_paths)?;
         // Per-section timing: emitted as `tracing::debug!` "sub-phase timing"
         // events (same field style as cc-index's `time_step`) so a slow
@@ -1654,19 +1565,11 @@ impl IndexDb {
         Self::delete_files_data_base_keep_test_edges_batch(&tx, &replace_paths)?;
         section_ms("db_replace_delete", normal_units.len(), section_start);
         let section_start = std::time::Instant::now();
-        for file in normal_units {
-            Self::insert_file_data_deferred_fts(
-                &tx,
-                file,
-                precompressed.get(&file.rel_path).map(Vec::as_slice),
-            )?;
-        }
+        Self::insert_file_units_batch(&tx, normal_units, precompressed)?;
         Self::insert_files_literal_fts_batch(&tx, &replace_paths)?;
         section_ms("db_replace_insert", normal_units.len(), section_start);
         let section_start = std::time::Instant::now();
-        for file in dirty_units {
-            Self::replace_reresolved_edges_for_file(&tx, file)?;
-        }
+        Self::replace_reresolved_edges_batch(&tx, dirty_units)?;
         section_ms("db_dirty_rewrite", dirty_units.len(), section_start);
         // Hierarchy edges for the batch files, inside the same transaction.
         // Must run after the dirty rewrite above: its per-file delete clears
@@ -1678,7 +1581,9 @@ impl IndexDb {
         let section_start = std::time::Instant::now();
         Self::insert_route_nodes_on(&tx, route_nodes)?;
         crate::signature_agg::finish_path_update(&tx, &touched_paths, agg_update)?;
-        let post_seed_agg = crate::signature_agg::load_on(&tx)?.map(|aggs| aggs.symbols_seed);
+        let post_aggs = crate::signature_agg::load_on(&tx)?;
+        let post_seed_agg = post_aggs.map(|aggs| aggs.symbols_seed);
+        let post_files_agg = post_aggs.map(|aggs| aggs.files_state);
         Self::bump_index_epoch_on(&tx)?;
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();
@@ -1693,6 +1598,9 @@ impl IndexDb {
             normal_units,
             dirty_units,
         );
+        // …and the file-state cache — dirty units never touch `files` rows
+        // (`replace_reresolved_edges_batch` rewrites edge tables only).
+        self.file_state_cache_apply_batch(pre_files_agg, post_files_agg, to_remove, normal_units);
         Ok(SeedTokenSpan {
             pre: pre_seed_agg,
             post: post_seed_agg,
@@ -2445,6 +2353,14 @@ impl ReadOps<'_> {
 
     pub fn get_file_state(&self) -> CcResult<HashMap<String, FileState>> {
         self.0.get_file_state()
+    }
+
+    /// The file-state snapshot behind an `Arc`, served from the cross-build
+    /// cache when the persisted `files_state` aggregate proves it current
+    /// (see `crate::file_state_cache`). Content-identical to
+    /// [`ReadOps::get_file_state`].
+    pub fn get_file_state_snapshot(&self) -> CcResult<std::sync::Arc<HashMap<String, FileState>>> {
+        self.0.get_file_state_snapshot()
     }
 
     pub fn get_metadata(&self, key: &str) -> CcResult<Option<String>> {

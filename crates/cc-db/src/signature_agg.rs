@@ -16,7 +16,8 @@
 //!
 //! The first six groups mirror exactly what the gates hash (filters
 //! included); `symbols_seed` validates the cross-build resolver seed cache
-//! (see `crate::seed_symbol_cache`):
+//! (see `crate::seed_symbol_cache`); `files_state` validates the cross-build
+//! file-state snapshot cache (see `crate::file_state_cache`):
 //!
 //! | group              | table          | rows                              | columns                                              |
 //! |--------------------|----------------|-----------------------------------|------------------------------------------------------|
@@ -27,11 +28,16 @@
 //! | `semantic_real`    | semantic_edges | `edge_id NOT LIKE 'synth:%'`      | source_symbol_uid, target_symbol_uid, relation_kind  |
 //! | `dispatch_sites`   | dispatch_sites | all                               | site_kind, key, file_path, enclosing/handler uid, line |
 //! | `symbols_seed`     | symbols        | all                               | the 15 resolver-seed columns (`SEED_COLUMNS` in `index_db_query`) |
+//! | `files_state`      | files          | all                               | file_path, content_hash, mtime, size (the `FileState` projection) |
 //!
 //! NULL (or non-TEXT) values hash as `""` in the gate groups, matching the
 //! previous scans' `as_str().unwrap_or("")` extraction. `symbols_seed`
 //! hashes `Option` values instead (NULL distinct from `''`), because its
 //! consumer caches actual row content, not just a change signal.
+//! `files_state` deliberately excludes `indexed_at` and every other files
+//! column, so a rewrite that leaves the FileState projection unchanged (the
+//! config linker re-applying identical units each build) keeps the token —
+//! and therefore the cache — stable.
 //!
 //! Maintenance contract — every write path that mutates the columns above
 //! must keep the stored aggregates in sync, inside the same transaction:
@@ -70,7 +76,8 @@ pub(crate) const GRAPH_SIG_AGG_KEY: &str = "graph_sig_aggregates";
 /// Serialized-format version. Bump when the row-hash formula, column sets or
 /// group layout change; stored aggregates from other versions read as absent.
 /// Version "2": added the `symbols_seed` group.
-const FORMAT_VERSION: &str = "2";
+/// Version "3": added the `files_state` group.
+const FORMAT_VERSION: &str = "3";
 
 /// One group's aggregate: row count plus wrapping sum of per-row hashes.
 /// Equal multisets of rows produce equal aggregates; add/remove commute.
@@ -115,7 +122,7 @@ impl RowAgg {
     }
 }
 
-/// The seven maintained aggregates (see module docs for the group table).
+/// The eight maintained aggregates (see module docs for the group table).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct GraphSignatureAggregates {
     pub symbols_full: RowAgg,
@@ -125,10 +132,11 @@ pub struct GraphSignatureAggregates {
     pub semantic_real: RowAgg,
     pub dispatch_sites: RowAgg,
     pub symbols_seed: RowAgg,
+    pub files_state: RowAgg,
 }
 
 impl GraphSignatureAggregates {
-    fn groups(&self) -> [RowAgg; 7] {
+    fn groups(&self) -> [RowAgg; 8] {
         [
             self.symbols_full,
             self.symbols_community,
@@ -137,6 +145,7 @@ impl GraphSignatureAggregates {
             self.semantic_real,
             self.dispatch_sites,
             self.symbols_seed,
+            self.files_state,
         ]
     }
 
@@ -168,6 +177,7 @@ impl GraphSignatureAggregates {
             post.dispatch_sites,
         );
         apply(&mut self.symbols_seed, pre.symbols_seed, post.symbols_seed);
+        apply(&mut self.files_state, pre.files_state, post.files_state);
     }
 
     fn serialize(&self) -> String {
@@ -201,6 +211,7 @@ impl GraphSignatureAggregates {
             semantic_real: group()?,
             dispatch_sites: group()?,
             symbols_seed: group()?,
+            files_state: group()?,
         };
         if parts.next().is_some() {
             return None;
@@ -251,6 +262,24 @@ fn hash_symbol_seed(texts: &[Option<&str>; 11], ints: &[i64; 3], param_count: Op
         value.hash(&mut hasher);
     }
     param_count.hash(&mut hasher);
+    hasher.finish()
+}
+
+/// Per-row hash over the `FileState` projection of one `files` row. Text
+/// columns hash as `Option` and `mtime` hashes by exact bit pattern — the
+/// consumer (the file-state snapshot cache) serves row content, so two
+/// states this hash cannot distinguish must materialize identical maps.
+fn hash_file_state_row(
+    file_path: Option<&str>,
+    content_hash: Option<&str>,
+    mtime: f64,
+    size: i64,
+) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    file_path.hash(&mut hasher);
+    content_hash.hash(&mut hasher);
+    mtime.to_bits().hash(&mut hasher);
+    size.hash(&mut hasher);
     hasher.finish()
 }
 
@@ -322,6 +351,17 @@ fn col_opt_i64(row: &rusqlite::Row<'_>, idx: usize) -> rusqlite::Result<Option<i
     })
 }
 
+/// Read a REAL column with the same INTEGER coercion `rusqlite::Row::get::<f64>`
+/// applies (the `get_file_state` reader relies on it), so the hash and the
+/// cached map observe identical values.
+fn col_f64(row: &rusqlite::Row<'_>, idx: usize) -> rusqlite::Result<f64> {
+    Ok(match row.get_ref(idx)? {
+        rusqlite::types::ValueRef::Real(f) => f,
+        rusqlite::types::ValueRef::Integer(n) => n as f64,
+        _ => 0.0,
+    })
+}
+
 /// Fold the rows of one table (optionally scoped to a path chunk) into the
 /// aggregates. `scope` is `Some((placeholders, params))` for path-scoped
 /// captures, `None` for full scans.
@@ -356,6 +396,7 @@ enum Table {
     CallEdges,
     SemanticEdges,
     DispatchSites,
+    Files,
 }
 
 impl Table {
@@ -384,6 +425,10 @@ impl Table {
             Table::DispatchSites => (
                 "SELECT site_kind, key, file_path, enclosing_symbol_uid, handler_symbol_uid, line \
                  FROM dispatch_sites{scope}",
+                " WHERE file_path IN ({in})",
+            ),
+            Table::Files => (
+                "SELECT file_path, content_hash, mtime, size FROM files{scope}",
                 " WHERE file_path IN ({in})",
             ),
         }
@@ -489,6 +534,18 @@ fn fold_query(
                     line,
                 ));
             }
+            Table::Files => {
+                let file_path = col_text(row, 0).map_err(db_err)?;
+                let content_hash = col_text(row, 1).map_err(db_err)?;
+                let mtime = col_f64(row, 2).map_err(db_err)?;
+                let size = col_i64(row, 3).map_err(db_err)?;
+                aggs.files_state.add_row(hash_file_state_row(
+                    file_path.as_deref(),
+                    content_hash.as_deref(),
+                    mtime,
+                    size,
+                ));
+            }
         }
     }
     Ok(())
@@ -504,6 +561,7 @@ pub(crate) fn scan_on(conn: &Connection) -> CcResult<GraphSignatureAggregates> {
         Table::CallEdges,
         Table::SemanticEdges,
         Table::DispatchSites,
+        Table::Files,
     ] {
         fold_table(conn, &mut aggs, table, None)?;
     }
@@ -522,6 +580,7 @@ fn capture_paths_on(conn: &Connection, paths: &[&str]) -> CcResult<GraphSignatur
         Table::CallEdges,
         Table::SemanticEdges,
         Table::DispatchSites,
+        Table::Files,
     ] {
         fold_table(conn, &mut aggs, table, Some(paths))?;
     }

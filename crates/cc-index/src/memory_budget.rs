@@ -161,23 +161,14 @@ impl MemoryBudget {
 
         #[cfg(target_os = "windows")]
         {
-            // Use GetProcessMemoryInfo via PowerShell to read WorkingSetSize.
-            // This avoids adding windows-sys / winapi as a build dependency.
-            match std::process::Command::new("powershell")
-                .args([
-                    "-NoProfile",
-                    "-Command",
-                    "(Get-Process -Id $PID).WorkingSet64",
-                ])
-                .output()
-            {
-                Ok(output) if output.status.success() => {
-                    let text = String::from_utf8_lossy(&output.stdout);
-                    if let Ok(bytes) = text.trim().parse::<u64>() {
-                        return bytes;
-                    }
-                }
-                _ => {}
+            // Native working-set read via K32GetProcessMemoryInfo (exported
+            // from kernel32.dll since Windows 7, which std already links) —
+            // no per-refresh process spawn and no windows-sys/winapi build
+            // dependency. The previous implementation shelled out to
+            // PowerShell on EVERY refresh, costing a full process spawn per
+            // batch-size decision.
+            if let Some(bytes) = windows_native::working_set_bytes() {
+                return bytes;
             }
             tracing::warn!("Windows RSS detection failed; memory budget may be inaccurate");
             0
@@ -228,24 +219,9 @@ impl MemoryBudget {
 
         #[cfg(target_os = "windows")]
         {
-            // Query total physical RAM via PowerShell (avoids winapi dependency).
-            match std::process::Command::new("powershell")
-                .args([
-                    "-NoProfile",
-                    "-Command",
-                    "(Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory",
-                ])
-                .output()
-            {
-                Ok(output) if output.status.success() => {
-                    let text = String::from_utf8_lossy(&output.stdout);
-                    if let Ok(bytes) = text.trim().parse::<u64>() {
-                        if bytes > 0 {
-                            return bytes;
-                        }
-                    }
-                }
-                _ => {}
+            // Native total-RAM read via GlobalMemoryStatusEx (kernel32).
+            if let Some(bytes) = windows_native::total_physical_ram_bytes() {
+                return bytes;
             }
             tracing::warn!("Windows total RAM detection failed; using 8 GiB fallback");
             8 * 1024 * 1024 * 1024
@@ -254,6 +230,91 @@ impl MemoryBudget {
         #[cfg(not(any(target_os = "macos", target_os = "linux", target_os = "windows")))]
         {
             8 * 1024 * 1024 * 1024
+        }
+    }
+}
+
+/// Native Windows memory readers over the kernel32 exports std already
+/// links: `K32GetProcessMemoryInfo` (working set, i.e. RSS) and
+/// `GlobalMemoryStatusEx` (total physical RAM). Struct layouts mirror
+/// `PROCESS_MEMORY_COUNTERS` / `MEMORYSTATUSEX` from `psapi.h` /
+/// `sysinfoapi.h`; `repr(C)` reproduces their natural alignment exactly.
+#[cfg(target_os = "windows")]
+mod windows_native {
+    use std::ffi::c_void;
+
+    #[repr(C)]
+    struct ProcessMemoryCounters {
+        cb: u32,
+        page_fault_count: u32,
+        peak_working_set_size: usize,
+        working_set_size: usize,
+        quota_peak_paged_pool_usage: usize,
+        quota_paged_pool_usage: usize,
+        quota_peak_non_paged_pool_usage: usize,
+        quota_non_paged_pool_usage: usize,
+        pagefile_usage: usize,
+        peak_pagefile_usage: usize,
+    }
+
+    #[repr(C)]
+    struct MemoryStatusEx {
+        dw_length: u32,
+        dw_memory_load: u32,
+        ull_total_phys: u64,
+        ull_avail_phys: u64,
+        ull_total_page_file: u64,
+        ull_avail_page_file: u64,
+        ull_total_virtual: u64,
+        ull_avail_virtual: u64,
+        ull_avail_extended_virtual: u64,
+    }
+
+    #[link(name = "kernel32")]
+    extern "system" {
+        fn GetCurrentProcess() -> *mut c_void;
+        fn K32GetProcessMemoryInfo(
+            process: *mut c_void,
+            counters: *mut ProcessMemoryCounters,
+            cb: u32,
+        ) -> i32;
+        fn GlobalMemoryStatusEx(buffer: *mut MemoryStatusEx) -> i32;
+    }
+
+    /// Current process working-set size in bytes, or `None` on failure.
+    pub(super) fn working_set_bytes() -> Option<u64> {
+        let mut counters = std::mem::MaybeUninit::<ProcessMemoryCounters>::uninit();
+        let cb = std::mem::size_of::<ProcessMemoryCounters>() as u32;
+        // SAFETY: GetCurrentProcess returns a pseudo-handle that needs no
+        // close; the counters buffer is sized and aligned per `cb`.
+        let ok = unsafe {
+            (*counters.as_mut_ptr()).cb = cb;
+            K32GetProcessMemoryInfo(GetCurrentProcess(), counters.as_mut_ptr(), cb)
+        };
+        if ok != 0 {
+            // SAFETY: a nonzero return means the struct was filled.
+            let counters = unsafe { counters.assume_init() };
+            Some(counters.working_set_size as u64)
+        } else {
+            None
+        }
+    }
+
+    /// Total physical RAM in bytes, or `None` on failure.
+    pub(super) fn total_physical_ram_bytes() -> Option<u64> {
+        let mut status = std::mem::MaybeUninit::<MemoryStatusEx>::uninit();
+        // SAFETY: dwLength must be set before the call; the buffer is sized
+        // and aligned for MEMORYSTATUSEX.
+        let ok = unsafe {
+            (*status.as_mut_ptr()).dw_length = std::mem::size_of::<MemoryStatusEx>() as u32;
+            GlobalMemoryStatusEx(status.as_mut_ptr())
+        };
+        if ok != 0 {
+            // SAFETY: a nonzero return means the struct was filled.
+            let status = unsafe { status.assume_init() };
+            (status.ull_total_phys > 0).then_some(status.ull_total_phys)
+        } else {
+            None
         }
     }
 }

@@ -32,20 +32,35 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
   已知语言文件总是被索引，include 只救援匹配 glob 的未知语言文件）。
 - 变更检测走 **mtime+size 快路径 + 哈希确认**：mtime+size 都没变的文件跳过
   哈希；`CODECORTEX_STRICT_HASH=1` 禁用快路径，每个文件都做 blake3。
-  哈希带 `b3:` 算法前缀；早期版本落盘的无前缀 SHA-256 行**惰性迁移**——
-  快路径命中时原值保留，首次 stat 变化触发一次重哈希 + 重解析并改写为
-  新格式（哈希只做相等比较，两种格式可长期共存）。
 - 超过 `indexing.max_file_bytes`（默认 512000）的文件跳过。
-- **作用域 scan/diff**（watcher 增量路径）：增量构建可带一个相对路径集
-  scope（watcher drain 的 changed+removed），`Scanner::scan_paths` 只走
-  候选路径及其祖先目录（同一 WalkBuilder + 准入规则，逐路径判定与全量
-  scan 一致），只有范围内路径会被删除判定，范围外 DB 已知文件作为隐式
-  Skip 进入 action 映射——脏传播照常跨范围提升导入者。全量构建忽略
-  scope；回退策略见 CONCURRENCY.md 的 FileWatcher 一节。
-- **单读管线**：diff 为哈希读取的内容（Add/Update）随 `PendingFile`
-  携带进 parse，enrichment 再复用（`ParseResult::sources`），受
-  `MemoryBudget::content_carry_budget`（总预算 1/8）软上限约束，超限或
-  非 UTF-8 回退读盘。
+- **事件域扫描（scoped scan）**：watcher tick 把变更/删除路径集
+  （`BuildScope`）穿过 cc-server 传给增量 prepare，扫描只 stat/哈希这些
+  路径（根锚定的 `filter_entry` 遍历，gitignore/配置忽略规则与全树扫描
+  同源），未触及的文件从持久化 files 快照直接判 Unchanged。MCP
+  `index()` 也可通过可选的 `changed_paths` / `removed_paths` 参数携带
+  事件集（与 `full=true` 互斥；合计超过 10k 路径自动清空退回全树）。
+  回退全树扫描的情形：首次构建、watcher 溢出、git poll 回填、显式全量
+  重建、无事件集的手动 `index()`。scope 内命中的删除仍走同一 diff
+  路径，脏闭包/epoch 守卫语义不变。
+- **事件域签名提示（`ScopeSignatureHints`）**：事件域构建没有
+  `WalkManifest`，config-linker / infra 的文件集签名原本各自回退整树
+  遍历。`scoped_scan_and_diff` 现按名字分类事件路径（config 候选判定
+  `is_config_path`、infra 候选名超集 `may_be_infra_candidate_name`；
+  目录或已删除路径保守清零两个提示），证明"事件集不含候选"时两个门
+  经 `should_run_assuming_unchanged` 直接复用已记录签名，跳过整树
+  遍历。信任模型与事件域扫描一致：域外的候选文件变化在下一次全树
+  构建收敛。
+- **单次共享树遍历（`WalkManifest`，并行）**：全树扫描的遍历结果作为
+  `WalkManifest` 随 `PreparedBuild` 携带，config-linker 的配置文件集
+  签名与 infra 候选签名直接消费它——一次构建至多一次树遍历，不再各
+  pass 自己重走。ADR 扫描同样上了文件集签名门（`FileSignatureGate`）。
+  遍历本身用 `ignore::WalkBuilder::build_parallel`（线程数 =
+  min(CPU, 12)）并行收集 readdir/stat/gitignore 原始条目，再按相对
+  路径排序（父目录先于子项）做串行分类，保持 override 目录剪枝的
+  顺序依赖与串行版语义一致，manifest 顺序确定。
+- 扫描哈希是 **blake3**（hex 编码，与旧 SHA-256 同宽）；算法切换随
+  schema 版本号一起 bump，旧库按既有的 rebuild-on-mismatch 策略整体
+  重建，不做跨算法哈希比较。
 
 ## parse
 
@@ -77,7 +92,7 @@ scan/diff → parse → dirty closure → framework enrichment → resolve
 |---|---|---|
 | `normal` | 不动点收敛 | 无 |
 | `partial_closure` | 第 1 轮之后命中轮次上限或预算 | 保留了闭包的完整轮前缀，更深的传递引用可能过期 |
-| `budget_exceeded` | 第 1 轮的直接导入者就超出预算 | 什么都没重解析，跨文件引用可能过期，**建议全量重建** |
+| `budget_exceeded` | 第 1 轮的直接导入者就超出预算 | 应用**预算大小的确定性前缀**（排序后截断，不再是历史上的完全不动），前缀外的导入者跨文件引用可能过期，**建议全量重建** |
 | `disabled` | 配置关闭（`indexing.dirty_propagation=false`） | 跨文件引用不维护 |
 
 ## enrichment 与 resolve
@@ -99,10 +114,8 @@ self-member → scope → same-file → imports → suffix → global-unique
 - 每个结果的 `winning_step` 决定持久化在边/引用上的
   `resolution_strategy`（如 `fuzzy_arg_count`、`...:upgraded_from=...`）；
 - `candidate_count` 进入置信度惩罚但不持久化；
-- 解析器目录的 `resolve_name` 有 **16 片分片锁 LRU 缓存**
-  （`CODECORTEX_RESOLVER_CACHE_SIZE`，默认 8192，均分到分片），并行
-  resolve 不再在单一互斥锁上串行化；缓存键在无作用域绑定时不含行号
-  （行号只通过 scope 距离排序影响结果），避免同名逐行引用打散缓存。
+- 解析器目录的 `resolve_name` 有 LRU 缓存
+  （`CODECORTEX_RESOLVER_CACHE_SIZE`，默认 8192）。
 - **候选上限**（`CODECORTEX_RESOLVER_MAX_POOL`，默认 256）：当某名字被超过上限个符号共享时，
   global-unique / fuzzy 阶与 `find_best` 兜底直接判不可解，不再构建/扫描该候选桶。解析器
   会把函数局部变量（`left`、`value`、`label` 等）也并入全局 `by_name`，在大仓库里这类名字
@@ -181,6 +194,17 @@ self-member → scope → same-file → imports → suffix → global-unique
 留下的结构性约束值得知晓：
 
 - FTS5 删除必须 rowid 对齐批量化（见 STORAGE.md），禁止逐文件 DELETE；
+- **多行 INSERT 批量化**（cc-db `index_db_multi_insert.rs`）：增量批写
+  与全量重建的行写入走分级多行 `INSERT INTO … VALUES (…),(…)`
+  （64/8/1 行三档，尾数落到小档，语句缓存里每表至多三条 SQL），消掉
+  逐行语句的绑定/执行开销；`chunks_fts` 的 rowid 对齐靠先插基表、再按
+  `chunk_id` 回读新 rowid、带显式 rowid 多行插镜像（基表列可能是 zstd
+  BLOB，不能 SELECT 镜像）；
+- **files 表快照缓存**（cc-db `file_state_cache.rs`）：`get_file_state()`
+  的 O(仓库文件数) 全表加载挂在 `IndexDb` 句柄上跨构建复用，以 files
+  表的行哈希聚合为 token（并入 `graph_sig_aggregates`，格式版本 3）；
+  批写在同事务差分维护聚合并折叠快照，token 不匹配（全量重建、跨进程
+  写）即丢弃重载——与 seed/目录缓存同一"聚合 token 即有效性证明"模式；
 - 层级边只为本批文件重生成，不做全量重算；
 - 框架检测不再因"变更文件 > 20"回退全仓扫描（file 级信号是文件的纯函数；
   repo 级 manifest pass 本来就每次构建重跑）；
@@ -194,7 +218,11 @@ self-member → scope → same-file → imports → suffix → global-unique
   腐蚀 gate 决策（无基线的库回退全表扫描，永远不会得到错误值）；
 - **community 门在聚合空间投影决策**：staged 合成动作对聚合做投影
   （`community_signature_projected`，不载边），只有判为 RUN 才真正载入
-  边表跑 Louvain；
+  边表跑 Louvain；边数超过 `CODECORTEX_COMMUNITY_MAX_EDGES`（默认
+  200 万）时不再整体放弃（全归社区 0），而是按权重裁剪
+  （`community.rs::prune_edges_by_weight`：无序点对按出现次数降序、字典
+  序破平，保留最重的点对至预算）后照跑 Louvain，降级信号记为
+  `community_edge_cap_pruned`；
 - **resolver seed 有跨构建缓存**（cc-db `seed_symbol_cache.rs`）：seed
   符号快照挂在 `IndexDb` 句柄上跨构建复用，以 `symbols_seed` 聚合为
   token 校验，miss 即回退全量重载。其上还有一层**符号目录缓存**
@@ -239,7 +267,7 @@ delta 真正落库后才持久化签名——保证"签名已记录但产物没�
 
 postprocess/analysis 各门的决策（`synthesis_round` / `community` /
 `git_cochange` / `infra` 的 run/skip + 原因）与降级信号
-（`community_edge_cap_exceeded`、`cochange_unavailable`）收集进一个
+（`community_edge_cap_pruned`、`cochange_unavailable`）收集进一个
 `BuildExplain` 信封（`cc-model/src/build_explain.rs`，与读侧
 [`GraphExplain`](../ARCHITECTURE.md#图可解释性graphexplain) 对偶），挂在
 `IndexReport.build_explain`（空则序列化省略）。它是读侧 `GraphExplain` 的

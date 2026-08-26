@@ -309,7 +309,7 @@ impl CodeIndex {
         let _build_permit = Self::try_acquire_build_gate(&gate)?;
         let file_limit = self.auto_index_file_limit()?;
         let inputs = self.build_inputs()?;
-        let prepared = Self::prepare_build(&inputs, full, Some(file_limit), None)?;
+        let prepared = Self::prepare_build(&inputs, full, Some(file_limit))?;
         self.commit_build(&inputs, full, Some(file_limit), prepared)
     }
 
@@ -338,17 +338,25 @@ impl CodeIndex {
     /// across the unlocked window and passes the resulting `PreparedBuild` to
     /// [`CodeIndex::commit_build`]. `full`/`auto_file_limit` must match the
     /// paired `commit_build` call.
-    ///
-    /// `scope`: optional scan/diff restriction to the named relative paths
-    /// (the watcher passes its drained batch); `None` scans the whole tree.
     pub fn prepare_build(
         inputs: &BuildInputs,
         full: bool,
         auto_file_limit: Option<usize>,
-        scope: Option<&HashSet<String>>,
+    ) -> CcResult<PreparedBuild> {
+        Self::prepare_build_scoped(inputs, full, auto_file_limit, None)
+    }
+
+    /// [`CodeIndex::prepare_build`] with an event-scoped hint: watcher ticks
+    /// pass their drained change set so the scan/diff phase can stat/hash
+    /// only those paths instead of walking the whole tree.
+    pub fn prepare_build_scoped(
+        inputs: &BuildInputs,
+        full: bool,
+        auto_file_limit: Option<usize>,
+        scope: Option<&cc_index::BuildScope>,
     ) -> CcResult<PreparedBuild> {
         let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
-        indexer.prepare_build(&inputs.project, full, auto_file_limit, scope)
+        indexer.prepare_build_scoped(&inputs.project, full, auto_file_limit, scope)
     }
 
     /// Commit a previously prepared build under the caller's write lock. Runs
@@ -1239,7 +1247,7 @@ mod tests {
         // The gate fires inside the lock-free prepare half, so split callers
         // skip oversized repos without ever taking the write lock.
         let inputs = idx.build_inputs().unwrap();
-        match CodeIndex::prepare_build(&inputs, false, Some(1), None) {
+        match CodeIndex::prepare_build(&inputs, false, Some(1)) {
             Ok(_) => panic!("prepare must be gated by the auto-index file limit"),
             Err(err) => assert!(
                 err.to_string().contains("auto-index skipped"),

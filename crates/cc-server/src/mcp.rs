@@ -113,9 +113,18 @@ impl CodeCortexMcpServer {
             .await
             .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?;
         let full = p.full;
-        spawn_handler!(index, "index", move |rt| handlers::core::build_index(
-            rt, full
-        ))
+        // Optional event-scoped hint (changed/removed rel paths): forwarded
+        // as a BuildScope so callers that know what they touched get the
+        // stat-only scan/diff path (same as watcher ticks). Empty → None.
+        let scope = {
+            let changed = p.changed_paths.unwrap_or_default();
+            let removed = p.removed_paths.unwrap_or_default();
+            let scope = cc_index::BuildScope { changed, removed };
+            (!scope.is_empty()).then_some(scope)
+        };
+        spawn_handler!(index, "index", move |rt| {
+            handlers::core::build_index_scoped(rt, full, scope)
+        })
     }
 
     // ── 3. search ────────────────────────────────────────────────────

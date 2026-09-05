@@ -51,6 +51,14 @@ jobs:
           grep -E 'test result:|FAILED|error\[|panicked|failures:' /tmp/workspace-tests.log || true
           if [ "$result" != 0 ]; then tail -100 /tmp/workspace-tests.log; fi
           exit "$result"
+      - name: Incremental differential oracle
+        if: success() || failure()
+        run: |
+          set +e
+          cargo test -p cc-eval --locked --test incremental_oracle > /tmp/incremental-oracle.log 2>&1
+          result=$?
+          tail -100 /tmp/incremental-oracle.log
+          exit "$result"
       - name: MCP eval
         if: success() || failure()
         run: |
@@ -66,6 +74,10 @@ jobs:
           cargo run -p cc-eval --locked --example quality_replay -- target/quality-round/raw.jsonl target/quality-round/replayed.json
           cmp target/quality-round/report.json target/quality-round/replayed.json
           python3 -c 'import json; r=json.load(open("target/quality-round/report.json")); print(json.dumps({k:r[k] for k in ["summary","latency","gate_failures"]},indent=2))'
+          python3 -m unittest discover -s scripts/tests -v
+      - name: Same-harness production baseline comparison
+        if: success() || failure()
+        run: bash _dev/compare_baseline.sh
       - name: Retain raw evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,7 +85,11 @@ jobs:
           name: quality-development-${{ github.run_id }}
           path: |
             target/quality-round/
+            target/quality-base/
+            target/quality-paired/
+            target/quality-comparison.json
             /tmp/workspace-tests.log
+            /tmp/incremental-oracle.log
             /tmp/mcp-eval.log
-            /tmp/quality.log
+            /tmp/quality*.log
           retention-days: 14

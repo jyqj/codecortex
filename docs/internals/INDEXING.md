@@ -89,6 +89,18 @@ framework enrichment 计入 `resolve_ms`，其余一一对应：
 
 ## dirty closure（脏闭包）
 
+**增量契约补强（ADR-0003）**：只有具备导出摘要的 JS/TS/JSX/TSX 使用
+导出指纹证明稳定；其他语言的空摘要不能作为未变证明，源码编辑保守触发
+有预算的依赖传播。依赖来源是 imports 加上已持久化调用/引用的实际目标，
+避免 import 字符串未解析成功时已有绑定永久陈旧。未绑定引用、全局名字桶
+变化与其他尚未覆盖的语义依赖仍不在完备保证内。
+
+Dirty reload 仅保留源码未变文件中 `parser_exact` 的本地 call/ref 绑定及
+来源信息；其他 resolver 状态仍清除重算。保守传播可能增加非 JS/TS 的
+正文编辑成本；200 文件与 16 轮上限及降级状态不变。三种语言的差分 oracle
+比较增量与独立全量构建，见 [Benchmark v2](../BENCHMARK_V2.md)。
+
+
 `dirty_closure.rs`。增量构建的跨文件正确性来自一个不动点循环：
 
 1. 对每个重解析的文件计算**导出指纹**（export fingerprint）；

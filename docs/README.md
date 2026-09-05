@@ -32,6 +32,7 @@
 |------|------|
 | [TEST_PLAN.md](TEST_PLAN.md) | 测试布局、eval 语料与断言类型、fixture 项目、集成测试三层。 |
 | [BENCHMARK.md](BENCHMARK.md) | 目标指标、四类基准的运行方法、最新结果、写阶段优化史。 |
+| [BENCHMARK_V2.md](BENCHMARK_V2.md) | 可重放质量协议、错误分母、回归/held-out 隔离与增量全量对照 |
 | [adr/](adr/README.md) | 架构决策记录（ADR）索引与撰写约定。 |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | 构建、测试、lint、MSRV、提交前检查。 |
 

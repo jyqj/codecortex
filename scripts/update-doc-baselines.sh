@@ -86,4 +86,6 @@ fi
 if [ "$DRIFT" -eq 0 ]; then
     echo ""
     echo "All baselines match docs/TEST_PLAN.md"
+else
+    exit 1
 fi

@@ -1,4 +1,4 @@
-# Temporary branch-only development runner; removed before the final PR tree.
+# Temporary branch-only runner; removed before final PR tree.
 name: Code index round development
 on:
   push:
@@ -34,7 +34,7 @@ jobs:
         run: |
           cargo fmt --all
           git diff --check
-          git add crates docs scripts
+          git add crates docs scripts Cargo.lock
           if ! git diff --cached --quiet; then
             git -c user.name='CodeCortex automation' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'refactor: materialize reviewed code-index optimization and tests'
             git push origin HEAD:refs/heads/opt/code-index-benchmark-v2-20260906
@@ -44,7 +44,36 @@ jobs:
         run: cargo clippy --workspace --all-targets --locked -- -D warnings
       - name: Workspace tests
         if: success() || failure()
-        run: cargo test --workspace --all-targets --locked
+        run: |
+          set +e
+          cargo test --workspace --all-targets --locked > /tmp/workspace-tests.log 2>&1
+          result=$?
+          grep -E 'test result:|FAILED|error\[|panicked|failures:' /tmp/workspace-tests.log || true
+          if [ "$result" != 0 ]; then tail -100 /tmp/workspace-tests.log; fi
+          exit "$result"
       - name: MCP eval
         if: success() || failure()
-        run: cargo test -p cc-eval --locked -- integration_fixtures_and_corpus --nocapture
+        run: |
+          set +e
+          cargo test -p cc-eval --locked -- integration_fixtures_and_corpus --nocapture > /tmp/mcp-eval.log 2>&1
+          result=$?
+          tail -45 /tmp/mcp-eval.log
+          exit "$result"
+      - name: Quality benchmark and exact replay
+        if: success() || failure()
+        run: |
+          cargo run -p cc-eval --locked --example quality_run -- crates/cc-eval/benchmarks/quality_smoke.json target/quality-round 3 > /tmp/quality.log 2>&1 || { tail -100 /tmp/quality.log; exit 1; }
+          cargo run -p cc-eval --locked --example quality_replay -- target/quality-round/raw.jsonl target/quality-round/replayed.json
+          cmp target/quality-round/report.json target/quality-round/replayed.json
+          python3 -c 'import json; r=json.load(open("target/quality-round/report.json")); print(json.dumps({k:r[k] for k in ["summary","latency","gate_failures"]},indent=2))'
+      - name: Retain raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-development-${{ github.run_id }}
+          path: |
+            target/quality-round/
+            /tmp/workspace-tests.log
+            /tmp/mcp-eval.log
+            /tmp/quality.log
+          retention-days: 14

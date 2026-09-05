@@ -499,7 +499,7 @@ impl RetrievalLane for GrepLane {
         // so this is a no-op there; scoped scans never run stage 1 and keep
         // SQLite's natural probe order untouched.
         if prefilter_phrase.is_some() {
-            scan.matches.sort_by(|a, b| b.0.cmp(&a.0));
+            scan.matches.sort_by_key(|a| std::cmp::Reverse(a.0));
             scan.matches.truncate(limit);
         }
         Ok(rank_scored(
@@ -530,7 +530,7 @@ impl GrepLane {
         limit: usize,
         scan_cap: usize,
         row: cc_db::GrepChunkRow,
-        mut seen_out: Option<&mut HashSet<String>>,
+        seen_out: Option<&mut HashSet<String>>,
         scan: &mut GrepScanState,
     ) -> bool {
         if scan.scanned >= scan_cap {
@@ -538,7 +538,7 @@ impl GrepLane {
             return false;
         }
         scan.scanned += 1;
-        if let Some(seen) = seen_out.as_deref_mut() {
+        if let Some(seen) = seen_out {
             seen.insert(row.chunk_id.clone());
         }
         let language = parse_language_name(&row.language_name);

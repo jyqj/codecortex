@@ -531,18 +531,21 @@ pub fn run_all(backend: &CodeIndexBackend, cases: &[EvalCase]) -> Vec<EvalCaseRe
 #[cfg(test)]
 mod rank_contract_tests {
     use super::*;
+    fn expected(value: &str) -> Assertion {
+        serde_json::from_value(serde_json::json!({"kind":"expected_symbols","value":value}))
+            .unwrap()
+    }
     #[test]
     fn unnamed_hits_keep_their_original_rank() {
         let output = serde_json::json!([{}, {}, {}, {}, {}, {"name":"target"}]);
-        let (recall, rr) =
-            compute_retrieval_metrics(&output, &Assertion::expected_symbols("target"));
+        let (recall, rr) = compute_retrieval_metrics(&output, &expected("target"));
         assert_eq!(recall, 0.0);
         assert_eq!(rr, 1.0 / 6.0);
     }
     #[test]
     fn duplicate_hits_cannot_inflate_recall() {
         let output = serde_json::json!([{"name":"a"},{"name":"a"},{"name":"a"}]);
-        let (recall, rr) = compute_retrieval_metrics(&output, &Assertion::expected_symbols("a,b"));
+        let (recall, rr) = compute_retrieval_metrics(&output, &expected("a,b"));
         assert_eq!(recall, 0.5);
         assert_eq!(rr, 1.0);
     }

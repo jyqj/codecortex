@@ -1251,3 +1251,5 @@ value = "formatName"
         assert!(!runner::check_assertion(&output, &assertion_bad_fmt));
     }
 }
+
+pub mod quality;

@@ -5,7 +5,7 @@ use cc_eval::runner::CodeIndexBackend;
 use serde_json::{json, Value};
 use std::error::Error;
 use std::fs::{self, File};
-use std::io::{BufWriter, Write};
+use std::io::{BufReader, BufWriter, Write};
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::time::Instant;
@@ -107,6 +107,16 @@ fn main() -> Result<()> {
         schema_version: 1,
         implementation_commit: command("git", &["rev-parse", "HEAD"])?,
         rustc: command("rustc", &["--version"])?,
+        provenance: json!({
+            "tracked_diff_git_blob": git_blob(command("git", &["diff", "HEAD", "--"]).unwrap_or_default().as_bytes())?,
+            "worktree_status": command("git", &["status", "--porcelain"] )?,
+            "profile": if cfg!(debug_assertions) { "debug" } else { "release" },
+            "os": std::env::consts::OS,
+            "arch": std::env::consts::ARCH,
+            "available_parallelism": std::thread::available_parallelism().map(|n|n.get()).ok(),
+            "rustflags": std::env::var("RUSTFLAGS").unwrap_or_default(),
+            "git_diff_note": "Baseline instrumentation may change eval-only files; inspect the recorded worktree status."
+        }),
         manifest_git_blob: git_blob(&bytes)?,
         repetitions,
         variant: args.get(4).cloned().unwrap_or_else(|| "default".into()),
@@ -114,7 +124,6 @@ fn main() -> Result<()> {
         manifest,
     };
     write_line(&mut writer, &json!({"kind":"header","data":header}))?;
-    let mut samples = Vec::new();
     for repo in &header.manifest.repositories {
         let temp = TempDir::new()?;
         for (path, text) in &repo.files {
@@ -129,11 +138,12 @@ fn main() -> Result<()> {
         let backend = CodeIndexBackend::new_unindexed(temp.path())?;
         let start = Instant::now();
         let build = backend.build_index_report(true)?;
+        let index_elapsed_us = start.elapsed().as_micros();
         write_line(
             &mut writer,
             &json!({"kind":"index","repo":repo.id,"revision":repo.revision,
             "snapshot_git_blob":git_blob(&serde_json::to_vec(&repo.files)?)?,
-            "elapsed_us":start.elapsed().as_micros(),"report":build}),
+            "elapsed_us":index_elapsed_us,"report":build}),
         )?;
         for task in header
             .manifest
@@ -145,18 +155,20 @@ fn main() -> Result<()> {
                 let cold = CodeIndexBackend::open_existing(temp.path())?;
                 let sample = measure(&cold, task, "cold_session", iteration)?;
                 write_line(&mut writer, &json!({"kind":"sample","data":sample}))?;
-                samples.push(sample);
             }
             let warmup = measure(&backend, task, "warmup", 0)?;
             write_line(&mut writer, &json!({"kind":"warmup","data":warmup}))?;
             for iteration in 0..repetitions {
                 let sample = measure(&backend, task, "warm_cache", iteration)?;
                 write_line(&mut writer, &json!({"kind":"sample","data":sample}))?;
-                samples.push(sample);
             }
         }
     }
-    let report = quality::report(&header, &samples)?;
+    // No accumulated response payload competes with index memory during timing.
+    drop(writer);
+    let (saved_header, samples) =
+        quality::read_raw(BufReader::new(File::open(output_dir.join("raw.jsonl"))?))?;
+    let report = quality::report(&saved_header, &samples)?;
     fs::write(
         output_dir.join("report.json"),
         serde_json::to_vec_pretty(&report)?,

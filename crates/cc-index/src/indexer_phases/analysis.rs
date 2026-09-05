@@ -499,7 +499,17 @@ mod analysis_phase_tests {
         build_explain: &mut BuildExplainCollector,
     ) -> AnalysisPlan {
         indexer
-            .phase_analysis_compute(project, false, &[], &[], &[], None, None, build_explain)
+            .phase_analysis_compute(
+                AnalysisInputs {
+                    project_path: project,
+                    full: false,
+                    write_units: &[],
+                    route_nodes: &[],
+                    walk_manifest: None,
+                    scope_hints: None,
+                },
+                build_explain,
+            )
             .unwrap()
     }
 

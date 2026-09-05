@@ -157,6 +157,8 @@ pub struct Header {
     pub schema_version: u32,
     pub implementation_commit: String,
     pub rustc: String,
+    #[serde(default)]
+    pub provenance: Value,
     pub manifest_git_blob: String,
     pub repetitions: usize,
     pub variant: String,
@@ -354,6 +356,8 @@ pub fn report(header: &Header, samples: &[Sample]) -> Result<Value, String> {
         serde_json::json!({"schema_version":1,"dataset_id":header.manifest.dataset_id,
         "purpose":header.manifest.purpose,"manifest_git_blob":header.manifest_git_blob,
         "implementation_commit":header.implementation_commit,"variant":header.variant,
+        "provenance":header.provenance,"rustc":header.rustc,
+        "ndcg_policy":"maximum-new-label-gain-per-hit-v1",
         "effective_config":header.effective_config,"latency":latency,"observations":rows,
         "summary":totals.finish(),
         "by_repo":by_repo.iter().map(|(k,v)|(k,v.finish())).collect::<BTreeMap<_,_>>(),
@@ -501,6 +505,7 @@ mod tests {
             schema_version: 1,
             implementation_commit: "test".into(),
             rustc: "test".into(),
+            provenance: json!({}),
             manifest_git_blob: "test".into(),
             repetitions: 1,
             variant: "default".into(),
@@ -518,10 +523,34 @@ mod tests {
             },
         };
         let s = sample(json!([hit()]));
-        assert!(report(&header, &[s.clone()]).is_err());
+        assert!(report(&header, std::slice::from_ref(&s)).is_err());
         assert!(report(&header, &[s.clone(), s.clone()]).is_err());
         let mut cold = s.clone();
         cold.mode = "cold_session".into();
         assert_eq!(report(&header, &[s, cold]).unwrap()["passed"], true);
     }
+}
+
+/// Read saved wire observations after measurement. Shared by run and replay;
+/// during measurement only one response is retained at a time.
+pub fn read_raw(reader: impl std::io::BufRead) -> Result<(Header, Vec<Sample>), String> {
+    let mut header = None;
+    let mut samples = Vec::new();
+    for line in reader.lines() {
+        let row: Value =
+            serde_json::from_str(&line.map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+        match row["kind"].as_str() {
+            Some("header") if header.is_none() && samples.is_empty() => {
+                header =
+                    Some(serde_json::from_value(row["data"].clone()).map_err(|e| e.to_string())?);
+            }
+            Some("sample") if header.is_some() => {
+                samples
+                    .push(serde_json::from_value(row["data"].clone()).map_err(|e| e.to_string())?);
+            }
+            Some("index" | "warmup") if header.is_some() => {}
+            _ => return Err("unexpected or duplicate raw record".into()),
+        }
+    }
+    Ok((header.ok_or("missing raw header")?, samples))
 }

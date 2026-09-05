@@ -70,10 +70,18 @@ fn exercise(api_path: &str, caller_path: &str, original: &str, caller: &str, cha
         let full = CodeIndexBackend::new_unindexed(fresh.path()).unwrap();
         full.build_index_report(true).unwrap();
         let rebuilt = snapshot(fresh.path());
-        assert_eq!(
-            incremental, rebuilt,
-            "incremental differs after editing {api_path}: {replacement:?}"
-        );
+        for section in ["symbols", "imports", "calls", "refs", "chunks"] {
+            let actual = incremental[section].as_array().unwrap();
+            let expected = rebuilt[section].as_array().unwrap();
+            assert_eq!(
+                actual.len(),
+                expected.len(),
+                "{section} cardinality after {api_path}: {replacement:?}"
+            );
+            for (row, (a, b)) in actual.iter().zip(expected).enumerate() {
+                assert_eq!(a, b, "{section}[{row}] after {api_path}: {replacement:?}");
+            }
+        }
     }
 }
 #[test]

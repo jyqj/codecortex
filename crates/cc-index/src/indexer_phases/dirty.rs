@@ -111,7 +111,11 @@ impl Indexer {
             &export_changed_files,
             self.dirty_propagation_max_files,
             crate::dirty_closure::DIRTY_CLOSURE_MAX_ROUNDS,
-            |files| self.db.reads().find_importers_of(files),
+            |files| {
+                let mut dependents = self.db.reads().find_importers_of(files)?;
+                dependents.extend(self.db.reads().find_bound_dependents_of(files)?);
+                Ok(dependents)
+            },
             |path| matches!(actions.get(path), Some(FileAction::Skip)),
             |files, changed_so_far| {
                 self.promoted_export_surfaces_changed(

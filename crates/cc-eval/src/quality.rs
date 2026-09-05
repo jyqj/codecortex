@@ -410,6 +410,30 @@ impl Totals {
     }
 }
 
+/// Read saved wire observations after measurement. Shared by run and replay;
+/// during measurement only one response is retained at a time.
+pub fn read_raw(reader: impl std::io::BufRead) -> Result<(Header, Vec<Sample>), String> {
+    let mut header = None;
+    let mut samples = Vec::new();
+    for line in reader.lines() {
+        let row: Value =
+            serde_json::from_str(&line.map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
+        match row["kind"].as_str() {
+            Some("header") if header.is_none() && samples.is_empty() => {
+                header =
+                    Some(serde_json::from_value(row["data"].clone()).map_err(|e| e.to_string())?);
+            }
+            Some("sample") if header.is_some() => {
+                samples
+                    .push(serde_json::from_value(row["data"].clone()).map_err(|e| e.to_string())?);
+            }
+            Some("index" | "warmup") if header.is_some() => {}
+            _ => return Err("unexpected or duplicate raw record".into()),
+        }
+    }
+    Ok((header.ok_or("missing raw header")?, samples))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -529,28 +553,4 @@ mod tests {
         cold.mode = "cold_session".into();
         assert_eq!(report(&header, &[s, cold]).unwrap()["passed"], true);
     }
-}
-
-/// Read saved wire observations after measurement. Shared by run and replay;
-/// during measurement only one response is retained at a time.
-pub fn read_raw(reader: impl std::io::BufRead) -> Result<(Header, Vec<Sample>), String> {
-    let mut header = None;
-    let mut samples = Vec::new();
-    for line in reader.lines() {
-        let row: Value =
-            serde_json::from_str(&line.map_err(|e| e.to_string())?).map_err(|e| e.to_string())?;
-        match row["kind"].as_str() {
-            Some("header") if header.is_none() && samples.is_empty() => {
-                header =
-                    Some(serde_json::from_value(row["data"].clone()).map_err(|e| e.to_string())?);
-            }
-            Some("sample") if header.is_some() => {
-                samples
-                    .push(serde_json::from_value(row["data"].clone()).map_err(|e| e.to_string())?);
-            }
-            Some("index" | "warmup") if header.is_some() => {}
-            _ => return Err("unexpected or duplicate raw record".into()),
-        }
-    }
-    Ok((header.ok_or("missing raw header")?, samples))
 }

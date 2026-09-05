@@ -1889,6 +1889,50 @@ impl WriteOps<'_> {
     }
 }
 
+// Actual persisted call/reference targets are invalidation dependencies even
+// when an import string could not be resolved (e.g. a Rust qualified `use`).
+impl SymbolGraphReads<'_> {
+    fn find_bound_dependents_of(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
+        let mut found = std::collections::BTreeSet::new();
+        if file_paths.is_empty() {
+            return Ok(Vec::new());
+        }
+        let conn = self.db.read_conn()?;
+        for batch in file_paths.chunks(IN_BATCH_SIZE) {
+            let placeholders = vec!["?"; batch.len()].join(",");
+            // Snapshot still contains the old symbols during dirty planning.
+            // UID lookups use the existing call/ref target indexes; no schema
+            // change and no per-file full scan of the edge tables.
+            let sql = format!(
+                "WITH changed AS (SELECT symbol_uid FROM symbols WHERE file_path IN ({placeholders}))
+                 SELECT file_path FROM call_edges WHERE callee_symbol_uid IN (SELECT symbol_uid FROM changed)
+                 UNION SELECT file_path FROM symbol_refs WHERE target_symbol_uid IN (SELECT symbol_uid FROM changed)
+                 ORDER BY file_path"
+            );
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
+                    row.get::<_, String>(0)
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                found.insert(row.map_err(db_err)?);
+            }
+        }
+        Ok(found.into_iter().collect())
+    }
+}
+
+impl ReadOps<'_> {
+    /// Files with persisted calls/references into the old symbols of these files.
+    /// Complements imports; it does not discover previously unresolved targets.
+    pub fn find_bound_dependents_of(&self, file_paths: &[String]) -> CcResult<Vec<String>> {
+        self.0
+            .symbol_graph_reads()
+            .find_bound_dependents_of(file_paths)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;

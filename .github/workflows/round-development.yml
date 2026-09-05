@@ -1,95 +1,27 @@
-# Temporary branch-only runner; removed before final PR tree.
-name: Code index round development
+name: Code index round finalization
 on:
   push:
     branches: [opt/code-index-benchmark-v2-20260906]
-    paths: ['_dev/**', '.github/workflows/round-development.yml']
+    paths: ['_dev/finalize_docs.py']
 permissions:
   contents: write
-concurrency:
-  group: codecortex-round-development
-  cancel-in-progress: false
 jobs:
-  develop:
+  finalize:
     if: github.repository == 'jyqj/codecortex' && github.ref == 'refs/heads/opt/code-index-benchmark-v2-20260906'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
-    env:
-      CARGO_TERM_COLOR: never
-      CARGO_BUILD_JOBS: 2
-      RUSTFLAGS: -D warnings
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.sha }}
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt, clippy
-      - uses: Swatinem/rust-cache@v2
-        with:
-          cache-on-failure: true
-      - name: Apply reviewed branch-only changes
-        run: python3 _dev/round_apply.py
-      - name: Format and publish implementation on the same branch
+      - name: Synchronize documentation and remove development machinery
         run: |
-          cargo fmt --all
+          python3 _dev/finalize_docs.py
+          git diff --exit-code -- crates
           git diff --check
-          git add crates docs scripts Cargo.lock
-          if ! git diff --cached --quiet; then
-            git -c user.name='CodeCortex automation' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'refactor: materialize reviewed code-index optimization and tests'
-            git push origin HEAD:refs/heads/opt/code-index-benchmark-v2-20260906
-          fi
-          echo "Testing implementation commit $(git rev-parse HEAD)"
-      - name: Clippy
-        run: cargo clippy --workspace --all-targets --locked -- -D warnings
-      - name: Workspace tests
-        if: success() || failure()
-        run: |
-          set +e
-          cargo test --workspace --all-targets --locked > /tmp/workspace-tests.log 2>&1
-          result=$?
-          grep -E 'test result:|FAILED|error\[|panicked|failures:' /tmp/workspace-tests.log || true
-          if [ "$result" != 0 ]; then tail -100 /tmp/workspace-tests.log; fi
-          exit "$result"
-      - name: Incremental differential oracle
-        if: success() || failure()
-        run: |
-          set +e
-          cargo test -p cc-eval --locked --test incremental_oracle > /tmp/incremental-oracle.log 2>&1
-          result=$?
-          tail -100 /tmp/incremental-oracle.log
-          exit "$result"
-      - name: MCP eval
-        if: success() || failure()
-        run: |
-          set +e
-          cargo test -p cc-eval --locked -- integration_fixtures_and_corpus --nocapture > /tmp/mcp-eval.log 2>&1
-          result=$?
-          tail -45 /tmp/mcp-eval.log
-          exit "$result"
-      - name: Quality benchmark and exact replay
-        if: success() || failure()
-        run: |
-          cargo run -p cc-eval --locked --example quality_run -- crates/cc-eval/benchmarks/quality_smoke.json target/quality-round 3 > /tmp/quality.log 2>&1 || { tail -100 /tmp/quality.log; exit 1; }
-          cargo run -p cc-eval --locked --example quality_replay -- target/quality-round/raw.jsonl target/quality-round/replayed.json
-          cmp target/quality-round/report.json target/quality-round/replayed.json
-          python3 -c 'import json; r=json.load(open("target/quality-round/report.json")); print(json.dumps({k:r[k] for k in ["summary","latency","gate_failures"]},indent=2))'
-          python3 -m unittest discover -s scripts/tests -v
-      - name: Same-harness production baseline comparison
-        if: success() || failure()
-        run: bash _dev/compare_baseline.sh
-      - name: Retain raw evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: quality-development-${{ github.run_id }}
-          path: |
-            target/quality-round/
-            target/quality-base/
-            target/quality-paired/
-            target/quality-comparison.json
-            /tmp/workspace-tests.log
-            /tmp/incremental-oracle.log
-            /tmp/mcp-eval.log
-            /tmp/quality*.log
-          retention-days: 14
+          test ! -e .github/workflows/round-development.yml
+          test -z "$(find _dev -type f -print)"
+          git add -A
+          git -c user.name='CodeCortex automation' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'docs: synchronize benchmark contracts and remove temporary development machinery'
+          git push origin HEAD:refs/heads/opt/code-index-benchmark-v2-20260906
+          echo "Final PR source commit $(git rev-parse HEAD)"

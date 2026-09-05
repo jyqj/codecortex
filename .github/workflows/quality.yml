@@ -1,0 +1,77 @@
+name: Code index quality
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: code-index-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: never
+  CARGO_BUILD_JOBS: 2
+  RUSTFLAGS: -D warnings
+  PYTHONDONTWRITEBYTECODE: '1'
+
+jobs:
+  quality-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Identity-aware metrics and incremental/full oracle
+        run: |
+          cargo test -p cc-eval --locked --lib quality::
+          cargo test -p cc-eval --locked --test incremental_oracle
+          python3 -m unittest discover -s scripts/tests -v
+      - name: Real MCP retrieval observations and exact replay
+        run: |
+          out="$RUNNER_TEMP/quality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          echo "QUALITY_OUTPUT=$out" >> "$GITHUB_ENV"
+          cargo run -p cc-eval --locked --example quality_run -- crates/cc-eval/benchmarks/quality_smoke.json "$out" 3
+          cargo run -p cc-eval --locked --example quality_replay -- "$out/raw.jsonl" "$out/replayed.json"
+          cmp "$out/report.json" "$out/replayed.json"
+      - name: Test/documentation baselines
+        run: bash scripts/update-doc-baselines.sh
+      - name: Retain raw evidence even when gates fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/quality-${{ github.run_id }}-${{ github.run_attempt }}/
+          retention-days: 90
+          if-no-files-found: warn
+
+  scale-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: scale-release
+      - name: Release 1k scale and ground-truth smoke
+        env:
+          CODECORTEX_WRITE_BENCHMARK: '1'
+        run: cargo test -p cc-eval --locked --release --test scale_bench bench_synthetic_1k -- --ignored --nocapture
+      - name: Retain scale observations
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scale-1k-${{ github.run_id }}-${{ github.run_attempt }}
+          path: docs/benchmarks/synthetic_1k_latest.md
+          retention-days: 90
+          if-no-files-found: warn

@@ -527,3 +527,23 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
 pub fn run_all(backend: &CodeIndexBackend, cases: &[EvalCase]) -> Vec<EvalCaseResult> {
     cases.iter().map(|case| run_case(backend, case)).collect()
 }
+
+#[cfg(test)]
+mod rank_contract_tests {
+    use super::*;
+    #[test]
+    fn unnamed_hits_keep_their_original_rank() {
+        let output = serde_json::json!([{}, {}, {}, {}, {}, {"name":"target"}]);
+        let (recall, rr) =
+            compute_retrieval_metrics(&output, &Assertion::expected_symbols("target"));
+        assert_eq!(recall, 0.0);
+        assert_eq!(rr, 1.0 / 6.0);
+    }
+    #[test]
+    fn duplicate_hits_cannot_inflate_recall() {
+        let output = serde_json::json!([{"name":"a"},{"name":"a"},{"name":"a"}]);
+        let (recall, rr) = compute_retrieval_metrics(&output, &Assertion::expected_symbols("a,b"));
+        assert_eq!(recall, 0.5);
+        assert_eq!(rr, 1.0);
+    }
+}

@@ -330,10 +330,10 @@ impl PreselectLayer for FtsSummaryLayer {
         Ok(rows
             .into_iter()
             .map(|(file_path, raw_score)| {
-                let bm25_score = (-raw_score).max(0.0);
+                let bm25_score = bm25_strength(raw_score);
                 LayerHit {
                     file_path,
-                    score: ctx.ranking.preselect_fts_base + bm25_score / (1.0 + bm25_score),
+                    score: ctx.ranking.preselect_fts_base + bm25_score,
                     reason: LAYER_FTS_SUMMARY.to_string(),
                 }
             })
@@ -1418,5 +1418,21 @@ mod tests {
             let bill = &result.layer_scores["src/callee.rs"];
             assert!(bill.iter().any(|(n, _)| *n == LAYER_GRAPH_NEIGHBOR));
         }
+    }
+}
+
+/// SQLite BM25 is negative-better; return a bounded positive-better feature.
+fn bm25_strength(raw: f64) -> f64 {
+    let strength = (-raw).max(0.0);
+    strength / (1.0 + strength)
+}
+
+#[cfg(test)]
+mod monotonicity_tests {
+    #[test]
+    fn stronger_sqlite_bm25_gets_a_larger_preselect_score() {
+        assert!(super::bm25_strength(-4.23) > super::bm25_strength(-1.98));
+        assert_eq!(super::bm25_strength(0.0), 0.0);
+        assert!(super::bm25_strength(-1e6) < 1.0);
     }
 }

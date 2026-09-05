@@ -786,3 +786,21 @@ fn find_seed_symbol_uids(
     sorted.truncate(20); // max 20 seed symbols
     Ok(sorted)
 }
+
+#[cfg(test)]
+mod fusion_contract_tests {
+    use super::*;
+    #[test]
+    fn duplicate_candidate_gets_one_vote_at_original_rank() {
+        let lane = LaneOutcome {
+            lane_id: "test",
+            weight: 1.0,
+            annotates_hits: false,
+            score_slot: None,
+            hits: vec![("a".into(), 1.0), ("a".into(), 1.0), ("b".into(), 1.0)],
+        };
+        let fused = fuse_outcomes(&[lane], 50);
+        assert_eq!(fused["a"].total, 1.0 / 51.0);
+        assert_eq!(fused["b"].total, 1.0 / 53.0);
+    }
+}

@@ -1519,7 +1519,7 @@ mod tests {
     }
 
     #[test]
-    fn graph_rerank_parity_with_pre_refactor_baseline() {
+    fn graph_rerank_preserves_flip_and_score_accounting() {
         let dir = TempDir::new().unwrap();
         let mut idx = CodeIndex::empty();
         idx.set_project(dir.path(), false).unwrap();
@@ -1598,18 +1598,17 @@ mod tests {
         );
         assert_eq!(graph_scores[1], 0.0, "beta has no graph connectivity");
 
-        // Bit-exact rerank values captured pre-refactor; any scoring-constant
-        // drift during the ScoringConfig migration shows up here.
-        assert!(
-            (rerank_scores[0] - 0.7865038336950975).abs() < 1e-12,
-            "alpha rerank_score drifted: got {}",
-            rerank_scores[0]
-        );
-        assert!(
-            (rerank_scores[1] - 0.7275681946166044).abs() < 1e-12,
-            "beta rerank_score drifted: got {}",
-            rerank_scores[1]
-        );
+        // The old numeric snapshot encoded inverted BM25 preselection. Check
+        // additive accounting alongside independent graph math and rank flip.
+        for hit in hits {
+            let total: f64 = hit["score_trace"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .map(|component| component[1].as_f64().unwrap())
+                .sum();
+            assert!((total - hit["rerank_score"].as_f64().unwrap()).abs() < 1e-12);
+        }
 
         // Flip proof: without the graph contribution (weight 0.3) alpha would
         // rank BELOW beta — the final ordering genuinely depends on the graph

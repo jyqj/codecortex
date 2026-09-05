@@ -41,6 +41,10 @@ impl Indexer {
             });
         }
 
+        // Non-JS/TS parsers have no complete export contract yet. Source edits
+        // seed bounded conservative importer closure: None == None is unknown,
+        // not proof of stability. Unresolved/global dependencies remain outside
+        // this imported-dependency contract (see the differential oracle).
         // Step 2: Compare old vs new export fingerprints to find files whose
         //         public API surface actually changed. Fetch all old
         //         fingerprints in one batched query to avoid N+1 round trips.
@@ -61,7 +65,19 @@ impl Indexer {
             let new_fp = write_unit_index
                 .get(file_path.as_str())
                 .and_then(|unit| Self::compute_fingerprint_for_unit(unit));
-            if old_fp != new_fp {
+            let unsupported_surface =
+                write_unit_index
+                    .get(file_path.as_str())
+                    .is_some_and(|unit| {
+                        !matches!(
+                            unit.language,
+                            cc_model::Language::JavaScript
+                                | cc_model::Language::TypeScript
+                                | cc_model::Language::Jsx
+                                | cc_model::Language::Tsx
+                        )
+                    });
+            if old_fp != new_fp || unsupported_surface {
                 export_changed_files.push(file_path.clone());
             }
         }
@@ -195,9 +211,18 @@ impl Indexer {
         Ok(files
             .iter()
             .filter(|path| {
-                targets_cache
-                    .get(path.as_str())
-                    .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))
+                // An absent export contract cannot prove a facade unchanged.
+                let conservative = !matches!(
+                    cc_parsers::detect_language(path),
+                    cc_model::Language::JavaScript
+                        | cc_model::Language::TypeScript
+                        | cc_model::Language::Jsx
+                        | cc_model::Language::Tsx
+                );
+                conservative
+                    || targets_cache
+                        .get(path.as_str())
+                        .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))
             })
             .cloned()
             .collect())

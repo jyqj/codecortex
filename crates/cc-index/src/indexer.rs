@@ -748,7 +748,7 @@ impl Indexer {
             .into_iter()
             .filter(|pf| !matches!(pf.action, FileAction::Skip))
             .collect();
-        to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));
+        to_parse.sort_by_key(|a| std::cmp::Reverse(a.scanned.size));
         to_parse
     }
 

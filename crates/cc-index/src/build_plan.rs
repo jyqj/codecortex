@@ -496,13 +496,14 @@ impl IndexBuildPlan {
 
         let phase_start = Instant::now();
         let analysis = indexer.phase_analysis_compute(
-            project_path,
-            self.mode.is_full(),
-            &write_units,
-            &parsed_file_paths,
-            &carry.output_snapshot.route_nodes,
-            walk_manifest.as_deref(),
-            carry.scan_result.scope_hints.as_ref(),
+            crate::indexer_phases::AnalysisInputs {
+                project_path,
+                full: self.mode.is_full(),
+                write_units: &write_units,
+                route_nodes: &carry.output_snapshot.route_nodes,
+                walk_manifest: walk_manifest.as_deref(),
+                scope_hints: carry.scan_result.scope_hints.as_ref(),
+            },
             &mut build_explain,
         )?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;

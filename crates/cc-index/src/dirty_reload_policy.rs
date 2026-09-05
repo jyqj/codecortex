@@ -26,8 +26,9 @@ use cc_model::parse::ParseOutcome;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum DirtyReloadPolicy {
     /// Stored target UIDs may be stale (the target's defining file changed),
-    /// so all resolved targets of this category — same-file and cross-file
-    /// alike — are cleared unconditionally for phase 4a re-resolution.
+    /// so resolver-derived targets are cleared for phase 4a re-resolution.
+    /// Parser-exact same-file call/ref bindings are the narrow exception:
+    /// dirty reload never changes that file's source or local symbol identity.
     ClearResolvedTargets,
     /// Edges of this category are regenerated for every file in the write
     /// batch (phase 4b hierarchy generation overwrites them, and a
@@ -136,6 +137,15 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     // re-resolved edge is indistinguishable from a freshly parsed one.
     if should_clear(ReloadedEdgeCategory::CallEdges) {
         for edge in &mut call_edges {
+            if parser_local_binding(
+                &edge.file_path,
+                edge.target_file_path.as_deref(),
+                &edge.resolution_strategy,
+            ) && edge.target_symbol_id.is_some()
+                && edge.callee_symbol_uid.is_some()
+            {
+                continue;
+            }
             edge.target_symbol_id = None;
             edge.target_file_path = None;
             edge.callee_symbol_uid = None;
@@ -146,6 +156,15 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     }
     if should_clear(ReloadedEdgeCategory::SymbolRefs) {
         for sym_ref in &mut symbol_refs {
+            if parser_local_binding(
+                &sym_ref.file_path,
+                sym_ref.target_file_path.as_deref(),
+                &sym_ref.resolution_strategy,
+            ) && sym_ref.target_symbol_id.is_some()
+                && sym_ref.target_symbol_uid.is_some()
+            {
+                continue;
+            }
             sym_ref.target_symbol_uid = None;
             sym_ref.target_symbol_id = None;
             sym_ref.target_file_path = None;
@@ -180,9 +199,22 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     }
 }
 
+/// Only source-proven local bindings survive an unchanged-file reload.
+/// Heuristic same-file bindings may still depend on a changed receiver/type.
+fn parser_local_binding(file: &str, target_file: Option<&str>, strategy: &str) -> bool {
+    strategy == "parser_exact" && target_file == Some(file)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn only_parser_exact_local_bindings_survive() {
+        assert!(parser_local_binding("a.ts", Some("a.ts"), "parser_exact"));
+        assert!(!parser_local_binding("a.ts", Some("b.ts"), "parser_exact"));
+        assert!(!parser_local_binding("a.ts", Some("a.ts"), "scope"));
+        assert!(!parser_local_binding("a.ts", None, "parser_exact"));
+    }
 
     #[test]
     fn resolver_resolved_categories_clear_resolved_targets() {

@@ -169,9 +169,7 @@ impl IndexDb {
                 let blobs = precompressed.get(&file.rel_path).map(Vec::as_slice);
                 file.outcome.chunks.iter().enumerate().map(move |(idx, c)| {
                     let zstd = match blobs.and_then(|b| b.get(idx)) {
-                        Some(precomputed) => {
-                            precomputed.as_deref().map(std::borrow::Cow::Borrowed)
-                        }
+                        Some(precomputed) => precomputed.as_deref().map(std::borrow::Cow::Borrowed),
                         None => compress_chunk_text(&c.text).map(std::borrow::Cow::Owned),
                     };
                     ChunkRow { rec: c, zstd }
@@ -255,10 +253,18 @@ impl IndexDb {
             6,
             &fts_rows,
             |stmt, base, (rowid, c)| {
-                bind_row!(stmt, base, [
-                    rowid, &c.chunk_id, &c.file_path, &c.breadcrumb,
-                    &c.symbol_name, &c.text,
-                ]);
+                bind_row!(
+                    stmt,
+                    base,
+                    [
+                        rowid,
+                        &c.chunk_id,
+                        &c.file_path,
+                        &c.breadcrumb,
+                        &c.symbol_name,
+                        &c.text,
+                    ]
+                );
                 Ok(())
             },
         )?;
@@ -488,15 +494,37 @@ impl IndexDb {
             "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES"
         };
         multi_insert(conn, head, 25, rows, |stmt, base, s| {
-            bind_row!(stmt, base, [
-                &s.symbol_id, &s.file_path, &s.name, s.kind.as_str(),
-                &s.container, s.start_line, s.end_line, s.start_col, s.end_col,
-                &s.signature, &s.doc, s.parser_tier.as_str(),
-                s.parser_confidence, &s.qname, &s.parent_symbol_id,
-                &s.export_name, s.is_default_export as i32, &s.symbol_uid,
-                &s.framework_role, &s.receiver_type, &s.param_types,
-                &s.return_type, s.param_count, &s.base_types, &s.implements,
-            ]);
+            bind_row!(
+                stmt,
+                base,
+                [
+                    &s.symbol_id,
+                    &s.file_path,
+                    &s.name,
+                    s.kind.as_str(),
+                    &s.container,
+                    s.start_line,
+                    s.end_line,
+                    s.start_col,
+                    s.end_col,
+                    &s.signature,
+                    &s.doc,
+                    s.parser_tier.as_str(),
+                    s.parser_confidence,
+                    &s.qname,
+                    &s.parent_symbol_id,
+                    &s.export_name,
+                    s.is_default_export as i32,
+                    &s.symbol_uid,
+                    &s.framework_role,
+                    &s.receiver_type,
+                    &s.param_types,
+                    &s.return_type,
+                    s.param_count,
+                    &s.base_types,
+                    &s.implements,
+                ]
+            );
             Ok(())
         })
     }
@@ -512,14 +540,30 @@ impl IndexDb {
             "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES"
         };
         multi_insert(conn, head, 18, rows, |stmt, base, r| {
-            bind_row!(stmt, base, [
-                &r.ref_id, &r.file_path, &r.symbol_name, &r.container,
-                &r.ref_kind, r.line, r.column, &r.target_symbol_id,
-                &r.target_file_path, &r.target_symbol_uid, &r.ref_name,
-                r.resolution_kind.as_str(), r.resolution_confidence,
-                &r.resolution_strategy, r.ref_end_line, r.ref_end_col,
-                r.parser_tier.as_str(), r.parser_confidence,
-            ]);
+            bind_row!(
+                stmt,
+                base,
+                [
+                    &r.ref_id,
+                    &r.file_path,
+                    &r.symbol_name,
+                    &r.container,
+                    &r.ref_kind,
+                    r.line,
+                    r.column,
+                    &r.target_symbol_id,
+                    &r.target_file_path,
+                    &r.target_symbol_uid,
+                    &r.ref_name,
+                    r.resolution_kind.as_str(),
+                    r.resolution_confidence,
+                    &r.resolution_strategy,
+                    r.ref_end_line,
+                    r.ref_end_col,
+                    r.parser_tier.as_str(),
+                    r.parser_confidence,
+                ]
+            );
             Ok(())
         })
     }
@@ -606,14 +650,31 @@ impl IndexDb {
             "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES"
         };
         multi_insert(conn, head, 19, rows, |stmt, base, r| {
-            bind_row!(stmt, base, [
-                &r.edge_id, &r.file_path, &r.route_path, &r.handler_name,
-                &r.method, r.line, r.start_col, r.end_line, r.end_col,
-                &r.handler_symbol_id, &r.handler_symbol_uid, &r.handler_expr,
-                &r.router_symbol_uid, &r.framework, &r.route_kind, r.confidence,
-                r.parser_tier.as_str(), &r.resolution_strategy,
-                r.resolution_confidence,
-            ]);
+            bind_row!(
+                stmt,
+                base,
+                [
+                    &r.edge_id,
+                    &r.file_path,
+                    &r.route_path,
+                    &r.handler_name,
+                    &r.method,
+                    r.line,
+                    r.start_col,
+                    r.end_line,
+                    r.end_col,
+                    &r.handler_symbol_id,
+                    &r.handler_symbol_uid,
+                    &r.handler_expr,
+                    &r.router_symbol_uid,
+                    &r.framework,
+                    &r.route_kind,
+                    r.confidence,
+                    r.parser_tier.as_str(),
+                    &r.resolution_strategy,
+                    r.resolution_confidence,
+                ]
+            );
             Ok(())
         })
     }

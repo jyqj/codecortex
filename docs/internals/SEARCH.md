@@ -14,7 +14,7 @@
 ```
 查询
   │
-  ├─ 文件预选（preselect）：给候选文件打分，收窄 chunk 级检索范围
+  ├─ 文件预选（preselect）：给候选文件打分；仅为 grep 提供有界扫描提示
   │
   ├─ 检索通道（lanes，并发执行、确定性融合序）：
   │     lexical（FTS5 over chunks）
@@ -77,7 +77,20 @@ graph 通道的种子打分与衰减由 `RankingConfig` 控制
 
 ## 文件预选（PreselectLayer）
 
-`preselect.rs`。chunk 级检索之前先对文件打分收窄范围。8 个已注册的层
+**范围契约（ADR-0003）**：用户的 `file_paths` / `path_prefix` / `languages`
+是硬范围，lexical 和 graph 通道在该范围内独立召回。Preselect 是软提示，
+不再覆盖 `SearchRequest.file_paths`；非 fallback 的提示可收窄 grep 扫描，
+但 recency fallback 不隐藏全库字面量。候选仍受各通道数量与扫描预算限制。
+BM25 文件预选使用 `base + strength/(1+strength)`，其中
+`strength=max(-bm25,0)`；排序方向与 SQLite 负分越小越好的约定一致。
+
+图通道的符号投影独立于 SQL：优先最小完整包含 chunk，长符号则取相交的
+多个分片；同分项在截断前按稳定身份打破平分。RRF 同一 lane 内的重复
+chunk 只投一次票，但仍保留原始位置成本。验证入口见
+[Benchmark v2](../BENCHMARK_V2.md)。
+
+
+`preselect.rs`。先对文件打分形成排序先验，不将系统猜测写入调用者的硬范围。8 个已注册的层
 适配器（与 lane 同样的缝隙风格，注册在 `default_preselect_layers()`，
 顺序即执行顺序）：
 

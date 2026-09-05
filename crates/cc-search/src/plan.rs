@@ -118,9 +118,8 @@ impl SearchPlan {
                 ranking,
             },
         )?;
-        if !preselect.files.is_empty() && request.file_paths.is_none() {
-            request.file_paths = Some(preselect.files.clone());
-        }
+        // Preserve caller scope. Heuristic preselection is a ranking/scan hint,
+        // not authorization to exclude globally matching lexical/graph candidates.
 
         let filters = MaterializedFilters::from_request(&request);
         let rerank_inputs = RerankInputs::from_request(&request);
@@ -180,10 +179,25 @@ impl SearchPlan {
         self.filters.chunk_scope()
     }
 
-    /// Whether the request carries an explicit file-paths scope (which
-    /// bounds the grep scan's cardinality).
+    /// Whether the effective grep scan has a bounded file-path scope.
     pub(crate) fn has_file_scope(&self) -> bool {
-        self.filters.has_file_scope()
+        self.grep_scope()
+            .file_paths
+            .is_some_and(|files| !files.is_empty())
+    }
+
+    /// Grep is a bounded scan, so use informative preselect hints for its work
+    /// scope. Fallback/recency-only files must not hide rare global literals.
+    /// Lexical and graph retrieval always use the caller's hard scope instead.
+    pub(crate) fn grep_scope(&self) -> cc_db::ChunkScope {
+        let mut scope = self.chunk_scope();
+        if scope.file_paths.is_none()
+            && !self.preselect.lane_stats.used_fallback
+            && !self.preselect.files.is_empty()
+        {
+            scope.file_paths = Some(self.preselect.files.clone());
+        }
+        scope
     }
 
     pub(crate) fn lane_ranks<'a>(&self, outcomes: &'a [LaneOutcome]) -> LaneRanks<'a> {
@@ -427,6 +441,7 @@ impl SearchPlan {
         serde_json::json!({
             "stage_a_file_score": stage_a_score,
             "stage_a_files_considered": self.preselect.files.len(),
+            "scope_policy": "hard-scope-with-preselect-hints-v1",
             "stage_a_file_reasons": self.preselect.reasons.get(file_path).cloned().unwrap_or_default(),
             "stage_a_layer_scores": self.preselect.layer_scores.get(file_path).cloned().unwrap_or_default(),
         })
@@ -474,15 +489,6 @@ impl MaterializedFilters {
                 .map(|langs| langs.iter().map(|lang| lang.as_str().to_string()).collect()),
             file_paths: self.file_paths.clone(),
         }
-    }
-
-    /// Whether the request carries an explicit file-paths scope (which
-    /// bounds the grep scan's cardinality).
-    pub(crate) fn has_file_scope(&self) -> bool {
-        self.file_paths
-            .as_ref()
-            .map(|files| !files.is_empty())
-            .unwrap_or(false)
     }
 
     fn path_prefix(&self) -> Option<&str> {

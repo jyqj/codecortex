@@ -1,5 +1,10 @@
 # 基准测试
 
+检索质量新增独立的 [Benchmark v2](BENCHMARK_V2.md)：身份/区间标签、
+原始 MCP 观测与重放、错误分母、配对比较、增量差分 oracle。
+[本轮实测](benchmarks/code_index_quality_round1.md) 与下文历史性能报告分开。
+旧质量/性能数值是原提交的历史记录，不是新作用域/评分契约的重新测量。
+
 四类基准全部由 eval harness 自动化，且都走真实 MCP 线路（进程内 duplex
 JSON-RPC 对 rmcp 路由，含 schema 校验与输出预算）：
 
@@ -50,7 +55,7 @@ JSON-RPC 对 rmcp 路由，含 schema 校验与输出预算）：
 | 工具调用数 | 回答一个问题的平均调用数（context vs search+node 循环） | context: 1，手工: 3–5 |
 | 单调用充分率 | 单次 context() 或 trace(source_mode=body) 可回答的任务占比 | >60% |
 
-当前质量基线：24 个 gold 用例（94 corpus 用例中携带 `expected_symbols`
+历史质量基线：24 个 gold 用例（94 corpus 用例中携带 `expected_symbols`
 断言的），最近一轮 Avg Recall@5 1.00、Avg MRR 0.92。由
 `cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture`
 产出。
@@ -66,7 +71,7 @@ CODECORTEX_WRITE_BENCHMARK=1 cargo test -p cc-eval -- benchmark_fixture
 工具延迟以 µs 粒度分 cold/warm 两列：cold 为每用例新建 MCP 会话后的首次
 调用（新 IndexDb 连接 → 新 db_identity，graph 邻接缓存与 SQLite 页缓存为
 冷、SearchEngine LRU 为空；OS 文件缓存保留），warm 为同会话 1 热身 + 2
-测量取最小值（缓存命中路径）。结果写入 `docs/benchmarks/latest.md`。
+测量保留全部样本（缓存命中路径，不再取最小值）。结果写入 `docs/benchmarks/latest.md`。
 不带 `CODECORTEX_WRITE_BENCHMARK` 时测试照跑，但不持久化报告。把它当
 冒烟基线；更大仓库的回归基线是真实工作区基准。
 

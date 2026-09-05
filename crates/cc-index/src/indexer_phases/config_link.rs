@@ -411,8 +411,7 @@ impl Indexer {
                 }
                 None => config_files_signature(project_path),
             });
-            let unchanged =
-                recorded_algo == CONFIG_SIG_ALGORITHM && recorded_sig == Some(sig);
+            let unchanged = recorded_algo == CONFIG_SIG_ALGORITHM && recorded_sig == Some(sig);
             (sig, unchanged)
         };
 
@@ -514,10 +513,9 @@ impl Indexer {
         sig: u64,
     ) -> CcResult<Vec<RawConfigToken>> {
         let raw_tokens = time_step("write", "config_token_scan", || match walk_manifest {
-            Some(manifest) => crate::config_linker::scan_config_tokens_from_manifest(
-                project_path,
-                manifest,
-            ),
+            Some(manifest) => {
+                crate::config_linker::scan_config_tokens_from_manifest(project_path, manifest)
+            }
             None => scan_config_tokens(project_path),
         })?;
         match Self::serialize_raw_token_cache(&raw_tokens) {

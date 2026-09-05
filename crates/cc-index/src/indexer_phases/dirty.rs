@@ -41,6 +41,10 @@ impl Indexer {
             });
         }
 
+        // Non-JS/TS parsers have no complete export contract yet. Source edits
+        // seed bounded conservative importer closure: None == None is unknown,
+        // not proof of stability. Unresolved/global dependencies remain outside
+        // this imported-dependency contract (see the differential oracle).
         // Step 2: Compare old vs new export fingerprints to find files whose
         //         public API surface actually changed. Fetch all old
         //         fingerprints in one batched query to avoid N+1 round trips.
@@ -61,7 +65,19 @@ impl Indexer {
             let new_fp = write_unit_index
                 .get(file_path.as_str())
                 .and_then(|unit| Self::compute_fingerprint_for_unit(unit));
-            if old_fp != new_fp {
+            let unsupported_surface =
+                write_unit_index
+                    .get(file_path.as_str())
+                    .is_some_and(|unit| {
+                        !matches!(
+                            unit.language,
+                            cc_model::Language::JavaScript
+                                | cc_model::Language::TypeScript
+                                | cc_model::Language::Jsx
+                                | cc_model::Language::Tsx
+                        )
+                    });
+            if old_fp != new_fp || unsupported_surface {
                 export_changed_files.push(file_path.clone());
             }
         }
@@ -95,7 +111,11 @@ impl Indexer {
             &export_changed_files,
             self.dirty_propagation_max_files,
             crate::dirty_closure::DIRTY_CLOSURE_MAX_ROUNDS,
-            |files| self.db.reads().find_importers_of(files),
+            |files| {
+                let mut dependents = self.db.reads().find_importers_of(files)?;
+                dependents.extend(self.db.reads().find_bound_dependents_of(files)?);
+                Ok(dependents)
+            },
             |path| matches!(actions.get(path), Some(FileAction::Skip)),
             |files, changed_so_far| {
                 self.promoted_export_surfaces_changed(
@@ -195,9 +215,18 @@ impl Indexer {
         Ok(files
             .iter()
             .filter(|path| {
-                targets_cache
-                    .get(path.as_str())
-                    .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))
+                // An absent export contract cannot prove a facade unchanged.
+                let conservative = !matches!(
+                    cc_parsers::detect_language(path),
+                    cc_model::Language::JavaScript
+                        | cc_model::Language::TypeScript
+                        | cc_model::Language::Jsx
+                        | cc_model::Language::Tsx
+                );
+                conservative
+                    || targets_cache
+                        .get(path.as_str())
+                        .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))
             })
             .cloned()
             .collect())
@@ -465,7 +494,9 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -556,7 +587,9 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -613,10 +646,7 @@ mod dirty_propagation_fixpoint_tests {
             "crate_a/Cargo.toml",
             "[package]\nname = \"crate_a\"\nversion = \"0.1.0\"\n",
         );
-        write(
-            "crate_a/src/lib.rs",
-            "pub fn alpha() -> i32 {\n    1\n}\n",
-        );
+        write("crate_a/src/lib.rs", "pub fn alpha() -> i32 {\n    1\n}\n");
         write(
             "crate_b/Cargo.toml",
             "[package]\nname = \"crate_b\"\nversion = \"0.1.0\"\n",
@@ -658,7 +688,9 @@ mod dirty_propagation_fixpoint_tests {
         // Remove the re-export target and run the incremental pipeline.
         std::fs::remove_file(project.join("crate_a/src/lib.rs")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         assert!(
             scan.to_remove.contains(&"crate_a/src/lib.rs".to_string()),
             "deleted lib.rs must land in to_remove; got {:?}",
@@ -735,7 +767,9 @@ mod dirty_propagation_fixpoint_tests {
         // Delete b.ts and run the incremental diff/parse/propagation pipeline.
         std::fs::remove_file(project.join("b.ts")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         assert!(
             scan.to_remove.contains(&"b.ts".to_string()),
             "deleted b.ts must land in to_remove; got {:?}",

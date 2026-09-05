@@ -402,7 +402,12 @@ mod tests {
         let pruned = prune_edges_by_weight(&edges, 4);
         assert_eq!(
             pruned,
-            vec![edge("a", "b"), edge("a", "b"), edge("a", "b"), edge("c", "d")],
+            vec![
+                edge("a", "b"),
+                edge("a", "b"),
+                edge("a", "b"),
+                edge("c", "d")
+            ],
             "heaviest pair keeps full multiplicity; next pair truncated to the budget"
         );
         // Determinism across repeated calls (HashMap aggregation must not leak).

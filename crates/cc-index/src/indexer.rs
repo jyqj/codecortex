@@ -337,8 +337,11 @@ impl Indexer {
         auto_file_limit: Option<usize>,
         scope: Option<&BuildScope>,
     ) -> CcResult<crate::build_plan::PreparedBuild> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
-            .prepare_scoped(self, project_path, scope)
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare_scoped(
+            self,
+            project_path,
+            scope,
+        )
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
@@ -543,12 +546,14 @@ impl Indexer {
             return Ok(None);
         }
 
-        let (admitted, pending) = crate::indexer_phases::time_step("scan_diff", "scoped_stat", || {
-            let scanned = self.scanner.scan_paths(&event_paths);
-            let admitted: HashSet<String> = scanned.iter().map(|f| f.rel_path.clone()).collect();
-            let pending = self.diff_scanned_files(scanned, &existing);
-            (admitted, pending)
-        });
+        let (admitted, pending) =
+            crate::indexer_phases::time_step("scan_diff", "scoped_stat", || {
+                let scanned = self.scanner.scan_paths(&event_paths);
+                let admitted: HashSet<String> =
+                    scanned.iter().map(|f| f.rel_path.clone()).collect();
+                let pending = self.diff_scanned_files(scanned, &existing);
+                (admitted, pending)
+            });
 
         // Removals: an event path that is indexed but no longer admitted, or
         // an indexed file under an event directory prefix (a removed/renamed
@@ -743,7 +748,7 @@ impl Indexer {
             .into_iter()
             .filter(|pf| !matches!(pf.action, FileAction::Skip))
             .collect();
-        to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));
+        to_parse.sort_by_key(|a| std::cmp::Reverse(a.scanned.size));
         to_parse
     }
 
@@ -758,8 +763,7 @@ impl Indexer {
         // Pre-compute Cargo workspace alias map for Rust crate import resolution
         let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
 
-        let parse_one =
-            |pf: &PendingFile| -> Result<(FileWriteUnit, Arc<str>), (String, String)> {
+        let parse_one = |pf: &PendingFile| -> Result<(FileWriteUnit, Arc<str>), (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
             let language = pf.scanned.language;

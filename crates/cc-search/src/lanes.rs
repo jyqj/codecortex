@@ -259,7 +259,13 @@ pub(crate) struct FusedScore {
 pub(crate) fn fuse_outcomes(outcomes: &[LaneOutcome], rrf_k: usize) -> HashMap<String, FusedScore> {
     let mut fused: HashMap<String, FusedScore> = HashMap::new();
     for outcome in outcomes {
+        let mut seen = HashSet::new();
         for (rank, (id, _)) in outcome.hits.iter().enumerate() {
+            // Duplicate candidates consume their original rank but cannot vote
+            // twice for the same document within one lane.
+            if !seen.insert(id) {
+                continue;
+            }
             let score = outcome.weight / (rrf_k + rank + 1) as f64;
             let entry = fused.entry(id.clone()).or_default();
             entry.total += score;
@@ -428,10 +434,11 @@ impl RetrievalLane for GrepLane {
             grep_prefilter_phrase(plan.grep_query())
         };
         if let Some(phrase) = &prefilter_phrase {
-            let result = context
-                .db
-                .retrieval()
-                .scan_chunks_for_grep_prefiltered(phrase, scan_cap, &plan.chunk_scope(), |row| {
+            let result = context.db.retrieval().scan_chunks_for_grep_prefiltered(
+                phrase,
+                scan_cap,
+                &plan.grep_scope(),
+                |row| {
                     Self::process_row(
                         context,
                         plan,
@@ -442,7 +449,8 @@ impl RetrievalLane for GrepLane {
                         Some(&mut prefiltered),
                         &mut scan,
                     )
-                });
+                },
+            );
             if let Err(e) = result {
                 // A MATCH the tokenizer rejects must not fail the lane —
                 // fall back to the plain full scan.
@@ -471,17 +479,8 @@ impl RetrievalLane for GrepLane {
             context
                 .db
                 .retrieval()
-                .scan_chunks_for_grep(&plan.chunk_scope(), skip, |row| {
-                    Self::process_row(
-                        context,
-                        plan,
-                        &re,
-                        limit,
-                        scan_cap,
-                        row,
-                        None,
-                        &mut scan,
-                    )
+                .scan_chunks_for_grep(&plan.grep_scope(), skip, |row| {
+                    Self::process_row(context, plan, &re, limit, scan_cap, row, None, &mut scan)
                 })?;
         }
 
@@ -500,7 +499,7 @@ impl RetrievalLane for GrepLane {
         // so this is a no-op there; scoped scans never run stage 1 and keep
         // SQLite's natural probe order untouched.
         if prefilter_phrase.is_some() {
-            scan.matches.sort_by(|a, b| b.0.cmp(&a.0));
+            scan.matches.sort_by_key(|a| std::cmp::Reverse(a.0));
             scan.matches.truncate(limit);
         }
         Ok(rank_scored(
@@ -531,7 +530,7 @@ impl GrepLane {
         limit: usize,
         scan_cap: usize,
         row: cc_db::GrepChunkRow,
-        mut seen_out: Option<&mut HashSet<String>>,
+        seen_out: Option<&mut HashSet<String>>,
         scan: &mut GrepScanState,
     ) -> bool {
         if scan.scanned >= scan_cap {
@@ -539,7 +538,7 @@ impl GrepLane {
             return false;
         }
         scan.scanned += 1;
-        if let Some(seen) = seen_out.as_deref_mut() {
+        if let Some(seen) = seen_out {
             seen.insert(row.chunk_id.clone());
         }
         let language = parse_language_name(&row.language_name);
@@ -609,7 +608,7 @@ impl RetrievalLane for GraphLane {
 
 impl GraphLane {
     /// Core graph retrieval: seed symbols + 1-hop call-edge expansion,
-    /// mapped back to the smallest containing chunks.
+    /// mapped to the smallest containing chunk, or the chunks of a split symbol.
     pub(crate) fn search(
         db: &IndexDb,
         plan: &SearchPlan,
@@ -703,25 +702,23 @@ impl GraphLane {
 
         let mut best_per_chunk: HashMap<String, f64> = HashMap::new();
         for (file, start, end, score) in candidates {
-            // Smallest containing chunk, matching the old per-symbol query.
-            let cid = chunks_by_file.get(file).and_then(|spans| {
-                spans
-                    .iter()
-                    .filter(|(_, cs, ce)| *cs <= start && *ce >= end)
-                    .min_by_key(|(_, cs, ce)| ce - cs)
-                    .map(|(cid, _, _)| cid.clone())
-            });
-            if let Some(cid) = cid {
-                best_per_chunk
-                    .entry(cid)
-                    .and_modify(|s| *s = s.max(score))
-                    .or_insert(score);
+            if let Some(spans) = chunks_by_file.get(file) {
+                for cid in crate::symbol_chunks::project_symbol_chunks(spans, start, end) {
+                    best_per_chunk
+                        .entry(cid.to_string())
+                        .and_modify(|s| *s = s.max(score))
+                        .or_insert(score);
+                }
             }
         }
         let mut chunk_scores: Vec<(String, f64)> = best_per_chunk.into_iter().collect();
 
         // Sort by score descending and limit
-        chunk_scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        chunk_scores.sort_by(|a, b| {
+            b.1.partial_cmp(&a.1)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.0.cmp(&b.0))
+        });
         chunk_scores.truncate(limit);
         Ok(chunk_scores)
     }
@@ -781,7 +778,29 @@ fn find_seed_symbol_uids(
     }
 
     let mut sorted: Vec<(String, f64)> = results.into_iter().collect();
-    sorted.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    sorted.sort_by(|a, b| {
+        b.1.partial_cmp(&a.1)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| a.0.cmp(&b.0))
+    });
     sorted.truncate(20); // max 20 seed symbols
     Ok(sorted)
+}
+
+#[cfg(test)]
+mod fusion_contract_tests {
+    use super::*;
+    #[test]
+    fn duplicate_candidate_gets_one_vote_at_original_rank() {
+        let lane = LaneOutcome {
+            lane_id: "test",
+            weight: 1.0,
+            annotates_hits: false,
+            score_slot: None,
+            hits: vec![("a".into(), 1.0), ("a".into(), 1.0), ("b".into(), 1.0)],
+        };
+        let fused = fuse_outcomes(&[lane], 50);
+        assert_eq!(fused["a"].total, 1.0 / 51.0);
+        assert_eq!(fused["b"].total, 1.0 / 53.0);
+    }
 }

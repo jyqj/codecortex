@@ -824,7 +824,10 @@ fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
     let lanes: [&dyn RetrievalLane; 2] = [&active, &disabled];
     let outcomes = run_lanes(&lanes, &context).unwrap();
 
-    assert!(active.ran.load(std::sync::atomic::Ordering::SeqCst), "enabled lane must run");
+    assert!(
+        active.ran.load(std::sync::atomic::Ordering::SeqCst),
+        "enabled lane must run"
+    );
     assert!(
         !disabled.ran.load(std::sync::atomic::Ordering::SeqCst),
         "disabled lane must be skipped before work"

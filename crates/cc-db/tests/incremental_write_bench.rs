@@ -403,8 +403,7 @@ fn bench_concurrent_reads_during_incremental_writes() {
                 let stop = Arc::clone(&stop);
                 scope.spawn(move || {
                     // Per-class latencies: (files count, FTS match, symbol point lookup)
-                    let mut latencies: [Vec<Duration>; 3] =
-                        [Vec::new(), Vec::new(), Vec::new()];
+                    let mut latencies: [Vec<Duration>; 3] = [Vec::new(), Vec::new(), Vec::new()];
                     let mut iterations = 0usize;
                     while !stop.load(Ordering::SeqCst) {
                         let class = iterations % 3;
@@ -437,7 +436,8 @@ fn bench_concurrent_reads_during_incremental_writes() {
                                 assert!(!rows.is_empty(), "FTS must see indexed content");
                             }
                             _ => {
-                                let name = format!("fn_{:05}_0", (iterations * 97) % expected_files);
+                                let name =
+                                    format!("fn_{:05}_0", (iterations * 97) % expected_files);
                                 let mut stmt = conn
                                     .prepare_cached(
                                         "SELECT file_path FROM symbols WHERE name = ?1 LIMIT 1",

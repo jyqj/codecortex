@@ -10,7 +10,7 @@ mod resolve;
 mod snapshot;
 mod write;
 
-pub(crate) use analysis::AnalysisPlan;
+pub(crate) use analysis::{AnalysisInputs, AnalysisPlan};
 pub(crate) use postprocess::PostprocessPlan;
 
 /// Signature algorithm versions, persisted next to each recorded signature

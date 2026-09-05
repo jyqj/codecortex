@@ -311,7 +311,7 @@ pub struct RankingConfig {
     pub preselect_overlay_floor: f64,
     #[serde(default = "default_preselect_overlay_scale")]
     pub preselect_overlay_scale: f64,
-    /// FTS summary layer: score is `base + 1 / (1 + |bm25|)`.
+    /// FTS summary layer: score is `base + strength / (1 + strength)`, strength = max(-bm25, 0).
     #[serde(default = "default_preselect_fts_base")]
     pub preselect_fts_base: f64,
     /// Per-token symbol-name match: exact name equality.

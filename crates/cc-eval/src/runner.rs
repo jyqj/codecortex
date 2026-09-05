@@ -367,13 +367,13 @@ fn compute_retrieval_metrics(output: &Value, assertion: &Assertion) -> (f64, f64
     // Extract symbol name from each item
     let result_names: Vec<String> = arr
         .iter()
-        .filter_map(|item| {
+        .map(|item| {
             for key in &["name", "symbol_name", "symbol"] {
                 if let Some(Value::String(s)) = item.get(*key) {
-                    return Some(s.clone());
+                    return s.clone();
                 }
             }
-            None
+            String::new()
         })
         .collect();
 
@@ -432,8 +432,11 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
 
     let mut assertions_passed = 0;
     let mut assertions_failed = Vec::new();
-    let mut recall_at_5: Option<f64> = None;
-    let mut mrr: Option<f64> = None;
+    // Retrieval errors remain zero-valued observations, not missing values
+    // silently excluded from the report's denominator.
+    let measures_retrieval = case.assertions.iter().any(|a| a.kind == "expected_symbols");
+    let mut recall_at_5: Option<f64> = measures_retrieval.then_some(0.0);
+    let mut mrr: Option<f64> = measures_retrieval.then_some(0.0);
 
     let output_size_bytes = match &result {
         Ok(output) => serde_json::to_string(output).unwrap_or_default().len(),
@@ -523,4 +526,27 @@ pub fn run_case(backend: &CodeIndexBackend, case: &EvalCase) -> EvalCaseResult {
 
 pub fn run_all(backend: &CodeIndexBackend, cases: &[EvalCase]) -> Vec<EvalCaseResult> {
     cases.iter().map(|case| run_case(backend, case)).collect()
+}
+
+#[cfg(test)]
+mod rank_contract_tests {
+    use super::*;
+    fn expected(value: &str) -> Assertion {
+        serde_json::from_value(serde_json::json!({"kind":"expected_symbols","value":value}))
+            .unwrap()
+    }
+    #[test]
+    fn unnamed_hits_keep_their_original_rank() {
+        let output = serde_json::json!([{}, {}, {}, {}, {}, {"name":"target"}]);
+        let (recall, rr) = compute_retrieval_metrics(&output, &expected("target"));
+        assert_eq!(recall, 0.0);
+        assert_eq!(rr, 1.0 / 6.0);
+    }
+    #[test]
+    fn duplicate_hits_cannot_inflate_recall() {
+        let output = serde_json::json!([{"name":"a"},{"name":"a"},{"name":"a"}]);
+        let (recall, rr) = compute_retrieval_metrics(&output, &expected("a,b"));
+        assert_eq!(recall, 0.5);
+        assert_eq!(rr, 1.0);
+    }
 }

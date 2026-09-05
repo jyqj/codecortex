@@ -137,11 +137,11 @@ impl<'a> RetrievalReadModel<'a> {
         let (sql, params_vec): (&str, Vec<Box<dyn rusqlite::types::ToSql>>) =
             if let Some(prefix) = path_prefix {
                 (
-                    "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
+                    "SELECT files.file_path, bm25(files_fts, 0.0, 1.0) AS score \
                  FROM files_fts \
                  JOIN files ON files.file_path = files_fts.file_path \
                  WHERE files_fts MATCH ?1 AND files.file_path LIKE ?2 ESCAPE '\\' \
-                 ORDER BY score LIMIT ?3",
+                 ORDER BY score, files.file_path LIMIT ?3",
                     vec![
                         Box::new(sanitized_query.to_string()) as Box<dyn rusqlite::types::ToSql>,
                         Box::new(format!("{}%", escape_like(prefix))),
@@ -150,11 +150,11 @@ impl<'a> RetrievalReadModel<'a> {
                 )
             } else {
                 (
-                    "SELECT files.file_path, bm25(files_fts, 1.8, 1.0) AS score \
+                    "SELECT files.file_path, bm25(files_fts, 0.0, 1.0) AS score \
                  FROM files_fts \
                  JOIN files ON files.file_path = files_fts.file_path \
                  WHERE files_fts MATCH ?1 \
-                 ORDER BY score LIMIT ?2",
+                 ORDER BY score, files.file_path LIMIT ?2",
                     vec![
                         Box::new(sanitized_query.to_string()) as Box<dyn rusqlite::types::ToSql>,
                         Box::new(limit as i64),
@@ -205,7 +205,7 @@ impl<'a> RetrievalReadModel<'a> {
             sql.push_str(" AND ");
             sql.push_str(&clauses.join(" AND "));
         }
-        sql.push_str(" ORDER BY score LIMIT ");
+        sql.push_str(" ORDER BY score, chunks.chunk_id LIMIT ");
         sql.push_str(&limit.to_string());
 
         let conn = self.db.read_conn()?;

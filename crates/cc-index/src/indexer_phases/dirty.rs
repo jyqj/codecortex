@@ -465,7 +465,9 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -556,7 +558,9 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -613,10 +617,7 @@ mod dirty_propagation_fixpoint_tests {
             "crate_a/Cargo.toml",
             "[package]\nname = \"crate_a\"\nversion = \"0.1.0\"\n",
         );
-        write(
-            "crate_a/src/lib.rs",
-            "pub fn alpha() -> i32 {\n    1\n}\n",
-        );
+        write("crate_a/src/lib.rs", "pub fn alpha() -> i32 {\n    1\n}\n");
         write(
             "crate_b/Cargo.toml",
             "[package]\nname = \"crate_b\"\nversion = \"0.1.0\"\n",
@@ -658,7 +659,9 @@ mod dirty_propagation_fixpoint_tests {
         // Remove the re-export target and run the incremental pipeline.
         std::fs::remove_file(project.join("crate_a/src/lib.rs")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         assert!(
             scan.to_remove.contains(&"crate_a/src/lib.rs".to_string()),
             "deleted lib.rs must land in to_remove; got {:?}",
@@ -735,7 +738,9 @@ mod dirty_propagation_fixpoint_tests {
         // Delete b.ts and run the incremental diff/parse/propagation pipeline.
         std::fs::remove_file(project.join("b.ts")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         assert!(
             scan.to_remove.contains(&"b.ts".to_string()),
             "deleted b.ts must land in to_remove; got {:?}",

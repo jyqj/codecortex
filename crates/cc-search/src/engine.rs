@@ -722,7 +722,6 @@ mod tests {
         SearchPlan::build(&engine.db, &engine.config, &engine.ranking, request, None).unwrap()
     }
 
-
     #[test]
     fn lexical_lane_adapter_matches_inline_ranking() {
         let (engine, _tmp) = scoped_test_engine();

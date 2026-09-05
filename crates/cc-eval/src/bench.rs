@@ -41,6 +41,7 @@ pub struct ToolBenchmark {
     pub warm_p50_us: u64,
     pub warm_p95_us: u64,
     pub warm_max_us: u64,
+    pub warm_samples: usize,
     pub avg_output_bytes: usize,
 }
 
@@ -50,7 +51,7 @@ pub struct ToolBenchmark {
 struct CaseMeasurement {
     tool: String,
     cold_us: u64,
-    warm_best_us: u64,
+    warm_us: Vec<u64>,
     output_bytes: usize,
 }
 
@@ -58,7 +59,7 @@ struct CaseMeasurement {
 ///
 /// Cold: one timed call on a brand-new MCP session attached to the existing
 /// index (see module docs for which cache layers this invalidates). Warm:
-/// 1 warmup + 2 measured calls on the shared session, best of the 2.
+/// 1 warmup + 2 measured calls on the shared session, retaining both samples.
 fn measure_case(
     backend: &CodeIndexBackend,
     project_path: &Path,
@@ -98,12 +99,10 @@ fn measure_case(
         }
     }
 
-    let warm_best_us = durations.iter().copied().min().unwrap_or(0);
-
     CaseMeasurement {
         tool: case.tool.clone(),
         cold_us,
-        warm_best_us,
+        warm_us: durations,
         output_bytes: last_output_bytes,
     }
 }
@@ -163,7 +162,10 @@ pub fn run_benchmark_named(
 
             let mut cold: Vec<u64> = group.iter().map(|m| m.cold_us).collect();
             cold.sort_unstable();
-            let mut warm: Vec<u64> = group.iter().map(|m| m.warm_best_us).collect();
+            let mut warm: Vec<u64> = group
+                .iter()
+                .flat_map(|m| m.warm_us.iter().copied())
+                .collect();
             warm.sort_unstable();
 
             let total_output: usize = group.iter().map(|m| m.output_bytes).sum();
@@ -177,6 +179,7 @@ pub fn run_benchmark_named(
                 warm_p50_us: percentile(&warm, 0.50),
                 warm_p95_us: percentile(&warm, 0.95),
                 warm_max_us: warm.last().copied().unwrap_or(0),
+                warm_samples: warm.len(),
                 avg_output_bytes: avg_output,
             }
         })

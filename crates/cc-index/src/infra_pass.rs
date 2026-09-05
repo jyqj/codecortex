@@ -55,8 +55,7 @@ fn classify_infra_file(file_name: &str, path: &Path) -> Option<InfraFileType> {
         Some(InfraFileType::Terraform)
     } else if file_name == "compile_commands.json" {
         Some(InfraFileType::CompileCommands)
-    } else if (file_name.ends_with(".yaml") || file_name.ends_with(".yml"))
-        && is_k8s_manifest(path)
+    } else if (file_name.ends_with(".yaml") || file_name.ends_with(".yml")) && is_k8s_manifest(path)
     {
         // Generic YAML with apiVersion + kind — likely K8s manifest
         Some(InfraFileType::K8sManifest)

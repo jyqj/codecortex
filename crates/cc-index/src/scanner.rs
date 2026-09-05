@@ -572,7 +572,11 @@ mod scoped_scan_tests {
         write(root, ".gitignore", "logs/\n");
         write(root, "src/main.py", "def main():\n    return 1\n");
         write(root, "src/nested/.gitignore", "secret.py\n");
-        write(root, "src/nested/secret.py", "def secret():\n    return 2\n");
+        write(
+            root,
+            "src/nested/secret.py",
+            "def secret():\n    return 2\n",
+        );
         write(root, "src/nested/open.py", "def open_fn():\n    return 3\n");
         // Ancestor directory gitignored at the ROOT level: a walk rooted at
         // `logs/` would never see the pruning rule — the regression this
@@ -587,11 +591,8 @@ mod scoped_scan_tests {
         config.max_file_bytes = 128;
         let scanner = Scanner::new(root, &config);
 
-        let full: std::collections::HashSet<String> = scanner
-            .scan()
-            .into_iter()
-            .map(|f| f.rel_path)
-            .collect();
+        let full: std::collections::HashSet<String> =
+            scanner.scan().into_iter().map(|f| f.rel_path).collect();
 
         let requested: Vec<String> = [
             "src/main.py",
@@ -753,8 +754,7 @@ mod shared_walk_tests {
             "user ignore patterns do not filter the manifest"
         );
 
-        let indexable_paths: Vec<&str> =
-            indexable.iter().map(|f| f.rel_path.as_str()).collect();
+        let indexable_paths: Vec<&str> = indexable.iter().map(|f| f.rel_path.as_str()).collect();
         assert!(indexable_paths.contains(&"src/main.py"));
         assert!(indexable_paths.contains(&"a/b/c/d/e/f/deep.py"));
         assert!(

@@ -37,3 +37,5 @@ pub(crate) mod test_seed {
         rusqlite::Connection::open(db.admin().db_path()).expect("open test seed connection")
     }
 }
+
+mod symbol_chunks;

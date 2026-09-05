@@ -12,7 +12,7 @@
 //!   2. recent files         max(1.2, 3.5 / rank)
 //!   3. pinned files         max(2.2, 4.0 / rank)
 //!   4. overlay (dirty)      max(1.5, 3.0 / rank)
-//!   5. FTS summary search   1.4 + 1.0 / (1.0 + |score|)
+//!   5. FTS summary search   1.4 + strength / (1.0 + strength), strength = max(-bm25, 0)
 //!   6. per-token: symbol name match (exact=2.0, fuzzy=1.2) + path token hit (1.0)
 //!
 //!   F. fallback: recently-indexed files (0.2) — a gated layer that only
@@ -330,10 +330,10 @@ impl PreselectLayer for FtsSummaryLayer {
         Ok(rows
             .into_iter()
             .map(|(file_path, raw_score)| {
-                let bm25_score = raw_score.abs();
+                let bm25_score = (-raw_score).max(0.0);
                 LayerHit {
                     file_path,
-                    score: ctx.ranking.preselect_fts_base + (1.0 / (1.0 + bm25_score)),
+                    score: ctx.ranking.preselect_fts_base + bm25_score / (1.0 + bm25_score),
                     reason: LAYER_FTS_SUMMARY.to_string(),
                 }
             })
@@ -589,7 +589,11 @@ fn score_graph_neighbors(
 
     // Sort by score and limit
     let mut result: Vec<(String, f64)> = neighbor_files.into_iter().collect();
-    result.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    result.sort_by(|a, b| {
+        b.1.partial_cmp(&a.1)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| a.0.cmp(&b.0))
+    });
     result.truncate(expansion_limit);
     Ok(result)
 }

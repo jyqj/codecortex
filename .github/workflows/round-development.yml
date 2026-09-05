@@ -1,0 +1,50 @@
+# Temporary branch-only development runner; removed before the final PR tree.
+name: Code index round development
+on:
+  push:
+    branches: [opt/code-index-benchmark-v2-20260906]
+    paths: ['_dev/**', '.github/workflows/round-development.yml']
+permissions:
+  contents: write
+concurrency:
+  group: codecortex-round-development
+  cancel-in-progress: false
+jobs:
+  develop:
+    if: github.repository == 'jyqj/codecortex' && github.ref == 'refs/heads/opt/code-index-benchmark-v2-20260906'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CARGO_TERM_COLOR: never
+      CARGO_BUILD_JOBS: 2
+      RUSTFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          cache-on-failure: true
+      - name: Apply reviewed branch-only changes
+        run: python3 _dev/round_apply.py
+      - name: Format and publish implementation on the same branch
+        run: |
+          cargo fmt --all
+          git diff --check
+          git add crates docs scripts
+          if ! git diff --cached --quiet; then
+            git -c user.name='CodeCortex automation' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' commit -m 'refactor: materialize reviewed code-index optimization and tests'
+            git push origin HEAD:refs/heads/opt/code-index-benchmark-v2-20260906
+          fi
+          echo "Testing implementation commit $(git rev-parse HEAD)"
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Workspace tests
+        if: success() || failure()
+        run: cargo test --workspace --all-targets --locked
+      - name: MCP eval
+        if: success() || failure()
+        run: cargo test -p cc-eval --locked -- integration_fixtures_and_corpus --nocapture

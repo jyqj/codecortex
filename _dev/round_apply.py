@@ -2,197 +2,147 @@ from pathlib import Path
 
 
 def replace(path, old, new, count=1):
-    p = Path(path)
-    s = p.read_text()
-    n = s.count(old)
+    p=Path(path); s=p.read_text(); n=s.count(old)
     if n != count:
-        raise RuntimeError(f'{path}: expected {count} occurrences, found {n}: {old[:100]!r}')
-    p.write_text(s.replace(old, new))
+        raise RuntimeError(f'{path}: wanted {count}, found {n}: {old[:100]!r}')
+    p.write_text(s.replace(old,new))
 
 
 def append(path, text):
-    p = Path(path)
-    p.write_text(p.read_text() + '\n' + text)
+    p=Path(path); p.write_text(p.read_text()+'\n'+text)
 
+replace('crates/cc-index/src/indexer.rs',
+        'to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));',
+        'to_parse.sort_by_key(|a| std::cmp::Reverse(a.scanned.size));')
+path='crates/cc-index/src/indexer_phases/analysis.rs'
+replace(path, 'impl Indexer {', '''/// Immutable inputs to analysis, separated from its mutable explanation sink.
+/// Scanning provenance travels together; no positional unused parsed-path input.
+pub(crate) struct AnalysisInputs<'a> {
+    pub project_path: &'a Path,
+    pub full: bool,
+    pub write_units: &'a [FileWriteUnit],
+    pub route_nodes: &'a [RouteNodeRecord],
+    pub walk_manifest: Option<&'a crate::scanner::WalkManifest>,
+    pub scope_hints: Option<&'a crate::indexer::ScopeSignatureHints>,
+}
 
-replace('crates/cc-search/src/plan.rs', '''        if !preselect.files.is_empty() && request.file_paths.is_none() {
-            request.file_paths = Some(preselect.files.clone());
+impl Indexer {''')
+replace(path, '''        project_path: &Path,
+        full: bool,
+        write_units: &[FileWriteUnit],
+        _parsed_file_paths: &[String],
+        route_nodes: &[RouteNodeRecord],
+        walk_manifest: Option<&crate::scanner::WalkManifest>,
+        scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
+        build_explain: &mut BuildExplainCollector,
+    ) -> CcResult<AnalysisPlan> {''', '''        inputs: AnalysisInputs<'_>,
+        build_explain: &mut BuildExplainCollector,
+    ) -> CcResult<AnalysisPlan> {
+        let AnalysisInputs { project_path, full, write_units, route_nodes, walk_manifest, scope_hints } = inputs;''')
+replace('crates/cc-index/src/indexer_phases/mod.rs', 'use analysis::AnalysisPlan;', 'use analysis::{AnalysisInputs, AnalysisPlan};')
+replace('crates/cc-index/src/build_plan.rs', '''        let analysis = indexer.phase_analysis_compute(
+            project_path,
+            self.mode.is_full(),
+            &write_units,
+            &parsed_file_paths,
+            &carry.output_snapshot.route_nodes,
+            walk_manifest.as_deref(),
+            carry.scan_result.scope_hints.as_ref(),
+            &mut build_explain,
+        )?;''', '''        let analysis = indexer.phase_analysis_compute(
+            crate::indexer_phases::AnalysisInputs {
+                project_path,
+                full: self.mode.is_full(),
+                write_units: &write_units,
+                route_nodes: &carry.output_snapshot.route_nodes,
+                walk_manifest: walk_manifest.as_deref(),
+                scope_hints: carry.scan_result.scope_hints.as_ref(),
+            },
+            &mut build_explain,
+        )?;''')
+path='crates/cc-server/src/engine.rs'
+replace(path,'fn graph_rerank_parity_with_pre_refactor_baseline()', 'fn graph_rerank_preserves_flip_and_score_accounting()')
+s=Path(path).read_text()
+a=s.index('        // Bit-exact rerank values captured pre-refactor;')
+b=s.index('        // Flip proof:',a)
+s=s[:a]+'''        // The old numeric snapshot encoded inverted BM25 preselection. Check
+        // additive accounting alongside independent graph math and rank flip.
+        for hit in hits {
+            let total: f64 = hit["score_trace"].as_array().unwrap().iter()
+                .map(|component| component[1].as_f64().unwrap())
+                .sum();
+            assert!((total - hit["rerank_score"].as_f64().unwrap()).abs() < 1e-12);
         }
-''', '''        // Preserve caller scope. Heuristic preselection is a ranking/scan hint,
-        // not authorization to exclude globally matching lexical/graph candidates.
-''')
-replace('crates/cc-search/src/plan.rs', '''    pub(crate) fn has_file_scope(&self) -> bool {
-        self.filters.has_file_scope()
-    }
-''', '''    pub(crate) fn has_file_scope(&self) -> bool {
-        self.grep_scope().file_paths.is_some_and(|files| !files.is_empty())
-    }
 
-    /// Grep is a bounded scan, so use informative preselect hints for its work
-    /// scope. Fallback/recency-only files must not hide rare global literals.
-    /// Lexical and graph retrieval always use the caller's hard scope instead.
-    pub(crate) fn grep_scope(&self) -> cc_db::ChunkScope {
-        let mut scope = self.chunk_scope();
-        if scope.file_paths.is_none()
-            && !self.preselect.lane_stats.used_fallback
-            && !self.preselect.files.is_empty()
-        {
-            scope.file_paths = Some(self.preselect.files.clone());
-        }
-        scope
-    }
-''')
-replace('crates/cc-search/src/plan.rs', '''    /// Whether the request carries an explicit file-paths scope (which
-    /// bounds the grep scan's cardinality).
-    pub(crate) fn has_file_scope(&self) -> bool {
-        self.file_paths
-            .as_ref()
-            .map(|files| !files.is_empty())
-            .unwrap_or(false)
-    }
-
-''', '')
-replace('crates/cc-search/src/plan.rs', '''    /// Whether the request carries an explicit file-paths scope (which
-    /// bounds the grep scan's cardinality).''', '    /// Whether the effective grep scan has a bounded file-path scope.')
-replace('crates/cc-search/src/plan.rs', '''            "stage_a_files_considered": self.preselect.files.len(),''', '''            "stage_a_files_considered": self.preselect.files.len(),
-            "scope_policy": "hard-scope-with-preselect-hints-v1",''')
-replace('crates/cc-search/src/preselect.rs', 'let bm25_score = raw_score.abs();', 'let bm25_score = (-raw_score).max(0.0);')
-replace('crates/cc-search/src/preselect.rs', 'ctx.ranking.preselect_fts_base + (1.0 / (1.0 + bm25_score))', 'ctx.ranking.preselect_fts_base + bm25_score / (1.0 + bm25_score)')
-replace('crates/cc-search/src/preselect.rs', '1.4 + 1.0 / (1.0 + |score|)', '1.4 + strength / (1.0 + strength), strength = max(-bm25, 0)')
-replace('crates/cc-model/src/config.rs', 'FTS summary layer: score is `base + 1 / (1 + |bm25|)`.', 'FTS summary layer: score is `base + strength / (1 + strength)`, strength = max(-bm25, 0).')
-for path in ['crates/cc-search/src/preselect.rs', 'crates/cc-search/src/lanes.rs']:
-    p = Path(path)
-    s = p.read_text()
-    old = 'b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)'
-    assert old in s
-    p.write_text(s.replace(old, old + '.then_with(|| a.0.cmp(&b.0))'))
-replace('crates/cc-db/src/index_db_retrieval.rs', 'ORDER BY score LIMIT ?3', 'ORDER BY score, files.file_path LIMIT ?3')
-replace('crates/cc-db/src/index_db_retrieval.rs', 'ORDER BY score LIMIT ?2', 'ORDER BY score, files.file_path LIMIT ?2')
-replace('crates/cc-db/src/index_db_retrieval.rs', 'sql.push_str(" ORDER BY score LIMIT ");', 'sql.push_str(" ORDER BY score, chunks.chunk_id LIMIT ");')
-replace('crates/cc-db/src/index_db_retrieval.rs', 'bm25(files_fts, 1.8, 1.0)', 'bm25(files_fts, 0.0, 1.0)', 2)
-p = Path('crates/cc-search/src/lanes.rs')
-s = p.read_text()
-a = s.index('impl RetrievalLane for GrepLane')
-b = s.index('/// Graph retrieval lane:', a)
-s = s[:a] + s[a:b].replace('&plan.chunk_scope()', '&plan.grep_scope()') + s[b:]
-p.write_text(s)
-replace('crates/cc-search/src/lanes.rs', '''            // Smallest containing chunk, matching the old per-symbol query.
-            let cid = chunks_by_file.get(file).and_then(|spans| {
-                spans
-                    .iter()
-                    .filter(|(_, cs, ce)| *cs <= start && *ce >= end)
-                    .min_by_key(|(_, cs, ce)| ce - cs)
-                    .map(|(cid, _, _)| cid.clone())
-            });
-            if let Some(cid) = cid {
-                best_per_chunk
-                    .entry(cid)
-                    .and_modify(|s| *s = s.max(score))
-                    .or_insert(score);
-            }''', '''            if let Some(spans) = chunks_by_file.get(file) {
-                for cid in crate::symbol_chunks::project_symbol_chunks(spans, start, end) {
-                    best_per_chunk
-                        .entry(cid.to_string())
-                        .and_modify(|s| *s = s.max(score))
-                        .or_insert(score);
-                }
-            }''')
-replace('crates/cc-search/src/lanes.rs', 'mapped back to the smallest containing chunks.', 'mapped to the smallest containing chunk, or the chunks of a split symbol.')
-replace('crates/cc-search/src/lanes.rs', '''    for outcome in outcomes {
-        for (rank, (id, _)) in outcome.hits.iter().enumerate() {
-            let score = outcome.weight / (rrf_k + rank + 1) as f64;''', '''    for outcome in outcomes {
-        let mut seen = HashSet::new();
-        for (rank, (id, _)) in outcome.hits.iter().enumerate() {
-            // Duplicate candidates consume their original rank but cannot vote
-            // twice for the same document within one lane.
-            if !seen.insert(id) {
-                continue;
-            }
-            let score = outcome.weight / (rrf_k + rank + 1) as f64;''')
-append('crates/cc-search/src/lib.rs', 'mod symbol_chunks;\n')
-Path('crates/cc-search/src/symbol_chunks.rs').write_text('''//! Symbol-to-source projection independent of graph retrieval and SQL.
-//!
-//! A short symbol selects its smallest containing chunk. A split symbol has
-//! no containing chunk: return intersecting pieces in source order instead
-//! of silently losing a symbol already found in the graph.
-
-pub(crate) fn project_symbol_chunks(
-    spans: &[(String, u32, u32)],
-    start: u32,
-    end: u32,
-) -> Vec<&str> {
-    if start > end {
-        return Vec::new();
-    }
-    if let Some((id, _, _)) = spans
-        .iter()
-        .filter(|(_, cs, ce)| *cs <= start && *ce >= end)
-        .min_by(|a, b| (a.2 - a.1).cmp(&(b.2 - b.1)).then_with(|| a.0.cmp(&b.0)))
-    {
-        return vec![id.as_str()];
-    }
-    let mut pieces: Vec<_> = spans
-        .iter()
-        .filter(|(_, cs, ce)| *cs <= *ce && *cs <= end && *ce >= start)
-        .collect();
-    pieces.sort_by(|a, b| a.1.cmp(&b.1).then_with(|| a.2.cmp(&b.2)).then_with(|| a.0.cmp(&b.0)));
-    pieces.into_iter().map(|(id, _, _)| id.as_str()).collect()
+'''+s[b:]
+Path(path).write_text(s)
+path='crates/cc-index/src/indexer_phases/dirty.rs'
+replace(path,'            if old_fp != new_fp {', '''            let unsupported_surface = write_unit_index.get(file_path.as_str())
+                .is_some_and(|unit| !matches!(unit.language,
+                    cc_model::Language::JavaScript | cc_model::Language::TypeScript |
+                    cc_model::Language::Jsx | cc_model::Language::Tsx));
+            if old_fp != new_fp || unsupported_surface {''')
+replace(path,'''            .filter(|path| {
+                targets_cache''', '''            .filter(|path| {
+                // An absent export contract cannot prove a facade unchanged.
+                let conservative = !matches!(cc_parsers::detect_language(path),
+                    cc_model::Language::JavaScript | cc_model::Language::TypeScript |
+                    cc_model::Language::Jsx | cc_model::Language::Tsx);
+                conservative || targets_cache''')
+replace(path,'''        // Step 2: Compare old vs new export fingerprints to find files whose''', '''        // Non-JS/TS parsers have no complete export contract yet. Source edits
+        // seed bounded conservative importer closure: None == None is unknown,
+        // not proof of stability. Unresolved/global dependencies remain outside
+        // this imported-dependency contract (see the differential oracle).
+        // Step 2: Compare old vs new export fingerprints to find files whose''')
+path='crates/cc-search/src/preselect.rs'
+replace(path, 'let bm25_score = (-raw_score).max(0.0);','let bm25_score = bm25_strength(raw_score);')
+replace(path, 'score: ctx.ranking.preselect_fts_base + bm25_score / (1.0 + bm25_score),', 'score: ctx.ranking.preselect_fts_base + bm25_score,')
+append(path, '''/// SQLite BM25 is negative-better; return a bounded positive-better feature.
+fn bm25_strength(raw: f64) -> f64 {
+    let strength = (-raw).max(0.0);
+    strength / (1.0 + strength)
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
+mod monotonicity_tests {
     #[test]
-    fn long_symbol_survives_chunk_boundaries() {
-        let spans = vec![("second".into(), 81, 160), ("first".into(), 1, 80)];
-        assert_eq!(project_symbol_chunks(&spans, 1, 160), ["first", "second"]);
-        assert_eq!(project_symbol_chunks(&spans, 79, 82), ["first", "second"]);
-    }
-    #[test]
-    fn smallest_container_and_stable_ties() {
-        let spans = vec![("large".into(), 1, 200), ("b".into(), 10, 20), ("a".into(), 10, 20)];
-        assert_eq!(project_symbol_chunks(&spans, 11, 19), ["a"]);
-        assert!(project_symbol_chunks(&spans, 20, 10).is_empty());
-        assert!(project_symbol_chunks(&spans, 300, 400).is_empty());
+    fn stronger_sqlite_bm25_gets_a_larger_preselect_score() {
+        assert!(super::bm25_strength(-4.23) > super::bm25_strength(-1.98));
+        assert_eq!(super::bm25_strength(0.0), 0.0);
+        assert!(super::bm25_strength(-1e6) < 1.0);
     }
 }
 ''')
-replace('crates/cc-eval/src/runner.rs', '''    let result_names: Vec<String> = arr
-        .iter()
-        .filter_map(|item| {''', '''    let result_names: Vec<String> = arr
-        .iter()
-        .map(|item| {''')
-replace('crates/cc-eval/src/runner.rs', '                    return Some(s.clone());', '                    return s.clone();')
-replace('crates/cc-eval/src/runner.rs', '''            None
-        })
-        .collect();
-
-    // Recall@5''', '''            String::new()
-        })
-        .collect();
-
-    // Recall@5''')
-replace('crates/cc-eval/src/runner.rs', '''    let mut recall_at_5: Option<f64> = None;
-    let mut mrr: Option<f64> = None;''', '''    // Retrieval errors remain zero-valued observations, not missing values
-    // silently excluded from the report's denominator.
-    let measures_retrieval = case.assertions.iter().any(|a| a.kind == "expected_symbols");
-    let mut recall_at_5: Option<f64> = measures_retrieval.then_some(0.0);
-    let mut mrr: Option<f64> = measures_retrieval.then_some(0.0);''')
-replace('crates/cc-eval/src/bench.rs', '    warm_best_us: u64,', '    warm_us: Vec<u64>,')
-replace('crates/cc-eval/src/bench.rs', '    let warm_best_us = durations.iter().copied().min().unwrap_or(0);\n', '')
-replace('crates/cc-eval/src/bench.rs', '        warm_best_us,', '        warm_us: durations,')
-replace('crates/cc-eval/src/bench.rs', 'group.iter().map(|m| m.warm_best_us).collect()', 'group.iter().flat_map(|m| m.warm_us.iter().copied()).collect()')
-replace('crates/cc-eval/src/bench.rs', '1 warmup + 2 measured calls on the shared session, best of the 2.', '1 warmup + 2 measured calls on the shared session, retaining both samples.')
-replace('crates/cc-eval/src/bench.rs', '    pub warm_max_us: u64,', '    pub warm_max_us: u64,\n    pub warm_samples: usize,')
-replace('crates/cc-eval/src/bench.rs', '                warm_max_us: warm.last().copied().unwrap_or(0),', '                warm_max_us: warm.last().copied().unwrap_or(0),\n                warm_samples: warm.len(),')
-replace('crates/cc-index/src/memory_budget.rs', '''    /// Byte cap for file content carried from the scan/diff phase into
-    /// parse/enrichment (the single-read pipeline). One eighth of the total
-    /// budget: the carried set peaks alongside parse allocations (tree-sitter
-    /// trees, symbol/chunk vectors), which the remaining budget must absorb.
-    /// Files past this cap simply fall back to a disk re-read in parse.
-    pub fn content_carry_budget(&self) -> u64 {
-        self.total_budget / 8
+append('crates/cc-eval/src/runner.rs', '''#[cfg(test)]
+mod rank_contract_tests {
+    use super::*;
+    #[test]
+    fn unnamed_hits_keep_their_original_rank() {
+        let output = serde_json::json!([{}, {}, {}, {}, {}, {"name":"target"}]);
+        let (recall, rr) = compute_retrieval_metrics(&output, &Assertion::expected_symbols("target"));
+        assert_eq!(recall, 0.0);
+        assert_eq!(rr, 1.0 / 6.0);
     }
-
-''', '')
-print('Applied code-index correctness round 1; no embedding dependencies added.')
+    #[test]
+    fn duplicate_hits_cannot_inflate_recall() {
+        let output = serde_json::json!([{"name":"a"},{"name":"a"},{"name":"a"}]);
+        let (recall, rr) = compute_retrieval_metrics(&output, &Assertion::expected_symbols("a,b"));
+        assert_eq!(recall, 0.5);
+        assert_eq!(rr, 1.0);
+    }
+}
+''')
+append('crates/cc-search/src/lanes.rs', '''#[cfg(test)]
+mod fusion_contract_tests {
+    use super::*;
+    #[test]
+    fn duplicate_candidate_gets_one_vote_at_original_rank() {
+        let lane = LaneOutcome { lane_id: "test", weight: 1.0, annotates_hits: false,
+            score_slot: None, hits: vec![("a".into(), 1.0),("a".into(), 1.0),("b".into(), 1.0)] };
+        let fused = fuse_outcomes(&[lane], 50);
+        assert_eq!(fused["a"].total, 1.0 / 51.0);
+        assert_eq!(fused["b"].total, 1.0 / 53.0);
+    }
+}
+''')
+print('Applied architecture contracts and regression tests, round 2')

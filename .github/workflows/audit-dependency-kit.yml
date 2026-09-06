@@ -1,0 +1,64 @@
+name: Prepare audited dependency repair
+on:
+  push:
+    branches: [fix/nonembedding-facts-quality-20260906]
+    paths: [.github/workflows/audit-dependency-kit.yml]
+permissions:
+  contents: read
+jobs:
+  prepare:
+    if: github.repository == 'jyqj/codecortex' && github.ref == 'refs/heads/fix/nonembedding-facts-quality-20260906'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Upgrade only affected dependency families and prepare offline sources
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/dependency-kit/source /tmp/dependency-kit/cargo
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('Cargo.toml')
+          text = p.read_text()
+          assert text.count('lru = "0.12"') == 1
+          assert text.count('notify = "7"') == 1
+          p.write_text(text.replace('lru = "0.12"', 'lru = "0.18.2"').replace('notify = "7"', 'notify = "8.2"'))
+          PY
+          cargo update -p lru -p notify -p crossbeam-epoch -p anyhow -p rand -p chacha20
+          cargo fetch --locked
+          cargo tree --locked > /tmp/dependency-kit/dependency-tree.txt
+          cp Cargo.toml Cargo.lock /tmp/dependency-kit/source/
+          cp -a "$HOME/.cargo/registry" /tmp/dependency-kit/cargo/
+          git diff -- Cargo.toml Cargo.lock > /tmp/dependency-kit/dependencies.patch
+          rustc -Vv > /tmp/dependency-kit/rustc.txt
+          git add Cargo.toml Cargo.lock
+          git diff --cached --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'build: update affected cache, watcher and transitive dependency families'
+          git push origin HEAD:refs/heads/fix/nonembedding-facts-quality-20260906
+          git ls-tree HEAD Cargo.toml Cargo.lock > /tmp/dependency-kit/source-blobs.txt
+          git rev-parse HEAD > /tmp/dependency-kit/commit.txt
+          tar -czf /tmp/dependency-kit.tgz -C /tmp/dependency-kit .
+      - name: Install pinned audit CLI and check vulnerabilities plus warnings
+        shell: bash
+        run: |
+          set -euo pipefail
+          cargo install cargo-audit --version 0.22.2 --locked
+          cargo audit --help > /tmp/dependency-kit/audit-help.txt
+          cargo audit --deny warnings --json > /tmp/dependency-kit/audit.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audited-dependency-kit-${{ github.run_id }}
+          path: |
+            /tmp/dependency-kit.tgz
+            /tmp/dependency-kit/audit.json
+            /tmp/dependency-kit/audit-help.txt
+          retention-days: 7

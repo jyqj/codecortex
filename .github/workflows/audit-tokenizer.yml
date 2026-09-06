@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: '3.13'
       - run: |
           mkdir -p kit/wheels kit/cache
           python -m pip download --only-binary=:all: --dest kit/wheels tiktoken==0.12.0

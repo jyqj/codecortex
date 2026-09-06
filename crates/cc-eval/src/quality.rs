@@ -42,7 +42,16 @@ pub struct Task {
     pub no_answer: bool,
     #[serde(default)]
     pub min_recall_at_5: Option<f64>,
+    #[serde(default)]
+    pub require_evidence_sufficient: bool,
+    /// Explicit task objective; locator tasks never inflate source-budget scores.
+    #[serde(default = "source_evidence_mode")]
+    pub evidence_mode: String,
 }
+fn source_evidence_mode() -> String {
+    "source".into()
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Manifest {
@@ -94,6 +103,7 @@ impl Manifest {
                 || task.params.get("project_path").is_some()
                 || (!task.result_pointer.is_empty() && !task.result_pointer.starts_with('/'))
                 || task.no_answer != task.labels.is_empty()
+                || !matches!(task.evidence_mode.as_str(), "source" | "locator")
                 || task
                     .min_recall_at_5
                     .is_some_and(|n| !n.is_finite() || !(0.0..=1.0).contains(&n))
@@ -201,6 +211,23 @@ fn matches_label(hit: &Value, label: &Label) -> bool {
             .is_some_and(|text| text.contains(anchor))
     })
 }
+fn degraded_output(output: &Value) -> bool {
+    let evidence = &output["evidence_summary"];
+    if matches!(
+        evidence["resolution_freshness"].as_str(),
+        Some("incomplete" | "unknown")
+    ) {
+        return true;
+    }
+    evidence["retrieval"]["lanes"]
+        .as_object()
+        .is_some_and(|lanes| {
+            lanes.values().any(|lane| {
+                lane["work_limited"].as_bool() == Some(true)
+                    || lane["errors"].as_array().is_some_and(|e| !e.is_empty())
+            })
+        })
+}
 /// Original wire ranks: unnamed and duplicate entries occupy positions. Each
 /// label earns novelty credit once, independently of production ranking scores.
 pub fn score(task: &Task, sample: &Sample) -> Metrics {
@@ -227,7 +254,8 @@ pub fn score(task: &Task, sample: &Sample) -> Metrics {
     };
     m.returned = hits.len();
     if task.no_answer {
-        m.correct_abstention = hits.is_empty();
+        m.correct_abstention =
+            hits.is_empty() && !sample.output.as_ref().is_some_and(degraded_output);
         return m;
     }
     let mut seen = BTreeSet::new();
@@ -335,6 +363,7 @@ pub fn report(header: &Header, samples: &[Sample]) -> Result<Value, String> {
             || sample.error.is_some()
             || (task.no_answer && !m.correct_abstention)
             || task.min_recall_at_5.is_some_and(|min| m.recall_at_5 < min)
+            || (task.require_evidence_sufficient && !m.evidence_sufficient)
         {
             gates.push(format!("{}:{}:{}", task.id, sample.mode, sample.iteration));
         }

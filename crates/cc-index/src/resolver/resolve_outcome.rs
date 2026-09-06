@@ -27,6 +27,11 @@ enum TypeUpgradeGate {
 }
 
 fn type_upgrade_gate(edge: &CallEdgeRecord) -> TypeUpgradeGate {
+    if cc_model::edge::is_terminal_syntax_miss(&edge.resolution_strategy)
+        || edge.resolution_strategy == "import_unresolved"
+    {
+        return TypeUpgradeGate::Skip;
+    }
     match edge.resolution_kind {
         ResolutionKind::Unresolved => TypeUpgradeGate::Backfill,
         ResolutionKind::Heuristic => match edge.resolution_strategy.as_str() {
@@ -85,8 +90,19 @@ impl SymbolCatalog {
         let imports = &context.imports;
         let has_rich_context = !scopes.is_empty() || !imports.is_empty();
 
+        let declared_imports: std::collections::HashSet<String> = outcome
+            .imports
+            .iter()
+            .filter_map(|i| i.alias.clone())
+            .collect();
+        let explicitly_imported =
+            |name: &str| declared_imports.contains(name.split('.').next().unwrap_or(name));
+
         // Resolve symbol refs
         for sref in &mut outcome.symbol_refs {
+            if cc_model::edge::is_terminal_syntax_miss(&sref.resolution_strategy) {
+                continue;
+            }
             if sref.resolution_strategy.is_empty() {
                 sref.resolution_strategy =
                     default_resolution_strategy(sref.resolution_kind).to_string();
@@ -98,6 +114,22 @@ impl SymbolCatalog {
                 continue;
             }
             let raw = sref.ref_name.as_deref().unwrap_or(&sref.symbol_name);
+            if explicitly_imported(raw) {
+                if let Some(idx) = self.resolve_via_imports(imports, raw) {
+                    let e = &self.entries[idx];
+                    sref.target_symbol_id = Some(e.symbol_id.clone());
+                    sref.target_file_path = Some(e.file_path.clone());
+                    sref.target_symbol_uid = e.symbol_uid.clone();
+                    sref.resolution_kind = ResolutionKind::ScopeResolved;
+                    sref.resolution_confidence = 0.85;
+                    sref.resolution_strategy = "import_map".into();
+                } else {
+                    sref.resolution_strategy = "import_unresolved".into();
+                    sref.resolution_kind = ResolutionKind::Unresolved;
+                    sref.resolution_confidence = 0.0;
+                }
+                continue;
+            }
             if has_rich_context {
                 if let Some(result) = self.resolve_name(
                     raw,
@@ -139,6 +171,9 @@ impl SymbolCatalog {
 
         // Resolve call edges
         for edge in &mut outcome.call_edges {
+            if cc_model::edge::is_terminal_syntax_miss(&edge.resolution_strategy) {
+                continue;
+            }
             if edge.resolution_strategy.is_empty() {
                 edge.resolution_strategy =
                     default_resolution_strategy(edge.resolution_kind).to_string();
@@ -147,6 +182,22 @@ impl SymbolCatalog {
                 edge.resolution_confidence = default_resolution_confidence(edge.resolution_kind);
             }
             if edge.target_symbol_id.is_some() {
+                continue;
+            }
+            if explicitly_imported(&edge.callee_symbol) {
+                if let Some(idx) = self.resolve_via_imports(imports, &edge.callee_symbol) {
+                    let e = &self.entries[idx];
+                    edge.target_symbol_id = Some(e.symbol_id.clone());
+                    edge.target_file_path = Some(e.file_path.clone());
+                    edge.callee_symbol_uid = e.symbol_uid.clone();
+                    edge.resolution_kind = ResolutionKind::ScopeResolved;
+                    edge.resolution_confidence = 0.85;
+                    edge.resolution_strategy = "import_map".into();
+                } else {
+                    edge.resolution_strategy = "import_unresolved".into();
+                    edge.resolution_kind = ResolutionKind::Unresolved;
+                    edge.resolution_confidence = 0.0;
+                }
                 continue;
             }
             if has_rich_context {

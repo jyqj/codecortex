@@ -152,7 +152,7 @@ impl JsTsParser {
                 return;
             }
             "import_statement" => {
-                if let Some(imp) = self.extract_import(node, source, file_path) {
+                for imp in self.extract_imports(node, source, file_path) {
                     // Check if import path matches a known broker pattern
                     if let Some(broker_match) =
                         crate::broker_patterns::match_broker(&imp.import_string)
@@ -169,8 +169,10 @@ impl JsTsParser {
                         }
                     }
                     let import_idx = ctx.imports.len();
-                    for binding in Self::collect_import_local_bindings(node, source) {
-                        ctx.import_bindings.entry(binding).or_insert(import_idx);
+                    if let Some(binding) = imp.alias.as_ref() {
+                        ctx.import_bindings
+                            .entry(binding.clone())
+                            .or_insert(import_idx);
                     }
                     ctx.imports.push(imp);
                 }

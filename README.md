@@ -87,3 +87,5 @@ index(path) -> status() -> context(task) -> explore(symbols) -> trace(from, to) 
 ## 许可证
 
 MIT
+
+事实、源码区间预算、完整图消融和连续增量差分协议见 [docs/BENCHMARK_V3.md](docs/BENCHMARK_V3.md)。回归夹具不等于 held-out 或 agent 成功率。

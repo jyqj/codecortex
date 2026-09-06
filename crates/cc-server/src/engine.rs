@@ -696,6 +696,8 @@ impl SearchOps<'_> {
                 "search_hits": hits.len(),
                 "files": files.into_iter().collect::<Vec<_>>(),
                 "graph_enrichment": graph_enrichment_summary,
+                "retrieval": enrichment.retrieval,
+                "resolution_freshness": self.0.ensure_db()?.reads().get_metadata(cc_db::RESOLUTION_FRESHNESS_KEY)?.unwrap_or_else(|| "unknown".into()),
             }),
         })
     }

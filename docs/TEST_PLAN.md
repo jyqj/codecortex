@@ -1,20 +1,20 @@
 # 测试计划
 
-最近一次 `cargo test --workspace --all-targets`：1326 passed + 16 ignored。
-实测实现提交 `dc6b3b3`，逐二进制求和，包含集成与 stdio 测试；详见
-[本轮验证记录](benchmarks/code_index_quality_round1.md)。文档基线漂移现在会让
+最近一次 `cargo test --workspace --all-targets`：1348 passed + 16 ignored。
+逐二进制求和，包含集成与 stdio 测试；本轮协议见
+[事实与预算评测](BENCHMARK_V3.md)。历史第一轮测量仍固定在原提交，不重新标记。文档基线漂移现在会让
 `scripts/update-doc-baselines.sh` 返回失败，而不只是打印提示。
 
 ## 单元测试
 
 | Crate | 测试数 | 覆盖重点 |
 |-------|-------|----------|
-| cc-db | 143 | schema v6 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹、签名聚合维护、seed 符号快照缓存、file-state 快照缓存 |
+| cc-db | 147 | schema v8 rebuild-on-mismatch、chunk 文本编码（含预压缩 blob 边车）、SQL 注入、architecture、ADR、边、frontier、图、查询、批量导出指纹、签名聚合维护、seed 符号快照缓存、file-state 快照缓存 |
 | cc-eval | 29 passed + 5 ignored | 断言类型（含 field_equals、output_not_contains、field_matches_regex、array_contains_item、带 per-case `min_recall` 的 expected_symbols Recall@5 阈值、expect_error）、语料加载、走真实 MCP 线路的 fixture 集成、合成仓库生成器确定性、ignored 的真实工作区/增量基准 |
 | cc-index | 363 | 框架 resolver（16 个，含跨文件）、dispatch 合成、多级 Louvain 社区检测、resolver 层级别名、路由解析来源、脏闭包状态分类、dirty-reload 清除策略、框架检测信号、导出指纹契约、自适应内存预算、三段提交 generation guard、config-linker 签名门、targeted scan 定向构建、全量 staging 提交、跨构建 catalog cache（remove_files 精确性、TypeCatalog 增量删除/复位、缓存命中/折叠/清槽生命周期与全量重建等价）、phase_write 行为锁（单事务 epoch 推进、同批删除清仓、zstd 边车往返）、analysis 阶段门禁（无 git 跳过、infra 四类产物、ADR 索引与清空、同内容跳过） |
 | cc-model | 62 | 路由归一化、数据结构、枚举往返、元素置信度矩阵基线、项目根发现、部分配置默认值、外部缓存目录路径、GraphExplain 信封、tool_graph_subsets 目录一致性 + 矩阵快照 |
 | cc-parsers | 181 | 10 种语言的 tree-sitter 解析、符号提取、基于 AST 的 Rust/C/C++ 调用图、spec 驱动的启发式文件内调用边、C/C++/Rust 参数/返回数据流、共享 import 提取缝（import_common） |
-| cc-search | 254 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
+| cc-search | 259 | Cypher 解析器/执行器、变长路径上限、正则校验、WHERE/Degree 标识符校验、FTS5/RRF 搜索、grep SQL 作用域、搜索引擎、结果缓存 Arc 复用、图感知结果缓存（epoch 键控、降级结果排除）、目录派生的 fast-path kinds、trigram 子串预选召回 |
 | cc-server | 220 | 引擎生命周期、影响分析 BFS、置信度阈值过滤、explore/trace 暴露参数、handler 分发集成、stdio MCP E2E、输出上限、UTF-8 安全截断、图 trace、环检测、flow、构建门串行化、watcher acquire-before-drain、graph_explain 附着、installer 8 个 IDE target（安装/合并/卸载/幂等） |
 
 依赖严格单向，每个 crate 都能独立编译测试：`cargo test -p cc-db`、
@@ -130,3 +130,17 @@ CODECORTEX_WRITE_REAL_BENCHMARK=1 \
 
 改动影响测试数/语料数后，运行 `scripts/update-doc-baselines.sh` 核对本
 文档的基线数字。
+
+## 无 embedding 事实与检索契约（v3）
+
+`fact_contract` 的 8 个解析器回归测试覆盖声明/注释/字符串排除、真实递归、
+嵌套归属、参数遮蔽、导入别名、具名/默认/命名空间导入、多个箭头声明的身份。
+`fact_oracle` 是一个 harness 测试，内部遍历 12 个独立闭世界事实场景：
+不要把它宣传为 12 个真实仓库。`incremental_oracle` 的 7 个测试逐步比较
+持久 MCP 增量更新和独立全量重建，包含负向查找、候选桶改变、缺失模块补齐、
+重导出切换和超预算状态持久性。
+
+`scripts/tests/test_evidence_budget.py` 独立验证跨分片区间并集、源码逐行一致、
+伪造/错位正文、重复输出成本、错误分母、预算前缀与定位任务隔离。
+质量数据、调用观测、评分和统计分别保存。完整配置、数据哈希、构建信息必须
+随报告保存；真实仓库、模型、工具预算冻结后的 agent 实验不在这些夹具内。

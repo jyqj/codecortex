@@ -19,6 +19,7 @@ use crate::score_trace::ScoreTrace;
 
 #[derive(Debug)]
 pub(crate) struct SearchPlan {
+    diagnostics: std::sync::Mutex<crate::diagnostics::RetrievalDiagnostics>,
     request: SearchRequest,
     dsl: crate::dsl::ParsedQuery,
     expanded_query: String,
@@ -104,7 +105,7 @@ impl SearchPlan {
         let preselect_limit = request
             .file_preselect_limit
             .unwrap_or_else(|| default_preselect_limit(top_k, repo_tier));
-        let preselect = crate::preselect::preselect(
+        let preselect = crate::preselect::preselect_with_graph(
             db,
             &PreselectRequest {
                 query: &query_text,
@@ -117,6 +118,7 @@ impl SearchPlan {
                 limit: preselect_limit,
                 ranking,
             },
+            config.graph_features,
         )?;
         // Preserve caller scope. Heuristic preselection is a ranking/scan hint,
         // not authorization to exclude globally matching lexical/graph candidates.
@@ -131,7 +133,19 @@ impl SearchPlan {
             rerank_window: config.rerank_window.max(top_k),
         };
 
+        let mut diagnostics = crate::diagnostics::RetrievalDiagnostics::default();
+        if !preselect.lane_stats.read_errors.is_empty() {
+            diagnostics.lanes.insert(
+                "preselect".into(),
+                crate::diagnostics::LaneDiagnostic {
+                    enabled: true,
+                    errors: preselect.lane_stats.read_errors.clone(),
+                    ..Default::default()
+                },
+            );
+        }
         Ok(Self {
+            diagnostics: std::sync::Mutex::new(diagnostics),
             request,
             dsl,
             expanded_query,
@@ -142,6 +156,22 @@ impl SearchPlan {
             rerank_inputs,
             ranking: ranking.clone(),
         })
+    }
+
+    pub(crate) fn note_lane(
+        &self,
+        lane: &str,
+        f: impl FnOnce(&mut crate::diagnostics::LaneDiagnostic),
+    ) {
+        let mut diagnostics = self.diagnostics.lock().unwrap_or_else(|p| p.into_inner());
+        f(diagnostics.lanes.entry(lane.to_string()).or_default());
+    }
+
+    pub(crate) fn diagnostics(&self) -> crate::diagnostics::RetrievalDiagnostics {
+        self.diagnostics
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .clone()
     }
 
     pub(crate) fn ranking(&self) -> &RankingConfig {
@@ -186,18 +216,10 @@ impl SearchPlan {
             .is_some_and(|files| !files.is_empty())
     }
 
-    /// Grep is a bounded scan, so use informative preselect hints for its work
-    /// scope. Fallback/recency-only files must not hide rare global literals.
-    /// Lexical and graph retrieval always use the caller's hard scope instead.
+    /// Grep scans caller hard scope. A working-set hint is not a proof that
+    /// substring-only evidence outside it is irrelevant; scan_cap bounds work.
     pub(crate) fn grep_scope(&self) -> cc_db::ChunkScope {
-        let mut scope = self.chunk_scope();
-        if scope.file_paths.is_none()
-            && !self.preselect.lane_stats.used_fallback
-            && !self.preselect.files.is_empty()
-        {
-            scope.file_paths = Some(self.preselect.files.clone());
-        }
-        scope
+        self.chunk_scope()
     }
 
     pub(crate) fn lane_ranks<'a>(&self, outcomes: &'a [LaneOutcome]) -> LaneRanks<'a> {
@@ -441,7 +463,7 @@ impl SearchPlan {
         serde_json::json!({
             "stage_a_file_score": stage_a_score,
             "stage_a_files_considered": self.preselect.files.len(),
-            "scope_policy": "hard-scope-with-preselect-hints-v1",
+            "scope_policy": "hard-scope-all-lanes-v2",
             "stage_a_file_reasons": self.preselect.reasons.get(file_path).cloned().unwrap_or_default(),
             "stage_a_layer_scores": self.preselect.layer_scores.get(file_path).cloned().unwrap_or_default(),
         })

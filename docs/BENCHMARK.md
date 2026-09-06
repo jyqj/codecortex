@@ -339,3 +339,5 @@ scan_diff 的 ~54ms 地板来自根目录 dirent 枚举（50k 仓库根下 2,500
 - grep/find 循环：每个问题 5–10 次工具调用
 - context(task)：1 次调用，应覆盖 70%+ 的符号需求
 - trace(source_mode=body)：1 次调用拿到带正文的完整调用路径
+
+事实、源码区间预算、完整图消融和连续增量差分协议见 [BENCHMARK_V3.md](BENCHMARK_V3.md)。回归夹具不等于 held-out 或 agent 成功率。

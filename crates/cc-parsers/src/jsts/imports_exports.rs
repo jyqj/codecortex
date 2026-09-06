@@ -201,45 +201,74 @@ impl JsTsParser {
     /// Local binding names introduced by an ES `import_statement`: the
     /// default import identifier, the `* as ns` namespace alias, and named
     /// specifiers (using the `as` alias as the local name when present).
-    pub(super) fn collect_import_local_bindings(
+    pub(super) fn extract_imports(
+        &self,
         node: &tree_sitter::Node,
         source: &[u8],
-    ) -> Vec<String> {
-        let mut bindings = Vec::new();
+        file_path: &str,
+    ) -> Vec<ImportRecord> {
+        let Some(src_node) = node.child_by_field_name("source") else {
+            return Vec::new();
+        };
+        let src = node_text(&src_node, source)
+            .unwrap_or("")
+            .trim_matches(['\'', '"']);
+        let base = ImportRecord {
+            file_path: file_path.into(),
+            import_string: src.into(),
+            resolved_path: None,
+            imported_name: None,
+            alias: None,
+            is_namespace: false,
+            is_default: false,
+            is_reexport: false,
+        };
+        let mut imports = Vec::new();
         let mut cursor = node.walk();
-        for child in node.children(&mut cursor) {
-            if child.kind() != "import_clause" {
-                continue;
-            }
-            let mut clause_cursor = child.walk();
-            for part in child.children(&mut clause_cursor) {
+        for clause in node
+            .named_children(&mut cursor)
+            .filter(|n| n.kind() == "import_clause")
+        {
+            let mut c = clause.walk();
+            for part in clause.named_children(&mut c) {
                 match part.kind() {
-                    "identifier" => {
-                        if let Some(name) = node_text(&part, source) {
-                            bindings.push(name.to_string());
-                        }
-                    }
+                    "identifier" => imports.push(ImportRecord {
+                        imported_name: Some("default".into()),
+                        alias: Some(node_text(&part, source).unwrap_or("").into()),
+                        is_default: true,
+                        ..base.clone()
+                    }),
                     "namespace_import" => {
-                        let mut ns_cursor = part.walk();
-                        for ns_child in part.children(&mut ns_cursor) {
-                            if ns_child.kind() == "identifier" {
-                                if let Some(name) = node_text(&ns_child, source) {
-                                    bindings.push(name.to_string());
-                                }
-                            }
+                        let mut nc = part.walk();
+                        for id in part
+                            .named_children(&mut nc)
+                            .filter(|n| n.kind() == "identifier")
+                        {
+                            imports.push(ImportRecord {
+                                alias: Some(node_text(&id, source).unwrap_or("").into()),
+                                is_namespace: true,
+                                ..base.clone()
+                            });
                         }
                     }
                     "named_imports" => {
-                        let mut spec_cursor = part.walk();
-                        for spec in part.children(&mut spec_cursor) {
-                            if spec.kind() != "import_specifier" {
-                                continue;
-                            }
-                            let local = spec
-                                .child_by_field_name("alias")
-                                .or_else(|| spec.child_by_field_name("name"));
-                            if let Some(name) = local.and_then(|n| node_text(&n, source)) {
-                                bindings.push(name.to_string());
+                        let mut nc = part.walk();
+                        for spec in part
+                            .named_children(&mut nc)
+                            .filter(|n| n.kind() == "import_specifier")
+                        {
+                            if let Some(name) = spec.child_by_field_name("name") {
+                                let local = spec.child_by_field_name("alias").unwrap_or(name);
+                                imports.push(ImportRecord {
+                                    imported_name: Some(
+                                        node_text(&name, source)
+                                            .unwrap_or("")
+                                            .trim_matches(['\'', '"'])
+                                            .into(),
+                                    ),
+                                    alias: Some(node_text(&local, source).unwrap_or("").into()),
+                                    ..base.clone()
+                                });
                             }
                         }
                     }
@@ -247,31 +276,9 @@ impl JsTsParser {
                 }
             }
         }
-        bindings
-    }
-
-    pub(super) fn extract_import(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-        file_path: &str,
-    ) -> Option<ImportRecord> {
-        let text = node.utf8_text(source).ok()?;
-        // Extract source path from import
-        let src_node = node.child_by_field_name("source")?;
-        let src = src_node
-            .utf8_text(source)
-            .ok()?
-            .trim_matches(|c| c == '"' || c == '\'');
-        Some(ImportRecord {
-            file_path: file_path.to_string(),
-            import_string: src.to_string(),
-            resolved_path: None,
-            imported_name: Some(text.to_string()),
-            alias: None,
-            is_namespace: text.contains('*'),
-            is_default: text.contains("default"),
-            is_reexport: false,
-        })
+        if imports.is_empty() {
+            imports.push(base);
+        }
+        imports
     }
 }

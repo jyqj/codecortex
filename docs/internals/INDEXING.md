@@ -371,3 +371,11 @@ apply 都推进 `index_epoch`，epoch 键控缓存随 delta 落地而收敛。
 - 合成边 pass：`SynthesisPassSpec` → `registry()`；
 - 后处理跳过门：`PassGate` → `indexer_phases/postprocess.rs` 与
   `indexer_phases/analysis.rs` 的 compute 阶段。
+
+## 解析查找失效（ADR-0004）
+
+v8 同时保存 lookup_dependencies。新/旧符号名触发其反向查找；文件拓扑变化
+保守重访模块依赖，导出空指纹的 barrel 编辑也传播。依赖者加入现有有预算闭包，
+并不承诺无限全量传播。超预算/解析失败持久记录 incomplete，后续 no-op 保留，
+成功 full build 才恢复之前未完成状态。JS/TS/Python AST 终止语法未解析不会被
+dirty reload 或 resolver 改成全局猜测。完整限制见 ADR-0004。

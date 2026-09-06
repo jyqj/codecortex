@@ -380,6 +380,23 @@ impl IndexBuildPlan {
             });
         }
 
+        let was_incomplete = indexer
+            .db
+            .reads()
+            .get_metadata(cc_db::RESOLUTION_FRESHNESS_KEY)?
+            .as_deref()
+            == Some("incomplete");
+        let fresh = parse_report.parse_errors.is_empty()
+            && (self.mode.is_full()
+                || (!was_incomplete
+                    && dirty_propagation.is_none_or(|s| s == DirtyPropagationStatus::Normal)));
+        let dirty_propagation =
+            if !fresh && dirty_propagation == Some(DirtyPropagationStatus::Normal) {
+                Some(DirtyPropagationStatus::PartialClosure)
+            } else {
+                dirty_propagation
+            };
+
         let mut build_explain = BuildExplainCollector::new();
         let walk_manifest = scan_result.walk_manifest.clone();
         let phase_start = Instant::now();
@@ -435,6 +452,20 @@ impl IndexBuildPlan {
 
         // Baseline for the stage-3 recheck, read after every stage-1 write
         // committed.
+        let freshness = if fresh { "complete" } else { "incomplete" };
+        if indexer
+            .db
+            .reads()
+            .get_metadata(cc_db::RESOLUTION_FRESHNESS_KEY)?
+            .as_deref()
+            != Some(freshness)
+        {
+            indexer
+                .db
+                .writes()
+                .set_metadata(cc_db::RESOLUTION_FRESHNESS_KEY, freshness)?;
+        }
+
         let written_index_epoch = indexer.db.reads().generation()?.index_epoch;
 
         Ok(WrittenBuild {

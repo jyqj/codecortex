@@ -103,7 +103,7 @@ dispatch synthesis 的 apply 阶段（`cc-index/src/synthesis_pipeline.rs`）。
 
 ## 表结构
 
-21 张基表（schema v6，`index_v1.sql`）：
+22 张基表（schema v8，`index_v1.sql`）：
 
 | 组 | 表 | 内容 |
 |---|---|---|
@@ -186,7 +186,15 @@ write_units/chunk blob 驻留内存到 commit（见 INDEXING.md）。staging
 
 ## Schema 版本策略
 
-`user_version` pragma 记录 schema 版本（当前 v6，
+`user_version` pragma 记录 schema 版本（当前 v8，
 `CURRENT_SCHEMA_VERSION` 在 `index_migrate.rs`）。磁盘索引版本不匹配时的
 策略是 **rebuild-on-mismatch**：就地清空（`writable_schema` 重置）后按当前
 schema 重建，不做向后迁移。索引是缓存而非数据源，重建总是安全的。
+
+## 解析决策依赖（v8）
+
+`lookup_dependencies(file_path, kind, lookup_key)` 是文件事实的事务性派生表，
+以 `(kind,lookup_key,file_path)` 加速反向查找。保存调用/引用的名字桶和模块查找，
+不只保存成功绑定的目标；删除通过 file 外键 cascade，所有批/单文件/dirty 写入口
+都在原事务内刷新。`resolution_freshness_v1` 只在 commit 后续受保护阶段写入。
+版本升级全量重建，也清除旧解析器伪调用。

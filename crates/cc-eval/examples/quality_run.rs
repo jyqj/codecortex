@@ -108,6 +108,7 @@ fn main() -> Result<()> {
         implementation_commit: command("git", &["rev-parse", "HEAD"])?,
         rustc: command("rustc", &["--version"])?,
         provenance: json!({
+            "commit_tree": command("git", &["rev-parse", "HEAD^{tree}"] )?,
             "tracked_diff_git_blob": git_blob(command("git", &["diff", "HEAD", "--"])?.as_bytes())?,
             "worktree_status": command("git", &["status", "--porcelain"] )?,
             "profile": if cfg!(debug_assertions) { "debug" } else { "release" },

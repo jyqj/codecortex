@@ -112,10 +112,16 @@ pub(in crate::resolver) fn best_by_import_distance(
     candidates: &[usize],
     current_file: &str,
 ) -> Option<usize> {
-    candidates
+    let best = candidates
+        .iter()
+        .map(|&i| common_path_prefix_len(&entries[i].file_path, current_file))
+        .max()?;
+    let winners: Vec<_> = candidates
         .iter()
         .copied()
-        .max_by_key(|&idx| common_path_prefix_len(&entries[idx].file_path, current_file))
+        .filter(|&i| common_path_prefix_len(&entries[i].file_path, current_file) == best)
+        .collect();
+    pick_unique(entries, &winners)
 }
 
 // ---------------------------------------------------------------------------

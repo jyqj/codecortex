@@ -31,6 +31,42 @@ pub(crate) fn project_symbol_chunks(
     pieces.into_iter().map(|(id, _, _)| id.as_str()).collect()
 }
 
+/// Reverse projection. A named hit must resolve to that name at an intersecting
+/// span, never to an earlier outer container. Without a name use the smallest
+/// full container. Equal-span distinct identities are ambiguous, not ordered by
+/// SQL insertion order. Returns no guessed symbol for multi-symbol file slices.
+pub(crate) fn symbol_for_chunk<'a>(
+    symbols: &'a [cc_db::index_db::SymbolRow],
+    hit: &cc_model::search::SearchHit,
+) -> Option<&'a cc_db::index_db::SymbolRow> {
+    let mut candidates: Vec<_> = symbols
+        .iter()
+        .filter(|s| {
+            s.file_path == hit.file_path
+                && s.symbol_uid.is_some()
+                && s.start_line <= s.end_line
+                && match &hit.symbol_name {
+                    Some(name) => {
+                        s.name == *name
+                            && s.start_line <= hit.end_line
+                            && s.end_line >= hit.start_line
+                    }
+                    None => s.start_line <= hit.start_line && s.end_line >= hit.end_line,
+                }
+        })
+        .collect();
+    candidates.sort_by_key(|s| (s.end_line - s.start_line, s.start_line));
+    let first = *candidates.first()?;
+    if candidates.iter().skip(1).any(|s| {
+        s.end_line - s.start_line == first.end_line - first.start_line
+            && s.start_line == first.start_line
+            && s.symbol_uid != first.symbol_uid
+    }) {
+        return None;
+    }
+    Some(first)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

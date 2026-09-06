@@ -10,20 +10,15 @@ use cc_model::diagnostic::DiagnosticRecord;
 use cc_model::dispatch_site::DispatchSiteKind;
 use cc_model::dispatch_site::DispatchSiteRecord;
 use cc_model::edge::{
-    CallEdgeRecord, DispatchKind, HttpCallEdgeRecord, ImportRecord, ResolutionKind,
-    RouteEdgeRecord, SemanticEdgeRecord, SemanticRelation,
+    HttpCallEdgeRecord, ImportRecord, RouteEdgeRecord, SemanticEdgeRecord, SemanticRelation,
 };
 use cc_model::id::StableId;
-use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+use cc_model::symbol::{SymbolKind, SymbolRecord};
 use cc_model::{CcResult, ElementKind, Language, ParseOutcome, ParserTier};
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
-static PY_CALL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(").expect("python call regex"));
-static PY_IDENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"\b[A-Za-z_][A-Za-z0-9_]*\b").expect("python ident regex"));
 static PY_CLASS_PARENTS_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r"(?m)^[^\S\n]*class\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(([^)]+)\)\s*:")
         .expect("python class parents regex")
@@ -52,12 +47,6 @@ static PY_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
     Regex::new(r#"os\.environ\[["'](\w+)["']\]|os\.environ\.get\(["'](\w+)["']\)|os\.getenv\(["'](\w+)["']\)"#)
         .expect("python env access regex")
 });
-
-static PY_KEYWORDS: &[&str] = &[
-    "def", "class", "return", "if", "elif", "else", "for", "while", "with", "as", "try", "except",
-    "finally", "import", "from", "pass", "True", "False", "None", "and", "or", "not", "in", "is",
-    "self",
-];
 
 pub struct PythonParser {
     language: tree_sitter::Language,
@@ -574,164 +563,6 @@ impl PythonParser {
         None
     }
 
-    fn extract_refs_and_calls(
-        &self,
-        content: &str,
-        file_path: &str,
-        symbols: &[SymbolRecord],
-    ) -> (Vec<SymbolRefRecord>, Vec<CallEdgeRecord>) {
-        let lines: Vec<&str> = content.lines().collect();
-        let keywords: HashSet<&str> = PY_KEYWORDS.iter().copied().collect();
-        let mut refs = Vec::new();
-        let mut calls = Vec::new();
-
-        let mut by_name: HashMap<String, (&str, &str)> = HashMap::new();
-        for sym in symbols {
-            if let Some(uid) = &sym.symbol_uid {
-                by_name
-                    .entry(sym.name.clone())
-                    .or_insert((sym.symbol_id.as_str(), uid.as_str()));
-            }
-        }
-
-        for sym in symbols
-            .iter()
-            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-        {
-            let start = sym.start_line.saturating_sub(1) as usize;
-            let end = (sym.end_line as usize).min(lines.len());
-            for (offset, line) in lines[start..end].iter().enumerate() {
-                let line_no = (start + offset + 1) as u32;
-                let mut call_starts = HashSet::new();
-                for cap in PY_CALL_RE.captures_iter(line) {
-                    let Some(m) = cap.get(1) else { continue };
-                    let callee = m.as_str();
-                    if keywords.contains(callee) {
-                        continue;
-                    }
-                    let start_col = m.start() as u32;
-                    call_starts.insert(start_col);
-                    let target = by_name.get(callee);
-                    let ref_id = StableId::ref_id(file_path, callee, line_no, start_col);
-                    refs.push(SymbolRefRecord {
-                        ref_id: ref_id.clone(),
-                        file_path: file_path.to_string(),
-                        symbol_name: callee.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "call".into(),
-                        line: line_no,
-                        column: start_col,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(callee.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: ParserTier::Semantic
-                            .element_confidence(ElementKind::CallRef),
-                    });
-                    calls.push(CallEdgeRecord {
-                        edge_id: StableId::edge_id("call", file_path, line_no, start_col),
-                        file_path: file_path.to_string(),
-                        caller_symbol: Some(sym.name.clone()),
-                        callee_symbol: callee.to_string(),
-                        line: line_no,
-                        start_col,
-                        end_line: Some(line_no),
-                        end_col: m.end() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        caller_symbol_id: Some(sym.symbol_id.clone()),
-                        caller_symbol_uid: sym.symbol_uid.clone(),
-                        callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        callee_ref_id: Some(ref_id),
-                        dispatch_kind: DispatchKind::Direct,
-                        call_kind: "direct".into(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        receiver_expr: None,
-                        arg_count: None,
-                        is_optional_chain: false,
-                        is_awaited: false,
-                        is_constructor: false,
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: ParserTier::Semantic
-                            .element_confidence(ElementKind::CallEdge),
-                        synthesized_by: None,
-                        synthesis_key: None,
-                        registered_file: None,
-                        registered_line: None,
-                    });
-                }
-
-                for m in PY_IDENT_RE.find_iter(line) {
-                    let ident = m.as_str();
-                    if keywords.contains(ident)
-                        || (line_no == sym.start_line && ident == sym.name)
-                        || call_starts.contains(&(m.start() as u32))
-                    {
-                        continue;
-                    }
-                    let target = by_name.get(ident);
-                    refs.push(SymbolRefRecord {
-                        ref_id: StableId::ref_id(file_path, ident, line_no, m.start() as u32),
-                        file_path: file_path.to_string(),
-                        symbol_name: ident.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "identifier".into(),
-                        line: line_no,
-                        column: m.start() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(ident.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: ParserTier::Semantic
-                            .element_confidence(ElementKind::IdentifierRef),
-                    });
-                }
-            }
-        }
-
-        (refs, calls)
-    }
-
     // =========================================================================
     // Single-pass DFS extraction (replaces extract_symbols + collect_route_edges
     // + extract_diagnostics + extract_http_calls)
@@ -1152,8 +983,9 @@ impl FileParser for PythonParser {
         let symbols = ast_ctx.symbols;
         let imports = ast_ctx.imports;
 
-        // ── Pass 2: Regex-based ref/call resolution (needs full symbol table) ──
-        let (symbol_refs, call_edges) = self.extract_refs_and_calls(content, file_path, &symbols);
+        // Syntax-authoritative facts; the module resolver handles external targets.
+        let (symbol_refs, call_edges) =
+            crate::ast_facts::extract(&tree, content, file_path, &symbols, language);
 
         // Django urlpatterns are root-level assignments — extract separately since
         // they depend on a pattern (assignment inspection) that doesn't naturally

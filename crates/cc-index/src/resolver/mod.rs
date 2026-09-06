@@ -1558,19 +1558,19 @@ mod tests {
             arg_count: Some(1),
             receiver: None,
         };
-        let result = catalog
-            .resolve_name_with_signals(
-                "parse",
-                "src/main.py",
-                5,
-                &HashMap::new(),
-                &[],
-                None,
-                signals,
-            )
-            .expect("fuzzy fallback still resolves");
-        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
-        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
+        let result = catalog.resolve_name_with_signals(
+            "parse",
+            "src/main.py",
+            5,
+            &HashMap::new(),
+            &[],
+            None,
+            signals,
+        );
+        assert!(
+            result.is_none(),
+            "a tied surviving pool is ambiguous, not a guessed target"
+        );
     }
 
     #[test]
@@ -1624,18 +1624,19 @@ mod tests {
             arg_count: None,
             receiver: Some("Validator"),
         };
-        let result = catalog
-            .resolve_name_with_signals(
-                "parse",
-                "src/main.py",
-                5,
-                &HashMap::new(),
-                &[],
-                None,
-                signals,
-            )
-            .expect("fuzzy fallback still resolves");
-        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+        let result = catalog.resolve_name_with_signals(
+            "parse",
+            "src/main.py",
+            5,
+            &HashMap::new(),
+            &[],
+            None,
+            signals,
+        );
+        assert!(
+            result.is_none(),
+            "a tied surviving pool is ambiguous, not a guessed target"
+        );
     }
 
     #[test]
@@ -1693,24 +1694,11 @@ mod tests {
     }
 
     #[test]
-    fn test_no_signal_resolution_matches_legacy_behavior() {
-        // Method metadata is present, but without call-site signals the
-        // ladder must skip the signal steps and fall through to the legacy
-        // import-distance tie-breaking with unchanged confidence math.
+    fn test_no_signal_tied_resolution_abstains() {
         let catalog = parse_method_catalog(1, 2);
-        let scopes = HashMap::new();
-        let imports = vec![];
-
-        let result = catalog
-            .resolve_name("parse", "src/main.py", 5, &scopes, &imports, None)
-            .expect("fuzzy multi should still resolve without signals");
-        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
-        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
-        assert_eq!(result.candidate_count, 2);
-        assert_eq!(result.strategy_name(), "fuzzy_multi");
-        // Legacy confidence: FuzzyMulti base (0.30), no count penalty for 2
-        // candidates, halved because no candidate is import-reachable.
-        assert!((result.confidence - 0.15).abs() < 1e-6);
+        assert!(catalog
+            .resolve_name("parse", "src/main.py", 5, &HashMap::new(), &[], None)
+            .is_none());
     }
 
     #[test]
@@ -1720,10 +1708,8 @@ mod tests {
         let imports = vec![];
 
         // Signal-free resolution first populates the cache...
-        let plain = catalog
-            .resolve_name("parse", "src/main.py", 5, &scopes, &imports, None)
-            .unwrap();
-        assert_eq!(plain.resolution_kind, InternalResKind::FuzzyMulti);
+        let plain = catalog.resolve_name("parse", "src/main.py", 5, &scopes, &imports, None);
+        assert!(plain.is_none(), "cache the signal-free ambiguous miss");
 
         // ...and a signal-bearing call at the same site must not be served
         // the signal-free entry.

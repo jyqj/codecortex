@@ -343,6 +343,15 @@ pub struct RouteEdgeRecord {
     pub resolution_confidence: Option<f64>,
 }
 
+/// A local syntax binding/dynamic expression cannot be repaired by global name
+/// guessing. These facts remain terminal across resolver and dirty-reload passes.
+pub fn is_terminal_syntax_miss(strategy: &str) -> bool {
+    matches!(
+        strategy,
+        "parser_shadowed" | "parser_ambiguous" | "parser_dynamic"
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

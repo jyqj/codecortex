@@ -1,0 +1,44 @@
+name: Audit repair development
+on:
+  push:
+    branches: [fix/nonembedding-facts-quality-20260906]
+    paths: [.github/workflows/audit-development.yml, scripts/audit_apply.py, scripts/audit_extra.py]
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: git archive HEAD -o source.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-source-${{ github.run_id }}
+          path: source.tar
+          retention-days: 7
+  validate:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: audit-repair
+      - name: Baseline workspace
+        run: |
+          set -o pipefail
+          mkdir -p audit-output
+          cargo test --workspace --all-targets --locked 2>&1 | tee audit-output/tests.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: audit-baseline-${{ github.run_id }}
+          path: audit-output/
+          retention-days: 14

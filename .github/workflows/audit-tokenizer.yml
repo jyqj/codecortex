@@ -1,0 +1,27 @@
+name: Audit tokenizer kit
+on:
+  push:
+    branches: [fix/nonembedding-facts-quality-20260906]
+    paths: [.github/workflows/audit-tokenizer.yml]
+permissions:
+  contents: read
+jobs:
+  kit:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: |
+          mkdir -p kit/wheels kit/cache
+          python -m pip download --only-binary=:all: --dest kit/wheels tiktoken==0.12.0
+          python -m pip install --no-index --find-links kit/wheels tiktoken==0.12.0
+          TIKTOKEN_CACHE_DIR=$PWD/kit/cache python -c 'import tiktoken; print(len(tiktoken.get_encoding("cl100k_base").encode_ordinary("source证据")))'
+          python -m pip freeze > kit/requirements-frozen.txt
+          sha256sum kit/cache/* > kit/cache-sha256.txt
+          tar czf audit-tokenizer.tgz -C kit .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-tokenizer-${{ github.run_id }}
+          path: audit-tokenizer.tgz
+          retention-days: 2

@@ -1,0 +1,30 @@
+name: Audit tokenizer export
+on:
+  push:
+    branches: [fix/nonembedding-facts-and-benchmark-v3]
+    paths: [.github/workflows/audit-tokenizer-export.yml]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Prepare pinned evaluation-only tokenizer
+        env:
+          TIKTOKEN_CACHE_DIR: /tmp/tokenizer/cache
+        run: |
+          mkdir -p /tmp/tokenizer/wheels /tmp/tokenizer/cache
+          python -m pip download 'tiktoken==0.12.0' --dest /tmp/tokenizer/wheels
+          python -m pip install --no-index --find-links /tmp/tokenizer/wheels 'tiktoken==0.12.0'
+          python -c 'import tiktoken; tiktoken.get_encoding("cl100k_base"); tiktoken.get_encoding("o200k_base")'
+          python -m pip freeze > /tmp/tokenizer/versions.txt
+          find /tmp/tokenizer/wheels /tmp/tokenizer/cache -type f -exec sha256sum '{}' ';' > /tmp/tokenizer/digests.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-tokenizer
+          path: /tmp/tokenizer/
+          retention-days: 2

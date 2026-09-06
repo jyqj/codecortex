@@ -1,0 +1,34 @@
+name: Audit offline build kit
+on:
+  push:
+    branches: [fix/nonembedding-facts-quality-20260906]
+    paths: [.github/workflows/audit-toolchain.yml]
+permissions:
+  contents: read
+jobs:
+  kit:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - name: Fetch locked dependencies and package offline tools
+        run: |
+          cargo fetch --locked
+          mkdir -p kit/toolchain kit/cargo
+          tc=$(rustc --print sysroot)
+          cp -a "$tc/bin" "$tc/lib" kit/toolchain/
+          cp -a "$HOME/.cargo/registry" kit/cargo/
+          rustc -Vv > kit/provenance.txt
+          tar -czf audit-build-kit.tgz -C kit .
+          du -h audit-build-kit.tgz
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-build-kit-${{ github.run_id }}
+          path: audit-build-kit.tgz
+          retention-days: 2
+          compression-level: 0

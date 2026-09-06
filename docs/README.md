@@ -37,3 +37,5 @@
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | 构建、测试、lint、MSRV、提交前检查。 |
 
 生成的基准报告在 [benchmarks/](benchmarks/) 下（由测试产出，英文）。
+
+事实、源码区间预算、完整图消融和连续增量差分协议见 [BENCHMARK_V3.md](BENCHMARK_V3.md)。回归夹具不等于 held-out 或 agent 成功率。

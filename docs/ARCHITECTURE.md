@@ -9,7 +9,7 @@ CodeCortex 是一个纯代码智能引擎：对代码库构建语义索引，通
 
 | 深入文档 | 内容 |
 |---|---|
-| [internals/STORAGE.md](internals/STORAGE.md) | cc-db：连接模型、UnitOfWork、epoch 双时钟、21 张表、FTS5 双维护、重建协议 |
+| [internals/STORAGE.md](internals/STORAGE.md) | cc-db：连接模型、UnitOfWork、epoch 双时钟、22 张表、FTS5 双维护、重建协议 |
 | [internals/INDEXING.md](internals/INDEXING.md) | cc-index：八步管线（计时聚合为 6 项）、脏闭包、解析阶梯、PassGate、dispatch 合成、三段提交 |
 | [internals/SEARCH.md](internals/SEARCH.md) | cc-search：检索通道、文件预选、RRF/重排、缓存、Cypher fast path |
 | [internals/CONCURRENCY.md](internals/CONCURRENCY.md) | 锁清单与锁序、一致性窗口、watcher、会话生命周期、epoch 失效协议 |
@@ -23,7 +23,7 @@ CodeCortex 是一个纯代码智能引擎：对代码库构建语义索引，通
 cc-model      数据类型、配置、错误定义（serde、thiserror、blake3）
     |
 cc-parsers    tree-sitter AST 提取 + 框架检测（仅依赖 cc-model）
-cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、21 表 + 5 FTS5、schema v6）
+cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、22 表 + 5 FTS5、schema v8）
     |
 cc-index      文件扫描、增量索引、Louvain 社区检测（依赖 cc-db + cc-parsers）
 cc-search     排序式本地检索（FTS5 + grep + 预选/RRF）、Cypher 子集引擎（依赖 cc-model + cc-db）

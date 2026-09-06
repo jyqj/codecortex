@@ -4,6 +4,7 @@
 //! chunking, import extraction, HTTP-call and dataflow helpers. Confidence
 //! tiers per language: `docs/LANGUAGES.md`.
 
+mod ast_facts;
 pub mod broker_patterns;
 pub mod c_cpp;
 pub mod chunker;

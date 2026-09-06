@@ -261,7 +261,6 @@ pub(in crate::resolver) struct CatalogEntry {
     pub(in crate::resolver) kind: SymbolKind,
     pub(in crate::resolver) container: Option<String>,
     pub(in crate::resolver) qname: Option<String>,
-    pub(in crate::resolver) is_default_export: bool,
     pub(in crate::resolver) start_line: u32,
     pub(in crate::resolver) end_line: u32,
     pub(in crate::resolver) scope_id: Option<String>,

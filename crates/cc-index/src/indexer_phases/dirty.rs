@@ -57,6 +57,17 @@ impl Indexer {
             .map(|u| (u.rel_path.as_str(), u))
             .collect();
 
+        // A barrel can change its exports without declaring any symbols:
+        // export { x } from "./a" -> "./b" has two empty symbol fingerprints.
+        // Treat edited forwarding files conservatively, including removal of
+        // their last re-export. This still shares the normal closure budget.
+        let old_reexport_files: HashSet<String> = self
+            .db
+            .reads()
+            .reexport_imports()?
+            .into_iter()
+            .map(|import| import.file_path)
+            .collect();
         let mut export_changed_files = Vec::new();
         for file_path in &changed_files {
             // Files with no exported symbols are absent from the map (== None),
@@ -77,7 +88,13 @@ impl Indexer {
                                 | cc_model::Language::Tsx
                         )
                     });
-            if old_fp != new_fp || unsupported_surface {
+            let forwarding_surface = old_reexport_files.contains(file_path)
+                || write_unit_index
+                    .get(file_path.as_str())
+                    .is_some_and(|unit| {
+                        unit.outcome.imports.iter().any(|import| import.is_reexport)
+                    });
+            if old_fp != new_fp || unsupported_surface || forwarding_surface {
                 export_changed_files.push(file_path.clone());
             }
         }
@@ -89,6 +106,41 @@ impl Indexer {
         // closure seeds from these paths (still present in importers' stored
         // `imports.resolved_path` at this point) and promotes the importers.
         export_changed_files.extend(removed_files.iter().cloned());
+
+        // A resolution depends on the candidate name bucket, not only on its
+        // old winning target. Keep successful heuristic AND negative lookups.
+        let mut touched = changed_files.clone();
+        touched.extend(removed_files.iter().cloned());
+        let old_symbols = self
+            .db
+            .reads()
+            .symbols_by_file_paths(&touched.iter().map(String::as_str).collect::<Vec<_>>())?;
+        let mut names = std::collections::BTreeSet::new();
+        for sym in &old_symbols {
+            names.insert(cc_db::lookup_name_key(&sym.name));
+            if let Some(q) = &sym.qname {
+                names.insert(cc_db::lookup_name_key(q));
+            }
+        }
+        for unit in write_units {
+            for sym in &unit.outcome.symbols {
+                names.insert(cc_db::lookup_name_key(&sym.name));
+                if let Some(q) = &sym.qname {
+                    names.insert(cc_db::lookup_name_key(q));
+                }
+            }
+        }
+        let topology_changed =
+            !removed_files.is_empty() || actions.values().any(|a| matches!(a, FileAction::Add));
+        let lookup_dependents = self
+            .db
+            .reads()
+            .find_lookup_dependents(&names.into_iter().collect::<Vec<_>>(), topology_changed)?;
+        if !lookup_dependents.is_empty() {
+            export_changed_files.extend(changed_files.iter().cloned());
+            export_changed_files.sort();
+            export_changed_files.dedup();
+        }
 
         if export_changed_files.is_empty() {
             return Ok(DirtyPropagationOutcome {
@@ -107,6 +159,7 @@ impl Indexer {
         // re-evaluation passes so each file's targets are fetched at most
         // once (one batched query per pass for the not-yet-cached files).
         let mut reexport_targets_cache: HashMap<String, Vec<String>> = HashMap::new();
+        let mut pending_lookups = Some(lookup_dependents);
         let closure_result = crate::dirty_closure::compute_dirty_closure(
             &export_changed_files,
             self.dirty_propagation_max_files,
@@ -114,6 +167,7 @@ impl Indexer {
             |files| {
                 let mut dependents = self.db.reads().find_importers_of(files)?;
                 dependents.extend(self.db.reads().find_bound_dependents_of(files)?);
+                dependents.extend(pending_lookups.take().unwrap_or_default());
                 Ok(dependents)
             },
             |path| matches!(actions.get(path), Some(FileAction::Skip)),

@@ -137,6 +137,9 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     // re-resolved edge is indistinguishable from a freshly parsed one.
     if should_clear(ReloadedEdgeCategory::CallEdges) {
         for edge in &mut call_edges {
+            if cc_model::edge::is_terminal_syntax_miss(&edge.resolution_strategy) {
+                continue;
+            }
             if parser_local_binding(
                 &edge.file_path,
                 edge.target_file_path.as_deref(),
@@ -156,6 +159,9 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     }
     if should_clear(ReloadedEdgeCategory::SymbolRefs) {
         for sym_ref in &mut symbol_refs {
+            if cc_model::edge::is_terminal_syntax_miss(&sym_ref.resolution_strategy) {
+                continue;
+            }
             if parser_local_binding(
                 &sym_ref.file_path,
                 sym_ref.target_file_path.as_deref(),

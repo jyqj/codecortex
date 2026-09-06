@@ -152,10 +152,12 @@ impl SearchEngine {
         }
         self.result_cache_misses.fetch_add(1, Ordering::Relaxed);
 
-        let results: Arc<[SearchHit]> = self.search_internal(request, true)?.into();
-
-        if let Ok(mut cache) = self.result_cache.lock() {
-            cache.put(cache_key, Arc::clone(&results));
+        let (hits, diagnostics) = self.search_internal(request, true)?;
+        let results: Arc<[SearchHit]> = hits.into();
+        if diagnostics.cacheable() {
+            if let Ok(mut cache) = self.result_cache.lock() {
+                cache.put(cache_key, Arc::clone(&results));
+            }
         }
         Ok(results)
     }
@@ -174,7 +176,7 @@ impl SearchEngine {
         &self,
         request: &SearchRequest,
         truncate_to_top_k: bool,
-    ) -> CcResult<Vec<SearchHit>> {
+    ) -> CcResult<(Vec<SearchHit>, crate::diagnostics::RetrievalDiagnostics)> {
         // No pooled read connection is held here: plan build (preselect),
         // each lane, and the batch fetch below all check out and release
         // their own, so a 1-connection read pool never sees nested checkouts.
@@ -201,6 +203,7 @@ impl SearchEngine {
 
         // RRF fusion across all lane outcomes; each candidate keeps its
         // per-lane contribution breakdown for the hit's score trace.
+        let mut diagnostics = plan.diagnostics();
         let fused = fuse_outcomes(&lane_outcomes, self.config.rrf_k);
 
         let mut candidates: Vec<(String, crate::lanes::FusedScore)> = fused.into_iter().collect();
@@ -213,10 +216,66 @@ impl SearchEngine {
                 // and platforms instead of depending on HashMap iteration order.
                 .then_with(|| a.0.cmp(&b.0))
         });
+        diagnostics.candidate_union = candidates.len();
+        if self.config.trace_candidates {
+            // Explicit evaluation instrumentation; don't silently claim complete
+            // stage recall when a configured candidate set exceeds the trace cap.
+            diagnostics.trace_truncated = candidates.len() > 512;
+            let ids: Vec<_> = candidates
+                .iter()
+                .take(512)
+                .map(|(id, _)| id.as_str())
+                .collect();
+            let rows = self
+                .db
+                .retrieval()
+                .chunk_rows_by_ids(&ids, &HashMap::new())?;
+            let locations: HashMap<_, _> = rows
+                .into_iter()
+                .map(|r| {
+                    (
+                        r.chunk_id.clone(),
+                        crate::diagnostics::CandidateLocation {
+                            chunk_id: r.chunk_id,
+                            file_path: r.file_path,
+                            start_line: r.start_line,
+                            end_line: r.end_line,
+                            symbol_name: r.symbol_name,
+                        },
+                    )
+                })
+                .collect();
+            diagnostics.stages.insert(
+                "candidate_union".into(),
+                ids.iter()
+                    .filter_map(|id| locations.get(*id).cloned())
+                    .collect(),
+            );
+            for lane in &lane_outcomes {
+                diagnostics.stages.insert(
+                    lane.lane_id.to_string(),
+                    lane.hits
+                        .iter()
+                        .filter_map(|(id, _)| locations.get(id).cloned())
+                        .collect(),
+                );
+            }
+        }
         candidates.truncate(limits.rerank_window);
+        diagnostics.rerank_candidates = candidates.len();
+        if let Some(union) = diagnostics.stages.get("candidate_union") {
+            let ids: std::collections::HashSet<_> =
+                candidates.iter().map(|(id, _)| id.as_str()).collect();
+            let locators = union
+                .iter()
+                .filter(|l| ids.contains(l.chunk_id.as_str()))
+                .cloned()
+                .collect();
+            diagnostics.stages.insert("rerank_window".into(), locators);
+        }
 
         if candidates.is_empty() {
-            return Ok(Vec::new());
+            return Ok((Vec::new(), diagnostics));
         }
 
         let lane_ranks = plan.lane_ranks(&lane_outcomes);
@@ -281,7 +340,33 @@ impl SearchEngine {
         // bill must replay its final rerank_score.
         crate::score_trace::debug_assert_trace_consistency(&results);
 
-        Ok(results)
+        diagnostics.returned = results.len();
+        if self.config.trace_candidates {
+            diagnostics.stages.insert(
+                "ranked".into(),
+                results
+                    .iter()
+                    .map(|h| crate::diagnostics::CandidateLocation {
+                        chunk_id: h.chunk_id.clone(),
+                        file_path: h.file_path.clone(),
+                        start_line: h.start_line,
+                        end_line: h.end_line,
+                        symbol_name: h.symbol_name.clone(),
+                    })
+                    .collect(),
+            );
+        }
+        Ok((results, diagnostics))
+    }
+
+    /// Uncached diagnostic view of the same production pipeline. Errors and
+    /// empty results retain diagnostics; no global last-query mutable state.
+    pub fn search_diagnosed(
+        &self,
+        request: &SearchRequest,
+    ) -> CcResult<(Vec<SearchHit>, crate::diagnostics::RetrievalDiagnostics)> {
+        self.observe_epochs()?;
+        self.search_internal(request, true)
     }
 }
 
@@ -297,6 +382,102 @@ mod tests {
     use crate::engine_test_support::{
         chunk_write_unit, insert_chunk_file, insert_graph_file, scoped_test_engine,
     };
+
+    #[test]
+    fn grep_hard_scope_rescues_mid_token_outside_working_set() {
+        let (mut engine, _tmp) = scoped_test_engine();
+        engine.config.grep_weight = 1.0;
+        insert_chunk_file(
+            &engine,
+            "src/a.rs",
+            Language::Rust,
+            "fn a() { let s = \"leftNeedleRight\"; }",
+        );
+        insert_chunk_file(&engine, "src/z.rs", Language::Rust, "fn unrelated() {}");
+        let req = SearchRequest {
+            query: "Needle".into(),
+            include_grep: true,
+            top_k: 5,
+            boost_file_paths: Some(vec!["src/z.rs".into()]),
+            file_preselect_limit: Some(1),
+            ..Default::default()
+        };
+        let (hits, diag) = engine.search_diagnosed(&req).unwrap();
+        assert!(hits.iter().any(|h| h.file_path == "src/a.rs"));
+        assert!(diag.lanes["grep"].returned > 0);
+        let scoped = SearchRequest {
+            file_paths: Some(vec!["src/z.rs".into()]),
+            ..req
+        };
+        assert!(engine.search_diagnosed(&scoped).unwrap().0.is_empty());
+    }
+
+    #[test]
+    fn empty_budget_limited_search_retains_diagnostics_and_is_not_cached() {
+        let (mut engine, _tmp) = scoped_test_engine();
+        engine.config.grep_scan_cap = 0;
+        engine.config.grep_weight = 1.0;
+        insert_chunk_file(&engine, "src/a.rs", Language::Rust, "fn a() {}");
+        let req = SearchRequest {
+            query: "absentliteral".into(),
+            include_grep: true,
+            top_k: 5,
+            ..Default::default()
+        };
+        let (hits, diag) = engine.search_diagnosed(&req).unwrap();
+        assert!(hits.is_empty());
+        assert!(diag.lanes["grep"].work_limited);
+        assert!(!diag.cacheable());
+        let first = engine.search(&req).unwrap();
+        let second = engine.search(&req).unwrap();
+        assert!(!Arc::ptr_eq(&first, &second));
+    }
+
+    #[test]
+    fn full_graph_ablation_skips_all_graph_reads_and_zero_weight_lanes() {
+        let (mut engine, _tmp) = scoped_test_engine();
+        engine.config.graph_features = false;
+        engine.config.grep_weight = 0.0;
+        insert_chunk_file(&engine, "src/a.rs", Language::Rust, "fn marker() {}");
+        crate::test_seed::seed_conn(&engine.db)
+            .execute("DROP TABLE call_edges", [])
+            .unwrap();
+        let req = SearchRequest {
+            query: "marker".into(),
+            include_grep: true,
+            top_k: 5,
+            ..Default::default()
+        };
+        let outcome = engine
+            .search_with_graph_context(&req, &RepoSizeTier::Small.graph_enrich_limits(), 4000)
+            .unwrap();
+        assert_eq!(outcome.0.len(), 1);
+        assert!(outcome.1.nodes.is_empty());
+        assert!(outcome.1.graph_explain.read_errors.is_empty());
+        assert!(!outcome.1.retrieval.lanes["graph"].enabled);
+        assert!(!outcome.1.retrieval.lanes["grep"].enabled);
+        assert!(outcome.1.retrieval.cacheable());
+        assert!(outcome
+            .0
+            .iter()
+            .all(|hit| !hit.score_trace.iter().any(|c| c.0.contains("graph"))));
+    }
+
+    #[test]
+    fn stage_trace_exposes_candidate_identity_only_when_enabled() {
+        let (mut engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(&engine, "src/a.rs", Language::Rust, "fn marker() {}");
+        let req = SearchRequest {
+            query: "marker".into(),
+            top_k: 5,
+            ..Default::default()
+        };
+        assert!(engine.search_diagnosed(&req).unwrap().1.stages.is_empty());
+        engine.config.trace_candidates = true;
+        let (_, diag) = engine.search_diagnosed(&req).unwrap();
+        assert_eq!(diag.stages["candidate_union"][0].file_path, "src/a.rs");
+        assert!(!diag.trace_truncated);
+    }
 
     #[test]
     fn search_completes_with_read_pool_size_one() {
@@ -762,7 +943,8 @@ mod tests {
 
     #[test]
     fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
-        let (engine, _tmp) = scoped_test_engine();
+        let (mut engine, _tmp) = scoped_test_engine();
+        engine.config.grep_weight = 1.0;
         insert_chunk_file(
             &engine,
             "src/g.rs",
@@ -788,7 +970,10 @@ mod tests {
 
         let lane = GrepLane;
         assert_eq!(lane.lane_id(), LANE_GREP);
-        assert!(lane.is_enabled(&context), "include_grep=true enables grep");
+        assert!(
+            lane.is_enabled(&context),
+            "include_grep=true and positive weight enable grep"
+        );
         assert_eq!(lane.weight(&engine.config), engine.config.grep_weight);
 
         let hits = lane.run(&context).unwrap();

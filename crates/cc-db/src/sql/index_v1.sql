@@ -435,3 +435,13 @@ CREATE TABLE IF NOT EXISTS adr (
     updated_at  TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_adr_status ON adr(status);
+
+-- v8: reverse dependencies of resolver decisions, including negative lookups.
+-- Maintained in the SAME transaction as each parsed/dirty file replacement.
+CREATE TABLE IF NOT EXISTS lookup_dependencies (
+    file_path TEXT NOT NULL REFERENCES files(file_path) ON DELETE CASCADE,
+    kind TEXT NOT NULL CHECK(kind IN ('name', 'module')),
+    lookup_key TEXT NOT NULL,
+    PRIMARY KEY(file_path, kind, lookup_key)
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS idx_lookup_key ON lookup_dependencies(kind, lookup_key, file_path);

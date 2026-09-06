@@ -36,7 +36,7 @@ const STATE_SETTER_NAME_CONFIDENCE: f64 = 0.75;
 /// React state setter bound by explicit `const [x, setX] = useState(...)`.
 const STATE_SETTER_BINDING_CONFIDENCE: f64 = 0.90;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
 // Re-import items from submodules for internal use
@@ -45,11 +45,6 @@ use routes::detect_nextjs_file_route;
 // ---------------------------------------------------------------------------
 // Static data
 // ---------------------------------------------------------------------------
-
-static JS_CALL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(").expect("js call regex"));
-static JS_IDENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"\b[A-Za-z_][A-Za-z0-9_]*\b").expect("js ident regex"));
 
 /// Matches `class Foo extends Bar` — captures class name and parent.
 static JS_EXTENDS_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -228,7 +223,7 @@ fn extract_fetch_method(call_node: &tree_sitter::Node, source: &[u8]) -> Option<
 fn short_text(node: &tree_sitter::Node, source: &[u8], max_len: usize) -> String {
     let text = node.utf8_text(source).unwrap_or("");
     if text.len() > max_len {
-        format!("{}...", &text[..max_len])
+        format!("{}...", &text[..text.floor_char_boundary(max_len)])
     } else {
         text.to_string()
     }
@@ -375,19 +370,8 @@ impl FileParser for JsTsParser {
         let tree = crate::parse_common::parse_tree(ts_lang, content, file_path, timeout_micros)?;
 
         let ast_ctx = self.extract_all(&tree, content.as_bytes(), file_path);
-        let (symbol_refs, regex_call_edges) =
-            self.extract_refs_and_calls(content, file_path, &ast_ctx.symbols);
-
-        let mut all_call_edges = ast_ctx.call_edges;
-        let existing: HashSet<(u32, u32)> = all_call_edges
-            .iter()
-            .map(|c| (c.line, c.start_col))
-            .collect();
-        for ce in regex_call_edges {
-            if !existing.contains(&(ce.line, ce.start_col)) {
-                all_call_edges.push(ce);
-            }
-        }
+        let (symbol_refs, all_call_edges) =
+            crate::ast_facts::extract(&tree, content, file_path, &ast_ctx.symbols, language);
 
         let mut route_edges = ast_ctx.route_edges;
         if let Some(nextjs_route) = detect_nextjs_file_route(file_path, &ast_ctx.symbols) {

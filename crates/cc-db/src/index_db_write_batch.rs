@@ -252,6 +252,7 @@ impl IndexDb {
                 )?;
             }
         }
+        Self::refresh_lookup_dependencies_on(tx, file)?;
         Ok(())
     }
 
@@ -882,6 +883,7 @@ impl IndexDb {
             )?;
         }
 
+        Self::refresh_lookup_dependencies_on(conn, file)?;
         Ok(())
     }
 

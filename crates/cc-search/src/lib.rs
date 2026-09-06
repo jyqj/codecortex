@@ -5,6 +5,7 @@
 //! no model. Deep dive: `docs/internals/SEARCH.md`; syntax: `docs/CYPHER.md`.
 
 pub mod cypher;
+pub mod diagnostics;
 pub mod dsl;
 pub mod engine;
 mod engine_cache;

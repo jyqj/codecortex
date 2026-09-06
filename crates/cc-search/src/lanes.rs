@@ -218,6 +218,10 @@ pub(crate) fn run_lanes(
             Some(result) => result?,
             None => Vec::new(),
         };
+        context.plan.note_lane(lane.lane_id(), |d| {
+            d.enabled = enabled[idx];
+            d.returned = hits.len();
+        });
         outcomes.push(LaneOutcome {
             lane_id: lane.lane_id(),
             weight: lane.weight(context.config),
@@ -287,8 +291,8 @@ impl RetrievalLane for LexicalLane {
         config.lexical_weight
     }
 
-    fn is_enabled(&self, _context: &LaneContext<'_>) -> bool {
-        true
+    fn is_enabled(&self, context: &LaneContext<'_>) -> bool {
+        context.config.lexical_weight > 0.0
     }
 
     fn annotates_hits(&self) -> bool {
@@ -320,6 +324,9 @@ impl RetrievalLane for LexicalLane {
             }
             results.push(cid);
         }
+        plan.note_lane(LANE_LEXICAL, |d| {
+            d.candidate_limit_reached = results.len() >= limit
+        });
         Ok(rank_scored(results))
     }
 }
@@ -391,7 +398,7 @@ impl RetrievalLane for GrepLane {
     }
 
     fn is_enabled(&self, context: &LaneContext<'_>) -> bool {
-        context.plan.request().include_grep
+        context.plan.request().include_grep && context.config.grep_weight > 0.0
     }
 
     fn annotates_hits(&self) -> bool {
@@ -459,6 +466,7 @@ impl RetrievalLane for GrepLane {
                     error = %e,
                     "grep prefilter query failed; falling back to full scan"
                 );
+                plan.note_lane(LANE_GREP, |d| d.errors.push(format!("prefilter: {e}")));
                 prefiltered.clear();
                 scan = GrepScanState {
                     scanned: 0,
@@ -494,6 +502,11 @@ impl RetrievalLane for GrepLane {
                  (raise search.grep_scan_cap to widen)"
             );
         }
+        plan.note_lane(LANE_GREP, |d| {
+            d.scanned = scan.scanned;
+            d.work_limited = scan.truncated;
+            d.candidate_limit_reached = scan.matches.len() >= limit;
+        });
         // Merge the stages in recency order (matches carry their base-table
         // rowid). Unscoped single-stage results are already rowid-descending
         // so this is a no-op there; scoped scans never run stage 1 and keep
@@ -577,7 +590,7 @@ impl RetrievalLane for GraphLane {
     }
 
     fn is_enabled(&self, context: &LaneContext<'_>) -> bool {
-        context.config.graph_weight > 0.0
+        context.config.graph_features && context.config.graph_weight > 0.0
     }
 
     /// Fusion-only by design: the graph lane influences ranking through RRF
@@ -596,13 +609,25 @@ impl RetrievalLane for GraphLane {
     fn run(&self, context: &LaneContext<'_>) -> CcResult<Vec<(String, f64)>> {
         // Graph failures degrade to an empty contribution instead of
         // aborting the whole search.
-        Ok(Self::search(
+        match Self::search(
             context.db,
             context.plan,
             context.plan.query_tokens(),
             context.config.graph_top_k,
-        )
-        .unwrap_or_default())
+        ) {
+            Ok(hits) => {
+                context.plan.note_lane(LANE_GRAPH, |d| {
+                    d.candidate_limit_reached = hits.len() >= context.config.graph_top_k
+                });
+                Ok(hits)
+            }
+            Err(e) => {
+                context
+                    .plan
+                    .note_lane(LANE_GRAPH, |d| d.errors.push(e.to_string()));
+                Ok(Vec::new())
+            }
+        }
     }
 }
 
@@ -627,14 +652,8 @@ impl GraphLane {
         // seed. Failures degrade to no expansion, matching the old
         // per-seed `if let Ok(..)` swallowing.
         let seed_keys: Vec<&str> = seed_uids.iter().map(|(uid, _)| uid.as_str()).collect();
-        let callees_by_seed = db
-            .reads()
-            .callee_rows_by_uids(&seed_keys, 10)
-            .unwrap_or_default();
-        let callers_by_seed = db
-            .reads()
-            .caller_rows_by_uids(&seed_keys, 10)
-            .unwrap_or_default();
+        let callees_by_seed = db.reads().callee_rows_by_uids(&seed_keys, 10)?;
+        let callers_by_seed = db.reads().caller_rows_by_uids(&seed_keys, 10)?;
 
         let mut neighbor_uids: HashMap<String, f64> = HashMap::new();
         for (uid, seed_score) in &seed_uids {

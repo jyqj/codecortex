@@ -28,19 +28,38 @@ jobs:
         with:
           persist-credentials: false
       - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
       - uses: Swatinem/rust-cache@v2
-      - name: Identity-aware metrics and incremental/full oracle
+      - name: Prepare isolated output and pinned tokenizer (outside measurements)
+        run: |
+          out="$RUNNER_TEMP/quality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          mkdir -p "$out"
+          echo "QUALITY_OUTPUT=$out" >> "$GITHUB_ENV"
+          echo "TIKTOKEN_CACHE_DIR=$RUNNER_TEMP/tokenizer-cache" >> "$GITHUB_ENV"
+          python3 -m pip install -r scripts/requirements-eval.txt
+          TIKTOKEN_CACHE_DIR="$RUNNER_TEMP/tokenizer-cache" python3 -c 'import tiktoken; tiktoken.get_encoding("cl100k_base")'
+      - name: Identity-aware metrics, independent facts and incremental/full oracle
         run: |
           cargo test -p cc-eval --locked --lib quality::
+          CODECORTEX_FACT_OUTPUT="$QUALITY_OUTPUT/facts.raw.jsonl" cargo test -p cc-eval --locked --test fact_oracle
           cargo test -p cc-eval --locked --test incremental_oracle
           python3 -m unittest discover -s scripts/tests -v
       - name: Real MCP retrieval observations and exact replay
         run: |
-          out="$RUNNER_TEMP/quality-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
-          echo "QUALITY_OUTPUT=$out" >> "$GITHUB_ENV"
-          cargo run -p cc-eval --locked --example quality_run -- crates/cc-eval/benchmarks/quality_smoke.json "$out" 3
+          out="$QUALITY_OUTPUT/default"
+          cargo run -p cc-eval --locked --example quality_run -- crates/cc-eval/benchmarks/quality_adversarial.json "$out" 3
           cargo run -p cc-eval --locked --example quality_replay -- "$out/raw.jsonl" "$out/replayed.json"
           cmp "$out/report.json" "$out/replayed.json"
+          python3 scripts/evidence_budget.py "$out/raw.jsonl" "$out/budget.json" --tokenizer-cache "$TIKTOKEN_CACHE_DIR"
+          python3 scripts/evidence_budget.py "$out/raw.jsonl" "$out/budget-replayed.json" --tokenizer-cache "$TIKTOKEN_CACHE_DIR"
+          cmp "$out/budget.json" "$out/budget-replayed.json"
+      - name: Candidate-stage diagnostics (separate instrumented measurement)
+        run: |
+          out="$QUALITY_OUTPUT/trace"
+          cargo run -p cc-eval --locked --example quality_run -- crates/cc-eval/benchmarks/quality_adversarial.json "$out" 1 crates/cc-eval/benchmarks/trace_candidates.json
+          python3 scripts/evidence_budget.py "$out/raw.jsonl" "$out/budget.json" --tokenizer-cache "$TIKTOKEN_CACHE_DIR"
       - name: Test/documentation baselines
         run: bash scripts/update-doc-baselines.sh
       - name: Retain raw evidence even when gates fail

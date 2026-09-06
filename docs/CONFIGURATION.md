@@ -123,7 +123,7 @@ chunk 级检索前的文件预选阶段使用的逐文件分值。四个上下�
 | `preselect_pinned_scale` | `4.0` | pinned 层衰减尺度。 |
 | `preselect_overlay_floor` | `1.5` | overlay（脏缓冲）层分数下限。 |
 | `preselect_overlay_scale` | `3.0` | overlay 层衰减尺度。 |
-| `preselect_fts_base` | `1.4` | FTS summary 层：分数为 `base + 1 / (1 + |bm25|)`。 |
+| `preselect_fts_base` | `1.4` | FTS summary 层：分数为 `base + strength / (1 + strength)`，`strength=max(-bm25,0)`。 |
 | `preselect_symbol_exact_bonus` | `2.0` | 符号名精确匹配的每 token 加成。 |
 | `preselect_symbol_fuzzy_bonus` | `1.2` | 符号名子串匹配的每 token 加成。 |
 | `preselect_path_token_bonus` | `1.0` | 路径分量匹配的每 token 加成。 |
@@ -213,3 +213,16 @@ CodeCortex 检测项目规模并自动调整输出预算：
 | `CODECORTEX_PROFILE_SCALES` | `1000,2000,4000,8000,16000` | 冷建缩放 profiler（`profile_cold_build_scaling`）的规模列表 |
 | `CODECORTEX_SOAK_SECS` | `60` | RSS soak（`soak_mcp_session_rss`，ignored）的运行时长（秒） |
 | `CODECORTEX_SOAK_FILES` | `1000` | RSS soak 的合成仓文件数 |
+
+## 检索诊断与消融（schema v8）
+
+`search.graph_features` 默认 true；false 同时关闭图预选、graph lane、图重排与
+搜索结果富化（索引仍构建图事实）。`search.trace_candidates` 默认 false；true
+增加有界候选位置诊断及额外读取成本。`lexical_weight`/`grep_weight` 为 0 时
+对应 lane 不产生候选。Grep 与其他 lane 一样服从 hard scope，不使用 working set
+作为授权剪裁；`grep_scan_cap` 仍限制工作量。预算或错误通过 evidence_summary
+透出，空结果同样有诊断，降级结果不进入结果缓存。
+
+`resolution_freshness_v1` 的 complete/incomplete 仅描述索引器本轮解析更新契约，
+不是整个程序语义或当前磁盘状态的证明。此前 incomplete 不被 no-op 清除；成功
+full index 可恢复。详见 ADR-0004 和 BENCHMARK_V3。

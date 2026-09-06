@@ -1,0 +1,42 @@
+name: Audit workspace export
+on:
+  push:
+    branches: [fix/nonembedding-facts-and-benchmark-v3]
+    paths: [.github/workflows/audit-workspace-export.yml]
+permissions:
+  contents: read
+jobs:
+  export:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy,rustfmt
+      - name: Export immutable source
+        run: |
+          mkdir -p /tmp/cc-export
+          git archive --format=tar HEAD | zstd -T0 -3 > /tmp/cc-export/source.tar.zst
+          git rev-parse HEAD > /tmp/cc-export/source.sha
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-source
+          path: /tmp/cc-export/source.*
+          retention-days: 7
+      - name: Provision public offline build dependencies
+        run: |
+          mkdir -p /tmp/cc-sdk/rust
+          cargo vendor --locked /tmp/cc-sdk/vendor > /tmp/cc-sdk/vendor-config.toml
+          SYSROOT=$(rustc --print sysroot)
+          cp -a "$SYSROOT/bin" "$SYSROOT/lib" /tmp/cc-sdk/rust/
+          rustc --version > /tmp/cc-sdk/rust-version.txt
+          tar -C /tmp/cc-sdk -cf - . | zstd -T0 -3 > /tmp/cc-export/offline-sdk.tar.zst
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-offline-sdk
+          path: /tmp/cc-export/offline-sdk.tar.zst
+          retention-days: 1
+          compression-level: 0

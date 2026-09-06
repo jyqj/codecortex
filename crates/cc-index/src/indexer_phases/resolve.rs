@@ -57,6 +57,28 @@ impl Indexer {
             self.build_resolution_catalog(full, write_units, to_remove)
         })?;
 
+        if !write_units.is_empty() {
+            let excluded: HashSet<_> = write_units
+                .iter()
+                .map(|u| u.rel_path.as_str())
+                .chain(to_remove.iter().map(String::as_str))
+                .collect();
+            let mut reexports = if full {
+                Vec::new()
+            } else {
+                self.db.reads().reexport_imports()?
+            };
+            reexports.retain(|i| !excluded.contains(i.file_path.as_str()));
+            reexports.extend(
+                write_units
+                    .iter()
+                    .flat_map(|u| u.outcome.imports.iter())
+                    .filter(|i| i.is_reexport)
+                    .cloned(),
+            );
+            catalog.set_reexports(reexports);
+        }
+
         // Phase 4a / 4a-2: semantic edge UIDs + backfill, USES_TYPE derivation.
         super::time_step("resolve", "semantic_edges", || {
             Self::resolve_semantic_edges(&catalog, write_units, &resolution_contexts)

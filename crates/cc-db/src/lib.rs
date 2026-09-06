@@ -37,3 +37,6 @@ pub use signature_agg::{GraphSignatureAggregates, RowAgg};
 pub mod snapshot_write_txn;
 pub mod sql_util;
 pub mod unit_of_work;
+
+mod lookup_dependencies;
+pub use lookup_dependencies::{lookup_name_key, RESOLUTION_FRESHNESS_KEY};

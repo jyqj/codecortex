@@ -18,6 +18,7 @@ use cc_model::{GraphExplain, GraphExplainCollector};
 /// plus counters for evidence summaries.
 #[derive(Default)]
 pub struct GraphEnrichment {
+    pub retrieval: crate::diagnostics::RetrievalDiagnostics,
     pub nodes: Vec<ContextNode>,
     pub symbols_resolved: usize,
     pub callers_added: usize,
@@ -72,20 +73,16 @@ pub(crate) fn graph_enrich(
     let mut resolved: Vec<(String, String)> = Vec::new(); // (chunk_id, uid)
     let mut seen_uids = HashSet::new();
     for hit in hits.iter().take(limits.max_resolve) {
-        let uid = all_symbols.iter().find(|s| {
-            s.file_path == hit.file_path
-                && (hit.symbol_name.as_deref() == Some(&s.name)
-                    || (s.start_line <= hit.start_line && s.end_line >= hit.end_line))
-        });
-        if let Some(sym) = uid {
-            if let Some(ref uid) = sym.symbol_uid {
-                if seen_uids.insert(uid.clone()) {
-                    resolved.push((hit.chunk_id.clone(), uid.clone()));
-                }
+        if let Some(sym) = crate::symbol_chunks::symbol_for_chunk(&all_symbols, hit) {
+            if let Some(uid) = &sym.symbol_uid {
+                seen_uids.insert(uid.clone());
+                // Every chunk receives its symbol's score; only adjacency work
+                // and the displayed symbol count are deduplicated by UID.
+                resolved.push((hit.chunk_id.clone(), uid.clone()));
             }
         }
     }
-    enrichment.symbols_resolved = resolved.len();
+    enrichment.symbols_resolved = seen_uids.len();
 
     // Degree metrics and both adjacency directions come from one batched
     // query each instead of one point query per resolved symbol; failures
@@ -146,6 +143,7 @@ pub(crate) fn graph_enrich(
                 );
                 let est = (text.len() / 4).max(10) as u32;
                 if graph_tokens + est > graph_budget {
+                    explain.mark_truncated("graph_token_budget");
                     break;
                 }
                 graph_tokens += est;
@@ -181,6 +179,7 @@ pub(crate) fn graph_enrich(
                 );
                 let est = (text.len() / 4).max(10) as u32;
                 if graph_tokens + est > graph_budget {
+                    explain.mark_truncated("graph_token_budget");
                     break;
                 }
                 graph_tokens += est;
@@ -217,6 +216,7 @@ pub(crate) fn graph_enrich(
         let text = format!("test file: {}", test_path);
         let est = (text.len() / 4).max(10) as u32;
         if graph_tokens + est > graph_budget {
+            explain.mark_truncated("graph_token_budget");
             break;
         }
         graph_tokens += est;
@@ -343,6 +343,54 @@ mod tests {
             lane: None,
             metadata: serde_json::Value::Null,
         }
+    }
+
+    #[test]
+    fn precise_symbol_beats_outer_container_and_all_chunks_get_score() {
+        let tmp = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+        insert_graph_file(
+            &db,
+            "src/a.rs",
+            "inner",
+            "uid:inner",
+            vec![CallEdgeRecord {
+                edge_id: "e".into(),
+                file_path: "src/a.rs".into(),
+                caller_symbol_uid: Some("uid:inner".into()),
+                callee_symbol_uid: Some("uid:other".into()),
+                ..Default::default()
+            }],
+        );
+        let mut one = make_hit("c1", "src/a.rs", "inner");
+        one.start_line = 1;
+        one.end_line = 1;
+        let mut two = one.clone();
+        two.chunk_id = "c2".into();
+        let (scores, enriched) = graph_enrich(
+            &db,
+            &[one.clone(), two],
+            &cc_model::config::RepoSizeTier::Small.graph_enrich_limits(),
+            4000,
+        );
+        assert_eq!(enriched.symbols_resolved, 1);
+        assert!(scores["c1"] > 0.0);
+        assert_eq!(scores["c1"], scores["c2"]);
+        let mut symbols = db.reads().symbols_by_file_paths(&["src/a.rs"]).unwrap();
+        let mut outer = symbols[0].clone();
+        outer.name = "outer".into();
+        outer.end_line = 100;
+        outer.symbol_uid = Some("uid:outer".into());
+        symbols.insert(0, outer);
+        assert_eq!(
+            crate::symbol_chunks::symbol_for_chunk(&symbols, &one)
+                .unwrap()
+                .name,
+            "inner"
+        );
+        symbols[1].start_line = 50;
+        symbols[1].end_line = 60;
+        assert!(crate::symbol_chunks::symbol_for_chunk(&symbols, &one).is_none());
     }
 
     /// Output lock for `graph_enrich`: the per-chunk score values, node

@@ -96,7 +96,8 @@ fn lexical_lane_adapter_matches_inline_ranking() {
 
 #[test]
 fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
-    let (engine, _tmp) = scoped_test_engine();
+    let (mut engine, _tmp) = scoped_test_engine();
+    engine.config.grep_weight = 1.0;
     insert_chunk_file(
         &engine,
         "src/g.rs",
@@ -122,7 +123,10 @@ fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
 
     let lane = GrepLane;
     assert_eq!(lane.lane_id(), LANE_GREP);
-    assert!(lane.is_enabled(&context), "include_grep=true enables grep");
+    assert!(
+        lane.is_enabled(&context),
+        "include_grep=true and positive weight enable grep"
+    );
     assert_eq!(lane.weight(&engine.config), engine.config.grep_weight);
 
     let hits = lane.run(&context).unwrap();

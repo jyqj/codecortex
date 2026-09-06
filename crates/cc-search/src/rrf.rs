@@ -13,7 +13,11 @@ pub fn rrf_accumulate(
     weight: f64,
     k: usize,
 ) {
+    let mut seen = std::collections::HashSet::new();
     for (rank, id) in ranked_ids.iter().enumerate() {
+        if !seen.insert(*id) {
+            continue;
+        }
         let score = weight / (k + rank + 1) as f64;
         if let Some(existing) = scores.get_mut(*id) {
             *existing += score;

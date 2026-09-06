@@ -12,7 +12,7 @@ CORPUS_COUNT=$(ls crates/cc-eval/corpus/*.toml 2>/dev/null | wc -l | tr -d ' ')
 # mount_resolution.rs / python_patterns.rs are not resolvers).
 RESOLVER_COUNT=$(grep -c 'registry.register' crates/cc-index/src/framework_resolvers/mod.rs)
 
-TEST_OUTPUT=$(cargo test --workspace --all-targets 2>&1)
+TEST_OUTPUT=$(cargo test --workspace --all-targets --locked 2>&1)
 TOTAL_PASSED=$(echo "$TEST_OUTPUT" | grep '^test result:' | awk '{sum+=$4} END {print sum}')
 TOTAL_IGNORED=$(echo "$TEST_OUTPUT" | grep '^test result:' | awk '{sum+=$8} END {print sum}')
 TOTAL=$((TOTAL_PASSED + TOTAL_IGNORED))

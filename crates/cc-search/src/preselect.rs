@@ -47,6 +47,7 @@ pub struct PreselectRequest<'a> {
 /// Statistics about which scoring lanes fired during preselection.
 #[derive(Debug, Clone, Default)]
 pub struct LaneStats {
+    pub read_errors: Vec<String>,
     pub fts_hits: usize,
     pub token_hits: usize,
     pub used_fallback: bool,
@@ -314,18 +315,10 @@ impl PreselectLayer for FtsSummaryLayer {
         } else {
             80 + (ctx.limit.saturating_sub(120)) / 3
         };
-        let rows =
-            match ctx
-                .db
-                .retrieval()
-                .fts_file_summaries(&fts_query, ctx.path_prefix, fts_limit)
-            {
-                Ok(rows) => rows,
-                Err(e) => {
-                    tracing::warn!("preselect: FTS summary query failed: {}", e);
-                    return Ok(Vec::new());
-                }
-            };
+        let rows = ctx
+            .db
+            .retrieval()
+            .fts_file_summaries(&fts_query, ctx.path_prefix, fts_limit)?;
 
         Ok(rows
             .into_iter()
@@ -475,8 +468,7 @@ impl PreselectLayer for GraphNeighborLayer {
             return Ok(Vec::new());
         }
         let budget = ctx.limit.saturating_sub(ctx.current_scores.len());
-        let extras = score_graph_neighbors(ctx.db, ctx.current_scores, budget, ctx.ranking)
-            .unwrap_or_default();
+        let extras = score_graph_neighbors(ctx.db, ctx.current_scores, budget, ctx.ranking)?;
         Ok(extras
             .into_iter()
             .map(|(file_path, score)| LayerHit {
@@ -507,7 +499,11 @@ fn score_graph_neighbors(
 
     // Take top-20 files by score as seeds
     let mut top_files: Vec<(&String, &f64)> = current_scores.iter().collect();
-    top_files.sort_by(|a, b| b.1.partial_cmp(a.1).unwrap_or(std::cmp::Ordering::Equal));
+    top_files.sort_by(|a, b| {
+        b.1.partial_cmp(a.1)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then_with(|| a.0.cmp(b.0))
+    });
     let seed_files: Vec<&str> = top_files.iter().take(20).map(|(f, _)| f.as_str()).collect();
 
     // Find symbol UIDs in seed files
@@ -533,14 +529,8 @@ fn score_graph_neighbors(
     // Both directions are fetched in one batched query each instead of one
     // point query per seed; failures degrade to no expansion, matching the
     // old per-seed `if let Ok(..)` swallowing.
-    let callers_by_seed = db
-        .reads()
-        .caller_rows_by_uids(&seed_uids, 5)
-        .unwrap_or_default();
-    let callees_by_seed = db
-        .reads()
-        .callee_rows_by_uids(&seed_uids, 5)
-        .unwrap_or_default();
+    let callers_by_seed = db.reads().caller_rows_by_uids(&seed_uids, 5)?;
+    let callees_by_seed = db.reads().callee_rows_by_uids(&seed_uids, 5)?;
 
     // --- Callers: who calls symbols in our seed files? ---
     for uid in &seed_uids {
@@ -575,7 +565,8 @@ fn score_graph_neighbors(
         callee_uids_to_resolve.sort();
         callee_uids_to_resolve.dedup();
         callee_uids_to_resolve.truncate(100);
-        if let Ok(sym_rows) = db.reads().symbol_rows_by_uids(&callee_uids_to_resolve) {
+        {
+            let sym_rows = db.reads().symbol_rows_by_uids(&callee_uids_to_resolve)?;
             for sym in sym_rows.values() {
                 if !current_scores.contains_key(&sym.file_path) {
                     neighbor_files
@@ -605,6 +596,14 @@ fn score_graph_neighbors(
 /// Accepts a [`PreselectRequest`] and returns [`PreselectResult`] with files
 /// ranked by relevance score, up to `req.limit`.
 pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResult> {
+    preselect_with_graph(db, req, true)
+}
+
+pub(crate) fn preselect_with_graph(
+    db: &IndexDb,
+    req: &PreselectRequest,
+    graph_features: bool,
+) -> CcResult<PreselectResult> {
     // If explicit file_paths given, return them directly (like Python).
     if let Some(fps) = req.explicit_file_paths {
         let explicit_score = req.ranking.preselect_explicit_scope_score;
@@ -642,7 +641,10 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
     // scores, reasons, and the per-layer bill are identical to sequential
     // execution. Score-dependent layers (fallback, graph-neighbor) run
     // sequentially after the group's merge, exactly as before.
-    let layers = default_preselect_layers();
+    let mut layers = default_preselect_layers();
+    if !graph_features {
+        layers.retain(|l| l.name() != LAYER_GRAPH_NEIGHBOR);
+    }
     let mut idx = 0;
     while idx < layers.len() {
         let group_end = if layers[idx].reads_prior_scores() {
@@ -700,7 +702,15 @@ pub fn preselect(db: &IndexDb, req: &PreselectRequest) -> CcResult<PreselectResu
             })
         };
         for (layer, hits) in group.iter().zip(group_hits) {
-            let hits = hits?;
+            let hits = match hits {
+                Ok(hits) => hits,
+                Err(err) => {
+                    lane_stats
+                        .read_errors
+                        .push(format!("{}: {err}", layer.name()));
+                    Vec::new()
+                }
+            };
             match layer.name() {
                 LAYER_FTS_SUMMARY => lane_stats.fts_hits = hits.len(),
                 LAYER_TOKEN_SEARCH => lane_stats.token_hits = hits.len(),

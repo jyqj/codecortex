@@ -68,9 +68,14 @@ impl SearchEngine {
         }
         self.graph_cache_misses.fetch_add(1, Ordering::Relaxed);
 
-        let mut hits = self.search_internal(request, false)?;
+        let (mut hits, diagnostics) = self.search_internal(request, false)?;
 
-        let (scores, enrichment) = graph_enrich(&self.db, &hits, limits, token_budget);
+        let (scores, mut enrichment) = if self.config.graph_features {
+            graph_enrich(&self.db, &hits, limits, token_budget)
+        } else {
+            (std::collections::HashMap::new(), GraphEnrichment::default())
+        };
+        enrichment.retrieval = diagnostics;
         let weight = self.ranking.graph_rerank_weight;
         for hit in &mut hits {
             if let Some(&graph_score) = scores.get(&hit.chunk_id) {
@@ -90,6 +95,7 @@ impl SearchEngine {
             b.rerank_score
                 .partial_cmp(&a.rerank_score)
                 .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.chunk_id.cmp(&b.chunk_id))
         });
         let top_k = if request.top_k == 0 {
             10
@@ -97,6 +103,21 @@ impl SearchEngine {
             request.top_k
         };
         hits.truncate(top_k);
+        enrichment.retrieval.returned = hits.len();
+        if self.config.trace_candidates {
+            enrichment.retrieval.stages.insert(
+                "returned".into(),
+                hits.iter()
+                    .map(|h| crate::diagnostics::CandidateLocation {
+                        chunk_id: h.chunk_id.clone(),
+                        file_path: h.file_path.clone(),
+                        start_line: h.start_line,
+                        end_line: h.end_line,
+                        symbol_name: h.symbol_name.clone(),
+                    })
+                    .collect(),
+            );
+        }
         crate::score_trace::debug_assert_trace_consistency(&hits);
 
         let result = Arc::new((hits, enrichment));
@@ -104,7 +125,7 @@ impl SearchEngine {
         // graph_explain.read_errors) produced partial graph context — keep
         // serving it for THIS call, but never from cache, so the next call
         // retries the reads instead of pinning the degradation to the epoch.
-        if result.1.graph_explain.read_errors.is_empty() {
+        if result.1.graph_explain.read_errors.is_empty() && result.1.retrieval.cacheable() {
             if let Ok(mut cache) = self.graph_result_cache.lock() {
                 cache.put(cache_key, Arc::clone(&result));
             }

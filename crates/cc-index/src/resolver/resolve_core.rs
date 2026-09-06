@@ -325,26 +325,68 @@ impl SymbolCatalog {
         module_path: &str,
         export_name: &str,
     ) -> Option<usize> {
-        let exact = self.exported(module_path, export_name);
-        if let Some(idx) = pick_unique(&self.entries, &exact) {
-            return Some(idx);
+        let mut seen = HashSet::new();
+        let mut budget = 128usize;
+        let (indices, complete) =
+            self.export_candidates(module_path, export_name, &mut seen, &mut budget);
+        if !complete {
+            return None;
         }
-        // Fallback: default export
-        if export_name == "default" {
-            let defaults: Vec<usize> = self
-                .by_file
-                .get(module_path)
-                .map(|indices| {
-                    indices
-                        .iter()
-                        .copied()
-                        .filter(|&i| self.entries[i].is_default_export)
-                        .collect()
+        pick_unique(&self.entries, &indices)
+    }
+
+    fn export_candidates(
+        &self,
+        file: &str,
+        name: &str,
+        seen: &mut HashSet<(String, String)>,
+        budget: &mut usize,
+    ) -> (Vec<usize>, bool) {
+        if !seen.insert((file.into(), name.into())) {
+            return (Vec::new(), true);
+        }
+        if *budget == 0 {
+            return (Vec::new(), false);
+        }
+        *budget -= 1;
+        let direct = self.exported(file, name);
+        if !direct.is_empty() {
+            return (direct, true);
+        }
+        let mut found = Vec::new();
+        let mut complete = true;
+        if let Some(imports) = self.reexports.get(file) {
+            let named: Vec<_> = imports
+                .iter()
+                .filter(|i| {
+                    !i.is_namespace
+                        && i.alias.as_deref().or(i.imported_name.as_deref()) == Some(name)
                 })
-                .unwrap_or_default();
-            return pick_unique(&self.entries, &defaults);
+                .collect();
+            let candidates: Vec<_> = if named.is_empty() {
+                imports
+                    .iter()
+                    .filter(|i| i.is_namespace && name != "default")
+                    .collect()
+            } else {
+                named
+            };
+            for i in candidates {
+                if let Some(target) = &i.resolved_path {
+                    let target_name = if i.is_namespace {
+                        name
+                    } else {
+                        i.imported_name.as_deref().unwrap_or(name)
+                    };
+                    let (mut more, ok) = self.export_candidates(target, target_name, seen, budget);
+                    found.append(&mut more);
+                    complete &= ok;
+                } else {
+                    complete = false;
+                }
+            }
         }
-        None
+        (found, complete)
     }
 
     // -----------------------------------------------------------------------

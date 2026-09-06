@@ -83,6 +83,7 @@ pub struct SymbolCatalog {
     /// where many files share a method/leaf name.
     pub(in crate::resolver) by_qname_leaf: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_file: HashMap<String, Vec<usize>>,
+    pub(in crate::resolver) reexports: HashMap<String, Vec<cc_model::edge::ImportRecord>>,
     pub(in crate::resolver) by_export: HashMap<String, HashMap<String, Vec<usize>>>,
     /// file_path -> name_lowercase -> Vec<usize>: nested index for same-file name lookup.
     pub(in crate::resolver) by_file_name: HashMap<String, HashMap<String, Vec<usize>>>,
@@ -108,6 +109,18 @@ pub struct SymbolCatalog {
 }
 
 impl SymbolCatalog {
+    pub fn set_reexports(&mut self, imports: Vec<cc_model::edge::ImportRecord>) {
+        self.reexports.clear();
+        self.resolve_cache.clear();
+        for import in imports {
+            if import.is_reexport {
+                self.reexports
+                    .entry(import.file_path.clone())
+                    .or_default()
+                    .push(import);
+            }
+        }
+    }
     pub fn new() -> Self {
         let cache_size = std::env::var("CODECORTEX_RESOLVER_CACHE_SIZE")
             .ok()
@@ -126,6 +139,7 @@ impl SymbolCatalog {
             by_qname_leaf: HashMap::new(),
             by_file: HashMap::new(),
             by_export: HashMap::new(),
+            reexports: HashMap::new(),
             by_file_name: HashMap::new(),
             by_file_qname: HashMap::new(),
             type_catalog: None,
@@ -306,7 +320,6 @@ impl SymbolCatalog {
                 kind: SymbolKind::Variable,
                 container: None,
                 qname: None,
-                is_default_export: false,
                 start_line: 0,
                 end_line: 0,
                 scope_id: None,
@@ -376,7 +389,6 @@ impl SymbolCatalog {
                 kind: sym.kind,
                 container: sym.container.clone(),
                 qname: sym.qname.clone(),
-                is_default_export: sym.is_default_export,
                 start_line: sym.start_line,
                 end_line: sym.end_line,
                 scope_id: sym.scope_id.clone(),

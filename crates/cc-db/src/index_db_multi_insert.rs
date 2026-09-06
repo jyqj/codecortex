@@ -394,6 +394,9 @@ impl IndexDb {
             .collect();
         Self::insert_dispatch_sites_multi(conn, &sites)?;
 
+        for unit in units {
+            Self::refresh_lookup_dependencies_on(conn, unit)?;
+        }
         Ok(())
     }
 
@@ -475,6 +478,9 @@ impl IndexDb {
         let route_edges: Vec<_> = units.iter().flat_map(|f| &f.outcome.route_edges).collect();
         Self::insert_route_edges_multi(conn, &route_edges, false)?;
 
+        for unit in units {
+            Self::refresh_lookup_dependencies_on(conn, unit)?;
+        }
         Ok(())
     }
 

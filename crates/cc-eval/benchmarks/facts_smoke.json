@@ -1,0 +1,185 @@
+[
+  {
+    "id": "ts-no-phantom",
+    "files": {
+      "facts.ts": "export function transact() {\n // ghost()\n return \"ghost()\";\n}\nfunction ghost() { return 1; }\n"
+    },
+    "query": "transact",
+    "calls": []
+  },
+  {
+    "id": "py-no-phantom",
+    "files": {
+      "facts.py": "def transact():\n    # ghost()\n    return 'ghost()'\ndef ghost():\n    return 1\n"
+    },
+    "query": "transact",
+    "calls": []
+  },
+  {
+    "id": "ts-recursion",
+    "files": {
+      "facts.ts": "export function f(n: number): number {\n return n ? f(n-1) : 0;\n}\n"
+    },
+    "query": "f",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "f",
+        "callee": "f",
+        "line": 2,
+        "target": "facts.ts"
+      }
+    ]
+  },
+  {
+    "id": "py-recursion",
+    "files": {
+      "facts.py": "def f(n):\n    return f(n-1) if n else 0\n"
+    },
+    "query": "f",
+    "calls": [
+      {
+        "file": "facts.py",
+        "caller": "f",
+        "callee": "f",
+        "line": 2,
+        "target": "facts.py"
+      }
+    ]
+  },
+  {
+    "id": "ts-nested-owner",
+    "files": {
+      "facts.ts": "function target() {}\nfunction outer() {\n function inner() { target(); }\n}\n"
+    },
+    "query": "inner",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "inner",
+        "callee": "target",
+        "line": 3,
+        "target": "facts.ts"
+      }
+    ]
+  },
+  {
+    "id": "py-nested-owner",
+    "files": {
+      "facts.py": "def target():\n    pass\ndef outer():\n    def inner():\n        target()\n"
+    },
+    "query": "inner",
+    "calls": [
+      {
+        "file": "facts.py",
+        "caller": "inner",
+        "callee": "target",
+        "line": 5,
+        "target": "facts.py"
+      }
+    ]
+  },
+  {
+    "id": "ts-shadow",
+    "files": {
+      "facts.ts": "function target() {}\nfunction run(target: () => void) { target(); }\n"
+    },
+    "query": "run",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "run",
+        "callee": "target",
+        "line": 2,
+        "target": null
+      }
+    ]
+  },
+  {
+    "id": "py-shadow",
+    "files": {
+      "facts.py": "def target():\n    pass\ndef run(target):\n    target()\n"
+    },
+    "query": "run",
+    "calls": [
+      {
+        "file": "facts.py",
+        "caller": "run",
+        "callee": "target",
+        "line": 4,
+        "target": null
+      }
+    ]
+  },
+  {
+    "id": "ts-nested-await",
+    "files": {
+      "facts.ts": "async function run() {\n await outer(\n  inner()\n );\n}\n"
+    },
+    "query": "run",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "run",
+        "callee": "outer",
+        "line": 2,
+        "target": null
+      },
+      {
+        "file": "facts.ts",
+        "caller": "run",
+        "callee": "inner",
+        "line": 3,
+        "target": null
+      }
+    ]
+  },
+  {
+    "id": "ts-arrow",
+    "files": {
+      "facts.ts": "function target() {}\nconst run = () => target();\n"
+    },
+    "query": "run",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "run",
+        "callee": "target",
+        "line": 2,
+        "target": "facts.ts"
+      }
+    ]
+  },
+  {
+    "id": "ts-method",
+    "files": {
+      "facts.ts": "function target() {}\nclass A { run() { target(); } }\n"
+    },
+    "query": "run",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "run",
+        "callee": "target",
+        "line": 2,
+        "target": "facts.ts"
+      }
+    ]
+  },
+  {
+    "id": "ts-dynamic-index",
+    "files": {
+      "facts.ts": "function target() {}\nfunction run(obj: any, name: string) { obj[name](); }\n"
+    },
+    "query": "run",
+    "calls": [
+      {
+        "file": "facts.ts",
+        "caller": "run",
+        "callee": "obj[name]",
+        "line": 2,
+        "target": null
+      }
+    ]
+  }
+]

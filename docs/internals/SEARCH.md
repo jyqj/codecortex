@@ -187,3 +187,12 @@ ORDER BY / LIMIT / UNION，编译到 SQLite SQL 执行。语法面与有意为�
   更早层的得分，graph-neighbor 以它之前的一切为种子。不读先前层得分的
   层可覆写 `reads_prior_scores()` 返回 `false` 以加入并发段（默认
   `true`，安全侧）。
+
+## ADR-0004 后的覆盖说明
+
+上文历史 preselect 提示不再裁剪 grep；所有 lane 使用调用者 hard scope。
+通道与预选错误统一进入 RetrievalDiagnostics，工作预算耗尽和读取失败的结果
+不缓存。可选 stage trace 有 512 候选记录上限，默认关闭。graph_features=false
+完整关闭检索图特征，非仅将 graph_weight 置零。Unicode token 去重、代码标识符/
+引号优先选择和安全 FTS quoting 代替纯句首截断；排名默认权重保持不变，未声称
+已经校准。源码片段的反向符号投影遵循“精确名字→最小容器→歧义拒绝”。

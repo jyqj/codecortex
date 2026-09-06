@@ -315,8 +315,11 @@ impl JsTsParser {
                             None => name.to_string(),
                         };
 
+                        // Each declarator owns its identity/span, not the whole const
+                        // statement. Multiple bindings must not share an id; an
+                        // arrow body must map back to the variable that names it.
                         let mut sym = self.make_symbol(
-                            node, file_path, name, kind, &qname, container, None, source,
+                            &child, file_path, name, kind, &qname, container, None, source,
                         );
                         sym.framework_role = classify_framework_role(name, kind, container);
                         if in_export {

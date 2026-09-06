@@ -169,6 +169,12 @@ impl Default for IndexingConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SearchConfig {
+    /// Disable all graph search features (preselection, lane, rerank, enrichment).
+    #[serde(default = "default_true")]
+    pub graph_features: bool,
+    /// Capture bounded stage locators for benchmark diagnostics (extra DB work).
+    #[serde(default)]
+    pub trace_candidates: bool,
     #[serde(default = "default_lexical_top_k")]
     pub lexical_top_k: usize,
     #[serde(default = "default_grep_top_k")]
@@ -227,6 +233,8 @@ fn default_graph_top_k() -> usize {
 impl Default for SearchConfig {
     fn default() -> Self {
         Self {
+            graph_features: true,
+            trace_candidates: false,
             lexical_top_k: default_lexical_top_k(),
             grep_top_k: default_grep_top_k(),
             grep_scan_cap: default_grep_scan_cap(),

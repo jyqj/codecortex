@@ -100,3 +100,35 @@ Clippy `-D warnings`、format、文档计数检查通过；Python **18/18**；
 置信区间；没有进行真实 held-out 仓库泛化或端到端 agent 成功率实验。
 人工排名与 confidence 未做概率校准，动态语言完整语义、所有关系依赖、配置变更、
 并发写和丢失 watcher 事件仍不在本轮普遍正确性承诺内。
+
+
+## 远端安全检查触发的依赖修复
+
+最初的 PR CI 发现旧锁文件含 RUSTSEC-2026-0204（crossbeam-epoch），以及
+lru、anyhow、rand 的内存安全告警、被撤回的 chacha20 版本和停止维护的 instant。
+这些检查没有通过 ignore、关闭 yanked 检查或放宽权限来绕过。
+
+| 依赖 | 原锁文件 | 修复后锁文件 |
+|---|---|---|
+| crossbeam-epoch | 0.9.18 | 0.9.21 |
+| lru | 0.12.5 | 0.18.4 |
+| anyhow | 1.0.102 | 1.0.104 |
+| rand | 0.10.0 | 0.10.2 |
+| chacha20 | 0.10.0 | 0.10.2 |
+| notify / notify-types | 7.0.0 / 1.0.1 | 8.2.0 / 2.1.0 |
+| instant | 0.1.13 | 移除 |
+
+只升级受影响的依赖族及其必要传递依赖，不引入 embedding 或外部模型。
+[依赖准备与严格审计](https://github.com/jyqj/codecortex/actions/runs/34039341159)
+使用 cargo-audit 0.22.2 和 `--deny warnings`：252 个锁定依赖、0 个已知漏洞、
+0 个告警；没有 ignore 项。审计数据库提交为
+`5a0ebedfe8bdd2e295b171f4162f8c977bcad9a5`，更新时间 2026-09-02。
+这只是该数据库下的已知风险检查，不是没有未知漏洞的证明。
+
+永久 CI 不再使用需要 Checks 写权限的 audit-check action，改为只读的固定版本
+cargo-audit CLI；保留 JSON、保持漏洞及所有告警的非零退出码。最终 PR CI 会在
+实际评审版本重新验证格式、工作区测试、Clippy、Rust 1.95 MSRV、质量及规模。
+
+**版本边界：** 上文配对延迟、输出成本和原始 hash 对应依赖升级之前的测量树，
+不会重新标成安全更新后提交的实测结果。安全更新后的回归观测使用独立输出目录
+和自身 implementation_commit/header 留存。

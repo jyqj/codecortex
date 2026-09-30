@@ -1,0 +1,2 @@
+def probeBoundary():
+    return 'allowed'

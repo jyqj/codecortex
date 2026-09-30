@@ -11,6 +11,7 @@ use std::collections::{HashMap, HashSet};
 use cc_db::index_db::IndexDb;
 use cc_model::config::GraphEnrichLimits;
 use cc_model::context::{ContextNode, NodeType, Role};
+use cc_model::retrieval::HardScope;
 use cc_model::search::SearchHit;
 use cc_model::{GraphExplain, GraphExplainCollector};
 
@@ -18,6 +19,10 @@ use cc_model::{GraphExplain, GraphExplainCollector};
 /// plus counters for evidence summaries.
 #[derive(Default)]
 pub struct GraphEnrichment {
+    pub retrieval_cost: cc_model::retrieval_cost::RetrievalCost,
+    pub lane_outcomes: Vec<cc_model::retrieval::LaneOutcome>,
+    pub grep_diagnostics: Option<cc_model::retrieval::GrepDiagnostics>,
+    pub scope_explain: Option<cc_model::context::SearchScopeExplain>,
     pub nodes: Vec<ContextNode>,
     pub symbols_resolved: usize,
     pub callers_added: usize,
@@ -33,11 +38,24 @@ pub struct GraphEnrichment {
 ///
 /// Returns `(scores, enrichment)` where `scores` maps `chunk_id` to the raw
 /// graph connectivity score (before the `graph_rerank_weight` multiplier).
+#[cfg(test)]
 pub(crate) fn graph_enrich(
     db: &IndexDb,
     hits: &[SearchHit],
     limits: &GraphEnrichLimits,
     token_budget: u32,
+) -> (HashMap<String, f64>, GraphEnrichment) {
+    graph_enrich_scoped(db, hits, limits, token_budget, &HardScope::default())
+}
+
+/// Scope applies to returned graph evidence too, before deduplication and budgets.
+/// Connectivity ranking remains a project-wide structural prior, not a scope ACL.
+pub(crate) fn graph_enrich_scoped(
+    db: &IndexDb,
+    hits: &[SearchHit],
+    limits: &GraphEnrichLimits,
+    token_budget: u32,
+    scope: &HardScope,
 ) -> (HashMap<String, f64>, GraphEnrichment) {
     let mut scores: HashMap<String, f64> = HashMap::new();
     let mut enrichment = GraphEnrichment::default();
@@ -115,24 +133,48 @@ pub(crate) fn graph_enrich(
     let graph_budget = (token_budget * limits.graph_budget_pct) / 100;
     let mut graph_tokens = 0u32;
     let mut neighbor_uids = HashSet::new();
-    let callers_by_uid = db
-        .reads()
-        .caller_rows_by_uids(&resolved_uids, limits.callers_per_sym)
-        .unwrap_or_else(|err| {
-            explain.record_read_error("caller_rows_by_uids", &err);
-            HashMap::new()
-        });
-    let callees_by_uid = db
-        .reads()
-        .callee_rows_by_uids(&resolved_uids, limits.callees_per_sym)
-        .unwrap_or_else(|err| {
-            explain.record_read_error("callee_rows_by_uids", &err);
-            HashMap::new()
-        });
+    let constrained =
+        scope.path_prefix.is_some() || scope.languages.is_some() || scope.file_paths.is_some();
+    let callers_by_uid = (if constrained {
+        db.retrieval().scoped_call_rows(
+            &resolved_uids,
+            &crate::scope::chunk_scope(scope),
+            limits.callers_per_sym,
+            true,
+        )
+    } else {
+        db.reads()
+            .caller_rows_by_uids(&resolved_uids, limits.callers_per_sym)
+    })
+    .unwrap_or_else(|err| {
+        explain.record_read_error("caller_rows_by_uids", &err);
+        HashMap::new()
+    });
+    let callees_by_uid = (if constrained {
+        db.retrieval().scoped_call_rows(
+            &resolved_uids,
+            &crate::scope::chunk_scope(scope),
+            limits.callees_per_sym,
+            false,
+        )
+    } else {
+        db.reads()
+            .callee_rows_by_uids(&resolved_uids, limits.callees_per_sym)
+    })
+    .unwrap_or_else(|err| {
+        explain.record_read_error("callee_rows_by_uids", &err);
+        HashMap::new()
+    });
 
     for (_chunk_id, uid) in &resolved {
         if let Some(callers) = callers_by_uid.get(uid) {
             for edge in callers {
+                if !scope.passes(
+                    &edge.file_path,
+                    crate::plan::language_from_path(&edge.file_path),
+                ) {
+                    continue;
+                }
                 let caller_uid = edge.caller_symbol_uid.as_deref().unwrap_or("");
                 if caller_uid.is_empty() || !neighbor_uids.insert(caller_uid.to_string()) {
                     continue;
@@ -168,6 +210,12 @@ pub(crate) fn graph_enrich(
         }
         if let Some(callees) = callees_by_uid.get(uid) {
             for edge in callees {
+                if !scope.passes(
+                    &edge.file_path,
+                    crate::plan::language_from_path(&edge.file_path),
+                ) {
+                    continue;
+                }
                 let callee_uid = edge.callee_symbol_uid.as_deref().unwrap_or("");
                 if callee_uid.is_empty() || !neighbor_uids.insert(callee_uid.to_string()) {
                     continue;
@@ -213,7 +261,11 @@ pub(crate) fn graph_enrich(
             explain.record_read_error("find_impacted_tests", &err);
             Vec::new()
         });
-    for test_path in impacted_tests.iter().take(limits.max_tests) {
+    for test_path in impacted_tests
+        .iter()
+        .filter(|p| scope.passes(p, crate::plan::language_from_path(p)))
+        .take(limits.max_tests)
+    {
         let text = format!("test file: {}", test_path);
         let est = (text.len() / 4).max(10) as u32;
         if graph_tokens + est > graph_budget {
@@ -255,6 +307,7 @@ mod tests {
         call_edges: Vec<CallEdgeRecord>,
     ) {
         let chunk = ChunkRecord {
+            source: None,
             chunk_id: format!("chunk:{}", file_path),
             file_path: file_path.to_string(),
             language: Language::Rust,

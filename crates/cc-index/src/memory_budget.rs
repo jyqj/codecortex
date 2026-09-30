@@ -15,8 +15,16 @@ type RssSource = Box<dyn Fn() -> u64 + Send + Sync>;
 /// Current process resident set size in bytes (0 when the platform reader
 /// fails). Public so benchmark/soak harnesses (cc-eval) can sample the same
 /// reading the indexing pipeline's budget controller uses.
+pub fn process_rss_bytes_opt() -> Option<u64> {
+    let bytes = MemoryBudget::current_rss_bytes();
+    (bytes > 0).then_some(bytes)
+}
+
+/// Backwards-compatible numeric reader. New benchmark/report code should use
+/// [`process_rss_bytes_opt`] so an unavailable platform probe is never recorded
+/// as a measured zero-byte resident set.
 pub fn process_rss_bytes() -> u64 {
-    MemoryBudget::current_rss_bytes()
+    process_rss_bytes_opt().unwrap_or(0)
 }
 
 /// RSS-based memory budget controller.
@@ -91,15 +99,6 @@ impl MemoryBudget {
     /// Check if currently over budget.
     pub fn is_over_budget(&self) -> bool {
         self.over_budget.load(Ordering::Relaxed)
-    }
-
-    /// Byte cap for file content carried from the scan/diff phase into
-    /// parse/enrichment (the single-read pipeline). One eighth of the total
-    /// budget: the carried set peaks alongside parse allocations (tree-sitter
-    /// trees, symbol/chunk vectors), which the remaining budget must absorb.
-    /// Files past this cap simply fall back to a disk re-read in parse.
-    pub fn content_carry_budget(&self) -> u64 {
-        self.total_budget / 8
     }
 
     /// Get last observed RSS in bytes.
@@ -384,9 +383,13 @@ mod tests {
     /// for the running test process (guards against a broken syscall path).
     #[test]
     fn real_current_rss_is_nonzero() {
-        let rss = MemoryBudget::current_rss_bytes();
-        // A running Rust test process always has a resident set; 0 means the
-        // platform syscall path is broken.
+        let rss = process_rss_bytes_opt().expect("supported platform current RSS");
+        // A running Rust test process always has a resident set; None/0 means
+        // the platform syscall path is broken.
         assert!(rss > 0, "current RSS should be > 0, got {}", rss);
+        assert!(
+            process_rss_bytes() > 0,
+            "backwards-compatible numeric RSS reader should also be available"
+        );
     }
 }

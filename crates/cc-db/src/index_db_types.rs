@@ -33,6 +33,8 @@ pub struct IndexGeneration {
 /// reading and hashing a file.
 #[derive(Debug, Clone, PartialEq)]
 pub struct FileState {
+    pub document_spec: Option<String>,
+    pub chunk_policy: Option<String>,
     pub content_hash: String,
     pub mtime: f64,
     pub size: u64,
@@ -190,9 +192,22 @@ pub struct SymbolTargetRow {
     pub file_path: String,
 }
 
+/// Lightweight, versioned candidate metadata. No chunk text is decoded here;
+/// final hydration performs the full document/source validation.
+#[derive(Debug, Clone)]
+pub struct ChunkCandidateRow {
+    pub document: cc_model::identity::DocumentRef,
+    pub source_evidence: cc_model::source::ChunkSource,
+    pub chunk_id: String,
+    pub file_path: String,
+    pub language: String,
+}
+
 /// Full chunk row with decoded text, returned by `chunk_rows_by_ids`.
 #[derive(Debug, Clone)]
 pub struct ChunkDetailRow {
+    pub document: Option<cc_model::identity::DocumentRef>,
+    pub source_evidence: Option<cc_model::source::ChunkSource>,
     pub chunk_id: String,
     pub file_path: String,
     pub language: String,

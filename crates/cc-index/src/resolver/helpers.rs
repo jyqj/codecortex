@@ -1,7 +1,5 @@
 //! Free helper functions used across the resolver module.
 
-use std::collections::HashSet;
-
 use cc_model::symbol::SymbolKind;
 
 use super::types::*;
@@ -112,10 +110,58 @@ pub(in crate::resolver) fn best_by_import_distance(
     candidates: &[usize],
     current_file: &str,
 ) -> Option<usize> {
-    candidates
+    let best = import_distance_candidates(entries, candidates, current_file);
+    (best.len() == 1).then(|| best[0])
+}
+
+/// Stable presentation order is never evidence of uniqueness.
+pub(in crate::resolver) fn stable_candidates(
+    entries: &[CatalogEntry],
+    candidates: &[usize],
+) -> Vec<usize> {
+    let mut result = candidates.to_vec();
+    result.sort_by(|&a, &b| {
+        let a = &entries[a];
+        let b = &entries[b];
+        (
+            &a.file_path,
+            &a.qname,
+            a.kind.as_str(),
+            &a.symbol_uid,
+            &a.symbol_id,
+        )
+            .cmp(&(
+                &b.file_path,
+                &b.qname,
+                b.kind.as_str(),
+                &b.symbol_uid,
+                &b.symbol_id,
+            ))
+    });
+    result.dedup_by(|a, b| {
+        let a = &entries[*a];
+        let b = &entries[*b];
+        a.file_path == b.file_path && a.symbol_id == b.symbol_id && a.symbol_uid == b.symbol_uid
+    });
+    result
+}
+pub(in crate::resolver) fn import_distance_candidates(
+    entries: &[CatalogEntry],
+    candidates: &[usize],
+    file: &str,
+) -> Vec<usize> {
+    let max = candidates
         .iter()
-        .copied()
-        .max_by_key(|&idx| common_path_prefix_len(&entries[idx].file_path, current_file))
+        .map(|&i| common_path_prefix_len(&entries[i].file_path, file))
+        .max();
+    stable_candidates(
+        entries,
+        &candidates
+            .iter()
+            .copied()
+            .filter(|&i| Some(common_path_prefix_len(&entries[i].file_path, file)) == max)
+            .collect::<Vec<_>>(),
+    )
 }
 
 // ---------------------------------------------------------------------------
@@ -142,28 +188,13 @@ pub(in crate::resolver) fn pick_unique(
     entries: &[CatalogEntry],
     candidates: &[usize],
 ) -> Option<usize> {
-    let mut seen = HashSet::new();
-    let mut unique = Vec::new();
-    for &idx in candidates {
-        if seen.insert(&entries[idx].symbol_id) {
-            unique.push(idx);
-        }
-    }
-    if unique.len() == 1 {
-        Some(unique[0])
-    } else {
-        None
-    }
+    let unique = stable_candidates(entries, candidates);
+    (unique.len() == 1).then(|| unique[0])
 }
 
 /// Deduplicate indices by symbol_id.
 pub(in crate::resolver) fn dedup_by_id(entries: &[CatalogEntry], indices: &[usize]) -> Vec<usize> {
-    let mut seen = HashSet::new();
-    indices
-        .iter()
-        .copied()
-        .filter(|&i| seen.insert(entries[i].symbol_id.clone()))
-        .collect()
+    stable_candidates(entries, indices)
 }
 
 // ---------------------------------------------------------------------------

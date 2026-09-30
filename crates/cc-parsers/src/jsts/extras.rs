@@ -2,21 +2,16 @@
 //! type assignments, and EventEmitter dispatch site helpers.
 
 use super::{
-    child_by_kind, js_find_enclosing_function, node_text, ExtractCtx, JsTsParser, JS_CALL_RE,
-    JS_DECORATOR_RE, JS_ENV_ACCESS_RE, JS_EXTENDS_RE, JS_IDENT_RE, JS_IMPLEMENTS_RE, JS_KEYWORDS,
-    JS_RETURN_TYPE_RE, JS_TYPE_ANNOT_RE,
+    child_by_kind, js_find_enclosing_function, node_text, ExtractCtx, JsTsParser, JS_DECORATOR_RE,
+    JS_ENV_ACCESS_RE, JS_EXTENDS_RE, JS_IMPLEMENTS_RE, JS_RETURN_TYPE_RE, JS_TYPE_ANNOT_RE,
 };
 use cc_model::diagnostic::LiteralRecord;
-use cc_model::edge::{
-    CallEdgeRecord, DataFlowEdgeRecord, DispatchKind, ResolutionKind, SemanticEdgeRecord,
-    SemanticRelation,
-};
+use cc_model::edge::{DataFlowEdgeRecord, SemanticEdgeRecord, SemanticRelation};
 use cc_model::id::StableId;
-use cc_model::symbol::{SymbolKind, SymbolRecord, SymbolRefRecord};
+use cc_model::symbol::SymbolRecord;
 use cc_model::type_assign::{TypeAssignRecord, TypeAssignSource};
 use cc_model::{ElementKind, ParserTier};
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
 use std::sync::LazyLock;
 
 // ---------------------------------------------------------------------------
@@ -584,168 +579,5 @@ impl JsTsParser {
             }
         }
         None
-    }
-
-    // -------------------------------------------------------------------
-    // Regex-based ref/call extraction
-    // -------------------------------------------------------------------
-
-    /// Build refs and calls from regex scanning (legacy, for intra-file resolution).
-    pub(super) fn extract_refs_and_calls(
-        &self,
-        content: &str,
-        file_path: &str,
-        symbols: &[SymbolRecord],
-    ) -> (Vec<SymbolRefRecord>, Vec<CallEdgeRecord>) {
-        let lines: Vec<&str> = content.lines().collect();
-        let keywords: HashSet<&str> = JS_KEYWORDS.iter().copied().collect();
-        let mut refs = Vec::new();
-        let mut calls = Vec::new();
-
-        let mut by_name: HashMap<String, (&str, &str)> = HashMap::new();
-        for sym in symbols {
-            if let Some(uid) = &sym.symbol_uid {
-                by_name
-                    .entry(sym.name.clone())
-                    .or_insert((sym.symbol_id.as_str(), uid.as_str()));
-            }
-        }
-
-        for sym in symbols
-            .iter()
-            .filter(|s| matches!(s.kind, SymbolKind::Function | SymbolKind::Method))
-        {
-            let start = sym.start_line.saturating_sub(1) as usize;
-            let end = (sym.end_line as usize).min(lines.len());
-            for (offset, line) in lines[start..end].iter().enumerate() {
-                let line_no = (start + offset + 1) as u32;
-                let mut call_starts = HashSet::new();
-                for cap in JS_CALL_RE.captures_iter(line) {
-                    let Some(m) = cap.get(1) else { continue };
-                    let callee = m.as_str();
-                    if keywords.contains(callee) {
-                        continue;
-                    }
-                    let start_col = m.start() as u32;
-                    call_starts.insert(start_col);
-                    let target = by_name.get(callee);
-                    let ref_id = StableId::ref_id(file_path, callee, line_no, start_col);
-                    refs.push(SymbolRefRecord {
-                        ref_id: ref_id.clone(),
-                        file_path: file_path.to_string(),
-                        symbol_name: callee.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "call".into(),
-                        line: line_no,
-                        column: start_col,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(callee.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: ParserTier::Semantic
-                            .element_confidence(ElementKind::CallRef),
-                    });
-                    calls.push(CallEdgeRecord {
-                        edge_id: StableId::edge_id("call", file_path, line_no, start_col),
-                        file_path: file_path.to_string(),
-                        caller_symbol: Some(sym.name.clone()),
-                        callee_symbol: callee.to_string(),
-                        line: line_no,
-                        start_col,
-                        end_line: Some(line_no),
-                        end_col: m.end() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        caller_symbol_id: Some(sym.symbol_id.clone()),
-                        caller_symbol_uid: sym.symbol_uid.clone(),
-                        callee_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        callee_ref_id: Some(ref_id),
-                        dispatch_kind: DispatchKind::Direct,
-                        call_kind: "direct".into(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        receiver_expr: None,
-                        arg_count: None,
-                        is_optional_chain: false,
-                        is_awaited: false,
-                        is_constructor: false,
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: ParserTier::Semantic
-                            .element_confidence(ElementKind::CallEdge),
-                        synthesized_by: None,
-                        synthesis_key: None,
-                        registered_file: None,
-                        registered_line: None,
-                    });
-                }
-
-                for m in JS_IDENT_RE.find_iter(line) {
-                    let ident = m.as_str();
-                    if keywords.contains(ident)
-                        || (line_no == sym.start_line && ident == sym.name)
-                        || call_starts.contains(&(m.start() as u32))
-                    {
-                        continue;
-                    }
-                    let target = by_name.get(ident);
-                    refs.push(SymbolRefRecord {
-                        ref_id: StableId::ref_id(file_path, ident, line_no, m.start() as u32),
-                        file_path: file_path.to_string(),
-                        symbol_name: ident.to_string(),
-                        container: sym.qname.clone(),
-                        ref_kind: "identifier".into(),
-                        line: line_no,
-                        column: m.start() as u32,
-                        target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
-                        target_file_path: target.map(|_| file_path.to_string()),
-                        target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-                        ref_name: Some(ident.to_string()),
-                        scope_id: sym.scope_id.clone(),
-                        resolution_kind: if target.is_some() {
-                            ResolutionKind::Exact
-                        } else {
-                            ResolutionKind::Unresolved
-                        },
-                        resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
-                        resolution_strategy: if target.is_some() {
-                            "parser_exact".into()
-                        } else {
-                            "unresolved".into()
-                        },
-                        ref_end_line: Some(line_no),
-                        ref_end_col: Some(m.end() as u32),
-                        parser_tier: ParserTier::Semantic,
-                        parser_confidence: ParserTier::Semantic
-                            .element_confidence(ElementKind::IdentifierRef),
-                    });
-                }
-            }
-        }
-
-        (refs, calls)
     }
 }

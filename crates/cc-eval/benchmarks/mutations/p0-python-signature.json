@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "steps": [
+    {
+      "kind": "write",
+      "path": "provider.py",
+      "content": "def transform(value, extra=0):\n    return value + extra + 2\n"
+    }
+  ],
+  "probes": [
+    {
+      "query": "transform",
+      "top_k": 10,
+      "path_prefix": null
+    }
+  ]
+}

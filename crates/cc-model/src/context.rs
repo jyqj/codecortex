@@ -1,6 +1,51 @@
 use serde::{Deserialize, Serialize};
 
+pub const CONTEXT_PACKING_SPEC: &str = "whole-json-priority-evidence-before-references-v2";
+
 use crate::Intent;
+
+/// Bounded query-level explanation. Does not enumerate excluded index inventory
+/// or raw soft paths; per-hit numeric contributions remain on the returned hits.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SearchScopeExplain {
+    pub schema_version: u32,
+    pub policy: String,
+    pub hard: SearchHardScopeExplain,
+    pub soft: SearchSoftScopeExplain,
+    pub budget: SearchBudgetExplain,
+    pub ordering: Vec<String>,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SearchHardScopeExplain {
+    pub path_prefix: Option<String>,
+    pub path_prefix_truncated: bool,
+    pub languages: Option<Vec<crate::Language>>,
+    pub explicit_file_count: Option<usize>,
+    pub empty: bool,
+    pub semantics: String,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SearchSoftScopeExplain {
+    pub role: String,
+    /// Counts of normalized requested hints, not counts of indexed/authorized files.
+    pub hint_entries: std::collections::BTreeMap<String, usize>,
+    pub preselected_count: usize,
+    pub contributions: String,
+}
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SearchBudgetExplain {
+    pub top_k: usize,
+    #[serde(default)]
+    pub exact_symbol_candidates: usize,
+    #[serde(default)]
+    pub path_candidates: usize,
+    pub lexical_candidates: usize,
+    pub grep_candidates: usize,
+    pub grep_scan_cap: usize,
+    pub rerank_window: usize,
+    pub grep_enabled: bool,
+    pub units: String,
+}
 
 /// Context node type — the kind of code-index evidence in a context envelope.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]

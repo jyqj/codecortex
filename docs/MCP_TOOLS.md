@@ -9,6 +9,30 @@
 所有工具共享同一套参数与输出契约（实现：`crates/cc-server/src/tools.rs`、
 `handlers/output_budget.rs`）：
 
+### 增量新鲜度（P2-C）
+
+`index`、索引 `status` 及对象型搜索/关系响应追加 `resolution_freshness`，区分 `ready`、`incomplete`、`changed_during_query`，并提供原因与重试说明。它仅覆盖已观察到的解析失效欠账，不代表语言语义完整、未观察到的磁盘变化或全查询快照隔离。未完成的旧数组型关系响应显式报错，不静默返回旧关系或改变原数组格式；输出截断保留该状态。工具名称及输入 schema 不变。详见 [INCREMENTAL_RECOVERY.md](internals/INCREMENTAL_RECOVERY.md)。
+
+### 检索能力与显式策略（P5-D）
+
+`status(aspect="capabilities").retrieval` 区分 `no_project / closed / empty / available / error`，保留已有布尔字段。`local_state=available` 只表示本地路径可运行，不保证每条查询完整。`semantic_state=not_configured` 表示无端口；宿主注入接口时为 `port_attached_unverified`，不能据此声称真实模型就绪。当前 `dense_state=disabled`，尚未实现 provider/vector publication。状态查询不调用端口，不启动索引。实际覆盖仍以查询的 lanes/lane_receipts、GraphExplain、source_freshness、selection 与 packing 为准；构建原因沿用原 BuildExplain，不伪造持久化的最后构建报告。
+
+`search`（hybrid 模式）与 `context` 新增可选 `retrieval_strategy=local|auto|semantic`。省略或 null 使用项目 `query.strategy`；local 不调用可选端口，auto 无端口时等价 local，semantic 无端口明确报不可用。显式 context 策略使用统一检索路径，不会被旧的直接符号快捷路径忽略。symbol 模式保留原数组响应，只接受省略/null/local，其他策略报参数错误。没有 provider、模型或任意 HTTP endpoint 新参数。
+
+以下请求由 `p5d_contract` 经真实 stdio 执行：
+<!-- p5d-query-contract:start -->
+```json
+[
+  {"tool":"search","args":{"query":"needle","retrieval_strategy":"local","top_k":3}},
+  {"tool":"search","args":{"query":"needle","retrieval_strategy":"auto","top_k":3}},
+  {"tool":"search","args":{"query":"needle","mode":"symbol","retrieval_strategy":"local"}},
+  {"tool":"context","args":{"task":"needle","retrieval_strategy":"auto"}}
+]
+```
+<!-- p5d-query-contract:end -->
+
+`code_index_context` 采用完整对象预算，包含最终新鲜度及元数据；超过预算时保留完整正文或明确引用，不返回截断 JSON 前缀。引用不作为源码命中。其他旧工具形状继续使用下文原出口策略。持有查询视图期间空闲清理不关闭实例；LRU 淘汰后同项目仍复用在途实例及构建门，释放最后视图后才可回收。参见 [运行时生命周期](internals/QUERY_LIFECYCLE.md)。
+
 ### 参数校验（sanitize）
 
 每个工具的参数在分发前经过 `sanitize()`：
@@ -44,6 +68,10 @@ Handler 全链路使用类型化错误（`cc_model::CcError`），仅在 MCP 出
   （`CcError::InvalidParams`：缺必填参数、未知 action、路径越界等）；
 - 运行期失败 → JSON-RPC error `-32603`（internal error），消息为底层
   错误文本；
+P5-A 的本地检索会核对每次尝试前后的 index/evidence epoch，最多三次；持续变化时 `CcError::RetrievalChanged` 通过同一出口返回 `-32603` 和 `data.retryable=true`。缓存正文不匹配会重新读取当前行，损坏的源码或文档清单仍是非可重试错误；这不是文件系统快照；P5-B 在该重试窗口外增加共享总期限及协作取消。
+
+P5-B 的 search/context 已接入 MCP `notifications/cancelled`。QueryTimedOut、QueryBusy、QueryInvalidated 返回可重试错误；QueryCancelled 不自动重试。可选语义子期限失败会保留 timeout/error/unavailable lane 并在父预算允许时返回本地结果。输出继续保留 resolution_freshness；工具数量和输入字段不变，默认不调用端口。完整执行边界见 [QUERY_EXECUTION.md](internals/QUERY_EXECUTION.md)。
+
 - **瞬态可重试错误**额外携带 `data: {"retryable": true}`：
   `CcError::BuildBusy`（"index build already in progress"，构建门被占）
   与 `CcError::StalePreparedBuild`（跨进程写者抢先提交）。客户端可据此
@@ -111,7 +139,21 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
 （六阶段毫秒数）、`dirty_propagation`（仅增量：`normal` /
 `partial_closure` / `budget_exceeded` / `disabled`，语义见
 [internals/INDEXING.md](internals/INDEXING.md#dirty-closure脏闭包)）。
-`budget_exceeded` 意味着跨文件引用可能过期，建议 `index(full=true)`。
+`budget_exceeded` 表示仍有依赖工作：继续增量可按持久 frontier 续跑，显式全量也可恢复；以 `resolution_freshness` 判定，不把未完成状态写成正常。
+
+P2-A 追加 `IndexReport.public_surface_coverage`：`parsed_files`、`known`、`known_empty`、`unknown`、`unknown_reasons`。只统计这次实际解析的文件，no-op 为零，不代表全仓所有事实的新鲜度。无新增工具或输入字段；详见 [internals/PUBLIC_SURFACE.md](internals/PUBLIC_SURFACE.md)。
+
+P3-A 追加 `IndexReport.project_model`，包含配置输入摘要、目录规模、配置发现读取/解析缓存命中、根路径探测、模式与诊断。发现读取数不含提交前复核读取；模块 resolved/unresolved/unsupported 计数与符号统计分开。无新工具或输入字段，详见 [PROJECT_MODEL.md](internals/PROJECT_MODEL.md)。
+
+P3-B扩展既有project_model报告，补充Rust源码声明读取/缓存命中及跨语言模块诊断；导入语法、配置条件与解析置信度分开。无新增工具或输入字段，默认无网络；见 [MODULE_RESOLUTION.md](internals/MODULE_RESOLUTION.md)。
+
+P3-C沿用14个工具输入，project_model追加Go紧凑声明读取/缓存命中，resolution_coverage追加external/ambiguous/unknown及packages_resolved计数。包结果不伪造代表文件；Go imports.resolved_path为NULL时需查看模块包集合证据，实际调用/引用仍指向具体源码符号。见 [GO_MODULES.md](internals/GO_MODULES.md)。
+
+P4-A 的 indexed search hit 新增可选 `metadata.source_evidence`：原始输入摘要、编码、字节长度、半开 `span`、切片摘要和边界依据。DB hydration 会核验切片与正文一致；这些是索引时快照坐标，不代表查询时磁盘已最新。旧或合成结果可能没有此字段，不得据此伪造 proof。工具数量与输入参数不变。详见 [SOURCE_CHUNKS.md](internals/SOURCE_CHUNKS.md)。
+
+P4-B 的 `IndexReport.chunk_policy` 报告本次构建使用的行、字节、Unicode 标量与估算 token 限额及合并阈值。每次构建重新捕获 indexing 配置；同一 MCP 进程也能使用新的切块预算。失败文件保留旧 stamp，报告不保证所有文件已采用新规则。`metadata.source_evidence` 仍是原始源码；单独的 embedding 文本渲染 API 不新增工具或发起模型调用。见 [CHUNK_POLICY.md](internals/CHUNK_POLICY.md)。
+
+P4-C增加可选`metadata.document`和`source_freshness`，公开hybrid结果每次核验磁盘（包含缓存命中），变更/删除/受限文件省略并标partial。源码展开使用同一核验入口；不拿旧位置解释新正文。`IndexReport.document_changes`仅统计本次投影文件，非全仓总量。14工具输入保持不变，详情见[DOCUMENTS.md](internals/DOCUMENTS.md)。
 
 ## Discovery
 
@@ -121,8 +163,9 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
 |---|---|
 | `query` | 查询串 |
 | `mode` | `hybrid`（默认，FTS5+grep+图融合）/ `symbol`（符号名查找） |
+| `retrieval_strategy` | 可选 local/auto/semantic，省略使用项目配置；symbol 仅接受省略/null/local |
 | `top_k`、`intent`、`exact` | 数量、意图（如 `fix`）、精确匹配开关 |
-| `boost_files` / `recent_files` / `pinned_files` / `overlay_files` / `path_prefix` | 上下文加成与范围限定（见 [CONFIGURATION.md](CONFIGURATION.md#ranking)；`overlay_files` 是编辑器脏缓冲文件） |
+| `boost_files` / `recent_files` / `pinned_files` / `overlay_files` / `path_prefix` | 前四项是软路径提示；path_prefix 是硬范围。overlay_files 不代表未保存正文已入库，见 [CONFIGURATION.md](CONFIGURATION.md#ranking)。 |
 | `conversation_queries` / `file_preselect_limit` | 会话内先前查询（时近性加成）与文件预选数量上限 |
 
 响应：
@@ -132,20 +175,27 @@ token、`read_errors`（上限 8）。干净且未截断的运行整体省略该
   `score`、`confidence`、`reasons[]`（含 `preselect:<layer>:+<score>`
   等可审计的排序理由）、`metadata`）、`spans[]`、`token_estimate`、
   `evidence_summary`（图富化摘要，可含 `graph_explain`）；
+  完整源码以 `machine_pack.hits` 为准；预算压缩时 nodes/spans 可省略，引用不含正文且不算命中；
 - `symbol`：符号行数组（`name`、`kind`、`file_path`、`start_line`、
   `qname`、`symbol_uid` …），不带信封。
+
+`hybrid` 范围规则（P1-A）：`path_prefix` 与 query 中的全部 `path:` 取交集；多个 `lang:` 同样取交集，互相矛盾时返回空命中。未知/空语言和空路径 DSL 返回明确参数错误。预选与 boost/recent/pinned/overlay 仅影响排名，不是搜索白名单。图补充证据也遵守范围。Rust 公共 `SearchRequest` 的 `file_paths`/`languages` 已贯通上下文查询，其中 `Some([])` 明确表示无可搜索内容；本批没有在 MCP 上新增同名参数。`symbol` 模式没有因此获得新的 DSL 能力。
+
+P1-B 路径补充：`path_prefix` 为大小写敏感的完整路径或目录后代，`src/api` 不匹配 `src/apix`。`symbol` 模式同样在 LIMIT 前应用显式 `path_prefix`，但仍不解析新 DSL。hybrid 响应新增 `evidence_summary.retrieval.grep`：complete、limited（候选上限）、partial（扫描预算/错误）、扫描计数与原因；空列表不等于完整无答案。精确符号或完整文件路径候选带 `exact-target` 理由，优先于非精确提示匹配；不新增工具或参数。
+
+P1-C 增量解释：`evidence_summary.retrieval.scope` 区分 hard / soft / budget / ordering；不会枚举被排除路径，缓存中的扫描计数属于原始计算。工具名与旧 hybrid/symbol 参数保持不变。当前 SDK 的未知字段反序列化拒绝是 `CallToolResult.is_error=true`；sanitize 对非法模式返回 JSON-RPC `-32602`，两种错误不要混为一种。十四工具的旧有效请求、未知字段和已有两种搜索模式有真实 stdio 回归。
+
+P1-D 成本解释：`evidence_summary.retrieval.cost`（version 1）包含词法 FTS、候选批取的外层 SQL 计数、文本缓存/存储读取、候选数量；`grep.stages` 保留三个阶段的计数。未覆盖预选/图查询/FTS 内部 SQL，不是全部 I/O 或资源上限。缺失成本是 unavailable，缓存响应的成本属于原始计算。结构化请求示例与具体计数边界见 [检索引擎](internals/SEARCH.md#可执行请求示例)。没有新增工具、搜索模式或输入参数。
 
 ### `context` —— 一次调用拿到任务的完整上下文
 
 | 参数 | 说明 |
 |---|---|
 | `task` | 任务描述 |
+| `retrieval_strategy` | 可选 local/auto/semantic；显式指定走统一检索与证据装配 |
 | `max_symbols`、`include_source`、`intent` | 规模与意图控制 |
 
-响应：`ContextEnvelope`——`task`、`intent`、`query`、`summary`、`nodes[]`
-（命中符号：`title`、`file_path`、行范围、`score`、`confidence`、`reasons[]`、
-`metadata`）、`spans[]`、`token_estimate`、`evidence_summary`，外加
-`include_source=true` 时按文件分组的 `symbol_details`。出口 ByteCap。
+响应有两种兼容形态：省略策略的本地直接符号路径可返回 `matched_symbols`、关系及可选 `symbol_details`；统一检索路径返回 `ContextEnvelope`，其 `machine_pack.hits` 为带来源证明的完整正文，`nodes/spans` 可因预算省略重复展示，`machine_pack.references` 仅作引用。`packing.partial` 和来源/通道不完整状态始终可见。`code_index_context` 使用完整对象预算，其他旧形态沿用出口 ByteCap。
 
 ## Deep dive
 

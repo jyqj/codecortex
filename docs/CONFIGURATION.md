@@ -3,9 +3,13 @@
 在项目根目录创建 `.codecortex.json` 自定义行为。所有字段都可省略——默认值
 适用于大多数项目。
 
+`.codecortex.json` 仅按普通文件读取，上限为 **1 MiB**；符号链接、管道、目录、无效 UTF-8 和超限内容被拒绝并记录告警，沿用默认值再应用已有环境变量覆盖。配置读取失败不是配置成功生效。TS/package/Cargo/Python/Go 模块配置有独立预算和捕获/提交前复核，见 [模块输入防护](internals/MODULE_INPUT_SAFETY.md)。这些路径不执行配置代码、构建脚本或抓取远程依赖。
+
 未知键只在日志告警、不会导致加载失败；历史版本已移除的键（如
 `indexing.parallelism`）会提示删除，迁移对照见
 [TROUBLESHOOTING.md](TROUBLESHOOTING.md#配置迁移)。
+
+`indexing.dirty_propagation_max_files` 限制每次依赖重解析工作量，不再丢弃超过额度的消费者：余量持久化后可由后续增量、重启或已启用 watcher 继续处理。关闭 dirty propagation 或设置零预算不会假装已收敛，也不会自动忙循环；可以重新启用或显式全量重建。恢复状态与边界见 [增量恢复](internals/INCREMENTAL_RECOVERY.md)。
 
 ```json
 {
@@ -14,6 +18,10 @@
     "ignore": ["**/generated/**"],
     "max_file_bytes": 512000,
     "chunk_line_budget": 80,
+    "chunk_byte_budget": 16384,
+    "chunk_char_budget": 16384,
+    "chunk_token_budget": 4096,
+    "chunk_merge_min_bytes": 256,
     "dirty_propagation": true,
     "dirty_propagation_max_files": 200,
     "memory_budget_fraction": 0.5,
@@ -25,10 +33,14 @@
   },
   "search": {
     "lexical_top_k": 24,
+    "exact_symbol_top_k": 24,
+    "path_top_k": 24,
     "grep_top_k": 12,
     "grep_scan_cap": 20000,
     "rrf_k": 50,
     "lexical_weight": 1.1,
+    "exact_symbol_weight": 1.1,
+    "path_weight": 1.0,
     "grep_weight": 0.8,
     "rerank_window": 40,
     "graph_weight": 0.6,
@@ -53,11 +65,15 @@
 | `include` | 27 项默认 glob | **扩展**（而非收窄）索引范围。已知语言的文件总是被索引；`include` 救援匹配这些 glob 的未知语言文件。设值是**替换**默认集而非追加。 |
 | `ignore` | 15 项默认排除 glob | 在 gitignore 感知发现之上额外排除的 glob（默认含 `.git/**`、`node_modules/**`、`target/**` 等）。设值是**替换**默认集而非追加。 |
 | `max_file_bytes` | `512000` | 超过此大小的文件跳过。 |
-| `chunk_line_budget` | `80` | 符号提取时单个代码 chunk 的最大行数。 |
+| `chunk_line_budget` | `80` | 已接入所有 Registry 解析器与 SFC；每块占用行数，范围 1–10000。 |
+| `chunk_byte_budget` | `16384` | 每块原始 UTF-8 字节上限，范围 4–1048576；包含首块、gap 和尾部。 |
+| `chunk_char_budget` | `16384` | 每块 Unicode 标量数，范围 2–1048576；不是字形或显示宽度。 |
+| `chunk_token_budget` | `4096` | ceil(UTF-8 字节数/4) 的估算上限，范围 1–262144；非模型 tokenizer 实测。 |
+| `chunk_merge_min_bytes` | `256` | 同父域且同 owner 的相邻非符号片段，一方小于此值时尝试合并；仍受全部预算约束。0 禁用，最大 1048576。 |
 | `parse_timeout_micros` | `null` | 单文件解析超时（微秒）。`null` 不超时。 |
 | `db_read_pool_size` | `null` | SQLite 读连接池大小。`null` 按仓库规模档位推导（4–12）。 |
 | `dirty_propagation` | `true` | 文件导出面变化时重解析其依赖方。 |
-| `dirty_propagation_max_files` | `200` | 一次脏传播最多提升的文件数。超限第 1 轮降级为 no-op（建议全量重建），后续轮保留部分闭包；结果以 `dirty_propagation` 字段出现在索引报告中。 |
+| `dirty_propagation_max_files` | `200` | 一次依赖重解析的文件预算；未完成闭包持久化，后续增量/重启/watcher 可续跑。零预算或关闭传播不等于欠账完成，详见增量恢复文档。 |
 | `memory_budget_fraction` | `0.5` | 并行解析的 RSS 上限（系统内存占比，0.1–0.95）。 |
 | `max_concurrent_parse` | `null` | 解析线程上限。`null` 用 rayon 默认。 |
 | `use_direct_writer` | `false` | 实验性：全量重建时绕过 SQL 解析器的直写器。 |
@@ -67,22 +83,54 @@
 
 ## search
 
-本地检索跑三条通道——FTS5 全文、regex 符号 grep、调用图扩展——之上是
-trigram 支撑的文件预选。通道结果经 RRF（Reciprocal Rank Fusion）融合，
+本地检索统一注册五条通道：exact_symbol、path、lexical、grep、graph。
+精确符号和路径召回独立于软文件预选；通道按文档版本去重，仅按排名做 RRF 融合，
 再按文件路径 / breadcrumb / 时近性加成重排。机制详见
 [internals/SEARCH.md](internals/SEARCH.md)。
 
 | 字段 | 默认 | 含义 |
 |------|------|------|
-| `lexical_top_k` | `24` | FTS5 词法通道每查询的最大候选数。 |
-| `grep_top_k` | `12` | regex 符号 grep 通道每查询的最大候选数。 |
-| `grep_scan_cap` | `20000` | grep 通道单次查询最多解压扫描的 chunk 行数。预算耗尽即截断（日志有提示），调大可换召回。 |
+| `lexical_top_k` | `24` | FTS5 词法候选预算；实际取配置值与请求 top_k 的较大者，精确候选已迁往独立通道。 |
+| `exact_symbol_top_k` | `24` | 精确 name/qname/字面签名候选预算；按字节定义位置映射文档，不因共享行号或短名称误绑。 |
+| `path_top_k` | `24` | 精确文件路径及有界 token 路径候选预算，不区分源码或文档优先。 |
+| `exact_symbol_weight` | `1.1` | 精确符号通道 RRF 权重，0 关闭该通道。 |
+| `path_weight` | `1.0` | 独立路径通道 RRF 权重，0 关闭该通道。 |
+| `grep_top_k` | `12` | 字面子串 grep 候选预算；实际取配置值与请求 top_k 的较大者。 |
+| `grep_scan_cap` | `20000` | grep 三阶段合计正文读取上限，plain 与 zstd 均计数，重复 ID 不重复读取；0 仍允许元数据探测。耗尽标 partial，不代表完整无答案；不是 SQL、内存或耗时上限。 |
 | `rrf_k` | `50` | RRF 平滑常数 `k`（`1 / (k + rank)`）。越大排名差异越平。 |
 | `lexical_weight` | `1.1` | FTS5 全文通道的 RRF 权重。 |
 | `grep_weight` | `0.8` | regex 符号 grep 通道的 RRF 权重。 |
-| `rerank_window` | `40` | 进入重排的融合候选数。 |
+| `rerank_window` | `40` | 进入重排的融合候选预算；实际取配置值与请求 top_k 的较大者。 |
 | `graph_weight` | `0.6` | 调用图通道（种子符号 + 1 跳调用边扩展）的 RRF 权重。`0.0` 关闭该通道。 |
 | `graph_top_k` | `12` | 调用图通道每查询贡献的最大候选数。 |
+
+`file_preselect_limit` 是每次搜索请求的软文件预选数量，不是全局搜索白名单。MCP 的 path_prefix 与 hybrid 查询内 path:/lang: 取交集；提示只改变排名和扫描优先级。Rust API 的 None 与 Some([]) 分别表示不限范围和明确空集合。配置文件本身不会因此获得新的 MCP 参数。
+
+`evidence_summary.retrieval.lanes` 保留各通道状态、候选数、覆盖度、耗时与版本化候选。complete 且 candidate_count=0 表示已执行但无命中，不等于 disabled。候选/扫描/种子/邻居上限可产生 partial，数据库瞬时失败不缓存成成功。多词路径查询忽略少于三个 Unicode 标量的模糊 token，避免自然语言 a/is 等偶然命中文件名；单 token 和完整路径直接查询仍支持短名称。旧 lexical/grep 权重为0时仍可能执行并保留诊断，这与 exact/path/graph 的关闭语义不同。
+
+`evidence_summary.retrieval` 可查看 scope、grep 覆盖状态和分部分成本。缓存中的计数属于生成该结果时的工作；没有清缓存的请求不能把旧计数再次累计成实际扫描量。配置由引擎不可变持有，需显式重载项目生效，不承诺自动监听配置文件。
+
+## 查询资源与能力观测
+
+`status(aspect="capabilities").retrieval` 报告索引可用性、解析欠账、完整 ReadGeneration 和可选端口配置状态；不把局部 ready 当成全局覆盖。`query_pins` 是仍持有资源的查询视图数量，同一视图的工作线程副本共用一次计数，不是请求计数。执行器统计仍为进程共享，不是本项目独占。
+
+空闲清理采用非等待写锁与构建门检查；忙实例留给下一次清理。缓存只强持有 16 个项目，非拥有的弱引用登记使被 LRU 淘汰但仍有在途查询的实例可复用。监听与空闲循环随会话关闭或最后所有者释放而停止；已经运行的同步工作不能被强杀。冷项目初始化不持查询锁，但同会话的首次初始化串行化，不代表所有冷启动都包含在查询 deadline 内。
+
+## query
+
+查询执行策略与期限，省略保持 local，不发送网络请求。`auto` 未配置端口时等价 local；`semantic` 未配置则明确报不可用。P5-B 只提供宿主可注入接口及 fake 测试，没有真实 provider/embedding 配置。
+
+P5-D 支持通过 `search`/`context` 的可选 `retrieval_strategy` 覆盖本次请求的策略；它不会修改项目配置。`search.mode` 仍仅为 hybrid/symbol，symbol 模式不接受 auto/semantic 覆盖。真实 dense 尚未实现，状态始终明确显示 disabled。
+
+| 字段 | 默认 | 含义 |
+|---|---|---|
+| `strategy` | `local` | `local` / `auto` / `semantic`；不改变 search.mode |
+| `deadline_ms` | `30000` | 查询准入起的总预算，包含排队、可选端口与输出组装 |
+| `lane_timeout_ms` | `20000` | 本地 lane 子预算，不延长总期限 |
+| `semantic_timeout_ms` | `5000` | 可选异步端口子预算，超时诊断保留 |
+| `semantic_top_k` | `24` | 提供方候选上限；1–4096 |
+
+时间字段允许1–600000毫秒。CPU执行4/等待32、async执行8/等待32是进程共享边界，不按项目扩张；`status(aspect=index).diagnostics.query_execution` 可观察占用。同步算法不可强制中断时保留执行额度至退出，迟到结果不能写正常缓存。冷项目定位/加载的生命周期阶段不属于上述查询预算；具体边界见 [QUERY_EXECUTION.md](internals/QUERY_EXECUTION.md)。
 
 ## ranking
 
@@ -123,7 +171,7 @@ chunk 级检索前的文件预选阶段使用的逐文件分值。四个上下�
 | `preselect_pinned_scale` | `4.0` | pinned 层衰减尺度。 |
 | `preselect_overlay_floor` | `1.5` | overlay（脏缓冲）层分数下限。 |
 | `preselect_overlay_scale` | `3.0` | overlay 层衰减尺度。 |
-| `preselect_fts_base` | `1.4` | FTS summary 层：分数为 `base + 1 / (1 + |bm25|)`。 |
+| `preselect_fts_base` | `1.4` | FTS summary 层：`base + x/(1+x)`，`x=max(-raw_bm25,0)`；更负的 BM25 贡献不会更低。 |
 | `preselect_symbol_exact_bonus` | `2.0` | 符号名精确匹配的每 token 加成。 |
 | `preselect_symbol_fuzzy_bonus` | `1.2` | 符号名子串匹配的每 token 加成。 |
 | `preselect_path_token_bonus` | `1.0` | 路径分量匹配的每 token 加成。 |

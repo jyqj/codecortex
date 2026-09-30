@@ -112,7 +112,7 @@ static JAVA_HTTP_URI_RE: LazyLock<Regex> =
 
 pub struct JavaParser {
     language: tree_sitter::Language,
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 impl JavaParser {
@@ -1656,9 +1656,9 @@ impl FileParser for JavaParser {
 
         let tier = ParserTier::TreeSitter;
         let confidence = tier.default_confidence();
-        let chunks = self
-            .chunker
-            .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
+        let (chunks, source_structure) = self.chunker.chunk_with_tree(
+            file_path, content, language, &symbols, &tree, tier, confidence,
+        );
 
         let summary = format!(
             "{} (java, {} lines, {} symbols)",
@@ -1671,6 +1671,7 @@ impl FileParser for JavaParser {
 
         Ok(ParseOutcome {
             summary,
+            source_structure: Some(source_structure),
             chunks,
             symbols,
             imports,

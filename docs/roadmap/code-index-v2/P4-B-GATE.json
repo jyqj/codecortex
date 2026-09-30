@@ -1,0 +1,182 @@
+{
+  "batch": "P4-B",
+  "tasks": [
+    "P4-006",
+    "P4-007",
+    "P4-008",
+    "P4-009",
+    "P4-010"
+  ],
+  "status": "passed_declared_local_scope",
+  "G4": "not_complete",
+  "accepted_attempt": "final",
+  "target_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+  "covered_source_digest_sha256": "ccb702775561ad50b332047b6d248f1c31e94b6a41be17cd45ee4aac9c06dbcb",
+  "covered_files": 575,
+  "cargo_commands": 30,
+  "toolchain_tests": {
+    "stable": {
+      "workspace": {
+        "passed": 1661,
+        "failed": 0,
+        "ignored": 48
+      },
+      "http": {
+        "passed": 186,
+        "failed": 0,
+        "ignored": 41
+      },
+      "real-mcp": {
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0
+      },
+      "watcher": {
+        "passed": 17,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    "1.95.0": {
+      "workspace": {
+        "passed": 1661,
+        "failed": 0,
+        "ignored": 48
+      },
+      "http": {
+        "passed": 186,
+        "failed": 0,
+        "ignored": 41
+      },
+      "real-mcp": {
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0
+      },
+      "watcher": {
+        "passed": 17,
+        "failed": 0,
+        "ignored": 0
+      }
+    }
+  },
+  "artifacts": [
+    "artifacts/benchmarks/p4b-20260928-tuNL/final/validation.json",
+    "artifacts/benchmarks/p4b-20260928-tuNL/paired-final/summary.json",
+    "artifacts/benchmarks/p4b-20260928-tuNL/scope-check.json",
+    "artifacts/benchmarks/p4b-20260928-tuNL/cost-summary.json",
+    "artifacts/benchmarks/p4b-20260928-tuNL/evidence-classification.json",
+    "docs/roadmap/code-index-v2/P4-B-IMPLEMENTATION.md",
+    "docs/roadmap/code-index-v2/P4-B-GATE.json",
+    "docs/internals/CHUNK_POLICY.md"
+  ],
+  "scope_check": "artifacts/benchmarks/p4b-20260928-tuNL/scope-check.json",
+  "known_failures": [
+    "S11 no-answer",
+    "retained development R12 regression before Control-boundary fix"
+  ],
+  "comparisons": {
+    "comparison-exact.json": "inconclusive",
+    "comparison-intents.json": "inconclusive",
+    "comparison-frozen-source.json": "inconclusive"
+  },
+  "external_module_oracles": [
+    {
+      "toolchain": "stable",
+      "cases": [
+        [
+          "rust-path",
+          "passed"
+        ],
+        [
+          "rust-default-feature",
+          "passed"
+        ],
+        [
+          "python-relative",
+          "passed"
+        ],
+        [
+          "python-namespace-order",
+          "passed"
+        ],
+        [
+          "go-workspace",
+          "not_run"
+        ],
+        [
+          "go-replace",
+          "not_run"
+        ]
+      ],
+      "versions": {
+        "python": "3.9.6 (default, May 22 2026, 11:13:45) \n[Clang 21.0.0 (clang-2100.1.1.101)]",
+        "rustc": {
+          "argv": [
+            "/Users/jin/.rustup/toolchains/stable-aarch64-apple-darwin/bin/rustc",
+            "--version",
+            "--verbose"
+          ],
+          "exit_code": 0,
+          "stdout": "rustc 1.97.0 (2d8144b78 2026-07-07)\nbinary: rustc\ncommit-hash: 2d8144b7880597b6e6d3dfd63a9a9efae3f533d3\ncommit-date: 2026-07-07\nhost: aarch64-apple-darwin\nrelease: 1.97.0\nLLVM version: 22.1.6\n",
+          "stderr": ""
+        },
+        "go": null
+      },
+      "receipt": "artifacts/benchmarks/p4b-20260928-tuNL/final-oracles-stable/result.json"
+    },
+    {
+      "toolchain": "1.95.0",
+      "cases": [
+        [
+          "rust-path",
+          "passed"
+        ],
+        [
+          "rust-default-feature",
+          "passed"
+        ],
+        [
+          "python-relative",
+          "passed"
+        ],
+        [
+          "python-namespace-order",
+          "passed"
+        ],
+        [
+          "go-workspace",
+          "not_run"
+        ],
+        [
+          "go-replace",
+          "not_run"
+        ]
+      ],
+      "versions": {
+        "python": "3.9.6 (default, May 22 2026, 11:13:45) \n[Clang 21.0.0 (clang-2100.1.1.101)]",
+        "rustc": {
+          "argv": [
+            "/Users/jin/.rustup/toolchains/1.95.0-aarch64-apple-darwin/bin/rustc",
+            "--version",
+            "--verbose"
+          ],
+          "exit_code": 0,
+          "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: aarch64-apple-darwin\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+          "stderr": ""
+        },
+        "go": null
+      },
+      "receipt": "artifacts/benchmarks/p4b-20260928-tuNL/final-oracles-1.95.0/result.json"
+    }
+  ],
+  "format": {
+    "schema": 20,
+    "project_model": 3,
+    "file_state_aggregate": 4,
+    "public_adapter": "cc-eval-public-v3"
+  },
+  "rendering": "pure production-facing render API validated on real chunks; no provider call or persistent document manifest",
+  "limits": "G4、DocKey/Version、持久document manifest、provider、完整查询时磁盘freshness、公开holdout、100k/RSS/尾延迟、跨平台与发行认证未完成。S11仍失败；性能比较按原始结果保留，模块外部Go/TS参照未运行。",
+  "publication": "none"
+}

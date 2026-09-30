@@ -27,7 +27,7 @@ const RESOLVE_CACHE_SHARDS: usize = 16;
 /// semantics (keys are pre-hashed u64s, so the low bits pick a shard
 /// uniformly) while letting parallel resolvers proceed contention-free.
 pub(in crate::resolver) struct ShardedResolveCache {
-    shards: Vec<Mutex<LruCache<u64, Option<ResolveResult>>>>,
+    shards: Vec<Mutex<LruCache<u64, NameResolution>>>,
 }
 
 impl ShardedResolveCache {
@@ -41,20 +41,20 @@ impl ShardedResolveCache {
         }
     }
 
-    fn shard(&self, key: u64) -> &Mutex<LruCache<u64, Option<ResolveResult>>> {
+    fn shard(&self, key: u64) -> &Mutex<LruCache<u64, NameResolution>> {
         &self.shards[(key as usize) & (RESOLVE_CACHE_SHARDS - 1)]
     }
 
-    /// Outer `Option`: cache hit or miss. Inner `Option`: the cached
-    /// resolution outcome (misses are cached too).
-    pub(in crate::resolver) fn get(&self, key: u64) -> Option<Option<ResolveResult>> {
+    /// `None` is a cache miss. The cached enum retains ambiguous and
+    /// unresolved decisions as distinct results.
+    pub(in crate::resolver) fn get(&self, key: u64) -> Option<NameResolution> {
         match self.shard(key).lock() {
             Ok(mut cache) => cache.get(&key).cloned(),
             Err(_) => None,
         }
     }
 
-    pub(in crate::resolver) fn put(&self, key: u64, value: Option<ResolveResult>) {
+    pub(in crate::resolver) fn put(&self, key: u64, value: NameResolution) {
         if let Ok(mut cache) = self.shard(key).lock() {
             cache.put(key, value);
         }
@@ -71,6 +71,9 @@ impl ShardedResolveCache {
 
 /// Cross-file symbol directory used during indexing to resolve references.
 pub struct SymbolCatalog {
+    package_modules: HashMap<String, Vec<String>>,
+    pub(in crate::resolver) forward_routes: HashMap<String, Vec<(String, String, String)>>,
+    pub(in crate::resolver) go_packages: HashMap<String, std::sync::Arc<GoPackageLookup>>,
     pub(in crate::resolver) entries: Vec<CatalogEntry>,
     pub(in crate::resolver) by_name: HashMap<String, Vec<usize>>,
     pub(in crate::resolver) by_uid: HashMap<String, usize>,
@@ -120,6 +123,9 @@ impl SymbolCatalog {
             .unwrap_or(256);
         Self {
             entries: Vec::new(),
+            package_modules: HashMap::new(),
+            go_packages: HashMap::new(),
+            forward_routes: HashMap::new(),
             by_name: HashMap::new(),
             by_uid: HashMap::new(),
             by_qname: HashMap::new(),
@@ -132,6 +138,36 @@ impl SymbolCatalog {
             resolve_cache: ShardedResolveCache::new(cache_size.max(1)),
             max_fuzzy_pool,
             dead: 0,
+        }
+    }
+
+    /// Build one name index per package/test view and share it among consumers.
+    /// This avoids O(package_files²) copies and a directory walk for each call.
+    pub(crate) fn install_go_groups(
+        &mut self,
+        groups: &std::collections::BTreeMap<cc_model::package_surface::PackageKey, Vec<String>>,
+        consumers: impl IntoIterator<Item = (String, cc_model::package_surface::PackageKey)>,
+    ) {
+        use std::sync::Arc;
+        let mut views = HashMap::new();
+        self.go_packages.clear();
+        self.clear_resolve_cache();
+        for (file, key) in consumers {
+            let view = views.entry(key.clone()).or_insert_with(|| {
+                let mut names: HashMap<String, Vec<usize>> = HashMap::new();
+                for contribution in key.contribution_keys() {
+                    for path in groups.get(&contribution).into_iter().flatten() {
+                        for &idx in self.by_file.get(path).into_iter().flatten() {
+                            let e = &self.entries[idx];
+                            if e.container.is_none() && e.kind != SymbolKind::Method {
+                                names.entry(e.name.clone()).or_default().push(idx);
+                            }
+                        }
+                    }
+                }
+                Arc::new(GoPackageLookup { names })
+            });
+            self.go_packages.insert(file, Arc::clone(view));
         }
     }
 
@@ -504,11 +540,67 @@ impl SymbolCatalog {
 
     /// Find exported symbols by file + export name.
     pub(in crate::resolver) fn exported(&self, file_path: &str, export_name: &str) -> Vec<usize> {
-        self.by_export
-            .get(file_path)
-            .and_then(|m| m.get(&export_name.to_lowercase()))
-            .cloned()
-            .unwrap_or_default()
+        if let Some(files) = self.package_modules.get(file_path) {
+            if !export_name.chars().next().is_some_and(char::is_uppercase) {
+                return vec![];
+            }
+            let indices = files
+                .iter()
+                .flat_map(|p| self.same_file_named(p, export_name))
+                .filter(|&i| {
+                    self.entries[i].name == export_name && self.entries[i].container.is_none()
+                })
+                .collect::<Vec<_>>();
+            return super::helpers::stable_candidates(&self.entries, &indices);
+        }
+        let mut todo = vec![(file_path.to_owned(), export_name.to_owned())];
+        let mut seen = std::collections::BTreeSet::new();
+        let mut found = Vec::new();
+        while let Some((file, name)) = todo.pop() {
+            if !seen.insert((file.clone(), name.clone())) {
+                continue;
+            }
+            if seen.len() > 4096 {
+                return Vec::new();
+            }
+            let exact = self
+                .by_export
+                .get(&file)
+                .and_then(|m| m.get(&name.to_lowercase()))
+                .cloned()
+                .unwrap_or_default();
+            if !exact.is_empty() {
+                found.extend(exact);
+                continue;
+            }
+            if let Some(routes) = self.forward_routes.get(&file) {
+                let named = routes.iter().any(|(export, _, _)| export == &name);
+                for (export, target, imported) in routes {
+                    if export == &name || (!named && export == "*" && name != "default") {
+                        todo.push((
+                            target.clone(),
+                            if imported == "*" {
+                                name.clone()
+                            } else {
+                                imported.clone()
+                            },
+                        ));
+                    }
+                }
+            }
+        }
+        super::helpers::stable_candidates(&self.entries, &found)
+    }
+    pub(crate) fn install_package_modules(&mut self, modules: HashMap<String, Vec<String>>) {
+        self.package_modules = modules;
+        self.resolve_cache.clear();
+    }
+    pub(crate) fn install_forward_routes(
+        &mut self,
+        routes: HashMap<String, Vec<(String, String, String)>>,
+    ) {
+        self.forward_routes = routes;
+        self.resolve_cache.clear();
     }
 
     pub(in crate::resolver) fn find_by_uid(&self, uid: &str) -> Option<usize> {

@@ -51,8 +51,12 @@ impl Indexer {
         &self,
         project_path: &Path,
         write_units: &[FileWriteUnit],
-        walk_manifest: Option<&crate::scanner::WalkManifest>,
+        inputs: crate::project_model::BuildInputView<'_>,
     ) -> CcResult<FullSnapshotPayload> {
+        let crate::project_model::BuildInputView {
+            walk_manifest,
+            project_model,
+        } = inputs;
         // Pre-collect snapshot data for config links before entering the
         // rebuild closure (the closure must not query the live DB).
         let symbol_targets = Self::collect_symbol_targets(write_units);
@@ -61,7 +65,7 @@ impl Indexer {
         // file changing in between leaves a stale signature behind, which
         // forces a rescan next build — never a wrong skip. With a shared-walk
         // manifest both halves come from the same snapshot, no extra walks.
-        let (config_sig, raw_tokens) = match walk_manifest {
+        let (config_sig, mut raw_tokens) = match walk_manifest {
             Some(manifest) => (
                 crate::config_linker::config_files_signature_from_manifest(manifest),
                 crate::config_linker::scan_config_tokens_from_manifest(project_path, manifest)?,
@@ -71,6 +75,11 @@ impl Indexer {
                 scan_config_tokens(project_path)?,
             ),
         };
+        // Module configuration has an authoritative typed interpretation.
+        // Do not also synthesize heuristic code refs/files from its JSON text.
+        if let Some(model) = project_model {
+            raw_tokens.retain(|token| !model.inputs().configs.contains_key(&token.config_file));
+        }
         let config_units = Self::build_config_link_units_from_snapshot(
             project_path,
             symbol_targets,
@@ -141,10 +150,10 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
-        walk_manifest: Option<&crate::scanner::WalkManifest>,
+        inputs: crate::project_model::BuildInputView<'_>,
     ) -> CcResult<(Vec<FileWriteUnit>, cc_db::index_db::IndexGeneration)> {
         let payload = time_step("write", "full_prepare_payload", || {
-            self.prepare_full_snapshot_payload(project_path, write_units, walk_manifest)
+            self.prepare_full_snapshot_payload(project_path, write_units, inputs)
         })?;
         let generation_floor = time_step("write", "full_build_staging", || {
             self.db.admin().build_temp_db_staging(|conn| {
@@ -174,10 +183,10 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
-        walk_manifest: Option<&crate::scanner::WalkManifest>,
+        inputs: crate::project_model::BuildInputView<'_>,
     ) -> CcResult<Vec<FileWriteUnit>> {
         let payload = time_step("write", "full_prepare_payload", || {
-            self.prepare_full_snapshot_payload(project_path, write_units, walk_manifest)
+            self.prepare_full_snapshot_payload(project_path, write_units, inputs)
         })?;
         time_step("write", "full_rebuild_temp_db", || {
             self.db.admin().rebuild_with_temp_db(|conn| {
@@ -205,10 +214,10 @@ impl Indexer {
         route_nodes: &[RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
-        walk_manifest: Option<&crate::scanner::WalkManifest>,
+        inputs: crate::project_model::BuildInputView<'_>,
     ) -> CcResult<Vec<FileWriteUnit>> {
         let payload = time_step("write", "full_prepare_payload", || {
-            self.prepare_full_snapshot_payload(project_path, write_units, walk_manifest)
+            self.prepare_full_snapshot_payload(project_path, write_units, inputs)
         })?;
         time_step("write", "full_rebuild_direct_writer", || {
             self.db.admin().rebuild_with_direct_writer(|conn| {

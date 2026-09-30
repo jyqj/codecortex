@@ -85,6 +85,14 @@ impl FrameworkResolver for ExpressResolver {
             return;
         }
 
+        // Syntax-derived registrations already own their source site. Regex
+        // enrichment is fallback-only and must not replace an AST handler with
+        // a keyword such as `function` or a duplicate SQL conflict winner.
+        let mut sites: std::collections::HashSet<_> = outcome
+            .route_edges
+            .iter()
+            .map(|r| (r.line, r.start_col))
+            .collect();
         // --- Standard route methods: app.get("/path", handler) ---
         for cap in ROUTE_METHOD_RE.captures_iter(source) {
             let method_name = cap.get(1).map(|m| m.as_str()).unwrap_or("");
@@ -93,16 +101,25 @@ impl FrameworkResolver for ExpressResolver {
             }
 
             let route_path = cap.get(2).map(|m| m.as_str()).unwrap_or("/");
-            let handler_name = cap.get(3).map(|m| m.as_str().to_string());
+            let handler_name = cap
+                .get(3)
+                .map(|m| m.as_str())
+                .filter(|s| !matches!(*s, "function" | "async"))
+                .map(str::to_owned);
 
             let match_offset = cap.get(0).unwrap().start();
             let line = line_for_offset(source, match_offset);
+            let col =
+                (match_offset - source[..match_offset].rfind('\n').map_or(0, |i| i + 1)) as u32;
+            if !sites.insert((line, col)) {
+                continue;
+            }
 
             push_route_edge(
                 outcome,
                 file_path,
                 line,
-                0,
+                col,
                 RouteEdgeSpec {
                     route_path: route_path.to_string(),
                     handler_name,
@@ -122,6 +139,11 @@ impl FrameworkResolver for ExpressResolver {
 
             let match_offset = cap.get(0).unwrap().start();
             let line = line_for_offset(source, match_offset);
+            let col =
+                (match_offset - source[..match_offset].rfind('\n').map_or(0, |i| i + 1)) as u32;
+            if !sites.insert((line, col)) {
+                continue;
+            }
 
             let route_path = prefix.unwrap_or("/").to_string();
             let route_kind = if prefix.is_some() {
@@ -134,7 +156,7 @@ impl FrameworkResolver for ExpressResolver {
                 outcome,
                 file_path,
                 line,
-                0,
+                col,
                 RouteEdgeSpec {
                     route_path,
                     handler_name,
@@ -185,6 +207,37 @@ mod tests {
         let ctx = ProjectFrameworkContext::new();
         ExpressResolver.enrich_file(file_path, source, Language::JavaScript, &mut outcome, &ctx);
         outcome.route_edges
+    }
+
+    #[test]
+    fn ast_routes_are_not_overwritten_by_regex_function_keyword() {
+        let source = include_str!("../../../cc-eval/fixtures/sample-project/routes.js");
+        let mut outcome = cc_parsers::ParserRegistry::new()
+            .parse("routes.js", source, Language::JavaScript)
+            .unwrap();
+        assert_eq!(outcome.route_edges.len(), 3);
+        ExpressResolver.enrich_file(
+            "routes.js",
+            source,
+            Language::JavaScript,
+            &mut outcome,
+            &ProjectFrameworkContext::new(),
+        );
+        assert_eq!(
+            outcome.route_edges.len(),
+            3,
+            "heuristic duplicate must not replace the AST handler"
+        );
+        assert!(outcome
+            .route_edges
+            .iter()
+            .all(|r| r.handler_name.as_deref() != Some("function")));
+    }
+    #[test]
+    fn same_line_route_fallbacks_have_distinct_source_ids() {
+        let routes = run_express("routes.js", r#"app.get("/a",one); app.get("/b",two);"#);
+        assert_eq!(routes.len(), 2);
+        assert_ne!(routes[0].edge_id, routes[1].edge_id);
     }
 
     #[test]

@@ -32,6 +32,7 @@ pub(crate) fn make_import(
     is_namespace: bool,
 ) -> ImportRecord {
     ImportRecord {
+        context: Default::default(),
         file_path: file_path.to_string(),
         import_string,
         resolved_path: None,

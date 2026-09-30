@@ -1,0 +1,162 @@
+{
+  "phase": "P2-A",
+  "tasks": [
+    "P2-001",
+    "P2-002",
+    "P2-003",
+    "P2-004",
+    "P2-005"
+  ],
+  "status": "passed_local_batch",
+  "head": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
+  "covered_source_digest_sha256": "aeb2d29759d4d81b577c493630ef283d37874bf7be23b904b87c864a327acec5",
+  "covered_source_files": 463,
+  "validation_receipt": "artifacts/benchmarks/p2a-closeout-20260928/final-v2/validation.json",
+  "checks": 36,
+  "toolchains": {
+    "stable": {
+      "workspace": {
+        "passed": 1457,
+        "failed": 0,
+        "ignored": 29
+      },
+      "eval_http": {
+        "passed": 122,
+        "failed": 0,
+        "ignored": 23
+      },
+      "binaries": {
+        "codecortex": "e1a7ca57c76c143bd4cfbed1bc26724bcab7dca6e6199876679b1b8f2fb27e1e",
+        "cc-eval": "09bfb407bc480a0f7525c2a568e9f080ca70fbdd36026b1fceb7923eaee09586"
+      }
+    },
+    "1.95.0": {
+      "workspace": {
+        "passed": 1457,
+        "failed": 0,
+        "ignored": 29
+      },
+      "eval_http": {
+        "passed": 122,
+        "failed": 0,
+        "ignored": 23
+      },
+      "binaries": {
+        "codecortex": "96796220f32aef9d86a4431e360c2aa1d2fd9194f8ce56c238e5c259c1a8c22c",
+        "cc-eval": "42af5ad095d844f9a8df5d52280ee3f38430d9d711acfba08a2a1498fc4fa54d"
+      }
+    }
+  },
+  "validations": {
+    "V06": "canonical empty/nonempty goldens, Known/Unknown, visibility, language boundaries, body and address change tests passed",
+    "V07": "original signature cases and targeted forwarding/relocation/full-vs-incremental checks passed; no complete P2 claim",
+    "V13": "file/surface transaction, rollback, cascade, corruption, 600-file batched reads, previous schemas 7/8/9 rebuild to10 passed",
+    "V18": "14 old/new MCP inputs identical; new public coverage and current-target real stdio passed",
+    "V19": "8 fixed retrieval runs, 306 requests, per-question deltas zero, replayed metrics/slices/costs; comparisons inconclusive"
+  },
+  "database_schema": 10,
+  "public_surface_format": 1,
+  "extractors": {
+    "jsts": "jsts-declared-v3",
+    "rust": "rust-declared-v3",
+    "python": "python-declared-v2"
+  },
+  "benchmark_summary": "artifacts/benchmarks/p2a-closeout-20260928/paired/summary.json",
+  "original_signature_oracles": [
+    {
+      "language": "python",
+      "variant": "p1d",
+      "equal": false,
+      "tables": [
+        "files",
+        "symbols",
+        "imports",
+        "symbol_refs",
+        "call_edges",
+        "chunks",
+        "test_edges",
+        "routes"
+      ],
+      "exit_code": 1,
+      "different_tables": [
+        [
+          "symbols",
+          "symbol_refs",
+          "call_edges"
+        ]
+      ]
+    },
+    {
+      "language": "python",
+      "variant": "p2a",
+      "equal": true,
+      "tables": [
+        "public_surfaces",
+        "files",
+        "symbols",
+        "imports",
+        "symbol_refs",
+        "call_edges",
+        "chunks",
+        "test_edges",
+        "routes"
+      ],
+      "exit_code": 0,
+      "different_tables": [
+        []
+      ]
+    },
+    {
+      "language": "rust",
+      "variant": "p1d",
+      "equal": false,
+      "tables": [
+        "files",
+        "symbols",
+        "imports",
+        "symbol_refs",
+        "call_edges",
+        "chunks",
+        "test_edges",
+        "routes"
+      ],
+      "exit_code": 1,
+      "different_tables": [
+        [
+          "symbols",
+          "symbol_refs",
+          "call_edges"
+        ]
+      ]
+    },
+    {
+      "language": "rust",
+      "variant": "p2a",
+      "equal": true,
+      "tables": [
+        "public_surfaces",
+        "files",
+        "symbols",
+        "imports",
+        "symbol_refs",
+        "call_edges",
+        "chunks",
+        "test_edges",
+        "routes"
+      ],
+      "exit_code": 0,
+      "different_tables": [
+        []
+      ]
+    }
+  ],
+  "full_P2_G2": "not_completed",
+  "limitations": [
+    "No G2, compiler semantic completeness or negative-dependency certification",
+    "No model, live OCE, Linux, Windows, remote Actions, holdout or release performance run",
+    "S11 remains failed; four unanchored Chinese authored cases remain misses",
+    "Declaration evidence is not compiler/LSP or runtime evaluation",
+    "Unknown propagation is bounded by existing closure budget; durable frontier and negative/name-bucket dependencies remain later tasks"
+  ],
+  "next_batch": "P2-B / P2-006..010"
+}

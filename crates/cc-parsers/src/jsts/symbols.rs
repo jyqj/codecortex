@@ -187,6 +187,7 @@ impl JsTsParser {
                     if val_node.kind() == "call_expression" {
                         let callee = val_node.child(0).and_then(|c| node_text(&c, source));
                         if callee == Some("require") {
+                            let import_start = ctx.imports.len();
                             if let Some(src) = self.extract_first_string_arg(&val_node, source) {
                                 if let Some(name_node) = child.child_by_field_name("name") {
                                     if name_node.kind() == "object_pattern" {
@@ -243,10 +244,15 @@ impl JsTsParser {
                                                 is_namespace: true,
                                                 is_default: true,
                                                 is_reexport: false,
+                                                context: Default::default(),
                                             });
                                         }
                                     }
                                 }
+                            }
+                            for import in &mut ctx.imports[import_start..] {
+                                import.context.syntax =
+                                    cc_model::module_inputs::ImportSyntax::Require;
                             }
                         }
                     }

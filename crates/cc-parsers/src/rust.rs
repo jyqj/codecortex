@@ -57,7 +57,7 @@ static RUST_ENV_ACCESS_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 pub struct RustParser {
     language: tree_sitter::Language,
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 impl RustParser {
@@ -138,6 +138,11 @@ impl RustParser {
                 let mut cursor = node.walk();
                 for child in node.children(&mut cursor) {
                     self.visit_node(&child, source, file_path, symbols, imports, container);
+                }
+            }
+            "mod_item" => {
+                if let Some(body) = node.child_by_field_name("body") {
+                    self.visit_node(&body, source, file_path, symbols, imports, container);
                 }
             }
             "use_declaration" => {
@@ -294,6 +299,17 @@ impl RustParser {
         let mut import =
             crate::import_common::make_import(file_path, import_string, None, None, false);
         import.is_reexport = is_reexport;
+        import.context = crate::rust_modules::import_context(*node, source);
+        if !import.import_string.contains(['{', '}', '*']) {
+            let (path, alias) = import
+                .import_string
+                .split_once(" as ")
+                .map_or((import.import_string.as_str(), None), |(p, a)| {
+                    (p, Some(a.trim().to_owned()))
+                });
+            import.imported_name = path.trim().rsplit("::").next().map(str::to_owned);
+            import.alias = alias;
+        }
         Some(import)
     }
 
@@ -467,6 +483,23 @@ impl RustParser {
         }
     }
 
+    /// Anchor a call at its actual callee token. The start of a chained field
+    /// expression belongs to its receiver and is shared by multiple calls.
+    fn callee_anchor(mut node: tree_sitter::Node<'_>) -> tree_sitter::Node<'_> {
+        loop {
+            let field = match node.kind() {
+                "generic_function" => "function",
+                "field_expression" => "field",
+                "scoped_identifier" => "name",
+                _ => return node,
+            };
+            match node.child_by_field_name(field) {
+                Some(child) => node = child,
+                None => return node,
+            }
+        }
+    }
+
     /// Emit a call edge + call ref for a single `call_expression` node.
     #[allow(clippy::too_many_arguments)]
     fn extract_call(
@@ -497,9 +530,10 @@ impl RustParser {
             args.named_children(&mut cursor).count() as u32
         });
 
-        let line_no = func_node.start_position().row as u32 + 1;
-        let start_col = func_node.start_position().column as u32;
-        let end_col = func_node.end_position().column as u32;
+        let anchor = Self::callee_anchor(func_node);
+        let line_no = anchor.start_position().row as u32 + 1;
+        let start_col = anchor.start_position().column as u32;
+        let end_col = anchor.end_position().column as u32;
         let call_kind = match dispatch_kind {
             DispatchKind::Dynamic => "dynamic",
             _ => "direct",
@@ -554,9 +588,10 @@ impl RustParser {
             _ => return,
         };
 
-        let line_no = macro_node.start_position().row as u32 + 1;
-        let start_col = macro_node.start_position().column as u32;
-        let end_col = macro_node.end_position().column as u32;
+        let anchor = Self::callee_anchor(macro_node);
+        let line_no = anchor.start_position().row as u32 + 1;
+        let start_col = anchor.start_position().column as u32;
+        let end_col = anchor.end_position().column as u32;
 
         self.push_call(
             file_path,
@@ -957,7 +992,9 @@ impl FileParser for RustParser {
         let tree =
             crate::parse_common::parse_tree(&self.language, content, file_path, timeout_micros)?;
 
-        let (symbols, imports) = self.extract_symbols(&tree, content.as_bytes(), file_path);
+        let (symbols, mut imports) = self.extract_symbols(&tree, content.as_bytes(), file_path);
+        let public_surface =
+            crate::exports::rust::extract(&tree, content.as_bytes(), file_path, &mut imports);
         let (symbol_refs, call_edges) =
             self.extract_refs_and_calls(&tree, content.as_bytes(), file_path, &symbols);
         let tier = ParserTier::Semantic;
@@ -988,9 +1025,9 @@ impl FileParser for RustParser {
             ],
         );
 
-        let chunks = self
-            .chunker
-            .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
+        let (chunks, source_structure) = self.chunker.chunk_with_tree(
+            file_path, content, language, &symbols, &tree, tier, confidence,
+        );
         let summary = format!(
             "{} (rust, {} lines, {} symbols)",
             file_path,
@@ -1001,6 +1038,8 @@ impl FileParser for RustParser {
 
         Ok(ParseOutcome {
             summary,
+            source_structure: Some(source_structure),
+            public_surface,
             chunks,
             symbols,
             imports,

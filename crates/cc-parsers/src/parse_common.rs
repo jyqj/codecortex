@@ -2,6 +2,8 @@
 
 use cc_model::{CcError, CcResult, Language};
 
+#[cfg(test)]
+thread_local! { static TREE_PARSE_COUNT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) }; }
 /// Build a tree-sitter parser for `language`, apply an optional timeout, and
 /// parse `content` into a syntax tree.
 pub(crate) fn parse_tree(
@@ -10,6 +12,8 @@ pub(crate) fn parse_tree(
     file_path: &str,
     timeout_micros: Option<u64>,
 ) -> CcResult<tree_sitter::Tree> {
+    #[cfg(test)]
+    TREE_PARSE_COUNT.with(|n| n.set(n.get() + 1));
     let mut parser = tree_sitter::Parser::new();
     parser.set_language(language).map_err(|e| CcError::Parse {
         file: file_path.to_string(),
@@ -27,6 +31,24 @@ pub(crate) fn parse_tree(
             "tree-sitter parse failed".to_string()
         },
     })
+}
+
+#[cfg(test)]
+#[test]
+fn p4a_chunking_reuses_one_language_parse() {
+    use crate::ParserRegistry;
+    for (path, language, source) in [
+        ("a.ts", Language::TypeScript, "export function a(){}\n"),
+        ("a.py", Language::Python, "def a():\n    pass\n"),
+        ("lib.rs", Language::Rust, "fn a(){}\n"),
+        ("a.go", Language::Go, "package a\nfunc A(){}\n"),
+        ("a.vue", Language::Vue, "<script>function a(){}</script>"),
+    ] {
+        TREE_PARSE_COUNT.with(|n| n.set(0));
+        let out = ParserRegistry::new().parse(path, source, language).unwrap();
+        assert!(out.source_structure.is_some());
+        TREE_PARSE_COUNT.with(|n| assert_eq!(n.get(), 1, "{path}: chunking must not reparse"));
+    }
 }
 
 /// 判断 `file_path` 是否像测试文件，按 `language` 分发到各语言既有的路径启发。

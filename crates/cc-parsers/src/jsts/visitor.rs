@@ -41,6 +41,9 @@ impl JsTsParser {
         in_export: bool,
         is_default_export: bool,
     ) {
+        if !ctx.visited_nodes.insert(node.id()) {
+            return;
+        }
         match node.kind() {
             "function_declaration" | "generator_function_declaration" => {
                 let prev_uid = ctx.current_symbol_uid.take();
@@ -152,7 +155,7 @@ impl JsTsParser {
                 return;
             }
             "import_statement" => {
-                if let Some(imp) = self.extract_import(node, source, file_path) {
+                for imp in self.extract_import(node, source, file_path) {
                     // Check if import path matches a known broker pattern
                     if let Some(broker_match) =
                         crate::broker_patterns::match_broker(&imp.import_string)
@@ -169,8 +172,10 @@ impl JsTsParser {
                         }
                     }
                     let import_idx = ctx.imports.len();
-                    for binding in Self::collect_import_local_bindings(node, source) {
-                        ctx.import_bindings.entry(binding).or_insert(import_idx);
+                    if let Some(binding) = imp.alias.as_ref().or(imp.imported_name.as_ref()) {
+                        ctx.import_bindings
+                            .entry(binding.clone())
+                            .or_insert(import_idx);
                     }
                     ctx.imports.push(imp);
                 }
@@ -334,6 +339,20 @@ impl JsTsParser {
     // Expression tree walking — extracts calls, routes, literals
     // -------------------------------------------------------------------
 
+    fn visit_call_children(
+        &self,
+        node: &tree_sitter::Node,
+        source: &[u8],
+        file_path: &str,
+        ctx: &mut ExtractCtx,
+        container: Option<&str>,
+    ) {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            self.visit_expression_tree(&child, source, file_path, ctx, container);
+        }
+    }
+
     pub(super) fn visit_expression_tree(
         &self,
         node: &tree_sitter::Node,
@@ -342,18 +361,17 @@ impl JsTsParser {
         ctx: &mut ExtractCtx,
         container: Option<&str>,
     ) {
+        if !ctx.visited_expressions.insert(node.id()) {
+            return;
+        }
         match node.kind() {
+            "function_declaration" | "generator_function_declaration" | "class_declaration" => {
+                self.visit_node(node, source, file_path, ctx, container, false, false);
+            }
             "call_expression" => {
                 self.visit_call_expression(node, source, file_path, ctx, container, false);
-                // Also visit arguments for nested refs
-                if let Some(args) = child_by_kind(node, "arguments") {
-                    let mut cursor = args.walk();
-                    for child in args.children(&mut cursor) {
-                        if !matches!(child.kind(), "(" | ")" | ",") {
-                            self.visit_expression_tree(&child, source, file_path, ctx, container);
-                        }
-                    }
-                }
+                // Both receiver/callee expressions and arguments can contain calls.
+                self.visit_call_children(node, source, file_path, ctx, container);
             }
             "new_expression" => {
                 self.visit_new_expression(node, source, file_path, ctx, container);
@@ -362,7 +380,12 @@ impl JsTsParser {
                 let mut cursor = node.walk();
                 for child in node.children(&mut cursor) {
                     if child.kind() == "call_expression" {
-                        self.visit_call_expression(&child, source, file_path, ctx, container, true);
+                        if ctx.visited_expressions.insert(child.id()) {
+                            self.visit_call_expression(
+                                &child, source, file_path, ctx, container, true,
+                            );
+                            self.visit_call_children(&child, source, file_path, ctx, container);
+                        }
                     } else if child.kind() != "await" {
                         self.visit_expression_tree(&child, source, file_path, ctx, container);
                     }
@@ -378,6 +401,12 @@ impl JsTsParser {
                 }
             }
             "template_string" => {
+                let mut cursor = node.walk();
+                for child in node.named_children(&mut cursor) {
+                    if child.kind() == "template_substitution" {
+                        self.visit_expression_tree(&child, source, file_path, ctx, container);
+                    }
+                }
                 if let Some(text) = node_text(node, source) {
                     let value = text.trim_matches('\u{0060}');
                     if (3..=160).contains(&value.len()) {

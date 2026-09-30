@@ -1,9 +1,13 @@
 //! cc-server library re-exports for use by cc-eval and the binary crate.
 
+pub mod capability_status;
 pub mod engine;
 pub mod handlers;
 pub mod mcp;
 pub mod project_session;
+pub mod query_handle;
+pub mod service_factory;
+pub(crate) mod session_tasks;
 pub mod tools;
 
 pub(crate) mod engine_query;
@@ -15,6 +19,7 @@ pub(crate) mod graph_type_hierarchy;
 pub(crate) mod graph_types;
 pub(crate) mod graph_walk;
 pub(crate) mod impact;
+#[cfg(test)]
 pub(crate) mod path_guard;
 pub(crate) mod symbol_extract;
 pub(crate) mod symbol_resolution;

@@ -73,8 +73,33 @@ pub fn handle_context(
     include_source: bool,
     intent: Option<&str>,
 ) -> CcResult<Value> {
-    let mut result = context::task_symbols(runtime.clone(), task, max_symbols, Some(1), intent)?;
+    let result = context::task_symbols(runtime.clone(), task, max_symbols, Some(1), intent)?;
+    finish_context(runtime, result, include_source)
+}
 
+pub(crate) fn finish_context(
+    runtime: SharedCodeIndex,
+    result: Value,
+    include_source: bool,
+) -> CcResult<Value> {
+    finish_context_with(result, include_source, |names| {
+        context::explore_symbols(runtime, names, &context_source_options())
+    })
+}
+
+pub(crate) fn context_source_options() -> crate::engine_query::ExploreOptions {
+    crate::engine_query::ExploreOptions {
+        max_callers: Some(3),
+        max_callees: Some(3),
+        include_source: true,
+        ..Default::default()
+    }
+}
+pub(crate) fn finish_context_with(
+    mut result: Value,
+    include_source: bool,
+    explore: impl FnOnce(&[String]) -> CcResult<Value>,
+) -> CcResult<Value> {
     if include_source {
         if let Some(matched) = result.get("matched_symbols").and_then(|v| v.as_array()) {
             let names: Vec<String> = matched
@@ -89,16 +114,7 @@ pub fn handle_context(
                 .collect();
 
             if !names.is_empty() {
-                let details = context::explore_symbols(
-                    runtime,
-                    &names,
-                    &crate::engine_query::ExploreOptions {
-                        max_callers: Some(3),
-                        max_callees: Some(3),
-                        include_source: true,
-                        ..Default::default()
-                    },
-                )?;
+                let details = explore(&names)?;
                 if let Some(obj) = result.as_object_mut() {
                     obj.insert("symbol_details".to_string(), details);
                 }

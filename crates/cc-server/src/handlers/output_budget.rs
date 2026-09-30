@@ -97,6 +97,13 @@ pub fn finalize(runtime: &SharedCodeIndex, tool: &str, value: Value) -> Value {
 /// Cap a JSON value's serialized size, replacing oversized values with a
 /// truncation envelope carrying a bounded UTF-8-safe preview.
 pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
+    if value.pointer("/machine_pack/kind").and_then(Value::as_str) == Some("code_index_context")
+        && value.get("token_budget").is_some()
+    {
+        return cc_search::selection::budget::pack_value(value, max_chars).unwrap_or_else(
+            |_| json!({"_truncated":true,"error":"context_budget_exceeded","partial":true}),
+        );
+    }
     let serialized = serde_json::to_string(&value).unwrap_or_default();
     if serialized.len() <= max_chars {
         return value;
@@ -105,24 +112,307 @@ pub(crate) fn enforce_output_limit(value: Value, max_chars: usize) -> Value {
     // Keep only a bounded UTF-8-safe preview. The old fallback inserted the
     // original `value` when the preview was not valid JSON, which defeated the
     // output budget for large strings/objects.
-    let preview_budget = max_chars.saturating_sub(256);
-    let preview = utf8_prefix(&serialized, preview_budget).to_string();
-    let partial = serde_json::from_str::<Value>(&preview)
-        .ok()
-        .unwrap_or(Value::String(preview));
+    let freshness = value.get("resolution_freshness").cloned();
+    let source_freshness = value
+        .get("source_freshness")
+        .or_else(|| value.pointer("/evidence_summary/source_freshness"))
+        .cloned();
+    let freshness_bytes = freshness.as_ref().map_or(0, |v| v.to_string().len() + 32)
+        + source_freshness
+            .as_ref()
+            .map_or(0, |v| v.to_string().len() + 32);
+    // Retain bounded per-file provenance/reasons alongside the human preview.
+    // Do not repeat a large proof for every same-file hit. These are explicitly
+    // reference previews, not complete chunk/source output or new search hits.
+    let mut retrieval_preview = Vec::new();
+    let mut seen = std::collections::BTreeSet::new();
+    if let Some(hits) = value
+        .pointer("/machine_pack/hits")
+        .and_then(Value::as_array)
+    {
+        for hit in hits.iter().take(64) {
+            let Some(path) = hit.get("file_path").and_then(Value::as_str) else {
+                continue;
+            };
+            if !seen.insert(path) {
+                continue;
+            }
+            let reasons: Vec<_> = hit
+                .pointer("/metadata/stage_a_file_reasons")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .filter_map(Value::as_str)
+                .take(4)
+                .map(|s| utf8_prefix(s, 128))
+                .collect();
+            let row = json!({"file_path":path,"chunk_id":hit.get("chunk_id"),"document":hit.pointer("/metadata/document"),"retrieval_reasons":reasons});
+            retrieval_preview.push(row);
+            if serde_json::to_string(&retrieval_preview).map_or(usize::MAX, |s| s.len())
+                > max_chars / 2
+            {
+                retrieval_preview.pop();
+                break;
+            }
+            if retrieval_preview.len() >= 8 {
+                break;
+            }
+        }
+    }
+    let mut evidence_summary = value.get("evidence_summary").cloned();
+    if let Some(obj) = evidence_summary.as_mut().and_then(Value::as_object_mut) {
+        obj.remove("source_freshness");
+    }
+    // Full lane candidates remain available on untruncated responses. When the
+    // response itself must be truncated, preserve the bounded execution/status
+    // receipt rather than dropping the whole evidence summary because repeated
+    // document identities are large. `candidate_count` remains authoritative.
+    if let Some(lanes) = evidence_summary
+        .as_mut()
+        .and_then(|summary| summary.pointer_mut("/retrieval/lanes"))
+        .and_then(Value::as_array_mut)
+    {
+        for lane in lanes {
+            if let Some(object) = lane.as_object_mut() {
+                let omitted = object
+                    .get("candidates")
+                    .and_then(Value::as_array)
+                    .is_some_and(|candidates| !candidates.is_empty());
+                object.remove("candidates");
+                if omitted {
+                    object.insert("candidates_omitted".into(), Value::Bool(true));
+                }
+            }
+        }
+    }
+    // New verbose policy explanations must not evict previously available
+    // graph/coverage diagnostics from a truncated response. Keep a bounded
+    // policy projection; the complete policy remains on untruncated output.
+    if let Some(summary) = evidence_summary.as_mut() {
+        if summary.to_string().len() > max_chars / 4 {
+            if let Some(policy) = summary.pointer_mut("/retrieval/policy") {
+                let mut compact = serde_json::Map::new();
+                for key in [
+                    "version",
+                    "requested",
+                    "effective",
+                    "intent",
+                    "semantic_state",
+                    "deadline_ms",
+                    "lane_timeout_ms",
+                    "semantic_timeout_ms",
+                    "semantic_top_k",
+                ] {
+                    if let Some(value) = policy.get(key) {
+                        compact.insert(key.into(), value.clone());
+                    }
+                }
+                compact.insert("details_omitted".into(), Value::Bool(true));
+                *policy = Value::Object(compact);
+            }
+        }
+        if summary.to_string().len() > max_chars / 4 {
+            if let Some(retrieval) = summary.get_mut("retrieval").and_then(Value::as_object_mut) {
+                if retrieval.remove("policy").is_some() {
+                    retrieval.insert("policy_omitted".into(), Value::Bool(true));
+                }
+            }
+        }
+    }
+    // Selection is an additive explanation, never a reason to erase older
+    // graph/lane diagnostics. Full responses keep its complete accounting.
+    if let Some(summary) = evidence_summary.as_mut() {
+        if summary.to_string().len() > max_chars / 4 {
+            if let Some(selection) = summary.get_mut("selection") {
+                let mut compact = serde_json::Map::new();
+                for key in [
+                    "spec",
+                    "intent",
+                    "input_candidates",
+                    "selected",
+                    "source_covered_omissions",
+                    "limit_omitted",
+                ] {
+                    if let Some(value) = selection.get(key) {
+                        compact.insert(key.into(), value.clone());
+                    }
+                }
+                compact.insert("details_omitted".into(), Value::Bool(true));
+                *selection = Value::Object(compact);
+            }
+        }
+        if summary.to_string().len() > max_chars / 4 {
+            if let Some(object) = summary.as_object_mut() {
+                if object.remove("selection").is_some() {
+                    object.insert("selection_omitted".into(), Value::Bool(true));
+                }
+            }
+        }
+    }
+    let evidence_summary = evidence_summary.filter(|s| {
+        s.as_object().is_some_and(|o| !o.is_empty()) && s.to_string().len() <= max_chars / 4
+    });
+    let summary_bytes = evidence_summary
+        .as_ref()
+        .map_or(0, |s| s.to_string().len() + 32);
+    let reference_bytes = if retrieval_preview.is_empty() {
+        0
+    } else {
+        serde_json::to_string(&retrieval_preview).map_or(0, |s| s.len() + 32)
+    };
+    let preview_budget =
+        max_chars.saturating_sub(256 + freshness_bytes + reference_bytes + summary_bytes);
+    // A metadata-heavy envelope must not hide its useful source rendering
+    // behind an alphabetically earlier JSON metadata prefix. This remains
+    // explicitly partial; it is never accepted as complete machine evidence.
+    let rendered = value.get("rendered_prompt").and_then(Value::as_str);
+    let preview = utf8_prefix(rendered.unwrap_or(&serialized), preview_budget).to_string();
+    let partial = if rendered.is_some() {
+        Value::String(preview)
+    } else {
+        serde_json::from_str::<Value>(&preview).unwrap_or(Value::String(preview))
+    };
 
-    json!({
+    let mut result = json!({
         "_truncated": true,
         "_original_chars": serialized.len(),
         "_max_chars": max_chars,
         "partial": partial,
-    })
+    });
+    // A truncation envelope must not hide incomplete resolution in a preview.
+    if let Some(freshness) = freshness {
+        result["resolution_freshness"] = freshness;
+    }
+    if let Some(summary) = evidence_summary {
+        result["evidence_summary"] = summary;
+    }
+    if !retrieval_preview.is_empty() {
+        result["retrieval_reference_preview"] = json!(retrieval_preview);
+    }
+    if let Some(source_freshness) = source_freshness {
+        result["source_freshness"] = source_freshness;
+    }
+    if rendered.is_some() {
+        result["partial_format"] = json!("rendered_prompt");
+    }
+    result
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn source_rendering_and_stale_diagnostics_survive_metadata_truncation() {
+        let input = json!({"machine_pack":{"metadata":"x".repeat(5000)},"rendered_prompt":"function independently_authored_marker() {}", "evidence_summary":{"source_freshness":{"partial":true,"omitted_files":{"gone.py":"deleted"}}}});
+        let result = enforce_output_limit(input, 512);
+        assert_eq!(result["_truncated"], true);
+        assert!(result["partial"]
+            .as_str()
+            .unwrap()
+            .contains("independently_authored_marker"));
+        assert_eq!(result["source_freshness"]["partial"], true);
+        assert_eq!(result["partial_format"], "rendered_prompt");
+    }
+
+    #[test]
+    fn verbose_selection_cannot_evict_existing_graph_and_lane_diagnostics() {
+        let input = json!({
+            "rendered_prompt":"fn selection_marker() {}",
+            "machine_pack":{"metadata":"x".repeat(16000)},
+            "evidence_summary":{
+                "graph_enrichment":{"symbols_resolved":2,"graph_explain":{"truncated":true}},
+                "retrieval":{"lanes":[{"lane_id":"graph","status":"partial","candidate_count":2,
+                    "truncation_reason":"graph_expansion_limit","candidates":[]}]},
+                "selection":{"spec":"anchored-facets-source-union-v1","intent":"fix",
+                    "input_candidates":40,"selected":8,"original_ranks":vec![1;3000],
+                    "unmet_facets":vec!["explanation";1000],"source_covered_omissions":2,"limit_omitted":30}
+            }
+        });
+        let full = enforce_output_limit(input.clone(), 100000);
+        assert_eq!(full, input);
+        let result = enforce_output_limit(input, 4096);
+        assert_eq!(result["_truncated"], true);
+        assert_eq!(
+            result["evidence_summary"]["graph_enrichment"]["symbols_resolved"],
+            2
+        );
+        assert_eq!(
+            result["evidence_summary"]["retrieval"]["lanes"][0]["status"],
+            "partial"
+        );
+        assert_eq!(
+            result["evidence_summary"]["selection"]["details_omitted"],
+            true
+        );
+        assert_eq!(result["evidence_summary"]["selection"]["selected"], 8);
+    }
+
+    #[test]
+    fn verbose_query_policy_cannot_evict_graph_and_lane_diagnostics() {
+        let input = json!({
+            "rendered_prompt": "fn context_marker() {}",
+            "machine_pack": {"metadata": "x".repeat(12000)},
+            "evidence_summary": {
+                "graph_enrichment": {"symbols_resolved": 2, "graph_explain": {"truncated": true}},
+                "retrieval": {
+                    "lanes": [{"lane_id":"graph", "status":"partial", "candidate_count":2,
+                        "truncation_reason":"graph_expansion_limit", "candidates":[]}],
+                    "policy": {"version":"query-policy-v1", "requested":"auto", "effective":"local",
+                        "intent":"trace", "semantic_state":"not_configured", "deadline_ms":30000,
+                        "obligations": vec!["repeated explanation"; 1000],
+                        "completeness":"all limits remain visible", "no_answer":"partial is not absence"}
+                }
+            }
+        });
+        let result = enforce_output_limit(input, 4096);
+        assert_eq!(result["_truncated"], true);
+        assert_eq!(
+            result["evidence_summary"]["graph_enrichment"]["symbols_resolved"],
+            2
+        );
+        assert_eq!(
+            result["evidence_summary"]["retrieval"]["lanes"][0]["status"],
+            "partial"
+        );
+        let policy = &result["evidence_summary"]["retrieval"]["policy"];
+        assert_eq!(policy["effective"], "local");
+        assert_eq!(policy["details_omitted"], true);
+        assert!(policy.get("obligations").is_none());
+        assert!(serde_json::to_vec(&result).unwrap().len() <= 4096);
+    }
+
+    #[test]
+    fn lane_status_receipts_survive_candidate_heavy_truncation() {
+        let candidate = json!({
+            "document": {"doc_key":"a".repeat(64),"doc_version":"b".repeat(64)},
+            "legacy_chunk_id":"chunk:src/large.rs:0",
+            "source_span":{"start":0,"end":20}
+        });
+        let input = json!({
+            "machine_pack":{"metadata":"x".repeat(12000)},
+            "rendered_prompt":"fn lane_status_marker() {}",
+            "evidence_summary":{"retrieval":{"lanes":[{
+                "schema_version":1,
+                "lane_id":"exact_symbol",
+                "weight":1.0,
+                "status":"complete",
+                "elapsed_us":10,
+                "candidate_count":40,
+                "coverage":{"scope":"hard_scope","complete":true,"examined":null,"total_lower_bound":40},
+                "truncation_reason":null,
+                "candidates":vec![candidate;40]
+            }]}}
+        });
+        let result = enforce_output_limit(input, 2048);
+        assert_eq!(result["_truncated"], true);
+        let lane = &result["evidence_summary"]["retrieval"]["lanes"][0];
+        assert_eq!(lane["status"], "complete");
+        assert_eq!(lane["candidate_count"], 40);
+        assert_eq!(lane["candidates_omitted"], true);
+        assert!(lane.get("candidates").is_none());
+    }
 
     // ── enforce_output_limit: passthrough when under limit ──────────
 

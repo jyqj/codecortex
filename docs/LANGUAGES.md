@@ -3,6 +3,39 @@
 CodeCortex 自动识别 30 种语言标识符（外加 `Unknown` 兜底），分三个提取
 层级，并内置 16 个语义框架 resolver。
 
+## 源码切块（P4-A/B）
+
+源码块直接来自原始 UTF-8 字节，保留 CRLF 和末尾换行；现有 tree-sitter 任务同时输出有界 AST 坐标，类成员、长函数、注释与签名使用同一坐标体系。Vue/Svelte 脚本按原组件位置投影，不把脚本拼接文本当原文。无 AST 的语言明确使用回退。P4-B将同一行/字节/Unicode标量/估算token预算接入全部Registry解析器与SFC，具体范围见[CHUNK_POLICY.md](internals/CHUNK_POLICY.md)。详见 [SOURCE_CHUNKS.md](internals/SOURCE_CHUNKS.md)。
+
+P4-C将上述块接入当前文档清单与独立DocVersion，并在公开源码读取前核验磁盘摘要；不存在的源码不会因为缓存命中而返回。此处不提供完整语言语义或全查询原子快照。详见[DOCUMENTS.md](internals/DOCUMENTS.md)。
+
+## 项目模型与模块解析（P3）
+
+最近 ts/jsconfig、JSONC、继承、paths/baseUrl 继续保留。P3-B新增捕获的workspace/package exports/imports、按导入语法及Node格式选条件、Rust声明模块/cfg和Python roots/相对包。P3-C新增Go本地module/workspace/replace包集合和显式External/Ambiguous/Unknown状态。配置发现与无磁盘模块解析分离，schema21保留导入上下文及包证据，并增加原始切块字节坐标、清除旧跨语言路径猜测。仅声明静态子集，不是完整编译器或运行时；Unsupported仍显式。见 [模块解析范围](internals/MODULE_RESOLUTION.md)。
+
+| 模块解析语言／模式 | 已声明范围 | 未认证范围 |
+|---|---|---|
+| JS/TS：local_compat、node10、bundler、node16、nodenext | 捕获配置、条件有序的本地/workspace入口与路径替换 | 完整编译器默认值、安装依赖、所有构建产物映射 |
+| Rust | 声明模块、path、crate/self/super、默认 feature 子集 | 宏、完整 target/profile 与 feature 合并 |
+| Python | 静态 root/src、相对导入、普通包和 namespace 顺序 | 初始化器、import hooks、运行时路径变化 |
+| Go | 无条件可移植、本地 module/workspace/replace 的非测试文件集合 | MVS、host target、cgo、完整类型与遮蔽语义 |
+| Vue/Svelte | 已提取 script 的导入复用 JS/TS 规则 | 任意组件目标扩展和框架转换 |
+| 其他语言模块规则 | 显式 Unsupported；提取/名称启发式仍是独立能力 | 不再将 Java 等导入猜成 JavaScript 文件 |
+
+机器可检验矩阵见 `internals/MODULE_CAPABILITIES.json`；输入预算、符号链接、平台和并发边界见 [模块输入防护](internals/MODULE_INPUT_SAFETY.md)。模块结果与符号置信度、已观察到的增量新鲜度分别报告，不能互相代替。
+
+## JS/TS 调用事实修正（P2-D）
+
+移除按文本正则补充调用/引用的旧入口；真实 AST 调用只归属一次，声明、注释、字符串正文不是调用。保留 await 参数、模板插值、嵌套函数和链式接收者中的真实调用；动态可调用表达式保持 Unsupported。这里的静态解析阶梯不是完整 JS/TS 类型检查器，项目配置及模块规则继续由 P3 完善。当前 schema21 需隔离重建旧索引。见 [增量验证边界](internals/INCREMENTAL_VERIFICATION.md)。
+
+## Python 调用事实修正（P2-C）
+
+调用/引用改为遍历真实 AST 节点，不把声明、注释、字符串正文当作调用。嵌套函数有唯一所属作用域，真实递归、跨行调用和 f-string 表达式保留；参数/赋值遮蔽与动态绑定保持 Unsupported，不以全局同名猜测冒充 parser_exact。这不是完整 Python 执行或编译器推断。独立真值测试与增量对全量对照分别留证，详见 [增量恢复与事实边界](internals/INCREMENTAL_RECOVERY.md)。
+
+## 公共接口能力（P2-A / P2-B）
+
+公共接口指纹与下方符号提取层级分开。JS/TS/JSX/TSX、Rust、Python、Go 提供版本化的声明接口子集；动态、条件选择或未建模构造为 Unknown，不能当成无导出。Go 按目录、包名和生产/测试贡献组合，不把方法当作可直接调用的包函数。Java、C/C++、spec-driven 和 generic 由显式保守能力表标记 Unknown；现有符号/边提取仍保留，但不等于已证明 classpath、预处理器或运行时接口。Vue/Svelte 组件接口也不能由脚本导出替代。具体语法、可见性和条件边界见 [internals/PUBLIC_SURFACE.md](internals/PUBLIC_SURFACE.md)，解析结果与依赖见 [internals/RESOLUTION_DEPENDENCIES.md](internals/RESOLUTION_DEPENDENCIES.md)。
+
 ## 提取层级
 
 ### Semantic（置信度 0.85）

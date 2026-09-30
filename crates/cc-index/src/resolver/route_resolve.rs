@@ -274,8 +274,7 @@ impl SymbolCatalog {
                 return None;
             }
             // Fall back to import-distance tie-breaking
-            return best_by_import_distance(&self.entries, indices, current_file)
-                .or_else(|| indices.first().copied());
+            return best_by_import_distance(&self.entries, indices, current_file);
         }
 
         // Try by name
@@ -288,8 +287,7 @@ impl SymbolCatalog {
                 return None;
             }
             // Fall back to import-distance tie-breaking
-            return best_by_import_distance(&self.entries, indices, current_file)
-                .or_else(|| indices.first().copied());
+            return best_by_import_distance(&self.entries, indices, current_file);
         }
 
         None
@@ -308,8 +306,7 @@ impl SymbolCatalog {
         nested
             .get(file)
             .and_then(|m| m.get(key_lower))
-            .and_then(|v| v.first())
-            .copied()
+            .and_then(|v| pick_unique(&self.entries, v))
     }
 
     // -----------------------------------------------------------------------
@@ -337,9 +334,9 @@ impl SymbolCatalog {
             Some(v) => v,
             None => return Vec::new(),
         };
-        indices
-            .iter()
-            .map(|&i| {
+        stable_candidates(&self.entries, indices)
+            .into_iter()
+            .map(|i| {
                 let e = &self.entries[i];
                 (
                     e.symbol_uid.clone().unwrap_or_default(),

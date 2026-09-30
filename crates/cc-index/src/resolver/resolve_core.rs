@@ -10,6 +10,7 @@ use super::types::*;
 enum StepOutcome {
     /// The step produced the final result — stop the ladder.
     Resolved(ResolveResult),
+    Ambiguous(NameResolution),
     /// The step does not apply or found nothing — try the next step.
     Continue,
     /// The step is authoritative for this name shape and failed — stop with
@@ -99,7 +100,13 @@ impl SymbolCatalog {
             .filter(|s| s.file_path == file && s.start_line <= line && line <= s.end_line)
             .collect();
         // Innermost = smallest span
-        candidates.sort_by_key(|s| (s.end_line - s.start_line, s.start_line));
+        candidates.sort_by(|a, b| {
+            (a.end_line - a.start_line, a.start_line, &a.scope_id).cmp(&(
+                b.end_line - b.start_line,
+                b.start_line,
+                &b.scope_id,
+            ))
+        });
         candidates.into_iter().next()
     }
 
@@ -234,17 +241,20 @@ impl SymbolCatalog {
                 | cc_model::symbol::SymbolKind::Property
         ) {
             if let Some(indices) = self.by_file.get(&container.file_path) {
+                let mut matches = Vec::new();
                 for &i in indices {
                     let e = &self.entries[i];
                     if e.kind != cc_model::symbol::SymbolKind::Class {
                         continue;
                     }
-                    let cls_member_qname =
-                        format!("{}.{}", e.qname.as_deref().unwrap_or(&e.name), member);
-                    let cls_matches = self.same_file_qname(&e.file_path, &cls_member_qname);
-                    if let Some(idx) = pick_unique(&self.entries, &cls_matches) {
-                        return Some(idx);
+                    let qname = format!("{}.{}", e.qname.as_deref().unwrap_or(&e.name), member);
+                    matches.extend(self.same_file_qname(&e.file_path, &qname));
+                    if matches.len() > self.max_fuzzy_pool {
+                        return None;
                     }
+                }
+                if !matches.is_empty() {
+                    return pick_unique(&self.entries, &matches);
                 }
             }
         }
@@ -285,38 +295,83 @@ impl SymbolCatalog {
 
     /// Resolve a name via import bindings.
     pub fn resolve_via_imports(&self, imports: &[ImportBinding], name: &str) -> Option<usize> {
-        let parts: Vec<&str> = name.split('.').collect();
+        self.import_decision(imports, name)
+            .resolved()
+            .map(|r| r.catalog_index)
+    }
+
+    fn import_decision(&self, imports: &[ImportBinding], name: &str) -> NameResolution {
+        let parts: Vec<_> = name.split('.').collect();
         let head = parts[0];
         let tail = &parts[1..];
-
-        // Find matching import
-        let binding = imports.iter().find(|b| b.local_name == head)?;
-
-        if binding.is_namespace {
-            // Namespace import: the tail is the exported name
-            if tail.is_empty() {
-                return None;
+        let mut bindings = std::collections::BTreeSet::new();
+        let mut candidates = Vec::new();
+        let mut missing = false;
+        for binding in imports.iter().filter(|b| b.local_name == head) {
+            if !bindings.insert((
+                &binding.source_module,
+                &binding.imported_name,
+                binding.is_namespace,
+                binding.is_default,
+            )) {
+                continue;
             }
-            let export_name = tail[0];
-            let target = self.resolve_export(&binding.source_module, export_name)?;
-            if tail.len() == 1 {
-                return Some(target);
+            if bindings.len() > self.max_fuzzy_pool {
+                return self.ambiguous(&[], "import_binding_budget_exceeded");
             }
-            return self.resolve_member_chain_from(
-                target,
-                &tail[1..],
-                &self.entries[target].file_path,
-            );
+            let (export_name, remaining) = if binding.is_namespace {
+                let Some((first, rest)) = tail.split_first() else {
+                    missing = true;
+                    continue;
+                };
+                (*first, rest)
+            } else {
+                (binding.imported_name.as_deref().unwrap_or(head), tail)
+            };
+            let exports = self.exported(&binding.source_module, export_name);
+            if exports.len() > self.max_fuzzy_pool {
+                return self.ambiguous(&[], "import_export_budget_exceeded");
+            }
+            if remaining.is_empty() {
+                if exports.is_empty() {
+                    missing = true;
+                } else {
+                    candidates.extend(exports);
+                }
+            } else if let Some(target) = self
+                .resolve_export(&binding.source_module, export_name)
+                .and_then(|i| {
+                    self.resolve_member_chain_from(i, remaining, &self.entries[i].file_path)
+                })
+            {
+                candidates.push(target);
+            } else {
+                missing = true;
+            }
+            if candidates.len() > self.max_fuzzy_pool {
+                return self.ambiguous(&[], "import_candidate_budget_exceeded");
+            }
         }
-
-        // Named / default import
-        let imported_name = binding.imported_name.as_deref().unwrap_or(head);
-
-        let target = self.resolve_export(&binding.source_module, imported_name)?;
-        if tail.is_empty() {
-            return Some(target);
+        let candidates = stable_candidates(&self.entries, &candidates);
+        if candidates.len() > 1 {
+            return self.ambiguous(&candidates, "conflicting_import_bindings");
         }
-        self.resolve_member_chain_from(target, tail, &self.entries[target].file_path)
+        if missing && bindings.len() > 1 {
+            return NameResolution::Ambiguous {
+                count_lower_bound: candidates.len(),
+                candidates,
+                reason: "incomplete_conflicting_import_bindings",
+                truncated: true,
+            };
+        }
+        match candidates.as_slice() {
+            [idx] => NameResolution::Resolved(ResolveResult::single(
+                *idx,
+                InternalResKind::ImportResolved,
+                ResolveStep::Import,
+            )),
+            _ => NameResolution::Unresolved("import_lookup_miss"),
+        }
     }
 
     /// Resolve an exported name from a module path.
@@ -392,9 +447,31 @@ impl SymbolCatalog {
         container: Option<&str>,
         signals: CallSiteSignals<'_>,
     ) -> Option<ResolveResult> {
+        self.resolve_decision(NameRequest {
+            name,
+            file,
+            line,
+            scopes,
+            imports,
+            container,
+            signals,
+        })
+        .resolved()
+    }
+
+    pub(crate) fn resolve_decision(&self, request: NameRequest<'_>) -> NameResolution {
+        let NameRequest {
+            name,
+            file,
+            line,
+            scopes,
+            imports,
+            container,
+            signals,
+        } = request;
         let trimmed = name.trim();
         if trimmed.is_empty() {
-            return None;
+            return NameResolution::Unresolved("empty_name");
         }
 
         // The line participates in the key only when scopes can make it
@@ -426,7 +503,7 @@ impl SymbolCatalog {
         imports: &[ImportBinding],
         container: Option<&str>,
         signals: CallSiteSignals<'_>,
-    ) -> Option<ResolveResult> {
+    ) -> NameResolution {
         let parts: Vec<&str> = name.split('.').collect();
         let leaf = *parts.last().unwrap_or(&parts[0]);
 
@@ -465,22 +542,42 @@ impl SymbolCatalog {
                                 ResolveStep::SameFile,
                             ))
                         }
-                        None => StepOutcome::Continue,
+                        None => {
+                            let candidates = self.same_file_named(file, name);
+                            if candidates.len() > 1 {
+                                StepOutcome::Ambiguous(self.ambiguous(&candidates, "same_file_tie"))
+                            } else {
+                                StepOutcome::Continue
+                            }
+                        }
                     }
                 }
-                ResolveStep::Import => match self.resolve_via_imports(imports, name) {
-                    Some(idx) => StepOutcome::Resolved(ResolveResult::single(
-                        idx,
-                        InternalResKind::ImportResolved,
-                        ResolveStep::Import,
-                    )),
-                    None => StepOutcome::Continue,
+                ResolveStep::Package => self.step_go_package(name, file),
+                ResolveStep::Import => match self.import_decision(imports, name) {
+                    NameResolution::Resolved(result) => StepOutcome::Resolved(result),
+                    result @ NameResolution::Ambiguous { .. } => StepOutcome::Ambiguous(result),
+                    NameResolution::Unresolved(_)
+                        if imports
+                            .iter()
+                            .any(|i| i.local_name == name.split('.').next().unwrap_or(name)) =>
+                    {
+                        StepOutcome::Abort
+                    }
+                    NameResolution::Unresolved(_) => StepOutcome::Continue,
                 },
                 ResolveStep::Suffix => match self.try_suffix_match(name, file) {
-                    Some(result) => StepOutcome::Resolved(result),
+                    Some(NameResolution::Resolved(result)) => StepOutcome::Resolved(result),
+                    Some(result) => StepOutcome::Ambiguous(result),
                     None => StepOutcome::Continue,
                 },
                 ResolveStep::GlobalUnique => {
+                    if self
+                        .by_name
+                        .get(&leaf.to_lowercase())
+                        .is_some_and(|v| v.len() > self.max_fuzzy_pool)
+                    {
+                        return self.ambiguous(&[], "name_bucket_budget_exceeded");
+                    }
                     let pool = fuzzy_pool.get_or_insert_with(|| {
                         match self.by_name.get(&leaf.to_lowercase()) {
                             // Cap before the O(bucket) dedup: a name shared by
@@ -560,13 +657,57 @@ impl SymbolCatalog {
             };
 
             match outcome {
-                StepOutcome::Resolved(result) => return Some(result),
-                StepOutcome::Abort => return None,
+                StepOutcome::Resolved(result) => return NameResolution::Resolved(result),
+                StepOutcome::Ambiguous(result) => return result,
+                StepOutcome::Abort => {
+                    return NameResolution::Unresolved("authoritative_lookup_miss")
+                }
                 StepOutcome::Continue => {}
             }
         }
 
-        None
+        NameResolution::Unresolved("no_candidate")
+    }
+
+    pub(crate) fn ambiguous(&self, candidates: &[usize], reason: &'static str) -> NameResolution {
+        let mut sorted = stable_candidates(&self.entries, candidates);
+        let count = sorted.len();
+        let cap = cc_model::resolution::MAX_RESOLUTION_CANDIDATES;
+        let truncated = count > cap || candidates.is_empty();
+        sorted.truncate(cap);
+        NameResolution::Ambiguous {
+            candidates: sorted,
+            reason,
+            count_lower_bound: count,
+            truncated,
+        }
+    }
+
+    fn step_go_package(&self, name: &str, file: &str) -> StepOutcome {
+        let Some(view) = self.go_packages.get(file) else {
+            return StepOutcome::Continue;
+        };
+        if name.contains('.') {
+            return StepOutcome::Continue;
+        }
+        let Some(candidates) = view.names.get(name) else {
+            return StepOutcome::Abort;
+        };
+        if candidates.len() > self.max_fuzzy_pool {
+            return StepOutcome::Ambiguous(
+                self.ambiguous(&[], "go_package_candidate_budget_exceeded"),
+            );
+        }
+        let candidates = stable_candidates(&self.entries, candidates);
+        match candidates.as_slice() {
+            [idx] => StepOutcome::Resolved(ResolveResult::single(
+                *idx,
+                InternalResKind::ScopeResolved,
+                ResolveStep::Package,
+            )),
+            [] => StepOutcome::Abort,
+            _ => StepOutcome::Ambiguous(self.ambiguous(&candidates, "go_package_duplicate_name")),
+        }
     }
 
     /// `SelfMember` step: `this.x` / `self.x` member resolution on the owner
@@ -659,7 +800,17 @@ impl SymbolCatalog {
                 candidate_count: fuzzy_total as u32,
                 winning_step: ResolveStep::FuzzyImportDistance,
             }),
-            None => StepOutcome::Continue,
+            None => {
+                let candidates = if reachable.is_empty() {
+                    pool
+                } else {
+                    &reachable
+                };
+                StepOutcome::Ambiguous(self.ambiguous(
+                    &import_distance_candidates(&self.entries, candidates, file),
+                    "equal_import_distance",
+                ))
+            }
         }
     }
 
@@ -745,7 +896,7 @@ impl SymbolCatalog {
         &self,
         name: &str,
         file: &str,
-    ) -> Option<ResolveResult> {
+    ) -> Option<NameResolution> {
         if !name.contains('.') {
             return None;
         }
@@ -766,7 +917,7 @@ impl SymbolCatalog {
             // (the best-import-distance pick is noise), and scanning the bucket
             // per dotted reference is O(N²) on shared method/leaf names.
             if candidates.len() > self.max_fuzzy_pool {
-                return None;
+                return Some(self.ambiguous(&[], "suffix_bucket_budget_exceeded"));
             }
             for &idx in candidates {
                 let matches_suffix = self.entries[idx]
@@ -790,9 +941,17 @@ impl SymbolCatalog {
         let idx = if count == 1 {
             unique[0]
         } else {
-            best_by_import_distance(&self.entries, &unique, file)?
+            match best_by_import_distance(&self.entries, &unique, file) {
+                Some(idx) => idx,
+                None => {
+                    return Some(self.ambiguous(
+                        &import_distance_candidates(&self.entries, &unique, file),
+                        "suffix_tie",
+                    ))
+                }
+            }
         };
-        Some(ResolveResult {
+        Some(NameResolution::Resolved(ResolveResult {
             catalog_index: idx,
             resolution_kind: InternalResKind::SuffixMatch,
             confidence: candidate_count_penalty(
@@ -801,7 +960,7 @@ impl SymbolCatalog {
             ),
             candidate_count: count as u32,
             winning_step: ResolveStep::Suffix,
-        })
+        }))
     }
 
     /// Find the best same-file candidate, preferring scope proximity.
@@ -867,6 +1026,9 @@ impl SymbolCatalog {
             })
             .collect();
         ranked.sort_by_key(|&(_, key)| key);
+        if ranked.len() > 1 && ranked[0].1 == ranked[1].1 {
+            return None;
+        }
         ranked.first().map(|&(idx, _)| idx)
     }
 }

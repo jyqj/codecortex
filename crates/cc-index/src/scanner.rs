@@ -243,7 +243,10 @@ impl Scanner {
                 };
                 let path = entry.path();
                 let rel_path = match path.strip_prefix(&project_path) {
-                    Ok(r) => r.to_string_lossy().replace('\\', "/"),
+                    Ok(r) => match cc_model::repo_path::from_native_relative(r) {
+                        Ok(p) => p,
+                        Err(_) => return ignore::WalkState::Continue,
+                    },
                     Err(_) => return ignore::WalkState::Continue,
                 };
                 if rel_path.is_empty() {
@@ -256,6 +259,15 @@ impl Scanner {
                 // (files only, for size/mtime).
                 let file_type = entry.file_type();
                 let needs_follow = file_type.is_none_or(|t| t.is_symlink());
+                if needs_follow
+                    && !path
+                        .canonicalize()
+                        .ok()
+                        .zip(project_path.canonicalize().ok())
+                        .is_some_and(|(target, root)| target.starts_with(root))
+                {
+                    return ignore::WalkState::Continue;
+                }
                 let (is_dir, metadata) = if needs_follow {
                     match std::fs::metadata(path) {
                         Ok(m) if m.is_dir() => (true, None),
@@ -432,7 +444,10 @@ impl Scanner {
         let mut subtree_prefixes: Vec<String> = Vec::new();
         let mut descend_dirs: std::collections::HashSet<String> = std::collections::HashSet::new();
         for raw in rel_paths {
-            let rel = raw.trim_end_matches('/');
+            let Ok(normalized) = cc_model::repo_path::normalize_relative(raw) else {
+                continue;
+            };
+            let rel = normalized.as_str();
             if !admissible(rel) {
                 continue;
             }
@@ -506,8 +521,20 @@ impl Scanner {
     /// filter (identical to the tree-walk indexable filters); pushes the
     /// resulting [`ScannedFile`].
     fn admit_scanned(&self, path: &Path, out: &mut Vec<ScannedFile>) {
+        // Event paths must obey the same symlink containment as the full walk.
+        if !path
+            .canonicalize()
+            .ok()
+            .zip(self.project_path.canonicalize().ok())
+            .is_some_and(|(target, root)| target.starts_with(root))
+        {
+            return;
+        }
         let rel_path = match path.strip_prefix(&self.project_path) {
-            Ok(r) => r.to_string_lossy().replace('\\', "/"),
+            Ok(r) => match cc_model::repo_path::from_native_relative(r) {
+                Ok(p) => p,
+                Err(_) => return,
+            },
             Err(_) => return,
         };
         let metadata = match path.metadata() {
@@ -572,7 +599,11 @@ mod scoped_scan_tests {
         write(root, ".gitignore", "logs/\n");
         write(root, "src/main.py", "def main():\n    return 1\n");
         write(root, "src/nested/.gitignore", "secret.py\n");
-        write(root, "src/nested/secret.py", "def secret():\n    return 2\n");
+        write(
+            root,
+            "src/nested/secret.py",
+            "def secret():\n    return 2\n",
+        );
         write(root, "src/nested/open.py", "def open_fn():\n    return 3\n");
         // Ancestor directory gitignored at the ROOT level: a walk rooted at
         // `logs/` would never see the pruning rule — the regression this
@@ -587,11 +618,8 @@ mod scoped_scan_tests {
         config.max_file_bytes = 128;
         let scanner = Scanner::new(root, &config);
 
-        let full: std::collections::HashSet<String> = scanner
-            .scan()
-            .into_iter()
-            .map(|f| f.rel_path)
-            .collect();
+        let full: std::collections::HashSet<String> =
+            scanner.scan().into_iter().map(|f| f.rel_path).collect();
 
         let requested: Vec<String> = [
             "src/main.py",
@@ -753,8 +781,7 @@ mod shared_walk_tests {
             "user ignore patterns do not filter the manifest"
         );
 
-        let indexable_paths: Vec<&str> =
-            indexable.iter().map(|f| f.rel_path.as_str()).collect();
+        let indexable_paths: Vec<&str> = indexable.iter().map(|f| f.rel_path.as_str()).collect();
         assert!(indexable_paths.contains(&"src/main.py"));
         assert!(indexable_paths.contains(&"a/b/c/d/e/f/deep.py"));
         assert!(

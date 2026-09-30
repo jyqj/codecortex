@@ -144,8 +144,10 @@ pub struct CallEdgeRecord {
 }
 
 /// An import declaration.
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ImportRecord {
+    #[serde(default)]
+    pub context: crate::module_inputs::ImportContext,
     pub file_path: String,
     pub import_string: String,
     pub resolved_path: Option<String>,

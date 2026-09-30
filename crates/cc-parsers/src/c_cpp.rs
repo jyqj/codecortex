@@ -98,7 +98,7 @@ static C_KEYWORDS: &[&str] = &[
 pub struct CCppParser {
     language: tree_sitter::Language,
     is_cpp: bool,
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 impl CCppParser {
@@ -149,29 +149,25 @@ impl CCppParser {
                         symbols.push(sym);
                     }
                 }
-                "struct_specifier" => {
-                    if child.child_by_field_name("body").is_some() {
-                        if let Some(sym) = self.extract_struct_or_class(
-                            &child,
-                            source,
-                            file_path,
-                            SymbolKind::Class,
-                            container,
-                        ) {
-                            let name = sym.name.clone();
-                            symbols.push(sym);
-                            // Walk body for nested declarations (methods in C++)
-                            if let Some(body) = child.child_by_field_name("body") {
-                                self.walk_symbols(&body, source, file_path, Some(&name), symbols);
-                            }
+                "struct_specifier" if child.child_by_field_name("body").is_some() => {
+                    if let Some(sym) = self.extract_struct_or_class(
+                        &child,
+                        source,
+                        file_path,
+                        SymbolKind::Class,
+                        container,
+                    ) {
+                        let name = sym.name.clone();
+                        symbols.push(sym);
+                        // Walk body for nested declarations (methods in C++)
+                        if let Some(body) = child.child_by_field_name("body") {
+                            self.walk_symbols(&body, source, file_path, Some(&name), symbols);
                         }
                     }
                 }
-                "enum_specifier" => {
-                    if child.child_by_field_name("body").is_some() {
-                        if let Some(sym) = self.extract_enum(&child, source, file_path, container) {
-                            symbols.push(sym);
-                        }
+                "enum_specifier" if child.child_by_field_name("body").is_some() => {
+                    if let Some(sym) = self.extract_enum(&child, source, file_path, container) {
+                        symbols.push(sym);
                     }
                 }
                 "type_definition" => {
@@ -180,20 +176,18 @@ impl CCppParser {
                     }
                 }
                 // C++ specific
-                "class_specifier" if self.is_cpp => {
-                    if child.child_by_field_name("body").is_some() {
-                        if let Some(sym) = self.extract_struct_or_class(
-                            &child,
-                            source,
-                            file_path,
-                            SymbolKind::Class,
-                            container,
-                        ) {
-                            let name = sym.name.clone();
-                            symbols.push(sym);
-                            if let Some(body) = child.child_by_field_name("body") {
-                                self.walk_symbols(&body, source, file_path, Some(&name), symbols);
-                            }
+                "class_specifier" if self.is_cpp && child.child_by_field_name("body").is_some() => {
+                    if let Some(sym) = self.extract_struct_or_class(
+                        &child,
+                        source,
+                        file_path,
+                        SymbolKind::Class,
+                        container,
+                    ) {
+                        let name = sym.name.clone();
+                        symbols.push(sym);
+                        if let Some(body) = child.child_by_field_name("body") {
+                            self.walk_symbols(&body, source, file_path, Some(&name), symbols);
                         }
                     }
                 }
@@ -1378,9 +1372,9 @@ impl FileParser for CCppParser {
         let tier = ParserTier::TreeSitter;
         let confidence = tier.default_confidence();
         let lang_name = if self.is_cpp { "cpp" } else { "c" };
-        let chunks = self
-            .chunker
-            .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
+        let (chunks, source_structure) = self.chunker.chunk_with_tree(
+            file_path, content, language, &symbols, &tree, tier, confidence,
+        );
 
         let summary = format!(
             "{} ({}, {} lines, {} symbols)",
@@ -1400,6 +1394,7 @@ impl FileParser for CCppParser {
 
         Ok(ParseOutcome {
             summary,
+            source_structure: Some(source_structure),
             chunks,
             symbols,
             imports,

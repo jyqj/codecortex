@@ -48,6 +48,11 @@ pub struct SearchHit {
 /// Parameters for a search request.
 #[derive(Debug, Clone, Default)]
 pub struct SearchRequest {
+    /// Internal execution controls; MCP input schema remains unchanged in P5-B.
+    pub retrieval_strategy: Option<crate::query::RetrievalStrategy>,
+    pub intent: Option<crate::Intent>,
+    pub control: Option<crate::query::QueryControl>,
+    pub semantic: Option<std::sync::Arc<crate::semantic::SemanticResponse>>,
     pub query: String,
     pub top_k: usize,
     pub path_prefix: Option<String>,

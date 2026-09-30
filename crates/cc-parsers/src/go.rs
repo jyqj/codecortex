@@ -95,7 +95,7 @@ static GO_HTTP_NEWREQ_RE: LazyLock<Regex> = LazyLock::new(|| {
 
 pub struct GoParser {
     language: tree_sitter::Language,
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 impl GoParser {
@@ -701,7 +701,12 @@ impl GoParser {
         let start_col = func_node.start_position().column as u32;
         let end_col = func_node.end_position().column as u32;
 
-        let target = by_name.get(&callee);
+        // A selector is not the same-file free function with the same leaf name.
+        let target = if receiver_expr.is_none() {
+            by_name.get(&callee)
+        } else {
+            None
+        };
         let ref_id = StableId::ref_id(file_path, &callee, line_no, start_col);
 
         refs.push(SymbolRefRecord {
@@ -715,7 +720,11 @@ impl GoParser {
             target_symbol_id: target.map(|(sid, _)| (*sid).to_string()),
             target_file_path: target.map(|_| file_path.to_string()),
             target_symbol_uid: target.map(|(_, uid)| (*uid).to_string()),
-            ref_name: Some(callee.clone()),
+            ref_name: Some(
+                receiver_expr
+                    .as_ref()
+                    .map_or_else(|| callee.clone(), |r| format!("{r}.{callee}")),
+            ),
             scope_id: caller_sym.and_then(|s| s.scope_id.clone()),
             resolution_kind: if target.is_some() {
                 ResolutionKind::Exact
@@ -1607,9 +1616,9 @@ impl FileParser for GoParser {
 
         let tier = ParserTier::TreeSitter;
         let confidence = tier.default_confidence();
-        let chunks = self
-            .chunker
-            .chunk_with_symbols(file_path, content, language, &symbols, tier, confidence);
+        let (chunks, source_structure) = self.chunker.chunk_with_tree(
+            file_path, content, language, &symbols, &tree, tier, confidence,
+        );
 
         let summary = format!(
             "{} (go, {} lines, {} symbols)",
@@ -1620,6 +1629,8 @@ impl FileParser for GoParser {
         let is_test = crate::parse_common::is_test_file(file_path, Language::Go);
 
         Ok(ParseOutcome {
+            public_surface: crate::exports::go::extract(&tree, content.as_bytes(), file_path),
+            source_structure: Some(source_structure),
             summary,
             chunks,
             symbols,

@@ -10,10 +10,11 @@ use crate::watcher::FileWatcher;
 use cc_model::config::RepoSizeTier;
 use cc_model::CcResult;
 use lru::LruCache;
+use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex, RwLock, Weak};
 use std::time::Instant;
 
 const PROJECT_CACHE_CAPACITY: usize = 16;
@@ -56,11 +57,13 @@ fn normalize_path(path: &Path) -> PathBuf {
 pub struct ProjectSession {
     active: Arc<tokio::sync::RwLock<ProjectServices>>,
     project_cache: Arc<tokio::sync::Mutex<LruCache<PathBuf, ProjectServices>>>,
+    /// Weak identity registry also covers live views evicted from the bounded LRU.
+    /// Its lock serializes cache misses; blocking initialization/reopen does
+    /// not run on the async scheduler or retain a query lock across network.
+    live_projects: Arc<tokio::sync::Mutex<HashMap<PathBuf, Weak<RwLock<CodeIndex>>>>>,
     last_activity: Arc<Mutex<Instant>>,
     auto_indexing: Arc<AtomicBool>,
-    /// Handle for the active file-watcher background task. When the project
-    /// changes this is replaced so the old watcher is stopped.
-    watcher_handle: Arc<tokio::sync::Mutex<Option<tokio::task::JoinHandle<()>>>>,
+    tasks: Arc<crate::session_tasks::SessionTasks>,
 }
 
 impl ProjectSession {
@@ -78,12 +81,17 @@ impl ProjectSession {
             initial_cache.put(normalize_path(path), services.clone());
         }
 
+        let mut live_projects = HashMap::new();
+        if let Some(path) = project_path {
+            live_projects.insert(normalize_path(path), Arc::downgrade(&services.index));
+        }
         Self {
             active: Arc::new(tokio::sync::RwLock::new(services)),
             project_cache: Arc::new(tokio::sync::Mutex::new(initial_cache)),
+            live_projects: Arc::new(tokio::sync::Mutex::new(live_projects)),
             last_activity: Arc::new(Mutex::new(Instant::now())),
             auto_indexing: Arc::new(AtomicBool::new(false)),
-            watcher_handle: Arc::new(tokio::sync::Mutex::new(None)),
+            tasks: Arc::default(),
         }
     }
 
@@ -100,54 +108,65 @@ impl ProjectSession {
         };
         let path = normalize_project_path(raw_path);
 
-        if let Some(index) = {
-            let mut cache = self.project_cache.lock().await;
-            cache.get(&path).map(ProjectServices::index)
-        } {
-            // A cached non-active project may have been idle-evicted (close()
-            // releases the DB handle but keeps project_path and the build
-            // gate). Reopen transparently — same recovery the active index
-            // gets in `call_tool` — instead of failing with ProjectNotSet.
-            Self::reopen_index_if_closed(&index)?;
-            return Ok(index);
-        }
-
-        let services = ProjectServices::new(Some(path.as_path()))?;
-        let index = services.index();
-        self.project_cache.lock().await.put(path, services);
-        Ok(index)
+        Ok(self.services_for_path(path).await?.index())
     }
 
     pub async fn set_active_project(&self, project_path: PathBuf) -> CcResult<SharedCodeIndex> {
         let path = normalize_path(&project_path);
-        // Reuse the cached services for this path (same policy as
-        // `index_for_project_path`): every entry point must share ONE
-        // CodeIndex instance per project, otherwise the per-project build
-        // gate cannot serialize manual builds against the auto-index/watcher
-        // builds of a previously created instance on the same DB.
-        let cached = {
-            let mut cache = self.project_cache.lock().await;
-            cache.get(&path).cloned()
-        };
-        let services = match cached {
-            Some(existing) => existing,
-            None => {
-                let created = ProjectServices::new(Some(path.as_path()))?;
-                self.project_cache
-                    .lock()
-                    .await
-                    .put(path.clone(), created.clone());
-                created
-            }
-        };
+        let services = self.services_for_path(path.clone()).await?;
         let index = services.index();
-        // Same idle-eviction recovery as `index_for_project_path`: a cached
-        // entry may have been closed while non-active — reopen before it
-        // becomes the active index, so the first tool call works directly.
-        Self::reopen_index_if_closed(&index)?;
-        *self.active.write().await = services;
+        let mut active = self.active.write().await;
+        *active = services;
         self.start_watcher(path);
+        drop(active);
         Ok(index)
+    }
+
+    async fn services_for_path(&self, path: PathBuf) -> CcResult<ProjectServices> {
+        // Open cache hits need no cold registry, blocking task or SQL read.
+        let cached = self
+            .project_cache
+            .try_lock()
+            .ok()
+            .and_then(|mut cache| cache.get(&path).cloned());
+        if let Some(services) = cached {
+            let open = services.index.try_read().is_ok_and(|rt| !rt.is_closed());
+            if open {
+                return Ok(services);
+            }
+        }
+        // Move the owned cold guard INTO the worker. Cancelling the awaiting
+        // request cannot release it while initialization still runs, and the
+        // worker publishes one cached runtime before releasing the guard.
+        let mut live = self.live_projects.clone().lock_owned().await;
+        let cache = self.project_cache.clone();
+        tokio::task::spawn_blocking(move || {
+            live.retain(|_, weak| weak.strong_count() != 0);
+            let cached = cache.blocking_lock().get(&path).cloned();
+            let services = match cached.or_else(|| {
+                live.get(&path)
+                    .and_then(Weak::upgrade)
+                    .map(|index| ProjectServices { index })
+            }) {
+                Some(existing) => existing,
+                None => ProjectServices::new(Some(&path))?,
+            };
+            Self::reopen_index_if_closed(&services.index())?;
+            live.insert(path.clone(), Arc::downgrade(&services.index));
+            let displaced = cache.blocking_lock().push(path, services.clone());
+            drop(live);
+            drop(displaced);
+            Ok(services)
+        })
+        .await
+        .map_err(|e| {
+            cc_model::CcError::Other(format!("project initialization/reopen failed: {e}"))
+        })?
+    }
+
+    /// Explicit bounded sweep used by the idle loop and deterministic lifecycle tests.
+    pub async fn evict_idle_now(&self) -> usize {
+        close_idle_instances(&self.active, &self.project_cache).await
     }
 
     pub fn touch_activity(&self) {
@@ -158,7 +177,12 @@ impl ProjectSession {
 
     pub async fn reopen_active_index_if_closed(&self) -> CcResult<()> {
         let index = self.active_index().await;
-        Self::reopen_index_if_closed(&index)
+        if index.try_read().is_ok_and(|rt| !rt.is_closed()) {
+            return Ok(());
+        }
+        tokio::task::spawn_blocking(move || Self::reopen_index_if_closed(&index))
+            .await
+            .map_err(|e| cc_model::CcError::Other(format!("active project reopen failed: {e}")))?
     }
 
     /// Transparently reopen an idle-evicted CodeIndex: read-lock probe of
@@ -173,9 +197,7 @@ impl ProjectSession {
         if need_reopen {
             let mut rt = handlers::lock_index_write(index)?;
             if rt.is_closed() {
-                if let Err(e) = rt.reopen() {
-                    tracing::warn!("failed to reopen index after idle eviction: {}", e);
-                }
+                rt.reopen()?;
             }
         }
         Ok(())
@@ -272,132 +294,90 @@ impl ProjectSession {
     /// project configuration (`.codecortex.json`). This method is intentionally
     /// fire-and-forget — errors in the watcher never propagate to callers.
     pub fn start_watcher(&self, project_path: PathBuf) {
-        let watcher_handle = self.watcher_handle.clone();
         let active = self.active.clone();
         let auto_indexing = self.auto_indexing.clone();
-
-        tokio::spawn(async move {
-            // Stop previous watcher if any.
-            {
-                let mut guard = watcher_handle.lock().await;
-                if let Some(handle) = guard.take() {
-                    handle.abort();
-                }
-            }
-
-            // Check config: only start watcher when auto_index is enabled.
-            let enabled = {
-                let index = active.read().await.index();
-                tokio::task::spawn_blocking(move || {
-                    let rt = match index.read() {
-                        Ok(rt) => rt,
-                        Err(_) => return false,
-                    };
-                    let pp = match rt.project_path.as_deref() {
-                        Some(p) => p,
-                        None => return false,
-                    };
-                    cc_model::config::load_project_config(pp).auto_index.enabled
-                })
-                .await
-                .unwrap_or(false)
-            };
-
+        // Initialization and polling share ONE tracked task; shutdown cannot
+        // race a detached initializer that installs a fresh watcher afterward.
+        self.tasks.replace_watcher(move |ready| async move {
+            let index = active.read().await.index();
+            let checked = index.clone();
+            let expected = project_path.clone();
+            let enabled = tokio::task::spawn_blocking(move || {
+                let Ok(rt) = checked.read() else { return false };
+                rt.project_path.as_ref() == Some(&expected)
+                    && cc_model::config::load_project_config(&expected)
+                        .auto_index
+                        .enabled
+            })
+            .await
+            .unwrap_or(false);
             if !enabled {
-                tracing::info!("watcher: auto_index disabled, skipping file watcher");
                 return;
             }
-
-            // Create the FileWatcher on a blocking thread (it uses `notify` internally).
-            let path_for_watcher = project_path.clone();
-            let watcher_result =
-                tokio::task::spawn_blocking(move || FileWatcher::start(&path_for_watcher)).await;
-
-            let watcher = match watcher_result {
-                Ok(Ok(w)) => w,
+            let native_started = Instant::now();
+            let watcher = match tokio::task::spawn_blocking(move || {
+                FileWatcher::start(&project_path)
+            })
+            .await
+            {
+                Ok(Ok(w)) => Arc::new(Mutex::new(Some(w))),
                 Ok(Err(e)) => {
-                    tracing::warn!("watcher: failed to start file watcher: {}", e);
+                    tracing::warn!("watcher initialization failed: {e}");
                     return;
                 }
                 Err(e) => {
-                    tracing::warn!("watcher: spawn_blocking failed: {}", e);
+                    tracing::warn!("watcher worker failed: {e}");
                     return;
                 }
             };
-
-            tracing::info!(path = %project_path.display(), "watcher: started file watcher");
-
-            // Wrap watcher in Arc<Mutex> so it can be shared with the poll task
-            // and cleaned up on Drop.
-            let watcher = Arc::new(std::sync::Mutex::new(Some(watcher)));
-            let watcher_for_task = watcher.clone();
-
-            let poll_handle = tokio::spawn({
-                let active = active.clone();
-                let auto_indexing = auto_indexing.clone();
-                async move {
-                    let poll_interval = tokio::time::Duration::from_secs(2);
-                    loop {
-                        tokio::time::sleep(poll_interval).await;
-
-                        // Cheap peek WITHOUT draining: events stay in the
-                        // pending set until a build slot is secured, so a
-                        // busy tick can never lose them (debounce keeps
-                        // coalescing in the meantime).
-                        let has_pending = {
-                            let guard = match watcher_for_task.lock() {
-                                Ok(g) => g,
-                                Err(e) => e.into_inner(),
-                            };
-                            match guard.as_ref() {
-                                Some(w) => w.has_pending(),
-                                None => break,
-                            }
-                        };
-                        if !has_pending {
-                            continue;
-                        }
-
-                        // Acquire-before-drain, part 1: the auto_indexing
-                        // flag. On failure leave events pending and retry on
-                        // the next tick.
-                        if auto_indexing
-                            .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
-                            .is_err()
-                        {
-                            tracing::debug!(
-                                "watcher: deferring incremental index — already in progress"
-                            );
-                            continue;
-                        }
-
-                        let index = active.read().await.index();
-                        let watcher_for_tick = watcher_for_task.clone();
-                        let result = tokio::task::spawn_blocking(move || {
-                            run_watcher_tick(&index, &watcher_for_tick)
-                        })
-                        .await;
-
-                        auto_indexing.store(false, Ordering::SeqCst);
-
-                        match result {
-                            Ok(WatcherTickOutcome::WatcherGone) => break,
-                            Ok(_) => {}
-                            Err(e) => {
-                                tracing::warn!("watcher: incremental index task panicked: {}", e);
-                            }
-                        }
+            tracing::info!(
+                native_start_ms = native_started.elapsed().as_millis(),
+                "watcher native subscription ready"
+            );
+            ready.store(true, Ordering::Release);
+            loop {
+                tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+                // Always poll the captured project's runtime, never whichever
+                // project happens to become active after an await.
+                let pending = watcher
+                    .lock()
+                    .unwrap_or_else(|e| e.into_inner())
+                    .as_ref()
+                    .is_some_and(|w| w.has_pending());
+                if !pending {
+                    let checked = index.clone();
+                    if !tokio::task::spawn_blocking(move || resolution_work_pending(&checked))
+                        .await
+                        .unwrap_or(false)
+                    {
+                        continue;
                     }
                 }
-            });
-
-            // Store the poll task handle so it can be aborted when the watcher
-            // is replaced or the server shuts down.
-            {
-                let mut guard = watcher_handle.lock().await;
-                *guard = Some(poll_handle);
+                if auto_indexing
+                    .compare_exchange(false, true, Ordering::SeqCst, Ordering::SeqCst)
+                    .is_err()
+                {
+                    continue;
+                }
+                let permit = crate::session_tasks::AutoIndexPermit(auto_indexing.clone());
+                let checked = index.clone();
+                let pending = watcher.clone();
+                let result = tokio::task::spawn_blocking(move || {
+                    let _permit = permit;
+                    run_watcher_tick(&checked, &pending)
+                })
+                .await;
+                match result {
+                    Ok(WatcherTickOutcome::WatcherGone) => break,
+                    Ok(_) => {}
+                    Err(e) => tracing::warn!("watcher tick failed: {e}"),
+                }
             }
         });
+    }
+
+    pub fn watcher_ready(&self) -> bool {
+        self.tasks.watcher_ready()
     }
 
     pub fn start_initial_project_tasks(&self, project_path: Option<&Path>) {
@@ -415,12 +395,7 @@ impl ProjectSession {
     /// already running inside `spawn_blocking` finishes on its blocking
     /// thread; SQLite transactional writes keep the DB consistent either way.)
     pub async fn shutdown(&self) {
-        let handle = { self.watcher_handle.lock().await.take() };
-        if let Some(handle) = handle {
-            handle.abort();
-            let _ = handle.await;
-            tracing::debug!("watcher poll task stopped");
-        }
+        self.tasks.shutdown().await;
     }
 
     pub async fn start_idle_eviction(&self) {
@@ -428,7 +403,7 @@ impl ProjectSession {
         let active = self.active.clone();
         let project_cache = self.project_cache.clone();
         let idle_timeout_secs = active_idle_timeout_secs(&active).await;
-        tokio::spawn(async move {
+        self.tasks.start_idle(async move {
             let idle_timeout = std::time::Duration::from_secs(idle_timeout_secs);
             let check_interval = std::time::Duration::from_secs(30);
             loop {
@@ -472,6 +447,29 @@ enum WatcherTickOutcome {
     Completed,
 }
 
+/// Inspect durable work without consuming it. Disabled/zero-budget maintenance
+/// waits for a user/config change rather than spinning useless builds.
+fn resolution_work_pending(index: &SharedCodeIndex) -> bool {
+    let Ok(rt) = index.read() else { return false };
+    let Some(db) = rt.index_db() else {
+        return false;
+    };
+    let Some(path) = rt.project_path.as_deref() else {
+        return false;
+    };
+    let config = cc_model::config::load_project_config(path);
+    if !config.indexing.dirty_propagation || config.indexing.dirty_propagation_max_files == 0 {
+        return false;
+    }
+    match db.reads().resolution_freshness() {
+        Ok(state) => !state.complete,
+        Err(error) => {
+            tracing::warn!(%error, "cannot inspect durable resolution work");
+            false
+        }
+    }
+}
+
 /// One watcher poll tick, run on a blocking thread. Ordering invariant:
 /// the build gate is acquired BEFORE `drain_pending`, so a drained batch is
 /// always followed by a build attempt — events are never droppable after
@@ -508,7 +506,7 @@ fn run_watcher_tick(
             None => return WatcherTickOutcome::WatcherGone,
         }
     };
-    if drain.is_empty() {
+    if drain.is_empty() && !resolution_work_pending(index) {
         return WatcherTickOutcome::Skipped;
     }
 
@@ -525,12 +523,17 @@ fn run_watcher_tick(
     // along as the build scope, so the prepare stats/hashes only the touched
     // paths instead of walking the whole tree (safety fallbacks to the full
     // walk are decided inside the scan/diff phase).
-    let scope = cc_index::BuildScope {
-        changed: drain.changed,
-        removed: drain.removed,
-    };
-    if let Err(e) = handlers::core::run_split_build(index, false, false, Some(&scope)) {
-        tracing::warn!("watcher: incremental index failed: {}", e);
+    let scope = drain.build_scope();
+    if let Err(e) = handlers::core::run_split_build(index, false, false, scope.as_ref()) {
+        // Draining must not acknowledge events when publication failed.
+        let guard = watcher.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some(w) = guard.as_ref() {
+            w.request_rescan();
+        }
+        tracing::warn!(
+            "watcher: incremental index failed; full reconciliation queued: {}",
+            e
+        );
     }
     WatcherTickOutcome::Completed
 }
@@ -551,32 +554,34 @@ async fn close_idle_instances(
         let cache = project_cache.lock().await;
         indexes.extend(cache.iter().map(|(_, services)| services.index()));
     }
-    let mut closed = 0usize;
-    for index in indexes {
-        let mut guard = match index.write() {
-            Ok(g) => g,
-            Err(_) => continue,
-        };
-        if guard.project_path.is_some() && !guard.is_closed() {
-            guard.close();
-            closed += 1;
+    tokio::task::spawn_blocking(move || {
+        let mut closed = 0usize;
+        for index in indexes {
+            // Idle maintenance never queues behind a query or build lock.
+            let Ok(mut guard) = index.try_write() else {
+                continue;
+            };
+            let gate = guard.build_gate();
+            let Ok(_build) = gate.try_lock() else {
+                continue;
+            };
+            if guard.query_pins() == 0 && guard.project_path.is_some() && !guard.is_closed() {
+                guard.close();
+                closed += 1;
+            }
         }
-    }
-    closed
+        closed
+    })
+    .await
+    .unwrap_or(0)
 }
 
 async fn active_idle_timeout_secs(active: &tokio::sync::RwLock<ProjectServices>) -> u64 {
     let index = active.read().await.index();
     index
-        .read()
+        .try_read()
         .ok()
-        .and_then(|rt| {
-            rt.project_path.as_deref().map(|p| {
-                cc_model::config::load_project_config(p)
-                    .auto_index
-                    .idle_timeout_secs
-            })
-        })
+        .map(|rt| rt.idle_timeout_secs())
         .unwrap_or(DEFAULT_IDLE_TIMEOUT_SECS)
 }
 
@@ -585,6 +590,96 @@ mod tests {
     use super::*;
     use std::time::Duration;
     use tempfile::TempDir;
+
+    #[tokio::test]
+    async fn p5d_hot_cache_does_not_wait_behind_cold_registry() {
+        let dir = TempDir::new().unwrap();
+        let session = ProjectSession::new(Some(dir.path()));
+        let original = session.active_index().await;
+        let _cold = session.live_projects.lock().await;
+        let routed = tokio::time::timeout(
+            Duration::from_millis(200),
+            session.index_for_project_path(Some(dir.path().to_str().unwrap())),
+        )
+        .await
+        .expect("open cache hit must bypass the cold registry")
+        .unwrap();
+        assert!(Arc::ptr_eq(&routed, &original));
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn p5d_cancelled_cold_client_keeps_initializer_fenced_until_publication() {
+        let dir = TempDir::new().unwrap();
+        let path = normalize_path(dir.path());
+        let session = ProjectSession::new(None);
+        // Block the initializer's cache lookup without stalling the scheduler.
+        let cache = session.project_cache.clone().lock_owned().await;
+        let caller = session.clone();
+        let requested = path.clone();
+        let job = tokio::spawn(async move { caller.services_for_path(requested).await });
+        tokio::time::timeout(Duration::from_secs(2), async {
+            while session.live_projects.try_lock().is_ok() {
+                tokio::task::yield_now().await;
+            }
+        })
+        .await
+        .unwrap();
+        job.abort();
+        assert!(matches!(job.await, Err(e) if e.is_cancelled()));
+        assert!(
+            session.live_projects.try_lock().is_err(),
+            "blocking initializer, not its cancelled client, must own the cold guard"
+        );
+        drop(cache);
+        let routed = tokio::time::timeout(
+            Duration::from_secs(5),
+            session.services_for_path(path.clone()),
+        )
+        .await
+        .unwrap()
+        .unwrap();
+        let cached = session
+            .project_cache
+            .lock()
+            .await
+            .get(&path)
+            .unwrap()
+            .index();
+        assert!(Arc::ptr_eq(&routed.index(), &cached));
+        assert!(Arc::ptr_eq(
+            &routed.index().read().unwrap().build_gate(),
+            &cached.read().unwrap().build_gate()
+        ));
+        session.shutdown().await;
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn p5d_active_reopen_lock_wait_does_not_block_async_scheduler() {
+        let dir = TempDir::new().unwrap();
+        let session = ProjectSession::new(Some(dir.path()));
+        let index = session.active_index().await;
+        let (start_tx, start_rx) = tokio::sync::oneshot::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let worker = std::thread::spawn(move || {
+            let _guard = index.write().unwrap();
+            start_tx.send(()).unwrap();
+            let _ = release_rx.recv_timeout(Duration::from_secs(3));
+        });
+        start_rx.await.unwrap();
+        let outcome = tokio::time::timeout(
+            Duration::from_millis(100),
+            session.reopen_active_index_if_closed(),
+        )
+        .await;
+        let _ = release_tx.send(());
+        worker.join().unwrap();
+        assert!(
+            outcome.is_err(),
+            "async timeout must run while a lifecycle lock is held"
+        );
+        session.reopen_active_index_if_closed().await.unwrap();
+        session.shutdown().await;
+    }
 
     /// Poll until the auto-index build commits (clears `needs_initial_index`).
     async fn wait_for_auto_index(session: &ProjectSession, timeout: Duration) -> bool {
@@ -595,7 +690,7 @@ mod tests {
                 .read()
                 .map(|rt| !rt.needs_initial_index())
                 .unwrap_or(false);
-            if built {
+            if built && !session.auto_indexing.load(Ordering::SeqCst) {
                 return true;
             }
             tokio::time::sleep(Duration::from_millis(50)).await;
@@ -784,6 +879,177 @@ mod tests {
             .expect("reactivated index must serve queries directly");
     }
 
+    #[test]
+    fn p1d_watcher_tick_keeps_known_pending_batch_until_manual_gate_released() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+        let index = Arc::new(std::sync::RwLock::new(
+            crate::engine::CodeIndex::new(Some(dir.path())).unwrap(),
+        ));
+        index.write().unwrap().build_index(true).unwrap();
+        let before = active_generation(&index);
+        let watcher = FileWatcher::start_with_config(
+            &normalize_path(dir.path()),
+            crate::watcher::WatcherConfig {
+                git_sanity_poll: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        std::fs::write(
+            dir.path().join("extra.rs"),
+            "pub fn extra_marker() -> i32 { 7 }\n",
+        )
+        .unwrap();
+        // Controlled queue insertion verifies the gate/drain ordering, separately
+        // from the native delivery integration test below, which remains enabled.
+        watcher.inject_pending_for_test("extra.rs");
+        let watcher = Arc::new(std::sync::Mutex::new(Some(watcher)));
+        let gate = index.read().unwrap().build_gate();
+        let permit = gate.lock().unwrap();
+        for _ in 0..3 {
+            assert!(matches!(
+                run_watcher_tick(&index, &watcher),
+                WatcherTickOutcome::Skipped
+            ));
+            assert!(watcher.lock().unwrap().as_ref().unwrap().has_pending());
+            assert_eq!(active_generation(&index), before);
+        }
+        drop(permit);
+        assert!(matches!(
+            run_watcher_tick(&index, &watcher),
+            WatcherTickOutcome::Completed
+        ));
+        assert!(index.read().unwrap().index_status().unwrap().indexed_files >= 2);
+        watcher.lock().unwrap().take();
+    }
+
+    #[test]
+    fn p3c_watcher_rescan_reconciles_unlisted_config_and_retries_failed_build() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            r#"{"auto_index":{"enabled":false}}"#,
+        )
+        .unwrap();
+        for name in ["a.ts", "b.ts"] {
+            std::fs::write(
+                dir.path().join(name),
+                "export function ping(x:number){return x;}\n",
+            )
+            .unwrap();
+        }
+        std::fs::write(
+            dir.path().join("use.ts"),
+            "import {ping} from '@api'; export function run(){return ping(1);}\n",
+        )
+        .unwrap();
+        let cfg =
+            |name: &str| format!(r#"{{"compilerOptions":{{"paths":{{"@api":["./{name}"]}}}}}}"#);
+        std::fs::write(dir.path().join("tsconfig.json"), cfg("a.ts")).unwrap();
+        let index = Arc::new(std::sync::RwLock::new(
+            crate::engine::CodeIndex::new(Some(dir.path())).unwrap(),
+        ));
+        index.write().unwrap().build_index(true).unwrap();
+        // Change before starting the watcher: only the explicit rescan flag can discover it.
+        std::fs::write(dir.path().join("tsconfig.json"), cfg("b.ts")).unwrap();
+        let watcher = FileWatcher::start_with_config(
+            &normalize_path(dir.path()),
+            crate::watcher::WatcherConfig {
+                git_sanity_poll: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        watcher.request_rescan();
+        let watcher = Arc::new(std::sync::Mutex::new(Some(watcher)));
+        assert!(matches!(
+            run_watcher_tick(&index, &watcher),
+            WatcherTickOutcome::Completed
+        ));
+        let db = index.read().unwrap().index_db().unwrap().clone();
+        let rows = db
+            .reads()
+            .query_json(
+                "SELECT resolved_path FROM imports WHERE file_path='use.ts'",
+                &[],
+            )
+            .unwrap();
+        assert_eq!(rows[0]["resolved_path"], "b.ts");
+        let key = cc_model::project_model::PROJECT_INPUT_KEY;
+        let valid = db.reads().get_metadata(key).unwrap().unwrap();
+        db.writes().set_metadata(key, "broken").unwrap();
+        watcher.lock().unwrap().as_ref().unwrap().request_rescan();
+        assert!(matches!(
+            run_watcher_tick(&index, &watcher),
+            WatcherTickOutcome::Completed
+        ));
+        assert!(
+            watcher.lock().unwrap().as_ref().unwrap().has_pending(),
+            "failed build lost the rescan request"
+        );
+        db.writes().set_metadata(key, &valid).unwrap();
+        assert!(matches!(
+            run_watcher_tick(&index, &watcher),
+            WatcherTickOutcome::Completed
+        ));
+        assert!(
+            !watcher
+                .lock()
+                .unwrap()
+                .as_ref()
+                .unwrap()
+                .drain_pending()
+                .rescan_needed
+        );
+        watcher.lock().unwrap().take();
+    }
+
+    #[test]
+    fn p2c_watcher_drains_durable_debt_without_new_events() {
+        let dir = TempDir::new().unwrap();
+        std::fs::write(dir.path().join(".codecortex.json"), r#"{"auto_index":{"enabled":false},"indexing":{"dirty_propagation_max_files":1,"db_read_pool_size":1}}"#).unwrap();
+        for name in ["a.py", "b.py", "c.py"] {
+            std::fs::write(
+                dir.path().join(name),
+                "def entry(x):\n    return later(x)\n",
+            )
+            .unwrap();
+        }
+        let index = Arc::new(std::sync::RwLock::new(
+            crate::engine::CodeIndex::new(Some(dir.path())).unwrap(),
+        ));
+        index.write().unwrap().build_index(true).unwrap();
+        std::fs::write(
+            dir.path().join("provider.py"),
+            "def later(x):\n    return x\n",
+        )
+        .unwrap();
+        index.write().unwrap().build_index(false).unwrap();
+        let watcher = FileWatcher::start_with_config(
+            &normalize_path(dir.path()),
+            crate::watcher::WatcherConfig {
+                git_sanity_poll: false,
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let watcher = Arc::new(std::sync::Mutex::new(Some(watcher)));
+        assert!(resolution_work_pending(&index));
+        for _ in 0..2 {
+            assert!(matches!(
+                run_watcher_tick(&index, &watcher),
+                WatcherTickOutcome::Completed
+            ));
+        }
+        assert!(!resolution_work_pending(&index));
+        assert!(matches!(
+            run_watcher_tick(&index, &watcher),
+            WatcherTickOutcome::Skipped
+        ));
+        watcher.lock().unwrap().take();
+    }
+
     /// Watcher poll ticks that find the build slot busy must NOT drain (and
     /// thereby drop) pending events: they stay queued and get indexed once
     /// the slot frees up. Before the acquire-before-drain fix, a busy tick
@@ -807,8 +1073,19 @@ mod tests {
         session.auto_indexing.store(true, Ordering::SeqCst);
 
         session.start_watcher(normalize_path(dir.path()));
-        // Give the watcher task time to subscribe before generating events.
-        tokio::time::sleep(Duration::from_millis(2500)).await;
+        // Observe successful subscription/poll-task installation rather than
+        // assuming a fixed sleep is enough under parallel workspace load.
+        let ready_deadline = Instant::now() + Duration::from_secs(10);
+        loop {
+            if session.tasks.watcher_ready() {
+                break;
+            }
+            assert!(
+                Instant::now() < ready_deadline,
+                "watcher did not become ready; event retention not tested"
+            );
+            tokio::time::sleep(Duration::from_millis(25)).await;
+        }
 
         // Several writes so a late-starting watcher still observes at least
         // one; all of them land inside the busy window.

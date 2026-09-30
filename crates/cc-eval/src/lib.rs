@@ -6,6 +6,7 @@
 //! `docs/BENCHMARK.md`.
 
 pub mod bench;
+pub mod benchmark;
 pub mod corpus;
 pub mod report;
 pub mod runner;

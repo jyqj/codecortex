@@ -16,8 +16,9 @@ use cc_model::{
 use crate::engine::SearchEngine;
 use crate::engine_test_support::{insert_chunk_file, insert_graph_file, scoped_test_engine};
 use crate::lanes::{
-    fuse_outcomes, run_lanes, FusedScore, GraphLane, GrepLane, LaneContext, LaneOutcome,
-    LexicalLane, RetrievalLane, ScoreSlot, LANE_GRAPH, LANE_GREP, LANE_LEXICAL,
+    fuse_outcomes, materialize_test_outcomes, run_lanes, test_lane_outcome, FusedScore, GraphLane,
+    GrepLane, LaneContext, LexicalLane, RetrievalLane, ScoreSlot, LANE_EXACT_SYMBOL, LANE_GRAPH,
+    LANE_GREP, LANE_LEXICAL, LANE_PATH,
 };
 use crate::plan::{CandidateChunk, SearchPlan};
 
@@ -56,6 +57,217 @@ fn build_plan(engine: &SearchEngine, request: &SearchRequest) -> SearchPlan {
     SearchPlan::build(&engine.db, &engine.config, &engine.ranking, request, None).unwrap()
 }
 
+fn engine_with(
+    search: SearchConfig,
+    ranking: cc_model::config::RankingConfig,
+) -> (SearchEngine, tempfile::TempDir) {
+    let tmp = tempfile::tempdir().unwrap();
+    let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+    let config = ProjectConfig {
+        search,
+        ranking,
+        ..Default::default()
+    };
+    (SearchEngine::new(Arc::new(db), &config, None), tmp)
+}
+
+#[test]
+fn exact_symbol_lane_ignores_soft_preselect_and_exposes_lane_contract() {
+    let (engine, _tmp) = engine_with(
+        SearchConfig {
+            lexical_weight: 0.0,
+            exact_symbol_weight: 1.0,
+            path_weight: 0.0,
+            grep_weight: 0.0,
+            graph_weight: 0.0,
+            ..Default::default()
+        },
+        Default::default(),
+    );
+    insert_graph_file(
+        &engine,
+        "src/target.rs",
+        "fn sought_symbol() {}",
+        "sought_symbol",
+        "uid:target",
+        Vec::new(),
+    );
+    insert_graph_file(
+        &engine,
+        "src/noise.rs",
+        "fn unrelated() {}",
+        "unrelated",
+        "uid:noise",
+        Vec::new(),
+    );
+
+    let result = engine
+        .search_with_diagnostics(&SearchRequest {
+            query: "sought_symbol".into(),
+            top_k: 1,
+            include_grep: false,
+            pinned_file_paths: Some(vec!["src/noise.rs".into()]),
+            file_preselect_limit: Some(1),
+            ..Default::default()
+        })
+        .unwrap();
+    assert_eq!(result.hits[0].file_path, "src/target.rs");
+    assert!(result.hits[0].reasons.contains(&"exact-target".into()));
+    assert_eq!(result.lanes.len(), 5);
+    let exact = result
+        .lanes
+        .iter()
+        .find(|lane| lane.lane_id == LANE_EXACT_SYMBOL)
+        .unwrap();
+    assert_eq!(exact.status, cc_model::retrieval::LaneStatus::Complete);
+    assert_eq!(exact.candidate_count, 1);
+    assert!(exact.candidates[0].exact_identity);
+    assert_eq!(
+        result
+            .lanes
+            .iter()
+            .find(|lane| lane.lane_id == LANE_PATH)
+            .unwrap()
+            .status,
+        cc_model::retrieval::LaneStatus::Disabled
+    );
+}
+
+#[test]
+fn exact_symbol_lane_retains_ambiguity_in_deterministic_order() {
+    let (engine, _tmp) = engine_with(
+        SearchConfig {
+            lexical_weight: 0.0,
+            exact_symbol_weight: 1.0,
+            path_weight: 0.0,
+            grep_weight: 0.0,
+            graph_weight: 0.0,
+            ..Default::default()
+        },
+        Default::default(),
+    );
+    for path in ["src/a.rs", "src/b.rs"] {
+        insert_graph_file(
+            &engine,
+            path,
+            "fn duplicate_name() {}",
+            "duplicate_name",
+            &format!("uid:{path}"),
+            Vec::new(),
+        );
+    }
+    let result = engine
+        .search_with_diagnostics(&SearchRequest {
+            query: "duplicate_name".into(),
+            top_k: 2,
+            include_grep: false,
+            ..Default::default()
+        })
+        .unwrap();
+    let paths: Vec<_> = result
+        .hits
+        .iter()
+        .map(|hit| hit.file_path.as_str())
+        .collect();
+    assert_eq!(paths, vec!["src/a.rs", "src/b.rs"]);
+    let exact = result
+        .lanes
+        .iter()
+        .find(|lane| lane.lane_id == LANE_EXACT_SYMBOL)
+        .unwrap();
+    assert_eq!(exact.candidate_count, 2);
+    assert!(exact
+        .candidates
+        .iter()
+        .all(|candidate| candidate.exact_identity));
+}
+
+#[test]
+fn path_lane_recalls_exact_path_but_never_widens_hard_scope() {
+    let (engine, _tmp) = engine_with(
+        SearchConfig {
+            lexical_weight: 0.0,
+            exact_symbol_weight: 0.0,
+            path_weight: 1.0,
+            grep_weight: 0.0,
+            graph_weight: 0.0,
+            ..Default::default()
+        },
+        Default::default(),
+    );
+    insert_chunk_file(
+        &engine,
+        "src/deep/target.rs",
+        Language::Rust,
+        "fn target() {}",
+    );
+    insert_chunk_file(&engine, "tests/noise.rs", Language::Rust, "fn noise() {}");
+
+    let found = engine
+        .search_with_diagnostics(&SearchRequest {
+            query: "src/deep/target.rs".into(),
+            top_k: 1,
+            include_grep: false,
+            pinned_file_paths: Some(vec!["tests/noise.rs".into()]),
+            file_preselect_limit: Some(1),
+            ..Default::default()
+        })
+        .unwrap();
+    assert_eq!(found.hits[0].file_path, "src/deep/target.rs");
+    let path = found
+        .lanes
+        .iter()
+        .find(|lane| lane.lane_id == LANE_PATH)
+        .unwrap();
+    assert!(path.candidates[0].exact_identity);
+
+    let scoped_out = engine
+        .search_with_diagnostics(&SearchRequest {
+            query: "src/deep/target.rs".into(),
+            top_k: 5,
+            include_grep: false,
+            path_prefix: Some("tests/".into()),
+            ..Default::default()
+        })
+        .unwrap();
+    assert!(scoped_out
+        .hits
+        .iter()
+        .all(|hit| hit.file_path.starts_with("tests/")));
+    assert!(scoped_out
+        .lanes
+        .iter()
+        .flat_map(|lane| &lane.candidates)
+        .all(|candidate| candidate.legacy_chunk_id != "chunk:src/deep/target.rs"));
+}
+
+#[test]
+fn non_finite_search_or_ranking_configuration_fails_before_scoring() {
+    let search = SearchConfig {
+        path_weight: f64::NAN,
+        ..Default::default()
+    };
+    let (engine, _tmp) = engine_with(search, Default::default());
+    assert!(engine
+        .search_with_diagnostics(&SearchRequest {
+            query: "anything".into(),
+            ..Default::default()
+        })
+        .is_err());
+
+    let ranking = cc_model::config::RankingConfig {
+        overlap_weight: f64::INFINITY,
+        ..Default::default()
+    };
+    let (engine, _tmp) = engine_with(SearchConfig::default(), ranking);
+    assert!(engine
+        .search_with_diagnostics(&SearchRequest {
+            query: "anything".into(),
+            ..Default::default()
+        })
+        .is_err());
+}
+
 #[test]
 fn lexical_lane_adapter_matches_inline_ranking() {
     let (engine, _tmp) = scoped_test_engine();
@@ -79,6 +291,7 @@ fn lexical_lane_adapter_matches_inline_ranking() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let lane = LexicalLane;
@@ -91,7 +304,14 @@ fn lexical_lane_adapter_matches_inline_ranking() {
     );
 
     let hits = lane.run(&context).unwrap();
-    assert_eq!(hits, vec![("chunk:src/alpha.rs".to_string(), 1.0)]);
+    // Native diagnostic score is now separate from the legacy rank slot.
+    assert!(hits.iter().all(|(_, raw)| raw.is_finite() && *raw < 0.0));
+    let ranks: Vec<_> = hits
+        .iter()
+        .enumerate()
+        .map(|(rank, (id, _))| (id.clone(), 1.0 / (rank + 1) as f64))
+        .collect();
+    assert_eq!(ranks, vec![("chunk:src/alpha.rs".to_string(), 1.0)]);
 }
 
 #[test]
@@ -118,6 +338,7 @@ fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let lane = GrepLane;
@@ -132,9 +353,9 @@ fn grep_lane_adapter_ranks_matches_and_caches_only_hits() {
     // text cache.  Scan-only rows stay out so a cold scan over a large
     // scope can't rotate the LRU and evict hot entries.
     let mut cache = engine.chunk_text_cache.lock().unwrap();
-    assert!(cache.get("chunk:src/g.rs").is_some());
+    assert!(cache.get(&(0, "chunk:src/g.rs".into())).is_some());
     assert!(
-        cache.get("chunk:src/other.rs").is_none(),
+        cache.get(&(0, "chunk:src/other.rs".into())).is_none(),
         "non-matching scanned chunk must not enter the text cache"
     );
 }
@@ -183,6 +404,7 @@ fn grep_lane_scan_budget_truncates_recency_first_and_deterministically() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let first = GrepLane.run(&context).unwrap();
@@ -215,6 +437,7 @@ fn grep_lane_disabled_when_request_excludes_grep() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
     assert!(!GrepLane.is_enabled(&context));
 }
@@ -262,6 +485,7 @@ fn graph_lane_adapter_ranks_seed_above_one_hop_neighbor() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let lane = GraphLane;
@@ -337,6 +561,7 @@ fn graph_lane_disabled_when_weight_is_zero() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
     assert!(
         !GraphLane.is_enabled(&context),
@@ -462,6 +687,7 @@ fn graph_lane_maps_symbol_to_smallest_containing_chunk() {
     // symbol span: the lane must pick the narrowest container.
     let (engine, _tmp) = scoped_test_engine();
     let make_chunk = |chunk_id: &str, index: i64, start: u32, end: u32| ChunkRecord {
+        source: None,
         chunk_id: chunk_id.to_string(),
         file_path: "src/wide.rs".to_string(),
         language: Language::Rust,
@@ -576,6 +802,8 @@ impl RetrievalLane for FakeLane {
 
 fn fake_candidate_chunk() -> CandidateChunk {
     CandidateChunk {
+        document: None,
+        source_evidence: None,
         chunk_id: "chunk:src/x.rs".to_string(),
         file_path: "src/x.rs".to_string(),
         language_name: "rust".to_string(),
@@ -606,6 +834,7 @@ fn new_lane_opting_into_annotation_gets_generic_hit_reasons() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let fourth = FakeLane {
@@ -638,6 +867,7 @@ fn new_lane_opting_into_annotation_gets_generic_hit_reasons() {
             &FusedScore {
                 total: 0.5,
                 by_lane: vec![],
+                exact_identity: false,
             },
             &lane_ranks,
         )
@@ -699,6 +929,7 @@ fn new_lane_declaring_score_slot_projects_without_plan_edits() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let slotted = SlottedLane;
@@ -712,6 +943,7 @@ fn new_lane_declaring_score_slot_projects_without_plan_edits() {
             &FusedScore {
                 total: 0.5,
                 by_lane: vec![],
+                exact_identity: false,
             },
             &lane_ranks,
         )
@@ -732,7 +964,16 @@ fn default_lanes_registry_keeps_fusion_order() {
     // deterministic RRF fusion order.
     let lanes = crate::lanes::default_lanes();
     let ids: Vec<&str> = lanes.iter().map(|lane| lane.lane_id()).collect();
-    assert_eq!(ids, vec![LANE_LEXICAL, LANE_GREP, LANE_GRAPH]);
+    assert_eq!(
+        ids,
+        vec![
+            LANE_EXACT_SYMBOL,
+            LANE_PATH,
+            LANE_LEXICAL,
+            LANE_GREP,
+            LANE_GRAPH
+        ]
+    );
 }
 
 #[test]
@@ -752,6 +993,7 @@ fn lane_opting_out_of_annotation_stays_fusion_only() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let silent = FakeLane {
@@ -764,9 +1006,10 @@ fn lane_opting_out_of_annotation_stays_fusion_only() {
     };
 
     let lanes: [&dyn RetrievalLane; 1] = [&silent];
-    let outcomes = run_lanes(&lanes, &context).unwrap();
+    let mut outcomes = run_lanes(&lanes, &context).unwrap();
+    materialize_test_outcomes(&mut outcomes);
 
-    let fused = fuse_outcomes(&outcomes, 50);
+    let fused = fuse_outcomes(&outcomes, 50).unwrap();
     assert!(
         fused.contains_key("chunk:src/x.rs"),
         "opted-out lane must still contribute to RRF fusion"
@@ -802,6 +1045,7 @@ fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
         db: &engine.db,
         config: &engine.config,
         chunk_text_cache: &engine.chunk_text_cache,
+        cache_epoch: 0,
     };
 
     let active = FakeLane {
@@ -824,7 +1068,10 @@ fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
     let lanes: [&dyn RetrievalLane; 2] = [&active, &disabled];
     let outcomes = run_lanes(&lanes, &context).unwrap();
 
-    assert!(active.ran.load(std::sync::atomic::Ordering::SeqCst), "enabled lane must run");
+    assert!(
+        active.ran.load(std::sync::atomic::Ordering::SeqCst),
+        "enabled lane must run"
+    );
     assert!(
         !disabled.ran.load(std::sync::atomic::Ordering::SeqCst),
         "disabled lane must be skipped before work"
@@ -844,22 +1091,14 @@ fn run_lanes_iterates_collection_and_skips_disabled_lane_before_work() {
 #[test]
 fn fuse_outcomes_accumulates_rrf_generically() {
     let outcomes = vec![
-        LaneOutcome {
-            lane_id: "fake-a",
-            weight: 1.0,
-            annotates_hits: false,
-            score_slot: None,
-            hits: vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
-        },
-        LaneOutcome {
-            lane_id: "fake-b",
-            weight: 0.5,
-            annotates_hits: false,
-            score_slot: None,
-            hits: vec![("y".to_string(), 1.0)],
-        },
+        test_lane_outcome(
+            "fake-a",
+            1.0,
+            vec![("x".to_string(), 1.0), ("y".to_string(), 0.5)],
+        ),
+        test_lane_outcome("fake-b", 0.5, vec![("y".to_string(), 1.0)]),
     ];
-    let fused = fuse_outcomes(&outcomes, 50);
+    let fused = fuse_outcomes(&outcomes, 50).unwrap();
 
     // score(d) = sum over lanes of weight / (k + rank)
     assert!((fused["x"].total - 1.0 / 51.0).abs() < 1e-12);
@@ -867,10 +1106,13 @@ fn fuse_outcomes_accumulates_rrf_generically() {
 
     // Per-lane breakdown is preserved in lane-accumulation order and
     // sums (left-to-right) to the fused total bit-for-bit.
-    assert_eq!(fused["x"].by_lane, vec![("fake-a", 1.0 / 51.0)]);
+    assert_eq!(fused["x"].by_lane, vec![("fake-a".to_string(), 1.0 / 51.0)]);
     assert_eq!(
         fused["y"].by_lane,
-        vec![("fake-a", 1.0 / 52.0), ("fake-b", 0.5 / 51.0)]
+        vec![
+            ("fake-a".to_string(), 1.0 / 52.0),
+            ("fake-b".to_string(), 0.5 / 51.0)
+        ]
     );
     for fused_score in fused.values() {
         let component_sum: f64 = fused_score.by_lane.iter().map(|(_, v)| v).sum();

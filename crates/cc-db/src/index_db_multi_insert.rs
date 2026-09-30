@@ -142,8 +142,8 @@ impl IndexDb {
             .collect();
         multi_insert(
             conn,
-            "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) VALUES",
-            11,
+            "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at,chunk_policy,document_spec) VALUES",
+            13,
             &files_rows,
             |stmt, base, (file, excerpt)| {
                 let o = &file.outcome;
@@ -151,15 +151,20 @@ impl IndexDb {
                     &file.rel_path, file.language.as_str(), &file.content_hash,
                     file.mtime, file.size as i64, &o.summary, excerpt,
                     o.parser_tier.as_str(), o.parser_confidence,
-                    o.is_test_file as i32, &now,
+                    o.is_test_file as i32, &now, &o.chunk_policy, &o.document_spec,
                 ]);
                 Ok(())
             },
         )?;
 
+        for file in units {
+            crate::public_surface_store::insert_on(conn, file)?;
+        }
+
         // chunks — resolve each chunk's payload (pre-compressed side-car or
         // in-transaction fallback; same policy, identical bytes).
         struct ChunkRow<'a> {
+            source_json: Option<String>,
             rec: &'a cc_model::chunk::ChunkRecord,
             zstd: Option<std::borrow::Cow<'a, [u8]>>,
         }
@@ -169,19 +174,21 @@ impl IndexDb {
                 let blobs = precompressed.get(&file.rel_path).map(Vec::as_slice);
                 file.outcome.chunks.iter().enumerate().map(move |(idx, c)| {
                     let zstd = match blobs.and_then(|b| b.get(idx)) {
-                        Some(precomputed) => {
-                            precomputed.as_deref().map(std::borrow::Cow::Borrowed)
-                        }
+                        Some(precomputed) => precomputed.as_deref().map(std::borrow::Cow::Borrowed),
                         None => compress_chunk_text(&c.text).map(std::borrow::Cow::Owned),
                     };
-                    ChunkRow { rec: c, zstd }
+                    c.source_json().map(|source_json| ChunkRow {
+                        rec: c,
+                        zstd,
+                        source_json,
+                    })
                 })
             })
-            .collect();
+            .collect::<CcResult<Vec<_>>>()?;
         multi_insert(
             conn,
-            "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence) VALUES",
-            14,
+            "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES",
+            15,
             &chunk_rows,
             |stmt, base, row| {
                 let c = row.rec;
@@ -202,10 +209,15 @@ impl IndexDb {
                 }
                 bind_row!(stmt, base + 11, [
                     c.token_estimate, c.parser_tier.as_str(), c.parser_confidence,
+                    &row.source_json,
                 ]);
                 Ok(())
             },
         )?;
+
+        for file in units {
+            crate::document_store::insert_on(conn, file)?;
+        }
 
         // chunks_fts — read back the fresh base rowids (previous rows for
         // these paths were deleted, so file_path IN (...) sees only this
@@ -255,10 +267,18 @@ impl IndexDb {
             6,
             &fts_rows,
             |stmt, base, (rowid, c)| {
-                bind_row!(stmt, base, [
-                    rowid, &c.chunk_id, &c.file_path, &c.breadcrumb,
-                    &c.symbol_name, &c.text,
-                ]);
+                bind_row!(
+                    stmt,
+                    base,
+                    [
+                        rowid,
+                        &c.chunk_id,
+                        &c.file_path,
+                        &c.breadcrumb,
+                        &c.symbol_name,
+                        &c.text,
+                    ]
+                );
                 Ok(())
             },
         )?;
@@ -271,14 +291,15 @@ impl IndexDb {
         let imports: Vec<_> = units.iter().flat_map(|f| &f.outcome.imports).collect();
         multi_insert(
             conn,
-            "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport) VALUES",
-            8,
+            "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport,context_json) VALUES",
+            9,
             &imports,
             |stmt, base, i| {
                 bind_row!(stmt, base, [
                     &i.file_path, &i.import_string, &i.resolved_path,
                     &i.imported_name, &i.alias, i.is_namespace as i32,
                     i.is_default as i32, i.is_reexport as i32,
+                    serde_json::to_string(&i.context).expect("finite import syntax"),
                 ]);
                 Ok(())
             },
@@ -407,6 +428,7 @@ impl IndexDb {
             return Ok(());
         }
         let paths: Vec<&str> = units.iter().map(|u| u.rel_path.as_str()).collect();
+        let communities = crate::community_carry::CommunityCarry::capture(conn, &paths)?;
         for table in &[
             "call_edges",
             "symbol_refs",
@@ -431,18 +453,20 @@ impl IndexDb {
 
         let symbols: Vec<_> = units.iter().flat_map(|f| &f.outcome.symbols).collect();
         Self::insert_symbols_multi(conn, &symbols, false)?;
+        communities.restore(conn)?;
 
         let imports: Vec<_> = units.iter().flat_map(|f| &f.outcome.imports).collect();
         multi_insert(
             conn,
-            "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport) VALUES",
-            8,
+            "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport,context_json) VALUES",
+            9,
             &imports,
             |stmt, base, i| {
                 bind_row!(stmt, base, [
                     &i.file_path, &i.import_string, &i.resolved_path,
                     &i.imported_name, &i.alias, i.is_namespace as i32,
                     i.is_default as i32, i.is_reexport as i32,
+                    serde_json::to_string(&i.context).expect("finite import syntax"),
                 ]);
                 Ok(())
             },
@@ -466,6 +490,10 @@ impl IndexDb {
             .collect();
         Self::insert_dispatch_sites_multi(conn, &sites)?;
 
+        for file in units {
+            crate::resolution_dependency_store::replace_on(conn, file)?;
+        }
+
         let route_edges: Vec<_> = units.iter().flat_map(|f| &f.outcome.route_edges).collect();
         Self::insert_route_edges_multi(conn, &route_edges, false)?;
 
@@ -488,15 +516,37 @@ impl IndexDb {
             "INSERT INTO symbols(symbol_id,file_path,name,kind,container,start_line,end_line,start_col,end_col,signature,doc,parser_tier,parser_confidence,qname,parent_symbol_id,export_name,is_default_export,symbol_uid,framework_role,receiver_type,param_types,return_type,param_count,base_types,implements) VALUES"
         };
         multi_insert(conn, head, 25, rows, |stmt, base, s| {
-            bind_row!(stmt, base, [
-                &s.symbol_id, &s.file_path, &s.name, s.kind.as_str(),
-                &s.container, s.start_line, s.end_line, s.start_col, s.end_col,
-                &s.signature, &s.doc, s.parser_tier.as_str(),
-                s.parser_confidence, &s.qname, &s.parent_symbol_id,
-                &s.export_name, s.is_default_export as i32, &s.symbol_uid,
-                &s.framework_role, &s.receiver_type, &s.param_types,
-                &s.return_type, s.param_count, &s.base_types, &s.implements,
-            ]);
+            bind_row!(
+                stmt,
+                base,
+                [
+                    &s.symbol_id,
+                    &s.file_path,
+                    &s.name,
+                    s.kind.as_str(),
+                    &s.container,
+                    s.start_line,
+                    s.end_line,
+                    s.start_col,
+                    s.end_col,
+                    &s.signature,
+                    &s.doc,
+                    s.parser_tier.as_str(),
+                    s.parser_confidence,
+                    &s.qname,
+                    &s.parent_symbol_id,
+                    &s.export_name,
+                    s.is_default_export as i32,
+                    &s.symbol_uid,
+                    &s.framework_role,
+                    &s.receiver_type,
+                    &s.param_types,
+                    &s.return_type,
+                    s.param_count,
+                    &s.base_types,
+                    &s.implements,
+                ]
+            );
             Ok(())
         })
     }
@@ -512,14 +562,30 @@ impl IndexDb {
             "INSERT INTO symbol_refs(ref_id,file_path,symbol_name,container,ref_kind,line,column_no,target_symbol_id,target_file_path,target_symbol_uid,ref_name,resolution_kind,resolution_confidence,resolution_strategy,ref_end_line,ref_end_col,parser_tier,parser_confidence) VALUES"
         };
         multi_insert(conn, head, 18, rows, |stmt, base, r| {
-            bind_row!(stmt, base, [
-                &r.ref_id, &r.file_path, &r.symbol_name, &r.container,
-                &r.ref_kind, r.line, r.column, &r.target_symbol_id,
-                &r.target_file_path, &r.target_symbol_uid, &r.ref_name,
-                r.resolution_kind.as_str(), r.resolution_confidence,
-                &r.resolution_strategy, r.ref_end_line, r.ref_end_col,
-                r.parser_tier.as_str(), r.parser_confidence,
-            ]);
+            bind_row!(
+                stmt,
+                base,
+                [
+                    &r.ref_id,
+                    &r.file_path,
+                    &r.symbol_name,
+                    &r.container,
+                    &r.ref_kind,
+                    r.line,
+                    r.column,
+                    &r.target_symbol_id,
+                    &r.target_file_path,
+                    &r.target_symbol_uid,
+                    &r.ref_name,
+                    r.resolution_kind.as_str(),
+                    r.resolution_confidence,
+                    &r.resolution_strategy,
+                    r.ref_end_line,
+                    r.ref_end_col,
+                    r.parser_tier.as_str(),
+                    r.parser_confidence,
+                ]
+            );
             Ok(())
         })
     }
@@ -606,14 +672,31 @@ impl IndexDb {
             "INSERT INTO routes(edge_id,file_path,route_path,handler_name,method,line,start_col,end_line,end_col,handler_symbol_id,handler_symbol_uid,handler_expr,router_symbol_uid,framework,route_kind,confidence,parser_tier,resolution_strategy,resolution_confidence) VALUES"
         };
         multi_insert(conn, head, 19, rows, |stmt, base, r| {
-            bind_row!(stmt, base, [
-                &r.edge_id, &r.file_path, &r.route_path, &r.handler_name,
-                &r.method, r.line, r.start_col, r.end_line, r.end_col,
-                &r.handler_symbol_id, &r.handler_symbol_uid, &r.handler_expr,
-                &r.router_symbol_uid, &r.framework, &r.route_kind, r.confidence,
-                r.parser_tier.as_str(), &r.resolution_strategy,
-                r.resolution_confidence,
-            ]);
+            bind_row!(
+                stmt,
+                base,
+                [
+                    &r.edge_id,
+                    &r.file_path,
+                    &r.route_path,
+                    &r.handler_name,
+                    &r.method,
+                    r.line,
+                    r.start_col,
+                    r.end_line,
+                    r.end_col,
+                    &r.handler_symbol_id,
+                    &r.handler_symbol_uid,
+                    &r.handler_expr,
+                    &r.router_symbol_uid,
+                    &r.framework,
+                    &r.route_kind,
+                    r.confidence,
+                    r.parser_tier.as_str(),
+                    &r.resolution_strategy,
+                    r.resolution_confidence,
+                ]
+            );
             Ok(())
         })
     }

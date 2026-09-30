@@ -4,6 +4,23 @@ use cc_model::{CcError, CcResult};
 use rmcp::schemars;
 use serde::{Deserialize, Serialize};
 
+/// Decode the one supported runtime policy enum; modes remain hybrid/symbol.
+pub fn parse_retrieval_strategy(
+    value: Option<&str>,
+) -> CcResult<Option<cc_model::query::RetrievalStrategy>> {
+    use cc_model::query::RetrievalStrategy;
+    value
+        .map(|v| match v {
+            "local" => Ok(RetrievalStrategy::Local),
+            "auto" => Ok(RetrievalStrategy::Auto),
+            "semantic" => Ok(RetrievalStrategy::Semantic),
+            _ => Err(CcError::InvalidParams(
+                "retrieval_strategy must be local, auto, or semantic".into(),
+            )),
+        })
+        .transpose()
+}
+
 // ---------------------------------------------------------------------------
 // Sanitization constants
 // ---------------------------------------------------------------------------
@@ -275,6 +292,12 @@ pub struct SearchParams {
     /// The search query string (natural language or symbol name).
     pub query: String,
 
+    /// Retrieval policy for hybrid mode: local, auto, or semantic. Omitted uses
+    /// project configuration; auto without a semantic port stays local. An
+    /// unconfigured explicit semantic request fails instead of pretending ready.
+    #[serde(default)]
+    pub retrieval_strategy: Option<String>,
+
     /// Search strategy.
     /// - `"hybrid"` – combines text and graph signals (default)
     /// - `"symbol"` – exact / fuzzy symbol-name lookup only
@@ -336,6 +359,14 @@ pub struct SearchParams {
 
 impl SearchParams {
     pub fn sanitize(&mut self) -> CcResult<()> {
+        let strategy = parse_retrieval_strategy(self.retrieval_strategy.as_deref())?;
+        if self.mode == "symbol"
+            && strategy.is_some_and(|s| s != cc_model::query::RetrievalStrategy::Local)
+        {
+            return Err(CcError::InvalidParams(
+                "symbol mode supports only local retrieval_strategy".into(),
+            ));
+        }
         clamp_str(&mut self.query, MAX_QUERY_LEN);
         self.top_k = self.top_k.clamp(1, MAX_TOP_K);
         clamp_opt_str(&mut self.intent, MAX_QUERY_LEN);
@@ -362,6 +393,7 @@ impl Default for SearchParams {
         Self {
             query: String::new(),
             mode: default_mode_hybrid(),
+            retrieval_strategy: None,
             top_k: default_top_k(),
             intent: None,
             exact: false,
@@ -390,6 +422,11 @@ pub struct ContextParams {
     /// Natural-language description of the task or question.
     pub task: String,
 
+    /// Optional local/auto/semantic policy. An explicit policy uses the unified
+    /// retrieval path rather than the legacy direct-symbol shortcut.
+    #[serde(default)]
+    pub retrieval_strategy: Option<String>,
+
     /// Maximum number of symbols to include in the context window.
     #[serde(default)]
     pub max_symbols: Option<usize>,
@@ -409,6 +446,7 @@ pub struct ContextParams {
 
 impl ContextParams {
     pub fn sanitize(&mut self) -> CcResult<()> {
+        parse_retrieval_strategy(self.retrieval_strategy.as_deref())?;
         clamp_str(&mut self.task, MAX_QUERY_LEN);
         if let Some(ref mut n) = self.max_symbols {
             *n = (*n).clamp(1, MAX_SYMBOLS);
@@ -424,6 +462,7 @@ impl Default for ContextParams {
         Self {
             task: String::new(),
             max_symbols: None,
+            retrieval_strategy: None,
             include_source: default_true(),
             intent: None,
             project_path: None,

@@ -28,7 +28,7 @@
 //! | `semantic_real`    | semantic_edges | `edge_id NOT LIKE 'synth:%'`      | source_symbol_uid, target_symbol_uid, relation_kind  |
 //! | `dispatch_sites`   | dispatch_sites | all                               | site_kind, key, file_path, enclosing/handler uid, line |
 //! | `symbols_seed`     | symbols        | all                               | the 15 resolver-seed columns (`SEED_COLUMNS` in `index_db_query`) |
-//! | `files_state`      | files          | all                               | file_path, content_hash, mtime, size (the scan-diff projection) |
+//! | `files_state`      | files          | all                               | file_path, content_hash, mtime, size, chunk_policy, document_spec (scan-diff projection) |
 //!
 //! NULL (or non-TEXT) values hash as `""` in the gate groups, matching the
 //! previous scans' `as_str().unwrap_or("")` extraction. `symbols_seed`
@@ -73,7 +73,9 @@ pub(crate) const GRAPH_SIG_AGG_KEY: &str = "graph_sig_aggregates";
 /// group layout change; stored aggregates from other versions read as absent.
 /// Version "2": added the `symbols_seed` group.
 /// Version "3": added the `files_state` group.
-const FORMAT_VERSION: &str = "3";
+// v4: chunk policy is part of the file-state cache projection.
+// v5: document encoding spec participates independently of the chunk policy.
+const FORMAT_VERSION: &str = "5";
 
 /// One group's aggregate: row count plus wrapping sum of per-row hashes.
 /// Equal multisets of rows produce equal aggregates; add/remove commute.
@@ -270,12 +272,16 @@ pub(crate) fn hash_file_state(
     content_hash: Option<&str>,
     mtime: f64,
     size: i64,
+    chunk_policy: Option<&str>,
+    document_spec: Option<&str>,
 ) -> u64 {
     let mut hasher = DefaultHasher::new();
     file_path.hash(&mut hasher);
     text(content_hash).hash(&mut hasher);
     mtime.to_bits().hash(&mut hasher);
     size.hash(&mut hasher);
+    chunk_policy.hash(&mut hasher);
+    document_spec.hash(&mut hasher);
     hasher.finish()
 }
 
@@ -423,7 +429,7 @@ impl Table {
                 " WHERE file_path IN ({in})",
             ),
             Table::Files => (
-                "SELECT file_path, content_hash, mtime, size FROM files{scope}",
+                "SELECT file_path, content_hash, mtime, size, chunk_policy, document_spec FROM files{scope}",
                 " WHERE file_path IN ({in})",
             ),
         }
@@ -534,11 +540,15 @@ fn fold_query(
                 let content_hash = col_text(row, 1).map_err(db_err)?;
                 let mtime = col_f64(row, 2).map_err(db_err)?;
                 let size = col_i64(row, 3).map_err(db_err)?;
+                let chunk_policy = col_text(row, 4).map_err(db_err)?;
+                let document_spec = col_text(row, 5).map_err(db_err)?;
                 aggs.files_state.add_row(hash_file_state(
                     text(file_path.as_deref()),
                     content_hash.as_deref(),
                     mtime,
                     size,
+                    chunk_policy.as_deref(),
+                    document_spec.as_deref(),
                 ));
             }
         }
@@ -907,15 +917,16 @@ mod tests {
         dirty: &[FileWriteUnit],
         hierarchy: &[cc_model::edge::SemanticEdgeRecord],
     ) {
-        db.write_incremental_batch(
-            to_remove,
-            normal,
-            dirty,
-            &[],
-            hierarchy,
-            &PrecompressedChunks::new(),
-        )
-        .unwrap();
+        db.writes()
+            .write_incremental_batch(
+                to_remove,
+                normal,
+                dirty,
+                &[],
+                hierarchy,
+                &PrecompressedChunks::new(),
+            )
+            .unwrap();
     }
 
     /// Add / modify / remove / dirty-rewrite through the incremental batch:

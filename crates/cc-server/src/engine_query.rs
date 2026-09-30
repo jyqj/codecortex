@@ -402,12 +402,15 @@ impl GraphOps<'_> {
                     if let (Some(project), Some(db)) =
                         (self.0.project_path.as_ref(), self.0.index_db.as_ref())
                     {
-                        if let Ok(full_path) = crate::path_guard::resolve_indexed_path_strict(
+                        if let Ok(evidence) = cc_search::evidence::read_verified(
+                            db,
                             project,
                             &sym.file_path,
-                            db,
+                            cc_search::evidence::FILE_LIMIT,
                         ) {
-                            if let Ok(content) = std::fs::read_to_string(&full_path) {
+                            entry["source_freshness"] = serde_json::to_value(&evidence)?;
+                            entry["source_rendering"] = serde_json::json!("line-normalized");
+                            if let Some(content) = evidence.text {
                                 let lines: Vec<&str> = content.lines().collect();
                                 let start = (sym.start_line as usize).saturating_sub(1);
                                 let end = (sym.end_line as usize).min(lines.len());
@@ -545,6 +548,7 @@ impl GraphOps<'_> {
         let tier = self.0.repo_size_tier();
         let max_src_chars = max_chars.unwrap_or_else(|| tier.max_source_chars_per_symbol());
 
+        let source_generation = db.reads().generation()?.index_epoch;
         let rows = db.reads().symbol_source_candidates(symbol, exact)?;
 
         if rows.is_empty() {
@@ -573,8 +577,24 @@ impl GraphOps<'_> {
             .and_then(|v| v.as_u64())
             .unwrap_or(start_line as u64) as u32;
 
-        let full_path = crate::path_guard::resolve_indexed_path_strict(&project, file_path, &db)?;
-        let content = std::fs::read_to_string(&full_path).map_err(CcError::Io)?;
+        let evidence = cc_search::evidence::read_verified(
+            &db,
+            &project,
+            file_path,
+            cc_search::evidence::FILE_LIMIT,
+        )?;
+        if db.reads().generation()?.index_epoch != source_generation {
+            return Ok(
+                serde_json::json!({"query":symbol,"source":null,"source_freshness":{"status":"index_changed_retry"},"retry":"reindex"}),
+            );
+        }
+        if !evidence.is_current() {
+            return Ok(
+                serde_json::json!({"query":symbol,"symbol":row,"source_freshness":evidence,"source":null,"retry":"reindex"}),
+            );
+        }
+        let source_freshness = serde_json::to_value(&evidence)?;
+        let content = evidence.require_text()?;
         let source = slice_lines(
             &content,
             start_line,
@@ -587,6 +607,8 @@ impl GraphOps<'_> {
             "query": symbol,
             "symbol": row,
             "source": source,
+            "source_freshness": source_freshness,
+            "source_rendering": "line-normalized",
             "line_numbered": include_line_numbers,
             "truncated": source.contains("... truncated"),
         }))

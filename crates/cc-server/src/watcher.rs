@@ -151,6 +151,13 @@ fn count_project_files(project_path: &Path) -> usize {
 // Pending events
 // ---------------------------------------------------------------------------
 
+/// Configuration invalidation is independent of source-chunk admission. Only
+/// JSON config candidates bypass source ignores; internal build/cache paths do not.
+fn should_track_input(path: &str, rules: &cc_index::IgnoreRules) -> bool {
+    cc_index::project_model::potential_config_path(path)
+        || (should_track(path) && !rules.is_ignored(path))
+}
+
 /// Pending file-system events, separated into changed and removed sets.
 /// Uses `HashSet` for O(1) membership checks instead of linear `Vec::contains`.
 #[derive(Debug, Default, Clone)]
@@ -172,9 +179,93 @@ pub struct WatcherDrain {
 }
 
 impl WatcherDrain {
+    /// `None` is an explicit full-tree reconciliation, including project inputs.
+    pub(crate) fn build_scope(&self) -> Option<cc_index::BuildScope> {
+        (!self.rescan_needed).then(|| cc_index::BuildScope {
+            changed: self.changed.clone(),
+            removed: self.removed.clone(),
+        })
+    }
+
     pub fn is_empty(&self) -> bool {
         self.changed.is_empty() && self.removed.is_empty() && !self.rescan_needed
     }
+}
+
+/// Normalize native notifications before debounce. Incomplete events never authorize
+/// a scoped scan. This function is also exercised with synthetic native events.
+fn classify_notification(
+    project: &Path,
+    result: &Result<Event, notify::Error>,
+    rules: &cc_index::IgnoreRules,
+) -> WatcherDrain {
+    use notify::event::{CreateKind, ModifyKind, RemoveKind, RenameMode};
+    let Ok(event) = result else {
+        return WatcherDrain {
+            rescan_needed: true,
+            ..Default::default()
+        };
+    };
+    let mut out = WatcherDrain {
+        rescan_needed: event.need_rescan(),
+        ..Default::default()
+    };
+    if matches!(event.kind, EventKind::Access(_)) {
+        return out;
+    }
+    let unknown = matches!(event.kind, EventKind::Any | EventKind::Other);
+    if event.paths.is_empty() {
+        out.rescan_needed = true;
+    }
+    for (index, p) in event.paths.iter().enumerate() {
+        let Ok(rel) = p.strip_prefix(project) else {
+            continue;
+        };
+        let Some(rel) = rel.to_str() else {
+            out.rescan_needed = true;
+            continue;
+        };
+        let rel = rel.replace('\\', "/");
+        let structural = rel.is_empty()
+            || cc_index::project_model::potential_config_path(&format!("{rel}/go.mod"));
+        // Cache/build directories cannot cause self-triggered full-tree loops.
+        if !structural {
+            continue;
+        }
+        let folder = matches!(
+            event.kind,
+            EventKind::Create(CreateKind::Folder) | EventKind::Remove(RemoveKind::Folder)
+        ) || p.is_dir();
+        let rename = matches!(event.kind, EventKind::Modify(ModifyKind::Name(_)));
+        let incomplete_remove = matches!(
+            event.kind,
+            EventKind::Remove(RemoveKind::Any | RemoveKind::Other)
+        );
+        if folder || rename || unknown || incomplete_remove {
+            out.rescan_needed = true;
+        }
+        if folder || rel.is_empty() || !should_track_input(&rel, rules) {
+            continue;
+        }
+        let removed = match event.kind {
+            EventKind::Remove(_) => true,
+            EventKind::Modify(ModifyKind::Name(RenameMode::From)) => true,
+            EventKind::Modify(ModifyKind::Name(RenameMode::Both)) if event.paths.len() == 2 => {
+                index == 0
+            }
+            _ => false,
+        };
+        if removed {
+            out.removed.push(rel);
+        } else if matches!(event.kind, EventKind::Create(_) | EventKind::Modify(_)) {
+            out.changed.push(rel);
+        }
+    }
+    out.changed.sort();
+    out.changed.dedup();
+    out.removed.sort();
+    out.removed.dedup();
+    out
 }
 
 // ---------------------------------------------------------------------------
@@ -295,55 +386,25 @@ impl FileWatcher {
         let project = project_path.to_path_buf();
 
         let watcher = notify::recommended_watcher(move |res: Result<Event, notify::Error>| {
-            if let Ok(event) = res {
-                // The OS dropped events (queue overflow): the accumulated
-                // path set is incomplete, so flag the next drain to force a
-                // full-tree scan.
-                if event.need_rescan() {
-                    rescan_cb.store(true, Ordering::Relaxed);
-                    if let Ok(mut ts) = last_event_cb.lock() {
-                        *ts = Some(Instant::now());
-                    }
-                }
-                let mut staging = match staging_cb.lock() {
-                    Ok(g) => g,
-                    Err(e) => e.into_inner(),
-                };
-
-                let mut tracked_any = false;
-                for path in &event.paths {
-                    let rel = match path.strip_prefix(&project) {
-                        Ok(r) => r,
-                        Err(_) => continue,
-                    };
-                    let rel_str = rel.to_string_lossy().replace('\\', "/");
-                    if !should_track(&rel_str) || ignore_cb.is_ignored(&rel_str) {
-                        continue;
-                    }
-
-                    match event.kind {
-                        EventKind::Create(_) | EventKind::Modify(_) => {
-                            staging.removed.remove(&rel_str);
-                            staging.changed.insert(rel_str);
-                        }
-                        EventKind::Remove(_) => {
-                            staging.changed.remove(&rel_str);
-                            staging.removed.insert(rel_str);
-                        }
-                        _ => {}
-                    }
-                    tracked_any = true;
-                }
-
-                if tracked_any {
-                    // Record burst event.
-                    burst_cb.record_event();
-
-                    // Update last event timestamp.
-                    if let Ok(mut ts) = last_event_cb.lock() {
-                        *ts = Some(Instant::now());
-                    }
-                }
+            let event = classify_notification(&project, &res, &ignore_cb);
+            if event.is_empty() {
+                return;
+            }
+            if event.rescan_needed {
+                rescan_cb.store(true, Ordering::Relaxed);
+            }
+            let mut staging = staging_cb.lock().unwrap_or_else(|e| e.into_inner());
+            for p in event.removed {
+                staging.changed.remove(&p);
+                staging.removed.insert(p);
+            }
+            for p in event.changed {
+                staging.removed.remove(&p);
+                staging.changed.insert(p);
+            }
+            burst_cb.record_event();
+            if let Ok(mut ts) = last_event_cb.lock() {
+                *ts = Some(Instant::now());
             }
         })
         .map_err(|e| cc_model::CcError::Other(format!("watcher error: {e}")))?;
@@ -471,6 +532,22 @@ impl FileWatcher {
         !(pending.changed.is_empty() && pending.removed.is_empty())
     }
 
+    /// Deterministic queue precondition for build-slot tests; does not assert
+    /// anything about native notification delivery and is absent from production.
+    #[cfg(test)]
+    pub(crate) fn inject_pending_for_test(&self, path: &str) {
+        self.pending
+            .lock()
+            .unwrap()
+            .changed
+            .insert(path.to_string());
+    }
+
+    /// A failed build consumed an incomplete batch; retry with a full-tree scan.
+    pub(crate) fn request_rescan(&self) {
+        self.rescan_needed.store(true, Ordering::Relaxed);
+    }
+
     /// Drain all pending events accumulated since the last call.
     ///
     /// Returns a [`WatcherDrain`] with separate `changed` and `removed` lists
@@ -542,7 +619,7 @@ fn git_sanity_poll_loop(
         let mut pending = pending.lock().unwrap_or_else(|e| e.into_inner());
         let mut backfilled = 0usize;
         for file in dirty_files {
-            if !should_track(&file) || ignore_rules.is_ignored(&file) {
+            if !should_track_input(&file, ignore_rules) {
                 continue;
             }
             if !pending.changed.contains(&file) && !pending.removed.contains(&file) {
@@ -654,12 +731,110 @@ pub fn should_track(rel_path: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn p3c_rename_sides_and_structural_changes_force_reconciliation() {
+        use notify::event::{ModifyKind, RemoveKind, RenameMode};
+        let d = tempfile::tempdir().unwrap();
+        let rules = cc_index::IgnoreRules::load(d.path(), &Default::default());
+        let e = Event::new(EventKind::Modify(ModifyKind::Name(RenameMode::Both)))
+            .add_path(d.path().join("go.work"))
+            .add_path(d.path().join("old.work"));
+        let out = classify_notification(d.path(), &Ok(e), &rules);
+        assert_eq!(out.removed, vec!["go.work"]);
+        assert_eq!(out.changed, vec!["old.work"]);
+        assert!(out.build_scope().is_none());
+        for p in ["pkg", ".config"] {
+            let e = Event::new(EventKind::Remove(RemoveKind::Folder)).add_path(d.path().join(p));
+            assert!(classify_notification(d.path(), &Ok(e), &rules).rescan_needed);
+        }
+        for p in [".codecortex", "target", ".git", "node_modules"] {
+            let e = Event::new(EventKind::Remove(RemoveKind::Folder)).add_path(d.path().join(p));
+            assert!(
+                classify_notification(d.path(), &Ok(e), &rules).is_empty(),
+                "{p}"
+            );
+        }
+    }
+    #[test]
+    fn p3c_error_or_overflow_cannot_be_lost_in_empty_scope() {
+        let d = tempfile::tempdir().unwrap();
+        let rules = cc_index::IgnoreRules::load(d.path(), &Default::default());
+        let err = Err(notify::Error::generic("overflow"));
+        let out = classify_notification(d.path(), &err, &rules);
+        assert!(!out.is_empty());
+        assert!(out.build_scope().is_none());
+        let mut event = Event::new(EventKind::Other);
+        event.attrs.set_flag(notify::event::Flag::Rescan);
+        assert!(classify_notification(d.path(), &Ok(event), &rules)
+            .build_scope()
+            .is_none());
+    }
+    #[test]
+    fn p3c_ordinary_config_modification_remains_scoped() {
+        let d = tempfile::tempdir().unwrap();
+        let cfg = cc_model::config::IndexingConfig {
+            ignore: vec!["**/*.mod".into()],
+            ..Default::default()
+        };
+        let rules = cc_index::IgnoreRules::load(d.path(), &cfg);
+        let event = Event::new(EventKind::Modify(notify::event::ModifyKind::Data(
+            notify::event::DataChange::Content,
+        )))
+        .add_path(d.path().join("pkg/go.mod"));
+        let out = classify_notification(d.path(), &Ok(event), &rules);
+        assert_eq!(out.changed, vec!["pkg/go.mod"]);
+        assert!(out.build_scope().is_some());
+    }
 
     #[test]
     fn should_track_accepts_plain_source_paths() {
         assert!(should_track("src/main.rs"));
         assert!(should_track("lib/index.ts"));
         assert!(should_track("a/b/c/util.py"));
+    }
+
+    #[test]
+    fn p3a_hidden_inherited_config_is_tracked_but_generated_inputs_are_not() {
+        let d = tempfile::tempdir().unwrap();
+        let config = cc_model::config::IndexingConfig {
+            ignore: vec!["**/*.json".into()],
+            ..Default::default()
+        };
+        let rules = cc_index::IgnoreRules::load(d.path(), &config);
+        assert!(should_track_input(".config/base.json", &rules));
+        assert!(should_track_input("config/.shared/base.jsonc", &rules));
+        for path in [
+            "dist/base.json",
+            "build/base.json",
+            ".cache/base.json",
+            ".venv/base.json",
+            "node_modules/p/base.json",
+            "target/base.json",
+            ".codecortex/cache.json",
+        ] {
+            assert!(!should_track_input(path, &rules), "{path}");
+        }
+    }
+
+    #[test]
+    fn p3a_configuration_events_are_not_lost_to_source_ignore_rules() {
+        let d = tempfile::tempdir().unwrap();
+        let config = cc_model::config::IndexingConfig {
+            ignore: vec!["**/*.json".into()],
+            ..Default::default()
+        };
+        let rules = cc_index::IgnoreRules::load(d.path(), &config);
+        assert!(rules.is_ignored("tsconfig.json"));
+        assert!(should_track_input("tsconfig.json", &rules));
+        assert!(should_track_input("config/base.json", &rules));
+        for p in [
+            "target/a.json",
+            "node_modules/pkg/tsconfig.json",
+            ".codecortex/cache.json",
+            ".git/a.json",
+        ] {
+            assert!(!should_track_input(p, &rules), "{p}");
+        }
     }
 
     #[test]

@@ -15,15 +15,46 @@ use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::CcResult;
 
 use crate::engine::SearchEngine;
-use crate::enrich::{graph_enrich, GraphEnrichment};
+use crate::enrich::{graph_enrich_scoped, GraphEnrichment};
+
+/// Connectivity is a structural prior, not a second source of query relevance.
+/// Rank-derived lexical/grep support bounds it; exact identities retain full support.
+fn direct_support(lexical: f64, grep: f64, exact: bool) -> f64 {
+    if exact {
+        return 1.0;
+    }
+    let finite = |s: f64| {
+        if s.is_finite() {
+            s.clamp(0.0, 1.0)
+        } else {
+            0.0
+        }
+    };
+    finite(lexical).max(finite(grep))
+}
+fn hit_support(hit: &SearchHit) -> f64 {
+    direct_support(
+        hit.lexical_score,
+        hit.grep_score,
+        hit.reasons.iter().any(|s| s == "exact-target"),
+    )
+}
+fn compare_graph_seeds(a: &SearchHit, b: &SearchHit) -> std::cmp::Ordering {
+    let exact = |h: &SearchHit| h.reasons.iter().any(|s| s == "exact-target");
+    exact(b)
+        .cmp(&exact(a))
+        .then_with(|| hit_support(b).total_cmp(&hit_support(a)))
+        .then_with(|| b.fused_score.total_cmp(&a.fused_score))
+        .then_with(|| a.chunk_id.cmp(&b.chunk_id))
+}
 
 impl SearchEngine {
     /// Search with graph-aware reranking, for context assembly.
     ///
     /// Runs the core search over a `rerank_window`-sized candidate list,
-    /// computes a connectivity-based `graph_score` for the top
-    /// `limits.max_resolve` hits, folds it into `rerank_score` using
-    /// `ranking.graph_rerank_weight`, then performs the single, final sort
+    /// computes connectivity for at most `limits.max_resolve` directly-supported
+    /// seeds, then gates its contribution by reciprocal lexical/grep rank and
+    /// `ranking.graph_rerank_weight`, before the single, final sort
     /// and truncates to the request's `top_k`.
     ///
     /// INVARIANT: this is the only place the graph contribution is applied —
@@ -49,72 +80,132 @@ impl SearchEngine {
         limits: &GraphEnrichLimits,
         token_budget: u32,
     ) -> CcResult<Arc<(Vec<SearchHit>, GraphEnrichment)>> {
-        // ── Cache lookup ─────────────────────────────────────────
-        let generation = self.observe_epochs()?;
+        self.search_graph_window(request, limits, token_budget, true)
+    }
+
+    /// The context selector consumes the existing bounded rerank window,
+    /// without changing lane budgets or recomputing relevance scores.
+    pub fn search_context_candidates(
+        &self,
+        request: &SearchRequest,
+        limits: &GraphEnrichLimits,
+        token_budget: u32,
+    ) -> CcResult<Arc<(Vec<SearchHit>, GraphEnrichment)>> {
+        self.search_graph_window(request, limits, token_budget, false)
+    }
+
+    fn search_graph_window(
+        &self,
+        request: &SearchRequest,
+        limits: &GraphEnrichLimits,
+        token_budget: u32,
+        top_k_only: bool,
+    ) -> CcResult<Arc<(Vec<SearchHit>, GraphEnrichment)>> {
+        let request = self.controlled_request(request)?;
+        let request = &request;
         let qhash = self.graph_query_hash(request, limits, token_budget);
-        let cache_key = (generation.index_epoch, generation.evidence_epoch, qhash);
-        if let Ok(mut cache) = self.graph_result_cache.lock() {
-            if let Some(cached) = cache.get(&cache_key) {
-                self.graph_cache_hits.fetch_add(1, Ordering::Relaxed);
-                tracing::debug!(
-                    query = %request.query,
-                    "graph search cache hit (index_epoch={}, evidence_epoch={}, hash={})",
-                    generation.index_epoch,
-                    generation.evidence_epoch,
-                    qhash,
-                );
-                return Ok(Arc::clone(cached));
-            }
-        }
-        self.graph_cache_misses.fetch_add(1, Ordering::Relaxed);
-
-        let mut hits = self.search_internal(request, false)?;
-
-        let (scores, enrichment) = graph_enrich(&self.db, &hits, limits, token_budget);
-        let weight = self.ranking.graph_rerank_weight;
-        for hit in &mut hits {
-            if let Some(&graph_score) = scores.get(&hit.chunk_id) {
-                hit.graph_score = graph_score;
-                // Atomically updates `rerank_score` and bills the matching
-                // trace component, keeping `sum(score_trace) == rerank_score`.
-                crate::score_trace::apply_traced_boost(
-                    hit,
-                    "boost:graph-rerank",
-                    graph_score * weight,
-                );
-            }
-        }
-
-        // Single final sort + truncation: rerank_score is immutable after this.
-        hits.sort_by(|a, b| {
-            b.rerank_score
-                .partial_cmp(&a.rerank_score)
-                .unwrap_or(std::cmp::Ordering::Equal)
-        });
-        let top_k = if request.top_k == 0 {
-            10
-        } else {
-            request.top_k
-        };
-        hits.truncate(top_k);
-        crate::score_trace::debug_assert_trace_consistency(&hits);
-
-        let result = Arc::new((hits, enrichment));
-        // Degraded-not-cached: a transient DB read failure (recorded in
-        // graph_explain.read_errors) produced partial graph context — keep
-        // serving it for THIS call, but never from cache, so the next call
-        // retries the reads instead of pinning the degradation to the epoch.
-        if result.1.graph_explain.read_errors.is_empty() {
+        let (generation, (result, cacheable)) = self.with_stable_generation(|generation| {
+            let cache_key = (generation.graph_key(qhash), top_k_only);
             if let Ok(mut cache) = self.graph_result_cache.lock() {
-                cache.put(cache_key, Arc::clone(&result));
+                if let Some(cached) = cache.get(&cache_key).filter(|_| request.semantic.is_none()) {
+                    self.graph_cache_hits.fetch_add(1, Ordering::Relaxed);
+                    tracing::debug!(
+                        query = %request.query,
+                        "graph search cache hit (index_epoch={}, evidence_epoch={}, hash={})",
+                        generation.index_epoch,
+                        generation.evidence_epoch,
+                        qhash,
+                    );
+                    return Ok((Arc::clone(cached), false));
+                }
             }
-        }
+            self.graph_cache_misses.fetch_add(1, Ordering::Relaxed);
+
+            let plan = crate::plan::SearchPlan::build_configured(
+                &self.db,
+                &self.config,
+                &self.ranking,
+                &self.query_config,
+                request,
+                self.repo_tier,
+            )?;
+            let retrieval = self.search_planned_detailed(&plan, false, generation.index_epoch)?;
+            let mut hits = retrieval.hits;
+            // Choose graph seeds before applying structural/file priors again. The
+            // previous rerank-prefix selection could reinforce incidental hub matches.
+            hits.sort_by(compare_graph_seeds);
+            let supported = hits.iter().take_while(|h| hit_support(h) > 0.0).count();
+            let (scores, mut enrichment) = graph_enrich_scoped(
+                &self.db,
+                &hits[..supported],
+                limits,
+                token_budget,
+                plan.hard_scope(),
+            );
+            enrichment.lane_outcomes = retrieval.lanes;
+            enrichment.grep_diagnostics = retrieval.grep;
+            enrichment.scope_explain = retrieval.scope;
+            enrichment.retrieval_cost = retrieval.cost;
+            let weight = self.ranking.graph_rerank_weight;
+            for hit in &mut hits {
+                if let Some(&graph_score) = scores.get(&hit.chunk_id) {
+                    hit.graph_score = graph_score;
+                    // Atomically updates `rerank_score` and bills the matching
+                    // trace component, keeping `sum(score_trace) == rerank_score`.
+                    crate::score_trace::apply_traced_boost(
+                        hit,
+                        "boost:graph-rerank",
+                        graph_score * weight * hit_support(hit),
+                    );
+                }
+            }
+
+            // Single final sort + truncation: rerank_score is immutable after this.
+            hits.sort_by(crate::plan::compare_hits);
+            hits.truncate(if top_k_only {
+                plan.limits().top_k
+            } else {
+                plan.limits().rerank_window
+            });
+            crate::score_trace::validate_trace_consistency(&hits)?;
+            crate::score_trace::debug_assert_trace_consistency(&hits);
+
+            plan.control().check()?;
+            let result = Arc::new((hits, enrichment));
+            // Degraded-not-cached: a transient DB read failure (recorded in
+            // graph_explain.read_errors) produced partial graph context — keep
+            // serving it for THIS call, but never from cache, so the next call
+            // retries the reads instead of pinning the degradation to the epoch.
+            let cacheable = result.1.graph_explain.read_errors.is_empty()
+                && result
+                    .1
+                    .lane_outcomes
+                    .iter()
+                    .all(cc_model::retrieval::LaneOutcome::is_cacheable)
+                && result
+                    .1
+                    .grep_diagnostics
+                    .as_ref()
+                    .is_none_or(|g| !g.prefilter_failed);
+            Ok((result, cacheable))
+        })?;
+        self.publish_query(request, || {
+            if cacheable && request.semantic.is_none() {
+                if let Ok(mut cache) = self.graph_result_cache.lock() {
+                    cache.put(
+                        (generation.graph_key(qhash), top_k_only),
+                        Arc::clone(&result),
+                    );
+                }
+            }
+        })?;
         Ok(result)
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use super::{compare_graph_seeds, direct_support, hit_support};
     use std::sync::Arc;
 
     use cc_model::config::RepoSizeTier;
@@ -131,6 +222,43 @@ mod tests {
             include_grep: false,
             ..Default::default()
         }
+    }
+
+    #[test]
+    fn graph_prior_requires_direct_support_and_keeps_exact_identity() {
+        assert_eq!(direct_support(0.0, 0.0, false), 0.0);
+        assert_eq!(direct_support(0.1, 0.0, false), 0.1);
+        assert_eq!(direct_support(0.0, 1.0, false), 1.0);
+        assert_eq!(direct_support(f64::NAN, f64::INFINITY, false), 0.0);
+        assert_eq!(direct_support(-1.0, 2.0, false), 1.0);
+        assert_eq!(direct_support(0.0, 0.0, true), 1.0);
+    }
+    #[test]
+    fn graph_seed_selection_cannot_be_bought_by_an_unrelated_file_prior() {
+        let (engine, _tmp) = scoped_test_engine();
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(
+                "src/first.rs",
+                "fn cached_marker() { alpha_one() }",
+            )])
+            .unwrap();
+        let hits = engine.search(&graph_cache_request()).unwrap();
+        let mut direct = hits[0].clone();
+        direct.lexical_score = 1.0;
+        direct.grep_score = 0.0;
+        direct.reasons.clear();
+        let mut hub = direct.clone();
+        hub.chunk_id = "hub".into();
+        hub.lexical_score = 0.1;
+        hub.rerank_score = 1_000_000.0;
+        hub.graph_score = 0.4;
+        assert!(compare_graph_seeds(&direct, &hub).is_lt());
+        hub.lexical_score = 0.0;
+        assert_eq!(hit_support(&hub), 0.0);
+        hub.reasons.push("exact-target".into());
+        assert!(compare_graph_seeds(&hub, &direct).is_lt());
     }
 
     #[test]

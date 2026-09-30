@@ -1,5 +1,17 @@
 # 基准测试
 
+## P2-D：连续变更、独立真值与成本
+
+`cc-eval mutation-case --case <case.json> --output <新目录> --shrink-attempts 32` 可独立重放十四表增量/全量对照，并以手写关系谓词检查两条路径共同出错的盲区；有效失败保留原件并自动缩减阶段，错误输入不冒充产品反例。动态接口 Unknown、未闭合阶段和 reducer 自测分别报告。SQL 工作量、名称桶/墓碑增长、1k/5k release 机制成本与公开 MCP 回归口径见 [INCREMENTAL_VERIFICATION.md](internals/INCREMENTAL_VERIFICATION.md)；不据此认证 100k、尾延迟或语义 holdout。
+
+## Code Index V2：P0 实现入口
+
+新增 `cc-eval` 开发 binary：严格输入锁、OCE兼容/原生评分、真实MCP子进程、可选OCE HTTP适配、独立增量oracle、原始工件与离线回放。入口见 [使用说明](../crates/cc-eval/benchmarks/USAGE.md)、[已知失败](../crates/cc-eval/benchmarks/KNOWN-FAILURES.md) 和 [P0实施报告](roadmap/code-index-v2/P0-IMPLEMENTATION.md)。
+
+P0的基线目录位于 `artifacts/benchmarks/`。小样本只报告观测值，不认证p95/p99或全仓自然语言召回。OCE两份题库已验证实际各100题与导入格式；未声称复核了全部标准答案，未调用真实付费模型。任务状态与证据以 `roadmap/code-index-v2/tasks.json` 为准。
+
+以下是保留的 legacy benchmark 说明。其“真实MCP线路”指进程内duplex，而非新增P0的独立子进程stdio；两种证据层级分开报告。
+
 四类基准全部由 eval harness 自动化，且都走真实 MCP 线路（进程内 duplex
 JSON-RPC 对 rmcp 路由，含 schema 校验与输出预算）：
 

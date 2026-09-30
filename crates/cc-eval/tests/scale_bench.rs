@@ -534,11 +534,8 @@ fn run_scale_bench(scale_label: &str, target_files: usize) {
         assert_eq!(report_usize(report, "files_parsed"), 1);
         assert_eq!(report_usize(report, "files_updated"), 1);
     }
-    let incremental_single_scoped = summarize_incremental_reports(
-        "single_file_scoped",
-        repo.files_written,
-        &scoped_reports,
-    );
+    let incremental_single_scoped =
+        summarize_incremental_reports("single_file_scoped", repo.files_written, &scoped_reports);
 
     // Incremental: body-only edits across 5% of code files per iteration.
     let batch: Vec<String> = repo

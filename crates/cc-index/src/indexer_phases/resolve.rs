@@ -46,16 +46,26 @@ impl Indexer {
         write_units: &mut [FileWriteUnit],
         to_remove: &[String],
         fw_context: &crate::framework_resolvers::ProjectFrameworkContext,
+        project_model: &crate::project_model::CapturedProject,
     ) -> CcResult<ResolveResult> {
         let ResolutionCatalog {
             mut catalog,
             persisted_symbols,
-            resolution_contexts,
+            mut resolution_contexts,
             cache_basis,
             type_catalog_reused,
         } = super::time_step("resolve", "build_catalog", || {
             self.build_resolution_catalog(full, write_units, to_remove)
         })?;
+
+        self.install_go_package_membership(&mut catalog, full, write_units, to_remove)?;
+        self.install_forwarding(&mut catalog, write_units, project_model)?;
+        Self::install_module_packages(
+            &mut catalog,
+            write_units,
+            &mut resolution_contexts,
+            project_model,
+        );
 
         // Phase 4a / 4a-2: semantic edge UIDs + backfill, USES_TYPE derivation.
         super::time_step("resolve", "semantic_edges", || {
@@ -82,10 +92,199 @@ impl Indexer {
             Self::resolve_framework_cross_file(&catalog, write_units, fw_context)
         });
 
+        for unit in write_units.iter_mut() {
+            catalog.seal_resolution_manifest(&unit.rel_path, &mut unit.outcome);
+        }
+
         Ok(ResolveResult {
             hierarchy_edges,
             catalog_carry: cache_basis.map(|basis| CatalogCarry { basis, catalog }),
         })
+    }
+
+    fn install_module_packages(
+        catalog: &mut SymbolCatalog,
+        units: &[FileWriteUnit],
+        contexts: &mut [ResolutionContext],
+        project: &crate::project_model::CapturedProject,
+    ) {
+        let mut modules = std::collections::HashMap::new();
+        for (unit, context) in units.iter().zip(contexts) {
+            if !unit.rel_path.ends_with(".go") {
+                continue;
+            }
+            for import in &unit.outcome.imports {
+                let r = crate::module_resolution::resolve_import(
+                    project.model(),
+                    &unit.rel_path,
+                    import,
+                );
+                let Some(package) = r.resolved_package else {
+                    continue;
+                };
+                let local = import.alias.clone().unwrap_or(package.name);
+                if matches!(local.as_str(), "_" | ".") {
+                    continue;
+                }
+                // Internal lookup identity, never published as a physical file path.
+                let key = format!("go-package:{}", package.directory);
+                modules.insert(key.clone(), package.files);
+                context.imports.push(crate::resolver::types::ImportBinding {
+                    local_name: local,
+                    source_module: key,
+                    imported_name: None,
+                    file_path: unit.rel_path.clone(),
+                    is_namespace: true,
+                    is_default: false,
+                });
+            }
+        }
+        catalog.install_package_modules(modules);
+    }
+
+    fn install_forwarding(
+        &self,
+        catalog: &mut SymbolCatalog,
+        units: &[FileWriteUnit],
+        project: &crate::project_model::CapturedProject,
+    ) -> CcResult<()> {
+        use std::collections::{BTreeSet, HashMap};
+        let current: HashMap<_, _> = units
+            .iter()
+            .map(|u| (u.rel_path.as_str(), &u.outcome.public_surface))
+            .collect();
+        let mut pending = units
+            .iter()
+            .flat_map(|u| {
+                u.outcome
+                    .imports
+                    .iter()
+                    .filter_map(|i| i.resolved_path.clone())
+            })
+            .collect::<BTreeSet<_>>();
+        let mut seen = BTreeSet::new();
+        let mut routes = HashMap::new();
+        let mut edges = 0usize;
+        for _ in 0..32 {
+            pending.retain(|p| !seen.contains(p) && project.model().files().contains(p));
+            if pending.is_empty() {
+                break;
+            }
+            if seen.len() + pending.len() > 4096 {
+                return Err(cc_model::CcError::Config(
+                    "reexport_file_budget_exceeded".into(),
+                ));
+            }
+            let paths = std::mem::take(&mut pending);
+            let lookup = paths
+                .iter()
+                .filter(|p| !current.contains_key(p.as_str()))
+                .cloned()
+                .collect::<Vec<_>>();
+            let stored = self.db.reads().public_surfaces(&lookup)?;
+            for file in paths {
+                seen.insert(file.clone());
+                let surface = current
+                    .get(file.as_str())
+                    .copied()
+                    .or_else(|| stored.get(&file));
+                let Some(surface) = surface else {
+                    continue;
+                };
+                let mut links = Vec::new();
+                for f in &surface.forwards {
+                    if !surface.conditions.is_empty() {
+                        continue;
+                    }
+                    let target =
+                        crate::module_resolution::resolve(project.model(), &file, &f.source);
+                    if let Some(path) = target.resolved_path {
+                        edges += 1;
+                        if edges > 65536 {
+                            return Err(cc_model::CcError::Config(
+                                "reexport_edge_budget_exceeded".into(),
+                            ));
+                        }
+                        let name = if file.ends_with(".rs") {
+                            f.imported_name
+                                .rsplit("::")
+                                .next()
+                                .unwrap_or(&f.imported_name)
+                                .to_owned()
+                        } else {
+                            f.imported_name.clone()
+                        };
+                        links.push((f.exported_name.clone(), path.clone(), name));
+                        pending.insert(path);
+                    }
+                }
+                links.sort();
+                links.dedup();
+                routes.insert(file, links);
+            }
+        }
+        pending.retain(|p| !seen.contains(p));
+        if !pending.is_empty() {
+            return Err(cc_model::CcError::Config(
+                "reexport_depth_budget_exceeded".into(),
+            ));
+        }
+        catalog.install_forward_routes(routes);
+        Ok(())
+    }
+
+    /// Build only package groups required by this batch; persisted contribution
+    /// rows are overlaid with the current parsed/dirty units, excluding removals.
+    fn install_go_package_membership(
+        &self,
+        catalog: &mut SymbolCatalog,
+        full: bool,
+        units: &[FileWriteUnit],
+        removed: &[String],
+    ) -> CcResult<()> {
+        use cc_model::package_surface::PackageKey;
+        let keys: std::collections::BTreeSet<_> = units
+            .iter()
+            .filter_map(|u| PackageKey::from_surface(&u.outcome.public_surface))
+            .flat_map(|k| k.contribution_keys())
+            .collect();
+        let excluded: HashSet<_> = units
+            .iter()
+            .map(|u| u.rel_path.as_str())
+            .chain(removed.iter().map(String::as_str))
+            .collect();
+        let mut groups: std::collections::BTreeMap<PackageKey, Vec<String>> =
+            std::collections::BTreeMap::new();
+        if !full {
+            for s in self
+                .db
+                .reads()
+                .package_contributions(&keys.iter().cloned().collect::<Vec<_>>())?
+            {
+                if !excluded.contains(s.module.as_str()) {
+                    if let Some(k) = PackageKey::from_surface(&s) {
+                        groups.entry(k).or_default().push(s.module);
+                    }
+                }
+            }
+        }
+        for u in units {
+            if let Some(k) = PackageKey::from_surface(&u.outcome.public_surface) {
+                groups.entry(k).or_default().push(u.rel_path.clone());
+            }
+        }
+        for paths in groups.values_mut() {
+            paths.sort();
+            paths.dedup();
+        }
+        catalog.install_go_groups(
+            &groups,
+            units.iter().filter_map(|u| {
+                PackageKey::from_surface(&u.outcome.public_surface)
+                    .map(|key| (u.rel_path.clone(), key))
+            }),
+        );
+        Ok(())
     }
 
     /// Phase 4a (input construction): seed the [`SymbolCatalog`] with symbols

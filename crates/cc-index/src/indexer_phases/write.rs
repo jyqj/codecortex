@@ -49,7 +49,9 @@ impl Indexer {
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         chunk_blobs: &PrecompressedChunks,
         walk_manifest: Option<&crate::scanner::WalkManifest>,
+        reconcile: Option<&cc_model::freshness::ReconcileUpdate>,
         scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
+        project_model: Option<&crate::project_model::CapturedProject>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<WriteResult> {
         // Separate dirty write units from normal ones before write.
@@ -63,6 +65,10 @@ impl Indexer {
             .partition(|u| dirty_set.contains(&u.rel_path));
 
         let mut seed_tokens = None;
+        let snapshot_inputs = crate::project_model::BuildInputView {
+            walk_manifest,
+            project_model,
+        };
         let config_units = if full {
             // Full rebuild: temp-db + atomic swap
             if self.use_direct_writer {
@@ -72,7 +78,7 @@ impl Indexer {
                     route_nodes,
                     hierarchy_edges,
                     chunk_blobs,
-                    walk_manifest,
+                    snapshot_inputs,
                 ) {
                     Ok(config_units) => {
                         tracing::info!("full rebuild completed via direct writer");
@@ -89,7 +95,7 @@ impl Indexer {
                             route_nodes,
                             hierarchy_edges,
                             chunk_blobs,
-                            walk_manifest,
+                            snapshot_inputs,
                         )?
                     }
                 }
@@ -100,7 +106,7 @@ impl Indexer {
                     route_nodes,
                     hierarchy_edges,
                     chunk_blobs,
-                    walk_manifest,
+                    snapshot_inputs,
                 )?
             }
         } else {
@@ -117,13 +123,14 @@ impl Indexer {
                 && normal_write_units.is_empty()
                 && dirty_write_units.is_empty();
             seed_tokens = Some(time_step("write", "incremental_batch", || {
-                self.db.writes().write_incremental_batch(
+                self.db.writes().write_reconciled_batch(
                     to_remove,
                     &normal_write_units,
                     &dirty_write_units,
                     route_nodes,
                     hierarchy_edges,
                     chunk_blobs,
+                    reconcile,
                 )
             })?);
 
@@ -137,6 +144,7 @@ impl Indexer {
                     batch_empty,
                     walk_manifest,
                     scope_hints,
+                    project_model,
                     build_explain,
                 )
             })? {
@@ -334,6 +342,7 @@ mod phase_write_behavior_tests {
 
     fn chunk(file: &str, idx: u32, text: &str) -> ChunkRecord {
         ChunkRecord {
+            source: None,
             chunk_id: format!("{file}:{idx}"),
             file_path: file.to_string(),
             language: Language::Rust,
@@ -382,6 +391,8 @@ mod phase_write_behavior_tests {
                 &[],
                 &[],
                 &chunk_blobs,
+                None,
+                None,
                 None,
                 None,
                 &mut build_explain,
@@ -669,6 +680,8 @@ mod phase_write_behavior_tests {
                 &[],
                 &[],
                 &blobs,
+                None,
+                None,
                 None,
                 None,
                 &mut build_explain,

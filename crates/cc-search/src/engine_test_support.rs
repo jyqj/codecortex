@@ -8,6 +8,7 @@ use std::sync::Arc;
 
 use cc_db::index_db::{FileWriteUnit, IndexDb};
 use cc_model::config::{ProjectConfig, SearchConfig};
+use cc_model::source::{ChunkSource, SourceSnapshot};
 use cc_model::{CallEdgeRecord, ChunkRecord, Language, ParseOutcome, ParserTier, SymbolRecord};
 
 use crate::engine::SearchEngine;
@@ -30,6 +31,47 @@ pub(crate) fn scoped_test_engine() -> (SearchEngine, tempfile::TempDir) {
     (SearchEngine::new(Arc::new(db), &config, None), tmp)
 }
 
+pub(crate) fn documented_write_unit(
+    file_path: &str,
+    language: Language,
+    text: &str,
+    mut outcome: ParseOutcome,
+) -> FileWriteUnit {
+    let source = SourceSnapshot::new(text.as_bytes());
+    let whole = source.whole();
+    let (start_line, end_line) = source.lines(whole).unwrap_or((1, 1));
+    for chunk in &mut outcome.chunks {
+        chunk.file_path = file_path.to_string();
+        chunk.language = language;
+        chunk.start_line = start_line;
+        chunk.end_line = end_line;
+        chunk.text = text.to_string();
+        chunk.source = Some(ChunkSource {
+            source: source.identity().clone(),
+            span: whole,
+            slice_digest: source.slice_digest(whole).unwrap(),
+            boundary: "test_fixture_whole_file".into(),
+            owner: Some(whole),
+            signature: None,
+        });
+    }
+    let policy = cc_model::chunk_policy::ChunkPolicy::default().fingerprint();
+    outcome.chunk_policy = Some(policy);
+    outcome.document_spec = Some(cc_index::documents::delta::spec_fingerprint().into());
+    outcome.documents = Some(
+        cc_index::documents::delta::prepare(&source, &outcome, &[])
+            .expect("prepare test document manifest"),
+    );
+    FileWriteUnit {
+        rel_path: file_path.to_string(),
+        language,
+        content_hash: source.identity().content_digest.clone(),
+        mtime: 0.0,
+        size: text.len() as u64,
+        outcome,
+    }
+}
+
 pub(crate) fn insert_chunk_file(
     engine: &SearchEngine,
     file_path: &str,
@@ -37,6 +79,7 @@ pub(crate) fn insert_chunk_file(
     text: &str,
 ) {
     let chunk = ChunkRecord {
+        source: None,
         chunk_id: format!("chunk:{}", file_path),
         file_path: file_path.to_string(),
         language,
@@ -60,23 +103,14 @@ pub(crate) fn insert_chunk_file(
     };
     outcome.is_test_file = false;
 
+    let unit = documented_write_unit(file_path, language, text, outcome);
     let conn = crate::test_seed::seed_conn(&engine.db);
-    IndexDb::insert_file_data(
-        &conn,
-        &FileWriteUnit {
-            rel_path: file_path.to_string(),
-            language,
-            content_hash: format!("hash-{file_path}"),
-            mtime: 0.0,
-            size: text.len() as u64,
-            outcome,
-        },
-    )
-    .unwrap();
+    IndexDb::insert_file_data(&conn, &unit).unwrap();
 }
 
 pub(crate) fn chunk_write_unit(file_path: &str, text: &str) -> FileWriteUnit {
     let chunk = ChunkRecord {
+        source: None,
         chunk_id: format!("chunk:{}", file_path),
         file_path: file_path.to_string(),
         language: Language::Rust,
@@ -91,20 +125,18 @@ pub(crate) fn chunk_write_unit(file_path: &str, text: &str) -> FileWriteUnit {
         parser_tier: ParserTier::TreeSitter,
         parser_confidence: 1.0,
     };
-    FileWriteUnit {
-        rel_path: file_path.to_string(),
-        language: Language::Rust,
-        content_hash: format!("hash-{file_path}-{}", text.len()),
-        mtime: 0.0,
-        size: text.len() as u64,
-        outcome: ParseOutcome {
+    documented_write_unit(
+        file_path,
+        Language::Rust,
+        text,
+        ParseOutcome {
             summary: text.to_string(),
             chunks: vec![chunk],
             parser_tier: ParserTier::TreeSitter,
             parser_confidence: 1.0,
             ..Default::default()
         },
-    }
+    )
 }
 
 /// Insert a single-chunk file together with one symbol (lines 1-1) and
@@ -118,6 +150,7 @@ pub(crate) fn insert_graph_file(
     call_edges: Vec<CallEdgeRecord>,
 ) {
     let chunk = ChunkRecord {
+        source: None,
         chunk_id: format!("chunk:{}", file_path),
         file_path: file_path.to_string(),
         language: Language::Rust,
@@ -171,17 +204,7 @@ pub(crate) fn insert_graph_file(
     };
     outcome.is_test_file = false;
 
+    let unit = documented_write_unit(file_path, Language::Rust, text, outcome);
     let conn = crate::test_seed::seed_conn(&engine.db);
-    IndexDb::insert_file_data(
-        &conn,
-        &FileWriteUnit {
-            rel_path: file_path.to_string(),
-            language: Language::Rust,
-            content_hash: format!("hash-{file_path}"),
-            mtime: 0.0,
-            size: text.len() as u64,
-            outcome,
-        },
-    )
-    .unwrap();
+    IndexDb::insert_file_data(&conn, &unit).unwrap();
 }

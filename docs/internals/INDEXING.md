@@ -5,11 +5,25 @@
 > 增量正确性问题的开发者。存储细节见 [STORAGE.md](STORAGE.md)；锁与一致性
 > 窗口见 [CONCURRENCY.md](CONCURRENCY.md)。
 
+P2-C 的变化分类、有限集合传播、同事务剩余工作、无变化/重启/watcher 续跑与 MCP 新鲜度合同见 [INCREMENTAL_RECOVERY.md](INCREMENTAL_RECOVERY.md)。`normal` 不得掩盖之前尚未处理的依赖；观察到的欠账保存在索引库内，直至实际收敛。
+
+## 原始源码与切块坐标
+
+P4-A 复用语言解析任务中的 AST 生成紧凑字节边界，切块正文来自同一原始 UTF-8 输入。`chunks.source_json` 保留快照摘要、半开区间、切片摘要及父域/签名坐标；单条/批量/plain/zstd 写入均验证格式。解析前核对 scan 摘要，重读变化不得把新正文写在旧 hash 下。该检查不是 OS 原子快照。公开 indexed search 已投影最小的metadata.source_evidence，并在hydration核验slice digest。P4-C增加index-local DocKey/Version、同事务文档清单和公开读取时的有界磁盘核验；参见[DOCUMENTS.md](DOCUMENTS.md)。不提供全查询/文件系统原子快照。见 [SOURCE_CHUNKS.md](SOURCE_CHUNKS.md)。
+
+P4-B的`ChunkPolicy`由每次构建捕获的indexing配置提供；文件事实同时存储规则摘要，改变预算会触发已有源码重处理，失败文件不被其他文件代确认。P4-D移除按单一行数静默钳制的旧构造面：AST、启发式符号和纯行fallback只负责形成`SourceStructure`，随后统一进入`from_structure → Partition → coalesce`。merge-disabled只存在于隔离的消融配置，不是第二套生产chunker。合并、gap及长行共用限额，原始文本与模型输入渲染分离。详见[CHUNK_POLICY.md](CHUNK_POLICY.md)。
+
+## 项目模块解析的单一入口
+
+准备阶段通过既有扫描目录与变更集合捕获不可变 ProjectModel；源码解析和 dirty reload 消费同一模型。`cc-index::module_resolution` 负责路径/包选择与精确负向探测，`cc-parsers` 只提取语法，旧 `import_resolver` 文件系统入口已删除。未建模语言返回 Unsupported，不再使用其他语言后缀补出成功目标。`config_linker` 生成配置关联启发式证据，**不是模块解析器或编译器**。
+
+应用配置、模块配置和必要的紧凑源码读取共用 `cc-model::input_file`。预算、描述符路径验证、非 Unix 限制和回滚见 [模块输入防护](MODULE_INPUT_SAFETY.md)。新增多包成本与四语言实际图目标测试分别衡量发现、复用和纯查找；不把构建阶段目录成本说成每次 import 的读盘，也不将局部计数当作全进程 IO。
+
 ## 阶段总览
 
 索引是一条阶段管线（阶段头在 `indexer.rs` 与 `indexer_phases/` 目录——
 按阶段拆为 `mod` / `resolve` / `write` / `config_link` / `snapshot` /
-`postprocess` / `analysis` / `dirty` 8 个文件；顺序不变式在
+`postprocess` / `analysis` / `dirty` / `dependencies` / `reconcile`；顺序不变式在
 `build_plan.rs`）：
 
 ```
@@ -86,14 +100,18 @@ framework enrichment 计入 `resolve_ms`，其余一一对应：
   可显式压并发；`indexing.parse_timeout_micros` 可设单文件解析超时。
 - 解析产物（符号、各类边、dispatch sites）的提取能力按语言分层，见
   [LANGUAGES.md](../LANGUAGES.md)。
+- `SourceStructure`/tree-sitter tree只在单文件解析作用域存在；数据库持久化的是chunk/source proof与派生事实，不持久化AST。P4-D架构守卫对此做有限词法检查，release成本只采样阶段RSS和序列化边界代理，不能据此声称全局峰值或任意规模常数内存。
+
+## 项目配置与导入解析（P3-A）
+
+scan/diff 后捕获不可变 ProjectModel，再交给新解析和 dirty reload；不对每条 import 读盘。共享 WalkManifest、配置内容摘要、继承来源、配置-only 失效及已有 frontier 续跑使用同一构建链路。owned TS 配置不再由旧启发式链接器重复写成文件。发现与提交复核仍有 IO，目录整理仍随文件数增长；详见 [PROJECT_MODEL.md](PROJECT_MODEL.md)。
 
 ## dirty closure（脏闭包）
 
 `dirty_closure.rs`。增量构建的跨文件正确性来自一个不动点循环：
 
-1. 对每个重解析的文件计算**导出指纹**（export fingerprint）；
-2. 指纹变化的文件，其导入者被提升为 DirtyResolveOnly（重做解析后的
-   resolve，不重新 parse）；
+1. 对每个重解析的文件提取版本化 **PublicSurface**，已知接口计算规范指纹；Unknown/缺失证据不能证明未变；
+2. 接口、名称候选桶、文件库存/路径、包贡献或已识别配置变化时，由既有 import/call/ref 及持久化正负依赖找到消费方，提升为 DirtyResolveOnly（重做 resolve，不重新 parse）；
 3. 循环直至收敛，受两个上限约束：文件预算
    `indexing.dirty_propagation_max_files`（默认 200）与轮次上限
    `DIRTY_CLOSURE_MAX_ROUNDS = 16`。
@@ -101,15 +119,17 @@ framework enrichment 计入 `resolve_ms`，其余一一对应：
 重新加载的边数据经过按类别的 dirty-reload 策略
 （`dirty_reload_policy.rs`），决定已存储的目标 UID 是清除、重生成还是保留。
 
-阶段如何结束由 `DirtyClosureResult::status()` 分类，作为
+P2-A/B 的四组声明接口、保守能力与事务语义见 [PUBLIC_SURFACE.md](PUBLIC_SURFACE.md)；有界正负依赖、歧义、Go 包视图与配置边界见 [RESOLUTION_DEPENDENCIES.md](RESOLUTION_DEPENDENCIES.md)。`public_surface_coverage` 只统计实际 parse 文件，`resolution_coverage` 统计本次处理的文件（包括 dirty-only），均不是全仓正确率。parser_exact 同文件完整身份仍在时可保留，其他目标重新解析。P2-C 的剩余闭包已同事务持久化，可通过无变化/重启/watcher 续跑；P2-D 增加有界反向查询及 SQL 工作量记录，详见 [INCREMENTAL_VERIFICATION.md](INCREMENTAL_VERIFICATION.md)。
+
+纯闭包结果与持久化剩余工作由 `reconcile.rs` 合并分类，作为
 `dirty_propagation` 字段进入 `IndexReport`（全量构建省略）：
 
 | 状态 | 含义 | 后果 |
 |---|---|---|
-| `normal` | 不动点收敛 | 无 |
-| `partial_closure` | 第 1 轮之后命中轮次上限或预算 | 保留了闭包的完整轮前缀，更深的传递引用可能过期 |
-| `budget_exceeded` | 第 1 轮的直接导入者就超出预算 | 应用**预算大小的确定性前缀**（排序后截断，不再是历史上的完全不动），前缀外的导入者跨文件引用可能过期，**建议全量重建** |
-| `disabled` | 配置关闭（`indexing.dirty_propagation=false`） | 跨文件引用不维护 |
+| `normal` | 已观察到的失效工作已闭合 | 不代表完整语言语义或未观察磁盘修改 |
+| `partial_closure` | 当前预算/轮次内未闭合 | 已提交前缀和持久欠账一起保留，后续续跑 |
+| `budget_exceeded` | 直接依赖超出本次预算 | 应用确定性前缀，剩余原因/完成集持久化；下一次增量继续，显式全量亦可恢复 |
+| `disabled` | 配置关闭（`indexing.dirty_propagation=false`） | 欠账保留且新鲜度不完整，重新启用或全量重建恢复 |
 
 ## enrichment 与 resolve
 
@@ -158,7 +178,7 @@ self-member → scope → same-file → imports → suffix → global-unique
   `SymbolCatalog::remove_files`，逐 distinct 键批量 retain，联动
   `TypeCatalog` 的按文件删除），条目槽位打墓碑、永不复用（幸存索引保持
   有效），然后照常叠加本批全量符号。`TypeCatalog` 的三张类型表为此改为
-  按 `(file, value)` 存多值贡献（读取"最后存活者"），删除一个文件不再抹掉
+  按 `(file, value)` 存多值贡献（冲突不能证明唯一类型），删除一个文件不再抹掉
   其他文件的同键贡献；变量类型赋值（type_assigns）保持 build-local，
   复用时清空重喂。
 - **折叠（写后）**：批文件的构建期条目整体替换为**最终写入单元**的行
@@ -166,10 +186,7 @@ self-member → scope → same-file → imports → suffix → global-unique
   `INSERT OR REPLACE` 同语义的 id/uid last-wins 去重，seed 投影
   （`scope_id = None`）后存回；`live == token.count` 兜底校验。全量构建
   清槽；纯删除批直接在停靠目录上折叠删除。
-- **发散契约**：复用目录与新载目录是同一条目**多重集**但桶内**顺序**
-  不同（新载按 `(file_path, start_line)`），等分候选的 tie-break 可能选出
-  不同的（同样合法、已受置信度惩罚的）赢家。墓碑超过存活数（含 4096
-  绝对下限）时折叠拒绝停靠，下次构建重建即压实。
+- **确定性契约**：缓存历史和桶插入顺序不得改变规范事实。同证据候选保留 Ambiguous；排序只决定呈现次序，不证明某个赢家更正确。墓碑超过 `max(live,4096)` 时拒绝停靠，下次冷加载压实。P2-D 以连续变更及独立真值、名称桶增长、实际缓存命中分别验证。
 - **容量**：与 seed 缓存共用 `CODECORTEX_SEED_CACHE_MAX_SYMBOLS`
   （默认 500k，`0` 同时禁两层）。
 

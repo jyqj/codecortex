@@ -14,6 +14,7 @@
 mod calls;
 mod extras;
 mod imports_exports;
+mod references;
 mod routes;
 mod symbols;
 mod visitor;
@@ -36,7 +37,7 @@ const STATE_SETTER_NAME_CONFIDENCE: f64 = 0.75;
 /// React state setter bound by explicit `const [x, setX] = useState(...)`.
 const STATE_SETTER_BINDING_CONFIDENCE: f64 = 0.90;
 use regex::Regex;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::sync::LazyLock;
 
 // Re-import items from submodules for internal use
@@ -45,11 +46,6 @@ use routes::detect_nextjs_file_route;
 // ---------------------------------------------------------------------------
 // Static data
 // ---------------------------------------------------------------------------
-
-static JS_CALL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"([A-Za-z_][A-Za-z0-9_]*)\s*\(").expect("js call regex"));
-static JS_IDENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"\b[A-Za-z_][A-Za-z0-9_]*\b").expect("js ident regex"));
 
 /// Matches `class Foo extends Bar` — captures class name and parent.
 static JS_EXTENDS_RE: LazyLock<Regex> = LazyLock::new(|| {
@@ -263,7 +259,7 @@ pub struct JsTsParser {
     js_lang: tree_sitter::Language,
     ts_lang: tree_sitter::Language,
     tsx_lang: tree_sitter::Language,
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 impl JsTsParser {
@@ -312,6 +308,9 @@ struct PendingExport {
 type ExtractResult = ExtractCtx;
 
 struct ExtractCtx {
+    // Ownership is keyed by AST node, not SQL last-writer deduplication.
+    visited_nodes: std::collections::HashSet<usize>,
+    visited_expressions: std::collections::HashSet<usize>,
     symbols: Vec<SymbolRecord>,
     imports: Vec<ImportRecord>,
     route_edges: Vec<RouteEdgeRecord>,
@@ -334,6 +333,8 @@ struct ExtractCtx {
 impl ExtractCtx {
     fn new(_file_path: &str) -> Self {
         Self {
+            visited_nodes: std::collections::HashSet::new(),
+            visited_expressions: std::collections::HashSet::new(),
             symbols: Vec::new(),
             imports: Vec::new(),
             route_edges: Vec::new(),
@@ -374,20 +375,22 @@ impl FileParser for JsTsParser {
         let ts_lang = self.ts_language_for(language);
         let tree = crate::parse_common::parse_tree(ts_lang, content, file_path, timeout_micros)?;
 
-        let ast_ctx = self.extract_all(&tree, content.as_bytes(), file_path);
-        let (symbol_refs, regex_call_edges) =
-            self.extract_refs_and_calls(content, file_path, &ast_ctx.symbols);
-
+        let mut ast_ctx = self.extract_all(&tree, content.as_bytes(), file_path);
+        let public_surface = crate::exports::jsts::extract(
+            &tree,
+            content.as_bytes(),
+            file_path,
+            language,
+            &mut ast_ctx.imports,
+        );
         let mut all_call_edges = ast_ctx.call_edges;
-        let existing: HashSet<(u32, u32)> = all_call_edges
-            .iter()
-            .map(|c| (c.line, c.start_col))
-            .collect();
-        for ce in regex_call_edges {
-            if !existing.contains(&(ce.line, ce.start_col)) {
-                all_call_edges.push(ce);
-            }
-        }
+        let symbol_refs = references::extract(
+            &tree,
+            content.as_bytes(),
+            file_path,
+            &ast_ctx.symbols,
+            &mut all_call_edges,
+        );
 
         let mut route_edges = ast_ctx.route_edges;
         if let Some(nextjs_route) = detect_nextjs_file_route(file_path, &ast_ctx.symbols) {
@@ -409,11 +412,12 @@ impl FileParser for JsTsParser {
         let type_assigns =
             self.extract_type_assigns(&tree, content.as_bytes(), file_path, &ast_ctx.symbols);
 
-        let chunks = self.chunker.chunk_with_symbols(
+        let (chunks, source_structure) = self.chunker.chunk_with_tree(
             file_path,
             content,
             language,
             &ast_ctx.symbols,
+            &tree,
             tier,
             confidence,
         );
@@ -430,6 +434,8 @@ impl FileParser for JsTsParser {
 
         Ok(ParseOutcome {
             summary,
+            source_structure: Some(source_structure),
+            public_surface,
             chunks,
             symbols: ast_ctx.symbols,
             imports: ast_ctx.imports,

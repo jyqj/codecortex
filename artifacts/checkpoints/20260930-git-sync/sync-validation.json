@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "created_at_utc": "2026-09-30T01:34:43.313385+00:00",
+  "scope": "Progress metadata and source-preserving Git snapshot; full Rust suites not rerun",
+  "status": "passed",
+  "environment_recovery": "Initial fmt invocation could not start because cargo was absent from default Runner PATH; resolved existing cargo executable without changing project source.",
+  "cargo_executable": "/Users/jin/.cargo/bin/cargo",
+  "original_validation_status": "failed",
+  "original_validation_source_digest_sha256": "ef63da5b557224f04bc1f6a79b4666221fdf96c17fbd625f8fdc6f24f41a4f5b",
+  "frozen_file_count": 622,
+  "original_receipt_logs_verified": 14,
+  "changed_frozen_paths": [
+    ".gitignore",
+    "README.md"
+  ],
+  "unexpected_frozen_source_changes": [],
+  "log_hash_mismatches": [],
+  "copy_hash_mismatches": [],
+  "commands": [
+    {
+      "label": "todo-generate",
+      "argv": [
+        "python3",
+        "scripts/code_index_plan.py",
+        "--write"
+      ],
+      "exit_code": 0,
+      "log": "artifacts/checkpoints/20260930-git-sync/todo-generate.log",
+      "log_sha256": "2bf256f2063b0e46518ebdc29315429a5466f0b93a464fd2194705efe4239a58"
+    },
+    {
+      "label": "plan-check",
+      "argv": [
+        "python3",
+        "scripts/code_index_plan.py"
+      ],
+      "exit_code": 0,
+      "log": "artifacts/checkpoints/20260930-git-sync/plan-check.log",
+      "log_sha256": "2bf256f2063b0e46518ebdc29315429a5466f0b93a464fd2194705efe4239a58"
+    },
+    {
+      "label": "format",
+      "argv": [
+        "/Users/jin/.cargo/bin/cargo",
+        "+stable",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit_code": 0,
+      "log": "artifacts/checkpoints/20260930-git-sync/format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "module-architecture",
+      "argv": [
+        "python3",
+        "scripts/check_module_architecture.py"
+      ],
+      "exit_code": 0,
+      "log": "artifacts/checkpoints/20260930-git-sync/module-architecture.log",
+      "log_sha256": "ad57357a9fc7ee6e261c86a0f06cc1e873decce860c7296d6ba0049a90169f24"
+    },
+    {
+      "label": "source-architecture",
+      "argv": [
+        "python3",
+        "scripts/check_source_architecture.py"
+      ],
+      "exit_code": 0,
+      "log": "artifacts/checkpoints/20260930-git-sync/source-architecture.log",
+      "log_sha256": "b127b0e418c20bfb0c20d78a08ce06ea8a0c932891fdd42efdc897b892f36d8f"
+    }
+  ]
+}

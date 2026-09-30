@@ -8,17 +8,19 @@ pub mod broker_patterns;
 pub mod c_cpp;
 pub mod chunker;
 mod dataflow_common;
+mod exports;
 pub mod generic;
 pub mod go;
+pub mod go_modules;
 pub mod http_call_helpers;
 mod import_common;
-pub mod import_resolver;
 pub mod java;
 pub mod jsts;
 pub mod lang_spec;
 mod parse_common;
 pub mod python;
 pub mod rust;
+pub mod rust_modules;
 pub mod sfc;
 pub mod spec_driven;
 pub mod traits;
@@ -29,6 +31,8 @@ use traits::FileParser;
 
 /// Registry of all available parsers. Dispatches to the best parser for a given language.
 pub struct ParserRegistry {
+    chunk_policy: cc_model::chunk_policy::ChunkPolicy,
+    chunk_policy_fingerprint: String,
     generic: generic::GenericParser,
     python: python::PythonParser,
     jsts: jsts::JsTsParser,
@@ -50,7 +54,14 @@ pub struct ParserRegistry {
 
 impl ParserRegistry {
     pub fn new() -> Self {
-        Self {
+        Self::with_chunk_policy(Default::default())
+    }
+
+    /// A policy is validated before parsing, not silently replaced with defaults.
+    pub fn with_chunk_policy(policy: cc_model::chunk_policy::ChunkPolicy) -> Self {
+        let mut registry = Self {
+            chunk_policy: policy,
+            chunk_policy_fingerprint: policy.fingerprint(),
             generic: generic::GenericParser::new(),
             python: python::PythonParser::new(),
             jsts: jsts::JsTsParser::new(),
@@ -67,7 +78,34 @@ impl ParserRegistry {
             spec_dart: SpecDrivenParser::new(&lang_spec::DART_SPEC),
             spec_scala: SpecDrivenParser::new(&lang_spec::SCALA_SPEC),
             spec_lua: SpecDrivenParser::new(&lang_spec::LUA_SPEC),
+        };
+        for chunker in [
+            &mut registry.generic.chunker,
+            &mut registry.python.chunker,
+            &mut registry.jsts.chunker,
+            &mut registry.rust.chunker,
+            &mut registry.go.chunker,
+            &mut registry.java.chunker,
+            &mut registry.c_parser.chunker,
+            &mut registry.cpp_parser.chunker,
+            &mut registry.spec_csharp.chunker,
+            &mut registry.spec_php.chunker,
+            &mut registry.spec_ruby.chunker,
+            &mut registry.spec_swift.chunker,
+            &mut registry.spec_kotlin.chunker,
+            &mut registry.spec_dart.chunker,
+            &mut registry.spec_scala.chunker,
+            &mut registry.spec_lua.chunker,
+        ] {
+            *chunker = chunker::Chunker::with_deferred_policy(policy);
         }
+        registry
+    }
+    pub fn chunk_policy(&self) -> cc_model::chunk_policy::ChunkPolicy {
+        self.chunk_policy
+    }
+    pub fn chunk_policy_fingerprint(&self) -> &str {
+        &self.chunk_policy_fingerprint
     }
 
     /// Parse a file, dispatching to the best available parser for its language.
@@ -88,7 +126,8 @@ impl ParserRegistry {
         language: Language,
         timeout_micros: Option<u64>,
     ) -> CcResult<ParseOutcome> {
-        match language {
+        self.chunk_policy.validate()?;
+        let mut outcome = match language {
             Language::Python => {
                 self.python
                     .parse_with_timeout(file_path, content, language, timeout_micros)
@@ -160,7 +199,19 @@ impl ParserRegistry {
             _ => self
                 .generic
                 .parse_with_timeout(file_path, content, language, timeout_micros),
+        }?;
+        outcome.chunk_policy = Some(self.chunk_policy_fingerprint.clone());
+        if outcome.source_structure.is_none() {
+            let snapshot = cc_model::source::SourceSnapshot::new(content.as_bytes());
+            outcome.source_structure = Some(cc_model::source::SourceStructure::fallback(
+                &snapshot,
+                "parser_has_no_ast_boundary_producer",
+            ));
         }
+        if outcome.public_surface.extractor_version == "unavailable" {
+            outcome.public_surface = exports::conservative::fallback(language, file_path);
+        }
+        Ok(outcome)
     }
 }
 

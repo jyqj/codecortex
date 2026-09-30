@@ -10,6 +10,7 @@ use std::collections::{HashMap, HashSet};
 use cc_db::fts::{expand_query_text, tokenize_codeish};
 use cc_db::index_db::IndexDb;
 use cc_model::config::{RankingConfig, RepoSizeTier, SearchConfig};
+use cc_model::retrieval::{HardScope, SoftHints};
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::{CcResult, Language};
 
@@ -19,12 +20,16 @@ use crate::score_trace::ScoreTrace;
 
 #[derive(Debug)]
 pub(crate) struct SearchPlan {
+    pub(crate) policy: crate::query_policy::QueryPolicy,
+    control: cc_model::query::QueryControl,
     request: SearchRequest,
     dsl: crate::dsl::ParsedQuery,
     expanded_query: String,
     query_tokens: Vec<String>,
+    primary_query_tokens: Vec<String>,
     limits: LaneLimits,
-    filters: MaterializedFilters,
+    filters: HardScope,
+    soft_hints: SoftHints,
     preselect: PreselectResult,
     rerank_inputs: RerankInputs,
     ranking: RankingConfig,
@@ -33,16 +38,11 @@ pub(crate) struct SearchPlan {
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct LaneLimits {
     pub top_k: usize,
+    pub exact_symbol: usize,
+    pub path: usize,
     pub lexical: usize,
     pub grep: usize,
     pub rerank_window: usize,
-}
-
-#[derive(Debug, Clone, Default)]
-pub(crate) struct MaterializedFilters {
-    path_prefix: Option<String>,
-    languages: Option<Vec<Language>>,
-    file_paths: Option<Vec<String>>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -69,6 +69,8 @@ pub(crate) struct LaneRanks<'a> {
 
 #[derive(Debug)]
 pub(crate) struct CandidateChunk {
+    pub document: Option<cc_model::identity::DocumentRef>,
+    pub source_evidence: Option<cc_model::source::ChunkSource>,
     pub chunk_id: String,
     pub file_path: String,
     pub language_name: String,
@@ -81,6 +83,7 @@ pub(crate) struct CandidateChunk {
 }
 
 impl SearchPlan {
+    #[cfg(test)]
     pub(crate) fn build(
         db: &IndexDb,
         config: &SearchConfig,
@@ -88,10 +91,43 @@ impl SearchPlan {
         request: &SearchRequest,
         repo_tier: Option<RepoSizeTier>,
     ) -> CcResult<Self> {
+        Self::build_configured(
+            db,
+            config,
+            ranking,
+            &cc_model::query::QueryConfig::default(),
+            request,
+            repo_tier,
+        )
+    }
+
+    pub(crate) fn build_configured(
+        db: &IndexDb,
+        config: &SearchConfig,
+        ranking: &RankingConfig,
+        query_config: &cc_model::query::QueryConfig,
+        request: &SearchRequest,
+        repo_tier: Option<RepoSizeTier>,
+    ) -> CcResult<Self> {
+        let policy = crate::query_policy::QueryPolicy::resolve(
+            query_config,
+            request,
+            request.semantic.is_some(),
+        )?;
+        let control = match &request.control {
+            Some(value) => value.clone(),
+            None => cc_model::query::QueryControl::new(std::time::Duration::from_millis(
+                policy.deadline_ms,
+            ))?,
+        };
+        control.check()?;
+        config.validate_retrieval()?;
+        ranking.validate_retrieval()?;
         let dsl = crate::dsl::parse_search_dsl(&request.query);
         let mut request = request.clone();
 
-        normalize_request_from_dsl(&mut request, &dsl);
+        let filters = crate::scope::normalize_request(&mut request, &dsl)?;
+        let mut soft_hints = SoftHints::from(&request);
 
         let query_text = augmented_query_text(&request);
         let expanded_query = expand_query_text(&query_text);
@@ -118,15 +154,16 @@ impl SearchPlan {
                 ranking,
             },
         )?;
-        if !preselect.files.is_empty() && request.file_paths.is_none() {
-            request.file_paths = Some(preselect.files.clone());
-        }
-
-        let filters = MaterializedFilters::from_request(&request);
-        let rerank_inputs = RerankInputs::from_request(&request);
+        control.check()?;
+        // Preselection is a ranking hint, never a caller-owned hard constraint.
+        soft_hints.preselected_files = preselect.files.clone();
+        let rerank_inputs = RerankInputs::from_hints(&soft_hints);
         let query_tokens = tokenize_codeish(&query_text);
+        let primary_query_tokens = tokenize_codeish(&dsl.text);
         let limits = LaneLimits {
             top_k,
+            exact_symbol: config.exact_symbol_top_k.max(top_k),
+            path: config.path_top_k.max(top_k),
             lexical: config.lexical_top_k.max(top_k),
             grep: config.grep_top_k.max(top_k),
             rerank_window: config.rerank_window.max(top_k),
@@ -134,23 +171,51 @@ impl SearchPlan {
 
         Ok(Self {
             request,
+            policy,
+            control,
             dsl,
             expanded_query,
             query_tokens,
+            primary_query_tokens,
             limits,
             filters,
             preselect,
+            soft_hints,
             rerank_inputs,
             ranking: ranking.clone(),
         })
     }
 
-    pub(crate) fn ranking(&self) -> &RankingConfig {
-        &self.ranking
+    pub(crate) fn control(&self) -> &cc_model::query::QueryControl {
+        &self.control
+    }
+    pub(crate) fn semantic(&self) -> Option<&cc_model::semantic::SemanticResponse> {
+        if self.policy.effective == cc_model::query::RetrievalStrategy::Local {
+            None
+        } else {
+            self.request.semantic.as_deref()
+        }
     }
 
-    pub(crate) fn request(&self) -> &SearchRequest {
-        &self.request
+    pub(crate) fn exact_symbol_query(&self) -> Option<&str> {
+        self.dsl.name_filter.as_deref().or_else(|| {
+            let text = self.dsl.text.trim();
+            // Equality lookup also accepts literal stored signatures containing
+            // whitespace; natural-language queries simply produce an empty lane.
+            (!text.is_empty()).then_some(text)
+        })
+    }
+
+    pub(crate) fn primary_query_text(&self) -> &str {
+        self.dsl.text.trim()
+    }
+
+    pub(crate) fn primary_query_tokens(&self) -> &[String] {
+        &self.primary_query_tokens
+    }
+
+    pub(crate) fn ranking(&self) -> &RankingConfig {
+        &self.ranking
     }
 
     pub(crate) fn lexical_query(&self) -> &str {
@@ -161,12 +226,25 @@ impl SearchPlan {
         &self.request.query
     }
 
+    /// Execution eligibility is independent of fusion weight. Legacy grep can
+    /// still supply candidates with zero RRF weight, but an empty hard scope
+    /// performs no scan. Diagnostics and the lane use this one predicate.
+    pub(crate) fn grep_enabled(&self) -> bool {
+        self.request.include_grep
+            && !self.filters.is_empty()
+            && !self.grep_query().trim().is_empty()
+    }
+
     pub(crate) fn query_tokens(&self) -> &[String] {
         &self.query_tokens
     }
 
     pub(crate) fn limits(&self) -> LaneLimits {
         self.limits
+    }
+
+    pub(crate) fn hard_scope(&self) -> &HardScope {
+        &self.filters
     }
 
     pub(crate) fn passes_filters(&self, file_path: &str, language: Language) -> bool {
@@ -177,13 +255,91 @@ impl SearchPlan {
     /// itself is owned by cc-db (`RetrievalReadModel::fts_chunk_candidates` /
     /// `scan_chunks_for_grep`).
     pub(crate) fn chunk_scope(&self) -> cc_db::ChunkScope {
-        self.filters.chunk_scope()
+        crate::scope::chunk_scope(&self.filters)
     }
 
     /// Whether the request carries an explicit file-paths scope (which
     /// bounds the grep scan's cardinality).
     pub(crate) fn has_file_scope(&self) -> bool {
-        self.filters.has_file_scope()
+        self.filters.file_paths.is_some()
+    }
+
+    /// Bounded soft worklist intersects, but never replaces, caller constraints.
+    pub(crate) fn soft_chunk_scope(&self) -> Option<cc_db::ChunkScope> {
+        let mut seen = HashSet::new();
+        let files: Vec<String> = self
+            .soft_hints
+            .pinned_files
+            .iter()
+            .chain(&self.soft_hints.working_files)
+            .chain(&self.soft_hints.recent_files)
+            .chain(&self.soft_hints.overlay_files)
+            .chain(&self.soft_hints.preselected_files)
+            .filter(|p| seen.insert((*p).clone()))
+            .take(512)
+            .cloned()
+            .collect();
+        if files.is_empty() {
+            return None;
+        }
+        let soft = self.filters.intersect(&HardScope {
+            file_paths: Some(files),
+            ..Default::default()
+        });
+        if soft.is_empty() {
+            None
+        } else {
+            Some(crate::scope::chunk_scope(&soft))
+        }
+    }
+
+    pub(crate) fn is_empty_scope(&self) -> bool {
+        self.filters.is_empty()
+    }
+
+    pub(crate) fn scope_explain(
+        &self,
+        config: &SearchConfig,
+    ) -> cc_model::context::SearchScopeExplain {
+        use cc_model::context::{
+            SearchBudgetExplain, SearchHardScopeExplain, SearchScopeExplain, SearchSoftScopeExplain,
+        };
+        let mut prefix = self.filters.path_prefix.clone();
+        let mut truncated = false;
+        if let Some(p) = &mut prefix {
+            if p.len() > 1024 {
+                let mut n = 1024;
+                while !p.is_char_boundary(n) {
+                    n -= 1;
+                }
+                p.truncate(n);
+                truncated = true;
+            }
+        }
+        let hint_entries = [
+            ("working", self.soft_hints.working_files.len()),
+            ("recent", self.soft_hints.recent_files.len()),
+            ("pinned", self.soft_hints.pinned_files.len()),
+            ("overlay", self.soft_hints.overlay_files.len()),
+        ]
+        .into_iter()
+        .map(|(k, v)| (k.to_string(), v))
+        .collect();
+        SearchScopeExplain {
+            schema_version: 1,
+            policy: crate::engine_cache::RETRIEVAL_POLICY.into(),
+            hard: SearchHardScopeExplain { path_prefix: prefix, path_prefix_truncated: truncated,
+                languages: self.filters.languages.clone(), explicit_file_count: self.filters.file_paths.as_ref().map(Vec::len),
+                empty: self.filters.is_empty(), semantics: "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count".into() },
+            soft: SearchSoftScopeExplain { role: "ranking_and_scan_priority_only".into(), hint_entries,
+                preselected_count: self.soft_hints.preselected_files.len(),
+                contributions: "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted".into() },
+            budget: SearchBudgetExplain { top_k: self.limits.top_k, exact_symbol_candidates: self.limits.exact_symbol, path_candidates: self.limits.path, lexical_candidates: self.limits.lexical, grep_candidates: self.limits.grep,
+                grep_scan_cap: config.grep_scan_cap, rerank_window: self.limits.rerank_window,
+                grep_enabled: self.grep_enabled(),
+                units: "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit".into() },
+            ordering: vec!["exact-target first (identity tier, not an additive score)".into(), "rerank_score descending = sum(score_trace)".into(), "chunk_id ascending".into()],
+        }
     }
 
     pub(crate) fn lane_ranks<'a>(&self, outcomes: &'a [LaneOutcome]) -> LaneRanks<'a> {
@@ -197,6 +353,8 @@ impl SearchPlan {
         lane_ranks: &LaneRanks<'_>,
     ) -> Option<SearchHit> {
         let CandidateChunk {
+            document,
+            source_evidence,
             chunk_id,
             file_path,
             language_name,
@@ -239,6 +397,9 @@ impl SearchPlan {
         trace.push("overlap", overlap * self.ranking.overlap_weight);
 
         let mut reasons = Vec::new();
+        if fused.exact_identity {
+            reasons.push("exact-target".into());
+        }
         // Per-hit annotation is lane-driven: every lane that opted in via
         // `RetrievalLane::annotates_hits()` contributes a `{lane_id}@{rank}`
         // reason and a rank-derived score, iterated in lane-collection order.
@@ -282,7 +443,7 @@ impl SearchPlan {
             }
         }
 
-        if let Some(prefix) = self.filters.path_prefix() {
+        if let Some(prefix) = self.filters.path_prefix.as_deref() {
             if file_path.starts_with(prefix) {
                 trace.push("boost:path-prefix", self.ranking.path_prefix_bonus);
             }
@@ -345,7 +506,18 @@ impl SearchPlan {
         }
 
         dedupe_reasons(&mut reasons);
-        let metadata = self.rerank_metadata(&file_path, stage_a_score);
+        let mut metadata = self.rerank_metadata(&file_path, stage_a_score);
+        metadata["source_freshness"] =
+            serde_json::json!({"status":"indexed_snapshot","disk_checked":false});
+        if let Some(reference) = document {
+            metadata["document"] =
+                serde_json::to_value(reference).expect("document reference serializable");
+        }
+        if let Some(proof) = source_evidence {
+            // Indexed-source coordinates, not a claim that the filesystem is current.
+            metadata["source_evidence"] =
+                serde_json::to_value(proof).expect("finite source coordinates");
+        }
 
         Some(SearchHit {
             chunk_id,
@@ -411,92 +583,27 @@ impl SearchPlan {
             });
         }
 
-        results.sort_by(|a, b| {
-            b.rerank_score
-                .partial_cmp(&a.rerank_score)
-                .unwrap_or(std::cmp::Ordering::Equal)
-                // Deterministic tie-break on chunk id so equal rerank scores
-                // (or NaN, which compares Equal) yield a stable order instead
-                // of depending on prior fusion/HashMap ordering.
-                .then_with(|| a.chunk_id.cmp(&b.chunk_id))
-        });
+        results.sort_by(compare_hits);
         results.truncate(limit);
     }
 
     fn rerank_metadata(&self, file_path: &str, stage_a_score: f64) -> serde_json::Value {
         serde_json::json!({
             "stage_a_file_score": stage_a_score,
-            "stage_a_files_considered": self.preselect.files.len(),
+            "stage_a_files_considered": self.soft_hints.preselected_files.len(),
             "stage_a_file_reasons": self.preselect.reasons.get(file_path).cloned().unwrap_or_default(),
             "stage_a_layer_scores": self.preselect.layer_scores.get(file_path).cloned().unwrap_or_default(),
         })
     }
 }
 
-impl MaterializedFilters {
-    pub(crate) fn from_request(request: &SearchRequest) -> Self {
-        Self {
-            path_prefix: request.path_prefix.clone(),
-            languages: request.languages.clone(),
-            file_paths: request.file_paths.clone(),
-        }
-    }
-
-    pub(crate) fn passes(&self, file_path: &str, language: Language) -> bool {
-        if let Some(prefix) = &self.path_prefix {
-            if !file_path.starts_with(prefix) {
-                return false;
-            }
-        }
-        if let Some(languages) = &self.languages {
-            if !languages.contains(&language) {
-                return false;
-            }
-        }
-        if let Some(files) = &self.file_paths {
-            if !files.iter().any(|file| file == file_path) {
-                return false;
-            }
-        }
-        true
-    }
-
-    /// Structured scope for cc-db's chunk-scan queries: same filters the
-    /// in-memory `passes` check applies, expressed as data instead of SQL.
-    /// Language filters are converted to their stored string form
-    /// (`Language::as_str()`).
-    pub(crate) fn chunk_scope(&self) -> cc_db::ChunkScope {
-        cc_db::ChunkScope {
-            path_prefix: self.path_prefix.clone(),
-            languages: self
-                .languages
-                .as_ref()
-                .map(|langs| langs.iter().map(|lang| lang.as_str().to_string()).collect()),
-            file_paths: self.file_paths.clone(),
-        }
-    }
-
-    /// Whether the request carries an explicit file-paths scope (which
-    /// bounds the grep scan's cardinality).
-    pub(crate) fn has_file_scope(&self) -> bool {
-        self.file_paths
-            .as_ref()
-            .map(|files| !files.is_empty())
-            .unwrap_or(false)
-    }
-
-    fn path_prefix(&self) -> Option<&str> {
-        self.path_prefix.as_deref()
-    }
-}
-
 impl RerankInputs {
-    fn from_request(request: &SearchRequest) -> Self {
+    fn from_hints(hints: &SoftHints) -> Self {
         Self {
-            boost_files: collect_paths(request.boost_file_paths.as_ref()),
-            recent_files: collect_paths(request.recent_file_paths.as_ref()),
-            pinned_files: collect_paths(request.pinned_file_paths.as_ref()),
-            overlay_files: collect_paths(request.overlay_file_paths.as_ref()),
+            boost_files: hints.working_files.iter().cloned().collect(),
+            recent_files: hints.recent_files.iter().cloned().collect(),
+            pinned_files: hints.pinned_files.iter().cloned().collect(),
+            overlay_files: hints.overlay_files.iter().cloned().collect(),
         }
     }
 }
@@ -542,6 +649,8 @@ impl From<cc_db::index_db::ChunkDetailRow> for CandidateChunk {
     fn from(row: cc_db::index_db::ChunkDetailRow) -> Self {
         Self {
             chunk_id: row.chunk_id,
+            source_evidence: row.source_evidence,
+            document: row.document,
             file_path: row.file_path,
             language_name: row.language,
             start_line: row.start_line,
@@ -566,25 +675,6 @@ pub(crate) fn default_preselect_limit(top_k: usize, tier: Option<RepoSizeTier>) 
     60usize.max(top_k * multiplier)
 }
 
-fn normalize_request_from_dsl(request: &mut SearchRequest, dsl: &crate::dsl::ParsedQuery) {
-    if dsl.path_filter.is_some() && request.path_prefix.is_none() {
-        request.path_prefix = dsl.path_filter.clone();
-    }
-
-    if let Some(ref lang_str) = dsl.lang_filter {
-        if request.languages.is_none() {
-            let lang = Language::from_name(lang_str);
-            if lang != Language::Unknown {
-                request.languages = Some(vec![lang]);
-            }
-        }
-    }
-
-    if !dsl.text.is_empty() {
-        request.query = dsl.text.clone();
-    }
-}
-
 fn augmented_query_text(request: &SearchRequest) -> String {
     let mut parts = Vec::new();
     let primary = request.query.trim();
@@ -602,15 +692,19 @@ fn augmented_query_text(request: &SearchRequest) -> String {
     parts.join("\n")
 }
 
-fn collect_paths(paths: Option<&Vec<String>>) -> HashSet<String> {
-    paths
-        .map(|v| v.iter().cloned().collect())
-        .unwrap_or_default()
-}
-
 fn dedupe_reasons(reasons: &mut Vec<String>) {
     let mut seen = HashSet::new();
     reasons.retain(|r| seen.insert(r.clone()));
+}
+
+/// Exact identity is a ranking tier, not an arbitrary tunable score bonus.
+/// Within each tier the replayable numeric score and stable chunk id decide order.
+pub(crate) fn compare_hits(a: &SearchHit, b: &SearchHit) -> std::cmp::Ordering {
+    let exact = |h: &SearchHit| h.reasons.iter().any(|r| r == "exact-target");
+    exact(b)
+        .cmp(&exact(a))
+        .then_with(|| b.rerank_score.total_cmp(&a.rerank_score))
+        .then_with(|| a.chunk_id.cmp(&b.chunk_id))
 }
 
 pub(crate) fn parse_language_name(value: &str) -> Language {
@@ -700,7 +794,7 @@ mod tests {
             ..Default::default()
         };
 
-        let scope = MaterializedFilters::from_request(&request).chunk_scope();
+        let scope = crate::scope::chunk_scope(&HardScope::from(&request));
         assert_eq!(scope.path_prefix.as_deref(), Some("src/%special"));
         assert_eq!(
             scope.languages,
@@ -711,7 +805,7 @@ mod tests {
             Some(vec!["src/lib.rs".to_string(), "src/main.py".to_string()])
         );
 
-        let empty = MaterializedFilters::default().chunk_scope();
+        let empty = crate::scope::chunk_scope(&HardScope::default());
         assert_eq!(empty.path_prefix, None);
         assert_eq!(empty.languages, None);
         assert_eq!(empty.file_paths, None);

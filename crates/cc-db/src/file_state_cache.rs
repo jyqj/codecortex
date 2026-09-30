@@ -13,7 +13,7 @@
 //! The cache is keyed on the write-time-maintained `files_state` aggregate
 //! (see [`crate::signature_agg`]): a persisted `(count, sum-of-row-hashes)`
 //! multiset homomorphism over exactly the scan-diff projection
-//! `(file_path, content_hash, mtime, size)`. Every production write path
+//! `(file_path, content_hash, mtime, size, chunk_policy, document_spec)`. Every production write path
 //! that mutates `files` rows keeps the aggregates in sync inside its own
 //! transaction (path-scoped deltas for incremental writers, baseline
 //! recompute for full rebuilds), so:
@@ -30,7 +30,7 @@
 //!
 //! The hot path ([`IndexDb::write_incremental_batch`]) updates the snapshot
 //! in place after its transaction commits: remove the removed paths, upsert
-//! the written units' `(hash, mtime, size)` — the exact file-scoped delta
+//! the written units' `(hash, mtime, size, chunk_policy)` — the exact file-scoped delta
 //! the transaction applied to `files`. All other writers simply move the
 //! token; the next read repopulates.
 //!
@@ -39,8 +39,8 @@
 //! The map is handed out as `Arc<HashMap>` — a cache hit is one Arc clone,
 //! no per-build copy. The write-path delta uses `Arc::make_mut`, which
 //! clones only while an in-flight build still holds the previous snapshot.
-//! One entry is ~100 bytes (path + 64-hex hash + metadata): ~10 MB at 50k
-//! files; repositories above the capacity knob
+//! Entries retain path, source hash, optional 64-hex policy and metadata;
+//! allocation/RSS cost depends on string capacity and map overhead. Repositories above the capacity knob
 //! (`CODECORTEX_FILE_STATE_CACHE_MAX_FILES`, default 1_000_000, `0`
 //! disables) skip the cache and keep the per-build direct load.
 
@@ -144,6 +144,8 @@ impl IndexDb {
             map.insert(
                 unit.rel_path.clone(),
                 FileState {
+                    document_spec: unit.outcome.document_spec.clone(),
+                    chunk_policy: unit.outcome.chunk_policy.clone(),
                     content_hash: unit.content_hash.clone(),
                     mtime: unit.mtime,
                     size: unit.size,
@@ -190,15 +192,16 @@ mod tests {
     }
 
     fn write_batch(db: &IndexDb, to_remove: &[String], normal: &[FileWriteUnit]) {
-        db.write_incremental_batch(
-            to_remove,
-            normal,
-            &[],
-            &[],
-            &[],
-            &PrecompressedChunks::new(),
-        )
-        .unwrap();
+        db.writes()
+            .write_incremental_batch(
+                to_remove,
+                normal,
+                &[],
+                &[],
+                &[],
+                &PrecompressedChunks::new(),
+            )
+            .unwrap();
     }
 
     /// Cached read must equal a direct SQL load after every batch shape.

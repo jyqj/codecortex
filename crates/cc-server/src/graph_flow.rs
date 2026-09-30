@@ -164,6 +164,7 @@ pub fn explore_flow(
         .iter()
         .filter_map(|uid| {
             let sym = sym_map.get(uid)?;
+            let mut source_freshness = None;
             let snippet = if include_source && snippet_budget > 0 {
                 let max_chars = snippet_budget.min(4096); // cap per-symbol
                 let s = read_symbol_snippet(
@@ -173,6 +174,7 @@ pub fn explore_flow(
                     sym.start_line,
                     sym.end_line,
                     max_chars,
+                    &mut source_freshness,
                 );
                 if let Some(ref text) = s {
                     snippet_budget = snippet_budget.saturating_sub(text.len());
@@ -190,6 +192,7 @@ pub fn explore_flow(
                 end_line: sym.end_line,
                 signature: sym.signature.clone(),
                 snippet,
+                source_freshness,
                 outgoing_calls: None,
             })
         })

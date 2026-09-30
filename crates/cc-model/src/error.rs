@@ -16,6 +16,17 @@ pub enum CcError {
     #[error("config error: {0}")]
     Config(String),
 
+    #[error("query cancelled")]
+    QueryCancelled,
+    #[error("query deadline exceeded")]
+    QueryTimedOut,
+    #[error("query executor capacity exhausted")]
+    QueryBusy,
+    #[error("semantic recall is not configured")]
+    SemanticUnavailable,
+    #[error("query handle was invalidated")]
+    QueryInvalidated,
+
     #[error("search error: {0}")]
     Search(String),
 
@@ -30,6 +41,11 @@ pub enum CcError {
         prepared_epoch: u64,
         current_epoch: u64,
     },
+
+    /// The bounded retrieval retry window observed a commit in every attempt.
+    /// No mixed-generation result is returned or admitted to the result cache.
+    #[error("index changed during retrieval after {attempts} attempts; retry the query")]
+    RetrievalChanged { attempts: u32 },
 
     /// A structural index build is already running for this project. The
     /// request is safe to retry after the in-flight build completes.
@@ -66,7 +82,12 @@ impl CcError {
     pub fn is_retryable(&self) -> bool {
         matches!(
             self,
-            CcError::BuildBusy | CcError::StalePreparedBuild { .. }
+            CcError::BuildBusy
+                | CcError::StalePreparedBuild { .. }
+                | CcError::RetrievalChanged { .. }
+                | CcError::QueryBusy
+                | CcError::QueryTimedOut
+                | CcError::QueryInvalidated
         )
     }
 }

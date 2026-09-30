@@ -12,7 +12,7 @@
 //!   2. recent files         max(1.2, 3.5 / rank)
 //!   3. pinned files         max(2.2, 4.0 / rank)
 //!   4. overlay (dirty)      max(1.5, 3.0 / rank)
-//!   5. FTS summary search   1.4 + 1.0 / (1.0 + |score|)
+//!   5. FTS summary search   1.4 + (-score) / (1.0 + (-score))
 //!   6. per-token: symbol name match (exact=2.0, fuzzy=1.2) + path token hit (1.0)
 //!
 //!   F. fallback: recently-indexed files (0.2) — a gated layer that only
@@ -27,6 +27,16 @@ use cc_db::fts::{sanitize_fts_query, tokenize_codeish};
 use cc_db::index_db::IndexDb;
 use cc_model::config::RankingConfig;
 use cc_model::CcResult;
+
+/// SQLite FTS5 returns more-negative scores for better matches. Preserve that
+/// order with a bounded positive contribution; keep raw scores in the DB API.
+fn bm25_relevance_bonus(raw_score: f64) -> f64 {
+    if !raw_score.is_finite() {
+        return 0.0;
+    }
+    let relevance = (-raw_score).max(0.0);
+    relevance / (1.0 + relevance)
+}
 
 // ── Public types ───────────────────────────────────────────────
 
@@ -330,10 +340,10 @@ impl PreselectLayer for FtsSummaryLayer {
         Ok(rows
             .into_iter()
             .map(|(file_path, raw_score)| {
-                let bm25_score = raw_score.abs();
+                let relevance = bm25_relevance_bonus(raw_score);
                 LayerHit {
                     file_path,
-                    score: ctx.ranking.preselect_fts_base + (1.0 / (1.0 + bm25_score)),
+                    score: ctx.ranking.preselect_fts_base + relevance,
                     reason: LAYER_FTS_SUMMARY.to_string(),
                 }
             })
@@ -1071,6 +1081,19 @@ mod tests {
 
     /// FTS summary layer in isolation: no summaries indexed -> no hits, and a
     /// blank query short-circuits.
+    #[test]
+    fn bm25_bonus_is_bounded_and_monotonic() {
+        let scores = [-f64::MAX, -1000.0, -10.0, -2.0, -1.0, -1e-9, 0.0];
+        for pair in scores.windows(2) {
+            let better = bm25_relevance_bonus(pair[0]);
+            let worse = bm25_relevance_bonus(pair[1]);
+            assert!(better >= worse);
+            assert!((0.0..=1.0).contains(&better));
+        }
+        assert_eq!(bm25_relevance_bonus(f64::NAN), 0.0);
+        assert_eq!(bm25_relevance_bonus(f64::INFINITY), 0.0);
+    }
+
     #[test]
     fn fts_summary_layer_isolated() {
         let (_tmp, db) = db_with_symbols();

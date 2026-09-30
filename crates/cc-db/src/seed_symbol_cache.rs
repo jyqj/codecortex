@@ -515,15 +515,16 @@ mod tests {
         normal: &[FileWriteUnit],
         dirty: &[FileWriteUnit],
     ) {
-        db.write_incremental_batch(
-            to_remove,
-            normal,
-            dirty,
-            &[],
-            &[],
-            &crate::index_db::PrecompressedChunks::new(),
-        )
-        .unwrap();
+        db.writes()
+            .write_incremental_batch(
+                to_remove,
+                normal,
+                dirty,
+                &[],
+                &[],
+                &crate::index_db::PrecompressedChunks::new(),
+            )
+            .unwrap();
     }
 
     /// Sorted serde fingerprints, so multisets compare without `PartialEq`

@@ -373,6 +373,7 @@ impl Indexer {
         batch_empty: bool,
         walk_manifest: Option<&crate::scanner::WalkManifest>,
         scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
+        project_model: Option<&crate::project_model::CapturedProject>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<Option<ConfigLinkRound>> {
         let recorded_algo = self
@@ -393,7 +394,8 @@ impl Indexer {
         // otherwise fall through to the compute so the gate behaves exactly
         // like the unscoped path on first build / algo upgrades.
         let scoped_reuse = walk_manifest.is_none()
-            && scope_hints.is_some_and(|h| h.config_files_unaffected)
+            && (scope_hints.is_some_and(|h| h.config_files_unaffected)
+                || project_model.is_some_and(|m| m.legacy_config_inputs_unchanged()))
             && recorded_algo == CONFIG_SIG_ALGORITHM
             && recorded_sig.is_some();
 
@@ -411,18 +413,18 @@ impl Indexer {
                 }
                 None => config_files_signature(project_path),
             });
-            let unchanged =
-                recorded_algo == CONFIG_SIG_ALGORITHM && recorded_sig == Some(sig);
+            let unchanged = recorded_algo == CONFIG_SIG_ALGORITHM && recorded_sig == Some(sig);
             (sig, unchanged)
         };
 
-        if unchanged && batch_empty {
+        let project_changed = project_model.is_some_and(|m| !m.report().changed_configs.is_empty());
+        if unchanged && batch_empty && !project_changed {
             build_explain.record_gate("config_link", false, "signature unchanged and batch empty");
             tracing::debug!("config linker: signature unchanged and batch empty, skipping");
             return Ok(None);
         }
 
-        let raw_tokens = if unchanged {
+        let mut raw_tokens = if unchanged {
             // 签名未变：原始 token 与上次一致，优先用缓存，缓存缺失/损坏则重扫。
             match time_step("write", "config_token_cache", || {
                 self.db
@@ -434,7 +436,7 @@ impl Indexer {
                         })
                     })
             })? {
-                Some(tokens) if tokens.is_empty() => {
+                Some(tokens) if tokens.is_empty() && !project_changed => {
                     // 零 token 快路径：零 token ⇒ 零链接且 seen 为空 ⇒ apply
                     // 必为 no-op，连 catalog 读取一起跳过。上轮若有链接，其
                     // token 非空且与签名一同落盘，签名未变时缓存命中的就是
@@ -475,15 +477,28 @@ impl Indexer {
             self.scan_and_record_config_tokens(project_path, walk_manifest, sig)?
         };
 
+        if let Some(model) = project_model {
+            raw_tokens.retain(|token| !model.inputs().configs.contains_key(&token.config_file));
+        }
         // 本轮扫描（或缓存）覆盖到的配置文件：没有产出单元的即为零链接，
         // apply 时按此清理它们的陈旧 refs。
         let mut seen_config_files: Vec<String> = raw_tokens
             .iter()
             .map(|token| token.config_file.clone())
             .collect();
+        if let Some(model) = project_model {
+            // On a role transition, clear previously heuristic config refs too.
+            seen_config_files.extend(model.inputs().configs.keys().cloned());
+        }
         seen_config_files.sort();
         seen_config_files.dedup();
 
+        if raw_tokens.is_empty() {
+            return Ok(Some(ConfigLinkRound {
+                units: Vec::new(),
+                seen_config_files,
+            }));
+        }
         let symbol_targets = time_step("write", "config_symbol_targets", || {
             self.db.reads().list_symbol_targets()
         })?;
@@ -514,10 +529,9 @@ impl Indexer {
         sig: u64,
     ) -> CcResult<Vec<RawConfigToken>> {
         let raw_tokens = time_step("write", "config_token_scan", || match walk_manifest {
-            Some(manifest) => crate::config_linker::scan_config_tokens_from_manifest(
-                project_path,
-                manifest,
-            ),
+            Some(manifest) => {
+                crate::config_linker::scan_config_tokens_from_manifest(project_path, manifest)
+            }
             None => scan_config_tokens(project_path),
         })?;
         match Self::serialize_raw_token_cache(&raw_tokens) {

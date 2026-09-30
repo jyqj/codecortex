@@ -14,13 +14,17 @@ use std::sync::Arc;
 
 use lru::LruCache;
 
-use cc_db::index_db::IndexGeneration;
 use cc_model::config::{GraphEnrichLimits, RankingConfig, SearchConfig};
+use cc_model::generation::ReadGeneration as IndexGeneration;
 use cc_model::search::{SearchHit, SearchRequest};
 use cc_model::CcResult;
 
 use crate::engine::SearchEngine;
 use crate::enrich::GraphEnrichment;
+
+/// In-process cache domain. Bump when ranking/scope/diagnostic semantics change.
+/// Not a stable cross-build hash or a persisted document identity.
+pub(crate) const RETRIEVAL_POLICY: &str = "final-hydration-priority-context-budget-v16";
 
 /// Default LRU capacity for search results.
 /// Override with `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`.
@@ -59,13 +63,13 @@ pub(crate) fn cache_capacity_from_env(var: &str, default: usize) -> NonZeroUsize
 }
 
 /// Result cache map: `(index_epoch, query_hash)` → shared, immutable hits.
-pub(crate) type ResultCache = LruCache<(u64, u64), Arc<[SearchHit]>>;
+pub(crate) type ResultCache = LruCache<([u8; 16], u64, u64), Arc<[SearchHit]>>;
 
 /// Graph-aware result cache map: `(index_epoch, evidence_epoch,
 /// graph_query_hash)` → shared, immutable final `(hits, enrichment)` pair
 /// from [`SearchEngine::search_with_graph_context`].
 pub(crate) type GraphResultCache =
-    LruCache<(u64, u64, u64), Arc<(Vec<SearchHit>, GraphEnrichment)>>;
+    LruCache<(([u8; 16], u64, u64, u64), bool), Arc<(Vec<SearchHit>, GraphEnrichment)>>;
 
 /// Snapshot of search result-cache hit/miss counters.
 ///
@@ -138,7 +142,8 @@ impl SearchEngine {
 
     /// Observe the current `(index_epoch, evidence_epoch)` pair, clearing
     /// caches eagerly when either moved.  An index bump invalidates
-    /// everything (the chunk text cache is keyed by positional chunk ids).
+    /// everything for memory hygiene; text entries also carry the query's epoch
+    /// so delayed writers cannot poison newer-generation cache entries.
     /// An evidence bump (`boost_http_edge_confidence` ingestion) clears only
     /// the graph-aware result cache: its entries embed evidence-boosted edge
     /// confidence, while plain `search()` results and chunk text do not
@@ -146,14 +151,23 @@ impl SearchEngine {
     /// their keys embed the epoch(s), so a bump simply misses; the clears
     /// here are memory hygiene.
     pub(crate) fn observe_epochs(&self) -> CcResult<IndexGeneration> {
-        let generation = self.db.reads().generation()?;
+        let generation = self.db.reads().read_generation()?;
+        let incarnation_changed = {
+            let mut old = self
+                .last_seen_incarnation
+                .lock()
+                .unwrap_or_else(|p| p.into_inner());
+            let changed = *old != Some(generation.incarnation);
+            *old = Some(generation.incarnation);
+            changed
+        };
         let prev_index = self
             .last_seen_index_epoch
             .swap(generation.index_epoch, Ordering::AcqRel);
         let prev_evidence = self
             .last_seen_evidence_epoch
             .swap(generation.evidence_epoch, Ordering::AcqRel);
-        if prev_index != generation.index_epoch {
+        if incarnation_changed || prev_index != generation.index_epoch {
             self.invalidate_cache();
         } else if prev_evidence != generation.evidence_epoch {
             if let Ok(mut cache) = self.graph_result_cache.lock() {
@@ -161,6 +175,41 @@ impl SearchEngine {
             }
         }
         Ok(generation)
+    }
+
+    /// Optimistic persistent-generation fence, also used by final context
+    /// assembly. No connection crosses stages. Work must not publish a final
+    /// result cache entry until acceptance; this is not a filesystem snapshot.
+    /// Nested retrieval keeps its own finite retry bound and the same deadline.
+    pub fn with_stable_generation<T>(
+        &self,
+        mut work: impl FnMut(IndexGeneration) -> CcResult<T>,
+    ) -> CcResult<(IndexGeneration, T)> {
+        const MAX_ATTEMPTS: u32 = 3;
+        for _ in 0..MAX_ATTEMPTS {
+            let before = self.observe_epochs()?;
+            let result = work(before);
+            if matches!(
+                &result,
+                Err(cc_model::CcError::QueryCancelled
+                    | cc_model::CcError::QueryTimedOut
+                    | cc_model::CcError::QueryInvalidated)
+            ) {
+                return result.map(|value| (before, value));
+            }
+            let after = self.db.reads().read_generation()?;
+            if before == after {
+                // A stable database error is real corruption/failure, not an
+                // excuse to silently retry or substitute an empty hit list.
+                return result.map(|value| (before, value));
+            }
+            // Drop both successful and failed mixed-generation work. The next
+            // attempt observes fresh epochs and clears obsolete text hints.
+            std::thread::yield_now();
+        }
+        Err(cc_model::CcError::RetrievalChanged {
+            attempts: MAX_ATTEMPTS,
+        })
     }
 
     /// Compute a deterministic hash of `SearchRequest` key fields.
@@ -173,6 +222,8 @@ impl SearchEngine {
             hasher: &mut impl std::hash::Hasher,
         ) {
             use std::hash::Hasher as _;
+            // Frame each optional field so empty hard sets cannot alias empty hints.
+            value.is_some().hash(hasher);
             if let Some(items) = value {
                 items.len().hash(hasher);
                 let mut acc: u64 = 0;
@@ -186,6 +237,8 @@ impl SearchEngine {
         }
 
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        request.retrieval_strategy.hash(&mut hasher);
+        request.intent.hash(&mut hasher);
         request.query.hash(&mut hasher);
         request.top_k.hash(&mut hasher);
         request.path_prefix.hash(&mut hasher);
@@ -198,30 +251,45 @@ impl SearchEngine {
             .map(|langs| langs.iter().map(|l| l.as_str()).collect::<Vec<_>>());
         hash_unordered_opt_vec(&lang_names, &mut hasher);
         hash_unordered_opt_vec(&request.file_paths, &mut hasher);
-        hash_unordered_opt_vec(&request.boost_file_paths, &mut hasher);
-        // conversation_queries: 不排序，顺序影响 augmented_query_text() 拼接语义
-        if let Some(ref cq) = request.conversation_queries {
-            cq.hash(&mut hasher);
-        }
-        hash_unordered_opt_vec(&request.recent_file_paths, &mut hasher);
-        hash_unordered_opt_vec(&request.pinned_file_paths, &mut hasher);
-        hash_unordered_opt_vec(&request.overlay_file_paths, &mut hasher);
+        // Hints have rank-decay semantics in preselection; their order matters.
+        request.boost_file_paths.hash(&mut hasher);
+        request.conversation_queries.hash(&mut hasher);
+        request.recent_file_paths.hash(&mut hasher);
+        request.pinned_file_paths.hash(&mut hasher);
+        request.overlay_file_paths.hash(&mut hasher);
         hasher.finish()
     }
 
-    /// Fingerprint of every config knob that shapes graph-aware results.
-    /// The full [`RankingConfig`] is hashed via its serde serialization
-    /// (struct field order is stable), so any future ranking knob is
-    /// automatically covered without enumerating fields here; the two
-    /// graph-lane params from [`SearchConfig`] are folded in explicitly.
-    /// Called once from [`Self::new`] — see `ranking_fingerprint` field.
+    /// Complete immutable config fingerprint shared by both result caches.
+    /// Serialization covers future fields; explicit floating-point bits also
+    /// distinguish non-finite/negative-zero search values. It is computed once.
     pub(crate) fn ranking_fingerprint(config: &SearchConfig, ranking: &RankingConfig) -> u64 {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        serde_json::to_string(ranking)
-            .unwrap_or_default()
+        RETRIEVAL_POLICY.hash(&mut hasher);
+        serde_json::to_string(&(config, ranking))
+            .expect("search and ranking configs contain only serializable values")
             .hash(&mut hasher);
+        config.lexical_weight.to_bits().hash(&mut hasher);
+        config.exact_symbol_weight.to_bits().hash(&mut hasher);
+        config.path_weight.to_bits().hash(&mut hasher);
+        config.grep_weight.to_bits().hash(&mut hasher);
         config.graph_weight.to_bits().hash(&mut hasher);
-        config.graph_top_k.hash(&mut hasher);
+        hasher.finish()
+    }
+
+    /// Raw request boundaries are retained conservatively. Equivalent normalized
+    /// spellings may miss the cache, but must never share a wrong explanation.
+    pub(crate) fn retrieval_query_hash(&self, request: &SearchRequest) -> u64 {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        Self::query_hash(request).hash(&mut hasher);
+        crate::selection::SELECTION_SPEC.hash(&mut hasher);
+        crate::selection::BUDGET_SPEC.hash(&mut hasher);
+        cc_model::identity::DOCUMENT_VERSION.hash(&mut hasher);
+        serde_json::to_string(&self.query_config)
+            .expect("query configuration serializable")
+            .hash(&mut hasher);
+        self.ranking_fingerprint.hash(&mut hasher);
+        self.repo_tier.map(|tier| tier as u8).hash(&mut hasher);
         hasher.finish()
     }
 
@@ -237,7 +305,7 @@ impl SearchEngine {
         token_budget: u32,
     ) -> u64 {
         let mut hasher = std::collections::hash_map::DefaultHasher::new();
-        Self::query_hash(request).hash(&mut hasher);
+        self.retrieval_query_hash(request).hash(&mut hasher);
         limits.max_resolve.hash(&mut hasher);
         limits.callers_per_sym.hash(&mut hasher);
         limits.callees_per_sym.hash(&mut hasher);
@@ -256,10 +324,271 @@ mod tests {
 
     use cc_model::config::ProjectConfig;
     use cc_model::search::SearchRequest;
-    use cc_model::Language;
+    use cc_model::{CcResult, Language};
 
     use crate::engine::SearchEngine;
     use crate::engine_test_support::{chunk_write_unit, insert_chunk_file, scoped_test_engine};
+
+    #[test]
+    fn equal_epoch_new_incarnation_misses_both_result_caches() {
+        let (engine, _tmp) = scoped_test_engine();
+        insert_chunk_file(
+            &engine,
+            "src/incarnation.rs",
+            Language::Rust,
+            "fn needle() {}",
+        );
+        let request = SearchRequest {
+            query: "needle".into(),
+            ..Default::default()
+        };
+        let limits = cc_model::config::RepoSizeTier::Tiny.graph_enrich_limits();
+        engine.search(&request).unwrap();
+        engine.search(&request).unwrap();
+        engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        let before = engine.db.reads().read_generation().unwrap();
+        let stats = engine.cache_stats();
+        crate::test_seed::seed_conn(&engine.db).execute(
+            "UPDATE metadata SET value=lower(hex(randomblob(16))) WHERE key='index_incarnation'", [],
+        ).unwrap();
+        let after = engine.db.reads().read_generation().unwrap();
+        assert_eq!(before.index_epoch, after.index_epoch);
+        assert_eq!(before.evidence_epoch, after.evidence_epoch);
+        assert_ne!(before.incarnation, after.incarnation);
+        engine.search(&request).unwrap();
+        engine
+            .search_with_graph_context(&request, &limits, 4000)
+            .unwrap();
+        let now = engine.cache_stats();
+        assert_eq!(now.result_hits, stats.result_hits);
+        assert_eq!(now.graph_hits, stats.graph_hits);
+        assert_eq!(now.result_misses, stats.result_misses + 1);
+        assert_eq!(now.graph_misses, stats.graph_misses + 1);
+    }
+
+    #[test]
+    fn generation_fence_detects_same_epoch_identity_change() {
+        let (engine, _tmp) = scoped_test_engine();
+        let mut calls = 0;
+        let (generation, value) = engine.with_stable_generation(|before| {
+            calls += 1;
+            if calls == 1 {
+                crate::test_seed::seed_conn(&engine.db).execute(
+                    "UPDATE metadata SET value=lower(hex(randomblob(16))) WHERE key='index_incarnation'", [],
+                ).unwrap();
+            }
+            Ok(before.incarnation)
+        }).unwrap();
+        assert_eq!(calls, 2);
+        assert_eq!(generation.incarnation, value);
+    }
+
+    #[test]
+    fn generation_fence_discards_changed_attempt_and_accepts_fresh_result() {
+        let (engine, _tmp) = scoped_test_engine();
+        let mut calls = 0;
+        let (generation, value) = engine
+            .with_stable_generation(|before| {
+                calls += 1;
+                if calls == 1 {
+                    engine.db.writes().replace_files_batch(&[chunk_write_unit(
+                        "src/fence.rs",
+                        "fn changed() {}",
+                    )])?;
+                }
+                Ok(before.index_epoch)
+            })
+            .unwrap();
+        assert_eq!(calls, 2);
+        assert_eq!(value, generation.index_epoch);
+        assert_eq!(generation, engine.db.reads().read_generation().unwrap());
+    }
+
+    #[test]
+    fn generation_fence_bounds_both_successful_and_failed_mixed_attempts() {
+        for fail in [false, true] {
+            let (engine, _tmp) = scoped_test_engine();
+            let mut calls = 0;
+            let result: CcResult<(cc_model::generation::ReadGeneration, ())> = engine
+                .with_stable_generation(|_| {
+                    calls += 1;
+                    engine.db.writes().replace_files_batch(&[chunk_write_unit(
+                        "src/fence.rs",
+                        &format!("fn change_{calls}() {{}}"),
+                    )])?;
+                    if fail {
+                        Err(cc_model::CcError::Search(
+                            "document changed during hydration".into(),
+                        ))
+                    } else {
+                        Ok(())
+                    }
+                });
+            let error = result.unwrap_err();
+            assert!(matches!(
+                error,
+                cc_model::CcError::RetrievalChanged { attempts: 3 }
+            ));
+            assert!(error.is_retryable());
+            assert_eq!(calls, 3);
+            assert!(engine.result_cache.lock().unwrap().is_empty());
+            assert!(engine.graph_result_cache.lock().unwrap().is_empty());
+        }
+    }
+
+    #[test]
+    fn generation_fence_does_not_mask_stable_corruption() {
+        let (engine, _tmp) = scoped_test_engine();
+        let mut calls = 0;
+        let result: CcResult<(cc_model::generation::ReadGeneration, ())> = engine
+            .with_stable_generation(|_| {
+                calls += 1;
+                Err(cc_model::CcError::Database("corrupt document".into()))
+            });
+        let error = result.unwrap_err();
+        assert!(matches!(error, cc_model::CcError::Database(_)));
+        assert!(!error.is_retryable());
+        assert_eq!(calls, 1);
+    }
+
+    #[test]
+    fn p1c_all_search_budgets_and_weights_participate_in_fingerprint() {
+        let cfg = cc_model::config::SearchConfig::default();
+        let ranking = cc_model::config::RankingConfig::default();
+        let base = SearchEngine::ranking_fingerprint(&cfg, &ranking);
+        let value = serde_json::to_value(&cfg).unwrap();
+        for (key, val) in value.as_object().unwrap() {
+            let mut changed = value.clone();
+            changed[key] = if val.is_u64() {
+                serde_json::json!(val.as_u64().unwrap() + 1)
+            } else {
+                serde_json::json!(val.as_f64().unwrap() + 0.25)
+            };
+            let other = serde_json::from_value(changed).unwrap();
+            assert_ne!(
+                base,
+                SearchEngine::ranking_fingerprint(&other, &ranking),
+                "omitted {key}"
+            );
+        }
+    }
+
+    #[test]
+    fn p1c_cache_domains_cover_tier_config_and_post_search_budgets() {
+        use cc_model::config::RepoSizeTier;
+        let (engine, _dir) = scoped_test_engine();
+        let cfg = ProjectConfig::default();
+        let a = SearchEngine::new(engine.db.clone(), &cfg, Some(RepoSizeTier::Tiny));
+        let b = SearchEngine::new(engine.db.clone(), &cfg, Some(RepoSizeTier::Large));
+        let req = SearchRequest {
+            query: "needle".into(),
+            ..Default::default()
+        };
+        assert_ne!(a.retrieval_query_hash(&req), b.retrieval_query_hash(&req));
+        let mut changed = cfg.clone();
+        changed.search.grep_scan_cap += 1;
+        let c = SearchEngine::new(engine.db.clone(), &changed, Some(RepoSizeTier::Tiny));
+        assert_ne!(a.retrieval_query_hash(&req), c.retrieval_query_hash(&req));
+        let limits = RepoSizeTier::Tiny.graph_enrich_limits();
+        let base = a.graph_query_hash(&req, &limits, 4000);
+        assert_ne!(base, a.graph_query_hash(&req, &limits, 4001));
+        for idx in 0..6 {
+            let mut other = RepoSizeTier::Tiny.graph_enrich_limits();
+            match idx {
+                0 => other.max_resolve += 1,
+                1 => other.callers_per_sym += 1,
+                2 => other.callees_per_sym += 1,
+                3 => other.max_tests += 1,
+                4 => other.max_routes += 1,
+                _ => other.graph_budget_pct += 1,
+            }
+            assert_ne!(base, a.graph_query_hash(&req, &other, 4000));
+        }
+        let mut r = cfg.ranking.clone();
+        r.stage_a_weight += 0.01;
+        assert_ne!(
+            SearchEngine::ranking_fingerprint(&cfg.search, &cfg.ranking),
+            SearchEngine::ranking_fingerprint(&cfg.search, &r)
+        );
+    }
+
+    #[test]
+    fn p1c_hard_set_order_and_soft_order_have_separate_contracts() {
+        let a = SearchRequest {
+            query: "needle".into(),
+            file_paths: Some(vec!["a.rs".into(), "b.py".into()]),
+            languages: Some(vec![Language::Rust, Language::Python]),
+            ..Default::default()
+        };
+        let mut b = a.clone();
+        b.file_paths.as_mut().unwrap().reverse();
+        b.languages.as_mut().unwrap().reverse();
+        assert_eq!(SearchEngine::query_hash(&a), SearchEngine::query_hash(&b));
+        for req in [
+            SearchRequest {
+                include_grep: !a.include_grep,
+                ..a.clone()
+            },
+            SearchRequest {
+                top_k: a.top_k + 1,
+                ..a.clone()
+            },
+            SearchRequest {
+                file_preselect_limit: Some(1),
+                ..a.clone()
+            },
+            SearchRequest {
+                path_prefix: Some("a.rs".into()),
+                ..a.clone()
+            },
+        ] {
+            assert_ne!(SearchEngine::query_hash(&a), SearchEngine::query_hash(&req));
+        }
+    }
+
+    #[test]
+    fn p1d_late_old_text_fill_cannot_poison_current_generation() {
+        let (engine, _tmp) = scoped_test_engine();
+        let path = "src/late.rs";
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(path, "needle oldvalue")])
+            .unwrap();
+        let request = SearchRequest {
+            query: "needle".into(),
+            include_grep: false,
+            ..Default::default()
+        };
+        let old_epoch = engine.db.reads().generation().unwrap().index_epoch;
+        let old = engine.search_with_diagnostics(&request).unwrap();
+        let delayed_text = Arc::<str>::from(old.hits[0].text.as_str());
+        engine
+            .db
+            .writes()
+            .replace_files_batch(&[chunk_write_unit(path, "needle newvalue")])
+            .unwrap();
+        assert!(engine.search_with_diagnostics(&request).unwrap().hits[0]
+            .text
+            .contains("newvalue"));
+        // Controlled completion of an old worker after the new reader cleared the LRU.
+        // This is a cache-interleaving regression, not a whole-query snapshot proof.
+        engine
+            .chunk_text_cache
+            .lock()
+            .unwrap()
+            .put((old_epoch, format!("chunk:{path}")), delayed_text);
+        let current = engine.search_with_diagnostics(&request).unwrap();
+        assert!(
+            current.hits[0].text.contains("newvalue"),
+            "late old fill poisoned current text"
+        );
+    }
 
     #[test]
     fn index_write_invalidates_search_cache_without_manual_call() {
@@ -488,6 +817,35 @@ mod tests {
     }
 
     #[test]
+    fn empty_hard_and_soft_fields_have_distinct_cache_keys() {
+        let base = SearchRequest {
+            query: "needle".into(),
+            ..Default::default()
+        };
+        let hard = SearchRequest {
+            file_paths: Some(vec![]),
+            ..base.clone()
+        };
+        let soft = SearchRequest {
+            boost_file_paths: Some(vec![]),
+            ..base.clone()
+        };
+        let language = SearchRequest {
+            languages: Some(vec![]),
+            ..base.clone()
+        };
+        let requests = [base, hard, soft, language];
+        for i in 0..requests.len() {
+            for j in i + 1..requests.len() {
+                assert_ne!(
+                    SearchEngine::query_hash(&requests[i]),
+                    SearchEngine::query_hash(&requests[j])
+                );
+            }
+        }
+    }
+
+    #[test]
     fn cache_key_includes_context_fields() {
         let base = SearchRequest {
             query: "foo".into(),
@@ -531,7 +889,7 @@ mod tests {
             SearchEngine::query_hash(&with_overlay)
         );
 
-        // 集合语义: pinned=[a,b] == pinned=[b,a]
+        // Hint rank-decay: pinned=[a,b] and pinned=[b,a] are different queries.
         let pinned_ab = SearchRequest {
             pinned_file_paths: Some(vec!["a.rs".into(), "b.rs".into()]),
             ..base.clone()
@@ -540,7 +898,7 @@ mod tests {
             pinned_file_paths: Some(vec!["b.rs".into(), "a.rs".into()]),
             ..base.clone()
         };
-        assert_eq!(
+        assert_ne!(
             SearchEngine::query_hash(&pinned_ab),
             SearchEngine::query_hash(&pinned_ba)
         );

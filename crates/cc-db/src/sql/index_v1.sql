@@ -1,4 +1,4 @@
--- index.sqlite3 — Schema v6 (21 tables + 5 FTS5)
+-- index.sqlite3 — Schema v21 (per-file chunk policy, original source coordinates, module evidence)
 --
 -- FTS5 rowid alignment (v6): every FTS table's rowid equals the rowid of its
 -- base-table row. symbols_fts and file_paths_fts enforce this via triggers;
@@ -12,6 +12,19 @@
 -- FROM base WHERE file_path IN (...))` — indexed on both sides instead of a
 -- full FTS-content-table scan (file_path is UNINDEXED in FTS5).
 
+-- Current mapping only; immutable historical/vector artifacts are not this table.
+CREATE TABLE IF NOT EXISTS document_manifest (
+    doc_key TEXT PRIMARY KEY,
+    doc_version TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    chunk_id TEXT NOT NULL UNIQUE REFERENCES chunks(chunk_id) ON DELETE CASCADE,
+    encoding_key TEXT,
+    reference_json TEXT NOT NULL,
+    record_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS document_manifest_path ON document_manifest(file_path,doc_key);
+CREATE INDEX IF NOT EXISTS document_manifest_encoding ON document_manifest(encoding_key);
+
 CREATE TABLE IF NOT EXISTS metadata (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
@@ -21,6 +34,8 @@ CREATE TABLE IF NOT EXISTS files (
     file_path         TEXT PRIMARY KEY,
     language          TEXT NOT NULL,
     content_hash      TEXT NOT NULL,
+    chunk_policy      TEXT,
+    document_spec     TEXT,
     mtime             REAL NOT NULL,
     size              INTEGER NOT NULL,
     summary           TEXT NOT NULL DEFAULT '',
@@ -29,6 +44,43 @@ CREATE TABLE IF NOT EXISTS files (
     parser_confidence REAL NOT NULL DEFAULT 0.5,
     is_test_file      INTEGER NOT NULL DEFAULT 0,
     indexed_at        TEXT NOT NULL
+);
+
+-- Versioned file-local interface evidence; removed atomically with its file.
+CREATE TABLE IF NOT EXISTS public_surfaces (
+    file_path TEXT PRIMARY KEY REFERENCES files(file_path) ON DELETE CASCADE,
+    format_version INTEGER NOT NULL,
+    payload TEXT NOT NULL,
+    fingerprint TEXT,
+    package_key TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_surface_package ON public_surfaces(package_key,file_path);
+
+CREATE TABLE IF NOT EXISTS resolution_manifests (
+    file_path TEXT PRIMARY KEY REFERENCES files(file_path) ON DELETE CASCADE,
+    version INTEGER NOT NULL,
+    payload TEXT NOT NULL,
+    digest TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS resolution_dependencies (
+    file_path TEXT NOT NULL REFERENCES files(file_path) ON DELETE CASCADE,
+    kind TEXT NOT NULL,
+    key TEXT NOT NULL,
+    PRIMARY KEY(file_path,kind,key)
+);
+CREATE INDEX IF NOT EXISTS idx_resolution_dependency_reverse ON resolution_dependencies(kind,key,file_path);
+
+-- Global replay basis deliberately survives deletion of its source roots.
+-- Always replaced in the same transaction as the corresponding file batch.
+CREATE TABLE IF NOT EXISTS resolution_frontier (
+    id INTEGER PRIMARY KEY CHECK(id = 1),
+    version INTEGER NOT NULL,
+    basis_epoch TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    root_count INTEGER NOT NULL,
+    completed_files INTEGER NOT NULL,
+    payload TEXT NOT NULL,
+    digest TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS chunks (
@@ -43,6 +95,7 @@ CREATE TABLE IF NOT EXISTS chunks (
     symbol_kind       TEXT,
     text              TEXT NOT NULL,
     text_encoding     TEXT NOT NULL DEFAULT 'plain',
+    source_json       TEXT,
     token_estimate    INTEGER NOT NULL DEFAULT 0,
     parser_tier       TEXT NOT NULL DEFAULT 'generic',
     parser_confidence REAL NOT NULL DEFAULT 0.5
@@ -51,6 +104,11 @@ CREATE INDEX IF NOT EXISTS idx_chunks_file ON chunks(file_path, chunk_index);
 CREATE INDEX IF NOT EXISTS idx_chunks_symbol ON chunks(symbol_name);
 
 -- rowid aligned with chunks.rowid (application-maintained).
+-- Explicit cleanup also works on rebuild connections with FK checks disabled.
+CREATE TRIGGER IF NOT EXISTS chunk_document_delete AFTER DELETE ON chunks BEGIN
+    DELETE FROM document_manifest WHERE chunk_id=OLD.chunk_id;
+END;
+
 CREATE VIRTUAL TABLE IF NOT EXISTS chunks_fts USING fts5(
     chunk_id UNINDEXED, file_path UNINDEXED,
     breadcrumb, symbol_name, text,
@@ -118,7 +176,8 @@ CREATE TABLE IF NOT EXISTS imports (
     alias         TEXT,
     is_namespace  INTEGER NOT NULL DEFAULT 0,
     is_default    INTEGER NOT NULL DEFAULT 0,
-    is_reexport   INTEGER NOT NULL DEFAULT 0
+    is_reexport   INTEGER NOT NULL DEFAULT 0,
+    context_json  TEXT NOT NULL DEFAULT '{}'
 );
 CREATE INDEX IF NOT EXISTS idx_imports_file ON imports(file_path);
 CREATE INDEX IF NOT EXISTS idx_imports_resolved ON imports(resolved_path);
@@ -146,6 +205,7 @@ CREATE TABLE IF NOT EXISTS symbol_refs (
 CREATE INDEX IF NOT EXISTS idx_refs_symbol ON symbol_refs(symbol_name);
 CREATE INDEX IF NOT EXISTS idx_refs_file ON symbol_refs(file_path);
 CREATE INDEX IF NOT EXISTS idx_refs_target_uid ON symbol_refs(target_symbol_uid);
+CREATE INDEX IF NOT EXISTS idx_refs_target_file ON symbol_refs(target_file_path, file_path);
 
 CREATE TABLE IF NOT EXISTS call_edges (
     edge_id            TEXT PRIMARY KEY,
@@ -180,6 +240,7 @@ CREATE TABLE IF NOT EXISTS call_edges (
     registered_line    INTEGER
 );
 CREATE INDEX IF NOT EXISTS idx_ce_callee ON call_edges(callee_symbol);
+CREATE INDEX IF NOT EXISTS idx_ce_target_file ON call_edges(target_file_path, file_path);
 CREATE INDEX IF NOT EXISTS idx_ce_file ON call_edges(file_path);
 CREATE INDEX IF NOT EXISTS idx_ce_caller_uid ON call_edges(caller_symbol_uid);
 CREATE INDEX IF NOT EXISTS idx_ce_callee_uid ON call_edges(callee_symbol_uid);

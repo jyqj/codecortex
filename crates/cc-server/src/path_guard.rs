@@ -1,4 +1,3 @@
-use cc_db::index_db::IndexDb;
 use cc_model::{CcError, CcResult};
 use std::path::{Path, PathBuf};
 
@@ -6,58 +5,9 @@ use std::path::{Path, PathBuf};
 ///
 /// Rejections are client-input problems ([`CcError::InvalidParams`]), so the
 /// MCP exit maps them to JSON-RPC `-32602`.
+#[cfg(test)]
 pub fn resolve_indexed_path(project_root: &Path, file_path: &str) -> CcResult<PathBuf> {
-    if file_path.starts_with('/') || file_path.starts_with('\\') {
-        return Err(CcError::InvalidParams(format!(
-            "absolute path rejected: {}",
-            file_path
-        )));
-    }
-
-    if file_path.split(['/', '\\']).any(|c| c == "..") {
-        return Err(CcError::InvalidParams(format!(
-            "path traversal rejected: {}",
-            file_path
-        )));
-    }
-
-    let canon_root = project_root
-        .canonicalize()
-        .map_err(|e| CcError::Other(format!("cannot canonicalize project root: {}", e)))?;
-
-    let joined = project_root.join(file_path);
-    let resolved = joined.canonicalize().map_err(|e| {
-        CcError::InvalidParams(format!("path does not exist: {} ({})", file_path, e))
-    })?;
-
-    if !resolved.starts_with(&canon_root) {
-        return Err(CcError::InvalidParams(format!(
-            "path escapes project root: {}",
-            file_path
-        )));
-    }
-
-    Ok(resolved)
-}
-
-/// Like [`resolve_indexed_path`] but also verifies the file is present in the index.
-pub fn resolve_indexed_path_strict(
-    project_root: &Path,
-    file_path: &str,
-    db: &IndexDb,
-) -> CcResult<PathBuf> {
-    let resolved = resolve_indexed_path(project_root, file_path)?;
-    if !db
-        .reads()
-        .file_is_indexed(file_path)
-        .map_err(|e| CcError::Database(format!("index check failed: {}", e)))?
-    {
-        return Err(CcError::InvalidParams(format!(
-            "file not indexed: {}",
-            file_path
-        )));
-    }
-    Ok(resolved)
+    cc_search::evidence::resolve_source_path(project_root, file_path)
 }
 
 #[cfg(test)]
@@ -65,12 +15,49 @@ mod tests {
     use super::*;
     use std::fs;
 
+    #[test]
+    fn rejects_directory_as_indexed_file() {
+        let root = tempfile::tempdir().unwrap();
+        fs::create_dir(root.path().join("folder")).unwrap();
+        assert!(resolve_indexed_path(root.path(), "folder").is_err());
+    }
+    #[cfg(unix)]
+    #[test]
+    fn rejects_unix_socket_before_any_reader_opens_it() {
+        let root = tempfile::tempdir().unwrap();
+        let _socket =
+            std::os::unix::net::UnixListener::bind(root.path().join("socket.rs")).unwrap();
+        assert!(resolve_indexed_path(root.path(), "socket.rs").is_err());
+    }
+
     fn setup_tmp() -> tempfile::TempDir {
         let dir = tempfile::tempdir().unwrap();
         let src = dir.path().join("src");
         fs::create_dir_all(&src).unwrap();
         fs::write(src.join("main.rs"), "fn main() {}").unwrap();
         dir
+    }
+
+    #[test]
+    fn separator_normalization_and_exact_spelling() {
+        let tmp = setup_tmp();
+        assert!(resolve_indexed_path(tmp.path(), "src\\main.rs").is_ok());
+        assert!(resolve_indexed_path(tmp.path(), "./src//main.rs").is_ok());
+        assert!(resolve_indexed_path(tmp.path(), "SRC/main.rs").is_err());
+        assert!(resolve_indexed_path(tmp.path(), "C:main.rs").is_err());
+        assert!(resolve_indexed_path(tmp.path(), "").is_err());
+    }
+    #[test]
+    #[cfg(unix)]
+    fn symlink_targets_are_checked_before_following_descendants() {
+        let tmp = setup_tmp();
+        let outside = tempfile::tempdir().unwrap();
+        std::fs::write(outside.path().join("secret.rs"), "secret").unwrap();
+        std::os::unix::fs::symlink(outside.path(), tmp.path().join("external")).unwrap();
+        std::os::unix::fs::symlink(tmp.path().join("src/main.rs"), tmp.path().join("inside.rs"))
+            .unwrap();
+        assert!(resolve_indexed_path(tmp.path(), "external/secret.rs").is_err());
+        assert!(resolve_indexed_path(tmp.path(), "inside.rs").is_ok());
     }
 
     #[test]

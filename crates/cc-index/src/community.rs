@@ -95,7 +95,8 @@ fn local_move(graph: &WeightedGraph, max_iterations: usize, rng_state: &mut u64)
                     - ki * (sigma_tot - sigma_tot_current)
                         / (graph.total_weight * graph.total_weight);
 
-                if gain > best_gain {
+                if gain > best_gain || (gain > 0.0 && gain == best_gain && target_comm < best_comm)
+                {
                     best_gain = gain;
                     best_comm = target_comm;
                 }
@@ -247,17 +248,20 @@ fn louvain_with_levels(
         return HashMap::new();
     }
 
-    // Build node index.
-    let mut nodes: Vec<String> = Vec::new();
-    let mut node_idx: HashMap<String, usize> = HashMap::new();
-    for (a, b) in edges {
-        for n in [a, b] {
-            if !node_idx.contains_key(n) {
-                node_idx.insert(n.clone(), nodes.len());
-                nodes.push(n.clone());
-            }
-        }
-    }
+    // Stable identity order, not SQLite row/insertion history, determines the
+    // node enumeration and therefore shuffle and final contiguous labels.
+    let nodes: Vec<String> = edges
+        .iter()
+        .flat_map(|(a, b)| [a.clone(), b.clone()])
+        .collect::<std::collections::BTreeSet<_>>()
+        .into_iter()
+        .collect();
+    let node_idx: HashMap<String, usize> = nodes
+        .iter()
+        .cloned()
+        .enumerate()
+        .map(|(i, n)| (n, i))
+        .collect();
 
     let n = nodes.len();
     if n == 0 {
@@ -275,6 +279,10 @@ fn louvain_with_levels(
             adjacency[ib].push((ia, 1.0));
             total_weight += 2.0;
         }
+    }
+
+    for neighbors in &mut adjacency {
+        neighbors.sort_by_key(|&(i, _)| i);
     }
 
     if total_weight == 0.0 {
@@ -402,7 +410,12 @@ mod tests {
         let pruned = prune_edges_by_weight(&edges, 4);
         assert_eq!(
             pruned,
-            vec![edge("a", "b"), edge("a", "b"), edge("a", "b"), edge("c", "d")],
+            vec![
+                edge("a", "b"),
+                edge("a", "b"),
+                edge("a", "b"),
+                edge("c", "d")
+            ],
             "heaviest pair keeps full multiplicity; next pair truncated to the budget"
         );
         // Determinism across repeated calls (HashMap aggregation must not leak).

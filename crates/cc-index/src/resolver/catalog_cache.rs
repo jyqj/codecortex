@@ -31,18 +31,14 @@
 //! `index_epoch` guard prevent a taken catalog from being committed against
 //! a moved database.
 //!
-//! # Divergence contract
+//! # Determinism contract
 //!
-//! A reused catalog holds the same entry *multiset* a fresh seed load would
-//! produce, but not the same bucket *order* (fresh loads order by
-//! `(file_path, start_line)`; a reused catalog keeps historical order and
-//! appends). Resolution outcomes are order-independent except for
-//! equal-score tie-breaks among ambiguous same-name candidates, where a
-//! different (equally valid, already confidence-penalized) winner may be
-//! picked than a cold rebuild would pick. Entry slots freed by removal are
-//! tombstoned, never reused; when tombstones outnumber live entries the fold
-//! declines to park and the next build rebuilds fresh (compaction by
-//! reconstruction).
+//! Reuse preserves the entry multiset, not bucket insertion order. Semantic
+//! ties remain explicit Ambiguous outcomes, candidates use stable identity
+//! ordering, and a tie must never become an arbitrary graph target. Type-map
+//! conflicting contributions likewise cannot use last-writer-wins semantics.
+//! Tombstones remain non-reused; capacity/token checks and compaction below
+//! are retained. The cache is an optimization, not an alternate resolution policy.
 //!
 //! The cache obeys the seed cache's capacity knob
 //! (`CODECORTEX_SEED_CACHE_MAX_SYMBOLS`, `0` disables both).
@@ -251,6 +247,70 @@ pub(crate) fn parked_live_len(db: &Arc<IndexDb>) -> Option<usize> {
 
 #[cfg(test)]
 pub(crate) use test_observability::cache_hits;
+
+#[cfg(test)]
+mod p2d_tests {
+    use super::*;
+    #[test]
+    fn p2d_churn_drops_dead_slots_without_leaking_name_buckets() {
+        let d = tempfile::tempdir().unwrap();
+        let db = Arc::new(IndexDb::open(&d.path().join("db")).unwrap().0);
+        let parser = cc_parsers::ParserRegistry::new();
+        let make = |generation: usize| {
+            let source = (0..64)
+                .map(|i| format!("def gen{generation}_{i}():\n    return {i}\n"))
+                .collect::<String>();
+            parser
+                .parse("churn.py", &source, cc_model::Language::Python)
+                .unwrap()
+                .symbols
+        };
+        let mut catalog = SymbolCatalog::new();
+        let mut prior = Vec::new();
+        let mut compactions = 0;
+        let mut max_slots = 0;
+        for generation in 0..160 {
+            catalog.remove_files(&HashSet::from(["churn.py".into()]));
+            for name in &prior {
+                assert!(!catalog.by_name.contains_key(name));
+            }
+            let symbols = make(generation);
+            catalog.add_symbols(&symbols);
+            prior = symbols.iter().map(|s| s.name.to_lowercase()).collect();
+            assert_eq!(catalog.by_name.len(), symbols.len());
+            assert_eq!(catalog.by_uid.len(), symbols.len());
+            let compact = catalog.should_compact();
+            max_slots = max_slots.max(catalog.entries.len());
+            let token = RowAgg {
+                count: catalog.live_len() as u64,
+                ..Default::default()
+            };
+            park_if_consistent(&db, catalog, token);
+            if compact {
+                assert!(db.take_resolver_catalog().is_none());
+                compactions += 1;
+                catalog = SymbolCatalog::new();
+                catalog.add_symbols(&symbols);
+            } else {
+                let parked = db
+                    .take_resolver_catalog()
+                    .expect("healthy catalog should be reusable");
+                catalog = parked
+                    .downcast::<CachedResolverCatalog>()
+                    .ok()
+                    .unwrap()
+                    .catalog;
+            }
+            assert_eq!(catalog.live_len(), 64);
+        }
+        assert!(compactions >= 2);
+        assert!(max_slots <= 4096 + 128, "{max_slots}");
+        if let Ok(out) = std::env::var("CODECORTEX_BENCH_OBSERVATIONS") {
+            std::fs::create_dir_all(&out).unwrap();
+            std::fs::write(std::path::Path::new(&out).join("catalog-churn.json"),serde_json::json!({"generations":160,"symbols_per_generation":64,"compactions":compactions,"max_slots":max_slots,"scope":"unit catalog park/compaction policy; not full-repository benchmark"}).to_string()).unwrap();
+        }
+    }
+}
 
 /// Per-handle hit counters, keyed by the process-unique `instance_id` so
 /// concurrently running tests cannot observe each other's hits.

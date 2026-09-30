@@ -32,6 +32,7 @@
 |------|------|
 | [TEST_PLAN.md](TEST_PLAN.md) | 测试布局、eval 语料与断言类型、fixture 项目、集成测试三层。 |
 | [BENCHMARK.md](BENCHMARK.md) | 目标指标、四类基准的运行方法、最新结果、写阶段优化史。 |
+| [Code Index V2 重构路线图](roadmap/code-index-v2/README.md) | 完整设计与 10 phases / 39 批次 / 192 项 TODO；含 oce-benchmark 参考实现规格。规划不代表已实现，任务状态以路线图为准。 |
 | [adr/](adr/README.md) | 架构决策记录（ADR）索引与撰写约定。 |
 | [../CONTRIBUTING.md](../CONTRIBUTING.md) | 构建、测试、lint、MSRV、提交前检查。 |
 

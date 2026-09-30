@@ -114,8 +114,8 @@ impl IndexDb {
             self.finalize_rebuild_generation(tmp_path, generation_floor)?;
 
             // Remove the old WAL/SHM files — the new file will create its own
-            let wal = self.db_path.with_extension("sqlite3-wal");
-            let shm = self.db_path.with_extension("sqlite3-shm");
+            let wal = Self::sidecar_path(&self.db_path, "-wal");
+            let shm = Self::sidecar_path(&self.db_path, "-shm");
             let _ = std::fs::remove_file(&wal);
             let _ = std::fs::remove_file(&shm);
 

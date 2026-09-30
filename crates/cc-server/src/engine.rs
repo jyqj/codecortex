@@ -31,7 +31,6 @@ use cc_model::{CcError, CcResult, Intent};
 use cc_search::SearchEngine;
 use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
-use std::str::FromStr;
 use std::sync::Arc;
 
 /// Owned inputs cloned from a `CodeIndex` under a brief read lock so that the
@@ -103,7 +102,8 @@ pub struct CodeIndex {
     pub project_path: Option<PathBuf>,
     config: Option<ProjectConfig>,
     pub(crate) index_db: Option<Arc<IndexDb>>,
-    engine: Option<SearchEngine>,
+    engine: Option<Arc<SearchEngine>>,
+    query_services: Arc<crate::service_factory::QueryServices>,
     pub(crate) repo_tier: Option<RepoSizeTier>,
     /// True when the DB was freshly created (Initialized) or rebuilt after a
     /// schema mismatch — signals that an auto-index build is needed.
@@ -167,6 +167,7 @@ impl CodeIndex {
             config: None,
             index_db: None,
             engine: None,
+            query_services: Arc::new(crate::service_factory::QueryServices::default()),
             repo_tier: None,
             needs_initial_index: false,
             build_gate: Arc::new(std::sync::Mutex::new(())),
@@ -191,10 +192,17 @@ impl CodeIndex {
         let repo_tier = Some(RepoSizeTier::from_file_count(estimated_files));
         let engine = SearchEngine::new(db.clone(), &config, repo_tier);
 
+        if self
+            .project_path
+            .as_ref()
+            .is_some_and(|old| old != &project)
+        {
+            self.query_services = Arc::new(crate::service_factory::QueryServices::default());
+        }
         self.project_path = Some(project);
         self.config = Some(config);
         self.index_db = Some(db);
-        self.engine = Some(engine);
+        self.engine = Some(Arc::new(engine));
         self.repo_tier = repo_tier;
         self.needs_initial_index = matches!(
             schema_status,
@@ -283,8 +291,24 @@ impl CodeIndex {
         self.index_db.as_ref().ok_or(CcError::ProjectNotSet)
     }
 
-    fn ensure_engine(&self) -> CcResult<&SearchEngine> {
+    fn ensure_engine(&self) -> CcResult<&Arc<SearchEngine>> {
         self.engine.as_ref().ok_or(CcError::ProjectNotSet)
+    }
+
+    pub fn query_handle(&self) -> CcResult<crate::query_handle::QueryHandle> {
+        Ok(crate::query_handle::QueryHandle {
+            db: self.ensure_db()?.clone(),
+            engine: self.ensure_engine()?.clone(),
+            project: self.ensure_project()?.to_path_buf(),
+            tier: self.repo_size_tier(),
+            config: self.ensure_config()?.query.clone(),
+            services: self.query_services.clone(),
+            _pin: self.query_services.pin(),
+            _runtime: None,
+        })
+    }
+    pub fn set_semantic_recall(&self, port: Option<Arc<dyn cc_model::semantic::SemanticRecall>>) {
+        self.query_services.set_semantic(port);
     }
 
     fn ensure_config(&self) -> CcResult<&ProjectConfig> {
@@ -294,11 +318,9 @@ impl CodeIndex {
     pub fn build_index(&mut self, full: bool) -> CcResult<IndexReport> {
         let gate = self.build_gate();
         let _build_permit = Self::try_acquire_build_gate(&gate)?;
-        let project = self.ensure_project()?;
-        let config = self.ensure_config()?;
-        let db = self.ensure_db()?;
-        let indexer = Indexer::new(db.clone(), project, &config.indexing);
-        let report = indexer.build_index(project, full)?;
+        let inputs = self.build_inputs()?;
+        let indexer = Indexer::new(inputs.db.clone(), &inputs.project, &inputs.indexing);
+        let report = indexer.build_index(&inputs.project, full)?;
         self.after_successful_index_build();
         Ok(report)
     }
@@ -329,7 +351,10 @@ impl CodeIndex {
     /// brief read lock, then release the lock before running `prepare_build`.
     pub fn build_inputs(&self) -> CcResult<BuildInputs> {
         let project = self.ensure_project()?;
-        let config = self.ensure_config()?;
+        // One bounded config read per build, never one per import/chunk. A
+        // long-lived MCP session must not pin the startup chunk policy forever.
+        let config = load_project_config(project);
+        config.indexing.chunk_policy().validate()?;
         let db = self.ensure_db()?;
         Ok(BuildInputs {
             db: db.clone(),
@@ -448,20 +473,44 @@ impl CodeIndex {
     /// the epochs cannot tell results computed from a half-mutated CodeIndex
     /// apart from valid ones.
     ///
-    /// Correctness depends on the CodeIndex lock ordering: this runs while
-    /// holding the CodeIndex WRITE lock (`&mut self`), and every in-flight
-    /// search — including its result-cache `put` — completes under a READ
-    /// lock, so no stale entry can be inserted concurrently with or after
-    /// this clear.
+    /// Retire the old Arc-owned engine before replacing it. Detached queries
+    /// fail their liveness/publication checks instead of repopulating its cache.
     pub fn invalidate_search_cache_after_poison(&mut self) {
         if let Some(engine) = self.engine.as_ref() {
-            engine.invalidate_cache();
+            engine.retire();
+        }
+        if let (Some(db), Some(config)) = (&self.index_db, &self.config) {
+            self.engine = Some(Arc::new(SearchEngine::new(
+                db.clone(),
+                config,
+                self.repo_tier,
+            )));
         }
     }
 
     pub fn index_status(&self) -> CcResult<ProjectStats> {
         let project = self.ensure_project()?;
         self.ensure_db()?.reads().stats(project)
+    }
+
+    pub(crate) fn idle_timeout_secs(&self) -> u64 {
+        self.config
+            .as_ref()
+            .map(|c| c.auto_index.idle_timeout_secs)
+            .unwrap_or(60)
+    }
+
+    pub fn capabilities_info(&self) -> serde_json::Value {
+        crate::capability_status::snapshot(
+            self.project_path.as_deref(),
+            self.index_db.as_deref(),
+            self.config.as_ref(),
+            &self.query_services,
+        )
+    }
+
+    pub fn query_pins(&self) -> usize {
+        self.query_services.query_pins()
     }
 
     pub fn diagnostics_info(&self) -> serde_json::Value {
@@ -505,12 +554,50 @@ impl CodeIndex {
             "last_indexed_at": last_indexed,
             "auto_index_enabled": auto_index_enabled,
             "lock_poison_recovered": crate::handlers::poison_recovered(),
+            "query_execution": self.query_services.pool.stats(),
+            "semantic_configured": self.query_services.semantic().is_some(),
+            "retrieval": self.capabilities_info()["retrieval"].clone(),
             "search_cache": search_cache,
         })
     }
 }
 
 impl SearchOps<'_> {
+    pub fn search_in_context(
+        &self,
+        query: &str,
+        top_k: usize,
+        intent: Option<Intent>,
+    ) -> CcResult<ContextEnvelope> {
+        self.0
+            .query_handle()?
+            .search_in_context(query, top_k, intent)
+    }
+    pub fn search_in_context_with(
+        &self,
+        query: &str,
+        top_k: usize,
+        intent: Option<Intent>,
+        overrides: SearchRequest,
+    ) -> CcResult<ContextEnvelope> {
+        self.0
+            .query_handle()?
+            .search_in_context_with(query, top_k, intent, overrides)
+    }
+    pub fn task_symbols(
+        &self,
+        task: &str,
+        max_symbols: Option<usize>,
+        expand_depth: Option<usize>,
+        intent: Option<&str>,
+    ) -> CcResult<serde_json::Value> {
+        self.0
+            .query_handle()?
+            .task_symbols(task, max_symbols, expand_depth, intent)
+    }
+}
+
+impl crate::query_handle::QueryHandle {
     pub fn search_in_context(
         &self,
         query: &str,
@@ -527,7 +614,30 @@ impl SearchOps<'_> {
         intent: Option<Intent>,
         overrides: SearchRequest,
     ) -> CcResult<ContextEnvelope> {
-        let tier = self.0.repo_size_tier();
+        self.config.validate()?;
+        let mut overrides = overrides;
+        let budget = std::time::Duration::from_millis(self.config.deadline_ms);
+        overrides.control = Some(match &overrides.control {
+            Some(control) => control.limit_total(budget),
+            None => cc_model::query::QueryControl::new(budget)?,
+        });
+        self.engine
+            .with_stable_generation(|generation| {
+                self.assemble_context_once(query, top_k, intent, overrides.clone(), generation)
+            })
+            .map(|(_, value)| value)
+    }
+
+    fn assemble_context_once(
+        &self,
+        query: &str,
+        top_k: usize,
+        intent: Option<Intent>,
+        overrides: SearchRequest,
+        generation: cc_model::generation::ReadGeneration,
+    ) -> CcResult<ContextEnvelope> {
+        self.engine.check_live()?;
+        let tier = self.tier;
         let token_budget = tier.default_token_budget();
         let max_output_chars = tier.max_output_chars();
         let top_k = if top_k == 0 {
@@ -535,19 +645,45 @@ impl SearchOps<'_> {
         } else {
             top_k
         };
-        let engine = self.0.ensure_engine()?;
+        let engine = &self.engine;
         let detected_intent = intent.unwrap_or_else(|| detect_intent(query));
-        let request = build_context_search_request(query, top_k, overrides);
+        let mut request = build_context_search_request(query, top_k, overrides);
+        request.intent = Some(detected_intent);
+        self.config.validate()?;
+        let control = match &request.control {
+            Some(c) => c.limit_total(std::time::Duration::from_millis(self.config.deadline_ms)),
+            None => cc_model::query::QueryControl::new(std::time::Duration::from_millis(
+                self.config.deadline_ms,
+            ))?,
+        };
+        request.control = Some(control.clone());
+        let policy = cc_search::query_policy::QueryPolicy::resolve(
+            &self.config,
+            &request,
+            request.semantic.is_some(),
+        )?;
+        control.check()?;
         // Graph-aware rerank happens entirely inside cc-search: it searches a
         // rerank_window-sized candidate list, folds graph connectivity into
-        // rerank_score, and returns the FINAL top_k ordering.  Hits must not
-        // be re-scored or re-sorted here (see SearchHit::rerank_score).
+        // rerank_score, and returns the FINAL bounded ranking. The evidence
+        // selector chooses a subset without changing that order or its scores.
         let graph_limits = tier.graph_enrich_limits();
         // The returned Arc is a shared, possibly cached pair — read-only by
         // contract (mutating it would corrupt cc-search's graph-aware cache).
         let search_outcome =
-            engine.search_with_graph_context(&request, &graph_limits, token_budget)?;
-        let (hits, enrichment) = (&search_outcome.0, &search_outcome.1);
+            engine.search_context_candidates(&request, &graph_limits, token_budget)?;
+        let enrichment = &search_outcome.1;
+        let mut verifier = cc_search::evidence_hydrator::EvidenceHydrator::new(
+            &self.db,
+            &self.project,
+            cc_search::query_policy::hard_scope(&request)?,
+            generation,
+            control.clone(),
+        )?;
+        let hits = verifier.hydrate(&search_outcome.0)?;
+
+        let (hits, selection) =
+            cc_search::selection::coverage::select(&hits, detected_intent, top_k)?;
 
         let mut nodes = Vec::with_capacity(hits.len());
         let mut spans = Vec::with_capacity(hits.len());
@@ -612,6 +748,9 @@ impl SearchOps<'_> {
         let mut graph_tokens_used = 0u32;
         let mut graph_rendered: Vec<String> = Vec::new();
         for gnode in &enrichment.nodes {
+            if !verifier.graph_current(gnode)? {
+                continue;
+            }
             if graph_tokens_used + gnode.token_estimate > graph_budget {
                 break;
             }
@@ -621,7 +760,27 @@ impl SearchOps<'_> {
         }
 
         let token_estimate: u32 = primary_tokens + graph_tokens_used;
-        let summary = if hits.is_empty() {
+        let source_freshness = verifier.diagnostics();
+        let incomplete = source_freshness["partial"] == true
+            || enrichment
+                .grep_diagnostics
+                .as_ref()
+                .is_some_and(|d| d.is_partial())
+            || enrichment.lane_outcomes.iter().any(|lane| {
+                matches!(
+                    lane.status,
+                    cc_model::retrieval::LaneStatus::Partial
+                        | cc_model::retrieval::LaneStatus::Timeout
+                        | cc_model::retrieval::LaneStatus::Unavailable
+                        | cc_model::retrieval::LaneStatus::Error
+                        | cc_model::retrieval::LaneStatus::Cancelled
+                )
+            });
+        let summary = if hits.is_empty() && incomplete {
+            format!(
+                "No results found within the scan budget for `{query}`; retrieval is incomplete."
+            )
+        } else if hits.is_empty() {
             format!("No indexed code results found for `{}`.", query)
         } else {
             format!(
@@ -641,14 +800,6 @@ impl SearchOps<'_> {
             rendered_prompt.push_str("\n\n## Graph Context\n");
             rendered_prompt.push_str(&graph_rendered.join("\n"));
         }
-        if rendered_prompt.len() > max_output_chars {
-            let mut truncate_at = max_output_chars.min(rendered_prompt.len());
-            while !rendered_prompt.is_char_boundary(truncate_at) {
-                truncate_at = truncate_at.saturating_sub(1);
-            }
-            rendered_prompt.truncate(truncate_at);
-            rendered_prompt.push_str("\n\n... truncated by adaptive repo-size budget");
-        }
 
         // Unified explainability envelope (additive, same pattern as the
         // graph handlers): the enrichment's GraphExplain is attached only
@@ -665,7 +816,9 @@ impl SearchOps<'_> {
                     .map_err(|e| CcError::Search(e.to_string()))?;
         }
 
-        Ok(ContextEnvelope {
+        control.check()?;
+        self.engine.check_live()?;
+        let envelope = ContextEnvelope {
             task: query.to_string(),
             intent: detected_intent,
             query: query.to_string(),
@@ -693,15 +846,46 @@ impl SearchOps<'_> {
                 "hits": hits,
             }),
             evidence_summary: serde_json::json!({
+                "source_freshness": source_freshness,
+                "selection": selection,
                 "search_hits": hits.len(),
                 "files": files.into_iter().collect::<Vec<_>>(),
                 "graph_enrichment": graph_enrichment_summary,
+                "retrieval": {"lanes": enrichment.lane_outcomes, "grep": enrichment.grep_diagnostics, "scope": enrichment.scope_explain, "cost": enrichment.retrieval_cost, "policy":policy},
             }),
-        })
+        };
+        let envelope = cc_search::selection::budget::pack(envelope, max_output_chars)?;
+        verifier.finish()?;
+        self.engine.check_live()?;
+        Ok(envelope)
     }
 }
 
 impl GraphOps<'_> {
+    pub fn find_symbol_in_scope(
+        &self,
+        name: &str,
+        exact: bool,
+        top_k: usize,
+        prefix: Option<&str>,
+    ) -> CcResult<serde_json::Value> {
+        let Some(prefix) = prefix else {
+            return self.find_symbol(name, exact, top_k, false);
+        };
+        let prefix = cc_model::repo_path::normalize_relative(prefix)?;
+        let db = self.0.ensure_db()?;
+        let rows = db.retrieval().scoped_symbol_rows(
+            name,
+            exact,
+            &cc_db::ChunkScope {
+                path_prefix: Some(prefix),
+                ..Default::default()
+            },
+            top_k,
+        )?;
+        Ok(serde_json::to_value(rows)?)
+    }
+
     pub fn find_symbol(
         &self,
         name: &str,
@@ -881,17 +1065,16 @@ impl GraphOps<'_> {
     }
 }
 
-// task_symbols lives in a second `SearchOps` impl block to keep the method in
-// its historical position in this file (minimal move); it belongs to the
-// search domain because it is task-text retrieval with a search fallback.
-impl SearchOps<'_> {
-    pub fn task_symbols(
+// One owned implementation shared by synchronous and asynchronous task callers.
+impl crate::query_handle::QueryHandle {
+    pub(crate) fn task_symbols_direct(
         &self,
         task: &str,
         max_symbols: Option<usize>,
         expand_depth: Option<usize>,
-        intent: Option<&str>,
-    ) -> CcResult<serde_json::Value> {
+        _intent: Option<&str>,
+    ) -> CcResult<Option<serde_json::Value>> {
+        self.engine.check_live()?;
         let candidates = crate::symbol_extract::extract_candidate_symbols(task);
         let mut matched_symbols: Vec<serde_json::Value> = Vec::new();
         let mut matched_uids: Vec<String> = Vec::new();
@@ -899,7 +1082,7 @@ impl SearchOps<'_> {
         let mut seen_uids: HashSet<String> = HashSet::new();
 
         for name in &candidates {
-            if let Ok(syms) = self.0.ensure_db()?.reads().find_symbol(name, true, 1) {
+            if let Ok(syms) = self.db.reads().find_symbol(name, true, 1) {
                 for sym in &syms {
                     let dedup_key = sym.symbol_uid.clone().unwrap_or_else(|| {
                         format!("{}:{}:{}", sym.file_path, sym.name, sym.start_line)
@@ -926,21 +1109,18 @@ impl SearchOps<'_> {
             }
         }
 
-        // Fallback: if too few symbols matched, use search_in_context
+        // Caller selects sync or async fallback; the symbol algorithm is shared.
         if matched_symbols.len() < 3 {
-            let detected = intent.and_then(|i| Intent::from_str(i).ok());
-            let env = self.search_in_context(task, 10, detected)?;
-            return Ok(serde_json::to_value(env)
-                .unwrap_or_else(|_| serde_json::json!({"error": "serialize failed"})));
+            return Ok(None);
         }
 
         let max_syms = max_symbols
-            .unwrap_or_else(|| self.0.repo_size_tier().explore_max_symbols())
+            .unwrap_or_else(|| self.tier.explore_max_symbols())
             .clamp(1, 20);
         matched_symbols.truncate(max_syms);
         matched_uids.truncate(max_syms);
 
-        let db = self.0.ensure_db()?;
+        let db = &self.db;
 
         let mut expanded_callers: Vec<serde_json::Value> = Vec::new();
         let mut expanded_callees: Vec<serde_json::Value> = Vec::new();
@@ -994,14 +1174,15 @@ impl SearchOps<'_> {
         let mut files_sorted: Vec<String> = relevant_files.into_iter().collect();
         files_sorted.sort();
 
-        Ok(serde_json::json!({
+        self.engine.check_live()?;
+        Ok(Some(serde_json::json!({
             "task": task,
             "candidates_extracted": candidates,
             "matched_symbols": matched_symbols,
             "expanded_callers": expanded_callers,
             "expanded_callees": expanded_callees,
             "relevant_files": files_sorted,
-        }))
+        })))
     }
 }
 
@@ -1020,17 +1201,22 @@ pub(crate) fn build_context_search_request(
         top_k,
         include_grep: true,
         boost_file_paths: overrides.boost_file_paths,
+        retrieval_strategy: overrides.retrieval_strategy,
+        intent: overrides.intent,
+        control: overrides.control,
+        semantic: overrides.semantic,
         recent_file_paths: overrides.recent_file_paths,
         pinned_file_paths: overrides.pinned_file_paths,
         conversation_queries: overrides.conversation_queries,
         overlay_file_paths: overrides.overlay_file_paths,
         file_preselect_limit: overrides.file_preselect_limit,
         path_prefix: overrides.path_prefix,
-        ..Default::default()
+        languages: overrides.languages,
+        file_paths: overrides.file_paths,
     }
 }
 
-fn detect_intent(query: &str) -> Intent {
+pub(crate) fn detect_intent(query: &str) -> Intent {
     let q = query.to_lowercase();
     if q.contains("fix") || q.contains("bug") || q.contains("error") || q.contains("报错") {
         Intent::Fix
@@ -1441,6 +1627,7 @@ mod tests {
     // after the rerank moves into cc-search.
 
     fn insert_context_fixture_file(
+        root: &std::path::Path,
         db: &cc_db::index_db::IndexDb,
         file_path: &str,
         text: &str,
@@ -1451,13 +1638,27 @@ mod tests {
         use cc_db::index_db::FileWriteUnit;
         use cc_model::{ChunkRecord, Language, ParseOutcome, ParserTier, SymbolRecord};
 
+        // Keep independent scoring facts, but source evidence requires a real
+        // matching original. No rank/score assertion is relaxed.
+        let path = root.join(file_path);
+        std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+        std::fs::write(path, text).unwrap();
+        let snapshot = cc_model::source::SourceSnapshot::new(text.as_bytes());
         let chunk = ChunkRecord {
+            source: Some(cc_model::source::ChunkSource {
+                source: snapshot.identity().clone(),
+                span: snapshot.whole(),
+                slice_digest: snapshot.slice_digest(snapshot.whole()).unwrap(),
+                boundary: "authored_fixture".into(),
+                owner: None,
+                signature: None,
+            }),
             chunk_id: format!("chunk:{}", file_path),
             file_path: file_path.to_string(),
             language: Language::Rust,
             chunk_index: 0,
             start_line: 1,
-            end_line: 3,
+            end_line: 1,
             breadcrumb: "root".to_string(),
             text: text.to_string(),
             symbol_name: Some(symbol_name.to_string()),
@@ -1473,7 +1674,7 @@ mod tests {
             kind: cc_model::SymbolKind::Function,
             container: None,
             start_line: 1,
-            end_line: 3,
+            end_line: 1,
             start_col: 0,
             end_col: 0,
             signature: None,
@@ -1494,22 +1695,26 @@ mod tests {
             base_types: None,
             implements: None,
         };
-        let outcome = ParseOutcome {
+        let mut outcome = ParseOutcome {
             summary: text.to_string(),
             chunks: vec![chunk],
             symbols: vec![symbol],
             call_edges,
             parser_tier: ParserTier::TreeSitter,
             parser_confidence: 1.0,
+            chunk_policy: Some(cc_model::chunk_policy::ChunkPolicy::default().fingerprint()),
+            document_spec: Some(cc_index::documents::delta::spec_fingerprint().into()),
             ..Default::default()
         };
+        outcome.documents =
+            Some(cc_index::documents::delta::prepare(&snapshot, &outcome, &[]).unwrap());
         let conn = crate::test_seed::seed_conn(db);
         cc_db::index_db::IndexDb::insert_file_data(
             &conn,
             &FileWriteUnit {
                 rel_path: file_path.to_string(),
                 language: Language::Rust,
-                content_hash: format!("hash-{file_path}"),
+                content_hash: snapshot.identity().content_digest.clone(),
                 mtime: 0.0,
                 size: text.len() as u64,
                 outcome,
@@ -1519,7 +1724,7 @@ mod tests {
     }
 
     #[test]
-    fn graph_rerank_parity_with_pre_refactor_baseline() {
+    fn graph_rerank_preserves_algebra_with_bm25_and_direct_support() {
         let dir = TempDir::new().unwrap();
         let mut idx = CodeIndex::empty();
         idx.set_project(dir.path(), false).unwrap();
@@ -1528,6 +1733,7 @@ mod tests {
         // beta: lexically stronger (matches all 8 query tokens), no symbol_uid
         // so the graph lane and graph enrichment cannot see it.
         insert_context_fixture_file(
+            dir.path(),
             &db,
             "src/beta.rs",
             "fn ranktoken() { alphaword(); betaword(); gammaword(); deltaword(); epsword(); zetaword(); etaword(); }",
@@ -1550,6 +1756,7 @@ mod tests {
             })
             .collect();
         insert_context_fixture_file(
+            dir.path(),
             &db,
             "src/alpha.rs",
             "fn ranktoken() { alphaword(); betaword(); gammaword(); deltaword(); epsword(); zetaword(); }",
@@ -1598,15 +1805,33 @@ mod tests {
         );
         assert_eq!(graph_scores[1], 0.0, "beta has no graph connectivity");
 
-        // Bit-exact rerank values captured pre-refactor; any scoring-constant
-        // drift during the ScoringConfig migration shows up here.
+        // Keep the historical baseline and derive BOTH deliberate changes:
+        // monotonic BM25 delta from raw SQLite, plus P3-B's bounded direct support.
+        // Alpha is the second lexical/grep match: support=1/2, so its old uniform
+        // graph bonus loses exactly 0.3 * ln(21)/10 * (1 - 1/2).
+        // This is independent algebra, not newly captured opaque output scores.
+        assert_eq!(hits[0]["lexical_score"].as_f64().unwrap(), 0.5);
+        assert!(hits[0]["grep_score"].as_f64().unwrap() <= 0.5);
+        let alpha_support = 0.5;
+        let connectivity_delta = expected_alpha_graph * 0.3 * (alpha_support - 1.0);
+        let raw = db
+            .retrieval()
+            .fts_file_summaries(&cc_db::fts::sanitize_fts_query(query), None, 100)
+            .unwrap();
+        let bm25_delta = |path: &str| {
+            let x = -raw.iter().find(|(p, _)| p == path).unwrap().1;
+            0.04 * ((x - 1.0) / (x + 1.0))
+        };
         assert!(
-            (rerank_scores[0] - 0.7865038336950975).abs() < 1e-12,
+            (rerank_scores[0]
+                - (0.7865038336950975 + bm25_delta("src/alpha.rs") + connectivity_delta))
+                .abs()
+                < 1e-12,
             "alpha rerank_score drifted: got {}",
             rerank_scores[0]
         );
         assert!(
-            (rerank_scores[1] - 0.7275681946166044).abs() < 1e-12,
+            (rerank_scores[1] - (0.7275681946166044 + bm25_delta("src/beta.rs"))).abs() < 1e-12,
             "beta rerank_score drifted: got {}",
             rerank_scores[1]
         );
@@ -1614,7 +1839,7 @@ mod tests {
         // Flip proof: without the graph contribution (weight 0.3) alpha would
         // rank BELOW beta — the final ordering genuinely depends on the graph
         // rerank step.
-        let alpha_pre_graph = rerank_scores[0] - graph_scores[0] * 0.3;
+        let alpha_pre_graph = rerank_scores[0] - graph_scores[0] * 0.3 * alpha_support;
         assert!(
             alpha_pre_graph < rerank_scores[1],
             "fixture must demonstrate a graph-driven flip: alpha pre-graph {} vs beta {}",
@@ -1630,6 +1855,7 @@ mod tests {
         idx.set_project(dir.path(), false).unwrap();
         let db = idx.ensure_db().unwrap().clone();
         insert_context_fixture_file(
+            dir.path(),
             &db,
             "src/alpha.rs",
             "fn cleanmarker() {}",
@@ -1660,6 +1886,7 @@ mod tests {
         idx.set_project(dir.path(), false).unwrap();
         let db = idx.ensure_db().unwrap().clone();
         insert_context_fixture_file(
+            dir.path(),
             &db,
             "src/alpha.rs",
             "fn brokenmarker() {}",

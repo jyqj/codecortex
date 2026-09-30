@@ -46,7 +46,7 @@ use cc_model::{BuildExplain, BuildExplainCollector, CcError, CcResult};
 use crate::dirty_closure::DirtyPropagationStatus;
 use crate::indexer::{FileAction, IndexReport, Indexer, ParseResult, PhaseTiming, ScanDiffResult};
 use crate::indexer_phases::time_step;
-use crate::indexer_phases::{AnalysisPlan, PostprocessPlan};
+use crate::indexer_phases::{AnalysisInputs, AnalysisPlan, PostprocessPlan};
 
 /// Owned, read-only output of the prepare phase.
 ///
@@ -56,6 +56,8 @@ use crate::indexer_phases::{AnalysisPlan, PostprocessPlan};
 /// caller's write lock. Fields stay private so callers only transport the
 /// bundle, never inspect it.
 pub struct PreparedBuild {
+    chunk_policy: cc_model::chunk_policy::ChunkPolicy,
+    project_model: crate::project_model::CapturedProject,
     scan_result: ScanDiffResult,
     write_units: Vec<FileWriteUnit>,
     /// Chunk payloads zstd-compressed during prepare (lock-free), so the
@@ -67,6 +69,7 @@ pub struct PreparedBuild {
     hierarchy_edges: Vec<SemanticEdgeRecord>,
     parse_report: ParseReport,
     dirty_propagation: Option<DirtyPropagationStatus>,
+    dirty_plan: cc_model::freshness::DirtyPlanExplanation,
     /// `index_epoch` observed at prepare START, before the first DB read
     /// (`get_file_state` in scan/diff). `commit` re-reads the epoch and
     /// refuses to write on mismatch, so a later-committing stale prepare can
@@ -74,6 +77,7 @@ pub struct PreparedBuild {
     /// generation pair: `evidence_epoch` is bumped concurrently by
     /// runtime-evidence ingestion and would false-positive.
     prepared_index_epoch: u64,
+    reconcile: Option<cc_model::freshness::ReconcileUpdate>,
     /// When set, prepare already wrote the full snapshot to `.sqlite3.tmp`;
     /// commit only performs the atomic swap and drops in-memory payloads.
     full_rebuild_staging_floor: Option<IndexGeneration>,
@@ -97,10 +101,13 @@ pub struct PreparedBuild {
 /// (compute and apply durations are added to `postprocess_ms`/`analysis_ms`
 /// as the stages run).
 struct ReportCarry {
+    chunk_policy: cc_model::chunk_policy::ChunkPolicy,
+    project_model: cc_model::project_model::ProjectModelReport,
     scan_result: ScanDiffResult,
     output_snapshot: OutputSnapshot,
     parse_report: ParseReport,
     dirty_propagation: Option<DirtyPropagationStatus>,
+    dirty_plan: cc_model::freshness::DirtyPlanExplanation,
     start: Instant,
     timing: PhaseTiming,
 }
@@ -211,6 +218,7 @@ impl IndexBuildPlan {
         // Generation snapshot must precede every DB read in this prepare
         // (the first is `get_file_state` inside scan/diff): any index write
         // that lands after our snapshot reads is then detected at commit.
+        indexer.parsers.chunk_policy().validate()?;
         let prepared_index_epoch = indexer.db.reads().generation()?.index_epoch;
 
         let phase_start = Instant::now();
@@ -220,11 +228,17 @@ impl IndexBuildPlan {
             self.auto_file_limit,
             scope,
         )?;
+        let project_model = crate::project_model::CapturedProject::capture(
+            indexer,
+            &scan_result,
+            scope,
+            self.mode.is_full(),
+        )?;
         let scan_diff_ms = phase_start.elapsed().as_millis() as u64;
 
         let phase_start = Instant::now();
         let to_parse = std::mem::take(&mut scan_result.to_parse);
-        let parse_result = indexer.phase_parse(project_path, to_parse)?;
+        let parse_result = indexer.phase_parse_with_model(to_parse, &project_model)?;
         let ParsedBuildState {
             mut write_units,
             parse_report,
@@ -237,13 +251,22 @@ impl IndexBuildPlan {
         // reachable through the resulting [`Reloaded`] token — so dirty units
         // provably participate in project context before resolvers bind
         // framework-specific edges.
-        let dirty_closed = DirtyClosed::compute(indexer, self.mode, &scan_result, &write_units)?;
+        let dirty_closed = DirtyClosed::compute(
+            indexer,
+            self.mode,
+            &scan_result,
+            &write_units,
+            prepared_index_epoch,
+            &project_model.report().changed_configs,
+        )?;
         let dirty_propagation = dirty_closed.dirty_propagation;
+        let dirty_plan = dirty_closed.dirty_plan.clone();
+        let reconcile = dirty_closed.reconcile.clone();
         let reloaded = dirty_closed.reload(
             indexer,
-            project_path,
             &mut write_units,
             &scan_result.existing,
+            &project_model,
         )?;
         let parse_ms = phase_start.elapsed().as_millis() as u64;
 
@@ -260,7 +283,11 @@ impl IndexBuildPlan {
             &mut write_units,
             &scan_result.to_remove,
             &fw_context,
+            &project_model,
         )?;
+        for unit in &mut write_units {
+            project_model.seal_modules(&unit.rel_path, &mut unit.outcome);
+        }
         let resolve_ms = phase_start.elapsed().as_millis() as u64;
 
         // Capture report totals and route nodes from the resolved in-memory
@@ -290,7 +317,10 @@ impl IndexBuildPlan {
                         &output_snapshot.route_nodes,
                         &hierarchy_edges,
                         &chunk_blobs,
-                        scan_result.walk_manifest.as_deref(),
+                        crate::project_model::BuildInputView {
+                            walk_manifest: scan_result.walk_manifest.as_deref(),
+                            project_model: Some(&project_model),
+                        },
                     )
                 })?;
             (
@@ -305,6 +335,8 @@ impl IndexBuildPlan {
         };
 
         Ok(PreparedBuild {
+            chunk_policy: indexer.parsers.chunk_policy(),
+            project_model,
             scan_result,
             write_units,
             chunk_blobs,
@@ -313,7 +345,9 @@ impl IndexBuildPlan {
             hierarchy_edges,
             parse_report,
             dirty_propagation,
+            dirty_plan,
             prepared_index_epoch,
+            reconcile,
             full_rebuild_staging_floor,
             staged_config_units,
             staged_parsed_paths,
@@ -349,7 +383,14 @@ impl IndexBuildPlan {
         project_path: &Path,
         prepared: PreparedBuild,
     ) -> CcResult<WrittenBuild> {
+        if prepared.chunk_policy != indexer.parsers.chunk_policy() {
+            return Err(CcError::Config(
+                "prepared chunk policy differs from commit policy; prepare again".into(),
+            ));
+        }
         let PreparedBuild {
+            chunk_policy,
+            project_model,
             scan_result,
             write_units,
             chunk_blobs,
@@ -358,7 +399,9 @@ impl IndexBuildPlan {
             hierarchy_edges,
             parse_report,
             dirty_propagation,
+            dirty_plan,
             prepared_index_epoch,
+            reconcile,
             full_rebuild_staging_floor,
             staged_config_units,
             staged_parsed_paths,
@@ -380,6 +423,7 @@ impl IndexBuildPlan {
             });
         }
 
+        project_model.verify(project_path)?;
         let mut build_explain = BuildExplainCollector::new();
         let walk_manifest = scan_result.walk_manifest.clone();
         let phase_start = Instant::now();
@@ -400,10 +444,13 @@ impl IndexBuildPlan {
                 &hierarchy_edges,
                 &chunk_blobs,
                 walk_manifest.as_deref(),
+                reconcile.as_ref(),
                 scan_result.scope_hints.as_ref(),
+                Some(&project_model),
                 &mut build_explain,
             )?
         };
+        project_model.acknowledge(&indexer.db)?;
         let write_ms = phase_start.elapsed().as_millis() as u64;
 
         let config_units = if staged_config_units.is_empty() {
@@ -439,10 +486,13 @@ impl IndexBuildPlan {
 
         Ok(WrittenBuild {
             carry: ReportCarry {
+                chunk_policy,
+                project_model: project_model.report().clone(),
                 scan_result,
                 output_snapshot,
                 parse_report,
                 dirty_propagation,
+                dirty_plan,
                 start,
                 timing: PhaseTiming {
                     scan_diff_ms,
@@ -497,12 +547,13 @@ impl IndexBuildPlan {
         let phase_start = Instant::now();
         let analysis = indexer.phase_analysis_compute(
             project_path,
-            self.mode.is_full(),
-            &write_units,
-            &parsed_file_paths,
-            &carry.output_snapshot.route_nodes,
-            walk_manifest.as_deref(),
-            carry.scan_result.scope_hints.as_ref(),
+            AnalysisInputs {
+                full: self.mode.is_full(),
+                write_units: &write_units,
+                route_nodes: &carry.output_snapshot.route_nodes,
+                walk_manifest: walk_manifest.as_deref(),
+                scope_hints: carry.scan_result.scope_hints.as_ref(),
+            },
             &mut build_explain,
         )?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
@@ -553,20 +604,37 @@ impl IndexBuildPlan {
         indexer.phase_analysis_apply(&analysis)?;
         carry.timing.analysis_ms += phase_start.elapsed().as_millis() as u64;
 
-        Ok(self.report(carry, build_explain))
+        Ok(self.report(
+            carry,
+            build_explain,
+            indexer.db.reads().resolution_freshness()?,
+        ))
     }
 
-    fn report(&self, carry: ReportCarry, build_explain: Option<BuildExplain>) -> IndexReport {
+    fn report(
+        &self,
+        carry: ReportCarry,
+        build_explain: Option<BuildExplain>,
+        resolution_freshness: cc_model::freshness::ResolutionFreshness,
+    ) -> IndexReport {
         let ReportCarry {
+            chunk_policy,
+            project_model,
             scan_result,
             output_snapshot,
             parse_report,
             dirty_propagation,
+            dirty_plan,
             start,
             timing,
         } = carry;
         IndexReport {
+            chunk_policy,
+            project_model,
             files_scanned: scan_result.files_scanned,
+            document_changes: parse_report.document_changes,
+            public_surface_coverage: parse_report.public_surface_coverage,
+            resolution_coverage: output_snapshot.resolution_coverage,
             files_added: scan_result.files_added,
             files_updated: scan_result.files_updated,
             files_removed: scan_result.to_remove.len(),
@@ -579,6 +647,8 @@ impl IndexBuildPlan {
             used_parallel_parse: parse_report.used_parallel,
             dirty_propagation,
             phase_timing: Some(timing),
+            dirty_plan,
+            resolution_freshness,
             build_explain,
         }
     }
@@ -591,10 +661,12 @@ impl IndexBuildPlan {
 /// miss re-resolve-only units in the catalog).
 struct DirtyClosed {
     actions: HashMap<String, FileAction>,
+    reconcile: Option<cc_model::freshness::ReconcileUpdate>,
     dirty_count: usize,
     /// Closure status for the report; `None` for full builds, where
     /// propagation does not apply.
     dirty_propagation: Option<DirtyPropagationStatus>,
+    dirty_plan: cc_model::freshness::DirtyPlanExplanation,
 }
 
 /// Proof that dirty units have been reloaded into `write_units`. Framework
@@ -611,6 +683,8 @@ impl DirtyClosed {
         mode: IndexBuildMode,
         scan_result: &ScanDiffResult,
         write_units: &[FileWriteUnit],
+        basis_epoch: u64,
+        input_changes: &[String],
     ) -> CcResult<Self> {
         let mut actions = indexer.build_actions_map(
             write_units,
@@ -621,34 +695,54 @@ impl DirtyClosed {
         // Full builds never promote skipped files; incremental builds may
         // close over importers whose dependency exports changed OR whose
         // dependency was removed/renamed away.
-        let (dirty_count, dirty_propagation) = if mode.is_incremental() {
-            let outcome =
-                indexer.run_dirty_propagation(&mut actions, write_units, &scan_result.to_remove)?;
-            (outcome.marked, Some(outcome.status))
+        let (dirty_count, dirty_propagation, reconcile, dirty_plan) = if mode.is_incremental() {
+            let outcome = indexer.run_dirty_propagation_with_inputs(
+                &mut actions,
+                write_units,
+                &scan_result.to_remove,
+                basis_epoch,
+                input_changes,
+            )?;
+            (
+                outcome.marked,
+                Some(outcome.status),
+                outcome.reconcile,
+                outcome.explanation,
+            )
         } else {
-            (0, None)
+            (
+                0,
+                None,
+                None,
+                cc_model::freshness::DirtyPlanExplanation {
+                    parsed_files: write_units.len(),
+                    ..Default::default()
+                },
+            )
         };
 
         Ok(Self {
             actions,
             dirty_count,
             dirty_propagation,
+            reconcile,
+            dirty_plan,
         })
     }
 
     fn reload(
         self,
         indexer: &Indexer,
-        project_path: &Path,
         write_units: &mut Vec<FileWriteUnit>,
         existing: &HashMap<String, FileState>,
+        model: &crate::project_model::CapturedProject,
     ) -> CcResult<Reloaded> {
-        indexer.phase_dirty_reload(
-            project_path,
+        indexer.phase_dirty_reload_with_model(
             write_units,
             &self.actions,
             existing,
             self.dirty_count,
+            model,
         )?;
         Ok(Reloaded {
             actions: self.actions,
@@ -684,9 +778,19 @@ struct ParsedBuildState {
 
 impl From<ParseResult> for ParsedBuildState {
     fn from(parse_result: ParseResult) -> Self {
+        let mut document_changes = cc_model::identity::DocumentChanges::default();
+        let mut public_surface_coverage = cc_model::public_surface::SurfaceCoverage::default();
+        for unit in &parse_result.write_units {
+            if let Some(batch) = &unit.outcome.documents {
+                document_changes.observe(&batch.delta);
+            }
+            public_surface_coverage.observe(&unit.outcome.public_surface);
+        }
         Self {
             write_units: parse_result.write_units,
             parse_report: ParseReport {
+                document_changes,
+                public_surface_coverage,
                 parse_errors: parse_result.parse_errors,
                 files_to_parse: parse_result.files_to_parse,
                 used_parallel: parse_result.used_parallel,
@@ -697,12 +801,15 @@ impl From<ParseResult> for ParsedBuildState {
 }
 
 struct ParseReport {
+    document_changes: cc_model::identity::DocumentChanges,
+    public_surface_coverage: cc_model::public_surface::SurfaceCoverage,
     parse_errors: Vec<String>,
     files_to_parse: usize,
     used_parallel: bool,
 }
 
 struct OutputSnapshot {
+    resolution_coverage: cc_model::resolution::ResolutionCoverage,
     symbols_total: usize,
     chunks_total: usize,
     route_nodes: Vec<RouteNodeRecord>,
@@ -712,13 +819,16 @@ impl OutputSnapshot {
     fn from_resolved_units(indexer: &Indexer, write_units: &[FileWriteUnit]) -> Self {
         let mut symbols_total = 0;
         let mut chunks_total = 0;
+        let mut resolution_coverage = cc_model::resolution::ResolutionCoverage::default();
         for unit in write_units {
             symbols_total += unit.outcome.symbols.len();
             chunks_total += unit.outcome.chunks.len();
+            resolution_coverage.observe(&unit.outcome.resolution);
         }
 
         Self {
             symbols_total,
+            resolution_coverage,
             chunks_total,
             route_nodes: indexer.collect_route_nodes(write_units),
         }
@@ -735,6 +845,49 @@ mod tests {
 
     use super::IndexBuildPlan;
     use crate::indexer::Indexer;
+
+    #[test]
+    fn p2d_repeated_single_file_edits_reuse_real_catalog_amid_unrelated_files() {
+        use crate::resolver::catalog_cache;
+        let d = tempfile::tempdir().unwrap();
+        let dbdir = tempfile::tempdir().unwrap();
+        for i in 0..1000 {
+            std::fs::write(
+                d.path().join(format!("cold{i}.py")),
+                format!("def cold{i}():\n    return {i}\n"),
+            )
+            .unwrap();
+        }
+        std::fs::write(d.path().join("use.py"), "def run(x):\n    return ping(x)\n").unwrap();
+        let db = Arc::new(IndexDb::open(&dbdir.path().join("db")).unwrap().0);
+        let indexer = Indexer::new(db.clone(), d.path(), &IndexingConfig::default());
+        let plan = IndexBuildPlan::new(false, None);
+        plan.execute(&indexer, d.path()).unwrap();
+        for n in 0..24 {
+            std::fs::write(
+                d.path().join("api.py"),
+                format!("def ping(x, extra{n}=0):\n    return x\n"),
+            )
+            .unwrap();
+            let hits = catalog_cache::cache_hits(&db);
+            let r = plan.execute(&indexer, d.path()).unwrap();
+            assert!(r.resolution_freshness.complete);
+            assert_eq!(r.files_parsed, 1);
+            assert!(catalog_cache::parked_live_len(&db).is_some());
+            if n > 0 {
+                assert_eq!(
+                    catalog_cache::cache_hits(&db),
+                    hits + 1,
+                    "must not rebuild full catalog on edit {n}"
+                );
+            }
+        }
+        let before=db.reads().query_json("SELECT target_symbol_id,callee_symbol_uid FROM call_edges WHERE file_path='use.py'",&[]).unwrap();
+        IndexBuildPlan::new(true, None)
+            .execute(&indexer, d.path())
+            .unwrap();
+        assert_eq!(before,db.reads().query_json("SELECT target_symbol_id,callee_symbol_uid FROM call_edges WHERE file_path='use.py'",&[]).unwrap());
+    }
 
     const FIXTURE_FILE: &str = "lib.py";
     const FIXTURE_SOURCE: &str = r#"

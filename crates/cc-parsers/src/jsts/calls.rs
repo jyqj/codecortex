@@ -33,6 +33,20 @@ impl JsTsParser {
             None => return,
         };
 
+        if func_node.kind() == "import" {
+            if let Some(spec) = self.extract_first_string_arg(node, source) {
+                ctx.imports.push(cc_model::ImportRecord {
+                    file_path: file_path.into(),
+                    import_string: spec,
+                    context: cc_model::module_inputs::ImportContext {
+                        syntax: cc_model::module_inputs::ImportSyntax::Dynamic,
+                        ..Default::default()
+                    },
+                    ..Default::default()
+                });
+            }
+            return;
+        }
         let is_optional = func_node.kind() == "optional_chain_expression"
             || func_node.kind().contains("optional");
 
@@ -57,10 +71,31 @@ impl JsTsParser {
             return;
         }
 
-        // Nested call: foo()()
-        if func_node.kind() == "call_expression" {
-            self.visit_call_expression(&func_node, source, file_path, ctx, container, is_awaited);
-        }
+        // Dynamic callee (foo()(), indexed lookup, etc.): keep the actual outer
+        // invocation as unsupported. Child traversal owns the inner call once.
+        let anchor = node.child_by_field_name("arguments").unwrap_or(*node);
+        ctx.call_edges.push(CallEdgeRecord {
+            edge_id: StableId::edge_id(
+                "call",
+                file_path,
+                anchor.start_position().row as u32 + 1,
+                anchor.start_position().column as u32,
+            ),
+            file_path: file_path.into(),
+            caller_symbol: container.map(str::to_owned),
+            caller_symbol_uid: ctx.current_symbol_uid.clone(),
+            callee_symbol: node_text(&func_node, source).unwrap_or("<dynamic>").into(),
+            line: anchor.start_position().row as u32 + 1,
+            start_col: anchor.start_position().column as u32,
+            end_line: Some(node.end_position().row as u32 + 1),
+            end_col: node.end_position().column as u32,
+            resolution_strategy: cc_model::resolution::PARSER_UNSUPPORTED_BINDING.into(),
+            is_awaited,
+            arg_count: Some(count_args(node)),
+            parser_tier: ParserTier::Semantic,
+            parser_confidence: AST_CALL_CONFIDENCE,
+            ..Default::default()
+        });
     }
 
     /// Handle `obj.method(args)` call expressions (member expression callee).
@@ -216,14 +251,14 @@ impl JsTsParser {
             edge_id: StableId::edge_id(
                 "call",
                 file_path,
-                node.start_position().row as u32 + 1,
-                node.start_position().column as u32,
+                prop.start_position().row as u32 + 1,
+                prop.start_position().column as u32,
             ),
             file_path: file_path.to_string(),
             caller_symbol: container.map(String::from),
             callee_symbol: callee,
-            line: node.start_position().row as u32 + 1,
-            start_col: node.start_position().column as u32,
+            line: prop.start_position().row as u32 + 1,
+            start_col: prop.start_position().column as u32,
             end_line: Some(node.end_position().row as u32 + 1),
             end_col: node.end_position().column as u32,
             target_symbol_id: None,

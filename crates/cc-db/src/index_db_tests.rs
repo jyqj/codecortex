@@ -71,6 +71,7 @@ fn file_unit(rel_path: &str) -> FileWriteUnit {
 
 fn chunk(chunk_index: u32, text: &str) -> cc_model::ChunkRecord {
     cc_model::ChunkRecord {
+        source: None,
         chunk_id: format!("chunk:{chunk_index}"),
         file_path: "src/c.rs".to_string(),
         language: Language::Rust,
@@ -113,15 +114,16 @@ fn precompressed_chunk_payloads_match_in_transaction_compression() {
         .collect();
     let mut precompressed = PrecompressedChunks::new();
     precompressed.insert("src/c.rs".to_string(), blobs);
-    db_b.write_incremental_batch(
-        &[],
-        std::slice::from_ref(&unit),
-        &[],
-        &[],
-        &[],
-        &precompressed,
-    )
-    .unwrap();
+    db_b.writes()
+        .write_incremental_batch(
+            &[],
+            std::slice::from_ref(&unit),
+            &[],
+            &[],
+            &[],
+            &precompressed,
+        )
+        .unwrap();
 
     let chunk_rows = |db: &IndexDb| -> Vec<(i64, rusqlite::types::Value, String)> {
         let conn = db.read_conn().unwrap();
@@ -203,7 +205,8 @@ fn batched_fts_deletes_cover_all_paths_across_chunk_boundary() {
 
     // Re-replace every file through the incremental batch path: exactly
     // one FTS row per file must remain (no stale duplicates).
-    db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
+    db.writes()
+        .write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
         .unwrap();
     assert_eq!(count("chunks_fts"), total as i64);
     assert_eq!(count("files_fts"), total as i64);
@@ -229,7 +232,8 @@ fn replace_in_place_keeps_test_edges_removal_cascades() {
     let mut test = file_unit("tests/foo_test.rs");
     test.outcome.is_test_file = true;
     let units = vec![code, test];
-    db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
+    db.writes()
+        .write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
         .unwrap();
     db.rebuild_test_edges_for_files(&["src/foo.rs".to_string(), "tests/foo_test.rs".to_string()])
         .unwrap();
@@ -243,7 +247,8 @@ fn replace_in_place_keeps_test_edges_removal_cascades() {
     assert_eq!(edge_count(&db), 1, "fixture must produce one test edge");
 
     // Content-only update through both replace paths: the edge survives.
-    db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
+    db.writes()
+        .write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
         .unwrap();
     assert_eq!(
         edge_count(&db),
@@ -258,15 +263,16 @@ fn replace_in_place_keeps_test_edges_removal_cascades() {
     );
 
     // Removal still cascades.
-    db.write_incremental_batch(
-        &["tests/foo_test.rs".to_string()],
-        &[],
-        &[],
-        &[],
-        &[],
-        &PrecompressedChunks::new(),
-    )
-    .unwrap();
+    db.writes()
+        .write_incremental_batch(
+            &["tests/foo_test.rs".to_string()],
+            &[],
+            &[],
+            &[],
+            &[],
+            &PrecompressedChunks::new(),
+        )
+        .unwrap();
     assert_eq!(edge_count(&db), 0, "removing a path must drop its edges");
 }
 
@@ -310,7 +316,8 @@ fn app_maintained_fts_rowids_align_with_base_tables() {
         .collect();
     db.replace_files_batch(&units).unwrap();
     // 增量替换：基表行获得新 rowid，FTS 必须随之重新对齐。
-    db.write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
+    db.writes()
+        .write_incremental_batch(&[], &units, &[], &[], &[], &PrecompressedChunks::new())
         .unwrap();
 
     let conn = db.read_conn().unwrap();
@@ -399,21 +406,23 @@ fn generation_starts_at_zero_and_index_writes_bump_index_epoch() {
     assert_eq!(after_write.index_epoch, 1);
     assert_eq!(after_write.evidence_epoch, 0);
 
-    db.write_incremental_batch(
-        &["src/a.rs".to_string()],
-        &[],
-        &[],
-        &[],
-        &[],
-        &PrecompressedChunks::new(),
-    )
-    .unwrap();
+    db.writes()
+        .write_incremental_batch(
+            &["src/a.rs".to_string()],
+            &[],
+            &[],
+            &[],
+            &[],
+            &PrecompressedChunks::new(),
+        )
+        .unwrap();
     let after_batch = db.generation().unwrap();
     assert!(after_batch.index_epoch > after_write.index_epoch);
     assert_eq!(after_batch.evidence_epoch, 0);
 
     // An empty incremental batch writes nothing and must not bump.
-    db.write_incremental_batch(&[], &[], &[], &[], &[], &PrecompressedChunks::new())
+    db.writes()
+        .write_incremental_batch(&[], &[], &[], &[], &[], &PrecompressedChunks::new())
         .unwrap();
     assert_eq!(db.generation().unwrap(), after_batch);
 }

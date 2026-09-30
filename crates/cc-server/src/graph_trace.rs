@@ -232,6 +232,7 @@ fn build_trace_nodes(
     let mut nodes: Vec<TraceNode> = Vec::new();
     for uid in uid_vec {
         if let Some(row) = sym_map.get(uid) {
+            let mut source_freshness = None;
             let snippet = if include_snippets && snippet_budget > 0 {
                 let effective_max_lines = if max_snippet_lines == usize::MAX {
                     (row.end_line.saturating_sub(row.start_line) + 1) as usize
@@ -245,6 +246,7 @@ fn build_trace_nodes(
                     row.start_line,
                     effective_max_lines,
                     &mut snippet_budget,
+                    &mut source_freshness,
                 )
             } else {
                 None
@@ -265,6 +267,7 @@ fn build_trace_nodes(
                 end_line: row.end_line,
                 signature: row.signature.clone(),
                 snippet,
+                source_freshness,
                 outgoing_calls,
             });
         }
@@ -310,10 +313,24 @@ pub(crate) fn read_symbol_snippet(
     start_line: u32,
     end_line: u32,
     max_chars: usize,
+    freshness: &mut Option<serde_json::Value>,
 ) -> Option<String> {
     let root = project_root?;
-    let full_path = crate::path_guard::resolve_indexed_path_strict(root, file_path, db).ok()?;
-    let content = std::fs::read_to_string(&full_path).ok()?;
+    let evidence = match cc_search::evidence::read_verified(
+        db,
+        root,
+        file_path,
+        cc_search::evidence::FILE_LIMIT,
+    ) {
+        Ok(e) => e,
+        Err(_) => {
+            *freshness = Some(serde_json::json!({"status":"source_read_error"}));
+            return None;
+        }
+    };
+    *freshness =
+        Some(serde_json::json!({"verification":evidence,"rendering":"line-numbered-normalized"}));
+    let content = evidence.require_text().ok()?;
     let lines: Vec<&str> = content.lines().collect();
     let start = start_line.saturating_sub(1) as usize;
     let end = (end_line as usize).min(lines.len());
@@ -341,10 +358,24 @@ fn read_snippet(
     start_line: u32,
     max_lines: usize,
     budget: &mut usize,
+    freshness: &mut Option<serde_json::Value>,
 ) -> Option<String> {
     let root = project_root?;
-    let full_path = crate::path_guard::resolve_indexed_path_strict(root, file_path, db).ok()?;
-    let content = std::fs::read_to_string(&full_path).ok()?;
+    let evidence = match cc_search::evidence::read_verified(
+        db,
+        root,
+        file_path,
+        cc_search::evidence::FILE_LIMIT,
+    ) {
+        Ok(e) => e,
+        Err(_) => {
+            *freshness = Some(serde_json::json!({"status":"source_read_error"}));
+            return None;
+        }
+    };
+    *freshness =
+        Some(serde_json::json!({"verification":evidence,"rendering":"line-numbered-normalized"}));
+    let content = evidence.require_text().ok()?;
     let lines: Vec<&str> = content.lines().collect();
     let start = start_line.saturating_sub(1) as usize;
     let end = (start + max_lines).min(lines.len());

@@ -13,10 +13,10 @@ pub struct ParsedQuery {
     pub text: String,
     /// `kind:` filter — matches against `SymbolKind::as_str()` (case-insensitive).
     pub kind_filter: Option<String>,
-    /// `lang:` filter — resolved via `Language::from_name()`.
-    pub lang_filter: Option<String>,
-    /// `path:` filter — used as path prefix.
-    pub path_filter: Option<String>,
+    /// Every `lang:` constraint, including repeated/empty values for validation.
+    pub lang_filters: Vec<String>,
+    /// Every `path:` prefix constraint; repeated filters intersect, not overwrite.
+    pub path_filters: Vec<String>,
     /// `name:` filter — matches against symbol name.
     pub name_filter: Option<String>,
 }
@@ -85,14 +85,12 @@ pub fn parse_search_dsl(raw: &str) -> ParsedQuery {
                 chars[start..pos].iter().collect()
             };
 
-            if !value.is_empty() {
-                match key {
-                    "kind" => result.kind_filter = Some(value),
-                    "lang" => result.lang_filter = Some(value),
-                    "path" => result.path_filter = Some(value),
-                    "name" => result.name_filter = Some(value),
-                    _ => {}
-                }
+            match key {
+                "lang" => result.lang_filters.push(value),
+                "path" => result.path_filters.push(value),
+                "kind" if !value.is_empty() => result.kind_filter = Some(value),
+                "name" if !value.is_empty() => result.name_filter = Some(value),
+                _ => {}
             }
         } else {
             // Regular token: consume until whitespace
@@ -159,8 +157,8 @@ mod tests {
     #[test]
     fn test_multiple_filters() {
         let q = parse_search_dsl("lang:python path:src/api kind:class UserService");
-        assert_eq!(q.lang_filter, Some("python".into()));
-        assert_eq!(q.path_filter, Some("src/api".into()));
+        assert_eq!(q.lang_filters, vec!["python"]);
+        assert_eq!(q.path_filters, vec!["src/api"]);
         assert_eq!(q.kind_filter, Some("class".into()));
         assert_eq!(q.text, "UserService");
     }
@@ -169,8 +167,8 @@ mod tests {
     fn test_no_filters() {
         let q = parse_search_dsl("hello world search");
         assert!(q.kind_filter.is_none());
-        assert!(q.lang_filter.is_none());
-        assert!(q.path_filter.is_none());
+        assert!(q.lang_filters.is_empty());
+        assert!(q.path_filters.is_empty());
         assert!(q.name_filter.is_none());
         assert_eq!(q.text, "hello world search");
     }
@@ -179,7 +177,7 @@ mod tests {
     fn test_case_insensitive_keys() {
         let q = parse_search_dsl("Kind:function Lang:Rust search_term");
         assert_eq!(q.kind_filter, Some("function".into()));
-        assert_eq!(q.lang_filter, Some("Rust".into()));
+        assert_eq!(q.lang_filters, vec!["Rust"]);
         assert_eq!(q.text, "search_term");
     }
 
@@ -202,7 +200,7 @@ mod tests {
     fn test_only_filters_no_text() {
         let q = parse_search_dsl("kind:class lang:python");
         assert_eq!(q.kind_filter, Some("class".into()));
-        assert_eq!(q.lang_filter, Some("python".into()));
+        assert_eq!(q.lang_filters, vec!["python"]);
         assert!(q.text.is_empty());
     }
 

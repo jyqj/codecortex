@@ -28,12 +28,14 @@ impl IndexDb {
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(db_err)?;
         let rel_paths: Vec<&str> = files.iter().map(|f| f.rel_path.as_str()).collect();
+        let communities = crate::community_carry::CommunityCarry::capture(&tx, &rel_paths)?;
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
         // Replacement keeps the path, so the path-derived test_edges
         // stay valid (see `delete_files_data_base_keep_test_edges_batch`).
         Self::delete_files_data_base_keep_test_edges_batch(&tx, &rel_paths)?;
         Self::insert_file_units_batch(&tx, files, &PrecompressedChunks::new())?;
+        communities.restore(&tx)?;
         Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
         Self::bump_index_epoch_on(&tx)?;
@@ -171,6 +173,9 @@ impl IndexDb {
         {
             let rel = file.rel_path.as_str();
             let outcome = &file.outcome;
+            let communities = crate::community_carry::CommunityCarry::capture(tx, &[rel])?;
+
+            crate::resolution_dependency_store::replace_on(tx, file)?;
 
             // Delete only the re-resolvable tables
             for table in &[
@@ -198,12 +203,14 @@ impl IndexDb {
                 )?;
             }
 
+            communities.restore(tx)?;
+
             // Re-insert imports
             for i in &outcome.imports {
                 Self::execute_cached(
                     tx,
-                    "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
-                    rusqlite::params![i.file_path, i.import_string, i.resolved_path, i.imported_name, i.alias, i.is_namespace as i32, i.is_default as i32, i.is_reexport as i32],
+                    "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport,context_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                    rusqlite::params![i.file_path, i.import_string, i.resolved_path, i.imported_name, i.alias, i.is_namespace as i32, i.is_default as i32, i.is_reexport as i32,serde_json::to_string(&i.context)?],
                 )?;
             }
 
@@ -272,6 +279,7 @@ impl IndexDb {
     /// transaction, so seed-derived caches above cc-db (the resolver catalog
     /// cache) can prove their fold basis the same way the in-crate seed
     /// cache does.
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn write_incremental_batch(
         &self,
         to_remove: &[String],
@@ -280,12 +288,14 @@ impl IndexDb {
         route_nodes: &[cc_model::edge::RouteNodeRecord],
         hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
         precompressed: &PrecompressedChunks,
+        reconcile: Option<&cc_model::freshness::ReconcileUpdate>,
     ) -> CcResult<SeedTokenSpan> {
         if to_remove.is_empty()
             && normal_units.is_empty()
             && dirty_units.is_empty()
             && route_nodes.is_empty()
             && hierarchy_edges.is_empty()
+            && reconcile.is_none()
         {
             // No-op batch: still make sure the signature-aggregate baseline
             // exists, so the postprocess gates stay O(1) on databases written
@@ -300,6 +310,20 @@ impl IndexDb {
         let tx = conn
             .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
             .map_err(db_err)?;
+        if let Some(update) = reconcile {
+            let current = Self::read_generation_on(&tx)?.index_epoch;
+            if current != update.expected_index_epoch {
+                return Err(cc_model::CcError::StalePreparedBuild {
+                    prepared_epoch: update.expected_index_epoch,
+                    current_epoch: current,
+                });
+            }
+            // Validate before changing any indexed facts. Any later failure
+            // rolls both facts and the acknowledgement back together.
+            if let Some(state) = &update.next {
+                state.payload()?;
+            }
+        }
         // Signature-aggregate maintenance: capture the touched paths' partial
         // aggregates before any delete (the whole batch is file-scoped, so
         // the delta against the post-state below covers every mutated row,
@@ -361,10 +385,12 @@ impl IndexDb {
         // the old per-file delete/insert interleaving carried no semantics.
         let section_start = std::time::Instant::now();
         let replace_paths: Vec<&str> = normal_units.iter().map(|f| f.rel_path.as_str()).collect();
+        let communities = crate::community_carry::CommunityCarry::capture(&tx, &replace_paths)?;
         Self::delete_files_data_base_keep_test_edges_batch(&tx, &replace_paths)?;
         section_ms("db_replace_delete", normal_units.len(), section_start);
         let section_start = std::time::Instant::now();
         Self::insert_file_units_batch(&tx, normal_units, precompressed)?;
+        communities.restore(&tx)?;
         Self::insert_files_literal_fts_batch(&tx, &replace_paths)?;
         section_ms("db_replace_insert", normal_units.len(), section_start);
         let section_start = std::time::Instant::now();
@@ -384,6 +410,9 @@ impl IndexDb {
         let post_seed_agg = post_aggs.map(|aggs| aggs.symbols_seed);
         let post_files_agg = post_aggs.map(|aggs| aggs.files_state);
         Self::bump_index_epoch_on(&tx)?;
+        if let Some(update) = reconcile {
+            crate::freshness_store::replace_on(&tx, update)?;
+        }
         section_ms("db_routes_epoch", route_nodes.len(), section_start);
         let section_start = std::time::Instant::now();
         tx.commit().map_err(db_err)?;
@@ -743,8 +772,8 @@ impl IndexDb {
         // files_fts mirror to `insert_files_literal_fts_batch`.
         Self::execute_cached(
             conn,
-            "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11)",
-            rusqlite::params![file.rel_path, file.language.as_str(), file.content_hash, file.mtime, file.size as i64, outcome.summary, excerpt, outcome.parser_tier.as_str(), outcome.parser_confidence, outcome.is_test_file as i32, now],
+            "INSERT INTO files(file_path,language,content_hash,mtime,size,summary,content_excerpt,parser_tier,parser_confidence,is_test_file,indexed_at,chunk_policy,document_spec) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+            rusqlite::params![file.rel_path, file.language.as_str(), file.content_hash, file.mtime, file.size as i64, outcome.summary, excerpt, outcome.parser_tier.as_str(), outcome.parser_confidence, outcome.is_test_file as i32, now, outcome.chunk_policy, outcome.document_spec],
         )?;
         if !defer_files_literal_fts {
             Self::execute_cached(
@@ -754,8 +783,11 @@ impl IndexDb {
             )?;
         }
 
+        crate::public_surface_store::insert_on(conn, file)?;
+
         // chunks + chunks_fts
         for (chunk_idx, c) in outcome.chunks.iter().enumerate() {
+            let source_json = c.source_json()?;
             // Compress chunk text with zstd when it saves space. Prefer the
             // payload pre-compressed during prepare (off the write lock);
             // fall back to compressing here for callers without a side-car.
@@ -770,14 +802,14 @@ impl IndexDb {
             if let Some(blob) = use_compressed {
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), blob, "zstd", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
                 )?;
             } else {
                 Self::execute_cached(
                     conn,
-                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14)",
-                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence],
+                    "INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,breadcrumb,symbol_name,symbol_kind,text,text_encoding,token_estimate,parser_tier,parser_confidence,source_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13,?14,?15)",
+                    rusqlite::params![c.chunk_id, c.file_path, c.language.as_str(), c.chunk_index, c.start_line, c.end_line, c.breadcrumb, c.symbol_name, c.symbol_kind.map(|k| k.as_str().to_string()), c.text, "plain", c.token_estimate, c.parser_tier.as_str(), c.parser_confidence, source_json],
                 )?;
             }
             // FTS always receives uncompressed text (rowid aligned with the
@@ -788,6 +820,8 @@ impl IndexDb {
                 rusqlite::params![conn.last_insert_rowid(), c.chunk_id, c.file_path, c.breadcrumb, c.symbol_name, c.text],
             )?;
         }
+
+        crate::document_store::insert_on(conn, file)?;
 
         // symbols
         for s in &outcome.symbols {
@@ -800,8 +834,8 @@ impl IndexDb {
 
         // imports
         for i in &outcome.imports {
-            Self::execute_cached(conn, "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport) VALUES(?1,?2,?3,?4,?5,?6,?7,?8)",
-                rusqlite::params![i.file_path, i.import_string, i.resolved_path, i.imported_name, i.alias, i.is_namespace as i32, i.is_default as i32, i.is_reexport as i32],
+            Self::execute_cached(conn, "INSERT INTO imports(file_path,import_string,resolved_path,imported_name,alias,is_namespace,is_default,is_reexport,context_json) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9)",
+                rusqlite::params![i.file_path, i.import_string, i.resolved_path, i.imported_name, i.alias, i.is_namespace as i32, i.is_default as i32, i.is_reexport as i32,serde_json::to_string(&i.context)?],
             )?;
         }
 
@@ -887,12 +921,9 @@ impl IndexDb {
 
     /// Insert a single route node into the given connection.
     pub fn insert_route_node_into(conn: &Connection, r: &RouteNodeRecord) -> CcResult<()> {
-        Self::execute_cached(
-            conn,
-            "INSERT OR REPLACE INTO routes(route_id,file_path,route_path,method,handler_symbol_uid,handler_name,framework,line,end_line,normalized_path,confidence,parser_tier) VALUES(?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12)",
-            rusqlite::params![r.route_id, r.file_path, r.route_path, r.method, r.handler_symbol_uid, r.handler_name, r.framework, r.line, r.end_line, r.normalized_path, r.confidence, r.parser_tier.as_str()],
-        )?;
-        Ok(())
+        // Full staging and incremental writes must use the same non-null key.
+        // A NULL TEXT PRIMARY KEY admits duplicate route nodes in SQLite.
+        Self::insert_route_nodes_on(conn, std::slice::from_ref(r))
     }
 
     /// Set a metadata key=value on the given connection.

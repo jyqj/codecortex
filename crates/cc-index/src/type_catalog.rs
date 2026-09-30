@@ -13,9 +13,9 @@
 //! cross-build catalog cache can delta-maintain it instead of rebuilding
 //! from every persisted symbol each build. To make removal exact, the three
 //! type maps store one contribution per *(file, value)* pair instead of a
-//! last-writer-wins scalar: reads take the last live contribution, which
-//! preserves the historical "later insert wins" semantics while letting a
-//! removed file's contribution disappear without erasing another file's.
+//! last-writer-wins scalar. Conflicting contributions provide no unique type
+//! or alias proof; removing one file cannot erase another file's contribution
+//! and warm/cold insertion order never decides the live meaning.
 
 use std::collections::{HashMap, HashSet};
 
@@ -35,7 +35,7 @@ struct MethodEntry {
 }
 
 /// Type hierarchy information for a named type.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 struct TypeInfo {
     base_types: Vec<String>,
     implements: Vec<String>,
@@ -63,14 +63,13 @@ pub(crate) struct SymbolKeyMeta<'a> {
 pub struct TypeCatalog {
     /// method_name (lowercase) -> list of method entries
     method_index: HashMap<String, Vec<MethodEntry>>,
-    /// canonical qname (lowercase) -> per-file contributions; the *last*
-    /// entry is the live TypeInfo (matches the historical insert-overwrite).
+    /// Canonical qname -> per-file contributions. Conflicting declarations
+    /// provide no unambiguous TypeInfo; insertion history is not evidence.
     type_index_by_qname: HashMap<String, Vec<(String, TypeInfo)>>,
     /// short name (lowercase) -> (file, canonical qname lowercase) pairs.
     /// Readers reduce to the distinct qname set.
     short_to_qnames: HashMap<String, Vec<(String, String)>>,
-    /// alias_name (lowercase) -> per-file (file, canonical lowercase) pairs;
-    /// the last entry is the live alias target.
+    /// Alias name -> per-file targets; resolve only an agreed target.
     type_aliases: HashMap<String, Vec<(String, String)>>,
     /// Maps (file_path, var_name_lowercase) -> type_name for local variable type inference.
     type_assign_index: HashMap<(String, String), String>,
@@ -100,8 +99,7 @@ impl TypeCatalog {
     }
 
     /// Register one symbol's contributions (methods, type hierarchy, alias).
-    /// The insertion-order semantics match the historical
-    /// `build_from_symbols` loop exactly.
+    /// Reads combine contributions independently of insertion order.
     pub(crate) fn add_symbol(&mut self, sym: &SymbolRecord) {
         let uid = match sym.symbol_uid.as_ref() {
             Some(u) => u.clone(),
@@ -289,13 +287,11 @@ impl TypeCatalog {
         resolved.to_string()
     }
 
-    /// The live TypeInfo for a canonical key: the last contribution wins,
-    /// mirroring the historical insert-overwrite semantics.
+    /// A canonical key is usable only when all live contributions agree.
     fn type_info(&self, canonical: &str) -> Option<&TypeInfo> {
-        self.type_index_by_qname
-            .get(canonical)
-            .and_then(|pairs| pairs.last())
-            .map(|(_, info)| info)
+        let pairs = self.type_index_by_qname.get(canonical)?;
+        let first = &pairs.first()?.1;
+        pairs.iter().all(|(_, info)| info == first).then_some(first)
     }
 
     /// Resolve a method by matching the receiver expression against known receiver types.
@@ -329,6 +325,7 @@ impl TypeCatalog {
 
         // Score each candidate
         let mut best: Option<(usize, u32)> = None; // (index, score)
+        let mut tied = false;
         for (i, entry) in entries.iter().enumerate() {
             let rt = match entry.receiver_type.as_ref() {
                 Some(rt) => rt.to_lowercase(),
@@ -337,13 +334,11 @@ impl TypeCatalog {
             let rt_canonical = self.resolve_alias(&rt);
             let rt_norm = self.normalize_type_name(rt_canonical);
 
-            // Direct match with normalized receiver expression
-            if rt_norm == canonical_norm {
-                return Some(&entry.symbol_uid);
-            }
-
-            // Match against last part of dotted receiver
-            let score = if receiver_parts
+            // Evaluate every top-scoring candidate; insertion order is not
+            // evidence that one of several identical receiver types is unique.
+            let score = if rt_norm == canonical_norm {
+                4
+            } else if receiver_parts
                 .last()
                 .map(|p| {
                     let p_norm = self.normalize_type_name(p);
@@ -369,10 +364,19 @@ impl TypeCatalog {
 
             if score > 0 && (best.is_none() || score > best.unwrap().1) {
                 best = Some((i, score));
+                tied = false;
+            } else if score > 0
+                && best
+                    .is_some_and(|(j, s)| s == score && entries[j].symbol_uid != entry.symbol_uid)
+            {
+                tied = true;
             }
         }
-
-        best.map(|(i, _)| entries[i].symbol_uid.as_str())
+        if tied {
+            None
+        } else {
+            best.map(|(i, _)| entries[i].symbol_uid.as_str())
+        }
     }
 
     /// Declared parameter count of a specific method symbol, if recorded.
@@ -449,18 +453,24 @@ impl TypeCatalog {
     /// the input unchanged.
     pub fn resolve_alias<'a>(&'a self, type_name: &'a str) -> &'a str {
         let mut current = type_name;
+        let mut seen = HashSet::new();
         for _ in 0..16 {
-            let next = self
-                .type_aliases
-                .get(current)
-                .and_then(|pairs| pairs.last())
-                .map(|(_, canonical)| canonical.as_str());
+            if !seen.insert(current) {
+                return type_name;
+            }
+            let next = self.type_aliases.get(current).and_then(|pairs| {
+                let first = &pairs.first()?.1;
+                pairs
+                    .iter()
+                    .all(|(_, value)| value == first)
+                    .then_some(first.as_str())
+            });
             match next {
                 Some(next) if next != current => current = next,
-                _ => break,
+                _ => return current,
             }
         }
-        current
+        type_name
     }
 
     /// Check whether `child` is a subtype of `parent` by walking the
@@ -932,8 +942,9 @@ mod tests {
         let base_b = make_class("BaseB", "uid-base-b", None);
 
         let mut catalog = TypeCatalog::build_from_symbols([&base_a, &base_b, &cfg_a, &cfg_b]);
-        // Last writer (b.py) is live.
-        assert!(catalog.is_subtype("Config", "BaseB"));
+        // Conflicting contributions are not a proven hierarchy in either order.
+        assert!(!catalog.is_subtype("Config", "BaseA"));
+        assert!(!catalog.is_subtype("Config", "BaseB"));
 
         let removed_files: HashSet<String> = ["b.py".to_string()].into();
         catalog.remove_files(&[key_meta(&cfg_b)], &removed_files);
@@ -958,7 +969,11 @@ mod tests {
         alias_b.file_path = "b.rs".to_string();
 
         let mut catalog = TypeCatalog::build_from_symbols([&alias_a, &alias_b]);
-        assert_eq!(catalog.resolve_alias("handle"), "realb");
+        assert_eq!(
+            catalog.resolve_alias("handle"),
+            "handle",
+            "conflicting alias targets remain unresolved"
+        );
 
         let removed_files: HashSet<String> = ["b.rs".to_string()].into();
         catalog.remove_files(&[key_meta(&alias_b)], &removed_files);

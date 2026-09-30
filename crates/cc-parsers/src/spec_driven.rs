@@ -21,7 +21,7 @@ use std::sync::LazyLock;
 /// for symbol and import extraction. Produces `ParserTier::Heuristic` output.
 pub struct SpecDrivenParser {
     spec: &'static LangSpec,
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 // ── Per-language regex patterns ─────────────────────────────────────────

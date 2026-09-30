@@ -586,7 +586,7 @@ impl IndexDb {
 
     /// Read the epoch vector from an arbitrary connection (e.g. a soon-to-be
     /// destroyed mismatched-schema database).
-    fn read_generation_on(conn: &Connection) -> CcResult<IndexGeneration> {
+    pub(crate) fn read_generation_on(conn: &Connection) -> CcResult<IndexGeneration> {
         let mut stmt = conn
             .prepare_cached("SELECT key, value FROM metadata WHERE key IN (?1, ?2)")
             .map_err(db_err)?;
@@ -648,6 +648,7 @@ impl IndexDb {
         let tmp_conn = Connection::open(tmp_path)
             .map_err(|e| CcError::Database(format!("open temp db for generation: {}", e)))?;
         Self::write_generation_on(&tmp_conn, next)?;
+        crate::read_generation::renew(&tmp_conn)?;
         // Fold the write back into the main file before the rename; the temp
         // db may be in WAL mode and only the main file is swapped in.
         let _ = tmp_conn.execute_batch("PRAGMA wal_checkpoint(TRUNCATE);");
@@ -761,13 +762,15 @@ impl IndexDb {
     /// Direct SQL load of the file-state map (the historical O(repo) path).
     pub(crate) fn load_file_state_on(conn: &Connection) -> CcResult<HashMap<String, FileState>> {
         let mut stmt = conn
-            .prepare("SELECT file_path, content_hash, mtime, size FROM files")
+            .prepare("SELECT file_path, content_hash, mtime, size, chunk_policy, document_spec FROM files")
             .map_err(db_err)?;
         let rows = stmt
             .query_map([], |row| {
                 Ok((
                     row.get::<_, String>(0)?,
                     FileState {
+                        document_spec: row.get(5)?,
+                        chunk_policy: row.get(4)?,
                         content_hash: row.get::<_, String>(1)?,
                         mtime: row.get::<_, f64>(2)?,
                         size: row.get::<_, i64>(3)?.max(0) as u64,
@@ -787,13 +790,18 @@ impl IndexDb {
 
     pub(crate) fn get_metadata(&self, key: &str) -> CcResult<Option<String>> {
         let conn = self.read_conn()?;
-        Ok(conn
-            .query_row(
-                "SELECT value FROM metadata WHERE key=?1",
-                rusqlite::params![key],
-                |r| r.get::<_, String>(0),
-            )
-            .ok())
+        Ok(Self::get_metadata_on(&conn, key))
+    }
+
+    /// Reuse an existing lease in composite reads. Acquiring a second pooled
+    /// connection while holding the first deadlocks a one-connection pool.
+    fn get_metadata_on(conn: &Connection, key: &str) -> Option<String> {
+        conn.query_row(
+            "SELECT value FROM metadata WHERE key=?1",
+            rusqlite::params![key],
+            |r| r.get::<_, String>(0),
+        )
+        .ok()
     }
 
     pub(crate) fn set_metadata(&self, key: &str, value: &str) -> CcResult<()> {
@@ -824,8 +832,8 @@ impl IndexDb {
             indexed_route_edges: count("routes"),
             indexed_literals: count("literal_index"),
             indexed_diagnostics: 0,
-            last_indexed_at: self.get_metadata("last_indexed_at")?,
-            index_version: self.get_metadata("index_version")?,
+            last_indexed_at: Self::get_metadata_on(&conn, "last_indexed_at"),
+            index_version: Self::get_metadata_on(&conn, "index_version"),
         })
     }
 
@@ -963,6 +971,31 @@ impl<'a> WriteOps<'a> {
             route_nodes,
             hierarchy_edges,
             precompressed,
+            None,
+        )
+    }
+
+    /// Same writer, with a CAS-fenced durable resolution frontier. The frontier
+    /// must never publish or acknowledge work separately from this file batch.
+    #[allow(clippy::too_many_arguments)]
+    pub fn write_reconciled_batch(
+        &self,
+        to_remove: &[String],
+        normal_units: &[FileWriteUnit],
+        dirty_units: &[FileWriteUnit],
+        route_nodes: &[cc_model::edge::RouteNodeRecord],
+        hierarchy_edges: &[cc_model::edge::SemanticEdgeRecord],
+        precompressed: &PrecompressedChunks,
+        reconcile: Option<&cc_model::freshness::ReconcileUpdate>,
+    ) -> CcResult<SeedTokenSpan> {
+        self.0.write_incremental_batch(
+            to_remove,
+            normal_units,
+            dirty_units,
+            route_nodes,
+            hierarchy_edges,
+            precompressed,
+            reconcile,
         )
     }
 

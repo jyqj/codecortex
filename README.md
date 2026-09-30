@@ -7,6 +7,17 @@ Rust 实现的代码图谱索引与分析 MCP 服务器。CodeCortex 为代码�
 纯代码智能——不提供 UI 或交互式 CLI 产品，MCP-first（CLI 仅用于启动
 MCP 服务器和安装 agent 配置）。
 
+## 当前重构进度
+
+Code Index V2 共 192 项任务：**115 done / 3 in_progress / 74 todo**。
+当前正在收口 P5-D（P5-016～018）；最新 Rust 1.95 workspace 验收仍有一项失败，
+本次保存的是开发进度快照，不是 G5/M2 或发行认证。
+
+进度入口：[重构总览](docs/roadmap/code-index-v2/README.md) ·
+[逐项 TODO](docs/roadmap/code-index-v2/05-TODO.md) ·
+[唯一任务状态源](docs/roadmap/code-index-v2/tasks.json) ·
+[当前快照与阻塞](docs/roadmap/code-index-v2/CHECKPOINT-2026-09-30.md)。
+
 ## 快速开始
 
 从源码构建：

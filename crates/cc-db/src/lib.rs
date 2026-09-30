@@ -5,10 +5,13 @@
 //! `admin()` / `retrieval()` / `graph_reads()`) split the method surface.
 //! Deep dive: `docs/internals/STORAGE.md`.
 
+mod community_carry;
 pub mod direct_writer;
+pub mod document_store;
 pub mod epoch_rules;
 mod file_state_cache;
 mod framework_scan;
+mod freshness_store;
 pub mod fts;
 pub mod index_db;
 mod index_db_arch;
@@ -22,13 +25,20 @@ mod index_db_rebuild;
 mod index_db_retrieval;
 mod index_db_types;
 mod index_db_write_batch;
+mod statement_work;
 
 pub use framework_scan::{FileFrameworkAggregate, FrameworkScanSession};
 pub use index_db::{MaintenanceOps, ReadOps, WriteOps};
 pub use index_db_graph_read::GraphReads;
-pub use index_db_retrieval::{ChunkScope, GrepChunkRow, RetrievalReadModel};
+pub use index_db_retrieval::{
+    ChunkScope, FtsCandidates, GrepChunkRow, GrepScanReport, HydratedChunks, RetrievalReadModel,
+};
 pub use snapshot_write_txn::SnapshotWriteTxn;
 pub mod index_migrate;
+mod public_surface_store;
+mod resolution_dependency_store;
+pub use public_surface_store::BoundSurfaceAddresses;
+mod read_generation;
 mod rows;
 mod seed_symbol_cache;
 pub use seed_symbol_cache::{seed_cache_max_symbols, SeedRows};

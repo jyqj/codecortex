@@ -1095,115 +1095,30 @@ impl<'a> SymbolGraphReads<'a> {
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
-    /// Get the export fingerprint for a file.
+    /// Compatibility name for the unified versioned PublicSurface fingerprint.
+    /// Missing/Unknown => None; KnownEmpty has a real fingerprint. export_name
+    /// is display/resolution metadata, never a second invalidation formula.
     pub(crate) fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
-        let conn = self.db.read_conn()?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT symbol_uid, name, COALESCE(signature, '') as sig, COALESCE(export_name, '') as exp
-                 FROM symbols
-                 WHERE file_path = ?1
-                   AND (export_name IS NOT NULL OR is_default_export = 1)
-                 ORDER BY symbol_uid",
-            )
-            .map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params![file_path], |row| {
-                Ok((
-                    row.get::<_, Option<String>>(0)?.unwrap_or_default(),
-                    row.get::<_, String>(1)?,
-                    row.get::<_, String>(2)?,
-                    row.get::<_, String>(3)?,
-                ))
-            })
-            .map_err(db_err)?;
-
-        let mut parts: Vec<String> = Vec::new();
-        for row in rows {
-            let (uid, name, sig, exp) = row.map_err(db_err)?;
-            parts.push(format!("{}|{}|{}|{}", uid, name, sig, exp));
-        }
-
-        if parts.is_empty() {
-            return Ok(None);
-        }
-
-        let combined = parts.join("\n");
-        let hash = blake3::hash(combined.as_bytes());
-        Ok(Some(hash.to_hex().to_string()))
+        Ok(self
+            .db
+            .reads()
+            .public_surfaces(&[file_path.into()])?
+            .get(file_path)
+            .and_then(cc_model::public_surface::PublicSurface::fingerprint))
     }
 
-    /// Batch variant of [`Self::get_export_fingerprint`]: compute the export
-    /// fingerprint for many files in a single query, avoiding N+1 round trips
-    /// during dirty propagation.
-    ///
-    /// Returns a map of `file_path -> fingerprint` containing only files that
-    /// have at least one exported symbol (matching the single-file method,
-    /// which returns `None` for files with no exports). The per-file hash is
-    /// byte-for-byte identical to `get_export_fingerprint(path)`.
+    /// Batched canonical surfaces; unknown records are omitted, not known-empty.
     pub(crate) fn get_export_fingerprints(
         &self,
         file_paths: &[String],
     ) -> CcResult<HashMap<String, String>> {
-        let mut result: HashMap<String, String> = HashMap::new();
-        if file_paths.is_empty() {
-            return Ok(result);
-        }
-
-        const BATCH_SIZE: usize = 500;
-        let conn = self.db.read_conn()?;
-
-        for chunk in file_paths.chunks(BATCH_SIZE) {
-            let placeholders: Vec<String> = (1..=chunk.len()).map(|i| format!("?{}", i)).collect();
-            // Order by file_path first so each file's rows are contiguous, then
-            // by symbol_uid to match the single-file query's ORDER BY.
-            let sql = format!(
-                "SELECT file_path, symbol_uid, name, COALESCE(signature, '') as sig, \
-                        COALESCE(export_name, '') as exp
-                 FROM symbols
-                 WHERE file_path IN ({})
-                   AND (export_name IS NOT NULL OR is_default_export = 1)
-                 ORDER BY file_path, symbol_uid",
-                placeholders.join(",")
-            );
-            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-            let params: Vec<&dyn rusqlite::types::ToSql> = chunk
-                .iter()
-                .map(|p| p as &dyn rusqlite::types::ToSql)
-                .collect();
-            let rows = stmt
-                .query_map(params.as_slice(), |row| {
-                    Ok((
-                        row.get::<_, String>(0)?,
-                        row.get::<_, Option<String>>(1)?.unwrap_or_default(),
-                        row.get::<_, String>(2)?,
-                        row.get::<_, String>(3)?,
-                        row.get::<_, String>(4)?,
-                    ))
-                })
-                .map_err(db_err)?;
-
-            // Group rows per file (rows are contiguous thanks to ORDER BY).
-            let mut grouped: HashMap<String, Vec<String>> = HashMap::new();
-            for row in rows {
-                let (file_path, uid, name, sig, exp) = row.map_err(db_err)?;
-                grouped
-                    .entry(file_path)
-                    .or_default()
-                    .push(format!("{}|{}|{}|{}", uid, name, sig, exp));
-            }
-
-            for (file_path, parts) in grouped {
-                if parts.is_empty() {
-                    continue;
-                }
-                let combined = parts.join("\n");
-                let hash = blake3::hash(combined.as_bytes());
-                result.insert(file_path, hash.to_hex().to_string());
-            }
-        }
-
-        Ok(result)
+        Ok(self
+            .db
+            .reads()
+            .public_surfaces(file_paths)?
+            .into_iter()
+            .filter_map(|(path, s)| s.fingerprint().map(|fp| (path, fp)))
+            .collect())
     }
 
     /// Find all files that import the given resolved paths.
@@ -1347,13 +1262,20 @@ impl<'a> SymbolGraphReads<'a> {
         let mut imp_stmt = conn
             .prepare(
                 "SELECT file_path,import_string,resolved_path,imported_name,alias,\
-                 is_namespace,is_default,is_reexport \
+                 is_namespace,is_default,is_reexport,context_json \
                  FROM imports WHERE file_path = ?1",
             )
             .map_err(db_err)?;
         let imp_rows = imp_stmt
             .query_map(rusqlite::params![file_path], |row| {
                 Ok(cc_model::ImportRecord {
+                    context: serde_json::from_str(&row.get::<_, String>(8)?).map_err(|e| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            8,
+                            rusqlite::types::Type::Text,
+                            Box::new(e),
+                        )
+                    })?,
                     file_path: row.get(0)?,
                     import_string: row.get(1)?,
                     resolved_path: row.get(2)?,
@@ -1809,7 +1731,7 @@ impl ReadOps<'_> {
             .find_classes_with_method_names(method_names)
     }
 
-    /// Get the export fingerprint for a file.
+    /// Compatibility spelling: versioned PublicSurface, not legacy export flags.
     pub fn get_export_fingerprint(&self, file_path: &str) -> CcResult<Option<String>> {
         self.0
             .symbol_graph_reads()
@@ -2047,6 +1969,28 @@ mod tests {
             tx.commit().unwrap();
         }
 
+        // Canonical interface evidence, independent of the legacy symbol export flags.
+        // No surface is provided for c: absence cannot certify an empty interface.
+        for path in ["src/a.rs", "src/b.rs"] {
+            let conn = db.write_conn.lock().unwrap();
+            crate::public_surface_store::insert_on(
+                &conn,
+                &crate::index_db::FileWriteUnit {
+                    rel_path: path.into(),
+                    language: cc_model::Language::Rust,
+                    content_hash: "test".into(),
+                    mtime: 0.0,
+                    size: 0,
+                    outcome: cc_model::ParseOutcome {
+                        public_surface: cc_model::public_surface::PublicSurface::new(
+                            "rust", path, "test-v1",
+                        ),
+                        ..Default::default()
+                    },
+                },
+            )
+            .unwrap();
+        }
         let paths = vec![
             "src/a.rs".to_string(),
             "src/b.rs".to_string(),
@@ -2072,7 +2016,8 @@ mod tests {
             );
         }
 
-        // Files with exports are present; files without exports / missing are absent.
+        // Canonical known surfaces are present, missing evidence is absent.
+        assert!(batch.values().all(|fp| fp.starts_with("ps1:")));
         assert!(batch.contains_key("src/a.rs"));
         assert!(batch.contains_key("src/b.rs"));
         assert!(!batch.contains_key("src/c_no_exports.rs"));

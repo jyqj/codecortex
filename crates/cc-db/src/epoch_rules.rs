@@ -38,6 +38,26 @@ pub enum EpochClock {
 /// `evidence_epoch`). That per-method exception is encoded in
 /// [`boost_http_edge_confidence_clock`].
 pub const EPOCH_RULES: &[(&str, EpochClock, &str)] = &[
+    (
+        "resolution_frontier",
+        EpochClock::Index,
+        "resolution debt and file facts commit together",
+    ),
+    (
+        "resolution_manifests",
+        EpochClock::Index,
+        "resolver outcomes share the file transaction",
+    ),
+    (
+        "resolution_dependencies",
+        EpochClock::Index,
+        "resolver positive/negative evidence shares the file transaction",
+    ),
+    (
+        "public_surfaces",
+        EpochClock::Index,
+        "interface evidence shares its file transaction",
+    ),
     // ── File-batch content: written by replace_files_batch /
     //    write_incremental_batch / remove_files_batch ────────────────
     (
@@ -227,6 +247,9 @@ mod tests {
             "imports",
             "symbol_refs",
             "data_flow_edges",
+            "public_surfaces",
+            "resolution_manifests",
+            "resolution_dependencies",
             "literal_index",
             "chunks",
             "http_call_edges",
@@ -241,6 +264,14 @@ mod tests {
                             .unwrap();
                     });
                 }
+                "resolution_frontier" => assert_bumps(&db, declared, "resolution_frontier", |db| {
+                    let epoch=db.reads().generation().unwrap().index_epoch;
+                    let mut state=cc_model::freshness::ReconcileState::new(epoch);
+                    state.roots.insert("src/files.rs".into());
+                    db.writes().write_reconciled_batch(&[],&[],&[],&[],&[],
+                        &crate::index_db::PrecompressedChunks::new(),
+                        Some(&cc_model::freshness::ReconcileUpdate{expected_index_epoch:epoch,next:Some(state)})).unwrap();
+                }),
                 "call_edges" => assert_bumps(&db, declared, "call_edges", |db| {
                     db.delete_synthetic_call_edges("event_emitter").unwrap();
                 }),

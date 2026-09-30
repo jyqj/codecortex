@@ -70,6 +70,7 @@ fn chunk(rel_path: &str, file_idx: usize, chunk_idx: u32) -> ChunkRecord {
     )
     .repeat(3);
     ChunkRecord {
+        source: None,
         chunk_id: format!("chunk:{}:{}", rel_path, chunk_idx),
         file_path: rel_path.to_string(),
         language: Language::Rust,
@@ -98,6 +99,7 @@ fn make_unit(file_idx: usize) -> FileWriteUnit {
     outcome.symbols = (0..5).map(|s| symbol(&rel_path, file_idx, s)).collect();
     outcome.imports = (0..2)
         .map(|i| ImportRecord {
+            context: Default::default(),
             file_path: rel_path.clone(),
             import_string: format!("crate::module_{:03}::dep_{}", (file_idx + i) % 200, i),
             resolved_path: Some(format!("src/module_{:03}/file_{:05}.rs", i, file_idx % 977)),
@@ -403,8 +405,7 @@ fn bench_concurrent_reads_during_incremental_writes() {
                 let stop = Arc::clone(&stop);
                 scope.spawn(move || {
                     // Per-class latencies: (files count, FTS match, symbol point lookup)
-                    let mut latencies: [Vec<Duration>; 3] =
-                        [Vec::new(), Vec::new(), Vec::new()];
+                    let mut latencies: [Vec<Duration>; 3] = [Vec::new(), Vec::new(), Vec::new()];
                     let mut iterations = 0usize;
                     while !stop.load(Ordering::SeqCst) {
                         let class = iterations % 3;
@@ -437,7 +438,8 @@ fn bench_concurrent_reads_during_incremental_writes() {
                                 assert!(!rows.is_empty(), "FTS must see indexed content");
                             }
                             _ => {
-                                let name = format!("fn_{:05}_0", (iterations * 97) % expected_files);
+                                let name =
+                                    format!("fn_{:05}_0", (iterations * 97) % expected_files);
                                 let mut stmt = conn
                                     .prepare_cached(
                                         "SELECT file_path FROM symbols WHERE name = ?1 LIMIT 1",

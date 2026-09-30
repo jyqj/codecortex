@@ -5,7 +5,7 @@ use crate::traits::FileParser;
 use cc_model::{CcResult, Language, ParseOutcome, ParserTier};
 
 pub struct GenericParser {
-    chunker: Chunker,
+    pub(crate) chunker: Chunker,
 }
 
 impl GenericParser {

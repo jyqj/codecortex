@@ -7,6 +7,7 @@
 pub mod architecture;
 pub mod build_explain;
 pub mod chunk;
+pub mod chunk_policy;
 pub mod config;
 pub mod context;
 pub mod diagnostic;
@@ -14,15 +15,32 @@ pub mod dispatch_site;
 pub mod edge;
 pub mod error;
 pub mod framework_taxonomy;
+pub mod freshness;
+pub mod generation;
+pub mod go_project;
 pub mod graph_catalog;
 pub mod graph_explain;
 pub mod id;
+pub mod identity;
 pub mod impact;
 pub mod infra;
+pub mod input_file;
+pub mod lane_receipt;
+pub mod module_inputs;
+pub mod package_surface;
 pub mod parse;
+pub mod project_model;
+pub mod public_surface;
+pub mod query;
+pub mod repo_path;
+pub mod resolution;
+pub mod retrieval;
+pub mod retrieval_cost;
 pub mod route_normalize;
 pub mod scope;
 pub mod search;
+pub mod semantic;
+pub mod source;
 pub mod symbol;
 pub mod type_assign;
 
@@ -368,7 +386,7 @@ impl std::str::FromStr for Intent {
 
 /// Approximate token count (1 token ~ 4 bytes)
 pub fn approx_tokens(text: &str) -> u32 {
-    (text.len() as u32).div_ceil(4)
+    u32::try_from(text.len().div_ceil(4)).unwrap_or(u32::MAX)
 }
 
 #[cfg(test)]

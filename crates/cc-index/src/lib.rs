@@ -11,6 +11,7 @@ pub(crate) mod config_linker;
 pub(crate) mod dirty_closure;
 pub(crate) mod dirty_reload_policy;
 pub(crate) mod dispatch_synthesis;
+pub mod documents;
 pub mod framework_registry;
 pub mod framework_resolvers;
 pub(crate) mod git_cochange;
@@ -22,18 +23,23 @@ pub(crate) mod infra_k8s;
 pub(crate) mod infra_pass;
 pub(crate) mod infra_terraform;
 pub(crate) mod memory_budget;
+pub mod module_resolution;
 pub(crate) mod pass_gate;
+pub mod project_model;
 pub(crate) mod resolver;
 pub mod scanner;
 pub(crate) mod synthesis_pipeline;
 pub(crate) mod synthesis_symbol_resolver;
 pub(crate) mod type_catalog;
 
+#[cfg(test)]
+mod source_snapshot_tests;
+
 pub use build_plan::{PreparedBuild, StagedPostprocess, WrittenBuild};
 pub use dirty_closure::DirtyPropagationStatus;
 pub use framework_registry::FileFrameworkDetection;
 pub use indexer::{BuildScope, IndexReport, Indexer};
-pub use memory_budget::process_rss_bytes;
+pub use memory_budget::{process_rss_bytes, process_rss_bytes_opt};
 pub use scanner::{IgnoreRules, ScannedFile, Scanner};
 
 /// Test-only seeding support shared by this crate's unit-test fixtures.

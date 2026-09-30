@@ -20,7 +20,6 @@ use cc_db::index_db::{FileState, FileWriteUnit, IndexDb};
 use cc_model::{CcError, CcResult, Language};
 
 use crate::framework_registry;
-use cc_parsers::import_resolver::resolve_import;
 use cc_parsers::ParserRegistry;
 
 use crate::scanner::{ScannedFile, Scanner};
@@ -144,6 +143,19 @@ pub struct PendingFile {
 /// Index report.
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct IndexReport {
+    /// Changes for files projected in this build (not global document totals).
+    pub document_changes: cc_model::identity::DocumentChanges,
+    /// Policy used by this build, not a claim about failed or unprocessed files.
+    pub chunk_policy: cc_model::chunk_policy::ChunkPolicy,
+    pub project_model: cc_model::project_model::ProjectModelReport,
+    /// Interface extraction coverage of newly parsed files in this build only.
+    /// Unknown is explicitly reported even when the bounded closure converges.
+    pub public_surface_coverage: cc_model::public_surface::SurfaceCoverage,
+    /// Resolution evidence for files processed in this build, not a whole-index
+    /// compiler accuracy or language capability certificate.
+    pub resolution_coverage: cc_model::resolution::ResolutionCoverage,
+    pub dirty_plan: cc_model::freshness::DirtyPlanExplanation,
+    pub resolution_freshness: cc_model::freshness::ResolutionFreshness,
     pub files_scanned: usize,
     pub files_added: usize,
     pub files_updated: usize,
@@ -264,7 +276,7 @@ impl Indexer {
     ) -> Self {
         Self {
             db,
-            parsers: ParserRegistry::new(),
+            parsers: ParserRegistry::with_chunk_policy(config.chunk_policy()),
             scanner: Scanner::new(project_path, config),
             parse_timeout_micros: config.parse_timeout_micros,
             dirty_propagation: config.dirty_propagation,
@@ -337,8 +349,11 @@ impl Indexer {
         auto_file_limit: Option<usize>,
         scope: Option<&BuildScope>,
     ) -> CcResult<crate::build_plan::PreparedBuild> {
-        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit)
-            .prepare_scoped(self, project_path, scope)
+        crate::build_plan::IndexBuildPlan::new(full, auto_file_limit).prepare_scoped(
+            self,
+            project_path,
+            scope,
+        )
     }
 
     /// Write half of a build, consuming the [`PreparedBuild`] produced by
@@ -526,6 +541,11 @@ impl Indexer {
                 tracing::debug!(path = %raw, "scoped scan: dot-path event may change admission rules");
                 return Ok(None);
             }
+            // Directory events may introduce/remove config roots not in the
+            // committed discovery set. Reuse one full shared walk in that case.
+            if self.scanner.project_path().join(rel).is_dir() {
+                return Ok(None);
+            }
             if event_set.insert(rel.to_string()) {
                 event_paths.push(rel.to_string());
             }
@@ -537,18 +557,30 @@ impl Indexer {
         let existing = crate::indexer_phases::time_step("scan_diff", "scoped_file_state", || {
             self.db.reads().get_file_state()
         })?;
+        if existing.values().any(|f| {
+            f.chunk_policy
+                .as_deref()
+                .is_some_and(|p| p != self.parsers.chunk_policy_fingerprint())
+                || (f.chunk_policy.is_some()
+                    && f.document_spec.as_deref()
+                        != Some(crate::documents::delta::spec_fingerprint()))
+        }) {
+            return Ok(None); // A policy change applies outside the event's path scope too.
+        }
         if existing.is_empty() {
             // Effectively a first build: the event set cannot describe the
             // whole tree.
             return Ok(None);
         }
 
-        let (admitted, pending) = crate::indexer_phases::time_step("scan_diff", "scoped_stat", || {
-            let scanned = self.scanner.scan_paths(&event_paths);
-            let admitted: HashSet<String> = scanned.iter().map(|f| f.rel_path.clone()).collect();
-            let pending = self.diff_scanned_files(scanned, &existing);
-            (admitted, pending)
-        });
+        let (admitted, pending) =
+            crate::indexer_phases::time_step("scan_diff", "scoped_stat", || {
+                let scanned = self.scanner.scan_paths(&event_paths);
+                let admitted: HashSet<String> =
+                    scanned.iter().map(|f| f.rel_path.clone()).collect();
+                let pending = self.diff_scanned_files(scanned, &existing);
+                (admitted, pending)
+            });
 
         // Removals: an event path that is indexed but no longer admitted, or
         // an indexed file under an event directory prefix (a removed/renamed
@@ -673,6 +705,7 @@ impl Indexer {
         scanned: Vec<ScannedFile>,
         existing: &HashMap<String, FileState>,
     ) -> Vec<PendingFile> {
+        let chunk_policy = self.parsers.chunk_policy_fingerprint();
         let strict_hash = std::env::var("CODECORTEX_STRICT_HASH")
             .map(|v| matches!(v.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
             .unwrap_or(false);
@@ -698,6 +731,9 @@ impl Indexer {
                 let (hash, action, content) = match existing.get(&file.rel_path) {
                     Some(old)
                         if !strict_hash
+                            && old.chunk_policy.as_deref() == Some(chunk_policy)
+                            && old.document_spec.as_deref()
+                                == Some(crate::documents::delta::spec_fingerprint())
                             && (file.mtime - old.mtime).abs() < 0.001
                             && file.size == old.size =>
                     {
@@ -712,7 +748,11 @@ impl Indexer {
                             None => return None,
                         };
                         let hash = content_hash_hex(&content);
-                        if hash == old.content_hash {
+                        if hash == old.content_hash
+                            && old.chunk_policy.as_deref() == Some(chunk_policy)
+                            && old.document_spec.as_deref()
+                                == Some(crate::documents::delta::spec_fingerprint())
+                        {
                             (hash, FileAction::Skip, None)
                         } else {
                             (hash, FileAction::Update, retain_source(content))
@@ -743,23 +783,44 @@ impl Indexer {
             .into_iter()
             .filter(|pf| !matches!(pf.action, FileAction::Skip))
             .collect();
-        to_parse.sort_by(|a, b| b.scanned.size.cmp(&a.scanned.size));
+        to_parse.sort_by_key(|file| std::cmp::Reverse(file.scanned.size));
         to_parse
     }
 
     /// Phase 3: Parallel (or sequential) parsing of pending files.
+    #[cfg(test)]
     pub(crate) fn phase_parse(
         &self,
         project_path: &Path,
+        to_parse: Vec<PendingFile>,
+    ) -> CcResult<ParseResult> {
+        let model = self.capture_test_project(project_path)?;
+        self.phase_parse_with_model(to_parse, &model)
+    }
+
+    #[cfg(test)]
+    fn capture_test_project(
+        &self,
+        project_path: &Path,
+    ) -> CcResult<crate::project_model::CapturedProject> {
+        let (files, manifest) = self.scanner.scan_with_manifest();
+        crate::project_model::discover(
+            project_path,
+            files.into_iter().map(|f| f.rel_path).collect(),
+            Some(&manifest),
+            None,
+            &Default::default(),
+        )
+    }
+
+    pub(crate) fn phase_parse_with_model(
+        &self,
         mut to_parse: Vec<PendingFile>,
+        model: &crate::project_model::CapturedProject,
     ) -> CcResult<ParseResult> {
         let mut parse_errors = Vec::new();
 
-        // Pre-compute Cargo workspace alias map for Rust crate import resolution
-        let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
-
-        let parse_one =
-            |pf: &PendingFile| -> Result<(FileWriteUnit, Arc<str>), (String, String)> {
+        let parse_one = |pf: &PendingFile| -> Result<(FileWriteUnit, Arc<str>), (String, String)> {
             let rel_path = pf.scanned.rel_path.clone();
             let abs_path = pf.scanned.abs_path.clone();
             let language = pf.scanned.language;
@@ -777,6 +838,12 @@ impl Indexer {
                         .map_err(|e| (rel_path.clone(), e.to_string()))?,
                 ),
             };
+            if content_hash_hex(content.as_bytes()) != content_hash {
+                return Err((
+                    rel_path.clone(),
+                    "source changed between scan and parse; retry index".into(),
+                ));
+            }
             let mut outcome = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 self.parsers.parse_with_timeout(
                     &rel_path,
@@ -798,21 +865,16 @@ impl Indexer {
             })
             .map_err(|e| (rel_path.clone(), e.to_string()))?;
 
-            for import in &mut outcome.imports {
-                import.resolved_path =
-                    resolve_import(project_path, &rel_path, &import.import_string);
+            outcome.document_spec = Some(crate::documents::delta::spec_fingerprint().into());
+            let previous = cc_db::document_store::references(&self.db, &rel_path)
+                .map_err(|e| (rel_path.clone(), e.to_string()))?;
+            let snapshot = cc_model::source::SourceSnapshot::new(content.as_bytes());
+            outcome.documents = Some(
+                crate::documents::delta::prepare(&snapshot, &outcome, &previous)
+                    .map_err(|e| (rel_path.clone(), e.to_string()))?,
+            );
 
-                // Fallback: resolve Rust workspace crate imports
-                if import.resolved_path.is_none()
-                    && language == Language::Rust
-                    && !workspace_aliases.is_empty()
-                {
-                    import.resolved_path = crate::resolver::resolve_rust_workspace_import(
-                        &import.import_string,
-                        &workspace_aliases,
-                    );
-                }
-            }
+            model.apply_imports(&rel_path, &mut outcome);
 
             let elapsed_ms = parse_started.elapsed().as_millis();
             if elapsed_ms >= SLOW_PARSE_WARN_MS {
@@ -958,6 +1020,7 @@ impl Indexer {
     }
 
     /// Phase 3.6: Load dirty files' edge data for re-resolution.
+    #[cfg(test)]
     pub(crate) fn phase_dirty_reload(
         &self,
         project_path: &Path,
@@ -966,19 +1029,28 @@ impl Indexer {
         existing: &HashMap<String, FileState>,
         dirty_count: usize,
     ) -> CcResult<()> {
+        let model = self.capture_test_project(project_path)?;
+        self.phase_dirty_reload_with_model(write_units, actions, existing, dirty_count, &model)
+    }
+
+    pub(crate) fn phase_dirty_reload_with_model(
+        &self,
+        write_units: &mut Vec<FileWriteUnit>,
+        actions: &HashMap<String, FileAction>,
+        existing: &HashMap<String, FileState>,
+        dirty_count: usize,
+        model: &crate::project_model::CapturedProject,
+    ) -> CcResult<()> {
         let dirty_files: Vec<String> = actions
             .iter()
             .filter(|(_, a)| matches!(a, FileAction::DirtyResolveOnly))
             .map(|(p, _)| p.clone())
             .collect();
 
-        // Dirty files are not re-parsed, but the tree may have shifted under
-        // them (a dependency removed, renamed, or newly shadowing) — so their
-        // import `resolved_path`s are recomputed from the current filesystem,
-        // mirroring `phase_parse`. Skipping this would leave IMPORTS edges (and
-        // the resolution context they feed) pointing at files that moved or
-        // vanished. The Cargo alias map is cheap and read once for the batch.
-        let workspace_aliases = crate::resolver::resolve_cargo_workspace(project_path);
+        // Both fresh and reloaded imports consume the same admitted snapshot;
+        // no per-import disk probes or duplicate Cargo discovery here.
+
+        let mut stored_surfaces = self.db.reads().public_surfaces(&dirty_files)?;
 
         for dirty_path in &dirty_files {
             let edges = self.db.reads().load_file_edges_for_reresolve(dirty_path)?;
@@ -994,23 +1066,11 @@ impl Indexer {
             // the central policy declared in `dirty_reload_policy`; its
             // complete destructuring keeps every reload field policed.
             let mut outcome = parse_outcome_from_reloaded_edges(edges);
-
-            // Re-resolve import targets against the current tree. `resolve_import`
-            // keys off the from-file/import-string (unchanged for a dirty file),
-            // so a moved/removed dependency now yields the correct new path or
-            // `None`. Language is `Unknown` on reload, so gate the Rust
-            // workspace fallback on the extension instead.
-            let is_rust = dirty_path.ends_with(".rs");
-            for import in &mut outcome.imports {
-                import.resolved_path =
-                    resolve_import(project_path, dirty_path, &import.import_string);
-                if import.resolved_path.is_none() && is_rust && !workspace_aliases.is_empty() {
-                    import.resolved_path = crate::resolver::resolve_rust_workspace_import(
-                        &import.import_string,
-                        &workspace_aliases,
-                    );
-                }
+            if let Some(surface) = stored_surfaces.remove(dirty_path) {
+                outcome.public_surface = surface;
             }
+
+            model.apply_imports(dirty_path, &mut outcome);
 
             write_units.push(FileWriteUnit {
                 rel_path: dirty_path.clone(),

@@ -68,6 +68,29 @@ pub(crate) fn apply_traced_boost(hit: &mut SearchHit, component: &str, amount: f
     hit.score_trace.push((component.to_string(), amount));
 }
 
+/// Release builds must not serialize NaN/Inf or a broken score bill. Finite
+/// configuration values can still overflow when several boosts are added.
+pub(crate) fn validate_trace_consistency(hits: &[SearchHit]) -> cc_model::CcResult<()> {
+    for hit in hits {
+        let total: f64 = hit.score_trace.iter().map(|(_, amount)| amount).sum();
+        if !hit.rerank_score.is_finite()
+            || !hit.fused_score.is_finite()
+            || hit
+                .score_trace
+                .iter()
+                .any(|(_, amount)| !amount.is_finite())
+            || (!hit.score_trace.is_empty()
+                && (!total.is_finite()
+                    || (total - hit.rerank_score).abs() > 1e-9 * total.abs().max(1.0)))
+        {
+            return Err(cc_model::CcError::Search(
+                "non-finite or inconsistent retrieval score trace".into(),
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// Debug-build invariant check at the search pipeline's exit: for every hit
 /// with a non-empty trace, `sum(score_trace)` must replay `rerank_score`
 /// (1e-9 tolerance).

@@ -45,6 +45,16 @@ struct AdrStage {
     record: DeferredSignatureRecord,
 }
 
+/// Borrowed inputs to the post-write analysis stage. Keeping the scan basis
+/// together avoids positional arguments drifting between bundled/staged builds.
+pub(crate) struct AnalysisInputs<'a> {
+    pub full: bool,
+    pub write_units: &'a [FileWriteUnit],
+    pub route_nodes: &'a [RouteNodeRecord],
+    pub walk_manifest: Option<&'a crate::scanner::WalkManifest>,
+    pub scope_hints: Option<&'a crate::indexer::ScopeSignatureHints>,
+}
+
 /// Phase 8-11 deltas: git co-change, infrastructure, ADR documents.
 pub(crate) struct AnalysisPlan {
     cochange: Option<CoChangeStage>,
@@ -60,14 +70,16 @@ impl Indexer {
     pub(crate) fn phase_analysis_compute(
         &self,
         project_path: &Path,
-        full: bool,
-        write_units: &[FileWriteUnit],
-        _parsed_file_paths: &[String],
-        route_nodes: &[RouteNodeRecord],
-        walk_manifest: Option<&crate::scanner::WalkManifest>,
-        scope_hints: Option<&crate::indexer::ScopeSignatureHints>,
+        inputs: AnalysisInputs<'_>,
         build_explain: &mut BuildExplainCollector,
     ) -> CcResult<AnalysisPlan> {
+        let AnalysisInputs {
+            full,
+            write_units,
+            route_nodes,
+            walk_manifest,
+            scope_hints,
+        } = inputs;
         // Phase 8: Git co-change analysis. HEAD-skip: co-change edges only
         // depend on commit history. If HEAD has not advanced since the last
         // successful analysis, the result is unchanged (the `--since=1.year`
@@ -486,7 +498,17 @@ mod analysis_phase_tests {
         build_explain: &mut BuildExplainCollector,
     ) -> AnalysisPlan {
         indexer
-            .phase_analysis_compute(project, false, &[], &[], &[], None, None, build_explain)
+            .phase_analysis_compute(
+                project,
+                AnalysisInputs {
+                    full: false,
+                    write_units: &[],
+                    route_nodes: &[],
+                    walk_manifest: None,
+                    scope_hints: None,
+                },
+                build_explain,
+            )
             .unwrap()
     }
 

@@ -50,7 +50,12 @@ pub fn parse_sfc(
     }
     let script_re = &*SCRIPT_BLOCK_RE;
 
-    let mut combined_script = String::new();
+    // Byte-preserving projection: non-script bytes become ASCII spaces, while
+    // CR/LF and every script byte keep their original offsets. One parser call.
+    let mut script_bytes: Vec<u8> = content
+        .bytes()
+        .map(|b| if matches!(b, b'\r' | b'\n') { b } else { b' ' })
+        .collect();
     let mut script_language = Language::JavaScript;
     let mut script_blocks = 0usize;
     for cap in script_re.captures_iter(content) {
@@ -61,16 +66,12 @@ pub fn parse_sfc(
         if LANG_TS_RE.is_match(attrs) {
             script_language = Language::TypeScript;
         }
-        let start_line = content[..body.start()]
-            .bytes()
-            .filter(|b| *b == b'\n')
-            .count();
-        combined_script.push_str(&"\n".repeat(start_line));
-        combined_script.push_str(body.as_str());
-        combined_script.push('\n');
+        script_bytes[body.start()..body.end()].copy_from_slice(body.as_str().as_bytes());
         script_blocks += 1;
     }
 
+    let combined_script =
+        String::from_utf8(script_bytes).expect("ASCII masking and complete UTF-8 script slices");
     let mut outcome = if combined_script.trim().is_empty() {
         ParseOutcome::default()
     } else {
@@ -116,6 +117,10 @@ pub fn parse_sfc(
         implements: None,
     };
     outcome.symbols.insert(0, component_symbol);
+    // Script exports alone do not describe template/props/compiler-generated API.
+    outcome
+        .public_surface
+        .mark_unknown("sfc_component_surface_not_modeled");
 
     add_template_refs(
         file_path,
@@ -125,6 +130,21 @@ pub fn parse_sfc(
         &component_uid,
         &mut outcome,
     );
+
+    let source = cc_model::source::SourceSnapshot::new(content.as_bytes());
+    let mut structure = outcome.source_structure.take().unwrap_or_else(|| {
+        cc_model::source::SourceStructure::fallback(&source, "sfc_without_script")
+    });
+    structure.source = source.identity().clone();
+    structure.capability = "sfc_script_projection".into();
+    structure.complete = false;
+    structure
+        .reasons
+        .push("template_structure_not_modeled".into());
+    outcome.chunks = jsts
+        .chunker
+        .from_structure(file_path, &source, language, &structure, tier, confidence);
+    outcome.source_structure = Some(structure);
 
     outcome.summary = format!(
         "{} ({}, {} lines, {} script block(s), {} symbols)",

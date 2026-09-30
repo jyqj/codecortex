@@ -1,3 +1,4 @@
+use crate::{CcError, CcResult};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
@@ -8,6 +9,8 @@ pub struct ProjectConfig {
     pub indexing: IndexingConfig,
     #[serde(default = "SearchConfig::default")]
     pub search: SearchConfig,
+    #[serde(default)]
+    pub query: crate::query::QueryConfig,
     #[serde(default)]
     pub ranking: RankingConfig,
     #[serde(default)]
@@ -58,6 +61,14 @@ pub struct IndexingConfig {
     pub max_file_bytes: u64,
     #[serde(default = "default_chunk_line_budget")]
     pub chunk_line_budget: u32,
+    #[serde(default = "default_chunk_byte_budget")]
+    pub chunk_byte_budget: u32,
+    #[serde(default = "default_chunk_char_budget")]
+    pub chunk_char_budget: u32,
+    #[serde(default = "default_chunk_token_budget")]
+    pub chunk_token_budget: u32,
+    #[serde(default = "default_chunk_merge_min_bytes")]
+    pub chunk_merge_min_bytes: u32,
     #[serde(default)]
     pub parse_timeout_micros: Option<u64>,
     /// SQLite read connection pool size. `None` means derive from repo size tier.
@@ -146,6 +157,30 @@ fn default_chunk_line_budget() -> u32 {
     80
 }
 
+fn default_chunk_byte_budget() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().bytes
+}
+fn default_chunk_char_budget() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().chars
+}
+fn default_chunk_token_budget() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().estimated_tokens
+}
+fn default_chunk_merge_min_bytes() -> u32 {
+    crate::chunk_policy::ChunkPolicy::default().merge_min_bytes
+}
+impl IndexingConfig {
+    pub fn chunk_policy(&self) -> crate::chunk_policy::ChunkPolicy {
+        crate::chunk_policy::ChunkPolicy {
+            lines: self.chunk_line_budget,
+            bytes: self.chunk_byte_budget,
+            chars: self.chunk_char_budget,
+            estimated_tokens: self.chunk_token_budget,
+            merge_min_bytes: self.chunk_merge_min_bytes,
+        }
+    }
+}
+
 impl Default for IndexingConfig {
     fn default() -> Self {
         Self {
@@ -153,6 +188,10 @@ impl Default for IndexingConfig {
             ignore: default_ignore_patterns(),
             max_file_bytes: default_max_file_bytes(),
             chunk_line_budget: default_chunk_line_budget(),
+            chunk_byte_budget: default_chunk_byte_budget(),
+            chunk_char_budget: default_chunk_char_budget(),
+            chunk_token_budget: default_chunk_token_budget(),
+            chunk_merge_min_bytes: default_chunk_merge_min_bytes(),
             parse_timeout_micros: None,
             db_read_pool_size: None,
             dirty_propagation: true,
@@ -171,6 +210,10 @@ impl Default for IndexingConfig {
 pub struct SearchConfig {
     #[serde(default = "default_lexical_top_k")]
     pub lexical_top_k: usize,
+    #[serde(default = "default_exact_symbol_top_k")]
+    pub exact_symbol_top_k: usize,
+    #[serde(default = "default_path_top_k")]
+    pub path_top_k: usize,
     #[serde(default = "default_grep_top_k")]
     pub grep_top_k: usize,
     /// Maximum number of chunk rows the grep lane decompresses per search.
@@ -182,6 +225,10 @@ pub struct SearchConfig {
     pub rrf_k: usize,
     #[serde(default = "default_lexical_weight")]
     pub lexical_weight: f64,
+    #[serde(default = "default_exact_symbol_weight")]
+    pub exact_symbol_weight: f64,
+    #[serde(default = "default_path_weight")]
+    pub path_weight: f64,
     #[serde(default = "default_grep_weight")]
     pub grep_weight: f64,
     #[serde(default = "default_rerank_window")]
@@ -195,14 +242,18 @@ pub struct SearchConfig {
 fn default_lexical_top_k() -> usize {
     24
 }
+fn default_exact_symbol_top_k() -> usize {
+    24
+}
+fn default_path_top_k() -> usize {
+    24
+}
 fn default_grep_top_k() -> usize {
     12
 }
 fn default_grep_scan_cap() -> usize {
-    // ~20k chunks ≈ a few hundred ms of zstd+regex worst case.  Preselect
-    // normally scopes grep to ≤ ~400 files (≪ 20k chunks), so the cap only
-    // binds on unscoped scans, where it covers the ~700 most recently
-    // indexed files instead of the whole table (~280k chunks at 10k files).
+    // Shared text-read budget across soft, prefiltered, and hard-scope fallback
+    // stages. Does not bound SQL work, total query memory, or wall-clock time.
     20_000
 }
 fn default_rrf_k() -> usize {
@@ -210,6 +261,12 @@ fn default_rrf_k() -> usize {
 }
 fn default_lexical_weight() -> f64 {
     1.1
+}
+fn default_exact_symbol_weight() -> f64 {
+    1.1
+}
+fn default_path_weight() -> f64 {
+    1.0
 }
 fn default_grep_weight() -> f64 {
     0.8
@@ -228,15 +285,40 @@ impl Default for SearchConfig {
     fn default() -> Self {
         Self {
             lexical_top_k: default_lexical_top_k(),
+            exact_symbol_top_k: default_exact_symbol_top_k(),
+            path_top_k: default_path_top_k(),
             grep_top_k: default_grep_top_k(),
             grep_scan_cap: default_grep_scan_cap(),
             rrf_k: default_rrf_k(),
             lexical_weight: default_lexical_weight(),
+            exact_symbol_weight: default_exact_symbol_weight(),
+            path_weight: default_path_weight(),
             grep_weight: default_grep_weight(),
             rerank_window: default_rerank_window(),
             graph_weight: default_graph_weight(),
             graph_top_k: default_graph_top_k(),
         }
+    }
+}
+
+impl SearchConfig {
+    pub fn validate_retrieval(&self) -> CcResult<()> {
+        let weights = [
+            ("lexical_weight", self.lexical_weight),
+            ("exact_symbol_weight", self.exact_symbol_weight),
+            ("path_weight", self.path_weight),
+            ("grep_weight", self.grep_weight),
+            ("graph_weight", self.graph_weight),
+        ];
+        if let Some((name, _)) = weights
+            .into_iter()
+            .find(|(_, value)| !value.is_finite() || *value < 0.0)
+        {
+            return Err(CcError::Config(format!(
+                "search.{name} must be finite and non-negative"
+            )));
+        }
+        Ok(())
     }
 }
 
@@ -311,7 +393,7 @@ pub struct RankingConfig {
     pub preselect_overlay_floor: f64,
     #[serde(default = "default_preselect_overlay_scale")]
     pub preselect_overlay_scale: f64,
-    /// FTS summary layer: score is `base + 1 / (1 + |bm25|)`.
+    /// FTS summary layer: `base + relevance/(1+relevance)`, relevance=max(-bm25,0).
     #[serde(default = "default_preselect_fts_base")]
     pub preselect_fts_base: f64,
     /// Per-token symbol-name match: exact name equality.
@@ -487,6 +569,78 @@ impl Default for RankingConfig {
             graph_seed_exact_score: default_graph_seed_exact_score(),
             graph_seed_fuzzy_score: default_graph_seed_fuzzy_score(),
         }
+    }
+}
+
+impl RankingConfig {
+    pub fn validate_retrieval(&self) -> CcResult<()> {
+        let values = [
+            ("graph_rerank_weight", self.graph_rerank_weight),
+            ("overlap_weight", self.overlap_weight),
+            ("symbol_exact_bonus", self.symbol_exact_bonus),
+            ("path_prefix_bonus", self.path_prefix_bonus),
+            ("doc_file_bonus", self.doc_file_bonus),
+            ("working_set_boost", self.working_set_boost),
+            ("recent_file_boost", self.recent_file_boost),
+            ("pinned_context_boost", self.pinned_context_boost),
+            ("overlay_neighbor_boost", self.overlay_neighbor_boost),
+            ("stage_a_weight", self.stage_a_weight),
+            ("stage_a_cap", self.stage_a_cap),
+            ("dsl_name_bonus", self.dsl_name_bonus),
+            (
+                "preselect_working_set_floor",
+                self.preselect_working_set_floor,
+            ),
+            (
+                "preselect_working_set_scale",
+                self.preselect_working_set_scale,
+            ),
+            ("preselect_recent_floor", self.preselect_recent_floor),
+            ("preselect_recent_scale", self.preselect_recent_scale),
+            ("preselect_pinned_floor", self.preselect_pinned_floor),
+            ("preselect_pinned_scale", self.preselect_pinned_scale),
+            ("preselect_overlay_floor", self.preselect_overlay_floor),
+            ("preselect_overlay_scale", self.preselect_overlay_scale),
+            ("preselect_fts_base", self.preselect_fts_base),
+            (
+                "preselect_symbol_exact_bonus",
+                self.preselect_symbol_exact_bonus,
+            ),
+            (
+                "preselect_symbol_fuzzy_bonus",
+                self.preselect_symbol_fuzzy_bonus,
+            ),
+            (
+                "preselect_path_token_bonus",
+                self.preselect_path_token_bonus,
+            ),
+            (
+                "preselect_graph_neighbor_base",
+                self.preselect_graph_neighbor_base,
+            ),
+            (
+                "preselect_graph_edge_increment",
+                self.preselect_graph_edge_increment,
+            ),
+            ("preselect_graph_accum_cap", self.preselect_graph_accum_cap),
+            ("preselect_fallback_score", self.preselect_fallback_score),
+            (
+                "preselect_explicit_scope_score",
+                self.preselect_explicit_scope_score,
+            ),
+            ("graph_neighbor_decay", self.graph_neighbor_decay),
+            ("graph_seed_exact_score", self.graph_seed_exact_score),
+            ("graph_seed_fuzzy_score", self.graph_seed_fuzzy_score),
+        ];
+        if let Some((name, _)) = values
+            .into_iter()
+            .find(|(_, value)| !value.is_finite() || *value < 0.0)
+        {
+            return Err(CcError::Config(format!(
+                "ranking.{name} must be finite and non-negative"
+            )));
+        }
+        Ok(())
     }
 }
 
@@ -837,9 +991,17 @@ pub fn find_project_root_with_marker(start: Option<&Path>) -> Option<PathBuf> {
 pub fn load_project_config(project_path: &Path) -> ProjectConfig {
     let config_path = project_path.join(CONFIG_FILE_NAME);
     let mut config = ProjectConfig::default();
-    if config_path.exists() {
-        match std::fs::read_to_string(&config_path) {
-            Ok(content) => {
+    {
+        match crate::input_file::read(project_path, CONFIG_FILE_NAME, 1024 * 1024)
+            .map_err(|e| format!("bounded config read rejected: {e:?}"))
+            .and_then(|bytes| {
+                bytes
+                    .map(String::from_utf8)
+                    .transpose()
+                    .map_err(|_| "config is not UTF-8".into())
+            }) {
+            Ok(None) => {}
+            Ok(Some(content)) => {
                 warn_unknown_config_keys(&content, &config_path);
                 match serde_json::from_str::<ProjectConfig>(&content) {
                     Ok(parsed) => config = parsed,

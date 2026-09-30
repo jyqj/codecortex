@@ -5,9 +5,11 @@
 //! multi-layer strategy: scope bindings → same-file candidates → imports →
 //! global unique name fallback.
 
+#[cfg(test)]
 pub mod cargo_workspace;
 pub(crate) mod catalog;
 pub(crate) mod catalog_cache;
+pub(crate) mod evidence;
 pub(crate) mod helpers;
 pub(crate) mod resolve_core;
 pub(crate) mod resolve_outcome;
@@ -15,13 +17,15 @@ pub(crate) mod route_resolve;
 pub(crate) mod type_edges;
 pub(crate) mod types;
 
-pub(crate) use cargo_workspace::{resolve_cargo_workspace, resolve_rust_workspace_import};
 pub(crate) use catalog::SymbolCatalog;
 pub(crate) use types::ResolutionContext;
 #[cfg(test)]
 pub(crate) use types::{
     CallSiteSignals, CatalogScope, ImportBinding, InternalResKind, ResolveStep, RESOLVE_LADDER,
 };
+
+#[cfg(test)]
+mod p2b_tests;
 
 // ---------------------------------------------------------------------------
 // Tests
@@ -30,6 +34,7 @@ pub(crate) use types::{
 #[cfg(test)]
 mod tests {
     use super::helpers::*;
+    use super::types::{NameRequest, NameResolution};
     use super::*;
     use cc_model::edge::SemanticRelation;
     use cc_model::scope::ScopeBinding;
@@ -1233,6 +1238,7 @@ mod tests {
         let mut outcome = cc_model::parse::ParseOutcome::default();
         // Import in the route file
         outcome.imports.push(cc_model::edge::ImportRecord {
+            context: Default::default(),
             import_string: "./controllers/auth".to_string(),
             imported_name: Some("AuthController".to_string()),
             alias: Some("authCtrl".to_string()),
@@ -1558,19 +1564,19 @@ mod tests {
             arg_count: Some(1),
             receiver: None,
         };
-        let result = catalog
-            .resolve_name_with_signals(
-                "parse",
-                "src/main.py",
-                5,
-                &HashMap::new(),
-                &[],
-                None,
-                signals,
-            )
-            .expect("fuzzy fallback still resolves");
-        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
-        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
+        let result = catalog.resolve_decision(NameRequest {
+            name: "parse",
+            file: "src/main.py",
+            line: 5,
+            scopes: &HashMap::new(),
+            imports: &[],
+            container: None,
+            signals,
+        });
+        assert!(
+            matches!(result,NameResolution::Ambiguous{ref candidates,..} if candidates.len()==2),
+            "unknown arity remains possible, not an arbitrary winner"
+        );
     }
 
     #[test]
@@ -1624,18 +1630,19 @@ mod tests {
             arg_count: None,
             receiver: Some("Validator"),
         };
-        let result = catalog
-            .resolve_name_with_signals(
-                "parse",
-                "src/main.py",
-                5,
-                &HashMap::new(),
-                &[],
-                None,
-                signals,
-            )
-            .expect("fuzzy fallback still resolves");
-        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
+        let result = catalog.resolve_decision(NameRequest {
+            name: "parse",
+            file: "src/main.py",
+            line: 5,
+            scopes: &HashMap::new(),
+            imports: &[],
+            container: None,
+            signals,
+        });
+        assert!(
+            matches!(result,NameResolution::Ambiguous{ref candidates,..} if candidates.len()==2),
+            "elimination alone is not positive receiver proof"
+        );
     }
 
     #[test]
@@ -1682,6 +1689,7 @@ mod tests {
                 ResolveStep::SelfMember,
                 ResolveStep::ScopeBinding,
                 ResolveStep::SameFile,
+                ResolveStep::Package,
                 ResolveStep::Import,
                 ResolveStep::Suffix,
                 ResolveStep::GlobalUnique,
@@ -1693,24 +1701,25 @@ mod tests {
     }
 
     #[test]
-    fn test_no_signal_resolution_matches_legacy_behavior() {
-        // Method metadata is present, but without call-site signals the
-        // ladder must skip the signal steps and fall through to the legacy
-        // import-distance tie-breaking with unchanged confidence math.
+    fn test_no_signal_resolution_preserves_ambiguity() {
+        // With no distinguishing signal, equal-distance candidates stay
+        // ambiguous. The original fixture/metadata is retained.
         let catalog = parse_method_catalog(1, 2);
         let scopes = HashMap::new();
         let imports = vec![];
 
-        let result = catalog
-            .resolve_name("parse", "src/main.py", 5, &scopes, &imports, None)
-            .expect("fuzzy multi should still resolve without signals");
-        assert_eq!(result.resolution_kind, InternalResKind::FuzzyMulti);
-        assert_eq!(result.winning_step, ResolveStep::FuzzyImportDistance);
-        assert_eq!(result.candidate_count, 2);
-        assert_eq!(result.strategy_name(), "fuzzy_multi");
-        // Legacy confidence: FuzzyMulti base (0.30), no count penalty for 2
-        // candidates, halved because no candidate is import-reachable.
-        assert!((result.confidence - 0.15).abs() < 1e-6);
+        let result = catalog.resolve_decision(NameRequest {
+            name: "parse",
+            file: "src/main.py",
+            line: 5,
+            scopes: &scopes,
+            imports: &imports,
+            container: None,
+            signals: CallSiteSignals::default(),
+        });
+        assert!(
+            matches!(result,NameResolution::Ambiguous{ref candidates,count_lower_bound:2,truncated:false,..} if candidates.len()==2)
+        );
     }
 
     #[test]
@@ -1720,10 +1729,16 @@ mod tests {
         let imports = vec![];
 
         // Signal-free resolution first populates the cache...
-        let plain = catalog
-            .resolve_name("parse", "src/main.py", 5, &scopes, &imports, None)
-            .unwrap();
-        assert_eq!(plain.resolution_kind, InternalResKind::FuzzyMulti);
+        let plain = catalog.resolve_decision(NameRequest {
+            name: "parse",
+            file: "src/main.py",
+            line: 5,
+            scopes: &scopes,
+            imports: &imports,
+            container: None,
+            signals: CallSiteSignals::default(),
+        });
+        assert!(matches!(plain, NameResolution::Ambiguous { .. }));
 
         // ...and a signal-bearing call at the same site must not be served
         // the signal-free entry.

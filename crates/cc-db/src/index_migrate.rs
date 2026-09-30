@@ -9,7 +9,24 @@ use rusqlite::Connection;
 /// version bump routes pre-blake3 databases through the standard
 /// rebuild-on-mismatch reset instead of letting every file re-hash as
 /// "changed" on the first incremental build.
-pub const CURRENT_SCHEMA_VERSION: u32 = 7;
+/// v8/v9 were unaccepted PublicSurface drafts. v10 persists the reviewed
+/// Rust/JS v3 policies, including nested active attributes and computed keys.
+/// Reset legacy/draft caches: unchanged files must not retain falsely-known
+/// interfaces from an earlier extractor.
+/// v11 adds durable resolution outcomes/dependencies and indexed Go package
+/// membership. Old caches cannot certify absence of this required evidence.
+/// v13: durable resolution invalidation frontier and AST-backed Python calls.
+/// Legacy caches may contain invented parser_exact calls and cannot be reused.
+/// v14 removes legacy JS/TS regex-created calls/refs and fixes call positions.
+/// v15: immutable project inputs and module-resolution evidence; prior caches
+/// must not retain pre-configuration import/name fallback results.
+/// v16 persists import syntax/scope plus package and multilingual module evidence.
+/// v17 distinguishes package/file/external/ambiguous/unknown module outcomes and Go inputs.
+/// v18 removes cross-language legacy module guesses and strengthens captured input reads.
+/// v19 preserves original chunk bytes and source-coordinate evidence.
+/// v20 stamps each file with the chunk policy that actually committed.
+/// v21: current document versions and prepared model inputs; old caches require rebuild.
+pub const CURRENT_SCHEMA_VERSION: u32 = 21;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -25,6 +42,7 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
         .map_err(db_err)?;
 
     if stored == CURRENT_SCHEMA_VERSION {
+        crate::read_generation::ensure(conn)?;
         return Ok(SchemaStatus::UpToDate);
     }
 
@@ -47,6 +65,7 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
     conn.pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
         .map_err(db_err)?;
 
+    crate::read_generation::ensure(conn)?;
     Ok(SchemaStatus::Initialized)
 }
 

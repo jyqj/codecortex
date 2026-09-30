@@ -105,7 +105,22 @@ fn split_build_once(
 pub fn index_status(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
     let stats = rt.index_status()?;
-    Ok(serde_json::to_value(stats)?)
+    let mut result = serde_json::to_value(stats)?;
+    if let Some(db) = rt.index_db() {
+        result["resolution_freshness"] = serde_json::to_value(db.reads().resolution_freshness()?)?;
+    }
+    Ok(result)
+}
+
+pub fn find_symbol_in_scope(
+    runtime: SharedCodeIndex,
+    name: &str,
+    exact: bool,
+    top_k: usize,
+    prefix: Option<&str>,
+) -> CcResult<serde_json::Value> {
+    let rt = super::lock_index(&runtime)?;
+    rt.graph().find_symbol_in_scope(name, exact, top_k, prefix)
 }
 
 pub fn find_symbol(
@@ -155,20 +170,7 @@ pub fn list_frameworks(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> 
 
 pub fn index_capabilities(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {
     let rt = super::lock_index(&runtime)?;
-    let status = rt.index_status();
-    let has_index = status.is_ok();
-    let stats = status.ok();
-    Ok(serde_json::json!({
-        "has_index": has_index,
-        "has_project": rt.project_path.is_some(),
-        "indexed_files": stats.as_ref().map(|s| s.indexed_files).unwrap_or(0),
-        "indexed_symbols": stats.as_ref().map(|s| s.indexed_symbols).unwrap_or(0),
-        "capabilities": {
-            "search": has_index,
-            "graph": has_index,
-            "impact": has_index
-        }
-    }))
+    Ok(rt.capabilities_info())
 }
 
 pub fn callers(

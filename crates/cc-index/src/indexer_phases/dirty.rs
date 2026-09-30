@@ -1,9 +1,11 @@
 use std::collections::{HashMap, HashSet};
 
 use cc_db::index_db::FileWriteUnit;
-use cc_model::CcResult;
+use cc_model::{freshness::ChangeKind, CcResult};
 
-use crate::dirty_closure::{DirtyPropagationOutcome, DirtyPropagationStatus};
+use crate::dirty_closure::DirtyPropagationOutcome;
+#[cfg(test)]
+use crate::dirty_closure::DirtyPropagationStatus;
 use crate::indexer::{FileAction, Indexer};
 
 impl Indexer {
@@ -12,19 +14,31 @@ impl Indexer {
     /// against the updated symbol catalog. The returned outcome carries the
     /// closure status so degradations (budget bail, partial closure) surface
     /// on the index report instead of only in logs.
+    #[cfg(test)]
     pub(crate) fn run_dirty_propagation(
         &self,
         actions: &mut HashMap<String, FileAction>,
         write_units: &[FileWriteUnit],
         removed_files: &[String],
+        basis_epoch: u64,
     ) -> CcResult<DirtyPropagationOutcome> {
-        if !self.dirty_propagation {
-            return Ok(DirtyPropagationOutcome {
-                marked: 0,
-                status: DirtyPropagationStatus::Disabled,
-            });
-        }
+        self.run_dirty_propagation_with_inputs(
+            actions,
+            write_units,
+            removed_files,
+            basis_epoch,
+            &[],
+        )
+    }
 
+    pub(crate) fn run_dirty_propagation_with_inputs(
+        &self,
+        actions: &mut HashMap<String, FileAction>,
+        write_units: &[FileWriteUnit],
+        removed_files: &[String],
+        basis_epoch: u64,
+        input_changes: &[String],
+    ) -> CcResult<DirtyPropagationOutcome> {
         // Step 1: Collect all Add/Update files (the ones that were freshly parsed)
         let changed_files: Vec<String> = actions
             .iter()
@@ -32,19 +46,16 @@ impl Indexer {
             .map(|(p, _)| p.clone())
             .collect();
 
-        // Nothing changed and nothing removed: the closure is trivially
-        // converged.
-        if changed_files.is_empty() && removed_files.is_empty() {
-            return Ok(DirtyPropagationOutcome {
-                marked: 0,
-                status: DirtyPropagationStatus::Normal,
-            });
+        // A no-source-change scan can still owe durable resolution work.
+        let mut reasons = std::collections::BTreeSet::new();
+        if !changed_files.is_empty() {
+            reasons.insert(ChangeKind::Body);
         }
 
         // Step 2: Compare old vs new export fingerprints to find files whose
         //         public API surface actually changed. Fetch all old
         //         fingerprints in one batched query to avoid N+1 round trips.
-        let old_fingerprints = self.db.reads().get_export_fingerprints(&changed_files)?;
+        let old_surfaces = self.db.reads().public_surfaces(&changed_files)?;
 
         // Build a HashMap index over write_units for O(1) lookup per file,
         // avoiding the previous O(changed_files × write_units) linear scan.
@@ -55,14 +66,61 @@ impl Indexer {
 
         let mut export_changed_files = Vec::new();
         for file_path in &changed_files {
-            // Files with no exported symbols are absent from the map (== None),
-            // matching the single-file query's None return.
-            let old_fp = old_fingerprints.get(file_path).cloned();
-            let new_fp = write_unit_index
-                .get(file_path.as_str())
-                .and_then(|unit| Self::compute_fingerprint_for_unit(unit));
-            if old_fp != new_fp {
+            // Unknown/missing evidence is not proof that an interface stayed
+            // empty. A shared canonical model owns the comparison on both sides.
+            let changed = write_unit_index.get(file_path.as_str()).is_none_or(|unit| {
+                unit.outcome
+                    .public_surface
+                    .changed_from(old_surfaces.get(file_path))
+            });
+            if changed {
                 export_changed_files.push(file_path.clone());
+            }
+        }
+
+        if !export_changed_files.is_empty() {
+            reasons.insert(ChangeKind::PublicSurface);
+        }
+        // Declared interfaces intentionally ignore source positions. Stored
+        // cross-file bindings also carry a location-derived symbol_id, however:
+        // a comment/body edit can move a still-identical UID to a new address.
+        // Re-resolve affected dependencies without polluting the API fingerprint
+        // or treating every private/local body change as an interface change.
+        let changed_surface_set: HashSet<&str> =
+            export_changed_files.iter().map(String::as_str).collect();
+        let unchanged_surfaces: Vec<String> = changed_files
+            .iter()
+            .filter(|p| !changed_surface_set.contains(p.as_str()))
+            .cloned()
+            .collect();
+        let bound_addresses = self
+            .db
+            .reads()
+            .surface_bound_addresses(&unchanged_surfaces)?;
+        for path in &unchanged_surfaces {
+            let Some(required) = bound_addresses.get(path) else {
+                continue;
+            };
+            let Some(unit) = write_unit_index.get(path.as_str()) else {
+                continue;
+            };
+            let current: HashSet<_> = unit
+                .outcome
+                .symbols
+                .iter()
+                .filter_map(|s| {
+                    s.symbol_uid
+                        .as_deref()
+                        .map(|uid| (s.symbol_id.as_str(), uid))
+                })
+                .collect();
+            if required
+                .iter()
+                .any(|(id, uid)| !current.contains(&(id.as_str(), uid.as_str())))
+            {
+                tracing::debug!(file = %path, "dirty propagation: bound symbol address changed");
+                reasons.insert(ChangeKind::BoundAddress);
+                export_changed_files.push(path.clone());
             }
         }
 
@@ -74,105 +132,84 @@ impl Indexer {
         // `imports.resolved_path` at this point) and promotes the importers.
         export_changed_files.extend(removed_files.iter().cloned());
 
-        if export_changed_files.is_empty() {
-            return Ok(DirtyPropagationOutcome {
-                marked: 0,
-                status: DirtyPropagationStatus::Normal,
-            });
-        }
-
-        // Step 3: Fixpoint closure over importers. Round 1 promotes direct
-        //         importers of export-changed files; if a promoted file's own
-        //         effective export surface changed (re-export chains), its
-        //         importers are promoted in the next round, until convergence.
-        //         The iteration policy, global budget, and round cap all live
-        //         in `compute_dirty_closure`.
-        // Per-file resolved re-export targets, memoized across rounds and
-        // re-evaluation passes so each file's targets are fetched at most
-        // once (one batched query per pass for the not-yet-cached files).
-        let mut reexport_targets_cache: HashMap<String, Vec<String>> = HashMap::new();
-        let closure_result = crate::dirty_closure::compute_dirty_closure(
+        let mut events = self.resolution_dependency_events(
+            actions,
+            write_units,
+            removed_files,
             &export_changed_files,
-            self.dirty_propagation_max_files,
-            crate::dirty_closure::DIRTY_CLOSURE_MAX_ROUNDS,
-            |files| self.db.reads().find_importers_of(files),
-            |path| matches!(actions.get(path), Some(FileAction::Skip)),
-            |files, changed_so_far| {
-                self.promoted_export_surfaces_changed(
-                    files,
-                    changed_so_far,
-                    &mut reexport_targets_cache,
-                )
-            },
         )?;
-
-        // Budget overflow (warn already emitted inside the closure): the
-        // closure returns a budget-sized partial promotion set instead of a
-        // no-op, so it is applied like any other result below; the
-        // BudgetExceeded status (from `closure_result.status()`) still tells
-        // the caller to consider a full rebuild for the dropped remainder.
-
-        // Step 4: Promote Skip → DirtyResolveOnly
-        let marked = closure_result.promoted.len();
-        for importer in &closure_result.promoted {
-            if let Some(action) = actions.get_mut(importer) {
-                *action = FileAction::DirtyResolveOnly;
+        if !input_changes.is_empty() {
+            use cc_model::resolution::{DependencyKind, ResolutionDependency};
+            export_changed_files.extend(input_changes.iter().cloned());
+            events.insert(ResolutionDependency::new(DependencyKind::ModuleConfig, "*"));
+            for path in input_changes {
+                events.insert(ResolutionDependency::new(
+                    DependencyKind::ModuleConfig,
+                    path.clone(),
+                ));
+            }
+            reasons.insert(ChangeKind::Configuration);
+        }
+        if export_changed_files.is_empty() && !events.is_empty() {
+            let already_parsed: Vec<_> = write_units
+                .iter()
+                .map(|u| u.rel_path.clone())
+                .chain(removed_files.iter().cloned())
+                .collect();
+            // A new private name is not an interface change. Only seed the
+            // closure for candidate/config events that have actual consumers.
+            if !self
+                .db
+                .reads()
+                .resolution_dependents(&events, 0, &already_parsed)?
+                .is_empty()
+            {
+                export_changed_files.extend(changed_files.iter().cloned());
+                export_changed_files.extend(removed_files.iter().cloned());
             }
         }
-
-        if marked > 0 {
-            tracing::info!(
-                marked,
-                export_changed = export_changed_files.len(),
-                rounds = closure_result.rounds_run,
-                partial = closure_result.partial,
-                "dirty propagation: marked files for re-resolution"
-            );
+        for event in &events {
+            use cc_model::resolution::DependencyKind::*;
+            let kind = match event.kind {
+                ModuleConfig => ChangeKind::Configuration,
+                MissingPath | FileInventory | PackageFiles => ChangeKind::Inventory,
+                NameBucket | SymbolInventory => ChangeKind::CandidateSet,
+                TargetSurface => ChangeKind::PublicSurface,
+            };
+            reasons.insert(kind);
         }
-
-        Ok(DirtyPropagationOutcome {
-            marked,
-            status: closure_result.status(),
-        })
+        self.plan_dirty_reconciliation(
+            actions,
+            write_units,
+            removed_files,
+            export_changed_files,
+            events,
+            reasons,
+            basis_epoch,
+        )
     }
 
     /// Which of the given promoted (DirtyResolveOnly) files' *effective*
     /// export surfaces changed, given the set of files whose exports changed
     /// so far (batch hook for `compute_dirty_closure`).
     ///
-    /// Promoted files are reloaded verbatim from the DB (`phase_dirty_reload`
-    /// does not re-parse), so their own export fingerprint provably cannot
-    /// change within this build — the in-memory and DB fingerprint formulas
-    /// are locked together by `in_memory_and_db_fingerprints_match`. What CAN
-    /// change is the surface contributed by re-exports (`export * from './b'`,
-    /// `export { x } from './b'`): when a promoted file re-exports from a
-    /// changed file, its own importers observe a changed surface and must be
-    /// re-resolved too.
+    /// Promoted files are content-unchanged and reloaded without parsing. Their
+    /// persisted file-local declaration evidence stays intact. A changed
+    /// forwarding target can nevertheless affect their importers. Unknown or
+    /// missing surfaces conservatively continue the existing bounded closure;
+    /// known surfaces use resolved forwarding routes. No recursive hashes.
     ///
     /// Re-export targets are fetched via one batched
     /// `reexport_targets_for_files` query per pass (only for files not yet in
     /// `targets_cache`, which memoizes them across rounds and re-evaluation
     /// passes), replacing the previous per-file N+1 query.
     ///
-    /// Coverage: the jsts extractor sets `is_reexport = 1` for
-    /// single-statement re-exports (`export * from './b'`,
-    /// `export { x } from './b'`) AND for two-step forwarding via ES imports
-    /// (`import { x } from './b'; export { x };`, including `as` aliasing and
-    /// `export default x` of an imported binding), so surface changes flowing
-    /// through such files promote their importers. The Rust extractor sets it
-    /// for visibility-qualified `use` (`pub use`, `pub(crate) use`, …);
-    /// since no non-JS/TS parser sets `export_name`, Rust export
-    /// fingerprints are constant and the flag currently matters for
-    /// removal-seeded closures (a re-exported crate file deleted/renamed
-    /// promotes the facade's importers transitively).
-    ///
-    /// Known remaining gaps: CommonJS forwarding
-    /// (`const { x } = require('./b'); module.exports = { x }` or mixed
-    /// `export { x }`) is still stored as a plain import, and the remaining
-    /// language extractors never set the flag (e.g. Python
-    /// `from b import *` / `__init__.py` star re-exports), so equivalent
-    /// forwarding in those languages is still missed.
-    fn promoted_export_surfaces_changed(
+    /// P2-A records ES direct/two-step forwarding, static CommonJS bindings,
+    /// Rust visibility-qualified use and Python imports. It reuses existing
+    /// resolved import rows; unresolved routes remain a project-model limit.
+    /// Python star interfaces are explicitly Unknown. Dependency events and
+    /// durable remainder reuse this finite-set expansion through reconcile.rs.
+    pub(super) fn promoted_export_surfaces_changed(
         &self,
         files: &[String],
         changed_so_far: &HashSet<String>,
@@ -192,68 +229,26 @@ impl Indexer {
                 targets_cache.insert(path.to_string(), targets);
             }
         }
+        let surfaces = self.db.reads().public_surfaces(files)?;
         Ok(files
             .iter()
             .filter(|path| {
+                if surfaces
+                    .get(path.as_str())
+                    .is_none_or(|s| s.fingerprint().is_none() || !s.forwards.is_empty())
+                {
+                    // A facade can acquire a previously missing route. Treat its
+                    // contribution conservatively as changed even when the old
+                    // resolved-import table has no route yet. Finite file sets,
+                    // not recursive hashes, stabilize cycles.
+                    return true;
+                }
                 targets_cache
                     .get(path.as_str())
                     .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))
             })
             .cloned()
             .collect())
-    }
-
-    /// Compute the export fingerprint from freshly-parsed write_units.
-    ///
-    /// The algorithm matches `IndexDb::get_export_fingerprint()`:
-    ///   1. Select exported symbols (export_name IS NOT NULL or is_default_export)
-    ///   2. Format each as "uid|name|signature|export_name"
-    ///   3. Sort by uid (first field)
-    ///   4. Join with "\n" and hash with blake3
-    ///
-    /// Note: For hot-path usage (e.g. looping over many files), prefer building
-    /// a HashMap index over `write_units` and calling `compute_fingerprint_for_unit`
-    /// directly to avoid O(n) linear scan per call.
-    #[cfg(test)]
-    pub(crate) fn compute_new_export_fingerprint(
-        write_units: &[FileWriteUnit],
-        file_path: &str,
-    ) -> Option<String> {
-        let unit = write_units.iter().find(|u| u.rel_path == file_path)?;
-        Self::compute_fingerprint_for_unit(unit)
-    }
-
-    /// Compute the export fingerprint for a single pre-found `FileWriteUnit`.
-    ///
-    /// This is the inner computation extracted from `compute_new_export_fingerprint`
-    /// so callers that already have a reference to the unit (e.g. via a HashMap
-    /// index) can skip the linear search.
-    fn compute_fingerprint_for_unit(unit: &FileWriteUnit) -> Option<String> {
-        let mut parts: Vec<String> = unit
-            .outcome
-            .symbols
-            .iter()
-            .filter(|s| s.export_name.is_some() || s.is_default_export)
-            .map(|s| {
-                format!(
-                    "{}|{}|{}|{}",
-                    s.symbol_uid.as_deref().unwrap_or(""),
-                    s.name,
-                    s.signature.as_deref().unwrap_or(""),
-                    s.export_name.as_deref().unwrap_or(""),
-                )
-            })
-            .collect();
-        // Sort by the uid prefix (whole string sort gives the same result
-        // because uid is the first field, matching the DB's ORDER BY symbol_uid).
-        parts.sort();
-
-        if parts.is_empty() {
-            return None;
-        }
-
-        let combined = parts.join("\n");
-        Some(blake3::hash(combined.as_bytes()).to_hex().to_string())
     }
 }
 
@@ -320,10 +315,8 @@ mod export_fingerprint_contract_tests {
         }
     }
 
-    /// Contract: `compute_new_export_fingerprint` (cc-index, in-memory) and
-    /// `IndexDb::get_export_fingerprint` (cc-db, SQL) are two independent blake3
-    /// implementations whose hashes MUST be byte-for-byte identical for the same
-    /// symbols. This test locks that contract so the two can never silently drift.
+    /// The parser/model and compatibility DB accessor consume ONE encoding.
+    /// Legacy symbol export flags cannot select a competing hash algorithm.
     #[test]
     fn in_memory_and_db_fingerprints_match() {
         let symbols = vec![
@@ -354,9 +347,17 @@ mod export_fingerprint_contract_tests {
             ),
         ];
 
-        let unit = write_unit(symbols);
+        let mut unit = write_unit(symbols);
+        unit.outcome.public_surface = cc_parsers::ParserRegistry::new()
+            .parse(
+                "src/lib.rs",
+                "pub fn alpha() {}\nfn private_fn() {}",
+                Language::Rust,
+            )
+            .unwrap()
+            .public_surface;
 
-        // Persist into a real IndexDb and read the DB-side fingerprint.
+        // Persist canonical declared surface, independent of export-name hints.
         let tmp = tempfile::TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("contract.db")).unwrap().0;
         db.writes()
@@ -365,8 +366,7 @@ mod export_fingerprint_contract_tests {
         let db_fp = db.reads().get_export_fingerprint("src/lib.rs").unwrap();
 
         // Compute the in-memory fingerprint from the same write_unit.
-        let mem_fp =
-            Indexer::compute_new_export_fingerprint(std::slice::from_ref(&unit), "src/lib.rs");
+        let mem_fp = unit.outcome.public_surface.fingerprint();
 
         assert!(db_fp.is_some(), "expected a non-empty DB fingerprint");
         assert_eq!(
@@ -375,10 +375,9 @@ mod export_fingerprint_contract_tests {
         );
     }
 
-    /// Contract for the no-exports case: both implementations must return None
-    /// when a file has zero exported symbols.
+    /// Missing interface evidence is Unknown, not inferred from symbol exports.
     #[test]
-    fn both_return_none_without_exports() {
+    fn both_return_none_without_surface_evidence() {
         let symbols = vec![symbol(
             "uid_priv",
             "helper",
@@ -397,8 +396,7 @@ mod export_fingerprint_contract_tests {
             .unwrap();
         let db_fp = db.reads().get_export_fingerprint("src/lib.rs").unwrap();
 
-        let mem_fp =
-            Indexer::compute_new_export_fingerprint(std::slice::from_ref(&unit), "src/lib.rs");
+        let mem_fp = unit.outcome.public_surface.fingerprint();
 
         assert_eq!(db_fp, None);
         assert_eq!(mem_fp, None);
@@ -465,7 +463,9 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -477,7 +477,12 @@ mod dirty_propagation_fixpoint_tests {
         );
 
         let outcome = indexer
-            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
+            .run_dirty_propagation(
+                &mut actions,
+                &parse.write_units,
+                &scan.to_remove,
+                indexer.db.reads().generation().unwrap().index_epoch,
+            )
             .unwrap();
 
         assert!(
@@ -556,7 +561,9 @@ mod dirty_propagation_fixpoint_tests {
         )
         .unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         let to_parse = std::mem::take(&mut scan.to_parse);
         let parse = indexer.phase_parse(project, to_parse).unwrap();
         let mut actions =
@@ -568,7 +575,12 @@ mod dirty_propagation_fixpoint_tests {
         );
 
         let outcome = indexer
-            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
+            .run_dirty_propagation(
+                &mut actions,
+                &parse.write_units,
+                &scan.to_remove,
+                indexer.db.reads().generation().unwrap().index_epoch,
+            )
             .unwrap();
 
         assert!(
@@ -593,9 +605,9 @@ mod dirty_propagation_fixpoint_tests {
     /// unresolvable against the workspace alias map — so neither promotion
     /// ever happened.
     ///
-    /// (Rust surface *edits* still don't seed the closure: no non-JS/TS
-    /// parser sets `export_name`, so Rust export fingerprints are constant.
-    /// Removal-seeded closures are the path this fix makes work end-to-end.)
+    /// P2-A additionally seeds edits from PublicSurface; this historical case
+    /// specifically guards deletion-seeded forwarding. Signature mutation
+    /// parity is covered by cc-eval's p2a_incremental integration tests.
     #[test]
     fn rust_pub_use_chain_promotes_transitive_importer_on_removal() {
         let tmp = TempDir::new().unwrap();
@@ -613,10 +625,7 @@ mod dirty_propagation_fixpoint_tests {
             "crate_a/Cargo.toml",
             "[package]\nname = \"crate_a\"\nversion = \"0.1.0\"\n",
         );
-        write(
-            "crate_a/src/lib.rs",
-            "pub fn alpha() -> i32 {\n    1\n}\n",
-        );
+        write("crate_a/src/lib.rs", "pub fn alpha() -> i32 {\n    1\n}\n");
         write(
             "crate_b/Cargo.toml",
             "[package]\nname = \"crate_b\"\nversion = \"0.1.0\"\n",
@@ -658,7 +667,9 @@ mod dirty_propagation_fixpoint_tests {
         // Remove the re-export target and run the incremental pipeline.
         std::fs::remove_file(project.join("crate_a/src/lib.rs")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         assert!(
             scan.to_remove.contains(&"crate_a/src/lib.rs".to_string()),
             "deleted lib.rs must land in to_remove; got {:?}",
@@ -670,7 +681,12 @@ mod dirty_propagation_fixpoint_tests {
             indexer.build_actions_map(&parse.write_units, &scan.existing, &scan.scanned_paths);
 
         indexer
-            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
+            .run_dirty_propagation(
+                &mut actions,
+                &parse.write_units,
+                &scan.to_remove,
+                indexer.db.reads().generation().unwrap().index_epoch,
+            )
             .unwrap();
 
         assert!(
@@ -735,7 +751,9 @@ mod dirty_propagation_fixpoint_tests {
         // Delete b.ts and run the incremental diff/parse/propagation pipeline.
         std::fs::remove_file(project.join("b.ts")).unwrap();
 
-        let mut scan = indexer.phase_scan_and_diff(project, false, None, None).unwrap();
+        let mut scan = indexer
+            .phase_scan_and_diff(project, false, None, None)
+            .unwrap();
         assert!(
             scan.to_remove.contains(&"b.ts".to_string()),
             "deleted b.ts must land in to_remove; got {:?}",
@@ -752,7 +770,12 @@ mod dirty_propagation_fixpoint_tests {
         );
 
         let outcome = indexer
-            .run_dirty_propagation(&mut actions, &parse.write_units, &scan.to_remove)
+            .run_dirty_propagation(
+                &mut actions,
+                &parse.write_units,
+                &scan.to_remove,
+                indexer.db.reads().generation().unwrap().index_epoch,
+            )
             .unwrap();
 
         assert!(
@@ -824,14 +847,14 @@ mod dirty_propagation_fixpoint_tests {
         };
         let disabled_indexer = Indexer::new(db.clone(), project, &disabled_config);
         let outcome = disabled_indexer
-            .run_dirty_propagation(&mut HashMap::new(), &[], &[])
+            .run_dirty_propagation(&mut HashMap::new(), &[], &[], 0)
             .unwrap();
         assert_eq!(outcome.status, DirtyPropagationStatus::Disabled);
         assert_eq!(outcome.marked, 0);
 
         let enabled_indexer = Indexer::new(db, project, &IndexingConfig::default());
         let outcome = enabled_indexer
-            .run_dirty_propagation(&mut HashMap::new(), &[], &[])
+            .run_dirty_propagation(&mut HashMap::new(), &[], &[], 0)
             .unwrap();
         assert_eq!(outcome.status, DirtyPropagationStatus::Normal);
         assert_eq!(outcome.marked, 0);

@@ -3,6 +3,7 @@
 pub mod context;
 pub mod core;
 pub mod facade;
+pub mod freshness;
 pub mod graph;
 pub mod output_budget;
 

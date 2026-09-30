@@ -71,6 +71,8 @@ pub(crate) enum ResolveStep {
     ScopeBinding,
     /// Same-file candidates (qname exact, member chain, scope proximity).
     SameFile,
+    /// Go package peers from explicitly recorded directory/name membership.
+    Package,
     /// Import bindings traced to their exporting module.
     Import,
     /// Qualified-name suffix match (pkg.mod.Func ↔ mod.Func).
@@ -93,10 +95,11 @@ pub(crate) enum ResolveStep {
 /// The resolution ladder, in evaluation order. The signal-driven steps sit
 /// between `GlobalUnique` and the import-distance fallback so that call-site
 /// evidence outranks pure path proximity.
-pub(crate) const RESOLVE_LADDER: [ResolveStep; 9] = [
+pub(crate) const RESOLVE_LADDER: [ResolveStep; 10] = [
     ResolveStep::SelfMember,
     ResolveStep::ScopeBinding,
     ResolveStep::SameFile,
+    ResolveStep::Package,
     ResolveStep::Import,
     ResolveStep::Suffix,
     ResolveStep::GlobalUnique,
@@ -185,6 +188,37 @@ impl InternalResKind {
     }
 }
 
+/// Internal evidence result. An ambiguous step terminates the ladder instead
+/// of falling through to a weaker, accidentally unique target.
+#[derive(Clone, Debug)]
+pub enum NameResolution {
+    Resolved(ResolveResult),
+    Ambiguous {
+        candidates: Vec<usize>,
+        reason: &'static str,
+        count_lower_bound: usize,
+        truncated: bool,
+    },
+    Unresolved(&'static str),
+}
+impl NameResolution {
+    pub(crate) fn resolved(self) -> Option<ResolveResult> {
+        match self {
+            Self::Resolved(r) => Some(r),
+            _ => None,
+        }
+    }
+}
+pub(crate) struct NameRequest<'a> {
+    pub name: &'a str,
+    pub file: &'a str,
+    pub line: u32,
+    pub scopes: &'a HashMap<String, CatalogScope>,
+    pub imports: &'a [ImportBinding],
+    pub container: Option<&'a str>,
+    pub signals: CallSiteSignals<'a>,
+}
+
 /// Result of recursive name resolution.
 #[derive(Clone, Debug)]
 pub struct ResolveResult {
@@ -250,6 +284,10 @@ pub(in crate::resolver) fn default_resolution_strategy(kind: ResolutionKind) -> 
 // ---------------------------------------------------------------------------
 // CatalogEntry
 // ---------------------------------------------------------------------------
+
+pub(in crate::resolver) struct GoPackageLookup {
+    pub(in crate::resolver) names: HashMap<String, Vec<usize>>,
+}
 
 /// A single entry in the symbol catalog (extended from original).
 #[derive(Clone, Debug)]

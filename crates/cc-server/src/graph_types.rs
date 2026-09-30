@@ -15,6 +15,8 @@ pub struct TraceNode {
     pub end_line: u32,
     pub signature: Option<String>,
     pub snippet: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub source_freshness: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub outgoing_calls: Option<Vec<String>>,
 }

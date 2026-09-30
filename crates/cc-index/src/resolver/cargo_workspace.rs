@@ -29,54 +29,20 @@ use std::path::Path;
 ///     "cc_db"    => "crates/cc-db/src/lib.rs", ... }
 /// ```
 pub fn resolve_cargo_workspace(project_path: &Path) -> HashMap<String, String> {
-    let mut result = HashMap::new();
-
-    let root_toml_path = project_path.join("Cargo.toml");
-    let root_toml = match std::fs::read_to_string(&root_toml_path) {
-        Ok(content) => content,
-        Err(_) => return result,
-    };
-
-    let members = parse_workspace_members(&root_toml);
-    if members.is_empty() {
-        return result;
-    }
-
-    // Expand glob patterns and resolve each member
-    for member_pattern in &members {
-        let expanded = expand_member_pattern(project_path, member_pattern);
-        for member_dir in expanded {
-            let member_toml_path = project_path.join(&member_dir).join("Cargo.toml");
-            let member_toml = match std::fs::read_to_string(&member_toml_path) {
-                Ok(content) => content,
-                Err(_) => continue,
-            };
-
-            let package_name = match parse_package_name(&member_toml) {
-                Some(name) => name,
-                None => continue,
-            };
-
-            // Rust crate alias: hyphens become underscores
-            let crate_alias = package_name.replace('-', "_");
-
-            // Determine entry point: prefer src/lib.rs, fall back to src/main.rs
-            let lib_path = project_path.join(&member_dir).join("src/lib.rs");
-            let main_path = project_path.join(&member_dir).join("src/main.rs");
-
-            let entry_point = if lib_path.exists() {
-                format!("{}/src/lib.rs", member_dir)
-            } else if main_path.exists() {
-                format!("{}/src/main.rs", member_dir)
-            } else {
-                continue;
-            };
-
-            result.insert(crate_alias, entry_point);
-        }
-    }
-
-    result
+    // Compatibility fixture entry: production discovery is solely ProjectModel.
+    let scanner = crate::Scanner::new(project_path, &Default::default());
+    let (files, manifest) = scanner.scan_with_manifest();
+    crate::project_model::discover(
+        project_path,
+        files.into_iter().map(|f| f.rel_path).collect(),
+        Some(&manifest),
+        None,
+        &Default::default(),
+    )
+    .expect("valid workspace fixture")
+    .model()
+    .rust_aliases()
+    .clone()
 }
 
 /// Resolve a Rust `use` import string against the workspace alias map.
@@ -235,49 +201,6 @@ fn parse_package_name(content: &str) -> Option<String> {
     }
 
     None
-}
-
-/// Expand a member pattern that may contain globs (e.g. `crates/*`).
-///
-/// Returns a list of directory paths (relative to project root) matching
-/// the pattern. Non-glob patterns are returned as-is if the directory exists.
-fn expand_member_pattern(project_path: &Path, pattern: &str) -> Vec<String> {
-    if !pattern.contains('*') {
-        // No glob — return as-is if the directory exists
-        let dir = project_path.join(pattern);
-        if dir.is_dir() {
-            return vec![pattern.to_string()];
-        }
-        return Vec::new();
-    }
-
-    // Simple glob expansion: only support trailing `/*`
-    // e.g. "crates/*" → list all subdirectories of "crates/"
-    if let Some(prefix) = pattern.strip_suffix("/*") {
-        let base_dir = project_path.join(prefix);
-        if !base_dir.is_dir() {
-            return Vec::new();
-        }
-        let mut results = Vec::new();
-        if let Ok(entries) = std::fs::read_dir(&base_dir) {
-            for entry in entries.flatten() {
-                let path = entry.path();
-                if path.is_dir() {
-                    // Check if this directory has a Cargo.toml
-                    if path.join("Cargo.toml").exists() {
-                        if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
-                            results.push(format!("{}/{}", prefix, name));
-                        }
-                    }
-                }
-            }
-        }
-        results.sort(); // deterministic order
-        return results;
-    }
-
-    // Unsupported glob pattern — skip
-    Vec::new()
 }
 
 // ---------------------------------------------------------------------------

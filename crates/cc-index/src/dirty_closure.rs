@@ -33,8 +33,8 @@ pub enum DirtyPropagationStatus {
     /// exceeded after round 1 — but the promotions kept form a valid
     /// complete-round prefix of the full closure.
     PartialClosure,
-    /// Round-1 direct importers alone exceeded the budget; propagation
-    /// degraded to a no-op (consider a full rebuild).
+    /// Round-1 direct importers exceeded the budget; only a bounded prefix
+    /// was processed. The replay basis remains durable until completion.
     BudgetExceeded,
     /// Dirty propagation is disabled via config.
     Disabled,
@@ -42,11 +42,13 @@ pub enum DirtyPropagationStatus {
 
 /// Outcome of the dirty-propagation phase: promotion count plus the closure
 /// classification surfaced on the index report.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub(crate) struct DirtyPropagationOutcome {
     /// Files promoted Skip → DirtyResolveOnly.
     pub(crate) marked: usize,
     pub(crate) status: DirtyPropagationStatus,
+    pub(crate) reconcile: Option<cc_model::freshness::ReconcileUpdate>,
+    pub(crate) explanation: cc_model::freshness::DirtyPlanExplanation,
 }
 
 /// Outcome of the fixpoint dirty closure.
@@ -104,8 +106,36 @@ impl DirtyClosureResult {
 ///   change are re-evaluated whenever the changed set grows (same-round
 ///   sibling re-export chains); each file can flip at most once, so
 ///   convergence stays bounded.
+#[cfg(test)]
 pub(crate) fn compute_dirty_closure<ImportersFn, PromotableFn, SurfaceChangedFn>(
     initially_changed: &[String],
+    max_promoted_files: usize,
+    max_rounds: usize,
+    importers_of: ImportersFn,
+    is_promotable: PromotableFn,
+    surface_changed_of: SurfaceChangedFn,
+) -> CcResult<DirtyClosureResult>
+where
+    ImportersFn: FnMut(&[String]) -> CcResult<Vec<String>>,
+    PromotableFn: FnMut(&str) -> bool,
+    SurfaceChangedFn: FnMut(&[String], &HashSet<String>) -> CcResult<Vec<String>>,
+{
+    compute_dirty_closure_resuming(
+        initially_changed,
+        &initially_changed.iter().cloned().collect(),
+        max_promoted_files,
+        max_rounds,
+        importers_of,
+        is_promotable,
+        surface_changed_of,
+    )
+}
+
+/// Same finite-set closure, but freshness proofs and propagation seeds are
+/// separate: after rebasing, an old root may itself need re-resolution.
+pub(crate) fn compute_dirty_closure_resuming<ImportersFn, PromotableFn, SurfaceChangedFn>(
+    initially_changed: &[String],
+    already_resolved: &HashSet<String>,
     max_promoted_files: usize,
     max_rounds: usize,
     mut importers_of: ImportersFn,
@@ -152,7 +182,7 @@ where
             .into_iter()
             .filter(|path| {
                 !promoted_set.contains(path)
-                    && !changed_so_far.contains(path)
+                    && !already_resolved.contains(path)
                     && is_promotable(path)
             })
             .collect();

@@ -14,11 +14,22 @@ mod engine_lane_tests;
 #[cfg(test)]
 pub(crate) mod engine_test_support;
 mod enrich;
+pub mod evidence;
+pub mod evidence_hydrator;
+mod evidence_path;
+pub mod execution;
+mod fusion;
+mod grep;
 mod lanes;
 mod plan;
 pub mod preselect;
+pub mod query_policy;
 pub mod rrf;
+mod scope;
 mod score_trace;
+pub mod selection;
+#[path = "lanes/semantic_adapter.rs"]
+pub mod semantic_adapter;
 
 pub use engine::SearchEngine;
 pub use enrich::GraphEnrichment;

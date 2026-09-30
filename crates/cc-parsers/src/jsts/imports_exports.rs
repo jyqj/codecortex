@@ -51,6 +51,10 @@ impl JsTsParser {
             let has_star = node.children(&mut cursor3).any(|c| c.kind() == "*");
             if has_star {
                 ctx.imports.push(ImportRecord {
+                    context: cc_model::module_inputs::ImportContext {
+                        syntax: cc_model::module_inputs::ImportSyntax::Static,
+                        ..Default::default()
+                    },
                     file_path: file_path.to_string(),
                     import_string: src,
                     resolved_path: None,
@@ -90,6 +94,10 @@ impl JsTsParser {
                                 continue;
                             };
                             ctx.imports.push(ImportRecord {
+                                context: cc_model::module_inputs::ImportContext {
+                                    syntax: cc_model::module_inputs::ImportSyntax::Static,
+                                    ..Default::default()
+                                },
                                 file_path: file_path.to_string(),
                                 import_string: src.clone(),
                                 resolved_path: None,
@@ -198,80 +206,45 @@ impl JsTsParser {
         }
     }
 
-    /// Local binding names introduced by an ES `import_statement`: the
-    /// default import identifier, the `* as ns` namespace alias, and named
-    /// specifiers (using the `as` alias as the local name when present).
-    pub(super) fn collect_import_local_bindings(
-        node: &tree_sitter::Node,
-        source: &[u8],
-    ) -> Vec<String> {
-        let mut bindings = Vec::new();
-        let mut cursor = node.walk();
-        for child in node.children(&mut cursor) {
-            if child.kind() != "import_clause" {
-                continue;
-            }
-            let mut clause_cursor = child.walk();
-            for part in child.children(&mut clause_cursor) {
-                match part.kind() {
-                    "identifier" => {
-                        if let Some(name) = node_text(&part, source) {
-                            bindings.push(name.to_string());
-                        }
-                    }
-                    "namespace_import" => {
-                        let mut ns_cursor = part.walk();
-                        for ns_child in part.children(&mut ns_cursor) {
-                            if ns_child.kind() == "identifier" {
-                                if let Some(name) = node_text(&ns_child, source) {
-                                    bindings.push(name.to_string());
-                                }
-                            }
-                        }
-                    }
-                    "named_imports" => {
-                        let mut spec_cursor = part.walk();
-                        for spec in part.children(&mut spec_cursor) {
-                            if spec.kind() != "import_specifier" {
-                                continue;
-                            }
-                            let local = spec
-                                .child_by_field_name("alias")
-                                .or_else(|| spec.child_by_field_name("name"));
-                            if let Some(name) = local.and_then(|n| node_text(&n, source)) {
-                                bindings.push(name.to_string());
-                            }
-                        }
-                    }
-                    _ => {}
-                }
-            }
-        }
-        bindings
-    }
-
     pub(super) fn extract_import(
         &self,
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
-    ) -> Option<ImportRecord> {
-        let text = node.utf8_text(source).ok()?;
-        // Extract source path from import
-        let src_node = node.child_by_field_name("source")?;
-        let src = src_node
-            .utf8_text(source)
-            .ok()?
-            .trim_matches(|c| c == '"' || c == '\'');
-        Some(ImportRecord {
-            file_path: file_path.to_string(),
-            import_string: src.to_string(),
-            resolved_path: None,
-            imported_name: Some(text.to_string()),
-            alias: None,
-            is_namespace: text.contains('*'),
-            is_default: text.contains("default"),
-            is_reexport: false,
-        })
+    ) -> Vec<ImportRecord> {
+        if let Some(clause) = super::child_by_kind(node, "import_require_clause") {
+            if let Some(src) = clause
+                .child_by_field_name("source")
+                .and_then(|n| super::node_text(&n, source))
+            {
+                let src = src.trim_matches(|c| c == '\'' || c == '\"');
+                if !src.contains('\\') {
+                    let name = clause
+                        .named_child(0)
+                        .and_then(|n| super::node_text(&n, source))
+                        .map(str::to_owned);
+                    let mut cursor = node.walk();
+                    let type_only = node.children(&mut cursor).any(|c| c.kind() == "type");
+                    return vec![ImportRecord {
+                        file_path: file_path.into(),
+                        import_string: src.into(),
+                        imported_name: Some("*".into()),
+                        alias: name,
+                        is_namespace: true,
+                        context: cc_model::module_inputs::ImportContext {
+                            syntax: if type_only {
+                                cc_model::module_inputs::ImportSyntax::TypeOnlyRequire
+                            } else {
+                                cc_model::module_inputs::ImportSyntax::Require
+                            },
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }];
+                }
+            }
+            return vec![];
+        }
+        crate::exports::jsts::ordinary_import_records(*node, source, file_path)
     }
 }

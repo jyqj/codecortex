@@ -22,9 +22,23 @@ regex = { workspace = true }
 # and exercised over an rmcp duplex client↔server JSON-RPC connection.
 tokio = { workspace = true }
 tracing = { workspace = true }
-rmcp = { workspace = true, features = ["client"] }
+rmcp = { workspace = true, features = ["client", "transport-child-process"] }
+blake3 = { workspace = true }
+clap = { workspace = true }
+schemars = "1.2"
+rusqlite = { workspace = true }
+tempfile = "3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"], optional = true }
+# Local build/source receipts for controlled ablations; no HTTP requirement.
+sha2 = "0.10"
+
+[features]
+default = []
+eval-http = ["dep:reqwest"]
 
 [dev-dependencies]
+cc-parsers = { path = "../cc-parsers" }
+cc-search = { path = "../cc-search" }
 tempfile = "3"
 # Scale-bench sub-phase attribution: RUST_LOG-gated subscriber so the
 # `time_step` debug events from cc-index / cc-db reach stderr.

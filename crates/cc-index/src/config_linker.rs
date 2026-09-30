@@ -173,9 +173,7 @@ fn tokenize_config_file(rel_string: &str, content: &str, tokens: &mut Vec<RawCon
 
 /// Config candidates from the shared walk manifest: config-typed files within
 /// the historical depth budget, sorted by path (the signature contract).
-fn config_candidates(
-    manifest: &crate::scanner::WalkManifest,
-) -> Vec<&crate::scanner::WalkedFile> {
+fn config_candidates(manifest: &crate::scanner::WalkManifest) -> Vec<&crate::scanner::WalkedFile> {
     let mut candidates: Vec<&crate::scanner::WalkedFile> = manifest
         .files
         .iter()

@@ -26,8 +26,9 @@ use cc_model::parse::ParseOutcome;
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum DirtyReloadPolicy {
     /// Stored target UIDs may be stale (the target's defining file changed),
-    /// so all resolved targets of this category — same-file and cross-file
-    /// alike — are cleared unconditionally for phase 4a re-resolution.
+    /// so resolver-produced targets are cleared for re-resolution. The only
+    /// exemption is a parser-exact same-file call/ref whose complete target
+    /// identity is still present in the unchanged file's symbol inventory.
     ClearResolvedTargets,
     /// Edges of this category are regenerated for every file in the write
     /// batch (phase 4b hierarchy generation overwrites them, and a
@@ -70,10 +71,10 @@ pub(crate) fn dirty_reload_policy(category: ReloadedEdgeCategory) -> DirtyReload
         ReloadedEdgeCategory::CallEdges => ClearResolvedTargets,
         ReloadedEdgeCategory::SymbolRefs => ClearResolvedTargets,
         ReloadedEdgeCategory::RouteEdges => ClearResolvedTargets,
-        // Dispatch sites carry only same-file enclosing UIDs in the DB
-        // (handler UIDs are resolved in-memory during synthesis), so they can
-        // be reused as-is for content-unchanged files.
-        ReloadedEdgeCategory::DispatchSites => KeepAsIs,
+        // The DB schema carries handler_symbol_uid too. Synthesis normally
+        // fills it in memory, but persisted values must not bypass re-resolution.
+        // Keep same-file enclosing identity, clear only the handler target.
+        ReloadedEdgeCategory::DispatchSites => ClearResolvedTargets,
         ReloadedEdgeCategory::SemanticEdge(relation) => match relation {
             // Hierarchy relations are file-local and regenerated for every
             // batch file by phase 4b (dirty-reloaded files are batch files).
@@ -117,7 +118,7 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
         mut call_edges,
         mut symbol_refs,
         mut semantic_edges,
-        dispatch_sites,
+        mut dispatch_sites,
         mut route_edges,
     } = edges;
 
@@ -125,7 +126,32 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     // to its declared policy.
     debug_assert!(!should_clear(ReloadedEdgeCategory::Symbols));
     debug_assert!(!should_clear(ReloadedEdgeCategory::Imports));
-    debug_assert!(!should_clear(ReloadedEdgeCategory::DispatchSites));
+    debug_assert!(should_clear(ReloadedEdgeCategory::DispatchSites));
+
+    // Unchanged source retains parser-proven same-file bindings only when the
+    // exact target identity is still among this file's unchanged symbols.
+    // Resolver/inferred bindings (including same-file ones) must be recomputed.
+    // Build once: testing every edge against a linear symbol scan would make
+    // dirty reload quadratic in a large file's reference/symbol counts.
+    let local_identities: std::collections::HashSet<_> = symbols
+        .iter()
+        .filter_map(|s| {
+            s.symbol_uid
+                .as_deref()
+                .map(|uid| (s.file_path.as_str(), s.symbol_id.as_str(), uid))
+        })
+        .collect();
+    let local_parser_target = |file: &str,
+                               target_file: Option<&str>,
+                               id: Option<&str>,
+                               uid: Option<&str>,
+                               strategy: &str| {
+        strategy == "parser_exact"
+            && target_file == Some(file)
+            && id
+                .zip(uid)
+                .is_some_and(|(id, uid)| local_identities.contains(&(file, id, uid)))
+    };
 
     // Clearing must cover the whole resolved-target state INCLUDING
     // `target_symbol_id`: phase 4c's re-resolution skip gate is
@@ -136,23 +162,48 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
     // re-resolved edge is indistinguishable from a freshly parsed one.
     if should_clear(ReloadedEdgeCategory::CallEdges) {
         for edge in &mut call_edges {
+            if local_parser_target(
+                &edge.file_path,
+                edge.target_file_path.as_deref(),
+                edge.target_symbol_id.as_deref(),
+                edge.callee_symbol_uid.as_deref(),
+                &edge.resolution_strategy,
+            ) {
+                continue;
+            }
             edge.target_symbol_id = None;
             edge.target_file_path = None;
             edge.callee_symbol_uid = None;
             edge.resolution_kind = ResolutionKind::Unresolved;
             edge.resolution_confidence = 0.0;
-            edge.resolution_strategy = String::new();
+            if edge.resolution_strategy != cc_model::resolution::PARSER_UNSUPPORTED_BINDING {
+                edge.resolution_strategy = String::new();
+            }
         }
     }
     if should_clear(ReloadedEdgeCategory::SymbolRefs) {
         for sym_ref in &mut symbol_refs {
+            if local_parser_target(
+                &sym_ref.file_path,
+                sym_ref.target_file_path.as_deref(),
+                sym_ref.target_symbol_id.as_deref(),
+                sym_ref.target_symbol_uid.as_deref(),
+                &sym_ref.resolution_strategy,
+            ) {
+                continue;
+            }
             sym_ref.target_symbol_uid = None;
             sym_ref.target_symbol_id = None;
             sym_ref.target_file_path = None;
             sym_ref.resolution_kind = ResolutionKind::Unresolved;
             sym_ref.resolution_confidence = 0.0;
-            sym_ref.resolution_strategy = String::new();
+            if sym_ref.resolution_strategy != cc_model::resolution::PARSER_UNSUPPORTED_BINDING {
+                sym_ref.resolution_strategy = String::new();
+            }
         }
+    }
+    for site in &mut dispatch_sites {
+        site.handler_symbol_uid = None;
     }
     if should_clear(ReloadedEdgeCategory::RouteEdges) {
         for route in &mut route_edges {
@@ -190,6 +241,7 @@ mod tests {
             ReloadedEdgeCategory::CallEdges,
             ReloadedEdgeCategory::SymbolRefs,
             ReloadedEdgeCategory::RouteEdges,
+            ReloadedEdgeCategory::DispatchSites,
         ] {
             assert_eq!(
                 dirty_reload_policy(category),
@@ -201,11 +253,7 @@ mod tests {
 
     #[test]
     fn local_state_categories_are_kept_as_is() {
-        for category in [
-            ReloadedEdgeCategory::Symbols,
-            ReloadedEdgeCategory::Imports,
-            ReloadedEdgeCategory::DispatchSites,
-        ] {
+        for category in [ReloadedEdgeCategory::Symbols, ReloadedEdgeCategory::Imports] {
             assert_eq!(
                 dirty_reload_policy(category),
                 DirtyReloadPolicy::KeepAsIs,
@@ -347,8 +395,8 @@ mod tests {
                 receiver_expr: None,
                 site_kind: DispatchSiteKind::EventOn,
                 key: String::new(),
-                handler_expr: None,
-                handler_symbol_uid: None,
+                handler_expr: Some("remoteHandler".into()),
+                handler_symbol_uid: Some("stale-cross-file-handler".into()),
                 confidence: 1.0,
             }],
         };
@@ -390,9 +438,13 @@ mod tests {
         );
 
         assert_eq!(
+            outcome.dispatch_sites[0].handler_symbol_uid, None,
+            "persisted dispatch handlers must not survive a dirty reload"
+        );
+        assert_eq!(
             outcome.dispatch_sites[0].enclosing_symbol_uid.as_deref(),
             Some("uEnclosing"),
-            "dispatch sites are kept as-is"
+            "same-file enclosing identity stays while handler target is cleared"
         );
     }
 }

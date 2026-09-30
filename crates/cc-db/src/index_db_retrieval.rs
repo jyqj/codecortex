@@ -32,8 +32,8 @@ pub type ChunkSpansByFile = HashMap<String, Vec<(String, u32, u32)>>;
 
 /// File-scope filter for chunk-level retrieval scans — the structured form
 /// of what cc-search used to render as raw scope SQL (path-prefix LIKE,
-/// language IN, file-path IN). Empty strings / empty lists are treated as
-/// "no filter" for that dimension.
+/// language IN, file-path IN). None adds no restriction; Some(empty list)
+/// explicitly denies all rows. An empty string prefix still matches every path.
 #[derive(Debug, Clone, Default)]
 pub struct ChunkScope {
     pub path_prefix: Option<String>,
@@ -52,30 +52,63 @@ impl ChunkScope {
         language_column: &str,
     ) {
         if let Some(prefix) = self.path_prefix.as_ref().filter(|p| !p.is_empty()) {
-            clauses.push(format!("{file_path_column} LIKE ? ESCAPE '\\'"));
-            params.push(format!("{}%", escape_like(prefix)));
+            let prefix = prefix.trim_end_matches('/');
+            // Binary range for descendants: '/' <= next byte < '0'. No LIKE case-folding,
+            // wildcard interpretation, or out-of-scope rows consuming the candidate LIMIT.
+            clauses.push(format!("({file_path_column} = ? COLLATE BINARY OR ({file_path_column} >= ? COLLATE BINARY AND {file_path_column} < ? COLLATE BINARY))"));
+            params.extend([
+                prefix.to_string(),
+                format!("{prefix}/"),
+                format!("{prefix}0"),
+            ]);
         }
 
-        if let Some(languages) = self.languages.as_ref().filter(|v| !v.is_empty()) {
-            let placeholders = vec!["?"; languages.len()].join(",");
-            clauses.push(format!("{language_column} IN ({placeholders})"));
-            params.extend(languages.iter().cloned());
+        if let Some(languages) = &self.languages {
+            if languages.is_empty() {
+                clauses.push("0".to_string());
+            } else {
+                let placeholders = vec!["?"; languages.len()].join(",");
+                clauses.push(format!("{language_column} IN ({placeholders})"));
+                params.extend(languages.iter().cloned());
+            }
         }
 
-        if let Some(files) = self.file_paths.as_ref().filter(|v| !v.is_empty()) {
-            let placeholders = vec!["?"; files.len()].join(",");
-            clauses.push(format!("{file_path_column} IN ({placeholders})"));
-            params.extend(files.iter().cloned());
+        if let Some(files) = &self.file_paths {
+            if files.is_empty() {
+                clauses.push("0".to_string());
+            } else {
+                let placeholders = vec!["?"; files.len()].join(",");
+                clauses.push(format!("{file_path_column} IN ({placeholders})"));
+                params.extend(files.iter().cloned());
+            }
         }
     }
 
     /// Whether the scope pins an explicit file set (bounds scan cardinality).
     fn has_file_scope(&self) -> bool {
-        self.file_paths
-            .as_ref()
-            .map(|files| !files.is_empty())
-            .unwrap_or(false)
+        self.file_paths.is_some()
     }
+}
+
+/// Measured variants retain the same rows and SQL semantics as legacy callers.
+pub struct FtsCandidates {
+    pub rows: Vec<(String, String, String)>,
+    /// Native negative-better SQLite BM25, separate from the legacy row shape.
+    pub raw_scores: HashMap<String, f64>,
+    pub work: cc_model::retrieval_cost::SqlWork,
+}
+pub struct HydratedChunks {
+    pub rows: Vec<ChunkDetailRow>,
+    pub work: cc_model::retrieval_cost::ReadWork,
+}
+
+/// Cursor coverage is observed before decoding; reaching a cap never decodes cap+1.
+#[derive(Debug, Clone, Copy, Default)]
+pub struct GrepScanReport {
+    pub decoded: usize,
+    pub skipped: usize,
+    pub exhausted: bool,
+    pub work: cc_model::retrieval_cost::ReadWork,
 }
 
 /// One decoded chunk row visited by [`RetrievalReadModel::scan_chunks_for_grep`].
@@ -185,6 +218,16 @@ impl<'a> RetrievalReadModel<'a> {
         scope: &ChunkScope,
         limit: usize,
     ) -> CcResult<Vec<(String, String, String)>> {
+        self.fts_chunk_candidates_with_work(sanitized_query, scope, limit)
+            .map(|r| r.rows)
+    }
+
+    pub fn fts_chunk_candidates_with_work(
+        &self,
+        sanitized_query: &str,
+        scope: &ChunkScope,
+        limit: usize,
+    ) -> CcResult<FtsCandidates> {
         let mut sql =
             "SELECT chunks_fts.chunk_id, chunks.file_path, chunks.language, bm25(chunks_fts, 1.0, 1.0, 2.0) AS score
              FROM chunks_fts
@@ -205,7 +248,7 @@ impl<'a> RetrievalReadModel<'a> {
             sql.push_str(" AND ");
             sql.push_str(&clauses.join(" AND "));
         }
-        sql.push_str(" ORDER BY score LIMIT ");
+        sql.push_str(" ORDER BY score, chunks.chunk_id LIMIT ");
         sql.push_str(&limit.to_string());
 
         let conn = self.db.read_conn()?;
@@ -216,10 +259,91 @@ impl<'a> RetrievalReadModel<'a> {
                     row.get::<_, String>(0)?,
                     row.get::<_, String>(1)?,
                     row.get::<_, String>(2)?,
+                    row.get::<_, f64>(3)?,
                 ))
             })
             .map_err(db_err)?;
-        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+        let scored = rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?;
+        let work = crate::statement_work::finish(&stmt, scored.len());
+        let raw_scores = scored
+            .iter()
+            .map(|(id, _, _, score)| (id.clone(), *score))
+            .collect();
+        let rows = scored
+            .into_iter()
+            .map(|(id, path, language, _)| (id, path, language))
+            .collect();
+        Ok(FtsCandidates {
+            rows,
+            raw_scores,
+            work,
+        })
+    }
+
+    /// One bounded scan stage. Duplicate ids and the budget are checked before decompression.
+    /// `exhausted` is true only after observing the end of this stage's cursor.
+    pub fn scan_grep_stage(
+        &self,
+        scope: &ChunkScope,
+        phrase: Option<&str>,
+        skip: &std::collections::HashSet<String>,
+        decode_cap: usize,
+        mut visit: impl FnMut(GrepChunkRow) -> bool,
+    ) -> CcResult<GrepScanReport> {
+        let mut sql =
+            "SELECT c.chunk_id,c.file_path,c.language,c.text,c.text_encoding,c.rowid FROM chunks c"
+                .to_string();
+        let mut clauses = Vec::new();
+        let mut params = Vec::new();
+        if let Some(phrase) = phrase {
+            sql.push_str(" JOIN chunks_fts ON chunks_fts.chunk_id=c.chunk_id");
+            clauses.push("chunks_fts MATCH ?".to_string());
+            params.push(phrase.to_string());
+        }
+        scope.push_clauses(&mut clauses, &mut params, "c.file_path", "c.language");
+        if !clauses.is_empty() {
+            sql.push_str(" WHERE ");
+            sql.push_str(&clauses.join(" AND "));
+        }
+        if phrase.is_some() || !scope.has_file_scope() {
+            sql.push_str(" ORDER BY c.rowid DESC");
+        }
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let mut rows = stmt
+            .query(rusqlite::params_from_iter(params.iter()))
+            .map_err(db_err)?;
+        let mut report = GrepScanReport::default();
+        loop {
+            let Some(row) = rows.next().map_err(db_err)? else {
+                report.exhausted = true;
+                break;
+            };
+            report.work.sql.rows += 1;
+            let cid: String = row.get(0).map_err(db_err)?;
+            if skip.contains(&cid) {
+                report.skipped += 1;
+                continue;
+            }
+            if report.decoded >= decode_cap {
+                break;
+            }
+            let decoded = GrepChunkRow {
+                chunk_id: cid,
+                file_path: row.get(1).map_err(db_err)?,
+                language_name: row.get(2).map_err(db_err)?,
+                text: read_chunk_text_with_encoding(row, 3, 4).map_err(db_err)?,
+                rowid: row.get(5).map_err(db_err)?,
+            };
+            crate::statement_work::text(&mut report.work.text, row, 4, decoded.text.len(), false);
+            report.decoded += 1;
+            if !visit(decoded) {
+                break;
+            }
+        }
+        drop(rows);
+        report.work.sql = crate::statement_work::finish(&stmt, report.work.sql.rows);
+        Ok(report)
     }
 
     /// Streaming scan over decoded chunk text for the grep lane, in scope.
@@ -243,58 +367,21 @@ impl<'a> RetrievalReadModel<'a> {
         skip: Option<&std::collections::HashSet<String>>,
         mut visit: impl FnMut(GrepChunkRow) -> bool,
     ) -> CcResult<()> {
-        let mut sql =
-            "SELECT chunk_id, file_path, language, text, text_encoding, rowid FROM chunks"
-                .to_string();
-        let mut clauses: Vec<String> = Vec::new();
-        let mut params: Vec<String> = Vec::new();
-
-        scope.push_clauses(&mut clauses, &mut params, "file_path", "language");
-
-        if !clauses.is_empty() {
-            sql.push_str(" WHERE ");
-            sql.push_str(&clauses.join(" AND "));
-        }
-        if !scope.has_file_scope() {
-            sql.push_str(" ORDER BY rowid DESC");
-        }
-
-        let conn = self.db.read_conn()?;
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                let cid = row.get::<_, String>(0)?;
-                if skip.is_some_and(|seen| seen.contains(&cid)) {
-                    return Ok(None);
-                }
-                Ok(Some(GrepChunkRow {
-                    chunk_id: cid,
-                    file_path: row.get::<_, String>(1)?,
-                    language_name: row.get::<_, String>(2)?,
-                    text: read_chunk_text_with_encoding(row, 3, 4)?,
-                    rowid: row.get::<_, i64>(5)?,
-                }))
-            })
-            .map_err(db_err)?;
-
-        for row in rows {
-            let Some(row) = row.map_err(db_err)? else {
-                continue;
-            };
-            if !visit(row) {
-                break;
-            }
-        }
-        Ok(())
+        self.scan_grep_stage(
+            scope,
+            None,
+            skip.unwrap_or(&std::collections::HashSet::new()),
+            usize::MAX,
+            &mut visit,
+        )
+        .map(|_| ())
     }
 
-    /// FTS-prefiltered variant of [`Self::scan_chunks_for_grep`]: same
-    /// columns and scope clauses, but candidates come from a `chunks_fts`
-    /// MATCH (the `phrase` parameter, a token-boundary superset of the grep
-    /// literal — see cc-search's `grep_prefilter_phrase`) joined back to
-    /// `chunks`, instead of a full table walk. Used by the grep lane's
-    /// stage-1 scan; the recency order and `scan_cap` LIMIT keep its budget
-    /// semantics identical to the unscoped full scan.
+    /// Compatibility wrapper over the same bounded stage implementation.
+    /// FTS phrase prefiltering is opportunistic: token boundaries can miss a
+    /// substring inside a token. The production grep planner uses
+    /// `scan_grep_stage` directly and reserves a hard-scope fallback. This
+    /// wrapper does not establish complete grep coverage or an SQL work limit.
     pub fn scan_chunks_for_grep_prefiltered(
         &self,
         phrase: &str,
@@ -302,49 +389,14 @@ impl<'a> RetrievalReadModel<'a> {
         scope: &ChunkScope,
         mut visit: impl FnMut(GrepChunkRow) -> bool,
     ) -> CcResult<()> {
-        let mut sql = "SELECT chunks.chunk_id, chunks.file_path, chunks.language, chunks.text, \
-                       chunks.text_encoding, chunks.rowid \
-                       FROM chunks_fts JOIN chunks ON chunks.chunk_id = chunks_fts.chunk_id \
-                       WHERE chunks_fts MATCH ?"
-            .to_string();
-        let mut clauses: Vec<String> = Vec::new();
-        let mut params: Vec<String> = vec![phrase.to_string()];
-
-        scope.push_clauses(
-            &mut clauses,
-            &mut params,
-            "chunks.file_path",
-            "chunks.language",
-        );
-
-        if !clauses.is_empty() {
-            sql.push_str(" AND ");
-            sql.push_str(&clauses.join(" AND "));
-        }
-        sql.push_str(" ORDER BY chunks.rowid DESC LIMIT ");
-        sql.push_str(&scan_cap.to_string());
-
-        let conn = self.db.read_conn()?;
-        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let rows = stmt
-            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
-                Ok(GrepChunkRow {
-                    chunk_id: row.get::<_, String>(0)?,
-                    file_path: row.get::<_, String>(1)?,
-                    language_name: row.get::<_, String>(2)?,
-                    text: read_chunk_text_with_encoding(row, 3, 4)?,
-                    rowid: row.get::<_, i64>(5)?,
-                })
-            })
-            .map_err(db_err)?;
-
-        for row in rows {
-            let row = row.map_err(db_err)?;
-            if !visit(row) {
-                break;
-            }
-        }
-        Ok(())
+        self.scan_grep_stage(
+            scope,
+            Some(phrase),
+            &std::collections::HashSet::new(),
+            scan_cap,
+            &mut visit,
+        )
+        .map(|_| ())
     }
 
     /// Path-token substring match via the trigram `file_paths_fts` mirror,
@@ -418,6 +470,81 @@ impl<'a> RetrievalReadModel<'a> {
             results.push(hits);
         }
         Ok(results)
+    }
+
+    /// Path-token matches with the complete chunk hard scope applied before
+    /// each per-token LIMIT. Short tokens fall back to the base `files` table;
+    /// this is a path retrieval lane, not a soft preselection whitelist.
+    pub fn path_token_file_hits_many_scoped(
+        &self,
+        tokens: &[&str],
+        scope: &ChunkScope,
+        per_token_limit: usize,
+    ) -> CcResult<Vec<Vec<String>>> {
+        if tokens.is_empty() || per_token_limit == 0 {
+            return Ok(vec![Vec::new(); tokens.len()]);
+        }
+        let conn = self.db.read_conn()?;
+        let mut results = Vec::with_capacity(tokens.len());
+        for token in tokens {
+            let path_column = if token.chars().count() < 3 {
+                "f.file_path"
+            } else {
+                "p.file_path"
+            };
+            let mut clauses = vec![
+                format!("{path_column} LIKE ? ESCAPE '\\'"),
+                "EXISTS (SELECT 1 FROM chunks c WHERE c.file_path=f.file_path)".to_string(),
+            ];
+            let mut params = vec![format!("%{}%", escape_like(token))];
+            scope.push_clauses(&mut clauses, &mut params, "f.file_path", "f.language");
+            let from = if token.chars().count() < 3 {
+                "files f"
+            } else {
+                "file_paths_fts p JOIN files f ON f.rowid=p.rowid"
+            };
+            let sql = format!(
+                "SELECT DISTINCT f.file_path FROM {from} WHERE {} ORDER BY f.file_path LIMIT {per_token_limit}",
+                clauses.join(" AND ")
+            );
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                    row.get::<_, String>(0)
+                })
+                .map_err(db_err)?;
+            results.push(rows.collect::<Result<Vec<_>, _>>().map_err(db_err)?);
+        }
+        Ok(results)
+    }
+
+    /// One deterministic representative per admitted file. Do not load every
+    /// chunk in each file merely to select its first source range.
+    pub fn first_chunk_ids_for_files(&self, files: &[&str]) -> CcResult<HashMap<String, String>> {
+        if files.is_empty() {
+            return Ok(HashMap::new());
+        }
+        let conn = self.db.read_conn()?;
+        let mut result = HashMap::with_capacity(files.len());
+        for batch in files.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT f.file_path,(SELECT c.chunk_id FROM chunks c WHERE c.file_path=f.file_path ORDER BY c.start_line,c.end_line,c.chunk_id LIMIT 1) FROM files f WHERE f.file_path IN ({})",
+                sql_in_placeholders(batch.len())
+            );
+            let mut statement = conn.prepare_cached(&sql).map_err(db_err)?;
+            let rows = statement
+                .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, Option<String>>(1)?))
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                let (file, chunk) = row.map_err(db_err)?;
+                if let Some(chunk) = chunk {
+                    result.insert(file, chunk);
+                }
+            }
+        }
+        Ok(result)
     }
 
     /// Symbol-name substring match via the trigram `symbols_fts` mirror,
@@ -514,18 +641,13 @@ impl<'a> RetrievalReadModel<'a> {
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
-    /// Batch-fetch full chunk rows by chunk id, queried in
-    /// [`IN_BATCH_SIZE`]-sized `IN (...)` batches like the sibling
-    /// batch methods.
-    ///
-    /// `cached_texts` lets callers supply already-decoded text per chunk id
-    /// (e.g. from a decompression cache); for those rows the stored text
-    /// column is not decoded again. Row order is unspecified (DB order).
-    pub fn chunk_rows_by_ids(
+    /// Resolve versioned document/source identity for lane candidates without
+    /// decoding chunk text. Full record/text validation still happens during
+    /// final hydration; malformed mirrors and missing required manifests fail.
+    pub fn chunk_candidate_rows_by_ids(
         &self,
         chunk_ids: &[&str],
-        cached_texts: &HashMap<String, Arc<str>>,
-    ) -> CcResult<Vec<ChunkDetailRow>> {
+    ) -> CcResult<Vec<crate::index_db::ChunkCandidateRow>> {
         if chunk_ids.is_empty() {
             return Ok(Vec::new());
         }
@@ -533,21 +655,236 @@ impl<'a> RetrievalReadModel<'a> {
         let mut results = Vec::with_capacity(chunk_ids.len());
         for batch in chunk_ids.chunks(IN_BATCH_SIZE) {
             let sql = format!(
-                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, \
-                 symbol_name, symbol_kind, text, text_encoding \
-                 FROM chunks WHERE chunk_id IN ({})",
+                "SELECT c.chunk_id,c.file_path,c.language,c.source_json,\
+                 d.reference_json,d.doc_key,d.doc_version,d.encoding_key,\
+                 f.document_spec,f.content_hash \
+                 FROM chunks c JOIN files f ON f.file_path=c.file_path \
+                 LEFT JOIN document_manifest d ON d.chunk_id=c.chunk_id \
+                 WHERE c.chunk_id IN ({})",
                 sql_in_placeholders(batch.len()),
             );
             let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
             let rows = stmt
                 .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
+                    Ok((
+                        row.get::<_, String>(0)?,
+                        row.get::<_, String>(1)?,
+                        row.get::<_, String>(2)?,
+                        row.get::<_, Option<String>>(3)?,
+                        row.get::<_, Option<String>>(4)?,
+                        row.get::<_, Option<String>>(5)?,
+                        row.get::<_, Option<String>>(6)?,
+                        row.get::<_, Option<String>>(7)?,
+                        row.get::<_, Option<String>>(8)?,
+                        row.get::<_, String>(9)?,
+                    ))
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                let (
+                    chunk_id,
+                    file_path,
+                    language,
+                    source_json,
+                    reference_json,
+                    doc_key,
+                    doc_version,
+                    encoding_key,
+                    document_spec,
+                    content_hash,
+                ) = row.map_err(db_err)?;
+                let source_json = source_json.ok_or_else(|| {
+                    cc_model::CcError::Database("candidate missing source evidence".into())
+                })?;
+                let reference_json = reference_json.ok_or_else(|| {
+                    cc_model::CcError::Database("candidate missing document manifest".into())
+                })?;
+                if document_spec.is_none() {
+                    return Err(cc_model::CcError::Database(
+                        "candidate file missing document specification".into(),
+                    ));
+                }
+                let source: cc_model::source::ChunkSource = serde_json::from_str(&source_json)?;
+                let reference: cc_model::identity::DocumentRef =
+                    serde_json::from_str(&reference_json)?;
+                let valid_span = source.span.start < source.span.end
+                    && source.span.end <= source.source.byte_len;
+                if !cc_model::repo_path::is_canonical_file(&file_path)
+                    || !valid_span
+                    || source.source.content_digest != content_hash
+                    || doc_key.as_deref() != Some(reference.doc_key.as_str())
+                    || doc_version.as_deref() != Some(reference.doc_version.as_str())
+                    || encoding_key != reference.encoding_key
+                {
+                    return Err(cc_model::CcError::Database(
+                        "candidate document/source mirror mismatch".into(),
+                    ));
+                }
+                results.push(crate::index_db::ChunkCandidateRow {
+                    document: reference,
+                    source_evidence: source,
+                    chunk_id,
+                    file_path,
+                    language,
+                });
+            }
+        }
+        Ok(results)
+    }
+
+    /// Batch-fetch full chunk rows by chunk id, queried in
+    /// [`IN_BATCH_SIZE`]-sized `IN (...)` batches like the sibling
+    /// batch methods.
+    ///
+    /// `cached_texts` supplies decoding hints, not authoritative source text.
+    /// Only hints matching the current row's source proof avoid a storage decode.
+    /// Missing proof or a stale hint reads the stored blob; invalid persisted
+    /// evidence still fails validation. Row order is unspecified (DB order).
+    pub fn chunk_rows_by_ids(
+        &self,
+        chunk_ids: &[&str],
+        cached_texts: &HashMap<String, Arc<str>>,
+    ) -> CcResult<Vec<ChunkDetailRow>> {
+        self.chunk_rows_by_ids_with_work(chunk_ids, cached_texts)
+            .map(|r| r.rows)
+    }
+
+    pub fn chunk_rows_by_ids_with_work(
+        &self,
+        chunk_ids: &[&str],
+        cached_texts: &HashMap<String, Arc<str>>,
+    ) -> CcResult<HydratedChunks> {
+        let mut work = cc_model::retrieval_cost::ReadWork::default();
+        if chunk_ids.is_empty() {
+            return Ok(HydratedChunks {
+                rows: Vec::new(),
+                work,
+            });
+        }
+        let conn = self.db.read_conn()?;
+        let mut results = Vec::with_capacity(chunk_ids.len());
+        for batch in chunk_ids.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT chunk_id, file_path, language, start_line, end_line, breadcrumb, \
+                 symbol_name, symbol_kind, text, text_encoding, source_json, \
+                 (SELECT record_json FROM document_manifest d WHERE d.chunk_id=chunks.chunk_id), \
+                 (SELECT document_spec FROM files f WHERE f.file_path=chunks.file_path), \
+                 (SELECT reference_json FROM document_manifest d WHERE d.chunk_id=chunks.chunk_id) \
+                 FROM chunks WHERE chunk_id IN ({})",
+                sql_in_placeholders(batch.len()),
+            );
+            let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
+            crate::statement_work::reset(&stmt);
+            let before = results.len();
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
                     let chunk_id: String = row.get(0)?;
-                    let text = if let Some(cached) = cached_texts.get(&chunk_id) {
-                        cached.to_string()
-                    } else {
-                        read_chunk_text_with_encoding(row, 8, 9)?
+                    let source_json: Option<String> = row.get(10)?;
+                    let source_evidence = source_json
+                        .as_deref()
+                        .map(|raw| {
+                            serde_json::from_str::<cc_model::source::ChunkSource>(raw).map_err(
+                                |e| {
+                                    rusqlite::Error::FromSqlConversionFailure(
+                                        10,
+                                        rusqlite::types::Type::Text,
+                                        Box::new(e),
+                                    )
+                                },
+                            )
+                        })
+                        .transpose()?;
+                    // A caller-owned cache is only a decoding hint. Validate it
+                    // against this row's source proof before reuse; a concurrent
+                    // write can keep a legacy chunk locator but change its bytes.
+                    let cached = cached_texts.get(&chunk_id).filter(|text| {
+                        source_evidence
+                            .as_ref()
+                            .is_some_and(|proof| proof.validate(text))
+                    });
+                    let text = match cached {
+                        Some(text) => text.to_string(),
+                        None => read_chunk_text_with_encoding(row, 8, 9)?,
                     };
+                    crate::statement_work::text(
+                        &mut work.text,
+                        row,
+                        9,
+                        text.len(),
+                        cached.is_some(),
+                    );
+                    // The fallback is not an exemption: corrupt stored bytes or
+                    // source evidence still fail before document hydration.
+                    if source_evidence
+                        .as_ref()
+                        .is_some_and(|proof| !proof.validate(&text))
+                    {
+                        return Err(rusqlite::Error::FromSqlConversionFailure(
+                            10,
+                            rusqlite::types::Type::Text,
+                            Box::new(std::io::Error::new(
+                                std::io::ErrorKind::InvalidData,
+                                "chunk source evidence does not match hydrated text",
+                            )),
+                        ));
+                    }
+                    let path: String = row.get(1)?;
+                    let document = row
+                        .get::<_, Option<String>>(11)?
+                        .map(|raw| {
+                            crate::document_store::decode(
+                                &raw,
+                                &text,
+                                &chunk_id,
+                                &path,
+                                source_evidence.as_ref(),
+                            )
+                            .map_err(|e| {
+                                rusqlite::Error::FromSqlConversionFailure(
+                                    11,
+                                    rusqlite::types::Type::Text,
+                                    Box::new(e),
+                                )
+                            })
+                        })
+                        .transpose()?;
+                    if row.get::<_, Option<String>>(12)?.is_some()
+                        && source_evidence.is_some()
+                        && document.is_none()
+                    {
+                        return Err(rusqlite::Error::FromSqlConversionFailure(
+                            11,
+                            rusqlite::types::Type::Null,
+                            Box::new(std::io::Error::new(
+                                std::io::ErrorKind::InvalidData,
+                                "missing required document manifest",
+                            )),
+                        ));
+                    }
+                    if let Some(reference) = &document {
+                        let raw: String = row.get(13)?;
+                        let mirror: cc_model::identity::DocumentRef = serde_json::from_str(&raw)
+                            .map_err(|e| {
+                                rusqlite::Error::FromSqlConversionFailure(
+                                    13,
+                                    rusqlite::types::Type::Text,
+                                    Box::new(e),
+                                )
+                            })?;
+                        if *reference != mirror {
+                            return Err(rusqlite::Error::FromSqlConversionFailure(
+                                13,
+                                rusqlite::types::Type::Text,
+                                Box::new(std::io::Error::new(
+                                    std::io::ErrorKind::InvalidData,
+                                    "document mirror mismatch",
+                                )),
+                            ));
+                        }
+                    }
                     Ok(ChunkDetailRow {
+                        document,
+                        source_evidence,
                         chunk_id,
                         file_path: row.get(1)?,
                         language: row.get(2)?,
@@ -563,8 +900,13 @@ impl<'a> RetrievalReadModel<'a> {
             for row in rows {
                 results.push(row.map_err(db_err)?);
             }
+            work.sql
+                .merge(crate::statement_work::finish(&stmt, results.len() - before));
         }
-        Ok(results)
+        Ok(HydratedChunks {
+            rows: results,
+            work,
+        })
     }
 
     /// Graph-lane seed lookup: `(symbol_uid, name)` pairs whose name contains
@@ -628,6 +970,321 @@ impl<'a> RetrievalReadModel<'a> {
             params_vec.iter().map(|p| p.as_ref()).collect();
         let rows = stmt
             .query_map(param_refs.as_slice(), |row| row.get::<_, String>(0))
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Graph seeds are scoped before their cap, so outside matches cannot starve a valid seed.
+    pub fn symbol_seed_hits_scoped(
+        &self,
+        token: &str,
+        scope: &ChunkScope,
+        limit: usize,
+    ) -> CcResult<Vec<(String, String)>> {
+        let mut clauses = vec!["s.symbol_uid IS NOT NULL".to_string()];
+        let trigram_join = if token.chars().count() >= 3 {
+            " JOIN symbols_fts g ON g.symbol_id=s.symbol_id"
+        } else {
+            ""
+        };
+        let mut params = Vec::new();
+        if token.chars().count() < 3 {
+            let mut chars = token.chars();
+            let capitalized = chars
+                .next()
+                .map(|c| c.to_uppercase().collect::<String>() + chars.as_str())
+                .unwrap_or_default();
+            clauses.push("s.name IN (?,?)".into());
+            params.extend([token.into(), capitalized]);
+        } else {
+            // The unescaped FTS LIKE is a candidate superset; the second predicate
+            // restores literal wildcard semantics without dropping trigram acceleration.
+            clauses.push("g.name LIKE ?".into());
+            params.push(format!("%{token}%"));
+            clauses.push("s.name LIKE ? ESCAPE '\\'".into());
+            params.push(format!("%{}%", escape_like(token)));
+        }
+        scope.push_clauses(&mut clauses, &mut params, "s.file_path", "f.language");
+        params.push(token.into());
+        let sql=format!("SELECT s.symbol_uid,s.name FROM symbols s JOIN files f ON f.file_path=s.file_path{trigram_join} WHERE {} ORDER BY (lower(s.name)=lower(?)) DESC,length(s.name),s.symbol_uid LIMIT {limit}",clauses.join(" AND "));
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |r| {
+                Ok((r.get(0)?, r.get(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Unique in-scope graph neighbors per seed, filtered before a per-seed cap.
+    /// Missing targets cannot become evidence. No pooled connection escapes this call.
+    pub fn graph_neighbor_uids_scoped(
+        &self,
+        seeds: &[&str],
+        scope: &ChunkScope,
+        per_seed: usize,
+    ) -> CcResult<Vec<(String, String)>> {
+        self.graph_neighbor_uids_scoped_with_coverage(seeds, scope, per_seed)
+            .map(|(rows, _)| rows)
+    }
+
+    /// Probe one extra neighbor per seed and direction without changing the
+    /// retained ranking. The boolean reports an observed truncation, not an
+    /// estimate derived from the final number of chunk candidates.
+    pub fn graph_neighbor_uids_scoped_with_coverage(
+        &self,
+        seeds: &[&str],
+        scope: &ChunkScope,
+        per_seed: usize,
+    ) -> CcResult<(Vec<(String, String)>, bool)> {
+        if seeds.is_empty() {
+            return Ok((Vec::new(), false));
+        }
+        let probe_limit = per_seed.saturating_add(1);
+        let conn = self.db.read_conn()?;
+        let mut result = Vec::new();
+        let mut truncated = false;
+        for (seed_col, neighbor_col) in [
+            ("caller_symbol_uid", "callee_symbol_uid"),
+            ("callee_symbol_uid", "caller_symbol_uid"),
+        ] {
+            let mut params: Vec<String> = seeds.iter().map(|s| s.to_string()).collect();
+            let mut clauses = vec![format!(
+                "e.{seed_col} IN ({})",
+                vec!["?"; seeds.len()].join(",")
+            )];
+            scope.push_clauses(&mut clauses, &mut params, "s.file_path", "f.language");
+            let sql=format!("WITH unique_neighbors AS (SELECT e.{seed_col} AS seed,s.symbol_uid AS neighbor,min(e.line) AS first_line FROM call_edges e JOIN symbols s ON s.symbol_uid=e.{neighbor_col} JOIN files f ON f.file_path=s.file_path WHERE {} GROUP BY seed,neighbor), ranked AS (SELECT seed,neighbor,row_number() OVER(PARTITION BY seed ORDER BY first_line,neighbor) AS position FROM unique_neighbors) SELECT seed,neighbor FROM ranked WHERE position <= {probe_limit} ORDER BY seed,position",clauses.join(" AND "));
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(params.iter()), |r| {
+                    Ok((r.get::<_, String>(0)?, r.get::<_, String>(1)?))
+                })
+                .map_err(db_err)?;
+            let mut counts = HashMap::<String, usize>::new();
+            for row in rows {
+                let row = row.map_err(db_err)?;
+                let count = counts.entry(row.0.clone()).or_default();
+                *count += 1;
+                if *count > per_seed {
+                    truncated = true;
+                } else {
+                    result.push(row);
+                }
+            }
+        }
+        Ok((result, truncated))
+    }
+
+    /// Scoped witness edges for supplemental context. Both the witness path and
+    /// the neighbor definition must pass before per-seed limits and deduplication.
+    pub fn scoped_call_rows(
+        &self,
+        seeds: &[&str],
+        scope: &ChunkScope,
+        per_seed: usize,
+        incoming: bool,
+    ) -> CcResult<HashMap<String, Vec<crate::index_db::CallEdgeLite>>> {
+        let mut grouped: HashMap<String, Vec<crate::index_db::CallEdgeLite>> = HashMap::new();
+        if seeds.is_empty() || per_seed == 0 {
+            return Ok(grouped);
+        }
+        let (seed, neighbor) = if incoming {
+            ("callee_symbol_uid", "caller_symbol_uid")
+        } else {
+            ("caller_symbol_uid", "callee_symbol_uid")
+        };
+        let mut unique = seeds.to_vec();
+        unique.sort_unstable();
+        unique.dedup();
+        let conn = self.db.read_conn()?;
+        for batch in unique.chunks(IN_BATCH_SIZE) {
+            let mut params: Vec<String> = batch.iter().map(|p| p.to_string()).collect();
+            let mut clauses = vec![format!(
+                "e.{seed} IN ({})",
+                vec!["?"; batch.len()].join(",")
+            )];
+            scope.push_clauses(&mut clauses, &mut params, "s.file_path", "f.language");
+            scope.push_clauses(&mut clauses, &mut params, "e.file_path", "w.language");
+            let columns="file_path,line,caller_symbol,callee_symbol,caller_symbol_uid,callee_symbol_uid,resolution_kind,resolution_confidence,dispatch_kind,synthesized_by,synthesis_key,registered_file,registered_line";
+            let qualified = columns
+                .split(',')
+                .map(|c| format!("e.{c}"))
+                .collect::<Vec<_>>()
+                .join(",");
+            let sql=format!("WITH witnesses AS (SELECT {qualified}, e.{seed} AS seed_uid,e.rowid AS edge_row,row_number() OVER(PARTITION BY e.{seed},e.{neighbor} ORDER BY e.line,e.rowid) AS duplicate FROM call_edges e JOIN symbols s ON s.symbol_uid=e.{neighbor} JOIN files f ON f.file_path=s.file_path JOIN files w ON w.file_path=e.file_path WHERE {}), ranked AS (SELECT *,row_number() OVER(PARTITION BY seed_uid ORDER BY line,edge_row) AS position FROM witnesses WHERE duplicate=1) SELECT {columns},seed_uid FROM ranked WHERE position<={per_seed} ORDER BY seed_uid,position",clauses.join(" AND "));
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(params.iter()), |r| {
+                    Ok((r.get::<_, String>(13)?, crate::rows::call_edge_lite(r)?))
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                let (seed, edge) = row.map_err(db_err)?;
+                grouped.entry(seed).or_default().push(edge);
+            }
+        }
+        Ok(grouped)
+    }
+
+    /// Exact name/qname/signature lookup, scoped before admission. Definitions
+    /// map by byte position, not merely a shared name or source line. Retain
+    /// ambiguous matches in deterministic order; LIMIT counts verified unique
+    /// documents, so an earlier same-line sibling cannot consume the budget.
+    pub fn exact_symbol_chunk_hits(
+        &self,
+        query: &str,
+        scope: &ChunkScope,
+        limit: usize,
+    ) -> CcResult<Vec<(String, f64)>> {
+        if query.is_empty() || limit == 0 {
+            return Ok(Vec::new());
+        }
+        let mut clauses = vec![
+            "(s.name=?1 COLLATE BINARY OR s.qname=?1 COLLATE BINARY OR s.signature=?1 COLLATE BINARY)".to_string(),
+        ];
+        let mut params = vec![query.to_string()];
+        scope.push_clauses(&mut clauses, &mut params, "c.file_path", "c.language");
+        let sql = format!(
+            "SELECT c.chunk_id,c.source_json,s.file_path,s.start_line,s.start_col,\
+             CASE WHEN s.name=?1 COLLATE BINARY THEN 1.0 WHEN s.qname=?1 COLLATE BINARY THEN 0.95 ELSE 0.9 END AS raw_score \
+             FROM symbols s JOIN chunks c ON c.file_path=s.file_path \
+             AND c.start_line<=s.start_line AND c.end_line>=s.start_line \
+             WHERE {} ORDER BY raw_score DESC,c.end_line-c.start_line,c.start_line,c.chunk_id,s.symbol_id",
+            clauses.join(" AND ")
+        );
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                Ok((
+                    row.get::<_, String>(0)?,
+                    row.get::<_, String>(1)?,
+                    row.get::<_, String>(2)?,
+                    row.get::<_, u32>(3)?,
+                    row.get::<_, u32>(4)?,
+                    row.get::<_, f64>(5)?,
+                ))
+            })
+            .map_err(db_err)?;
+        let mut starts = HashMap::<(String, u32), (String, usize)>::new();
+        let mut seen = std::collections::HashSet::new();
+        let mut hits = Vec::new();
+        for row in rows {
+            let (id, raw, file, line, column, score) = row.map_err(db_err)?;
+            if seen.contains(&id) {
+                continue;
+            }
+            let proof: cc_model::source::ChunkSource = serde_json::from_str(&raw)?;
+            let key = (file.clone(), line);
+            if !starts.contains_key(&key) {
+                // The exact byte partition guarantees the earliest chunk
+                // occupying this line contains its beginning. Decode just that
+                // bounded prefix chunk, never the whole file or filesystem.
+                let (text, raw, first): (String, String, u32) = conn.query_row(
+                    "SELECT text,text_encoding,source_json,start_line FROM chunks WHERE file_path=?1 AND start_line<=?2 AND end_line>=?2 ORDER BY json_extract(source_json,'$.span.start') LIMIT 1",
+                    rusqlite::params![file, line], |row| Ok((
+                        read_chunk_text_with_encoding(row, 0, 1)?, row.get(2)?, row.get(3)?
+                    )),
+                ).map_err(db_err)?;
+                let prefix: cc_model::source::ChunkSource = serde_json::from_str(&raw)?;
+                if !prefix.validate(&text) || prefix.source != proof.source {
+                    return Err(cc_model::CcError::Database(
+                        "exact lookup source changed or is corrupt; retry".into(),
+                    ));
+                }
+                let snapshot = cc_model::source::SourceSnapshot::new(text.as_bytes());
+                let local_line = (line - first) as usize + 1;
+                let start = snapshot.line_start(local_line).ok_or_else(|| {
+                    cc_model::CcError::Database("exact lookup line outside source".into())
+                })?;
+                let offset = prefix.span.start.checked_add(start).ok_or_else(|| {
+                    cc_model::CcError::Database("exact lookup coordinate overflow".into())
+                })?;
+                starts.insert(key.clone(), (prefix.source.snapshot_id, offset));
+            }
+            let (snapshot, start) = &starts[&key];
+            if snapshot != &proof.source.snapshot_id {
+                return Err(cc_model::CcError::Database(
+                    "exact lookup mixed source versions; retry".into(),
+                ));
+            }
+            let position = start.checked_add(column as usize).ok_or_else(|| {
+                cc_model::CcError::Database("exact lookup coordinate overflow".into())
+            })?;
+            if proof.span.start <= position && position < proof.span.end {
+                seen.insert(id.clone());
+                hits.push((id, score));
+                if hits.len() == limit {
+                    break;
+                }
+            }
+        }
+        Ok(hits)
+    }
+
+    /// Exact canonical path candidates, filtered before LIMIT. The path lane
+    /// may additionally add token matches, but only these rows are identity-tier.
+    pub fn exact_path_chunk_hits(
+        &self,
+        query: &str,
+        scope: &ChunkScope,
+        limit: usize,
+    ) -> CcResult<Vec<(String, f64)>> {
+        if limit == 0 {
+            return Ok(Vec::new());
+        }
+        let Ok(path) = cc_model::repo_path::normalize_relative(query) else {
+            return Ok(Vec::new());
+        };
+        if path.is_empty() {
+            return Ok(Vec::new());
+        }
+        let mut clauses = vec!["c.file_path=? COLLATE BINARY".to_string()];
+        let mut params = vec![path];
+        scope.push_clauses(&mut clauses, &mut params, "c.file_path", "c.language");
+        let sql = format!(
+            "SELECT c.chunk_id,1.0 FROM chunks c WHERE {} ORDER BY c.start_line,c.chunk_id LIMIT {limit}",
+            clauses.join(" AND ")
+        );
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(params.iter()), |row| {
+                Ok((row.get::<_, String>(0)?, row.get::<_, f64>(1)?))
+            })
+            .map_err(db_err)?;
+        rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
+    }
+
+    /// Symbol-mode lookup with the same pre-LIMIT scope as hybrid retrieval.
+    pub fn scoped_symbol_rows(
+        &self,
+        name: &str,
+        exact: bool,
+        scope: &ChunkScope,
+        limit: usize,
+    ) -> CcResult<Vec<crate::index_db::SymbolRow>> {
+        let mut clauses = vec![if exact {
+            "s.name=? COLLATE BINARY".into()
+        } else {
+            "s.name LIKE ? ESCAPE '\\'".into()
+        }];
+        let mut params = vec![if exact {
+            name.to_string()
+        } else {
+            format!("%{}%", escape_like(name))
+        }];
+        scope.push_clauses(&mut clauses, &mut params, "s.file_path", "f.language");
+        let sql=format!("SELECT s.symbol_id,s.symbol_uid,s.name,s.kind,s.file_path,s.container,s.start_line,s.end_line,s.qname,s.signature FROM symbols s JOIN files f ON f.file_path=s.file_path WHERE {} ORDER BY s.file_path,s.start_line,s.symbol_id LIMIT {limit}",clauses.join(" AND "));
+        let conn = self.db.read_conn()?;
+        let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+        let rows = stmt
+            .query_map(
+                rusqlite::params_from_iter(params.iter()),
+                crate::rows::symbol_row,
+            )
             .map_err(db_err)?;
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
@@ -1283,7 +1940,7 @@ mod tests {
     }
 
     #[test]
-    fn chunk_rows_by_ids_prefers_cached_text() {
+    fn chunk_rows_by_ids_rejects_unverified_cached_text() {
         let (db, _tmp) = setup();
         insert_file(&db, "src/a.rs", "2024-01-01");
         insert_chunk(&db, "ch1", "src/a.rs", 1, 5, "fn alpha() {}");
@@ -1291,17 +1948,22 @@ mod tests {
 
         let mut cached: HashMap<String, Arc<str>> = HashMap::new();
         cached.insert("ch1".to_string(), Arc::from("CACHED TEXT"));
-        let rows = db
+        let hydrated = db
             .retrieval()
-            .chunk_rows_by_ids(&["ch1", "ch2"], &cached)
+            .chunk_rows_by_ids_with_work(&["ch1", "ch2"], &cached)
             .unwrap();
+        // Legacy rows have no source proof. They remain readable, but a cache
+        // keyed only by a locator cannot override their stored source bytes.
+        assert_eq!(hydrated.work.text.cache_hits, 0);
+        assert_eq!(hydrated.work.text.storage_reads, 2);
+        let rows = hydrated.rows;
         let by_id: HashMap<&str, &str> = rows
             .iter()
             .map(|r| (r.chunk_id.as_str(), r.text.as_str()))
             .collect();
         assert_eq!(
-            by_id["ch1"], "CACHED TEXT",
-            "cached text must win over the stored column"
+            by_id["ch1"], "fn alpha() {}",
+            "an unverified cache hint must never replace stored source"
         );
         assert_eq!(by_id["ch2"], "fn beta() {}");
     }

@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "steps": [
+    {
+      "kind": "write",
+      "path": "provider.rs",
+      "content": "pub fn transform(value: i32, extra: i32) -> i32 {\n    value + extra + 2\n}\n"
+    }
+  ],
+  "probes": [
+    {
+      "query": "transform",
+      "top_k": 10,
+      "path_prefix": null
+    }
+  ]
+}

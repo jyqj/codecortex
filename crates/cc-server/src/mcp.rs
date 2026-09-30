@@ -59,6 +59,19 @@ fn handler_error_data(e: cc_model::CcError) -> rmcp::ErrorData {
     }
 }
 
+/// The rmcp request token is cancelled by notifications/cancelled. Dropping the
+/// query future triggers its cooperative guard; running CPU work retains permits.
+async fn cancellable_query(
+    context: RequestContext<RoleServer>,
+    work: impl std::future::Future<Output = cc_model::CcResult<serde_json::Value>>,
+) -> Result<Json<JsonResult>, rmcp::ErrorData> {
+    tokio::select! {
+        biased;
+        _=context.ct.cancelled()=>Err(handler_error_data(cc_model::CcError::QueryCancelled)),
+        result=work=>result.map(|result|Json(JsonResult {result})).map_err(handler_error_data),
+    }
+}
+
 /// Run a tool handler on the blocking pool and apply the tool's output
 /// budget policy at this single dispatch exit (`output_budget::finalize`).
 /// Typed handler errors are mapped to JSON-RPC errors by
@@ -69,19 +82,23 @@ macro_rules! spawn_handler {
         let index = $index;
         let budget_index = index.clone();
         tokio::task::spawn_blocking(move || {
-            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| $body(index)))
-                .unwrap_or_else(|panic_val| {
-                    let msg = match panic_val.downcast_ref::<&str>() {
-                        Some(s) => (*s).to_string(),
-                        None => match panic_val.downcast_ref::<String>() {
-                            Some(s) => s.clone(),
-                            None => "handler panicked".to_string(),
-                        },
-                    };
-                    tracing::error!("handler panic caught: {}", msg);
-                    Err(cc_model::CcError::Other(format!("internal error: {}", msg)))
-                })
-                .map(|v| handlers::output_budget::finalize(&budget_index, $tool, v))
+            std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let before = handlers::freshness::capture(&budget_index, $tool)?;
+                let value = $body(index)?;
+                handlers::freshness::attach(&budget_index, $tool, before, value)
+            }))
+            .unwrap_or_else(|panic_val| {
+                let msg = match panic_val.downcast_ref::<&str>() {
+                    Some(s) => (*s).to_string(),
+                    None => match panic_val.downcast_ref::<String>() {
+                        Some(s) => s.clone(),
+                        None => "handler panicked".to_string(),
+                    },
+                };
+                tracing::error!("handler panic caught: {}", msg);
+                Err(cc_model::CcError::Other(format!("internal error: {}", msg)))
+            })
+            .map(|v| handlers::output_budget::finalize(&budget_index, $tool, v))
         })
         .await
         .map_err(|e| rmcp::ErrorData::internal_error(e.to_string(), None))?
@@ -159,12 +176,16 @@ impl CodeCortexMcpServer {
     async fn tool_search(
         &self,
         Parameters(p): Parameters<crate::tools::SearchParams>,
+        context: RequestContext<RoleServer>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
+        let retrieval_strategy =
+            crate::tools::parse_retrieval_strategy(p.retrieval_strategy.as_deref())
+                .map_err(handler_error_data)?;
         let query = p.query;
         let top_k = p.top_k;
         let mode = p.mode;
@@ -179,9 +200,11 @@ impl CodeCortexMcpServer {
         let path_prefix = p.path_prefix;
         match mode.as_str() {
             "symbol" => {
-                spawn_handler!(index, "search", move |rt| handlers::core::find_symbol(
-                    rt, &query, exact, top_k, false
-                ))
+                cancellable_query(
+                    context,
+                    handlers::context::symbol_search_async(index, query, exact, top_k, path_prefix),
+                )
+                .await
             }
             _ => {
                 let has_overrides = boost_files.is_some()
@@ -190,9 +213,11 @@ impl CodeCortexMcpServer {
                     || conversation_queries.is_some()
                     || overlay_files.is_some()
                     || file_preselect_limit.is_some()
-                    || path_prefix.is_some();
+                    || path_prefix.is_some()
+                    || retrieval_strategy.is_some();
                 if has_overrides {
                     let overrides = cc_model::search::SearchRequest {
+                        retrieval_strategy,
                         boost_file_paths: boost_files,
                         recent_file_paths: recent_files,
                         pinned_file_paths: pinned_files,
@@ -202,15 +227,23 @@ impl CodeCortexMcpServer {
                         path_prefix,
                         ..Default::default()
                     };
-                    spawn_handler!(index, "search", move |rt| {
-                        handlers::context::search_in_context_with(
-                            rt, &query, top_k, intent, overrides,
-                        )
-                    })
+                    cancellable_query(
+                        context,
+                        handlers::context::search_async(index, query, top_k, intent, overrides),
+                    )
+                    .await
                 } else {
-                    spawn_handler!(index, "search", move |rt| {
-                        handlers::context::search_in_context(rt, &query, top_k, intent)
-                    })
+                    cancellable_query(
+                        context,
+                        handlers::context::search_async(
+                            index,
+                            query,
+                            top_k,
+                            intent,
+                            Default::default(),
+                        ),
+                    )
+                    .await
                 }
             }
         }
@@ -225,27 +258,32 @@ impl CodeCortexMcpServer {
     async fn tool_context(
         &self,
         Parameters(p): Parameters<crate::tools::ContextParams>,
+        context: RequestContext<RoleServer>,
     ) -> Result<Json<JsonResult>, rmcp::ErrorData> {
         let mut p = p;
         p.sanitize().map_err(handler_error_data)?;
         let index = self
             .index_for_project_path(p.project_path.as_deref())
             .await?;
+        let retrieval_strategy =
+            crate::tools::parse_retrieval_strategy(p.retrieval_strategy.as_deref())
+                .map_err(handler_error_data)?;
         let task = p.task;
         let max_symbols = p.max_symbols;
         let include_source = p.include_source;
         let intent = p.intent;
-        spawn_handler!(
-            index,
-            "context",
-            move |rt| handlers::facade::handle_context(
-                rt,
-                &task,
+        cancellable_query(
+            context,
+            handlers::context::context_async_with_strategy(
+                index,
+                task,
                 max_symbols,
                 include_source,
-                intent.as_deref(),
-            )
+                intent,
+                retrieval_strategy,
+            ),
         )
+        .await
     }
 
     // ── 5. node ──────────────────────────────────────────────────────
@@ -830,7 +868,24 @@ fn parse_intent_opt(value: Option<&str>) -> Option<cc_model::Intent> {
 }
 
 #[cfg(test)]
+#[path = "mcp_query_tests.rs"]
+mod query_tests;
+
+#[cfg(test)]
 mod shutdown_tests {
+    #[test]
+    fn retrieval_conflict_is_retryable_but_corruption_is_not() {
+        let conflict =
+            super::handler_error_data(cc_model::CcError::RetrievalChanged { attempts: 3 });
+        let wire = serde_json::to_value(conflict).unwrap();
+        assert_eq!(wire["code"], -32603);
+        assert_eq!(wire["data"]["retryable"], true);
+        let corrupt =
+            super::handler_error_data(cc_model::CcError::Database("corrupt source".into()));
+        let wire = serde_json::to_value(corrupt).unwrap();
+        assert_ne!(wire["data"]["retryable"], true);
+    }
+
     #[test]
     fn shutdown_signal_compiles() {
         // Verify the function exists and compiles.

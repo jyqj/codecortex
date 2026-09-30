@@ -8,6 +8,12 @@
 所有状态存于单一数据库文件 `index.sqlite3`。没有第二个数据库、没有会话存储、
 没有遥测落盘（见 [DESIGN.md](../../DESIGN.md) 的非目标清单）。
 
+当前 schema 21 保留 P2-C 增加的单行 `resolution_frontier`，新增每文件模块证据及 digest 校验的 project_model_inputs_v1 配置缓存；P3-B增加imports.context_json，P3-C增加Go包集合及显式模块状态、模型格式3；P3-D删除旧跨语言路径猜测，P4-A增加chunks.source_json并保留CRLF/末尾换行原文字节；P4-B增加files.chunk_policy并纳入file-state聚合版本4，与每文件事实同事务写入；P4-C增加document_manifest与files.document_spec（file-state聚合5），随原有chunks事务写入/删除；P4-D清理构造入口并增加质量/成本验收，不改变schema。数据库不持久化tree-sitter tree或通用AST，边界只以chunk/source proof和派生事实存在。20及更早缓存须隔离重建。参见[DOCUMENTS.md](DOCUMENTS.md)。详见[SOURCE_CHUNKS.md](SOURCE_CHUNKS.md)。欠账及其确认与文件/关系批次在同一 IMMEDIATE 事务发布，并由 index epoch 围栏保护。不存在独立的 frontier setter。升级/回滚需隔离缓存重建，详见 [INCREMENTAL_RECOVERY.md](INCREMENTAL_RECOVERY.md)。
+
+完整重建的 WAL/SHM 文件名通过向完整数据库路径追加 `-wal` / `-shm` 得到，不替换扩展名；否则自定义文件名可能残留旧 WAL 并污染新库。相关回归与成本口径见 [INCREMENTAL_VERIFICATION.md](INCREMENTAL_VERIFICATION.md)。
+
+项目配置输入确认在事实/frontier 成功发布后进行；失败可重复失效，不宣称与所有后处理同事务。提交前复核捕获配置，详见 [PROJECT_MODEL.md](PROJECT_MODEL.md)。
+
 ## 连接模型
 
 `IndexDb`（`index_db.rs`）持有：
@@ -55,7 +61,7 @@
 
 | 视图 | 入口 | 内容 |
 |---|---|---|
-| `ReadOps` | `.reads()` | 查询：符号/文件/图读取、`generation`、`stats`、`get_metadata`、`get_file_state`、`read_conn`。多符号邻接读取有批量变体（`caller_rows_by_uids` / `callee_rows_by_uids` / `symbol_degree_details_batch`）——cc-search 的图消费方（enrichment、preselect、graph lane）全部走批量接口，一次搜索的图富化只发 3 条查询，而不是每个符号 3 条 |
+| `ReadOps` | `.reads()` | 类型化符号/文件读取、`generation`、`stats`、`get_metadata`、`get_file_state`、`public_surfaces`、`surface_dependents`、`resolution_manifests`、`resolution_dependents` 与按包键读取的贡献。不向上层代理裸 `read_conn`；邻接读取保留批量接口。图 SQL 数量依请求范围、空集合和批大小而变，不能固定宣称整次搜索只有三条 SQL |
 | `RetrievalReadModel` | `.retrieval()` | FTS5/trigram **检索**查询（file-summary bm25、path/symbol token 批量命中、chunk 批量取、symbol seed/uid 查找）——cc-search 的 preselect 与 graph lane 消费。SQL 直接拥有在 `impl RetrievalReadModel`，不经 `impl IndexDb` 转发 |
 | `GraphReads` | `.graph_reads()` / `GraphReads::new` | 任务形态的**图读**查询（邻接/impact/dead-code、imports/communities、HTTP/async 桥、infra 绑定）——cc-server 的 graph/impact/exploration 工具消费。15 个核心 SQL 直接拥有在 `impl GraphReads`（`self.db.read_conn` / `self.db.query_json`），不经 `impl IndexDb` 转发；另有 8 个仍借用 `IndexDb` 通用方法（`call_uid_edges_lite` 等在 `index_db_graph.rs`）。`ReadOps` 的图读 delegate 改转发到 `.graph_reads()`，保留通用读入口 |
 | `WriteOps` | `.writes()` | 所有推进 epoch 的变更：批量写、边/证据写入、`set_metadata`、`begin_unit_of_work`。这是写方法的唯一公开路径（编译期写隔离） |
@@ -87,7 +93,7 @@ dispatch synthesis 的 apply 阶段（`cc-index/src/synthesis_pipeline.rs`）。
 
 | 表 | 时钟 | 理由 |
 |---|---|---|
-| files, symbols, imports, call_edges, symbol_refs, semantic_edges, dispatch_sites, data_flow_edges, literal_index, chunks | `index_epoch` | 文件批写入的索引内容 |
+| files, public_surfaces, resolution_manifests, resolution_dependencies, symbols, imports, call_edges, symbol_refs, semantic_edges, dispatch_sites, data_flow_edges, literal_index, chunks | `index_epoch` | 文件批写入的索引内容 |
 | routes, http_call_edges, test_edges, co_change_edges, communities, frameworks, infra_nodes, infra_edges | `index_epoch` | 解析/后处理产物，被 context/graph 输出当作索引内容消费 |
 | adr | `index_epoch` | ADR 在 context 输出中以 index_epoch 为键出现 |
 | runtime_evidence | `evidence_epoch` | 持续摄入，不能驱逐 index-only 缓存槽 |
@@ -101,14 +107,20 @@ dispatch synthesis 的 apply 阶段（`cc-index/src/synthesis_pipeline.rs`）。
 `generation()` 用单条 SELECT 同时读出两个 epoch，返回一致的
 `IndexGeneration` 快照，避免读到撕裂的版本向量。
 
+### P4-D 文档存储成本口径
+
+P4-D的release收据分别记录`chunks`/`document_manifest`行数、原始source span字节、模型输入字节、manifest JSON字节、数据库文件大小及最大块。它们是机制成本，不是SQLite页级归因或长期空间放大率；阶段RSS还包含测试进程、解析器和连接缓存，不能从单次差值推断某一张表的独占内存。
+
 ## 表结构
 
-21 张基表（schema v6，`index_v1.sql`）：
+基表（schema v12，`index_v1.sql`；PublicSurface 与 ResolutionManifest 格式版本各自独立为 1）：
 
 | 组 | 表 | 内容 |
 |---|---|---|
 | 元数据 | `metadata` | KV：epoch、版本、各 pass 的输入签名等 |
 | 文件与内容 | `files`, `chunks` | 文件元数据（路径/语言/哈希/摘要）；检索分块（zstd 压缩正文） |
+| 公共接口证据 | `public_surfaces` | 与文件同事务的版本化声明、Known/Unknown 状态及规范指纹；删除级联，详见 [PUBLIC_SURFACE.md](PUBLIC_SURFACE.md) |
+| 解析结果与依赖 | `resolution_manifests`, `resolution_dependencies` | 有界结果、歧义、能力状态和正/负查找键；同文件事务与删除级联，详见 [RESOLUTION_DEPENDENCIES.md](RESOLUTION_DEPENDENCIES.md) |
 | 符号与引用 | `symbols`, `symbol_refs`, `imports` | 符号定义；引用位置（含跨文件目标 UID）；导入声明 |
 | 调用与关系 | `call_edges`, `semantic_edges`, `data_flow_edges`, `dispatch_sites` | 调用图（含合成边）；继承/实现等语义关系；数据流（type_ref / env_access / param_pass / return_flow）；动态派发点 |
 | Web 与服务 | `routes`, `http_call_edges`, `infra_nodes`, `infra_edges` | HTTP 路由；出站 HTTP/异步调用；基础设施节点与连边 |
@@ -186,7 +198,9 @@ write_units/chunk blob 驻留内存到 commit（见 INDEXING.md）。staging
 
 ## Schema 版本策略
 
-`user_version` pragma 记录 schema 版本（当前 v6，
+`user_version` pragma 记录 schema 版本（当前 v12，
 `CURRENT_SCHEMA_VERSION` 在 `index_migrate.rs`）。磁盘索引版本不匹配时的
 策略是 **rebuild-on-mismatch**：就地清空（`writable_schema` 重置）后按当前
-schema 重建，不做向后迁移。索引是缓存而非数据源，重建总是安全的。
+schema 重建，不做向后迁移。源码派生事实可以重建，但持久资产/运行时证据仍须遵守已有导出恢复流程。测试升级或回退应使用隔离缓存，不以清空开发者日常索引作为验证。schema10/未验收11与12不得混用。
+
+全量 staging 与增量写入 route node 复用同一 `insert_route_nodes_on` 助手，`edge_id=route_id` 均非空，避免 TEXT PRIMARY KEY 的空值或两种写法造成重复与 A/B 差异。

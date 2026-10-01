@@ -1,11 +1,13 @@
+> 2026-10-01：用户已暂停开发/验证/矩阵，当前全部工程与失败进度上传 GitHub；G5/M2未通过。见 [暂停进度](2026-10-01-PAUSED-PROGRESS.md)。
+
 # CodeCortex Code Index V2：重构优化设计与执行入口
 
-> **115 done / 3 in_progress / 74 todo；P5为15/20。P5-016～018正在收口，P5-019/020尚未开始。** 当前最新P5-D final-v3验收为failed：Rust 1.95 workspace退出101，空闲项目回收测试预期2、实际1，独立audit.json未生成。三个任务不勾选完成，G5/M2仍未通过。
-> 当前见[快照与阻塞](CHECKPOINT-2026-09-30.md)及[P5-D-PROGRESS.md](P5-D-PROGRESS.md)。本次保存开发进度，不发布版本标签；源码、任务状态、派生TODO与轻量失败收据一起版本化，大型原始产物仅保留本地。
+> **118 done / 1 in_progress / 73 todo，P5 为 18/20；P5-016～018 已验收，P5-019 正在实施通用查询质量修复与独立消融。P5-D 整批与 G5/M2 尚未完成。** 已接入能力状态、查询视图租约、LRU 弱登记与取消安全的冷初始化、非阻塞空闲清理，以及 search/context 的显式策略参数；dense 仍明确 disabled。
+> 最新见 [P5-D-RUNTIME-IMPLEMENTATION.md](P5-D-RUNTIME-IMPLEMENTATION.md) 与 [P5-D-RUNTIME-GATE.json](P5-D-RUNTIME-GATE.json)。
 
-**以下为上一批P5-C的历史验收记录，不代表当前P5-D已通过。** 详见[P5-C-COMPLETION.md](P5-C-COMPLETION.md)及[P5-C-GATE.json](P5-C-GATE.json)；旧P5-C-IMPLEMENTATION/PARTIAL-GATE/PROGRESS继续保留历史范围与失败。
+冻结 623 文件、6675050 字节，摘要 `44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0`；38 条命令收据、源码归档、日志和不可变二进制一致。证据目录 `artifacts/benchmarks/p5d-20260930-resume/final-v3`。stable：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored；1.95.0：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored。各组失败 0，忽略项不计通过，重叠组不相加为唯一测试总数。固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败；原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致。
 
-冻结616文件、6605476字节，摘要`471919b1d73828db2938d314e3319dd34827a7c1828388925c45b1db7372f473`。38条命令收据，源码/归档/日志/不可变二进制均核验；最终接受版本对当前源码重新运行全套验证；中间版本曾复用的旧收据只保留历史，不代替最终结果。证据目录`artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930`。两工具链各workspace 1767 passed/57 ignored、HTTP 255 passed/50 ignored、专项 71 passed/2 ignored、真实stdio 24 passed、取消协议1 passed、watcher17 passed。各组内部失败0，忽略项不计通过；测试组有重叠，不相加为唯一测试总数。固定51题306请求的逐题Top-1/nDCG无负差分，无效源码命中为0，raw回放一致。原Partial/S11继续失败，本次新增18次真实预算省略Partial，涉及6个问题；完整检索Gate保持not_passed，不能称G5/M2通过。gold与评分公式未改。
+Git HEAD=`0a56a257f9a92c54d06ea5be0ce1d1763917a527`；未提交、推送、PR 或合并，既有工作与失败证据保留。
 
 ## 1. 目标
 
@@ -34,7 +36,7 @@
 
 **10 个阶段 / 39 批 / 192 项任务。** 115 done / 3 in_progress / 74 todo；P5为15/20，当前P5-D验收未通过，先处理P5-016～018，再进入P5-019。 `tasks.json` 是唯一任务状态源，`05-TODO.md` 为派生视图。
 
-固定51题306请求的逐题Top-1/nDCG无负差分，无效源码命中为0，raw回放一致。原Partial/S11继续失败，本次新增18次真实预算省略Partial，涉及6个问题；完整检索Gate保持not_passed，不能称G5/M2通过。gold与评分公式未改。新增30次最终证据装配release观测，并复跑60次旧lane成本和192次有界准入请求；不是100k、峰值RSS或尾延迟认证。schema21不变，public adapter7、retrieval policy16、packing spec2。预算针对code_index_context结果对象，不包含JSON-RPC帧；其他旧工具形状保留原预算。没有真实provider/vector、持久化semantic epoch、原子文件系统快照、公开holdout、跨平台或发行认证。
+固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败；原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致。新增 12 组 release 项目清理/租约观测，复跑 90 次旧查询成本和 192 次准入请求；可选 ps 进程树采样在本机停滞后显式关闭，对应 RSS 为 null、原生自身 RSS 单列。核心验证未跳过；不是 P5-019 的完整消融、100k、尾延迟或发行认证。
 
 ## 3. 不改变的边界
 

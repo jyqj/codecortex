@@ -1,0 +1,102 @@
+{
+  "scope": "exact immutable original P0 smoke/source + locked exact/intents;NO current-source relock",
+  "datasets": [
+    {
+      "id": "smoke",
+      "suite": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/suite.json",
+      "suite_sha256": "c09e196a9d735039481b85a63eed165e500d29972605573362671960e700fd3f",
+      "query_sha256": "f2cb03747e2f6a42f474cd1120f2b012afdd1c506bce708e24b9f14cab49d872",
+      "source_files_sha256": {
+        "session.py": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+        "billing.py": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+        "routes.ts": "08d50dfa77926e01926999c0d195f9dbcc4dcb137a995b65b1005e37e33c4caf"
+      },
+      "queries": 11,
+      "families": [
+        "absent",
+        "billing-invariant",
+        "browser-validation",
+        "retry",
+        "route",
+        "session",
+        "subscription"
+      ],
+      "repetitions": 3
+    },
+    {
+      "id": "exact",
+      "suite": "/Users/jin/Desktop/codecortex-rust/crates/cc-eval/benchmarks/manifests/p1b-exact.json",
+      "suite_sha256": "48f37902daf414b36584756ea71e0d6c3ccb5c5c72dc39fffea211e2972d5dbf",
+      "query_sha256": "cdf1c77465950208eccf68818614e696f24e458c04be04815f0f1d1fa7b7ca59",
+      "source_files_sha256": {
+        "pkg/api/target.py": "068592c1d82573efd5f888c1d661ac681881e53aeaa8af9b2f340a71bbea0183",
+        "pkg/apix/decoy.py": "87acee3b5111e1d167d494a90b279c4d0ea72a8cc9b8f5cedaa3cf0f90501aff",
+        "src/codec.py": "d9b29d282122e033f241600be19c3a38957e1685622a6a2b02d56d1361a00e8a",
+        "src/noise.py": "45136207ad3cb027172e0f96fe46940a35c168792f2d4e6879d2e3d32e1c8094"
+      },
+      "queries": 8,
+      "families": [
+        "api-path",
+        "api-scope",
+        "apix-scope",
+        "codec-definition",
+        "codec-path",
+        "noise-definition",
+        "noise-path"
+      ],
+      "repetitions": 3
+    },
+    {
+      "id": "intents",
+      "suite": "/Users/jin/Desktop/codecortex-rust/crates/cc-eval/benchmarks/manifests/p1c-intents.json",
+      "suite_sha256": "ebba7ccdc318f8bce333fdd9fafa3efde3ff1676ae67fe2d1b9b1203d0ceae1e",
+      "query_sha256": "53ad86b131e7323ccdff15d5409295f921ca5a25c888453267ef0bd90cc7b977",
+      "source_files_sha256": {
+        "decoder.py": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+        "dispatcher.py": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+        "display.py": "52d66bca760693d8e1ac00cea2f0a4f44f71ddb8a2c57f104eca7e4cbd18e503",
+        "errors.py": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+        "example.py": "111d2ce68062af595cc1c467710340b56733474213041afd59b804bc9b89f1d8",
+        "settings.py": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33"
+      },
+      "queries": 18,
+      "families": [
+        "absent-scheduler",
+        "callsite",
+        "decode",
+        "errors",
+        "settings"
+      ],
+      "repetitions": 3
+    },
+    {
+      "id": "source",
+      "suite": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/suite.json",
+      "suite_sha256": "3befca1be7830d91b44684e7075f8133c03cb88bba72819305ab97ff7cb5fb73",
+      "query_sha256": "bb923e72b1ec21f85af487e49220491e37d71498576257530149ce94f4858e39",
+      "source_files_sha256": {
+        "cc-db/src/index_migrate.rs": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7",
+        "cc-index/src/dirty_closure.rs": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c",
+        "cc-index/src/indexer_phases/dirty.rs": "6a4f3d0598a2732f33ad56e99ce92f42fa633471d51e6097f2ba7489f0549e01",
+        "cc-model/src/id.rs": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0",
+        "cc-parsers/src/chunker.rs": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46",
+        "cc-search/src/plan.rs": "95f3969fb88657123fc4dfd7192680ca1b1e7c7aa59ca64a858daacf2ab812cc",
+        "cc-search/src/preselect.rs": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44"
+      },
+      "queries": 14,
+      "families": [
+        "chunking",
+        "closure",
+        "preselect",
+        "schema",
+        "search-plan",
+        "surface",
+        "symbol-id"
+      ],
+      "repetitions": 3
+    }
+  ],
+  "queries": 51,
+  "requests_per_cell": 153,
+  "total_matrix_requests": 1224
+}

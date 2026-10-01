@@ -202,6 +202,7 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
                     "symbol_kind",
                     "qname",
                     "exact_identity",
+                    "evidence_priority",
                 ],
             );
             hit["metadata"]["details_omitted"] = json!(true);
@@ -238,6 +239,8 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
             policy,
             &[
                 "version",
+                "graph_source_mapping",
+                "path_source_domain",
                 "requested",
                 "effective",
                 "intent",
@@ -248,7 +251,34 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
                 "semantic_top_k",
             ],
         );
+        // Compress only this known, equivalent explanation, not arbitrary
+        // caller metadata. Keep scoped canonical/exact vs bounded fallback
+        // and the non-whole-body domain before removing actual source.
+        if policy["path_source_domain"].as_str() == Some(crate::query_policy::PATH_SOURCE_DOMAIN) {
+            policy["path_source_domain"] =
+                json!("canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3");
+        }
+        if policy["graph_source_mapping"].as_str()
+            == Some(crate::query_policy::GRAPH_SOURCE_MAPPING)
+        {
+            policy["graph_source_mapping"] = json!("uid_byte_decl_docs;not_whole_body:v2");
+        }
         policy["details_omitted"] = json!(true);
+    }
+    // Verbose schema prose is not source evidence. Keep every scope/budget
+    // value and the exact ordering semantics, but use documented terse labels
+    // before dropping any body or required facet. No scan/error/partial count
+    // is changed by this projection.
+    let scope = &mut value["evidence_summary"]["retrieval"]["scope"];
+    if scope.is_object() {
+        scope["budget"]["units"] =
+            json!("chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost");
+        scope["hard"]["semantics"] =
+            json!("conjunctive_case_sensitive_repo_paths; explicit_empty_denies");
+        scope["soft"]["contributions"] =
+            json!("score_trace=additive; stage_a_already_included; raw_hint_paths_omitted");
+        scope["ordering"] = json!(["exact_identity_first", "rerank_score_desc", "chunk_id_asc"]);
+        scope["details_omitted"] = json!(true);
     }
     for field in ["task", "query", "summary"] {
         if value[field].as_str().is_some_and(|s| s.len() > 512) {
@@ -339,7 +369,34 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
             value["evidence_summary"]["packing"]["partial"] = json!(true);
             continue;
         }
-        let hit = value["machine_pack"]["hits"].as_array_mut().unwrap().pop();
+        let hits = value["machine_pack"]["hits"].as_array_mut().unwrap();
+        // Preserve rank one and bounded required source-support evidence before
+        // lower-priority incidental hits. Original ordering/scores stay intact;
+        // if even these cannot fit, omission remains explicitly Partial.
+        let remove = hits
+            .iter()
+            .enumerate()
+            .rev()
+            .find(|(index, hit)| {
+                *index > 0
+                    && !matches!(
+                        hit["metadata"]["evidence_priority"].as_str(),
+                        Some("intent_facet" | "distinctive_source_support")
+                    )
+            })
+            .map(|(index, _)| index)
+            .or_else(|| {
+                hits.iter()
+                    .enumerate()
+                    .rev()
+                    .find(|(index, hit)| {
+                        *index > 0
+                            && hit["metadata"]["evidence_priority"] == "distinctive_source_support"
+                    })
+                    .map(|(index, _)| index)
+            })
+            .or_else(|| hits.len().checked_sub(1));
+        let hit = remove.map(|index| hits.remove(index));
         let Some(hit) = hit else {
             break;
         };

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "design_date": "2026-09-27",
-  "status": "p5d_in_progress_validation_failed_checkpoint",
+  "status": "p5e_quality_ablation_in_progress",
   "baseline_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da",
   "benchmark_reference_sha": "d4f10554a18e31599d1e46d5d56da6588d4aa86c",
   "state_authority": "tasks.json; 05-TODO.md is derived",
@@ -42,7 +42,7 @@
     "P9": 12
   },
   "task_count": 192,
-  "execution_note": "2026-09-30：保存当前开发进度快照；115done/3in_progress/74todo，P5为15/20。P5-016～018保持in_progress；final-v3的Rust 1.95 workspace退出101，空闲项目回收测试预期2实际1，独立audit.json未生成。下一步先定位并复验此失败，再收口三项任务，之后才进入P5-019/020。原Partial/S11与真实预算Partial保留；无G5/M2/发行或跨平台认证。源码、任务清单和轻量验证收据一起版本化，原始大型产物保留本地；见CHECKPOINT-2026-09-30.md。",
+  "execution_note": "P5-016/017/018已独立验收；118 done / 1 in_progress / 73 todo。P5-019进行通用identifier与证据完整性修复、独立消融和混合负载，P5-020/G5/M2未完成。P5-D旧冻结仅覆盖接受时源码，后续变更需重新冻结验收。 2026-10-01：用户明确暂停功能/验证/矩阵执行并授权上传全部进度GitHub；所有agent当前live为空。Git同步不代表G5通过，不变更任务未完成状态；恢复须从paused checkpoint重新核Git/source/实际终态。",
   "tasks": [
     {
       "id": "P0-001",
@@ -7738,7 +7738,7 @@
       "phase_name": "查询执行与证据装配",
       "batch": "P5-D",
       "title": "诊断与能力状态收口",
-      "status": "in_progress",
+      "status": "done",
       "priority": "normal",
       "scope": [
         "crates/cc-server/src/capability_status.rs",
@@ -7770,9 +7770,37 @@
       "required_for": [
         "M2"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+          "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0",
+          "status": "passed_declared_local_016_018_scope",
+          "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3",
+          "artifacts": [
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz",
+            "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json",
+            "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md",
+            "docs/internals/QUERY_LIFECYCLE.md"
+          ],
+          "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json",
+          "limitations": [
+            "P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.",
+            "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.",
+            "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.",
+            "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.",
+            "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."
+          ]
+        }
+      ],
       "conditional_dependencies": [],
-      "implementation_notes": "实现已进入冻结复验，但仍未验收完成：final-v3的Rust 1.95 workspace退出101，project_session::tests::close_idle_instances_closes_cached_non_active_projects预期关闭2实例、实际1；audit.json未生成。保持in_progress，不以stable通过替代最低工具链验收。轻量原始收据见artifacts/checkpoints/20260930-git-sync/p5d-final-v3/；P5-019/020保持todo，原完整性失败保留。"
+      "implementation_notes": "能力状态区分无项目/关闭/空库/可用/错误，dense明确disabled；复用既有诊断来源，不把fake端口或局部ready冒充完整覆盖。"
     },
     {
       "id": "P5-017",
@@ -7780,7 +7808,7 @@
       "phase_name": "查询执行与证据装配",
       "batch": "P5-D",
       "title": "项目驱逐与查询资源生命周期",
-      "status": "in_progress",
+      "status": "done",
       "priority": "normal",
       "scope": [
         "crates/cc-server/src/project_session.rs",
@@ -7812,9 +7840,37 @@
       "required_for": [
         "M2"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+          "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0",
+          "status": "passed_declared_local_016_018_scope",
+          "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3",
+          "artifacts": [
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz",
+            "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json",
+            "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md",
+            "docs/internals/QUERY_LIFECYCLE.md"
+          ],
+          "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json",
+          "limitations": [
+            "P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.",
+            "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.",
+            "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.",
+            "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.",
+            "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."
+          ]
+        }
+      ],
       "conditional_dependencies": [],
-      "implementation_notes": "实现已进入冻结复验，但仍未验收完成：final-v3的Rust 1.95 workspace退出101，project_session::tests::close_idle_instances_closes_cached_non_active_projects预期关闭2实例、实际1；audit.json未生成。保持in_progress，不以stable通过替代最低工具链验收。轻量原始收据见artifacts/checkpoints/20260930-git-sync/p5d-final-v3/；P5-019/020保持todo，原完整性失败保留。"
+      "implementation_notes": "查询视图租约、LRU弱登记、热路由快路径、worker-owned冷初始化与取消、非阻塞空闲清理、会话后台任务生命周期均接入；原生通知与同步工作仍不可强制抢占。"
     },
     {
       "id": "P5-018",
@@ -7822,7 +7878,7 @@
       "phase_name": "查询执行与证据装配",
       "batch": "P5-D",
       "title": "MCP旧新契约和文档一体迁移",
-      "status": "in_progress",
+      "status": "done",
       "priority": "normal",
       "scope": [
         "crates/cc-server/src/tools.rs",
@@ -7855,9 +7911,37 @@
       "required_for": [
         "M2"
       ],
-      "evidence": [],
+      "evidence": [
+        {
+          "target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+          "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0",
+          "status": "passed_declared_local_016_018_scope",
+          "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3",
+          "artifacts": [
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json",
+            "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz",
+            "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json",
+            "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md",
+            "docs/internals/QUERY_LIFECYCLE.md"
+          ],
+          "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json",
+          "limitations": [
+            "P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.",
+            "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.",
+            "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.",
+            "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.",
+            "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."
+          ]
+        }
+      ],
       "conditional_dependencies": [],
-      "implementation_notes": "实现已进入冻结复验，但仍未验收完成：final-v3的Rust 1.95 workspace退出101，project_session::tests::close_idle_instances_closes_cached_non_active_projects预期关闭2实例、实际1；audit.json未生成。保持in_progress，不以stable通过替代最低工具链验收。轻量原始收据见artifacts/checkpoints/20260930-git-sync/p5d-final-v3/；P5-019/020保持todo，原完整性失败保留。"
+      "implementation_notes": "search/context的可选retrieval_strategy贯穿schema/sanitize/dispatch/handler/status/docs/真实stdio，显式context策略不被快捷路径绕过；保留14工具旧字段与mode语义。"
     },
     {
       "id": "P5-019",
@@ -7865,7 +7949,7 @@
       "phase_name": "查询执行与证据装配",
       "batch": "P5-D",
       "title": "查询质量/成本/并发消融",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "normal",
       "scope": [
         "crates/cc-eval/src/benchmark/ablation.rs",
@@ -7899,7 +7983,7 @@
       ],
       "evidence": [],
       "conditional_dependencies": [],
-      "implementation_notes": "P5-A交接：完整性门禁未通过，source42/intents12请求为Partial，原因见P5-A-GATE与completeness-review.json；须明确lane需求/子预算及图源码映射覆盖，保留S11，不以压掉状态或查询ID特判修绿。"
+      "implementation_notes": "通用compound FTS、UID/byte Graph批映射、可信intent/source-support预算已实现并有真实入口红绿。source-v2(51029e/628files)新core21命令双链1815/286/98/1/25/17及releasecost4独立通过，仅工程非G5。2026-10-01正式29stage已全部采证/replay/资源原件校验；本轮未验收：混合各C的100/300 path请求因generic src token库存截断strict Partial；8cell共享target+copytree旧mtime造成110/111实际exact关闭，与计划on矛盾，48edges和cell111候选质量证据失效（旧raw/错误收据均保留）。下一source-v3通用canonical existing exact-path domain修复、新完整core/profile/矩阵；每cell独立target fresh构建及actual3factor行为见证。不得低capcategory anchor冒称全语义正文，也不删Partial或改gold换绿。 新source-v3已冻629文件/canonical02af5df5c307386c0a197394c25d9a2e46901b7df47479f43f894feb765a3908；PathDomain真实MCP千file/SQLtripwire/core scope+53原件核验绿，全新21命令core-v3运行中，尚无新正式矩阵/G5。 source-v3 core真实1821/1失败：新增policy说明越16k预算挤掉731正文；已独立因果证明净文字99bytes并通用仅known-equality双domain版本化压缩，保真数字/proof/score/status/cap/未知label，新增明确合成numeric/nonce宽度压力绿。最新source-v4 canonical3cd542941467c4d4855266dbd5658bf6a2928cd4ba16bb81f87246008225a461/629files，新21命令core-v4运行；所有旧失败保持，尚无新正式矩阵/G5。 新source-v4(3cd542/629files)core-v4因observer stdout BrokenPipe在14/21终止（已完成14均绿含两workspace1823/0/60），不当Rust失败也不拼绿；仅外围可靠ownedprogress/stdouterr修复，新same-source core-v5全21重跑中，旧failed收据/独立audit保留。 最新same-source core-v5可靠ownedprogress完整21命令实际tool退出0并独立审计通过，两链workspace1823/0/60、HTTP293/0/53、focused105/0/4及stdio/lease/cost/旧契约/输入锁均新验；仅工程非G5，新同源release/metrics/harness-v6和每cellfresh+实际controlwitness正式矩阵待新审批运行。 用户暂停时：最新formal-v3 stage1全部9真实control/Full111等价绿，stage2原51baseline153 strict红，stage3 nativeablate因opaque build_options比较不同CARGO_TARGET_DIR输出路径foundation2（尚0/1224新cell请求），ownedwait2/PID48577保真。仅外部versioned semanticABI投影B设计批准+实际8Cargo fingerprint同源证明；实施/负例/完整锁/新批准/全测量仍not_run。所有生产/测试/证据已静止，Git上传当前全部工程进度及必要轻原件，不推断G5/done。"
     },
     {
       "id": "P5-020",
@@ -7962,7 +8046,7 @@
       ],
       "evidence": [],
       "conditional_dependencies": [],
-      "implementation_notes": "P5-A交接：完整性门禁未通过，source42/intents12请求为Partial，原因见P5-A-GATE与completeness-review.json；须明确lane需求/子预算及图源码映射覆盖，保留S11，不以压掉状态或查询ID特判修绿。"
+      "implementation_notes": "P5-016～018独立验收仅完成本地运行时子集。G5/M2仍待P5-019全部质量/成本/并发证据及当前源全回归。旧strict库存Partial和自然语言miss保持原样，独立任务facet/span与graph事实另行报告；不以旧P5-D绿灯或source-v1失败候选收口。"
     },
     {
       "id": "P6-001",
@@ -11079,6 +11163,6 @@
   ],
   "dependency_semantics": "depends_on 为硬集成依赖；conditional_dependencies 仅在 when 对应认证范围启用。未启用的条件任务仍标 todo/blocked/deferred，不算 done。optional-judge 不阻塞确定性或语义效果认证。",
   "current_phase": "P5",
-  "next_task": "P5-016",
-  "last_implementation_date": "2026-09-30"
+  "next_task": "P5-019",
+  "last_implementation_date": "2026-10-01"
 }

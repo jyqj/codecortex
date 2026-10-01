@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "suite": {
+    "schema_version": 1,
+    "name": "P0 authored smoke",
+    "source": {
+      "root": "source",
+      "commit": null,
+      "digest": "132b85a9f59be96f9c379401a07ebfd1c0e31dd1ffbacd8140b393c04530ac3d",
+      "files": [
+        "session.py",
+        "billing.py",
+        "routes.ts"
+      ]
+    },
+    "queries": "queries.jsonl",
+    "queries_digest": "28e372c84b204b92f744c324fe1dcc49da94b4790abebf9195765d04cb4b869e",
+    "scoring": "codecortex-native-v1",
+    "repetitions": 3,
+    "warmup": 0,
+    "seed": 27,
+    "timeout_ms": 30000,
+    "top_k": 10,
+    "engine_config": {
+      "auto_index": {
+        "enabled": false
+      }
+    }
+  },
+  "input": {
+    "files": [
+      {
+        "path": "billing.py",
+        "bytes": 385,
+        "digest": "801106cac276bed5bcd06aaabb9e6a0ad1c5c1e69308cb83a458e51a8b009afd"
+      },
+      {
+        "path": "routes.ts",
+        "bytes": 275,
+        "digest": "6effeb3c38a2fd3077bb48b9c41e3870026fb596ffd98af45c318a23554e8f66"
+      },
+      {
+        "path": "session.py",
+        "bytes": 647,
+        "digest": "85c1ae0bd3d3869c1cc9b76e643c2f8b379b8dfbfbaa074923ddb2029f07753e"
+      }
+    ],
+    "source_digest": "132b85a9f59be96f9c379401a07ebfd1c0e31dd1ffbacd8140b393c04530ac3d",
+    "query_digest": "28e372c84b204b92f744c324fe1dcc49da94b4790abebf9195765d04cb4b869e",
+    "config_digest": "f95316735cccc5b24ef7b5ef755f1a4b44797934949d77402ed07ea0d3c06c2d",
+    "commit": null,
+    "submodules": ""
+  },
+  "adapter": "mcp-stdio",
+  "adapter_version": "cc-eval-public-v7",
+  "engine": {
+    "arch": "aarch64",
+    "binary_digest": "b87aee4d705a83efd92f99171345e5f58da999f75e9df8ebf5c1a62f4d90017b",
+    "binary_source_binding": "recorded build receipt required; path/HEAD alone do not prove binding",
+    "cargo_lock_digest": "afc46052969389f9b27436976a9290e02bbe1a7fb26df42fb2a1c0283ea69704",
+    "cpu_parallelism": 16,
+    "dirty_observed": "M crates/cc-eval/src/benchmark/ablation.rs\n M crates/cc-eval/src/benchmark/sampler.rs\n M crates/cc-server/src/project_session.rs\n M docs/internals/CONCURRENCY.md\n?? artifacts/checkpoints/todolist-completion-audit/ROUND-01-AUDIT.md\n?? artifacts/checkpoints/todolist-completion-audit/audit_p5d.py\n?? artifacts/checkpoints/todolist-completion-audit/p5-completeness-history.json\n?? artifacts/checkpoints/todolist-completion-audit/round-01.json\n?? artifacts/checkpoints/todolist-completion-audit/snapshot.py\n?? artifacts/checkpoints/todolist-dataset-preparation/P8-PREPARATION.md\n?? crates/cc-eval/tests/p5e_ablation.rs",
+    "engine_head_observed": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+    "eval_debug_assertions": true,
+    "eval_version": "1.0.0",
+    "hardware": "68719476736\nApple M3 Max",
+    "os": "macos",
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+    "rustflags": null,
+    "sdkroot": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "source_files_digest": "892edbdadd02c09e3277715fb5950f0aea36252386f81dd6ab126f68019418d2",
+    "tracked_diff_digest": "c1a64c0cde65ecd1101573e31b7a63666ca9726e24e4bcffe880aff7b3f2c078"
+  },
+  "query_snapshot_digest": "28e372c84b204b92f744c324fe1dcc49da94b4790abebf9195765d04cb4b869e",
+  "normalized_digest": "f4d399b79d4a95552389bb31357bcb2f6360ac1360b8c8e5382f1c959970ce26",
+  "measurement_profile": "smoke",
+  "source_verification": "public result source ranges checked against isolated admitted input; missing source fields marked unverified",
+  "infrastructure_failure": null
+}

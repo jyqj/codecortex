@@ -1,0 +1,788 @@
+{
+  "evidence_summary": {
+    "files": [
+      "api_handler.rs",
+      "main.go",
+      "server.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 5,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-required-source-support-before-incidental-v3",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15813
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 32,
+        "hydrate_requested": 32,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 32,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 1900
+          },
+          "text": {
+            "cache_hits": 0,
+            "legacy_auto_reads": 0,
+            "storage_reads": 32,
+            "utf8_bytes": 3672,
+            "zstd_decodes": 9
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 7,
+          "grep": 0,
+          "lexical": 24,
+          "path": 4
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 578
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 52,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 200,
+        "skipped_duplicates": 148,
+        "soft_scanned": 148,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 148,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 1603
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 148,
+                "utf8_bytes": 15413,
+                "zstd_decodes": 47
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 199,
+                "rows": 200,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 1607
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 52,
+                "utf8_bytes": 2420,
+                "zstd_decodes": 2
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 228,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 4,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 4
+          },
+          "elapsed_us": 2009,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 1755,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 200,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 2914,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 7,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 7
+          },
+          "elapsed_us": 3203,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "graph_expansion_limit",
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-grouped-lexical-uid-graph-v3"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+        },
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+        },
+        "ordering": [
+          "exact-target first (identity tier, not an additive score)",
+          "rerank_score descending = sum(score_trace)",
+          "chunk_id ascending"
+        ],
+        "policy": "uid-byte-graph-distinctive-source-support-context-budget-v19",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 14,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 5,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 32,
+      "intent": "locate",
+      "limit_omitted": 22,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        12,
+        13
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 3672,
+        "redundant_bytes": 0,
+        "unique_bytes": 3672
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 1296,
+        "redundant_bytes": 0,
+        "unique_bytes": 1296
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:server.py:2",
+        "chunk:server.py:1"
+      ],
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 13,
+      "generation": {
+        "evidence_epoch": 0,
+        "incarnation": [
+          210,
+          103,
+          21,
+          254,
+          34,
+          49,
+          137,
+          87,
+          38,
+          66,
+          89,
+          33,
+          214,
+          36,
+          136,
+          69
+        ],
+        "index_epoch": 6,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 14373,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 32
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "order_routes",
+        "chunk_id": "chunk:api_handler.rs:12",
+        "end_line": 41,
+        "file_path": "api_handler.rs",
+        "fused_score": 0.032918552036199096,
+        "graph_score": 0.23025850929940458,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "18ac795b8f63c2e65a7525f678f2a20c18acf220662149eb1209d7385ae55241",
+            "doc_version": "88a94e9db8cc98cd3fe4847ba0904f41ceae018f3734f1a3f094c091a6126540",
+            "encoding_key": "c721fcfad2d96096c2f6391de33f17963d86bf5843bddeca943fe530b2f6bae8",
+            "entity_key": "0712fa3d438df7b3b86028950b94bc5abe5cd9a79a9015fdad7ca4b4ee337f23"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 1025,
+              "start": 784
+            },
+            "signature": {
+              "end": 816,
+              "start": 784
+            },
+            "slice_digest": "787072b9c069a86e9e46b9ba95321dc2319c3f55acba5a870b622334ecd97fd1",
+            "source": {
+              "byte_len": 2455,
+              "content_digest": "4805e678208e84c3a12701e5a6fa5ceb980b8f6c53e7b05104726aba905ac3ad",
+              "encoding": "utf8",
+              "snapshot_id": "63a4325e6e6ffda96a049925072e998c675f640f7511b13ee2d4924f1011b0a5"
+            },
+            "span": {
+              "end": 1025,
+              "start": 725
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "fts-summary",
+          "path-token:api",
+          "path-token:and",
+          "preselect:fts-summary:+2.17",
+          "preselect:token-search:+3.20"
+        ],
+        "rerank_score": 0.36961767204926066,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.0875
+          ],
+          [
+            "boost:stage-a",
+            0.21466034361815087
+          ],
+          [
+            "boost:graph-rerank",
+            0.03453877639491069
+          ]
+        ],
+        "source": "index",
+        "start_line": 32,
+        "symbol_kind": "function",
+        "symbol_name": "order_routes",
+        "text": "\n\n/// Build the Axum router with all order-related routes.\npub fn order_routes() -> Router {\n    Router::new()\n        .route(\"/orders\", get(list_orders))\n        .route(\"/orders\", post(create_order))\n        .route(\"/orders/:id\", get(get_order))\n        .route(\"/orders/:id\", delete(delete_order))\n}"
+      },
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:main.go:15",
+        "end_line": 53,
+        "file_path": "main.go",
+        "fused_score": 0.02,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "go",
+        "lexical_score": 0.2,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "1590bb486b30337630036717f291b090f1a87c4e7a701c30848548e2f5b54060",
+            "doc_version": "1f7de108d34d6c2bdcb8255908b34b3dee81a2027b7b938f92a117fab80c46c7",
+            "encoding_key": "175dce8fcdb6baa4044bb478046774ceaa8d50f3a04adc59a1124ee79e9f45c0",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "4eec0f18cf7a119620356e34f9c1fd7f416f66c10549b6e742116c8688cc20d7",
+            "source": {
+              "byte_len": 2620,
+              "content_digest": "df9bde4c7687de0d5d260fe9142619e00057ec7d2b1f5ff21497aaaa7ca9e1c4",
+              "encoding": "utf8",
+              "snapshot_id": "266a731692f0ba7315a35404be357bf753993ad687d2ec5a99552da0c0d7d2a2"
+            },
+            "span": {
+              "end": 1301,
+              "start": 1244
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@5",
+          "symbol:handleGetUser",
+          "symbol:handleCreateUser",
+          "symbol:handleUpdateUser",
+          "preselect:token-search:+4.80"
+        ],
+        "rerank_score": 0.2995,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.02
+          ],
+          [
+            "overlap",
+            0.0875
+          ],
+          [
+            "boost:stage-a",
+            0.192
+          ]
+        ],
+        "source": "index",
+        "start_line": 51,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "\n\n// handleCreateUser is the POST handler for /api/users."
+      },
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:main.go:13",
+        "end_line": 45,
+        "file_path": "main.go",
+        "fused_score": 0.019642857142857146,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "go",
+        "lexical_score": 0.16666666666666666,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "af603896948174ee7e4594e518252b6c47b1d3ff37756af8e587a8bf06b0ef3f",
+            "doc_version": "ce0303984c374a6454d6ce414ac6ea4a8414f15806b9072af626d689e6840e85",
+            "encoding_key": "b40465c2e852c4e0b7dfbf2434e686d69e7fcedfe3e67925300eba566b28dadc",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "ee3466ded2b00d43479fd46b85cb71109e1e7f44e5e5ac2b3084c5cd4a695e8b",
+            "source": {
+              "byte_len": 2620,
+              "content_digest": "df9bde4c7687de0d5d260fe9142619e00057ec7d2b1f5ff21497aaaa7ca9e1c4",
+              "encoding": "utf8",
+              "snapshot_id": "266a731692f0ba7315a35404be357bf753993ad687d2ec5a99552da0c0d7d2a2"
+            },
+            "span": {
+              "end": 1105,
+              "start": 1048
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@6",
+          "symbol:handleGetUser",
+          "symbol:handleCreateUser",
+          "symbol:handleUpdateUser",
+          "preselect:token-search:+4.80"
+        ],
+        "rerank_score": 0.29914285714285715,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.019642857142857146
+          ],
+          [
+            "overlap",
+            0.0875
+          ],
+          [
+            "boost:stage-a",
+            0.192
+          ]
+        ],
+        "source": "index",
+        "start_line": 43,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "\n\n// handleGetUser is the GET handler for /api/users/:id."
+      },
+      {
+        "breadcrumb": "api_create_user",
+        "chunk_id": "chunk:server.py:2",
+        "end_line": 12,
+        "file_path": "server.py",
+        "fused_score": 0.029654088050314463,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.1,
+        "metadata": {
+          "coverage_priority": "distinctive_source_implementation",
+          "details_omitted": true,
+          "document": {
+            "doc_key": "c787331d0cb541761ce4a7358c4d32f944028ed8797b2a1573f9629e2c36eb15",
+            "doc_version": "082964b8f2848ea7a484164f7bf22c4399f4cc614ba4a5181c5738aaeeb61144",
+            "encoding_key": "7af8b034db150242356076e34baeadca79ae708faef3f9368a38c0cf11cc3474",
+            "entity_key": "70b57b9da5a9e62ab758a782d929ae0c111ebf4ff3b7cbf5ed408174d524df6a"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 318,
+              "start": 213
+            },
+            "signature": {
+              "end": 279,
+              "start": 213
+            },
+            "slice_digest": "2ab8b4749cbfbcadfe302aa6e44499a00e7803345e977e64fdc84330ef080466",
+            "source": {
+              "byte_len": 416,
+              "content_digest": "12de8f592b04bb17a5e7b919a8b806b9fe0fd3ea70762957682afe3f131ef811",
+              "encoding": "utf8",
+              "snapshot_id": "fd2dc89839c23388088c2ae3371eff71cef0e71e087734f085d99676ed7545cc"
+            },
+            "span": {
+              "end": 318,
+              "start": 211
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@10",
+          "fts-summary",
+          "symbol:api_get_user",
+          "symbol:api_create_user",
+          "preselect:fts-summary:+2.21",
+          "preselect:token-search:+2.40"
+        ],
+        "rerank_score": 0.21414051665437786,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.018333333333333333
+          ],
+          [
+            "rrf:graph",
+            0.011320754716981131
+          ],
+          [
+            "boost:stage-a",
+            0.1844864286040634
+          ]
+        ],
+        "source": "index",
+        "start_line": 8,
+        "symbol_kind": "function",
+        "symbol_name": "api_create_user",
+        "text": "\n\n@app.route('/users', methods=['POST'])\ndef api_create_user():\n    return jsonify(create_user(\"new_user\"))"
+      },
+      {
+        "breadcrumb": "api_get_user",
+        "chunk_id": "chunk:server.py:1",
+        "end_line": 8,
+        "file_path": "server.py",
+        "fused_score": 0.02957124842370744,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.09090909090909091,
+        "metadata": {
+          "coverage_priority": "distinctive_source_implementation",
+          "details_omitted": true,
+          "document": {
+            "doc_key": "210d33d4725b80e72ec93c6144e64e10d8a2937ea95e4cbc5c0e8364d4560696",
+            "doc_version": "1628fac6ddc13e27fa459aa9cab8caf1456749f4b9bedad39f6b2cda47073a8b",
+            "encoding_key": "ef23cb2d6a579a97dcdc546b1d19edf78b6861c130726c56f50f9babe780cd6f",
+            "entity_key": "0b581a40de0332cd938032ceb7a63cf81bc4db88de01955190956bd76274dfd2"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 211,
+              "start": 95
+            },
+            "signature": {
+              "end": 178,
+              "start": 95
+            },
+            "slice_digest": "f28c9edec7e2331a05aeb1079aff003e18fab53657f65e5190545643d43dea8f",
+            "source": {
+              "byte_len": 416,
+              "content_digest": "12de8f592b04bb17a5e7b919a8b806b9fe0fd3ea70762957682afe3f131ef811",
+              "encoding": "utf8",
+              "snapshot_id": "fd2dc89839c23388088c2ae3371eff71cef0e71e087734f085d99676ed7545cc"
+            },
+            "span": {
+              "end": 211,
+              "start": 93
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@11",
+          "fts-summary",
+          "symbol:api_get_user",
+          "symbol:api_create_user",
+          "preselect:fts-summary:+2.21",
+          "preselect:token-search:+2.40"
+        ],
+        "rerank_score": 0.21405767702777084,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.018032786885245903
+          ],
+          [
+            "rrf:graph",
+            0.011538461538461537
+          ],
+          [
+            "boost:stage-a",
+            0.1844864286040634
+          ]
+        ],
+        "source": "index",
+        "start_line": 4,
+        "symbol_kind": "function",
+        "symbol_name": "api_get_user",
+        "text": "\n\n@app.route('/users/<int:user_id>', methods=['GET'])\ndef api_get_user(user_id):\n    return jsonify(get_user(user_id))"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "understand the Flask API routes and their handlers",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:main.go:25",
+        "document": {
+          "doc_key": "d2366f371a1f66e27f4a8fde082fa2e15106e980b401e904fd6b950728673a43",
+          "doc_version": "637e85ecea876386e25acca856c51a9b8eda4dfa2f9a5ecda389e7f791fb147f",
+          "encoding_key": "87c2486d4c8042f38e24d29b954918d5ee830b0350eb4aa045cb7c3dd690f5f8",
+          "entity_key": "01bf619db57b6ad55bfe636b026c4e040dd6bfc82d7766a164b3eb8c2c64f930"
+        },
+        "file_path": "main.go",
+        "kind": "document_reference",
+        "language": "go",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "symbol:handleGetUser",
+          "symbol:handleCreateUser",
+          "symbol:handleUpdateUser",
+          "symbol:handleDeleteUser"
+        ],
+        "source_digest": "df9bde4c7687de0d5d260fe9142619e00057ec7d2b1f5ff21497aaaa7ca9e1c4",
+        "source_span": {
+          "end": 2620,
+          "start": 2267
+        },
+        "symbol_kind": "function",
+        "symbol_name": "main"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [],
+  "query": "understand the Flask API routes and their handlers",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 6,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "understand the Flask API routes and their handlers",
+  "token_budget": 4000,
+  "token_estimate": 3954
+}

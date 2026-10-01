@@ -11,7 +11,11 @@ pub fn hard_scope(request: &SearchRequest) -> CcResult<cc_model::retrieval::Hard
     crate::scope::normalize_request(&mut request.clone(), &dsl)
 }
 
-pub const POLICY_VERSION: &str = "query-policy-local-optional-semantic-v1";
+pub const POLICY_VERSION: &str = "query-policy-local-semantic-canonical-path-domain-v4";
+pub const PATH_SOURCE_DOMAIN: &str =
+    "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage";
+pub const GRAPH_SOURCE_MAPPING: &str =
+    "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage";
 #[derive(Debug, Clone, Serialize)]
 pub struct LaneObligation {
     pub lane_id: &'static str,
@@ -21,6 +25,8 @@ pub struct LaneObligation {
 #[derive(Debug, Clone, Serialize)]
 pub struct QueryPolicy {
     pub version: &'static str,
+    pub graph_source_mapping: &'static str,
+    pub path_source_domain: &'static str,
     pub requested: RetrievalStrategy,
     pub effective: RetrievalStrategy,
     pub intent: Intent,
@@ -75,6 +81,8 @@ impl QueryPolicy {
         }
         Ok(Self {
             version: POLICY_VERSION,
+            graph_source_mapping: GRAPH_SOURCE_MAPPING,
+            path_source_domain: PATH_SOURCE_DOMAIN,
             requested,
             effective,
             intent,

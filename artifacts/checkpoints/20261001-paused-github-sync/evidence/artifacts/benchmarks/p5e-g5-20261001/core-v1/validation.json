@@ -1,0 +1,235 @@
+{
+  "accepted_task_scope": [],
+  "requested_task_scope": [
+    "P5-019",
+    "P5-020"
+  ],
+  "scope": "current dual-toolchain engineering core; independent performance/quality matrix required separately",
+  "pending_tasks": {},
+  "status": "failed",
+  "head": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+  "source_digest_sha256": "429e005528d0d91ec77179bd11ae6d00efa1e2908e1727247b6486383ef84098",
+  "source_file_count": 626,
+  "commands": [
+    {
+      "label": "format",
+      "argv": [
+        "cargo",
+        "+stable",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": ".",
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_BUILD_JOBS": "4",
+        "RUST_LOG": "error",
+        "CODECORTEX_BENCH_PROCESS_PROBE": "0"
+      },
+      "exit_code": 0,
+      "allowed_exit_codes": [
+        0
+      ],
+      "seconds": 0.9489678750000001,
+      "tests": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log": "artifacts/benchmarks/p5e-g5-20261001/core-v1/format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "module-architecture",
+      "argv": [
+        "python3",
+        "scripts/check_module_architecture.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_BUILD_JOBS": "4",
+        "RUST_LOG": "error",
+        "CODECORTEX_BENCH_PROCESS_PROBE": "0"
+      },
+      "exit_code": 0,
+      "allowed_exit_codes": [
+        0
+      ],
+      "seconds": 0.042383624999999814,
+      "tests": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log": "artifacts/benchmarks/p5e-g5-20261001/core-v1/module-architecture.log",
+      "log_sha256": "ad57357a9fc7ee6e261c86a0f06cc1e873decce860c7296d6ba0049a90169f24"
+    },
+    {
+      "label": "source-architecture",
+      "argv": [
+        "python3",
+        "scripts/check_source_architecture.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_BUILD_JOBS": "4",
+        "RUST_LOG": "error",
+        "CODECORTEX_BENCH_PROCESS_PROBE": "0"
+      },
+      "exit_code": 0,
+      "allowed_exit_codes": [
+        0
+      ],
+      "seconds": 0.0460327920000001,
+      "tests": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log": "artifacts/benchmarks/p5e-g5-20261001/core-v1/source-architecture.log",
+      "log_sha256": "b127b0e418c20bfb0c20d78a08ce06ea8a0c932891fdd42efdc897b892f36d8f"
+    },
+    {
+      "label": "stable-strict",
+      "argv": [
+        "cargo",
+        "+stable",
+        "clippy",
+        "--workspace",
+        "--all-targets",
+        "--features",
+        "cc-eval/eval-http",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": ".",
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/target/p0-dev",
+        "CODECORTEX_BENCH_OBSERVATIONS": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/observations/stable-strict",
+        "CODECORTEX_CONTRACT_RECEIPT": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/stable-contract.json",
+        "RUST_LOG": "error",
+        "CODECORTEX_BENCH_PROCESS_PROBE": "0"
+      },
+      "exit_code": 0,
+      "allowed_exit_codes": [
+        0
+      ],
+      "seconds": 15.779687832999999,
+      "tests": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log": "artifacts/benchmarks/p5e-g5-20261001/core-v1/stable-strict.log",
+      "log_sha256": "2bcc0ffed576e070e394fd6393c2e45e864c6d94a1dcca3c26c0df237382bc82"
+    },
+    {
+      "label": "stable-bins",
+      "argv": [
+        "cargo",
+        "+stable",
+        "build",
+        "--workspace",
+        "--bins",
+        "--features",
+        "cc-eval/eval-http",
+        "--locked",
+        "--offline"
+      ],
+      "cwd": ".",
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/target/p0-dev",
+        "CODECORTEX_BENCH_OBSERVATIONS": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/observations/stable-bins",
+        "CODECORTEX_CONTRACT_RECEIPT": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/stable-contract.json",
+        "RUST_LOG": "error",
+        "CODECORTEX_BENCH_PROCESS_PROBE": "0"
+      },
+      "exit_code": 0,
+      "allowed_exit_codes": [
+        0
+      ],
+      "seconds": 63.591911208,
+      "tests": {
+        "passed": 0,
+        "failed": 0,
+        "ignored": 0
+      },
+      "log": "artifacts/benchmarks/p5e-g5-20261001/core-v1/stable-bins.log",
+      "log_sha256": "cdbc8cbf045b4cf364dd5d1f8665e87cb155ff14fa6a23bfc87c638c435ec32b"
+    },
+    {
+      "label": "stable-workspace",
+      "argv": [
+        "cargo",
+        "+stable",
+        "test",
+        "--workspace",
+        "--no-fail-fast",
+        "--locked",
+        "--offline",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": ".",
+      "environment": {
+        "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "CARGO_BUILD_JOBS": "4",
+        "CARGO_TARGET_DIR": "/Users/jin/Desktop/codecortex-rust/target/p0-dev",
+        "CODECORTEX_BENCH_BINARY": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/binaries/stable/codecortex",
+        "CODECORTEX_BENCH_OBSERVATIONS": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/observations/stable-workspace",
+        "CODECORTEX_CONTRACT_RECEIPT": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-g5-20261001/core-v1/stable-contract.json",
+        "RUST_LOG": "error",
+        "CODECORTEX_BENCH_PROCESS_PROBE": "0"
+      },
+      "exit_code": 101,
+      "allowed_exit_codes": [
+        0
+      ],
+      "seconds": 885.075267666,
+      "tests": {
+        "passed": 1810,
+        "failed": 2,
+        "ignored": 60
+      },
+      "log": "artifacts/benchmarks/p5e-g5-20261001/core-v1/stable-workspace.log",
+      "log_sha256": "30bf1b4f805d9b7ca92db937a7fc4a31b0a6ce9a6a9e1feeade195c68b4ff65e"
+    }
+  ],
+  "binaries": {
+    "stable": {
+      "codecortex": {
+        "path": "artifacts/benchmarks/p5e-g5-20261001/core-v1/binaries/stable/codecortex",
+        "sha256": "0e81e651980ca60ed0a288748975ebd4c7472f0b6ce232b019f517190b0e2caf",
+        "immutable_attempt_copy": true
+      },
+      "cc-eval": {
+        "path": "artifacts/benchmarks/p5e-g5-20261001/core-v1/binaries/stable/cc-eval",
+        "sha256": "f1d568c21aeeb2ca6b2029302bdea27912d639608189c8455bc2afd3e97fae5f",
+        "immutable_attempt_copy": true
+      }
+    }
+  },
+  "compilers": {
+    "stable": "rustc 1.97.0 (2d8144b78 2026-07-07)\nbinary: rustc\ncommit-hash: 2d8144b7880597b6e6d3dfd63a9a9efae3f533d3\ncommit-date: 2026-07-07\nhost: aarch64-apple-darwin\nrelease: 1.97.0\nLLVM version: 22.1.6\n"
+  },
+  "archive_sha256": "d16481cf40f395a9ff3471a186ea31a1ac2fb9eef9c6ee88761b04f2f3b0bab6",
+  "validation_scheduling": {
+    "stable_workspace": "new current-source serial test-harness run; no earlier full run substituted",
+    "http_and_msrv_workspace": "serial test-harness execution to avoid timing-test contention; internal explicit concurrency tests unchanged",
+    "retained_failure": "artifacts/benchmarks/p5d-20260930-runtime/final-v2/stable-http.log",
+    "isolation_receipt": "artifacts/benchmarks/p5d-20260930-runtime/development/performance-isolation/receipt.json",
+    "performance_claim": "not tail latency or concurrent-load certification"
+  },
+  "error": "failed: stable-workspace"
+}

@@ -120,7 +120,7 @@ fn public_context_reports_selection_and_cache_windows_do_not_alias() {
     assert_eq!(envelope.machine_pack["hits"].as_array().unwrap().len(), 2);
     assert_eq!(
         envelope.evidence_summary["selection"]["spec"],
-        "anchored-facets-source-union-v1"
+        cc_search::selection::SELECTION_SPEC
     );
     let engine = SearchEngine::new(index.index_db().unwrap().clone(), &Default::default(), None);
     let req = SearchRequest {

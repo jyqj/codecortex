@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "suite": {
+    "schema_version": 1,
+    "name": "P0 actual CodeCortex source subset",
+    "source": {
+      "root": "source",
+      "commit": null,
+      "digest": "b177c6c9a4a1c993a539c905575ccbb8e75ab9ef2871baef437acdf33cdc11a3",
+      "files": [
+        "cc-db/src/index_migrate.rs",
+        "cc-index/src/dirty_closure.rs",
+        "cc-index/src/indexer_phases/dirty.rs",
+        "cc-model/src/id.rs",
+        "cc-parsers/src/chunker.rs",
+        "cc-search/src/plan.rs",
+        "cc-search/src/preselect.rs"
+      ]
+    },
+    "queries": "queries.jsonl",
+    "queries_digest": "34905321eef3c2b731467708883443e23667a5417feb81c2ac205fa4752a43d2",
+    "scoring": "codecortex-native-v1",
+    "repetitions": 3,
+    "warmup": 0,
+    "seed": 27,
+    "timeout_ms": 30000,
+    "top_k": 10,
+    "engine_config": {
+      "auto_index": {
+        "enabled": false
+      }
+    }
+  },
+  "input": {
+    "files": [
+      {
+        "path": "cc-db/src/index_migrate.rs",
+        "bytes": 3473,
+        "digest": "2d5de635d2c39bfe3e643d1b3b8c5c85eb6708752c786d49c8f079a437443229"
+      },
+      {
+        "path": "cc-index/src/dirty_closure.rs",
+        "bytes": 21966,
+        "digest": "04a2efe8b3624e2fbd7f9cdaaa1650336649286704324864137614c76b37d7d5"
+      },
+      {
+        "path": "cc-index/src/indexer_phases/dirty.rs",
+        "bytes": 34126,
+        "digest": "4815ab9c8b2829feb95e371eda5b7db51a9f97b8bcc03955eb5d7320f88d017d"
+      },
+      {
+        "path": "cc-model/src/id.rs",
+        "bytes": 5984,
+        "digest": "b9624f2be9f8f4fe8aeb2314df1ae4d054efb4ace08b87220a87dbe11c6ae030"
+      },
+      {
+        "path": "cc-parsers/src/chunker.rs",
+        "bytes": 7579,
+        "digest": "b75ff867355a45397a8eb24384437e427ab4394e856ed50752692b00350e2c4b"
+      },
+      {
+        "path": "cc-search/src/plan.rs",
+        "bytes": 27276,
+        "digest": "595cf2329d4f151ad5f9700906b4e8c5a237ffdd6ca1f01a4112f9fa46154c12"
+      },
+      {
+        "path": "cc-search/src/preselect.rs",
+        "bytes": 55183,
+        "digest": "a2def0d2e5d987de4c85136286fe5d23cf61043fcbaad8e31b45f631d697ae0f"
+      }
+    ],
+    "source_digest": "b177c6c9a4a1c993a539c905575ccbb8e75ab9ef2871baef437acdf33cdc11a3",
+    "query_digest": "34905321eef3c2b731467708883443e23667a5417feb81c2ac205fa4752a43d2",
+    "config_digest": "f95316735cccc5b24ef7b5ef755f1a4b44797934949d77402ed07ea0d3c06c2d",
+    "commit": null,
+    "submodules": ""
+  },
+  "adapter": "mcp-stdio",
+  "adapter_version": "cc-eval-public-v7",
+  "engine": {
+    "arch": "aarch64",
+    "binary_digest": "60021653085a87f6b5cfe3ca0d31d9e607770b57b5c7fc93ce625d6a73e82677",
+    "binary_source_binding": "recorded build receipt required; path/HEAD alone do not prove binding",
+    "cargo_lock_digest": "8575d029714b98f43310af87ec9ed2feea2b5156d203831a1c33b68fe7e457cd",
+    "cpu_parallelism": 16,
+    "dirty_observed": "M Cargo.lock\n M README.md\n M crates/cc-db/src/fts.rs\n M crates/cc-db/src/index_db_retrieval.rs\n M crates/cc-eval/Cargo.toml\n M crates/cc-eval/src/benchmark/ablation.rs\n M crates/cc-eval/src/benchmark/normalizer.rs\n M crates/cc-eval/src/benchmark/sampler.rs\n M crates/cc-eval/tests/p5c_selection.rs\n M crates/cc-model/src/context.rs\n M crates/cc-search/src/engine.rs\n M crates/cc-search/src/engine_cache.rs\n M crates/cc-search/src/engine_lane_tests.rs\n M crates/cc-search/src/lanes.rs\n M crates/cc-search/src/plan.rs\n M crates/cc-search/src/query_policy.rs\n M crates/cc-search/src/selection/budget.rs\n M crates/cc-search/src/selection/coverage.rs\n M crates/cc-search/src/selection/mod.rs\n M crates/cc-server/src/engine.rs\n M crates/cc-server/src/project_session.rs\n M docs/internals/CONCURRENCY.md\n M docs/internals/QUERY_EXECUTION.md\n M docs/roadmap/code-index-v2/04-PHASES.md\n M docs/roadmap/code-index-v2/05-TODO.md\n M docs/roadmap/code-index-v2/06-VALIDATION.md\n M docs/roadmap/code-index-v2/08-HANDOFF.md\n M docs/roadmap/code-index-v2/09-BENCHMARK.md\n M docs/roadmap/code-index-v2/PLAN-CHECK.json\n M docs/roadmap/code-index-v2/README.md\n M docs/roadmap/code-index-v2/tasks.json\n?? artifacts/checkpoints/todolist-completion-audit/ROUND-01-AUDIT.md\n?? artifacts/checkpoints/todolist-completion-audit/audit_p5d.py\n?? artifacts/checkpoints/todolist-completion-audit/p5-completeness-history.json\n?? artifacts/checkpoints/todolist-completion-audit/round-01.json\n?? artifacts/checkpoints/todolist-completion-audit/round-02-p5d-accepted.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/G5-EXECUTION-APPROVAL-final-v1.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/G5-PREREGISTRATION-REVIEW.md\n?? artifacts/checkpoints/todolist-completion-audit/round03/GRAPH-ANCHOR-REVIEW.md\n?? artifacts/checkpoints/todolist-completion-audit/round03/NATIVE-CPU-UNIT-REVIEW.md\n?? artifacts/checkpoints/todolist-completion-audit/round03/P6-READONLY-CONSISTENCY-REVIEW.md\n?? artifacts/checkpoints/todolist-completion-audit/round03/audit_core.py\n?? artifacts/checkpoints/todolist-completion-audit/round03/baseline-release-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/build_obligations.py\n?? artifacts/checkpoints/todolist-completion-audit/round03/candidate-v2-release-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/core-v2-completed-stage-check-01.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/core-v2-completed-stage-check-02.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/current-requirements.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/development-obligations.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/evaluate_formal_obligations.py\n?? artifacts/checkpoints/todolist-completion-audit/round03/evaluate_obligations.py\n?? artifacts/checkpoints/todolist-completion-audit/round03/fanout-preregistration-review-v5.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/fanout-structured-mechanism-review-v5.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/final-harness-v5-prelock-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/final-source-v1-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/final-source-v2-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/flask-context-failure-diagnosis.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/gold-obligations-second-source-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/graph-source-review-v2.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/graph-task-inventory-boundary-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/bad_freshness.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/baseline-fanout3.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/baseline-typed5.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/budget_exhausted.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/candidate-fanout3.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/candidate-typed5.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/disabled_graph.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/missing_graph_receipt.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/missing_seed_body.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/omitted_file.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/partial_graph.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/receipt.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/wrong_CALLS_endpoint.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/wrong_source_callsite_proof.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/harness-v5-independent-replay/zero_graph_work.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-cpu-calibration-receipt-v2.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-check\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-check.c\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-calibration\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-calibration-v2\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-calibration-v2.c\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-calibration.c\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-first-attempt.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-observation-v2.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-cpu-observation.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/native-taskinfo-observation.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/p6-readonly-requirements.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/proposed-profile-review.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/query-aware-selection-review-v1.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/query-aware-selection-review-v2.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/task-obligations-v1.json\n?? artifacts/checkpoints/todolist-completion-audit/round03/task-obligations-v2.json\n?? artifacts/checkpoints/todolist-completion-audit/snapshot.py\n?? artifacts/checkpoints/todolist-dataset-preparation/P8-PREPARATION.md\n?? artifacts/checkpoints/todolist-p6-owner-preparation-20261001/ADR-0003-PREPARATION.md\n?? artifacts/checkpoints/todolist-p6-owner-preparation-20261001/REQUIREMENTS-PREPARATION.json\n?? crates/cc-db/tests/fts_identifier_expansion.rs\n?? crates/cc-eval/tests/p5e_ablation.rs\n?? crates/cc-eval/tests/p5e_context_facets.rs\n?? crates/cc-eval/tests/p5e_graph_anchor.rs\n?? crates/cc-eval/tests/p5e_identifier.rs\n?? crates/cc-eval/tests/p5e_priority_pressure.rs\n?? docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json\n?? docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md",
+    "engine_head_observed": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+    "eval_debug_assertions": false,
+    "eval_version": "1.0.0",
+    "hardware": "68719476736\nApple M3 Max",
+    "os": "macos",
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+    "rustflags": "-C link-arg=-isysroot -C link-arg=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "sdkroot": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "source_files_digest": "2b06cd738344449b58bd01d0b35b0a8446011fa712a0044ab9e13e80da0a8f22",
+    "tracked_diff_digest": "23e991e615d2394c27eb13cf684785412fc3f9cad4892084d345bc87e1e61591"
+  },
+  "query_snapshot_digest": "34905321eef3c2b731467708883443e23667a5417feb81c2ac205fa4752a43d2",
+  "normalized_digest": "269adb1c9b3b1939383d7625d4856286359d759eb663ea50b6897977b5bb3cfd",
+  "measurement_profile": "smoke",
+  "source_verification": "public result source ranges checked against isolated admitted input; missing source fields marked unverified",
+  "infrastructure_failure": null
+}

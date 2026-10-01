@@ -1,0 +1,234 @@
+{
+  "errors": [
+    {
+      "field": "actual_raw_control_body_proof",
+      "id": "intent_behavior",
+      "recomputed": {
+        "actual_control_mechanism": false,
+        "actual_lanes": [
+          {
+            "candidate_count": 0,
+            "candidate_details_omitted": true,
+            "coverage": {
+              "complete": true,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 53,
+            "lane_id": "exact_symbol",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 1.1
+          },
+          {
+            "candidate_count": 0,
+            "candidate_details_omitted": true,
+            "coverage": {
+              "complete": true,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 191,
+            "lane_id": "path",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 1.0
+          },
+          {
+            "candidate_count": 5,
+            "candidate_details_omitted": true,
+            "coverage": {
+              "complete": true,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 5
+            },
+            "elapsed_us": 291,
+            "lane_id": "lexical",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 1.1
+          },
+          {
+            "candidate_count": 0,
+            "candidate_details_omitted": true,
+            "coverage": {
+              "complete": true,
+              "examined": 5,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 274,
+            "lane_id": "grep",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 0.8
+          },
+          {
+            "candidate_count": 0,
+            "candidate_details_omitted": true,
+            "coverage": {
+              "complete": false,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 0,
+            "lane_id": "graph",
+            "schema_version": 1,
+            "status": "disabled",
+            "truncation_reason": null,
+            "weight": 0.0
+          }
+        ],
+        "actual_policy": {
+          "deadline_ms": 30000,
+          "details_omitted": true,
+          "effective": "local",
+          "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+          "intent": "fix",
+          "lane_timeout_ms": 20000,
+          "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+          "requested": "local",
+          "semantic_state": "disabled",
+          "semantic_timeout_ms": 5000,
+          "semantic_top_k": 24,
+          "version": "query-policy-local-semantic-canonical-path-domain-v4"
+        },
+        "actual_selection": {
+          "facets": {
+            "implementation": 3,
+            "interface": 1,
+            "test": 1
+          },
+          "input_candidates": 5,
+          "intent": "locate",
+          "intent_facet_anchors": {
+            "implementation": "chunk:scope/support.py:0",
+            "interface": "chunk:scope/api.ts:0",
+            "test": "chunk:scope/test_widget.py:0"
+          },
+          "limit_omitted": 0,
+          "original_ranks": [
+            1,
+            2,
+            3,
+            4,
+            5
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 358,
+            "redundant_bytes": 0,
+            "unique_bytes": 358
+          },
+          "requested_limit": 10,
+          "selected": 5,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 358,
+            "redundant_bytes": 0,
+            "unique_bytes": 358
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [
+            "chunk:scope/support.py:0"
+          ],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "body_source_checks": {
+          "facets": [
+            {
+              "covered": true,
+              "marker": "def bind_widget(value):\n    return value + 731",
+              "path": "scope/impl.py"
+            },
+            {
+              "covered": true,
+              "marker": "def test_bind_widget():\n    assert bind_widget(1) == 732",
+              "path": "scope/test_widget.py"
+            },
+            {
+              "covered": true,
+              "marker": "export interface WidgetContract { bind_widget(value: number): number; }",
+              "path": "scope/api.ts"
+            },
+            {
+              "covered": true,
+              "marker": "def widget_support_trace(value):\n    return bind_widget(value) + 997",
+              "path": "scope/support.py"
+            }
+          ],
+          "passed": true,
+          "status": "Success",
+          "verified_source_spans": [
+            {
+              "path": "scope/support.py",
+              "span": {
+                "end": 69,
+                "start": 0
+              },
+              "valid": true,
+              "verification_error": null
+            },
+            {
+              "path": "scope/api.ts",
+              "span": {
+                "end": 72,
+                "start": 0
+              },
+              "valid": true,
+              "verification_error": null
+            },
+            {
+              "path": "scope/impl.py",
+              "span": {
+                "end": 47,
+                "start": 0
+              },
+              "valid": true,
+              "verification_error": null
+            },
+            {
+              "path": "scope/noise.py",
+              "span": {
+                "end": 113,
+                "start": 0
+              },
+              "valid": true,
+              "verification_error": null
+            },
+            {
+              "path": "scope/test_widget.py",
+              "span": {
+                "end": 57,
+                "start": 0
+              },
+              "valid": true,
+              "verification_error": null
+            }
+          ]
+        },
+        "complete_actual_source_body": true,
+        "declared_local_lanes_complete_or_intentionally_disabled": true,
+        "factor": "intent_aware_facet_reservation",
+        "foundation_complete": true,
+        "freshness_complete": true,
+        "limits": "Locate retains rank-anchor/defaultfill and source-support,not a fabricated implementation-anchor map;no corpus quality/timing claim",
+        "packing_no_body_omission": true,
+        "passed": false,
+        "registered_enabled": true,
+        "scope_complete": true
+      }
+    }
+  ],
+  "status": "invalid_control_evidence"
+}

@@ -1,6 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-pub const CONTEXT_PACKING_SPEC: &str = "whole-json-priority-evidence-before-references-v2";
+pub const CONTEXT_PACKING_SPEC: &str =
+    "whole-json-intent-facets-source-support-before-incidental-v5";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum EvidencePriority {
+    IntentFacet,
+    DistinctiveSourceSupport,
+}
 
 use crate::Intent;
 

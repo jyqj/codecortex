@@ -1,0 +1,559 @@
+{
+  "observed_at_utc": "2026-09-30T22:33:37.880942+00:00",
+  "status": "readonly_P8_original20_requirements_and_dataset_preparation_not_certified",
+  "accepted_tasks": [],
+  "inputs": {
+    "docs/roadmap/code-index-v2/tasks.json": "2b594a90c7b6e94a5647a79b5db75b017fb193019360d89e512d95939e4f41f6",
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731",
+    "artifacts/checkpoints/todolist-dataset-preparation/P8-PREPARATION.md": "4368dbed178c369952ed293e09f57cdc44e9452614c607a35ef2b22a9b6a140e"
+  },
+  "tasks": [
+    {
+      "id": "P8-001",
+      "title": "锁定release候选与证据输入",
+      "status": "todo",
+      "depends_on": [
+        "P7-020"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/manifest.rs",
+        "artifacts/benchmarks/"
+      ],
+      "acceptance": [
+        "每份报告精确回到同一候选，后续改动使对应证据失效",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V02"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-002",
+      "title": "完成真实多仓native语料认证",
+      "status": "todo",
+      "depends_on": [
+        "P8-001"
+      ],
+      "scope": [
+        "crates/cc-eval/benchmarks/native/",
+        "crates/cc-eval/benchmarks/manifests/"
+      ],
+      "acceptance": [
+        "题数、类别、语言、能力缺口和实际审阅范围透明",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V02",
+        "V19"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-003",
+      "title": "运行外部兼容套件",
+      "status": "todo",
+      "depends_on": [
+        "P8-002"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/adapters/",
+        "artifacts/benchmarks/"
+      ],
+      "acceptance": [
+        "无锁/输入不同/平台glob差异不能直接对比排行榜",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V19"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-004",
+      "title": "封存holdout与反过拟合检查",
+      "status": "todo",
+      "depends_on": [
+        "P8-003"
+      ],
+      "scope": [
+        "crates/cc-eval/benchmarks/manifests/",
+        "crates/cc-search/"
+      ],
+      "acceptance": [
+        "translation/paraphrase不泄漏，回归后不直接改标签保分",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V19"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-005",
+      "title": "完整规模1k到100k",
+      "status": "todo",
+      "depends_on": [
+        "P8-004"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/sampler.rs",
+        "crates/cc-eval/tests/index_v2_scale.rs"
+      ],
+      "acceptance": [
+        "不存在只报文件数或把不同工作量直接算倍数",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-006",
+      "title": "增量规模与fanout曲线",
+      "status": "todo",
+      "depends_on": [
+        "P7-020",
+        "P8-001",
+        "P8-005"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/mutations.rs",
+        "crates/cc-index/"
+      ],
+      "acceptance": [
+        "时间可归因且闭包完成后full parity，未完成有显式status",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-007",
+      "title": "多并发与混合负载",
+      "status": "todo",
+      "depends_on": [
+        "P8-006"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-server/"
+      ],
+      "acceptance": [
+        "无死锁饥饿，吞吐不能隐藏timeout与尾部",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V11",
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-008",
+      "title": "冷建/重开/热查分层",
+      "status": "todo",
+      "depends_on": [
+        "P8-007"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/runner.rs",
+        "crates/cc-eval/src/benchmark/statistics.rs"
+      ],
+      "acceptance": [
+        "无best-of，sample N/分布/CI齐全",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-009",
+      "title": "内存/磁盘/费用总账",
+      "status": "todo",
+      "depends_on": [
+        "P8-008"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/sampler.rs",
+        "crates/cc-semantic/"
+      ],
+      "acceptance": [
+        "单位和归属正确，不把unavailable填0或把runner当server",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-010",
+      "title": "长时soak与连续修改",
+      "status": "todo",
+      "depends_on": [
+        "P8-009"
+      ],
+      "scope": [
+        "crates/cc-eval/tests/soak.rs",
+        "crates/cc-eval/src/benchmark/mutations.rs"
+      ],
+      "acceptance": [
+        "内存/队列不无界增长，长期索引和全量一致",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V07",
+        "V17",
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-011",
+      "title": "端到端故障与恢复认证",
+      "status": "todo",
+      "depends_on": [
+        "P7-020",
+        "P8-007",
+        "P8-010"
+      ],
+      "scope": [
+        "crates/cc-eval/tests/semantic_lifecycle.rs",
+        "crates/cc-server/tests/mcp_stdio.rs"
+      ],
+      "acceptance": [
+        "没有假ready或删除复活，恢复与费用影响清楚",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V14",
+        "V17",
+        "V18"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-012",
+      "title": "MSRV与平台冷构建矩阵",
+      "status": "todo",
+      "depends_on": [
+        "P8-011"
+      ],
+      "scope": [
+        ".github/workflows/ci.yml",
+        "CONTRIBUTING.md"
+      ],
+      "acceptance": [
+        "SDK blocker解决或发布平台范围明确，缓存测试不替冷构建",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V21"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-013",
+      "title": "指标/门槛与失败退出最终认证",
+      "status": "todo",
+      "depends_on": [
+        "P8-012"
+      ],
+      "scope": [
+        "crates/cc-eval/src/benchmark/gate.rs",
+        "crates/cc-eval/tests/benchmark_cli.rs"
+      ],
+      "acceptance": [
+        "红线失败必非零，inconclusive不被自动passed",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V03",
+        "V04",
+        "V20"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-014",
+      "title": "可选LLM评审旁证流程",
+      "status": "todo",
+      "depends_on": [
+        "P8-013"
+      ],
+      "scope": [
+        "crates/cc-eval/benchmarks/manifests/",
+        "docs/BENCHMARK.md"
+      ],
+      "acceptance": [
+        "不替代确定性gold，提示注入文本只作数据，费用需授权",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V19"
+      ],
+      "conditional": "可选 LLM 旁证；需要明确授权和预算。未执行不阻塞确定性评分或本地/语义发布，但不能声称完成 LLM 复核。",
+      "required_for": [
+        "optional-judge"
+      ]
+    },
+    {
+      "id": "P8-015",
+      "title": "真实语义效果发布认证",
+      "status": "todo",
+      "depends_on": [
+        "P8-013",
+        "P7-018"
+      ],
+      "scope": [
+        "crates/cc-eval/benchmarks/manifests/",
+        "artifacts/benchmarks/"
+      ],
+      "acceptance": [
+        "缺live证据只发布已验证的能力范围，不伪造M4-semantic通过",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V15",
+        "V19",
+        "V20"
+      ],
+      "conditional": "仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。",
+      "required_for": [
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-016",
+      "title": "数据库/配置/包回滚演练",
+      "status": "todo",
+      "depends_on": [
+        "P7-020",
+        "P8-012",
+        "P8-013"
+      ],
+      "scope": [
+        "crates/cc-db/src/index_migrate.rs",
+        "crates/cc-semantic/src/cache.rs",
+        "docs/TROUBLESHOOTING.md"
+      ],
+      "acceptance": [
+        "回滚不误读新向量/丢用户源码，恢复步骤实测",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V13",
+        "V17",
+        "V21"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-017",
+      "title": "删除临时兼容和重复模块",
+      "status": "todo",
+      "depends_on": [
+        "P8-016"
+      ],
+      "scope": [
+        "crates/cc-index/",
+        "crates/cc-search/",
+        "crates/cc-eval/"
+      ],
+      "acceptance": [
+        "运行路径只有一个事实与算法所有者，删除有回归证据",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-018",
+      "title": "文档事实与安装契约同步",
+      "status": "todo",
+      "depends_on": [
+        "P8-017"
+      ],
+      "scope": [
+        "docs/ARCHITECTURE.md",
+        "docs/BENCHMARK.md",
+        "docs/MCP_TOOLS.md",
+        "docs/CONFIGURATION.md"
+      ],
+      "acceptance": [
+        "文档表数/schema/工具数不再漂移，设计与已实现标识分开",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V21"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-019",
+      "title": "发布工件与完整报告归档",
+      "status": "todo",
+      "depends_on": [
+        "P8-018"
+      ],
+      "scope": [
+        ".github/workflows/ci.yml",
+        "artifacts/benchmarks/",
+        "docs/benchmarks/"
+      ],
+      "acceptance": [
+        "报告可重算，历史原始run不被下一轮覆盖",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V01",
+        "V04",
+        "V21"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    },
+    {
+      "id": "P8-020",
+      "title": "P8发布评审与遗留关闭",
+      "status": "todo",
+      "depends_on": [
+        "P8-001",
+        "P8-002",
+        "P8-003",
+        "P8-004",
+        "P8-005",
+        "P8-006",
+        "P8-007",
+        "P8-008",
+        "P8-009",
+        "P8-010",
+        "P8-011",
+        "P8-012",
+        "P8-013",
+        "P8-016",
+        "P8-017",
+        "P8-018",
+        "P8-019"
+      ],
+      "scope": [
+        "docs/roadmap/code-index-v2/",
+        "artifacts/benchmarks/"
+      ],
+      "acceptance": [
+        "本次选择发布范围内blocker为0，其他证据不足明确列出",
+        "相关旧功能回归通过；没有证据的项标not_run/blocked而非done。"
+      ],
+      "validations": [
+        "V18",
+        "V19",
+        "V20",
+        "V21"
+      ],
+      "conditional": null,
+      "required_for": [
+        "M4-local",
+        "M4-semantic"
+      ]
+    }
+  ],
+  "actual_evidence_gap": [
+    "D2sixrealrepositories/languages/mixedmonorepo/about600independentlyreviewedquestionsonlyproposal;no pinnedsource/goldcertification",
+    "D5development51alreadyusedinfixesnoteligibleholdout;sealrepo/module/query_family andtranslationpairssamesplit",
+    "D4allowsfixedseed1k-100ksyntheticbutrequiresrealrepositoryalso;currentmixed1k74786bytesnotP8scale certification",
+    "D3atleast100mutationsequencesandreconcilecanonicalparity/fault/crashcoverage notcurrentimmutablefullrebuildmixed",
+    "P8MSRV/macOS/Linuxcoldbuild/longsoak/artifactrollback/endtoendsemantictombstone recovery stillunproven",
+    "P8-014optionaljudge/P8-015liveprovider explicitauthorization+budgetnotinferfromordinaryallTODOgoal"
+  ],
+  "independent_gold_review_contract": [
+    "Authorreadfixedsourcefirst,originalbyte/function/callsite/facet/typedgraphlabels beforecandidate retrieval.",
+    "Secondreviewmustgenuinelyindependent annotator/schema checks;sameagentsecondpasslikeround03notsecondindependentgoldannotation.",
+    "Truthfulcapabilitycoverage/admission/license/commit/tree/dirty/submodules/inputdiff/sourcehash;notbranchURLorfileinventorypass.",
+    "Goldquarantinebeforeenginefreeze,donotdelete/relabelfailedquestionsforgreengates.",
+    "Holdoutmustnotbeusedtofixcurrentenginebeforeclaimedcertification;futuretuningrequiresnewseal/testset orversionedretestedclaim.",
+    "Compat/native/local/livequalitiesseparate;newscorer mustrecompute both sides,scoreguardfail exits1/invalidmeasurement2 andinconclusivecannotPASS."
+  ],
+  "scope": "Read-onlyfutureacceptancepreparationduringcurrentcorebuild;doesnotstartP8implementation/fetch/provider orskipG5/P6/P7."
+}

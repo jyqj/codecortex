@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "reference_source": "reference",
+  "controls": [
+    {
+      "id": "path",
+      "path": "crates/cc-search/src/lanes/path.rs",
+      "on_text": "context.config.path_weight > 0.0",
+      "off_text": "false /* P5E isolated path-lane-off */"
+    },
+    {
+      "id": "exact",
+      "path": "crates/cc-search/src/lanes/exact_symbol.rs",
+      "on_text": "context.config.exact_symbol_weight > 0.0",
+      "off_text": "false /* P5E isolated exact-lane-off */"
+    },
+    {
+      "id": "facet_selector",
+      "path": "crates/cc-server/src/engine.rs",
+      "on_text": "cc_search::selection::coverage::select(&hits, detected_intent, top_k)?",
+      "off_text": "cc_search::selection::coverage::select(&hits, cc_model::Intent::Locate, top_k)?"
+    }
+  ],
+  "variants": [
+    {
+      "id": "cell_000",
+      "enabled": [],
+      "source_root": "sources/cell_000",
+      "binary": "binaries/cell_000",
+      "build_receipt": "receipts/cell_000.json"
+    },
+    {
+      "id": "cell_001",
+      "enabled": [
+        "facet_selector"
+      ],
+      "source_root": "sources/cell_001",
+      "binary": "binaries/cell_001",
+      "build_receipt": "receipts/cell_001.json"
+    },
+    {
+      "id": "cell_010",
+      "enabled": [
+        "exact"
+      ],
+      "source_root": "sources/cell_010",
+      "binary": "binaries/cell_010",
+      "build_receipt": "receipts/cell_010.json"
+    },
+    {
+      "id": "cell_011",
+      "enabled": [
+        "exact",
+        "facet_selector"
+      ],
+      "source_root": "sources/cell_011",
+      "binary": "binaries/cell_011",
+      "build_receipt": "receipts/cell_011.json"
+    },
+    {
+      "id": "cell_100",
+      "enabled": [
+        "path"
+      ],
+      "source_root": "sources/cell_100",
+      "binary": "binaries/cell_100",
+      "build_receipt": "receipts/cell_100.json"
+    },
+    {
+      "id": "cell_101",
+      "enabled": [
+        "path",
+        "facet_selector"
+      ],
+      "source_root": "sources/cell_101",
+      "binary": "binaries/cell_101",
+      "build_receipt": "receipts/cell_101.json"
+    },
+    {
+      "id": "cell_110",
+      "enabled": [
+        "path",
+        "exact"
+      ],
+      "source_root": "sources/cell_110",
+      "binary": "binaries/cell_110",
+      "build_receipt": "receipts/cell_110.json"
+    },
+    {
+      "id": "cell_111",
+      "enabled": [
+        "path",
+        "exact",
+        "facet_selector"
+      ],
+      "source_root": "sources/cell_111",
+      "binary": "binaries/cell_111",
+      "build_receipt": "receipts/cell_111.json"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "smoke",
+      "suite": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/suite.json",
+      "hints": {}
+    },
+    {
+      "id": "exact",
+      "suite": "/Users/jin/Desktop/codecortex-rust/crates/cc-eval/benchmarks/manifests/p1b-exact.json",
+      "hints": {}
+    },
+    {
+      "id": "intents",
+      "suite": "/Users/jin/Desktop/codecortex-rust/crates/cc-eval/benchmarks/manifests/p1c-intents.json",
+      "hints": {}
+    },
+    {
+      "id": "source",
+      "suite": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/suite.json",
+      "hints": {}
+    }
+  ],
+  "seed": 1905
+}

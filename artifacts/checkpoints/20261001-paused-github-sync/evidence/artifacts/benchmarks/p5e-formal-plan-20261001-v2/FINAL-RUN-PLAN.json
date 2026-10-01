@@ -1,0 +1,545 @@
+{
+  "status": "sourcev4_immutable_producers_actualshortcontrolverified_pendingnewprofile_approval",
+  "working_directory": "/Users/jin/Desktop/codecortex-rust",
+  "process_env": {
+    "CODECORTEX_BENCH_PROCESS_PROBE": "1",
+    "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "RUSTFLAGS": "-C link-arg=-isysroot -C link-arg=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "CARGO_BUILD_JOBS": "2"
+  },
+  "binaries": {
+    "metrics": {
+      "path": "artifacts/benchmarks/p5e-metrics-runner-sourcev4-20261001/binaries/cc-eval",
+      "bytes": 26471728,
+      "sha256": "95230bf76c0ef9164db9d25329c95a4214de0d8ed47e225b935ae86bfeb04354"
+    },
+    "harness": {
+      "path": "artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+      "bytes": 34663600,
+      "sha256": "106a5a72412ec0a89d51cd9d58a008069679343ea177a1b7db0e840e4ba3059a"
+    },
+    "candidate": {
+      "path": "artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+      "bytes": 23586528,
+      "sha256": "b0791d115899cd275e1794f615900200c0cb246ae7d71d8720e6248ddf311c49"
+    },
+    "baseline": {
+      "path": "artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+      "bytes": 23520304,
+      "sha256": "6adae4d53bfb0be40623d86ff159d30f38e1f2bab8b5d3ff6e0ec757eb2451be"
+    }
+  },
+  "sequence": [
+    {
+      "sequence": 0,
+      "stage": "eight_cell_build",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/prepare_factorial.py",
+        "--accepted-source",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/source",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build",
+        "--sdkroot",
+        "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+        "--workspace-root",
+        "/Users/jin/Desktop/codecortex-rust",
+        "--runner",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-metrics-runner-sourcev4-20261001/binaries/cc-eval",
+        "--build"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build",
+      "scope": "build_only_no_measurements"
+    },
+    {
+      "stage": "actual_eachcell_controls_and_full111_equivalence",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/verify_control_bindings.py",
+        "--prepared",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build",
+        "--driver",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "--candidate",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "--witness-plan",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/control-witness-plan.json",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/control-binding"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/control-binding",
+      "scope": "mandatory_premeasurement_binary_behavior_binding",
+      "expected_witnesses": 9,
+      "expected_control_queries": 27,
+      "failure_policy": "ANYnonzero blocks BEFOREoriginal51/performance;not rawqualityred exemption",
+      "sequence": 1
+    },
+    {
+      "sequence": 2,
+      "stage": "original51_baseline153",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-metrics-runner-sourcev4-20261001/binaries/cc-eval",
+        "run",
+        "--suite",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/suite.json",
+        "--suite",
+        "/Users/jin/Desktop/codecortex-rust/crates/cc-eval/benchmarks/manifests/p1b-exact.json",
+        "--suite",
+        "/Users/jin/Desktop/codecortex-rust/crates/cc-eval/benchmarks/manifests/p1c-intents.json",
+        "--suite",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/suite.json",
+        "--backend",
+        "mcp-stdio",
+        "--binary",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "--profile",
+        "smoke",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-baseline",
+      "scope": "original51_fixed_quality_only_not_tail",
+      "expected_requests": 153,
+      "guard": "immutableoriginalsuite11/8/18/14x3 requests kept;no reps/gold/warmuprewrite;releasebinariesunchanged"
+    },
+    {
+      "sequence": 3,
+      "stage": "original51_8cells1224",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-metrics-runner-sourcev4-20261001/binaries/cc-eval",
+        "ablate",
+        "--plan",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/plan.json",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-factorial"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-factorial",
+      "scope": "ablation_diagnostic_fixedquality_not_tail",
+      "expected_requests": 1224,
+      "native_profile": "ablation-diagnostic (ablation.rs runner::run),notperformance"
+    },
+    {
+      "sequence": 4,
+      "stage": "facet_cell_000",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_000",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_000"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_000",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 5,
+      "stage": "facet_cell_001",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_001",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_001"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_001",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 6,
+      "stage": "facet_cell_010",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_010",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_010"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_010",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 7,
+      "stage": "facet_cell_011",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_011",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_011"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_011",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 8,
+      "stage": "facet_cell_100",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_100",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_100"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_100",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 9,
+      "stage": "facet_cell_101",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_101",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_101"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_101",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 10,
+      "stage": "facet_cell_110",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_110",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_110"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_110",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 11,
+      "stage": "facet_cell_111",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "facets",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/factorial-build/binaries/cell_111",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_111"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/facets/cell_111",
+      "scope": "formal",
+      "expected_requests": 90
+    },
+    {
+      "sequence": 12,
+      "stage": "typedgraph_baseline",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "graph",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/graph-plan.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/typedgraph-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/typedgraph-baseline",
+      "scope": "formal",
+      "expected_typed_requests": 5
+    },
+    {
+      "sequence": 13,
+      "stage": "typedgraph_candidate",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "graph",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/graph-plan.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/typedgraph-candidate"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/typedgraph-candidate",
+      "scope": "formal",
+      "expected_typed_requests": 5
+    },
+    {
+      "sequence": 14,
+      "stage": "fanout_baseline",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "graph",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/fanout-plan.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-baseline",
+      "scope": "formal",
+      "expected_typed_requests": 40,
+      "expected_wholequeries": 300
+    },
+    {
+      "sequence": 15,
+      "stage": "fanout_candidate",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "graph",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/fanout-plan.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-candidate"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-candidate",
+      "scope": "formal",
+      "expected_typed_requests": 40,
+      "expected_wholequeries": 300
+    },
+    {
+      "sequence": 16,
+      "stage": "mixed_c1_baseline",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c1.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-baseline",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 17,
+      "stage": "mixed_c1_candidate",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c1.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-candidate"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-candidate",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 18,
+      "stage": "mixed_c4_candidate",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c4.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-candidate"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-candidate",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 19,
+      "stage": "mixed_c4_baseline",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c4.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-baseline",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 20,
+      "stage": "mixed_c8_baseline",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c8.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-baseline",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 21,
+      "stage": "mixed_c8_candidate",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c8.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-candidate"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-candidate",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 22,
+      "stage": "mixed_c16_candidate",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-candidate-release-20261001-v4/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c16.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-candidate"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-candidate",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 23,
+      "stage": "mixed_c16_baseline",
+      "argv": [
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/binaries/p5e-evidence-driver",
+        "mixed-stdio",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/mixed-c16.json",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-baseline"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-baseline",
+      "scope": "formal",
+      "expected_reads": 300,
+      "expected_fullbuilds": 30
+    },
+    {
+      "sequence": 24,
+      "stage": "factorial_cluster_report",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/cluster_report.py",
+        "--ablation",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-factorial/ablation.json",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-factorial-cluster-report.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-factorial-cluster-report.json",
+      "scope": "offline_recompute"
+    },
+    {
+      "sequence": 25,
+      "stage": "fanout_paired_report",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/compare_fanout.py",
+        "--baseline",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-baseline",
+        "--candidate",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-candidate",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-paired-report.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/fanout-paired-report.json",
+      "scope": "offline_recompute"
+    },
+    {
+      "sequence": 26,
+      "stage": "mixed_c1_paired_report",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/compare_mixed.py",
+        "--baseline",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-baseline",
+        "--candidate",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-candidate",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-paired-report.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c1-paired-report.json",
+      "scope": "offline_recompute"
+    },
+    {
+      "sequence": 27,
+      "stage": "mixed_c4_paired_report",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/compare_mixed.py",
+        "--baseline",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-baseline",
+        "--candidate",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-candidate",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-paired-report.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c4-paired-report.json",
+      "scope": "offline_recompute"
+    },
+    {
+      "sequence": 28,
+      "stage": "mixed_c8_paired_report",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/compare_mixed.py",
+        "--baseline",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-baseline",
+        "--candidate",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-candidate",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-paired-report.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c8-paired-report.json",
+      "scope": "offline_recompute"
+    },
+    {
+      "sequence": 29,
+      "stage": "mixed_c16_paired_report",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/compare_mixed.py",
+        "--baseline",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-baseline",
+        "--candidate",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-candidate",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-paired-report.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/mixed-c16-paired-report.json",
+      "scope": "offline_recompute"
+    },
+    {
+      "stage": "original_noanswer_executed_absence",
+      "argv": [
+        "python3",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/check_noanswer.py",
+        "--ablation-root",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original51-factorial",
+        "--output",
+        "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original-noanswer-absence.json"
+      ],
+      "output": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-formal-runs-20261001-v2/original-noanswer-absence.json",
+      "scope": "offline_recompute",
+      "failure_policy": "alllocked noanswer queries+completeunique repetitions;notrankingN/Azero",
+      "sequence": 30
+    }
+  ],
+  "failure_policy": "abort provenance/protocol/foundation errors;quality rc1 preserved including baselineunmapped/offcells,do not erase or best-of;retain stderr and exit for each stage;no parallel compile/performance",
+  "factor_order": [
+    "path",
+    "exact",
+    "intent_aware_facet_reservation"
+  ],
+  "factor3": "actualLocate desired=[]/rank1-defaultfill/querysourcesupport versus Fix intentfacet reservation;never literalimplementation-anchor map",
+  "replay_policy": "native cc-eval replay every raw suite output;driver replay-facets/replay-graph/replay-mixed every corresponding output before independent acceptance",
+  "missing_offline_obligations": [
+    "independent 110span overlay and all perquery negative cause reviews must be auditor recomputed;not replaced by cluster CI",
+    "resource native validator all formalfanout/mixed runs;missing blocks",
+    "finalproducer/cell source and binary postchecks"
+  ],
+  "corrected_before_execution": {
+    "previous_plan_preserved": "FINAL-RUN-PLAN.json",
+    "reason": "native run_one performance guard requires >=200per-suite and warmup>0;original51 baseline is quality only;releasebinary/compiler remain identical",
+    "runtime_changes": 0,
+    "original_suites_modified": false,
+    "formal_requests_executed": 0
+  },
+  "baseline_cost_rule": "generic structured PathLane path_token_limit inventoryonly knownbaselineRED eligible300allstate costdiagnostic;allother requiredsource/scope/protocol/resource/lifecycle/timingcountvalid;candidate allstrict hardgates required;baseline strictFAIL preserved",
+  "count_lock": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-harness-20261001/final-v6/inputs/EXACT-MIXED-WORKLOAD-COUNT-LOCK.json",
+  "compiled_source_sha256": "3cd542941467c4d4855266dbd5658bf6a2928cd4ba16bb81f87246008225a461",
+  "wrapper": "run_owned.py regularownedlog+child.wait actualreturncode receipt,never stdout FINAL/OSguess"
+}

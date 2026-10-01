@@ -30,6 +30,13 @@ use crate::sql_util::{db_err, escape_like, sql_in_placeholders, IN_BATCH_SIZE};
 /// `(chunk_id, start_line, end_line)` spans grouped by file path.
 pub type ChunkSpansByFile = HashMap<String, Vec<(String, u32, u32)>>;
 
+#[derive(Debug, Default, serde::Serialize)]
+pub struct SymbolAnchorBatch {
+    pub anchors: HashMap<String, String>,
+    /// Projection/prefix/admission only; excludes seed/edge/hydration SQL.
+    pub work: cc_model::retrieval_cost::ReadWork,
+}
+
 /// File-scope filter for chunk-level retrieval scans — the structured form
 /// of what cc-search used to render as raw scope SQL (path-prefix LIKE,
 /// language IN, file-path IN). None adds no restriction; Some(empty list)
@@ -1138,17 +1145,229 @@ impl<'a> RetrievalReadModel<'a> {
         scope: &ChunkScope,
         limit: usize,
     ) -> CcResult<Vec<(String, f64)>> {
+        self.symbol_anchor_chunk_hits(query, scope, limit, false)
+    }
+
+    /// UID-authoritative declaration anchor for a graph symbol split into
+    /// bounded source documents. Does not fabricate a whole-symbol chunk or
+    /// match a same-name sibling. Uses the same byte-position verifier as the
+    /// exact lane; the caller retains its graph score/identity semantics.
+    pub fn symbol_uid_anchor_chunk(
+        &self,
+        uid: &str,
+        scope: &ChunkScope,
+    ) -> CcResult<Option<String>> {
+        Ok(self
+            .symbol_anchor_chunk_hits(uid, scope, 1, true)?
+            .into_iter()
+            .next()
+            .map(|(id, _)| id))
+    }
+
+    /// UID projection, batched prefix decode and byte-filtered admission.
+    /// At most three SQL statements per 200 UIDs; prefixes share (file,line).
+    pub fn symbol_uid_anchor_chunks(
+        &self,
+        uids: &[&str],
+        scope: &ChunkScope,
+        control: &cc_model::query::QueryControl,
+    ) -> CcResult<HashMap<String, String>> {
+        Ok(self
+            .symbol_uid_anchor_chunks_with_work(uids, scope, control)?
+            .anchors)
+    }
+
+    pub fn symbol_uid_anchor_chunks_with_work(
+        &self,
+        uids: &[&str],
+        scope: &ChunkScope,
+        control: &cc_model::query::QueryControl,
+    ) -> CcResult<SymbolAnchorBatch> {
+        control.check()?;
+        if uids.is_empty() {
+            return Ok(SymbolAnchorBatch::default());
+        }
+        if uids.len() > 1024 {
+            return Err(cc_model::CcError::InvalidParams(
+                "graph anchor UID budget exceeded".into(),
+            ));
+        }
+        let conn = self.db.read_conn()?;
+        let mut anchors = HashMap::new();
+        let mut work = cc_model::retrieval_cost::ReadWork::default();
+        let mut starts = HashMap::<(String, u32), (String, usize)>::new();
+        for batch in uids.chunks(200) {
+            control.check()?;
+            let mut params: Vec<String> = batch.iter().map(|uid| (*uid).to_owned()).collect();
+            let mut clauses = vec![format!(
+                "s.symbol_uid IN ({})",
+                (1..=params.len())
+                    .map(|n| format!("?{n}"))
+                    .collect::<Vec<_>>()
+                    .join(",")
+            )];
+            scope.push_clauses(&mut clauses, &mut params, "s.file_path", "f.language");
+            let sql=format!("SELECT s.symbol_uid,s.file_path,s.start_line,s.start_col FROM symbols s JOIN files f ON f.file_path=s.file_path WHERE {} ORDER BY s.symbol_uid",clauses.join(" AND "));
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let symbols = stmt
+                .query_map(rusqlite::params_from_iter(params.iter()), |r| {
+                    Ok((
+                        r.get::<_, String>(0)?,
+                        r.get::<_, String>(1)?,
+                        r.get::<_, u32>(2)?,
+                        r.get::<_, u32>(3)?,
+                    ))
+                })
+                .map_err(db_err)?
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(db_err)?;
+            work.sql
+                .merge(crate::statement_work::finish(&stmt, symbols.len()));
+            control.check()?;
+            let needed: std::collections::BTreeSet<(String, u32)> = symbols
+                .iter()
+                .map(|(_, file, line, _)| (file.clone(), *line))
+                .filter(|key| !starts.contains_key(key))
+                .collect();
+            if !needed.is_empty() {
+                let params: Vec<String> = needed.iter().map(|(file, _)| file.clone()).collect();
+                let requested = needed
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (_, line))| format!("(?{},{line})", i + 1))
+                    .collect::<Vec<_>>()
+                    .join(",");
+                let sql=format!("WITH requested(file,line) AS (VALUES {requested}), candidates AS (SELECT r.file,r.line,c.text,c.text_encoding,c.source_json,c.start_line,row_number() OVER(PARTITION BY r.file,r.line ORDER BY json_extract(c.source_json,'$.span.start'),c.chunk_id) AS position FROM requested r JOIN chunks c ON c.file_path=r.file AND c.start_line<=r.line AND c.end_line>=r.line) SELECT file,line,text,text_encoding,source_json,start_line FROM candidates WHERE position=1 ORDER BY file,line");
+                let mut prefixes = conn.prepare(&sql).map_err(db_err)?;
+                let mut prefix_rows = 0usize;
+                let rows = prefixes
+                    .query_map(rusqlite::params_from_iter(params.iter()), |r| {
+                        Ok((
+                            r.get::<_, String>(0)?,
+                            r.get::<_, u32>(1)?,
+                            read_chunk_text_with_encoding(r, 2, 3)?,
+                            r.get::<_, String>(4)?,
+                            r.get::<_, u32>(5)?,
+                            r.get::<_, String>(3)?,
+                        ))
+                    })
+                    .map_err(db_err)?;
+                for row in rows {
+                    control.check()?;
+                    let (file, line, text, raw, first, encoding) = row.map_err(db_err)?;
+                    prefix_rows += 1;
+                    work.text.storage_reads += 1;
+                    work.text.utf8_bytes = work.text.utf8_bytes.saturating_add(text.len() as u64);
+                    if encoding == "zstd" {
+                        work.text.zstd_decodes += 1;
+                    } else if encoding != "plain" {
+                        work.text.legacy_auto_reads += 1;
+                    }
+                    let proof: cc_model::source::ChunkSource = serde_json::from_str(&raw)?;
+                    if !proof.validate(&text) {
+                        return Err(cc_model::CcError::Database(
+                            "graph anchor prefix is corrupt".into(),
+                        ));
+                    }
+                    let local = cc_model::source::SourceSnapshot::new(text.as_bytes());
+                    let offset = local
+                        .line_start((line - first) as usize + 1)
+                        .and_then(|n| proof.span.start.checked_add(n))
+                        .ok_or_else(|| {
+                            cc_model::CcError::Database("graph anchor line outside source".into())
+                        })?;
+                    starts.insert((file, line), (proof.source.snapshot_id, offset));
+                }
+                work.sql
+                    .merge(crate::statement_work::finish(&prefixes, prefix_rows));
+            }
+            let mut params = Vec::<String>::new();
+            let mut positioned = Vec::new();
+            for (uid, file, line, column) in &symbols {
+                if let Some((_, start)) = starts.get(&(file.clone(), *line)) {
+                    let position = start
+                        .checked_add(*column as usize)
+                        .and_then(|n| i64::try_from(n).ok())
+                        .ok_or_else(|| {
+                            cc_model::CcError::Database("graph anchor coordinate overflow".into())
+                        })?;
+                    params.push(uid.clone());
+                    positioned.push(format!("(?{},{position})", params.len()));
+                }
+            }
+            if positioned.is_empty() {
+                continue;
+            }
+            let mut clauses = Vec::new();
+            scope.push_clauses(&mut clauses, &mut params, "c.file_path", "c.language");
+            let where_scope = if clauses.is_empty() {
+                "1".into()
+            } else {
+                clauses.join(" AND ")
+            };
+            let sql=format!("WITH positioned(uid,byte) AS (VALUES {}) SELECT s.symbol_uid,c.chunk_id,c.source_json,s.file_path,s.start_line,s.start_col FROM positioned p JOIN symbols s ON s.symbol_uid=p.uid JOIN chunks c ON c.file_path=s.file_path AND c.start_line<=s.start_line AND c.end_line>=s.start_line AND json_extract(c.source_json,'$.span.start')<=p.byte AND json_extract(c.source_json,'$.span.end')>p.byte WHERE {where_scope} ORDER BY s.symbol_uid,c.end_line-c.start_line,c.start_line,c.chunk_id,s.symbol_id",positioned.join(","));
+            let mut stmt = conn.prepare(&sql).map_err(db_err)?;
+            let mut admitted_rows = 0usize;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(params.iter()), |r| {
+                    Ok((
+                        r.get::<_, String>(0)?,
+                        r.get::<_, String>(1)?,
+                        r.get::<_, String>(2)?,
+                        r.get::<_, String>(3)?,
+                        r.get::<_, u32>(4)?,
+                        r.get::<_, u32>(5)?,
+                    ))
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                control.check()?;
+                let (uid, id, raw, file, line, column) = row.map_err(db_err)?;
+                admitted_rows += 1;
+                if !anchors.contains_key(&uid)
+                    && symbol_anchor_position_matches(
+                        &conn,
+                        &raw,
+                        &file,
+                        line,
+                        column,
+                        &mut starts,
+                    )?
+                {
+                    anchors.insert(uid, id);
+                }
+            }
+            work.sql
+                .merge(crate::statement_work::finish(&stmt, admitted_rows));
+        }
+        Ok(SymbolAnchorBatch { anchors, work })
+    }
+
+    fn symbol_anchor_chunk_hits(
+        &self,
+        query: &str,
+        scope: &ChunkScope,
+        limit: usize,
+        uid_lookup: bool,
+    ) -> CcResult<Vec<(String, f64)>> {
         if query.is_empty() || limit == 0 {
             return Ok(Vec::new());
         }
-        let mut clauses = vec![
-            "(s.name=?1 COLLATE BINARY OR s.qname=?1 COLLATE BINARY OR s.signature=?1 COLLATE BINARY)".to_string(),
-        ];
+        let mut clauses = vec![if uid_lookup {
+            "s.symbol_uid=?1 COLLATE BINARY".to_string()
+        } else {
+            "(s.name=?1 COLLATE BINARY OR s.qname=?1 COLLATE BINARY OR s.signature=?1 COLLATE BINARY)".to_string()
+        }];
         let mut params = vec![query.to_string()];
         scope.push_clauses(&mut clauses, &mut params, "c.file_path", "c.language");
+        let raw_score = if uid_lookup {
+            "1.0"
+        } else {
+            "CASE WHEN s.name=?1 COLLATE BINARY THEN 1.0 WHEN s.qname=?1 COLLATE BINARY THEN 0.95 ELSE 0.9 END"
+        };
         let sql = format!(
             "SELECT c.chunk_id,c.source_json,s.file_path,s.start_line,s.start_col,\
-             CASE WHEN s.name=?1 COLLATE BINARY THEN 1.0 WHEN s.qname=?1 COLLATE BINARY THEN 0.95 ELSE 0.9 END AS raw_score \
+             {raw_score} AS raw_score \
              FROM symbols s JOIN chunks c ON c.file_path=s.file_path \
              AND c.start_line<=s.start_line AND c.end_line>=s.start_line \
              WHERE {} ORDER BY raw_score DESC,c.end_line-c.start_line,c.start_line,c.chunk_id,s.symbol_id",
@@ -1176,44 +1395,7 @@ impl<'a> RetrievalReadModel<'a> {
             if seen.contains(&id) {
                 continue;
             }
-            let proof: cc_model::source::ChunkSource = serde_json::from_str(&raw)?;
-            let key = (file.clone(), line);
-            if !starts.contains_key(&key) {
-                // The exact byte partition guarantees the earliest chunk
-                // occupying this line contains its beginning. Decode just that
-                // bounded prefix chunk, never the whole file or filesystem.
-                let (text, raw, first): (String, String, u32) = conn.query_row(
-                    "SELECT text,text_encoding,source_json,start_line FROM chunks WHERE file_path=?1 AND start_line<=?2 AND end_line>=?2 ORDER BY json_extract(source_json,'$.span.start') LIMIT 1",
-                    rusqlite::params![file, line], |row| Ok((
-                        read_chunk_text_with_encoding(row, 0, 1)?, row.get(2)?, row.get(3)?
-                    )),
-                ).map_err(db_err)?;
-                let prefix: cc_model::source::ChunkSource = serde_json::from_str(&raw)?;
-                if !prefix.validate(&text) || prefix.source != proof.source {
-                    return Err(cc_model::CcError::Database(
-                        "exact lookup source changed or is corrupt; retry".into(),
-                    ));
-                }
-                let snapshot = cc_model::source::SourceSnapshot::new(text.as_bytes());
-                let local_line = (line - first) as usize + 1;
-                let start = snapshot.line_start(local_line).ok_or_else(|| {
-                    cc_model::CcError::Database("exact lookup line outside source".into())
-                })?;
-                let offset = prefix.span.start.checked_add(start).ok_or_else(|| {
-                    cc_model::CcError::Database("exact lookup coordinate overflow".into())
-                })?;
-                starts.insert(key.clone(), (prefix.source.snapshot_id, offset));
-            }
-            let (snapshot, start) = &starts[&key];
-            if snapshot != &proof.source.snapshot_id {
-                return Err(cc_model::CcError::Database(
-                    "exact lookup mixed source versions; retry".into(),
-                ));
-            }
-            let position = start.checked_add(column as usize).ok_or_else(|| {
-                cc_model::CcError::Database("exact lookup coordinate overflow".into())
-            })?;
-            if proof.span.start <= position && position < proof.span.end {
+            if symbol_anchor_position_matches(&conn, &raw, &file, line, column, &mut starts)? {
                 seen.insert(id.clone());
                 hits.push((id, score));
                 if hits.len() == limit {
@@ -1376,6 +1558,58 @@ impl<'a> RetrievalReadModel<'a> {
         }
         Ok(by_file)
     }
+}
+
+fn symbol_anchor_position_matches(
+    conn: &rusqlite::Connection,
+    raw: &str,
+    file: &str,
+    line: u32,
+    column: u32,
+    starts: &mut HashMap<(String, u32), (String, usize)>,
+) -> CcResult<bool> {
+    let proof: cc_model::source::ChunkSource = serde_json::from_str(raw)?;
+    let key = (file.to_owned(), line);
+    if !starts.contains_key(&key) {
+        // The exact byte partition guarantees the earliest chunk
+        // occupying this line contains its beginning. Decode just that
+        // bounded prefix chunk, never the whole file or filesystem.
+        let (text, raw, first): (String, String, u32) = conn.query_row(
+            "SELECT text,text_encoding,source_json,start_line FROM chunks WHERE file_path=?1 AND start_line<=?2 AND end_line>=?2 ORDER BY json_extract(source_json,'$.span.start') LIMIT 1",
+            rusqlite::params![file, line], |row| Ok((
+        read_chunk_text_with_encoding(row, 0, 1)?, row.get(2)?, row.get(3)?
+            )),
+        ).map_err(db_err)?;
+        let prefix: cc_model::source::ChunkSource = serde_json::from_str(&raw)?;
+        if !prefix.validate(&text) || prefix.source != proof.source {
+            return Err(cc_model::CcError::Database(
+                "exact lookup source changed or is corrupt; retry".into(),
+            ));
+        }
+        let snapshot = cc_model::source::SourceSnapshot::new(text.as_bytes());
+        let local_line = (line - first) as usize + 1;
+        let start = snapshot.line_start(local_line).ok_or_else(|| {
+            cc_model::CcError::Database("exact lookup line outside source".into())
+        })?;
+        let offset = prefix.span.start.checked_add(start).ok_or_else(|| {
+            cc_model::CcError::Database("exact lookup coordinate overflow".into())
+        })?;
+        starts.insert(key.clone(), (prefix.source.snapshot_id, offset));
+    }
+    let (snapshot, start) = &starts[&key];
+    if snapshot != &proof.source.snapshot_id {
+        return Err(cc_model::CcError::Database(
+            "exact lookup mixed source versions; retry".into(),
+        ));
+    }
+    let position = start
+        .checked_add(column as usize)
+        .ok_or_else(|| cc_model::CcError::Database("exact lookup coordinate overflow".into()))?;
+    Ok(proof.span.start <= position
+        && position < proof.span.end
+        && proof
+            .owner
+            .is_none_or(|owner| owner.start <= position && position < owner.end))
 }
 
 #[cfg(test)]

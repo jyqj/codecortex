@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "status": "prepared_premeasurement_runtime_witness_not_formalquality",
+  "files": {
+    "scope/impl.py": "def bind_widget(value):\n    return value + 731  # scope/impl.py\n",
+    "scope/test_widget.py": "def test_bind_widget():\n    assert bind_widget(1) == 732\n",
+    "scope/api.ts": "export interface WidgetContract { bind_widget(value: number): number; }\n",
+    "scope/support.py": "def widget_support_trace(value):\n    return bind_widget(value) + 997\n",
+    "scope/noise.py": "# bind_widget WidgetContract tests highrank incidental noise\ndef incidental_noise(value):\n    return value + 101\n"
+  },
+  "engine_config": {
+    "auto_index": {
+      "enabled": false
+    },
+    "search": {
+      "graph_weight": 0.0,
+      "lexical_top_k": 50,
+      "rerank_window": 50
+    }
+  },
+  "queries": [
+    {
+      "id": "path_behavior",
+      "factor": "path",
+      "query": "scope/impl.py",
+      "top_k": 10,
+      "required_facets": [
+        {
+          "path": "scope/impl.py",
+          "marker": "def bind_widget(value):\n    return value + 731"
+        }
+      ]
+    },
+    {
+      "id": "exact_behavior",
+      "factor": "exact",
+      "query": "incidental_noise",
+      "top_k": 10,
+      "required_facets": [
+        {
+          "path": "scope/noise.py",
+          "marker": "def incidental_noise(value):\n    return value + 101"
+        }
+      ]
+    },
+    {
+      "id": "intent_behavior",
+      "factor": "intent_aware_facet_reservation",
+      "query": "fix bind_widget WidgetContract widget_support_trace tests",
+      "top_k": 10,
+      "required_facets": [
+        {
+          "path": "scope/impl.py",
+          "marker": "def bind_widget(value):\n    return value + 731"
+        },
+        {
+          "path": "scope/test_widget.py",
+          "marker": "def test_bind_widget():\n    assert bind_widget(1) == 732"
+        },
+        {
+          "path": "scope/api.ts",
+          "marker": "export interface WidgetContract { bind_widget(value: number): number; }"
+        },
+        {
+          "path": "scope/support.py",
+          "marker": "def widget_support_trace(value):\n    return bind_widget(value) + 997"
+        }
+      ]
+    }
+  ],
+  "limits": [
+    "everycell must expose actualpath/exact enabled-complete-nonzero or disabled asregistered",
+    "selector.on Fix trustedimpl/test/interface;off Locate retainsdefaultimplanchor/querysourcesupport",
+    "allreturnedsource independentlyverified fullbody beforecontrolgate;notrank-only",
+    "full111 actual stablepolicy/control/body/score projection must match productcandidate",
+    "missing/controlmismatch blocks before any original51/performance measurements"
+  ],
+  "source_support_nonvacuous_cue": "widget_support_trace exists only in actual scope/support.py definition;noise retains generic bind_widget/WidgetContract/test cues but not unique cue",
+  "exact_probe": "actualuniqueincidental_noise declaration;no otherfile mentionsname;notbind_widget sharedreferences broadpacking",
+  "versioned_change": "controlfixture-v3 only inlinegenericfilepath in actualimplfunctionchunk supportslex/grep off-state;olddef/return731marker stillfull;no production/original51/facetgold/budgetguard changes"
+}

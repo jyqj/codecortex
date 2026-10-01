@@ -1376,21 +1376,33 @@ mod tests {
         // A file with a wide chunk and a narrow chunk that both contain the
         // symbol span: the lane must pick the narrowest container.
         let (engine, _tmp) = scoped_test_engine();
-        let make_chunk = |chunk_id: &str, index: i64, start: u32, end: u32| ChunkRecord {
-            source: None,
-            chunk_id: chunk_id.to_string(),
-            file_path: "src/wide.rs".to_string(),
-            language: Language::Rust,
-            chunk_index: index as u32,
-            start_line: start,
-            end_line: end,
-            breadcrumb: "root".to_string(),
-            text: "fn narrow_fn() {}".to_string(),
-            symbol_name: None,
-            symbol_kind: None,
-            token_estimate: 8,
-            parser_tier: ParserTier::TreeSitter,
-            parser_confidence: 1.0,
+        let source_text = format!("\nfn narrow_fn() {{\n}}\n{}", "// padding\n".repeat(47));
+        let source = cc_model::source::SourceSnapshot::new(source_text.as_bytes());
+        let make_chunk = |chunk_id: &str, index: i64, start: u32, end: u32| {
+            let span = source.line_range(start as usize, end as usize).unwrap();
+            ChunkRecord {
+                source: Some(cc_model::source::ChunkSource {
+                    source: source.identity().clone(),
+                    span,
+                    slice_digest: source.slice_digest(span).unwrap(),
+                    boundary: "graph-fixture".into(),
+                    owner: Some(source.line_range(2, 3).unwrap()),
+                    signature: Some(source.line_range(2, 2).unwrap()),
+                }),
+                chunk_id: chunk_id.to_string(),
+                file_path: "src/wide.rs".to_string(),
+                language: Language::Rust,
+                chunk_index: index as u32,
+                start_line: start,
+                end_line: end,
+                breadcrumb: "root".to_string(),
+                text: source.slice(span).unwrap().to_string(),
+                symbol_name: None,
+                symbol_kind: None,
+                token_estimate: 8,
+                parser_tier: ParserTier::TreeSitter,
+                parser_confidence: 1.0,
+            }
         };
         let symbol = SymbolRecord {
             symbol_id: "sym:src/wide.rs:narrow_fn".to_string(),

@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "tools": 14,
+  "changes": [
+    {
+      "tool": "search",
+      "optional_property": "retrieval_strategy",
+      "schema": {
+        "default": null,
+        "description": "Retrieval policy for hybrid mode: local, auto, or semantic. Omitted uses\nproject configuration; auto without a semantic port stays local. An\nunconfigured explicit semantic request fails instead of pretending ready.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    },
+    {
+      "tool": "context",
+      "optional_property": "retrieval_strategy",
+      "schema": {
+        "default": null,
+        "description": "Optional local/auto/semantic policy. An explicit policy uses the unified\nretrieval path rather than the legacy direct-symbol shortcut.",
+        "type": [
+          "string",
+          "null"
+        ]
+      }
+    }
+  ],
+  "all_old_properties_required_fields_and_modes_unchanged": true
+}

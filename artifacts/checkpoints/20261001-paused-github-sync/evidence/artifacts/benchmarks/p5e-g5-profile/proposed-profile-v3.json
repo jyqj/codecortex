@@ -1,0 +1,223 @@
+{
+  "schema_version": 3,
+  "status": "auditor_decision_refinements_bound_pending_final_graph_fanout_and_harness_input_hashes",
+  "profile": "G5-M2-local-engineering-task-quality-v3",
+  "scope_basis": [
+    "docs/roadmap/code-index-v2/06-VALIDATION.md sections G5,4",
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md sections 3,9,10,11",
+    "tasks P5-019/P5-020"
+  ],
+  "registered_before_final_candidate_runs": true,
+  "baseline": {
+    "source_digest_sha256": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0",
+    "archive_sha256": "b497cba0c054795da5da5a3b110a03780d5f83b6671c2bb7542408a83f251d71",
+    "producer_receipt": {
+      "path": "artifacts/benchmarks/p5e-baseline-release-20261001/BUILD-RECEIPT.json",
+      "bytes": 1779,
+      "sha256": "61685fc1a4e19ea3bfa1022937d9a41ff24c9ee53b78cb695b239a2af7b74dd6"
+    },
+    "binary": {
+      "path": "artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+      "bytes": 23520304,
+      "sha256": "6adae4d53bfb0be40623d86ff159d30f38e1f2bab8b5d3ff6e0ec757eb2451be"
+    },
+    "options": {
+      "toolchain": "stable",
+      "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "RUSTFLAGS": "-C link-arg=-isysroot -C link-arg=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "profile": "release",
+      "features": "default",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_TARGET_DIR": "/tmp/p5e-baseline-release-target-20261001"
+    },
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)\nbinary: rustc\ncommit-hash: 2d8144b7880597b6e6d3dfd63a9a9efae3f533d3\ncommit-date: 2026-07-07\nhost: aarch64-apple-darwin\nrelease: 1.97.0\nLLVM version: 22.1.6\n"
+  },
+  "candidate": {
+    "source_digest_sha256": "429e005528d0d91ec77179bd11ae6d00efa1e2908e1727247b6486383ef84098",
+    "archive_sha256": "70b27b0be75170a6700de300ca17d44aeca6cc347df68c9bf19dc84181673a85",
+    "producer_receipt": {
+      "path": "artifacts/benchmarks/p5e-candidate-release-20261001/BUILD-RECEIPT.json",
+      "bytes": 1764,
+      "sha256": "055ab197eaa199bbd90b5b08ee473c4859f5af3f38c1343bc64ffee23ae8761d"
+    },
+    "binary": {
+      "path": "artifacts/benchmarks/p5e-candidate-release-20261001/binaries/codecortex",
+      "bytes": 23553248,
+      "sha256": "d8673818818cec2059139f2ead02eeb56a39210349e155fa43c38d5b44e93e5d"
+    },
+    "options": {
+      "toolchain": "stable",
+      "SDKROOT": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "RUSTFLAGS": "-C link-arg=-isysroot -C link-arg=/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+      "profile": "release",
+      "features": "default",
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_TARGET_DIR": "/tmp/p5e-candidate-release-target-20261001"
+    },
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)\nbinary: rustc\ncommit-hash: 2d8144b7880597b6e6d3dfd63a9a9efae3f533d3\ncommit-date: 2026-07-07\nhost: aarch64-apple-darwin\nrelease: 1.97.0\nLLVM version: 22.1.6\n"
+  },
+  "hard_gates": {
+    "scope_source_version_budget_violations": 0,
+    "compiler_clippy_format_architecture_test_failures": 0,
+    "scorer_golden_lock_replay_failures": 0,
+    "three_existing_no_answer_errors": 0,
+    "multi_facet_mechanism_required_facets": 1.0,
+    "typed_graph_direction_edge_type_false_positive_errors": 0,
+    "lost_or_filtered_raw_requests": 0,
+    "unbounded_admitted_workers": 0
+  },
+  "quality": {
+    "existing_original_51_queries": "retain original gold/scorer and strict inventory completeness gate result separately",
+    "independent_110_core_span_overlay": "pre-locked by auditor; paired baseline/candidate per-query byte-span union, source proof required; references never count as body",
+    "task_coverage_regression_budget": 0,
+    "primary_top1_review_trigger_absolute": 0.01,
+    "ndcg10_review_trigger_absolute": 0.01,
+    "repository_query_family_clustered_bootstrap": "10000 resamples, fixed seed 1905, repetitions not independent questions",
+    "confidence": "report N and 95% CI; inconclusive cannot become passed",
+    "semantic_natural_language_misses": "must list all original/current misses and spans; no fixture-id or query-specific repair; not a claim of 100% offline semantic recall",
+    "decision_contract": {
+      "per_query_required_core_span_or_facet_regression": "any new regression blocks; no average offset",
+      "source_scope_version_budget_errors": "any error blocks",
+      "no_answer": "S11/I17/I18 plus generic identifier hard negatives all real NoMatch/zero valid bodies/complete executed absence",
+      "full_on_multifacet_and_graph": "all required source facets/spans and typed ordered graph constraints exact; any loss blocks",
+      "paired_rank_statistics": "quality mean delta and 95% lower bound for Top1 and nDCG must both >= -0.01; mean below -0.01 blocks, CI below -0.01 with acceptable point is inconclusive until new independent evidence/review; repeats never manufactured independent N",
+      "small_negative_within_margin": "still report every case and trigger independent regression cause review; never automatic tolerance of a deterministic wrong result",
+      "counterfactual_factor_edges": "exactly12factorial edges per dataset,4datasets=48dataset-edges; emit every edge; unavailable CI inconclusive; off-state quality loss diagnostic only",
+      "rank_review_state": "any negative per-query rank delta must have an independent cause review; review pending or deterministic wrong result blocks acceptance even when mean/CI within0.01; numerical guardrails never automatically excuse correctness errors"
+    }
+  },
+  "ablation": {
+    "controls": [
+      "path lane",
+      "exact-symbol lane",
+      "coverage facet reservation with overlap preserved"
+    ],
+    "variants": 8,
+    "existing_suite_runs": "4 fixed suites, three repetitions, 1224 stdio requests",
+    "independent_multifacet_runs": "three pre-locked fixture cases,30 repetitions,8 variants,720 stdio requests; production-on cell all facets/spans mandatory",
+    "negative_counterfactuals": "intentional lane/selector-off quality loss is diagnostic, never credited as optimization"
+  },
+  "mixed_load": {
+    "process": "one real rmcp stdio session per variant/profile; same release compiler/options, source manifest, budget,seed,offered schedule; candidate and immutable baseline order paired/alternated",
+    "files": 1000,
+    "concurrency": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "minimum_read_samples_per_concurrency_variant": 300,
+    "build_jobs_per_concurrency_variant": 30,
+    "source_operations": "full rebuild,immutable source during run; mutation/freshness verified separately by current source regression suite",
+    "metrics": [
+      "offered,started,finished",
+      "client queue",
+      "service plus transport",
+      "end to end",
+      "throughput",
+      "all error,timeout,Partial",
+      "source/facet/span validity",
+      "thread count and worker contention",
+      "resource availability/sample interval/process ownership"
+    ],
+    "tail": "300pooled homogeneous scheduled mixed-read observations allow workload observed p50/p95 with pairedcycle CI; individual query has100reads and build30samples labeled insufficient_for_tail_claim; no per-query/build reliabletail or p99 claim",
+    "performance_review_trigger_ratio": 1.1,
+    "performance_block_ratio": 1.2,
+    "comparison": "same environment repeated current-source release measurements; no debug/reused old latency substitution; unexplained >10% review, >20% blocks this profile",
+    "decision_contract": {
+      "inputs": "same plan/source/homogeneous offered workload/sequences/budgets, 300 reads and 30 builds per capacity/variant; all states included",
+      "hard_failure": "invalid source/facet/span, any unavailable required producer/source/count/lifecycle evidence, protocol/timeout/cancel/error or missing scheduled job blocks applicable mechanism; actual overload must be reported, not hidden",
+      "p50_p95": "point ratio >1.2 blocks; >1.1 requires independent explanation/review and cannot auto pass; point<=1.1 and95%CI upper<=1.2 withN>=200 is within guardrail only after independent hard-gate checks; CI upper>1.2 is inconclusive",
+      "order": "C1 baseline,candidate; C4 candidate,baseline; C8 baseline,candidate; C16 candidate,baseline; no best-of, no overlapping compile/other expensive profile",
+      "sampling": "dedicated bounded observer thread, native runner and actual child PID at50ms; every timestamp/missing interval preserved, same PID/kernel/unit/timebase required for checked nonnegative CPU deltas; libproc resident-size observed max is not process-tree or absolute peak",
+      "resource_prerequisite": "at least2non-null actualserver native samples plus runner samples, same PID/kernel/rawclock/timebase and monotonic cumulativeCPU enabling nonnegative checked delta; preserve all missing intervals. CurrentDarwin25.6/aarch64calibrated resident-size/threads/rawCPU/ns required; absent required evidence blocks resource proof, neverzero. Observedmax!=absolutepeak; process-treeRSS unmeasured."
+    }
+  },
+  "current_source_validation": "new complete dual-toolchain workspace/HTTP/focused/protocol/real stdio/watcher/release-cost plus all new identifier/ablation/probe tests, cancellation/fake/leases/resolution/mutations/source-budget hard regressions; old P5D receipts only historical baseline",
+  "preserved_limitations": [
+    "original strict inventory gate may remain not_passed and must remain named/reported",
+    "110 span overlay is reviewed development data, not holdout",
+    "100k/holdout/macOS+Linux/release/paid provider gates remain P8/P7 responsibilities",
+    "probe disabled/unavailable data remains null; cannot certify absent resource dimension",
+    "G5 is whole stated M2 local profile only, not entire P6/P7/P8/P9 or all user goal"
+  ],
+  "locked_inputs": [
+    {
+      "path": "artifacts/checkpoints/todolist-completion-audit/round03/task-obligations-v2.json",
+      "bytes": 82165,
+      "sha256": "89a458d8be334713cea95d5b6c0ca46ce169df5465eb8ecdd4f58ec0453bfb7f"
+    },
+    {
+      "path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/suite.json",
+      "bytes": 805,
+      "sha256": "3befca1be7830d91b44684e7075f8133c03cb88bba72819305ab97ff7cb5fb73"
+    },
+    {
+      "path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/queries.jsonl",
+      "bytes": 7983,
+      "sha256": "bb923e72b1ec21f85af487e49220491e37d71498576257530149ce94f4858e39"
+    },
+    {
+      "path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/suite.json",
+      "bytes": 596,
+      "sha256": "c09e196a9d735039481b85a63eed165e500d29972605573362671960e700fd3f"
+    },
+    {
+      "path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/queries.jsonl",
+      "bytes": 4879,
+      "sha256": "f2cb03747e2f6a42f474cd1120f2b012afdd1c506bce708e24b9f14cab49d872"
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/manifests/p1b-exact.json",
+      "bytes": 705,
+      "sha256": "48f37902daf414b36584756ea71e0d6c3ccb5c5c72dc39fffea211e2972d5dbf"
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/native/p1b-exact.jsonl",
+      "bytes": 4892,
+      "sha256": "cdf1c77465950208eccf68818614e696f24e458c04be04815f0f1d1fa7b7ca59"
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/manifests/p1c-intents.json",
+      "bytes": 728,
+      "sha256": "ebba7ccdc318f8bce333fdd9fafa3efde3ff1676ae67fe2d1b9b1203d0ceae1e"
+    },
+    {
+      "path": "crates/cc-eval/benchmarks/native/p1c-intents.jsonl",
+      "bytes": 10374,
+      "sha256": "53ad86b131e7323ccdff15d5409295f921ca5a25c888453267ef0bd90cc7b977"
+    },
+    {
+      "path": "crates/cc-eval/tests/p5e_graph_anchor.rs",
+      "bytes": 16074,
+      "sha256": "c526cd8b28b005a4d0844bb3da728ae6304dc9e1ecc84aee278b3963f8d487f2"
+    },
+    {
+      "path": "artifacts/checkpoints/todolist-completion-audit/round03/native-cpu-calibration-receipt-v2.json",
+      "bytes": 887,
+      "sha256": "2b6071d219981864bb762e55c913fd28455ecab32882317be2e8da982a58a9bd"
+    }
+  ],
+  "environment": {
+    "machine": "arm64",
+    "kernel_release": "25.6.0",
+    "platform": "macOS-26.6.2-arm64-arm-64bit",
+    "uname": "Darwin MacBook-Pro.local 25.6.0 Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:53 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T6031 arm64",
+    "build_environment": "exact immutable producer receipts; SDKROOT15.4/RUSTFLAGS-isysroot/rustc1.97/default release/jobs2",
+    "timing_isolation": "must revalidate before starting; no CPU guarantee derived from OS description"
+  },
+  "pending_before_acceptance": [
+    "final graph-plan source/constraints+owned-stdio harness mode hash",
+    "latest immutable harness/source/binary/lock/Python comparator manifest",
+    "original51 matrix script frozen input paths and golden bytes verified",
+    "actual run plan paths/order and final independent auditor approval"
+  ],
+  "graph_full_query_profile": {
+    "source": "fixed20seeds×10caller+10callee,actualindexed long-body source; graphplan/hash stillpending",
+    "minimum_samples": 300,
+    "input_corpus_and_queries": "same frozen bytes/seed/budget for same-release baseline/candidate",
+    "all_states": "include graph_source_unmapped/otherPartial/errors in latency; old mappingdefect explicitly recorded, cannot count absence of validsource as optimization",
+    "constraints": "typedCALLS orderededge/endpoint/direction/witness correct; reverse/wrongkind/foreignsame-name/decoy negatives,source-bodyproof separately",
+    "cost": "420DAO9SQLdebug mechanism supports boundeddesign only,notfullquerytail; fullqueryactualraw+trace/source mapping outcome+nativePIDresource+pairedlatency separate"
+  }
+}

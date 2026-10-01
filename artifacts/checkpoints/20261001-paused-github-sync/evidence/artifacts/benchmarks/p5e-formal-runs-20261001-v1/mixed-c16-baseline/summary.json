@@ -1,0 +1,82 @@
+{
+  "build_latency": {
+    "max_us": 250174,
+    "p50_us": 238790,
+    "p95_us": 247131,
+    "samples": 30,
+    "tail_claim": "insufficient_for_tail_claim"
+  },
+  "completed_jobs": 330,
+  "completed_requests_per_second": 19.776445857454856,
+  "concurrency": 16,
+  "elapsed_us": 16686517,
+  "exit_code": 1,
+  "failures": 100,
+  "files": 1000,
+  "lifecycle": {
+    "cancel_ok": true,
+    "cancel_result": "Ok(Cancelled)",
+    "exit_code": 0,
+    "forced": false,
+    "lifecycle_passed": true,
+    "pid": 14211,
+    "reaped": true,
+    "scope": "owned tokio Child;bounded cancel5s/wait5s/kill5s;nonzero/forced/error never green",
+    "wait_error": null
+  },
+  "limitations": [
+    "same-source full rebuild,not mutation freshness",
+    "client queue includes worker admission;server queue not independently observable",
+    "all error/Partial/timeout retained in latency;deadline censored explicit",
+    "originating work receipts are not actual cache-hit cost",
+    "thread/resident samples use 50ms target plus bounded-probe time;not tree/absolute peaks",
+    "homogeneous per-query N and pooled profile N separate;no p99 certification"
+  ],
+  "offered_jobs": 330,
+  "per_query": {
+    "exact": {
+      "failed": 0,
+      "latency": {
+        "max_us": 28850,
+        "p50_us": 7793,
+        "p95_us": 24193,
+        "samples": 100,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "requests": 100
+    },
+    "fix_facets": {
+      "failed": 0,
+      "latency": {
+        "max_us": 32740,
+        "p50_us": 7397,
+        "p95_us": 24417,
+        "samples": 100,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "requests": 100
+    },
+    "path": {
+      "failed": 100,
+      "latency": {
+        "max_us": 41486,
+        "p50_us": 16747,
+        "p95_us": 28406,
+        "samples": 100,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "requests": 100
+    }
+  },
+  "read_latency": {
+    "max_us": 41486,
+    "p50_us": 9804,
+    "p95_us": 27132,
+    "samples": 300,
+    "tail_claim": "empirical_distribution_only"
+  },
+  "source_bytes": 74786,
+  "source_drift": [],
+  "status": "failed",
+  "worker_failures": []
+}

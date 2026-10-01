@@ -95,8 +95,11 @@ watcher 带自适应去抖、突发退避、扫描器对齐的忽略过滤（`cc
 
 - **空闲驱逐**：每 30 秒检查一次，MCP 无活动超过
   `auto_index.idle_timeout_secs`（默认 60）即对**会话持有的全部实例**
-  （active + 16 槽 LRU 里缓存的非 active 项目）调用 `close()`——释放 DB
+  （active + 16 槽 LRU 里缓存的非 active 项目）尝试调用 `close()`——释放 DB
   句柄、清空 `index_db`/`engine`，保留 `project_path` 与 build gate。
+  单次 sweep 不等待读写锁或 build gate；争用实例与仍持合法查询租约的实例
+  被跳过，临时争用结束或最后租约释放后由后续 sweep 回收。单次关闭数量
+  不是会话最终可回收实例数，不能要求第一次 sweep 必须关闭所有实例。
   空闲是会话级事实（`last_activity` 被每次工具调用刷新），只关活动项目
   会让缓存的非 active 实例无限期持有读池/写连接与 seed/目录缓存。
   `close()` 同时按 `db_identity` 清除该实例在进程级图缓存的全部槽位

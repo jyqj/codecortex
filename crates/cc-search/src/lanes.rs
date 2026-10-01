@@ -9,7 +9,6 @@ use std::time::Instant;
 
 use lru::LruCache;
 
-use cc_db::fts::sanitize_fts_query;
 use cc_db::index_db::IndexDb;
 use cc_model::config::SearchConfig;
 use cc_model::retrieval::{
@@ -407,10 +406,10 @@ pub(crate) fn materialize_lane_outcomes(
 fn lanes_scoring_spec(lane_id: &str) -> &'static str {
     match lane_id {
         LANE_EXACT_SYMBOL => "exact-symbol-name-qname-signature-v1",
-        LANE_PATH => "exact-and-eligible-token-path-v2",
+        LANE_PATH => "canonical-scoped-exact-path-domain-token-fallback-v3",
         LANE_LEXICAL => "fts5-bm25-order-v1",
         LANE_GREP => "bounded-case-insensitive-literal-v1",
-        LANE_GRAPH => "call-graph-one-hop-v1",
+        LANE_GRAPH => "call-graph-one-hop-uid-byte-anchor-v2",
         _ => "ranked-chunk-v1",
     }
 }
@@ -519,12 +518,15 @@ impl RetrievalLane for LexicalLane {
     fn run_detailed(&self, context: &LaneContext<'_>) -> CcResult<LaneRun> {
         let plan = context.plan;
         let limit = plan.limits().lexical;
-        let fts_q = sanitize_fts_query(plan.lexical_query());
+        // SearchPlan compiles trusted literal groups. Re-sanitizing here
+        // would erase the conjunctive identifier boundary and restore the
+        // noisy OR-of-every-camel-fragment behavior.
+        let fts_q = plan.lexical_query();
         if fts_q == r#""""# {
             return Ok(LaneRun::complete(Vec::new()));
         }
         let candidates = context.db.retrieval().fts_chunk_candidates_with_work(
-            &fts_q,
+            fts_q,
             &plan.chunk_scope(),
             limit.saturating_add(1),
         )?;
@@ -542,7 +544,9 @@ impl RetrievalLane for LexicalLane {
             }
         }
         let lower_bound = results.len();
-        let truncated = results.len() > limit;
+        let candidate_truncated = results.len() > limit;
+        let query_truncated = plan.lexical_query_budget_exhausted();
+        let truncated = candidate_truncated || query_truncated;
         results.truncate(limit);
         Ok(LaneRun {
             hits: results,
@@ -557,7 +561,12 @@ impl RetrievalLane for LexicalLane {
             } else {
                 LaneCoverage::complete(None, lower_bound)
             },
-            truncation_reason: truncated.then(|| "candidate_limit".into()),
+            truncation_reason: match (candidate_truncated, query_truncated) {
+                (true, true) => Some("candidate_limit_and_query_expansion_budget".into()),
+                (true, false) => Some("candidate_limit".into()),
+                (false, true) => Some("query_expansion_atom_budget".into()),
+                (false, false) => None,
+            },
             lexical_work: candidates.work,
             grep: None,
         })
@@ -692,7 +701,9 @@ impl RetrievalLane for GraphLane {
 
 impl GraphLane {
     /// Core graph retrieval: seed symbols + 1-hop call-edge expansion,
-    /// mapped back to the smallest containing chunks.
+    /// mapped to byte-verified declaration documents. A split symbol does
+    /// not require a nonexistent whole-function chunk; an anchor does not
+    /// claim that the whole function body was returned.
     pub(crate) fn search(
         db: &IndexDb,
         plan: &SearchPlan,
@@ -739,9 +750,9 @@ impl GraphLane {
         let uid_list: Vec<String> = neighbor_uids.keys().cloned().collect();
         let sym_rows = db.reads().symbol_rows_by_uids(&uid_list)?;
 
-        // Apply file filters first, then batch-load chunk spans for the
-        // surviving files in one query instead of one point query per neighbor.
-        let mut candidates: Vec<(&str, u32, u32, f64)> = Vec::new(); // (file, start, end, score)
+        // Existing seed/neighbor budgets bound authoritative UID lookups.
+        // Scope is checked here and again before DAO declaration admission.
+        let mut candidates: Vec<(&str, f64)> = Vec::new();
         for (uid, score) in &neighbor_uids {
             if let Some(sym) = sym_rows.get(uid) {
                 // SymbolRow carries no language column — infer it from the
@@ -749,28 +760,24 @@ impl GraphLane {
                 if !plan.passes_filters(&sym.file_path, language_from_path(&sym.file_path)) {
                     continue;
                 }
-                candidates.push((sym.file_path.as_str(), sym.start_line, sym.end_line, *score));
+                candidates.push((uid.as_str(), *score));
             }
         }
-        let candidate_files: Vec<&str> = candidates
-            .iter()
-            .map(|(f, ..)| *f)
-            .collect::<std::collections::HashSet<_>>()
-            .into_iter()
-            .collect();
-        let chunks_by_file = db.retrieval().chunk_spans_for_files(&candidate_files)?;
-
         let mut best_per_chunk: HashMap<String, f64> = HashMap::new();
         let mut unmapped_source = false;
-        for (file, start, end, score) in candidates {
-            // Smallest containing chunk, matching the old per-symbol query.
-            let cid = chunks_by_file.get(file).and_then(|spans| {
-                spans
-                    .iter()
-                    .filter(|(_, cs, ce)| *cs <= start && *ce >= end)
-                    .min_by_key(|(_, cs, ce)| ce - cs)
-                    .map(|(cid, _, _)| cid.clone())
-            });
+        let mut anchor_uids: Vec<&str> = candidates.iter().map(|(uid, _)| *uid).collect();
+        anchor_uids.sort_unstable();
+        anchor_uids.dedup();
+        let anchors = db.retrieval().symbol_uid_anchor_chunks(
+            &anchor_uids,
+            &plan.chunk_scope(),
+            plan.control(),
+        )?;
+        for (uid, score) in candidates {
+            plan.control().check()?;
+            // Smallest-container order plus actual start_line/start_col byte
+            // containment, without same-line sibling/name substitution.
+            let cid = anchors.get(uid).cloned();
             if let Some(cid) = cid {
                 best_per_chunk
                     .entry(cid)

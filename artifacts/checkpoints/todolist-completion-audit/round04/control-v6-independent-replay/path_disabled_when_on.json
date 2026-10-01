@@ -1,0 +1,204 @@
+{
+  "errors": [
+    {
+      "field": "actual_raw_control_body_proof",
+      "id": "path_behavior",
+      "recomputed": {
+        "actual_control_mechanism": false,
+        "actual_lanes": [
+          {
+            "candidate_count": 0,
+            "candidates": [],
+            "coverage": {
+              "complete": true,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 46,
+            "lane_id": "exact_symbol",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 1.1
+          },
+          {
+            "candidate_count": 0,
+            "candidates": [
+              {
+                "document": {
+                  "doc_key": "d03bfa10685eb5d1e46764d92c49c4a6900a27a5f194c9ae3858f94bf61c0ed3",
+                  "doc_version": "9b21f59f749be5138a5a802173d20948c003aa1403e3e7c58318b6b7ead4314a",
+                  "encoding_key": "cbacacca3eb998d83f4e02dc7b50d134245b0223343afd788bd42827621eddeb",
+                  "entity_key": "f9bc224fe11ec18db86968ec08d9110d785c05cd34d0907ec3ed605443166c20"
+                },
+                "exact_identity": true,
+                "lane_id": "path",
+                "lane_rank": 1,
+                "legacy_chunk_id": "chunk:scope/impl.py:0",
+                "raw_score": 1.0,
+                "schema_version": 1,
+                "scoring_spec": "canonical-scoped-exact-path-domain-token-fallback-v3",
+                "source_span": {
+                  "end": 47,
+                  "start": 0
+                }
+              }
+            ],
+            "coverage": {
+              "complete": true,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 1
+            },
+            "elapsed_us": 40,
+            "lane_id": "path",
+            "schema_version": 1,
+            "status": "disabled",
+            "truncation_reason": null,
+            "weight": 1.0
+          },
+          {
+            "candidate_count": 0,
+            "candidates": [],
+            "coverage": {
+              "complete": true,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 97,
+            "lane_id": "lexical",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 1.1
+          },
+          {
+            "candidate_count": 0,
+            "candidates": [],
+            "coverage": {
+              "complete": true,
+              "examined": 5,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 267,
+            "lane_id": "grep",
+            "schema_version": 1,
+            "status": "complete",
+            "truncation_reason": null,
+            "weight": 0.8
+          },
+          {
+            "candidate_count": 0,
+            "candidates": [],
+            "coverage": {
+              "complete": false,
+              "examined": null,
+              "scope": "hard_scope",
+              "total_lower_bound": 0
+            },
+            "elapsed_us": 0,
+            "lane_id": "graph",
+            "schema_version": 1,
+            "status": "disabled",
+            "truncation_reason": null,
+            "weight": 0.0
+          }
+        ],
+        "actual_policy": {
+          "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+          "deadline_ms": 30000,
+          "effective": "local",
+          "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+          "intent": "locate",
+          "lane_timeout_ms": 20000,
+          "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+          "obligations": [
+            {
+              "lane_id": "exact_symbol",
+              "role": "identity",
+              "timeout_ms": 20000
+            },
+            {
+              "lane_id": "path",
+              "role": "identity",
+              "timeout_ms": 20000
+            },
+            {
+              "lane_id": "lexical",
+              "role": "source",
+              "timeout_ms": 20000
+            },
+            {
+              "lane_id": "grep",
+              "role": "source",
+              "timeout_ms": 20000
+            },
+            {
+              "lane_id": "graph",
+              "role": "supporting",
+              "timeout_ms": 20000
+            }
+          ],
+          "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+          "requested": "local",
+          "semantic_state": "disabled",
+          "semantic_timeout_ms": 5000,
+          "semantic_top_k": 24,
+          "version": "query-policy-local-semantic-canonical-path-domain-v4"
+        },
+        "actual_selection": {
+          "facets": {
+            "implementation": 1
+          },
+          "input_candidates": 1,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 47,
+            "redundant_bytes": 0,
+            "unique_bytes": 47
+          },
+          "requested_limit": 10,
+          "selected": 1,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 47,
+            "redundant_bytes": 0,
+            "unique_bytes": 47
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "body_source_checks": {
+          "facets": [],
+          "normalization_error": "protocol/infrastructure error: invalid lane receipt: invalid lane outcome",
+          "passed": false,
+          "status": "invalid_measurement",
+          "verified_source_spans": []
+        },
+        "complete_actual_source_body": false,
+        "declared_local_lanes_complete_or_intentionally_disabled": false,
+        "factor": "path",
+        "foundation_complete": false,
+        "freshness_complete": true,
+        "limits": "Locate retains rank-anchor/defaultfill and source-support,not a fabricated implementation-anchor map;no corpus quality/timing claim",
+        "packing_no_body_omission": true,
+        "passed": false,
+        "registered_enabled": true,
+        "scope_complete": true
+      }
+    }
+  ],
+  "status": "invalid_control_evidence"
+}

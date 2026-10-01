@@ -1,0 +1,1 @@
+Prepared final harness binds cc-eval dependency to immutable candidate429e0055 source copy, not mutable workspace. All Rust/helper/input/report originals copied and will be hash-locked after release build. Candidate source/profile still pending independent acceptance. No official quality/performance run yet.

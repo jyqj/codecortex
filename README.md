@@ -9,14 +9,14 @@ MCP 服务器和安装 agent 配置）。
 
 ## 当前重构进度
 
-Code Index V2 共 192 项任务：**115 done / 3 in_progress / 74 todo**。
-当前正在收口 P5-D（P5-016～018）；最新 Rust 1.95 workspace 验收仍有一项失败，
+Code Index V2 共 192 项任务：**118 done / 1 in_progress / 73 todo**。
+P5-016～018 已通过新冻结双工具链验证及独立审计；当前实施 P5-019 查询质量/成本/并发消融，
 本次保存的是开发进度快照，不是 G5/M2 或发行认证。
 
 进度入口：[重构总览](docs/roadmap/code-index-v2/README.md) ·
 [逐项 TODO](docs/roadmap/code-index-v2/05-TODO.md) ·
 [唯一任务状态源](docs/roadmap/code-index-v2/tasks.json) ·
-[当前快照与阻塞](docs/roadmap/code-index-v2/CHECKPOINT-2026-09-30.md)。
+[最新验收](docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md) · [历史快照](docs/roadmap/code-index-v2/CHECKPOINT-2026-09-30.md)。
 
 ## 快速开始
 

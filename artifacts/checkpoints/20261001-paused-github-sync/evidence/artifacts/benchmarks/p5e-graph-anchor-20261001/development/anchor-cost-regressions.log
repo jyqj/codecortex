@@ -1,0 +1,32 @@
+   Compiling cc-db v1.0.0 (/Users/jin/Desktop/codecortex-rust/crates/cc-db)
+error[E0308]: mismatched types
+    --> crates/cc-db/src/index_db_retrieval.rs:1260:45
+     |
+1260 |                     work.text.utf8_bytes += text.len();
+     |                                             ^^^^^^^^^^ expected `u64`, found `usize`
+
+error[E0277]: cannot add-assign `usize` to `u64`
+    --> crates/cc-db/src/index_db_retrieval.rs:1260:42
+     |
+1260 |                     work.text.utf8_bytes += text.len();
+     |                                          ^^ no implementation for `u64 += usize`
+     |
+     = help: the trait `AddAssign<usize>` is not implemented for `u64`
+help: `u64` implements trait `AddAssign<Rhs>`
+    --> /Users/jin/.rustup/toolchains/stable-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/ops/arith.rs:786:9
+     |
+ 786 |         impl const AddAssign for $t {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ `AddAssign`
+...
+ 799 | add_assign_impl! { usize u8 u16 u32 u64 u128 isize i8 i16 i32 i64 i128 f16 f32 f64 f128 }
+     | ----------------------------------------------------------------------------------------- in this macro invocation
+     |
+    ::: /Users/jin/.rustup/toolchains/stable-aarch64-apple-darwin/lib/rustlib/src/rust/library/core/src/internal_macros.rs:61:9
+     |
+  61 |         impl const $imp<&$u> for $t {
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^ `AddAssign<&u64>`
+     = note: this error originates in the macro `add_assign_impl` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+Some errors have detailed explanations: E0277, E0308.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `cc-db` (lib) due to 2 previous errors

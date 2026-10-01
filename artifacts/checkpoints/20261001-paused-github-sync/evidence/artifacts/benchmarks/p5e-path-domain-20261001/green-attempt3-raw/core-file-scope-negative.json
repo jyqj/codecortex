@@ -1,0 +1,263 @@
+{
+  "cost": {
+    "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+    "fused_candidates": 1,
+    "hydrate_requested": 1,
+    "hydration": {
+      "sql": {
+        "fullscan_steps": 0,
+        "rows": 1,
+        "sorts": 0,
+        "statements": 1,
+        "vm_steps": 61
+      },
+      "text": {
+        "cache_hits": 0,
+        "legacy_auto_reads": 0,
+        "storage_reads": 1,
+        "utf8_bytes": 32,
+        "zstd_decodes": 0
+      }
+    },
+    "lane_candidates": {
+      "exact_symbol": 0,
+      "graph": 0,
+      "grep": 0,
+      "lexical": 0,
+      "path": 1
+    },
+    "lexical_sql": {
+      "fullscan_steps": 0,
+      "rows": 0,
+      "sorts": 1,
+      "statements": 1,
+      "vm_steps": 18
+    },
+    "schema_version": 1
+  },
+  "hits": [
+    {
+      "breadcrumb": "neighbor",
+      "chunk_id": "chunk:src/ab.rs:0",
+      "end_line": 1,
+      "file_path": "src/ab.rs",
+      "fused_score": 0.0196078431372549,
+      "graph_score": 0.0,
+      "grep_score": 0.0,
+      "lane": null,
+      "language": "rust",
+      "lexical_score": 0.0,
+      "metadata": {
+        "document": {
+          "doc_key": "ea425af12929832d679f92e37d4791479c532cdff042e9bc5073e1d8490df302",
+          "doc_version": "61295abf54f195ee825f506fb202bdf11234a43f6ded08ace90b28384e3ef8a2",
+          "encoding_key": "65a779d80354cc69e73b8d420635c2dcb4993b495802ca0bf4b65511bc634e46",
+          "entity_key": "b7366e1cdca46e42b3c257fce3f23e3355b919f28748049d25c23f761f004528"
+        },
+        "source_evidence": {
+          "boundary": "symbol",
+          "owner": {
+            "end": 31,
+            "start": 0
+          },
+          "signature": {
+            "end": 25,
+            "start": 0
+          },
+          "slice_digest": "a4f5ab77113b54aea5490db666f01132270db9acade492ad56f3e63832a71bd3",
+          "source": {
+            "byte_len": 32,
+            "content_digest": "a4f5ab77113b54aea5490db666f01132270db9acade492ad56f3e63832a71bd3",
+            "encoding": "utf8",
+            "snapshot_id": "b0a24fe6e9866889d8dced63aaa421a6573186ed8769d6b18edd426d9c26afc5"
+          },
+          "span": {
+            "end": 32,
+            "start": 0
+          }
+        },
+        "source_freshness": {
+          "disk_checked": false,
+          "status": "indexed_snapshot"
+        },
+        "stage_a_file_reasons": [
+          "explicit-scope"
+        ],
+        "stage_a_file_score": 10.0,
+        "stage_a_files_considered": 1,
+        "stage_a_layer_scores": [
+          [
+            "explicit-scope",
+            10.0
+          ]
+        ]
+      },
+      "reasons": [
+        "path@1",
+        "explicit-scope",
+        "preselect:explicit-scope:+10.00"
+      ],
+      "rerank_score": 0.5029411764705882,
+      "score_trace": [
+        [
+          "rrf:path",
+          0.0196078431372549
+        ],
+        [
+          "overlap",
+          0.2333333333333333
+        ],
+        [
+          "boost:stage-a",
+          0.25
+        ]
+      ],
+      "source": "index",
+      "start_line": 1,
+      "symbol_kind": "function",
+      "symbol_name": "neighbor",
+      "text": "pub fn neighbor() -> i32 { 81 }\n"
+    }
+  ],
+  "lanes": [
+    {
+      "candidate_count": 0,
+      "candidates": [],
+      "coverage": {
+        "complete": true,
+        "examined": null,
+        "scope": "hard_scope",
+        "total_lower_bound": 0
+      },
+      "elapsed_us": 122,
+      "lane_id": "exact_symbol",
+      "schema_version": 1,
+      "status": "complete",
+      "truncation_reason": null,
+      "weight": 1.1
+    },
+    {
+      "candidate_count": 1,
+      "candidates": [
+        {
+          "document": {
+            "doc_key": "ea425af12929832d679f92e37d4791479c532cdff042e9bc5073e1d8490df302",
+            "doc_version": "61295abf54f195ee825f506fb202bdf11234a43f6ded08ace90b28384e3ef8a2",
+            "encoding_key": "65a779d80354cc69e73b8d420635c2dcb4993b495802ca0bf4b65511bc634e46",
+            "entity_key": "b7366e1cdca46e42b3c257fce3f23e3355b919f28748049d25c23f761f004528"
+          },
+          "exact_identity": false,
+          "lane_id": "path",
+          "lane_rank": 1,
+          "legacy_chunk_id": "chunk:src/ab.rs:0",
+          "raw_score": 1.0,
+          "schema_version": 1,
+          "scoring_spec": "canonical-scoped-exact-path-domain-token-fallback-v3",
+          "source_span": {
+            "end": 32,
+            "start": 0
+          }
+        }
+      ],
+      "coverage": {
+        "complete": true,
+        "examined": null,
+        "scope": "hard_scope",
+        "total_lower_bound": 1
+      },
+      "elapsed_us": 324,
+      "lane_id": "path",
+      "schema_version": 1,
+      "status": "complete",
+      "truncation_reason": null,
+      "weight": 1.0
+    },
+    {
+      "candidate_count": 0,
+      "candidates": [],
+      "coverage": {
+        "complete": true,
+        "examined": null,
+        "scope": "hard_scope",
+        "total_lower_bound": 0
+      },
+      "elapsed_us": 224,
+      "lane_id": "lexical",
+      "schema_version": 1,
+      "status": "complete",
+      "truncation_reason": null,
+      "weight": 1.1
+    },
+    {
+      "candidate_count": 0,
+      "candidates": [],
+      "coverage": {
+        "complete": false,
+        "examined": null,
+        "scope": "hard_scope",
+        "total_lower_bound": 0
+      },
+      "elapsed_us": 0,
+      "lane_id": "grep",
+      "schema_version": 1,
+      "status": "disabled",
+      "truncation_reason": null,
+      "weight": 0.8
+    },
+    {
+      "candidate_count": 0,
+      "candidates": [],
+      "coverage": {
+        "complete": true,
+        "examined": null,
+        "scope": "hard_scope",
+        "total_lower_bound": 0
+      },
+      "elapsed_us": 327,
+      "lane_id": "graph",
+      "schema_version": 1,
+      "status": "complete",
+      "truncation_reason": null,
+      "weight": 0.6
+    }
+  ],
+  "scope": {
+    "budget": {
+      "exact_symbol_candidates": 24,
+      "grep_candidates": 24,
+      "grep_enabled": false,
+      "grep_scan_cap": 20000,
+      "lexical_candidates": 24,
+      "path_candidates": 24,
+      "rerank_window": 40,
+      "top_k": 24,
+      "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+    },
+    "hard": {
+      "empty": false,
+      "explicit_file_count": 1,
+      "languages": null,
+      "path_prefix": null,
+      "path_prefix_truncated": false,
+      "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+    },
+    "ordering": [
+      "exact-target first (identity tier, not an additive score)",
+      "rerank_score descending = sum(score_trace)",
+      "chunk_id ascending"
+    ],
+    "policy": "canonical-scoped-exact-path-domain-trusted-context-budget-v21",
+    "schema_version": 1,
+    "soft": {
+      "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+      "hint_entries": {
+        "overlay": 0,
+        "pinned": 0,
+        "recent": 0,
+        "working": 0
+      },
+      "preselected_count": 1,
+      "role": "ranking_and_scan_priority_only"
+    }
+  }
+}

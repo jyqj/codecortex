@@ -1,0 +1,603 @@
+{
+  "evidence_summary": {
+    "files": [
+      "src/a.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": false,
+      "configured_max_bytes": 24000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 24000,
+      "omitted_hits": 0,
+      "omitted_nodes": 0,
+      "original_hits": 1,
+      "original_nodes": 1,
+      "partial": false,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v4",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 11340
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+        "fused_candidates": 1,
+        "hydrate_requested": 1,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 1,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 61
+          },
+          "text": {
+            "cache_hits": 0,
+            "legacy_auto_reads": 0,
+            "storage_reads": 1,
+            "utf8_bytes": 29,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 0,
+          "path": 1
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 0,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 17
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 847,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 1000,
+        "skipped_duplicates": 153,
+        "soft_scanned": 153,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 153,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 2766
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 153,
+                "utf8_bytes": 5787,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 999,
+                "rows": 1000,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 8007
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 847,
+                "utf8_bytes": 32103,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lanes": [
+        {
+          "candidate_count": 0,
+          "candidates": [],
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 381,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 1,
+          "candidates": [
+            {
+              "document": {
+                "doc_key": "3c327ec0609a54ac61f80e91528ab575556f1372795c360bc37143cba3d575d8",
+                "doc_version": "0694d65e15a9294b23c1db9674afe9b8b39b957db1198971b85860eb2bef1cdc",
+                "encoding_key": "c41a829793b4adef743e4ec5d21e6e7dae5d4d9ee1adc06b40dd74e3de891086",
+                "entity_key": "4fef039b49b630b26f874ef083032e830e7ce39967be1a3852e62916307b272f"
+              },
+              "exact_identity": true,
+              "lane_id": "path",
+              "lane_rank": 1,
+              "legacy_chunk_id": "chunk:src/a.rs:0",
+              "raw_score": 1.0,
+              "schema_version": 1,
+              "scoring_spec": "canonical-scoped-exact-path-domain-token-fallback-v3",
+              "source_span": {
+                "end": 29,
+                "start": 0
+              }
+            }
+          ],
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 127,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 0,
+          "candidates": [],
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 338,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidates": [],
+          "coverage": {
+            "complete": true,
+            "examined": 1000,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 6124,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidates": [],
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 344,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+        "deadline_ms": 30000,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+        "obligations": [
+          {
+            "lane_id": "exact_symbol",
+            "role": "identity",
+            "timeout_ms": 20000
+          },
+          {
+            "lane_id": "path",
+            "role": "identity",
+            "timeout_ms": 20000
+          },
+          {
+            "lane_id": "lexical",
+            "role": "source",
+            "timeout_ms": 20000
+          },
+          {
+            "lane_id": "grep",
+            "role": "source",
+            "timeout_ms": 20000
+          },
+          {
+            "lane_id": "graph",
+            "role": "supporting",
+            "timeout_ms": 20000
+          }
+        ],
+        "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 24,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 24,
+          "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+        },
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+        },
+        "ordering": [
+          "exact-target first (identity tier, not an additive score)",
+          "rerank_score descending = sum(score_trace)",
+          "chunk_id ascending"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-trusted-context-budget-v21",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 153,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 1,
+    "selection": {
+      "facets": {
+        "implementation": 1
+      },
+      "input_candidates": 1,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 0,
+      "original_ranks": [
+        1
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 29,
+        "redundant_bytes": 0,
+        "unique_bytes": 29
+      },
+      "requested_limit": 24,
+      "selected": 1,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 29,
+        "redundant_bytes": 0,
+        "unique_bytes": 29
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 1,
+      "generation": {
+        "evidence_epoch": 0,
+        "incarnation": [
+          78,
+          81,
+          3,
+          142,
+          213,
+          69,
+          112,
+          152,
+          93,
+          83,
+          46,
+          108,
+          239,
+          91,
+          159,
+          71
+        ],
+        "index_epoch": 6,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 29,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 1
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "needle",
+        "chunk_id": "chunk:src/a.rs:0",
+        "end_line": 1,
+        "file_path": "src/a.rs",
+        "fused_score": 0.0196078431372549,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.0,
+        "metadata": {
+          "document": {
+            "doc_key": "3c327ec0609a54ac61f80e91528ab575556f1372795c360bc37143cba3d575d8",
+            "doc_version": "0694d65e15a9294b23c1db9674afe9b8b39b957db1198971b85860eb2bef1cdc",
+            "encoding_key": "c41a829793b4adef743e4ec5d21e6e7dae5d4d9ee1adc06b40dd74e3de891086",
+            "entity_key": "4fef039b49b630b26f874ef083032e830e7ce39967be1a3852e62916307b272f"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 28,
+              "start": 0
+            },
+            "signature": {
+              "end": 23,
+              "start": 0
+            },
+            "slice_digest": "5c9d252dcfb52319494c0093d59908e0b148a6fc5e91ed42a41c41fa94d763ff",
+            "source": {
+              "byte_len": 29,
+              "content_digest": "5c9d252dcfb52319494c0093d59908e0b148a6fc5e91ed42a41c41fa94d763ff",
+              "encoding": "utf8",
+              "snapshot_id": "a4b3dcc2a746832ba0ea03375b6e665855b2ed475aad3d7e1ad7763da1df8016"
+            },
+            "span": {
+              "end": 29,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          },
+          "stage_a_file_reasons": [
+            "fts-summary",
+            "path-token:src"
+          ],
+          "stage_a_file_score": 3.2636685587558465,
+          "stage_a_files_considered": 153,
+          "stage_a_layer_scores": [
+            [
+              "fts-summary",
+              2.2636685587558465
+            ],
+            [
+              "token-search",
+              1.0
+            ]
+          ]
+        },
+        "reasons": [
+          "exact-target",
+          "path@1",
+          "fts-summary",
+          "path-token:src",
+          "preselect:fts-summary:+2.26",
+          "preselect:token-search:+1.00"
+        ],
+        "rerank_score": 0.5001545854874887,
+        "score_trace": [
+          [
+            "rrf:path",
+            0.0196078431372549
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:stage-a",
+            0.13054674235023386
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": "function",
+        "symbol_name": "needle",
+        "text": "pub fn needle() -> i32 { 7 }\n"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "src/a.rs",
+    "repo_size_tier": "Small",
+    "token_budget": 6000,
+    "top_k": 24
+  },
+  "nodes": [
+    {
+      "backing_file_path": "src/a.rs",
+      "backing_source": null,
+      "confidence": 0.8,
+      "depends_on": [],
+      "end_line": 1,
+      "file_path": "src/a.rs",
+      "freshness": null,
+      "invalidation_keys": [
+        "src/a.rs"
+      ],
+      "metadata": {
+        "document": {
+          "doc_key": "3c327ec0609a54ac61f80e91528ab575556f1372795c360bc37143cba3d575d8",
+          "doc_version": "0694d65e15a9294b23c1db9674afe9b8b39b957db1198971b85860eb2bef1cdc",
+          "encoding_key": "c41a829793b4adef743e4ec5d21e6e7dae5d4d9ee1adc06b40dd74e3de891086",
+          "entity_key": "4fef039b49b630b26f874ef083032e830e7ce39967be1a3852e62916307b272f"
+        },
+        "source_evidence": {
+          "boundary": "symbol",
+          "owner": {
+            "end": 28,
+            "start": 0
+          },
+          "signature": {
+            "end": 23,
+            "start": 0
+          },
+          "slice_digest": "5c9d252dcfb52319494c0093d59908e0b148a6fc5e91ed42a41c41fa94d763ff",
+          "source": {
+            "byte_len": 29,
+            "content_digest": "5c9d252dcfb52319494c0093d59908e0b148a6fc5e91ed42a41c41fa94d763ff",
+            "encoding": "utf8",
+            "snapshot_id": "a4b3dcc2a746832ba0ea03375b6e665855b2ed475aad3d7e1ad7763da1df8016"
+          },
+          "span": {
+            "end": 29,
+            "start": 0
+          }
+        },
+        "source_freshness": {
+          "disk_checked": true,
+          "hydrator": "current-document-scope-source-generation-v1",
+          "status": "current_verified"
+        },
+        "stage_a_file_reasons": [
+          "fts-summary",
+          "path-token:src"
+        ],
+        "stage_a_file_score": 3.2636685587558465,
+        "stage_a_files_considered": 153,
+        "stage_a_layer_scores": [
+          [
+            "fts-summary",
+            2.2636685587558465
+          ],
+          [
+            "token-search",
+            1.0
+          ]
+        ]
+      },
+      "node_id": "search:chunk:src/a.rs:0",
+      "node_type": "SEARCH_HIT",
+      "rank_explanation": null,
+      "reasons": [
+        "exact-target",
+        "path@1",
+        "fts-summary",
+        "path-token:src",
+        "preselect:fts-summary:+2.26",
+        "preselect:token-search:+1.00"
+      ],
+      "relation": null,
+      "role": "primary",
+      "score": 0.5001545854874887,
+      "source": "index",
+      "source_end_line": 1,
+      "source_start_line": 1,
+      "span_kind": "indexed_chunk",
+      "start_line": 1,
+      "text": "pub fn needle() -> i32 { 7 }\n",
+      "title": "src/a.rs needle:1-1",
+      "token_estimate": 8
+    }
+  ],
+  "query": "src/a.rs",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Task: code-index search\nIntent: locate\nQuery: src/a.rs\n\n## 1. src/a.rs:1-1\npub fn needle() -> i32 { 7 }\n",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 6,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [
+    {
+      "end_line": 1,
+      "file_path": "src/a.rs",
+      "label": "needle",
+      "node_id": "search:chunk:src/a.rs:0",
+      "start_line": 1
+    }
+  ],
+  "summary": "Found 1 indexed code result(s) across 1 file(s) for `src/a.rs`.",
+  "task": "src/a.rs",
+  "token_budget": 6000,
+  "token_estimate": 2835
+}

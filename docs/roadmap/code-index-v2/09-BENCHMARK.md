@@ -1,8 +1,12 @@
 # 09｜Benchmark 实现设计：以 oce-benchmark 为参考，扩展为代码索引验收系统
 
-> 状态：设计，不是已运行结果。Benchmark 从 P0 开工，贯穿 P1–P9；P8 只是规模/发布认证，不是到最后才写 benchmark。任务与依赖在 tasks.json，验证门在 06-VALIDATION.md。
+> 下文保留目标设计；本轮仅接受运行时与接口子集。
 
-最新见[P5-C-COMPLETION.md](P5-C-COMPLETION.md)与[P5-C-GATE.json](P5-C-GATE.json)，旧P5-C-IMPLEMENTATION/PARTIAL-GATE/PROGRESS保留历史范围与失败。固定51题306请求的逐题Top-1/nDCG无负差分，无效源码命中为0，raw回放一致。原Partial/S11继续失败，本次新增18次真实预算省略Partial，涉及6个问题；完整检索Gate保持not_passed，不能称G5/M2通过。gold与评分公式未改。新增30次最终证据装配release观测，并复跑60次旧lane成本和192次有界准入请求；不是100k、峰值RSS或尾延迟认证。一次默认并行HTTP测试的debug索引计时超过原500毫秒门限，原失败保留；源码不变的独立复验通过，后续计时相关测试组串行执行，内部并发测试不变。未放宽阈值，不把隔离通过当成共享负载性能认证。
+118 done / 1 in_progress / 73 todo，P5 为 18/20；P5-016～018 已验收，P5-019 正在实施通用查询质量修复与独立消融。P5-D 整批与 G5/M2 尚未完成。最新见 [P5-D-RUNTIME-IMPLEMENTATION.md](P5-D-RUNTIME-IMPLEMENTATION.md) 与 [P5-D-RUNTIME-GATE.json](P5-D-RUNTIME-GATE.json)。
+
+冻结 623 文件、6675050 字节，摘要 `44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0`；38 条命令收据、源码归档、日志和不可变二进制一致。证据目录 `artifacts/benchmarks/p5d-20260930-resume/final-v3`。固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败；原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致。
+
+新增 12 组 release 项目清理/租约观测，复跑 90 次旧查询成本和 192 次准入请求；可选 ps 进程树采样在本机停滞后显式关闭，对应 RSS 为 null、原生自身 RSS 单列。核心验证未跳过；不是 P5-019 的完整消融、100k、尾延迟或发行认证。
 
 ## 1. 冻结参考和审阅范围
 

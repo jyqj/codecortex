@@ -7,7 +7,7 @@
 
 use std::collections::{HashMap, HashSet};
 
-use cc_db::fts::{expand_query_text, tokenize_codeish};
+use cc_db::fts::{compile_expanded_fts_query, tokenize_codeish, CompiledFtsQuery};
 use cc_db::index_db::IndexDb;
 use cc_model::config::{RankingConfig, RepoSizeTier, SearchConfig};
 use cc_model::retrieval::{HardScope, SoftHints};
@@ -24,7 +24,7 @@ pub(crate) struct SearchPlan {
     control: cc_model::query::QueryControl,
     request: SearchRequest,
     dsl: crate::dsl::ParsedQuery,
-    expanded_query: String,
+    lexical_query: CompiledFtsQuery,
     query_tokens: Vec<String>,
     primary_query_tokens: Vec<String>,
     limits: LaneLimits,
@@ -130,7 +130,7 @@ impl SearchPlan {
         let mut soft_hints = SoftHints::from(&request);
 
         let query_text = augmented_query_text(&request);
-        let expanded_query = expand_query_text(&query_text);
+        let lexical_query = compile_expanded_fts_query(&query_text);
         let top_k = if request.top_k == 0 {
             10
         } else {
@@ -174,7 +174,7 @@ impl SearchPlan {
             policy,
             control,
             dsl,
-            expanded_query,
+            lexical_query,
             query_tokens,
             primary_query_tokens,
             limits,
@@ -219,7 +219,11 @@ impl SearchPlan {
     }
 
     pub(crate) fn lexical_query(&self) -> &str {
-        &self.expanded_query
+        &self.lexical_query.query
+    }
+
+    pub(crate) fn lexical_query_budget_exhausted(&self) -> bool {
+        self.lexical_query.source_tokens_omitted || self.lexical_query.identifier_groups_omitted > 0
     }
 
     pub(crate) fn grep_query(&self) -> &str {

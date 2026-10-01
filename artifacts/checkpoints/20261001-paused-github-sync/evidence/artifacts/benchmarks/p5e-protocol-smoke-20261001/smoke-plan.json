@@ -1,0 +1,56 @@
+{
+  "schema_version": 1,
+  "files": {
+    "src/a.rs": "pub fn needle() -> i32 { 7 }\n",
+    "src/b.rs": "pub fn needle_secondary() -> i32 { needle() }\nfn needle() -> i32 { 8 }\n",
+    "src/c.rs": "pub fn needle_fallback() -> i32 { 9 }\n",
+    "src/interface.rs": "pub trait NeedleContract { fn needle(&self) -> i32; }\n",
+    "tests/needle_test.rs": "#[test]\nfn test_needle() { assert_eq!(needle(), 7); }\nfn needle() -> i32 { 7 }\n"
+  },
+  "queries": [
+    {
+      "id": "path",
+      "query": "src/a.rs",
+      "required_facets": [
+        {
+          "path": "src/a.rs",
+          "marker": "pub fn needle() -> i32 { 7 }"
+        }
+      ]
+    },
+    {
+      "id": "exact",
+      "query": "needle",
+      "required_facets": [
+        {
+          "path": "src/a.rs",
+          "marker": "pub fn needle() -> i32 { 7 }"
+        }
+      ]
+    },
+    {
+      "id": "fix_facets",
+      "query": "fix needle tests NeedleContract",
+      "required_facets": [
+        {
+          "path": "src/a.rs",
+          "marker": "pub fn needle() -> i32 { 7 }"
+        },
+        {
+          "path": "tests/needle_test.rs",
+          "marker": "fn test_needle() { assert_eq!(needle(), 7); }"
+        },
+        {
+          "path": "src/interface.rs",
+          "marker": "pub trait NeedleContract { fn needle(&self) -> i32; }"
+        }
+      ]
+    }
+  ],
+  "concurrency": 1,
+  "repetitions": 1,
+  "offered_interval_us": 50000,
+  "build_every": 3,
+  "top_k": 5,
+  "seed": 1905
+}

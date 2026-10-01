@@ -1,0 +1,57 @@
+{
+  "status": "source_mechanism_reviewed_ready_for_frozen_full_validation",
+  "reviewer": "acceptance_auditor",
+  "observed_at_utc": "2026-09-30T17:59:14.434185+00:00",
+  "source_files_sha256": {
+    "crates/cc-db/src/index_db_retrieval.rs": "efd8bcfdef3034c04cae38a4d1627ee250b28662aa88bec378447d78fc7dfbd5",
+    "crates/cc-search/src/lanes.rs": "1de5d88c35357355c8bd170693562400ea02487a3d1f249cd5bd32b4a548e70b",
+    "crates/cc-search/src/query_policy.rs": "3c0718da6f0d1e04cb02229858c29fa5457764ee6b9a840666c725402a68f908",
+    "crates/cc-search/src/engine_cache.rs": "717f8663eb304023a9fcd1308bef1053f7ce2b2ba80a0c730f074f66e9764b83",
+    "crates/cc-search/src/selection/budget.rs": "4f386522a99f0cc7e89f4e44f894190706fa25c1ff769a4c97364537861f8178",
+    "crates/cc-eval/tests/p5e_graph_anchor.rs": "c526cd8b28b005a4d0844bb3da728ae6304dc9e1ecc84aee278b3963f8d487f2"
+  },
+  "reviewed_real_graph_tests": 8,
+  "mechanism_logs_sha256": {
+    "real-fanout-regressions-v2.log": "82daa988bd3dd133830110bf51cecedd592379e45ff6bba4b4dfef779260bf1a",
+    "db-search-current-regression.log": "e6caa4f83ad5cfc0caf339909c506e5c35de71daad90161bf56698a17708824f",
+    "work-observations/graph-420-anchor-work.json": "77a80efd16310543446f8bdc4d01ecfaa7d18e5745e11be55579b9d77a20e8bf",
+    "strict.log": "a58ab752db7a6c94f99719339954933bfa0fb1e8e361fc2c5aef5d7e294880c9"
+  },
+  "scope_assertions": [
+    "UID byte-column projected from actual symbols table, scope before admission/limit; not merely sibling/name/line selection.",
+    "200 UID batches with three phases per batch: symbol projection, shared prefix read/coordinate calculation, byte-filtered candidate admission.",
+    "Hard1024 UID API bound; existing graph seed/neighbor bound420; sortedUID/candidate stable order; entry/batch/row/after mapping checks QueryControl.",
+    "Candidate prefix validates actual bytes/source proof, cached snapshot must match, position inside span and owner if present.",
+    "Final DocRef mirrors/currentmanifest and source/disk/generation integrity remain existing required stages, including warm corrupted/deleted manifest negative tests.",
+    "Graph lane remains fusion-only, candidate exact_identity false; caller/callee source candidate proof not fabricated graph@ reason.",
+    "GraphSourceMapping policyv3/cachev18 and budget-retained mapping domain explicitly do not claim complete function body."
+  ],
+  "mechanism_cost": {
+    "anchors": 420,
+    "elapsed_us": 29314,
+    "scope": "420 real indexed long declarations; UID mapping projection/prefix/admission only, not seed-edge or whole-query work",
+    "work": {
+      "sql": {
+        "fullscan_steps": 0,
+        "rows": 1260,
+        "sorts": 9,
+        "statements": 9,
+        "vm_steps": 473510
+      },
+      "text": {
+        "cache_hits": 0,
+        "legacy_auto_reads": 0,
+        "storage_reads": 420,
+        "utf8_bytes": 14679,
+        "zstd_decodes": 0
+      }
+    }
+  },
+  "limits": [
+    "Debug mapping elapsed observation is not complete query or performance certification.",
+    "Source review does not certify all new-source dual-toolchain workspace or real stdio context under load.",
+    "Normal misses, seed/neighbor/query budget/candidate/packing Partial and110span task obligations retained.",
+    "Formal full-query graph fanout/longfunction same-release tail/cost/source-validity evidence remains required."
+  ],
+  "accepted_gate_tasks": []
+}

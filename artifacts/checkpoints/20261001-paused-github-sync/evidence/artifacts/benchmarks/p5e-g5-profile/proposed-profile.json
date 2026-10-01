@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "status": "proposed_pending_independent_review_not_gate",
+  "profile": "G5-M2-local-engineering-task-quality-v1",
+  "scope_basis": [
+    "docs/roadmap/code-index-v2/06-VALIDATION.md sections G5,4",
+    "docs/roadmap/code-index-v2/09-BENCHMARK.md sections 3,9,10,11",
+    "tasks P5-019/P5-020"
+  ],
+  "registered_before_final_candidate_runs": true,
+  "baseline": {
+    "source_manifest": "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json",
+    "source_digest_sha256": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0",
+    "archive_sha256": "b497cba0c054795da5da5a3b110a03780d5f83b6671c2bb7542408a83f251d71",
+    "release_build_required": true,
+    "same_evaluation_harness_required": true
+  },
+  "candidate": "must bind immutable final current-source manifest/archive/binaries after integration and independent source review",
+  "hard_gates": {
+    "scope_source_version_budget_violations": 0,
+    "compiler_clippy_format_architecture_test_failures": 0,
+    "scorer_golden_lock_replay_failures": 0,
+    "three_existing_no_answer_errors": 0,
+    "multi_facet_mechanism_required_facets": 1.0,
+    "typed_graph_direction_edge_type_false_positive_errors": 0,
+    "lost_or_filtered_raw_requests": 0,
+    "unbounded_admitted_workers": 0
+  },
+  "quality": {
+    "existing_original_51_queries": "retain original gold/scorer and strict inventory completeness gate result separately",
+    "independent_110_core_span_overlay": "pre-locked by auditor; paired baseline/candidate per-query byte-span union, source proof required; references never count as body",
+    "task_coverage_regression_budget": 0,
+    "primary_top1_review_trigger_absolute": 0.01,
+    "ndcg10_review_trigger_absolute": 0.01,
+    "repository_query_family_clustered_bootstrap": "10000 resamples, fixed seed 1905, repetitions not independent questions",
+    "confidence": "report N and 95% CI; inconclusive cannot become passed",
+    "semantic_natural_language_misses": "must list all original/current misses and spans; no fixture-id or query-specific repair; not a claim of 100% offline semantic recall"
+  },
+  "ablation": {
+    "controls": [
+      "path lane",
+      "exact-symbol lane",
+      "coverage facet reservation with overlap preserved"
+    ],
+    "variants": 8,
+    "existing_suite_runs": "4 fixed suites, three repetitions, 1224 stdio requests",
+    "independent_multifacet_runs": "three pre-locked fixture cases,30 repetitions,8 variants,720 stdio requests; production-on cell all facets/spans mandatory",
+    "negative_counterfactuals": "intentional lane/selector-off quality loss is diagnostic, never credited as optimization"
+  },
+  "mixed_load": {
+    "process": "one real rmcp stdio session per variant/profile; same release compiler/options, source manifest, budget,seed,offered schedule; candidate and immutable baseline order paired/alternated",
+    "files": 1000,
+    "concurrency": [
+      1,
+      4,
+      8,
+      16
+    ],
+    "minimum_read_samples_per_concurrency_variant": 300,
+    "build_jobs_per_concurrency_variant": 30,
+    "source_operations": "full rebuild,immutable source during run; mutation/freshness verified separately by current source regression suite",
+    "metrics": [
+      "offered,started,finished",
+      "client queue",
+      "service plus transport",
+      "end to end",
+      "throughput",
+      "all error,timeout,Partial",
+      "source/facet/span validity",
+      "thread count and worker contention",
+      "resource availability/sample interval/process ownership"
+    ],
+    "tail": "all homogeneous samples reported with N/CI and observed p50/p95; no reliable p99 claim from 300 samples",
+    "performance_review_trigger_ratio": 1.1,
+    "performance_block_ratio": 1.2,
+    "comparison": "same environment repeated current-source release measurements; no debug/reused old latency substitution; unexplained >10% review, >20% blocks this profile"
+  },
+  "current_source_validation": "new complete dual-toolchain workspace/HTTP/focused/protocol/real stdio/watcher/release-cost plus all new identifier/ablation/probe tests, cancellation/fake/leases/resolution/mutations/source-budget hard regressions; old P5D receipts only historical baseline",
+  "preserved_limitations": [
+    "original strict inventory gate may remain not_passed and must remain named/reported",
+    "110 span overlay is reviewed development data, not holdout",
+    "100k/holdout/macOS+Linux/release/paid provider gates remain P8/P7 responsibilities",
+    "probe disabled/unavailable data remains null; cannot certify absent resource dimension",
+    "G5 is whole stated M2 local profile only, not entire P6/P7/P8/P9 or all user goal"
+  ]
+}

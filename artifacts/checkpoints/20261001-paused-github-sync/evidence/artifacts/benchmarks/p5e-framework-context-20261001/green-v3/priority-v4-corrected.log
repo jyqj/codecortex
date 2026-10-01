@@ -1,0 +1,40 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.27s
+     Running tests/p5c_budget.rs (target/p0-dev/debug/deps/p5c_budget-ef5a984c64c43b6f)
+
+running 10 tests
+test real_stdio_search_preserves_full_json_budget_and_source_proofs ... ignored, explicit CODECORTEX_BENCH_BINARY; real MCP structured response budget
+test projected_lane_receipts_keep_partial_errors_and_reject_bad_headers ... ok
+test malformed_packing_status_cannot_be_interpreted_as_complete ... ok
+test malformed_context_objects_fail_without_panicking_or_erasing_old_status ... ok
+test post_handler_metadata_and_old_omission_flags_share_final_budget ... ok
+test actual_async_response_counts_final_freshness_and_survives_repacking ... ok
+test small_source_survives_metadata_compaction_and_size_is_self_accounted ... FAILED
+test first_huge_body_becomes_reference_not_unbounded_or_fake_slice ... ok
+test oversized_graph_and_diagnostic_metadata_yield_before_primary_source ... ok
+test lower_rank_references_never_evict_a_fitting_primary_body ... FAILED
+
+failures:
+
+---- small_source_survives_metadata_compaction_and_size_is_self_accounted stdout ----
+
+thread 'small_source_survives_metadata_compaction_and_size_is_self_accounted' (2545662) panicked at crates/cc-eval/tests/p5c_budget.rs:63:5:
+assertion `left == right` failed
+  left: Null
+ right: String("pub fn needle() -> i32 { 7 }\n")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- lower_rank_references_never_evict_a_fitting_primary_body stdout ----
+
+thread 'lower_rank_references_never_evict_a_fitting_primary_body' (2545656) panicked at crates/cc-eval/tests/p5c_budget.rs:97:5:
+assertion `left == right` failed
+  left: Null
+ right: String("pub fn needle() -> i32 { 7 }\n")
+
+
+failures:
+    lower_rank_references_never_evict_a_fitting_primary_body
+    small_source_survives_metadata_compaction_and_size_is_self_accounted
+
+test result: FAILED. 7 passed; 2 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.79s
+
+error: test failed, to rerun pass `-p cc-eval --test p5c_budget`

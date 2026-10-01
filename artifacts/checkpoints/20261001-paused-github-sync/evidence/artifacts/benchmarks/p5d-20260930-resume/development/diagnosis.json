@@ -1,0 +1,17 @@
+{
+  "original_scope": "P5-016/017/018",
+  "resumed_head": "0a56a25",
+  "retained_failed_attempt": "artifacts/benchmarks/p5d-20260930-runtime/final-v3",
+  "before_repeat_runs": 30,
+  "before_failed_runs": [
+    2,
+    11
+  ],
+  "after_repeat_runs": 40,
+  "after_failed_runs": [],
+  "cause": "nonblocking idle sweep correctly skips transient watcher read-lock; first-sweep exact2 contradicted eventual reclamation contract",
+  "repair": "cumulative bounded exact2 test plus deterministic held-reader skip/release/exact1/exact0 test, unchanged production locking policy",
+  "first_build_failure": "default SDK27.0 linker unsupported arm64e.x1; retry SDK15.4",
+  "memory": "no project-specific relevant registry hits",
+  "no_prior_receipts_substituted": true
+}

@@ -14,6 +14,76 @@ MCP 的 `search` 和 `context` 使用异步编排。先在共享执行器中短�
 
 ## QueryPolicy 与配置
 
+P5-019 开发中的词法规范将 compound identifier 编译为
+`(whole_literal OR (all_distinct_components AND))`，不再把任一 camel/snake
+碎片独立 OR 成有效代码证据；普通独立词之间仍是 OR。所有用户项 literal
+quote，不能注入 FTS 运算符。总量上限 12 atom，优先保留原词，派生 AND 组
+不能截断成前缀；不足时退回 whole，并保留 `query_expansion_atom_budget`
+的 Partial 诊断。它是词法支持，不冒充 exact-symbol 或语义证明。
+QueryPolicy 与检索缓存 policy 版本一并推进；旧结果不能沿用新的解释。
+该改动的正式完整质量/成本验收以新的冻结证据为准，不沿用 P5-D 收据。
+
+GraphLane 的当前开发映射由 UID、原始 line/byte-column 与当前 source
+snapshot 定位声明文档。20 个 seed/有界双向 1-hop 邻居经分批投影、共享
+source-prefix 解码和 byte-span 入场；每个 UID 不单独执行 SQL，途中检查
+QueryControl。policy 与缓存域已随此语义推进。`graph_source_mapping`
+在压缩后的 policy 也保留：complete 只表示有界已执行图召回的声明映射，
+不表示长函数全部 statement/body 文档均返回。正文任务义务仍按实际
+byte-span/facet 覆盖审计；source unmapped、邻居/seed/candidate 截断继续
+明确 Partial，不能靠一个锚点洗成全正文完整。
+
+## 规范化精确路径域
+
+PathLane scoring spec 为 `canonical-scoped-exact-path-domain-token-fallback-v3`，
+QueryPolicy v4 和检索缓存 policy v22 共同失效旧解释。只有整个查询是没有任何
+Unicode 空白/反斜杠、至少两段且 `normalize_relative(query)==query` 的路径，
+并且同一 HardScope 下有精确 indexed-document 命中时，本次 PathLane 域才是
+该文件的真实文档。不会再执行目录名等 generic component 的 token fallback。
+这不是删除已经执行的限额，也不扩大检索预算。精确文档超过候选上限仍返回
+`candidate_limit` Partial；indexed-current 不等于磁盘已验证或整文件正文完整，
+最终 hydrate 的 byte/DocVersion/新鲜度守卫仍执行。
+
+没有精确 scoped 文档、普通 basename/identifier、含额外 prose/空白、`./`、
+双斜杠或反斜杠别名，均保持原精确尝试加有界 token fallback；其真实
+`path_token_limit`、省略和 Partial 继续公开。语言/file-path/prefix 限制在 SQL
+LIMIT 前执行，soft hints 不扩 HardScope。当前 API 没有 doc-kind 过滤参数；
+Markdown 等非代码文档应保留实际原件/类型元数据，不借此增加虚构 public 参数。
+压缩 policy 保留 `path_source_domain`，不把定位声明或文件等同任务所有 facets。
+
+## 解释性 metadata 的紧凑域标签
+
+完整 policy 的原长定义保留。packing v5 只在严格等于已知长定义时，将下列
+解释文改为语义等价、版本化的紧凑标签；未知 caller label 不改写。此投影先于
+删除实际正文，全部预算、计数、耗时、generation、source proof、score trace、
+原 Partial/省略状态保持原值；不得提高 cap。旧 packing v2/v3/v4 仅兼容读取，
+不升级它们的完整性结论。
+
+| 完整字段定义 | 紧凑标签 | 不改变的证明域 |
+| --- | --- | --- |
+| `canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage` | `canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3` | 同 HardScope 的 canonical existing indexed Doc；否则原有界 token fallback。不是磁盘已验证或整文件正文完整。 |
+| `uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage` | `uid_byte_decl_docs;not_whole_body:v2` | 当前 snapshot/DocVersion 内按 UID+byte 证明声明文档。不是整个 symbol 正文覆盖。 |
+
+语义/预算规格变化同时使缓存 policy v22 失效；presentation 数字位宽与
+incarnation/nonce 的回归属于明确的合成 metadata 压力，不冒实际测量。
+
+## 声明、任务 facet 与输出预算
+
+P5-019 开发版的 selector v2 可从已验证的 `2 * top_k` 候选窗口识别
+字面 program cue（保留大小写的 ASCII token/qualified component，支持中文
+文句内的 ASCII 标识符）。窗口中仅一个文件有该字面证据不等于全仓唯一。
+非首词或 compound cue 优先于句首标题化的 fallback；不是框架词典、
+语义推断或 exact-symbol 身份。支持项必须带有效 source proof、包含非空
+signature 的 owner，且当前返回声明有 query 的 code-token 支持。
+
+selector 先清除外部 `coverage_priority`/`evidence_priority`，再标记最多
+两个 source-support 正文和可信 intent-facet 代表。分数与原有顺序不改，
+hard scope 不扩大。packing v4 保 rank one，然后保实际 intent-facet、
+source-support，最后 incidental/comment/reference；空间仍不足则明确
+Partial/omission。低预算下先把 scope 的解释性长文压成版本化短标签，
+所有 scope/budget 数值、ordering、source proof、score trace 与状态保留。
+旧 packing v2/v3 仅由评测 decoder 按各自状态读取用于 immutable baseline
+对照，不升级旧 Partial；新 source-v2 必须完整重新验收。
+
 `.codecortex.json` 可增加顶层 `query`：
 
 ```json

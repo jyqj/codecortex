@@ -1,0 +1,9 @@
+   Compiling cc-eval v1.0.0 (/Users/jin/Desktop/codecortex-rust/crates/cc-eval)
+error[E0599]: no method named `db_path` found for struct `Arc<cc_db::index_db::IndexDb>` in the current scope
+   --> crates/cc-eval/tests/p5e_path_domain.rs:363:52
+    |
+363 |     let connection = rusqlite::Connection::open(db.db_path()).unwrap();
+    |                                                    ^^^^^^^ private field, not a method
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `cc-eval` (test "p5e_path_domain") due to 1 previous error

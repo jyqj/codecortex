@@ -794,3 +794,217 @@ pub fn run_chunk_policy_ablation(plan_path: &Path) -> Result<Value> {
 #[cfg(test)]
 #[path = "ablation_tests.rs"]
 mod tests;
+
+/// Public-dispatch mixed-load mechanism study. Sources are materialized into a
+/// private directory; this runner never edits a caller's checkout or live index.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MixedQuery {
+    pub id: String,
+    pub query: String,
+    pub required_facets: Vec<ChunkFacet>,
+}
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct MixedPlan {
+    pub schema_version: u32,
+    pub files: BTreeMap<String, String>,
+    pub queries: Vec<MixedQuery>,
+    pub concurrency: usize,
+    pub repetitions: usize,
+    pub offered_interval_us: u64,
+    /// Insert a full rebuild after this many offered reads. It competes with
+    /// reads through the same MCP server/session, not a separate index instance.
+    pub build_every: usize,
+    pub top_k: usize,
+    pub seed: u64,
+}
+
+fn validate_mixed(plan: &MixedPlan) -> Result<()> {
+    if plan.schema_version != 1
+        || ![1, 4, 8, 16].contains(&plan.concurrency)
+        || !(1..=1000).contains(&plan.repetitions)
+        || !(1..=32).contains(&plan.top_k)
+        || plan.queries.is_empty()
+        || plan.queries.len() > 256
+        || plan.files.is_empty()
+        || plan.files.len() > 1024
+        || plan.offered_interval_us > 1_000_000
+        || plan.build_every == 0
+        || plan.repetitions.saturating_mul(plan.queries.len()) > 4096
+    {
+        return Err(invalid("mixed load plan bounds"));
+    }
+    let mut bytes = 0usize;
+    for (path, source) in &plan.files {
+        super::validation::relative_path(path)?;
+        if !cc_model::repo_path::is_canonical_file(path) || path.starts_with('.') {
+            return Err(invalid("mixed source path"));
+        }
+        bytes = bytes.saturating_add(source.len());
+    }
+    if bytes > 16 * 1024 * 1024 {
+        return Err(invalid("mixed source budget"));
+    }
+    let mut ids = BTreeSet::new();
+    for q in &plan.queries {
+        if !slug(&q.id)
+            || !ids.insert(&q.id)
+            || q.query.trim().is_empty()
+            || q.required_facets.is_empty()
+            || q.required_facets.len() > 32
+        {
+            return Err(invalid("mixed query/facet bounds"));
+        }
+        for f in &q.required_facets {
+            if f.marker.is_empty()
+                || !plan
+                    .files
+                    .get(&f.path)
+                    .is_some_and(|s| s.contains(&f.marker))
+            {
+                return Err(invalid("mixed facet not in locked source"));
+            }
+        }
+    }
+    Ok(())
+}
+
+/// Retain failures and partial responses. Coverage cannot be traded for latency:
+/// every declared facet must occur in independently validated returned source.
+pub fn run_mixed_load(plan: &MixedPlan, out: &Path) -> Result<Value> {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Mutex,
+    };
+    use std::time::Instant;
+    validate_mixed(plan)?;
+    if out.exists() {
+        return Err(invalid("mixed output already exists"));
+    }
+    std::fs::create_dir_all(out)?;
+    report::json(&out.join("plan.json"), plan)?;
+    let dir = tempfile::tempdir()?;
+    for (p, s) in &plan.files {
+        let file = dir.path().join(p);
+        std::fs::create_dir_all(file.parent().expect("source parent"))?;
+        std::fs::write(file, s)?;
+    }
+    let backend = crate::runner::CodeIndexBackend::new(dir.path())
+        .map_err(|e| BenchError::Tool(e.to_string()))?;
+    let mut jobs = Vec::new();
+    for rep in 0..plan.repetitions {
+        for qi in statistics::order(plan.queries.len(), plan.seed.wrapping_add(rep as u64)) {
+            jobs.push(Some(qi));
+            if jobs.iter().filter(|j| j.is_some()).count() % plan.build_every == 0 {
+                jobs.push(None);
+            }
+        }
+    }
+    let next = AtomicUsize::new(0);
+    let rows = Mutex::new(Vec::new());
+    // Optional introspection is setup work, not offered-load queue time.
+    let probe_started = Instant::now();
+    let threads_before = process_threads();
+    let preload_probe_us = probe_started.elapsed().as_micros() as u64;
+    let start = Instant::now();
+    std::thread::scope(|scope| {
+        for worker in 0..plan.concurrency {
+            let backend = &backend;
+            let jobs = &jobs;
+            let next = &next;
+            let rows = &rows;
+            let root = dir.path();
+            scope.spawn(move || loop {
+                let j = next.fetch_add(1, Ordering::Relaxed);
+                let Some(query) = jobs.get(j) else { break; };
+                let offered_us = (j as u64).saturating_mul(plan.offered_interval_us);
+                let offered = Duration::from_micros(offered_us);
+                if let Some(delay) = offered.checked_sub(start.elapsed()) { std::thread::sleep(delay); }
+                let started_us = start.elapsed().as_micros() as u64;
+                let response = match query {
+                    Some(qi) => backend.call_tool("search", &json!({"query":plan.queries[*qi].query,"top_k":plan.top_k,"mode":"hybrid"})),
+                    None => backend.build_index_report(true),
+                };
+                let finished_us = start.elapsed().as_micros() as u64;
+                let mut evidence_valid = None;
+                let mut facet_coverage = None;
+                let mut result_status = "build".to_string();
+                let mut verification_error = None;
+                if let (Some(qi), Ok(payload)) = (query, &response) {
+                    match super::normalizer::mcp(payload) {
+                        Ok((mut hits, status)) => {
+                            result_status = format!("{status:?}");
+                            let mut valid = true;
+                            for hit in &mut hits {
+                                if let Err(e) = super::normalizer::verify_source(hit, root) {
+                                    valid = false; verification_error = Some(e.to_string());
+                                }
+                                valid &= hit.evidence_valid == Some(true);
+                            }
+                            evidence_valid = Some(valid);
+                            let facets = &plan.queries[*qi].required_facets;
+                            let covered = facets.iter().filter(|f| hits.iter().any(|h|
+                                h.evidence_valid == Some(true) && h.path == f.path
+                                && h.text.as_deref().is_some_and(|t| t.contains(&f.marker))
+                            )).count();
+                            facet_coverage = Some(covered as f64 / facets.len() as f64);
+                        }
+                        Err(e) => { result_status = "invalid_measurement".into(); verification_error = Some(e.to_string()); }
+                    }
+                }
+                let row = json!({"sequence":j,"worker":worker,"kind":if query.is_some(){"read"}else{"full_build"},
+                    "query_id":query.map(|qi| &plan.queries[qi].id),"offered_us":offered_us,"started_us":started_us,
+                    "finished_us":finished_us,"client_queue_us":started_us.saturating_sub(offered_us),
+                    "service_and_transport_us":finished_us-started_us,"end_to_end_us":finished_us.saturating_sub(offered_us),
+                    "status":if response.is_err(){"error"}else{&result_status},"error":response.as_ref().err().map(ToString::to_string),
+                    "verification_error":verification_error,"evidence_valid":evidence_valid,"facet_coverage":facet_coverage,
+                    "originating_work":response.as_ref().ok().and_then(super::sampler::retrieval_work),"raw":response.ok()});
+                rows.lock().expect("mixed rows").push(row);
+            });
+        }
+    });
+    let elapsed_us = start.elapsed().as_micros() as u64;
+    let threads_after = process_threads();
+    let mut rows = rows
+        .into_inner()
+        .map_err(|_| invalid("mixed result mutex"))?;
+    rows.sort_by_key(|r| r["sequence"].as_u64());
+    report::json(&out.join("observations.json"), &rows)?;
+    let mut reads = Vec::new();
+    let mut builds = Vec::new();
+    let mut failures = 0;
+    let mut partial = 0;
+    for row in &rows {
+        if row["error"].is_string() || row["verification_error"].is_string() {
+            failures += 1;
+        }
+        if row["kind"] == "read" {
+            reads.push(row["end_to_end_us"].as_u64().expect("read time"));
+            if row["status"] == "Partial" {
+                partial += 1;
+            }
+            if row["facet_coverage"].as_f64() != Some(1.0) || row["evidence_valid"] != true {
+                failures += 1;
+            }
+        } else {
+            builds.push(row["end_to_end_us"].as_u64().expect("build time"));
+        }
+    }
+    let summary = json!({"schema_version":1,"status":if failures==0 && partial==0{"passed_mechanism_scope"}else{"failed"},
+        "exit_code":if failures==0 && partial==0{0}else{1},"concurrency":plan.concurrency,"offered_jobs":jobs.len(),
+        "completed_jobs":rows.len(),"elapsed_us":elapsed_us,"failures":failures,"partial_reads":partial,
+        "read_latency":statistics::distribution(&reads),"build_latency":statistics::distribution(&builds),
+        "process_threads_before":threads_before,"process_threads_after":threads_after,
+        "preload_probe_elapsed_us":preload_probe_us,"measurement_clock_starts_after_preload_probe":true,
+        "thread_scope":"whole in-process runner/server; unavailable is null; not separate stdio server attribution",
+        "limitations":["in-process real rmcp shared session, not stdio release measurement","immutable-source full rebuild contention, not mutation freshness certification",
+            "client_queue excludes server-internal queue; service includes dispatch/transport","no best-of; errors and Partial retained; required facets never waived",
+            "mechanism corpus only; not holdout, 100k, RSS, p99 or provider certification"]});
+    report::json(&out.join("summary.json"), &summary)?;
+    Ok(summary)
+}
+
+fn process_threads() -> Option<u64> {
+    super::sampler::thread_count(std::process::id())
+}

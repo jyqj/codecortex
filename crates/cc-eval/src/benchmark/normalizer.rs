@@ -174,9 +174,18 @@ pub fn mcp(payload: &Value) -> Result<(Vec<Hit>, ResultStatus)> {
     let packing_partial = match payload.pointer("/evidence_summary/packing") {
         None => false,
         Some(packing) => {
-            if packing.get("spec").and_then(Value::as_str)
-                != Some(cc_model::context::CONTEXT_PACKING_SPEC)
-            {
+            // Both versioned complete-JSON budget contracts remain readable
+            // for immutable baseline comparison. Preserve their own omission
+            // truth; accepting a documented legacy spec never upgrades status.
+            if !matches!(
+                packing.get("spec").and_then(Value::as_str),
+                Some(
+                    cc_model::context::CONTEXT_PACKING_SPEC
+                        | "whole-json-priority-evidence-before-references-v2"
+                        | "whole-json-required-source-support-before-incidental-v3"
+                        | "whole-json-intent-facets-source-support-before-incidental-v4"
+                )
+            ) {
                 return Err(BenchError::Protocol("invalid context packing spec".into()));
             }
             packing

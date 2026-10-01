@@ -8,6 +8,15 @@ use super::{LaneContext, LaneRun, RetrievalLane, LANE_PATH};
 
 pub(crate) struct PathLane;
 
+// A whole canonical multi-component path is a different retrieval domain
+// from prose/component hints. Spaces/aliases keep the old fallback behavior.
+fn canonical_path_domain(query: &str) -> bool {
+    !query.chars().any(char::is_whitespace)
+        && !query.contains('\\')
+        && query.split('/').count() >= 2
+        && cc_model::repo_path::normalize_relative(query).is_ok_and(|path| path == query)
+}
+
 impl RetrievalLane for PathLane {
     fn lane_id(&self) -> &'static str {
         LANE_PATH
@@ -40,6 +49,32 @@ impl RetrievalLane for PathLane {
             limit.saturating_add(1),
         )?;
         let exact_ids: HashSet<String> = exact.iter().map(|(id, _)| id.clone()).collect();
+
+        // This is scoped indexed-document identity, not disk freshness or
+        // whole-file body completeness. Hydration still verifies current
+        // source/version. No generic token scan is executed in this domain.
+        if !exact.is_empty() && canonical_path_domain(context.plan.primary_query_text()) {
+            let lower_bound = exact.len();
+            let truncated = lower_bound > limit;
+            exact.truncate(limit);
+            return Ok(LaneRun {
+                status: if truncated {
+                    LaneStatus::Partial
+                } else {
+                    LaneStatus::Complete
+                },
+                coverage: if truncated {
+                    LaneCoverage::partial(None, lower_bound)
+                } else {
+                    LaneCoverage::complete(None, exact.len())
+                },
+                truncation_reason: truncated.then(|| "candidate_limit".into()),
+                hits: exact,
+                exact_ids,
+                grep: None,
+                lexical_work: Default::default(),
+            });
+        }
 
         // Multi-token prose often contains incidental one/two-character
         // words (a, is, ...). Those are not useful substring path evidence.
@@ -111,5 +146,32 @@ impl RetrievalLane for PathLane {
             grep: None,
             lexical_work: Default::default(),
         })
+    }
+}
+
+#[cfg(test)]
+mod domain_tests {
+    use super::canonical_path_domain;
+    #[test]
+    fn shortcut_requires_whole_canonical_multicomponent_path() {
+        for q in ["src/a.rs", "文档/Guide.md", "src/deep/x.py"] {
+            assert!(canonical_path_domain(q), "{q}");
+        }
+        for q in [
+            "a.rs",
+            "needle",
+            "./src/a.rs",
+            "src//a.rs",
+            "../src/a.rs",
+            "/src/a.rs",
+            "src\\a.rs",
+            "fix src/a.rs",
+            "src/foo bar.rs",
+            "src/\u{2003}x.rs",
+            "src/",
+            "",
+        ] {
+            assert!(!canonical_path_domain(q), "{q}");
+        }
     }
 }

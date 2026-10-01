@@ -682,8 +682,12 @@ impl crate::query_handle::QueryHandle {
         )?;
         let hits = verifier.hydrate(&search_outcome.0)?;
 
-        let (hits, selection) =
-            cc_search::selection::coverage::select(&hits, detected_intent, top_k)?;
+        let (hits, selection) = cc_search::selection::coverage::select_with_query(
+            &hits,
+            detected_intent,
+            top_k,
+            query,
+        )?;
 
         let mut nodes = Vec::with_capacity(hits.len());
         let mut spans = Vec::with_capacity(hits.len());

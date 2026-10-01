@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`776b21dae16b8ab501b0ce185a52b1da46db9128478f7023c0b7f200d099b67f`。
+> 任务总数：192；源文件 SHA-256：`25a9c99939dabb25b7c9424f0b6ce3193dc626af03de3cbca70496410b5fb569`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -12,7 +12,7 @@
 | P2 | 公共表面与增量正确性 | 20 / 20 |
 | P3 | 项目模型与模块解析 | 20 / 20 |
 | P4 | 源码切块与文档版本 | 20 / 20 |
-| P5 | 查询执行与证据装配 | 15 / 20 |
+| P5 | 查询执行与证据装配 | 18 / 20 |
 | P6 | 语义持久化与发布底座 | 0 / 20 |
 | P7 | provider与dense端到端 | 0 / 20 |
 | P8 | 规模、质量与发行认证 | 0 / 20 |
@@ -1525,9 +1525,9 @@
 证据：[{"target_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da", "status": "development_only_not_accepted", "artifacts": ["docs/roadmap/code-index-v2/P5-C-PROGRESS.md", "artifacts/benchmarks/p5c-20260929-evidence-assembly/development/focused-v2.log"], "limitations": "最新代码未冻结验收；预算红测保留；P5-015被拦截未落地。"}, {"target_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da", "status": "not_accepted", "artifacts": ["docs/roadmap/code-index-v2/P5-C-PROGRESS.md", "artifacts/benchmarks/p5c-20260929-evidence-assembly/tool-blockers.json", "artifacts/benchmarks/p5c-20260929-evidence-assembly/development/pair-v2/summary.json", "artifacts/benchmarks/p5c-20260929-evidence-assembly/development/pair-v3-rollback/summary.json"], "limitations": "本项未完成；通过的011-013子集不能替代本项验收。"}, {"target_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da", "status": "development_passed_pending_frozen_acceptance", "artifacts": ["artifacts/benchmarks/p5c-20260929-completion/development/legacy-94-v5.log", "artifacts/benchmarks/p5c-20260929-completion/development/assembly-v6.log", "artifacts/benchmarks/p5c-20260929-completion/development/pair-v1/summary.json", "docs/internals/EVIDENCE_ASSEMBLY.md"], "limitations": "本条不是完成Gate；完整性/无答案/尾延迟/跨平台/真实provider仍未认证。"}, {"target_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da", "worktree_digest": "471919b1d73828db2938d314e3319dd34827a7c1828388925c45b1db7372f473", "status": "passed_declared_local_implementation_scope", "run_id": "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930", "artifacts": ["artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/validation.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/paired/summary.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/closure-audit.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/cost-summary.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/evidence-classification.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/source-review.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/wire-budget-audit.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/source-manifest.json", "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/source.tar.gz", "docs/roadmap/code-index-v2/P5-C-GATE.json", "docs/roadmap/code-index-v2/P5-C-COMPLETION.md", "docs/internals/EVIDENCE_ASSEMBLY.md"], "commands_receipt": "artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/validation.json", "limitations": ["Local P5-C implementation/contract/ranking/source/bounded-output scope; not G5/M2 or release certification.", "Full retrieval gates still fail: prior Partial/S11 and explicitly counted new budget omissions. No completeness-green claim.", "Budget covers the compact code_index_context result object, not JSON-RPC framing or other legacy tool shapes.", "References and outlines have no source body and are never scored as source hits. File retrieval reasons are diagnostics, not exact identity.", "Optimistic generation and per-file disk checks are not an atomic filesystem snapshot. Three outer attempts, bounded inner retries, same original deadline.", "No provider/vector publication, persistent semantic epoch, holdout, 100k, peak RSS, tail-latency or cross-platform certification.", "No commit, push, PR, merge or daily-index mutation. Inherited changes and prior failed evidence are retained."]}]
 实施备注：实际组合根接入EvidenceHydrator，批量核对完整manifest、scope、原字节/跨度/显示坐标和持久化代际，暖缓存损坏与取消负例通过。复用symbol_extract已有名称提取，不伪造该规划路径的源码改动。
 
-### [ ] P5-016｜诊断与能力状态收口
+### [x] P5-016｜诊断与能力状态收口
 
-状态：`in_progress`；批次：`P5-D`；优先级：`normal`。
+状态：`done`；批次：`P5-D`；优先级：`normal`。
 范围：`crates/cc-server/src/capability_status.rs`；`crates/cc-model/src/context.rs`
 硬依赖：P4-020, P5-015
 步骤：复用GraphExplain/BuildExplain；增加lane/freshness/coverage状态
@@ -1535,12 +1535,12 @@
 验收：不会出现status ready但所有dense因未配置跳过的假象；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
-证据：尚无
-实施备注：实现已进入冻结复验，但仍未验收完成：final-v3的Rust 1.95 workspace退出101，project_session::tests::close_idle_instances_closes_cached_non_active_projects预期关闭2实例、实际1；audit.json未生成。保持in_progress，不以stable通过替代最低工具链验收。轻量原始收据见artifacts/checkpoints/20260930-git-sync/p5d-final-v3/；P5-019/020保持todo，原完整性失败保留。
+证据：[{"target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527", "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0", "status": "passed_declared_local_016_018_scope", "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3", "artifacts": ["artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz", "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json", "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md", "docs/internals/QUERY_LIFECYCLE.md"], "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "limitations": ["P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.", "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.", "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.", "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.", "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."]}]
+实施备注：能力状态区分无项目/关闭/空库/可用/错误，dense明确disabled；复用既有诊断来源，不把fake端口或局部ready冒充完整覆盖。
 
-### [ ] P5-017｜项目驱逐与查询资源生命周期
+### [x] P5-017｜项目驱逐与查询资源生命周期
 
-状态：`in_progress`；批次：`P5-D`；优先级：`normal`。
+状态：`done`；批次：`P5-D`；优先级：`normal`。
 范围：`crates/cc-server/src/project_session.rs`；`crates/cc-server/src/query_handle.rs`
 硬依赖：P5-016
 步骤：pin活跃查询；idle close有界且不持网络锁
@@ -1548,12 +1548,12 @@
 验收：LRU驱逐不中断合法inflight，释放后资源可回收；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V20
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
-证据：尚无
-实施备注：实现已进入冻结复验，但仍未验收完成：final-v3的Rust 1.95 workspace退出101，project_session::tests::close_idle_instances_closes_cached_non_active_projects预期关闭2实例、实际1；audit.json未生成。保持in_progress，不以stable通过替代最低工具链验收。轻量原始收据见artifacts/checkpoints/20260930-git-sync/p5d-final-v3/；P5-019/020保持todo，原完整性失败保留。
+证据：[{"target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527", "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0", "status": "passed_declared_local_016_018_scope", "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3", "artifacts": ["artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz", "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json", "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md", "docs/internals/QUERY_LIFECYCLE.md"], "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "limitations": ["P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.", "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.", "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.", "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.", "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."]}]
+实施备注：查询视图租约、LRU弱登记、热路由快路径、worker-owned冷初始化与取消、非阻塞空闲清理、会话后台任务生命周期均接入；原生通知与同步工作仍不可强制抢占。
 
-### [ ] P5-018｜MCP旧新契约和文档一体迁移
+### [x] P5-018｜MCP旧新契约和文档一体迁移
 
-状态：`in_progress`；批次：`P5-D`；优先级：`normal`。
+状态：`done`；批次：`P5-D`；优先级：`normal`。
 范围：`crates/cc-server/src/tools.rs`；`docs/MCP_TOOLS.md`；`docs/CONFIGURATION.md`
 硬依赖：P5-017
 步骤：新策略走schema到handler全链；保留旧mode与错误形态
@@ -1561,12 +1561,12 @@
 验收：14工具旧调用回归过，未实现字段不先对外广告；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18；V21
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
-证据：尚无
-实施备注：实现已进入冻结复验，但仍未验收完成：final-v3的Rust 1.95 workspace退出101，project_session::tests::close_idle_instances_closes_cached_non_active_projects预期关闭2实例、实际1；audit.json未生成。保持in_progress，不以stable通过替代最低工具链验收。轻量原始收据见artifacts/checkpoints/20260930-git-sync/p5d-final-v3/；P5-019/020保持todo，原完整性失败保留。
+证据：[{"target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527", "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0", "status": "passed_declared_local_016_018_scope", "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3", "artifacts": ["artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz", "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json", "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md", "docs/internals/QUERY_LIFECYCLE.md"], "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "limitations": ["P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.", "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.", "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.", "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.", "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."]}]
+实施备注：search/context的可选retrieval_strategy贯穿schema/sanitize/dispatch/handler/status/docs/真实stdio，显式context策略不被快捷路径绕过；保留14工具旧字段与mode语义。
 
 ### [ ] P5-019｜查询质量/成本/并发消融
 
-状态：`todo`；批次：`P5-D`；优先级：`normal`。
+状态：`in_progress`；批次：`P5-D`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/ablation.rs`；`artifacts/benchmarks/`
 硬依赖：P5-018
 步骤：独立比较path/exact/selector；混合构建下测延迟与线程
@@ -1575,7 +1575,7 @@
 验证：V19；V20
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
 证据：尚无
-实施备注：P5-A交接：完整性门禁未通过，source42/intents12请求为Partial，原因见P5-A-GATE与completeness-review.json；须明确lane需求/子预算及图源码映射覆盖，保留S11，不以压掉状态或查询ID特判修绿。
+实施备注：通用compound FTS、UID/byte Graph批映射、可信intent/source-support预算已实现并有真实入口红绿。source-v2(51029e/628files)新core21命令双链1815/286/98/1/25/17及releasecost4独立通过，仅工程非G5。2026-10-01正式29stage已全部采证/replay/资源原件校验；本轮未验收：混合各C的100/300 path请求因generic src token库存截断strict Partial；8cell共享target+copytree旧mtime造成110/111实际exact关闭，与计划on矛盾，48edges和cell111候选质量证据失效（旧raw/错误收据均保留）。下一source-v3通用canonical existing exact-path domain修复、新完整core/profile/矩阵；每cell独立target fresh构建及actual3factor行为见证。不得低capcategory anchor冒称全语义正文，也不删Partial或改gold换绿。 新source-v3已冻629文件/canonical02af5df5c307386c0a197394c25d9a2e46901b7df47479f43f894feb765a3908；PathDomain真实MCP千file/SQLtripwire/core scope+53原件核验绿，全新21命令core-v3运行中，尚无新正式矩阵/G5。 source-v3 core真实1821/1失败：新增policy说明越16k预算挤掉731正文；已独立因果证明净文字99bytes并通用仅known-equality双domain版本化压缩，保真数字/proof/score/status/cap/未知label，新增明确合成numeric/nonce宽度压力绿。最新source-v4 canonical3cd542941467c4d4855266dbd5658bf6a2928cd4ba16bb81f87246008225a461/629files，新21命令core-v4运行；所有旧失败保持，尚无新正式矩阵/G5。 新source-v4(3cd542/629files)core-v4因observer stdout BrokenPipe在14/21终止（已完成14均绿含两workspace1823/0/60），不当Rust失败也不拼绿；仅外围可靠ownedprogress/stdouterr修复，新same-source core-v5全21重跑中，旧failed收据/独立audit保留。 最新same-source core-v5可靠ownedprogress完整21命令实际tool退出0并独立审计通过，两链workspace1823/0/60、HTTP293/0/53、focused105/0/4及stdio/lease/cost/旧契约/输入锁均新验；仅工程非G5，新同源release/metrics/harness-v6和每cellfresh+实际controlwitness正式矩阵待新审批运行。 用户暂停时：最新formal-v3 stage1全部9真实control/Full111等价绿，stage2原51baseline153 strict红，stage3 nativeablate因opaque build_options比较不同CARGO_TARGET_DIR输出路径foundation2（尚0/1224新cell请求），ownedwait2/PID48577保真。仅外部versioned semanticABI投影B设计批准+实际8Cargo fingerprint同源证明；实施/负例/完整锁/新批准/全测量仍not_run。所有生产/测试/证据已静止，Git上传当前全部工程进度及必要轻原件，不推断G5/done。
 
 ### [ ] P5-020｜P5本地增强版验收
 
@@ -1588,7 +1588,7 @@
 验证：V11；V12；V18；V19；V20
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
 证据：尚无
-实施备注：P5-A交接：完整性门禁未通过，source42/intents12请求为Partial，原因见P5-A-GATE与completeness-review.json；须明确lane需求/子预算及图源码映射覆盖，保留S11，不以压掉状态或查询ID特判修绿。
+实施备注：P5-016～018独立验收仅完成本地运行时子集。G5/M2仍待P5-019全部质量/成本/并发证据及当前源全回归。旧strict库存Partial和自然语言miss保持原样，独立任务facet/span与graph事实另行报告；不以旧P5-D绿灯或source-v1失败候选收口。
 
 ## P6｜语义持久化与发布底座
 

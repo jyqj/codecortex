@@ -24,7 +24,8 @@ use crate::enrich::GraphEnrichment;
 
 /// In-process cache domain. Bump when ranking/scope/diagnostic semantics change.
 /// Not a stable cross-build hash or a persisted document identity.
-pub(crate) const RETRIEVAL_POLICY: &str = "final-hydration-priority-context-budget-v16";
+pub(crate) const RETRIEVAL_POLICY: &str =
+    "canonical-scoped-exact-path-domain-compact-context-budget-v22";
 
 /// Default LRU capacity for search results.
 /// Override with `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`.

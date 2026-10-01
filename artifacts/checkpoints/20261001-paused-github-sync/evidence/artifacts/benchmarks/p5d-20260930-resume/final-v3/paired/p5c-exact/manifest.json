@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "suite": {
+    "schema_version": 1,
+    "name": "P1-B authored exact and component-scope contracts",
+    "source": {
+      "root": "../../fixtures/index-v2/p1b-exact",
+      "commit": null,
+      "digest": "3dd732ebb7979bf2d7e52b8cc89950fe4de7bf1c4d79747f4968d41351861006",
+      "files": [
+        "pkg/api/target.py",
+        "pkg/apix/decoy.py",
+        "src/codec.py",
+        "src/noise.py"
+      ]
+    },
+    "queries": "../native/p1b-exact.jsonl",
+    "queries_digest": "568f04e788fdcb2e91632edce03c0149d9c7003738d54a3a9c7e9702c4de2bd1",
+    "scoring": "codecortex-native-v1",
+    "repetitions": 3,
+    "warmup": 0,
+    "seed": 27,
+    "timeout_ms": 30000,
+    "top_k": 10,
+    "engine_config": {
+      "auto_index": {
+        "enabled": false
+      }
+    }
+  },
+  "input": {
+    "files": [
+      {
+        "path": "pkg/api/target.py",
+        "bytes": 42,
+        "digest": "3a4371fa1176cbd1e921d152ae5e1747514fd92d8463b3a683e3934599d16c18"
+      },
+      {
+        "path": "pkg/apix/decoy.py",
+        "bytes": 81,
+        "digest": "5eb87b141a83ac745519a0844323a402d581958ddb9ae9892f97e0eb785414df"
+      },
+      {
+        "path": "src/codec.py",
+        "bytes": 68,
+        "digest": "6cf4dd4cc5e6f026572a2fdcfc06842daaafe3d1bd8568cdcfe06279e12a6fab"
+      },
+      {
+        "path": "src/noise.py",
+        "bytes": 72,
+        "digest": "d515e7f700049e6f1e46357c142413745660ea1f7f5ed01967447baa11e8ae65"
+      }
+    ],
+    "source_digest": "3dd732ebb7979bf2d7e52b8cc89950fe4de7bf1c4d79747f4968d41351861006",
+    "query_digest": "568f04e788fdcb2e91632edce03c0149d9c7003738d54a3a9c7e9702c4de2bd1",
+    "config_digest": "f95316735cccc5b24ef7b5ef755f1a4b44797934949d77402ed07ea0d3c06c2d",
+    "commit": null,
+    "submodules": ""
+  },
+  "adapter": "mcp-stdio",
+  "adapter_version": "cc-eval-public-v7",
+  "engine": {
+    "arch": "aarch64",
+    "binary_digest": "b87aee4d705a83efd92f99171345e5f58da999f75e9df8ebf5c1a62f4d90017b",
+    "binary_source_binding": "recorded build receipt required; path/HEAD alone do not prove binding",
+    "cargo_lock_digest": "afc46052969389f9b27436976a9290e02bbe1a7fb26df42fb2a1c0283ea69704",
+    "cpu_parallelism": 16,
+    "dirty_observed": "M crates/cc-eval/src/benchmark/ablation.rs\n M crates/cc-eval/src/benchmark/sampler.rs\n M crates/cc-server/src/project_session.rs\n M docs/internals/CONCURRENCY.md\n?? artifacts/checkpoints/todolist-completion-audit/ROUND-01-AUDIT.md\n?? artifacts/checkpoints/todolist-completion-audit/audit_p5d.py\n?? artifacts/checkpoints/todolist-completion-audit/p5-completeness-history.json\n?? artifacts/checkpoints/todolist-completion-audit/round-01.json\n?? artifacts/checkpoints/todolist-completion-audit/snapshot.py\n?? artifacts/checkpoints/todolist-dataset-preparation/P8-PREPARATION.md\n?? crates/cc-eval/tests/p5e_ablation.rs",
+    "engine_head_observed": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+    "eval_debug_assertions": true,
+    "eval_version": "1.0.0",
+    "hardware": "68719476736\nApple M3 Max",
+    "os": "macos",
+    "rustc": "rustc 1.97.0 (2d8144b78 2026-07-07)",
+    "rustflags": null,
+    "sdkroot": "/Library/Developer/CommandLineTools/SDKs/MacOSX15.4.sdk",
+    "source_files_digest": "892edbdadd02c09e3277715fb5950f0aea36252386f81dd6ab126f68019418d2",
+    "tracked_diff_digest": "c1a64c0cde65ecd1101573e31b7a63666ca9726e24e4bcffe880aff7b3f2c078"
+  },
+  "query_snapshot_digest": "60315b3077b44673c72787635125b9574bad2f2f008ffa2fc8601eea3aca6bdd",
+  "normalized_digest": "406ec843176c3c79652c579561188f6bf271ff131c4e988c2d31fd310735df7e",
+  "measurement_profile": "smoke",
+  "source_verification": "public result source ranges checked against isolated admitted input; missing source fields marked unverified",
+  "infrastructure_failure": null
+}

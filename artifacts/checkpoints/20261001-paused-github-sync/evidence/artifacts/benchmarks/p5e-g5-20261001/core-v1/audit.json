@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "reviewer": "acceptance_auditor",
+  "observed_at_utc": "2026-09-30T18:40:49.247032+00:00",
+  "status": "failed_current_engineering_core_not_accepted",
+  "head": "0a56a257f9a92c54d06ea5be0ce1d1763917a527",
+  "source_digest_sha256": "429e005528d0d91ec77179bd11ae6d00efa1e2908e1727247b6486383ef84098",
+  "source_files": 626,
+  "accepted_tasks": [],
+  "failed_command": "stable-workspace",
+  "failed_exit_code": 101,
+  "actual_test_counts": {
+    "passed": 1810,
+    "failed": 2,
+    "ignored": 60
+  },
+  "failed_targets": [
+    "cc_eval::tests::integration_fixtures_and_corpus context_flask_routes",
+    "p4c_documents::context_keeps_flask_handler_after_freshness_metadata"
+  ],
+  "completed_commands_verified": 6,
+  "validation_sha256": "963d29d36555eab758bba8c1ea4adeee356aa8db226f8fa0b86e020486b30b95",
+  "independent_diagnosis": {
+    "baseline_raw": "artifacts/benchmarks/p5d-20260930-resume/final-v3/observations/stable-workspace/flask-context.json",
+    "baseline_raw_sha256": "ba65eb6e55e20d4fd07ab97c9b0ab998fcc88f45f150f1f9c4a0f2a3161c2519",
+    "failed_raw": "artifacts/benchmarks/p5e-g5-20261001/core-v1/observations/stable-workspace/flask-context.json",
+    "failed_raw_sha256": "4f68b514c5eecdad26c34a930a9edbdef4b15c7bdcdce5c7df79d768084031ab",
+    "retained_six_body_ids_scores_text_equal": true,
+    "baseline_handler_name_location": "machine_pack.references[0].retrieval_reasons[1]=symbol:api_get_user; no retained Flask body",
+    "candidate_handler_name_location": "absent; references empty",
+    "baseline_packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 4,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-priority-evidence-before-references-v2",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15971
+    },
+    "candidate_packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 4,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-priority-evidence-before-references-v2",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15899
+    },
+    "conclusion": "Budget residual reference contract regression after expanded policy metadata; pre-existing absence of real Flask handler body also exposed. No assertion relaxation or marker injection is completion."
+  },
+  "next_required_proof": [
+    "Generic distinctive entity/task evidence selection plus complete budget/source proof, no fixture-specific boosting.",
+    "Original 94 and p4c assertions pass unchanged, add true server.py handler route/body source-valid obligation.",
+    "Preserve old failed run; new source/archive/binary/profile hashes and complete dual-toolchain core/matrix must rerun."
+  ],
+  "limits": [
+    "Source review freeze readiness did not imply behavior acceptance; current core contradicts completion.",
+    "New profile-v1 source/binary cannot be granted formal G5 acceptance on this failed core.",
+    "Old strict inventory gate and all real miss/omission truth remain."
+  ]
+}

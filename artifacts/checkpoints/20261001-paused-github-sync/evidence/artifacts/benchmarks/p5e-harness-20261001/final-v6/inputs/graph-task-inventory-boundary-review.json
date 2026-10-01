@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "reviewer": "acceptance_auditor",
+  "observed_at_utc": "2026-09-30T18:56:56.415038+00:00",
+  "status": "approved_task_vs_inventory_reporting_semantics_before_formal_candidate_run_not_G5",
+  "basis": "Original profile requires exact locked task facets/spans/typed graph constraints; original inventory status and strict gate are separately preserved.",
+  "raw_path": "artifacts/benchmarks/p5e-graph-functional-smoke-20261001/run/source-body.json",
+  "raw_sha256": "c2fa928382d75a08c615fd725e329d388ba8309b736f2124aa71d80abe77b8aa",
+  "actual_inventory_status": "Partial",
+  "original_strict_check_passed": false,
+  "facts": {
+    "required_three_chain_function_bodies_covered": true,
+    "all_returned_source_proofs_valid": true,
+    "all_executed_lanes_complete": true,
+    "source_freshness_complete": true,
+    "omitted_inventory": [
+      {
+        "file": "foreign.py",
+        "symbol": "middle",
+        "body_omitted": true,
+        "reason": "output_budget"
+      }
+    ],
+    "hard_scope_allows_foreign_file": "raw hard scope has no path/file/language exclusion; foreign here means non-core same-name decoy, not another owner or prohibited source"
+  },
+  "permitted_new_reporting": [
+    "Retain raw response/inventory_status=Partial and legacy strict_check_passed=false.",
+    "Add independent locked_task_evidence_complete=true only when all required facets/spans and typed constraints pass, zero invalid source/scope/version/budget object, no foundational/protocol/deadline/cancel/unavailable errors.",
+    "Separate truthful optional/non-required inventory budget omission from requested-task evidence completeness.",
+    "Any omitted required facet/span/witness, source freshness error or incomplete absence remains fail; no change to source/gold/markers/budget to preserve result."
+  ],
+  "forbidden": [
+    "Rewrite response Partial to Success.",
+    "Rename original failed strict inventory gate into pass.",
+    "Treat refs/path names as source body.",
+    "Apply blanket Partial exemption or declare NoAnswer on incomplete scan."
+  ],
+  "accepted_gate_tasks": []
+}

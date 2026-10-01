@@ -1,0 +1,9 @@
+import pathlib,json,os,subprocess,hashlib,shutil
+root=pathlib.Path.cwd();out=root/'artifacts/benchmarks/p5e-metrics-runner-sourcev2-20261001';candidate=root/'artifacts/benchmarks/p5e-candidate-release-20261001-v2';baseline=json.load(open(root/'artifacts/benchmarks/p5e-baseline-release-20261001/BUILD-RECEIPT.json'));env=os.environ.copy();env.update(SDKROOT=baseline['options']['SDKROOT'],RUSTFLAGS=baseline['options']['RUSTFLAGS'],CARGO_BUILD_JOBS='2',CARGO_TARGET_DIR='/tmp/p5e-candidate-release-target-20261001');cmd=['cargo','+stable','build','--offline','--locked','--release','-p','cc-eval','--bin','cc-eval','--manifest-path',str(candidate/'source/Cargo.toml')];assert not(out/'BUILD-RECEIPT.json').exists()
+with (out/'build.log').open('w') as stream:rc=subprocess.call(cmd,env=env,stdout=stream,stderr=subprocess.STDOUT)
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+m=json.load(open(candidate/'source-manifest.json'))
+for f in m['files']:assert sha(candidate/'source'/f['path'])==f['sha256']
+binary=out/'binaries/cc-eval'
+if rc==0:binary.parent.mkdir();shutil.copy2(pathlib.Path(env['CARGO_TARGET_DIR'])/'release/cc-eval',binary);binary.chmod(0o555)
+(out/'BUILD-RECEIPT.json').write_text(json.dumps({'exit_code':rc,'source_sha256':m['source_digest_sha256'],'source_postcheck_files':len(m['files']),'build_argv':cmd,'options':{k:env[k] for k in ['SDKROOT','RUSTFLAGS','CARGO_BUILD_JOBS','CARGO_TARGET_DIR']},'profile':'release','features':'default','rustc':subprocess.check_output(['rustc','+stable','-vV'],text=True),'cargo':subprocess.check_output(['cargo','+stable','-V'],text=True),'binary':str(binary.relative_to(root)),'binary_sha256':sha(binary) if rc==0 else None,'log_sha256':sha(out/'build.log'),'scope':'native metrics runner producer only,notperformance'},indent=2)+'\n');print('terminal',rc,'binarySHA',sha(binary) if rc==0 else None);raise SystemExit(rc)

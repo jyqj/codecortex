@@ -1,0 +1,519 @@
+   Compiling cc-db v1.0.0 (/Users/jin/Desktop/codecortex-rust/crates/cc-db)
+   Compiling cc-index v1.0.0 (/Users/jin/Desktop/codecortex-rust/crates/cc-index)
+   Compiling cc-search v1.0.0 (/Users/jin/Desktop/codecortex-rust/crates/cc-search)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 18.89s
+     Running unittests src/lib.rs (target/p0-dev/debug/deps/cc_db-cff3e1e25516b2a6)
+
+running 147 tests
+test direct_writer::tests::direct_writer_bulk_insert_perf ... ok
+test direct_writer::tests::direct_writer_creates_valid_db ... ok
+test direct_writer::tests::direct_writer_handles_fts_tables ... ok
+test direct_writer::tests::direct_writer_write_fn_error_propagates ... ok
+test direct_writer::tests::drop_index_stmts_match_create_set ... ok
+test direct_writer::tests::extract_index_stmts ... ok
+test direct_writer::tests::extract_table_stmts ... ok
+test direct_writer::tests::split_sql_handles_comments_and_strings ... ok
+test epoch_rules::tests::boost_http_edge_confidence_bumps_evidence_clock ... ok
+test epoch_rules::tests::declared_clock_matches_observed_bump_for_every_table ... ok
+test epoch_rules::tests::evidence_method_family_bumps_evidence_only ... ok
+test epoch_rules::tests::lookup_covers_known_tables_and_rejects_metadata ... ok
+test epoch_rules::tests::unit_of_work_commit_bumps_index_exactly_once ... ok
+test file_state_cache::tests::batch_delta_matches_direct_load ... ok
+test file_state_cache::tests::cache_hit_shares_the_same_allocation ... ok
+test file_state_cache::tests::foreign_files_writer_invalidates_then_rewarns ... ok
+test file_state_cache::tests::held_snapshot_is_immutable_across_batches ... ok
+test fts::tests::camel_case_split ... ok
+test fts::tests::expand_query ... ok
+test fts::tests::expand_query_snake_case ... ok
+test fts::tests::fts_sanitize_basic ... ok
+test index_db::tests::app_maintained_fts_rowids_align_with_base_tables ... ok
+test index_db::tests::batched_fts_deletes_cover_all_paths_across_chunk_boundary ... ok
+test index_db::tests::chunk_text_encoding_reads_plain_and_zstd ... ok
+test index_db::tests::empty_file_state ... ok
+test index_db::tests::full_rebuild_advances_both_epochs_past_previous_values ... ok
+test index_db::tests::generation_starts_at_zero_and_index_writes_bump_index_epoch ... ok
+test index_db::tests::http_call_cross_service_chain ... ok
+test index_db::tests::metadata_round_trip ... ok
+test index_db::tests::mismatch_rebuild_stress_loop ... ignored
+test index_db::tests::open_creates_schema ... ok
+test index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression ... ok
+test index_db::tests::read_pool_connections_reject_writes ... ok
+test index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild ... ok
+test index_db::tests::replace_in_place_keeps_test_edges_removal_cascades ... ok
+test index_db::tests::resolver_seed_symbols_excludes_requested_files ... ok
+test index_db::tests::route_edge_resolution_provenance_round_trips ... ok
+test index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values ... ok
+test index_db::tests::test_find_symbol_safe_with_injection_string ... ok
+test index_db::tests::test_find_symbol_safe_with_null_byte ... ok
+test index_db::tests::test_find_symbol_safe_with_unicode_injection ... ok
+test index_db::tests::test_find_symbol_safe_with_union_injection ... ok
+test index_db::tests::test_metadata_safe_with_injection_key ... ok
+test index_db_arch::tests::test_adr_crud ... ok
+test index_db_arch::tests::test_adr_upsert_conflict ... ok
+test index_db_arch::tests::test_architecture_entry_points ... ok
+test index_db_arch::tests::test_architecture_languages ... ok
+test index_db_arch::tests::test_architecture_routes ... ok
+test index_db_arch::tests::test_extract_package_from_path ... ok
+test index_db_edges::tests::evidence_writes_bump_only_evidence_epoch ... ok
+test index_db_edges::tests::full_rebuild_matches_incremental_like_semantics ... ok
+test index_db_edges::tests::http_edge_match_prefers_method_then_falls_back_to_path ... ok
+test index_db_edges::tests::postprocess_writes_bump_index_epoch ... ok
+test index_db_edges::tests::route_id_for_normalized_path_returns_first_match ... ok
+test index_db_edges::tests::test_co_change_edges_roundtrip ... ok
+test index_db_edges::tests::test_dispatch_sites_roundtrip ... ok
+test index_db_edges::tests::test_rebuild_test_edges_for_files ... ok
+test index_db_edges::tests::test_runtime_evidence_lifecycle ... ok
+test index_db_edges::tests::test_semantic_edges_roundtrip ... ok
+test index_db_edges::tests::test_stem_to_base_clean ... ok
+test index_db_frontier::tests::test_http_calls_by_caller_uid ... ok
+test index_db_frontier::tests::test_route_nodes_by_normalized_path ... ok
+test index_db_frontier::tests::test_route_rows_by_path ... ok
+test index_db_graph::tests::step_error_after_side_connection_drop_is_err_not_empty_ok ... ok
+test index_db_graph::tests::test_caller_callee_rows ... ok
+test index_db_graph::tests::test_caller_callee_rows_by_uids_match_single_uid_queries ... ok
+test index_db_graph::tests::test_find_symbols_by_names_and_kinds_matches_single ... ok
+test index_db_graph::tests::test_get_export_fingerprints_batch_matches_single ... ok
+test index_db_graph::tests::test_get_export_fingerprints_empty_input ... ok
+test index_db_graph::tests::test_reexport_targets_for_files ... ok
+test index_db_graph::tests::test_reexport_targets_for_files_empty_input ... ok
+test index_db_graph::tests::test_symbol_degree_details ... ok
+test index_db_graph::tests::test_symbol_degree_details_batch_matches_single ... ok
+test index_db_graph::tests::test_symbols_covering ... ok
+test index_db_graph::tests::test_update_communities ... ok
+test index_db_graph_read::tests::async_consumer_rows_match_topic_in_name_or_properties ... ok
+test index_db_graph_read::tests::call_edge_provenance_counts_breakdowns ... ok
+test index_db_graph_read::tests::callees_with_nonself_callers_excludes_self_loops ... ok
+test index_db_graph_read::tests::child_symbol_outline_rows_ordered_by_start_line ... ok
+test index_db_graph_read::tests::community_adjacency_pairs_cross_community_only ... ok
+test index_db_graph_read::tests::cross_file_call_file_pairs_skip_same_file_edges ... ok
+test index_db_graph_read::tests::dead_code_symbol_scan_applies_scope_like_filter ... ok
+test index_db_graph_read::tests::direct_importers_exclude_self_and_respect_limit ... ok
+test index_db_graph_read::tests::env_access_rows_filter_by_key_and_file_patterns ... ok
+test index_db_graph_read::tests::file_import_pairs_returns_only_resolved_distinct_pairs ... ok
+test index_db_graph_read::tests::import_witness_rows_keeps_import_string ... ok
+test index_db_graph_read::tests::importers_of_paths_batches_into_single_query ... ok
+test index_db_graph_read::tests::param_counts_for_uids_maps_null_to_none ... ok
+test index_db_graph_read::tests::reverse_callers_applies_confidence_and_limit ... ok
+test index_db_graph_read::tests::route_handler_rows_filters_by_path_substring ... ok
+test index_db_graph_read::tests::service_binding_rows_match_nodes_routes_and_edges ... ok
+test index_db_graph_read::tests::suggested_test_files_distinct_and_ordered ... ok
+test index_db_graph_read::tests::symbol_kind_counts_orders_by_frequency ... ok
+test index_db_graph_read::tests::symbol_names_for_uids_skips_missing ... ok
+test index_db_graph_read::tests::symbol_ref_containers_for_targets_returns_uid_container_pairs ... ok
+test index_db_graph_read::tests::symbol_source_candidates_rank_exact_before_fuzzy ... ok
+test index_db_graph_read::tests::symbols_lite_in_files_skips_files_not_requested_and_uidless ... ok
+test index_db_query::tests::count_table_rows_counts_and_errors_on_missing_table ... ok
+test index_db_query::tests::read_pool_supports_explicit_read_transaction ... ok
+test index_db_query::tests::test_file_summary ... ok
+test index_db_query::tests::test_file_symbols ... ok
+test index_db_query::tests::test_find_symbol_exact_and_like ... ok
+test index_db_query::tests::test_query_json ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_empty_input ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_fetches_batch ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_rejects_unverified_cached_text ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_spans_multiple_in_batches ... ok
+test index_db_retrieval::tests::chunk_spans_for_files_groups_by_file ... ok
+test index_db_retrieval::tests::fts_chunk_candidates_applies_scope_and_limit ... ok
+test index_db_retrieval::tests::fts_file_summaries_applies_prefix_and_limit ... ok
+test index_db_retrieval::tests::fts_file_summaries_empty_for_no_match ... ok
+test index_db_retrieval::tests::fts_file_summaries_orders_by_bm25 ... ok
+test index_db_retrieval::tests::fts_file_summaries_prefix_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::path_token_file_hits_many_substring_match_per_token ... ok
+test index_db_retrieval::tests::path_token_file_hits_many_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::recent_indexed_files_newest_first ... ok
+test index_db_retrieval::tests::scan_chunks_for_grep_recency_order_early_stop_and_prefix_escaping ... ok
+test index_db_retrieval::tests::symbol_seed_hits_exact_first_and_skips_null_uid ... ok
+test index_db_retrieval::tests::symbol_seed_hits_mixed_case_token_exact_first ... ok
+test index_db_retrieval::tests::symbol_seed_hits_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_exact_name_first_per_token ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_prefixed_keeps_exact_name_first_ordering ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::symbol_uids_by_exact_names_matches_only_listed_names ... ok
+test index_migrate::tests::fresh_db_initializes_schema ... ok
+test index_migrate::tests::matching_version_returns_up_to_date ... ok
+test index_migrate::tests::old_version_returns_mismatch ... ok
+test read_generation::tests::identity_and_epoch_corruption_never_become_zero_generation ... ok
+test read_generation::tests::persisted_identity_survives_reopen_and_differs_at_equal_epochs ... ok
+test read_generation::tests::staged_rebuild_gets_fresh_persistent_identity ... ok
+test seed_symbol_cache::tests::batch_delta_matches_direct_load ... ok
+test seed_symbol_cache::tests::batch_duplicate_uid_folds_like_sql ... ok
+test seed_symbol_cache::tests::build_respects_capacity_cap ... ok
+test seed_symbol_cache::tests::foreign_symbol_writer_invalidates_then_rewarns ... ok
+test seed_symbol_cache::tests::materialize_orders_and_excludes ... ok
+test seed_symbol_cache::tests::projection_strips_non_seed_fields ... ok
+test signature_agg::tests::empty_batch_initializes_missing_baseline ... ok
+test signature_agg::tests::file_scoped_writers_converge ... ok
+test signature_agg::tests::incremental_batch_add_modify_remove_converges ... ok
+test signature_agg::tests::row_agg_add_remove_round_trips ... ok
+test signature_agg::tests::row_agg_distinguishes_duplicate_multisets ... ok
+test signature_agg::tests::serialize_round_trips_and_rejects_other_versions ... ok
+test signature_agg::tests::synthetic_call_edge_lifecycle_converges ... ok
+test signature_agg::tests::unit_of_work_synthesis_writes_converge ... ok
+test sql_util::tests::escape_like_escapes_wildcards_and_backslash ... ok
+test unit_of_work::tests::commit_applies_all_writes_and_bumps_epoch_once ... ok
+test unit_of_work::tests::drop_without_commit_rolls_back_and_leaves_epoch_untouched ... ok
+
+test result: ok. 146 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.92s
+
+     Running tests/fts_identifier_expansion.rs (target/p0-dev/debug/deps/fts_identifier_expansion-7e1a9060f0cbd093)
+
+running 13 tests
+test acronym_and_number_boundaries_preserve_every_distinct_component ... ok
+test expansion_requires_all_components_not_just_one ... ok
+test full_identifier_and_all_components_are_both_useful ... ok
+test independent_natural_words_still_have_or_semantics ... ok
+test literal_fts_operators_and_punctuation_cannot_control_match_syntax ... ok
+test multiple_groups_share_one_atom_budget_without_dropping_originals ... ok
+test one_distinct_component_never_degrades_to_generic_fragment ... ok
+test original_terms_have_priority_and_an_expansion_is_never_truncated ... ok
+test oversized_identifier_group_is_omitted_as_a_whole ... ok
+test snake_whole_preserves_phrase_and_parts_support_reordering ... ok
+test source_token_limit_is_explicit_and_does_not_claim_full_input_coverage ... ok
+test unicode_original_terms_coexist_with_compound_all_components ... ok
+test unknown_identifier_does_not_buy_recall_from_a_generic_fragment ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/incremental_write_bench.rs (target/p0-dev/debug/deps/incremental_write_bench-cb8a547994dea92b)
+
+running 2 tests
+test bench_concurrent_reads_during_incremental_writes ... ignored, read-during-write micro-benchmark; run explicitly with --release
+test bench_incremental_batch_write_10k ... ignored, write-path micro-benchmark; run explicitly with --release
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p2b_resolution_store.rs (target/p0-dev/debug/deps/p2b_resolution_store-4cc99e397b53cd19)
+
+running 4 tests
+test bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches ... ok
+test corrupt_payload_is_rejected ... ok
+test dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback ... ok
+test package_aggregate_tracks_files_and_test_visibility ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/p2c_freshness_store.rs (target/p0-dev/debug/deps/p2c_freshness_store-ddeefc3dc98ca154)
+
+running 4 tests
+test debt_and_file_facts_share_epoch_and_survive_reopen ... ok
+test failed_file_batch_never_acknowledges_or_publishes_debt ... ok
+test invalid_frontier_fails_before_file_commit_and_bad_hash_is_not_ready ... ok
+test stale_prepare_is_fenced_inside_the_writer_transaction ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/p2d_dependency_cost.rs (target/p0-dev/debug/deps/p2d_dependency_cost-9f04017171fa4b17)
+
+running 1 test
+test p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.72s
+
+     Running tests/public_surface_store.rs (target/p0-dev/debug/deps/public_surface_store-6a0fadb0e030f337)
+
+running 6 tests
+test a_bad_surface_rolls_back_the_whole_file_batch ... ok
+test batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown ... ok
+test corrupt_fingerprint_and_new_format_fail_closed ... ok
+test nonempty_surface_roundtrip_canonicalizes_declaration_order ... ok
+test previous_schema_cannot_reuse_absent_surface_evidence ... ok
+test surface_roundtrip_shares_file_epoch_and_cascades_on_delete ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running unittests src/lib.rs (target/p0-dev/debug/deps/cc_search-3555ba7917180c6f)
+
+running 278 tests
+test cypher::fast_path::tests::cycle_re_reaches_root_at_depth_three ... ok
+test cypher::fast_path::tests::cycle_with_min_depth_two ... ok
+test cypher::fast_path::tests::decision_covers_used_fallback_disabled_and_not_applicable ... ok
+test cypher::fast_path::tests::decision_for_query_handles_union_and_parse_errors ... ok
+test cypher::fast_path::tests::decision_metadata_json_shapes_are_snapshot_locked ... ok
+test cypher::fast_path::tests::default_limit_metadata_matches ... ok
+test cypher::fast_path::tests::depth_range_one_to_two_on_chain ... ok
+test cypher::fast_path::tests::diamond_dedups_two_paths ... ok
+test cypher::fast_path::tests::distinct_collapses_identical_projected_rows ... ok
+test cypher::fast_path::tests::dst_kind_filter_from_label ... ok
+test cypher::fast_path::tests::dst_where_equality_and_uid_seed ... ok
+test cypher::fast_path::tests::env_flag_defaults_to_enabled ... ok
+test cypher::fast_path::tests::equivalence_sweep_over_fixtures_templates_and_directions ... ok
+test cypher::fast_path::tests::execute_with_options_routes_eligible_query_identically ... ok
+test cypher::fast_path::tests::fast_path_kinds_derive_from_catalog_declaration ... ok
+test cypher::fast_path::tests::gate_reason_covers_every_rejection_point ... ok
+test cypher::fast_path::tests::gate_reason_empty_return_via_hand_built_ast ... ok
+test cypher::fast_path::tests::gate_rejects_ineligible_shapes ... ok
+test cypher::fast_path::tests::gate_rejects_multi_clause_and_optional_match ... ok
+test cypher::fast_path::tests::ignored_direction_spellings_all_match_forward ... ok
+test cypher::fast_path::tests::incoming_direction_cycle_re_reaches_root ... ok
+test cypher::fast_path::tests::incoming_direction_distinct_collapse ... ok
+test cypher::fast_path::tests::incoming_direction_order_by_matches_positionally ... ok
+test cypher::fast_path::tests::ineligibility_display_is_snapshot_locked ... ok
+test cypher::fast_path::tests::limit_without_order_by_truncates_to_a_subset ... ok
+test cypher::fast_path::tests::multiple_seeds_share_a_name ... ok
+test cypher::fast_path::tests::no_matching_seed_returns_empty ... ok
+test cypher::fast_path::tests::node_reachable_at_multiple_depths_with_min_two ... ok
+test cypher::fast_path::tests::order_by_desc_and_alias ... ok
+test cypher::fast_path::tests::order_by_with_limit_truncation ... ok
+test cypher::fast_path::tests::return_props_of_both_endpoints_with_aliases ... ok
+test cypher::fast_path::tests::src_label_kind_is_ignored_like_the_sql_path ... ok
+test cypher::fast_path::tests::traversal_continues_through_uid_missing_from_symbols ... ok
+test cypher::fast_path::tests::undirected_diamond_multiplicity_and_min_depth ... ok
+test cypher::parser::tests::parse_varlen_clamps_to_global_cap ... ok
+test cypher::tests::anchored_two_clause_optional_still_executes ... ok
+test cypher::tests::comma_separated_patterns_are_rejected ... ok
+test cypher::tests::contains_escapes_like_wildcards ... ok
+test cypher::tests::cross_variable_or_predicate_errors ... ok
+test cypher::tests::degree_to_sql_generates_subquery ... ok
+test cypher::tests::edge_map_has_expected_types ... ok
+test cypher::tests::edge_map_has_http_calls ... ok
+test cypher::tests::edge_map_matches_graph_catalog ... ok
+test cypher::tests::execute_union_all_no_dedup ... ok
+test cypher::tests::execute_union_dedup_merges ... ok
+test cypher::tests::fan_in_query_full_sql ... ok
+test cypher::tests::handles_joins_route_to_handler_symbol ... ok
+test cypher::tests::http_calls_join_route_by_normalized_path ... ok
+test cypher::tests::label_maps_correctly ... ok
+test cypher::tests::multiple_plain_match_clauses_are_rejected ... ok
+test cypher::tests::optional_match_with_dst_where_preserves_source ... ok
+test cypher::tests::parse_avg_return ... ok
+test cypher::tests::parse_collect_distinct ... ok
+test cypher::tests::parse_collect_return ... ok
+test cypher::tests::parse_count_distinct_prop ... ok
+test cypher::tests::parse_count_distinct_var ... ok
+test cypher::tests::parse_count_return ... ok
+test cypher::tests::parse_count_star ... ok
+test cypher::tests::parse_count_var_prop ... ok
+test cypher::tests::parse_degree_combined_with_and ... ok
+test cypher::tests::parse_degree_filter ... ok
+test cypher::tests::parse_in_degree_filter ... ok
+test cypher::tests::parse_match_then_optional_match ... ok
+test cypher::tests::parse_match_with_rel ... ok
+test cypher::tests::parse_min_max_return ... ok
+test cypher::tests::parse_optional_match ... ok
+test cypher::tests::parse_order_by_alias ... ok
+test cypher::tests::parse_order_by_desc ... ok
+test cypher::tests::parse_out_degree_filter ... ok
+test cypher::tests::parse_return_distinct ... ok
+test cypher::tests::parse_return_with_alias ... ok
+test cypher::tests::parse_single_node ... ok
+test cypher::tests::parse_single_query_no_union ... ok
+test cypher::tests::parse_sum_distinct ... ok
+test cypher::tests::parse_sum_return ... ok
+test cypher::tests::parse_triple_union ... ok
+test cypher::tests::parse_union_all_two_queries ... ok
+test cypher::tests::parse_union_column_count_mismatch ... ok
+test cypher::tests::parse_union_two_queries ... ok
+test cypher::tests::parse_variable_length_path ... ok
+test cypher::tests::parse_where_and_or ... ok
+test cypher::tests::regex_generates_regexp_sql ... ok
+test cypher::tests::test_cypher_injection_via_node_label ... ok
+test cypher::tests::test_cypher_injection_via_property_value ... ok
+test cypher::tests::test_injection_attach_database ... ok
+test cypher::tests::test_injection_double_dash_comment ... ok
+test cypher::tests::test_injection_drop_table ... ok
+test cypher::tests::test_injection_quotes ... ok
+test cypher::tests::test_injection_semicolon ... ok
+test cypher::tests::test_injection_unicode ... ok
+test cypher::tests::test_validate_ident_accepts_valid ... ok
+test cypher::tests::test_validate_ident_rejects_empty ... ok
+test cypher::tests::test_validate_ident_rejects_special_chars ... ok
+test cypher::tests::test_validate_query_identifiers_accepts_valid_where_clause ... ok
+test cypher::tests::test_validate_query_identifiers_rejects_malicious_degree_var_in_where ... ok
+test cypher::tests::test_validate_query_identifiers_rejects_malicious_label ... ok
+test cypher::tests::test_validate_query_identifiers_rejects_malicious_prop_name_in_where ... ok
+test cypher::tests::test_validate_query_identifiers_rejects_malicious_prop_ref_in_where ... ok
+test cypher::tests::test_validate_query_identifiers_rejects_malicious_var ... ok
+test cypher::tests::tokenize_basic_match ... ok
+test cypher::tests::tokenize_distinct_and_optional ... ok
+test cypher::tests::tokenize_order_by ... ok
+test cypher::tests::tokenize_regex_and_contains ... ok
+test cypher::tests::tokenize_starts_ends_with ... ok
+test cypher::tests::tokenize_sum_avg_min_max ... ok
+test cypher::tests::tokenize_union ... ok
+test cypher::tests::tokenize_union_all ... ok
+test cypher::tests::tokenize_varlen ... ok
+test cypher::tests::translate_applies_default_limit_when_omitted ... ok
+test cypher::tests::translate_avg_single_node ... ok
+test cypher::tests::translate_contains_file_variable_length ... ok
+test cypher::tests::translate_contains_to_like ... ok
+test cypher::tests::translate_count_distinct_prop_to_sql ... ok
+test cypher::tests::translate_count_distinct_to_sql ... ok
+test cypher::tests::translate_defines_edge ... ok
+test cypher::tests::translate_defines_method_edge ... ok
+test cypher::tests::translate_ends_with ... ok
+test cypher::tests::translate_min_max_single_node ... ok
+test cypher::tests::translate_multi_aggregate_no_group_by ... ok
+test cypher::tests::translate_optional_match_uses_left_join ... ok
+test cypher::tests::translate_return_distinct_to_sql ... ok
+test cypher::tests::translate_single_hop_sql ... ok
+test cypher::tests::translate_single_node_sql ... ok
+test cypher::tests::translate_starts_with ... ok
+test cypher::tests::translate_sum_distinct_to_sql ... ok
+test cypher::tests::translate_sum_generates_group_by ... ok
+test cypher::tests::translate_sum_group_by_full_pipeline ... ok
+test cypher::tests::translate_uses_explicit_limit_value ... ok
+test cypher::tests::translate_variable_length_sql ... ok
+test cypher::tests::union_applies_global_limit ... ok
+test cypher::tests::validate_regex_accepts_simple_patterns ... ok
+test cypher::tests::validate_regex_rejects_alternation ... ok
+test cypher::tests::validate_regex_rejects_anchors ... ok
+test cypher::tests::validate_regex_rejects_backreference ... ok
+test cypher::tests::validate_regex_rejects_character_class ... ok
+test cypher::tests::validate_regex_rejects_lazy_quantifiers ... ok
+test cypher::tests::validate_regex_rejects_lookahead ... ok
+test cypher::tests::validate_regex_rejects_quantifier ... ok
+test cypher::tests::validate_regex_rejects_shorthand_classes ... ok
+test cypher::tests::variable_length_reachability_dedups_and_terminates ... ok
+test dsl::tests::test_basic_filters ... ok
+test dsl::tests::test_case_insensitive_keys ... ok
+test dsl::tests::test_empty_input ... ok
+test dsl::tests::test_matches_kind ... ok
+test dsl::tests::test_matches_language_python ... ok
+test dsl::tests::test_multiple_filters ... ok
+test dsl::tests::test_name_filter ... ok
+test dsl::tests::test_no_filters ... ok
+test dsl::tests::test_only_filters_no_text ... ok
+test dsl::tests::test_quoted_value ... ok
+test engine::tests::cache_key_includes_context_fields ... ok
+test engine::tests::default_lanes_registry_keeps_fusion_order ... ok
+test engine::tests::fuse_outcomes_accumulates_rrf_generically ... ok
+test engine::tests::graph_lane_adapter_ranks_seed_above_one_hop_neighbor ... ok
+test engine::tests::graph_lane_disabled_when_weight_is_zero ... ok
+test engine::tests::graph_lane_expands_caller_direction_at_decay ... ok
+test engine::tests::graph_lane_maps_symbol_to_smallest_containing_chunk ... ok
+test engine::tests::graph_lane_respects_languages_filter_by_file_extension ... ok
+test engine::tests::graph_lane_scores_fuzzy_seed_below_exact_seed ... ok
+test engine::tests::graph_lane_seeds_short_tokens_by_exact_name ... ok
+test engine::tests::graph_search_cache_hit_returns_shared_arc ... ok
+test engine::tests::graph_search_cache_key_covers_budget_and_limits ... ok
+test engine::tests::graph_search_cache_misses_on_evidence_epoch_bump ... ok
+test engine::tests::graph_search_cache_misses_on_index_epoch_bump ... ok
+test engine::tests::graph_search_degraded_result_is_not_cached ... ok
+test engine::tests::graph_search_returns_empty_for_no_symbols ... ok
+test engine::tests::grep_lane_adapter_ranks_matches_and_caches_only_hits ... ok
+test engine::tests::grep_lane_disabled_when_request_excludes_grep ... ok
+test engine::tests::grep_lane_prefilter_keeps_midtoken_matches_via_full_scan ... ok
+test engine::tests::grep_lane_scan_budget_truncates_recency_first_and_deterministically ... ok
+test engine::tests::grep_prefilter_phrase_tokenizes_like_unicode61 ... ok
+test engine::tests::lane_opting_out_of_annotation_stays_fusion_only ... ok
+test engine::tests::lexical_lane_adapter_matches_inline_ranking ... ok
+test engine::tests::lexical_search_applies_path_prefix_before_limit ... ok
+test engine::tests::new_lane_declaring_score_slot_projects_without_plan_edits ... ok
+test engine::tests::new_lane_opting_into_annotation_gets_generic_hit_reasons ... ok
+test engine::tests::run_lanes_iterates_collection_and_skips_disabled_lane_before_work ... ok
+test engine::tests::run_lanes_parallel_preserves_slice_order_and_runs_all ... ok
+test engine::tests::run_lanes_parallel_propagates_first_error_in_slice_order ... ok
+test engine::tests::score_trace_replays_rerank_after_graph_rerank ... ok
+test engine::tests::score_trace_replays_rerank_for_grep_and_graph_mix ... ok
+test engine::tests::score_trace_replays_rerank_for_pure_lexical_hit ... ok
+test engine::tests::score_trace_replays_rerank_with_dsl_name_bonus ... ok
+test engine::tests::score_trace_replays_rerank_with_preselect_and_multiple_boosts ... ok
+test engine::tests::search_completes_with_read_pool_size_one ... ok
+test engine_cache::tests::cache_key_includes_context_fields ... ok
+test engine_cache::tests::cache_stats_counts_hits_and_misses ... ok
+test engine_cache::tests::empty_hard_and_soft_fields_have_distinct_cache_keys ... ok
+test engine_cache::tests::equal_epoch_new_incarnation_misses_both_result_caches ... ok
+test engine_cache::tests::generation_fence_bounds_both_successful_and_failed_mixed_attempts ... ok
+test engine_cache::tests::generation_fence_detects_same_epoch_identity_change ... ok
+test engine_cache::tests::generation_fence_discards_changed_attempt_and_accepts_fresh_result ... ok
+test engine_cache::tests::generation_fence_does_not_mask_stable_corruption ... ok
+test engine_cache::tests::index_write_invalidates_chunk_text_cache_on_lexical_only_path ... ok
+test engine_cache::tests::index_write_invalidates_search_cache_without_manual_call ... ok
+test engine_cache::tests::p1c_all_search_budgets_and_weights_participate_in_fingerprint ... ok
+test engine_cache::tests::p1c_cache_domains_cover_tier_config_and_post_search_budgets ... ok
+test engine_cache::tests::p1c_hard_set_order_and_soft_order_have_separate_contracts ... ok
+test engine_cache::tests::p1d_late_old_text_fill_cannot_poison_current_generation ... ok
+test engine_cache::tests::search_cache_hit_is_zero_copy_and_equivalent ... ok
+test engine_cache::tests::search_cache_returns_same_results ... ok
+test engine_graph::tests::graph_prior_requires_direct_support_and_keeps_exact_identity ... ok
+test engine_graph::tests::graph_search_cache_hit_returns_shared_arc ... ok
+test engine_graph::tests::graph_search_cache_key_covers_budget_and_limits ... ok
+test engine_graph::tests::graph_search_cache_misses_on_evidence_epoch_bump ... ok
+test engine_graph::tests::graph_search_cache_misses_on_index_epoch_bump ... ok
+test engine_graph::tests::graph_search_degraded_result_is_not_cached ... ok
+test engine_graph::tests::graph_seed_selection_cannot_be_bought_by_an_unrelated_file_prior ... ok
+test engine_lane_tests::default_lanes_registry_keeps_fusion_order ... ok
+test engine_lane_tests::exact_symbol_lane_ignores_soft_preselect_and_exposes_lane_contract ... ok
+test engine_lane_tests::exact_symbol_lane_retains_ambiguity_in_deterministic_order ... ok
+test engine_lane_tests::fuse_outcomes_accumulates_rrf_generically ... ok
+test engine_lane_tests::graph_lane_adapter_ranks_seed_above_one_hop_neighbor ... ok
+test engine_lane_tests::graph_lane_disabled_when_weight_is_zero ... ok
+test engine_lane_tests::graph_lane_does_not_break_existing_search ... ok
+test engine_lane_tests::graph_lane_expands_caller_direction_at_decay ... ok
+test engine_lane_tests::graph_lane_maps_symbol_to_smallest_containing_chunk ... ok
+test engine_lane_tests::graph_lane_respects_languages_filter_by_file_extension ... ok
+test engine_lane_tests::graph_lane_scores_fuzzy_seed_below_exact_seed ... ok
+test engine_lane_tests::graph_lane_seeds_short_tokens_by_exact_name ... ok
+test engine_lane_tests::graph_search_returns_empty_for_no_symbols ... ok
+test engine_lane_tests::grep_lane_adapter_ranks_matches_and_caches_only_hits ... ok
+test engine_lane_tests::grep_lane_disabled_when_request_excludes_grep ... ok
+test engine_lane_tests::grep_lane_scan_budget_truncates_recency_first_and_deterministically ... ok
+test engine_lane_tests::lane_opting_out_of_annotation_stays_fusion_only ... ok
+test engine_lane_tests::lexical_lane_adapter_matches_inline_ranking ... ok
+test engine_lane_tests::new_lane_declaring_score_slot_projects_without_plan_edits ... ok
+test engine_lane_tests::new_lane_opting_into_annotation_gets_generic_hit_reasons ... ok
+test engine_lane_tests::non_finite_search_or_ranking_configuration_fails_before_scoring ... ok
+test engine_lane_tests::path_lane_recalls_exact_path_but_never_widens_hard_scope ... ok
+test engine_lane_tests::run_lanes_iterates_collection_and_skips_disabled_lane_before_work ... ok
+test enrich::tests::test_graph_enrich_locks_scores_nodes_and_counters ... ok
+test enrich::tests::test_graph_enrich_records_read_errors_on_db_failure ... ok
+test execution::tests::async_timeout_keeps_parent_usable ... ok
+test execution::tests::cancelled_worker_retains_permit_and_cannot_publish_late ... ok
+test execution::tests::deadline_discards_late_worker_result_and_reclaims_when_it_exits ... ok
+test execution::tests::full_queue_rejects_and_aborted_waiter_releases_admission ... ok
+test fusion::tests::conflicting_document_spans_and_versions_are_rejected ... ok
+test fusion::tests::duplicate_lanes_cannot_cast_two_votes ... ok
+test fusion::tests::final_hydration_cannot_substitute_new_or_missing_evidence ... ok
+test fusion::tests::raw_score_scale_does_not_change_rrf_and_trace_replays ... ok
+test plan::tests::materialized_filters_map_to_chunk_scope ... ok
+test plan::tests::preselect_scales_with_tier ... ok
+test plan::tests::test_is_project_doc_adr_directory ... ok
+test plan::tests::test_is_project_doc_docs_directory ... ok
+test plan::tests::test_is_project_doc_non_doc_files ... ok
+test plan::tests::test_is_project_doc_top_level_files ... ok
+test preselect::tests::bm25_bonus_is_bounded_and_monotonic ... ok
+test preselect::tests::fallback_layer_gate ... ok
+test preselect::tests::fts_summary_layer_isolated ... ok
+test preselect::tests::graph_neighbor_layer_respects_budget ... ok
+test preselect::tests::graph_neighbors_discovers_callees_and_callers ... ok
+test preselect::tests::graph_neighbors_empty_scores ... ok
+test preselect::tests::graph_neighbors_skips_already_scored_files ... ok
+test preselect::tests::graph_neighbors_zero_limit ... ok
+test preselect::tests::layer_scores_sum_to_total ... ok
+test preselect::tests::merge_layer_hit_accumulates_and_bills ... ok
+test preselect::tests::preselect_graph_expansion_fires_when_budget_remains ... ok
+test preselect::tests::preselect_recalls_path_token_match ... ok
+test preselect::tests::preselect_recalls_substring_symbol_match ... ok
+test preselect::tests::preselect_reports_fallback ... ok
+test preselect::tests::preselect_request_explicit_paths ... ok
+test preselect::tests::preselect_request_interface ... ok
+test preselect::tests::rank_decay_layers_score_their_own_lists ... ok
+test preselect::tests::ranking_defaults_match_legacy_magic_numbers ... ok
+test preselect::tests::registry_preserves_execution_order ... ok
+test preselect::tests::token_search_layer_isolated ... ok
+test query_policy::tests::auto_without_port_is_local_and_explicit_semantic_is_unavailable ... ok
+test query_policy::tests::intent_and_budgets_are_fingerprinted_without_hiding_partial ... ok
+test rrf::tests::rrf_basic ... ok
+test rrf::tests::rrf_merge_two_lists ... ok
+test score_trace::tests::apply_traced_boost_handles_negative_amount ... ok
+test score_trace::tests::apply_traced_boost_skips_zero_amount ... ok
+test score_trace::tests::apply_traced_boost_updates_score_and_trace_atomically ... ok
+test score_trace::tests::empty_trace_totals_zero ... ok
+test score_trace::tests::total_is_sum_of_pushed_components_in_order ... ok
+test score_trace::tests::zero_contributions_are_skipped ... ok
+test selection::overlap::tests::union_is_exact_and_different_provenance_survives ... ok
+
+test result: ok. 278 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.28s
+
+   Doc-tests cc_db
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+   Doc-tests cc_search
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

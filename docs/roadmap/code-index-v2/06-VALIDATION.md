@@ -1,8 +1,12 @@
 # 06｜验证登记与阶段门禁
 
-> 测试名称/文件路径是拟实施位置；只有现有命令标为“当前可用”。Vxx 是任务验收引用，不代表已通过。详细 benchmark 方法见 09-BENCHMARK.md。
+> Vxx 为验证包，不代表所有未来场景已认证。
 
-冻结616文件、6605476字节，摘要`471919b1d73828db2938d314e3319dd34827a7c1828388925c45b1db7372f473`。38条命令收据，源码/归档/日志/不可变二进制均核验；最终接受版本对当前源码重新运行全套验证；中间版本曾复用的旧收据只保留历史，不代替最终结果。证据目录`artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930`。两工具链各workspace 1767 passed/57 ignored、HTTP 255 passed/50 ignored、专项 71 passed/2 ignored、真实stdio 24 passed、取消协议1 passed、watcher17 passed。各组内部失败0，忽略项不计通过；测试组有重叠，不相加为唯一测试总数。固定51题306请求的逐题Top-1/nDCG无负差分，无效源码命中为0，raw回放一致。原Partial/S11继续失败，本次新增18次真实预算省略Partial，涉及6个问题；完整检索Gate保持not_passed，不能称G5/M2通过。gold与评分公式未改。一次默认并行HTTP测试的debug索引计时超过原500毫秒门限，原失败保留；源码不变的独立复验通过，后续计时相关测试组串行执行，内部并发测试不变。未放宽阈值，不把隔离通过当成共享负载性能认证。
+118 done / 1 in_progress / 73 todo，P5 为 18/20；P5-016～018 已验收，P5-019 正在实施通用查询质量修复与独立消融。P5-D 整批与 G5/M2 尚未完成。最新见 [P5-D-RUNTIME-IMPLEMENTATION.md](P5-D-RUNTIME-IMPLEMENTATION.md) 与 [P5-D-RUNTIME-GATE.json](P5-D-RUNTIME-GATE.json)。
+
+冻结 623 文件、6675050 字节，摘要 `44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0`；38 条命令收据、源码归档、日志和不可变二进制一致。证据目录 `artifacts/benchmarks/p5d-20260930-resume/final-v3`。固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败；原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致。
+
+stable：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored；1.95.0：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored。各组失败 0，忽略项不计通过，重叠组不相加为唯一测试总数。
 
 ## 1. 验证层级
 
@@ -62,7 +66,7 @@ L1 单元/属性测试：解析、hash、排序、状态机，快速确定性。
 
 ## 5. 当前可用命令与未来命令
 
-当前实际执行的命令、工具链和收据：`artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930/validation.json`。下方示例不是新测试结果。
+当前实际执行的命令、工具链和收据：`artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json`。下方示例不是新测试结果。
 
 ```sh
 cargo test --workspace --locked --offline --lib --tests

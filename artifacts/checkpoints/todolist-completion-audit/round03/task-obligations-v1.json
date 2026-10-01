@@ -1,0 +1,1927 @@
+{
+  "schema_version": 1,
+  "reviewer": "acceptance_auditor",
+  "observed_at_utc": "2026-09-30T15:29:43.665376+00:00",
+  "profile": "independent_reviewed_development_task_obligations_v1",
+  "source_basis": "Source and original query read without new candidate retrieval results; original gold untouched. Historical questions already public, not heldout.",
+  "locked_inputs": [
+    {
+      "dataset": "source",
+      "suite_path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/suite.json",
+      "suite_sha256": "3befca1be7830d91b44684e7075f8133c03cb88bba72819305ab97ff7cb5fb73",
+      "query_path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/queries.jsonl",
+      "query_sha256": "bb923e72b1ec21f85af487e49220491e37d71498576257530149ce94f4858e39",
+      "source_root": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-codecortex-subset/source",
+      "files": [
+        {
+          "path": "cc-db/src/index_migrate.rs",
+          "sha256": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7"
+        },
+        {
+          "path": "cc-index/src/dirty_closure.rs",
+          "sha256": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c"
+        },
+        {
+          "path": "cc-index/src/indexer_phases/dirty.rs",
+          "sha256": "6a4f3d0598a2732f33ad56e99ce92f42fa633471d51e6097f2ba7489f0549e01"
+        },
+        {
+          "path": "cc-model/src/id.rs",
+          "sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0"
+        },
+        {
+          "path": "cc-parsers/src/chunker.rs",
+          "sha256": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46"
+        },
+        {
+          "path": "cc-search/src/plan.rs",
+          "sha256": "95f3969fb88657123fc4dfd7192680ca1b1e7c7aa59ca64a858daacf2ab812cc"
+        },
+        {
+          "path": "cc-search/src/preselect.rs",
+          "sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44"
+        }
+      ]
+    },
+    {
+      "dataset": "smoke",
+      "suite_path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/suite.json",
+      "suite_sha256": "c09e196a9d735039481b85a63eed165e500d29972605573362671960e700fd3f",
+      "query_path": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/queries.jsonl",
+      "query_sha256": "f2cb03747e2f6a42f474cd1120f2b012afdd1c506bce708e24b9f14cab49d872",
+      "source_root": "artifacts/benchmarks/p0-g0-20260927/frozen-inputs/p0-smoke/source",
+      "files": [
+        {
+          "path": "session.py",
+          "sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f"
+        },
+        {
+          "path": "billing.py",
+          "sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750"
+        },
+        {
+          "path": "routes.ts",
+          "sha256": "08d50dfa77926e01926999c0d195f9dbcc4dcb137a995b65b1005e37e33c4caf"
+        }
+      ]
+    },
+    {
+      "dataset": "exact",
+      "suite_path": "crates/cc-eval/benchmarks/manifests/p1b-exact.json",
+      "suite_sha256": "48f37902daf414b36584756ea71e0d6c3ccb5c5c72dc39fffea211e2972d5dbf",
+      "query_path": "crates/cc-eval/benchmarks/native/p1b-exact.jsonl",
+      "query_sha256": "cdf1c77465950208eccf68818614e696f24e458c04be04815f0f1d1fa7b7ca59",
+      "source_root": "crates/cc-eval/fixtures/index-v2/p1b-exact",
+      "files": [
+        {
+          "path": "pkg/api/target.py",
+          "sha256": "068592c1d82573efd5f888c1d661ac681881e53aeaa8af9b2f340a71bbea0183"
+        },
+        {
+          "path": "pkg/apix/decoy.py",
+          "sha256": "87acee3b5111e1d167d494a90b279c4d0ea72a8cc9b8f5cedaa3cf0f90501aff"
+        },
+        {
+          "path": "src/codec.py",
+          "sha256": "d9b29d282122e033f241600be19c3a38957e1685622a6a2b02d56d1361a00e8a"
+        },
+        {
+          "path": "src/noise.py",
+          "sha256": "45136207ad3cb027172e0f96fe46940a35c168792f2d4e6879d2e3d32e1c8094"
+        }
+      ]
+    },
+    {
+      "dataset": "intents",
+      "suite_path": "crates/cc-eval/benchmarks/manifests/p1c-intents.json",
+      "suite_sha256": "ebba7ccdc318f8bce333fdd9fafa3efde3ff1676ae67fe2d1b9b1203d0ceae1e",
+      "query_path": "crates/cc-eval/benchmarks/native/p1c-intents.jsonl",
+      "query_sha256": "53ad86b131e7323ccdff15d5409295f921ca5a25c888453267ef0bd90cc7b977",
+      "source_root": "crates/cc-eval/fixtures/index-v2/p1c-intents",
+      "files": [
+        {
+          "path": "decoder.py",
+          "sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570"
+        },
+        {
+          "path": "dispatcher.py",
+          "sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f"
+        },
+        {
+          "path": "display.py",
+          "sha256": "52d66bca760693d8e1ac00cea2f0a4f44f71ddb8a2c57f104eca7e4cbd18e503"
+        },
+        {
+          "path": "errors.py",
+          "sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8"
+        },
+        {
+          "path": "example.py",
+          "sha256": "111d2ce68062af595cc1c467710340b56733474213041afd59b804bc9b89f1d8"
+        },
+        {
+          "path": "settings.py",
+          "sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33"
+        }
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "dataset": "source",
+      "id": "R01",
+      "query": "symbol_uid",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-model/src/id.rs",
+          "byte_span": {
+            "start": 619,
+            "end": 637
+          },
+          "required_text": "pub fn symbol_uid(",
+          "source_sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R02",
+      "query": "symbol identity resilient to line number drift",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-model/src/id.rs",
+          "byte_span": {
+            "start": 786,
+            "end": 817
+          },
+          "required_text": "h.update(file_path.as_bytes());",
+          "source_sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-model/src/id.rs",
+          "byte_span": {
+            "start": 851,
+            "end": 878
+          },
+          "required_text": "h.update(qname.as_bytes());",
+          "source_sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-model/src/id.rs",
+          "byte_span": {
+            "start": 912,
+            "end": 938
+          },
+          "required_text": "h.update(kind.as_bytes());",
+          "source_sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-model/src/id.rs",
+          "byte_span": {
+            "start": 1019,
+            "end": 1071
+          },
+          "required_text": "h.update(Self::normalize_signature(sig).as_bytes());",
+          "source_sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R03",
+      "query": "chunk_with_symbols",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-parsers/src/chunker.rs",
+          "byte_span": {
+            "start": 444,
+            "end": 470
+          },
+          "required_text": "pub fn chunk_with_symbols(",
+          "source_sha256": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R04",
+      "query": "split long top level symbols into line budget chunks",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-parsers/src/chunker.rs",
+          "byte_span": {
+            "start": 2582,
+            "end": 2620
+          },
+          "required_text": "if nlines as u32 <= self.line_budget {",
+          "source_sha256": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-parsers/src/chunker.rs",
+          "byte_span": {
+            "start": 3198,
+            "end": 3235
+          },
+          "required_text": "let end = (off + budget).min(nlines);",
+          "source_sha256": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-parsers/src/chunker.rs",
+          "byte_span": {
+            "start": 3256,
+            "end": 3301
+          },
+          "required_text": "let t = lines[s0 + off..s0 + end].join(\"\\n\");",
+          "source_sha256": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R05",
+      "query": "CURRENT_SCHEMA_VERSION",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-db/src/index_migrate.rs",
+          "byte_span": {
+            "start": 484,
+            "end": 526
+          },
+          "required_text": "pub const CURRENT_SCHEMA_VERSION: u32 = 7;",
+          "source_sha256": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R06",
+      "query": "rebuild on database schema mismatch",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-db/src/index_migrate.rs",
+          "byte_span": {
+            "start": 1153,
+            "end": 1190
+          },
+          "required_text": "if stored == CURRENT_SCHEMA_VERSION {",
+          "source_sha256": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-db/src/index_migrate.rs",
+          "byte_span": {
+            "start": 1245,
+            "end": 1261
+          },
+          "required_text": "if stored != 0 {",
+          "source_sha256": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-db/src/index_migrate.rs",
+          "byte_span": {
+            "start": 1459,
+            "end": 1504
+          },
+          "required_text": "return Ok(SchemaStatus::Mismatch { stored });",
+          "source_sha256": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R07",
+      "query": "compute_dirty_closure",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-index/src/dirty_closure.rs",
+          "byte_span": {
+            "start": 5132,
+            "end": 5168
+          },
+          "required_text": "pub(crate) fn compute_dirty_closure<",
+          "source_sha256": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R08",
+      "query": "propagate changed exports to importers until fixpoint",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-index/src/dirty_closure.rs",
+          "byte_span": {
+            "start": 6928,
+            "end": 6969
+          },
+          "required_text": "let importers = importers_of(&frontier)?;",
+          "source_sha256": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-index/src/dirty_closure.rs",
+          "byte_span": {
+            "start": 10416,
+            "end": 10480
+          },
+          "required_text": "let flipped = surface_changed_of(&candidates, &changed_so_far)?;",
+          "source_sha256": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-index/src/dirty_closure.rs",
+          "byte_span": {
+            "start": 10782,
+            "end": 10829
+          },
+          "required_text": "changed_so_far.extend(flipped.iter().cloned());",
+          "source_sha256": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-index/src/dirty_closure.rs",
+          "byte_span": {
+            "start": 11164,
+            "end": 11189
+          },
+          "required_text": "frontier = next_frontier;",
+          "source_sha256": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R09",
+      "query": "compute_fingerprint_for_unit",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-index/src/indexer_phases/dirty.rs",
+          "byte_span": {
+            "start": 10707,
+            "end": 10739
+          },
+          "required_text": "fn compute_fingerprint_for_unit(",
+          "source_sha256": "6a4f3d0598a2732f33ad56e99ce92f42fa633471d51e6097f2ba7489f0549e01",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R10",
+      "query": "reexport targets cache",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-index/src/indexer_phases/dirty.rs",
+          "byte_span": {
+            "start": 8617,
+            "end": 8675
+          },
+          "required_text": ".filter(|path| !targets_cache.contains_key(path.as_str()))",
+          "source_sha256": "6a4f3d0598a2732f33ad56e99ce92f42fa633471d51e6097f2ba7489f0549e01",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-index/src/indexer_phases/dirty.rs",
+          "byte_span": {
+            "start": 8784,
+            "end": 8856
+          },
+          "required_text": "let mut fetched = self.db.reads().reexport_targets_for_files(&missing)?;",
+          "source_sha256": "6a4f3d0598a2732f33ad56e99ce92f42fa633471d51e6097f2ba7489f0549e01",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-index/src/indexer_phases/dirty.rs",
+          "byte_span": {
+            "start": 9139,
+            "end": 9187
+          },
+          "required_text": "targets_cache.insert(path.to_string(), targets);",
+          "source_sha256": "6a4f3d0598a2732f33ad56e99ce92f42fa633471d51e6097f2ba7489f0549e01",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R11",
+      "query": "preselect_files",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 29111,
+            "end": 29134
+          },
+          "required_text": "pub fn preselect_files(",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R12",
+      "query": "working set pinned recent file ranking",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 9569,
+            "end": 9616
+          },
+          "required_text": "RankDecaySource::WorkingSet => ctx.boost_paths,",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 9629,
+            "end": 9673
+          },
+          "required_text": "RankDecaySource::Recent => ctx.recent_paths,",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 9686,
+            "end": 9730
+          },
+          "required_text": "RankDecaySource::Pinned => ctx.pinned_paths,",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 9958,
+            "end": 9994
+          },
+          "required_text": "ranking.preselect_working_set_floor,",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 10120,
+            "end": 10151
+          },
+          "required_text": "ranking.preselect_recent_floor,",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/preselect.rs",
+          "byte_span": {
+            "start": 10272,
+            "end": 10303
+          },
+          "required_text": "ranking.preselect_pinned_floor,",
+          "source_sha256": "3e4e20cba205dc6d7344c508867d13791361812a7640274507239e08988e5c44",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R13",
+      "query": "chunk_scope",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-search/src/plan.rs",
+          "byte_span": {
+            "start": 5695,
+            "end": 5750
+          },
+          "required_text": "pub(crate) fn chunk_scope(&self) -> cc_db::ChunkScope {",
+          "source_sha256": "95f3969fb88657123fc4dfd7192680ca1b1e7c7aa59ca64a858daacf2ab812cc",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/plan.rs",
+          "byte_span": {
+            "start": 5759,
+            "end": 5785
+          },
+          "required_text": "self.filters.chunk_scope()",
+          "source_sha256": "95f3969fb88657123fc4dfd7192680ca1b1e7c7aa59ca64a858daacf2ab812cc",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "source",
+      "id": "R14",
+      "query": "normalize caller requests and materialize file filters",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "cc-search/src/plan.rs",
+          "byte_span": {
+            "start": 2985,
+            "end": 3032
+          },
+          "required_text": "normalize_request_from_dsl(&mut request, &dsl);",
+          "source_sha256": "95f3969fb88657123fc4dfd7192680ca1b1e7c7aa59ca64a858daacf2ab812cc",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "cc-search/src/plan.rs",
+          "byte_span": {
+            "start": 4199,
+            "end": 4212
+          },
+          "required_text": "let filters =",
+          "source_sha256": "95f3969fb88657123fc4dfd7192680ca1b1e7c7aa59ca64a858daacf2ab812cc",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S01",
+      "query": "renew_session",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 51,
+            "end": 69
+          },
+          "required_text": "def renew_session(",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S02",
+      "query": "过期会话令牌如何更新",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 193,
+            "end": 224
+          },
+          "required_text": "if now - issued_at >= lifetime:",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 233,
+            "end": 287
+          },
+          "required_text": "return {\"token\": token + \":renewed\", \"issued_at\": now}",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 292,
+            "end": 339
+          },
+          "required_text": "return {\"token\": token, \"issued_at\": issued_at}",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S03",
+      "query": "retry_connection",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 342,
+            "end": 363
+          },
+          "required_text": "def retry_connection(",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S04",
+      "query": "停止反复连接的尝试次数在哪里限制",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 342,
+            "end": 384
+          },
+          "required_text": "def retry_connection(connect, attempts=3):",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 466,
+            "end": 491
+          },
+          "required_text": "for _ in range(attempts):",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "session.py",
+          "byte_span": {
+            "start": 591,
+            "end": 646
+          },
+          "required_text": "raise TimeoutError(\"connection retry budget exhausted\")",
+          "source_sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S05",
+      "query": "renew_subscription",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "billing.py",
+          "byte_span": {
+            "start": 67,
+            "end": 90
+          },
+          "required_text": "def renew_subscription(",
+          "source_sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S06",
+      "query": "延长付费订阅而不是刷新登录令牌",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "billing.py",
+          "byte_span": {
+            "start": 67,
+            "end": 107
+          },
+          "required_text": "def renew_subscription(account, months):",
+          "source_sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "billing.py",
+          "byte_span": {
+            "start": 192,
+            "end": 263
+          },
+          "required_text": "return {\"account\": account, \"months\": months, \"invoice_required\": True}",
+          "source_sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S07",
+      "query": "validate_amount",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "billing.py",
+          "byte_span": {
+            "start": 266,
+            "end": 286
+          },
+          "required_text": "def validate_amount(",
+          "source_sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S08",
+      "query": "amount must be positive",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "billing.py",
+          "byte_span": {
+            "start": 299,
+            "end": 314
+          },
+          "required_text": "if amount <= 0:",
+          "source_sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "billing.py",
+          "byte_span": {
+            "start": 323,
+            "end": 366
+          },
+          "required_text": "raise ValueError(\"amount must be positive\")",
+          "source_sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S09",
+      "query": "normalizeRoute",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "routes.ts",
+          "byte_span": {
+            "start": 0,
+            "end": 31
+          },
+          "required_text": "export function normalizeRoute(",
+          "source_sha256": "08d50dfa77926e01926999c0d195f9dbcc4dcb137a995b65b1005e37e33c4caf",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S10",
+      "query": "validateAmount",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "routes.ts",
+          "byte_span": {
+            "start": 100,
+            "end": 131
+          },
+          "required_text": "export function validateAmount(",
+          "source_sha256": "08d50dfa77926e01926999c0d195f9dbcc4dcb137a995b65b1005e37e33c4caf",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "smoke",
+      "id": "S11",
+      "query": "zzNoSuchSymbolInThisFixture4938",
+      "path_prefix": null,
+      "no_answer": true,
+      "required_source_evidence": [],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "absence_basis": "All locked fixture sources independently read; no declaration, implementation or callsite of the requested invented symbol/task scheduler exists. Mere empty Partial is not validated absence.",
+      "absence_required_status": "NoMatch with all required lookup/scope evidence complete; zero source hits; no timeout/error/partial absence claim.",
+      "scope_files_reviewed": [
+        {
+          "path": "session.py",
+          "sha256": "55fdfe6c5dfbbbed4694cc69a958a87be3853765ae3d18a148fe8406973dc61f"
+        },
+        {
+          "path": "billing.py",
+          "sha256": "b739514b20e3a627c788553ae65472bea785b407867ebc187305aac120d84750"
+        },
+        {
+          "path": "routes.ts",
+          "sha256": "08d50dfa77926e01926999c0d195f9dbcc4dcb137a995b65b1005e37e33c4caf"
+        }
+      ]
+    },
+    {
+      "dataset": "exact",
+      "id": "E01",
+      "query": "decodeFrame",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "src/codec.py",
+          "byte_span": {
+            "start": 0,
+            "end": 18
+          },
+          "required_text": "def decodeFrame():",
+          "source_sha256": "d9b29d282122e033f241600be19c3a38957e1685622a6a2b02d56d1361a00e8a",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E02",
+      "query": "encodeFrame",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "src/codec.py",
+          "byte_span": {
+            "start": 35,
+            "end": 53
+          },
+          "required_text": "def encodeFrame():",
+          "source_sha256": "d9b29d282122e033f241600be19c3a38957e1685622a6a2b02d56d1361a00e8a",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E03",
+      "query": "src/codec.py",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "src/codec.py",
+          "byte_span": {
+            "start": 0,
+            "end": 18
+          },
+          "required_text": "def decodeFrame():",
+          "source_sha256": "d9b29d282122e033f241600be19c3a38957e1685622a6a2b02d56d1361a00e8a",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "src/codec.py",
+          "byte_span": {
+            "start": 35,
+            "end": 53
+          },
+          "required_text": "def encodeFrame():",
+          "source_sha256": "d9b29d282122e033f241600be19c3a38957e1685622a6a2b02d56d1361a00e8a",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E04",
+      "query": "src/noise.py",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "src/noise.py",
+          "byte_span": {
+            "start": 0,
+            "end": 22
+          },
+          "required_text": "def describe_format():",
+          "source_sha256": "45136207ad3cb027172e0f96fe46940a35c168792f2d4e6879d2e3d32e1c8094",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E05",
+      "query": "probeBoundary",
+      "path_prefix": "pkg/api",
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "pkg/api/target.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "def probeBoundary():",
+          "source_sha256": "068592c1d82573efd5f888c1d661ac681881e53aeaa8af9b2f340a71bbea0183",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "pkg/api/target.py",
+          "byte_span": {
+            "start": 25,
+            "end": 41
+          },
+          "required_text": "return 'allowed'",
+          "source_sha256": "068592c1d82573efd5f888c1d661ac681881e53aeaa8af9b2f340a71bbea0183",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E06",
+      "query": "probeBoundary",
+      "path_prefix": "pkg/apix",
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "pkg/apix/decoy.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "def probeBoundary():",
+          "source_sha256": "87acee3b5111e1d167d494a90b279c4d0ea72a8cc9b8f5cedaa3cf0f90501aff",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "pkg/apix/decoy.py",
+          "byte_span": {
+            "start": 25,
+            "end": 80
+          },
+          "required_text": "return 'neighboring directory, not the requested scope'",
+          "source_sha256": "87acee3b5111e1d167d494a90b279c4d0ea72a8cc9b8f5cedaa3cf0f90501aff",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E07",
+      "query": "pkg/api/target.py",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "pkg/api/target.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "def probeBoundary():",
+          "source_sha256": "068592c1d82573efd5f888c1d661ac681881e53aeaa8af9b2f340a71bbea0183",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "exact",
+      "id": "E08",
+      "query": "describe_format",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "src/noise.py",
+          "byte_span": {
+            "start": 0,
+            "end": 22
+          },
+          "required_text": "def describe_format():",
+          "source_sha256": "45136207ad3cb027172e0f96fe46940a35c168792f2d4e6879d2e3d32e1c8094",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I01",
+      "query": "load_settings timeout default",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "DEFAULT_TIMEOUT = 30",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 23,
+            "end": 52
+          },
+          "required_text": "def load_settings(overrides):",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 57,
+            "end": 118
+          },
+          "required_text": "return {\"timeout\": overrides.get(\"timeout\", DEFAULT_TIMEOUT)}",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I02",
+      "query": "load_settings 中 timeout 默认值在哪里",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "DEFAULT_TIMEOUT = 30",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 23,
+            "end": 52
+          },
+          "required_text": "def load_settings(overrides):",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 57,
+            "end": 118
+          },
+          "required_text": "return {\"timeout\": overrides.get(\"timeout\", DEFAULT_TIMEOUT)}",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I03",
+      "query": "Where is the default waiting duration selected?",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "DEFAULT_TIMEOUT = 30",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 23,
+            "end": 52
+          },
+          "required_text": "def load_settings(overrides):",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 57,
+            "end": 118
+          },
+          "required_text": "return {\"timeout\": overrides.get(\"timeout\", DEFAULT_TIMEOUT)}",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I04",
+      "query": "网络一直无响应时最多等多久",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 0,
+            "end": 20
+          },
+          "required_text": "DEFAULT_TIMEOUT = 30",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 23,
+            "end": 52
+          },
+          "required_text": "def load_settings(overrides):",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "settings.py",
+          "byte_span": {
+            "start": 57,
+            "end": 118
+          },
+          "required_text": "return {\"timeout\": overrides.get(\"timeout\", DEFAULT_TIMEOUT)}",
+          "source_sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I05",
+      "query": "decode_frame",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 0,
+            "end": 22
+          },
+          "required_text": "def decode_frame(raw):",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I06",
+      "query": "decode_frame 的定义在哪",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 0,
+            "end": 22
+          },
+          "required_text": "def decode_frame(raw):",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I07",
+      "query": "Which function splits incoming bytes at a colon?",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 0,
+            "end": 22
+          },
+          "required_text": "def decode_frame(raw):",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 83,
+            "end": 116
+          },
+          "required_text": "tag, payload = raw.split(b\":\", 1)",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 121,
+            "end": 156
+          },
+          "required_text": "return tag.decode(\"ascii\"), payload",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I08",
+      "query": "把二进制数据拆成标签和正文的是哪段代码",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 0,
+            "end": 22
+          },
+          "required_text": "def decode_frame(raw):",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 83,
+            "end": 116
+          },
+          "required_text": "tag, payload = raw.split(b\":\", 1)",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "decoder.py",
+          "byte_span": {
+            "start": 121,
+            "end": 156
+          },
+          "required_text": "return tag.decode(\"ascii\"), payload",
+          "source_sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I09",
+      "query": "process_packet decode_frame caller",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 35,
+            "end": 59
+          },
+          "required_text": "def process_packet(raw):",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 64,
+            "end": 96
+          },
+          "required_text": "tag, payload = decode_frame(raw)",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 101,
+            "end": 138
+          },
+          "required_text": "return {\"kind\": tag, \"body\": payload}",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return.",
+      "source_relation": {
+        "caller": "dispatcher.py:process_packet",
+        "callee": "decoder.py:decode_frame",
+        "kind": "CALLS",
+        "direction": "caller_to_callee",
+        "source_callsite_required": true,
+        "note": "source callsite satisfies question; any emitted graph fact must independently agree, graph metadata alone is not source span evidence"
+      }
+    },
+    {
+      "dataset": "intents",
+      "id": "I10",
+      "query": "process_packet 在哪里调用 decode_frame",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 35,
+            "end": 59
+          },
+          "required_text": "def process_packet(raw):",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 64,
+            "end": 96
+          },
+          "required_text": "tag, payload = decode_frame(raw)",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 101,
+            "end": 138
+          },
+          "required_text": "return {\"kind\": tag, \"body\": payload}",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return.",
+      "source_relation": {
+        "caller": "dispatcher.py:process_packet",
+        "callee": "decoder.py:decode_frame",
+        "kind": "CALLS",
+        "direction": "caller_to_callee",
+        "source_callsite_required": true,
+        "note": "source callsite satisfies question; any emitted graph fact must independently agree, graph metadata alone is not source span evidence"
+      }
+    },
+    {
+      "dataset": "intents",
+      "id": "I11",
+      "query": "Where is the decoded packet turned into a dictionary?",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 35,
+            "end": 59
+          },
+          "required_text": "def process_packet(raw):",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 64,
+            "end": 96
+          },
+          "required_text": "tag, payload = decode_frame(raw)",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 101,
+            "end": 138
+          },
+          "required_text": "return {\"kind\": tag, \"body\": payload}",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return.",
+      "source_relation": {
+        "caller": "dispatcher.py:process_packet",
+        "callee": "decoder.py:decode_frame",
+        "kind": "CALLS",
+        "direction": "caller_to_callee",
+        "source_callsite_required": true,
+        "note": "source callsite satisfies question; any emitted graph fact must independently agree, graph metadata alone is not source span evidence"
+      }
+    },
+    {
+      "dataset": "intents",
+      "id": "I12",
+      "query": "接收到报文后由谁交给解码器再包装结果",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 35,
+            "end": 59
+          },
+          "required_text": "def process_packet(raw):",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 64,
+            "end": 96
+          },
+          "required_text": "tag, payload = decode_frame(raw)",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "dispatcher.py",
+          "byte_span": {
+            "start": 101,
+            "end": 138
+          },
+          "required_text": "return {\"kind\": tag, \"body\": payload}",
+          "source_sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return.",
+      "source_relation": {
+        "caller": "dispatcher.py:process_packet",
+        "callee": "decoder.py:decode_frame",
+        "kind": "CALLS",
+        "direction": "caller_to_callee",
+        "source_callsite_required": true,
+        "note": "source callsite satisfies question; any emitted graph fact must independently agree, graph metadata alone is not source span evidence"
+      }
+    },
+    {
+      "dataset": "intents",
+      "id": "I13",
+      "query": "safe_decode ValueError",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 35,
+            "end": 56
+          },
+          "required_text": "def safe_decode(raw):",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 74,
+            "end": 98
+          },
+          "required_text": "return decode_frame(raw)",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 103,
+            "end": 121
+          },
+          "required_text": "except ValueError:",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 130,
+            "end": 141
+          },
+          "required_text": "return None",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I14",
+      "query": "safe_decode 如何捕获 ValueError",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 35,
+            "end": 56
+          },
+          "required_text": "def safe_decode(raw):",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 74,
+            "end": 98
+          },
+          "required_text": "return decode_frame(raw)",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 103,
+            "end": 121
+          },
+          "required_text": "except ValueError:",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 130,
+            "end": 141
+          },
+          "required_text": "return None",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I15",
+      "query": "How does a malformed frame fail without crashing?",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 35,
+            "end": 56
+          },
+          "required_text": "def safe_decode(raw):",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 74,
+            "end": 98
+          },
+          "required_text": "return decode_frame(raw)",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 103,
+            "end": 121
+          },
+          "required_text": "except ValueError:",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 130,
+            "end": 141
+          },
+          "required_text": "return None",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I16",
+      "query": "坏数据会不会把程序弄崩",
+      "path_prefix": null,
+      "no_answer": false,
+      "required_source_evidence": [
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 35,
+            "end": 56
+          },
+          "required_text": "def safe_decode(raw):",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 74,
+            "end": 98
+          },
+          "required_text": "return decode_frame(raw)",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 103,
+            "end": 121
+          },
+          "required_text": "except ValueError:",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        },
+        {
+          "path": "errors.py",
+          "byte_span": {
+            "start": 130,
+            "end": 141
+          },
+          "required_text": "return None",
+          "source_sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8",
+          "rule": "complete span union of independently byte-valid source hits; refs/path metadata do not satisfy"
+        }
+      ],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "reason": "Definition/location evidence for identifier/path lookup; actual behavior statements for semantic/how/caller queries. Minimum core task evidence, not whole candidate inventory or whole-file return."
+    },
+    {
+      "dataset": "intents",
+      "id": "I17",
+      "query": "nonexistentGalaxyScheduler987",
+      "path_prefix": null,
+      "no_answer": true,
+      "required_source_evidence": [],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "absence_basis": "All locked fixture sources independently read; no declaration, implementation or callsite of the requested invented symbol/task scheduler exists. Mere empty Partial is not validated absence.",
+      "absence_required_status": "NoMatch with all required lookup/scope evidence complete; zero source hits; no timeout/error/partial absence claim.",
+      "scope_files_reviewed": [
+        {
+          "path": "decoder.py",
+          "sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570"
+        },
+        {
+          "path": "dispatcher.py",
+          "sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f"
+        },
+        {
+          "path": "display.py",
+          "sha256": "52d66bca760693d8e1ac00cea2f0a4f44f71ddb8a2c57f104eca7e4cbd18e503"
+        },
+        {
+          "path": "errors.py",
+          "sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8"
+        },
+        {
+          "path": "example.py",
+          "sha256": "111d2ce68062af595cc1c467710340b56733474213041afd59b804bc9b89f1d8"
+        },
+        {
+          "path": "settings.py",
+          "sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33"
+        }
+      ]
+    },
+    {
+      "dataset": "intents",
+      "id": "I18",
+      "query": "不存在的任务调度器Galaxy987",
+      "path_prefix": null,
+      "no_answer": true,
+      "required_source_evidence": [],
+      "graph_object_required": false,
+      "inventory_coverage_not_task_evidence": true,
+      "absence_basis": "All locked fixture sources independently read; no declaration, implementation or callsite of the requested invented symbol/task scheduler exists. Mere empty Partial is not validated absence.",
+      "absence_required_status": "NoMatch with all required lookup/scope evidence complete; zero source hits; no timeout/error/partial absence claim.",
+      "scope_files_reviewed": [
+        {
+          "path": "decoder.py",
+          "sha256": "b4ddf69abd03a7d93e76b748fdac9a86fdab9fd7a6c529e3f629613a890da570"
+        },
+        {
+          "path": "dispatcher.py",
+          "sha256": "5af9aa157c01658560ceb4edcfc2aadbf1d117b2560686ec30d62dd9414b0f2f"
+        },
+        {
+          "path": "display.py",
+          "sha256": "52d66bca760693d8e1ac00cea2f0a4f44f71ddb8a2c57f104eca7e4cbd18e503"
+        },
+        {
+          "path": "errors.py",
+          "sha256": "cba2455ba1384560ebfa9a4c31df5849030ab0463fecc8521d723e83eb4aace8"
+        },
+        {
+          "path": "example.py",
+          "sha256": "111d2ce68062af595cc1c467710340b56733474213041afd59b804bc9b89f1d8"
+        },
+        {
+          "path": "settings.py",
+          "sha256": "b82f287335ece72684249ce571ac0f1e2ec86fd8d6edac6791c3bcc065ab6f33"
+        }
+      ]
+    }
+  ],
+  "known_scope_limitations": [
+    "Minimum task evidence is separate from truthful lane inventory Partial and packing omissions.",
+    "No question in these 51 explicitly requests a machine graph object; graph correctness certification requires independent graph constraint fixtures and emitted-fact validation.",
+    "Derived obligations do not replace fixed original ranking/no-answer scorers or their retained failures.",
+    "No threshold/marker may be removed after candidate failure without independent source-spec justification."
+  ]
+}

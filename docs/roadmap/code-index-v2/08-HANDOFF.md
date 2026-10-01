@@ -2,27 +2,24 @@
 
 ## 1. 当前状态
 
-**115 done / 3 in_progress / 74 todo；P5为15/20。P5-016～018保持进行中，P5-019/020保持todo。** 最新P5-D final-v3验收failed：Rust 1.95 workspace退出101，`project_session::tests::close_idle_instances_closes_cached_non_active_projects`预期关闭2实例、实际1；独立audit.json不存在。先定位并复验此问题，不重复开发已完成的P5-C，也不把stable的通过替代最低工具链验收。见[当前快照](CHECKPOINT-2026-09-30.md)与[P5-D-PROGRESS.md](P5-D-PROGRESS.md)。
+**118 done / 1 in_progress / 73 todo，P5 为 18/20；P5-016～018 已验收，P5-019 正在实施通用查询质量修复与独立消融。P5-D 整批与 G5/M2 尚未完成。** 已接入能力状态、查询视图租约、LRU 弱登记与取消安全的冷初始化、非阻塞空闲清理，以及 search/context 的显式策略参数；dense 仍明确 disabled。最新见 [P5-D-RUNTIME-IMPLEMENTATION.md](P5-D-RUNTIME-IMPLEMENTATION.md) 与 [P5-D-RUNTIME-GATE.json](P5-D-RUNTIME-GATE.json)。
 
-**下面两段为P5-C历史验收，不能用于宣称当前P5-D通过。** 其完整记录见[P5-C-COMPLETION.md](P5-C-COMPLETION.md)与[P5-C-GATE.json](P5-C-GATE.json)。
+冻结 623 文件、6675050 字节，摘要 `44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0`；38 条命令收据、源码归档、日志和不可变二进制一致。证据目录 `artifacts/benchmarks/p5d-20260930-resume/final-v3`。stable：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored；1.95.0：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored。各组失败 0，忽略项不计通过，重叠组不相加为唯一测试总数。
 
-冻结616文件、6605476字节，摘要`471919b1d73828db2938d314e3319dd34827a7c1828388925c45b1db7372f473`。38条命令收据，源码/归档/日志/不可变二进制均核验；最终接受版本对当前源码重新运行全套验证；中间版本曾复用的旧收据只保留历史，不代替最终结果。证据目录`artifacts/benchmarks/p5c-20260929-completion/final-v5-20260930`。两工具链各workspace 1767 passed/57 ignored、HTTP 255 passed/50 ignored、专项 71 passed/2 ignored、真实stdio 24 passed、取消协议1 passed、watcher17 passed。各组内部失败0，忽略项不计通过；测试组有重叠，不相加为唯一测试总数。
+固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败；原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致。新增 12 组 release 项目清理/租约观测，复跑 90 次旧查询成本和 192 次准入请求；可选 ps 进程树采样在本机停滞后显式关闭，对应 RSS 为 null、原生自身 RSS 单列。核心验证未跳过；不是 P5-019 的完整消融、100k、尾延迟或发行认证。
 
-固定51题306请求的逐题Top-1/nDCG无负差分，无效源码命中为0，raw回放一致。原Partial/S11继续失败，本次新增18次真实预算省略Partial，涉及6个问题；完整检索Gate保持not_passed，不能称G5/M2通过。gold与评分公式未改。一次默认并行HTTP测试的debug索引计时超过原500毫秒门限，原失败保留；源码不变的独立复验通过，后续计时相关测试组串行执行，内部并发测试不变。未放宽阈值，不把隔离通过当成共享负载性能认证。
+Git HEAD=`0a56a257f9a92c54d06ea5be0ce1d1763917a527`；未提交、推送、PR 或合并，既有工作与失败证据保留。
 
-本次Git快照以`4514630dcd26481cf6dbc2aff38824ed71ef06da`为父基线，保存当前源码与全部任务文档；提交号以仓库Git历史为准。轻量原始收据位于`artifacts/checkpoints/20260930-git-sync/p5d-final-v3/`，完整benchmark工作区、二进制和导出包保留本地而不入Git。历史收据的旧HEAD/digest不改写成新提交证据。
+## 2. 下一步：P5-019，再进入 P5-020
 
-## 2. 当前批次：先收口P5-D的P5-016～018，再推进P5-019～020
+先读本轮 RUNTIME-IMPLEMENTATION/GATE、[QUERY_LIFECYCLE.md](../../internals/QUERY_LIFECYCLE.md) 与既有 EVIDENCE_ASSEMBLY/QUERY_EXECUTION。P5-016～018 已验收，不重复实现或把三个任务的通过升级为整批通过。
 
-先调查最低工具链下空闲项目回收测试为何只关闭一个实例；目前只有失败现象，不能先断言是计时抖动或产品缺陷。保留原失败收据，冻结修复源码后执行所需复验和独立审计，满足验收再勾选P5-016～018。随后按依赖推进P5-019的质量/成本/并发消融及P5-020整体验收；保留原题库、评分和失败门禁。
+P5-019 必须完成独立 exact/path/selector 等查询质量、成本、并发消融，记录真实混合构建与查询的延迟、线程/资源归属。当前 51 题配对只证明排序和完整性状态未回退，不替代独立消融。保留旧 Partial、S11 与真实预算省略，不能改 gold、按问题编号特判或压掉状态来修绿。
 
-先读P5-C-COMPLETION/GATE、EVIDENCE_ASSEMBLY.md与QUERY_EXECUTION.md，复用ReadGeneration、拥有资源的QueryHandle、有界执行、取消栅栏和rank-only融合。最终校验必须在selector/packing之前；异步后置freshness仍需完整字节计数和接受代际复核，不能换用另一活动项目的正文。
+冷路径登记锁属于工作线程直到缓存发布，已打开缓存走不受冷锁影响的快路径；查询 clone 共用租约，在取消后仍运行的 blocking 工作结束前不能释放。保持这些负例，不为吞吐牺牲实例一致性。监听器启动/原生析构不可强制抢占；20 秒启动看门狗不是性能指标，既有 500 毫秒 debug 索引门限未修改。
 
-预算的正文/引用优先级已修复旧五题退化；文件引用保留原digest，召回理由是诊断，不是准确函数正文。新增packing.partial不是旧失败消失，P5-019/020必须复核完整性、无答案及实际代价。不得改gold、按题目编号特判或压掉Partial修绿。
+P5-020/G5 需在当前实现上完成本地增强版整体验收后再判断 M2；真实 provider/vector、持久化 semantic epoch、公开 holdout、100k 和跨平台发行仍未完成。
 
-三次外层装配尝试和三次内部检索共用原deadline，不是无限重试；每文件磁盘检查不是原子快照。配置取得前600秒临时准入、不可中断SQL、冷路由等旧边界保留。需要P5-D后才能判断G5/M2，不能凭P5-C完成提前宣布。
-
-schema21不变，public adapter7、retrieval policy16、packing spec2。预算针对code_index_context结果对象，不包含JSON-RPC帧；其他旧工具形状保留原预算。没有真实provider/vector、持久化semantic epoch、原子文件系统快照、公开holdout、跨平台或发行认证。
 
 ## 3. 每次开始
 

@@ -773,7 +773,22 @@ mod tests {
         let index_b = session.active_index().await;
         assert!(!Arc::ptr_eq(&index_a, &index_b), "B must be a new instance");
 
-        let closed = close_idle_instances(&session.active, &session.project_cache).await;
+        // set_active_project starts a watcher whose configuration probe can
+        // briefly hold B's read lock. Each idle sweep is deliberately
+        // nonblocking, so require eventual full reclamation, not that the
+        // first sweep wins that race. Sum every sweep (no best-of sample).
+        let closed = tokio::time::timeout(Duration::from_secs(5), async {
+            let mut closed = 0;
+            loop {
+                closed += close_idle_instances(&session.active, &session.project_cache).await;
+                if closed == 2 {
+                    break closed;
+                }
+                tokio::time::sleep(Duration::from_millis(10)).await;
+            }
+        })
+        .await
+        .expect("both project instances must become reclaimable after transient contention");
         assert_eq!(
             closed, 2,
             "both active B and cached non-active A must close"
@@ -797,6 +812,50 @@ mod tests {
             "LRU must reuse instance A"
         );
         assert!(!reopened.read().unwrap().is_closed(), "A must be reopened");
+        session.shutdown().await;
+    }
+
+    /// A watcher's short read probe is enough to make an idle sweep skip an
+    /// instance. Reproduce that interleaving explicitly, then prove the next
+    /// sweep reclaims the same instance when the probe releases its guard.
+    #[tokio::test(flavor = "current_thread")]
+    async fn idle_sweep_skips_reader_then_reclaims_every_cached_instance() {
+        let a = TempDir::new().unwrap();
+        let b = TempDir::new().unwrap();
+        let session = ProjectSession::new(Some(a.path()));
+        let index_a = session.active_index().await;
+        // Route B without starting an unrelated native watcher: the reader
+        // below deterministically supplies the actual contention boundary.
+        let services_b = session
+            .services_for_path(normalize_path(b.path()))
+            .await
+            .unwrap();
+        let index_b = services_b.index();
+        *session.active.write().await = services_b;
+        let (ready_tx, ready_rx) = tokio::sync::oneshot::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let reader = index_b.clone();
+        let worker = std::thread::spawn(move || {
+            let _probe = reader.read().unwrap();
+            ready_tx.send(()).unwrap();
+            release_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        });
+        ready_rx.await.unwrap();
+        let first =
+            tokio::time::timeout(Duration::from_millis(500), session.evict_idle_now()).await;
+        release_tx.send(()).unwrap();
+        worker.join().unwrap();
+        assert_eq!(first.expect("idle sweep must not wait behind a reader"), 1);
+        assert!(index_a.read().unwrap().is_closed());
+        assert!(!index_b.read().unwrap().is_closed());
+        assert_eq!(session.evict_idle_now().await, 1);
+        assert!(index_b.read().unwrap().is_closed());
+        assert_eq!(
+            session.evict_idle_now().await,
+            0,
+            "closed aliases must not be double counted"
+        );
+        session.shutdown().await;
     }
 
     /// An idle-evicted NON-active project must reopen transparently when the

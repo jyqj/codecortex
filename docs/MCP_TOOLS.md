@@ -15,7 +15,7 @@
 
 ### 检索能力与显式策略（P5-D）
 
-`status(aspect="capabilities").retrieval` 区分 `no_project / closed / empty / available / error`，保留已有布尔字段。`local_state=available` 只表示本地路径可运行，不保证每条查询完整。`semantic_state=not_configured` 表示无端口；宿主注入接口时为 `port_attached_unverified`，不能据此声称真实模型就绪。当前 `dense_state=disabled`，尚未实现 provider/vector publication。状态查询不调用端口，不启动索引。实际覆盖仍以查询的 lanes/lane_receipts、GraphExplain、source_freshness、selection 与 packing 为准；构建原因沿用原 BuildExplain，不伪造持久化的最后构建报告。
+`status(aspect="capabilities").retrieval` 区分 `no_project / closed / empty / available / error`，保留已有布尔字段。`local_state=available` 只表示本地路径可运行，不保证每条查询完整。`semantic_state=not_configured` 表示无端口；宿主注入接口时为 `port_attached_unverified`，不能据此声称真实模型就绪。未接线时 `dense_state=disabled`；已接线且存在 active space 时，只读状态投影报告 `semantic_pending` / `semantic_failed` 与 `dense_published` / `dense_desired`。有 pending 或未发布文档为 `backfilling`，无 pending 且有失败任务为 `failed`；只有覆盖完成时才报告 `ready`，零 eligible 文档仍为 dense `partial`。无 active space 保留 `port_attached_unverified`，不会冒称 ready。该投影仅描述 active space 的数据库发布状态，不证明真实 provider 可用或语义效果；生产 worker 调度及完整 stdio 验收仍待 P7-014 收口。状态查询不调用端口，不启动索引。实际覆盖仍以查询的 lanes/lane_receipts、GraphExplain、source_freshness、selection 与 packing 为准；构建原因沿用原 BuildExplain，不伪造持久化的最后构建报告。
 
 `search`（hybrid 模式）与 `context` 新增可选 `retrieval_strategy=local|auto|semantic`。省略或 null 使用项目 `query.strategy`；local 不调用可选端口，auto 无端口时等价 local，semantic 无端口明确报不可用。显式 context 策略使用统一检索路径，不会被旧的直接符号快捷路径忽略。symbol 模式保留原数组响应，只接受省略/null/local，其他策略报参数错误。没有 provider、模型或任意 HTTP endpoint 新参数。
 

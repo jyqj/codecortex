@@ -83,7 +83,7 @@ use cc_semantic::publish::Publisher;
 use cc_semantic::queue::{drain_pending, BatchReport, EmbedHandler, LeaseGuard, TaskExit};
 use cc_semantic::space_switch::{drain_space_revocations, RevocationDrainReport};
 use cc_semantic::spec::{QueryEncodingSpec, VectorSpace};
-use cc_semantic::types::{DocSpecDigest, InputDigest};
+use cc_semantic::types::DocSpecDigest;
 use cc_semantic::vector::exact::{search, space_manifest_reads, ExactSearch};
 use std::collections::HashMap;
 use std::future::Future;
@@ -601,7 +601,7 @@ pub fn run_gc_until_exhausted(
     let mut total = GcCounters::default();
     let mut after: Option<GcPosition> = None;
     for _ in 0..GC_MAX_ROUNDS {
-        let (counters, resume, exhausted) = run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
+        let (counters, resume, _exhausted) = run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
         total.kept_fresh += counters.kept_fresh;
         total.kept_referenced += counters.kept_referenced;
         total.kept_live_task += counters.kept_live_task;
@@ -644,7 +644,7 @@ pub fn drain_revocations_with_reclaim(
     max_batch: usize,
     now_unix: i64,
 ) -> CcResult<RevocationReclaimReport> {
-    if db.reads().semantic_active_space()?.as_deref() == Some(space_id) {
+    if db.semantic_active_space()?.as_deref() == Some(space_id) {
         return Err(CcError::InvalidParams(format!(
             "revocation drain refuses the ACTIVE space {space_id}: only revoked or \
              diagnostic spaces are drainable (use drain_worker_batch for the active space)"

@@ -1,0 +1,41 @@
+{
+  "scope": "process_inherited_seccomp; not a network namespace",
+  "before": {
+    "NoNewPrivs": "1",
+    "Seccomp": "2",
+    "Seccomp_filters": "1"
+  },
+  "system_settings_changed": false,
+  "namespace_attempted": false,
+  "credential_values_recorded": false,
+  "closed_socket_fds": [],
+  "denied_syscalls": [
+    "socket",
+    "connect",
+    "io_uring_setup",
+    "io_uring_enter",
+    "io_uring_register"
+  ],
+  "unavailable_syscalls": [
+    "socketcall"
+  ],
+  "after": {
+    "NoNewPrivs": "1",
+    "Seccomp": "2",
+    "Seccomp_filters": "2"
+  },
+  "ipv4": {
+    "blocked": true,
+    "errno": 1
+  },
+  "ipv6": {
+    "blocked": true,
+    "errno": 1
+  },
+  "local_unix_pair": "allowed",
+  "exec_child_ipv4_ipv6_blocked": {
+    "2": true,
+    "10": true
+  },
+  "result": "passed_process_seccomp_scope"
+}

@@ -84,7 +84,7 @@ use cc_semantic::queue::{drain_pending, BatchReport, EmbedHandler, LeaseGuard, T
 use cc_semantic::space_switch::{drain_space_revocations, RevocationDrainReport};
 use cc_semantic::spec::{QueryEncodingSpec, VectorSpace};
 use cc_semantic::types::DocSpecDigest;
-use cc_semantic::vector::exact::{search, space_manifest_reads, ExactSearch};
+use cc_semantic::vector::exact::{search_controlled, space_manifest_reads, ExactSearch};
 use std::collections::HashMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -674,6 +674,7 @@ pub fn drain_revocations_with_reclaim(
 /// receipts (doc version / source span / coverage). Contains no provider and
 /// no transport type; the caller (lane adapter + `append_semantic_outcome`)
 /// re-verifies generation and identity against its own DB.
+#[derive(Clone)]
 pub struct ExactRecallService {
     db: Arc<IndexDb>,
     cache: Arc<ArtifactCache>,
@@ -705,146 +706,184 @@ impl ExactRecallService {
     }
 }
 
+impl ExactRecallService {
+    async fn recall_on(
+        &self,
+        request: SemanticRequest,
+        control: QueryControl,
+        pool: cc_search::execution::ExecutionPool,
+    ) -> CcResult<LaneOutcome> {
+        control.check()?;
+        let service = self.clone();
+        // run_cpu cancels its own control when the waiting future is
+        // dropped. Give admission an independent token so a lane timeout
+        // cannot cancel the parent's local fallback. The worker still
+        // checks the original child deadline and parent cancellation.
+        let admission = QueryControl::new(control.remaining())?;
+        let inside = control.clone();
+        cc_search::execution::until(
+            &control,
+            pool.run_cpu(admission, move || service.recall_blocking(request, inside)),
+        )
+        .await?
+    }
+
+    /// Entire synchronous scan/receipt assembly lives on the bounded worker.
+    fn recall_blocking(
+        &self,
+        request: SemanticRequest,
+        control: QueryControl,
+    ) -> CcResult<LaneOutcome> {
+        control.check()?;
+        let started = std::time::Instant::now();
+        // 0. P7-013 degradation gate: a provider-side failure (breaker
+        //    open/half-open, 429 gate pause, ledger degraded) silently
+        //    degrades THIS query's dense lane to an explicit
+        //    `Unavailable` receipt — before any scan, before any lock,
+        //    before the query vector cache is even read. The query
+        //    keeps its local lanes; the reason stays on the receipt.
+        let unhealthy = (self.health)();
+        control.check()?;
+        if let Some(reason) = unhealthy {
+            return Ok(self.unavailable(reason, started));
+        }
+        // 1. Query vector from the P7-009 cache ONLY — no provider, no
+        //    transport, nothing HTTP-shaped on this path.
+        let input = QueryInput::from_bytes(request.query.as_bytes())?;
+        let key = QueryCacheKey::new(&self.namespace, &self.query_spec, &input)?;
+        let Some(vector) = self.query_cache.get(&key) else {
+            return Ok(self.unavailable("query_vector_not_encoded", started));
+        };
+        control.check()?;
+        // 2. Filtered exact top-k (C09: hard scope before top-k) over the
+        //    published manifest × artifact cache, under one short DB read
+        //    connection. Freshness stays with the caller: the lane
+        //    adapter re-verifies `request.generation` against the live
+        //    generation after this returns. The scope declaration (P7-011,
+        //    wiring todo 12) runs on its own checkout AFTER the scan
+        //    released its connection (never a nested checkout); the
+        //    adapter's generation re-verification covers the interleave.
+        let space_digest = self.space.digest()?;
+        let scored = {
+            let conn = self.db.read_conn()?;
+            let manifest = SemanticManifestReads::on(&conn);
+            let scoped = space_manifest_reads(&manifest, &space_digest);
+            search_controlled(
+                &self.cache,
+                &scoped,
+                ExactSearch {
+                    space: &self.space,
+                    query: &vector.data,
+                    filter: &request.scope,
+                    k: request.limit,
+                    batch_rows: EXACT_BATCH_ROWS,
+                },
+                &control,
+            )?
+        };
+        // P7-013 recall checkpoint: the total deadline owns the whole
+        // lane (encoding → recall → fusion contribution); expiry here
+        // propagates as `QueryTimedOut`, which the lane adapter turns
+        // into a Timeout receipt instead of blocking the query.
+        control.check()?;
+        let declaration = crate::semantic_scope_guard::declare(
+            &self.db,
+            space_digest.as_str(),
+            &request.scope,
+            scored.len(),
+        )?;
+        // P7-011 scope fence: a recall whose space is not the active
+        // publishing space returns nothing (P6-017 混排拒绝), never a
+        // Complete-over-nothing receipt.
+        if !declaration.status.is_fusable() {
+            return Ok(LaneOutcome {
+                schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+                lane_id: LANE_ID.into(),
+                weight: 1.0,
+                status: declaration.status,
+                elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
+                candidate_count: 0,
+                coverage: declaration.coverage,
+                truncation_reason: declaration.truncation_reason,
+                candidates: Vec::new(),
+            });
+        }
+        // 3. Versioned identity for the receipts (doc version / source
+        //    span). The exact backend speaks doc_keys; the sanctioned
+        //    candidate reader speaks chunk_ids, so the doc_key →
+        //    chunk_id mapping comes from the document manifest first
+        //    (a manifest row without a current document is an integrity
+        //    error — the caller re-verifies every reference against its
+        //    own DB regardless).
+        let doc_keys: Vec<&str> = scored.iter().map(|doc| doc.doc_key.as_str()).collect();
+        control.check()?;
+        let chunk_ids = self.db.retrieval().chunk_ids_by_doc_keys(&doc_keys)?;
+        let mut missing: std::collections::HashSet<&str> = doc_keys.iter().copied().collect();
+        for (doc_key, _) in &chunk_ids {
+            missing.remove(doc_key.as_str());
+        }
+        if !missing.is_empty() {
+            return Err(CcError::Search(
+                "semantic candidate is not a current document".into(),
+            ));
+        }
+        let chunk_id_refs: Vec<&str> = chunk_ids.iter().map(|(_, id)| id.as_str()).collect();
+        let rows = self
+            .db
+            .retrieval()
+            .chunk_candidate_rows_by_ids(&chunk_id_refs)?;
+        let mut rows_by_doc_key: HashMap<&str, &_> = rows
+            .iter()
+            .map(|row| (row.document.doc_key.as_str(), row))
+            .collect();
+        let mut candidates = Vec::with_capacity(scored.len());
+        for (rank, doc) in scored.iter().enumerate() {
+            control.check()?;
+            let row = rows_by_doc_key
+                .remove(doc.doc_key.as_str())
+                .ok_or_else(|| {
+                    CcError::Search("semantic candidate is not a current document".into())
+                })?;
+            candidates.push(CandidateRef {
+                schema_version: CANDIDATE_REF_SCHEMA_VERSION,
+                document: row.document.clone(),
+                source_span: row.source_evidence.span,
+                legacy_chunk_id: row.chunk_id.clone(),
+                lane_id: LANE_ID.into(),
+                lane_rank: rank + 1,
+                raw_score: doc.score,
+                scoring_spec: SCORING_SPEC.into(),
+                exact_identity: false,
+            });
+        }
+        // The scope declaration owns the receipt's honesty: an exact scan
+        // over a fully published hard scope stays Complete (top-k is the
+        // requested limit, not a truncation); partial publication
+        // coverage of the scope surfaces as Partial +
+        // `semantic_coverage_uncovered` — never a Complete receipt over
+        // missing vectors (P6-018 口径, recall layer).
+        control.check()?;
+        Ok(LaneOutcome {
+            schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+            lane_id: LANE_ID.into(),
+            weight: 1.0,
+            status: declaration.status,
+            elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
+            candidate_count: candidates.len(),
+            coverage: declaration.coverage,
+            truncation_reason: declaration.truncation_reason,
+            candidates,
+        })
+    }
+}
+
 impl SemanticRecall for ExactRecallService {
     fn recall(
         &self,
         request: SemanticRequest,
         control: QueryControl,
     ) -> Pin<Box<dyn Future<Output = CcResult<LaneOutcome>> + Send + '_>> {
-        Box::pin(async move {
-            let started = std::time::Instant::now();
-            // 0. P7-013 degradation gate: a provider-side failure (breaker
-            //    open/half-open, 429 gate pause, ledger degraded) silently
-            //    degrades THIS query's dense lane to an explicit
-            //    `Unavailable` receipt — before any scan, before any lock,
-            //    before the query vector cache is even read. The query
-            //    keeps its local lanes; the reason stays on the receipt.
-            if let Some(reason) = (self.health)() {
-                return Ok(self.unavailable(reason, started));
-            }
-            // 1. Query vector from the P7-009 cache ONLY — no provider, no
-            //    transport, nothing HTTP-shaped on this path.
-            let input = QueryInput::from_bytes(request.query.as_bytes())?;
-            let key = QueryCacheKey::new(&self.namespace, &self.query_spec, &input)?;
-            let Some(vector) = self.query_cache.get(&key) else {
-                return Ok(self.unavailable("query_vector_not_encoded", started));
-            };
-            control.check()?;
-            // 2. Filtered exact top-k (C09: hard scope before top-k) over the
-            //    published manifest × artifact cache, under one short DB read
-            //    connection. Freshness stays with the caller: the lane
-            //    adapter re-verifies `request.generation` against the live
-            //    generation after this returns. The scope declaration (P7-011,
-            //    wiring todo 12) runs on its own checkout AFTER the scan
-            //    released its connection (never a nested checkout); the
-            //    adapter's generation re-verification covers the interleave.
-            let space_digest = self.space.digest()?;
-            let scored = {
-                let conn = self.db.read_conn()?;
-                let manifest = SemanticManifestReads::on(&conn);
-                let scoped = space_manifest_reads(&manifest, &space_digest);
-                search(
-                    &self.cache,
-                    &scoped,
-                    ExactSearch {
-                        space: &self.space,
-                        query: &vector.data,
-                        filter: &request.scope,
-                        k: request.limit,
-                        batch_rows: EXACT_BATCH_ROWS,
-                    },
-                )?
-            };
-            // P7-013 recall checkpoint: the total deadline owns the whole
-            // lane (encoding → recall → fusion contribution); expiry here
-            // propagates as `QueryTimedOut`, which the lane adapter turns
-            // into a Timeout receipt instead of blocking the query.
-            control.check()?;
-            let declaration = crate::semantic_scope_guard::declare(
-                &self.db,
-                space_digest.as_str(),
-                &request.scope,
-                scored.len(),
-            )?;
-            // P7-011 scope fence: a recall whose space is not the active
-            // publishing space returns nothing (P6-017 混排拒绝), never a
-            // Complete-over-nothing receipt.
-            if !declaration.status.is_fusable() {
-                return Ok(LaneOutcome {
-                    schema_version: LANE_OUTCOME_SCHEMA_VERSION,
-                    lane_id: LANE_ID.into(),
-                    weight: 1.0,
-                    status: declaration.status,
-                    elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
-                    candidate_count: 0,
-                    coverage: declaration.coverage,
-                    truncation_reason: declaration.truncation_reason,
-                    candidates: Vec::new(),
-                });
-            }
-            // 3. Versioned identity for the receipts (doc version / source
-            //    span). The exact backend speaks doc_keys; the sanctioned
-            //    candidate reader speaks chunk_ids, so the doc_key →
-            //    chunk_id mapping comes from the document manifest first
-            //    (a manifest row without a current document is an integrity
-            //    error — the caller re-verifies every reference against its
-            //    own DB regardless).
-            let doc_keys: Vec<&str> = scored.iter().map(|doc| doc.doc_key.as_str()).collect();
-            let chunk_ids = self.db.retrieval().chunk_ids_by_doc_keys(&doc_keys)?;
-            let mut missing: std::collections::HashSet<&str> =
-                doc_keys.iter().copied().collect();
-            for (doc_key, _) in &chunk_ids {
-                missing.remove(doc_key.as_str());
-            }
-            if !missing.is_empty() {
-                return Err(CcError::Search(
-                    "semantic candidate is not a current document".into(),
-                ));
-            }
-            let chunk_id_refs: Vec<&str> = chunk_ids.iter().map(|(_, id)| id.as_str()).collect();
-            let rows = self
-                .db
-                .retrieval()
-                .chunk_candidate_rows_by_ids(&chunk_id_refs)?;
-            let mut rows_by_doc_key: HashMap<&str, &_> = rows
-                .iter()
-                .map(|row| (row.document.doc_key.as_str(), row))
-                .collect();
-            let mut candidates = Vec::with_capacity(scored.len());
-            for (rank, doc) in scored.iter().enumerate() {
-                let row = rows_by_doc_key.remove(doc.doc_key.as_str()).ok_or_else(|| {
-                    CcError::Search("semantic candidate is not a current document".into())
-                })?;
-                candidates.push(CandidateRef {
-                    schema_version: CANDIDATE_REF_SCHEMA_VERSION,
-                    document: row.document.clone(),
-                    source_span: row.source_evidence.span,
-                    legacy_chunk_id: row.chunk_id.clone(),
-                    lane_id: LANE_ID.into(),
-                    lane_rank: rank + 1,
-                    raw_score: doc.score,
-                    scoring_spec: SCORING_SPEC.into(),
-                    exact_identity: false,
-                });
-            }
-            // The scope declaration owns the receipt's honesty: an exact scan
-            // over a fully published hard scope stays Complete (top-k is the
-            // requested limit, not a truncation); partial publication
-            // coverage of the scope surfaces as Partial +
-            // `semantic_coverage_uncovered` — never a Complete receipt over
-            // missing vectors (P6-018 口径, recall layer).
-            Ok(LaneOutcome {
-                schema_version: LANE_OUTCOME_SCHEMA_VERSION,
-                lane_id: LANE_ID.into(),
-                weight: 1.0,
-                status: declaration.status,
-                elapsed_us: started.elapsed().as_micros().min(u64::MAX as u128) as u64,
-                candidate_count: candidates.len(),
-                coverage: declaration.coverage,
-                truncation_reason: declaration.truncation_reason,
-                candidates,
-            })
-        })
+        Box::pin(self.recall_on(request, control, crate::service_factory::query_pool()))
     }
 }
 
@@ -1398,6 +1437,102 @@ mod tests {
 
     fn unhealthy(reason: &'static str) -> ProviderHealth {
         Arc::new(move || Some(reason))
+    }
+
+    #[tokio::test(flavor = "current_thread")]
+    async fn recall_worker_timeout_and_cancellation_keep_capacity_until_exit() {
+        use std::sync::{
+            atomic::{AtomicBool, Ordering},
+            Mutex,
+        };
+        use std::time::Duration;
+
+        for cancel_parent in [false, true] {
+            let (world, subsystem, _services) = seeded_world("recall-cancel-worker").await;
+            warm_query_cache(&subsystem).await;
+            let pool = cc_search::execution::ExecutionPool::new(1, 0, 1).unwrap();
+            let (started_tx, started_rx) = tokio::sync::oneshot::channel();
+            let started_tx = Mutex::new(Some(started_tx));
+            let (release_tx, release_rx) = std::sync::mpsc::channel();
+            let release_rx = Mutex::new(release_rx);
+            let exited = Arc::new(AtomicBool::new(false));
+            let health: ProviderHealth = {
+                let exited = exited.clone();
+                Arc::new(move || {
+                    started_tx.lock().unwrap().take().unwrap().send(()).unwrap();
+                    // Synthetic blocking I/O at the worker boundary. The safety
+                    // timeout prevents a failed test from leaking a stuck thread.
+                    let _ = release_rx
+                        .lock()
+                        .unwrap()
+                        .recv_timeout(Duration::from_secs(3));
+                    exited.store(true, Ordering::Release);
+                    None
+                })
+            };
+            let service = service_with_health(&world, &subsystem, health);
+            let parent = QueryControl::new(Duration::from_secs(5)).unwrap();
+            let child = parent.child(Duration::from_millis(200));
+            let request = SemanticRequest {
+                query: QUERY_TEXT.into(),
+                scope: HardScope::default(),
+                limit: 8,
+                policy_fingerprint: "worker-cancel-test".into(),
+                generation: world.db.reads().read_generation().unwrap(),
+            };
+            let worker_pool = pool.clone();
+            let query =
+                tokio::spawn(async move { service.recall_on(request, child, worker_pool).await });
+            tokio::time::timeout(Duration::from_secs(1), started_rx)
+                .await
+                .unwrap()
+                .unwrap();
+            // This current-thread runtime remains schedulable while synchronous
+            // work is blocked. Parent cancellation uses the original token.
+            if cancel_parent {
+                parent.cancel();
+            }
+            let result = tokio::time::timeout(Duration::from_secs(1), query)
+                .await
+                .unwrap()
+                .unwrap();
+            assert!(if cancel_parent {
+                matches!(result, Err(CcError::QueryCancelled))
+            } else {
+                matches!(result, Err(CcError::QueryTimedOut))
+            });
+            assert!(
+                !exited.load(Ordering::Acquire),
+                "caller returned before blocking I/O exited"
+            );
+            assert_eq!(pool.stats().cpu_in_flight, 1);
+            assert_eq!(pool.stats().cpu_admitted, 1);
+            let local = QueryControl::new(Duration::from_secs(1)).unwrap();
+            assert!(matches!(
+                pool.run_cpu(local, || Ok(())).await,
+                Err(CcError::QueryBusy)
+            ));
+            if !cancel_parent {
+                parent
+                    .check()
+                    .expect("lane timeout must leave the local fallback usable");
+            }
+            release_tx.send(()).unwrap();
+            tokio::time::timeout(Duration::from_secs(1), async {
+                while pool.stats().cpu_in_flight != 0 {
+                    tokio::task::yield_now().await;
+                }
+            })
+            .await
+            .unwrap();
+            assert!(exited.load(Ordering::Acquire));
+            let local = if cancel_parent {
+                QueryControl::new(Duration::from_secs(1)).unwrap()
+            } else {
+                parent.clone()
+            };
+            assert_eq!(pool.run_cpu(local, || Ok(42)).await.unwrap(), 42);
+        }
     }
 
     async fn warm_query_cache(subsystem: &SemanticSubsystem) {

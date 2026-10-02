@@ -2,7 +2,7 @@
 
 Executed final candidate: PR41 `c8c20b5b7d416372ee06ed5e248663c48912064e`, including PR38 `4654b9c37e4cb2c58539a29c8c8e023c03989bf4`.
 Earlier independently observed candidate: `bfaf45ead49469a5ba7bd5ea732a71fc0b6e247d`.
-PR41 remote head observed during PR preparation: `a9f5b7c13e2a4d79c25a017e3a8cbfb47e9037db`; its delta from c8c20b5 contains only author evidence and ledger/docs (five files), no source/config/test changes. This review's executed candidate remains **c8c20b5**; no claim that remote a9f5b7c was separately tested.
+Final independent review branch baseline: `a9f5b7c13e2a4d79c25a017e3a8cbfb47e9037db`; its delta from c8c20b5 contains only author evidence and ledger/docs (five files), no source/config/test changes. The branch adopts a9f5b7c; this review's actually executed candidate remains **c8c20b5**. The entire crates tree is identical, and receipt.json records SHA256 fingerprints for 13 relevant production modules at both commits. No redundant execution on a9f5b7c is claimed.
 
 ## Independent production harness
 

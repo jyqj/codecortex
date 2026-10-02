@@ -1,0 +1,85 @@
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `dev` profile [unoptimized] target(s) in 6.75s
+{"binary": "/tmp/p7-017-ci-runner/p7-017-semantic/codecortex", "receipt": "/tmp/p7-017-ci-runner/p7-017-semantic/build-receipt.json", "package_kind": "semantic", "features": ["semantic"], "sha256": "57831850f3413265a073c45f75fa8f9ef6ab5ab6f68e14b0698b381f46e10e75"}
+   Compiling cc-eval v1.0.0 (/workspace/codecortex/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 0.78s
+     Running tests/benchmark_adapters.rs (/tmp/p7-017-build/debug/deps/benchmark_adapters-d00c18fec2109a38)
+
+running 4 tests
+test p7_offline::build_receipt_rejects_identity_feature_and_binary_mismatch ... ok
+test exited_child_is_protocol_error_not_empty_search ... ok
+2026-10-02T22:03:38.178492Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:03:38.191578Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:03:38.191641Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:03:38.192883Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:03:38.192974Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T22:03:38.193769Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:38.220156Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpGkZB7C/.codecortex/index.sqlite3.tmp
+2026-10-02T22:03:38.232309Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T22:03:38.233807Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T22:03:38.238954Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T22:03:38.239125Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:38.246038Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:38.250459Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:38.289621Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:03:38.289707Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:03:38.289984Z  INFO cc_server::mcp: MCP server shut down gracefully
+test real_stdio_index_search_scope_and_tool_error ... ok
+[2m2026-10-02T22:03:40.153549Z[0m [32m INFO[0m [2mcc_db::index_migrate[0m[2m:[0m initializing index schema [3mversion[0m[2m=[0m22
+[2m2026-10-02T22:03:40.168184Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m Service initialized as server [3mpeer_info[0m[2m=[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+[2m2026-10-02T22:03:40.168294Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server started on stdio
+[2m2026-10-02T22:03:40.168487Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m received notification [3mnotification[0m[2m=[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+[2m2026-10-02T22:03:40.168578Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::handler::server[0m[2m:[0m client initialized
+[2m2026-10-02T22:03:40.172467Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.193272Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: creating temp database [3mtmp[0m[2m=[0m/tmp/.tmpHooigw/.codecortex/index.sqlite3.tmp
+[2m2026-10-02T22:03:40.205677Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: writing data to temp database
+[2m2026-10-02T22:03:40.209049Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: recreating indexes
+[2m2026-10-02T22:03:40.214083Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: temp database ready for swap
+[2m2026-10-02T22:03:40.214277Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.225670Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.229159Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.301812Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m19 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32602), message: "invalid mode: 'invalid' (valid: hybrid, symbol)", data: None }
+[2m2026-10-02T22:03:40.302959Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m20 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+[2m2026-10-02T22:03:40.304026Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m21 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+[2m2026-10-02T22:03:40.305128Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m22 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32603), message: "search error: symbol not found: no_such_fixture_symbol", data: None }
+[2m2026-10-02T22:03:40.305668Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m input stream terminated
+[2m2026-10-02T22:03:40.305826Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m serve finished [3mquit_reason[0m[2m=[0mClosed
+[2m2026-10-02T22:03:40.306072Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server shut down gracefully
+[2m2026-10-02T22:03:40.319893Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m Service initialized as server [3mpeer_info[0m[2m=[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+[2m2026-10-02T22:03:40.319967Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server started on stdio
+[2m2026-10-02T22:03:40.320274Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m received notification [3mnotification[0m[2m=[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+[2m2026-10-02T22:03:40.320372Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::handler::server[0m[2m:[0m client initialized
+[2m2026-10-02T22:03:40.350397Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m input stream terminated
+[2m2026-10-02T22:03:40.350484Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m serve finished [3mquit_reason[0m[2m=[0mClosed
+[2m2026-10-02T22:03:40.350713Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server shut down gracefully
+[2m2026-10-02T22:03:40.359982Z[0m [32m INFO[0m [2mcc_db::index_migrate[0m[2m:[0m initializing index schema [3mversion[0m[2m=[0m22
+[2m2026-10-02T22:03:40.373558Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m Service initialized as server [3mpeer_info[0m[2m=[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+[2m2026-10-02T22:03:40.373660Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server started on stdio
+[2m2026-10-02T22:03:40.373902Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m received notification [3mnotification[0m[2m=[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+[2m2026-10-02T22:03:40.374015Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::handler::server[0m[2m:[0m client initialized
+[2m2026-10-02T22:03:40.377456Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.396926Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: creating temp database [3mtmp[0m[2m=[0m/tmp/.tmpgwyeTU/.codecortex/index.sqlite3.tmp
+[2m2026-10-02T22:03:40.409261Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: writing data to temp database
+[2m2026-10-02T22:03:40.412400Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: recreating indexes
+[2m2026-10-02T22:03:40.417696Z[0m [32m INFO[0m [2mcc_db::index_db_rebuild[0m[2m:[0m full rebuild: temp database ready for swap
+[2m2026-10-02T22:03:40.417962Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.425576Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.429131Z[0m [32m INFO[0m [2mcc_index::memory_budget[0m[2m:[0m memory budget initialized [3mtotal_ram_mb[0m[2m=[0m18007 [3mbudget_mb[0m[2m=[0m9003 [3mfraction[0m[2m=[0m0.5
+[2m2026-10-02T22:03:40.505915Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m19 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32602), message: "invalid mode: 'invalid' (valid: hybrid, symbol)", data: None }
+[2m2026-10-02T22:03:40.506867Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m20 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+[2m2026-10-02T22:03:40.507869Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m21 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+[2m2026-10-02T22:03:40.508846Z[0m [33m WARN[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m response error [3mid[0m[2m=[0m22 [3merror[0m[2m=[0mErrorData { code: ErrorCode(-32603), message: "search error: symbol not found: no_such_fixture_symbol", data: None }
+[2m2026-10-02T22:03:40.509253Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m input stream terminated
+[2m2026-10-02T22:03:40.509315Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m serve finished [3mquit_reason[0m[2m=[0mClosed
+[2m2026-10-02T22:03:40.509544Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server shut down gracefully
+[2m2026-10-02T22:03:40.526235Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m Service initialized as server [3mpeer_info[0m[2m=[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+[2m2026-10-02T22:03:40.526332Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server started on stdio
+[2m2026-10-02T22:03:40.526514Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m received notification [3mnotification[0m[2m=[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+[2m2026-10-02T22:03:40.526600Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::handler::server[0m[2m:[0m client initialized
+[2m2026-10-02T22:03:40.556490Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m input stream terminated
+[2m2026-10-02T22:03:40.556579Z[0m [32m INFO[0m [1mserve_inner[0m[2m:[0m [2mrmcp::service[0m[2m:[0m serve finished [3mquit_reason[0m[2m=[0mClosed
+[2m2026-10-02T22:03:40.556913Z[0m [32m INFO[0m [2mcc_server::mcp[0m[2m:[0m MCP server shut down gracefully
+test p7_offline::real_stdio_default_disabled_semantic_contract ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.39s

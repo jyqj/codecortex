@@ -1,0 +1,88 @@
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling regex-automata v0.4.14
+   Compiling log v0.4.29
+   Compiling serde_json v1.0.149
+   Compiling tracing-core v0.1.36
+   Compiling r2d2 v0.8.10
+   Compiling tracing v0.1.44
+   Compiling r2d2_sqlite v0.35.0
+   Compiling mio v1.2.0
+   Compiling tempfile v3.27.0
+   Compiling tokio v1.50.0
+   Compiling regex v1.12.3
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling chrono v0.4.44
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling toml_edit v0.22.27
+   Compiling tree-sitter v0.24.7
+   Compiling globset v0.4.18
+   Compiling ignore v0.4.25
+   Compiling toml v0.8.23
+   Compiling cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+   Compiling cc-search v1.0.0 (/workspace/codecortex/crates/cc-search)
+    Finished `test` profile [unoptimized] target(s) in 27.03s
+     Running unittests src/lib.rs (/tmp/p7-017-build/debug/deps/cc_search-6c8a7dd56b219064)
+
+running 5 tests
+test execution::tests::async_timeout_keeps_parent_usable ... ok
+test execution::tests::semantic_lane_share_never_extends_the_total_deadline ... ok
+test execution::tests::cancelled_worker_retains_permit_and_cannot_publish_late ... ok
+test execution::tests::full_queue_rejects_and_aborted_waiter_releases_admission ... ok
+test execution::tests::deadline_discards_late_worker_result_and_reclaims_when_it_exits ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 293 filtered out; finished in 0.08s
+
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized] target(s) in 13.62s
+     Running unittests src/lib.rs (/tmp/p7-017-build/debug/deps/cc_server-d71d26a95cfe2cf9)
+
+running 1 test
+test mcp::query_tests::mcp_cancel_notification_stops_search_and_context_optional_recall ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 252 filtered out; finished in 0.18s
+
+   Compiling cc-eval v1.0.0 (/workspace/codecortex/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 1.61s
+     Running tests/p5b_execution.rs (/tmp/p7-017-build/debug/deps/p5b_execution-e522ac4cb5ffcedf)
+
+running 11 tests
+test explicit_expired_request_cannot_return_a_warm_cache_hit ... ok
+test cancellation_and_future_drop_release_async_work_without_a_detached_task ... ok
+test explicit_empty_scope_disables_optional_port_without_invoking_it ... ok
+test local_never_invokes_installed_port_and_missing_auto_is_local ... ok
+test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ignored, requires explicit CODECORTEX_BENCH_BINARY; real stdio query policy/handles
+test partial_receipt_and_provider_panics_remain_visible_not_complete_empty ... ok
+test owned_handle_survives_idle_close_but_poison_recovery_invalidates_old_engine ... ok
+test async_dispatch_preserves_resolution_freshness_and_project_identity ... ok
+test semantic_timeout_keeps_local_result_visible_and_does_not_cache_failure ... ok
+test semantic_candidates_are_hydrated_from_current_scoped_documents ... ok
+test slow_fake_does_not_hold_codeindex_lock_or_the_only_sql_connection ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.85s
+
+    Finished `test` profile [unoptimized] target(s) in 0.16s
+     Running tests/p5b_execution.rs (/tmp/p7-017-build/debug/deps/p5b_execution-e522ac4cb5ffcedf)
+
+running 1 test
+2026-10-02T22:03:15.201495Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:03:15.201579Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:03:15.202085Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:03:15.202188Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T22:03:15.203903Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:15.233065Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpuHy6zb/.codecortex/index.sqlite3.tmp
+2026-10-02T22:03:15.245981Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T22:03:15.248060Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T22:03:15.253819Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T22:03:15.254015Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:15.264225Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:15.270706Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:15.317672Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:03:15.317837Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:03:15.318275Z  INFO cc_server::mcp: MCP server shut down gracefully
+test real_mcp_preserves_tool_schema_and_exposes_offline_query_policy ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 10 filtered out; finished in 0.23s

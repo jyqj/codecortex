@@ -723,18 +723,18 @@ mod transport {
             ));
             // Real fixture runtime + only read-pool connection remain usable
             // during the isolated transport worker's blocked interval.
-            let guard = runtime
-                .try_write()
-                .expect("transport retained CodeIndex lock");
-            let db = guard.index_db().unwrap();
-            let conn = db.read_conn().unwrap();
-            assert_eq!(
-                conn.query_row("SELECT 1", [], |r| r.get::<_, i32>(0))
-                    .unwrap(),
-                1
-            );
-            drop(conn);
-            drop(guard);
+            {
+                let guard = runtime
+                    .try_write()
+                    .expect("transport retained CodeIndex lock");
+                let db = guard.index_db().unwrap();
+                let conn = db.read_conn().unwrap();
+                assert_eq!(
+                    conn.query_row("SELECT 1", [], |r| r.get::<_, i32>(0))
+                        .unwrap(),
+                    1
+                );
+            }
             if !cancel_parent {
                 parent
                     .check()

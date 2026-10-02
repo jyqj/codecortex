@@ -1,0 +1,21 @@
+# New independently opted-in query encoding contract — pending product wiring
+
+Product preparation baseline: `codex/cloud-p7-query-optin-integration@00e8c6d667198b1c0a1eb2b4a8fd69ca3fd71c4b`, including frozen PR33. Its existing 105-pass frozen evidence is retained, not re-executed as new coverage. Config/status commit `f9d12c2e2a950c9be31510459282ce7972ece2cb` defines the new switch and authorization status; the query encoder is not attached at this baseline. No successful new network path is claimed until the designated owner's service is wired into the product.
+
+Locked interface: `.codecortex.json` `semantic.allow_query_network: bool`, default false. All four gates are required: compiled semantic-http, semantic.enabled, semantic.network_opt_in, semantic.allow_query_network. Existing network_opt_in alone never authorizes user query/task encoding. MCP inputs add no authorization switch. Actual `/retrieval/query_encoding` fields are configured_opt_in, network_authorized, reason, request_scope (`nonlocal_nonempty_only`). Missing gate reasons come from the inspected owner code; all gates true currently yields query_encoder_not_attached.
+
+Owned source: only appended new `query_network_contract` tests/helpers in `crates/cc-server/tests/p7_v18_parameter_contract.rs`. Owned evidence: this directory. No config/schema/wiring, dependency, old test body or shared checklist change. Default D1/D2 remain intact; only synthetic loopback requests are permitted.
+
+Planned actual product acceptance:
+
+1. Deserialize actual config type: omitted/default/explicit false stay false, explicit true stays true; string/number/null/array/object boolean values reject. The file loader's documented fail-closed/default behavior is checked separately from typed parsing; do not invent a new public error shape.
+2. Observe all 14 actual tool schemas without a bypass parameter. Even with all configuration gates enabled, public search/context attempts to provide allow_query_network must be schema-rejected before encoding.
+3. Independent feature profiles default / semantic / semantic-http. All-gates request config under a missing feature must make zero query HTTP calls; attached-port cold cache remains unavailable, absent-port behavior retains its existing local/semantic contract.
+4. semantic-http one-factor gate table: semantic disabled; old network_opt_in false; new key missing; new false. Each gets unique never-warmed user query/task markers, through real stdio search/context. Count query versus document POSTs separately; document backfill traffic is permitted under its existing gates and is never mistaken for query authorization.
+5. All gates true: healthy loopback publishes documents; a user search marker with zero lexical overlap goes through the product query encoder and encode_queries, yields a nonempty **actual semantic lane candidate** and source result. A distinct context marker proves that path independently. Identical repeated requests hit the production cache and add no query POST. No manual cache insertion or internal query receipts.
+6. All gates true but local strategy / empty search hard path scope / invalid public parameters: zero query POST. A fresh session that reloads a revoked false config also sends zero query POST. Hot-reload/cancellation revocation semantics will follow the owner contract, not an invented interface or timing expectation.
+7. Match observed authorization/blocking against actual `/retrieval/query_encoding` fields and reason constants after the config/service combination is published. No guessed JSON child key.
+
+The mock records exact toy query input strings separately from document inputs, returns declared-model synthetic two-dimensional vectors, and binds 127.0.0.1 only. It supplies only a public dummy authorization marker. Network counters must be observed after responses, not inferred from return shape; every gate uses unique cold markers. No real credential/provider/source egress or semantic-quality assertion.
+
+Run only the new test filter (`query_network_contract`) against the final exact combination SHA; do not rerun the frozen PR33 matrix. Readiness, async publication and runtime shutdown are bounded; all failed/not_run samples are retained. Full P7-014 and nonempty public semantic path stay pending until real new wiring is executed and independently reviewed.

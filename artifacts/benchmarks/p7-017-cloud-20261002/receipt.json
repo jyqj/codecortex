@@ -1,0 +1,78 @@
+{
+  "baseline_branch": "codex/cloud-p7-recovery-integration",
+  "baseline_sha": "855b4fc8f2435215c438db629c1bd91f7a59510d",
+  "task": "P7-017 independent default/disabled stdio contract",
+  "formal_completion": "not_done; P7-016 dependency and broader V18/V21 release checks outstanding",
+  "toolchain": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2",
+  "build_profile": "dev, debug=0, incremental=0; locked/offline after registry dependency fetch",
+  "feature_default": "cc-server has no default feature declaration; --no-default-features equals default feature set",
+  "binaries": {
+    "default": {
+      "sha256": "c33a811cc2df4284694dcbf65995d227feef0911ea648d7e158726551afb1e15",
+      "bytes": 66221968,
+      "build_command": "cargo build -p cc-server --bin codecortex --no-default-features --locked --offline",
+      "dependency_has_cc_semantic": false
+    },
+    "semantic": {
+      "sha256": "030f8a64025af1b13144d82d9cbb38aeb555863dcefd9467cfc8e9fb8afa7436",
+      "bytes": 66921752,
+      "build_command": "cargo build -p cc-server --bin codecortex --no-default-features --features semantic --locked --offline",
+      "dependency_has_cc_semantic": true
+    }
+  },
+  "test_runs": {
+    "default": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "configuration_cases": 2,
+      "explicit_binary": "/tmp/p7-017-product-binaries/default/codecortex",
+      "command": "python3 deny_network.py --report network-default-run.json -- cargo test -p cc-eval --test benchmark_adapters --locked --offline -- --include-ignored --nocapture",
+      "environment": {
+        "CODECORTEX_BENCH_BINARY": "/tmp/p7-017-product-binaries/default/codecortex",
+        "P7_017_PACKAGE_KIND": "default",
+        "CODECORTEX_BENCH_OBSERVATIONS": "/workspace/codecortex/artifacts/benchmarks/p7-017-cloud-20261002"
+      }
+    },
+    "semantic": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "configuration_cases": 2,
+      "explicit_binary": "/tmp/p7-017-product-binaries/semantic/codecortex",
+      "command": "python3 deny_network.py --report network-semantic-run.json -- cargo test -p cc-eval --test benchmark_adapters --locked --offline -- --include-ignored --nocapture",
+      "environment": {
+        "CODECORTEX_BENCH_BINARY": "/tmp/p7-017-product-binaries/semantic/codecortex",
+        "P7_017_PACKAGE_KIND": "semantic",
+        "CODECORTEX_BENCH_OBSERVATIONS": "/workspace/codecortex/artifacts/benchmarks/p7-017-cloud-20261002"
+      }
+    }
+  },
+  "checks": {
+    "targeted_clippy": "passed (-D warnings)",
+    "owned_file_rustfmt": "passed",
+    "diff_check": "passed"
+  },
+  "network": {
+    "process_seccomp": "passed; no non-Unix socket creation/connect/io_uring; inherited sockets absent/closed; IPv4/IPv6 and exec-child probes passed",
+    "namespace": "blocked in prior parent attempt; not retried; not claimed",
+    "system_changes": false
+  },
+  "not_run": [
+    "P7-016 acceptance completion",
+    "entire V18 configuration/client compatibility matrix",
+    "V21 release packaging, rollback, MSRV and cross-platform validation",
+    "full workspace tests/clippy/fmt; only owned adapter target checked",
+    "live/paid provider (prohibited)"
+  ],
+  "scope": [
+    "crates/cc-eval/tests/benchmark_adapters.rs",
+    "artifacts/benchmarks/p7-017-cloud-20261002/"
+  ],
+  "source_transport": "only synthetic local fixtures; registry fetch downloads locked dependencies; no provider calls/source transmission",
+  "initial_failures": [
+    "offline default build: missing chacha20 registry cache; resolved by cargo fetch --locked",
+    "added missing-symbol assertion expected structured result; observed legacy MCP -32603 and corrected assertion; existing assertions unchanged"
+  ],
+  "owned_test_sha256": "620ac8ec22ea3c1b972001316267c21721b5b7b62c3289256691a1cdba40a781"
+}

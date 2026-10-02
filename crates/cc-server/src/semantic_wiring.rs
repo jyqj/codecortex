@@ -78,7 +78,7 @@ use cc_semantic::degrade::{quarantine_detected, requeue_after_degrade, Degradati
 use cc_semantic::gc::{run_gc_pass, GcConfig, GcCounters, GcPosition};
 use cc_semantic::ports::{DocumentInput, EmbeddingProvider, QueryInput};
 use cc_semantic::publish::Publisher;
-use cc_semantic::queue::{drain_pending, BatchReport, EmbedHandler, LeaseGuard, TaskExit};
+use cc_semantic::queue::{BatchReport, EmbedHandler, LeaseGuard, TaskExit};
 use cc_semantic::space_switch::{drain_space_revocations, RevocationDrainReport};
 use cc_semantic::spec::{QueryEncodingSpec, VectorSpace};
 use cc_semantic::types::DocSpecDigest;
@@ -508,6 +508,7 @@ pub struct WorkerDrainOptions<'a> {
     pub owner: &'a str,
     pub max_batch: usize,
     pub now_unix: i64,
+    pub lifecycle: Option<&'a cc_db::semantic_publish::LifecycleFence>,
 }
 
 pub fn drain_worker_batch(
@@ -522,6 +523,7 @@ pub fn drain_worker_batch(
         owner,
         max_batch,
         now_unix,
+        lifecycle,
     } = options;
     let limits = cc_semantic::queue::WorkerLimits::validated(
         max_batch,
@@ -538,46 +540,57 @@ pub fn drain_worker_batch(
         &subsystem.space,
         &subsystem.doc_spec,
         incarnation,
-    )?;
+    )?
+    .with_lifecycle(lifecycle);
     let handler = EmbedHandler::new(publisher, provider, resolve_input);
     let mut quarantined = 0usize;
     let mut requeued_after_degrade = 0usize;
-    let report = drain_pending(db, owner, &limits, &mut |guard: &LeaseGuard<'_>| {
-        // Degrade pre-check: a corrupt artifact must never reach the
-        // provider. Quarantine + requeue WITHOUT consuming the attempt
-        // budget; the task was disposed by the degrade path itself, so the
-        // loop must not touch it again.
-        let task = guard.task();
-        let input = cc_semantic::degrade::task_input(task);
-        if let CacheRead::Corrupt(report) =
-            subsystem
-                .cache
-                .get(&subsystem.space, &input, &subsystem.doc_spec)?
-        {
-            let record = quarantine_detected(
-                &subsystem.cache,
-                &subsystem.ledger,
-                &subsystem.space,
-                &input,
-                &subsystem.doc_spec,
-                &report,
-                now_unix,
-            )?;
-            quarantined += usize::from(record.is_some());
-            if requeue_after_degrade(
-                db,
-                task,
-                "semantic degrade: corrupt cache artifact quarantined, task requeued",
-            )? {
-                requeued_after_degrade += 1;
+    let report = cc_semantic::queue::drain_pending_with_lifecycle(
+        db,
+        owner,
+        &limits,
+        lifecycle,
+        &mut |guard: &LeaseGuard<'_>| {
+            // Degrade pre-check: a corrupt artifact must never reach the
+            // provider. Quarantine + requeue WITHOUT consuming the attempt
+            // budget; the task was disposed by the degrade path itself, so the
+            // loop must not touch it again.
+            let task = guard.task();
+            let input = cc_semantic::degrade::task_input(task);
+            if let CacheRead::Corrupt(report) =
+                subsystem
+                    .cache
+                    .get(&subsystem.space, &input, &subsystem.doc_spec)?
+            {
+                let record = quarantine_detected(
+                    &subsystem.cache,
+                    &subsystem.ledger,
+                    &subsystem.space,
+                    &input,
+                    &subsystem.doc_spec,
+                    &report,
+                    now_unix,
+                )?;
+                quarantined += usize::from(record.is_some());
+                if requeue_after_degrade(
+                    db,
+                    task,
+                    "semantic degrade: corrupt cache artifact quarantined, task requeued",
+                )? {
+                    requeued_after_degrade += 1;
+                }
+                return Ok(TaskExit::Disposed);
             }
-            return Ok(TaskExit::Disposed);
-        }
-        handler.handle(guard)
-    })?;
+            handler.handle(guard)
+        },
+    )?;
     // 状态轮询转写: the probe's degradation view follows the worker, not
     // the assembly instant.
-    services.set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
+    let owner: Arc<dyn cc_model::semantic::SemanticRecall> = subsystem.recall.clone();
+    services.set_semantic_degradation_for(
+        &owner,
+        SemanticDegradation::from(subsystem.ledger.snapshot()),
+    );
     Ok(DrainOutcome {
         batch: report,
         quarantined,

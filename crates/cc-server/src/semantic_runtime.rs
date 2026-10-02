@@ -19,7 +19,8 @@ pub struct SemanticRuntime {
     provider: ProviderSource,
     cancellation: tokio_util::sync::CancellationToken,
     closed: AtomicBool,
-    lifecycle: cc_db::semantic_publish::LifecycleFence,
+    lifecycle: Arc<cc_db::semantic_publish::LifecycleFence>,
+    query_encoding: Mutex<Option<Arc<crate::semantic_query_encoding::QueryEncodingContext>>>,
     running: AtomicBool,
     requested: AtomicBool,
     backfill_cursor: Mutex<Option<String>>,
@@ -68,7 +69,8 @@ impl SemanticRuntime {
             provider,
             cancellation: tokio_util::sync::CancellationToken::new(),
             closed: AtomicBool::new(false),
-            lifecycle: cc_db::semantic_publish::LifecycleFence::default(),
+            lifecycle: Arc::new(cc_db::semantic_publish::LifecycleFence::default()),
+            query_encoding: Mutex::new(None),
             running: AtomicBool::new(false),
             requested: AtomicBool::new(false),
             // Reopening an active index must also reconcile missing desired rows.
@@ -104,6 +106,27 @@ impl SemanticRuntime {
             ));
         }
         Ok(provider)
+    }
+    pub(crate) async fn encode_query(
+        self: &Arc<Self>,
+        query: String,
+        control: cc_model::query::QueryControl,
+    ) -> CcResult<()> {
+        let context = self
+            .query_encoding
+            .lock()
+            .map_err(|_| cc_model::CcError::Other("query encoder unavailable".into()))?
+            .clone();
+        if let Some(context) = context {
+            crate::semantic_query_encoding::ensure_query_vector(
+                context,
+                query,
+                control,
+                self.services.pin(),
+            )
+            .await?;
+        }
+        Ok(())
     }
     pub fn close(&self) {
         self.lifecycle.close();
@@ -383,41 +406,139 @@ pub fn from_config(
         return Ok(None);
     }
     let retry = RetryPolicy::from_provider_config(config)?;
+    let query_config = config.clone();
     let config = config.clone();
     let namespace = subsystem.namespace.clone();
     let receipts = Arc::new(ReceiptLedger::new(4096)?);
-    SemanticRuntime::new_with_factory(db, subsystem, services, move |cancellation| {
-        let transport_config = config.clone();
-        let transport_cancellation = cancellation.clone();
-        let provider = crate::semantic_provider_factory::build_embedding_provider(&config, || {
-            crate::semantic_http_transport::build_http_transport_with_cancellation(
-                &transport_config,
-                transport_cancellation,
-            )
-        })?
-        .ok_or_else(|| cc_model::CcError::Config("semantic worker provider disabled".into()))?;
-        let gate = (config.max_concurrent > 0).then(crate::service_factory::semantic_provider_gate);
-        let admitted = Arc::new(AdmittedProvider {
-            inner: provider,
-            gate: gate.clone(),
-            namespace: namespace.clone(),
-            wait: std::time::Duration::from_millis(config.acquire_timeout_ms),
-            cancellation,
+    let query_receipts = receipts.clone();
+    let runtime =
+        SemanticRuntime::new_with_factory(db, subsystem, services, move |cancellation| {
+            let transport_config = config.clone();
+            let transport_cancellation = cancellation.clone();
+            let provider =
+                crate::semantic_provider_factory::build_embedding_provider(&config, || {
+                    crate::semantic_http_transport::build_http_transport_with_cancellation(
+                        &transport_config,
+                        transport_cancellation,
+                    )
+                })?
+                .ok_or_else(|| {
+                    cc_model::CcError::Config("semantic worker provider disabled".into())
+                })?;
+            let gate =
+                (config.max_concurrent > 0).then(crate::service_factory::semantic_provider_gate);
+            let admitted = Arc::new(AdmittedProvider {
+                inner: provider,
+                gate: gate.clone(),
+                namespace: namespace.clone(),
+                wait: std::time::Duration::from_millis(config.acquire_timeout_ms),
+                cancellation,
+                control: None,
+            });
+            Ok(Arc::new(
+                RetryingProvider::new(
+                    admitted,
+                    retry.clone(),
+                    crate::service_factory::semantic_circuit_breaker(),
+                    gate,
+                )
+                .with_receipts(
+                    receipts.clone(),
+                    CostBudget::new(config.retry_max_cost_units),
+                ),
+            ) as Arc<dyn EmbeddingProvider>)
+        })?;
+    if query_config.allow_query_network {
+        use crate::semantic_query_encoding::{query_deadline_transport, QueryEncodingContext};
+        // Hard partition: foreground cannot consume either background slot.
+        // Both classes acquire the same FIFO provider gate for each attempt.
+        static FOREGROUND: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
+        let capacity = FOREGROUND
+            .get_or_init(|| Arc::new(tokio::sync::Semaphore::new(2)))
+            .clone();
+        let namespace = runtime.subsystem.namespace.clone();
+        let spec = runtime.subsystem.query_spec.clone();
+        let max_tokens = spec.max_tokens() as usize;
+        let input_budget = cc_semantic::admission::InputBudget::validated(
+            1,
+            max_tokens
+                .checked_mul(4)
+                .ok_or_else(|| cc_model::CcError::Config("query input bound overflow".into()))?,
+            max_tokens,
+        )?;
+        let context = Arc::new(QueryEncodingContext {
+            factory: Arc::new(move |control, cancellation| {
+                control.check()?;
+                let raw_config = query_config.clone();
+                let transport_token = cancellation.clone();
+                let transport_control = control.clone();
+                let provider = crate::semantic_provider_factory::build_embedding_provider(
+                    &query_config,
+                    || {
+                        let raw =
+                            crate::semantic_http_transport::build_http_transport_with_cancellation(
+                                &raw_config,
+                                transport_token.clone(),
+                            )?;
+                        Ok(query_deadline_transport(
+                            raw,
+                            transport_control,
+                            transport_token,
+                        ))
+                    },
+                )?
+                .ok_or_else(|| cc_model::CcError::Config("query provider disabled".into()))?;
+                let gate = (query_config.max_concurrent > 0)
+                    .then(crate::service_factory::semantic_provider_gate);
+                let admitted = Arc::new(AdmittedProvider {
+                    inner: provider,
+                    gate: gate.clone(),
+                    namespace: namespace.clone(),
+                    wait: std::time::Duration::from_millis(query_config.acquire_timeout_ms),
+                    cancellation,
+                    control: Some(control.clone()),
+                });
+                // One attempt: no retry/backoff can escape the absolute child budget.
+                let mut policy = RetryPolicy::from_provider_config(&query_config)?;
+                policy.max_attempts = 1;
+                policy.total_deadline = policy.total_deadline.min(control.remaining());
+                Ok(Arc::new(
+                    RetryingProvider::new(
+                        admitted,
+                        policy,
+                        crate::service_factory::semantic_circuit_breaker(),
+                        gate,
+                    )
+                    .with_receipts(
+                        query_receipts.clone(),
+                        CostBudget::new(query_config.retry_max_cost_units),
+                    ),
+                ) as Arc<dyn EmbeddingProvider>)
+            }),
+            cache: runtime.subsystem.query_cache.clone(),
+            namespace: runtime.subsystem.namespace.clone(),
+            spec,
+            input_budget,
+            lifecycle: runtime.lifecycle.clone(),
+            cancellation: runtime.cancellation.clone(),
+            capacity,
         });
-        Ok(Arc::new(
-            RetryingProvider::new(
-                admitted,
-                retry.clone(),
-                crate::service_factory::semantic_circuit_breaker(),
-                gate,
-            )
-            .with_receipts(
-                receipts.clone(),
-                CostBudget::new(config.retry_max_cost_units),
-            ),
-        ) as Arc<dyn EmbeddingProvider>)
-    })
-    .map(Some)
+        *runtime
+            .query_encoding
+            .lock()
+            .map_err(|_| cc_model::CcError::Other("query encoder unavailable".into()))? =
+            Some(context);
+        runtime
+            .subsystem
+            .recall
+            .install_query_encoder(Arc::downgrade(&runtime));
+        runtime
+            .services
+            .set_query_encoding_lifecycle(Some(runtime.lifecycle.clone()));
+    } else {
+        runtime.services.set_query_encoding_lifecycle(None);
+    }
+    Ok(Some(runtime))
 }
 
 #[cfg(feature = "semantic-http")]
@@ -427,9 +548,22 @@ struct AdmittedProvider {
     namespace: String,
     wait: std::time::Duration,
     cancellation: tokio_util::sync::CancellationToken,
+    control: Option<cc_model::query::QueryControl>,
 }
 #[cfg(feature = "semantic-http")]
 impl AdmittedProvider {
+    fn check_control(&self) -> Result<(), ProviderError> {
+        if let Some(control) = &self.control {
+            control.check().map_err(|error| {
+                if matches!(error, cc_model::CcError::QueryTimedOut) {
+                    ProviderError::Timeout
+                } else {
+                    ProviderError::Cancelled
+                }
+            })?;
+        }
+        Ok(())
+    }
     fn call(
         &self,
         call: impl FnOnce() -> Result<Vec<Vec<f32>>, ProviderError>,
@@ -437,18 +571,25 @@ impl AdmittedProvider {
         if self.cancellation.is_cancelled() {
             return Err(ProviderError::Cancelled);
         }
+        self.check_control()?;
+        let wait = self
+            .control
+            .as_ref()
+            .map_or(self.wait, |control| self.wait.min(control.remaining()));
         let _permit = self
             .gate
             .as_ref()
             .map(|gate| {
-                gate.try_acquire_permit(&self.namespace, self.wait)
+                gate.try_acquire_permit(&self.namespace, wait)
                     .map_err(|_| ProviderError::Timeout)
             })
             .transpose()?;
         if self.cancellation.is_cancelled() {
             return Err(ProviderError::Cancelled);
         }
+        self.check_control()?;
         let result = call();
+        self.check_control()?;
         if self.cancellation.is_cancelled() {
             return Err(ProviderError::Cancelled);
         }

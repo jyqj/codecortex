@@ -240,7 +240,7 @@ P7-002 起 `.codecortex.json` 新增首个语义配置节 `semantic`（声明模
 | `breaker_open_ms` | `30000` | 断路器开路窗长（毫秒）：开路期间快速失败、不触 provider；窗口流逝后惰性进入半开、每次只放行一个探测调用（成功闭合、失败重开）。`AuthError` 立即开路且窗长 ×10。断路器是组合根单例（与 `ProviderGate` 同点装配），无线程/定时器，时钟注入。 |
 | `network_opt_in` | `false` | **显式网络 opt-in**（P7-007 外发政策）。默认 `false` = 默认无网络：未开启时组合根拒绝装配任何 provider transport（`cc-semantic::policy::gate_transport_assembly` 与适配器构造器双重强制，配置错误拒启）。`enabled: true` 单独不足以放开网络——外发必须由本键独立、显式声明。 |
 | `allow_http` | `false` | 是否允许明文 `http://` 端点（P7-007）。默认 `false` = 仅 https；明文端点被外发政策拒绝（配置错误），设置 `true` 才放行。生产部署建议保持关闭。 |
-| `allow_query_network` | `false` | 独立授权发送 query/task 文本以生成查询向量；`network_opt_in` 单独不会授权此用途。生产接线要求 `semantic-http` 构建、`enabled`、`network_opt_in` 与本键全部开启；local 查询及空 hard scope 不编码。当前接线正在实施，关闭本键保留 cold query vector 的明确 unavailable 结果。 |
+| `allow_query_network` | `false` | 独立授权发送 query/task 文本以生成查询向量；`network_opt_in` 单独不会授权此用途。生产接线要求 `semantic-http` 构建、`enabled`、`network_opt_in` 与本键全部开启；local 查询及空 hard scope 不编码。开启后在召回前生成并缓存查询向量，使用同一绝对查询预算、独立前台容量及单次尝试；关闭本键保留 cold query vector 的明确 unavailable 结果。 |
 
 ### 代码外发与凭据政策（P7-007，执行机制腿）
 

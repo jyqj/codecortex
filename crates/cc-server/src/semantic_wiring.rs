@@ -327,6 +327,7 @@ pub fn assemble_with(
             namespace: namespace.clone(),
             space: space.clone(),
             query_spec: query_spec.clone(),
+            query_encoder: Arc::default(),
             // P7-013: the SAME process-wide failure picture the workers use
             // (gate + breaker singletons) plus this project's ledger. Read
             // per query, never mutated here; no permit/lease is taken.
@@ -700,10 +701,21 @@ pub struct ExactRecallService {
     /// P7-013 degradation seam: consulted before any scan; `Some(reason)`
     /// short-circuits the lane into an `Unavailable(reason)` receipt.
     health: ProviderHealth,
+    query_encoder:
+        Arc<std::sync::RwLock<Option<std::sync::Weak<crate::semantic_runtime::SemanticRuntime>>>>,
 }
 
 impl ExactRecallService {
-    /// Cache-miss outcome: the query path never encodes inline. This is a
+    pub(crate) fn install_query_encoder(
+        &self,
+        runtime: std::sync::Weak<crate::semantic_runtime::SemanticRuntime>,
+    ) {
+        *self
+            .query_encoder
+            .write()
+            .unwrap_or_else(|p| p.into_inner()) = Some(runtime);
+    }
+    /// Cache-miss outcome when the independently opted-in encoder is absent. This is a
     /// per-query `Unavailable` (C10: "no result" ≠ "did not run"), cacheable
     /// no, retried no — P7-012/P7-013 own the inline-encoding ruling.
     fn unavailable(&self, reason: &str, started: std::time::Instant) -> LaneOutcome {
@@ -729,6 +741,60 @@ impl ExactRecallService {
         pool: cc_search::execution::ExecutionPool,
     ) -> CcResult<LaneOutcome> {
         control.check()?;
+        if !request.scope.is_empty() && (self.health)().is_none() {
+            let runtime = self
+                .query_encoder
+                .read()
+                .unwrap_or_else(|p| p.into_inner())
+                .as_ref()
+                .and_then(std::sync::Weak::upgrade);
+            if let Some(runtime) = runtime {
+                // Resolve an empty persisted domain before query text egress.
+                // The CPU job releases its read connection before network work.
+                let probe = self.clone();
+                let scope = request.scope.clone();
+                let inside = control.clone();
+                let admission = QueryControl::new(control.remaining())?;
+                let has_documents = cc_search::execution::until(
+                    &control,
+                    pool.run_cpu(admission, move || {
+                        probe.scope_has_documents(&scope, &inside)
+                    }),
+                )
+                .await??;
+                if !has_documents {
+                    return Ok(LaneOutcome {
+                        schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+                        lane_id: LANE_ID.into(),
+                        weight: 1.0,
+                        status: LaneStatus::Complete,
+                        elapsed_us: 0,
+                        candidate_count: 0,
+                        coverage: LaneCoverage::complete(None, 0),
+                        truncation_reason: None,
+                        candidates: Vec::new(),
+                    });
+                }
+                match runtime
+                    .encode_query(request.query.clone(), control.clone())
+                    .await
+                {
+                    Ok(()) => {}
+                    Err(
+                        error @ (cc_model::CcError::QueryTimedOut
+                        | cc_model::CcError::QueryCancelled
+                        | cc_model::CcError::QueryBusy),
+                    ) => return Err(error),
+                    Err(_) => {
+                        return Ok(self.unavailable(
+                            "semantic_query_encoding_failed",
+                            std::time::Instant::now(),
+                        ))
+                    }
+                }
+            }
+        }
+        control.check()?;
         let service = self.clone();
         // run_cpu cancels its own control when the waiting future is
         // dropped. Give admission an independent token so a lane timeout
@@ -741,6 +807,38 @@ impl ExactRecallService {
             pool.run_cpu(admission, move || service.recall_blocking(request, inside)),
         )
         .await?
+    }
+
+    fn scope_has_documents(
+        &self,
+        scope: &cc_model::retrieval::HardScope,
+        control: &QueryControl,
+    ) -> CcResult<bool> {
+        control.check()?;
+        let conn = self.db.read_conn()?;
+        let mut statement = conn.prepare(
+            "SELECT d.file_path,f.language FROM document_manifest d JOIN files f ON f.file_path=d.file_path WHERE ?1 IS NULL OR instr(d.file_path,?1)=1",
+        ).map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+        let mut rows = statement
+            .query([scope.path_prefix.as_deref()])
+            .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+        while let Some(row) = rows
+            .next()
+            .map_err(|e| cc_model::CcError::Database(e.to_string()))?
+        {
+            control.check()?;
+            let path: String = row
+                .get(0)
+                .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+            let language: String = row
+                .get(1)
+                .map_err(|e| cc_model::CcError::Database(e.to_string()))?;
+            if scope.passes(&path, cc_model::Language::from_name(&language)) {
+                return Ok(true);
+            }
+        }
+        control.check()?;
+        Ok(false)
     }
 
     /// Entire synchronous scan/receipt assembly lives on the bounded worker.
@@ -1447,6 +1545,7 @@ mod tests {
             namespace: subsystem.namespace.clone(),
             space: subsystem.space.clone(),
             query_spec: subsystem.query_spec.clone(),
+            query_encoder: Arc::default(),
             health,
         }
     }

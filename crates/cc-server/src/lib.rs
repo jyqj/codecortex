@@ -11,6 +11,8 @@ pub mod semantic_http_transport;
 #[cfg(feature = "semantic")]
 pub mod semantic_provider_factory;
 #[cfg(feature = "semantic")]
+pub mod semantic_query_encoding;
+#[cfg(feature = "semantic")]
 pub mod semantic_runtime;
 /// Optional semantic-subsystem composition-root wiring (P7-010 minimal
 /// assembly leg). Compiled only with the opt-in `semantic` feature; the

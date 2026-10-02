@@ -1,0 +1,75 @@
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+   Compiling cc-search v1.0.0 (/workspace/codecortex/crates/cc-search)
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 15.97s
+     Running tests/p7_query_deadline_public.rs (target/debug/deps/p7_query_deadline_public-26e5bdf84d416ae6)
+
+running 2 tests
+2026-10-02T23:14:41.054833Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T23:14:41.054834Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T23:14:41.068150Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T23:14:41.068307Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T23:14:41.068943Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T23:14:41.069032Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T23:14:41.069180Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T23:14:41.069233Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T23:14:41.069834Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T23:14:41.070071Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.070365Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T23:14:41.070657Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.099401Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpnFBXaB/project/.codecortex/index.sqlite3.tmp
+2026-10-02T23:14:41.099448Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpiwpVDD/project/.codecortex/index.sqlite3.tmp
+2026-10-02T23:14:41.111638Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T23:14:41.112464Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T23:14:41.113151Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T23:14:41.113890Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T23:14:41.118234Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T23:14:41.118382Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.118811Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T23:14:41.118912Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.126826Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.128137Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.131003Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.132873Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.160161Z  INFO serve_inner: rmcp::service: received notification notification=CancelledNotification(Notification { method: CancelledNotificationMethod, params: CancelledNotificationParam { request_id: Some(Number(4)), reason: Some("synthetic independent cancellation"), meta: None }, extensions: Extensions })
+2026-10-02T23:14:41.160243Z  INFO serve_inner: rmcp::service: cancelled id=4 reason="synthetic independent cancellation"
+2026-10-02T23:14:41.160413Z  WARN serve_inner: rmcp::service: response error id=4 error=ErrorData { code: ErrorCode(-32603), message: "query cancelled", data: None }
+2026-10-02T23:14:41.373678Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T23:14:41.373792Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T23:14:41.374029Z  INFO cc_server::mcp: MCP server shut down gracefully
+2026-10-02T23:14:41.385146Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T23:14:41.397781Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T23:14:41.397858Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T23:14:41.398114Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T23:14:41.398205Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T23:14:41.398918Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.430762Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpsWsdAy/project/.codecortex/index.sqlite3.tmp
+2026-10-02T23:14:41.443790Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T23:14:41.445362Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T23:14:41.450604Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T23:14:41.450769Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.457837Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.462770Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T23:14:41.696994Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T23:14:41.697104Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T23:14:41.697371Z  INFO cc_server::mcp: MCP server shut down gracefully
+test real_http_deadline_closes_transport_and_auto_keeps_local_search_and_context ... ok
+
+thread 'protocol_cancel_closes_real_http_and_later_auto_request_can_fallback' (121148) panicked at crates/cc-server/tests/p7_query_deadline_public.rs:131:10:
+called `Result::unwrap()` on an `Err` value: Elapsed(())
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test protocol_cancel_closes_real_http_and_later_auto_request_can_fallback ... FAILED
+
+failures:
+
+failures:
+    protocol_cancel_closes_real_http_and_later_auto_request_can_fallback
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s
+
+2026-10-02T23:14:42.162104Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T23:14:42.162229Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T23:14:42.162545Z  INFO cc_server::mcp: MCP server shut down gracefully
+error: test failed, to rerun pass `-p cc-server --test p7_query_deadline_public`

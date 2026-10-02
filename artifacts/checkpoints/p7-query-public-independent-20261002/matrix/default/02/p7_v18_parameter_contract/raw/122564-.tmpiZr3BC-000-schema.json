@@ -1,0 +1,135 @@
+{
+  "data": {
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "boost_files": {
+          "default": null,
+          "description": "File paths the agent is currently focused on. These files receive a\nranking boost in search results (they are not used as an exclusive filter).",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "conversation_queries": {
+          "default": null,
+          "description": "Prior conversational queries that bias lexical / semantic retrieval\ntoward the ongoing discussion.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "exact": {
+          "default": false,
+          "description": "When `true`, require an exact symbol-name match instead of fuzzy.",
+          "type": "boolean"
+        },
+        "file_preselect_limit": {
+          "default": null,
+          "description": "Maximum number of candidate files to consider during the preselection\nstage. Higher values trade latency for recall on large repos. Default\nis auto-tuned based on `top_k`.",
+          "format": "uint",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "intent": {
+          "default": null,
+          "description": "Optional intent hint to guide ranking (e.g. \"find error handling logic\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mode": {
+          "default": "hybrid",
+          "description": "Search strategy.\n- `\"hybrid\"` – combines text and graph signals (default)\n- `\"symbol\"` – exact / fuzzy symbol-name lookup only",
+          "type": "string"
+        },
+        "overlay_files": {
+          "default": null,
+          "description": "In-memory / unsaved file paths (editor overlays) that should be treated\nas part of the working set when ranking results.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "path_prefix": {
+          "default": null,
+          "description": "Restrict results to files whose path begins with this prefix\n(e.g. `\"src/api/\"`). Applied as an exclusive filter.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "pinned_files": {
+          "default": null,
+          "description": "Pinned / bookmarked file paths that should always rank highly when they\nmatch the query.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "project_path": {
+          "default": null,
+          "description": "Optional project root override.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "query": {
+          "description": "The search query string (natural language or symbol name).",
+          "type": "string"
+        },
+        "recent_files": {
+          "default": null,
+          "description": "Recently viewed / edited file paths. Receives a smaller ranking boost\nthan `boost_files`.",
+          "items": {
+            "type": "string"
+          },
+          "type": [
+            "array",
+            "null"
+          ]
+        },
+        "retrieval_strategy": {
+          "default": null,
+          "description": "Retrieval policy for hybrid mode: local, auto, or semantic. Omitted uses\nproject configuration; auto without a semantic port stays local. An\nunconfigured explicit semantic request fails instead of pretending ready.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "top_k": {
+          "default": 10,
+          "description": "Maximum number of results to return. Default 10.",
+          "format": "uint",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "query"
+      ],
+      "type": "object"
+    },
+    "tool": "search"
+  },
+  "kind": "schema",
+  "test": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults"
+}

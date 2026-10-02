@@ -89,6 +89,110 @@ mod p7_offline {
     use std::{collections::BTreeSet, path::Path, process::Stdio};
 
     type Client = RunningService<RoleClient, ()>;
+    fn verify_build_receipt(binary: &Path, package: &str, receipt: &Value) -> Result<(), String> {
+        use sha2::{Digest, Sha256};
+        let reject = || Err("product build receipt does not match binary/package/features".into());
+        let expected_features = match package {
+            "default" => json!([]),
+            "semantic" => json!(["semantic"]),
+            _ => return reject(),
+        };
+        let artifact = &receipt["cargo_artifact"];
+        let mut expected_command = vec![
+            "cargo",
+            "build",
+            "-p",
+            "cc-server",
+            "--bin",
+            "codecortex",
+            "--no-default-features",
+            "--locked",
+            "--message-format=json-render-diagnostics",
+        ];
+        if package == "semantic" {
+            expected_command.extend(["--features", "semantic"]);
+        }
+        let actual_command = &receipt["build_command"];
+        if actual_command != &json!(expected_command) {
+            expected_command.push("--offline");
+            if actual_command != &json!(expected_command) {
+                return reject();
+            }
+        }
+        if receipt["schema_version"] != 1
+            || receipt["build_exit_code"] != 0
+            || receipt["package_kind"] != package
+            || artifact["reason"] != "compiler-artifact"
+            || artifact["target"]["name"] != "codecortex"
+            || artifact["target"]["kind"] != json!(["bin"])
+            || artifact["features"] != expected_features
+            || artifact["executable"].as_str().is_none_or(str::is_empty)
+            || !artifact["package_id"].as_str().is_some_and(|id| {
+                id.rsplit_once('#').is_some_and(|(source, version)| {
+                    source.ends_with("/cc-server") && !version.is_empty()
+                })
+            })
+        {
+            return reject();
+        }
+        let path = receipt["binary_path"]
+            .as_str()
+            .ok_or_else(|| "missing receipt binary path".to_string())?;
+        if Path::new(path).canonicalize().map_err(|e| e.to_string())?
+            != binary.canonicalize().map_err(|e| e.to_string())?
+        {
+            return reject();
+        }
+        let digest = format!(
+            "{:x}",
+            Sha256::digest(std::fs::read(binary).map_err(|e| e.to_string())?)
+        );
+        if receipt["binary_sha256"] != digest {
+            return reject();
+        }
+        Ok(())
+    }
+
+    #[test]
+    fn build_receipt_rejects_identity_feature_and_binary_mismatch() {
+        use sha2::{Digest, Sha256};
+        let dir = tempfile::tempdir().unwrap();
+        let binary = dir.path().join("codecortex");
+        std::fs::write(&binary, b"synthetic receipt-validator bytes, not a product").unwrap();
+        let digest = format!("{:x}", Sha256::digest(std::fs::read(&binary).unwrap()));
+        let receipt = json!({"schema_version":1,"build_exit_code":0,"package_kind":"default","build_command":["cargo","build","-p","cc-server","--bin","codecortex","--no-default-features","--locked","--message-format=json-render-diagnostics"],"binary_path":binary,"binary_sha256":digest,"cargo_artifact":{"reason":"compiler-artifact","package_id":"path+file:///synthetic/cc-server#cc-server@1.0.0","target":{"name":"codecortex","kind":["bin"]},"features":[],"executable":"/synthetic/target/codecortex"}});
+        verify_build_receipt(&binary, "default", &receipt).unwrap();
+        assert!(verify_build_receipt(&binary, "semantic", &receipt).is_err());
+        assert!(verify_build_receipt(&binary, "default", &json!({})).is_err());
+        for (pointer, replacement) in [
+            ("/package_kind", json!("semantic")),
+            ("/cargo_artifact/features", json!(["semantic"])),
+            (
+                "/cargo_artifact/package_id",
+                json!("path+file:///synthetic/other#other@1.0.0"),
+            ),
+            ("/cargo_artifact/target/kind", json!(["lib"])),
+            ("/cargo_artifact/target/name", json!("other")),
+            ("/build_exit_code", json!(101)),
+            (
+                "/build_command",
+                json!(["cargo", "build", "--features", "semantic"]),
+            ),
+            ("/binary_sha256", json!("wrong")),
+        ] {
+            let mut bad = receipt.clone();
+            *bad.pointer_mut(pointer).unwrap() = replacement;
+            assert!(
+                verify_build_receipt(&binary, "default", &bad).is_err(),
+                "accepted mismatch: {pointer}"
+            );
+        }
+        let other = dir.path().join("other");
+        std::fs::write(&other, b"synthetic other binary").unwrap();
+        assert!(verify_build_receipt(&other, "default", &receipt).is_err());
+        std::fs::write(&binary, b"mutated after receipt").unwrap();
+        assert!(verify_build_receipt(&binary, "default", &receipt).is_err());
+    }
     const SOURCE: &str = "pub fn parse_field(raw: &str) -> i32 {\n    raw.trim().parse().unwrap_or(0)\n}\n\npub fn validate_payload(raw: &str) -> bool {\n    parse_field(raw) > 0\n}\n\npub fn renew_session(raw: &str) -> bool {\n    validate_payload(raw)\n}\n";
     const TOOLS: [&str; 14] = [
         "status",
@@ -232,6 +336,11 @@ mod p7_offline {
         let package = std::env::var("P7_017_PACKAGE_KIND")
             .expect("default or semantic build receipt required");
         assert!(matches!(package.as_str(), "default" | "semantic"));
+        let receipt_path = std::env::var("P7_017_BUILD_RECEIPT")
+            .expect("explicit Cargo product build receipt required");
+        let receipt: Value =
+            serde_json::from_slice(&std::fs::read(&receipt_path).unwrap()).unwrap();
+        verify_build_receipt(&binary, &package, &receipt).expect("verified product build identity");
         let restricted =
             std::env::var("P7_017_NETWORK_POLICY").as_deref() == Ok("process_seccomp_deny_network");
         if restricted {
@@ -507,7 +616,10 @@ mod p7_offline {
             std::fs::create_dir_all(&output).unwrap();
             std::fs::write(
                 Path::new(&output).join(format!("p7-017-{package}.json")),
-                serde_json::to_vec_pretty(&json!({"binary":binary,"cases":observations})).unwrap(),
+                serde_json::to_vec_pretty(
+                    &json!({"binary":binary,"build_receipt":receipt,"cases":observations}),
+                )
+                .unwrap(),
             )
             .unwrap();
         }

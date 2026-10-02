@@ -3,6 +3,7 @@ import importlib.util
 import json
 from pathlib import Path
 import unittest
+import unittest.mock
 
 HERE = Path(__file__).resolve().parent
 spec = importlib.util.spec_from_file_location('experiment', HERE / 'experiment.py')
@@ -64,5 +65,4 @@ class Controls(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    import unittest.mock
     unittest.main()

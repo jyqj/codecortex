@@ -80,6 +80,48 @@ pub fn is_current(db: &IndexDb, reference: &DocumentRef) -> CcResult<bool> {
         .map_err(db_err)?;
     Ok(current.is_some_and(|(v, e)| v == reference.doc_version && e == reference.encoding_key))
 }
+/// Owned worker input, fenced against the currently indexed document version.
+/// The read connection is released before the caller can contact a provider.
+pub fn semantic_worker_input(
+    db: &IndexDb,
+    doc_key: &str,
+    doc_version: &str,
+    input_digest: &str,
+) -> CcResult<Option<String>> {
+    let raw: Option<(String, String)> = {
+        let conn = db.read_conn()?;
+        conn.query_row(
+            "SELECT record_json,encoding_key FROM document_manifest WHERE doc_key=?1 AND doc_version=?2 AND encoding_key IS NOT NULL",
+            rusqlite::params![doc_key, doc_version],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        ).optional().map_err(db_err)?
+    };
+    let Some((raw, encoding)) = raw else {
+        return Ok(None);
+    };
+    let record: DocumentRecord = serde_json::from_str(&raw)?;
+    if record.reference.doc_key != doc_key
+        || record.reference.doc_version != doc_version
+        || record.reference.encoding_key.as_deref() != Some(encoding.as_str())
+    {
+        return Err(CcError::Database(
+            "worker document identity mismatch".into(),
+        ));
+    }
+    let Some(input) = record.input.as_ref() else {
+        return Ok(None);
+    };
+    let original = input
+        .text
+        .get(input.source_range.start..input.source_range.end)
+        .ok_or_else(|| CcError::Database("worker document source range invalid".into()))?;
+    record.validate(original)?;
+    Ok(record
+        .input
+        .filter(|input| input.input_hash == input_digest)
+        .map(|input| input.text))
+}
+
 pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
     let Some(batch) = &file.outcome.documents else {
         return Ok(());

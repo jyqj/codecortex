@@ -270,14 +270,13 @@ fn plan_order<K>(
     rendered: &[(K, Vec<u8>)],
     budget: &InputBudget,
 ) -> (Vec<Vec<usize>>, Vec<(usize, OversizeReason)>) {
-    let len = rendered.len();
     let mut batches: Vec<Vec<usize>> = Vec::new();
     let mut skips: Vec<(usize, OversizeReason)> = Vec::new();
     let mut current: Vec<usize> = Vec::new();
     let mut current_bytes = 0usize;
     let mut current_tokens = 0usize;
-    for index in 0..len {
-        match admit_item(rendered[index].1.as_slice(), budget) {
+    for (index, (_, bytes)) in rendered.iter().enumerate() {
+        match admit_item(bytes.as_slice(), budget) {
             Err(reason) => skips.push((index, reason)),
             Ok((item_bytes, item_tokens)) => {
                 let must_close = current.len() == budget.max_items

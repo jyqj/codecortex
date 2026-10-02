@@ -233,7 +233,7 @@ mod tests {
         assert!(manifest(&foreign).is_err());
 
         let mut drifted = rendered_input("def sample():\n    return 1\n");
-        drifted.token_estimate = drifted.token_estimate + 1;
+        drifted.token_estimate += 1;
         assert!(manifest(&drifted).is_err());
     }
 }

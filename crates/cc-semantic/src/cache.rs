@@ -105,7 +105,7 @@ pub fn namespace_key(project_identity: &str) -> CcResult<String> {
             "project identity must be a non-empty string to derive a cache namespace",
         ));
     }
-    Ok(hash(&(NAMESPACE_DOMAIN, project_identity))?)
+    hash(&(NAMESPACE_DOMAIN, project_identity))
 }
 
 fn validate_namespace(namespace: &str) -> CcResult<()> {
@@ -129,6 +129,7 @@ fn validate_namespace(namespace: &str) -> CcResult<()> {
 /// 1. [`CACHE_ROOT_ENV`] override (also the test/deployment seam);
 /// 2. platform convention under `$HOME`: macOS `~/Library/Caches/codecortex/semantic`,
 ///    Linux `$XDG_CACHE_HOME|~/.cache/codecortex/semantic`.
+///
 /// `None` means "no default derivable" — callers must then pass an explicit
 /// root to [`ArtifactCache::open`]. Resolves only; creates nothing.
 pub fn resolve_cache_root() -> Option<PathBuf> {

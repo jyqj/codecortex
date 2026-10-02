@@ -106,6 +106,8 @@ pub struct CodeIndex {
     query_services: Arc<crate::service_factory::QueryServices>,
     #[cfg(feature = "semantic")]
     semantic_subsystem: Option<Arc<crate::semantic_wiring::SemanticSubsystem>>,
+    #[cfg(feature = "semantic")]
+    semantic_runtime: Option<Arc<crate::semantic_runtime::SemanticRuntime>>,
     pub(crate) repo_tier: Option<RepoSizeTier>,
     /// True when the DB was freshly created (Initialized) or rebuilt after a
     /// schema mismatch — signals that an auto-index build is needed.
@@ -172,6 +174,8 @@ impl CodeIndex {
             query_services: Arc::new(crate::service_factory::QueryServices::default()),
             #[cfg(feature = "semantic")]
             semantic_subsystem: None,
+            #[cfg(feature = "semantic")]
+            semantic_runtime: None,
             repo_tier: None,
             needs_initial_index: false,
             build_gate: Arc::new(std::sync::Mutex::new(())),
@@ -208,17 +212,34 @@ impl CodeIndex {
         // Validate and assemble before publishing any new project state.
         // Initialization resolves configuration only; it never calls a provider.
         #[cfg(feature = "semantic")]
-        let semantic_subsystem = crate::semantic_wiring::try_init(
-            &query_services,
-            &project.to_string_lossy(),
-            &config,
-            db.clone(),
-        )?
-        .map(Arc::new);
+        let semantic_subsystem =
+            crate::semantic_wiring::assemble(&project.to_string_lossy(), &config, db.clone())?
+                .map(Arc::new);
+        #[cfg(feature = "semantic-http")]
+        let semantic_runtime = match semantic_subsystem.as_ref() {
+            Some(subsystem) => crate::semantic_runtime::from_config(
+                db.clone(),
+                subsystem.clone(),
+                query_services.clone(),
+                &config.semantic,
+            )?,
+            None => None,
+        };
         self.query_services = query_services;
         #[cfg(feature = "semantic")]
         {
+            if let Some(worker) = self.semantic_runtime.take() {
+                worker.close();
+            }
+            match semantic_subsystem.as_ref() {
+                Some(subsystem) => crate::semantic_wiring::attach(&self.query_services, subsystem),
+                None => crate::semantic_wiring::teardown(&self.query_services),
+            }
             self.semantic_subsystem = semantic_subsystem;
+            #[cfg(feature = "semantic-http")]
+            {
+                self.semantic_runtime = semantic_runtime;
+            }
         }
         self.project_path = Some(project);
         self.config = Some(config);
@@ -256,6 +277,9 @@ impl CodeIndex {
         }
         #[cfg(feature = "semantic")]
         {
+            if let Some(worker) = self.semantic_runtime.take() {
+                worker.close();
+            }
             crate::semantic_wiring::teardown(&self.query_services);
             self.semantic_subsystem = None;
         }
@@ -268,6 +292,36 @@ impl CodeIndex {
     #[cfg(feature = "semantic")]
     pub fn semantic_subsystem(&self) -> Option<Arc<crate::semantic_wiring::SemanticSubsystem>> {
         self.semantic_subsystem.clone()
+    }
+
+    /// Attach an explicitly authorized provider; installation performs no I/O.
+    #[cfg(feature = "semantic")]
+    pub fn install_semantic_provider(
+        &mut self,
+        provider: Arc<dyn cc_semantic::ports::EmbeddingProvider>,
+    ) -> CcResult<()> {
+        let subsystem = self
+            .semantic_subsystem
+            .clone()
+            .ok_or_else(|| CcError::InvalidParams("semantic subsystem disabled".into()))?;
+        let db = self
+            .index_db
+            .clone()
+            .ok_or_else(|| CcError::InvalidParams("project closed".into()))?;
+        let worker = crate::semantic_runtime::SemanticRuntime::new(
+            db,
+            subsystem,
+            self.query_services.clone(),
+            provider,
+        )?;
+        if let Some(old) = self.semantic_runtime.replace(worker) {
+            old.close();
+        }
+        Ok(())
+    }
+    #[cfg(feature = "semantic")]
+    pub fn semantic_runtime(&self) -> Option<Arc<crate::semantic_runtime::SemanticRuntime>> {
+        self.semantic_runtime.clone()
     }
 
     pub fn is_closed(&self) -> bool {

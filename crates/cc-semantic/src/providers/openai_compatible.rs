@@ -222,11 +222,12 @@ pub trait EmbeddingHttpTransport: Send + Sync {
 /// Semantic-level L2 norm policy applied by the strong response gate
 /// (P7-004; the planning brief's "norm 策略可配"). The frozen zero-vector
 /// rejection always applies regardless of this policy.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Default, Debug, Clone, PartialEq)]
 pub enum NormPolicy {
     /// No range admission: only the always-on structural checks (finite,
     /// non-zero, dimension) constrain vectors. The default, preserving the
     /// P7-001 gate semantics.
+    #[default]
     Accept,
     /// Reject any vector whose L2 norm falls outside the **inclusive** range
     /// `[min, max]`. Intended for unit-normalized spaces (e.g.
@@ -234,12 +235,6 @@ pub enum NormPolicy {
     /// f64 so a legitimate vector of finite f32 components can never overflow
     /// the accumulation.
     RejectOutside { min: f32, max: f32 },
-}
-
-impl Default for NormPolicy {
-    fn default() -> Self {
-        Self::Accept
-    }
 }
 
 impl NormPolicy {

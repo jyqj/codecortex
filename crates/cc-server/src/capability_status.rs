@@ -103,6 +103,13 @@ pub(crate) fn snapshot(
     // a failed read keeps the conservative unverified wording.
     if attached && wired.is_some() {
         apply_semantic_wired(&mut result, db);
+        if let Some(reason) = services
+            .semantic_worker()
+            .and_then(|state| state.failure_reason())
+        {
+            result["retrieval"]["semantic_state"] = json!("failed");
+            result["retrieval"]["semantic_worker_reason"] = json!(reason);
+        }
     }
     apply_semantic_degradation(&mut result, services, attached);
     result

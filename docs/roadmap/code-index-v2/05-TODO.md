@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`3faafb9e67b9a1e58a70eb606dd6ce470ea8268480381bea0ee9d1dabf2ee812`。
+> 任务总数：192；源文件 SHA-256：`35b5076531f5137699c32684ea686dd525b43fcf807aad5cc4b0d4c31cf5811c`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -1994,8 +1994,8 @@
 验收：semantic找回结果也不会被softscope误删或越过hard范围；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V05；V16
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
-实施备注：2026-10-02 父对话独立复核报告：带 languages 请求会忽略未覆盖文档，Rust eligible=1/published=0 仍报 Complete 已复现；scope guard 修复由独立任务负责。保持 todo，修复与当前 SHA 复验前不收口。 修复 PR #6 SHA46d6e5b 已非破坏性集成至 b738a6a；最终格式源码 c4dfa324 上四 crate lib975/0/1通过，正式 V05/V16 尚未全跑，保持 todo。
+证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}, {"target_sha": "24db8bbe14e7b47bc5cc413bbf7c66a0be8f2710", "worktree_digest": "5721d0d639e0cfc66437c9ff48af15a016ee4bb7", "artifact_paths": ["artifacts/benchmarks/p7-acceptance-20261002/combined-v2/matrix.json", "artifacts/benchmarks/p7-acceptance-20261002/combined-v2/receipt.json"], "review": "independent offline matrix owner; integration review; declared subchecks only", "rollback_status": "revert new tests/evidence commits independently", "scope": "V05/V16 L1-L2 scope/exact, V11/V15 fault/cache/cancellation mechanisms; no unconditional full validation closure"}]
+实施备注：2026-10-02 父对话独立复核报告：带 languages 请求会忽略未覆盖文档，Rust eligible=1/published=0 仍报 Complete 已复现；scope guard 修复由独立任务负责。保持 todo，修复与当前 SHA 复验前不收口。 修复 PR #6 SHA46d6e5b 已非破坏性集成至 b738a6a；最终格式源码 c4dfa324 上四 crate lib975/0/1通过，正式 V05/V16 尚未全跑，保持 todo。 新独立矩阵PR14源24db8bb/58e20d0已原样纳入recovery；20轮semantic7/default2共180pass、PR12各4pass为既有精确基线证据，未升级成新SHA验收或整gate通过。原wiring许可释放竞态已最小等待两个计数归零，正式复验仍需绑定当前SHA。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 
@@ -2007,7 +2007,8 @@
 验收：timeout与无命中可区分，declared full coverage有证据；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V19
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"target_sha": "24db8bbe14e7b47bc5cc413bbf7c66a0be8f2710", "worktree_digest": "5721d0d639e0cfc66437c9ff48af15a016ee4bb7", "artifact_paths": ["artifacts/benchmarks/p7-acceptance-20261002/combined-v2/matrix.json", "artifacts/benchmarks/p7-acceptance-20261002/combined-v2/receipt.json"], "review": "independent offline matrix owner; integration review; declared subchecks only", "rollback_status": "revert new tests/evidence commits independently", "scope": "V05/V16 L1-L2 scope/exact, V11/V15 fault/cache/cancellation mechanisms; no unconditional full validation closure"}, {"target_sha": "05f4853e75be5ccddab3855d91ce164b2a017282", "artifact_paths": ["artifacts/benchmarks/p7-v19-offline-20261002/README.md", "artifacts/benchmarks/p7-v19-offline-20261002/plan.json"], "review": "independent V19 owner, retrospective offline scope", "rollback_status": "revert dedicated V19 test/evidence commits", "scope": "420 official-runner replay requests, three local ablations; V19 formal blocked: no unseen holdout/hard negatives/facet-span independent gold/full corpus/live dense quality"}]
+实施备注： 新独立矩阵PR14源24db8bb/58e20d0已原样纳入recovery；20轮semantic7/default2共180pass、PR12各4pass为既有精确基线证据，未升级成新SHA验收或整gate通过。原wiring许可释放竞态已最小等待两个计数归零，正式复验仍需绑定当前SHA。
 
 ### [ ] P7-013｜查询总deadline和模型故障退化
 
@@ -2019,13 +2020,13 @@
 验收：网络不占读写锁，故障结果不缓存成完整成功；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
-实施备注：2026-10-02 父对话独立复核报告：真实执行器 20ms deadline/120ms 返回 probe 超时，wiring 同步扫描和 exact 候选循环缺 control；取消链交独立任务，云集成 owner 释放 semantic_wiring recall 段（约700～800行）。hydrator skip 顶层 partial 为尚未证实可达的测试缺口，不据此宣称生产 bug；保持 todo。 两提交057e283/4c3dfe1均已按序集成；最终格式源码c4dfa324上四crate lib975/0/1通过，单次同步IO仍不可强抢占；fake HTTP/故障缓存正式义务未齐，保持todo；单独PR发布被执行器拒绝，未代开同PR。
+证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}, {"target_sha": "24db8bbe14e7b47bc5cc413bbf7c66a0be8f2710", "worktree_digest": "5721d0d639e0cfc66437c9ff48af15a016ee4bb7", "artifact_paths": ["artifacts/benchmarks/p7-acceptance-20261002/combined-v2/matrix.json", "artifacts/benchmarks/p7-acceptance-20261002/combined-v2/receipt.json"], "review": "independent offline matrix owner; integration review; declared subchecks only", "rollback_status": "revert new tests/evidence commits independently", "scope": "V05/V16 L1-L2 scope/exact, V11/V15 fault/cache/cancellation mechanisms; no unconditional full validation closure"}]
+实施备注：2026-10-02 父对话独立复核报告：真实执行器 20ms deadline/120ms 返回 probe 超时，wiring 同步扫描和 exact 候选循环缺 control；取消链交独立任务，云集成 owner 释放 semantic_wiring recall 段（约700～800行）。hydrator skip 顶层 partial 为尚未证实可达的测试缺口，不据此宣称生产 bug；保持 todo。 两提交057e283/4c3dfe1均已按序集成；最终格式源码c4dfa324上四crate lib975/0/1通过，单次同步IO仍不可强抢占；fake HTTP/故障缓存正式义务未齐，保持todo；单独PR发布被执行器拒绝，未代开同PR。 新独立矩阵PR14源24db8bb/58e20d0已原样纳入recovery；20轮semantic7/default2共180pass、PR12各4pass为既有精确基线证据，未升级成新SHA验收或整gate通过。原wiring许可释放竞态已最小等待两个计数归零，正式复验仍需绑定当前SHA。
 
 ### [ ] P7-014｜配置/status/MCP全链贯通
 
 状态：`in_progress`；批次：`P7-C`；优先级：`normal`。
-范围：`crates/cc-server/src/tools.rs`；`crates/cc-server/src/capability_status.rs`；`docs/MCP_TOOLS.md`
+范围：`crates/cc-server/src/tools.rs`；`crates/cc-server/src/capability_status.rs`；`docs/MCP_TOOLS.md`；`crates/cc-server/src/semantic_runtime.rs`；`crates/cc-server/src/engine.rs`；`crates/cc-server/src/handlers/core.rs`；`crates/cc-server/src/service_factory.rs`；`crates/cc-server/src/lib.rs`；`crates/cc-db/src/document_store.rs`
 硬依赖：P7-013
 步骤：新字段schema/sanitize/handler/doc/E2E一体；原mode语义不变
 交付物：配置/status/MCP全链贯通的实现/配置或规格变更；artifacts/benchmarks/<run-id>/ 中对应 V18 验证证据（实施时生成）
@@ -2033,7 +2034,7 @@
 验证：V18
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
 证据：[{"target_sha": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa", "worktree_digest": "9df8ebdd6db932509211c813797bcc843f6038c4", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/receipt.json"], "review": "self-reviewed; independent review pending; P7-014 not complete", "rollback_status": "revert recovery commit; no schema/credential/provider change", "scope": "cloud build recovery and capability projection only; full task remains in_progress"}, {"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
-实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。 生命周期PR #7保留subsystem、初始化错误保原项目、close/reopen对称处理（默认253/semantic280通过）；纳入011/013后四crate lib975/0/1通过。生产worker调度与wired stdio仍未闭环，保持in_progress。 新云恢复分支codex/cloud-p7-recovery-integration以d6462c1为精确基线；逐文件diff证明PR10/11/12改动已组合，未重复cherry-pick。原样纳入PR13工厂9ea2b0b并注册，8/0/0局部测试通过；39文件格式问题已修正。生产worker/transport/wired stdio和独立正式验收仍待闭环，保持in_progress。
+实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。 生命周期PR #7保留subsystem、初始化错误保原项目、close/reopen对称处理（默认253/semantic280通过）；纳入011/013后四crate lib975/0/1通过。生产worker调度与wired stdio仍未闭环，保持in_progress。 新云恢复分支codex/cloud-p7-recovery-integration以d6462c1为精确基线；逐文件diff证明PR10/11/12改动已组合，未重复cherry-pick。原样纳入PR13工厂9ea2b0b并注册，8/0/0局部测试通过；39文件格式问题已修正。生产worker/transport/wired stdio和独立正式验收仍待闭环，保持in_progress。 已恢复15326B旧worker补丁并核验hash；补齐有限job跨页消费、restart cache复用、输入完整provenance验证、close迟到响应fence与状态独立归属。纳入PR16生产transport7b335e5，feature默认关闭；装配/调用/销毁均在blocking job、无DB/CodeIndex网络锁，5runtime局部测试通过。stdio缺model echo的mock曾真实拒绝，修fixture而不放宽provider守卫，当前待精确binary复验；尚不收口。
 
 ### [ ] P7-015｜后台回填与前台查询竞争测试
 

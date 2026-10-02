@@ -412,7 +412,7 @@ fn namespace_key_is_stable_distinct_and_path_safe() {
     assert!(a1.chars().all(|c| c.is_ascii_hexdigit()));
     assert_eq!(a1.len(), 64);
     assert!(cc_semantic::cache::namespace_key("  ").is_err());
-    assert!(ArtifactCache::open(&root(), a1).is_ok());
+    assert!(ArtifactCache::open(root(), a1).is_ok());
 }
 
 fn root() -> PathBuf {

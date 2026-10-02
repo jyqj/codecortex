@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "name": "P7 V19 retrospective compat/graph_rerank_off",
+  "source": {
+    "root": "../source",
+    "commit": null,
+    "digest": "285d30ed8dcbe7ff0420f95e77cced816bff30846a3b5a923a5f9d1a43379136",
+    "files": [
+      "cc-db/src/index_migrate.rs",
+      "cc-index/src/dirty_closure.rs",
+      "cc-index/src/indexer_phases/dirty.rs",
+      "cc-model/src/id.rs",
+      "cc-model/src/retrieval.rs",
+      "cc-parsers/src/chunker.rs",
+      "cc-search/src/plan.rs",
+      "cc-search/src/preselect.rs",
+      "cc-search/src/scope.rs"
+    ]
+  },
+  "queries": "../queries/compat.jsonl",
+  "queries_digest": "f5c4132abf99e108ea60afa5285b8cafe92fae63ad8d92a6f81b68150f0d207c",
+  "scoring": "oce-compat-v1",
+  "repetitions": 3,
+  "warmup": 0,
+  "seed": 2719013,
+  "timeout_ms": 30000,
+  "top_k": 10,
+  "engine_config": {
+    "auto_index": {
+      "enabled": false
+    },
+    "ranking": {
+      "graph_rerank_weight": 0.0
+    }
+  }
+}

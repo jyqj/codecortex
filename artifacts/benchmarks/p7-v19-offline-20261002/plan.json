@@ -1,0 +1,252 @@
+{
+  "arms": {
+    "baseline": {},
+    "graph_rerank_off": {
+      "ranking": {
+        "graph_rerank_weight": 0.0
+      }
+    },
+    "graph_vote_off": {
+      "search": {
+        "graph_weight": 0.0
+      }
+    },
+    "lexical_votes_only": {
+      "ranking": {
+        "graph_rerank_weight": 0.0
+      },
+      "search": {
+        "exact_weight": 0.0,
+        "graph_weight": 0.0,
+        "grep_weight": 0.0,
+        "path_weight": 0.0
+      }
+    },
+    "rg_literal": {}
+  },
+  "blocked": [
+    "Unseen D5 holdout",
+    "6-repo/600-query D2 corpus",
+    "Upstream 200-query OCE compat",
+    "Independently reviewed hard negatives and facet/span gold",
+    "Real dense-only/local+dense and semantic quality (D1/D2 authorization unchanged)",
+    "Selector-off: no public config switch, production edits forbidden",
+    "L4 performance certification: smoke sample count only"
+  ],
+  "factor_semantics": {
+    "graph_rerank_off": "Only ranking.graph_rerank_weight=0; traversal still executes",
+    "graph_vote_off": "Only search.graph_weight=0; graph traversal still executes",
+    "lexical_votes_only": "Composite vote/rerank suppression; exact/path/grep/graph lanes and selector still execute",
+    "rg_literal": "Official fixed-string whole-query rg baseline; not BM25"
+  },
+  "family_order_sha256_seeded": [
+    "symbol-id",
+    "preselect",
+    "surface",
+    "schema",
+    "closure",
+    "chunking",
+    "search-plan"
+  ],
+  "gold_source_audit": [
+    {
+      "current": {
+        "cc-model/src/id.rs": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0"
+      },
+      "id": "R01",
+      "original": {
+        "cc-model/src/id.rs": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0"
+      },
+      "unchanged": true
+    },
+    {
+      "current": {
+        "cc-model/src/id.rs": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0"
+      },
+      "id": "R02",
+      "original": {
+        "cc-model/src/id.rs": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0"
+      },
+      "unchanged": true
+    },
+    {
+      "current": {
+        "cc-parsers/src/chunker.rs": "ea81138fe6473cfca6aa9b17b176126c7d1d179a4ae1a157204f86483e4335a5"
+      },
+      "id": "R03",
+      "original": {
+        "cc-parsers/src/chunker.rs": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-parsers/src/chunker.rs": "ea81138fe6473cfca6aa9b17b176126c7d1d179a4ae1a157204f86483e4335a5"
+      },
+      "id": "R04",
+      "original": {
+        "cc-parsers/src/chunker.rs": "38710135b88fcbba98b1bdd7b51e14a2a934dc190e84a4a53fc1a8bed59a1f46"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-db/src/index_migrate.rs": "8876514fd51a8ca6d2648ee2ea6d22471911ffccd3b466b8087696106f4a0f40"
+      },
+      "id": "R05",
+      "original": {
+        "cc-db/src/index_migrate.rs": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-db/src/index_migrate.rs": "8876514fd51a8ca6d2648ee2ea6d22471911ffccd3b466b8087696106f4a0f40"
+      },
+      "id": "R06",
+      "original": {
+        "cc-db/src/index_migrate.rs": "02c39192bd015c89c1edef515783d82f3a61225e91ebed4c7daaf582cc9ee0b7"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-index/src/dirty_closure.rs": "d26072bd26bb5baa2db25500508b66e79730f3afba796036a5253301210048f2"
+      },
+      "id": "R07",
+      "original": {
+        "cc-index/src/dirty_closure.rs": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-index/src/dirty_closure.rs": "d26072bd26bb5baa2db25500508b66e79730f3afba796036a5253301210048f2"
+      },
+      "id": "R08",
+      "original": {
+        "cc-index/src/dirty_closure.rs": "cbe53c654cdfdead3362b1a37d10a6a0ac0da4fc9c39cdb34b6c2b9426a8595c"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-index/src/indexer_phases/dirty.rs": "20821b6045e42e16ab0cc53c8bf3d21befae74929b6afb7bd97aab8882daf484"
+      },
+      "id": "R09",
+      "original": {
+        "cc-index/src/indexer_phases/dirty.rs": "f8bc2d32311d281ad653c241eea0cc66c76a1789ef870e3c52eb4973ddc07ef5"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-index/src/indexer_phases/dirty.rs": "20821b6045e42e16ab0cc53c8bf3d21befae74929b6afb7bd97aab8882daf484"
+      },
+      "id": "R10",
+      "original": {
+        "cc-index/src/indexer_phases/dirty.rs": "f8bc2d32311d281ad653c241eea0cc66c76a1789ef870e3c52eb4973ddc07ef5"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-search/src/preselect.rs": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639"
+      },
+      "id": "R11",
+      "original": {
+        "cc-search/src/preselect.rs": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639"
+      },
+      "unchanged": true
+    },
+    {
+      "current": {
+        "cc-search/src/preselect.rs": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639"
+      },
+      "id": "R12",
+      "original": {
+        "cc-search/src/preselect.rs": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639"
+      },
+      "unchanged": true
+    },
+    {
+      "current": {
+        "cc-search/src/plan.rs": "b4d32673260d653a8137f293cdc27acca2dbf3b81c8ecd14f70c809bf72ce6f0",
+        "cc-search/src/scope.rs": "01b4e01f95d8328eaba08477f48bc30dd1f6019afbbdc883ae45429a1b8bf646"
+      },
+      "id": "R13",
+      "original": {
+        "cc-search/src/plan.rs": "57bcd1877afaf973529259c7ba58655cd4399d6ceaf8dfa458922e8da8544951",
+        "cc-search/src/scope.rs": "80c520c99d9e8b198544c108674c683a76e8e85ac4ebf49c0a3787c0a67d65e5"
+      },
+      "unchanged": false
+    },
+    {
+      "current": {
+        "cc-search/src/scope.rs": "01b4e01f95d8328eaba08477f48bc30dd1f6019afbbdc883ae45429a1b8bf646"
+      },
+      "id": "R14",
+      "original": {
+        "cc-search/src/scope.rs": "80c520c99d9e8b198544c108674c683a76e8e85ac4ebf49c0a3787c0a67d65e5"
+      },
+      "unchanged": false
+    }
+  ],
+  "holdout_kind": "Retrospective family/module partition of already-used dev gold; NOT unseen D5",
+  "input_sha": "58e20d08285303fc9e12ed8cdfa21d6afb84910b",
+  "integration_sha": "d6462c163abe6ca92d2ae0a2cf967b1ad2433e22",
+  "measurement_profile": "smoke",
+  "original_gold_sha256": "728e17bfa3061d627fbd77cdb668a38728532dd1bbfb433d1de36bf0225649a1",
+  "quota_families": {
+    "dev": 4,
+    "holdout": 3
+  },
+  "quota_queries": {
+    "dev": 8,
+    "holdout": 6
+  },
+  "repetitions": 3,
+  "scoring": "Official cc-eval only; compat is derived path gold, not upstream OCE",
+  "seed": 2719013,
+  "source_files": {
+    "cc-db/src/index_migrate.rs": {
+      "bytes": 10450,
+      "sha256": "8876514fd51a8ca6d2648ee2ea6d22471911ffccd3b466b8087696106f4a0f40"
+    },
+    "cc-index/src/dirty_closure.rs": {
+      "bytes": 23086,
+      "sha256": "d26072bd26bb5baa2db25500508b66e79730f3afba796036a5253301210048f2"
+    },
+    "cc-index/src/indexer_phases/dirty.rs": {
+      "bytes": 33956,
+      "sha256": "20821b6045e42e16ab0cc53c8bf3d21befae74929b6afb7bd97aab8882daf484"
+    },
+    "cc-model/src/id.rs": {
+      "bytes": 5984,
+      "sha256": "bc1431f2c004ebabff2960dac1ecdaf55e67169d90dfd141e26b84d2b7f152b0"
+    },
+    "cc-model/src/retrieval.rs": {
+      "bytes": 20599,
+      "sha256": "bb228628e1e63edd74c5314dde157209da2279d3064198ea256f6a54bece20e0"
+    },
+    "cc-parsers/src/chunker.rs": {
+      "bytes": 8796,
+      "sha256": "ea81138fe6473cfca6aa9b17b176126c7d1d179a4ae1a157204f86483e4335a5"
+    },
+    "cc-search/src/plan.rs": {
+      "bytes": 32458,
+      "sha256": "b4d32673260d653a8137f293cdc27acca2dbf3b81c8ecd14f70c809bf72ce6f0"
+    },
+    "cc-search/src/preselect.rs": {
+      "bytes": 56042,
+      "sha256": "11741090fd395c97ca01db3b63754f3d18de289595e24aac8a3416d26981f639"
+    },
+    "cc-search/src/scope.rs": {
+      "bytes": 3355,
+      "sha256": "01b4e01f95d8328eaba08477f48bc30dd1f6019afbbdc883ae45429a1b8bf646"
+    }
+  },
+  "timeout_ms": 30000,
+  "top_k": 10,
+  "warmup": 0
+}

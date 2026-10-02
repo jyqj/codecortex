@@ -1,0 +1,679 @@
+{
+  "evidence_summary": {
+    "files": [
+      "cc-parsers/src/chunker.rs",
+      "cc-search/src/preselect.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 2,
+      "callers_added": 0,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 7,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 12,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15992
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 24,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 1428
+          },
+          "text": {
+            "cache_hits": 19,
+            "legacy_auto_reads": 0,
+            "storage_reads": 5,
+            "utf8_bytes": 17209,
+            "zstd_decodes": 4
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 3272
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 0,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 641,
+        "skipped_duplicates": 641,
+        "soft_scanned": 641,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 6493
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 641,
+                "utf8_bytes": 194726,
+                "zstd_decodes": 315
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 640,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5135
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 313,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 2629,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "path_token_limit",
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 2878,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 641,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 25234,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 0,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "disabled",
+          "truncation_reason": null,
+          "weight": 0.0
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 9,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 17209,
+        "redundant_bytes": 0,
+        "unique_bytes": 17209
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 13344,
+        "redundant_bytes": 0,
+        "unique_bytes": 13344
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 4,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          79,
+          99,
+          157,
+          230,
+          87,
+          42,
+          232,
+          203,
+          252,
+          78,
+          206,
+          105,
+          160,
+          249,
+          242,
+          149
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 103280,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 24
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "split",
+        "chunk_id": "chunk:cc-parsers/src/chunker.rs:5",
+        "end_line": 6,
+        "file_path": "cc-parsers/src/chunker.rs",
+        "fused_score": 0.017741935483870968,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.08333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "12002591466cf2342b0a5173f8c52465380aabbfaf9d70f54ff1fe56e9ba31a3",
+            "doc_version": "5860ad060321fee3121546a65ececfdc137fc1036a1ddbfe080110a062374072",
+            "encoding_key": "d01e0af9ade1af85fa68786f460db588d89eb526e8512c2eba25b3a5657f0b42",
+            "entity_key": "d84d627271c0eb2b1edf74f9de75e4103edacf8997ae4e6d86148386d045efc6"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 146,
+              "start": 136
+            },
+            "signature": {
+              "end": 146,
+              "start": 136
+            },
+            "slice_digest": "386399d7088f7c2ede075dfd86ce30cf4d99ca857131bfd2e5ff8a9720745f15",
+            "source": {
+              "byte_len": 8796,
+              "content_digest": "f39de7d292d0c0088d06a1f60cfd441de7ee98c647ebdad6fc4b958674180345",
+              "encoding": "utf8",
+              "snapshot_id": "d008f32e0f5a369f2fe1bfd8e8a44f1842f2b6974eeb62b0e958ad6c8fbdb8fd"
+            },
+            "span": {
+              "end": 146,
+              "start": 135
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@12",
+          "symbol-exact",
+          "fts-summary",
+          "symbol:chunk_with_symbols",
+          "symbol:chunk_by_lines",
+          "preselect:fts-summary:+1.88",
+          "preselect:token-search:+3.60"
+        ],
+        "rerank_score": 0.45576154703086746,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.017741935483870968
+          ],
+          [
+            "overlap",
+            0.03888888888888888
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:stage-a",
+            0.2191307226581076
+          ]
+        ],
+        "source": "index",
+        "start_line": 5,
+        "symbol_kind": "module",
+        "symbol_name": "split",
+        "text": "\nmod split;"
+      },
+      {
+        "breadcrumb": "tests > chunk_by_lines_basic",
+        "chunk_id": "chunk:cc-parsers/src/chunker.rs:27",
+        "end_line": 252,
+        "file_path": "cc-parsers/src/chunker.rs",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.24849066497880004,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "464b9d3ba84adebd7b6bee7156165672bae1fb1aae1c9bb3ac1469ce3906b2c3",
+            "doc_version": "cbc5b81a3be640a8991a02332192a08fc3d266cbbd9e7462c25214c039eae41e",
+            "encoding_key": "35d02e0c9e9949542b1d8b01cf143e6e83a29d35af6e143fef10bd40b6b93d81",
+            "entity_key": "6a484529e9aa84bf485979191ae6af988add7059f8b3e172ae7f602ceb825017"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 8380,
+              "start": 7778
+            },
+            "signature": {
+              "end": 7804,
+              "start": 7778
+            },
+            "slice_digest": "8194b82ecfb501587bb6f05cdeb3419c97096e996feb872e530bc6cb7e237f57",
+            "source": {
+              "byte_len": 8796,
+              "content_digest": "f39de7d292d0c0088d06a1f60cfd441de7ee98c647ebdad6fc4b958674180345",
+              "encoding": "utf8",
+              "snapshot_id": "d008f32e0f5a369f2fe1bfd8e8a44f1842f2b6974eeb62b0e958ad6c8fbdb8fd"
+            },
+            "span": {
+              "end": 8380,
+              "start": 7773
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:chunk_with_symbols",
+          "symbol:chunk_by_lines",
+          "preselect:fts-summary:+1.88",
+          "preselect:token-search:+3.60"
+        ],
+        "rerank_score": 0.3930243273805058,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.07777777777777777
+          ],
+          [
+            "boost:stage-a",
+            0.2191307226581076
+          ],
+          [
+            "boost:graph-rerank",
+            0.07454719949364001
+          ]
+        ],
+        "source": "index",
+        "start_line": 231,
+        "symbol_kind": "function",
+        "symbol_name": "chunk_by_lines_basic",
+        "text": "\n    fn chunk_by_lines_basic() {\n        let c = Chunker::from_policy(ChunkPolicy {\n            lines: 5,\n            ..Default::default()\n        })\n        .unwrap();\n        let content = (1..=12)\n            .map(|i| format!(\"line {}\", i))\n            .collect::<Vec<_>>()\n            .join(\"\\n\");\n        let chunks = c.chunk_by_lines(\n            \"test.py\",\n            &content,\n            Language::Python,\n            ParserTier::Generic,\n            0.3,\n        );\n        assert_eq!(chunks.len(), 3);\n        assert_eq!(chunks[0].start_line, 1);\n        assert_eq!(chunks[0].end_line, 5);\n    }"
+      },
+      {
+        "breadcrumb": "tests > db_with_call_graph",
+        "chunk_id": "chunk:cc-search/src/preselect.rs:177",
+        "end_line": 1317,
+        "file_path": "cc-search/src/preselect.rs",
+        "fused_score": 0.0171875,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.07142857142857142,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "c2dbdf878b8ae0b299d11c60e118a6580ccdd92cc2565830c7c4d711f4ba2b84",
+            "doc_version": "8c85870bfee29ba7a9af4e6b2febd844e55af95530150be63ab4a3e3ec1cf07b",
+            "encoding_key": "18e5ce0dc63433404f3683456291ef25fb86baec4a5b699bd227a74a4f03b008",
+            "entity_key": "71f0e18d05f4f0740c9b7b678f7f4a325d5a7f55163fb1fa81810cc8cb8d15ad"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 51394,
+              "start": 49093
+            },
+            "signature": {
+              "end": 49139,
+              "start": 49093
+            },
+            "slice_digest": "48e1df03cac7846ec28d4693ac51b4bc825f01e7b21fafa7f3bfb9f6152996ee",
+            "source": {
+              "byte_len": 56042,
+              "content_digest": "cafbc34c82782431c8ff6a7c4c8a43dd16eb42be335515379f6a75837e31bce5",
+              "encoding": "utf8",
+              "snapshot_id": "d25736fb48e64d318f82ce52c3d4e116fc55ca26ae32da09e9aaf54424a0e519"
+            },
+            "span": {
+              "end": 51394,
+              "start": 48931
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@14",
+          "fts-summary",
+          "symbol:db_with_symbols",
+          "symbol:graph_neighbor_layer_respects_budget",
+          "preselect:fts-summary:+2.14",
+          "preselect:token-search:+3.60"
+        ],
+        "rerank_score": 0.36347961466160916,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.0171875
+          ],
+          [
+            "overlap",
+            0.11666666666666665
+          ],
+          [
+            "boost:stage-a",
+            0.22962544799494247
+          ]
+        ],
+        "source": "index",
+        "start_line": 1284,
+        "symbol_kind": "function",
+        "symbol_name": "db_with_call_graph",
+        "text": "\n\n    /// Build a DB with symbols that have UIDs and call_edges connecting them,\n    /// then verify that graph neighbor expansion discovers the callee file.\n    fn db_with_call_graph() -> (TempDir, IndexDb) {\n        let tmp = TempDir::new().unwrap();\n        let db = IndexDb::open(&tmp.path().join(\"graph_test.db\")).unwrap().0;\n        let conn = crate::test_seed::seed_conn(&db);\n        conn.execute_batch(\n            \"INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)\n                 VALUES('src/caller.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');\n             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)\n                 VALUES('src/callee.rs', 'Rust', 'h2', 1.0, 100, '2024-01-01');\n             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)\n                 VALUES('src/reverse_caller.rs', 'Rust', 'h3', 1.0, 100, '2024-01-01');\n\n             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)\n                 VALUES('s1', 'uid:caller:handle_request', 'src/caller.rs', 'handle_request', 'function', 1, 10);\n             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)\n                 VALUES('s2', 'uid:callee:process_data', 'src/callee.rs', 'process_data', 'function', 1, 10);\n             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)\n                 VALUES('s3', 'uid:reverse:invoke_handler', 'src/reverse_caller.rs', 'invoke_handler', 'function', 1, 10);\n\n             -- caller.rs::handle_request calls callee.rs::process_data\n             INSERT INTO call_edges(edge_id, file_path, caller_symbol, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence)\n                 VALUES('e1', 'src/caller.rs', 'handle_request', 'process_data', 5, 'uid:caller:handle_request', 'uid:callee:process_data', 'resolved', 1.0);\n\n             -- reverse_caller.rs::invoke_handler calls caller.rs::handle_request\n             INSERT INTO call_edges(edge_id, file_path, caller_symbol, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence)\n                 VALUES('e2', 'src/reverse_caller.rs', 'invoke_handler', 'handle_request', 3, 'uid:reverse:invoke_handler', 'uid:caller:handle_request', 'resolved', 1.0);\",\n        )\n        .unwrap();\n        (tmp, db)\n    }"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "split long top level symbols into line budget chunks",
+    "references": [],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-parsers/src/chunker.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:8744f16cf461a263f08c835b",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 233,
+      "text": "callee: chunk_by_lines_basic → from_policy (cc-parsers/src/chunker.rs:233)",
+      "title": "Callee: from_policy",
+      "token_estimate": 19
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-parsers/src/chunker.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:a092052978b0aa553e3f6182",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 235,
+      "text": "callee: chunk_by_lines_basic → default (cc-parsers/src/chunker.rs:235)",
+      "title": "Callee: default",
+      "token_estimate": 18
+    }
+  ],
+  "query": "split long top level symbols into line budget chunks",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "split long top level symbols into line budget chunks",
+  "token_budget": 4000,
+  "token_estimate": 3998
+}

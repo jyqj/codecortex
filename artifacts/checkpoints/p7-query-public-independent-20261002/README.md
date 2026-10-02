@@ -40,3 +40,7 @@ All three preliminary runs used **`bfaf45ead49469a5ba7bd5ea732a71fc0b6e247d`**, 
 These scaffolding runs are not counted in the 155 canonical passes. `baseline-update.diff` records the two production files changed by the main owner from bfaf45e to c8c20b5; this task edited neither. Remote `codex/cloud-p7-model-transition@a9f5b7c13e2a4d79c25a017e3a8cbfb47e9037db` was inspected after canonical verification: its additional commit is documentation/evidence only, with no crates/Cargo/scripts diff. The executed conclusion is still explicitly c8c20b5; no test run is relabelled a9f5b7c.
 
 D1/D2 remain unchanged. No real provider, credential, source egress or provider-quality certification. Full workspace regression, CI receipt and formal P7 gate decisions remain with the main owner; this is independent scoped public-query evidence.
+
+## Final review baseline
+
+Per the main owner, final PR is based on `a9f5b7c13e2a4d79c25a017e3a8cbfb47e9037db`. All executed runs remain labelled c8c20b5 / frozen source 153ced0. `production-byte-equivalence.json` proves exact equality of tracked production src and Cargo blobs between executed c8c20b5, source 153ced0, a9f5b7c and this final branch, with SHA-256 for every module. New and old test bytes also match the executed frozen sources. No metadata-only update caused a redundant rerun or relabelling.

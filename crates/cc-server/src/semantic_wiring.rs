@@ -62,21 +62,19 @@ use cc_db::index_db::IndexDb;
 use cc_db::semantic_manifest_reads::SemanticManifestReads;
 use cc_db::semantic_outbox::ClaimedTask;
 use cc_model::config::ProjectConfig;
+use cc_model::query::QueryControl;
 use cc_model::retrieval::{
-    CandidateRef, LaneCoverage, LaneOutcome, LaneStatus, LANE_OUTCOME_SCHEMA_VERSION,
-    CANDIDATE_REF_SCHEMA_VERSION,
+    CandidateRef, LaneCoverage, LaneOutcome, LaneStatus, CANDIDATE_REF_SCHEMA_VERSION,
+    LANE_OUTCOME_SCHEMA_VERSION,
 };
 use cc_model::semantic::{SemanticRecall, SemanticRequest};
-use cc_model::query::QueryControl;
 use cc_model::{CcError, CcResult};
 use cc_semantic::cache::{
     namespace_key, resolve_cache_root_with, ArtifactCache, CacheRead, QueryCacheKey,
     QueryVectorCache, CACHE_ROOT_ENV,
 };
 use cc_semantic::capability::resolve_provider;
-use cc_semantic::degrade::{
-    quarantine_detected, requeue_after_degrade, DegradationLedger,
-};
+use cc_semantic::degrade::{quarantine_detected, requeue_after_degrade, DegradationLedger};
 use cc_semantic::gc::{run_gc_pass, GcConfig, GcCounters, GcPosition};
 use cc_semantic::ports::{DocumentInput, EmbeddingProvider, QueryInput};
 use cc_semantic::publish::Publisher;
@@ -157,10 +155,7 @@ pub fn provider_unhealthy_reason(
     ledger_degraded: bool,
 ) -> Option<&'static str> {
     use cc_semantic::providers::openai_compatible::{CircuitState, SystemRetryClock};
-    if !matches!(
-        breaker.state(&SystemRetryClock),
-        CircuitState::Closed
-    ) {
+    if !matches!(breaker.state(&SystemRetryClock), CircuitState::Closed) {
         return Some(BREAKER_OPEN_REASON);
     }
     if gate.snapshot().suspended_for.is_some() {
@@ -415,9 +410,7 @@ fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
         model_id: subsystem.space.model_id().to_owned(),
         dimensions: subsystem.space.dimension(),
     }));
-    services.set_semantic_degradation(Some(SemanticDegradation::from(
-        subsystem.ledger.snapshot(),
-    )));
+    services.set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
 }
 
 /// Detach the semantic subsystem from the query services: every slot is
@@ -573,9 +566,7 @@ pub fn drain_worker_batch(
     })?;
     // 状态轮询转写: the probe's degradation view follows the worker, not
     // the assembly instant.
-    services.set_semantic_degradation(Some(SemanticDegradation::from(
-        subsystem.ledger.snapshot(),
-    )));
+    services.set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
     Ok(DrainOutcome {
         batch: report,
         quarantined,
@@ -601,7 +592,8 @@ pub fn run_gc_until_exhausted(
     let mut total = GcCounters::default();
     let mut after: Option<GcPosition> = None;
     for _ in 0..GC_MAX_ROUNDS {
-        let (counters, resume, _exhausted) = run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
+        let (counters, resume, _exhausted) =
+            run_gc_pass(db, &subsystem.cache, &cfg, after.as_ref())?;
         total.kept_fresh += counters.kept_fresh;
         total.kept_referenced += counters.kept_referenced;
         total.kept_live_task += counters.kept_live_task;
@@ -662,9 +654,7 @@ pub fn drain_revocations_with_reclaim(
     let gc = run_gc_until_exhausted(db, subsystem, now_unix)?;
     // The reclaim can move the visible set only inside the drain's own
     // consume transactions; the snapshot refresh keeps the probe current.
-    services.set_semantic_degradation(Some(SemanticDegradation::from(
-        subsystem.ledger.snapshot(),
-    )));
+    services.set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
     Ok(RevocationReclaimReport { revocations, gc })
 }
 
@@ -995,7 +985,10 @@ mod tests {
         )
         .expect_err("missing model_id must refuse");
         assert!(error.to_string().contains("semantic.model_id"));
-        assert!(!services_attached(&services), "a refused config never wires");
+        assert!(
+            !services_attached(&services),
+            "a refused config never wires"
+        );
 
         let mut config = enabled_config();
         config.semantic.dimensions = None;
@@ -1121,9 +1114,8 @@ mod tests {
             .ledger
             .note_corrupt(&InputDigest::of_input(b"corrupt-input").expect("digest"));
         // The composition root re-forwards the snapshot (one-line bridge).
-        services.set_semantic_degradation(Some(
-            SemanticDegradation::from(subsystem.ledger.snapshot()),
-        ));
+        services
+            .set_semantic_degradation(Some(SemanticDegradation::from(subsystem.ledger.snapshot())));
         let degradation = services.semantic_degradation().expect("bridged");
         assert!(degradation.degraded);
         let retrieval = &probe(&services, Some(&config))["retrieval"];
@@ -1156,11 +1148,7 @@ mod tests {
         );
 
         // 2. dense recall through the production port + lane receipt gate.
-        let generation = world
-            .db
-            .reads()
-            .read_generation()
-            .expect("read generation");
+        let generation = world.db.reads().read_generation().expect("read generation");
         let control = QueryControl::new(std::time::Duration::from_millis(5_000)).unwrap();
         let raw = subsystem
             .recall
@@ -1338,7 +1326,10 @@ mod tests {
             outcome.truncation_reason.as_deref(),
             Some(crate::semantic_scope_guard::PARTIAL_COVERAGE_REASON)
         );
-        assert!(!outcome.coverage.complete, "partial must never read complete");
+        assert!(
+            !outcome.coverage.complete,
+            "partial must never read complete"
+        );
         assert_eq!(outcome.candidate_count, 1);
         assert_eq!(outcome.candidates[0].document.doc_key, world.doc_key);
         outcome.validate().expect("partial receipt validates");
@@ -1563,9 +1554,8 @@ mod tests {
         use cc_semantic::types::InputDigest;
         use std::time::Duration;
 
-        let healthy_breaker = CircuitBreaker::new(
-            BreakerLimits::validated(2, Duration::from_secs(1)).unwrap(),
-        );
+        let healthy_breaker =
+            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_secs(1)).unwrap());
         let healthy_gate = ProviderGate::new(GateLimits::permissive());
         let healthy_ledger = DegradationLedger::new(None);
         assert_eq!(
@@ -1578,9 +1568,8 @@ mod tests {
             "closed breaker + live gate + clean ledger is healthy"
         );
 
-        let tripped = CircuitBreaker::new(
-            BreakerLimits::validated(2, Duration::from_secs(60)).unwrap(),
-        );
+        let tripped =
+            CircuitBreaker::new(BreakerLimits::validated(2, Duration::from_secs(60)).unwrap());
         let clock = MockRetryClock::new(1_000);
         tripped.record_failure(&clock);
         tripped.record_failure(&clock);
@@ -1796,7 +1785,13 @@ mod tests {
         conn.execute(
             "INSERT INTO document_manifest(doc_key,doc_version,file_path,chunk_id,encoding_key,\
              reference_json,record_json) VALUES(?1,?2,'src/d1.rs','c-d1',?3,?4,?5)",
-            rusqlite::params![doc_key, doc_version, input_digest, reference_json, record_json],
+            rusqlite::params![
+                doc_key,
+                doc_version,
+                input_digest,
+                reference_json,
+                record_json
+            ],
         )
         .unwrap();
         cc_db::semantic_outbox::supersede_and_enqueue_on(

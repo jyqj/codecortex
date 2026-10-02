@@ -79,7 +79,11 @@ use crate::types::{DocSpecDigest, InputDigest, SpaceDigest};
 /// `batch_rows` of them. [`SemanticManifestReads`] is the sanctioned
 /// production source (adapter below); tests substitute an in-memory source.
 pub trait ManifestCandidates {
-    fn next_batch(&self, after_doc_key: &str, batch_rows: usize) -> CcResult<Vec<SemanticManifestRow>>;
+    fn next_batch(
+        &self,
+        after_doc_key: &str,
+        batch_rows: usize,
+    ) -> CcResult<Vec<SemanticManifestRow>>;
 }
 
 /// Production adapter: a [`SemanticManifestReads`] handle pinned to one query
@@ -104,8 +108,13 @@ pub fn space_manifest_reads<'a>(
 }
 
 impl ManifestCandidates for SpaceScopedManifestReads<'_> {
-    fn next_batch(&self, after_doc_key: &str, batch_rows: usize) -> CcResult<Vec<SemanticManifestRow>> {
-        self.reads.scan_space(&self.space_id, after_doc_key, batch_rows)
+    fn next_batch(
+        &self,
+        after_doc_key: &str,
+        batch_rows: usize,
+    ) -> CcResult<Vec<SemanticManifestRow>> {
+        self.reads
+            .scan_space(&self.space_id, after_doc_key, batch_rows)
     }
 }
 
@@ -375,18 +384,15 @@ impl TopK {
     }
 
     fn offer(&mut self, doc_key: String, score: f64) {
-        self.heap.push(std::cmp::Reverse(Candidate { score, doc_key }));
+        self.heap
+            .push(std::cmp::Reverse(Candidate { score, doc_key }));
         if self.heap.len() > self.k {
             self.heap.pop(); // drops the least desirable survivor
         }
     }
 
     fn finish(self) -> Vec<ScoredDoc> {
-        let mut best: Vec<Candidate> = self
-            .heap
-            .into_iter()
-            .map(|reverse| reverse.0)
-            .collect();
+        let mut best: Vec<Candidate> = self.heap.into_iter().map(|reverse| reverse.0).collect();
         // Descending desirability = (score desc, doc_key asc). `sort` is
         // stable, but the order is total so stability is not load-bearing.
         best.sort_by(|a, b| b.cmp(a));
@@ -454,7 +460,13 @@ mod tests {
         }
     }
 
-    fn row(doc_key: &str, file_path: &str, language: &str, artifact_ref: &str, space_id: &str) -> SemanticManifestRow {
+    fn row(
+        doc_key: &str,
+        file_path: &str,
+        language: &str,
+        artifact_ref: &str,
+        space_id: &str,
+    ) -> SemanticManifestRow {
         SemanticManifestRow {
             doc_key: doc_key.into(),
             doc_version: "v1".into(),
@@ -478,8 +490,7 @@ mod tests {
                 std::process::id(),
                 SEQ.fetch_add(1, Ordering::SeqCst)
             ));
-            let cache =
-                ArtifactCache::open(&root, format!("ns-{tag}")).expect("open cache");
+            let cache = ArtifactCache::open(&root, format!("ns-{tag}")).expect("open cache");
             (Self { root }, cache)
         }
     }
@@ -537,9 +548,7 @@ mod tests {
             .iter()
             .map(|(key, v)| (key.clone(), reference_cosine(query, v)))
             .collect();
-        scored.sort_by(|a, b| {
-            b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
-        });
+        scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         scored.truncate(k);
         scored
     }
@@ -778,7 +787,13 @@ mod tests {
             let reference = cache
                 .put(&space, &input, &spec, vector, 1_000)
                 .expect("put");
-            rows.push(row(key, format!("{key}.rs").as_str(), "rust", reference.as_str(), digest.as_str()));
+            rows.push(row(
+                key,
+                format!("{key}.rs").as_str(),
+                "rust",
+                reference.as_str(),
+                digest.as_str(),
+            ));
         }
         let query = [1.0_f32, 0.0, 0.0];
         let result = run(&cache, rows, &query, &space, &scope(), 4, 2).expect("search");
@@ -861,9 +876,20 @@ mod tests {
 
         let baseline = run(&cache, rows.clone(), &query, &space, &scope(), 5, 4).expect("baseline");
         for batch_rows in [1_usize, 2, 16, 17, 100] {
-            let other = run(&cache, rows.clone(), &query, &space, &scope(), 5, batch_rows)
-                .expect("batched run");
-            assert_eq!(baseline, other, "batch_rows={batch_rows} changed the result");
+            let other = run(
+                &cache,
+                rows.clone(),
+                &query,
+                &space,
+                &scope(),
+                5,
+                batch_rows,
+            )
+            .expect("batched run");
+            assert_eq!(
+                baseline, other,
+                "batch_rows={batch_rows} changed the result"
+            );
         }
     }
 
@@ -985,7 +1011,13 @@ mod tests {
             let reference = cache
                 .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
                 .expect("put");
-            rows.push(row(key, path, language, reference.as_str(), digest.as_str()));
+            rows.push(row(
+                key,
+                path,
+                language,
+                reference.as_str(),
+                digest.as_str(),
+            ));
         }
         let query = [1.0_f32, 0.0];
 
@@ -1007,7 +1039,8 @@ mod tests {
             languages: Some(vec![Language::Rust]),
             file_paths: None,
         };
-        let got = run(&cache, rows.clone(), &query, &space, &prefix_rust, 10, 2).expect("prefix+lang");
+        let got =
+            run(&cache, rows.clone(), &query, &space, &prefix_rust, 10, 2).expect("prefix+lang");
         assert_eq!(
             got.iter().map(|d| d.doc_key.as_str()).collect::<Vec<_>>(),
             ["a", "d"]
@@ -1033,7 +1066,13 @@ mod tests {
         let (_temp, cache) = TempCache::open("scope-lang-none");
         let space = space(2);
         let digest = space.digest().expect("digest");
-        let mut orphan = row("x", "x.rs", "rust", "cas.v1:ns:sp:in:spec:ck", digest.as_str());
+        let mut orphan = row(
+            "x",
+            "x.rs",
+            "rust",
+            "cas.v1:ns:sp:in:spec:ck",
+            digest.as_str(),
+        );
         // points at a real object so it would be scorable if admitted
         let spec = DocumentEncodingSpec::new(space.clone(), None, 8_192, "t")
             .expect("spec")
@@ -1052,11 +1091,27 @@ mod tests {
         };
         let mut no_language = orphan.clone();
         no_language.language = None;
-        let got = run(&cache, vec![no_language.clone()], &[1.0, 0.0], &space, &languages, 10, 1)
-            .expect("filtered");
+        let got = run(
+            &cache,
+            vec![no_language.clone()],
+            &[1.0, 0.0],
+            &space,
+            &languages,
+            10,
+            1,
+        )
+        .expect("filtered");
         assert!(got.is_empty(), "None language must fail a languages filter");
-        let got = run(&cache, vec![no_language], &[1.0, 0.0], &space, &scope(), 10, 1)
-            .expect("unfiltered");
+        let got = run(
+            &cache,
+            vec![no_language],
+            &[1.0, 0.0],
+            &space,
+            &scope(),
+            10,
+            1,
+        )
+        .expect("unfiltered");
         assert_eq!(got.len(), 1);
     }
 
@@ -1140,8 +1195,15 @@ mod tests {
         let reference = cache
             .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
             .expect("put");
-        let rows = vec![row("d", "d.rs", "rust", reference.as_str(), space.digest().expect("d").as_str())];
-        let got = run(&cache, rows, &[0.0, 0.0], &space, &scope(), 1, 1).expect("zero query w/ docs");
+        let rows = vec![row(
+            "d",
+            "d.rs",
+            "rust",
+            reference.as_str(),
+            space.digest().expect("d").as_str(),
+        )];
+        let got =
+            run(&cache, rows, &[0.0, 0.0], &space, &scope(), 1, 1).expect("zero query w/ docs");
         assert!(got.is_empty());
 
         // Zero document vector among valid ones: the zero doc is skipped.
@@ -1161,7 +1223,10 @@ mod tests {
             "d",
             "d.rs",
             "rust",
-            cache.put(&space, &input, &spec, &[1.0, 0.0], 1_000).expect("put").as_str(),
+            cache
+                .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
+                .expect("put")
+                .as_str(),
             space.digest().expect("d").as_str(),
         ));
         let got = run(&cache, rows, &[1.0, 0.0], &space, &scope(), 5, 1).expect("zero doc");
@@ -1302,10 +1367,17 @@ mod tests {
         .expect("search");
         assert_eq!(got.len(), 3);
         let batches = source.batches.borrow();
-        assert!(batches.iter().all(|&b| b == 4), "every request ≤ batch_rows");
+        assert!(
+            batches.iter().all(|&b| b == 4),
+            "every request ≤ batch_rows"
+        );
         // 11 rows / batch 4 → keyset walks 4,4,3 then stops on the empty batch
         // (the MemSource records the request, so 4 requests total).
-        assert_eq!(batches.len(), 4, "one request per keyset step incl. terminator");
+        assert_eq!(
+            batches.len(),
+            4,
+            "one request per keyset step incl. terminator"
+        );
     }
 
     // ── 7. Space isolation, deletion, and degradation ────────────────────
@@ -1330,9 +1402,21 @@ mod tests {
             // Row published under a different space id — the load layer (SQL
             // WHERE space_id) excludes it; the ref check here is defense in
             // depth.
-            row("foreign-space", "f.rs", "rust", mine.as_str(), other_digest.as_str()),
+            row(
+                "foreign-space",
+                "f.rs",
+                "rust",
+                mine.as_str(),
+                other_digest.as_str(),
+            ),
             // Correct space id but the ref carries a foreign space digest.
-            row("foreign-ref", "g.rs", "rust", &format!("cas.v1:ns-digest:{}:in:spec:ck", other_digest.as_str()), digest.as_str()),
+            row(
+                "foreign-ref",
+                "g.rs",
+                "rust",
+                &format!("cas.v1:ns-digest:{}:in:spec:ck", other_digest.as_str()),
+                digest.as_str(),
+            ),
             // Unparseable ref.
             row("bad-ref", "h.rs", "rust", "not-a-ref", digest.as_str()),
             // Ref input digest disagrees with the row's input digest.
@@ -1340,7 +1424,11 @@ mod tests {
                 "mismatched-input",
                 "i.rs",
                 "rust",
-                &format!("cas.v1:ns-digest:{}:other-input:{}:ck", digest.as_str(), spec.as_str()),
+                &format!(
+                    "cas.v1:ns-digest:{}:other-input:{}:ck",
+                    digest.as_str(),
+                    spec.as_str()
+                ),
                 digest.as_str(),
             ),
             // The one legitimate row.
@@ -1422,7 +1510,10 @@ mod tests {
             let reference = cache
                 .put(&space, &input.input_digest, &spec_digest, vector, 1_000)
                 .expect("put");
-            let key = format!("doc-{}", input.input_digest.as_str().get(..8).unwrap_or("x"));
+            let key = format!(
+                "doc-{}",
+                input.input_digest.as_str().get(..8).unwrap_or("x")
+            );
             corpus.push((key.clone(), vector.to_vec()));
             let mut candidate = row(
                 &key,
@@ -1446,6 +1537,8 @@ mod tests {
         assert_docs_eq(&got, &expected);
         // The embedded query itself is never a document: doc/query paths are
         // domain separated by the provider and only document rows were loaded.
-        assert!(got.iter().all(|d| corpus.iter().any(|(key, _)| *key == d.doc_key)));
+        assert!(got
+            .iter()
+            .all(|d| corpus.iter().any(|(key, _)| *key == d.doc_key)));
     }
 }

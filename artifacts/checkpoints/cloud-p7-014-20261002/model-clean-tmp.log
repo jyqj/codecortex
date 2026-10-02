@@ -1,0 +1,108 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 16.41s
+     Running unittests src/lib.rs (target/debug/deps/cc_model-78e50aba07b8196e)
+
+running 87 tests
+test build_explain::tests::finish_non_empty_skips_empty_collector ... ok
+test build_explain::tests::empty_envelope_serializes_to_empty_object ... ok
+test config::tests::collect_unknown_config_keys_flags_unknown_top_level_key ... ok
+test config::tests::collect_unknown_config_keys_flags_removed_indexing_parallelism ... ok
+test config::tests::collect_unknown_config_keys_empty_for_fully_valid_config ... ok
+test build_explain::tests::gate_decisions_and_degraded_roundtrip ... ok
+test config::tests::find_project_root_with_marker_returns_marker_dir ... ok
+test config::tests::find_project_root_with_marker_returns_none_without_marker ... FAILED
+test config::tests::env_overrides_apply_on_top_of_file_config ... ok
+test config::tests::partial_config_fills_missing_fields_with_defaults ... ok
+test config::tests::semantic_egress_policy_keys_parse_and_default_closed ... ok
+test config::tests::semantic_retry_and_breaker_keys_parse_with_conservative_defaults ... ok
+test config::tests::semantic_section_is_inert_by_default_and_fills_defaults_when_partial ... ok
+test context::tests::context_node_new_sets_token_estimate ... ok
+test context::tests::coverage_explain_projects_the_receipt_verbatim ... ok
+test context::tests::node_type_serde_round_trip ... ok
+test context::tests::role_buckets_are_non_empty ... ok
+test config::tests::semantic_concurrency_keys_parse_and_default_off ... ok
+test context::tests::semantic_explain_is_absent_exactly_when_no_semantic_lane_ran ... ok
+test edge::tests::dispatch_kind_roundtrip ... ok
+test edge::tests::semantic_relation_roundtrip ... ok
+test framework_taxonomy::tests::canonical_aliases_covers_canonical_then_aliases ... ok
+test framework_taxonomy::tests::resolver_tier_lookup_uses_static_aliases ... ok
+test framework_taxonomy::tests::taxon_lookup_covers_canonical_and_aliases ... ok
+test config::tests::semantic_section_keys_are_known_config_keys ... ok
+test edge::tests::resolution_kind_roundtrip ... ok
+test framework_taxonomy::tests::taxonomy_is_closed_and_unique ... ok
+test graph_catalog::tests::edge_kind_set_contains_and_iter ... ok
+test graph_catalog::tests::cypher_fast_path_kinds_support_variable_length ... ok
+test graph_catalog::tests::catalog_covers_core_query_edges ... ok
+test graph_catalog::tests::tool_edge_kind_matrix_snapshot ... ok
+test graph_catalog::tests::tool_subsets_resolve_in_catalog ... ok
+test graph_catalog::tests::table_names_are_unique_and_include_symbol_refs ... ok
+test graph_catalog::tests::visible_relationships_have_schema_descriptions ... ok
+test graph_explain::tests::declared_only_carries_just_the_contract ... ok
+test graph_explain::tests::empty_envelope_serializes_to_empty_object ... ok
+test graph_explain::tests::edge_kinds_deduplicated_in_first_seen_order ... ok
+test graph_explain::tests::declared_edge_kinds_do_not_make_envelope_non_empty ... ok
+test graph_explain::tests::finish_non_empty_skips_empty_collector ... ok
+test graph_explain::tests::first_truncated_reason_wins ... ok
+test graph_explain::tests::read_errors_capped_with_dropped_count ... ok
+test graph_explain::tests::non_empty_fields_serialize_and_roundtrip ... ok
+test id::tests::chunk_id_is_deterministic ... ok
+test graph_explain::tests::synthesis_notes_first_count_wins_and_finishes_as_strings ... ok
+test id::tests::edge_id_is_deterministic ... ok
+test id::tests::ref_id_is_deterministic ... ok
+test id::tests::span_text_hash_deterministic ... ok
+test id::tests::stable_hash_deterministic ... ok
+test id::tests::symbol_uid_differs_by_kind ... ok
+test id::tests::symbol_uid_is_deterministic ... ok
+test id::tests::symbol_uid_signature_normalized ... ok
+test language_tests::as_str_new_languages ... ok
+test language_tests::from_extension_new_languages ... ok
+test language_tests::from_name_new_languages ... ok
+test parser_tier_tests::element_confidence_falls_back_to_tier_default ... ok
+test parser_tier_tests::element_confidence_matrix_baselines ... ok
+test public_surface::tests::known_empty_encoding_has_independent_golden ... ok
+test public_surface::tests::order_duplicates_and_literal_boundaries ... ok
+test public_surface::tests::unknown_is_not_empty_or_unchanged ... ok
+test query::tests::child_cannot_extend_deadline_and_cancel_blocks_publication ... ok
+test query::tests::expired_control_and_bad_config_fail_closed ... ok
+test repo_path::tests::component_and_case_boundaries ... ok
+test repo_path::tests::native_names_do_not_alias_portable_paths ... ok
+test repo_path::tests::portable_normalization_rejects_traversal_and_roots ... ok
+test retrieval::tests::absent_and_explicit_empty_roundtrip_differ ... ok
+test config::tests::index_paths_can_use_external_cache_dir ... ok
+test input_file::tests::bound_and_path_failures_do_not_read_arbitrary_files ... ok
+test input_file::tests::descriptor_anchor_survives_path_replacement_without_following_new_symlink ... ok
+test retrieval::tests::lane_outcome_rejects_non_finite_scores_and_duplicate_versions ... ok
+test retrieval::tests::lane_status_requires_consistent_reason_and_coverage ... ok
+test retrieval::tests::soft_hints_never_create_a_hard_scope ... ok
+test retrieval::tests::lane_outcome_distinguishes_disabled_from_complete_empty ... ok
+test retrieval::tests::malformed_span_optional_identity_and_coverage_fail_closed ... ok
+test retrieval_cost::tests::unavailable_and_overflow_are_not_zero ... ok
+test route_normalize::tests::normalize_basic_paths ... ok
+test route_normalize::tests::normalize_full_url_with_params ... ok
+test route_normalize::tests::normalize_lowercases ... ok
+test route_normalize::tests::normalize_replaces_params ... ok
+test retrieval::tests::intersections_never_admit_a_file_rejected_by_either_side ... ok
+test route_normalize::tests::normalize_strips_query_and_fragment ... ok
+test route_normalize::tests::normalize_strips_scheme_and_host ... ok
+test util_tests::first_sentence_empty ... ok
+test util_tests::first_sentence_with_newline ... ok
+test search::tests::search_hit_score_trace_is_serde_backward_compatible ... ok
+test util_tests::first_sentence_without_period ... ok
+test util_tests::chunked_basic ... ok
+test util_tests::first_sentence_with_period ... ok
+
+failures:
+
+---- config::tests::find_project_root_with_marker_returns_none_without_marker stdout ----
+
+thread 'config::tests::find_project_root_with_marker_returns_none_without_marker' (58545) panicked at crates/cc-model/src/config.rs:1742:9:
+assertion failed: find_project_root_with_marker(Some(&project_dir)).is_none()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    config::tests::find_project_root_with_marker_returns_none_without_marker
+
+test result: FAILED. 86 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p cc-model --lib`

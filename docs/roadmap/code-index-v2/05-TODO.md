@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`00019b42e4adaf9e7b5a321fa7c2ff888837143fec0e4fe558148f88640cf838`。
+> 任务总数：192；源文件 SHA-256：`b3c1fcf72d1e8071dfcf67a27585c9af268eaa29eca90df5577254e1701c7429`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -1994,8 +1994,8 @@
 验收：semantic找回结果也不会被softscope误删或越过hard范围；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V05；V16
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
-实施备注：2026-10-02 父对话独立复核报告：带 languages 请求会忽略未覆盖文档，Rust eligible=1/published=0 仍报 Complete 已复现；scope guard 修复由独立任务负责。保持 todo，修复与当前 SHA 复验前不收口。
+证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
+实施备注：2026-10-02 父对话独立复核报告：带 languages 请求会忽略未覆盖文档，Rust eligible=1/published=0 仍报 Complete 已复现；scope guard 修复由独立任务负责。保持 todo，修复与当前 SHA 复验前不收口。 修复 PR #6 SHA46d6e5b 已非破坏性集成至 b738a6a；最终格式源码 c4dfa324 上四 crate lib975/0/1通过，正式 V05/V16 尚未全跑，保持 todo。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 
@@ -2019,8 +2019,8 @@
 验收：网络不占读写锁，故障结果不缓存成完整成功；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
-实施备注：2026-10-02 父对话独立复核报告：真实执行器 20ms deadline/120ms 返回 probe 超时，wiring 同步扫描和 exact 候选循环缺 control；取消链交独立任务，云集成 owner 释放 semantic_wiring recall 段（约700～800行）。hydrator skip 顶层 partial 为尚未证实可达的测试缺口，不据此宣称生产 bug；保持 todo。
+证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
+实施备注：2026-10-02 父对话独立复核报告：真实执行器 20ms deadline/120ms 返回 probe 超时，wiring 同步扫描和 exact 候选循环缺 control；取消链交独立任务，云集成 owner 释放 semantic_wiring recall 段（约700～800行）。hydrator skip 顶层 partial 为尚未证实可达的测试缺口，不据此宣称生产 bug；保持 todo。 两提交057e283/4c3dfe1均已按序集成；最终格式源码c4dfa324上四crate lib975/0/1通过，单次同步IO仍不可强抢占；fake HTTP/故障缓存正式义务未齐，保持todo；单独PR发布被执行器拒绝，未代开同PR。
 
 ### [ ] P7-014｜配置/status/MCP全链贯通
 
@@ -2032,8 +2032,8 @@
 验收：未配置、关闭、回填、失败、就绪状态真实一致；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：[{"target_sha": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa", "worktree_digest": "9df8ebdd6db932509211c813797bcc843f6038c4", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/receipt.json"], "review": "self-reviewed; independent review pending; P7-014 not complete", "rollback_status": "revert recovery commit; no schema/credential/provider change", "scope": "cloud build recovery and capability projection only; full task remains in_progress"}]
-实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。
+证据：[{"target_sha": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa", "worktree_digest": "9df8ebdd6db932509211c813797bcc843f6038c4", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/receipt.json"], "review": "self-reviewed; independent review pending; P7-014 not complete", "rollback_status": "revert recovery commit; no schema/credential/provider change", "scope": "cloud build recovery and capability projection only; full task remains in_progress"}, {"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
+实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。 生命周期PR #7保留subsystem、初始化错误保原项目、close/reopen对称处理（默认253/semantic280通过）；纳入011/013后四crate lib975/0/1通过。生产worker调度与wired stdio仍未闭环，保持in_progress。
 
 ### [ ] P7-015｜后台回填与前台查询竞争测试
 

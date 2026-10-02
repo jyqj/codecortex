@@ -631,7 +631,7 @@ fn query_path_never_touches_the_document_cache() {
             &doc_space,
             &cc_semantic::types::InputDigest::of_input(b"document text").expect("digest"),
             &doc_spec.digest().expect("digest"),
-            &vec![1.0_f32; 8],
+            &[1.0_f32; 8],
             1_000,
         )
         .expect("doc put");

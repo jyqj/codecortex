@@ -1,0 +1,60 @@
+{
+  "data": {
+    "schema": {
+      "$schema": "https://json-schema.org/draft/2020-12/schema",
+      "additionalProperties": false,
+      "properties": {
+        "include_source": {
+          "default": true,
+          "description": "Whether to include source code for each symbol. Default `true`.",
+          "type": "boolean"
+        },
+        "intent": {
+          "default": null,
+          "description": "Optional intent hint to steer retrieval (e.g. \"refactor\", \"debug\").",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "max_symbols": {
+          "default": null,
+          "description": "Maximum number of symbols to include in the context window.",
+          "format": "uint",
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "project_path": {
+          "default": null,
+          "description": "Optional project root override.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "retrieval_strategy": {
+          "default": null,
+          "description": "Optional local/auto/semantic policy. An explicit policy uses the unified\nretrieval path rather than the legacy direct-symbol shortcut.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "task": {
+          "description": "Natural-language description of the task or question.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "task"
+      ],
+      "type": "object"
+    },
+    "tool": "context"
+  },
+  "kind": "schema",
+  "test": "advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults"
+}

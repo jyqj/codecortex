@@ -181,8 +181,7 @@ mod tests {
             1
         );
         assert_eq!(
-            value["resolution_freshness"]["dispatch_observed_generation_change"]
-                ["to_index_epoch"],
+            value["resolution_freshness"]["dispatch_observed_generation_change"]["to_index_epoch"],
             2
         );
     }
@@ -203,8 +202,7 @@ mod tests {
             value["resolution_freshness"]["status"],
             "changed_during_query"
         );
-        assert!(value["resolution_freshness"]["dispatch_observed_generation_change"]
-            .is_null());
+        assert!(value["resolution_freshness"]["dispatch_observed_generation_change"].is_null());
     }
 
     // P2 guard: without an accepted generation the annotation must stay
@@ -236,6 +234,9 @@ mod tests {
             },
         });
         assert_eq!(accepted_generation_of(&value), Some(generation));
-        assert_eq!(accepted_generation_of(&serde_json::json!({"hits": []})), None);
+        assert_eq!(
+            accepted_generation_of(&serde_json::json!({"hits": []})),
+            None
+        );
     }
 }

@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "suite": {
+    "schema_version": 1,
+    "name": "P7 V19 retrospective compat/lexical_votes_only",
+    "source": {
+      "root": "../source",
+      "commit": null,
+      "digest": "285d30ed8dcbe7ff0420f95e77cced816bff30846a3b5a923a5f9d1a43379136",
+      "files": [
+        "cc-db/src/index_migrate.rs",
+        "cc-index/src/dirty_closure.rs",
+        "cc-index/src/indexer_phases/dirty.rs",
+        "cc-model/src/id.rs",
+        "cc-model/src/retrieval.rs",
+        "cc-parsers/src/chunker.rs",
+        "cc-search/src/plan.rs",
+        "cc-search/src/preselect.rs",
+        "cc-search/src/scope.rs"
+      ]
+    },
+    "queries": "../queries/compat.jsonl",
+    "queries_digest": "f5c4132abf99e108ea60afa5285b8cafe92fae63ad8d92a6f81b68150f0d207c",
+    "scoring": "oce-compat-v1",
+    "repetitions": 3,
+    "warmup": 0,
+    "seed": 2719013,
+    "timeout_ms": 30000,
+    "top_k": 10,
+    "engine_config": {
+      "auto_index": {
+        "enabled": false
+      },
+      "ranking": {
+        "graph_rerank_weight": 0.0
+      },
+      "search": {
+        "exact_weight": 0.0,
+        "graph_weight": 0.0,
+        "grep_weight": 0.0,
+        "path_weight": 0.0
+      }
+    }
+  },
+  "input": {
+    "files": [
+      {
+        "path": "cc-db/src/index_migrate.rs",
+        "bytes": 10450,
+        "digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73"
+      },
+      {
+        "path": "cc-index/src/dirty_closure.rs",
+        "bytes": 23086,
+        "digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b"
+      },
+      {
+        "path": "cc-index/src/indexer_phases/dirty.rs",
+        "bytes": 33956,
+        "digest": "0acec508376de861e202aa93a3a733e310fe33e9582a648964a3abb81d77f5a1"
+      },
+      {
+        "path": "cc-model/src/id.rs",
+        "bytes": 5984,
+        "digest": "b9624f2be9f8f4fe8aeb2314df1ae4d054efb4ace08b87220a87dbe11c6ae030"
+      },
+      {
+        "path": "cc-model/src/retrieval.rs",
+        "bytes": 20599,
+        "digest": "8a13523127fa80cc5bf93620100029c9316b791ded000530bddde3e8fb0a4995"
+      },
+      {
+        "path": "cc-parsers/src/chunker.rs",
+        "bytes": 8796,
+        "digest": "f39de7d292d0c0088d06a1f60cfd441de7ee98c647ebdad6fc4b958674180345"
+      },
+      {
+        "path": "cc-search/src/plan.rs",
+        "bytes": 32458,
+        "digest": "25887b9934b0ac058c482e70185e316338e06ac32bef9de256706f77831ffbc2"
+      },
+      {
+        "path": "cc-search/src/preselect.rs",
+        "bytes": 56042,
+        "digest": "cafbc34c82782431c8ff6a7c4c8a43dd16eb42be335515379f6a75837e31bce5"
+      },
+      {
+        "path": "cc-search/src/scope.rs",
+        "bytes": 3355,
+        "digest": "dc6e0fef4298053a59766978c6f45965c40aaecb6ef0931b8733ca3238b99f54"
+      }
+    ],
+    "source_digest": "285d30ed8dcbe7ff0420f95e77cced816bff30846a3b5a923a5f9d1a43379136",
+    "query_digest": "f5c4132abf99e108ea60afa5285b8cafe92fae63ad8d92a6f81b68150f0d207c",
+    "config_digest": "5232a1ac93b2e32a7ce415dde54aa9736e9378b8012df53747a4199927742d1e",
+    "commit": null,
+    "submodules": ""
+  },
+  "adapter": "mcp-stdio",
+  "adapter_version": "cc-eval-public-v7",
+  "engine": {
+    "arch": "x86_64",
+    "binary_digest": "88ce6c3b841f00d45fa8924a2ed9c2bd66a0019da80886edba9bf693f0ab6963",
+    "binary_source_binding": "recorded build receipt required; path/HEAD alone do not prove binding",
+    "cargo_lock_digest": "f15246ecdbf74868928ddb35cb210efa6ad525d42a2cd4c22e1b5b7ab2a5bce7",
+    "cpu_parallelism": 4,
+    "dirty_observed": "",
+    "engine_head_observed": "05f4853e75be5ccddab3855d91ce164b2a017282",
+    "eval_debug_assertions": true,
+    "eval_version": "1.0.0",
+    "hardware": null,
+    "os": "linux",
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+    "rustflags": null,
+    "sdkroot": null,
+    "source_files_digest": "76a401c8ff8e2ae5b05540a5b83eb208d8d94447f67ae58e976bc75c1d76fa5a",
+    "tracked_diff_digest": "af1349b9f5f9a1a6a0404dea36dcc9499bcb25c9adc112b7cc9a93cae41f3262"
+  },
+  "query_snapshot_digest": "f58accdebc1e46bda2b8ed7589636d7104bcfa9829c76b5f807481b05270b1a5",
+  "normalized_digest": "49e696eac285cfa37e033ee07e8e26b29198834959ce894952ebb5fca627b37e",
+  "measurement_profile": "smoke",
+  "source_verification": "public result source ranges checked against isolated admitted input; missing source fields marked unverified",
+  "infrastructure_failure": null
+}

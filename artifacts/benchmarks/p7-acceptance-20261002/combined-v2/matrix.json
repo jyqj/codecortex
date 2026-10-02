@@ -1,0 +1,268 @@
+{
+  "run_id": "p7-acceptance-20261002/combined-v2",
+  "integration_base_sha": "d6462c163abe6ca92d2ae0a2cf967b1ad2433e22",
+  "tested_source_commit_sha": "24db8bbe14e7b47bc5cc413bbf7c66a0be8f2710",
+  "tested_source_tree_sha": "5721d0d639e0cfc66437c9ff48af15a016ee4bb7",
+  "test_source": "crates/cc-server/tests/p7_acceptance_matrix.rs",
+  "test_source_sha256": "b1532544acae541db7c0f927063b9649aa9fb4d142a154b5435d3d705d2ca0f2",
+  "authority": [
+    {
+      "path": "docs/roadmap/code-index-v2/tasks.json",
+      "sha256": "b3c1fcf72d1e8071dfcf67a27585c9af268eaa29eca90df5577254e1701c7429"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/06-VALIDATION.md",
+      "sha256": "64a9fde995077f8349edc76ee501825feca6717c6c60ab7c03cc535142016aad"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/02-CONTRACTS.md",
+      "sha256": "66cca99c35f7f9ff1c9d1a7832ab71adec074058e126b188f6e06aff65adb0ad"
+    },
+    {
+      "path": "docs/roadmap/code-index-v2/09-BENCHMARK.md",
+      "sha256": "0c8bcbed17ea4e83b1dc55e9828f93a27e2a334a0d0eaa056302944260d0a731"
+    },
+    {
+      "path": "artifacts/checkpoints/p7-implementation-planning-20261002/TASK-BRIEFS.md",
+      "sha256": "ac3c6321baeeefec71ea4cd2de8a9669364426d9b645c66bdc226deb3f3ff613"
+    }
+  ],
+  "input_provenance": {
+    "initial_published_base": "60ab18ff3b6030ab14a72a5ab771bbb05e4f1316",
+    "published_combination": "d6462c163abe6ca92d2ae0a2cf967b1ad2433e22",
+    "published_combination_includes": [
+      "PR11:1cc418e12d8cc21780acb449735fad35ae9ce077",
+      "PR12:2e38989eee8c7fb5c9feccdeb634612fb4c74c38",
+      "PR10:16c8a0dda0240349e303cda5eb0a2c46809d6017"
+    ],
+    "selection": "New acceptance file rebased onto published d6462c1. No claim that 60ab18f contains later inputs. Current source commit adds only the new test file."
+  },
+  "receipt": "receipt.json",
+  "profile": {
+    "level": "L1/L2 offline engineering",
+    "vectors": "synthetic, no linguistic/semantic-quality interpretation",
+    "transport": "in-memory implementation at EmbeddingHttpTransport seam; no sockets",
+    "slow_transport": "isolated bounded ExecutionPool component test; not production worker scheduling or inline query encoding",
+    "query_faults": "production QueryHandle with scripted async SemanticRecall, auto and explicit semantic, 3 identical requests per fault",
+    "network_setup": "cargo fetch --locked downloaded upgraded registry dependencies before offline validation; no provider calls",
+    "D1_D2": "unchanged"
+  },
+  "validation_rows": [
+    {
+      "id": "V05",
+      "status": "passed_declared_L1_L2_scope_subchecks",
+      "commands": [
+        "search-lib",
+        "scope",
+        "matrix-semantic",
+        "matrix-default"
+      ],
+      "new_evidence": [
+        "soft boost/recent/pinned/overlay + file_preselect_limit=1 cannot erase dense target outside hints; real final source hydration",
+        "path/language/file_paths intersection before top-k, stronger outside candidate excluded",
+        "Some(empty) file and language and disjoint paths do not invoke optional port"
+      ],
+      "limits": [
+        "No independent L3 stdio claim; actual stdio/lifecycle belongs to P7-014 owner"
+      ]
+    },
+    {
+      "id": "V16",
+      "status": "passed_declared_L1_L2_exact_subchecks",
+      "commands": [
+        "vector-exact",
+        "exact-manifest",
+        "matrix-semantic"
+      ],
+      "new_evidence": [
+        "Stored f32 cosine hand calculation, k=1 scope filtering, Rust uncovered receipt Partial, eligible/published distinction",
+        "Second recall after actual file removal returns Complete + zero in now-empty eligible scope"
+      ],
+      "existing_evidence": [
+        "20 exact tests cover cosine, deterministic tie, bounded batch, space isolation, cancellation; 4 manifest integration tests cover SQLite/cache/FK deletion"
+      ],
+      "limits": [
+        "Bounded batch mechanism checked; no RSS/100k measured-memory or performance certification"
+      ]
+    },
+    {
+      "id": "V11",
+      "status": "partial_mechanism_evidence_with_known_test_race",
+      "commands": [
+        "execution",
+        "lock-span",
+        "wiring",
+        "query-cache",
+        "matrix-semantic"
+      ],
+      "new_evidence": [
+        "Auto and explicit semantic: timeout/error/unavailable -> complete-empty -> repeated failure for identical query; 3 recalls; identical local score bills/source; no failed result reused as complete",
+        "Slow in-memory transport: cancel and deadline return while physical blocking worker retains capacity; admission rejects; both permits drain before capacity reopens; total fallback budget preserved"
+      ],
+      "existing_evidence": [
+        "Actual QueryHandle fake-recall interval leaves CodeIndex write lock and only SQLite read connection usable",
+        "Existing mixed-generation, cache key, bounded execution and query vector cache tests rerun"
+      ],
+      "limits": [
+        "Prior original wiring test raced permit release; retained raw failure; current d646 repeat of suite 16/16 passes without repairing original",
+        "No production P7-014 worker/runtime/stdio certification"
+      ]
+    },
+    {
+      "id": "V15",
+      "status": "passed_declared_fake_subchecks_live_and_real_cost_blocked",
+      "commands": [
+        "provider",
+        "admission",
+        "fake-provider",
+        "query-cache",
+        "matrix-semantic"
+      ],
+      "new_evidence": [
+        "10 offline transport failures: 429/500/auth/timeout/cancelled/missing-index/duplicate-index/dimension/zero/non-numeric; whole failed batch uncached; second call repairs; third warm call no transport; out-of-order successful indexes restored"
+      ],
+      "existing_evidence": [
+        "69 provider adapter tests, 39 admission/gate/receipt tests, 16 FakeProvider tests including per-call latency, 17 query-cache tests including NaN rejection and space/spec keys"
+      ],
+      "limits": [
+        "Fake per-call latency and async/slow transport cancellation are separate component profiles",
+        "No live redirect/TLS/HTTP-client deadline behavior, real usage or monetary costs; unknown stays unknown"
+      ]
+    },
+    {
+      "id": "V19",
+      "status": "mechanism_only_quality_not_run",
+      "commands": [
+        "fusion",
+        "partial-budget",
+        "partial-budget-semantic",
+        "matrix-semantic"
+      ],
+      "new_evidence": [
+        "Non-fusable fault receipts cast zero votes and preserve exact local ranking/source on three identical queries"
+      ],
+      "reused_evidence": [
+        "PR12 real handler partial/budget cases 4/4 default and 4/4 semantic on d646",
+        "10 fusion contracts including rank-only RRF, raw score scale, tie, complete-empty vs timeout and full-coverage receipt identity"
+      ],
+      "limits": [
+        "Not real public corpus, hard negatives/holdout, paired ablation, macro/micro/CI, or semantic benefit; no close recommendation for full V19"
+      ]
+    }
+  ],
+  "task_rows": [
+    {
+      "id": "P7-011",
+      "defined_validations": [
+        "V05",
+        "V16"
+      ],
+      "recommendation": "Accept listed offline scope/exact subchecks after independent review; task status remains unchanged; no whole-gate certification"
+    },
+    {
+      "id": "P7-012",
+      "defined_validations": [
+        "V11",
+        "V19"
+      ],
+      "recommendation": "Accept listed fusion/coverage/cache mechanisms; full formal quality matrix not closed"
+    },
+    {
+      "id": "P7-013",
+      "defined_validations": [
+        "V11",
+        "V15"
+      ],
+      "recommendation": "Accept listed offline faults/lock/cancellation/cache mechanisms; track original synchronization race and retain live/cost/runtime boundaries"
+    },
+    {
+      "id": "P7-014",
+      "recommendation": "Not owned, not completed, not certified; production runtime/worker/stdio remains with its owners"
+    }
+  ],
+  "known_findings": [
+    {
+      "kind": "original_test_synchronization_race",
+      "severity": "requires owner review, not classified as production bug",
+      "baseline_sha": "60ab18ff3b6030ab14a72a5ab771bbb05e4f1316",
+      "test_source_sha256": "fa70c0b974b3b4a68eb5fbad2ade01167a55045a06edba4a5e856e0f830c5e34",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic",
+        "--lib",
+        "semantic_wiring::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 101,
+      "counts": [
+        [
+          15,
+          1,
+          0
+        ]
+      ],
+      "log": "prior-wiring-race.log",
+      "log_sha256": "1b025307a3669988555314fbcbc14dfc4ee33a482a84ed1294fb17e3dde35786",
+      "boundary": "crates/cc-server/src/semantic_wiring.rs:1515-1525; run_cpu has independent admission and worker permits at crates/cc-search/src/execution.rs:117-143",
+      "diagnosis": "Original wait tests cpu_in_flight==0 only; worker permit may be dropped before admission permit. The next run_cpu try_acquire can legitimately return QueryBusy. Code-review-supported cause; no deterministic drop hook added. Current unchanged original suite later passes, which does not erase the failure.",
+      "suggestion": "Owner should await both cpu_in_flight==0 and cpu_admitted==0. Own new transport test already uses both. No production files edited."
+    },
+    {
+      "kind": "dependency_cache_setup",
+      "status": "resolved_by_fetch_then_offline_revalidation",
+      "initial_exit": 101,
+      "initial_error": "chacha20 v0.10.2 absent from local registry cache",
+      "log": "prior-offline-cache-miss.log",
+      "setup_argv": [
+        "cargo",
+        "fetch",
+        "--locked"
+      ],
+      "setup_exit": 0,
+      "setup_log": "dependency-fetch.log",
+      "setup_log_sha256": "d0f76c4436e5f64955a27b1224316291d04a63fea3ab78695d0fc9175a1af1d2"
+    },
+    {
+      "kind": "strict_semantic_clippy_blocked_by_existing_production_lints",
+      "commands": [
+        "new-test-clippy",
+        "new-test-only-clippy"
+      ],
+      "files": [
+        "crates/cc-semantic/src/admission.rs:291",
+        "crates/cc-semantic/src/cache.rs:108/132/133",
+        "crates/cc-semantic/src/providers/openai_compatible.rs:239",
+        "crates/cc-server/src/semantic_wiring.rs:506"
+      ],
+      "boundary": "No lint allowances, dependency changes, or production edits introduced; default targeted clippy and new test formatting pass."
+    }
+  ],
+  "remaining_parallel_gaps": [
+    {
+      "area": "V19",
+      "state": "not_run",
+      "work": "Fixed public corpus + native/compat report, hard negatives/holdout, paired local+dense ablation and macro/micro bootstrap CI; fake vectors have no semantic effect interpretation"
+    },
+    {
+      "area": "V15 live / real cost",
+      "state": "blocked_D1_D2",
+      "work": "Real provider/client behavior and reported usage/cost require separate authorization; never infer from fake receipts"
+    },
+    {
+      "area": "V11 L3 / P7-014",
+      "state": "not_owned_pending_other_tasks",
+      "work": "Exact product binary stdio, production factory/runtime/worker lifecycle; retain separate owner evidence"
+    },
+    {
+      "area": "Original wiring race and production lint",
+      "state": "needs_owner_review",
+      "work": "Scope-limited synchronization repair and hygiene; no timeout expansion or assertion deletion"
+    }
+  ],
+  "closure": "No tasks/TODO edited; no unconditional task/gate done recommendation; review pending."
+}

@@ -147,7 +147,12 @@ impl IndexDb {
     /// own attempt, not this primitive's).
     ///
     /// Auxiliary: no epoch ever moves (P6-004 taxonomy).
-    pub fn hand_back_semantic_task(&self, task_id: i64, token: &str, reason: &str) -> CcResult<bool> {
+    pub fn hand_back_semantic_task(
+        &self,
+        task_id: i64,
+        token: &str,
+        reason: &str,
+    ) -> CcResult<bool> {
         debug_assert!(OutboxState::Claimed.can_transition_to(OutboxState::Pending));
         let conn = self.write_conn.lock().map_err(db_err)?;
         let now = semantic_outbox::now_unix();

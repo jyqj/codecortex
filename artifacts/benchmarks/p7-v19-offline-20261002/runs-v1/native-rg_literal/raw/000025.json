@@ -1,0 +1,84 @@
+{
+  "nodes": [
+    {
+      "end_line": 20,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 20,
+      "text": "    pub fn symbol_uid(file_path: &str, qname: &str, kind: &str, signature: Option<&str>) -> String {"
+    },
+    {
+      "end_line": 113,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 113,
+      "text": "    fn symbol_uid_is_deterministic() {"
+    },
+    {
+      "end_line": 114,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 114,
+      "text": "        let a = StableId::symbol_uid(\"src/main.rs\", \"main\", \"function\", None);"
+    },
+    {
+      "end_line": 115,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 115,
+      "text": "        let b = StableId::symbol_uid(\"src/main.rs\", \"main\", \"function\", None);"
+    },
+    {
+      "end_line": 122,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 122,
+      "text": "    fn symbol_uid_differs_by_kind() {"
+    },
+    {
+      "end_line": 123,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 123,
+      "text": "        let a = StableId::symbol_uid(\"src/lib.rs\", \"Foo\", \"class\", None);"
+    },
+    {
+      "end_line": 124,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 124,
+      "text": "        let b = StableId::symbol_uid(\"src/lib.rs\", \"Foo\", \"function\", None);"
+    },
+    {
+      "end_line": 129,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 129,
+      "text": "    fn symbol_uid_signature_normalized() {"
+    },
+    {
+      "end_line": 130,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 130,
+      "text": "        let a = StableId::symbol_uid(\"f.ts\", \"foo\", \"function\", Some(\"(a: number,  b: string)\"));"
+    },
+    {
+      "end_line": 131,
+      "file_path": "cc-model/src/id.rs",
+      "metadata": {},
+      "node_type": "SEARCH_HIT",
+      "start_line": 131,
+      "text": "        let b = StableId::symbol_uid(\"f.ts\", \"foo\", \"function\", Some(\"(a: number, b: string)\"));"
+    }
+  ]
+}

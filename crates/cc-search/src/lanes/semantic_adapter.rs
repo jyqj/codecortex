@@ -171,7 +171,9 @@ mod tests {
             .await
             .expect("degraded receipt");
         assert_eq!(response.outcome.status, LaneStatus::Timeout);
-        parent.check().expect("parent budget unaffected by the lane timeout");
+        parent
+            .check()
+            .expect("parent budget unaffected by the lane timeout");
         let local = pool.run_cpu(parent, || Ok("local-lanes".to_string())).await;
         assert_eq!(local.expect("local work runs"), "local-lanes");
     }

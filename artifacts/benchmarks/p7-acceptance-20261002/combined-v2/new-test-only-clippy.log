@@ -1,0 +1,41 @@
+    Checking hashbrown v0.17.1
+    Checking chacha20 v0.10.2
+    Checking crossbeam-epoch v0.9.20
+    Checking cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+    Checking inotify-sys v0.1.8
+    Checking inotify v0.11.5
+    Checking rand v0.10.3
+    Checking crossbeam-deque v0.8.6
+    Checking notify-types v2.1.0
+    Checking rayon-core v1.13.0
+    Checking ignore v0.4.25
+    Checking hashlink v0.12.1
+    Checking rayon v1.11.0
+    Checking uuid v1.23.0
+    Checking rusqlite v0.40.1
+    Checking lru v0.18.2
+    Checking notify v8.2.0
+    Checking r2d2_sqlite v0.35.0
+    Checking cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+    Checking cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+    Checking cc-search v1.0.0 (/workspace/codecortex/crates/cc-search)
+    Checking cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+    Checking cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+    Checking cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+error: this function has too many arguments (8/7)
+   --> crates/cc-server/src/semantic_wiring.rs:505:1
+    |
+505 | / pub fn drain_worker_batch(
+506 | |     db: &Arc<IndexDb>,
+507 | |     subsystem: &SemanticSubsystem,
+508 | |     services: &QueryServices,
+...   |
+513 | |     now_unix: i64,
+514 | | ) -> CcResult<DrainOutcome> {
+    | |___________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: could not compile `cc-server` (lib) due to 1 previous error

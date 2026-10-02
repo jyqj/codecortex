@@ -1536,7 +1536,7 @@ mod tests {
         assert_eq!(partial.semantic.model_id, "text-embedding-x");
         assert_eq!(partial.semantic.dimensions, Some(1536));
         assert_eq!(partial.semantic.metric, "cosine");
-        assert!(partial.semantic.supports_instruction == false);
+        assert!(!partial.semantic.supports_instruction);
         // P7-005: concurrency keys default to off/conservative — unlimited
         // (`0`) concurrency, explicit 30s admission-wait budget.
         assert_eq!(without.semantic.max_concurrent, 0);
@@ -1659,11 +1659,10 @@ mod tests {
         assert!(collect_unknown_config_keys(&full).is_empty());
         // P7-014 wiring keys: budget defaults unbounded, lease/grace carry
         // their conservative defaults.
-        let parsed: ProjectConfig =
-            serde_json::from_value(serde_json::json!({ "semantic": {
+        let parsed: ProjectConfig = serde_json::from_value(serde_json::json!({ "semantic": {
                 "reembed_budget_max": 64, "worker_lease_secs": 300,
                 "gc_min_retention_secs": 1800 } }))
-            .unwrap();
+        .unwrap();
         assert_eq!(parsed.semantic.reembed_budget_max, Some(64));
         assert_eq!(parsed.semantic.worker_lease_secs, 300);
         assert_eq!(parsed.semantic.gc_min_retention_secs, 1800);
@@ -1674,7 +1673,8 @@ mod tests {
     }
 
     #[test]
-    fn collect_unknown_config_keys_empty_for_fully_valid_config() {        let raw = serde_json::json!({
+    fn collect_unknown_config_keys_empty_for_fully_valid_config() {
+        let raw = serde_json::json!({
             "indexing": { "max_file_bytes": 1024, "max_concurrent_parse": 4 },
             "search": { "lexical_top_k": 8 },
             "ranking": { "overlap_weight": 0.5 },

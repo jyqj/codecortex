@@ -151,8 +151,7 @@ pub fn gate_transport_assembly(
     }
     policy.validate_endpoint(endpoint)?;
     Ok(transport.map(|inner| {
-        Arc::new(GuardedTransport::new(inner, policy.clone()))
-            as Arc<dyn EmbeddingHttpTransport>
+        Arc::new(GuardedTransport::new(inner, policy.clone())) as Arc<dyn EmbeddingHttpTransport>
     }))
 }
 
@@ -182,7 +181,10 @@ impl GuardedTransport {
 }
 
 impl EmbeddingHttpTransport for GuardedTransport {
-    fn post_json(&self, request: HttpRequest) -> Result<crate::providers::openai_compatible::HttpResponse, TransportError> {
+    fn post_json(
+        &self,
+        request: HttpRequest,
+    ) -> Result<crate::providers::openai_compatible::HttpResponse, TransportError> {
         if request.timeout.is_zero() {
             return Err(TransportError::Io(
                 "egress policy rejected the request: timeout is mandatory (zero timeout refused)"
@@ -276,12 +278,11 @@ pub fn audit_egress(
         ));
     }
 
-    let body: serde_json::Value = serde_json::from_slice(&request.body).map_err(|_| {
-        CcError::Config("egress audit: request body is not valid JSON".into())
-    })?;
-    let object = body.as_object().ok_or_else(|| {
-        CcError::Config("egress audit: request body is not a JSON object".into())
-    })?;
+    let body: serde_json::Value = serde_json::from_slice(&request.body)
+        .map_err(|_| CcError::Config("egress audit: request body is not valid JSON".into()))?;
+    let object = body
+        .as_object()
+        .ok_or_else(|| CcError::Config("egress audit: request body is not a JSON object".into()))?;
     let mut actual: Vec<String> = object.keys().cloned().collect();
     let mut expected = declaration.body_fields.clone();
     actual.sort();
@@ -319,7 +320,8 @@ pub fn audit_egress(
     let secret = api_key.expose_secret();
     if !secret.is_empty() {
         let header_ok = request.headers.iter().any(|(name, value)| {
-            name.eq_ignore_ascii_case("authorization") && value.as_str() == format!("Bearer {secret}")
+            name.eq_ignore_ascii_case("authorization")
+                && value.as_str() == format!("Bearer {secret}")
         });
         if !header_ok {
             return Err(CcError::Config(
@@ -408,12 +410,11 @@ pub fn resolve_key_reference_with(
                 "semantic.api_key_ref has an invalid file reference: the path is empty".into(),
             ));
         }
-        let value = read_file(path)
-            .map_err(|error| {
-                CcError::Config(format!(
-                    "semantic.api_key_ref file reference {path:?} could not be read: {error}"
-                ))
-            })?;
+        let value = read_file(path).map_err(|error| {
+            CcError::Config(format!(
+                "semantic.api_key_ref file reference {path:?} could not be read: {error}"
+            ))
+        })?;
         let value = value.trim();
         if value.is_empty() {
             return Err(CcError::Config(format!(
@@ -482,9 +483,7 @@ const MIN_REDACTED_TOKEN_CHARS: usize = 8;
 mod tests {
     use super::*;
     use crate::ports::EmbeddingProvider;
-    use crate::providers::openai_compatible::{
-        OpenAiCompatibleConfig, OpenAiCompatibleProvider,
-    };
+    use crate::providers::openai_compatible::{OpenAiCompatibleConfig, OpenAiCompatibleProvider};
     use crate::types::VectorSpace;
     use std::sync::Mutex;
     use std::time::Duration;
@@ -497,11 +496,7 @@ mod tests {
     }
 
     fn adapter(endpoint: &str, policy: EgressPolicy) -> OpenAiCompatibleProvider {
-        let mut config = OpenAiCompatibleConfig::new(
-            space(),
-            endpoint,
-            EmbeddingApiKey::new(KEY),
-        );
+        let mut config = OpenAiCompatibleConfig::new(space(), endpoint, EmbeddingApiKey::new(KEY));
         config.egress = policy;
         OpenAiCompatibleProvider::new(config)
     }
@@ -516,11 +511,9 @@ mod tests {
         )
     }
 
-    fn audit_adapter_request(
-        provider: &OpenAiCompatibleProvider,
-        texts: &[&str],
-    ) -> CcResult<()> {
-        let request = provider.build_request(&texts.iter().map(|t| t.to_string()).collect::<Vec<_>>());
+    fn audit_adapter_request(provider: &OpenAiCompatibleProvider, texts: &[&str]) -> CcResult<()> {
+        let request =
+            provider.build_request(&texts.iter().map(|t| t.to_string()).collect::<Vec<_>>());
         let declaration = EgressDeclaration::embeddings_request(request.url.clone());
         audit_egress(
             &request,
@@ -565,7 +558,10 @@ mod tests {
         .unwrap_err();
         let message = error.to_string();
         assert!(message.contains("telemetry_session"), "got: {message}");
-        assert!(message.contains("outside the declared surface"), "got: {message}");
+        assert!(
+            message.contains("outside the declared surface"),
+            "got: {message}"
+        );
     }
 
     #[test]
@@ -606,11 +602,9 @@ mod tests {
             },
         )
         .unwrap_err();
-        assert!(
-            error
-                .to_string()
-                .contains("credential material found in the request body")
-        );
+        assert!(error
+            .to_string()
+            .contains("credential material found in the request body"));
     }
 
     #[test]
@@ -741,11 +735,9 @@ mod tests {
             (
                 "missing env",
                 Box::new(|| {
-                    resolve_key_reference_with(
-                        "env:CODECORTEX_TEST_KEY",
-                        env_of(&[]),
-                        |_| Err("no".into()),
-                    )
+                    resolve_key_reference_with("env:CODECORTEX_TEST_KEY", env_of(&[]), |_| {
+                        Err("no".into())
+                    })
                 }),
             ),
             (
@@ -761,25 +753,31 @@ mod tests {
             (
                 "missing file",
                 Box::new(|| {
-                    resolve_key_reference_with("file:/run/secrets/k", |_| None, |_| {
-                        Err("No such file or directory (os error 2)".into())
-                    })
+                    resolve_key_reference_with(
+                        "file:/run/secrets/k",
+                        |_| None,
+                        |_| Err("No such file or directory (os error 2)".into()),
+                    )
                 }),
             ),
             (
                 "empty file",
                 Box::new(|| {
-                    resolve_key_reference_with("file:/run/secrets/k", |_| None, |_| {
-                        Ok("\n \n".to_owned())
-                    })
+                    resolve_key_reference_with(
+                        "file:/run/secrets/k",
+                        |_| None,
+                        |_| Ok("\n \n".to_owned()),
+                    )
                 }),
             ),
             (
                 "inline secret rejected",
                 Box::new(|| {
-                    resolve_key_reference_with("sk-inline-secret-value", |_| None, |_| {
-                        Err("no".into())
-                    })
+                    resolve_key_reference_with(
+                        "sk-inline-secret-value",
+                        |_| None,
+                        |_| Err("no".into()),
+                    )
                 }),
             ),
             (
@@ -805,7 +803,9 @@ mod tests {
             }
             // Actionability: at least the reference or the config key is named.
             assert!(
-                rendered.contains("api_key_ref") || rendered.contains("env:") || rendered.contains("file:"),
+                rendered.contains("api_key_ref")
+                    || rendered.contains("env:")
+                    || rendered.contains("file:"),
                 "{label}: error must name the reference/key: {rendered}"
             );
         }
@@ -819,12 +819,21 @@ mod tests {
         );
         let redacted = redact_for_log(&leaky);
         assert!(!redacted.contains(KEY), "still leaks: {redacted}");
-        assert!(!redacted.contains("sk-other-token-42"), "still leaks: {redacted}");
+        assert!(
+            !redacted.contains("sk-other-token-42"),
+            "still leaks: {redacted}"
+        );
         assert_eq!(redacted.matches("[REDACTED]").count(), 2, "got: {redacted}");
         // Innocent text is untouched.
-        assert_eq!(redact_for_log("plain failure, no credentials"), "plain failure, no credentials");
+        assert_eq!(
+            redact_for_log("plain failure, no credentials"),
+            "plain failure, no credentials"
+        );
         // A bare "bearer" word with no token is left alone.
-        assert_eq!(redact_for_log("the bearer of the token ring"), "the bearer of the token ring");
+        assert_eq!(
+            redact_for_log("the bearer of the token ring"),
+            "the bearer of the token ring"
+        );
     }
 
     // ── Transport guard ───────────────────────────────────────────────────
@@ -882,7 +891,9 @@ mod tests {
                 ..https_request()
             })
             .unwrap_err();
-        assert!(matches!(error, TransportError::Io(message) if message.contains("scheme not permitted")));
+        assert!(
+            matches!(error, TransportError::Io(message) if message.contains("scheme not permitted"))
+        );
         assert_eq!(inner.calls(), 0);
     }
 
@@ -896,7 +907,9 @@ mod tests {
                 ..https_request()
             })
             .unwrap_err();
-        assert!(matches!(error, TransportError::Io(message) if message.contains("timeout is mandatory")));
+        assert!(
+            matches!(error, TransportError::Io(message) if message.contains("timeout is mandatory"))
+        );
         assert_eq!(inner.calls(), 0);
     }
 
@@ -925,7 +938,10 @@ mod tests {
         .err()
         .expect("gate refuses transport without opt-in");
         let message = error.to_string();
-        assert!(message.contains("semantic.network_opt_in"), "got: {message}");
+        assert!(
+            message.contains("semantic.network_opt_in"),
+            "got: {message}"
+        );
         assert!(message.contains("default no-network"), "got: {message}");
     }
 
@@ -950,10 +966,12 @@ mod tests {
             network_opt_in: true,
             allow_http: false,
         };
-        assert!(
-            gate_transport_assembly(&opted_in, "http://provider.invalid/v1", Some(transport()))
-                .is_err()
-        );
+        assert!(gate_transport_assembly(
+            &opted_in,
+            "http://provider.invalid/v1",
+            Some(transport())
+        )
+        .is_err());
         gate_transport_assembly(
             &EgressPolicy {
                 network_opt_in: true,
@@ -981,7 +999,11 @@ mod tests {
     fn adapter_constructor_refuses_transport_without_network_opt_in() {
         // The fail-closed default (opt-in false) plus an injected transport is
         // a wiring contradiction: the constructor fails fast at composition.
-        let mut config = OpenAiCompatibleConfig::new(space(), "https://provider.invalid/v1", EmbeddingApiKey::new(KEY));
+        let mut config = OpenAiCompatibleConfig::new(
+            space(),
+            "https://provider.invalid/v1",
+            EmbeddingApiKey::new(KEY),
+        );
         config.transport = Some(transport());
         assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
             OpenAiCompatibleProvider::new(config)
@@ -996,6 +1018,8 @@ mod tests {
         let provider = adapter("https://provider.invalid/v1", EgressPolicy::default());
         let input = crate::ports::DocumentInput::from_bytes(b"alpha").expect("valid");
         let error = provider.embed_documents(&[input]).unwrap_err();
-        assert!(matches!(error, crate::ports::ProviderError::InvalidInput(message) if message.contains("disabled")));
+        assert!(
+            matches!(error, crate::ports::ProviderError::InvalidInput(message) if message.contains("disabled"))
+        );
     }
 }

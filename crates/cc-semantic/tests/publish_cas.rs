@@ -333,9 +333,8 @@ fn published_document_is_retrievable_and_duplicate_ack_does_not_bump() {
         "duplicate ack of an unchanged visible set must not bump"
     );
     assert_eq!(after_replay.index_epoch, after_first.index_epoch);
-    assert_eq!(
+    assert!(
         manifest_row(&world.conn).is_some(),
-        true,
         "manifest keeps its single row"
     );
 }

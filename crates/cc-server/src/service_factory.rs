@@ -79,14 +79,18 @@ mod provider_gate {
     /// later callers (and the default path) share the same instance.
     pub fn semantic_circuit_breaker() -> Arc<CircuitBreaker> {
         breaker_slot()
-            .get_or_init(|| Arc::new(CircuitBreaker::new(BreakerLimits::validated(
-                cc_model::config::SemanticProviderConfig::default()
-                    .breaker_failure_threshold,
-                std::time::Duration::from_millis(
-                    cc_model::config::SemanticProviderConfig::default().breaker_open_ms,
-                ),
-            )
-            .expect("default breaker limits are valid"))))
+            .get_or_init(|| {
+                Arc::new(CircuitBreaker::new(
+                    BreakerLimits::validated(
+                        cc_model::config::SemanticProviderConfig::default()
+                            .breaker_failure_threshold,
+                        std::time::Duration::from_millis(
+                            cc_model::config::SemanticProviderConfig::default().breaker_open_ms,
+                        ),
+                    )
+                    .expect("default breaker limits are valid"),
+                ))
+            })
             .clone()
     }
 
@@ -119,12 +123,38 @@ pub struct SemanticWiredInfo {
     pub dimensions: u32,
 }
 
+/// Worker failure state owned by one runtime incarnation. A retired worker
+/// updates only its own Arc, so it cannot overwrite a newly wired project.
+#[derive(Default)]
+pub struct SemanticWorkerStatus(std::sync::atomic::AtomicU8);
+impl SemanticWorkerStatus {
+    #[cfg(feature = "semantic")]
+    pub(crate) fn clear(&self) {
+        self.0.store(0, Ordering::Release);
+    }
+    #[cfg(feature = "semantic")]
+    pub(crate) fn assembly_failed(&self) {
+        self.0.store(1, Ordering::Release);
+    }
+    #[cfg(feature = "semantic")]
+    pub(crate) fn round_failed(&self) {
+        self.0.store(2, Ordering::Release);
+    }
+    pub fn failure_reason(&self) -> Option<&'static str> {
+        match self.0.load(Ordering::Acquire) {
+            1 => Some("semantic_provider_assembly_failed"),
+            2 => Some("semantic_worker_round_failed"),
+            _ => None,
+        }
+    }
+}
 pub struct QueryServices {
     pub pool: ExecutionPool,
     semantic: RwLock<Option<Arc<dyn SemanticRecall>>>,
     /// Composition-root wiring evidence for the attached port (see
     /// [`SemanticWiredInfo`]); `None` = attached-only or unattached.
     semantic_wired: RwLock<Option<SemanticWiredInfo>>,
+    semantic_worker: RwLock<Option<Arc<SemanticWorkerStatus>>>,
     /// Optional semantic-subsystem degradation snapshot (P6-018). Plain
     /// data, no cc-semantic dependency: the composition root (when the
     /// optional `semantic` feature is wired) forwards
@@ -157,6 +187,7 @@ impl Default for QueryServices {
             pool: query_pool(),
             semantic: RwLock::new(None),
             semantic_wired: RwLock::new(None),
+            semantic_worker: RwLock::new(None),
             semantic_degradation: RwLock::new(None),
             pins: Arc::default(),
         }
@@ -176,6 +207,7 @@ impl QueryServices {
             pool,
             semantic: RwLock::new(None),
             semantic_wired: RwLock::new(None),
+            semantic_worker: RwLock::new(None),
             semantic_degradation: RwLock::new(None),
             pins: Arc::default(),
         }
@@ -201,6 +233,19 @@ impl QueryServices {
             .semantic_wired
             .write()
             .unwrap_or_else(|p| p.into_inner()) = wired;
+    }
+    pub fn semantic_worker(&self) -> Option<Arc<SemanticWorkerStatus>> {
+        self.semantic_worker
+            .read()
+            .unwrap_or_else(|p| p.into_inner())
+            .clone()
+    }
+    #[cfg(feature = "semantic")]
+    pub(crate) fn set_semantic_worker(&self, state: Option<Arc<SemanticWorkerStatus>>) {
+        *self
+            .semantic_worker
+            .write()
+            .unwrap_or_else(|p| p.into_inner()) = state;
     }
     pub fn semantic_degradation(&self) -> Option<SemanticDegradation> {
         self.semantic_degradation
@@ -250,7 +295,11 @@ mod provider_gate_tests {
         let second = semantic_circuit_breaker();
         assert!(Arc::ptr_eq(&first, &second));
         let initialized = init_semantic_circuit_breaker(
-            cc_semantic::providers::openai_compatible::BreakerLimits::validated(3, std::time::Duration::from_millis(1_000)).unwrap(),
+            cc_semantic::providers::openai_compatible::BreakerLimits::validated(
+                3,
+                std::time::Duration::from_millis(1_000),
+            )
+            .unwrap(),
         );
         assert!(
             Arc::ptr_eq(&initialized, &semantic_circuit_breaker()),

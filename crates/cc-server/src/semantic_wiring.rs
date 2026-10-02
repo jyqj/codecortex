@@ -404,7 +404,7 @@ pub fn wire_with(
 /// the P7-014 wiring-evidence stamp): recall port, degradation snapshot,
 /// and the `SemanticWiredInfo` marker that upgrades the capability state
 /// machine from `port_attached_unverified` to the real states.
-fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
+pub(crate) fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
     services.set_semantic(Some(subsystem.recall.clone()));
     services.set_semantic_wired(Some(SemanticWiredInfo {
         model_id: subsystem.space.model_id().to_owned(),
@@ -420,6 +420,7 @@ fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
 /// side-effect free: no cache content is touched, no worker state is lost
 /// (the outbox and the artifact cache outlive the process).
 pub fn teardown(services: &QueryServices) {
+    services.set_semantic_worker(None);
     services.set_semantic(None);
     services.set_semantic_wired(None);
     services.set_semantic_degradation(None);
@@ -502,16 +503,26 @@ pub struct DrainOutcome {
 ///
 /// The record-schema read (rendered embedding input for a task) stays the
 /// caller's closure — the same decoupling `EmbedHandler` prescribes.
+#[derive(Debug, Clone, Copy)]
+pub struct WorkerDrainOptions<'a> {
+    pub owner: &'a str,
+    pub max_batch: usize,
+    pub now_unix: i64,
+}
+
 pub fn drain_worker_batch(
     db: &Arc<IndexDb>,
     subsystem: &SemanticSubsystem,
     services: &QueryServices,
     provider: &dyn EmbeddingProvider,
     resolve_input: &dyn Fn(&ClaimedTask) -> CcResult<Option<DocumentInput>>,
-    owner: &str,
-    max_batch: usize,
-    now_unix: i64,
+    options: WorkerDrainOptions<'_>,
 ) -> CcResult<DrainOutcome> {
+    let WorkerDrainOptions {
+        owner,
+        max_batch,
+        now_unix,
+    } = options;
     let limits = cc_semantic::queue::WorkerLimits::validated(
         max_batch,
         subsystem.lease_secs,
@@ -1120,7 +1131,7 @@ mod tests {
         assert!(degradation.degraded);
         let retrieval = &probe(&services, Some(&config))["retrieval"];
         assert_eq!(retrieval["semantic_state"], "degraded");
-        assert!(retrieval["degraded_reason"].as_array().unwrap().len() >= 1);
+        assert!(!retrieval["degraded_reason"].as_array().unwrap().is_empty());
     }
 
     #[tokio::test]
@@ -1510,7 +1521,10 @@ mod tests {
             }
             release_tx.send(()).unwrap();
             tokio::time::timeout(Duration::from_secs(1), async {
-                while pool.stats().cpu_in_flight != 0 {
+                while {
+                    let stats = pool.stats();
+                    stats.cpu_in_flight != 0 || stats.cpu_admitted != 0
+                } {
                     tokio::task::yield_now().await;
                 }
             })

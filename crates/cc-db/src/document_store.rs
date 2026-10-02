@@ -80,6 +80,154 @@ pub fn is_current(db: &IndexDb, reference: &DocumentRef) -> CcResult<bool> {
         .map_err(db_err)?;
     Ok(current.is_some_and(|(v, e)| v == reference.doc_version && e == reference.encoding_key))
 }
+/// Owned worker input, fenced against the currently indexed document version.
+/// The read connection is released before the caller can contact a provider.
+pub fn semantic_worker_input(
+    db: &IndexDb,
+    doc_key: &str,
+    doc_version: &str,
+    input_digest: &str,
+) -> CcResult<Option<String>> {
+    let raw: Option<(String, String)> = {
+        let conn = db.read_conn()?;
+        conn.query_row(
+            "SELECT record_json,encoding_key FROM document_manifest WHERE doc_key=?1 AND doc_version=?2 AND encoding_key IS NOT NULL",
+            rusqlite::params![doc_key, doc_version],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        ).optional().map_err(db_err)?
+    };
+    let Some((raw, encoding)) = raw else {
+        return Ok(None);
+    };
+    Ok(worker_record_input(&raw, doc_key, doc_version, &encoding)?
+        .filter(|input| input.input_hash == input_digest)
+        .map(|input| input.text))
+}
+
+fn worker_record_input(
+    raw: &str,
+    doc_key: &str,
+    doc_version: &str,
+    encoding: &str,
+) -> CcResult<Option<cc_model::retrieval::EmbeddingInput>> {
+    let record: DocumentRecord = serde_json::from_str(raw)?;
+    if record.reference.doc_key != doc_key
+        || record.reference.doc_version != doc_version
+        || record.reference.encoding_key.as_deref() != Some(encoding)
+    {
+        return Err(CcError::Database(
+            "worker document identity mismatch".into(),
+        ));
+    }
+    let Some(input) = record.input.as_ref() else {
+        return Ok(None);
+    };
+    let original = input
+        .text
+        .get(input.source_range.start..input.source_range.end)
+        .ok_or_else(|| CcError::Database("worker document source range invalid".into()))?;
+    record.validate(original)?;
+    Ok(record.input)
+}
+
+/// A bounded keyset page. Cursor follows the physical rows, never a filtered
+/// subset; malformed eligible records fail instead of hiding later documents.
+pub struct SemanticWorkerPage {
+    pub desired: Vec<crate::semantic_outbox::OutboxUpsert>,
+    pub next_cursor: Option<String>,
+}
+pub fn semantic_worker_desired_page(
+    db: &IndexDb,
+    after: &str,
+    limit: usize,
+) -> CcResult<SemanticWorkerPage> {
+    if !(1..=256).contains(&limit) {
+        return Err(CcError::InvalidParams(
+            "worker page limit must be 1..=256".into(),
+        ));
+    }
+    let rows: Vec<(String, String, String, String)> = {
+        let conn = db.read_conn()?;
+        let mut stmt = conn.prepare_cached("SELECT doc_key,doc_version,encoding_key,record_json FROM document_manifest WHERE encoding_key IS NOT NULL AND doc_key>?1 ORDER BY doc_key LIMIT ?2").map_err(db_err)?;
+        let result = stmt
+            .query_map(rusqlite::params![after, limit as i64], |r| {
+                Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?))
+            })
+            .map_err(db_err)?
+            .collect::<Result<_, _>>()
+            .map_err(db_err)?;
+        result
+    };
+    let next_cursor = (rows.len() == limit).then(|| rows.last().unwrap().0.clone());
+    let mut desired = Vec::with_capacity(rows.len());
+    for (doc_key, doc_version, encoding, raw) in rows {
+        let input = worker_record_input(&raw, &doc_key, &doc_version, &encoding)?
+            .ok_or_else(|| CcError::Database("eligible worker document has no input".into()))?;
+        desired.push(crate::semantic_outbox::OutboxUpsert {
+            doc_key,
+            doc_version,
+            input_digest: input.input_hash,
+        });
+    }
+    Ok(SemanticWorkerPage {
+        desired,
+        next_cursor,
+    })
+}
+
+pub fn semantic_worker_publication_current(
+    db: &IndexDb,
+    task: &crate::semantic_outbox::OutboxUpsert,
+    space: &str,
+) -> CcResult<bool> {
+    let conn = db.read_conn()?;
+    conn.query_row("SELECT EXISTS(SELECT 1 FROM semantic_manifest WHERE doc_key=?1 AND doc_version=?2 AND input_digest=?3 AND space_id=?4)",
+        rusqlite::params![task.doc_key, task.doc_version, task.input_digest, space], |r| r.get(0)).map_err(db_err)
+}
+
+/// Atomically enqueue only missing current versions. Reopening must preserve
+/// live leases/backoff and terminal failures, never reset their attempt budget.
+/// The version/input check shares the transaction with the frozen queue planner
+/// so an old scan cannot supersede a newer index build's desired task.
+pub fn enqueue_semantic_worker_missing(
+    db: &IndexDb,
+    desired: &[crate::semantic_outbox::OutboxUpsert],
+) -> CcResult<crate::semantic_outbox::OutboxWriteStats> {
+    if desired.len() > 256 {
+        return Err(CcError::InvalidParams(
+            "worker enqueue page exceeds bound".into(),
+        ));
+    }
+    let mut conn = db.write_conn.lock().map_err(db_err)?;
+    let tx = conn
+        .transaction_with_behavior(rusqlite::TransactionBehavior::Immediate)
+        .map_err(db_err)?;
+    let Some(space) = crate::semantic_outbox::active_space_on(&tx)? else {
+        return Ok(Default::default());
+    };
+    let mut missing = Vec::new();
+    for task in desired {
+        let eligible: bool = tx.query_row("SELECT EXISTS(SELECT 1 FROM document_manifest d WHERE d.doc_key=?1 AND d.doc_version=?2 AND d.encoding_key IS NOT NULL AND json_extract(d.record_json,'$.input.input_hash')=?3) AND NOT EXISTS(SELECT 1 FROM semantic_outbox t WHERE t.doc_key=?1 AND t.doc_version=?2 AND t.input_digest=?3 AND t.space_id=?4 AND t.state IN ('pending','claimed','failed'))",
+            rusqlite::params![task.doc_key, task.doc_version, task.input_digest, space], |r| r.get(0)).map_err(db_err)?;
+        if eligible {
+            missing.push(task.clone());
+        }
+    }
+    let stats = crate::semantic_outbox::supersede_and_enqueue_on(
+        &tx,
+        &crate::semantic_outbox::OutboxPlan {
+            upserts: &missing,
+            removals: &[],
+            now_unix: crate::semantic_outbox::now_unix(),
+        },
+    )?;
+    if stats.changed_semantic_state() {
+        IndexDb::bump_semantic_epoch_on(&tx)?;
+    }
+    tx.commit().map_err(db_err)?;
+    Ok(stats)
+}
+
 pub(crate) fn insert_on(conn: &Connection, file: &FileWriteUnit) -> CcResult<()> {
     let Some(batch) = &file.outcome.documents else {
         return Ok(());

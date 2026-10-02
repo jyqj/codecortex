@@ -1,0 +1,76 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.07s
+     Running unittests src/lib.rs (target/debug/deps/cc_semantic-52bd09e05eca4ffb)
+
+running 69 tests
+test providers::openai_compatible::tests::auth_error_is_not_retried_and_trips_the_long_open_window ... ok
+test providers::openai_compatible::tests::a_suspended_gate_stops_the_loop_instead_of_parking ... ok
+test providers::openai_compatible::tests::api_key_is_redacted_in_debug_and_never_in_error_messages ... ok
+test providers::openai_compatible::tests::backoff_is_exponential_capped_and_jitter_only_shrinks ... ok
+test providers::openai_compatible::tests::breaker_and_retrying_provider_are_send_sync_shareable ... ok
+test providers::openai_compatible::tests::breaker_rejection_records_an_uncertain_receipt_without_provider_contact ... ok
+test providers::openai_compatible::tests::breadth_bomb_dies_at_the_count_gate_before_decoding_entries ... ok
+test providers::openai_compatible::tests::budget_admission_boundary_is_visible_in_the_receipt_chain ... ok
+test providers::openai_compatible::tests::consecutive_failures_open_the_circuit_which_fails_fast_without_provider_contact ... ok
+test providers::openai_compatible::tests::cost_budget_refuses_before_the_call_and_records_the_refusal ... ok
+test providers::openai_compatible::tests::cost_cap_ends_the_sequence ... ok
+test providers::openai_compatible::tests::adapter_is_interchangeable_with_fake_provider_on_the_port_and_in_the_cache_loop ... ok
+test providers::openai_compatible::tests::count_mismatch_is_rejected ... ok
+test providers::openai_compatible::tests::dimension_mismatch_is_rejected ... ok
+test providers::openai_compatible::tests::deeply_nested_json_is_rejected_by_the_depth_limit ... ok
+test providers::openai_compatible::tests::disabled_breaker_never_opens_and_neutral_outcomes_change_nothing ... ok
+test providers::openai_compatible::tests::disabled_policy_makes_exactly_one_attempt ... ok
+test providers::openai_compatible::tests::each_call_gets_a_fresh_sequence_budget_layering ... ok
+test providers::openai_compatible::tests::embedding_must_be_a_numeric_array_not_a_string_or_object ... ok
+test providers::openai_compatible::tests::empty_batch_is_a_no_op_without_attempts_or_breaker_contact ... ok
+test providers::openai_compatible::tests::duplicate_index_is_rejected ... ok
+test providers::openai_compatible::tests::empty_batch_short_circuits_without_transport_or_disabled_error ... ok
+test providers::openai_compatible::tests::empty_batch_records_no_receipt ... ok
+test providers::openai_compatible::tests::empty_success_response_is_rejected_when_batch_is_nonempty ... ok
+test providers::openai_compatible::tests::every_attempt_of_a_retry_sequence_leaves_a_complete_receipt ... ok
+test providers::openai_compatible::tests::half_open_probe_failure_reopens_for_a_fresh_window ... ok
+test providers::openai_compatible::tests::half_open_probe_meeting_a_budget_refusal_does_not_retain_the_probe_slot ... ok
+test providers::openai_compatible::tests::http_401_and_403_map_to_auth_error ... ok
+test providers::openai_compatible::tests::fractional_negative_and_string_indices_are_rejected ... ok
+test providers::openai_compatible::tests::http_429_maps_to_rate_limited_with_retry_after ... ok
+test providers::openai_compatible::tests::http_429_without_retry_after_uses_the_fallback ... ok
+test providers::openai_compatible::tests::http_5xx_maps_to_server_error ... ok
+test providers::openai_compatible::tests::invalid_policy_combinations_are_rejected_with_named_reasons ... ok
+test providers::openai_compatible::tests::invalid_endpoint_is_rejected_eagerly ... ok
+test providers::openai_compatible::tests::missing_data_array_and_malformed_json_are_rejected ... ok
+test providers::openai_compatible::tests::model_echo_is_required_and_must_be_a_string ... ok
+test providers::openai_compatible::tests::model_mismatch_is_rejected ... ok
+test providers::openai_compatible::tests::error_vectors_never_reach_the_artifact_cache ... ok
+test providers::openai_compatible::tests::no_transport_is_fail_closed_disabled ... ok
+test providers::openai_compatible::tests::negative_zero_vector_is_rejected ... ok
+test providers::openai_compatible::tests::non_numeric_component_is_rejected ... ok
+test providers::openai_compatible::tests::non_retryable_errors_pass_through_without_a_second_call ... ok
+test providers::openai_compatible::tests::non_utf8_input_is_rejected_before_any_transport_call ... ok
+test providers::openai_compatible::tests::norm_policy_accept_is_the_default_and_admits_unnormalized_vectors ... ok
+test providers::openai_compatible::tests::norm_policy_is_validated_eagerly ... ok
+test providers::openai_compatible::tests::open_window_elapsed_lazily_becomes_half_open_with_a_single_probe_slot ... ok
+test providers::openai_compatible::tests::other_http_4xx_maps_to_non_retryable_invalid_input_without_body_echo ... ok
+test providers::openai_compatible::tests::norm_policy_rejects_vectors_outside_the_configured_range ... ok
+test providers::openai_compatible::tests::oversized_response_body_is_rejected_before_json_parsing ... ok
+test providers::openai_compatible::tests::provider_error_envelope_diagnostics_exclude_the_free_form_message ... ok
+test providers::openai_compatible::tests::receipt_duration_is_measured_on_the_injected_clock ... ok
+test providers::openai_compatible::tests::query_path_uses_the_same_request_shape ... ok
+test providers::openai_compatible::tests::receipts_never_contain_input_text_or_credentials ... ok
+test providers::openai_compatible::tests::redirect_informational_and_unknown_statuses_follow_http_semantics ... ok
+test providers::openai_compatible::tests::retry_budget_exhaustion_returns_the_last_error ... ok
+test providers::openai_compatible::tests::request_carries_model_input_order_and_bearer_auth ... ok
+test providers::openai_compatible::tests::response_vectors_are_reordered_by_index_to_batch_order ... ok
+test providers::openai_compatible::tests::retryable_server_errors_are_retried_within_the_bound ... ok
+test providers::openai_compatible::tests::success_resets_the_consecutive_failure_count ... ok
+test providers::openai_compatible::tests::timeout_attempts_carry_the_uncertain_marker_and_duplicate_risk ... ok
+test providers::openai_compatible::tests::success_responses_require_a_json_content_type ... ok
+test providers::openai_compatible::tests::total_deadline_ends_the_sequence_before_the_attempt_bound ... ok
+test providers::openai_compatible::tests::trailing_slash_on_endpoint_is_trimmed ... ok
+test providers::openai_compatible::tests::transport_errors_map_to_timeout_cancelled_and_server_error ... ok
+test providers::openai_compatible::tests::without_respecting_retry_after_the_backoff_is_exponential ... ok
+test providers::openai_compatible::tests::usage_field_must_be_an_object_when_present ... ok
+test providers::openai_compatible::tests::validation_errors_never_carry_request_or_response_payloads ... ok
+test providers::openai_compatible::tests::zero_vector_and_nan_responses_are_rejected ... ok
+test providers::openai_compatible::tests::rate_limited_waits_retry_after_feeds_the_gate_and_resumes_after_expiry ... ok
+
+test result: ok. 69 passed; 0 failed; 0 ignored; 0 measured; 148 filtered out; finished in 0.03s
+

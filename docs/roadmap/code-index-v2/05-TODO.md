@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`679da865769a3d4301397e77943638aafe9e484e594fac851a986486131c5199`。
+> 任务总数：192；源文件 SHA-256：`00019b42e4adaf9e7b5a321fa7c2ff888837143fec0e4fe558148f88640cf838`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -1995,6 +1995,7 @@
 验证：V05；V16
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
 证据：尚无
+实施备注：2026-10-02 父对话独立复核报告：带 languages 请求会忽略未覆盖文档，Rust eligible=1/published=0 仍报 Complete 已复现；scope guard 修复由独立任务负责。保持 todo，修复与当前 SHA 复验前不收口。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 
@@ -2019,10 +2020,11 @@
 验证：V11；V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
 证据：尚无
+实施备注：2026-10-02 父对话独立复核报告：真实执行器 20ms deadline/120ms 返回 probe 超时，wiring 同步扫描和 exact 候选循环缺 control；取消链交独立任务，云集成 owner 释放 semantic_wiring recall 段（约700～800行）。hydrator skip 顶层 partial 为尚未证实可达的测试缺口，不据此宣称生产 bug；保持 todo。
 
 ### [ ] P7-014｜配置/status/MCP全链贯通
 
-状态：`todo`；批次：`P7-C`；优先级：`normal`。
+状态：`in_progress`；批次：`P7-C`；优先级：`normal`。
 范围：`crates/cc-server/src/tools.rs`；`crates/cc-server/src/capability_status.rs`；`docs/MCP_TOOLS.md`
 硬依赖：P7-013
 步骤：新字段schema/sanitize/handler/doc/E2E一体；原mode语义不变
@@ -2030,7 +2032,8 @@
 验收：未配置、关闭、回填、失败、就绪状态真实一致；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"target_sha": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa", "worktree_digest": "9df8ebdd6db932509211c813797bcc843f6038c4", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/receipt.json"], "review": "self-reviewed; independent review pending; P7-014 not complete", "rollback_status": "revert recovery commit; no schema/credential/provider change", "scope": "cloud build recovery and capability projection only; full task remains in_progress"}]
+实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。
 
 ### [ ] P7-015｜后台回填与前台查询竞争测试
 

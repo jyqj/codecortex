@@ -1,3 +1,5 @@
+> 2026-10-02 云端最新入口：基线 `ff458bc591b4e7e444af4464d6eef2513cdb335c`，恢复提交 `ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa`，draft [PR #5](https://github.com/jyqj/codecortex/pull/5)。150 done / 1 in_progress / 41 todo；P7-011～013 独立复核待收口，P7-014 进行中。旧 P5 交接正文仅为历史；云端实测与未通过项见 `artifacts/checkpoints/cloud-p7-014-20261002/receipt.json`。默认/semantic 构建恢复，状态4/4、semantic lib278/278、默认真实stdio1/1通过；全仓2250/4/60，lint/format失败；生产worker调度和wired lifecycle stdio尚未完成。
+
 # 08｜执行交接与下一轮入口
 
 ## 1. 当前状态

@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`35b5076531f5137699c32684ea686dd525b43fcf807aad5cc4b0d4c31cf5811c`。
+> 任务总数：192；源文件 SHA-256：`7c29f5de944a83114db91fee192692fa29ddfeb7f9d9236da979e60d10a63cfd`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2034,7 +2034,7 @@
 验证：V18
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
 证据：[{"target_sha": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa", "worktree_digest": "9df8ebdd6db932509211c813797bcc843f6038c4", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/receipt.json"], "review": "self-reviewed; independent review pending; P7-014 not complete", "rollback_status": "revert recovery commit; no schema/credential/provider change", "scope": "cloud build recovery and capability projection only; full task remains in_progress"}, {"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}]
-实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。 生命周期PR #7保留subsystem、初始化错误保原项目、close/reopen对称处理（默认253/semantic280通过）；纳入011/013后四crate lib975/0/1通过。生产worker调度与wired stdio仍未闭环，保持in_progress。 新云恢复分支codex/cloud-p7-recovery-integration以d6462c1为精确基线；逐文件diff证明PR10/11/12改动已组合，未重复cherry-pick。原样纳入PR13工厂9ea2b0b并注册，8/0/0局部测试通过；39文件格式问题已修正。生产worker/transport/wired stdio和独立正式验收仍待闭环，保持in_progress。 已恢复15326B旧worker补丁并核验hash；补齐有限job跨页消费、restart cache复用、输入完整provenance验证、close迟到响应fence与状态独立归属。纳入PR16生产transport7b335e5，feature默认关闭；装配/调用/销毁均在blocking job、无DB/CodeIndex网络锁，5runtime局部测试通过。stdio缺model echo的mock曾真实拒绝，修fixture而不放宽provider守卫，当前待精确binary复验；尚不收口。
+实施备注：2026-10-02 云端首块恢复默认/semantic 编译，状态与真实 stdio 兼容回归通过；完整工作区 2250 passed/4 failed/60 ignored，严格 lint/format 失败原件保留。P7-011～013 等待独立复核，P7-014 尚缺生产调度与 wired lifecycle E2E，不翻 done。 生命周期PR #7保留subsystem、初始化错误保原项目、close/reopen对称处理（默认253/semantic280通过）；纳入011/013后四crate lib975/0/1通过。生产worker调度与wired stdio仍未闭环，保持in_progress。 新云恢复分支codex/cloud-p7-recovery-integration以d6462c1为精确基线；逐文件diff证明PR10/11/12改动已组合，未重复cherry-pick。原样纳入PR13工厂9ea2b0b并注册，8/0/0局部测试通过；39文件格式问题已修正。生产worker/transport/wired stdio和独立正式验收仍待闭环，保持in_progress。 已恢复15326B旧worker补丁并核验hash；补齐有限job跨页消费、restart cache复用、输入完整provenance验证、close迟到响应fence与状态独立归属。纳入PR16生产transport7b335e5，feature默认关闭；装配/调用/销毁均在blocking job、无DB/CodeIndex网络锁，5runtime局部测试通过。stdio缺model echo的mock曾真实拒绝，修fixture而不放宽provider守卫，当前待精确binary复验；尚不收口。 检查点81b6188完整semantic-http workspace2334/0/61通过；真实stdio先通过五种状态/idle重开，但500重试被重开回填重置attempt_count，命令仍失败并保留hash摘要。新增短事务去重/版本检查保留pending/claimed/failed、已校验publication复用；6runtime回归含1100doc跨job和terminal failed通过。当前等待修复后精确SHA stdio复验，保持in_progress。
 
 ### [ ] P7-015｜后台回填与前台查询竞争测试
 

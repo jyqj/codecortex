@@ -1,0 +1,72 @@
+{
+  "baseline_sha": "81b6188178e9087fc29aedc8acc5dab34e2ac456",
+  "baseline_workspace": {
+    "passed": 2334,
+    "failed": 0,
+    "ignored": 61,
+    "suites": 123
+  },
+  "baseline_stdio_failure": {
+    "binary_sha256": "45599233724656cb1c969bd603067544e9cedfef5d9cc7eb320329dd64c76d12",
+    "exit_code": 1,
+    "finding": "actual idle close/reopen superseded the current pending task, resetting attempt_count to one after each 500; terminal failed was unreachable across these reopens",
+    "retained_database_states": [
+      {
+        "state": "superseded",
+        "attempt_count": 1
+      },
+      {
+        "state": "superseded",
+        "attempt_count": 1
+      },
+      {
+        "state": "pending",
+        "attempt_count": 1
+      }
+    ],
+    "preceding_success_cases": [
+      "unconfigured",
+      "disabled",
+      "network_disabled",
+      "assembly_failed",
+      "wired_backfilling_ready_idle_close_reopen"
+    ],
+    "scope": "preceding assertions passed within a failing command; not final L3 certification"
+  },
+  "fix_scope": [
+    "bounded provenance-validated keyset pages use physical row cursor",
+    "short atomic enqueue preserves current live/failed task and rejects stale document version/input",
+    "verified matching publications are skipped on reopen",
+    "finite jobs reschedule remaining ready work and await process capacity asynchronously",
+    "physical project pin spans successor scheduling"
+  ],
+  "runtime_regressions": {
+    "passed": 6,
+    "failed": 0,
+    "ignored": 0,
+    "scope": "includes 1100 actual documents crossing page and finite job boundaries; retry terminal failure with unit clock availability fixture"
+  },
+  "commands": [
+    {
+      "local_log": "/tmp/p7-recovery-workspace-http.log",
+      "sha256": "2866174b7861276cac893b7e5e97a584d59919e42bdef5537a2e423375fa25bb",
+      "bytes": 239108
+    },
+    {
+      "local_log": "/tmp/p7-recovery-stdio-final.log",
+      "sha256": "598ce4d7ca3fa145b756428c14c6e1d6af143fe4708ef3d9439f34a481870430",
+      "bytes": 2024
+    },
+    {
+      "local_log": "/tmp/p7-recovery-runtime-v10.log",
+      "sha256": "a6456f859d950a0757b7a5d0a82115ebc201ec037b0caa1828200deec92a2609",
+      "bytes": 948
+    },
+    {
+      "local_log": "/tmp/p7-recovery-clippy-final-v2.log",
+      "sha256": "6e6eceffd09ffa4d52127a71e623db2274e48f8e3aa2e46fe8bffb07b51e8f38",
+      "bytes": 895
+    }
+  ],
+  "next": "exact published source build/workspace/L3 stdio plus independent review before task closure"
+}

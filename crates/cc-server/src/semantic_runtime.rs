@@ -107,7 +107,8 @@ impl SemanticRuntime {
         self.cancellation.cancel();
         self.closed.store(true, Ordering::Release);
     }
-    /// Returns false when closed, busy, outside Tokio, or global capacity is full.
+    /// Returns false when closed, busy, or outside Tokio. Global capacity waits
+    /// asynchronously; coalesced work retains one project pin, without DB locks.
     /// Capacity and the project pin stay owned until blocking work really exits.
     pub fn schedule(self: &Arc<Self>) -> bool {
         static CAPACITY: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
@@ -126,15 +127,16 @@ impl SemanticRuntime {
             return false;
         }
         let running = Running(self.clone());
-        let Ok(permit) = CAPACITY
+        let capacity = CAPACITY
             .get_or_init(|| Arc::new(tokio::sync::Semaphore::new(2)))
-            .clone()
-            .try_acquire_owned()
-        else {
-            return false;
-        };
+            .clone();
         let pin = self.services.pin();
-        handle.spawn_blocking(move || {
+        handle.spawn(async move {
+            let permit = tokio::select! {
+                _ = running.0.cancellation.cancelled() => return,
+                permit = capacity.acquire_owned() => match permit { Ok(permit) => permit, Err(_) => return },
+            };
+            tokio::task::spawn_blocking(move || {
             running.0.requested.store(false, Ordering::Release);
             // A job is finite: at most 64 rounds / 30s, checked between port
             // calls. Transport/retry deadlines bound each synchronous call.
@@ -151,6 +153,7 @@ impl SemanticRuntime {
                     }
                 }
             };
+            let mut continue_work = false;
             for _ in 0..64 {
                 let Some(provider) = provider.as_ref() else {
                     break;
@@ -158,12 +161,14 @@ impl SemanticRuntime {
                 running.0.requested.store(false, Ordering::Release);
                 match running.0.run_round_with(provider.as_ref()) {
                     Ok(more) => {
+                        continue_work = more;
                         running.0.status.clear();
                         if !more && !running.0.requested.load(Ordering::Acquire) {
                             break;
                         }
                     }
                     Err(error) => {
+                        continue_work = false;
                         running.0.status.round_failed();
                         tracing::warn!(%error, "semantic worker round failed");
                         break;
@@ -177,12 +182,12 @@ impl SemanticRuntime {
             drop(provider);
             let worker = running.0.clone();
             drop(permit);
-            drop(pin);
             drop(running);
             // Do not lose a build request arriving during the final round.
-            if worker.requested.swap(false, Ordering::AcqRel) {
-                worker.schedule();
-            }
+            let requested = worker.requested.swap(false, Ordering::AcqRel);
+            if continue_work || requested { worker.schedule(); }
+            drop(pin);
+            });
         });
         true
     }
@@ -239,13 +244,39 @@ impl SemanticRuntime {
                 cc_model::CcError::Database("worker backfill cursor poisoned".into())
             })?;
             if let Some(after) = cursor.as_ref() {
-                let desired = self.db.semantic_rebuild_desired_set_bounded(after, 64)?;
-                self.db.enqueue_semantic_rebuild_plan(&desired)?;
-                *cursor = if desired.len() < 64 {
-                    None
-                } else {
-                    desired.last().map(|doc| doc.doc_key.clone())
-                };
+                let page =
+                    cc_db::document_store::semantic_worker_desired_page(&self.db, after, 64)?;
+                let mut missing = Vec::new();
+                for desired in page.desired {
+                    let Some(text) = cc_db::document_store::semantic_worker_input(
+                        &self.db,
+                        &desired.doc_key,
+                        &desired.doc_version,
+                        &desired.input_digest,
+                    )?
+                    else {
+                        continue;
+                    };
+                    let input = DocumentInput::from_bytes(text.as_bytes())?.input_digest;
+                    let published = cc_db::document_store::semantic_worker_publication_current(
+                        &self.db,
+                        &desired,
+                        space_id.as_str(),
+                    )?;
+                    let cached = matches!(
+                        self.subsystem.cache.get(
+                            &self.subsystem.space,
+                            &input,
+                            &self.subsystem.doc_spec
+                        )?,
+                        cc_semantic::cache::CacheRead::Hit(_)
+                    );
+                    if !published || !cached {
+                        missing.push(desired);
+                    }
+                }
+                cc_db::document_store::enqueue_semantic_worker_missing(&self.db, &missing)?;
+                *cursor = page.next_cursor;
             }
         }
         let now = std::time::SystemTime::now()
@@ -526,7 +557,7 @@ mod tests {
         )
         .unwrap();
         // Real manifest rows, large enough to expose a one-page / one-batch job.
-        for n in 0..130 {
+        for n in 0..1100 {
             std::fs::write(
                 dir.path().join(format!("source_{n}.rs")),
                 format!("pub fn source_{n}() -> u32 {{ {n} }}\n"),
@@ -556,7 +587,7 @@ mod tests {
         assert_eq!(coverage.failed, 0);
         assert_eq!(worker.db.reads().semantic_outbox_pending().unwrap(), 0);
         let calls = provider.call_count();
-        assert!(calls > 64);
+        assert!(calls > 1024, "fixture must cross finite job boundary");
         let reopened = tokio::task::spawn_blocking(move || {
             let mut rt = index.write().unwrap();
             rt.close();
@@ -746,5 +777,84 @@ mod tests {
             .is_none());
         semantic_wiring::teardown(&worker.services);
         assert!(worker.services.semantic_worker().is_none());
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn reopen_preserves_live_retry_budget_and_terminal_failure() {
+        let _serial = test_gate().lock().await;
+        let dir = tempfile::tempdir().unwrap();
+        let mut config = ProjectConfig::default();
+        config.semantic.enabled = true;
+        config.semantic.model_id = "fake/retry-runtime".into();
+        config.semantic.dimensions = Some(2);
+        config.semantic.max_input_tokens = Some(8192);
+        config.semantic.max_batch_items = Some(16);
+        config.semantic.endpoint = "https://semantic.invalid/v1".into();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("one.rs"), "pub fn one() -> u32 { 1 }\n").unwrap();
+        let mut index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+        let mut provider_config =
+            FakeProviderConfig::new(index.semantic_subsystem().unwrap().space.clone());
+        provider_config.fail_after_n_calls = Some(0);
+        let provider = Arc::new(FakeProvider::new(provider_config));
+        index.install_semantic_provider(provider.clone()).unwrap();
+        let worker = index.semantic_runtime().unwrap();
+        let shared = Arc::new(std::sync::RwLock::new(index));
+        let build_index = shared.clone();
+        tokio::task::spawn_blocking(move || crate::handlers::core::build_index(build_index, true))
+            .await
+            .unwrap()
+            .unwrap();
+        wait_for_idle(&worker).await;
+        for expected in 2..=3 {
+            // Unit fixture advances availability; L3 stdio waits real backoff.
+            crate::test_seed::seed_conn(&worker.db)
+                .execute(
+                    "UPDATE semantic_outbox SET available_at=0 WHERE state='pending'",
+                    [],
+                )
+                .unwrap();
+            let replacement = {
+                let mut index = shared.write().unwrap();
+                index.close();
+                index.reopen().unwrap();
+                index.install_semantic_provider(provider.clone()).unwrap();
+                index.semantic_runtime().unwrap()
+            };
+            assert!(replacement.schedule());
+            wait_for_idle(&replacement).await;
+            assert_eq!(provider.call_count(), expected);
+        }
+        let connection = crate::test_seed::seed_conn(&worker.db);
+        let counts: (i64, i64) = connection
+            .query_row(
+                "SELECT COUNT(*),MAX(attempt_count) FROM semantic_outbox",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(
+            counts,
+            (1, 3),
+            "reopen must neither duplicate nor reset the current task"
+        );
+        assert_eq!(
+            worker
+                .db
+                .reads()
+                .semantic_coverage()
+                .unwrap()
+                .coverage
+                .failed,
+            1
+        );
+        let index = shared.read().unwrap();
+        assert_eq!(
+            index.capabilities_info()["retrieval"]["semantic_state"],
+            "failed"
+        );
     }
 }

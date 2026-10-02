@@ -542,7 +542,7 @@ mod tests {
     #[test]
     fn an_extra_body_field_fails_the_audit_and_names_the_field() {
         let provider = https_adapter();
-        let mut request = provider.build_request(&vec!["alpha".to_owned()]);
+        let mut request = provider.build_request(&["alpha".to_owned()]);
         let mut body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
         body["telemetry_session"] = serde_json::json!("abc");
         request.body = serde_json::to_vec(&body).unwrap();
@@ -567,7 +567,7 @@ mod tests {
     #[test]
     fn a_missing_body_field_fails_the_audit() {
         let provider = https_adapter();
-        let mut request = provider.build_request(&vec!["alpha".to_owned()]);
+        let mut request = provider.build_request(&["alpha".to_owned()]);
         let mut body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
         body.as_object_mut().unwrap().remove("encoding_format");
         request.body = serde_json::to_vec(&body).unwrap();
@@ -587,7 +587,7 @@ mod tests {
     #[test]
     fn credential_material_may_only_travel_in_the_authorization_header() {
         let provider = https_adapter();
-        let mut request = provider.build_request(&vec!["alpha".to_owned()]);
+        let mut request = provider.build_request(&["alpha".to_owned()]);
         let mut body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
         // Adversarial: a code path accidentally folded the key into the body.
         body["input"] = serde_json::json!([format!("alpha {KEY}")]);
@@ -613,7 +613,7 @@ mod tests {
         // default-closed policy (constructor-legal, no transport) must reject
         // the plaintext destination.
         let provider = https_adapter();
-        let mut request = provider.build_request(&vec!["alpha".to_owned()]);
+        let mut request = provider.build_request(&["alpha".to_owned()]);
         let closed = EgressPolicy {
             network_opt_in: true,
             allow_http: false,
@@ -655,7 +655,7 @@ mod tests {
     #[test]
     fn audit_rejects_a_zero_timeout() {
         let provider = https_adapter();
-        let mut request = provider.build_request(&vec!["alpha".to_owned()]);
+        let mut request = provider.build_request(&["alpha".to_owned()]);
         request.timeout = Duration::ZERO;
         let error = audit_egress(
             &request,
@@ -673,7 +673,7 @@ mod tests {
     #[test]
     fn the_header_surface_is_audited() {
         let provider = https_adapter();
-        let mut request = provider.build_request(&vec!["alpha".to_owned()]);
+        let mut request = provider.build_request(&["alpha".to_owned()]);
         request
             .headers
             .push(("X-Extra-Trace".to_owned(), "1".to_owned()));
@@ -731,7 +731,8 @@ mod tests {
     fn every_resolution_failure_names_the_reference_and_never_echoes_values() {
         // Full-path leak scan: Display AND Debug of every error path must
         // contain the reference (actionable) but never a resolved value.
-        let cases: Vec<(&str, Box<dyn Fn() -> CcResult<EmbeddingApiKey>>)> = vec![
+        type KeyResolver = Box<dyn Fn() -> CcResult<EmbeddingApiKey>>;
+        let cases: Vec<(&str, KeyResolver)> = vec![
             (
                 "missing env",
                 Box::new(|| {

@@ -779,7 +779,22 @@ mod tests {
             coverage.eligible > 64,
             "fixture must cross backfill page boundary"
         );
-        assert_eq!(coverage.uncovered, 0);
+        let errors = worker
+            .db
+            .read_conn()
+            .unwrap()
+            .query_row(
+                "SELECT COALESCE(group_concat(DISTINCT last_error),'none') FROM semantic_outbox",
+                [],
+                |row| row.get::<_, String>(0),
+            )
+            .unwrap();
+        assert_eq!(
+            coverage.uncovered,
+            0,
+            "coverage={coverage:?}; errors={errors}; worker={:?}",
+            worker.status.failure_reason()
+        );
         assert_eq!(coverage.failed, 0);
         assert_eq!(worker.db.reads().semantic_outbox_pending().unwrap(), 0);
         let calls = provider.call_count();

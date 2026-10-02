@@ -155,6 +155,7 @@ pub struct QueryServices {
     /// [`SemanticWiredInfo`]); `None` = attached-only or unattached.
     semantic_wired: RwLock<Option<SemanticWiredInfo>>,
     semantic_worker: RwLock<Option<Arc<SemanticWorkerStatus>>>,
+    query_encoding_lifecycle: RwLock<Option<Arc<cc_db::semantic_publish::LifecycleFence>>>,
     /// Optional semantic-subsystem degradation snapshot (P6-018). Plain
     /// data, no cc-semantic dependency: the composition root (when the
     /// optional `semantic` feature is wired) forwards
@@ -188,6 +189,7 @@ impl Default for QueryServices {
             semantic: RwLock::new(None),
             semantic_wired: RwLock::new(None),
             semantic_worker: RwLock::new(None),
+            query_encoding_lifecycle: RwLock::new(None),
             semantic_degradation: RwLock::new(None),
             pins: Arc::default(),
         }
@@ -208,6 +210,7 @@ impl QueryServices {
             semantic: RwLock::new(None),
             semantic_wired: RwLock::new(None),
             semantic_worker: RwLock::new(None),
+            query_encoding_lifecycle: RwLock::new(None),
             semantic_degradation: RwLock::new(None),
             pins: Arc::default(),
         }
@@ -239,6 +242,23 @@ impl QueryServices {
             .read()
             .unwrap_or_else(|p| p.into_inner())
             .clone()
+    }
+    pub(crate) fn query_encoding_active(&self) -> bool {
+        self.query_encoding_lifecycle
+            .read()
+            .unwrap_or_else(|p| p.into_inner())
+            .as_ref()
+            .is_some_and(|lifecycle| lifecycle.is_open())
+    }
+    #[cfg(feature = "semantic")]
+    pub(crate) fn set_query_encoding_lifecycle(
+        &self,
+        lifecycle: Option<Arc<cc_db::semantic_publish::LifecycleFence>>,
+    ) {
+        *self
+            .query_encoding_lifecycle
+            .write()
+            .unwrap_or_else(|p| p.into_inner()) = lifecycle;
     }
     #[cfg(feature = "semantic")]
     pub(crate) fn set_semantic_worker(&self, state: Option<Arc<SemanticWorkerStatus>>) {

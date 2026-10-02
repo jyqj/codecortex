@@ -1,0 +1,97 @@
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.70s
+     Running tests/p7_v18_parameter_contract.rs (target/debug/deps/p7_v18_parameter_contract-54468c7fadb88611)
+
+running 5 tests
+2026-10-02T22:04:22.698602Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:04:22.700223Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:04:22.700616Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:04:22.700956Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:04:22.712321Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:04:22.712377Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:04:22.714188Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:04:22.714245Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:04:22.714280Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T22:04:22.714307Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:04:22.714883Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+
+thread 'enabled_semantic_strategy_reaches_real_wired_query_and_read_only_status' (106602) panicked at crates/cc-server/tests/p7_v18_parameter_contract.rs:78:9:
+assertion `left != right` failed
+  left: Some(true)
+ right: Some(true)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+2026-10-02T22:04:22.715192Z  INFO serve_inner: rmcp::handler::server: client initialized
+test enabled_semantic_strategy_reaches_real_wired_query_and_read_only_status ... FAILED
+2026-10-02T22:04:22.719100Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:04:22.719154Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:04:22.719308Z  INFO cc_server::mcp: MCP server shut down gracefully
+V18_SCHEMA {"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","additionalProperties":false,"properties":{"boost_files":{"default":null,"description":"File paths the agent is currently focused on. These files receive a\nranking boost in search results (they are not used as an exclusive filter).","items":{"type":"string"},"type":["array","null"]},"conversation_queries":{"default":null,"description":"Prior conversational queries that bias lexical / semantic retrieval\ntoward the ongoing discussion.","items":{"type":"string"},"type":["array","null"]},"exact":{"default":false,"description":"When `true`, require an exact symbol-name match instead of fuzzy.","type":"boolean"},"file_preselect_limit":{"default":null,"description":"Maximum number of candidate files to consider during the preselection\nstage. Higher values trade latency for recall on large repos. Default\nis auto-tuned based on `top_k`.","format":"uint","minimum":0,"type":["integer","null"]},"intent":{"default":null,"description":"Optional intent hint to guide ranking (e.g. \"find error handling logic\").","type":["string","null"]},"mode":{"default":"hybrid","description":"Search strategy.\n- `\"hybrid\"` – combines text and graph signals (default)\n- `\"symbol\"` – exact / fuzzy symbol-name lookup only","type":"string"},"overlay_files":{"default":null,"description":"In-memory / unsaved file paths (editor overlays) that should be treated\nas part of the working set when ranking results.","items":{"type":"string"},"type":["array","null"]},"path_prefix":{"default":null,"description":"Restrict results to files whose path begins with this prefix\n(e.g. `\"src/api/\"`). Applied as an exclusive filter.","type":["string","null"]},"pinned_files":{"default":null,"description":"Pinned / bookmarked file paths that should always rank highly when they\nmatch the query.","items":{"type":"string"},"type":["array","null"]},"project_path":{"default":null,"description":"Optional project root override.","type":["string","null"]},"query":{"description":"The search query string (natural language or symbol name).","type":"string"},"recent_files":{"default":null,"description":"Recently viewed / edited file paths. Receives a smaller ranking boost\nthan `boost_files`.","items":{"type":"string"},"type":["array","null"]},"retrieval_strategy":{"default":null,"description":"Retrieval policy for hybrid mode: local, auto, or semantic. Omitted uses\nproject configuration; auto without a semantic port stays local. An\nunconfigured explicit semantic request fails instead of pretending ready.","type":["string","null"]},"top_k":{"default":10,"description":"Maximum number of results to return. Default 10.","format":"uint","minimum":0,"type":"integer"}},"required":["query"],"type":"object"},"tool":"search"}
+V18_SCHEMA {"schema":{"$schema":"https://json-schema.org/draft/2020-12/schema","additionalProperties":false,"properties":{"include_source":{"default":true,"description":"Whether to include source code for each symbol. Default `true`.","type":"boolean"},"intent":{"default":null,"description":"Optional intent hint to steer retrieval (e.g. \"refactor\", \"debug\").","type":["string","null"]},"max_symbols":{"default":null,"description":"Maximum number of symbols to include in the context window.","format":"uint","minimum":0,"type":["integer","null"]},"project_path":{"default":null,"description":"Optional project root override.","type":["string","null"]},"retrieval_strategy":{"default":null,"description":"Optional local/auto/semantic policy. An explicit policy uses the unified\nretrieval path rather than the legacy direct-symbol shortcut.","type":["string","null"]},"task":{"description":"Natural-language description of the task or question.","type":"string"}},"required":["task"],"type":"object"},"tool":"context"}
+
+thread 'advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults' (106601) panicked at crates/cc-server/tests/p7_v18_parameter_contract.rs:78:9:
+assertion `left != right` failed
+  left: Some(true)
+ right: Some(true)
+2026-10-02T22:04:22.722160Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:04:22.722213Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+test advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults ... FAILED
+2026-10-02T22:04:22.722256Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:04:22.722327Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:04:22.722369Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:04:22.722569Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:04:22.722587Z  INFO cc_server::mcp: MCP server shut down gracefully
+2026-10-02T22:04:22.722924Z  INFO serve_inner: rmcp::handler::server: client initialized
+
+thread 'omitted_null_and_explicit_overrides_inherit_project_strategy_through_queries' (106604) panicked at crates/cc-server/tests/p7_v18_parameter_contract.rs:78:9:
+assertion `left != right` failed
+  left: Some(true)
+ right: Some(true)
+test omitted_null_and_explicit_overrides_inherit_project_strategy_through_queries ... FAILED
+2026-10-02T22:04:22.723472Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:04:22.723519Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:04:22.723665Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:04:22.723974Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:04:22.723959Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:04:22.724121Z  INFO cc_server::mcp: MCP server shut down gracefully
+2026-10-02T22:04:22.725071Z  INFO serve_inner: rmcp::handler::server: client initialized
+V18_JSON {"args":{"aspect":"capabilities"},"result":{"capabilities":{"graph":true,"impact":true,"search":true},"has_index":true,"has_project":true,"indexed_files":0,"indexed_symbols":0,"resolution_freshness":{"basis_epoch":null,"complete":true,"completed_files":0,"index_epoch":0,"reason":null,"retry":null,"root_count":0,"scope":"observed_resolution_invalidations","status":"ready"},"retrieval":{"default_effective_strategy":"local","default_query_state":"available_with_per_query_checks","default_strategy":"local","dense_reason":"provider_and_vector_publication_not_implemented","dense_state":"disabled","diagnostic_sources":{"build":"BuildExplain on index response","graph":"GraphExplain on query response","lanes":"evidence_summary.retrieval.lanes or lane_receipts","packing":"evidence_summary.packing","selection":"evidence_summary.selection","semantic":"evidence_summary.retrieval.semantic (dense lane receipt projection)","source":"evidence_summary.source_freshness"},"execution":{"async_admitted":0,"async_in_flight":0,"async_limit":8,"completed":0,"cpu_admitted":0,"cpu_in_flight":0,"cpu_limit":4,"queue_limit":32,"rejected":0},"execution_scope":"process_shared_not_project_local","generation":{"evidence_epoch":0,"incarnation":[189,147,62,121,249,157,252,71,60,98,153,111,136,190,135,93],"index_epoch":0,"semantic_epoch":null},"index_state":"empty","local_state":"available","pin_scope":"owned_query_views_including_inflight_clones_not_request_count","query_coverage":{"scope":"per_query_not_global","state":"not_measured"},"query_pins":0,"resolution_freshness":{"basis_epoch":null,"complete":true,"completed_files":0,"index_epoch":0,"reason":null,"retry":null,"root_count":0,"scope":"observed_resolution_invalidations","status":"ready"},"semantic_state":"not_configured","spec":"retrieval-capabilities-v1"}},"tool":"status"}
+2026-10-02T22:04:22.727607Z  WARN serve_inner: rmcp::service: response error id=2 error=ErrorData { code: ErrorCode(-32602), message: "retrieval_strategy must be local, auto, or semantic", data: None }
+V18_JSON {"args":{"query":"needle","retrieval_strategy":"dense"},"error_code":-32602,"message":"retrieval_strategy must be local, auto, or semantic","tool":"search"}
+2026-10-02T22:04:22.728410Z  WARN serve_inner: rmcp::service: response error id=3 error=ErrorData { code: ErrorCode(-32602), message: "retrieval_strategy must be local, auto, or semantic", data: None }
+V18_JSON {"args":{"query":"needle","retrieval_strategy":"AUTO"},"error_code":-32602,"message":"retrieval_strategy must be local, auto, or semantic","tool":"search"}
+2026-10-02T22:04:22.729040Z  WARN serve_inner: rmcp::service: response error id=4 error=ErrorData { code: ErrorCode(-32602), message: "retrieval_strategy must be local, auto, or semantic", data: None }
+V18_JSON {"args":{"query":"needle","retrieval_strategy":""},"error_code":-32602,"message":"retrieval_strategy must be local, auto, or semantic","tool":"search"}
+
+thread 'malformed_strategy_and_symbol_incompatibility_are_public_parameter_errors' (106603) panicked at crates/cc-server/tests/p7_v18_parameter_contract.rs:96:10:
+called `Result::unwrap_err()` on an `Ok` value: CallToolResult { content: [Text(TextContent { text: "failed to deserialize parameters: invalid type: integer `1`, expected a string", meta: None, annotations: None })], structured_content: None, is_error: Some(true), meta: None }
+test malformed_strategy_and_symbol_incompatibility_are_public_parameter_errors ... FAILED
+2026-10-02T22:04:22.730476Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:04:22.730564Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:04:22.730712Z  INFO cc_server::mcp: MCP server shut down gracefully
+2026-10-02T22:04:22.738165Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:04:22.738241Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:04:22.738505Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:04:22.738586Z  INFO serve_inner: rmcp::handler::server: client initialized
+
+thread 'symbol_mode_preserves_legacy_array_and_sanitized_limits' (106636) panicked at crates/cc-server/tests/p7_v18_parameter_contract.rs:78:9:
+assertion `left != right` failed
+  left: Some(true)
+ right: Some(true)
+2026-10-02T22:04:22.739471Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:04:22.739514Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+test symbol_mode_preserves_legacy_array_and_sanitized_limits ... FAILED
+
+failures:
+
+failures:
+    advertised_schema_keeps_fourteen_tools_and_optional_strategy_defaults
+    enabled_semantic_strategy_reaches_real_wired_query_and_read_only_status
+    malformed_strategy_and_symbol_incompatibility_are_public_parameter_errors
+    omitted_null_and_explicit_overrides_inherit_project_strategy_through_queries
+    symbol_mode_preserves_legacy_array_and_sanitized_limits
+
+test result: FAILED. 0 passed; 5 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+2026-10-02T22:04:22.739695Z  INFO cc_server::mcp: MCP server shut down gracefully
+error: test failed, to rerun pass `-p cc-server --test p7_v18_parameter_contract`

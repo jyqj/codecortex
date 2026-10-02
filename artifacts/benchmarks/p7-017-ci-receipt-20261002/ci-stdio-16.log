@@ -1,0 +1,53 @@
+   Compiling cc-eval v1.0.0 (/workspace/codecortex/crates/cc-eval)
+    Finished `test` profile [unoptimized] target(s) in 1.03s
+     Running tests/p5d_contract.rs (/tmp/p7-017-build/debug/deps/p5d_contract-9ceb4d5750cc2e9b)
+
+running 2 tests
+test real_stdio_policy_override_and_capability_state ... ignored, explicit CODECORTEX_BENCH_BINARY; actual public policy and capabilities contract
+test policy_parameters_are_optional_strict_and_documented ... ok
+
+test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p5d_runtime.rs (/tmp/p7-017-build/debug/deps/p5d_runtime-3ffd6d52c72e84fa)
+
+running 10 tests
+test cancelled_blocking_work_keeps_pin_until_actual_exit ... ok
+test dropping_session_stops_recurring_tasks_and_releases_cached_db ... ok
+test concurrent_cold_routes_share_one_instance_and_build_gate ... ok
+test capability_readiness_distinguishes_absence_empty_error_and_semantic_port ... ok
+test cloned_views_hold_one_lease_until_last_drop ... ok
+test explicit_unconfigured_semantic_is_never_reported_ready ... ok
+test idle_sweep_never_waits_for_write_or_build_lock ... ok
+test explicit_context_policy_cannot_bypass_optional_port_via_direct_symbols ... ok
+test inflight_recall_survives_idle_and_lru_then_reclaims_resources ... ok
+test shutdown_prevents_late_watcher_and_idle_restart ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.17s
+
+    Finished `test` profile [unoptimized] target(s) in 0.11s
+     Running tests/p5d_contract.rs (/tmp/p7-017-build/debug/deps/p5d_contract-9ceb4d5750cc2e9b)
+
+running 1 test
+2026-10-02T22:03:30.238253Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-02T22:03:30.251345Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-02T22:03:30.251412Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-02T22:03:30.252415Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-02T22:03:30.252653Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-02T22:03:30.253170Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:30.279874Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpq0mlsO/.codecortex/index.sqlite3.tmp
+2026-10-02T22:03:30.292999Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-02T22:03:30.294864Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-02T22:03:30.300142Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-02T22:03:30.300297Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:30.308055Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:30.311792Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-02T22:03:30.372587Z  WARN serve_inner: rmcp::service: response error id=7 error=ErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+2026-10-02T22:03:30.373598Z  WARN serve_inner: rmcp::service: response error id=8 error=ErrorData { code: ErrorCode(-32603), message: "semantic recall is not configured", data: None }
+2026-10-02T22:03:30.374157Z  WARN serve_inner: rmcp::service: response error id=9 error=ErrorData { code: ErrorCode(-32602), message: "retrieval_strategy must be local, auto, or semantic", data: None }
+2026-10-02T22:03:30.374714Z  WARN serve_inner: rmcp::service: response error id=10 error=ErrorData { code: ErrorCode(-32602), message: "symbol mode supports only local retrieval_strategy", data: None }
+2026-10-02T22:03:30.375141Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-02T22:03:30.375197Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-02T22:03:30.375396Z  INFO cc_server::mcp: MCP server shut down gracefully
+test real_stdio_policy_override_and_capability_state ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.15s

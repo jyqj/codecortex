@@ -140,10 +140,17 @@ fn identical_options_except_target_dir_pass_with_positional_metrics() {
         );
     }
     let distinct: BTreeSet<_> = projection.positional_metrics.values().collect();
-    assert_eq!(distinct.len(), p.variants.len(), "targets must be pairwise distinct");
+    assert_eq!(
+        distinct.len(),
+        p.variants.len(),
+        "targets must be pairwise distinct"
+    );
 }
 fn root_target(dir: &tempfile::TempDir, id: &str) -> String {
-    dir.path().join(format!("{id}-target")).display().to_string()
+    dir.path()
+        .join(format!("{id}-target"))
+        .display()
+        .to_string()
 }
 #[test]
 fn rustc_version_drift_is_rejected_by_semantic_projection() {
@@ -163,7 +170,10 @@ fn rustflags_drift_is_rejected_by_semantic_projection() {
     });
     report::json(&p.variants[1].build_receipt, &r).unwrap();
     let err = validate(&p, d.path()).unwrap_err().to_string();
-    assert!(err.contains("'RUSTFLAGS'"), "error must name the field: {err}");
+    assert!(
+        err.contains("'RUSTFLAGS'"),
+        "error must name the field: {err}"
+    );
 }
 #[test]
 fn profile_features_jobs_binding_drift_is_rejected() {

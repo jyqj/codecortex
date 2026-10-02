@@ -91,8 +91,7 @@ impl QueryHandle {
             };
             // P7-013: the lane's share of the query-total deadline, as a
             // named primitive (child can never extend the total).
-            let child =
-                cc_search::execution::semantic_child_budget(&control, &policy);
+            let child = cc_search::execution::semantic_child_budget(&control, &policy);
             let response = if request.scope.is_empty() {
                 cc_model::semantic::SemanticResponse {
                     generation: request.generation,

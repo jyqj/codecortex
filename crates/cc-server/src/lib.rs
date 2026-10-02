@@ -6,6 +6,8 @@ pub mod handlers;
 pub mod mcp;
 pub mod project_session;
 pub mod query_handle;
+#[cfg(feature = "semantic")]
+pub mod semantic_provider_factory;
 /// Optional semantic-subsystem composition-root wiring (P7-010 minimal
 /// assembly leg). Compiled only with the opt-in `semantic` feature; the
 /// default build contains none of this code and no cc-semantic dependency.

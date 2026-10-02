@@ -146,18 +146,18 @@ impl FakeProvider {
     /// Shared embed pipeline: latency, scripted fault, deterministic
     /// generation, output gate. `kind` and the per-input digests are
     /// supplied by the two port methods.
-    fn embed(
-        &self,
-        kind: &str,
-        digests: &[&str],
-    ) -> Result<Vec<Vec<f32>>, ProviderError> {
+    fn embed(&self, kind: &str, digests: &[&str]) -> Result<Vec<Vec<f32>>, ProviderError> {
         let ordinal = self.calls.fetch_add(1, Ordering::SeqCst) + 1;
         if self.config.delay_per_call > Duration::ZERO {
             std::thread::sleep(self.config.delay_per_call);
         }
         if let Some(after) = self.config.fail_after_n_calls {
             if ordinal > after {
-                return Err(self.config.fail_with.clone().unwrap_or(ProviderError::ServerError));
+                return Err(self
+                    .config
+                    .fail_with
+                    .clone()
+                    .unwrap_or(ProviderError::ServerError));
             }
         }
         let dim = self.config.space.dimension() as usize;
@@ -252,8 +252,8 @@ fn validate_output(space: &VectorSpace, digest: &str, vector: &[f32]) -> Result<
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::types::InputDigest;
     use crate::ports::DocumentInput;
+    use crate::types::InputDigest;
 
     fn provider(model: &str, dim: u32) -> FakeProvider {
         let space = VectorSpace::new(model, dim).expect("valid space");
@@ -308,7 +308,11 @@ mod tests {
     fn vectors_are_unit_length_for_the_frozen_cosine_metric() {
         let p = provider("fake/model-a", 64);
         let v = p.embed_documents(&[doc("norm check")]).unwrap().remove(0);
-        let norm: f64 = v.iter().map(|x| (*x as f64) * (*x as f64)).sum::<f64>().sqrt();
+        let norm: f64 = v
+            .iter()
+            .map(|x| (*x as f64) * (*x as f64))
+            .sum::<f64>()
+            .sqrt();
         assert!((norm - 1.0).abs() < 1e-9, "norm was {norm}");
     }
 
@@ -320,7 +324,10 @@ mod tests {
         // and `FAKE_PROVIDER_ALGORITHM_VERSION` must bump with new fixtures —
         // bitwise cross-machine reproducibility is the contract.
         let p = provider("fake/golden-model", 8);
-        let v = p.embed_documents(&[doc("golden fixture input")]).unwrap().remove(0);
+        let v = p
+            .embed_documents(&[doc("golden fixture input")])
+            .unwrap()
+            .remove(0);
         let expected: [u32; 4] = [3169967527, 1032920341, 3201138986, 1039597886];
         for (i, bits) in expected.iter().enumerate() {
             assert_eq!(v[i].to_bits(), *bits, "golden component {i} drifted");
@@ -340,9 +347,18 @@ mod tests {
 
     #[test]
     fn model_id_and_dimension_are_part_of_the_derivation() {
-        let a = provider("fake/model-a", 8).embed_documents(&[doc("same")]).unwrap().remove(0);
-        let b = provider("fake/model-b", 8).embed_documents(&[doc("same")]).unwrap().remove(0);
-        let c = provider("fake/model-a", 16).embed_documents(&[doc("same")]).unwrap().remove(0);
+        let a = provider("fake/model-a", 8)
+            .embed_documents(&[doc("same")])
+            .unwrap()
+            .remove(0);
+        let b = provider("fake/model-b", 8)
+            .embed_documents(&[doc("same")])
+            .unwrap()
+            .remove(0);
+        let c = provider("fake/model-a", 16)
+            .embed_documents(&[doc("same")])
+            .unwrap()
+            .remove(0);
         assert_ne!(a, b, "same dimension, different model must not reproduce");
         assert_eq!(a.len(), 8);
         assert_eq!(c.len(), 16);
@@ -355,16 +371,26 @@ mod tests {
         let p = provider("fake/model-a", 8);
         let docs = vec![doc("d-one"), doc("d-two"), doc("d-three")];
         let out = p.embed_documents(&docs).unwrap();
-        assert_eq!(out.len(), docs.len(), "one output per input, batch not split");
+        assert_eq!(
+            out.len(),
+            docs.len(),
+            "one output per input, batch not split"
+        );
         for (input, vector) in docs.iter().zip(&out) {
-            let single = p.embed_documents(std::slice::from_ref(input)).unwrap().remove(0);
+            let single = p
+                .embed_documents(std::slice::from_ref(input))
+                .unwrap()
+                .remove(0);
             assert_bits_eq(vector, &single);
         }
         let queries = vec![query("q-one"), query("q-two")];
         let out = p.embed_queries(&queries).unwrap();
         assert_eq!(out.len(), queries.len());
         for (input, vector) in queries.iter().zip(&out) {
-            let single = p.embed_queries(std::slice::from_ref(input)).unwrap().remove(0);
+            let single = p
+                .embed_queries(std::slice::from_ref(input))
+                .unwrap()
+                .remove(0);
             assert_bits_eq(vector, &single);
         }
     }
@@ -397,7 +423,10 @@ mod tests {
             ..FakeProviderConfig::new(space)
         });
         let batch = vec![doc("x")];
-        assert!(p.embed_documents(&batch).is_ok(), "call 1 (ordinal ≤ n) succeeds");
+        assert!(
+            p.embed_documents(&batch).is_ok(),
+            "call 1 (ordinal ≤ n) succeeds"
+        );
         assert_eq!(p.call_count(), 1);
         let err = p.embed_documents(&batch).unwrap_err();
         assert_eq!(
@@ -406,7 +435,10 @@ mod tests {
                 retry_after: Duration::from_secs(3)
             }
         );
-        assert!(p.embed_queries(&[query("y")]).is_err(), "fault spans both methods");
+        assert!(
+            p.embed_queries(&[query("y")]).is_err(),
+            "fault spans both methods"
+        );
         assert_eq!(p.call_count(), 3, "failing calls are counted too");
     }
 
@@ -452,7 +484,9 @@ mod tests {
     #[test]
     fn zero_vector_injection_is_rejected_by_the_output_gate() {
         let space = VectorSpace::new("fake/model-a", 8).expect("valid space");
-        let bad = InputDigest::of_input(b"poisoned").expect("digest").into_inner();
+        let bad = InputDigest::of_input(b"poisoned")
+            .expect("digest")
+            .into_inner();
         let p = FakeProvider::new(FakeProviderConfig {
             zero_vector_digests: vec![bad.clone()],
             ..FakeProviderConfig::new(space)
@@ -461,7 +495,10 @@ mod tests {
         let err = p.embed_documents(&[doc("poisoned")]).unwrap_err();
         match err {
             ProviderError::InvalidInput(message) => {
-                assert!(message.contains(&bad), "error must name the digest: {message}");
+                assert!(
+                    message.contains(&bad),
+                    "error must name the digest: {message}"
+                );
                 assert!(message.contains("zero vector"));
             }
             other => panic!("expected InvalidInput, got {other:?}"),

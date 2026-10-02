@@ -57,10 +57,7 @@ pub fn space_spec_json(spec: &DocumentEncodingSpec) -> CcResult<String> {
 /// 三段之第 1 段（状态载体）：校验并冻结新 spec，注册 `backfilling` 行，
 /// 返回其 `SpaceDigest`（即 `space_id`）。已存在的行（任意状态）拒绝——
 /// 回滚复用走 `revoked → active` 边，不重注册。
-pub fn register_backfill_space(
-    db: &IndexDb,
-    spec: &DocumentEncodingSpec,
-) -> CcResult<SpaceDigest> {
+pub fn register_backfill_space(db: &IndexDb, spec: &DocumentEncodingSpec) -> CcResult<SpaceDigest> {
     spec.validate()?;
     let digest = spec.space().digest()?;
     db.register_semantic_space(digest.as_str(), &space_spec_json(spec)?)?;
@@ -195,7 +192,10 @@ mod tests {
         assert_eq!(a, b, "冻结序列化必须逐字节稳定");
         // 字段序固定、无 map：space 在前，tokenizer/max_tokens 在后。
         let expected_prefix = "{\"space\":{\"model_id\":\"fake/model-switch\"";
-        assert!(a.starts_with(expected_prefix), "unexpected canonical form: {a}");
+        assert!(
+            a.starts_with(expected_prefix),
+            "unexpected canonical form: {a}"
+        );
     }
 
     #[test]

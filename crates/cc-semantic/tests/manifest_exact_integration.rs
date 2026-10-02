@@ -18,10 +18,7 @@ use cc_semantic::vector::exact::{search, space_manifest_reads, ExactSearch};
 
 fn v22_conn() -> rusqlite::Connection {
     let conn = rusqlite::Connection::open_in_memory().unwrap();
-    assert_eq!(
-        migrate_index_db(&conn).unwrap(),
-        SchemaStatus::Initialized
-    );
+    assert_eq!(migrate_index_db(&conn).unwrap(), SchemaStatus::Initialized);
     conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
     conn
 }
@@ -72,8 +69,7 @@ impl TempCache {
             "cc-semantic-p6010-integration-{tag}-{}",
             std::process::id()
         ));
-        let cache =
-            ArtifactCache::open(&root, format!("ns-{tag}")).expect("open cache");
+        let cache = ArtifactCache::open(&root, format!("ns-{tag}")).expect("open cache");
         (Self(root), cache)
     }
 }
@@ -150,8 +146,17 @@ fn published_rows_round_trip_through_manifest_scan_and_cache() {
         );
     }
 
-    let got = run_search(&cache, &conn, &digest, &space, &[1.0, 0.0, 0.0], &scope(), 10, 2)
-        .expect("search");
+    let got = run_search(
+        &cache,
+        &conn,
+        &digest,
+        &space,
+        &[1.0, 0.0, 0.0],
+        &scope(),
+        10,
+        2,
+    )
+    .expect("search");
     let keys: Vec<_> = got.iter().map(|d| d.doc_key.as_str()).collect();
     assert_eq!(keys, ["doc-a", "doc-b", "doc-c"]);
     assert!(got.iter().all(|d| d.score == 1.0));
@@ -196,8 +201,8 @@ fn sql_scan_is_space_isolated_and_keyset_paginated() {
 
     // k = 2 with batch 1 → the keyset walk must still cover exactly the space's
     // three rows, in doc_key order, skipping the foreign-space row.
-    let got = run_search(&cache, &conn, &digest, &space, &[1.0, 1.0], &scope(), 2, 1)
-        .expect("search");
+    let got =
+        run_search(&cache, &conn, &digest, &space, &[1.0, 1.0], &scope(), 2, 1).expect("search");
     let keys: Vec<_> = got.iter().map(|d| d.doc_key.as_str()).collect();
     assert_eq!(keys, ["a", "b"]);
 }
@@ -235,8 +240,17 @@ fn cascaded_deletion_removes_the_candidate_structurally() {
         .unwrap();
     assert_eq!(remaining, 1, "FK CASCADE removed the published row");
 
-    let got = run_search(&cache, &conn, &digest, &space, &[1.0, 0.0], &scope(), 10, 10)
-        .expect("search");
+    let got = run_search(
+        &cache,
+        &conn,
+        &digest,
+        &space,
+        &[1.0, 0.0],
+        &scope(),
+        10,
+        10,
+    )
+    .expect("search");
     assert_eq!(
         got.iter().map(|d| d.doc_key.as_str()).collect::<Vec<_>>(),
         ["keep"],
@@ -272,8 +286,8 @@ fn hard_scope_language_filter_applies_on_the_real_read_path() {
         languages: Some(vec![Language::Rust]),
         file_paths: None,
     };
-    let got = run_search(&cache, &conn, &digest, &space, &[1.0, 0.0], &filter, 10, 10)
-        .expect("search");
+    let got =
+        run_search(&cache, &conn, &digest, &space, &[1.0, 0.0], &filter, 10, 10).expect("search");
     assert_eq!(
         got.iter().map(|d| d.doc_key.as_str()).collect::<Vec<_>>(),
         ["rs-doc"]

@@ -92,10 +92,7 @@ impl InputBudget {
     /// item and token bounds come straight from the capability sheet; the
     /// bytes bound stays an operator decision (capabilities declare tokens,
     /// not bytes).
-    pub fn from_capability(
-        capability: &ModelCapability,
-        max_batch_bytes: usize,
-    ) -> CcResult<Self> {
+    pub fn from_capability(capability: &ModelCapability, max_batch_bytes: usize) -> CcResult<Self> {
         Self::validated(
             capability.max_batch_items as usize,
             max_batch_bytes,
@@ -122,10 +119,7 @@ pub enum OversizeReason {
     EmptyInput,
     /// The input alone exceeds the byte bound (`budget.max_bytes`, or the
     /// frozen [`MAX_INPUT_BYTES`] backstop reported as `max_bytes`).
-    BytesTooLarge {
-        bytes: usize,
-        max_bytes: usize,
-    },
+    BytesTooLarge { bytes: usize, max_bytes: usize },
     /// The input's estimated token count exceeds `budget.max_tokens` under
     /// the declared estimator. An estimate — see the module docs.
     TokensTooLarge {
@@ -190,10 +184,7 @@ pub enum PlannedInput<K> {
     /// A legal batch: feed `items` to `embed_documents` unsplit.
     Batch(BatchPlan<K>),
     /// The input can never fit any batch; explicit, never silent.
-    Skipped {
-        key: K,
-        reason: OversizeReason,
-    },
+    Skipped { key: K, reason: OversizeReason },
 }
 
 /// One planned query batch (query-path dual of [`BatchPlan`]).
@@ -216,10 +207,7 @@ impl<K> QueryBatchPlan<K> {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PlannedQueryInput<K> {
     Batch(QueryBatchPlan<K>),
-    Skipped {
-        key: K,
-        reason: OversizeReason,
-    },
+    Skipped { key: K, reason: OversizeReason },
 }
 
 /// Declared token estimate for one input: `utf8-bytes-div-ceil-4-v1`
@@ -331,7 +319,8 @@ pub fn plan_document_batches<K: Clone>(
     let (batches, skips) = plan_order(rendered, budget);
     // Interleave batches (positioned at their first input) and skips by
     // input position so the plan reads in input order.
-    let mut entries: Vec<(usize, PlannedInput<K>)> = Vec::with_capacity(batches.len() + skips.len());
+    let mut entries: Vec<(usize, PlannedInput<K>)> =
+        Vec::with_capacity(batches.len() + skips.len());
     for batch in batches {
         let position = batch[0];
         let mut items = Vec::with_capacity(batch.len());
@@ -658,7 +647,9 @@ impl ProviderGate {
             if let Some(remaining) = Self::suspended_for(&mut st) {
                 withdraw(&mut st, ticket);
                 wake(core, &st);
-                return Err(GateAcquireError::Suspended { cooldown_remaining: remaining });
+                return Err(GateAcquireError::Suspended {
+                    cooldown_remaining: remaining,
+                });
             }
             if let Some(deadline) = deadline {
                 let now = Instant::now();
@@ -751,7 +742,11 @@ impl ProviderGate {
             max_concurrent_per_project: core.limits.max_concurrent_per_project,
             in_flight: st.in_flight,
             waiting: st.queue.len(),
-            per_project_in_flight: st.per_project.iter().map(|(k, v)| (k.clone(), *v)).collect(),
+            per_project_in_flight: st
+                .per_project
+                .iter()
+                .map(|(k, v)| (k.clone(), *v))
+                .collect(),
             suspended_for,
         }
     }
@@ -797,7 +792,11 @@ fn core_scan(core: &GateCore, st: &mut GateState) {
         let project_ok = match core.limits.max_concurrent_per_project {
             None => true,
             Some(cap) => {
-                st.per_project.get(&st.queue[index].project).copied().unwrap_or(0) < cap
+                st.per_project
+                    .get(&st.queue[index].project)
+                    .copied()
+                    .unwrap_or(0)
+                    < cap
             }
         };
         if project_ok {
@@ -1110,10 +1109,7 @@ impl ReceiptLedger {
     }
 
     pub fn retained_count(&self) -> usize {
-        self.inner
-            .lock()
-            .unwrap_or_else(|p| p.into_inner())
-            .len()
+        self.inner.lock().unwrap_or_else(|p| p.into_inner()).len()
     }
 
     /// Snapshot of the retained receipts, oldest first (the raw read
@@ -1180,10 +1176,7 @@ fn fold_receipt(acc: &mut ReceiptAggregate, receipt: &ProviderCallReceipt) {
         }
         None => acc.attempts_with_unknown_reported += 1,
     }
-    if receipt
-        .usage
-        .unknown_duplicate_risk(receipt.attempt)
-    {
+    if receipt.usage.unknown_duplicate_risk(receipt.attempt) {
         acc.unknown_duplicate_risk += 1;
     }
     if receipt.usage.cache_reuse {
@@ -1195,12 +1188,12 @@ fn fold_receipt(acc: &mut ReceiptAggregate, receipt: &ProviderCallReceipt) {
 mod tests {
     use super::*;
     use crate::capability::{DimensionsMode, EncodingFormat};
+    use crate::ports::EmbeddingProvider;
     use crate::providers::fake::{FakeProvider, FakeProviderConfig};
     use crate::providers::openai_compatible::{
-        EmbeddingApiKey, EmbeddingHttpTransport, HttpRequest, HttpResponse,
-        OpenAiCompatibleConfig, OpenAiCompatibleProvider, TransportError,
+        EmbeddingApiKey, EmbeddingHttpTransport, HttpRequest, HttpResponse, OpenAiCompatibleConfig,
+        OpenAiCompatibleProvider, TransportError,
     };
-    use crate::ports::EmbeddingProvider;
     use crate::spec::{DistanceMetric, MAX_INPUT_BYTES};
     use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
     use std::sync::Mutex;
@@ -1305,7 +1298,10 @@ mod tests {
     fn empty_input_is_skipped_explicitly() {
         let b = budget(4, 100, 100);
         let plan = plan_document_batches(
-            &[("empty".to_string(), Vec::new()), ("ok".to_string(), b"x".to_vec())],
+            &[
+                ("empty".to_string(), Vec::new()),
+                ("ok".to_string(), b"x".to_vec()),
+            ],
             &b,
             TOKENIZER,
         )
@@ -1346,11 +1342,9 @@ mod tests {
     #[test]
     fn empty_set_yields_nothing_and_single_item_yields_one_batch() {
         let b = budget(4, 100, 100);
-        assert!(
-            plan_document_batches::<String>(&[], &b, TOKENIZER)
-                .expect("plan")
-                .is_empty()
-        );
+        assert!(plan_document_batches::<String>(&[], &b, TOKENIZER)
+            .expect("plan")
+            .is_empty());
 
         let single = vec![("only".to_string(), b"payload".to_vec())];
         let plan = plan_document_batches(&single, &b, TOKENIZER).expect("plan");
@@ -1404,7 +1398,12 @@ mod tests {
         // 4+3+4 = 11 bytes / 3 tokens fits; 4 more bytes would breach both
         // byte (15 > 12) and token (4 > 5? no: 3+1=4 ≤ 5 — byte bound closes
         // the batch) — either way every emitted batch is legal.
-        assert_eq!(plan.iter().filter(|e| matches!(e, PlannedInput::Batch(_))).count(), 2);
+        assert_eq!(
+            plan.iter()
+                .filter(|e| matches!(e, PlannedInput::Batch(_)))
+                .count(),
+            2
+        );
     }
 
     #[test]
@@ -1454,11 +1453,14 @@ mod tests {
                     input.verify().expect("digest binding");
                     assert_eq!(
                         input.input_digest.as_str(),
-                        crate::spec::input_bytes_digest(&input.bytes).expect("digest").as_str()
+                        crate::spec::input_bytes_digest(&input.bytes)
+                            .expect("digest")
+                            .as_str()
                     );
-                    let expected =
-                        DocumentInput::from_bytes(&inputs.iter().find(|(k, _)| k == key).unwrap().1)
-                            .expect("direct construction");
+                    let expected = DocumentInput::from_bytes(
+                        &inputs.iter().find(|(k, _)| k == key).unwrap().1,
+                    )
+                    .expect("direct construction");
                     assert_eq!(input, &expected);
                 }
             }
@@ -1501,26 +1503,21 @@ mod tests {
                 let input_count = serde_json::from_str::<serde_json::Value>(&body_text)
                     .ok()
                     .and_then(|value| {
-                        value.get("input").and_then(|input| input.as_array()).map(Vec::len)
+                        value
+                            .get("input")
+                            .and_then(|input| input.as_array())
+                            .map(Vec::len)
                     })
                     .unwrap_or(0);
                 let data: Vec<String> = (0..input_count)
-                    .map(|index| {
-                        format!(r#"{{"index":{index},"embedding":[0.5]}}"#)
-                    })
+                    .map(|index| format!(r#"{{"index":{index},"embedding":[0.5]}}"#))
                     .collect();
                 self.bodies.lock().unwrap().push(body_text);
                 Ok(HttpResponse {
                     status: 200,
-                    headers: vec![(
-                        "Content-Type".to_owned(),
-                        "application/json".to_owned(),
-                    )],
-                    body: format!(
-                        r#"{{"model":"fake/model-a","data":[{}]}}"#,
-                        data.join(",")
-                    )
-                    .into_bytes(),
+                    headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
+                    body: format!(r#"{{"model":"fake/model-a","data":[{}]}}"#, data.join(","))
+                        .into_bytes(),
                 })
             }
         }
@@ -1611,8 +1608,14 @@ mod tests {
         let inputs = rendered(&["a"], &[4]);
         let err = plan_document_batches(&inputs, &b, "cl100k_base").expect_err("refused");
         let message = format!("{err}");
-        assert!(message.contains(TOKENIZER), "names the supported estimator: {message}");
-        assert!(message.contains("cl100k_base"), "names the request: {message}");
+        assert!(
+            message.contains(TOKENIZER),
+            "names the supported estimator: {message}"
+        );
+        assert!(
+            message.contains("cl100k_base"),
+            "names the request: {message}"
+        );
         assert!(plan_query_batches(&inputs, &b, "tiktoken").is_err());
     }
 
@@ -1843,7 +1846,8 @@ mod tests {
         }
         // After the permit is released the same caller admits.
         drop(holder.join().expect("holder"));
-        gate.try_acquire_permit("p-b", GENEROUS_WAIT).expect("admitted after release");
+        gate.try_acquire_permit("p-b", GENEROUS_WAIT)
+            .expect("admitted after release");
     }
 
     #[test]
@@ -2009,11 +2013,15 @@ mod tests {
     fn from_provider_config_maps_the_semantic_keys() {
         // Default (disabled / max_concurrent = 0): no gate at all — 限流默认关闭.
         let mut config = SemanticProviderConfig::default();
-        assert!(ProviderGate::from_provider_config(&config).unwrap().is_none());
+        assert!(ProviderGate::from_provider_config(&config)
+            .unwrap()
+            .is_none());
 
         config.enabled = true;
         assert!(
-            ProviderGate::from_provider_config(&config).unwrap().is_none(),
+            ProviderGate::from_provider_config(&config)
+                .unwrap()
+                .is_none(),
             "enabled but max_concurrent=0 still means unlimited"
         );
 
@@ -2230,7 +2238,7 @@ mod tests {
                 UsageReceipt {
                     reported: None,
                     estimated: Some(7),
-                    cache_reuse: false
+                    cache_reuse: false,
                 },
                 1,
                 AttemptOutcome::Succeeded,
@@ -2385,7 +2393,10 @@ mod tests {
         assert_eq!(agg.cache_reuse_hits, 0);
         assert_eq!(agg.per_space.len(), 2);
         assert_eq!(agg.per_space["a"].attempts, 2);
-        assert_eq!(agg.per_space["a"].cost_units, 2 * PROVIDER_ATTEMPT_COST_UNITS);
+        assert_eq!(
+            agg.per_space["a"].cost_units,
+            2 * PROVIDER_ATTEMPT_COST_UNITS
+        );
         assert_eq!(agg.per_space["b"].rejected_by_breaker, 1);
         assert_eq!(agg.per_space["b"].rejected_by_budget, 1);
         assert!(agg.per_space["a"].per_space.is_empty(), "no nested maps");
@@ -2477,10 +2488,7 @@ mod tests {
         let agg = ledger.aggregate(None);
         assert_eq!(agg.cache_reuse_hits, 1);
         assert_eq!(agg.attempts, 1);
-        assert_eq!(
-            agg.cost_units, 0,
-            "a cache hit must add no cost units"
-        );
+        assert_eq!(agg.cost_units, 0, "a cache hit must add no cost units");
         assert_eq!(ledger.total_cost_units(), 0);
     }
 
@@ -2522,7 +2530,10 @@ mod tests {
 
     #[test]
     fn ledger_is_bounded_evicts_oldest_but_keeps_lifetime_totals() {
-        assert!(ReceiptLedger::new(0).is_err(), "0 capacity is a config error");
+        assert!(
+            ReceiptLedger::new(0).is_err(),
+            "0 capacity is a config error"
+        );
         let ledger = ReceiptLedger::new(2).expect("ledger");
         let est = UsageReceipt {
             reported: None,

@@ -17,8 +17,8 @@ use std::sync::{Arc, Mutex};
 use cc_model::CcError;
 use cc_semantic::admission::{InputBudget, OversizeReason};
 use cc_semantic::cache::{
-    encode_queries, namespace_key, ArtifactCache, QueryCacheKey, QueryEncodeOutcome,
-    QueryVector, QueryVectorCache,
+    encode_queries, namespace_key, ArtifactCache, QueryCacheKey, QueryEncodeOutcome, QueryVector,
+    QueryVectorCache,
 };
 use cc_semantic::ports::{DocumentInput, EmbeddingProvider, ProviderError, QueryInput};
 use cc_semantic::providers::fake::{FakeProvider, FakeProviderConfig};
@@ -161,10 +161,7 @@ fn query_cache_key_distinguishes_namespace_spec_and_text() {
     );
     // Different project namespace → different key.
     let other_ns = namespace_key("proj-b").expect("namespace key b");
-    assert_ne!(
-        key,
-        QueryCacheKey::new(&other_ns, &spec, &q1).expect("key")
-    );
+    assert_ne!(key, QueryCacheKey::new(&other_ns, &spec, &q1).expect("key"));
 }
 
 #[test]
@@ -239,13 +236,17 @@ fn query_cache_skips_entries_that_cannot_fit() {
 
     // A single 32-byte entry against a 16-byte budget: never stored, no error.
     let cache = QueryVectorCache::new(4, 16);
-    cache.put(key.clone(), vector(8, 1.0)).expect("put is not an error");
+    cache
+        .put(key.clone(), vector(8, 1.0))
+        .expect("put is not an error");
     assert!(cache.get(&key).is_none());
     assert_eq!(cache.total_payload_bytes(), 0);
 
     // max_entries == 0 disables storing entirely.
     let disabled = QueryVectorCache::new(0, 1_024);
-    disabled.put(key, vector(8, 1.0)).expect("put is not an error");
+    disabled
+        .put(key, vector(8, 1.0))
+        .expect("put is not an error");
     assert!(disabled.get(&key_for(&namespace, &spec, "q")).is_none());
 }
 
@@ -255,11 +256,26 @@ fn query_cache_rejects_invalid_vectors_on_put() {
     let key = key_for(&ns(), &qspec("fake/model-a", None), "q");
 
     let cases = [
-        QueryVector { dimension: 8, data: vec![f32::NAN; 8] },
-        QueryVector { dimension: 8, data: vec![f32::INFINITY, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0] },
-        QueryVector { dimension: 8, data: vec![0.0; 8] },
-        QueryVector { dimension: 8, data: vec![1.0; 4] }, // length mismatch
-        QueryVector { dimension: 0, data: Vec::new() },
+        QueryVector {
+            dimension: 8,
+            data: vec![f32::NAN; 8],
+        },
+        QueryVector {
+            dimension: 8,
+            data: vec![f32::INFINITY, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0],
+        },
+        QueryVector {
+            dimension: 8,
+            data: vec![0.0; 8],
+        },
+        QueryVector {
+            dimension: 8,
+            data: vec![1.0; 4],
+        }, // length mismatch
+        QueryVector {
+            dimension: 0,
+            data: Vec::new(),
+        },
     ];
     for bad in cases {
         assert!(cache.put(key.clone(), bad).is_err(), "bad vector accepted");
@@ -309,9 +325,15 @@ fn encode_queries_returns_vectors_in_input_order_across_batches() {
         ("q3".to_string(), b"gamma query".to_vec()),
     ];
 
-    let outcomes =
-        encode_queries(&provider, &cache, &namespace, &spec, &budget(2, 4_096), &queries)
-            .expect("encode");
+    let outcomes = encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &budget(2, 4_096),
+        &queries,
+    )
+    .expect("encode");
     assert_eq!(outcomes.len(), 3);
     for (index, outcome) in outcomes.iter().enumerate() {
         let (key, v) = encoded(outcome.clone());
@@ -335,15 +357,27 @@ fn encode_queries_second_pass_hits_cache_without_provider_contact() {
         ("q2".to_string(), b"another question".to_vec()),
     ];
 
-    let first =
-        encode_queries(&provider, &cache, &namespace, &spec, &budget(8, 4_096), &queries)
-            .expect("first encode");
+    let first = encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &budget(8, 4_096),
+        &queries,
+    )
+    .expect("first encode");
     let calls_after_first = provider.call_count();
     assert_eq!(calls_after_first, 1); // one planned batch
 
-    let second =
-        encode_queries(&provider, &cache, &namespace, &spec, &budget(8, 4_096), &queries)
-            .expect("second encode");
+    let second = encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &budget(8, 4_096),
+        &queries,
+    )
+    .expect("second encode");
     assert_eq!(provider.call_count(), calls_after_first); // zero new calls
     for (first, second) in first.iter().zip(&second) {
         assert_eq!(encoded(first.clone()).1, encoded(second.clone()).1);
@@ -360,12 +394,11 @@ fn encode_queries_never_reuses_vectors_across_specs_or_spaces() {
     let queries = vec![("q".to_string(), b"one stable question".to_vec())];
     let b = budget(8, 4_096);
 
-    let base = encode_queries(&provider_a, &cache, &namespace, &spec_a, &b, &queries)
-        .expect("encode a");
+    let base =
+        encode_queries(&provider_a, &cache, &namespace, &spec_a, &b, &queries).expect("encode a");
     assert_eq!(provider_a.call_count(), 1);
     // Same spec, same text → cache hit, no provider contact.
-    encode_queries(&provider_a, &cache, &namespace, &spec_a, &b, &queries)
-        .expect("encode a again");
+    encode_queries(&provider_a, &cache, &namespace, &spec_a, &b, &queries).expect("encode a again");
     assert_eq!(provider_a.call_count(), 1);
 
     // Instruction change → new spec digest → re-encode.
@@ -377,8 +410,8 @@ fn encode_queries_never_reuses_vectors_across_specs_or_spaces() {
     // Different space (same dimension, different model) → re-encode on the
     // other provider: cross-space reuse is unreachable.
     let spec_b = qspec("fake/model-b", None);
-    let across = encode_queries(&provider_b, &cache, &namespace, &spec_b, &b, &queries)
-        .expect("encode b");
+    let across =
+        encode_queries(&provider_b, &cache, &namespace, &spec_b, &b, &queries).expect("encode b");
     assert_eq!(provider_b.call_count(), 1);
     assert_ne!(
         encoded(base.into_iter().next().expect("outcome")).1.data,
@@ -398,8 +431,15 @@ fn encode_queries_rebatches_only_misses_inside_one_planned_batch() {
     let fresh = ("fresh".to_string(), b"fresh question".to_vec());
 
     // First pass: both miss → one planned batch of two provider inputs.
-    encode_queries(&provider, &cache, &namespace, &spec, &b, &[warm.clone(), cold.clone()])
-        .expect("first pass");
+    encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &b,
+        &[warm.clone(), cold.clone()],
+    )
+    .expect("first pass");
     // Second pass: `warm` and `cold` hit, only `fresh` (1 input) reaches the
     // provider — inside the same single planned batch of three.
     let outcomes = encode_queries(
@@ -427,8 +467,15 @@ fn encode_queries_skips_oversized_queries_and_never_sends_them() {
         ("big".to_string(), vec![b'x'; 100]),
     ];
 
-    let outcomes = encode_queries(&provider, &cache, &namespace, &spec, &budget(4, 16), &queries)
-        .expect("encode");
+    let outcomes = encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &budget(4, 16),
+        &queries,
+    )
+    .expect("encode");
     assert_eq!(outcomes.len(), 2);
     match &outcomes[1] {
         QueryEncodeOutcome::Skipped { key, reason } => {
@@ -451,11 +498,21 @@ fn encode_queries_rejects_invalid_vectors_and_caches_nothing() {
     let namespace = ns();
     let queries = vec![("q".to_string(), b"poisoned question".to_vec())];
 
-    let err = encode_queries(&provider, &cache, &namespace, &spec, &budget(8, 4_096), &queries)
-        .expect_err("poisoned batch must fail");
+    let err = encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &budget(8, 4_096),
+        &queries,
+    )
+    .expect_err("poisoned batch must fail");
     assert!(cache.is_empty(), "an invalid vector reached the cache");
     assert_eq!(provider.query_batch_sizes(), vec![1]);
-    assert!(!err.to_string().is_empty(), "error carries a diagnostic: {err}");
+    assert!(
+        !err.to_string().is_empty(),
+        "error carries a diagnostic: {err}"
+    );
 }
 
 #[test]
@@ -487,7 +544,10 @@ fn encode_queries_maps_provider_failures_and_caches_nothing() {
         .expect_err("timeout must fail the call");
     assert!(matches!(err, CcError::QueryTimedOut), "got: {err}");
 
-    assert!(cache.is_empty(), "a failed batch left something in the cache");
+    assert!(
+        cache.is_empty(),
+        "a failed batch left something in the cache"
+    );
 }
 
 #[test]
@@ -511,13 +571,23 @@ fn encode_queries_leaks_no_query_text_anywhere() {
     )
     .expect_err("must fail");
     let rendered = format!("{err:?} {err}");
-    assert!(!rendered.contains(MARKER), "query text leaked into the error");
+    assert!(
+        !rendered.contains(MARKER),
+        "query text leaked into the error"
+    );
 
     // Success leg: keys, outcomes and cache state carry no text.
     let provider = FakeProvider::new(FakeProviderConfig::new(space("fake/model-a", 8)));
     let cache = QueryVectorCache::new(64, 65_536);
-    let outcomes = encode_queries(&provider, &cache, &namespace, &spec, &budget(8, 4_096), &queries)
-        .expect("encode");
+    let outcomes = encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &spec,
+        &budget(8, 4_096),
+        &queries,
+    )
+    .expect("encode");
     let outcome = outcomes.first().expect("one outcome").clone();
     let (key, _) = encoded(outcome.clone());
     let rendered = format!("{outcome:?} {key:?} {cache:?}");
@@ -531,8 +601,8 @@ fn encode_queries_empty_input_is_a_provider_free_no_op() {
     let spec = qspec("fake/model-a", None);
 
     let empty: Vec<(String, Vec<u8>)> = Vec::new();
-    let outcomes = encode_queries(&provider, &cache, &ns(), &spec, &budget(8, 4_096), &empty)
-        .expect("encode");
+    let outcomes =
+        encode_queries(&provider, &cache, &ns(), &spec, &budget(8, 4_096), &empty).expect("encode");
     assert!(outcomes.is_empty());
     assert_eq!(provider.query_batch_sizes(), Vec::<usize>::new());
 }
@@ -572,9 +642,20 @@ fn query_path_never_touches_the_document_cache() {
     let cache = QueryVectorCache::new(64, 65_536);
     let query_spec = qspec("fake/model-a", None);
     let queries = vec![("q".to_string(), b"a query".to_vec())];
-    encode_queries(&provider, &cache, &namespace, &query_spec, &budget(8, 4_096), &queries)
-        .expect("encode");
-    assert_eq!(count_files(&root), files_before, "the query path wrote to the artifact cache");
+    encode_queries(
+        &provider,
+        &cache,
+        &namespace,
+        &query_spec,
+        &budget(8, 4_096),
+        &queries,
+    )
+    .expect("encode");
+    assert_eq!(
+        count_files(&root),
+        files_before,
+        "the query path wrote to the artifact cache"
+    );
     // The document object still reads Hit.
     let read = artifact
         .get(

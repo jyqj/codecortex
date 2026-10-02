@@ -80,9 +80,7 @@ use serde::Serialize;
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::IndexDb;
-use crate::semantic_outbox::{
-    self, ClaimedTask, OutboxUpsert, OutboxWriteStats, OutboxState,
-};
+use crate::semantic_outbox::{self, ClaimedTask, OutboxState, OutboxUpsert, OutboxWriteStats};
 use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Metadata key carrying the append-only switch event log.
@@ -187,11 +185,16 @@ fn timestamp_text(now_unix: f64) -> CcResult<String> {
     let nanos = ((now_unix - secs as f64) * 1e9).round() as u32;
     chrono::DateTime::from_timestamp(secs, nanos)
         .map(|dt| dt.to_rfc3339())
-        .ok_or_else(|| CcError::InvalidParams("semantic space switch timestamp out of range".into()))
+        .ok_or_else(|| {
+            CcError::InvalidParams("semantic space switch timestamp out of range".into())
+        })
 }
 
 /// Read one space's current state (+`activated_at`), or `None` when unknown.
-pub fn space_state_on(conn: &Connection, space_id: &str) -> CcResult<Option<(SpaceState, Option<String>)>> {
+pub fn space_state_on(
+    conn: &Connection,
+    space_id: &str,
+) -> CcResult<Option<(SpaceState, Option<String>)>> {
     let raw = conn
         .query_row(
             "SELECT state, activated_at FROM semantic_spaces WHERE space_id=?1",
@@ -335,7 +338,9 @@ pub fn switch_active_space_on(
 
     if let Some(old_space_id) = &previous_active {
         let revoked = conn
-            .prepare_cached("UPDATE semantic_spaces SET state='revoked' WHERE space_id=?1 AND state='active'")
+            .prepare_cached(
+                "UPDATE semantic_spaces SET state='revoked' WHERE space_id=?1 AND state='active'",
+            )
             .map_err(db_err)?
             .execute([old_space_id])
             .map_err(db_err)?;
@@ -543,8 +548,7 @@ impl IndexDb {
         let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("BEGIN IMMEDIATE;")
             .map_err(|e| CcError::Database(format!("begin backfill enqueue: {e}")))?;
-        let outcome =
-            enqueue_backfill_on(&conn, space_id, upserts, semantic_outbox::now_unix());
+        let outcome = enqueue_backfill_on(&conn, space_id, upserts, semantic_outbox::now_unix());
         let outcome = match outcome {
             Ok(stats) => {
                 if stats.changed_semantic_state() {
@@ -584,8 +588,12 @@ impl IndexDb {
         let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("BEGIN IMMEDIATE;")
             .map_err(|e| CcError::Database(format!("begin space switch: {e}")))?;
-        let outcome =
-            switch_active_space_on(&conn, new_space_id, trigger_revision, semantic_outbox::now_unix());
+        let outcome = switch_active_space_on(
+            &conn,
+            new_space_id,
+            trigger_revision,
+            semantic_outbox::now_unix(),
+        );
         let outcome = match outcome {
             Ok(stats) => {
                 if stats.visible_set_switched {

@@ -333,8 +333,12 @@ mod tests {
         // when it fits under it.
         use crate::query_policy::QueryPolicy;
         use cc_model::search::SearchRequest;
-        let policy = QueryPolicy::resolve(&cc_model::query::QueryConfig::default(), &SearchRequest::default(), false)
-            .unwrap();
+        let policy = QueryPolicy::resolve(
+            &cc_model::query::QueryConfig::default(),
+            &SearchRequest::default(),
+            false,
+        )
+        .unwrap();
         assert_eq!(policy.semantic_timeout_ms, 5_000);
         let parent = QueryControl::new(Duration::from_millis(100)).unwrap();
         let clamped = semantic_child_budget(&parent, &policy);
@@ -347,7 +351,9 @@ mod tests {
         let share = semantic_child_budget(&long_parent, &policy);
         assert!(share.deadline() < long_parent.deadline());
         assert_eq!(
-            share.deadline().duration_since(share.deadline() - Duration::from_secs(5)),
+            share
+                .deadline()
+                .duration_since(share.deadline() - Duration::from_secs(5)),
             Duration::from_secs(5),
             "the configured share applies in full when it fits under the parent"
         );

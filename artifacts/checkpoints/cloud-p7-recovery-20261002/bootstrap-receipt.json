@@ -1,0 +1,139 @@
+{
+  "run_id": "cloud-p7-recovery-20261002-bootstrap",
+  "baseline_sha": "d6462c163abe6ca92d2ae0a2cf967b1ad2433e22",
+  "branch": "codex/cloud-p7-recovery-integration",
+  "toolchain": "rustc 1.95.0",
+  "already_composed_sources": [
+    {
+      "source_sha": "16c8a0dda0240349e303cda5eb0a2c46809d6017",
+      "ancestor": false,
+      "files": [
+        "Cargo.lock",
+        "Cargo.toml"
+      ],
+      "exact_file_diff_bytes": 0,
+      "exact_file_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_sha": "402872cc172c85217649f9827234df2eaa9d1516",
+      "ancestor": false,
+      "files": [
+        "crates/cc-model/src/config.rs"
+      ],
+      "exact_file_diff_bytes": 0,
+      "exact_file_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_sha": "293b253ff83f352f856d21418979181c066a19fe",
+      "ancestor": false,
+      "files": [
+        "crates/cc-eval/tests/p5b_execution.rs"
+      ],
+      "exact_file_diff_bytes": 0,
+      "exact_file_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_sha": "1cc418e12d8cc21780acb449735fad35ae9ce077",
+      "ancestor": false,
+      "files": [
+        "crates/cc-eval/tests/p5e_priority_pressure.rs"
+      ],
+      "exact_file_diff_bytes": 0,
+      "exact_file_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source_sha": "2e38989eee8c7fb5c9feccdeb634612fb4c74c38",
+      "ancestor": false,
+      "files": [
+        "crates/cc-eval/tests/p7_partial_budget.rs"
+      ],
+      "exact_file_diff_bytes": 0,
+      "exact_file_diff_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "factory_source_sha": "9ea2b0ba09a0e9842c43bf36c5344bfd2a4b870b",
+  "factory_tests": {
+    "passed": 8,
+    "failed": 0,
+    "ignored": 0
+  },
+  "format_baseline_files": [
+    "/workspace/codecortex/crates/cc-db/src/lib.rs",
+    "/workspace/codecortex/crates/cc-db/src/semantic_manifest_reads.rs",
+    "/workspace/codecortex/crates/cc-db/src/semantic_recovery.rs",
+    "/workspace/codecortex/crates/cc-db/src/semantic_space_switch.rs",
+    "/workspace/codecortex/crates/cc-db/tests/semantic_queue.rs",
+    "/workspace/codecortex/crates/cc-db/tests/semantic_recovery.rs",
+    "/workspace/codecortex/crates/cc-db/tests/semantic_space_switch.rs",
+    "/workspace/codecortex/crates/cc-eval/src/benchmark/ablation.rs",
+    "/workspace/codecortex/crates/cc-eval/src/benchmark/ablation_tests.rs",
+    "/workspace/codecortex/crates/cc-index/src/documents/render.rs",
+    "/workspace/codecortex/crates/cc-model/src/config.rs",
+    "/workspace/codecortex/crates/cc-model/src/context.rs",
+    "/workspace/codecortex/crates/cc-search/src/engine.rs",
+    "/workspace/codecortex/crates/cc-search/src/engine_cache.rs",
+    "/workspace/codecortex/crates/cc-search/src/execution.rs",
+    "/workspace/codecortex/crates/cc-search/src/fusion.rs",
+    "/workspace/codecortex/crates/cc-search/src/lanes.rs",
+    "/workspace/codecortex/crates/cc-search/src/lanes/semantic_adapter.rs",
+    "/workspace/codecortex/crates/cc-search/src/lib.rs",
+    "/workspace/codecortex/crates/cc-search/src/semantic_hydrate_guard.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/admission.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/cache.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/capability.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/policy.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/ports.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/providers/fake.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/providers/openai_compatible.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/space_switch.rs",
+    "/workspace/codecortex/crates/cc-semantic/src/spec.rs",
+    "/workspace/codecortex/crates/cc-semantic/tests/artifact_cache.rs",
+    "/workspace/codecortex/crates/cc-semantic/tests/manifest_exact_integration.rs",
+    "/workspace/codecortex/crates/cc-semantic/tests/query_cache.rs",
+    "/workspace/codecortex/crates/cc-semantic/tests/queue_worker.rs",
+    "/workspace/codecortex/crates/cc-semantic/tests/retry_worker_layering.rs",
+    "/workspace/codecortex/crates/cc-semantic/tests/space_switch.rs",
+    "/workspace/codecortex/crates/cc-server/src/handlers/context.rs",
+    "/workspace/codecortex/crates/cc-server/src/handlers/freshness.rs",
+    "/workspace/codecortex/crates/cc-server/src/query_handle.rs",
+    "/workspace/codecortex/crates/cc-server/src/service_factory.rs"
+  ],
+  "commands": [
+    {
+      "command": "cargo fmt --all -- --check (initial baseline)",
+      "exit_code": 1,
+      "local_log": "/tmp/p7-recovery-format-check.log",
+      "sha256": "eff4ba287a45cdebf0cf073325679b51b9917bae0e24777fceed49fc2442390c",
+      "bytes": 183508
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "local_log": "/tmp/p7-recovery-format-after.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "command": "cargo test -p cc-server --features semantic --lib semantic_provider_factory --locked",
+      "exit_code": 0,
+      "local_log": "/tmp/p7-recovery-factory.log",
+      "sha256": "d065527c22a25319d4db9976a18cc0e065c539e68c7273c6b5cc32d986613785",
+      "bytes": 2210
+    },
+    {
+      "command": "cargo clippy --workspace --all-targets --features cc-server/semantic --locked -- -D warnings",
+      "exit_code": 101,
+      "local_log": "/tmp/p7-recovery-clippy.log",
+      "sha256": "41413ce3299c3bfc70febde1e18301d83087811ee240e2b6b07184f156e8babb",
+      "bytes": 1894
+    }
+  ],
+  "scope": "bootstrap and formatting only; formal V05/V16/V11/V19 matrix owned separately; P7-014 remains in_progress",
+  "pending": [
+    "recover and review unpublished worker patch",
+    "production transport assembly/scheduling",
+    "wired-state stdio lifecycle",
+    "strict clippy rerun after unchanged boolean assertion simplification"
+  ],
+  "security": "D1/D2 retained; no live provider or source egress; raw format log retained locally, not uploaded"
+}

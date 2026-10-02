@@ -281,7 +281,12 @@ impl ArtifactCache {
             (Err(e), _) | (_, Err(e)) => return Err(e.into()),
         };
 
-        let corrupt = |reason: String| CacheRead::Corrupt(CorruptReport { path: bin_path.clone(), reason });
+        let corrupt = |reason: String| {
+            CacheRead::Corrupt(CorruptReport {
+                path: bin_path.clone(),
+                reason,
+            })
+        };
 
         let meta: ObjectMeta = match serde_json::from_slice(&meta_raw) {
             Ok(meta) => meta,
@@ -379,10 +384,7 @@ impl ArtifactCache {
 
         let dir = self.object_dir(&space_digest, input, spec);
         std::fs::create_dir_all(&dir)?;
-        atomic_write(
-            &dir.join(format!("{}.bin", spec.as_str())),
-            &payload,
-        )?;
+        atomic_write(&dir.join(format!("{}.bin", spec.as_str())), &payload)?;
         atomic_write(
             &dir.join(format!("{}.meta.json", spec.as_str())),
             &serde_json::to_vec(&meta)?,
@@ -414,7 +416,12 @@ impl ArtifactCache {
         Ok(removed)
     }
 
-    fn object_dir(&self, space: &SpaceDigest, input: &InputDigest, spec: &DocSpecDigest) -> PathBuf {
+    fn object_dir(
+        &self,
+        space: &SpaceDigest,
+        input: &InputDigest,
+        spec: &DocSpecDigest,
+    ) -> PathBuf {
         self.root
             .join(format!("{NAMESPACE_DIR_PREFIX}{}", self.namespace))
             .join(space.as_str())
@@ -705,10 +712,7 @@ impl QueryVectorCache {
 #[derive(Debug, Clone, PartialEq)]
 pub enum QueryEncodeOutcome<K> {
     /// Encoded (from the cache or freshly) and cached under the Q5 key.
-    Encoded {
-        key: K,
-        vector: QueryVector,
-    },
+    Encoded { key: K, vector: QueryVector },
     /// Refused by admission before any provider contact; explicit, never
     /// silent (query-path dual of the document-path skip ledger).
     Skipped { key: K, reason: OversizeReason },

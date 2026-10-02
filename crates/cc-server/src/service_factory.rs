@@ -79,14 +79,18 @@ mod provider_gate {
     /// later callers (and the default path) share the same instance.
     pub fn semantic_circuit_breaker() -> Arc<CircuitBreaker> {
         breaker_slot()
-            .get_or_init(|| Arc::new(CircuitBreaker::new(BreakerLimits::validated(
-                cc_model::config::SemanticProviderConfig::default()
-                    .breaker_failure_threshold,
-                std::time::Duration::from_millis(
-                    cc_model::config::SemanticProviderConfig::default().breaker_open_ms,
-                ),
-            )
-            .expect("default breaker limits are valid"))))
+            .get_or_init(|| {
+                Arc::new(CircuitBreaker::new(
+                    BreakerLimits::validated(
+                        cc_model::config::SemanticProviderConfig::default()
+                            .breaker_failure_threshold,
+                        std::time::Duration::from_millis(
+                            cc_model::config::SemanticProviderConfig::default().breaker_open_ms,
+                        ),
+                    )
+                    .expect("default breaker limits are valid"),
+                ))
+            })
             .clone()
     }
 
@@ -250,7 +254,11 @@ mod provider_gate_tests {
         let second = semantic_circuit_breaker();
         assert!(Arc::ptr_eq(&first, &second));
         let initialized = init_semantic_circuit_breaker(
-            cc_semantic::providers::openai_compatible::BreakerLimits::validated(3, std::time::Duration::from_millis(1_000)).unwrap(),
+            cc_semantic::providers::openai_compatible::BreakerLimits::validated(
+                3,
+                std::time::Duration::from_millis(1_000),
+            )
+            .unwrap(),
         );
         assert!(
             Arc::ptr_eq(&initialized, &semantic_circuit_breaker()),

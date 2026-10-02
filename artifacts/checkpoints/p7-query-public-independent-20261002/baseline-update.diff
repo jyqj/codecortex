@@ -1,0 +1,60 @@
+diff --git a/crates/cc-server/src/semantic_runtime.rs b/crates/cc-server/src/semantic_runtime.rs
+index 9d48108..0029391 100644
+--- a/crates/cc-server/src/semantic_runtime.rs
++++ b/crates/cc-server/src/semantic_runtime.rs
+@@ -779,7 +779,22 @@ mod tests {
+             coverage.eligible > 64,
+             "fixture must cross backfill page boundary"
+         );
+-        assert_eq!(coverage.uncovered, 0);
++        let errors = worker
++            .db
++            .read_conn()
++            .unwrap()
++            .query_row(
++                "SELECT COALESCE(group_concat(DISTINCT last_error),'none') FROM semantic_outbox",
++                [],
++                |row| row.get::<_, String>(0),
++            )
++            .unwrap();
++        assert_eq!(
++            coverage.uncovered,
++            0,
++            "coverage={coverage:?}; errors={errors}; worker={:?}",
++            worker.status.failure_reason()
++        );
+         assert_eq!(coverage.failed, 0);
+         assert_eq!(worker.db.reads().semantic_outbox_pending().unwrap(), 0);
+         let calls = provider.call_count();
+diff --git a/crates/cc-server/src/semantic_wiring.rs b/crates/cc-server/src/semantic_wiring.rs
+index bbd7eaf..9e5b4c5 100644
+--- a/crates/cc-server/src/semantic_wiring.rs
++++ b/crates/cc-server/src/semantic_wiring.rs
+@@ -742,7 +742,7 @@ impl ExactRecallService {
+         pool: cc_search::execution::ExecutionPool,
+     ) -> CcResult<LaneOutcome> {
+         control.check()?;
+-        if !request.scope.is_empty() && (self.health)().is_none() {
++        if !request.scope.is_empty() {
+             let runtime = self
+                 .query_encoder
+                 .read()
+@@ -759,10 +759,17 @@ impl ExactRecallService {
+                 let has_documents = cc_search::execution::until(
+                     &control,
+                     pool.run_cpu(admission, move || {
+-                        probe.scope_has_documents(&scope, &inside)
++                        let health = (probe.health)();
++                        inside.check()?;
++                        let exists = probe.scope_has_documents(&scope, &inside)?;
++                        Ok((exists, health))
+                     }),
+                 )
+                 .await??;
++                let (has_documents, health) = has_documents;
++                if let Some(reason) = health {
++                    return Ok(self.unavailable(reason, std::time::Instant::now()));
++                }
+                 if !has_documents {
+                     return Ok(LaneOutcome {
+                         schema_version: LANE_OUTCOME_SCHEMA_VERSION,

@@ -706,6 +706,7 @@ pub struct ExactRecallService {
 }
 
 impl ExactRecallService {
+    #[cfg(feature = "semantic-http")]
     pub(crate) fn install_query_encoder(
         &self,
         runtime: std::sync::Weak<crate::semantic_runtime::SemanticRuntime>,
@@ -741,7 +742,7 @@ impl ExactRecallService {
         pool: cc_search::execution::ExecutionPool,
     ) -> CcResult<LaneOutcome> {
         control.check()?;
-        if !request.scope.is_empty() && (self.health)().is_none() {
+        if !request.scope.is_empty() {
             let runtime = self
                 .query_encoder
                 .read()
@@ -758,10 +759,17 @@ impl ExactRecallService {
                 let has_documents = cc_search::execution::until(
                     &control,
                     pool.run_cpu(admission, move || {
-                        probe.scope_has_documents(&scope, &inside)
+                        let health = (probe.health)();
+                        inside.check()?;
+                        let exists = probe.scope_has_documents(&scope, &inside)?;
+                        Ok((exists, health))
                     }),
                 )
                 .await??;
+                let (has_documents, health) = has_documents;
+                if let Some(reason) = health {
+                    return Ok(self.unavailable(reason, std::time::Instant::now()));
+                }
                 if !has_documents {
                     return Ok(LaneOutcome {
                         schema_version: LANE_OUTCOME_SCHEMA_VERSION,

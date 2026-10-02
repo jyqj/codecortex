@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "baseline": "00e8c6d667198b1c0a1eb2b4a8fd69ca3fd71c4b",
+  "changed_manifest": "crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json",
+  "scope": "one source digest refresh plus dedicated audit/regression evidence; no production/query/gold/scoring/CI/config/tasks/TODO change",
+  "cause": "intentional source-only changes to two of nine admitted files since old validated snapshot; exact same 14-query bytes",
+  "old_source_lock_blake3": "47ac4cea726aee72f3ab0a70b53437fc24208786c125059fb0c1c97df8e4af23",
+  "new_source_lock_blake3": "285d30ed8dcbe7ff0420f95e77cced816bff30846a3b5a923a5f9d1a43379136",
+  "old_queries_lock_blake3": "51fc027399b46214a6fd1689482594f7bf9ffdf0f1db4b21d14ed607a648959b",
+  "new_queries_lock_blake3": "51fc027399b46214a6fd1689482594f7bf9ffdf0f1db4b21d14ed607a648959b",
+  "old_manifest_sha256": "9a847943b392008579f407d059d96158f2014cdaea6b14e9a45841f5c94895a4",
+  "new_manifest_sha256": "bf1bab44e59b20f69467d9246ed00e774f1c20f49cf1043b7a5bb7d9af82f6f2",
+  "old_queries_sha256": "728e17bfa3061d627fbd77cdb668a38728532dd1bbfb433d1de36bf0225649a1",
+  "new_queries_sha256": "728e17bfa3061d627fbd77cdb668a38728532dd1bbfb433d1de36bf0225649a1",
+  "official_authoring_command": "target/debug/cc-eval freeze --suite crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json",
+  "old_snapshot_validation": "Reconstructed all 9 files from 0a56a257 plus unchanged query bytes in /tmp; original source/query locks validate successfully without freeze",
+  "ci_failures_confirmed": [
+    {
+      "pr": 35,
+      "run": 37073361153,
+      "job": 111057677876,
+      "step": 28,
+      "error": "source or query content lock drift",
+      "other_suites_passed": 5
+    },
+    {
+      "pr": 34,
+      "run": 37072792551,
+      "job": 111055892729,
+      "step": 28,
+      "error": "source or query content lock drift",
+      "other_suites_passed": 5
+    }
+  ],
+  "checks": [
+    {
+      "check": "validate-before",
+      "exit_code": 2,
+      "log": "validate-before.log",
+      "sha256": "3b93d10d226de53ae702ab9e9cadee14d70a11a5caf0a73bd7c24024137122c4"
+    },
+    {
+      "check": "validate-after",
+      "exit_code": 0,
+      "log": "validate-after.log",
+      "sha256": "4300eb2b60689f5bb08d7719f993b8cba9698fe137844ba8161257cf544ab568"
+    },
+    {
+      "check": "benchmark-lock-negative-unit",
+      "exit_code": 0,
+      "log": "benchmark-lock-negative-unit.log",
+      "sha256": "1bfd8d4edaab1d047f9a0645eafa1a6f84bb694648fd0580bb01461e211ccf40"
+    },
+    {
+      "check": "task-ledger-read-only",
+      "exit_code": 0,
+      "log": "task-ledger-read-only.log",
+      "sha256": "94888709e4d37a0065011e8bbb01091d11e114875d2854d23f84a037363aba67"
+    },
+    {
+      "check": "old-snapshot-validates-original-locks",
+      "exit_code": 0,
+      "log": "old-snapshot-validation.log",
+      "sha256": "71474869ad6056bf4c677ea054b6714a50a801448330fb1dfbca2da37d1079ac"
+    }
+  ],
+  "six_suite_counts": [
+    11,
+    14,
+    8,
+    18,
+    1,
+    2
+  ],
+  "negative_unit_tests": {
+    "passed": 10,
+    "failed": 0,
+    "ignored": 0
+  },
+  "isolated_real_corpus_lock_negatives": {
+    "source_byte_drift": 2,
+    "query_text_drift": 2,
+    "gold_answer_drift": 2,
+    "old_source_lock": 2,
+    "invalid_queries_lock": 2,
+    "valid_copy": 0,
+    "validator_mutated_inputs": false
+  },
+  "remaining_limits": [
+    "R09 legacy function-name gold debt predates the old locked checkpoint; source-audit documents it, query/gold not silently rewritten",
+    "No retrieval quality/performance rerun or overall CI-green claim",
+    "P7-014 remains in_progress; query encoding module PR36 frozen and unchanged"
+  ],
+  "rollback": "Revert this manifest/audit-only commit; original digest retained here."
+}

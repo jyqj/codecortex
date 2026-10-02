@@ -122,6 +122,10 @@ pub(crate) fn snapshot(
     // a failed read keeps the conservative unverified wording.
     if attached && wired.is_some() {
         apply_semantic_wired(&mut result, db);
+        #[cfg(feature = "semantic")]
+        if let Some(wired_info) = wired.as_ref() {
+            apply_configured_space_state(&mut result, db, wired_info);
+        }
         if let Some(reason) = services
             .semantic_worker()
             .and_then(|state| state.failure_reason())
@@ -132,6 +136,24 @@ pub(crate) fn snapshot(
     }
     apply_semantic_degradation(&mut result, services, attached);
     result
+}
+
+#[cfg(feature = "semantic")]
+fn apply_configured_space_state(
+    result: &mut Value,
+    db: &IndexDb,
+    wired: &crate::service_factory::SemanticWiredInfo,
+) {
+    let expected = cc_semantic::types::VectorSpace::new(&wired.model_id, wired.dimensions)
+        .and_then(|space| space.digest());
+    if let (Ok(expected), Ok(Some(active))) = (expected, db.semantic_active_space()) {
+        if active != expected.as_str() {
+            result["retrieval"]["semantic_state"] = json!("backfilling");
+            result["retrieval"]["dense_state"] = json!("partial");
+            result["retrieval"]["dense_reason"] = json!("semantic_configured_space_pending");
+            result["retrieval"]["dense_published"] = json!(0);
+        }
+    }
 }
 
 /// The wired-port state projection (P7-014). `semantic_state`:
@@ -402,5 +424,35 @@ mod tests {
             live.close();
             assert_eq!(view(&config)["network_authorized"], false);
         }
+    }
+    #[cfg(feature = "semantic")]
+    #[test]
+    fn old_active_space_cannot_report_configured_new_model_ready() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&dir.path().join("space-status.db"))
+            .unwrap()
+            .0;
+        let old = cc_semantic::types::VectorSpace::new("synthetic/old", 2)
+            .unwrap()
+            .digest()
+            .unwrap();
+        db.register_semantic_space(old.as_str(), "{}").unwrap();
+        db.switch_semantic_active_space(old.as_str(), "old-config")
+            .unwrap();
+        let mut result = json!({"retrieval":{"semantic_state":"ready","dense_state":"ready","dense_published":3}});
+        apply_configured_space_state(
+            &mut result,
+            &db,
+            &crate::service_factory::SemanticWiredInfo {
+                model_id: "synthetic/new".into(),
+                dimensions: 2,
+            },
+        );
+        assert_eq!(result["retrieval"]["semantic_state"], "backfilling");
+        assert_eq!(
+            result["retrieval"]["dense_reason"],
+            "semantic_configured_space_pending"
+        );
+        assert_eq!(result["retrieval"]["dense_published"], 0);
     }
 }

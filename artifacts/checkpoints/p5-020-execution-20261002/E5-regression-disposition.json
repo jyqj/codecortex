@@ -1,0 +1,77 @@
+{
+  "evidence": "E5_full_regression_disposition",
+  "command_set": "PLAYBOOK 3.3 step 5 (= p5d final-v3 validation.json argv verbatim), SDKROOT=MacOSX15.4.sdk",
+  "logs": "artifacts/benchmarks/p5e-g5-freeze-20261002/regression/ (validation.json + per-command .log)",
+  "attempt_note": "attempt 1 (pre lint-fix) discarded before any receipt consumed: stable-clippy rc=101 unused_mut in round's own test code -> fixed (engine_cache.rs:529 mut removed, cfg(test), semantics unchanged), source re-frozen as rev2, full set re-run on frozen rev2 source; attempt-1 logs deleted to keep logs==frozen-source binding",
+  "results_frozen_rev2": {
+    "stable-clippy": {
+      "exit_code": 0,
+      "seconds": 9.881
+    },
+    "stable-workspace": {
+      "exit_code": 101,
+      "passed": 1839,
+      "failed": 1,
+      "ignored": 60,
+      "seconds": 495.229
+    },
+    "stable-http": {
+      "exit_code": 101,
+      "passed": 35,
+      "failed": 1,
+      "ignored": 5,
+      "seconds": 48.389
+    },
+    "1950-clippy": {
+      "exit_code": 0,
+      "seconds": 53.221
+    },
+    "1950-workspace": {
+      "exit_code": 101,
+      "passed": 1839,
+      "failed": 1,
+      "ignored": 60,
+      "seconds": 557.622
+    },
+    "1950-http": {
+      "exit_code": 101,
+      "passed": 35,
+      "failed": 1,
+      "ignored": 5,
+      "seconds": 50.358
+    },
+    "release-cost": {
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0,
+      "ignored": 0,
+      "seconds": 127.507
+    }
+  },
+  "failed_test_identification": {
+    "test": "cc-eval lib::tests::benchmark_fixture (perf-threshold gate: all tools warm p95 < 500ms; 'index' tool single-case)",
+    "measured_failures": [
+      "549.15ms (stable-workspace)",
+      "553.83ms / 645.36ms / 665.21ms / 581.13ms (isolated reruns)"
+    ],
+    "both_toolchains_same_single_test": true
+  },
+  "causal_control_experiment": {
+    "method": "detached-HEAD worktree 0de7c890 (NO round delta) at /tmp, fresh CARGO_TARGET_DIR, same test command, removed after experiment",
+    "result_1": "FAILED on HEAD (same test)",
+    "result_2": "PASSED on HEAD minutes later",
+    "conclusion": "failure reproduces on the no-delta baseline source; passes and failures interleave on BOTH sources under identical ambient conditions -> environment-sensitive threshold flake, NOT caused by the round delta (c4 fix touches query-path fence/freshness/handler only; index write path and cc-db untouched)"
+  },
+  "ambient_context": "loadavg 7.6-12.0 throughout the day (RoxyBrowser/Warp/WindowServer chronic CPU per c16 covariates); historical index warm p95 = 74.97ms recorded 2026-07-11 on quiet machine; formal-v4 workspace (1823/0) passed 2026-10-01",
+  "disposition": "classified as environment-load-sensitive flake of a perf-threshold assertion; threshold and assertion NOT touched; full-regression failure counts retained verbatim (failed=1 per workspace/http suite); GATE acceptance[old_functionality_regression] records this explicitly instead of claiming unqualified all-green; escalation to independent audit round for verdict",
+  "fixed_source_isolated_samples": {
+    "pass": 2,
+    "fail": 4,
+    "note": "runs 1-6 interleaved at load 7.6-12.0"
+  },
+  "redlines": {
+    "no_threshold_relaxed": true,
+    "no_test_skipped": true,
+    "logs_retained_verbatim": true
+  }
+}

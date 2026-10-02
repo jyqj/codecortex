@@ -55,6 +55,47 @@ pub struct SearchBudgetExplain {
     pub units: String,
 }
 
+/// Per-lane coverage explanation projected verbatim from a versioned lane
+/// receipt (`cc_model::retrieval::LaneOutcome`, P7-012 partial-coverage
+/// semantics). The receipt is the single source of truth: this projection
+/// never folds `Partial`, `Timeout`, `Unavailable`, or `Error` into a
+/// complete story and never drops a `truncation_reason`, so "executed, zero
+/// candidates" (`Complete` + `candidate_count == 0`) and "did not finish"
+/// (`Timeout`/`Unavailable` + reason) stay distinguishable downstream.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct LaneCoverageExplain {
+    pub lane_id: String,
+    pub status: crate::retrieval::LaneStatus,
+    pub candidate_count: usize,
+    pub truncation_reason: Option<String>,
+    pub coverage: crate::retrieval::LaneCoverage,
+}
+
+impl LaneCoverageExplain {
+    /// Project one receipt verbatim; all eight `LaneStatus` values pass
+    /// through unmodified, none is collapsed into another.
+    pub fn from_lane_outcome(outcome: &crate::retrieval::LaneOutcome) -> Self {
+        Self {
+            lane_id: outcome.lane_id.clone(),
+            status: outcome.status,
+            candidate_count: outcome.candidate_count,
+            truncation_reason: outcome.truncation_reason.clone(),
+            coverage: outcome.coverage.clone(),
+        }
+    }
+
+    /// The dense lane's receipt, if this query carried one at all. `None`
+    /// means the query had no semantic lane (local strategy or unwired
+    /// port): nothing may then be claimed about semantic coverage, and the
+    /// fused result rests on the local lanes alone.
+    pub fn semantic_from_outcomes(outcomes: &[crate::retrieval::LaneOutcome]) -> Option<Self> {
+        outcomes
+            .iter()
+            .find(|outcome| outcome.lane_id == "semantic")
+            .map(Self::from_lane_outcome)
+    }
+}
+
 /// Context node type — the kind of code-index evidence in a context envelope.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
@@ -260,6 +301,27 @@ pub struct ContextEnvelope {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::retrieval::{
+        LaneCoverage, LaneOutcome, LaneStatus, LANE_OUTCOME_SCHEMA_VERSION,
+    };
+
+    fn receipt(lane_id: &str, status: LaneStatus, reason: Option<&str>, count: usize) -> LaneOutcome {
+        LaneOutcome {
+            schema_version: LANE_OUTCOME_SCHEMA_VERSION,
+            lane_id: lane_id.into(),
+            weight: 1.0,
+            status,
+            elapsed_us: 0,
+            candidate_count: count,
+            coverage: match status {
+                LaneStatus::Complete => LaneCoverage::complete(None, count),
+                LaneStatus::Partial => LaneCoverage::partial(None, count),
+                _ => LaneCoverage::not_run(),
+            },
+            truncation_reason: reason.map(Into::into),
+            candidates: Vec::new(),
+        }
+    }
 
     #[test]
     fn node_type_serde_round_trip() {
@@ -307,5 +369,63 @@ mod tests {
             "one two three four".into(),
         );
         assert!(node.token_estimate > 0);
+    }
+
+    #[test]
+    fn coverage_explain_projects_the_receipt_verbatim() {
+        let ran_empty = receipt("semantic", LaneStatus::Complete, None, 0);
+        let ran_empty = LaneCoverageExplain::from_lane_outcome(&ran_empty);
+        assert_eq!(ran_empty.status, LaneStatus::Complete);
+        assert_eq!(ran_empty.truncation_reason, None);
+        assert_eq!(ran_empty.candidate_count, 0);
+        assert!(ran_empty.coverage.complete);
+
+        let timed_out = receipt("semantic", LaneStatus::Timeout, Some("semantic_deadline"), 0);
+        let timed_out = LaneCoverageExplain::from_lane_outcome(&timed_out);
+        assert_eq!(timed_out.status, LaneStatus::Timeout);
+        assert_eq!(timed_out.truncation_reason.as_deref(), Some("semantic_deadline"));
+        assert_eq!(timed_out.candidate_count, 0);
+        assert!(!timed_out.coverage.complete);
+
+        let partial = receipt(
+            "semantic",
+            LaneStatus::Partial,
+            Some("semantic_coverage_uncovered"),
+            3,
+        );
+        let partial = LaneCoverageExplain::from_lane_outcome(&partial);
+        assert_eq!(partial.status, LaneStatus::Partial);
+        assert_eq!(
+            partial.truncation_reason.as_deref(),
+            Some("semantic_coverage_uncovered")
+        );
+        assert_eq!(partial.candidate_count, 3);
+        assert!(!partial.coverage.complete);
+
+        let disabled = LaneOutcome::disabled("semantic", 1.0);
+        let disabled = LaneCoverageExplain::from_lane_outcome(&disabled);
+        assert_eq!(disabled.status, LaneStatus::Disabled);
+        assert_eq!(disabled.truncation_reason, None);
+        assert!(!disabled.coverage.complete);
+    }
+
+    #[test]
+    fn semantic_explain_is_absent_exactly_when_no_semantic_lane_ran() {
+        let lanes = vec![receipt("lexical", LaneStatus::Complete, None, 1)];
+        let mut with_semantic = lanes.clone();
+        with_semantic.push(receipt(
+            "semantic",
+            LaneStatus::Partial,
+            Some("semantic_coverage_uncovered"),
+            0,
+        ));
+        let projected = LaneCoverageExplain::semantic_from_outcomes(&with_semantic).unwrap();
+        assert_eq!(projected.lane_id, "semantic");
+        assert_eq!(
+            projected.truncation_reason.as_deref(),
+            Some("semantic_coverage_uncovered")
+        );
+        // A purely local query carries no semantic claim at all.
+        assert!(LaneCoverageExplain::semantic_from_outcomes(&lanes).is_none());
     }
 }

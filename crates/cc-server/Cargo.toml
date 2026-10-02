@@ -29,6 +29,13 @@ notify.workspace = true
 regex.workspace = true
 chrono.workspace = true
 lru.workspace = true
+# Optional semantic persistence seam (P6-002). Declared but unwired by
+# default: the `semantic` feature is enabled explicitly; the default build
+# neither compiles cc-semantic into cc-server nor creates any cache path.
+cc-semantic = { path = "../cc-semantic", optional = true }
+
+[features]
+semantic = ["dep:cc-semantic"]
 
 [dev-dependencies]
 rmcp = { workspace = true, features = ["client", "transport-child-process"] }

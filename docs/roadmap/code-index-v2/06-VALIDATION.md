@@ -2,9 +2,11 @@
 
 > Vxx 为验证包，不代表所有未来场景已认证。
 
-118 done / 1 in_progress / 73 todo，P5 为 18/20；P5-016～018 已验收，P5-019 正在实施通用查询质量修复与独立消融。P5-D 整批与 G5/M2 尚未完成。最新见 [P5-D-RUNTIME-IMPLEMENTATION.md](P5-D-RUNTIME-IMPLEMENTATION.md) 与 [P5-D-RUNTIME-GATE.json](P5-D-RUNTIME-GATE.json)。
+120 done / 0 in_progress / 72 todo，P5 为 20/20；P5 全部任务已验收（P5-019 转 done 时 c4/c16 均为 blocked-with-evidence，两并发点对比证据不存在；P5-020 本地增强版验收收口）。G5=`passed_declared_local_scope`、M2=`passed_local_scope`，均为本地口径、未认证、非发行认证。最新见 [P5-D-RUNTIME-IMPLEMENTATION.md](P5-D-RUNTIME-IMPLEMENTATION.md)、[P5-GATE.json](P5-GATE.json) 与 [P5-D-RUNTIME-GATE.json](P5-D-RUNTIME-GATE.json)。
 
-冻结 623 文件、6675050 字节，摘要 `44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0`；38 条命令收据、源码归档、日志和不可变二进制一致。证据目录 `artifacts/benchmarks/p5d-20260930-resume/final-v3`。固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败；原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致。
+当前冻结（source-v6，冻结锚点 F0，P5-020 轮）：629 文件、6815216 字节，摘要 `d1f5a7af5ff9b0d025b6dd8dc475c110f178735d757d22e3546ba8470b45a167`，head `0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6`，冻结 binary sha256 `5f935adc5264b707a61e5ce6d02f1cc0efb9c4a24297db319e8db91953a7ecc9`；F-1 断言全量重放 623 条回对 head MATCH + 6 条声明 worktree patch + 0 stale。证据目录 `artifacts/benchmarks/p5e-candidate-release-20261002-v6` 与 `artifacts/benchmarks/p5e-g5-freeze-20261002`；GATE 见 [P5-GATE.json](P5-GATE.json)。semantic 仅显示 disabled/not_configured，零网络零 key。原 source/intent Partial 和 S11 仍失败，完整检索 gate 保持 not_passed。两个可选 retrieval_strategy 字段以外，14 工具的旧输入属性和必填项保持一致（additive 零漂移）。
+
+上一轮冻结（P5-D 轮，历史值）：623 文件、6675050 字节，摘要 `44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0`；38 条命令收据、源码归档、日志和不可变二进制一致。证据目录 `artifacts/benchmarks/p5d-20260930-resume/final-v3`。固定 51 题/306 请求无排序负差分、无效源码或新增完整性失败。
 
 stable：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored；1.95.0：workspace 1786 passed/60 ignored, http 270 passed/53 ignored, focused 82 passed/3 ignored, real-mcp 25 passed/0 ignored, watcher 17 passed/0 ignored。各组失败 0，忽略项不计通过，重叠组不相加为唯一测试总数。
 

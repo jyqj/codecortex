@@ -14,6 +14,12 @@ use rusqlite::Connection;
 pub const INDEX_EPOCH_KEY: &str = "index_epoch";
 /// Metadata key for the runtime-evidence epoch counter.
 pub const EVIDENCE_EPOCH_KEY: &str = "evidence_epoch";
+/// Metadata key for the semantic visible-set epoch counter (P6-004).
+///
+/// Strict-read contract: an absent key reads as `None`
+/// (`ReadGeneration::semantic_epoch`), meaning "semantic publication not
+/// ready" — it must never be folded into `0`.
+pub const SEMANTIC_EPOCH_KEY: &str = "semantic_epoch";
 
 /// Monotonic epoch vector persisted in the metadata KV table.
 ///

@@ -1,0 +1,230 @@
+{
+  "binary": "/Users/jin/Desktop/codecortex-rust/artifacts/benchmarks/p5e-baseline-release-20261001/binaries/codecortex",
+  "steps": {
+    "initialize": {
+      "ok": true,
+      "server_info": {
+        "name": "codecortex",
+        "version": "1.0.0"
+      }
+    },
+    "tools/list": {
+      "count": 14,
+      "names": [
+        "adr",
+        "architecture",
+        "context",
+        "explore",
+        "files",
+        "graph_query",
+        "impact",
+        "index",
+        "ingest_traces",
+        "node",
+        "relations",
+        "search",
+        "status",
+        "trace"
+      ],
+      "contracts": {
+        "adr": {
+          "required": [],
+          "properties": [
+            "action",
+            "adr_id",
+            "context",
+            "decision",
+            "project_path",
+            "status",
+            "title"
+          ]
+        },
+        "architecture": {
+          "required": [],
+          "properties": [
+            "aspect",
+            "filter",
+            "limit",
+            "project_path"
+          ]
+        },
+        "context": {
+          "required": [
+            "task"
+          ],
+          "properties": [
+            "include_source",
+            "intent",
+            "max_symbols",
+            "project_path",
+            "retrieval_strategy",
+            "task"
+          ]
+        },
+        "explore": {
+          "required": [
+            "symbols"
+          ],
+          "properties": [
+            "exact",
+            "file_path",
+            "include_source",
+            "max_callees",
+            "max_callers",
+            "max_candidates",
+            "max_depth",
+            "max_paths",
+            "max_source_per_file",
+            "mode",
+            "outline",
+            "project_path",
+            "symbols"
+          ]
+        },
+        "files": {
+          "required": [],
+          "properties": [
+            "action",
+            "context_lines",
+            "end_line",
+            "path",
+            "project_path",
+            "start_line"
+          ]
+        },
+        "graph_query": {
+          "required": [
+            "query"
+          ],
+          "properties": [
+            "project_path",
+            "query"
+          ]
+        },
+        "impact": {
+          "required": [],
+          "properties": [
+            "base_branch",
+            "confidence_threshold",
+            "file_path",
+            "files",
+            "granularity",
+            "limit",
+            "max_nodes",
+            "max_per_layer",
+            "project_path",
+            "scope"
+          ]
+        },
+        "index": {
+          "required": [
+            "path"
+          ],
+          "properties": [
+            "changed_paths",
+            "full",
+            "path",
+            "removed_paths"
+          ]
+        },
+        "ingest_traces": {
+          "required": [
+            "traces"
+          ],
+          "properties": [
+            "project_path",
+            "traces"
+          ]
+        },
+        "node": {
+          "required": [
+            "symbol"
+          ],
+          "properties": [
+            "include",
+            "project_path",
+            "symbol"
+          ]
+        },
+        "relations": {
+          "required": [
+            "symbol"
+          ],
+          "properties": [
+            "direction",
+            "kind",
+            "limit",
+            "project_path",
+            "symbol"
+          ]
+        },
+        "search": {
+          "required": [
+            "query"
+          ],
+          "properties": [
+            "boost_files",
+            "conversation_queries",
+            "exact",
+            "file_preselect_limit",
+            "intent",
+            "mode",
+            "overlay_files",
+            "path_prefix",
+            "pinned_files",
+            "project_path",
+            "query",
+            "recent_files",
+            "retrieval_strategy",
+            "top_k"
+          ]
+        },
+        "status": {
+          "required": [],
+          "properties": [
+            "aspect",
+            "project_path"
+          ]
+        },
+        "trace": {
+          "required": [
+            "from",
+            "to"
+          ],
+          "properties": [
+            "from",
+            "from_uid",
+            "include_source",
+            "max_depth",
+            "max_snippet_lines",
+            "project_path",
+            "source_mode",
+            "to",
+            "to_uid"
+          ]
+        }
+      }
+    },
+    "capabilities": {
+      "is_error": false,
+      "semantic_state": "not_configured",
+      "dense_state": "disabled",
+      "dense_reason": "provider_and_vector_publication_not_implemented",
+      "structured_head": "{\"result\": {\"capabilities\": {\"graph\": true, \"impact\": true, \"search\": true}, \"has_index\": true, \"has_project\": true, \"indexed_files\": 2, \"indexed_symbols\": 1, \"resolution_freshness\": {\"basis_epoch\": null, \"complete\": true, \"completed_files\": 0, \"index_epoch\": 6, \"reason\": null, \"retry\": null, \"root_count\": 0, \"scope\": \"observed_resolution_invalidations\", \"status\": \"ready\"}, \"retrieval\": {\"default_"
+    },
+    "protocol_error_unknown_tool": {
+      "has_error": true,
+      "code": -32602
+    },
+    "status_call": {
+      "is_error": false,
+      "has_structured": true
+    },
+    "search_call": {
+      "is_error": true,
+      "has_structured": false,
+      "error_content_head": "[{\"type\": \"text\", \"text\": \"failed to deserialize parameters: unknown field `limit`, expected one of `query`, `retrieval_strategy`, `mode`, `top_k`, `intent`, `exact`, `boost_files`, `recent_files`, `pinned_files`, `conversation_queries`, `overlay_files`, `file_preselect_limit`, `path_prefix`, `proje"
+    }
+  },
+  "server_stderr_tail": "O\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m Service initialized as server \u001b[3mpeer_info\u001b[0m\u001b[2m=\u001b[0mSome(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion(\"2024-11-05\"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: \"p5-020-v18-probe\", title: None, version: \"1\", description: None, icons: None, website_url: None } })\n\u001b[2m2026-10-02T04:10:45.924016Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::mcp\u001b[0m\u001b[2m:\u001b[0m MCP server started on stdio\n\u001b[2m2026-10-02T04:10:45.924093Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m received notification \u001b[3mnotification\u001b[0m\u001b[2m=\u001b[0mInitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })\n\u001b[2m2026-10-02T04:10:45.924107Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::handler::server\u001b[0m\u001b[2m:\u001b[0m client initialized\n\u001b[2m2026-10-02T04:10:45.924285Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::watcher\u001b[0m\u001b[2m:\u001b[0m watcher: counted project files for adaptive debounce \u001b[3mfile_count\u001b[0m\u001b[2m=\u001b[0m2\n\u001b[2m2026-10-02T04:10:45.924289Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::watcher\u001b[0m\u001b[2m:\u001b[0m watcher: adaptive debounce interval computed \u001b[3mdebounce_ms\u001b[0m\u001b[2m=\u001b[0m500\n\u001b[2m2026-10-02T04:10:45.924746Z\u001b[0m \u001b[33m WARN\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m response error \u001b[3mid\u001b[0m\u001b[2m=\u001b[0m4 \u001b[3merror\u001b[0m\u001b[2m=\u001b[0mErrorData { code: ErrorCode(-32602), message: \"tool not found\", data: None }\n\u001b[2m2026-10-02T04:10:45.925625Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m input stream terminated\n\u001b[2m2026-10-02T04:10:45.925631Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m serve finished \u001b[3mquit_reason\u001b[0m\u001b[2m=\u001b[0mClosed\n\u001b[2m2026-10-02T04:10:45.925680Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::mcp\u001b[0m\u001b[2m:\u001b[0m MCP server shut down gracefully\n"
+}

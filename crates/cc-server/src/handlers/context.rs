@@ -26,6 +26,34 @@ pub fn search_in_context_with(
     Ok(serde_json::to_value(env)?)
 }
 
+/// Single exit for async search responses after the query's own optimistic
+/// fence accepted the envelope: attach the dispatch-seam freshness projection
+/// (with accepted-generation refinement) and apply the output budget.
+///
+/// There is deliberately no fence-external generation hard-check here. After
+/// fence acceptance the envelope is single-generation self-consistent; a
+/// generation change inside the serialization window is a freshness fact the
+/// projection above annotates explicitly (`changed_during_query`, or the
+/// accepted-generation observation when the fence recovered onto the new
+/// generation) — it is not a single-attempt retryable error. The retained
+/// contract (`cc_model` error.rs: never return or cache mixed-generation
+/// results) is untouched.
+pub(crate) fn finalize_search_response(
+    db: &cc_db::index_db::IndexDb,
+    before: Option<cc_model::freshness::ResolutionFreshness>,
+    value: serde_json::Value,
+    max_bytes: usize,
+) -> CcResult<serde_json::Value> {
+    let accepted = super::freshness::accepted_generation_of(&value);
+    let value = super::freshness::attach_observed(
+        before,
+        db.reads().resolution_freshness()?,
+        accepted,
+        value,
+    )?;
+    cc_search::selection::budget::pack_value(value, max_bytes)
+}
+
 pub async fn search_async(
     runtime: SharedCodeIndex,
     query: String,
@@ -46,14 +74,7 @@ pub async fn search_async(
         .pool
         .run_cpu(control.clone(), move || {
             let value = serde_json::to_value(envelope)?;
-            let value = super::freshness::attach_observed(
-                Some(before),
-                db.reads().resolution_freshness()?,
-                value,
-            )?;
-            let value = cc_search::selection::budget::pack_value(value, max_bytes)?;
-            cc_search::evidence_hydrator::validate_envelope_generation(&db, &value)?;
-            Ok(value)
+            finalize_search_response(&db, Some(before), value, max_bytes)
         })
         .await?;
     control.check()?;
@@ -84,9 +105,11 @@ pub async fn symbol_search_async(
             let value =
                 rt.graph()
                     .find_symbol_in_scope(&query, exact, top_k, path_prefix.as_deref())?;
+            let accepted = super::freshness::accepted_generation_of(&value);
             super::freshness::attach_observed(
                 Some(before),
                 db.reads().resolution_freshness()?,
+                accepted,
                 value,
             )
         })
@@ -172,9 +195,11 @@ pub async fn context_async_with_strategy(
                     details, max_chars,
                 ))
             })?;
+            let accepted = super::freshness::accepted_generation_of(&result);
             let result = super::freshness::attach_observed(
                 Some(before),
                 db.reads().resolution_freshness()?,
+                accepted,
                 result,
             )?;
             let result = if result
@@ -186,7 +211,9 @@ pub async fn context_async_with_strategy(
             } else {
                 super::output_budget::enforce_output_limit(result, max_chars)
             };
-            cc_search::evidence_hydrator::validate_envelope_generation(&db, &result)?;
+            // Same P0 contract as finalize_search_response: no fence-external
+            // single-shot generation hard-check after acceptance — the
+            // freshness projection above owns the annotation.
             Ok(result)
         })
         .await?;
@@ -342,4 +369,89 @@ pub fn expand_code_region(
         "source_freshness": source_freshness,
         "source_rendering": "line-normalized",
     }))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::sync::{Arc, RwLock};
+
+    /// Build an indexed project and return its shared handle plus db.
+    fn indexed_db() -> (tempfile::TempDir, Arc<RwLock<crate::engine::CodeIndex>>, Arc<cc_db::index_db::IndexDb>) {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.rs"), "pub fn a() {}\n").unwrap();
+        let index = Arc::new(RwLock::new(
+            crate::engine::CodeIndex::new(Some(dir.path())).unwrap(),
+        ));
+        index.write().unwrap().build_index(true).unwrap();
+        let db = index.read().unwrap().index_db().unwrap().clone();
+        (dir, index, db)
+    }
+
+    /// Minimal envelope carrying the fence-accepted generation exactly where
+    /// the hydrator embeds it (`evidence_summary/source_freshness/generation`),
+    /// shaped to pass `selection::budget::pack_value`.
+    fn envelope_with_accepted_generation(
+        generation: cc_model::generation::ReadGeneration,
+    ) -> serde_json::Value {
+        serde_json::json!({
+            "token_budget": 4096,
+            "nodes": [],
+            "spans": [],
+            "machine_pack": {"kind": "code_index_context", "hits": []},
+            "evidence_summary": {
+                "source_freshness": {
+                    "generation": serde_json::to_value(generation).unwrap(),
+                },
+            },
+        })
+    }
+
+    // P0: a full rebuild committing inside the serialization window (after the
+    // query's fence accepted the envelope) is a freshness fact to annotate,
+    // not a fence-external single-shot hard error. The response must succeed
+    // and honestly report changed_during_query with complete=false.
+    #[test]
+    fn serialized_window_generation_change_is_annotated_not_a_hard_error() {
+        let (_dir, index, db) = indexed_db();
+        let accepted = db.reads().read_generation().unwrap();
+        let before = cc_model::freshness::ResolutionFreshness::ready(accepted.index_epoch);
+        let value = envelope_with_accepted_generation(accepted);
+        // The commit lands between fence acceptance and response finalization.
+        std::fs::write(_dir.path().join("b.rs"), "pub fn b() {}\n").unwrap();
+        index.write().unwrap().build_index(false).unwrap();
+        let value = finalize_search_response(&db, Some(before), value, 1_000_000).unwrap();
+        assert_eq!(value["resolution_freshness"]["complete"], false);
+        assert_eq!(
+            value["resolution_freshness"]["status"],
+            "changed_during_query"
+        );
+        assert_eq!(
+            value["resolution_freshness"]["reason"],
+            "index_generation_changed_during_query"
+        );
+    }
+
+    // P2: when the outer fence recovered onto the post-change generation, the
+    // result is fresh — it must not be flagged incomplete, and the observed
+    // dispatch-window change must still be recorded explicitly.
+    #[test]
+    fn fence_recovered_result_is_complete_with_observed_change() {
+        let (_dir, _index, db) = indexed_db();
+        let accepted = db.reads().read_generation().unwrap();
+        let before =
+            cc_model::freshness::ResolutionFreshness::ready(accepted.index_epoch.saturating_sub(1));
+        let value = envelope_with_accepted_generation(accepted);
+        let value = finalize_search_response(&db, Some(before), value, 1_000_000).unwrap();
+        assert_eq!(value["resolution_freshness"]["complete"], true);
+        assert_eq!(
+            value["resolution_freshness"]["dispatch_observed_generation_change"]
+                ["from_index_epoch"],
+            accepted.index_epoch.saturating_sub(1)
+        );
+        assert_eq!(
+            value["resolution_freshness"]["dispatch_observed_generation_change"]["to_index_epoch"],
+            accepted.index_epoch
+        );
+    }
 }

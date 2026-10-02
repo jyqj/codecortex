@@ -29,7 +29,8 @@ use crate::engine_cache::{
     GRAPH_RESULT_CACHE_CAPACITY, RESULT_CACHE_CAPACITY,
 };
 use crate::lanes::{
-    default_lanes, fuse_outcomes, materialize_lane_outcomes, run_lanes, LaneContext,
+    default_lanes, fused_candidate_ordering, fuse_outcomes, materialize_lane_outcomes, run_lanes,
+    LaneContext,
 };
 pub use crate::plan::is_project_doc;
 use crate::plan::{CandidateChunk, SearchPlan};
@@ -307,12 +308,9 @@ impl SearchEngine {
         cost.fused_candidates = fused.len();
 
         let mut candidates: Vec<(String, crate::lanes::FusedScore)> = fused.into_iter().collect();
-        candidates.sort_by(|a, b| {
-            b.1.exact_identity
-                .cmp(&a.1.exact_identity)
-                .then_with(|| b.1.total.total_cmp(&a.1.total))
-                .then_with(|| a.0.cmp(&b.0))
-        });
+        // Named fusion contract (`fusion::fused_candidate_ordering`):
+        // exact-identity tier, fused total descending, chunk_id ascending.
+        candidates.sort_by(fused_candidate_ordering);
         candidates.truncate(limits.rerank_window);
         cost.hydrate_requested = candidates.len();
 

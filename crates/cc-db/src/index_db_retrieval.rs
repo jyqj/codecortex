@@ -648,6 +648,34 @@ impl<'a> RetrievalReadModel<'a> {
         rows.collect::<Result<Vec<_>, _>>().map_err(db_err)
     }
 
+    /// doc_key → chunk_id mapping from the document manifest (P7-010
+    /// additive read; the exact vector backend speaks doc_keys while
+    /// [`Self::chunk_candidate_rows_by_ids`] speaks chunk_ids). Batched
+    /// like the sibling methods; doc_keys without a current manifest row
+    /// are simply absent from the result — the caller decides whether that
+    /// is an integrity error.
+    pub fn chunk_ids_by_doc_keys(&self, doc_keys: &[&str]) -> CcResult<Vec<(String, String)>> {
+        let mut results = Vec::with_capacity(doc_keys.len());
+        for batch in doc_keys.chunks(IN_BATCH_SIZE) {
+            let sql = format!(
+                "SELECT doc_key, chunk_id FROM document_manifest \
+                 WHERE doc_key IN ({})",
+                sql_in_placeholders(batch.len()),
+            );
+            let conn = self.db.read_conn()?;
+            let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
+            let rows = stmt
+                .query_map(rusqlite::params_from_iter(batch.iter()), |row| {
+                    Ok((row.get::<_, String>(0)?, row.get::<_, String>(1)?))
+                })
+                .map_err(db_err)?;
+            for row in rows {
+                results.push(row.map_err(db_err)?);
+            }
+        }
+        Ok(results)
+    }
+
     /// Resolve versioned document/source identity for lane candidates without
     /// decoding chunk text. Full record/text validation still happens during
     /// final hydration; malformed mirrors and missing required manifests fail.

@@ -35,7 +35,7 @@ cc-parsers/cc-index），两支在 cc-server 汇合。
 | Crate | 职责 |
 |-------|------|
 | cc-model | 数据类型、配置、错误（serde、thiserror、blake3） |
-| cc-db | SQLite 索引存储：r2d2 池、WAL、FTS5、21 表（+5 FTS5）、schema v6 |
+| cc-db | SQLite 索引存储：r2d2 池、WAL、FTS5、29 基表（+5 FTS5 虚拟表）、schema v22 |
 | cc-parsers | tree-sitter AST 提取 + 框架检测 |
 | cc-index | 文件扫描、增量索引、Louvain 社区检测 |
 | cc-search | 排序式本地检索（FTS5 + grep + 预选/RRF）+ Cypher 子集 |
@@ -46,8 +46,16 @@ cc-parsers/cc-index），两支在 cc-server 汇合。
 
 - **MCP-first，单一目的。** 产品是经 MCP 提供的代码智能——不是 CLI 应用，
   不是 UI。CLI 只为启动服务器和安装 agent 配置而存在。
-- **单一数据库。** 所有状态在 `index.sqlite3`。没有 `runtime.sqlite3`、
-  没有会话存储、没有遥测落盘。
+- **权威状态单一数据库。** 全部权威状态在 `index.sqlite3`：索引内容、
+  incarnation/generation、语义 manifest 可见集合、outbox/lease 队列与
+  active space 指针。没有 `runtime.sqlite3`、没有会话存储、没有遥测落盘。
+  **显式例外（唯一）**：可选语义功能的内容寻址、可丢弃、可校验重建的
+  派生 artifact cache 存于库外本地目录——它是付费换来的派生产物，不是
+  权威状态，不承担源码/manifest 权威、不存秘密、跨项目默认隔离。边界
+  与 durability 顺序的正式决策见
+  [docs/adr/0003-semantic-persistence-single-db-boundary.md](docs/adr/0003-semantic-persistence-single-db-boundary.md)
+  （ADR-0003，限定修订本条；存储侧事实见
+  [docs/internals/STORAGE.md](docs/internals/STORAGE.md)）。
 - **默认确定性、离线。** 一等行为不依赖网络：解析、FTS5、grep、预选、
   Louvain 全部本地。搜索只用词法/排序的本地信号；没有外部模型依赖。
 - **图查询只读。** Cypher 子集（`graph_query`）支持 MATCH / OPTIONAL
@@ -67,4 +75,5 @@ cc-parsers/cc-index），两支在 cc-server 汇合。
 - 不做遥测持久化（不落盘服务器自身的使用统计。`ingest_traces` 摄入的
   运行时证据是**索引内容**——用户主动提交、写入 `runtime_evidence` 表、
   为边做置信度验证——不属于遥测）
-- 没有 `runtime.sqlite3`（只有 `index.sqlite3`）
+- 没有 `runtime.sqlite3`（权威状态只有 `index.sqlite3`；唯一的库外例外是
+  ADR-0003 的派生 artifact cache，它不是第二个权威库，见"设计原则"）

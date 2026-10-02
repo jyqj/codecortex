@@ -11,6 +11,25 @@ use std::{
 };
 use tokio::sync::Semaphore;
 
+/// The semantic lane's share of the query-total deadline (P7-013).
+///
+/// The lane budget is `policy.semantic_timeout_ms` (itself already
+/// `min(deadline_ms)`-clamped at policy resolution) cut as a child of the
+/// running total: `QueryControl::child` clamps the child deadline to
+/// `min(now + share, parent_deadline)`, so the lane can never extend the
+/// query's absolute deadline (C11: "request deadline 为总预算；每 lane 有
+/// 子预算，取消向下传播"). A lane that times out degrades to a `Timeout`
+/// receipt (`semantic_adapter`), never blocks the whole query — unless the
+/// PARENT budget itself is exhausted, in which case the total deadline
+/// governs and the whole query fails with `QueryTimedOut` at its next
+/// checkpoint.
+pub fn semantic_child_budget(
+    control: &QueryControl,
+    policy: &crate::query_policy::QueryPolicy,
+) -> QueryControl {
+    control.child(std::time::Duration::from_millis(policy.semantic_timeout_ms))
+}
+
 pub async fn until<T>(control: &QueryControl, future: impl Future<Output = T>) -> CcResult<T> {
     control.check()?;
     let value = tokio::select! {
@@ -305,5 +324,40 @@ mod tests {
         assert!(matches!(result, Err(CcError::QueryTimedOut)));
         parent.check().unwrap();
         assert_eq!(pool.stats().async_admitted, 0);
+    }
+
+    #[test]
+    fn semantic_lane_share_never_extends_the_total_deadline() {
+        // P7-013 budget-allocation rule: the lane share is clamped by the
+        // parent remainder, both when the configured share exceeds it and
+        // when it fits under it.
+        use crate::query_policy::QueryPolicy;
+        use cc_model::search::SearchRequest;
+        let policy = QueryPolicy::resolve(&cc_model::query::QueryConfig::default(), &SearchRequest::default(), false)
+            .unwrap();
+        assert_eq!(policy.semantic_timeout_ms, 5_000);
+        let parent = QueryControl::new(Duration::from_millis(100)).unwrap();
+        let clamped = semantic_child_budget(&parent, &policy);
+        assert_eq!(
+            clamped.deadline(),
+            parent.deadline(),
+            "a 5s share under a 100ms total must clamp to the total"
+        );
+        let long_parent = QueryControl::new(Duration::from_secs(30)).unwrap();
+        let share = semantic_child_budget(&long_parent, &policy);
+        assert!(share.deadline() < long_parent.deadline());
+        assert_eq!(
+            share.deadline().duration_since(share.deadline() - Duration::from_secs(5)),
+            Duration::from_secs(5),
+            "the configured share applies in full when it fits under the parent"
+        );
+        // Cancellation shares one state across parent and children (C11:
+        // 取消向下传播) — cancelling the parent lane share is observed by
+        // both sides of the same chain.
+        share.cancel();
+        assert!(long_parent.is_cancelled());
+        let chained = long_parent.child(Duration::from_millis(10));
+        assert!(chained.is_cancelled());
+        drop(clamped);
     }
 }

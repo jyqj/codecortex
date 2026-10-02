@@ -138,6 +138,48 @@ watcher 带自适应去抖、突发退避、扫描器对齐的忽略过滤（`cc
   查询）是 [ADR-0001](../adr/0001-cypher-traversal-lazy-bfs-fast-path.md)
   的明确决定。
 
+### 语义钟扩展（P6）：Auxiliary 永不冲刷缓存
+
+P6 在协议上加入第三钟 `semantic_epoch` 与四类 typed write effects
+（`WriteEffect`/`EffectSet`，提交缝 `UnitOfWork::commit_with`，见
+[STORAGE.md](STORAGE.md#epoch-协议三钟与四效应)）。对缓存失效语义的
+直接影响：
+
+- **`Auxiliary` 提交（claim/renew/heartbeat/retry/reclaim 等队列簿记）
+  不推进任何钟**——语义 worker 的重试循环因此不可能冲刷 epoch 键控的
+  检索内容缓存（这是 ADR-0003 边界修订的动机：队列可靠性数据不是检索
+  内容）。
+- **`semantic_epoch` 只在语义状态实际变化时移动**：manifest 可见集合
+  变化（发布 CAS、删除撤销、revoke 消费）或 outbox 期望集合重入队。
+  键缺失（`ReadGeneration::semantic_epoch == None`）= 语义未就绪，
+  绝不折叠为 0——消费方不得把 `None` 当作"第 0 代"参与缓存键比对。
+- 语义诊断读（覆盖率等）在同一池化连接上 before/after 比对完整
+  `ReadGeneration`，不等即重试——与 capability 快照同一模式，杜绝
+  混代计数进入缓存。
+
+### 语义写入的 fencing 并发（P6）
+
+语义队列与发布路径的跨进程并发不靠进程内锁，靠 DB 层 fencing（实现：
+`semantic_outbox.rs`/`semantic_publish.rs`/`semantic_rebuild.rs`，
+事实记录见 [STORAGE.md](STORAGE.md#at-least-once-与-fencing明确不是-exactly-once)）：
+
+- **claim 是单语句 CAS + 每 attempt 随机 token**：两进程竞争同一任务
+  恰一者胜出；renew/ack/retry 只认 token，过期 worker 的迟到结果
+  （renew/ack/retry/publish）全部零写入被拒。
+- **发布五重 fence**：incarnation + lease token + doc_version +
+  input digest + active space，任一不过零写入。慢旧结果挂不到同路径
+  新版本上。
+- **换库（incarnation swap）的幽灵进程防线**：另一进程持旧 inode
+  连接时，其池连接读到的永远是旧 incarnation——进程内 mutex 与
+  fence 1 均不足以覆盖。权威判定改在**权威路径上新开只读连接**读
+  incarnation（`generation_at_path`），publish/claim/recover 在任何
+  事务前即被 `Fenced` 零写入。这与既有"db_identity 永不复用防跨实例
+  串缓存"是同一威胁模型在写侧的对偶。
+- **GC 与发布的共享同步点**：GC 的删除决定基于一次短读快照
+  （`IndexDb::semantic_gc_mark`）+ 新鲜宽限，与发布 CAS 的 IMMEDIATE
+  事务族互斥组合，"刚发布的产物被 GC 删除"不可达（机制详见
+  [STORAGE.md](STORAGE.md#gc-与空间切换)）。
+
 ## 读路径的失败语义
 
 图读路径上的 DB 读失败**不再**静默降级为空结果（旧行为是

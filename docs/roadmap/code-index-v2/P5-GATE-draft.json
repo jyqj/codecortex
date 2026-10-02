@@ -1,0 +1,422 @@
+{
+  "draft": true,
+  "draft_note": "DRAFT produced by P5-020 execution round 2026-10-02; finalization (rename to P5-G5-GATE.json, 06-VALIDATION.md freeze header update, tasks.json evidence backfill, independent audit per PLAYBOOK 4.3) belongs to the closeout/audit round. Do not treat as final gate verdict.",
+  "batch": "P5-E",
+  "gate": "G5",
+  "accepted_tasks": [
+    "P5-019",
+    "P5-020"
+  ],
+  "status": "draft_passed_declared_local_scope",
+  "G5": "draft_passed_declared_local_scope",
+  "M2": "draft_passed_local_scope",
+  "target_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
+  "covered_source_digest_sha256": "d1f5a7af5ff9b0d025b6dd8dc475c110f178735d757d22e3546ba8470b45a167",
+  "covered_files": 629,
+  "config_frozen_head": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6 (CONFIGURATION.md / MCP_TOOLS.md / crates/cc-model/src/config.rs inside closure; default semantic.enabled=false, tiny read pool; zero network zero key)",
+  "input_contract": "14 tools and existing properties preserved; additive fields: retrieval_strategy x2 (already in baseline binary, verified unchanged); live tools/list diff frozen-v6 vs baseline release binary = zero schema drift; freshness observation fields (dispatch_observed_generation_change) are response-payload additive only, not tool-schema changes",
+  "semantic_delivery": "no embedding required; capability_status shows semantic_state=not_configured and dense_state=disabled (provider_and_vector_publication_not_implemented); no ready impersonation; probed on frozen binary over stdio, zero network zero key",
+  "freeze_anchor": "F0",
+  "c4_disposition": "fixed_verified",
+  "toolchain_tests": {
+    "stable": {
+      "clippy": {
+        "exit_code": 0,
+        "seconds": 9.881
+      },
+      "workspace": {
+        "passed": 1839,
+        "failed": 1,
+        "ignored": 60,
+        "exit_code": 101,
+        "seconds": 495.229
+      },
+      "http": {
+        "passed": 35,
+        "failed": 1,
+        "ignored": 5,
+        "exit_code": 101,
+        "seconds": 48.389
+      },
+      "release-cost": {
+        "exit_code": 0,
+        "seconds": 127.507,
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0
+      }
+    },
+    "1.95.0": {
+      "clippy": {
+        "exit_code": 0,
+        "seconds": 53.221
+      },
+      "workspace": {
+        "passed": 1839,
+        "failed": 1,
+        "ignored": 60,
+        "exit_code": 101,
+        "seconds": 557.622
+      },
+      "http": {
+        "passed": 35,
+        "failed": 1,
+        "ignored": 5,
+        "exit_code": 101,
+        "seconds": 50.358
+      }
+    }
+  },
+  "validations": {
+    "V11": {
+      "status": "passed_local_scope_with_c4_fix_verified",
+      "evidence": [
+        "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/MIXED-C4-FIX1-RECEIPT.json (candidate fixed arm census {Success:300, build:30}, 0 hard error, 0 Partial, 330/330 count lock; same-window dual-arm, covariates recorded; census-only criteria)",
+        "artifacts/checkpoints/p5-020-execution-20261002/E2-c4-redgreen-RECEIPT.json (fence backoff bounded + commit-storm recovery, freshness refinement guards: true stale stays changed_during_query; cc-search 281/0, cc-server 249+41+9/0, p1d_concurrency 4/0/1)",
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4/mixed-c1-paired-report.json + mixed-c8-paired-report.json (formal-v4 mechanism-scope reference, v5 closure)",
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/c16-final/same-window/C16-FINAL-RECEIPT.json (c16 terminal receipt, both final arms 0 hard error)"
+      ]
+    },
+    "V12": {
+      "status": "passed_mechanism_scope_reference_plus_v6_fanout",
+      "evidence": [
+        "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/FANOUT-V6-RECEIPT.json (fanout double-side bound to frozen v6 binary; criterion issues=[] zero failed requests)",
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4/facets/ (facet cell_100-111 zero-fail + original51 strict budget; formal-v4 reference, v5 closure 78f83f0f...)",
+        "artifacts/checkpoints/p5-020-execution-20261002/V12-facet-disposition.json (facet 8-cell v6 rebinding NO-GO on cost with zero delta-intersection analysis; audit round may escalate)"
+      ]
+    },
+    "V18": {
+      "status": "passed_local_scope",
+      "evidence": [
+        "artifacts/checkpoints/p5-020-execution-20261002/additive-contract.json (live tools/list: 14 tools identical names and schemas vs baseline release binary; zero drift)",
+        "artifacts/checkpoints/p5-020-execution-20261002/v18-probe-frozen-v6.json (initialize/tools-list/capabilities/protocol-error/valid-search on frozen binary, stdio, zero network zero key)",
+        "artifacts/checkpoints/p5-020-execution-20261002/v18-probe-baseline.json (same probe on baseline binary for parity)",
+        "workspace protocol/real-mcp test groups inside regression logs (artifacts/benchmarks/p5e-g5-freeze-20261002/regression/)"
+      ]
+    },
+    "V19": {
+      "status": "passed_mechanism_scope_with_frozen_source_reference",
+      "evidence": [
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4/ (48 edges + 1224-request 8-cell matrix + 9 witness + original51 baseline strict red retained; 31/31 stage receipts)",
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4-replay/REPLAY-RECEIPT.json (R2 25/25 PASS)",
+        "artifacts/checkpoints/todolist-completion-audit/round07/formal-v4-quality-acceptance.json",
+        "artifacts/checkpoints/p5-020-execution-20261002/E2-c4-redgreen-RECEIPT.json + artifacts/benchmarks/p5e-formal-runs-20261002-fix1/MIXED-C4-FIX1-RECEIPT.json (c4-fix criteria retest strengthens the concurrency surface; V19 main body remains pre-fix source mechanism-scope evidence)"
+      ]
+    },
+    "V20": {
+      "status": "passed_mechanism_scope_plus_frozen_source_concurrency_observations",
+      "evidence": [
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4/mixed-c1-paired-report.json + mixed-c8-paired-report.json (per-lane latency + native resource proof; formal-v4 reference)",
+        "artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/c16-final/same-window/mixed-c16-paired-report.json (same-window c16; final arms 0 hard error; recorded as-is with invalid_workload_comparison status note)",
+        "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/MIXED-C4-FIX1-RECEIPT.json (c4 concurrency point observed on frozen source; census-only, latency not certified)",
+        "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json (lifecycle-cost reference)",
+        "artifacts/benchmarks/p5e-g5-freeze-20261002/regression/validation.json (release-cost command, frozen source)"
+      ]
+    }
+  },
+  "acceptance": {
+    "semantic_disabled_only": {
+      "status": "passed",
+      "evidence": "artifacts/checkpoints/p5-020-execution-20261002/additive-contract.json probes: semantic_state=not_configured, dense_state=disabled, reason=provider_and_vector_publication_not_implemented; default config stdio, no cache files, no endpoint probing, no worker"
+    },
+    "old_functionality_regression": {
+      "status": "passed_dual_toolchain_with_documented_environment_flake",
+      "numbers": {
+        "stable": {
+          "workspace": {
+            "label": "stable-workspace",
+            "exit_code": 101,
+            "seconds": 495.229,
+            "passed": 1839,
+            "failed": 1,
+            "ignored": 60,
+            "result_lines": [
+              "test result: ok. 146 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 13.44s",
+              "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.55s",
+              "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.14s",
+              "test result: FAILED. 35 passed; 1 failed; 5 ignored; 0 measured; 0 filtered out; finished in 11.10s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.05s",
+              "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s",
+              "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.30s",
+              "test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.06s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.92s",
+              "test result: ok. 11 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 5.20s",
+              "test result: ok. 11 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 4.45s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.52s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.25s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.00s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 14.73s",
+              "test result: ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 20.99s",
+              "test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 12.04s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 110.48s",
+              "test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.07s",
+              "test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.63s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.51s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.39s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.55s",
+              "test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.05s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.92s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.96s",
+              "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 7.57s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.14s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.71s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.04s",
+              "test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.85s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.83s",
+              "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.86s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.24s",
+              "test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.36s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.41s",
+              "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.84s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s",
+              "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.85s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s",
+              "test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 377 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 26.17s",
+              "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s",
+              "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.71s",
+              "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s",
+              "test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.26s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+              "test result: ok. 17 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+              "test result: ok. 80 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s",
+              "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.69s",
+              "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 179 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.64s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+              "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s",
+              "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s",
+              "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s",
+              "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s",
+              "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s",
+              "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+              "test result: ok. 281 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 17.68s",
+              "test result: ok. 249 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 38.09s",
+              "test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 13.49s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+            ],
+            "finished_utc": "2026-10-02T04:25:27Z"
+          },
+          "http": {
+            "label": "stable-http",
+            "exit_code": 101,
+            "seconds": 48.389,
+            "passed": 35,
+            "failed": 1,
+            "ignored": 5,
+            "result_lines": [
+              "test result: FAILED. 35 passed; 1 failed; 5 ignored; 0 measured; 0 filtered out; finished in 10.98s"
+            ],
+            "finished_utc": "2026-10-02T04:26:16Z"
+          }
+        },
+        "1.95.0": {
+          "workspace": {
+            "label": "1950-workspace",
+            "exit_code": 101,
+            "seconds": 557.622,
+            "passed": 1839,
+            "failed": 1,
+            "ignored": 60,
+            "result_lines": [
+              "test result: ok. 146 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 15.64s",
+              "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s",
+              "test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.87s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.31s",
+              "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.59s",
+              "test result: FAILED. 35 passed; 1 failed; 5 ignored; 0 measured; 0 filtered out; finished in 10.98s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.11s",
+              "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s",
+              "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 5.31s",
+              "test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.92s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.02s",
+              "test result: ok. 11 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 4.06s",
+              "test result: ok. 11 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 5.10s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.02s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.74s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.44s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.58s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 18.98s",
+              "test result: ok. 13 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 19.77s",
+              "test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 12.52s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 118.47s",
+              "test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 7.53s",
+              "test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 4.68s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.58s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.17s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.07s",
+              "test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.97s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 12 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.79s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.19s",
+              "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.75s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.61s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 5.85s",
+              "test result: ok. 9 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 3.85s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.50s",
+              "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 4.27s",
+              "test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.57s",
+              "test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.42s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.35s",
+              "test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 11.23s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.19s",
+              "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 9.03s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s",
+              "test result: ok. 0 passed; 0 failed; 4 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 377 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 28.31s",
+              "test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.32s",
+              "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.80s",
+              "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s",
+              "test result: ok. 11 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.32s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+              "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s",
+              "test result: ok. 17 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.03s",
+              "test result: ok. 80 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s",
+              "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s",
+              "test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 179 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.63s",
+              "test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s",
+              "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s",
+              "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.17s",
+              "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s",
+              "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s",
+              "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s",
+              "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s",
+              "test result: ok. 281 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 20.58s",
+              "test result: ok. 249 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 39.10s",
+              "test result: ok. 41 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s",
+              "test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 12.41s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.62s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s",
+              "test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s"
+            ],
+            "finished_utc": "2026-10-02T04:36:27Z"
+          },
+          "http": {
+            "label": "1950-http",
+            "exit_code": 101,
+            "seconds": 50.358,
+            "passed": 35,
+            "failed": 1,
+            "ignored": 5,
+            "result_lines": [
+              "test result: FAILED. 35 passed; 1 failed; 5 ignored; 0 measured; 0 filtered out; finished in 11.64s"
+            ],
+            "finished_utc": "2026-10-02T04:37:17Z"
+          }
+        },
+        "clippy_both": "0 warnings (-D warnings) rc=0",
+        "release-cost": {
+          "label": "release-cost",
+          "exit_code": 0,
+          "seconds": 127.507,
+          "passed": 4,
+          "failed": 0,
+          "ignored": 0,
+          "result_lines": [
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.52s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.39s",
+            "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 15.06s"
+          ],
+          "finished_utc": "2026-10-02T04:39:25Z"
+        }
+      },
+      "single_failure_disposition": "the only failing test on both toolchains is cc-eval lib::tests::benchmark_fixture (perf-threshold, index warm p95 549-665ms vs 500ms limit under ambient load 7.6-12); causal control on detached-HEAD 0de7c890 (no round delta) reproduced the same failure and then passed minutes later -> environment-sensitive flake, not round-caused; threshold untouched; see artifacts/checkpoints/p5-020-execution-20261002/E5-regression-disposition.json; final verdict delegated to independent audit round",
+      "known_red_retained": "original source/intent strict Partial and S11 known failures retained as-is, not claimed green; ignored counts listed explicitly and not counted as passes"
+    }
+  },
+  "full_retrieval_gate": "not_passed_known_failures_retained",
+  "artifacts": [
+    "artifacts/benchmarks/p5e-candidate-release-20261002-v6/source-manifest.json",
+    "artifacts/benchmarks/p5e-candidate-release-20261002-v6/BUILD-RECEIPT.json",
+    "artifacts/benchmarks/p5e-candidate-release-20261002-v6/binaries/codecortex",
+    "artifacts/benchmarks/p5e-g5-freeze-20261002/F0-FREEZE-RECEIPT.json",
+    "artifacts/benchmarks/p5e-g5-freeze-20261002/regression/validation.json",
+    "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/MIXED-C4-FIX1-RECEIPT.json",
+    "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/FANOUT-V6-RECEIPT.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/E1-c16-receipt-verification.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/E2-c4-redgreen-RECEIPT.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/additive-contract.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/v18-probe-frozen-v6.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/v18-probe-baseline.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/V12-facet-disposition.json",
+    "artifacts/checkpoints/p5-020-execution-20261002/EXECUTION-PROGRESS.md",
+    "artifacts/checkpoints/c4-race-analysis-20261002/IMPLEMENTATION-20261002.md",
+    "artifacts/benchmarks/p5e-formal-runs-20261001-v4/STAGE-RECEIPTS.json",
+    "artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/c16-final/same-window/C16-FINAL-RECEIPT.json",
+    "artifacts/checkpoints/todolist-completion-audit/round07/formal-v4-quality-acceptance.json"
+  ],
+  "limitations": [
+    "Original source/intent strict Partial and S11 known failures retained as-is; this is NOT a full retrieval quality certification.",
+    "formal-v4 main-body evidence (V19 facets/edges/witness, V20 c1/c8 latency) measured on v5 closure 78f83f0faac3ca7c2816a74847f34947f8be8cd504316df1557390cdb63d1c10; frozen v6 delta = c4 fix + ABI projection, with c4 criteria retest (E3) and fanout rebinding (V12) as the strengthened frozen-source observations; facet 8-cell not rebuilt on v6 (zero delta-intersection, see V12-facet-disposition.json).",
+    "No real provider / holdout / 100k / cross-platform / release certification; G7/G8 out of scope; semantic only shown disabled (no fake availability).",
+    "mixed-c4 retest and fanout re-run executed outside a quiet window (structurally unreachable on this machine; same-window protocol precedent); criteria were census/functional-only and latency is not certified.",
+    "Storm fence test has a known timing-sensitive flake window (assertion-failure direction); one parallel-mode flake observed and recorded in E2; sequential-mode (regression mode) stable."
+  ],
+  "independent_audit": "pending (audit round; expected under artifacts/checkpoints/ per PLAYBOOK 4.3)",
+  "next_phase": "P6 batch 1 (after F0: crates/ zero-change straight to batch-1 first commit; IMPLEMENTATION-ORDER.md:30)"
+}

@@ -1,0 +1,81 @@
+{
+  "round": "round11",
+  "date": "2026-10-02",
+  "scope": "P6 batch 3 closure (落账轮): hand-back 原语落地 + 两处观察项文档声明 + tasks.json status flips + evidence backfill + rederivation",
+  "reviewer": "Claude (GLM agent), instructed closure after batch-3 review PASS",
+  "batch3_review_verdict": {
+    "verdict": "PASS",
+    "note": "批次 3 独立评审已 PASS（总裁决由本轮任务指令给定：『P6 批次 3 收口（评审已 PASS，5 任务可标 done）』，附 2 收口动作 + 2 观察项）；本审计文件为评审后的落账收口记录，不重复评审本体。"
+  },
+  "closure_actions": {
+    "action_2_hand_back_primitive": {
+      "disposition": "本轮落地（评审建议采纳）",
+      "primitive": "cc-db `IndexDb::hand_back_semantic_task(task_id, token, reason)`（crates/cc-db/src/semantic_recovery.rs 新增；不修改任何冻结函数）：fenced claimed→pending 直写，谓词 `WHERE task_id=? AND lease_token=? AND state='claimed'`，rowcount=0 → `Ok(false)` 零写入；成功路径 state='pending'、available_at=now（立即再可 claim）、lease 三列清空、reason 留痕 last_error、attempt_count 不变、Auxiliary 零 bump。",
+      "call_site_switch": "crates/cc-semantic/src/recovery.rs 的 CacheRead::Miss | CacheRead::Corrupt hand-back 路径由消耗 attempt 的 fenced retry（retry_semantic_task）切换至该原语；revisit-guard 与 revoke-op 的 hand-back 保持既有 fenced retry 语义（attempt 记账为有意行为，未触碰）；RecoveryOptions::max_attempts 文档同步注明。",
+      "tdd_evidence_verbatim": [
+        "red: cargo test -p cc-db --test semantic_recovery → error[E0599]: no method named `hand_back_semantic_task` found … could not compile `cc-db` (test \"semantic_recovery\") due to 4 previous errors",
+        "green (原语单测): test hand_back_primitive_fences_and_never_consumes_an_attempt ... ok / test result: ok. 1 passed; 0 failed（断言：stale token 与未知 task_id 拒绝 Ok(false) 且行字节级未变、成功回 pending + lease 清空 + attempt_count=1 不变 + available_at 即时可 claim + last_error 留痕、done 终态 fence 拒绝、三钟全静）",
+        "green (集成测试): test cache_miss_hand_back_spends_no_attempt_budget ... ok / test result: ok. 1 passed; 0 failed（判别性设置 max_attempts=1：旧语义 fenced retry 会按 attempt_count=1>=1 在 hand-back 时折进终态 failed；新语义实测 state=pending、attempt_count=1（仅 recovery claim 计一次）、lease 清空、converged，worker 续跑恰一次付费到 done——预算完整留给 worker）"
+      ],
+      "existing_test_semantics": "无既有测试断言 cache-miss hand-back 消耗 attempt（旧注释 crates/cc-semantic/tests/semantic_recovery.rs options() 曾记载『多轮 recovery 反复重查 miss 任务会经 fenced retry 消耗 attempt 预算』为已知有界风险，已按新语义更新该注释并注明切换）；P6-015 实施记录 §8 裁决点 2 即本动作的移交来源，已闭合。"
+    },
+    "action_1_doc_wording": {
+      "disposition": "本轮不做（任务指令）",
+      "handover": "P6-012 模块文档措辞统一归 P6-019 文档轮；已记入 tasks.json execution_note 批次 3 收口段移交清单。"
+    }
+  },
+  "observation_declarations": {
+    "observation_1": {
+      "file": "crates/cc-db/src/semantic_rebuild.rs",
+      "publish_semantic_fenced_toctou": "TOCTOU 边界声明：fence 读（权威路径 incarnation）与发布事务之间不是原子的——两时刻之间发生的换库 rename 本调用不可见；owner 串行集成模型下可接受，模型外调用方须自行在外层串行化 rebuild 与 publish，不得依赖本 fence 提供跨进程互斥。",
+      "generation_at_path_busy_timeout": "busy_timeout fail-stop 方向行为：该 fresh 只读连接未配置 busy_timeout（SQLite 默认零等待），权威路径并发写锁（如 rebuild staging rename 提交窗口）使读以 SQLITE_BUSY 类错误即时失败上抛——fence 宁可 fail-stop 拒绝本次判定/发布（按可重试错误处理），绝不退化为无权威读的放行。"
+    },
+    "observation_2": {
+      "file": "crates/cc-db/src/semantic_recovery.rs",
+      "desired_set_bounded_invariant": "不变式前提：encoding_key 非空的行必然在 record_json.input.input_hash 内嵌输入摘要（P6-006 写路径口径：可嵌入 ⇒ 渲染成功 ⇒ 摘要存在），本投影不校验；违反后果：缺摘要行与渲染失败行同样被静默跳过，该 doc_key 被排除在期望集之外——重建 reconcile 不为其重入队，形成 desired 集与 coverage 分母间的不可见覆盖缺口，只能由下一轮全量 reconcile 或显式修复动作闭合；写入方 P6-006 是本前提的唯一保证者。"
+    }
+  },
+  "closure_record": {
+    "status_flips": [
+      {"id": "P6-011", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-012", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-013", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-014", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-015", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true}
+    ],
+    "evidence_targets": "evidence[] 各指向 crates/cc-db、crates/cc-semantic 具体改动文件与 artifacts/checkpoints/p6-batch3-20261002/ 对应实施记录；limitations 段均明示命令级证据范围并声明 V13/V14/V17/V18/V20 正式验证矩阵证据归验收轮。",
+    "review_boundaries_carried": {
+      "P6-011": "V14 正式矩阵证据归验收轮；发布 worker 编排归 P6-013；跨实例 ghost fence 归 P6-014（已落地）。",
+      "P6-012": "收口动作①（模块文档措辞统一）移交 P6-019 文档轮；stale 恒 0 守卫面；eligible 50k 基准未做；dense lane 消费归接线轮。",
+      "P6-013": "组合根接线归接线轮；公平化 ORDER BY 注入（偏差 3）与机会性 reclaim 收窄（偏差 7）归接线轮一并评审。",
+      "P6-014": "重入队 bump 口径张力（偏差 5）移交后续裁决；TOCTOU 声明与 busy_timeout 注明已于本轮收口补入；V13/V17 归验收轮。",
+      "P6-015": "V17 真实子进程 SIGKILL 正式化归验收轮（当前为进程内 kill 模拟）；dead_letter/coverage.failed 页帽化（偏差 6）移交；hand-back 原语已落地（收口动作②闭合）。"
+    },
+    "counts_before": {"total": 192, "done": 130, "in_progress": 0, "todo": 62},
+    "counts_after": {"total": 192, "done": 135, "in_progress": 0, "todo": 57},
+    "execution_note": "已追加批次 3 收口段（评审 PASS 引用、收口动作②落地细节、观察项 1/2 声明、移交清单含收口动作①、评审留边界逐条、计数重算、next_task=P6-016）；next_task 由 P6-011 更新为 P6-016；last_implementation_date=2026-10-02"
+  },
+  "rederivation": {
+    "command": "python3 scripts/code_index_plan.py --write",
+    "validation_output_verbatim": "{\"status\": \"passed\", \"task_count\": 192, \"states\": {\"done\": 135, \"todo\": 57}, \"task_sha256\": \"5bad9b1e33630aaca7a864216a5c159a7de955f514113e0b460463b2ae49dc94\"}",
+    "derived_file": "docs/roadmap/code-index-v2/05-TODO.md（--write 重派生）",
+    "expected_match": "预期 192 / 135 done / 57 todo，实测一致"
+  },
+  "verification": {
+    "tests": {
+      "command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk cargo test -p cc-db -p cc-semantic --locked --offline",
+      "result_verbatim": "24 个 `test result: ok` 行，0 failed（cc-db lib 170 passed + 13 suites、cc-semantic 全部 suites 含新增 2 测试）；新增测试按名复跑：hand_back_primitive_fences_and_never_consumes_an_attempt ... ok、cache_miss_hand_back_spends_no_attempt_budget ... ok"
+    },
+    "workspace_check": {
+      "command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk cargo check --workspace --locked --offline",
+      "result_verbatim": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.43s（零 error / 零 warning）"
+    }
+  },
+  "redlines_respected": [
+    "未 git commit",
+    "批次 1/2 冻结交付物未触碰（本轮代码改动仅：cc-db semantic_recovery.rs 新增原语与文档行、cc-semantic recovery.rs cache-miss 路径切换与文档行、cc-db semantic_rebuild.rs 纯文档行、两份测试文件的批次 3 测试/注释；semantic_outbox/semantic_queue/semantic_publish 等冻结函数零改动）",
+    "未改 schema（sql/index_v1.sql 等未触碰）",
+    "未推断任何验收门：V13/V14/V17/V18/V20 正式矩阵证据均明示归验收轮，不因 status=done 而声明",
+    "status 翻转仅限 P6-011/012/013/014/015 五个任务"
+  ]
+}

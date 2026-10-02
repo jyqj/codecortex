@@ -1,0 +1,83 @@
+{
+  "round": "round09",
+  "date": "2026-10-02",
+  "scope": "P6 batch 1 closure: P6-005 independent review + batch status closure",
+  "reviewer": "Claude (GLM agent), read-only review then instructed closure",
+  "inputs": [
+    "artifacts/checkpoints/p6-batch1-20261002/P6-005-IMPLEMENTATION.md",
+    "artifacts/checkpoints/p6-implementation-planning-20261002/TASK-BRIEFS.md (P6-005 brief incl. DDL draft)",
+    "docs/adr/0003-semantic-persistence-single-db-boundary.md (ADR-0003, constraint table row P6-005)"
+  ],
+  "p6_005_review": {
+    "verdict": "PASS",
+    "items": {
+      "a_ddl_consistency": {
+        "result": "PASS",
+        "method": "语句级规范化比对（剥离注释/空白后逐语句 diff）：简报 DDL 草案 9 语句 vs index_v1.sql 尾部块 9 语句，unified diff 为空。新增对象实为 3 表（semantic_manifest / semantic_outbox / semantic_spaces）+ 6 索引（manifest: space/file/artifact；outbox: ready/doc + 部分唯一 live_per_doc；spaces 无索引），逐列核对一致。",
+        "erratum": "实施记录 §2 与本轮任务措辞的『3 表 + 7 索引』为计数笔误：逐个列出仅 6 个索引（3+3），sqlite_master 实测新增对象 9 个（测试 9 对象断言与 DROP 清单一致）；『7 索引』纯文字计数错误，DDL 本体与简报草案逐句一致，不构成缺陷。按红线未改实施记录原文，以本勘误为准。",
+        "note": "sqlite_master 中 name LIKE 'semantic%' 共 10 个 = 本批 9 个新对象 + 既有旧表 semantic_edges（早于 P6-005 存在，非本批产物）；简报任务措辞中 claim-lease/artifact manifest/coverage 非独立表，映射为 outbox 三列 / semantic_manifest.artifact_ref / P6-012 派生统计，与实施记录 §5 偏差 3 一致。"
+      },
+      "b_migration_safety": {
+        "result": "PASS",
+        "idempotency": {
+          "test_coverage": "已覆盖：(1) index_migrate.rs::adjacent_version_migrates_in_place_preserving_rows 同连接二次 migrate_index_db → 第二次 UpToDate、9 对象 sqlite_master 计数恰 1、旧 files 行保留；(2) semantic_schema.rs::v21_file_database_opens_migrated_with_data_intact 真实文件库 IndexDb::open → Migrated{from:21}，drop 后重开 → UpToDate，incarnation/epoch 向量逐字节保留。",
+          "independent_live_test": "补充实测（临时库 /tmp，python3 sqlite3，系统 sqlite3 CLI 无 fts5 不可用）：v21 形态文件库（v22 全 schema DROP 9 个新对象 + user_version=21 + 一行 files 数据）上连续重放 FULL_SCHEMA_SQL 两次 → 两次均无错、本批 9 个新对象全部在场（semantic% 计 10 含既有旧表 semantic_edges）、sqlite_master 无重复对象、旧行保留。user_version 维持 21 属预期（该 PRAGMA 由 Rust 侧设置）。"
+        },
+        "v_lt_21_rebuild_path": "PASS：index_migrate.rs::non_adjacent_versions_keep_rebuild_on_mismatch（stored 1/20 → Mismatch）+ 既有 stored 99 测试；index_db.rs Mismatch 分支（destructive reset → rebuild）diff 零改动。",
+        "schema_status_consumers": "全消费点 grep 核验：crates/cc-db/src/index_db.rs:316-319 三态直通（UpToDate|Initialized|Migrated）；crates/cc-server/src/engine.rs:209 matches!（Migrated → needs_initial_index=false，语义正确：数据保留无需重扫）；cc-index 全部 IndexDb::open 调用丢弃 status 或取 .0，无穷举 match；测试侧均为 matches!/assert_eq。cargo check --workspace --locked --offline exit 0（Finished，零错误）证明无遗漏调用方。"
+      },
+      "c_additive_constant_and_fixture": {
+        "result": "PASS",
+        "constant_doc": "ADDITIVE_MIGRATION_FROM=21 doc（index_migrate.rs:37-42）明确：仅因 v21→v22 delta 纯加法而有效；下个 bump 必须重评；非加法 delta 不得推进该常量。与实施记录 §3 一致。",
+        "fixture_masking_analysis": "fixture 手法（v22 全 schema DROP 三表七索引）不掩盖缺口：git diff 证明 v21→v22 文件级 delta = 头注释 1→2 行 + 尾部追加 9 对象，故 v22-full 减 9 对象 ≡ v21-full 精确形态；另 grep 全文件确认所有 DDL 语句（CREATE TABLE/INDEX/TRIGGER）均带 IF NOT EXISTS（无裸 CREATE/DROP/ALTER/INSERT/PRAGMA user_version），原位重放对既有对象零副作用；新 DDL 的 FK 目标 document_manifest 系 v21 已有对象（不在本 diff 内）。结论：真实 v21 库不缺任何 v22 前置对象，fixture 精确无盲区。"
+      },
+      "d_redline_diff": {
+        "result": "PASS",
+        "detail": "git diff crates/cc-db/src/sql/index_v1.sql：仅头注释（1 行→2 行）+ 尾部纯追加 53 行，旧表/列/FTS 触发器零改动；index_migrate.rs 仅迁移逻辑 + 2 新测试 + 版本历史注释；新增 crates/cc-db/tests/semantic_schema.rs。工作区其余修改文件（epoch_rules.rs/unit_of_work.rs/Cargo.* 等）属 P6-002/003/004 既有改动，非 P6-005 触碰。"
+      },
+      "e_test_rerun": {
+        "result": "PASS",
+        "commands": [
+          "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk cargo test -p cc-db --locked --offline → 全套件 exit 0：lib 158 tests / 157 passed; 0 failed; 1 ignored；集成套件含 semantic_schema 6/6、public_surface_store 6/6、p2d_dependency_cost 1/1 全部 ok",
+          "SDKROOT=... cargo check --workspace --locked --offline → Finished dev profile, exit 0"
+        ],
+        "match_to_record": "与 P6-005-IMPLEMENTATION.md §4 记载逐位一致。"
+      },
+      "deviations_acknowledged": [
+        "偏差 1（迁移策略：相邻 v21 原位迁移 vs 简报 rebuild-on-mismatch）：判定为合理——任务红线（迁移只增不删）与验收（旧数据不动）在破坏性 reset 下不可满足，delta 客观纯加法且 IF NOT EXISTS 结构保证安全性，rebuild 契约一字未动，ADR 的明确重建路径仍成立；ADDITIVE_MIGRATION_FROM 常量 doc 已加防误用约束。",
+        "偏差 2/4（无行级 effect 列、SchemaStatus::Migrated 新变体）：均有实施记录论证与全消费点验证，成立。"
+      ]
+    }
+  },
+  "closure_record": {
+    "status_flips": [
+      {"id": "P6-002", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-003", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-004", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-005", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-001", "from": "todo", "to": "in_progress", "note": "按前序裁决：ADR 决策本体完成（docs/adr/0003 Status: accepted）；回归/V21/章程同步 blocked；implementation_notes 原有裁决未重写"}
+    ],
+    "counts_after": {"total": 192, "done": 124, "in_progress": 1, "todo": 67},
+    "phase_task_counts": "与任务数口径核对一致（P0-P8 各 20、P9 12；本字段为每 phase 任务总数，不随 status 变化）",
+    "execution_note": "已追加批次 1 收口段（含评审结论、计数、冲突记录、批次 2 就绪声明）；next_task 更新为 P6-006",
+    "todo_regeneration": {
+      "command": "python3 scripts/code_index_plan.py --write",
+      "result": "FAILED（原样）：ValueError: Done task has unfinished hard dependency: P6-002",
+      "root_cause": "scripts/code_index_plan.py validate() 第 44-49 行：done 任务要求全部 depends_on 为 done。P6-002 depends_on P6-001，而 P6-001 按指令与前序裁决置 in_progress。指令的两个要求（P6-002..005 done + P6-001 in_progress + validation 通过）在现有校验器下互斥。",
+      "rehearsal": "内存预演：①指令口径（P6-001 in_progress + 4 done）→ validate 失败于 P6-002 依赖；②P6-001=done+evidence 变体 → validate 通过（失败点仅 evidence 缺失，属预演桩数据）。",
+      "pre_existing_drift": "05-TODO.md 在本轮之前已与 tasks.json drift（批次 1 实施时改 P6-001 notes 未重派生）；本轮未新增该页内容，仅保持其未派生状态。",
+      "resolution_options": [
+        "①P6-001 按 round07 c4_blocked_allowed_for_done 判例（blocked-with-evidence 可收 done）转 done，evidence 记 ADR 决策完成 + 回归/V21/章程同步 blocked-with-evidence（章程同步归 P6-019）；此后 python3 scripts/code_index_plan.py --write 即通过（已预演）。计数变为 125 done / 0 in_progress / 67 todo。",
+        "②维持 P6-001 in_progress，则 P6-002..005 须回退 todo，批次 1 状态收口整体搁置（工程实现与评审结论不受影响，仅 status 不落账）。"
+      ]
+    },
+    "batch2_readiness": "就绪：P6-006 硬依赖 P5-020/P6-004/P6-005 全部 done；P6-007/008/009/010 依批次 2 串行/并行拓扑展开。声明限于任务图依赖满足，不含任何验收门推断。"
+  },
+  "redlines_respected": [
+    "未 git commit",
+    "artifacts 冻结链与既有收据（p6-batch1-20261002/ 四份实施记录、p5e 系列、round01-08）零触碰",
+    "status 翻转仅限 P6-001..005 五个任务",
+    "G5/M2 与 P6 验收门（V13/V21 等正式矩阵）未推断，evidence limitations 明示属验收轮产物",
+    "本轮评审为只读核验，临时库实测不落仓库文件（/tmp 已清理）"
+  ]
+}

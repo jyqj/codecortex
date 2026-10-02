@@ -12,7 +12,10 @@
 //!   the unit's own uncommitted writes.
 //! - `commit` bumps `index_epoch` exactly once and commits; the per-method
 //!   epoch bump done by `IndexDb` write methods is intentionally skipped
-//!   inside a unit of work to avoid double-counting.
+//!   inside a unit of work to avoid double-counting. `commit_with` declares
+//!   the typed effect set (ADR-0003: `Index`/`Evidence`/`Semantic`/`Auxiliary`)
+//!   instead: each declared clock bumps exactly once inside the commit
+//!   transaction; `Auxiliary` and the empty set advance no clock.
 //! - Dropping an uncommitted unit rolls the transaction back.
 //!
 //! Failure and contention model:
@@ -37,6 +40,7 @@ use serde_json::Value;
 
 use cc_model::{CcError, CcResult};
 
+use crate::epoch_rules::EffectSet;
 use crate::index_db::IndexDb;
 use crate::sql_util::db_err;
 
@@ -63,8 +67,33 @@ impl<'db> UnitOfWork<'db> {
     }
 
     /// Commit the unit of work, bumping `index_epoch` exactly once.
-    pub fn commit(mut self) -> CcResult<()> {
-        IndexDb::bump_index_epoch_on(&self.conn)?;
+    ///
+    /// Exactly the historical Index-only commit; identical to
+    /// `commit_with(EffectSet::of(WriteEffect::Index))`.
+    pub fn commit(self) -> CcResult<()> {
+        self.commit_with(EffectSet::of(crate::epoch_rules::WriteEffect::Index))
+    }
+
+    /// Commit the unit of work with an explicit typed effect set (ADR-0003).
+    ///
+    /// Each declared effect bumps its clock exactly once inside this commit
+    /// transaction:
+    /// - `Index` → `index_epoch`, `Evidence` → `evidence_epoch`,
+    ///   `Semantic` → `semantic_epoch` (declare only when the semantic
+    ///   visible set actually changed — the visible-set diff is the
+    ///   publisher's duty, e.g. the P6-011 publish CAS);
+    /// - `Auxiliary` (and `EffectSet::EMPTY`) advance no clock — queue
+    ///   bookkeeping (claim/renew/heartbeat/retry) is not search content.
+    pub fn commit_with(mut self, effects: EffectSet) -> CcResult<()> {
+        if effects.contains(crate::epoch_rules::WriteEffect::Index) {
+            IndexDb::bump_index_epoch_on(&self.conn)?;
+        }
+        if effects.contains(crate::epoch_rules::WriteEffect::Evidence) {
+            IndexDb::bump_evidence_epoch_on(&self.conn)?;
+        }
+        if effects.contains(crate::epoch_rules::WriteEffect::Semantic) {
+            IndexDb::bump_semantic_epoch_on(&self.conn)?;
+        }
         self.conn
             .execute_batch("COMMIT;")
             .map_err(|e| CcError::Database(format!("commit unit of work: {}", e)))?;
@@ -190,7 +219,7 @@ mod tests {
     #[test]
     fn drop_without_commit_rolls_back_and_leaves_epoch_untouched() {
         let (_tmp, db) = setup();
-        let before = db.generation().unwrap();
+        let before = db.reads().read_generation().unwrap();
 
         {
             let uow = db.begin_unit_of_work().unwrap();
@@ -199,8 +228,9 @@ mod tests {
             // Dropped without commit → rollback.
         }
 
-        let after = db.generation().unwrap();
+        let after = db.reads().read_generation().unwrap();
         assert_eq!(after.index_epoch, before.index_epoch);
+        assert_eq!(after.semantic_epoch, None);
         let rows = db
             .query_json(
                 "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by = 'event_emitter'",
@@ -211,5 +241,102 @@ mod tests {
         // The write connection is usable again after the rollback.
         db.insert_synthetic_call_edges(&[sample_edge("synth:ee:after")])
             .unwrap();
+    }
+
+    /// Zero-intrusion guard: the default `commit()` is exactly the historical
+    /// Index-only commit — index_epoch +1, evidence untouched, and the
+    /// `semantic_epoch` key stays absent (`None`, never created as 0).
+    #[test]
+    fn default_commit_keeps_index_only_semantics_and_semantic_absent() {
+        let (_tmp, db) = setup();
+        let before = db.reads().read_generation().unwrap();
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.delete_synthetic_call_edges("event_emitter").unwrap();
+        uow.commit().unwrap();
+
+        let after = db.reads().read_generation().unwrap();
+        assert_eq!(after.index_epoch, before.index_epoch + 1);
+        assert_eq!(after.evidence_epoch, before.evidence_epoch);
+        assert_eq!(
+            after.semantic_epoch, None,
+            "Index-only commits must not create the semantic epoch key"
+        );
+    }
+
+    /// Q4 (ADR-0003): the source-code transaction commit carrying
+    /// `{Index, Semantic}` bumps each clock exactly once, in one transaction.
+    #[test]
+    fn commit_with_index_and_semantic_bumps_both_exactly_once() {
+        let (_tmp, db) = setup();
+        let before = db.reads().read_generation().unwrap();
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.insert_synthetic_call_edges(&[sample_edge("synth:ee:combo")])
+            .unwrap();
+        uow.commit_with(
+            crate::epoch_rules::EffectSet::of(crate::epoch_rules::WriteEffect::Index).union(
+                crate::epoch_rules::EffectSet::of(crate::epoch_rules::WriteEffect::Semantic),
+            ),
+        )
+        .unwrap();
+
+        let after = db.reads().read_generation().unwrap();
+        assert_eq!(after.index_epoch, before.index_epoch + 1);
+        assert_eq!(after.evidence_epoch, before.evidence_epoch);
+        assert_eq!(after.semantic_epoch, Some(1));
+        let rows = db
+            .query_json(
+                "SELECT COUNT(*) AS cnt FROM call_edges WHERE synthesized_by = 'event_emitter'",
+                &[],
+            )
+            .unwrap();
+        assert_eq!(rows[0]["cnt"].as_i64(), Some(1));
+    }
+
+    /// Q4: a repeat ack of an unchanged semantic visible set must not bump —
+    /// the commit declares no Semantic effect (Auxiliary-only), and the
+    /// clock stays where the last real publication left it. The visible-set
+    /// diff is the publisher's duty (P6-011 CAS); cc-db is declarative.
+    #[test]
+    fn repeat_ack_without_visible_change_does_not_bump_semantic_epoch() {
+        let (_tmp, db) = setup();
+        use crate::epoch_rules::{EffectSet, WriteEffect};
+
+        // First publication: the visible set changed, Semantic is declared.
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.commit_with(EffectSet::of(WriteEffect::Semantic))
+            .unwrap();
+        let after_first = db.reads().read_generation().unwrap();
+        assert_eq!(after_first.semantic_epoch, Some(1));
+
+        // Duplicate ack, visible set unchanged: no Semantic effect declared.
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.commit_with(EffectSet::of(WriteEffect::Auxiliary))
+            .unwrap();
+        let after_second = db.reads().read_generation().unwrap();
+        assert_eq!(
+            after_second.semantic_epoch,
+            Some(1),
+            "a repeat ack that declares no Semantic effect must not bump"
+        );
+        assert_eq!(after_second.index_epoch, after_first.index_epoch);
+    }
+
+    #[test]
+    fn commit_with_evidence_bumps_evidence_only() {
+        let (_tmp, db) = setup();
+        let before = db.reads().read_generation().unwrap();
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.commit_with(crate::epoch_rules::EffectSet::of(
+            crate::epoch_rules::WriteEffect::Evidence,
+        ))
+        .unwrap();
+
+        let after = db.reads().read_generation().unwrap();
+        assert_eq!(after.evidence_epoch, before.evidence_epoch + 1);
+        assert_eq!(after.index_epoch, before.index_epoch);
+        assert_eq!(after.semantic_epoch, None);
     }
 }

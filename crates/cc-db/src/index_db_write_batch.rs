@@ -30,6 +30,9 @@ impl IndexDb {
         let rel_paths: Vec<&str> = files.iter().map(|f| f.rel_path.as_str()).collect();
         let communities = crate::community_carry::CommunityCarry::capture(&tx, &rel_paths)?;
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
+        // P6-006: outbox half of this transaction (see
+        // `write_incremental_batch` for the ordering rationale).
+        let semantic_stats = crate::semantic_outbox::apply_file_batch_on(&tx, files, &[])?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
         // Replacement keeps the path, so the path-derived test_edges
         // stay valid (see `delete_files_data_base_keep_test_edges_batch`).
@@ -38,8 +41,29 @@ impl IndexDb {
         communities.restore(&tx)?;
         Self::insert_files_literal_fts_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
-        Self::bump_index_epoch_on(&tx)?;
+        Self::bump_effects_on(&tx, semantic_stats)?;
         tx.commit().map_err(db_err)?;
+        Ok(())
+    }
+
+    /// Bump the declared clocks of one commit: `Index` always, plus
+    /// `Semantic` exactly when the transaction wrote semantic state (ADR-0003
+    /// typed effect set — shared by the file batch writers).
+    fn bump_effects_on(
+        tx: &Connection,
+        semantic_stats: crate::semantic_outbox::OutboxWriteStats,
+    ) -> CcResult<()> {
+        use crate::epoch_rules::{EffectSet, WriteEffect};
+        let mut effects = EffectSet::of(WriteEffect::Index);
+        if semantic_stats.changed_semantic_state() {
+            effects = effects.union(EffectSet::of(WriteEffect::Semantic));
+        }
+        if effects.contains(WriteEffect::Index) {
+            Self::bump_index_epoch_on(tx)?;
+        }
+        if effects.contains(WriteEffect::Semantic) {
+            Self::bump_semantic_epoch_on(tx)?;
+        }
         Ok(())
     }
 
@@ -347,6 +371,15 @@ impl IndexDb {
         let pre_seed_agg = pre_aggs.map(|aggs| aggs.symbols_seed);
         let pre_files_agg = pre_aggs.map(|aggs| aggs.files_state);
         let agg_update = crate::signature_agg::begin_path_update(&tx, &touched_paths)?;
+        // P6-006: desired embed tasks / manifest revokes, written in THIS
+        // transaction (a rollback cannot leak a half task). Runs before the
+        // base deletes: removal doc_keys resolve through `semantic_manifest`
+        // while those rows still exist. No-op without an active semantic
+        // space — the default build path is untouched.
+        let section_start = std::time::Instant::now();
+        let semantic_stats =
+            crate::semantic_outbox::apply_file_batch_on(&tx, normal_units, to_remove)?;
+        section_ms("db_semantic_outbox", semantic_stats.enqueued, section_start);
         // Per-section timing: emitted as `tracing::debug!` "sub-phase timing"
         // events (same field style as cc-index's `time_step`) so a slow
         // `write.incremental_batch` aggregate can be attributed from logs.
@@ -409,7 +442,23 @@ impl IndexDb {
         let post_aggs = crate::signature_agg::load_on(&tx)?;
         let post_seed_agg = post_aggs.map(|aggs| aggs.symbols_seed);
         let post_files_agg = post_aggs.map(|aggs| aggs.files_state);
-        Self::bump_index_epoch_on(&tx)?;
+        // Declared effect set (ADR-0003, P6-004 `commit_with` semantics — the
+        // first production caller of the {Index, Semantic} combination):
+        // `Index` always, `Semantic` only when this transaction actually
+        // wrote semantic queue/manifest state. Each declared clock bumps
+        // exactly once, inside this commit.
+        let mut effects = crate::epoch_rules::EffectSet::of(crate::epoch_rules::WriteEffect::Index);
+        if semantic_stats.changed_semantic_state() {
+            effects = effects.union(crate::epoch_rules::EffectSet::of(
+                crate::epoch_rules::WriteEffect::Semantic,
+            ));
+        }
+        if effects.contains(crate::epoch_rules::WriteEffect::Index) {
+            Self::bump_index_epoch_on(&tx)?;
+        }
+        if effects.contains(crate::epoch_rules::WriteEffect::Semantic) {
+            Self::bump_semantic_epoch_on(&tx)?;
+        }
         if let Some(update) = reconcile {
             crate::freshness_store::replace_on(&tx, update)?;
         }
@@ -472,10 +521,14 @@ impl IndexDb {
             .map_err(db_err)?;
         let rel_paths: Vec<&str> = paths.iter().map(String::as_str).collect();
         let agg_update = crate::signature_agg::begin_path_update(&tx, &rel_paths)?;
+        // P6-006: revoke the removed files' visible-set rows and supersede
+        // their live tasks in this same transaction (before the base deletes
+        // cascade the manifests away).
+        let semantic_stats = crate::semantic_outbox::apply_file_batch_on(&tx, &[], paths)?;
         Self::delete_files_fts_batch(&tx, rel_paths.iter().copied())?;
         Self::delete_files_data_base_batch(&tx, &rel_paths)?;
         crate::signature_agg::finish_path_update(&tx, &rel_paths, agg_update)?;
-        Self::bump_index_epoch_on(&tx)?;
+        Self::bump_effects_on(&tx, semantic_stats)?;
         tx.commit().map_err(db_err)?;
         Ok(paths.len())
     }

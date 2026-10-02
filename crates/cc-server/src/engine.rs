@@ -209,6 +209,18 @@ impl CodeIndex {
             cc_db::index_migrate::SchemaStatus::Initialized
         );
 
+        // P7-010 minimal assembly leg: attach (or detach) the optional
+        // semantic subsystem on the freshly-set project. A config error in
+        // the `semantic` section refuses set_project (fail-closed, no silent
+        // default); the default build compiles none of this.
+        #[cfg(feature = "semantic")]
+        crate::semantic_wiring::wire(
+            &self.query_services,
+            &self.project_path.as_ref().expect("just set").to_string_lossy(),
+            self.config.as_ref().expect("just set"),
+            self.index_db.as_ref().expect("just set").clone(),
+        )?;
+
         if auto_index {
             // set_project itself succeeded (project/db/engine are all set);
             // surface the auto-index failure instead of silently dropping it.

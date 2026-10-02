@@ -313,7 +313,9 @@ impl IndexDb {
         conn.execute_batch(pragmas).map_err(db_err)?;
 
         match migrate_index_db(&conn)? {
-            status @ (SchemaStatus::UpToDate | SchemaStatus::Initialized) => Ok((conn, status)),
+            status @ (SchemaStatus::UpToDate
+            | SchemaStatus::Initialized
+            | SchemaStatus::Migrated { .. }) => Ok((conn, status)),
             SchemaStatus::Mismatch { stored } => {
                 tracing::warn!(
                     stored_version = stored,
@@ -623,6 +625,18 @@ impl IndexDb {
         Self::bump_epoch_on(conn, EVIDENCE_EPOCH_KEY)
     }
 
+    /// Increment the semantic visible-set epoch on the given
+    /// connection/transaction (P6-004 typed write effects).
+    ///
+    /// The first bump persists `semantic_epoch = 1`: the key moves from
+    /// absent (`ReadGeneration::semantic_epoch == None`, "not ready") to
+    /// present. Callers must declare the `Semantic` effect only when the
+    /// semantic visible set actually changed — a repeat ack of unchanged
+    /// content must not bump (ADR-0003 / P6-011 publish CAS).
+    pub(crate) fn bump_semantic_epoch_on(conn: &Connection) -> CcResult<()> {
+        Self::bump_epoch_on(conn, SEMANTIC_EPOCH_KEY)
+    }
+
     /// Persist the post-rebuild epoch vector into the finished temp database.
     ///
     /// Must be called while the write lock is held, immediately before the
@@ -916,6 +930,37 @@ impl ReadOps<'_> {
     pub fn synthetic_call_kind_aggregate(&self, kinds: &[&str]) -> CcResult<crate::RowAgg> {
         let conn = self.0.read_conn()?;
         crate::signature_agg::synthetic_kind_agg_on(&conn, kinds)
+    }
+
+    /// Semantic outbox tasks ready for a worker right now (`pending`, past
+    /// `available_at`, oldest first; served through the `semantic_outbox_ready`
+    /// index). Claiming/leasing is P6-007's fenced domain — this is the read
+    /// seam the queue consumer will build on (P6-006).
+    pub fn semantic_outbox_ready(
+        &self,
+        limit: usize,
+    ) -> CcResult<Vec<crate::semantic_outbox::OutboxTask>> {
+        let conn = self.0.read_conn()?;
+        crate::semantic_outbox::ready_tasks_on(&conn, limit, crate::semantic_outbox::now_unix())
+    }
+
+    /// Count of live (`pending` + `claimed`) outbox tasks of the active
+    /// space — the capability probe's `backfilling` evidence (P7-014).
+    /// No active space → 0 (nothing is ever claimable against a space that
+    /// does not exist, mirroring `uncovered_on`'s convention). Additive
+    /// read; Auxiliary only, moves no epoch.
+    pub fn semantic_outbox_pending(&self) -> CcResult<u64> {
+        let conn = self.0.read_conn()?;
+        let Some(space_id) = crate::semantic_outbox::active_space_on(&conn)? else {
+            return Ok(0);
+        };
+        conn.query_row(
+            "SELECT count(*) FROM semantic_outbox WHERE space_id=?1 AND state IN ('pending','claimed')",
+            rusqlite::params![space_id],
+            |row| row.get::<_, i64>(0),
+        )
+        .map(|n| n.max(0) as u64)
+        .map_err(|e| CcError::Database(format!("semantic outbox pending count: {e}")))
     }
 }
 

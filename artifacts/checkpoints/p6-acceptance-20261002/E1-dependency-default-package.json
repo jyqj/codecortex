@@ -1,0 +1,98 @@
+{
+ "receipt": "E1-dependency-default-package",
+ "task": "P6-020",
+ "date": "2026-10-02",
+ "commands": [
+  {
+   "argv": [
+    "cargo",
+    "tree",
+    "-p",
+    "cc-server",
+    "-e",
+    "normal",
+    "--locked"
+   ],
+   "purpose": "default dependency graph",
+   "result": {
+    "cc_semantic_edges": 0,
+    "note": "cc-semantic does not appear anywhere in the default cc-server dependency graph (count 0, grep empty)"
+   }
+  },
+  {
+   "argv": [
+    "cargo",
+    "tree",
+    "-p",
+    "cc-server",
+    "-e",
+    "normal",
+    "--features",
+    "semantic",
+    "--locked"
+   ],
+   "purpose": "semantic-feature dependency graph",
+   "result": {
+    "cc_semantic_edges": 1,
+    "note": "exactly one edge via cc-server optional dep (cc-server/Cargo.toml: semantic = [\"dep:cc-semantic\"])"
+   }
+  },
+  {
+   "argv": [
+    "cargo",
+    "tree",
+    "-p",
+    "cc-semantic",
+    "-e",
+    "normal",
+    "--locked"
+   ],
+   "purpose": "network-crate scan",
+   "result": {
+    "network_client_crates": [],
+    "note": "transitive closure of cc-semantic contains blake3/rusqlite/serde/tracing/regex/uuid/zstd/rand/chrono/parking_lot/r2d2 etc.; grep for reqwest|hyper|http|ureq|curl|tungstenite|quinn|h2 over full cc-server --features semantic tree = empty; no network client crate reachable through cc-semantic"
+   }
+  },
+  {
+   "argv": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "-p",
+    "cc-server",
+    "--bin",
+    "codecortex"
+   ],
+   "exit_code": 0,
+   "seconds": 19.76,
+   "finished_utc": "2026-10-02T12:38:51Z",
+   "purpose": "default (no semantic) build, offline"
+  },
+  {
+   "argv": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "-p",
+    "cc-server",
+    "--bin",
+    "codecortex",
+    "--features",
+    "semantic"
+   ],
+   "exit_code": 0,
+   "seconds": 8.75,
+   "finished_utc": "2026-10-02T12:39:05Z",
+   "purpose": "semantic-feature build, offline"
+  }
+ ],
+ "acceptance_alignment": {
+  "claim": "默认包不含 cc-semantic；cc-semantic 仅以 optional+feature 交付（P6-002 验收允许 optional+feature）",
+  "verdict": "held",
+  "note": "默认树计 0 与『默认包不含 cc-semantic』一致；--features semantic 计 1 为声明中的 optional+feature 语义，不与默认包口径冲突。GATE 中如实双口径声明。",
+  "default_build_cache_dir": "~/Library/Caches/codecortex/semantic 不存在（默认构建不编译 cc-semantic，无 cache 目录创建路径；探针后复查仍不存在）"
+ },
+ "head": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6"
+}

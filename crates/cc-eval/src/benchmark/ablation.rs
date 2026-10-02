@@ -65,6 +65,114 @@ pub struct BuildReceipt {
     pub build_options: Value,
     pub exit_code: i32,
 }
+/// Versioned semantic projection (design B) of per-cell `build_options`.
+/// Only `CARGO_TARGET_DIR` is a positional output location, never a semantic
+/// compiler input; every other known option must be exactly equal across cells.
+/// Receipts never claim an identical target: the per-cell target dir is recorded
+/// as a derived positional metric instead.
+pub const SEMANTIC_PROJECTION_KIND: &str = "ablation_build_options_without_target_dir";
+pub const SEMANTIC_PROJECTION_VERSION: u32 = 1;
+/// The single build option excluded from semantic identity comparison.
+const POSITIONAL_OPTION_KEY: &str = "CARGO_TARGET_DIR";
+/// Optional receipt-side marker; if present it must declare the supported
+/// projection kind/version, otherwise the receipt predates or postdates this ABI.
+const PROJECTION_MARKER_KEY: &str = "semantic_projection";
+/// Whitelist of known semantic option keys. Any key outside this list (and the
+/// positional/marker keys above) fails validation instead of being dropped.
+/// `compiler` is an existing test-fixture-only field name; real receipts do not
+/// carry it and it is optional.
+const KNOWN_SEMANTIC_OPTION_KEYS: &[&str] = &[
+    "binding", "cargo", "command", "compiler", "features", "jobs", "profile", "rustc", "RUSTFLAGS",
+    "SDKROOT",
+];
+/// Semantic keys that must be present in every cell's `build_options`. Together
+/// with the positional `CARGO_TARGET_DIR` (whose absence is separately rejected),
+/// missing any one of these is a hard failure. This closes the residual gap
+/// where a receipt stream that consistently drops a known key (e.g. `SDKROOT`)
+/// would project cleanly while silently losing compile semantics. Real receipts
+/// already carry exactly this set (plus `CARGO_TARGET_DIR`), so old receipts
+/// stay compatible. The test fixture additionally carries the optional
+/// `compiler` key used by compiler-drift tests.
+const REQUIRED_SEMANTIC_OPTION_KEYS: &[&str] = &[
+    "command", "cargo", "rustc", "SDKROOT", "RUSTFLAGS", "profile", "features", "jobs", "binding",
+];
+/// Cross-cell comparison operates on this projection, never on the raw value.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct BuildOptionsProjection {
+    pub projection_kind: String,
+    pub projection_version: u32,
+    /// Derived positional metric: cell id -> its CARGO_TARGET_DIR. All cells
+    /// must be pairwise distinct (no shared target dir) and are descriptive
+    /// provenance only; they never alias a semantic identity claim.
+    pub positional_metrics: BTreeMap<String, String>,
+}
+struct ProjectedIdentity {
+    semantic_identity: Value,
+    cargo_target_dir: String,
+}
+/// Project `build_options` to its semantic identity by removing exactly
+/// `CARGO_TARGET_DIR`. Unknown keys, a missing positional key and a missing
+/// required semantic key all fail closed.
+fn projected_semantic_identity(build_options: &Value) -> Result<ProjectedIdentity> {
+    let Some(map) = build_options.as_object() else {
+        return Err(invalid("build options is not a JSON object"));
+    };
+    for key in REQUIRED_SEMANTIC_OPTION_KEYS {
+        if !map.contains_key(*key) {
+            return Err(invalid(format!("required build option key '{key}' missing")));
+        }
+    }
+    if let Some(marker) = map.get(PROJECTION_MARKER_KEY) {
+        let kind = marker.get("kind").and_then(Value::as_str).unwrap_or_default();
+        let version = marker.get("version").and_then(Value::as_u64);
+        if kind != SEMANTIC_PROJECTION_KIND
+            || version != Some(u64::from(SEMANTIC_PROJECTION_VERSION))
+        {
+            return Err(invalid(
+                "unsupported build options semantic projection kind/version",
+            ));
+        }
+    }
+    let mut semantic = serde_json::Map::new();
+    let mut cargo_target_dir = None;
+    for (key, value) in map {
+        if key == PROJECTION_MARKER_KEY {
+            continue;
+        }
+        if key == POSITIONAL_OPTION_KEY {
+            let Some(path) = value.as_str().filter(|p| !p.is_empty()) else {
+                return Err(invalid("CARGO_TARGET_DIR is not a non-empty string"));
+            };
+            cargo_target_dir = Some(path.to_string());
+            continue;
+        }
+        if !KNOWN_SEMANTIC_OPTION_KEYS.contains(&key.as_str()) {
+            return Err(invalid(format!("unknown build option key '{key}'")));
+        }
+        semantic.insert(key.clone(), value.clone());
+    }
+    let Some(cargo_target_dir) = cargo_target_dir else {
+        return Err(invalid(
+            "CARGO_TARGET_DIR missing; derived positional metric cannot be recorded",
+        ));
+    };
+    Ok(ProjectedIdentity {
+        semantic_identity: Value::Object(semantic),
+        cargo_target_dir,
+    })
+}
+/// Name the first semantic field on which two projected identities disagree.
+fn first_semantic_field_difference(reference: &Value, observed: &Value) -> Option<String> {
+    let (Some(a), Some(b)) = (reference.as_object(), observed.as_object()) else {
+        return Some("build options shape".to_string());
+    };
+    for key in a.keys().chain(b.keys()).collect::<BTreeSet<_>>() {
+        if a.get(key) != b.get(key) {
+            return Some(key.clone());
+        }
+    }
+    None
+}
 fn sha(bytes: &[u8]) -> String {
     format!("{:x}", Sha256::digest(bytes))
 }
@@ -118,7 +226,10 @@ fn inventory(root: &Path) -> Result<BTreeMap<String, String>> {
 }
 /// Validate every source byte, exact counterfactual patch and build/binary receipt
 /// before executing any variant. Receipts are provenance, not remote attestation.
-pub fn validate(plan: &Plan, base: &Path) -> Result<()> {
+/// Cross-cell `build_options` equality uses the versioned semantic projection:
+/// only `CARGO_TARGET_DIR` may differ, and each cell's target dir is returned as
+/// a derived positional metric.
+pub fn validate(plan: &Plan, base: &Path) -> Result<BuildOptionsProjection> {
     if plan.schema_version != 1
         || !(1..=4).contains(&plan.controls.len())
         || plan.variants.len() != 1 << plan.controls.len()
@@ -151,7 +262,8 @@ pub fn validate(plan: &Plan, base: &Path) -> Result<()> {
     }
     let mut variants = BTreeSet::new();
     let mut cells = BTreeSet::new();
-    let mut build_options = None;
+    let mut semantic_identity = None;
+    let mut positional_metrics = BTreeMap::new();
     for v in &plan.variants {
         let enabled: BTreeSet<_> = v.enabled.iter().cloned().collect();
         if !slug(&v.id)
@@ -183,14 +295,27 @@ pub fn validate(plan: &Plan, base: &Path) -> Result<()> {
         if sha(&std::fs::read(base.join(&v.binary))?) != receipt.binary_sha256 {
             return Err(invalid("binary digest drift"));
         }
-        if receipt.build_options.is_null()
-            || build_options
-                .as_ref()
-                .is_some_and(|b| b != &receipt.build_options)
-        {
-            return Err(invalid("build options differ or unavailable"));
+        let projection = projected_semantic_identity(&receipt.build_options)
+            .map_err(|e| invalid(format!("{} build options: {e}", v.id)))?;
+        match &semantic_identity {
+            None => semantic_identity = Some(projection.semantic_identity),
+            Some(reference) => {
+                if let Some(field) =
+                    first_semantic_field_difference(reference, &projection.semantic_identity)
+                {
+                    return Err(invalid(format!(
+                        "build options differ in semantic field '{field}'"
+                    )));
+                }
+            }
         }
-        build_options = Some(receipt.build_options);
+        if positional_metrics
+            .values()
+            .any(|target| target == &projection.cargo_target_dir)
+        {
+            return Err(invalid("cells share a CARGO_TARGET_DIR; independent per-cell targets are required"));
+        }
+        positional_metrics.insert(v.id.clone(), projection.cargo_target_dir);
     }
     let mut datasets = BTreeSet::new();
     for d in &plan.datasets {
@@ -208,7 +333,11 @@ pub fn validate(plan: &Plan, base: &Path) -> Result<()> {
         }
         manifest::load(&base.join(&d.suite))?;
     }
-    Ok(())
+    Ok(BuildOptionsProjection {
+        projection_kind: SEMANTIC_PROJECTION_KIND.to_string(),
+        projection_version: SEMANTIC_PROJECTION_VERSION,
+        positional_metrics,
+    })
 }
 struct WithHints {
     client: McpStdio,
@@ -250,7 +379,7 @@ impl Backend for WithHints {
 pub async fn run(plan_path: &Path, out: &Path) -> Result<i32> {
     let plan: Plan = manifest::json_file(plan_path)?;
     let base = plan_path.parent().unwrap_or(Path::new("."));
-    validate(&plan, base)?;
+    let projection = validate(&plan, base)?;
     if out.exists() {
         return Err(invalid("ablation output already exists"));
     }
@@ -332,7 +461,7 @@ pub async fn run(plan_path: &Path, out: &Path) -> Result<i32> {
     validate(&plan, base)?;
     report::json(
         &out.join("ablation.json"),
-        &json!({"schema_version":1,"exit_code":exit,"status":"diagnostic_factorial_observations_not_release_certification","gates":all_gates,"one_factor_edges":edges,"limitations":["small authored cases are not holdout quality","build receipts are local provenance, not cryptographic source-to-binary attestation","counterfactuals use the same reference scaffold, not the entire historical product"]}),
+        &json!({"schema_version":1,"exit_code":exit,"status":"diagnostic_factorial_observations_not_release_certification","gates":all_gates,"one_factor_edges":edges,"build_options_projection":{"projection_kind":projection.projection_kind,"projection_version":projection.projection_version,"positional_metrics":projection.positional_metrics},"limitations":["small authored cases are not holdout quality","build receipts are local provenance, not cryptographic source-to-binary attestation","counterfactuals use the same reference scaffold, not the entire historical product"]}),
     )?;
     Ok(exit)
 }

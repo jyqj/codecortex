@@ -1,4 +1,5 @@
--- index.sqlite3 — Schema v21 (per-file chunk policy, original source coordinates, module evidence)
+-- index.sqlite3 — Schema v22 (semantic persistence: manifest / outbox / spaces;
+-- v21: per-file chunk policy, original source coordinates, module evidence)
 --
 -- FTS5 rowid alignment (v6): every FTS table's rowid equals the rowid of its
 -- base-table row. symbols_fts and file_paths_fts enforce this via triggers;
@@ -496,3 +497,56 @@ CREATE TABLE IF NOT EXISTS adr (
     updated_at  TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_adr_status ON adr(status);
+
+-- ── P6-005: 语义持久化（权威单库内；派生向量本体在 cc-semantic cache，不在本库）──
+-- v22 节点合并提交；新增对象全部为 CREATE ... IF NOT EXISTS 纯加法（v21 可原位迁移，
+-- 见 index_migrate.rs::ADDITIVE_MIGRATION_FROM），不触碰 FTS 触发器体系。
+
+-- 可见集合（权威）：当前已发布映射；一行 = 一个 doc_key 在一个空间的当前发布。
+CREATE TABLE IF NOT EXISTS semantic_manifest (
+    doc_key        TEXT PRIMARY KEY REFERENCES document_manifest(doc_key) ON DELETE CASCADE,
+    doc_version    TEXT NOT NULL,   -- 发布 CAS 校验的 doc version（fencing 之一）
+    file_path      TEXT NOT NULL,   -- 冗余自 document_manifest：filtered exact 先过滤热路径
+    encoding_key   TEXT NOT NULL,   -- = document_manifest.encoding_key
+    input_digest   TEXT NOT NULL,   -- 实际嵌入输入 digest（fencing 之一；P6-003 定义）
+    space_id       TEXT NOT NULL,   -- VectorSpace::digest()（P6-003）
+    artifact_ref   TEXT NOT NULL,   -- cache 内容寻址引用（P6-008）
+    published_at   TEXT NOT NULL,
+    published_incarnation TEXT NOT NULL  -- 发布时 ReadGeneration.incarnation hex
+);
+CREATE INDEX IF NOT EXISTS semantic_manifest_space   ON semantic_manifest(space_id);
+CREATE INDEX IF NOT EXISTS semantic_manifest_file    ON semantic_manifest(file_path);
+CREATE INDEX IF NOT EXISTS semantic_manifest_artifact ON semantic_manifest(artifact_ref); -- GC mark 用
+
+-- desired 任务（权威队列可靠性数据；Auxiliary 时钟管辖，不属检索内容）。
+-- claim/lease 状态即 attempt token / lease 到期 / claim owner 三列（P6-007 消费）。
+CREATE TABLE IF NOT EXISTS semantic_outbox (
+    task_id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    doc_key        TEXT NOT NULL,
+    doc_version    TEXT NOT NULL,
+    input_digest   TEXT NOT NULL,
+    space_id       TEXT NOT NULL,
+    op             TEXT NOT NULL CHECK(op IN ('embed','revoke')),
+    state          TEXT NOT NULL CHECK(state IN ('pending','claimed','done','failed','superseded')),
+    attempt_count  INTEGER NOT NULL DEFAULT 0,
+    lease_token    TEXT,            -- 每 attempt 独立 token（lower(hex(randomblob(16)))）
+    lease_expires_at REAL,          -- unix seconds
+    claim_owner    TEXT,            -- 进程标识（boot id + pid）
+    available_at   REAL NOT NULL,   -- retry backoff 基准
+    last_error     TEXT,
+    created_at     TEXT NOT NULL,
+    updated_at     TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS semantic_outbox_ready ON semantic_outbox(state, available_at, space_id);
+CREATE INDEX IF NOT EXISTS semantic_outbox_doc   ON semantic_outbox(doc_key, space_id, state);
+-- 合并 pending：同 doc 同空间至多一个活跃任务（P6-013 合并语义的 DB 层保证）
+CREATE UNIQUE INDEX IF NOT EXISTS semantic_outbox_live_per_doc
+    ON semantic_outbox(doc_key, space_id) WHERE state IN ('pending','claimed');
+
+-- active space 指针与空间生命周期（P6-017 切换三段的状态载体）
+CREATE TABLE IF NOT EXISTS semantic_spaces (
+    space_id    TEXT PRIMARY KEY,
+    spec_json   TEXT NOT NULL,      -- VectorSpace + DocSpec 冻结序列化
+    state       TEXT NOT NULL CHECK(state IN ('backfilling','active','revoked')),
+    activated_at TEXT
+);

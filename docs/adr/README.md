@@ -9,6 +9,7 @@
 |------|------|------|------|
 | [0001](0001-cypher-traversal-lazy-bfs-fast-path.md) | Cypher 变长路径用惰性 BFS fast path，不下沉内存邻接缓存 | accepted | 2026-06-10 |
 | [0002](0002-staged-commit-postprocess-out-of-write-lock.md) | Commit 三段化：postprocess/analysis 计算移出写锁，接受最终一致窗口 | accepted | 2026-06-12 |
+| [0003](0003-semantic-persistence-single-db-boundary.md) | 语义持久化单库边界修订：权威 `index.sqlite3` 之外只允许可丢弃的派生 artifact cache，不引入第二权威库或隐式服务 | accepted | 2026-10-01 |
 
 ## 撰写约定
 

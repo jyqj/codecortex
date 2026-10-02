@@ -1,0 +1,53 @@
+{
+  "evidence": "E2_c4_fix_red_green_receipt",
+  "status": "red_green_verified",
+  "implementation_record": "artifacts/checkpoints/c4-race-analysis-20261002/IMPLEMENTATION-20261002.md",
+  "tdd_order": "red (behavioral failures on old behavior) then green; red-phase excerpts preserved verbatim in implementation record section 3",
+  "fresh_revalidation_20261002": {
+    "cmd1": "cargo test -p cc-search --locked --offline",
+    "cmd1_result": {
+      "passed": 281,
+      "failed": 0,
+      "ignored": 0,
+      "note": "includes new fence_backoff_rides_out_a_back_to_back_commit_storm + fence_backoff_is_bounded; 4 existing generation_fence_* remain green"
+    },
+    "cmd2": "cargo test -p cc-server --locked --offline",
+    "cmd2_result": {
+      "lib": {
+        "passed": 249,
+        "failed": 0
+      },
+      "main": {
+        "passed": 41,
+        "failed": 0
+      },
+      "mcp_stdio_integration": {
+        "passed": 9,
+        "failed": 0
+      },
+      "note": "includes new freshness.rs tests 3-7 and context.rs tests 8-9 per implementation record"
+    },
+    "cmd3": "cargo test -p cc-eval --locked --offline --test p1d_concurrency",
+    "cmd3_result": {
+      "passed": 4,
+      "failed": 0,
+      "ignored": 1,
+      "note": "RetrievalChanged{attempts:3} contract test green"
+    }
+  },
+  "flake_observation_honest_record": {
+    "event": "after test-only unused-mut lint fix (engine_cache.rs:529 mut removed), one parallel-mode (default test-threads) run of fence_backoff_rides_out_a_back_to_back_commit_storm FAILED (assert failure, the documented failure direction)",
+    "assessment": "known timing-sensitive window declared in IMPLEMENTATION record section 5; failure direction is assertion failure, never false green",
+    "sequential_mode_stability": "3/3 green at --test-threads=1 under loadavg ~8 (matches full-regression mode); implementation round recorded 6/6"
+  },
+  "lint_fix": {
+    "file": "crates/cc-search/src/engine_cache.rs",
+    "line": 529,
+    "change": "removed unused `mut` on wait closure; semantics unchanged; test-only (cfg(test))"
+  },
+  "redlines": {
+    "cc_db_write_path_untouched": true,
+    "epoch_semantics_untouched": true,
+    "harness_thresholds_untouched": true
+  }
+}

@@ -22,6 +22,31 @@ use cc_model::CcResult;
 use crate::engine::SearchEngine;
 use crate::enrich::GraphEnrichment;
 
+/// Per-attempt fence retry backoff step (milliseconds). Backoff lets a
+/// back-to-back rebuild commit cadence drain between attempts instead of
+/// burning every retry window (see `fence_backoff_delay`).
+pub(crate) const FENCE_BACKOFF_STEP_MS: u64 = 30;
+
+/// Hard per-delay ceiling for fence retry backoff (milliseconds). The fence
+/// must never wait without bound; the query's own deadline control keeps
+/// working inside each attempt, and exhaustion still returns the retryable
+/// `RetrievalChanged` error.
+pub(crate) const FENCE_BACKOFF_MAX_DELAY_MS: u64 = 60;
+
+/// Fence retry attempt ceiling (unchanged semantics: exhaustion stays a
+/// retryable hard error).
+pub(crate) const FENCE_MAX_ATTEMPTS: u32 = 3;
+
+/// Bounded, escalating backoff before fence retry attempt `attempt`
+/// (1-based): `min(STEP * attempt, MAX_DELAY)` — 30ms then 60ms, ≤90ms total
+/// per fence call. Cancel/deadline-class errors still short-circuit
+/// immediately, so the backoff can never extend a query past its own deadline
+/// control.
+pub(crate) fn fence_backoff_delay(attempt: u32) -> std::time::Duration {
+    let step = FENCE_BACKOFF_STEP_MS.saturating_mul(u64::from(attempt));
+    std::time::Duration::from_millis(step.min(FENCE_BACKOFF_MAX_DELAY_MS))
+}
+
 /// In-process cache domain. Bump when ranking/scope/diagnostic semantics change.
 /// Not a stable cross-build hash or a persisted document identity.
 pub(crate) const RETRIEVAL_POLICY: &str =
@@ -182,12 +207,19 @@ impl SearchEngine {
     /// assembly. No connection crosses stages. Work must not publish a final
     /// result cache entry until acceptance; this is not a filesystem snapshot.
     /// Nested retrieval keeps its own finite retry bound and the same deadline.
+    ///
+    /// Between attempts the fence sleeps a bounded escalating backoff
+    /// ([`fence_backoff_delay`], `min(30ms × k, 60ms)` per step, cumulative
+    /// ≤90ms) so a back-to-back rebuild commit cadence can drain instead of
+    /// burning every retry window. Deadline awareness is structural: cancel/deadline-class
+    /// errors short-circuit immediately, each retry re-enters `work`, whose
+    /// own query control still enforces the caller's deadline, and exhaustion
+    /// remains the retryable `RetrievalChanged` error.
     pub fn with_stable_generation<T>(
         &self,
         mut work: impl FnMut(IndexGeneration) -> CcResult<T>,
     ) -> CcResult<(IndexGeneration, T)> {
-        const MAX_ATTEMPTS: u32 = 3;
-        for _ in 0..MAX_ATTEMPTS {
+        for attempt in 0..FENCE_MAX_ATTEMPTS {
             let before = self.observe_epochs()?;
             let result = work(before);
             if matches!(
@@ -205,11 +237,15 @@ impl SearchEngine {
                 return result.map(|value| (before, value));
             }
             // Drop both successful and failed mixed-generation work. The next
-            // attempt observes fresh epochs and clears obsolete text hints.
-            std::thread::yield_now();
+            // attempt observes fresh epochs and clears obsolete text hints;
+            // the bounded backoff lets a dense rebuild cadence drain instead
+            // of straddling every commit.
+            if attempt + 1 < FENCE_MAX_ATTEMPTS {
+                std::thread::sleep(fence_backoff_delay(attempt + 1));
+            }
         }
         Err(cc_model::CcError::RetrievalChanged {
-            attempts: MAX_ATTEMPTS,
+            attempts: FENCE_MAX_ATTEMPTS,
         })
     }
 
@@ -455,6 +491,100 @@ mod tests {
         assert!(matches!(error, cc_model::CcError::Database(_)));
         assert!(!error.is_retryable());
         assert_eq!(calls, 1);
+    }
+
+    // P1: a back-to-back rebuild commit storm burns every yield-only retry —
+    // without backoff all three attempts straddle a commit and the fence
+    // returns the hard `RetrievalChanged{3}` error; with bounded backoff the
+    // third commit drains inside the retry backoff and the fence accepts a
+    // stable-generation result.
+    //
+    // Event-driven timing (load-robust): commits 1 and 2 are gated on the
+    // fence entering work attempts 1 and 2, so they always land inside those
+    // attempts' windows. Commit 3 fires shortly after attempt 2 returns: with
+    // yield-only retries it lands inside attempt 3's work window (straddle →
+    // exhaustion); with the 30ms first backoff it drains before attempt 3's
+    // before-read (stable → acceptance).
+    #[test]
+    fn fence_backoff_rides_out_a_back_to_back_commit_storm() {
+        use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+        let (engine, _tmp) = scoped_test_engine();
+        let db = engine.db.clone();
+        let calls = Arc::new(AtomicUsize::new(0));
+        let attempt2_done = Arc::new(AtomicBool::new(false));
+        let writer_calls = calls.clone();
+        let writer_done = attempt2_done.clone();
+        let writer = std::thread::spawn(move || {
+            let commit = |storm: u32| {
+                db.writes()
+                    .replace_files_batch(&[chunk_write_unit(
+                        "src/storm.rs",
+                        &format!("fn storm_{storm}() {{}}"),
+                    )])
+                    .unwrap();
+            };
+            // Bounded gates: under pathological scheduling the writer gives
+            // up instead of deadlocking the test; the asserts then fail with
+            // "storm did not race" rather than hanging.
+            let wait = |gate: &dyn Fn() -> bool| {
+                for _ in 0..5000 {
+                    if gate() {
+                        return true;
+                    }
+                    std::thread::sleep(std::time::Duration::from_millis(1));
+                }
+                false
+            };
+            if !wait(&|| writer_calls.load(Ordering::SeqCst) >= 1) {
+                return;
+            }
+            commit(1);
+            if !wait(&|| writer_calls.load(Ordering::SeqCst) >= 2) {
+                return;
+            }
+            commit(2);
+            if !wait(&|| writer_done.load(Ordering::SeqCst)) {
+                return;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(8));
+            commit(3);
+        });
+        let result: CcResult<(cc_model::generation::ReadGeneration, ())> = engine
+            .with_stable_generation(|_| {
+                calls.fetch_add(1, Ordering::SeqCst);
+                std::thread::sleep(std::time::Duration::from_millis(60));
+                if calls.load(Ordering::SeqCst) == 2 {
+                    attempt2_done.store(true, Ordering::SeqCst);
+                }
+                Ok(())
+            });
+        writer.join().unwrap();
+        let (generation, _) = result
+            .expect("fence must ride out a finite commit storm with bounded backoff");
+        assert_eq!(generation, engine.db.reads().read_generation().unwrap());
+        assert!(calls.load(Ordering::SeqCst) >= 2, "storm did not race");
+    }
+
+    // P1 guard: retry backoff must be strictly positive and bounded — the
+    // fence may never wait without limit.
+    #[test]
+    fn fence_backoff_is_bounded() {
+        let total: std::time::Duration = (1..super::FENCE_MAX_ATTEMPTS)
+            .map(super::fence_backoff_delay)
+            .sum();
+        assert!(
+            total
+                <= std::time::Duration::from_millis(
+                    super::FENCE_BACKOFF_MAX_DELAY_MS * u64::from(super::FENCE_MAX_ATTEMPTS)
+                ),
+            "cumulative backoff {total:?} exceeds budget"
+        );
+        for attempt in 1..super::FENCE_MAX_ATTEMPTS {
+            assert!(
+                !super::fence_backoff_delay(attempt).is_zero(),
+                "attempt {attempt} backoff must be positive"
+            );
+        }
     }
 
     #[test]

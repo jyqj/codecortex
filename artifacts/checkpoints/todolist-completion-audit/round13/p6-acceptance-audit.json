@@ -1,0 +1,104 @@
+{
+ "round": "round13",
+ "date": "2026-10-02",
+ "scope": "P6 batch 5 acceptance (P6-020 + G6): fault matrix + exact oracle replay, dependency graph/default package check, V-numbered verdicts, full workspace regression, GATE finalization, tasks.json closeout",
+ "reviewer": "Claude (GLM agent), batch-5 acceptance executor; audit=self-recorded closeout per P5-020 precedent (GATE finalized in-round with receipts on disk)",
+ "evidence_assembly": {
+  "E1_dependency_default_package": {
+   "receipt": "artifacts/checkpoints/p6-acceptance-20261002/E1-dependency-default-package.json",
+   "result": "default cc-server tree cc-semantic edges=0; --features semantic edges=1 (optional+feature per P6-002 acceptance); cc-semantic transitive closure contains no network client crate (grep reqwest|hyper|http|ureq|curl|tungstenite|quinn|h2 over full semantic tree = empty); dual offline builds exit 0 (default 19.76s, semantic 8.75s); default build creates no cache dir and no second db file"
+  },
+  "E2_fault_matrix_exact_oracle": {
+   "receipt": "artifacts/checkpoints/p6-acceptance-20261002/E2-fault-matrix-exact-oracle-RECEIPT.json",
+   "result": "cargo test -p cc-semantic --locked --offline x2 runs both exit 0: 117 passed / 0 failed (lib 60 incl. fake six-variant ProviderError matrix + 16 exact oracle unit tests; 9 integration suites = 57: artifact_cache 17, manifest_exact_integration 4, publish_cas 4, queue_worker 8, reconcile_rebuild 3, semantic_degrade 5, semantic_gc 8, semantic_recovery 6, space_switch 2)",
+   "six_variants": [
+    "RateLimited{retry_after}",
+    "ServerError",
+    "AuthError",
+    "Timeout",
+    "Cancelled",
+    "InvalidInput(String)"
+   ],
+   "ownership_note": "replayable-seed full fault matrix regression and real subprocess SIGKILL formalization belong to P7-016; this round replays existing P6 matrix tests only, honestly marked not_run at process level"
+  },
+  "V18_probe": {
+   "receipt": "artifacts/checkpoints/p6-acceptance-20261002/v18-probe-default-binary.json",
+   "result": "default binary (no cc-semantic) stdio MCP probe: initialize ok; tools/list 14 tools with contracts; capabilities semantic_state=not_configured, dense_state=disabled, dense_reason=provider_and_vector_publication_not_implemented; unknown tool -32602; status/search ok; zero network zero key; ~/Library/Caches/codecortex/semantic absent after probe"
+  },
+  "full_regression": {
+   "command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk cargo test --workspace --locked --offline",
+   "result": "exit 0; 118 suites; 2051 passed / 0 failed / 60 ignored; window 2026-10-02T12:39:51Z..12:44:17Z",
+   "log": "artifacts/checkpoints/p6-acceptance-20261002/regression-workspace.log",
+   "flake_note": "P5-era benchmark_fixture environment flake passed this round (low ambient load); its documented_environment_flake disposition and thresholds untouched"
+  }
+ },
+ "v_verdicts": {
+  "V13": "passed_local_scope_library_layer (cc-db typed effects/aux non-refresh + outbox/incarnation; orchestration scheduling unwired = backlog #2)",
+  "V14": "passed_local_scope_library_layer (publish_cas+queue_worker; cross-process expressed as incarnation fence, real deployment not certified)",
+  "V15": "not_in_this_gate_by_declaration (fake matrix replayed as G6 evidence; formal V15 belongs to P7 line)",
+  "V16": "passed_local_scope_library_layer (exact oracle 16+4; space isolation, tie, filter-first, bounded batch)",
+  "V17": "passed_local_scope_library_layer_process_level_handed_to_p7 (recovery/GC/degrade green; process-level SIGKILL not_run, P7-016 ownership)",
+  "V18": "passed_local_scope (default-binary probe + cc-server capability tests; degraded production write point unwired = backlog #3/#4)",
+  "V21": "passed_local_scope_evidence_only (not in P6-020 validations; batch-level evidence referenced, no formal matrix inferred)"
+ },
+ "acceptance_reconciliation": [
+  {
+   "criterion": "publish/fencing/GC/rebuild闭环，仍未冒充真实provider效果",
+   "verdict": "passed_local_scope",
+   "evidence": "9 cc-semantic integration suites replayed green (E2); five-fold fencing at library layer; zero network crates in closure (E1); fake never claimed as real-provider quality"
+  },
+  {
+   "criterion": "相关旧功能回归通过；没有证据的项标not_run/blocked而非done",
+   "verdict": "passed",
+   "evidence": "workspace 2051/0/60 exit 0; V17 process-level and P7-016 marked not_run/ownership, never done"
+  }
+ ],
+ "gate": {
+  "file": "docs/roadmap/code-index-v2/P6-GATE.json",
+  "status": "passed_declared_local_scope_library_layer",
+  "finalized": "2026-10-02 (draft to final in one round; receipts on disk)"
+ },
+ "boundary": {
+  "library_layer_complete_composition_root_unwired": true,
+  "wiring_backlog": "13 items, authoritative location artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json#wiring_round_pending_table",
+  "semantic_default_disabled": true,
+  "handover_tension_recorded": "round11 recorded 'V17 real subprocess SIGKILL formalization goes to acceptance round'; this acceptance round records it as not_run at process level (in-process kill simulation green) and, per the batch-5 task brief, assigns real process-level fault ownership to P7-016 — the tension between the two handover phrasings is recorded honestly; no new fault infrastructure was built in the acceptance round"
+ },
+ "closeout": {
+  "status_flips": [
+   {
+    "id": "P6-020",
+    "from": "todo",
+    "to": "done",
+    "evidence_backfilled": true,
+    "implementation_notes_appended": true
+   }
+  ],
+  "counts_before": {
+   "total": 192,
+   "done": 139,
+   "in_progress": 0,
+   "todo": 53
+  },
+  "counts_after": {
+   "total": 192,
+   "done": 140,
+   "in_progress": 0,
+   "todo": 52
+  },
+  "next_task": "P7-001 (dependency-graph pointer only; no P7+/G7 gate inference)",
+  "current_phase": "left as-is (P5) per rounds 10-12 precedent; not touched this round",
+  "rederivation": {
+   "command": "python3 scripts/code_index_plan.py --write",
+   "output_verbatim": "{\"status\": \"passed\", \"task_count\": 192, \"states\": {\"done\": 140, \"todo\": 52}, \"task_sha256\": \"6fd0ecc5cfaac4321c93e9d844e741975794d390ad2cec52aa4827cd13e2bf2c\"}",
+   "expected_match": "预期 140 done，实测一致"
+  }
+ },
+ "redlines_respected": [
+  "未 git commit",
+  "未放宽任何断言/阈值（本轮唯一状态翻转为 P6-020；GATE 中 V 系列按库层口径如实声明，进程级 not_run）",
+  "全程 --offline：零网络成立（测试口径即 offline；cc-semantic 闭包零网络客户端 crate）",
+  "G6 定稿显式声明『库层完成、组合根未接线、semantic 默认 disabled』",
+  "不推断 P7+ 任何门"
+ ]
+}

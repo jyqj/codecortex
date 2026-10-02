@@ -199,6 +199,149 @@ chunk 级检索前的文件预选阶段使用的逐文件分值。四个上下�
 | `file_limit` | `50000` | 首次连接自动索引的最大文件数。 |
 | `idle_timeout_secs` | `60` | 空闲会话驱逐：MCP 无活动超过此秒数后关闭活动项目的 `CodeIndex`（释放 DB 句柄），下次调用透明重开。与 watcher 去抖无关——watcher 按仓库大小自行计算自适应去抖（500ms 基础 + 每 500 文件 100ms，上限 3000ms）。 |
 
+## 语义缓存与降级（P6，可选）
+
+语义持久化是可选功能（`semantic` feature + 组合根接线），默认构建不含
+`cc-semantic`、不读配置、不创建任何文件。以下事实来自已交付的库层实现
+（`crates/cc-semantic/src/cache.rs`、`degrade.rs`；存储侧总记录见
+[STORAGE.md](internals/STORAGE.md#语义持久化p6schema-v22)）；预算/租约参数
+由调用方按库层 API 传入，组合根接线归接线轮。
+
+### `semantic` 配置节（P7-002，声明面）
+
+P7-002 起 `.codecortex.json` 新增首个语义配置节 `semantic`（声明模型能力，
+`crates/cc-model/src/config.rs` 的 `SemanticProviderConfig`）。默认
+`enabled: false`（C14：默认无网络）——关闭时其余字段**可解释但不生效**，
+不解析 provider、不建任何网络路径。
+
+| 字段 | 默认 | 含义 |
+|------|------|------|
+| `enabled` | `false` | 语义 provider 总开关；`false` 时整节惰性。 |
+| `model_id` | `""` | 嵌入模型全名，构成冻结 `VectorSpace` 身份的一部分；`enabled` 时必填。 |
+| `dimensions` | — | 声明的输出维度；`enabled` 时必填，须与模型真实输出一致（探针验证）。 |
+| `metric` | `"cosine"` | 距离度量；冻结 spec v1 只承认 `cosine`，其余值拒启。 |
+| `dimensions_mode` | `"configurable"` | `"configurable"`：端点接受请求体显式 `dimensions` 字段；`"fixed"`：模型单一原生维度、不得发送该字段。供应商不支持 `dimensions` 时走此配置路径，不伪成功。 |
+| `endpoint` | `""` | OpenAI 兼容端点 base URL（如 `https://host/v1`），非凭据。 |
+| `api_key_ref` | — | API key 的**外部引用名**（如 `env:MY_KEY`）；密钥本体永不进入配置，解析归凭据政策层（P7-007）。 |
+| `max_input_tokens` | — | 声明的模型单输入 token 上限；`enabled` 时必填，文档/查询 spec 的 `max_tokens` 超过它即配置错误拒启。 |
+| `max_batch_items` | — | 声明的端点批次上限；`enabled` 时必填，探针按此值全量探测（协议 v1 上限 4096）。 |
+| `encoding_formats` | `["float"]` | 声明支持的 `encoding_format`；必须含 `float`（适配器唯一发送格式）。 |
+| `supports_instruction` | `false` | 模型是否支持 instruction 前缀；spec 声明 instruction 而此处为 `false` 即配置错误拒启。 |
+| `max_concurrent` | `0` | 进程级共享 provider 并发上限（P7-005）。`0` = 不限流（默认，保守值）：组合根单例 `ProviderGate` 处于 permissive 模式，准入永不等待；`≥1` 即硬信号量上限。 |
+| `max_concurrent_per_project` | `0` | 单项目在共享 gate 中的并发份额；`0` = 不限（默认）。设置时必须**严格小于** `max_concurrent`，否则单个项目可占满全部许可、饿死其他项目（V20 验收红线），配置错误拒启。 |
+| `acquire_timeout_ms` | `30000` | 调用方获取并发许可的默认等待预算（毫秒）。只约束**准入等待**，不约束进行中的 provider 调用，也不跨任何 DB 事务（C11）；等待超时返回显式超时，由调用方走 fenced retry。收到 429（带 `Retry-After`）时 gate 进入全局暂停、准入快速失败直至冷却到期。 |
+| `retry_max_attempts` | `0` | 调用层有界重试（P7-006）：**一次 outbox attempt 内**重试装饰器发起的 provider 总尝试次数。`0` = 调用层重试关闭（默认，保守值）：每次 provider 调用只试一次，任何失败直接交还 fenced retry；`≥2` 启用有界重试（指数退避 + 确定性抖动 + deadline/费用封顶，仅重试 429/5xx/timeout 可重试类；auth/永久错误不重试）。该预算独立于 outbox attempt 预算，不消耗 DB attempt。 |
+| `retry_base_backoff_ms` | `500` | 重试指数退避基值（毫秒）：第 `n` 次重试等待 `min(base×2ⁿ, retry_max_backoff_ms)`，再被确定性抖动最多缩 25%。 |
+| `retry_max_backoff_ms` | `8000` | 指数退避上限（毫秒），必须 ≥ `retry_base_backoff_ms`，否则配置错误拒启。 |
+| `retry_total_deadline_ms` | `30000` | **单次**重试序列的墙钟总预算（毫秒）：一次等待若会越过它则不再等待、立即以最后一个错误返回。 |
+| `retry_respect_retry_after` | `true` | 429 的 `Retry-After` 时长是否覆盖该次退避计算（默认尊重）。共享 gate 仍会收到 429 上报并进入全局冷却；若等待后 gate 仍处暂停，重试循环立即停止（不泊线程对抗冷却，交还 fenced retry）。 |
+| `retry_max_cost_units` | — | 单次重试序列的费用封顶（抽象费用单位；P7-008 收据层接入前占位费率为每次尝试 1 单位）。缺省 = 无独立费用帽，仅受次数/deadline 约束。 |
+| `breaker_failure_threshold` | `5` | 进程级 provider 断路器（P7-006）的**连续**可重试失败（5xx/timeout）阈值，成功清零；`0` = 显式关闭断路器。默认开启（保守值）：断路器只对持续失败生效，不影响任何成功路径。429、输入非法、取消不计入。 |
+| `breaker_open_ms` | `30000` | 断路器开路窗长（毫秒）：开路期间快速失败、不触 provider；窗口流逝后惰性进入半开、每次只放行一个探测调用（成功闭合、失败重开）。`AuthError` 立即开路且窗长 ×10。断路器是组合根单例（与 `ProviderGate` 同点装配），无线程/定时器，时钟注入。 |
+| `network_opt_in` | `false` | **显式网络 opt-in**（P7-007 外发政策）。默认 `false` = 默认无网络：未开启时组合根拒绝装配任何 provider transport（`cc-semantic::policy::gate_transport_assembly` 与适配器构造器双重强制，配置错误拒启）。`enabled: true` 单独不足以放开网络——外发必须由本键独立、显式声明。 |
+| `allow_http` | `false` | 是否允许明文 `http://` 端点（P7-007）。默认 `false` = 仅 https；明文端点被外发政策拒绝（配置错误），设置 `true` 才放行。生产部署建议保持关闭。 |
+
+### 代码外发与凭据政策（P7-007，执行机制腿）
+
+口径：**默认无网络 + 显式 opt-in**。本节声明政策的机制保证与数据流向；
+机制实现见 `crates/cc-semantic/src/policy.rs`（`EgressPolicy`、
+`gate_transport_assembly`、`GuardedTransport`、`audit_egress`、
+`resolve_key_reference`、`redact_for_log`）。
+
+**默认无网络**：`semantic.enabled` 与 `semantic.network_opt_in` 双默认
+`false`。默认状态下不存在任何网络代码路径（transport 为 `None`，适配器
+fail-closed disabled），不解析密钥、不发起连接；未 opt-in 时装配
+transport 是配置错误拒启，而不是静默联网。
+
+**数据流向声明（外发面逐项清单）**：每一次 `/embeddings` 请求**只会**
+发送以下内容，`policy::audit_egress` 机制化审计请求体键集与头部集合
+"恰好等于声明面"（多余字段/缺失字段/多余头部都判违规并点名）：
+
+1. **input 文本 bytes**——批内文本（渲染后的文档分块或查询文本；它们
+   **可能包含源码片段**，这是嵌入调用的声明内容本身）；
+2. **model 名**——冻结 `space.model_id()`；
+3. **`encoding_format: "float"`**——唯一承认的编码格式；
+4. **`dimensions` 参数**——**仅探针请求**、且仅 `dimensions_mode =
+   "configurable"` 时（适配器 embed 请求永不携带）。
+
+头部恰好为 `Content-Type`、`Authorization`（凭据唯一通道）、`Accept`。
+除上述声明外**零外发**：无遥测、无额外字段、无 tracing 日志（适配层与
+政策层零日志调用）。
+
+**凭据机制**：配置只存外部引用 `api_key_ref`（`env:NAME` 或 `file:PATH`
+两种形式，其余形式——包括内联明文——显式拒绝）。密钥在调用点解析为
+内存中的 `EmbeddingApiKey`：`Debug` 固定输出 `[REDACTED]`、无 `Display`、
+只经 `Authorization: Bearer` 头离开进程；解析失败只点名引用名/配置键，
+永不回显密钥值；错误诊断若意外嵌入密钥，`redact_for_log` 将
+`Bearer <token>` 脱敏后再进日志。密钥零落配置、日志、错误、缓存与磁盘
+（能力缓存只存结构判定，不含凭据）；内存生命周期尽量短——无 static、
+无缓存、无持久化，组合根装配后即可丢弃。**如实声明**：显式
+zero-on-drop 内存擦除本轮未实现（避免为离线闭包新增依赖），属已知边界
+而非已完成保证。
+
+**传输安全机制**：默认仅 https（`allow_http: false` 拒绝明文端点）；
+per-request 超时强制（零超时在政策守卫 `GuardedTransport` 处被拒）；
+**重定向永不跟随**——适配层把任何 3xx 判为不可重试的 `InvalidInput`
+（机制测试断言 seam 恰好收到一次请求、认证头绝不重发），且
+`EmbeddingHttpTransport` 契约条款绑定一切实现：不得自动跟随重定向，
+底层客户端无法关闭 auto-follow 时至少必须在任何重定向跳前剥离
+`Authorization` 头并仍透出最终 3xx 状态。任何注入的 transport 在适配器
+构造时被 `GuardedTransport` 包装，scheme 准入与超时强制不依赖实现方自觉。
+
+**blocked 声明（双轨口径，D1/D2 2026-10-02）**：live 真实外发（生产
+transport、真实端点验证）归 P7-018，本轮 conditional blocked；敏感文件
+外发分类矩阵同因未开放，无配置面。本轮政策只声明上述机制保证，**不**
+宣称任何审计认证、合规认证或对第三方 provider 行为的保证。
+
+声明能力与冻结编码面（`VectorSpace`/`DocumentEncodingSpec`/
+`QueryEncodingSpec`）的一致性校验与探针协议见 `crates/cc-semantic/src/capability.rs`：
+任何"支持差异"（维度/度量/上限/instruction/编码格式不匹配）都是
+`CcError::Config` 拒启，不是静默默认；探针（mock transport 全链验证）只有
+成功判定入进程内能力缓存（按 `SpaceDigest` 键），失败永不入缓存。
+
+### cache 根目录解析
+
+`resolve_cache_root`（cache.rs:128）按序取第一个可用项：
+
+1. 环境变量 `CODECORTEX_SEMANTIC_CACHE_ROOT`（空白值视为未设）——
+   部署/测试钉根的首选方式；
+2. macOS：`~/Library/Caches/codecortex/semantic`；
+3. Linux：`$XDG_CACHE_HOME/codecortex/semantic`，未设 XDG 时
+   `~/.cache/codecortex/semantic`。
+
+解析不出默认根（无 `HOME`）时调用方必须显式传根。`put`/`get` 路径
+不读任何环境变量；`open` 零文件系统副作用，首个 `put` 才惰性建目录
+——默认构建/启动不产生 cache 目录。
+
+### namespace 键与跨项目隔离
+
+namespace = `blake3("cc-semantic.cache-namespace.v1", 项目身份)` 的
+64 位 hex（`namespace_key`，cache.rs:96），是 cache 目录的首层分隔：
+`<root>/namespace-<ns>/<space>/<input>/<spec>.bin`。跨项目默认隔离、
+跨克隆（同项目身份）共享；**不绑 incarnation**——索引重建换库后解析
+同一 namespace，付费向量经 `(space, input, spec)` 全链校验直接复用。
+项目身份字符串由组合根提供（当前来源与项目索引缓存 `CODECORTEX_CACHE_DIR`
+的规范路径同源；接线轮接线）。
+
+### 降级语义与 re-embed 预算
+
+- 纯缓存 Miss（冷缓存）是常态，**永不降级**：dense lane 只缺席该文档，
+  lexical/graph 本地检索不受影响。
+- 损坏（Corrupt）：检索跳过候选不报错；显式检测点将坏对象双半隔离进
+  `<root>/quarantine/` 并留诊断 sidecar（`degrade.rs:119`），可见性
+  判据 `corrupt_events > 0 || 预算耗尽` → capability status
+  `semantic_state: "degraded"` + `degraded_reason`（透出槽已交付
+  `capability_status.rs:100`，组合根转写归接线轮）。
+- **re-embed 预算**：只对"已付费产物损坏后的补嵌"计费准入（首嵌不入
+  预算）；`BudgetedProvider`（`degrade.rs:347`）整批裁决，超限拒绝发生
+  在调用内层 provider 之前，原因持久化进 outbox `last_error`，attempt
+  预算耗尽终态 `failed` 死信——不静默无界重费。预算值当前为进程内
+  调用方参数（进程生命周期，重启清零；outbox 行计数为持久审计轨），
+  尚无配置文件键。
+- GC 宽限（`min_retention_secs`，默认 3600s）同理为调用方参数
+  （`gc.rs:93`），防"刚发布产物被 GC 删除"；接线轮应将其纳入配置面并
+  保证非零下限。
+
 ## 仓库规模档位
 
 CodeCortex 检测项目规模并自动调整输出预算：
@@ -249,6 +392,12 @@ CodeCortex 检测项目规模并自动调整输出预算：
 | 变量 | 默认 | 作用 |
 |------|------|------|
 | `CODECORTEX_PPID_POLL_MS` | `5000` | 父进程死亡检测间隔（毫秒）；`0` 关闭 watchdog |
+
+### 语义缓存（P6，可选，`semantic` 接线后生效）
+
+| 变量 | 默认 | 作用 |
+|------|------|------|
+| `CODECORTEX_SEMANTIC_CACHE_ROOT` | 未设（平台默认） | 派生 artifact cache 根目录覆盖，优先于平台默认（macOS `~/Library/Caches/codecortex/semantic`、Linux `$XDG_CACHE_HOME\|~/.cache/codecortex/semantic`）；空白值视为未设。cache 机制已交付库层，组合根接线归接线轮，详见上文[语义缓存与降级](#语义缓存与降级p6可选) |
 
 ### 评测 / 基准（仅 cc-eval）
 

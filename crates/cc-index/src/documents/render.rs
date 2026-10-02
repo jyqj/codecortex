@@ -155,3 +155,85 @@ pub fn render(
         render_key,
     })
 }
+
+/// Rendered-input manifest entry for batch admission (P7-003): the exact
+/// final bytes an admission planner will measure, plus the declared token
+/// estimate stamped at render time. Pure projection — no IO, no re-render.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct RenderedManifestEntry {
+    /// Exact final input bytes (`EmbeddingInput.text`, UTF-8): what the
+    /// provider would see, measured as-is — never re-derived from the chunk.
+    pub bytes: Vec<u8>,
+    /// Declared token estimate stamped by `render`.
+    pub token_estimate: u32,
+    /// Declared estimator identity (`utf8-bytes-div-ceil-4-v1`).
+    pub token_estimator: &'static str,
+    /// Explicit render-layer truncation flag (metadata only; source text is
+    /// never truncated — render re-chunks or fails instead).
+    pub metadata_truncated: bool,
+}
+
+/// Expose one rendered input as an admission manifest entry. Refuses to
+/// launder a foreign estimator or a drifted estimate: both must match the
+/// declared workspace estimator exactly, so the admission side's declared
+///口径 and this side's stamped numbers can never disagree silently.
+pub fn manifest(input: &EmbeddingInput) -> CcResult<RenderedManifestEntry> {
+    if input.token_estimator != cc_model::chunk_policy::TOKEN_ESTIMATOR {
+        return Err(error("manifest: foreign token estimator"));
+    }
+    if input.token_estimate != cc_model::approx_tokens(&input.text) {
+        return Err(error(
+            "manifest: token estimate drifted from the declared estimator",
+        ));
+    }
+    Ok(RenderedManifestEntry {
+        bytes: input.text.as_bytes().to_vec(),
+        token_estimate: input.token_estimate,
+        token_estimator: cc_model::chunk_policy::TOKEN_ESTIMATOR,
+        metadata_truncated: input.metadata_truncated,
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use cc_model::{source::SourceSnapshot, Language};
+    use cc_parsers::ParserRegistry;
+
+    fn rendered_input(text: &str) -> EmbeddingInput {
+        let out = ParserRegistry::new()
+            .parse("a.py", text, Language::Python)
+            .unwrap();
+        let source = SourceSnapshot::new(text.as_bytes());
+        render(&source, &out.chunks[0], RenderOptions::default()).unwrap()
+    }
+
+    #[test]
+    fn manifest_reports_exact_final_bytes_and_the_declared_estimate() {
+        let input = rendered_input("def sample():\n    return 1\n");
+        let entry = manifest(&input).unwrap();
+        assert_eq!(entry.bytes, input.text.as_bytes());
+        assert_eq!(entry.token_estimator, cc_model::chunk_policy::TOKEN_ESTIMATOR);
+        assert_eq!(
+            entry.token_estimate,
+            cc_model::approx_tokens(&input.text)
+        );
+        assert_eq!(entry.metadata_truncated, input.metadata_truncated);
+        // The bytes are the FINAL input (framing prefix + header + source),
+        // not the raw chunk text.
+        assert!(std::str::from_utf8(&entry.bytes)
+            .unwrap()
+            .starts_with("CODECORTEX_EMBED_V1\n"));
+    }
+
+    #[test]
+    fn manifest_refuses_foreign_estimator_or_drifted_estimate() {
+        let mut foreign = rendered_input("def sample():\n    return 1\n");
+        foreign.token_estimator = "tiktoken-cl100k".into();
+        assert!(manifest(&foreign).is_err());
+
+        let mut drifted = rendered_input("def sample():\n    return 1\n");
+        drifted.token_estimate = drifted.token_estimate + 1;
+        assert!(manifest(&drifted).is_err());
+    }
+}

@@ -27,6 +27,7 @@ pub mod query_policy;
 pub mod rrf;
 mod scope;
 mod score_trace;
+pub mod semantic_hydrate_guard;
 pub mod selection;
 #[path = "lanes/semantic_adapter.rs"]
 pub mod semantic_adapter;

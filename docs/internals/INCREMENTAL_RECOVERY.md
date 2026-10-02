@@ -52,6 +52,35 @@ Independent truth checks are required in addition to full/incremental comparison
 
 ## Upgrade, rollback and validation
 
-Schema 21 (document manifests/spec stamps, per-file chunk policy stamps, original chunk byte coordinates, single module resolver, retained import context/Go package sets and explicit knowledge states) is incompatible with schema 20 and earlier: the cache needs a clean isolated full rebuild, both for the durable table and to remove old regex-invented Python/JS/TS facts and obsolete call positions. P2-D verification and remaining cost bounds are detailed in [INCREMENTAL_VERIFICATION.md](INCREMENTAL_VERIFICATION.md). Never test this by clearing a developer's daily index. Rollback uses the preserved prior source/binary and a separate cache rebuild, plus the existing durable-asset export/restore procedure.
+Schema 21 (document manifests/spec stamps, per-file chunk policy stamps, original chunk byte coordinates, single module resolver, retained import context/Go package sets and explicit knowledge states) is incompatible with schema 20 and earlier: the cache needs a clean isolated full rebuild, both for the durable table and to remove old regex-invented Python/JS/TS facts and obsolete call positions. Schema 22 (P6 semantic persistence) extends 21 additively — a stored-21 database migrates in place with all rows, epochs and the incarnation preserved; every other stored version keeps rebuild-on-mismatch. P2-D verification and remaining cost bounds are detailed in [INCREMENTAL_VERIFICATION.md](INCREMENTAL_VERIFICATION.md). Never test this by clearing a developer's daily index. Rollback uses the preserved prior source/binary and a separate cache rebuild, plus the existing durable-asset export/restore procedure.
 
 The per-batch implementation report and raw receipts identify tested source, toolchains, commands and boundaries. Unit/storage, finite-closure, actual-parser/SQLite, watcher and public-MCP evidence are separate. Passing P2-C does not complete P2/G2, M1, embedding, large-repository performance or release certification.
+
+## 语义持久化的恢复事实（P6）
+
+全量重建协议对语义状态的语义（实现：`cc-db/src/semantic_rebuild.rs`、
+`cc-semantic/src/reconcile.rs`/`recovery.rs`；存储侧总记录见
+[STORAGE.md](STORAGE.md#语义持久化p6schema-v22)）：
+
+- **换库改变 incarnation，语义状态不从零携带**：staging 库的
+  `semantic_spaces` 为空（重建写路径不挂接 outbox），swap 后
+  `semantic_manifest`/`semantic_outbox`/`semantic_spaces` 全部从零、
+  `semantic_epoch` 键缺席（= 语义未就绪，绝不当作 0）。组合根在 swap 后
+  重注册 active space，再走 reconcile 协议恢复语义状态。
+- **reconcile 三步**：fence 先行（权威路径 fresh 读 incarnation，持旧
+  inode 的幽灵进程零写入即被拒）→ 从 `document_manifest × active space`
+  重导 desired 集合并重入队 → 逐任务 `cache.get`：命中且校验过直接走
+  发布 CAS（**零 provider 调用，付费产物保留**），miss/corrupt 交还
+  pending 给 worker（唯一付费方）。
+- **崩溃恢复有界且可复算**：`recover_scan` = fence 先行 + 一次有界
+  过期 lease 回收 + 一轮有界重放 + 死信清点（只清点不复活），调用方按
+  `converged` 循环驱动；crash 点残态矩阵见
+  [STORAGE.md](STORAGE.md#恢复步骤与-crash-点)。与本文 P2-C 的
+  resolution frontier 恢复相互独立：frontier 恢复索引解析欠账，
+  recovery 恢复语义发布队列，二者互不代理。
+- **派生 cache 不随重建丢失**：cache namespace 不含 incarnation，
+  重建/降级后同一 namespace 经 `(space, input, spec)` 全链校验命中即
+  复用；损坏只降级不污染。这是"重建不误删已付费向量"的机制前提。
+
+组合根接线（swap 后的重注册/reconcile/recovery 编排时机）尚未落地，
+上述均为库层协议事实。

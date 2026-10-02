@@ -23,7 +23,7 @@ use crate::plan::{language_from_path, parse_language_name, SearchPlan};
 mod exact_symbol;
 #[path = "lanes/path.rs"]
 mod path;
-pub(crate) use crate::fusion::{fuse_outcomes, FusedScore};
+pub(crate) use crate::fusion::{fused_candidate_ordering, fuse_outcomes, FusedScore};
 pub(crate) use exact_symbol::ExactSymbolLane;
 pub(crate) use path::PathLane;
 

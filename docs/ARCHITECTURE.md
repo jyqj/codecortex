@@ -23,7 +23,7 @@ CodeCortex 是一个纯代码智能引擎：对代码库构建语义索引，通
 cc-model      数据类型、配置、错误定义（serde、thiserror、blake3）
     |
 cc-parsers    tree-sitter AST 提取 + 框架检测（仅依赖 cc-model）
-cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、21 表 + 5 FTS5、schema v6）
+cc-db         SQLite 索引存储（r2d2 读池、WAL、FTS5、29 基表 + 5 FTS5、schema v22）
     |
 cc-index      文件扫描、增量索引、Louvain 社区检测（依赖 cc-db + cc-parsers）
 cc-search     排序式本地检索（FTS5 + grep + 预选/RRF）、Cypher 子集引擎（依赖 cc-model + cc-db）

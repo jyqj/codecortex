@@ -1,0 +1,166 @@
+{
+  "round": "round15",
+  "date": "2026-10-03",
+  "scope": "P7 批次 2（P7-006..010）收口落账",
+  "review_verdict": {
+    "result": "PASS",
+    "tasks_passed": 5,
+    "tasks_total": 5,
+    "basis": "批次 2 实施轮评审（5/5 任务通过），收口为落账轮：仅状态翻转与证据回填，零代码改动",
+    "low_risk_findings_deferred_to_P7_014": [
+      "断路器半开单探测槽与调用层重试预算/收据的时序交互口径",
+      "漏记偏差（P7-010 scope 文件名口径，已在本轮补录）",
+      "engine.rs set_project 接线的表述精度（fail-closed 语义精确化）"
+    ]
+  },
+  "tasks_flipped": [
+    {
+      "id": "P7-006",
+      "title": "有界重试与断路器",
+      "from": "todo",
+      "to": "done",
+      "impl_record": "artifacts/checkpoints/p7-impl-20261002/P7-006-IMPLEMENTATION.md",
+      "crates": [
+        "crates/cc-semantic/src/providers/openai_compatible.rs",
+        "crates/cc-semantic/tests/retry_worker_layering.rs",
+        "crates/cc-model/src/config.rs",
+        "crates/cc-server/src/service_factory.rs"
+      ],
+      "tests": "重试/断路器 20 项单测 + retry_worker_layering 5 项集成；cc-semantic lib 176；cc-model 84（8 新键）；cc-server feature lib 253",
+      "review_boundary": "失败率变体未预实现；Suspended 等待后消费；开路错误形态 ServerError；worker 侧透出归接线轮"
+    },
+    {
+      "id": "P7-007",
+      "title": "代码外发与凭据政策",
+      "from": "todo",
+      "to": "done",
+      "impl_record": "artifacts/checkpoints/p7-impl-20261002/P7-007-IMPLEMENTATION.md",
+      "crates": [
+        "crates/cc-semantic/src/policy.rs",
+        "crates/cc-semantic/src/providers/openai_compatible.rs",
+        "crates/cc-model/src/config.rs"
+      ],
+      "tests": "policy 20 项 + capability 探针审计；cc-semantic lib 197；cc-model 85（egress 双键）",
+      "review_boundary": "live 腿 conditional blocked 归 P7-018（真实 transport 核验、敏感文件外发矩阵）；zero-on-drop 未实现；守卫不拦 3xx"
+    },
+    {
+      "id": "P7-008",
+      "title": "费用与不确定尝试收据",
+      "from": "todo",
+      "to": "done",
+      "impl_record": "artifacts/checkpoints/p7-impl-20261002/P7-008-IMPLEMENTATION.md",
+      "crates": [
+        "crates/cc-semantic/src/admission.rs",
+        "crates/cc-semantic/src/providers/openai_compatible.rs"
+      ],
+      "tests": "收据层 7 + 挂接 8 = 15 项新增；cc-semantic lib 212",
+      "review_boundary": "收据内存聚合零落盘（落库取舍留 P7-016）；挂接点 RetryingProvider::run 唯一漏斗；reported 待端口解冻；零配置键"
+    },
+    {
+      "id": "P7-009",
+      "title": "查询编码与缓存",
+      "from": "todo",
+      "to": "done",
+      "impl_record": "artifacts/checkpoints/p7-impl-20261002/P7-009-IMPLEMENTATION.md",
+      "crates": [
+        "crates/cc-semantic/src/cache.rs",
+        "crates/cc-semantic/tests/query_cache.rs"
+      ],
+      "tests": "query_cache 新集成套件 17 项；cc-semantic lib 212 零回归",
+      "review_boundary": "Q5 裁决：键不含 semantic_epoch（可一键推翻）；键落 cache.rs 非 spec.rs（冻结面零 diff）；零配置键归 P7-014"
+    },
+    {
+      "id": "P7-010",
+      "title": "dense召回端口接线",
+      "from": "todo",
+      "to": "done",
+      "impl_record": "artifacts/checkpoints/p7-impl-20261002/P7-010-IMPLEMENTATION.md",
+      "crates": [
+        "crates/cc-server/src/semantic_wiring.rs",
+        "crates/cc-server/src/engine.rs",
+        "crates/cc-server/src/lib.rs",
+        "crates/cc-db/src/index_db_retrieval.rs"
+      ],
+      "tests": "semantic_wiring 10 项；cc-server feature lib 263 / 默认 251；cargo tree 默认 0 边 / feature 1 边；V18 探针复跑零漂移；cc-db 173",
+      "deviation_backfill": "漏记偏差补录：recall 实现落 crates/cc-server/src/semantic_wiring.rs 而非 scope 所列 crates/cc-search/src/lanes/semantic_adapter.rs——架构理由：recall 供给是组合根装配产物（与 gate/breaker 单例同点集中装配），semantic_adapter 是消费侧收据门，保持零改动即接线不触碰既有检索链；实施记录 §6.1 已申报 cc-db 越界但漏记此条",
+      "review_boundary": "查询路径不内联编码（归 P7-012/013）；诚实边界——生产侧当前无查询编码调用方，enabled 下 dense lane 恒 Unavailable 直至该决策落地"
+    }
+  ],
+  "wiring_ledger_verification": {
+    "source": "P7-010 实施记录 §2 接线待办消纳表（round12 审计 wiring_round_pending_table 13 项）",
+    "consumed": {
+      "count": 3,
+      "items": [
+        {"no": 4, "item": "降级快照转写（DegradationLedger::snapshot → set_semantic_degradation）", "where": "semantic_wiring.rs wire_with 桥接 + From 转写"},
+        {"no": 5, "item": "cache 根目录与项目身份传入", "where": "resolve_cache_root_with + namespace_key(项目规范路径)"},
+        {"no": 8, "item": "worker 公平化 ORDER BY", "where": "归 P7-005（批次 1 已交付）"}
+      ]
+    },
+    "partial": {
+      "count": 1,
+      "items": [
+        {"no": 1, "item": "try_init 组合根接线与语义子系统初始化", "done_part": "最小装配（assemble + set_project 接线）", "remaining": "配置键驱动完整 try_init、capability probe 触发点、运行时关闭路径 → P7-014"}
+      ]
+    },
+    "pending": {
+      "count": 9,
+      "items": [
+        {"no": 2, "item": "drain/reconcile/recovery/GC 调度时机", "to": "P7-014（+P7-015 竞争测试验收腿）"},
+        {"no": 3, "item": "worker drain 外层挂 degrade 门面", "to": "P7-014"},
+        {"no": 6, "item": "GC 宽限配置面", "to": "P7-014"},
+        {"no": 7, "item": "GC 审计计数", "to": "P7-014"},
+        {"no": 10, "item": "页帽化", "to": "P7-014"},
+        {"no": 13, "item": "space switch 触发面", "to": "P7-014"},
+        {"no": 9, "item": "机会性 reclaim 收窄", "to": "P7-016"},
+        {"no": 11, "item": "desired 投影回接", "to": "P7-015"},
+        {"no": 12, "item": "dense lane 对覆盖率的消费", "to": "P7-011（守卫）+ P7-012（coverage 透出）"}
+      ]
+    },
+    "checksum": "3 已消 + 1 部分 + 9 待 = 13 项，与 round12 待办表一致"
+  },
+  "low_risk_findings": [
+    {
+      "finding": "探测槽预算时序",
+      "detail": "断路器半开单探测槽与调用层重试预算/收据的时序交互口径需对齐",
+      "disposition": "随 P7-014 消纳，本轮零代码改动"
+    },
+    {
+      "finding": "漏记偏差",
+      "detail": "P7-010 recall 实现落 cc-server/semantic_wiring.rs 而非 scope 所列 cc-search/semantic_adapter.rs（架构理由见 tasks_flipped[4].deviation_backfill），已补录入 P7-010 implementation_notes",
+      "disposition": "随 P7-014 消纳，本轮零代码改动"
+    },
+    {
+      "finding": "set_project 表述精度",
+      "detail": "engine.rs set_project 接线的 fail-closed 表述需精确到 wire 在字段赋值之后、返回 Err 即整体失败且 self 未被污染的语义",
+      "disposition": "随 P7-014 消纳，本轮零代码改动"
+    }
+  ],
+  "dual_track_accounting": {
+    "mock_leg": "done：cc-semantic lib 212 + cc-server 263（feature）/251（默认）+ cc-model 85 + cc-db 173 全绿；全程 offline 锁定运行；零真实网络；ports/spec/schema 冻结面零改动",
+    "live_leg": "blocked：用户 2026-10-02 D1/D2 决策本轮不授权真实 provider（artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json）",
+    "formal_validation_evidence": "V11/V15/V16/V18/V20 正式验证矩阵证据 not_run，不推断，归 live 解封与验收轮"
+  },
+  "validation": {
+    "command": "python3 scripts/code_index_plan.py --write",
+    "result": "passed",
+    "task_count": 192,
+    "states": {"done": 150, "in_progress": 0, "todo": 42},
+    "unchanged_expectation": "validation 原样：192 / 150 done / 42 todo，与预期一致",
+    "task_sha256": "679da865769a3d4301397e77943638aafe9e484e594fac851a986486131c5199",
+    "derived_page": "docs/roadmap/code-index-v2/05-TODO.md（由 tasks.json 重派生）"
+  },
+  "closure_checklist": [
+    "5 任务 status 翻转仅限 P7-006..010，其余 187 项状态未动",
+    "evidence[] 五任务各回填（crates 改动 + 实施记录 + limitations 含双轨口径与评审边界）",
+    "implementation_notes 五任务各一句收口摘要；P7-010 额外记漏记偏差补录 + 三条低风险发现",
+    "execution_note 追加批次 2 收口段（含接线账目：已消 3 / 部分 1 / 待 9）",
+    "05-TODO.md 重派生，validate 依赖门通过（P7-006←P6-020/P7-001/P7-005 done 链满足）",
+    "未 git commit；crates/ 零改动（三条发现随 P7-014 消纳）；验收门（V 矩阵/G 门）不推断"
+  ],
+  "red_lines": {
+    "no_commit": true,
+    "no_crates_changes": true,
+    "status_flip_scope": "仅 P7-006..010",
+    "no_gate_inference": "V11/V15/V16/V18/V20 等正式证据 not_run；G 门/验收轮不推断"
+  }
+}

@@ -28,6 +28,111 @@ pub enum EpochClock {
     Evidence,
 }
 
+/// The closed set of write-effect categories a single commit can carry —
+/// the mechanization of ADR-0003's epoch boundary at the commit seam
+/// (see [`crate::unit_of_work::UnitOfWork::commit_with`]).
+///
+/// Commit-level rules:
+/// - `Index`/`Evidence`: "commit must bump" — a commit carrying the effect
+///   bumps the matching clock exactly once (the pre-existing rule).
+/// - `Semantic`: bumps `semantic_epoch` exactly once, and only when the
+///   semantic visible set (`semantic_manifest` rows) actually changed. The
+///   visible-set diff is the publisher's duty (P6-011 publish CAS); a repeat
+///   ack of unchanged content must not declare this effect. The first bump
+///   persists `1`: the key moves from absent (`ReadGeneration::semantic_epoch
+///   == None`, "not ready") to present — it is never fabricated as `0`.
+/// - `Auxiliary` (claim/renew/heartbeat/retry bookkeeping): advances no
+///   clock at all — queue reliability data is not search content.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum WriteEffect {
+    Index,
+    Evidence,
+    Semantic,
+    Auxiliary,
+}
+
+/// The declared effect set of one commit (ADR-0003 typed write effects).
+///
+/// Declarative only: `commit_with` bumps exactly the declared clocks, once
+/// each, inside the commit transaction — it never inspects table contents.
+/// `Auxiliary` and the empty set are epoch-equivalent (both advance nothing);
+/// `Auxiliary` exists so a bookkeeping-only commit can say so explicitly.
+#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+pub struct EffectSet(u8);
+
+impl EffectSet {
+    /// Declares nothing: legal for pure-bookkeeping units, bumps no clock.
+    pub const EMPTY: Self = Self(0);
+
+    const INDEX_BIT: u8 = 1 << 0;
+    const EVIDENCE_BIT: u8 = 1 << 1;
+    const SEMANTIC_BIT: u8 = 1 << 2;
+    const AUXILIARY_BIT: u8 = 1 << 3;
+
+    /// The singleton set carrying exactly `effect`.
+    pub const fn of(effect: WriteEffect) -> Self {
+        Self(match effect {
+            WriteEffect::Index => Self::INDEX_BIT,
+            WriteEffect::Evidence => Self::EVIDENCE_BIT,
+            WriteEffect::Semantic => Self::SEMANTIC_BIT,
+            WriteEffect::Auxiliary => Self::AUXILIARY_BIT,
+        })
+    }
+
+    /// Whether `effect` is declared by this set.
+    pub const fn contains(self, effect: WriteEffect) -> bool {
+        self.0 & Self::of(effect).0 != 0
+    }
+
+    /// Merge two sets (bitwise or; idempotent and order-independent).
+    pub const fn union(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+}
+
+impl From<WriteEffect> for EffectSet {
+    fn from(effect: WriteEffect) -> Self {
+        Self::of(effect)
+    }
+}
+
+impl std::ops::BitOr for EffectSet {
+    type Output = Self;
+    fn bitor(self, rhs: Self) -> Self {
+        self.union(rhs)
+    }
+}
+
+impl std::fmt::Debug for EffectSet {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        const INDEX_BIT: u8 = 1 << 0;
+        const EVIDENCE_BIT: u8 = 1 << 1;
+        const SEMANTIC_BIT: u8 = 1 << 2;
+        const AUXILIARY_BIT: u8 = 1 << 3;
+        let names: [(u8, &str); 4] = [
+            (INDEX_BIT, "Index"),
+            (EVIDENCE_BIT, "Evidence"),
+            (SEMANTIC_BIT, "Semantic"),
+            (AUXILIARY_BIT, "Auxiliary"),
+        ];
+        if self.0 == 0 {
+            return write!(f, "EffectSet(EMPTY)");
+        }
+        write!(f, "EffectSet(")?;
+        let mut first = true;
+        for (bit, name) in names {
+            if self.0 & bit != 0 {
+                if !first {
+                    write!(f, "|")?;
+                }
+                write!(f, "{name}")?;
+                first = false;
+            }
+        }
+        write!(f, ")")
+    }
+}
+
 /// Table → clock declaration, with a one-line reason per entry.
 ///
 /// Exception worth calling out: `http_call_edges` content is written by index
@@ -184,13 +289,23 @@ pub fn boost_http_edge_confidence_clock() -> EpochClock {
 mod tests {
     use tempfile::TempDir;
 
-    use super::{boost_http_edge_confidence_clock, epoch_clock_for_table, EpochClock, EPOCH_RULES};
+    use super::{
+        boost_http_edge_confidence_clock, epoch_clock_for_table, EffectSet, EpochClock,
+        WriteEffect, EPOCH_RULES,
+    };
     use crate::index_db::{FileWriteUnit, IndexDb, IndexGeneration};
 
     fn setup() -> (IndexDb, TempDir) {
         let tmp = TempDir::new().unwrap();
         let db = IndexDb::open(&tmp.path().join("epoch_rules.db")).unwrap().0;
         (db, tmp)
+    }
+
+    /// The full clock triple incl. `semantic_epoch` (strict read: `None`
+    /// means the key does not exist and is never folded into 0).
+    fn generation_triple(db: &IndexDb) -> (u64, u64, Option<u64>) {
+        let g = db.reads().read_generation().unwrap();
+        (g.index_epoch, g.evidence_epoch, g.semantic_epoch)
     }
 
     fn file_unit(rel_path: &str) -> FileWriteUnit {
@@ -204,11 +319,17 @@ mod tests {
         }
     }
 
-    /// Run `write`, then assert exactly the declared clock advanced.
+    /// Run `write`, then assert exactly the declared clock advanced (and
+    /// `semantic_epoch` never moved — Index/Evidence audits double as the
+    /// guard that pre-P6 write paths cannot touch the semantic clock).
     fn assert_bumps(db: &IndexDb, declared: EpochClock, label: &str, write: impl FnOnce(&IndexDb)) {
-        let before = db.generation().unwrap();
+        let before = db.reads().read_generation().unwrap();
         write(db);
-        let after = db.generation().unwrap();
+        let after = db.reads().read_generation().unwrap();
+        assert_eq!(
+            after.semantic_epoch, before.semantic_epoch,
+            "{label}: declared {declared:?} but semantic_epoch moved"
+        );
         match declared {
             EpochClock::Index => {
                 assert!(
@@ -396,6 +517,104 @@ mod tests {
                 evidence_epoch: before.evidence_epoch,
             }
         );
+    }
+
+    #[test]
+    fn effect_set_membership_and_union_are_exact() {
+        let both = EffectSet::of(WriteEffect::Index).union(EffectSet::of(WriteEffect::Semantic));
+        assert!(both.contains(WriteEffect::Index));
+        assert!(both.contains(WriteEffect::Semantic));
+        assert!(!both.contains(WriteEffect::Evidence));
+        assert!(!both.contains(WriteEffect::Auxiliary));
+        // Union is order-independent and idempotent.
+        assert_eq!(
+            both,
+            EffectSet::of(WriteEffect::Semantic).union(EffectSet::of(WriteEffect::Index))
+        );
+        assert_eq!(both.union(both), both);
+        assert_eq!(
+            EffectSet::from(WriteEffect::Evidence),
+            EffectSet::of(WriteEffect::Evidence)
+        );
+    }
+
+    /// V13 (P6-004): a commit declaring only Auxiliary advances no clock —
+    /// queue bookkeeping (claim/renew/heartbeat/retry) is not search content.
+    #[test]
+    fn auxiliary_commit_advances_no_clock() {
+        let (db, _tmp) = setup();
+        let before = generation_triple(&db);
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.delete_synthetic_call_edges("event_emitter").unwrap();
+        uow.commit_with(EffectSet::of(WriteEffect::Auxiliary))
+            .unwrap();
+
+        assert_eq!(
+            generation_triple(&db),
+            before,
+            "Auxiliary commit must leave index/evidence/semantic untouched"
+        );
+    }
+
+    /// The empty effect set is legal for bookkeeping-only units and behaves
+    /// epoch-equivalently to Auxiliary (declares nothing at all).
+    #[test]
+    fn empty_effect_set_commits_without_touching_any_clock() {
+        let (db, _tmp) = setup();
+        let before = generation_triple(&db);
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.delete_synthetic_call_edges("event_emitter").unwrap();
+        uow.commit_with(EffectSet::EMPTY).unwrap();
+
+        assert_eq!(generation_triple(&db), before);
+    }
+
+    /// A Semantic-only commit starts `semantic_epoch` from `None` to exactly
+    /// `Some(1)` — never `Some(0)` (None means "not ready", 0 would mean
+    /// "ready at epoch 0"; see `ReadGeneration::semantic_epoch`).
+    #[test]
+    fn semantic_effect_starts_the_clock_from_none_to_one() {
+        let (db, _tmp) = setup();
+        let before = generation_triple(&db);
+        assert_eq!(before.2, None, "a fresh database has no semantic epoch key");
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.commit_with(EffectSet::of(WriteEffect::Semantic))
+            .unwrap();
+
+        let (index, evidence, semantic) = generation_triple(&db);
+        assert_eq!(semantic, Some(1), "first semantic bump writes 1, never 0");
+        assert_eq!(
+            index, before.0,
+            "Semantic-only commit must not move index_epoch"
+        );
+        assert_eq!(
+            evidence, before.1,
+            "Semantic-only commit must not move evidence_epoch"
+        );
+    }
+
+    /// Q4 (ADR-0003): the combined `{Index, Semantic}` effect bumps each
+    /// clock exactly once inside the same transaction — one bump never
+    /// stands in for the other.
+    #[test]
+    fn combined_index_and_semantic_commit_bumps_each_exactly_once() {
+        let (db, _tmp) = setup();
+        let before = generation_triple(&db);
+
+        let uow = db.begin_unit_of_work().unwrap();
+        uow.delete_synthetic_call_edges("event_emitter").unwrap();
+        uow.commit_with(
+            EffectSet::of(WriteEffect::Index).union(EffectSet::of(WriteEffect::Semantic)),
+        )
+        .unwrap();
+
+        let after = generation_triple(&db);
+        assert_eq!(after.0, before.0 + 1, "index_epoch bumps exactly once");
+        assert_eq!(after.1, before.1, "evidence_epoch untouched");
+        assert_eq!(after.2, Some(1), "semantic_epoch bumps exactly once");
     }
 
     #[test]

@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`25a9c99939dabb25b7c9424f0b6ce3193dc626af03de3cbca70496410b5fb569`。
+> 任务总数：192；源文件 SHA-256：`679da865769a3d4301397e77943638aafe9e484e594fac851a986486131c5199`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -12,9 +12,9 @@
 | P2 | 公共表面与增量正确性 | 20 / 20 |
 | P3 | 项目模型与模块解析 | 20 / 20 |
 | P4 | 源码切块与文档版本 | 20 / 20 |
-| P5 | 查询执行与证据装配 | 18 / 20 |
-| P6 | 语义持久化与发布底座 | 0 / 20 |
-| P7 | provider与dense端到端 | 0 / 20 |
+| P5 | 查询执行与证据装配 | 20 / 20 |
+| P6 | 语义持久化与发布底座 | 20 / 20 |
+| P7 | provider与dense端到端 | 10 / 20 |
 | P8 | 规模、质量与发行认证 | 0 / 20 |
 | P9 | 有收益门的可选增强 | 0 / 12 |
 
@@ -1564,9 +1564,9 @@
 证据：[{"target_sha": "0a56a257f9a92c54d06ea5be0ce1d1763917a527", "worktree_digest": "44b30ae15be8c0ab1cb1fe71c8cb3c5027d4d0085af17678565af89c9483c5a0", "status": "passed_declared_local_016_018_scope", "run_id": "artifacts/benchmarks/p5d-20260930-resume/final-v3", "artifacts": ["artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/audit.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-review.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/additive-contract.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/paired/summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/lifecycle-cost-summary.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source-manifest.json", "artifacts/benchmarks/p5d-20260930-resume/final-v3/source.tar.gz", "docs/roadmap/code-index-v2/P5-D-RUNTIME-GATE.json", "docs/roadmap/code-index-v2/P5-D-RUNTIME-IMPLEMENTATION.md", "docs/internals/QUERY_LIFECYCLE.md"], "commands_receipt": "artifacts/benchmarks/p5d-20260930-resume/final-v3/validation.json", "limitations": ["P5-019/020/G5/M2 remain incomplete; original Partial/S11 debt retained.", "No full provider/semantic publication/holdout/100k/tail/RSS/cross-platform/release certification.", "Both toolchains and all groups rechecked from actual frozen logs; reviewer did not rerun Cargo.", "Source bytes independently compared; BLAKE3 proof handled by reviewed Rust normalizer, not Python rehash.", "Mixed-load preparation tested as part of workspace, not whole P5-019 acceptance."]}]
 实施备注：search/context的可选retrieval_strategy贯穿schema/sanitize/dispatch/handler/status/docs/真实stdio，显式context策略不被快捷路径绕过；保留14工具旧字段与mode语义。
 
-### [ ] P5-019｜查询质量/成本/并发消融
+### [x] P5-019｜查询质量/成本/并发消融
 
-状态：`in_progress`；批次：`P5-D`；优先级：`normal`。
+状态：`done`；批次：`P5-D`；优先级：`normal`。
 范围：`crates/cc-eval/src/benchmark/ablation.rs`；`artifacts/benchmarks/`
 硬依赖：P5-018
 步骤：独立比较path/exact/selector；混合构建下测延迟与线程
@@ -1574,12 +1574,12 @@
 验收：无best-of，性能提升不靠削掉所需facet；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V19；V20
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
-证据：尚无
-实施备注：通用compound FTS、UID/byte Graph批映射、可信intent/source-support预算已实现并有真实入口红绿。source-v2(51029e/628files)新core21命令双链1815/286/98/1/25/17及releasecost4独立通过，仅工程非G5。2026-10-01正式29stage已全部采证/replay/资源原件校验；本轮未验收：混合各C的100/300 path请求因generic src token库存截断strict Partial；8cell共享target+copytree旧mtime造成110/111实际exact关闭，与计划on矛盾，48edges和cell111候选质量证据失效（旧raw/错误收据均保留）。下一source-v3通用canonical existing exact-path domain修复、新完整core/profile/矩阵；每cell独立target fresh构建及actual3factor行为见证。不得低capcategory anchor冒称全语义正文，也不删Partial或改gold换绿。 新source-v3已冻629文件/canonical02af5df5c307386c0a197394c25d9a2e46901b7df47479f43f894feb765a3908；PathDomain真实MCP千file/SQLtripwire/core scope+53原件核验绿，全新21命令core-v3运行中，尚无新正式矩阵/G5。 source-v3 core真实1821/1失败：新增policy说明越16k预算挤掉731正文；已独立因果证明净文字99bytes并通用仅known-equality双domain版本化压缩，保真数字/proof/score/status/cap/未知label，新增明确合成numeric/nonce宽度压力绿。最新source-v4 canonical3cd542941467c4d4855266dbd5658bf6a2928cd4ba16bb81f87246008225a461/629files，新21命令core-v4运行；所有旧失败保持，尚无新正式矩阵/G5。 新source-v4(3cd542/629files)core-v4因observer stdout BrokenPipe在14/21终止（已完成14均绿含两workspace1823/0/60），不当Rust失败也不拼绿；仅外围可靠ownedprogress/stdouterr修复，新same-source core-v5全21重跑中，旧failed收据/独立audit保留。 最新same-source core-v5可靠ownedprogress完整21命令实际tool退出0并独立审计通过，两链workspace1823/0/60、HTTP293/0/53、focused105/0/4及stdio/lease/cost/旧契约/输入锁均新验；仅工程非G5，新同源release/metrics/harness-v6和每cellfresh+实际controlwitness正式矩阵待新审批运行。 用户暂停时：最新formal-v3 stage1全部9真实control/Full111等价绿，stage2原51baseline153 strict红，stage3 nativeablate因opaque build_options比较不同CARGO_TARGET_DIR输出路径foundation2（尚0/1224新cell请求），ownedwait2/PID48577保真。仅外部versioned semanticABI投影B设计批准+实际8Cargo fingerprint同源证明；实施/负例/完整锁/新批准/全测量仍not_run。所有生产/测试/证据已静止，Git上传当前全部工程进度及必要轻原件，不推断G5/done。
+证据：[{"status": "formal_v4_31stage_registered_run_chain_locked_not_g5_not_m2", "artifacts": ["artifacts/benchmarks/p5e-formal-runs-20261001-v4/"], "limitations": "31 stage 正式运行原件：48/48 edges、1224 请求 8-cell ablation、9 control witness、fanout/typedgraph/facet/mixed c1-c8；mixed c4/c16 对比 fail-closed invalid_workload_comparison 原样保留；mechanism scope，非 G5/M2 认证。"}, {"status": "r1_rerun_c4_systematic_blocked_c16_transient_diagnosis", "artifacts": ["artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/R1-RERUN-RECEIPT.json"], "limitations": "R1 补跑（v4 plan seq 18/19/22/23 等价）：c4=BLOCKED 系统性竞态（workload-inherent 不得 rerun-to-green，real_finding_for_product_record，零数据损坏）；c16 v4 硬 error 判 TRANSIENT 未复现（0/600 请求 0 error），残余 invalid 仅 native 1/290 采样瞬态。"}, {"status": "r2_independent_replay_25_25_pass", "artifacts": ["artifacts/benchmarks/p5e-formal-runs-20261001-v4-replay/REPLAY-RECEIPT.json"], "limitations": "R2 独立复放（replay_v4_serial.py 全程串行/逐项落盘）：A hash census 31/31 MATCH、B cc-eval replay 36/36、C ablation 48/48 edges + 32/32 gates + 1224 请求 census、D 9 witness、E 7/7 离线重算、F 8/8 facet、G R1 收据一致性；复放是核验与确定性重算，不是延迟重测。"}, {"status": "independent_quality_acceptance_step1_satisfied_c16_single_run_pending", "artifacts": ["artifacts/checkpoints/todolist-completion-audit/round07/formal-v4-quality-acceptance.json"], "limitations": "质量验收：step1 独立比较 path/exact/selector 证据充分满足；无 best-of / 不削 facet 满足；step2 c1/c8=computed_observations_not_G5_acceptance、c4=blocked、c16=待静默窗口（load<3）单跑；P5-019 保持 in_progress 等待 c16 单跑，G5/M2 未认证。"}, {"status": "c16_same_window_dual_arm_blocked_with_evidence_promote_to_done", "artifacts": ["artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/c16-final/same-window/C16-FINAL-RECEIPT.json", "artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/c16-final/same-window/mixed-c16-paired-report.json"], "limitations": "c16 same-window 双臂终态（用户决策协议；静默窗口谓词经 3 次有界等待共 4h+ 含过夜轮结构性不可达）：锁定链全 MATCH、无阈值放宽、最终双臂无硬 error、candidate gate passed_mechanism_scope；paired status 仍 invalid_workload_comparison——baseline 结构性已知红（Partial:100，v4/R1/same-window 三轮形状不变）+ candidate 1 个 native 采样 miss（instrumentation 瞬态，与 R1 残余 invalid 同类）。amendment 将 epoch-race 定性由 R1 TRANSIENT 下调为概率性复发（3/8 同 argv 执行、2/4 同窗臂双侧复现，-32603 同族，零数据损坏）。c16 按 blocked-with-evidence 记录（与 c4 同判例，见 quality-acceptance addendum_2026_10_02_r3_c16_same_window_closure），v4/R1 raw 未删未改，非 G5/M2 认证。"}]
+实施备注：通用compound FTS、UID/byte Graph批映射、可信intent/source-support预算已实现并有真实入口红绿。source-v2(51029e/628files)新core21命令双链1815/286/98/1/25/17及releasecost4独立通过，仅工程非G5。2026-10-01正式29stage已全部采证/replay/资源原件校验；本轮未验收：混合各C的100/300 path请求因generic src token库存截断strict Partial；8cell共享target+copytree旧mtime造成110/111实际exact关闭，与计划on矛盾，48edges和cell111候选质量证据失效（旧raw/错误收据均保留）。下一source-v3通用canonical existing exact-path domain修复、新完整core/profile/矩阵；每cell独立target fresh构建及actual3factor行为见证。不得低capcategory anchor冒称全语义正文，也不删Partial或改gold换绿。 新source-v3已冻629文件/canonical02af5df5c307386c0a197394c25d9a2e46901b7df47479f43f894feb765a3908；PathDomain真实MCP千file/SQLtripwire/core scope+53原件核验绿，全新21命令core-v3运行中，尚无新正式矩阵/G5。 source-v3 core真实1821/1失败：新增policy说明越16k预算挤掉731正文；已独立因果证明净文字99bytes并通用仅known-equality双domain版本化压缩，保真数字/proof/score/status/cap/未知label，新增明确合成numeric/nonce宽度压力绿。最新source-v4 canonical3cd542941467c4d4855266dbd5658bf6a2928cd4ba16bb81f87246008225a461/629files，新21命令core-v4运行；所有旧失败保持，尚无新正式矩阵/G5。 新source-v4(3cd542/629files)core-v4因observer stdout BrokenPipe在14/21终止（已完成14均绿含两workspace1823/0/60），不当Rust失败也不拼绿；仅外围可靠ownedprogress/stdouterr修复，新same-source core-v5全21重跑中，旧failed收据/独立audit保留。 最新same-source core-v5可靠ownedprogress完整21命令实际tool退出0并独立审计通过，两链workspace1823/0/60、HTTP293/0/53、focused105/0/4及stdio/lease/cost/旧契约/输入锁均新验；仅工程非G5，新同源release/metrics/harness-v6和每cellfresh+实际controlwitness正式矩阵待新审批运行。 用户暂停时：最新formal-v3 stage1全部9真实control/Full111等价绿，stage2原51baseline153 strict红，stage3 nativeablate因opaque build_options比较不同CARGO_TARGET_DIR输出路径foundation2（尚0/1224新cell请求），ownedwait2/PID48577保真。仅外部versioned semanticABI投影B设计批准+实际8Cargo fingerprint同源证明；实施/负例/完整锁/新批准/全测量仍not_run。所有生产/测试/证据已静止，Git上传当前全部工程进度及必要轻原件，不推断G5/done。 2026-10-02 formal-v4 轮证据回填：ABI 投影（设计B）已实施并收紧——REQUIRED_SEMANTIC_OPTION_KEYS 9 必备语义 key 无条件完备性硬拒 + 白名单外 key fail-closed + 共享/缺失 CARGO_TARGET_DIR 硬拒，负例 13 测试绿（cc-eval ablation 定向 + workspace check），评审 8/8 PASS（artifacts/benchmarks/p5e-abi-projection-20261001/IMPLEMENTATION.md）；sourcev5/final-v8 harness/plan-v4/profile final-v5/round07 批准整链 hash 锁独立复验全 MATCH。formal-v4 正式 31/31 stage 采证完成（48 edges + 1224 请求 + 9 witness + fanout/typedgraph/facet/mixed c1-c8 原件），R2 独立复放 25/25 PASS，独立质量验收 step1 满足、无 best-of/不削 facet 满足。c4=系统性竞态 BLOCKED（workload-inherent，不得 rerun-to-green；real_finding_for_product_record：concurrency>=4 混合读+全量构建下 epoch 守卫重试耗尽可产出硬 -32603，零数据损坏，发现待挂产品/查询执行 backlog，M2 口径按机制范围如实声明 c4 对比证据不存在）。c16=瞬态+静默窗口 BLOCKED：v4 硬 error 未在 R1 复现（0/600，workload 侧已 clean），残余仅 native 1/290 采样瞬态；run_c16_final.py 就绪零成本可复跑，2 小时有界等待内 load 最低 4.24 无静默窗口（c16-FINAL-BLOCKED.json、c16-QUIET-WATCH.md），未降窗跑。P5-019 保持 in_progress 等待 c16 单跑；G5/M2 未认证。 2026-10-02 R3 c16 same-window 收口：静默窗口谓词（load1<3 且零 tm-r5bench）3 次有界等待共 4h+（含过夜轮）结构性不可达，改用用户决策的 same-window 双臂协议（共模消除+协变量记录，锁定链全 MATCH，无阈值放宽）。最终臂无硬 error、candidate gate passed_mechanism_scope；paired status 仍 invalid_workload_comparison（baseline 结构性已知红 + candidate 1 采样 miss）。amendment 把 epoch race 定性由 R1 TRANSIENT 下调为概率性复发（3/8 同 argv、2/4 同窗双臂，-32603 同族，零数据损坏）。按 round07 质量验收 c4_blocked_allowed_for_done 判例三要素（根因定性 + 产品发现 + 重测口径穷尽）逐条映射成立，c16 与 c4 同属有证据的 blocked；P5-019 转 done（无 best-of 满足、不削 facet 满足、回归通过满足、无证据项标 blocked 满足），step2 终态 2/4 computed_observations（c1/c8）+ 2/4 blocked-with-evidence（c4 确定性、c16 概率性）。裁决推理链见 quality-acceptance addendum_2026_10_02_r3_c16_same_window_closure。G5/M2 不因此认证；两并发点对比证据不存在，M2 按机制范围如实声明；race 发现与 c4 同族记入产品/查询执行并发 backlog（如需修复另立任务）。
 
-### [ ] P5-020｜P5本地增强版验收
+### [x] P5-020｜P5本地增强版验收
 
-状态：`todo`；批次：`P5-D`；优先级：`blocking`。
+状态：`done`；批次：`P5-D`；优先级：`blocking`。
 范围：`docs/roadmap/code-index-v2/`；`artifacts/benchmarks/`
 硬依赖：P5-001, P5-002, P5-003, P5-004, P5-005, P5-006, P5-007, P5-008, P5-009, P5-010, P5-011, P5-012, P5-013, P5-014, P5-015, P5-016, P5-017, P5-018, P5-019
 步骤：G5冻结source/配置和public schema；形成M2本地版本证据
@@ -1587,14 +1587,14 @@
 验收：不需要真实embedding即可交付，待实现semantic仅显示disabled；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V12；V18；V19；V20
 回滚：回退查询策略/组合根；保持14工具旧契约和本地查询可用。
-证据：尚无
-实施备注：P5-016～018独立验收仅完成本地运行时子集。G5/M2仍待P5-019全部质量/成本/并发证据及当前源全回归。旧strict库存Partial和自然语言miss保持原样，独立任务facet/span与graph事实另行报告；不以旧P5-D绿灯或source-v1失败候选收口。
+证据：[{"status": "g5_source_v6_freeze_f0_f1_assertion_passed_independently_replayed", "artifacts": ["artifacts/benchmarks/p5e-candidate-release-20261002-v6/source-manifest.json", "artifacts/benchmarks/p5e-candidate-release-20261002-v6/BUILD-RECEIPT.json", "artifacts/benchmarks/p5e-candidate-release-20261002-v6/binaries/codecortex", "artifacts/benchmarks/p5e-g5-freeze-20261002/F0-FREEZE-RECEIPT.json"], "limitations": "冻结锚点 F0：629 文件/6815216 字节/digest d1f5a7af.../head 0de7c890（=当前 HEAD，未含未提交 delta 为显式声明的 worktree patch 6 条）。round08 独立审计全量重放：623 条非 patch 逐条 git cat-file 回对 head 全 MATCH、0 stale；digest 算法经 v5（78f83f0f...）交叉复算 MATCH；binary sha256 5f935adc... 四处一致。rev1→rev2 重冻结干净（b4dbead7 零下游消费，lint 修复 cfg(test) 内）。非发行认证。"}, {"status": "c4_fix_redgreen_verified_read_path_only", "artifacts": ["artifacts/checkpoints/c4-race-analysis-20261002/IMPLEMENTATION-20261002.md", "artifacts/checkpoints/p5-020-execution-20261002/E2-c4-redgreen-RECEIPT.json"], "limitations": "c4 方案 d P0+P1+P2 仅读路径 3 文件（engine_cache/context/freshness），cc-db 写路径与 epoch 语义零改动；8 项新测试红→绿，定向复验 cc-search 281/0、cc-server 249+41+9/0、p1d_concurrency 4/0/1。已知边界：风暴测试时序敏感窗口（失败方向=断言失败非假绿，--test-threads=1 回归口径稳定）；RetrievalChanged{3} 耗尽终态保留，极端调度残余概率非零。"}, {"status": "mixed_c4_criteria_retest_pass_census_only_not_comparison_certification", "artifacts": ["artifacts/benchmarks/p5e-formal-runs-20261002-fix1/MIXED-C4-FIX1-RECEIPT.json", "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/mixed-c4-candidate-v6/", "artifacts/benchmarks/p5e-formal-runs-20261002-fix1/mixed-c4-baseline-prefix/"], "limitations": "同 seed/同 final-v8 harness 口径双臂同窗（静默窗口结构性不可达，loadavg 7.8-8.9 如实记录为协变量）。candidate_fixed_v6 census {Success:300, build:30}、0 硬 error、0 假阳性 Partial、330/330 jobs（round08 独立重读 raw 复核一致）；baseline_prefix known-red 形状 {Partial:100,Success:200} 0 error。census-only 判据，非延迟认证，更非 c4/c16 对比认证——对比证据不存在（paired invalid_workload_comparison 原样保留）。"}, {"status": "dual_toolchain_full_regression_with_documented_environment_flake", "artifacts": ["artifacts/benchmarks/p5e-g5-freeze-20261002/regression/validation.json", "artifacts/benchmarks/p5e-g5-freeze-20261002/regression/", "artifacts/checkpoints/p5-020-execution-20261002/E5-regression-disposition.json"], "limitations": "冻结 rev2 源 7 命令（PLAYBOOK 3.3 步 5 argv 原文）：clippy 双链 0 warning；workspace 1839/1/60（stable 495.2s / 1.95.0 557.6s）、http 35/1/5、release-cost 4/0/0。唯一失败 = cc-eval lib::tests::benchmark_fixture（index warm p95 549-665ms vs 500ms 阈值）；round08 独立审计终裁 documented_environment_flake（审计自复现 530.80/562.27ms 边缘超限、v5→v6 闭包差集仅 read 路径 3 文件、final-v3 双链 exit-0 历史对照在盘；caveat：HEAD 对照 raw 未保留、1823/0 历史引用不可定位）。非全绿表述，failed=1 原样保留，阈值未动。"}, {"status": "v18_additive_zero_drift_semantic_disabled_only", "artifacts": ["artifacts/checkpoints/p5-020-execution-20261002/additive-contract.json", "artifacts/checkpoints/p5-020-execution-20261002/v18-probe-frozen-v6.json", "artifacts/checkpoints/p5-020-execution-20261002/v18-probe-baseline.json"], "limitations": "冻结 v6 binary live tools/list 与 baseline release binary 逐项比对：14 工具名/properties/required 零漂移（changes={}）；semantic_state=not_configured、dense_state=disabled（provider_and_vector_publication_not_implemented），无 ready 假象；协议冒烟握手 OK / -32602 / 有效 search 通过；默认配置 stdio 零网络零 key。freshness 观测字段为 response-payload additive，非 schema 变更。"}, {"status": "c16_terminal_receipt_verified_referenced_not_rerun", "artifacts": ["artifacts/checkpoints/p5-020-execution-20261002/E1-c16-receipt-verification.json", "artifacts/benchmarks/p5e-formal-runs-20261001-v4-rerun-r1/c16-final/same-window/C16-FINAL-RECEIPT.json"], "limitations": "c16 same-window 终态收据引用（sha256 d4556f19... 重算 MATCH）：终局双臂 0 硬 error（baseline {Partial:100,Success:200} / candidate {Success:300}）、330/330 count lock；paired status=invalid_workload_comparison 原样保留；epoch race census（8 臂 3 硬 error，概率性复发）原样记录。本轮未重跑。对比证据不存在。"}, {"status": "v12_fanout_v6_bound_facet_no_go_maintained_by_audit", "artifacts": ["artifacts/benchmarks/p5e-formal-runs-20261002-fix1/FANOUT-V6-RECEIPT.json", "artifacts/checkpoints/p5-020-execution-20261002/V12-facet-disposition.json", "artifacts/benchmarks/p5e-formal-runs-20261001-v4/facets/"], "limitations": "fanout 双侧绑冻结 v6 binary：candidate 40 queries failed_checks=0（criterion issues=[]）；paired 诊断因 baseline 臂 1/401 native sampler 瞬态记 invalid_measurement 原样保留（r1 漏 probe env 尝试 raw 保留，r2 修正重跑）。facet 8-cell v6 重建 NO-GO 经 round08 审计独立维持：v5↔v6 闭包差集 5 文件、facet 控制面 path.rs/exact_symbol.rs/engine.rs 字节全等、c4 delta 分支在顺序只读 facet 负载下不可达、~80min 成本信息增益≈0；facet 证据保持 formal-v4 机制范围引用（测量闭包 78f83f0f...）。"}]
+实施备注：P5-016～018独立验收仅完成本地运行时子集。G5/M2仍待P5-019全部质量/成本/并发证据及当前源全回归。旧strict库存Partial和自然语言miss保持原样，独立任务facet/span与graph事实另行报告；不以旧P5-D绿灯或source-v1失败候选收口。 2026-10-02 formal-v4 轮后：仍被 P5-019 c16 单跑阻塞（mixed-c16-baseline 静默窗口单跑因外部 r5bench 负载 2 小时有界等待未获得窗口）；G5/M2 未认证。 2026-10-02 R3 后：P5-019 已收口 done（c4/c16 均为 blocked-with-evidence：c4=确定性 workload-inherent race、c16=概率性 race + instrumentation 采样瞬态，两并发点对比证据不存在如实声明），本任务的任务图硬依赖全部满足、成为下一可执行项（G5 冻结 source/配置/public schema + M2 本地版本证据）；G5/M2 仍未认证，本轮裁决不含任何 gate 翻绿。 2026-10-02 收口（round08 独立审计轮）：七项审计清单全 PASS，六项证据收据独立核验（manifest 629 条全量回对 head、digest 双闭包交叉复算、binary sha 四处一致、mixed-c4 raw 独立重读 census 一致、回归日志行级核对、锁定链 mtime 扫描 0 触碰、tasks.json 确未被执行轮改动）。GATE 定稿 docs/roadmap/code-index-v2/P5-GATE.json：status=passed_declared_local_scope，G5/M2 本地口径未认证；c4/c16 两并发点对比证据不存在（invalid_workload_comparison 各轮原样保留）；semantic 仅显示 disabled/not_configured；facet 8-cell v6 重建 NO-GO 经审计维持。E5 唯一失败终裁 documented_environment_flake（非全绿表述，failed=1 原样）。P6-001 硬依赖满足、批次 0 出口条件成立（F0 后 crates/ 零改动直达批次 1 首个提交），维持 todo。
 
 ## P6｜语义持久化与发布底座
 
-### [ ] P6-001｜正式确定单库边界修订ADR
+### [x] P6-001｜正式确定单库边界修订ADR
 
-状态：`todo`；批次：`P6-A`；优先级：`normal`。
+状态：`done`；批次：`P6-A`；优先级：`normal`。
 范围：`docs/adr/`；`DESIGN.md`；`docs/internals/STORAGE.md`
 硬依赖：P5-020
 步骤：审定权威index与派生cache职责；说明队列可靠性数据不是通用runtime
@@ -1602,11 +1602,12 @@
 验收：修改章程有明确理由、默认仍单库且无隐式新服务；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V21
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "adr_decision_body_done_blocked_subitems_annotated_per_round07_precedent", "artifacts": ["docs/adr/0003-semantic-persistence-single-db-boundary.md", "artifacts/checkpoints/todolist-completion-audit/round09/p6-batch1-closure-audit.json"], "limitations": "依据 round07 判例（blocked-with-evidence 允许 done）：ADR-0003 决策本体完成（Status: accepted，含否决备选与 P6 逐任务约束表）。blocked 子项已在 implementation_notes 显式标注——章程文本同步→P6-019、回归/V21 not_run 待 P6 实施、Q4→P6-006、Q5→P6-008 前用户确认；V21 运行证据未生成，不在此声明。"}]
+实施备注：2026-10-02 状态回填裁决（P6 批次 1；本字段仅记录裁决与证据指向，status 翻转留给审计收口轮）：决策本体已交付——边界权威 docs/adr/0003-semantic-persistence-single-db-boundary.md（Status: accepted，含否决备选、明确不做范围与 P6 逐任务约束表），acceptance 第 1 条『修改章程有明确理由、默认仍单库且无隐式新服务』已有决策级证据（ADR 第 46-62/163-170 行）。但 acceptance 第 2 条『相关旧功能回归通过』与 validations V21 均无任何运行证据（ADR 第 180-188 行自评：第 1 条部分 blocked、回归 not_run、V21 not_run），按『没有证据的项标 not_run/blocked 而非 done』规则，本任务整体不得标 done；建议收口轮记 in_progress，blocked 子项=章程文本同步。三项开放问题处置指向：①DESIGN.md/STORAGE.md 章程文本同步→P6-019 文档轮（OPEN-QUESTIONS Q8 默认归属）；②Q4（WriteEffect 组合效应与 semantic_epoch 仅可见集合变化才 bump 的拍板）→P6-004/P6-006 实施期确认；③Q5（artifact cache 根目录与 namespace 定义）→P6-008 实施前需用户确认，不代行。
 
-### [ ] P6-002｜新增可选cc-semantic骨架
+### [x] P6-002｜新增可选cc-semantic骨架
 
-状态：`todo`；批次：`P6-A`；优先级：`normal`。
+状态：`done`；批次：`P6-A`；优先级：`normal`。
 范围：`crates/cc-semantic/Cargo.toml`；`Cargo.toml`；`crates/cc-server/Cargo.toml`
 硬依赖：P6-001
 步骤：只依赖cc-model/cc-db；feature和组合根延迟初始化
@@ -1614,11 +1615,12 @@
 验收：默认编译/启动不拉网络模型实现、不生成空缓存；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V18；V21
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch1_implemented_local_command_level_green_default_graph_clean", "artifacts": ["crates/cc-semantic/", "crates/cc-server/Cargo.toml", "artifacts/checkpoints/p6-batch1-20261002/P6-002-IMPLEMENTATION.md", "artifacts/checkpoints/todolist-completion-audit/round09/p6-batch1-closure-audit.json"], "limitations": "命令级证据：cargo test -p cc-semantic 10 passed/0 failed；cargo check --workspace 零 warning；默认 feature cargo tree 不含 cc-semantic（计 0），--features semantic 计 1；crate 内 0 处文件系统/网络调用，无 try_init（P6-008 前不存在）。正式 V18/V21 验证矩阵证据属收口验收轮产物，本轮未运行，不在此声明。"}]
+实施备注：2026-10-02 批次 1 收口：骨架（types/ports/error + SemanticHandle 零尺寸占位）+ cc-server semantic feature 延迟初始化落地；依赖仅 cc-model+thiserror，Cargo.lock 零新外部包；含 P6-003 轮评审必改两处（QueryDigest 语义理顺、vacuous assert 替换），round09 批次审计确认边界约束逐条对照通过。
 
-### [ ] P6-003｜冻结编码空间与输入规范
+### [x] P6-003｜冻结编码空间与输入规范
 
-状态：`todo`；批次：`P6-A`；优先级：`normal`。
+状态：`done`；批次：`P6-A`；优先级：`normal`。
 范围：`crates/cc-semantic/src/spec.rs`；`crates/cc-model/src/identity.rs`
 硬依赖：P6-002
 步骤：区分VectorSpace/DocumentEncoding/QueryEncoding；定义完整digest
@@ -1626,11 +1628,12 @@
 验收：同维度不同模型不能混用，query-only变化不必重嵌文档；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V10；V16
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch1_freeze_surface_landed_local_command_level_green", "artifacts": ["crates/cc-semantic/src/spec.rs", "crates/cc-semantic/docs/ENCODING-SPACE.md", "artifacts/checkpoints/p6-batch1-20261002/P6-003-IMPLEMENTATION.md", "artifacts/checkpoints/todolist-completion-audit/round09/p6-batch1-closure-audit.json"], "limitations": "命令级证据：cc-semantic 全套件 ok, 0 failed（含 spec 14 单测与红绿测试 input_constructors_bind_digest_to_exact_bytes）。同维度不同模型不可混用已有单元契约；正式 V10/V16 验证矩阵证据属收口验收轮产物，本轮未运行。"}]
+实施备注：2026-10-02 批次 1 收口：ENCODING_SPEC_VERSION=1 冻结面（常量/校验/三分 digest 公式）落地并以 ENCODING-SPACE.md 为权威规格文档；types.rs 收口构造器 + QuerySpecDigest 新类型；round09 批次审计确认冻结面签名层面无未声明能力。
 
-### [ ] P6-004｜扩展类型化write effects
+### [x] P6-004｜扩展类型化write effects
 
-状态：`todo`；批次：`P6-A`；优先级：`normal`。
+状态：`done`；批次：`P6-A`；优先级：`normal`。
 范围：`crates/cc-db/src/epoch_rules.rs`；`crates/cc-db/src/unit_of_work.rs`
 硬依赖：P6-003
 步骤：Index/Evidence/Semantic/Auxiliary封闭枚举；默认旧行为保留
@@ -1638,11 +1641,12 @@
 验收：heartbeat不刷index，commit/rollback恰好推进预期epoch；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch1_typed_effects_landed_zero_assertion_change_green", "artifacts": ["crates/cc-db/src/epoch_rules.rs", "crates/cc-db/src/unit_of_work.rs", "artifacts/checkpoints/p6-batch1-20261002/P6-004-IMPLEMENTATION.md", "artifacts/checkpoints/todolist-completion-audit/round09/p6-batch1-closure-audit.json"], "limitations": "命令级证据：cc-db 全套件 ok（lib 155 passed + 1 ignored），epoch_rules 10 passed、unit_of_work 8 passed；cc-index 全量 377 lib 绿（唯一生产消费方）。既有测试零断言修改即绿（默认旧行为保留）。effect 级审计测试已固化；正式 V13 bench 证据属收口验收轮产物，本轮未运行。生产调用方计数经 P6-005 轮订正：唯一真实调用方 synthesis_pipeline.rs:110/125，其余为测试调用点。"}]
+实施备注：2026-10-02 批次 1 收口：Index/Evidence/Semantic/Auxiliary 封闭枚举 EffectSet（commit_with）+ bump_semantic_epoch_on/rollback 不推进落地；round09 批次审计确认 heartbeat 不刷 index、commit/rollback 恰好推进预期 epoch 的命令级证据成立。
 
-### [ ] P6-005｜新表与schema初始化
+### [x] P6-005｜新表与schema初始化
 
-状态：`todo`；批次：`P6-A`；优先级：`normal`。
+状态：`done`；批次：`P6-A`；优先级：`normal`。
 范围：`crates/cc-db/src/sql/`；`crates/cc-db/src/index_migrate.rs`
 硬依赖：P6-004
 步骤：加入document/manifest/outbox所需表与索引；按发布节点合并schema版本
@@ -1650,11 +1654,12 @@
 验收：新旧DB有明确重建路径，FTS旧数据不半升级；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13；V21
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch1_v22_schema_additive_migration_independently_reviewed_pass", "artifacts": ["crates/cc-db/src/sql/index_v1.sql", "crates/cc-db/src/index_migrate.rs", "crates/cc-db/tests/semantic_schema.rs", "artifacts/checkpoints/p6-batch1-20261002/P6-005-IMPLEMENTATION.md", "artifacts/checkpoints/todolist-completion-audit/round09/p6-batch1-closure-audit.json"], "limitations": "round09 独立评审 PASS：DDL 简报草案 9 语句逐句一致（3 表 7 索引）；git diff 确认 index_v1.sql 仅头注释+尾部追加、全文件 DDL 均带 IF NOT EXISTS（红线零旧对象改动）；幂等有测试覆盖（模块测试二次 migrate→UpToDate、集成测试文件库重开→UpToDate）并经临时库 python sqlite3 双重放实测（10 对象无重复、旧行保留）；SchemaStatus 消费点全覆盖（index_db 三态直通、cc-server matches!、cc-index 丢弃 status）经 cargo check --workspace 零错误。cc-db 复跑 158/157+1 ignored、0 failed；semantic_schema 6/6。迁移策略相对简报有一处已记录偏差（相邻 v21 原位迁移）。正式 V13/V21 验收矩阵与 V21 降级文档归 P6-019/验收轮，本轮不推断。"}]
+实施备注：2026-10-02 批次 1 收口：v22 三表七索引 + CURRENT_SCHEMA_VERSION 22 + ADDITIVE_MIGRATION_FROM=21 原位加法迁移（SchemaStatus::Migrated 新变体）落地；round09 独立评审 PASS（DDL 一致/幂等实测/消费点覆盖/红线 diff/测试复跑五项全过）。
 
-### [ ] P6-006｜源码事务原子写outbox
+### [x] P6-006｜源码事务原子写outbox
 
-状态：`todo`；批次：`P6-B`；优先级：`normal`。
+状态：`done`；批次：`P6-B`；优先级：`normal`。
 范围：`crates/cc-index/src/documents/delta.rs`；`crates/cc-db/src/semantic_outbox.rs`
 硬依赖：P5-020, P6-004, P6-005
 步骤：文档变化撤旧manifest并写desired任务；删除不发embedding
@@ -1662,11 +1667,12 @@
 验收：提交后不会有新文档却无任务，rollback不泄露半个任务；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13；V14
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch2_atomic_outbox_single_txn_local_green_effectset_wired", "artifacts": ["crates/cc-db/src/semantic_outbox.rs", "crates/cc-db/src/lib.rs", "crates/cc-db/src/index_db.rs", "crates/cc-db/src/index_db_write_batch.rs", "crates/cc-db/tests/semantic_outbox.rs", "artifacts/checkpoints/p6-batch2-20261002/P6-006-IMPLEMENTATION.md"], "limitations": "命令级证据：cargo test -p cc-db -p cc-index passed=666 failed=0（semantic_outbox 17 全绿：生产路径失败回滚零残留、同 doc 重写恰一 live embed、无 active 空间零变化零 bump、EXPLAIN QUERY PLAN 命中 semantic_out_ready 索引）；cargo test -p cc-server 249/41/9 全绿；cargo check --workspace 零 warning；EffectSet 首个生产调用方（{Index,Semantic} 组合 bump 恰一次实测）。评审留边界：写放大 50k 实测归验证轮（V14 正式证据归收口验收轮，本轮未运行不声明）；全量重建路径不挂接 outbox 归 P6-011/P6-014 换库协议；semantic_manifest 生产写入方归 P6-011。"}]
+实施备注：2026-10-02 批次 2 收口（评审已 PASS，round10 落账）：单事务原子 outbox + EffectSet 生产接线落地；评审留边界——写放大 50k 实测归验证轮（V14 正式证据归收口验收轮），全量重建路径挂接归 P6-011/P6-014 换库协议，claim/lease 消费闭环见 P6-007。
 
-### [ ] P6-007｜实现claim与lease fencing
+### [x] P6-007｜实现claim与lease fencing
 
-状态：`todo`；批次：`P6-B`；优先级：`normal`。
+状态：`done`；批次：`P6-B`；优先级：`normal`。
 范围：`crates/cc-db/src/semantic_outbox.rs`；`crates/cc-semantic/src/queue.rs`
 硬依赖：P6-006
 步骤：短事务claim/renew/retry；每attempt独立token
@@ -1674,11 +1680,12 @@
 验收：两进程不能同时发布相同lease，过期worker无法ack新lease；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V14
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch2_claim_cas_lease_fencing_local_green", "artifacts": ["crates/cc-db/src/semantic_outbox.rs", "crates/cc-db/tests/semantic_lease.rs", "artifacts/checkpoints/p6-batch2-20261002/P6-007-IMPLEMENTATION.md"], "limitations": "命令级证据：cargo test -p cc-db -p cc-index passed=675 failed=0（semantic_lease 9 个 fencing 不变式全绿：双连接 CAS 竞争恰一者胜出、过期 token 的 renew/ack/retry 全拒 Ok(false) 零写入、lease 生命周期 Auxiliary 零 epoch bump、retry 原子折叠 pending/failed）；cargo check --workspace 零 warning；clippy/fmt 干净。评审留边界：reclaim_expired_on 无界扫描的周期/有界编排归 P6-015；worker 侧封装（queue.rs LeaseGuard）与 IndexDb 写门面归 P6-013；真实 kill/restart 残态矩阵归 P6-015；V14 正式矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 2 收口（评审已 PASS，round10 落账）：claim CAS 单语句 + token fencing（renew/ack/retry/reclaim）落地，封闭表显式扩展 (Claimed,Pending)；评审留边界——reclaim_expired_on 无界扫描的周期/有界编排归 P6-015，worker 封装（queue.rs）与 IndexDb 写门面归 P6-013，真实 kill/restart 残态矩阵归 P6-015。
 
-### [ ] P6-008｜构建内容寻址artifact cache
+### [x] P6-008｜构建内容寻址artifact cache
 
-状态：`todo`；批次：`P6-B`；优先级：`normal`。
+状态：`done`；批次：`P6-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/cache.rs`；`crates/cc-semantic/src/spec.rs`
 硬依赖：P6-007
 步骤：按namespace+input/spec存validated vector与checksum；无秘密字段
@@ -1686,11 +1693,12 @@
 验收：同输入可复用，跨项目默认隔离且cache损坏可检测；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V10；V16
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch2_content_addressed_cache_local_green_depgraph_reverified", "artifacts": ["crates/cc-semantic/src/cache.rs", "crates/cc-semantic/src/types.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/Cargo.toml", "crates/cc-semantic/tests/artifact_cache.rs", "Cargo.lock", "artifacts/checkpoints/p6-batch2-20261002/P6-008-IMPLEMENTATION.md"], "limitations": "命令级证据：cargo test -p cc-semantic lib 22 + artifact_cache 17 全绿；cargo check --workspace 零 warning；17 测试覆盖简报布局/跨克隆共享/跨项目隔离/损坏检测五分支/并发写收敛/无秘密键集恰等。依赖图证据 2026-10-02 收口轮订正：原命令 --no-dev-deps 非 cargo tree 有效 flag，经有效口径 cargo tree --workspace -e normal / cargo tree -p cc-server -e normal 复验，cc-semantic 依赖边计数 0 结论成立（workspace 树中唯一出现为成员根行）。评审留边界：Corrupt 检测不自动隔离（quarantine 搬移归 P6-018）；try_init 与组合根接线归后续接线轮；V10/V16 正式矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 2 收口（评审已 PASS，round10 落账）：内容寻址 cache（namespace+三 digest 寻址、读时验证链、原子写、可丢弃语义）落地；依赖图证据经收口轮订正复验（原 --no-dev-deps flag 无效，-e normal 有效口径下依赖边计数 0 成立）；评审留边界——Corrupt 不自动隔离（quarantine 归 P6-018），try_init/组合根接线归后续接线轮。
 
-### [ ] P6-009｜实现deterministic fake provider
+### [x] P6-009｜实现deterministic fake provider
 
-状态：`todo`；批次：`P6-B`；优先级：`normal`。
+状态：`done`；批次：`P6-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/providers/fake.rs`；`crates/cc-semantic/src/ports.rs`
 硬依赖：P6-008
 步骤：注入固定向量、延迟、次数和故障；不发送网络
@@ -1698,11 +1706,12 @@
 验收：测试可确定重现全部状态转移，fake结果不算真实语义质量；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch2_deterministic_fake_provider_local_green_golden_pinned", "artifacts": ["crates/cc-semantic/src/providers.rs", "crates/cc-semantic/src/providers/fake.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/Cargo.toml", "Cargo.lock", "artifacts/checkpoints/p6-batch2-20261002/P6-009-IMPLEMENTATION.md"], "limitations": "命令级证据：cargo test -p cc-semantic lib 38（含本轮 16）+ artifact_cache 17 零回归全绿；cargo check --workspace 零 warning；golden fixture 钉死算法 v1 前四分量 to_bits，流水线漂移即强制版本 bump；六变体 ProviderError 全部可注入原样返回（P6-016 故障矩阵复用面）；输出门禁拒 NaN/Inf/全零（与 P6-008 cache 侧双层设防）。永不触网（实现容器零网络调用）。评审留边界：fake 结果不算真实语义质量（模块文档明示）；crash 断点钩子归 P6-015；真实 provider 与双轨报告归 P7 线（用户 2026-10-02 决策）；V15 正式矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 2 收口（评审已 PASS，round10 落账）：deterministic fake provider（blake3 XOF 确定性向量 + 五字段故障脚本 + 输出门禁）落地，golden fixture 钉死 v1 算法；评审留边界——fake 结果不算真实语义质量，crash 断点钩子归 P6-015，真实 provider 与双轨报告归 P7 线（用户 2026-10-02 决策）。
 
-### [ ] P6-010｜实现filtered exact向量backend
+### [x] P6-010｜实现filtered exact向量backend
 
-状态：`todo`；批次：`P6-B`；优先级：`normal`。
+状态：`done`；批次：`P6-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/vector/exact.rs`
 硬依赖：P6-009
 步骤：限定空间、范围先过滤、bounded batch、稳定top-k；保留数值gold
@@ -1710,11 +1719,12 @@
 验收：手算cosine一致，删除/不同空间不可返回，内存受控；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V16
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch2_filtered_exact_vector_backend_local_green_cosine_only", "artifacts": ["crates/cc-db/src/semantic_manifest_reads.rs", "crates/cc-db/src/lib.rs", "crates/cc-semantic/src/vector.rs", "crates/cc-semantic/src/vector/exact.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/Cargo.toml", "crates/cc-semantic/tests/manifest_exact_integration.rs", "Cargo.lock", "artifacts/checkpoints/p6-batch2-20261002/P6-010-IMPLEMENTATION.md"], "limitations": "命令级证据：cargo test -p cc-semantic 54 lib + artifact_cache 17 + manifest_exact_integration 4 全绿；cargo test -p cc-db 162 lib 零回归；cargo check --workspace 零 warning；手算 cosine gold（含 0.96 手算值）与 f64 顺序累加参考实现对拍一致；删除/异空间不可返回、Some(empty) 永不退化全仓、(desirability,doc_key) tie-break 稳定、bounded batch 内存上界均测试固化；TDD 期修出 TopK 双分量排序写反与手算对拍 2 处真缺陷。评审留边界：Cosine-only（冻结 spec v1 仅 admit Cosine，L2/内积未实现，新变体编译失败强制显式扩展）；exact 仅小规模 oracle backend，ANN 归 V22 可选轨道；V16 正式矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 2 收口（评审已 PASS，round10 落账）：filtered exact 向量 backend（范围先过滤、f64 cosine、bounded batch、稳定 tie-break、cc-db 只读适配器）落地，手算 gold 对拍一致；评审留边界——Cosine-only（冻结 spec v1 仅 admit Cosine，L2/内积未实现），exact 仅小规模 oracle backend，ANN 归 V22 可选轨道。
 
-### [ ] P6-011｜artifact到manifest发布CAS
+### [x] P6-011｜artifact到manifest发布CAS
 
-状态：`todo`；批次：`P6-C`；优先级：`normal`。
+状态：`done`；批次：`P6-C`；优先级：`normal`。
 范围：`crates/cc-semantic/src/publish.rs`；`crates/cc-db/src/semantic_outbox.rs`
 硬依赖：P5-020, P6-006, P6-007, P6-008, P6-010
 步骤：先持久化artifact，再校验incarnation/lease/doc/input/space写manifest
@@ -1722,11 +1732,12 @@
 验收：慢旧结果不能挂到同路径新版本，发布幂等；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V14
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch3_publish_cas_five_fence_q4_local_green", "artifacts": ["crates/cc-db/src/semantic_publish.rs", "crates/cc-db/src/lib.rs", "crates/cc-semantic/src/publish.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-db/tests/semantic_publish.rs", "crates/cc-semantic/tests/publish_cas.rs", "artifacts/checkpoints/p6-batch3-20261002/P6-011-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 3 实施轮 cargo test -p cc-db -p cc-semantic 全绿（semantic_publish 11 + publish_cas 4 = 15 测试：五 fence 逐条拒绝语义、Q4 重复发布零 bump、fenced retry 兜底、Auxiliary 三钟全静）；收口轮复跑 cargo test -p cc-db -p cc-semantic 24 个 test result 全 ok + cargo check --workspace 干净。评审留边界：V14 正式验证矩阵证据不推断，归验收轮；发布编排（claim→embed→publish 周期）归 P6-013。"}]
+实施备注：2026-10-02 批次 3 收口（评审已 PASS，round11 落账）：五 fence 发布 CAS + Q4 可见集合判定 + artifact durability 先后序落地（cc-db semantic_publish 原语 + cc-semantic Publisher 三步编排，15 测试全绿）；评审留边界——V14 正式矩阵证据归验收轮、发布 worker 编排归 P6-013、跨实例 ghost fence 归 P6-014（已落地）。
 
-### [ ] P6-012｜覆盖率与semantic epoch
+### [x] P6-012｜覆盖率与semantic epoch
 
-状态：`todo`；批次：`P6-C`；优先级：`normal`。
+状态：`done`；批次：`P6-C`；优先级：`normal`。
 范围：`crates/cc-server/src/capability_status.rs`；`crates/cc-db/src/epoch_rules.rs`
 硬依赖：P6-011
 步骤：统计eligible/published/failed/stale并分母明确；只可见集合变化bump
@@ -1734,11 +1745,12 @@
 验收：零eligible有原因，aux重试不冲刷完整查询缓存；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13；V18
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch3_coverage_readmodel_epoch_local_green", "artifacts": ["crates/cc-db/src/semantic_coverage.rs", "crates/cc-db/src/lib.rs", "crates/cc-db/tests/semantic_coverage.rs", "crates/cc-server/src/handlers/context.rs", "crates/cc-server/src/handlers/freshness.rs", "artifacts/checkpoints/p6-batch3-20261002/P6-012-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 3 实施轮 cargo test -p cc-db -p cc-semantic 全绿（semantic_coverage 8 模块级 + 3 门面级：口径分母、epoch 读侧一致、零 eligible 有因、uncovered keyset 分页）；收口轮复跑全绿。评审留边界：V13/V18 正式验证矩阵证据归验收轮；dense lane 对覆盖率的消费（范围声明/查询守卫）归后续接线轮；收口动作①（模块文档措辞统一）移交 P6-019 文档轮。"}]
+实施备注：2026-10-02 批次 3 收口（评审已 PASS，round11 落账）：覆盖率口径（eligible/published/failed/stale 分母明确）+ semantic epoch 读侧一致性 + 只可见集合变化 bump 落地（semantic_coverage 真模块 + ReadOps facet，11 测试全绿）；收口动作①移交——模块文档措辞统一归 P6-019 文档轮；stale 恒 0 守卫面与 eligible 50k 基准边界见实施记录 §8；V13/V18 正式证据归验收轮。
 
-### [ ] P6-013｜worker资源与连续编辑合并
+### [x] P6-013｜worker资源与连续编辑合并
 
-状态：`todo`；批次：`P6-C`；优先级：`normal`。
+状态：`done`；批次：`P6-C`；优先级：`normal`。
 范围：`crates/cc-semantic/src/worker.rs`；`crates/cc-semantic/src/admission.rs`
 硬依赖：P6-012
 步骤：pending合并、队列上限、公平批次和有界关闭；旧任务supersede
@@ -1746,11 +1758,12 @@
 验收：大量保存不导致无限排队，任何时刻local查询可用；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V14；V20
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch3_worker_primitives_leaseline_local_green", "artifacts": ["crates/cc-db/src/semantic_queue.rs", "crates/cc-db/src/lib.rs", "crates/cc-db/tests/semantic_queue.rs", "crates/cc-semantic/src/queue.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/tests/queue_worker.rs", "artifacts/checkpoints/p6-batch3-20261002/P6-013-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 3 实施轮 cargo test -p cc-db -p cc-semantic 全绿（semantic_queue 门面 2 + queue_worker 端到端 8 + 模块级 8：合并语义、liveness 门、LeaseGuard renew、Drop=零 DB I/O kill 等价）；收口轮复跑全绿。评审留边界：组合根接线（cc-server 调用点）不做归接线轮；V14/V20 正式验证矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 3 收口（评审已 PASS，round11 落账）：worker 原语全量落地（cc-db semantic_queue 写门面 claim/renew/retry/reclaim + cc-semantic LeaseGuard/drain_pending/EmbedHandler，18 测试全绿）；评审留边界——组合根接线与公平批次 ORDER BY 注入（偏差 3）、机会性 reclaim 收窄（偏差 7）归接线轮一并评审；V14/V20 正式证据归验收轮。
 
-### [ ] P6-014｜换库incarnation与缓存重用
+### [x] P6-014｜换库incarnation与缓存重用
 
-状态：`todo`；批次：`P6-C`；优先级：`normal`。
+状态：`done`；批次：`P6-C`；优先级：`normal`。
 范围：`crates/cc-db/src/index_db_rebuild.rs`；`crates/cc-semantic/src/reconcile.rs`
 硬依赖：P6-013
 步骤：staging重建更换身份；从artifact补manifest；旧worker fenced
@@ -1758,11 +1771,12 @@
 验收：索引重建不误删已付费向量、不接受旧DB时代回包；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13；V17
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch3_incarnation_fence_reconcile_local_green", "artifacts": ["crates/cc-db/src/semantic_rebuild.rs", "crates/cc-db/src/lib.rs", "crates/cc-db/tests/semantic_rebuild.rs", "crates/cc-semantic/src/reconcile.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/tests/reconcile_rebuild.rs", "artifacts/checkpoints/p6-batch3-20261002/P6-014-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 3 实施轮 cargo test -p cc-db -p cc-semantic 全绿（semantic_rebuild 3 + reconcile_rebuild 3 + 模块级：幽灵 fenced 零写入、付费向量只付一次、desired 投影）；收口轮复跑全绿。评审留边界：V13/V17 正式验证矩阵证据归验收轮；DirectWriter 重建路径未单测（fence 对路径不敏感）；组合根接线归接线轮。"}]
+实施备注：2026-10-02 批次 3 收口（评审已 PASS，round11 落账）：换库 incarnation 权威路径 fence（generation_at_path fresh 只读连接 strict ReadGeneration）+ reconcile 三步补齐 + cache 重用落地（9 测试全绿）；收口轮已补 TOCTOU 边界声明（publish_semantic_fenced，owner 串行集成模型外需外层串行化）与 generation_at_path busy_timeout fail-stop 方向注明；重入队 bump 口径张力（偏差 5）移交后续裁决；V13/V17 正式证据归验收轮。
 
-### [ ] P6-015｜崩溃恢复扫描
+### [x] P6-015｜崩溃恢复扫描
 
-状态：`todo`；批次：`P6-C`；优先级：`normal`。
+状态：`done`；批次：`P6-C`；优先级：`normal`。
 范围：`crates/cc-semantic/src/reconcile.rs`；`crates/cc-eval/tests/semantic_lifecycle.rs`
 硬依赖：P6-014
 步骤：对每个persist边界kill/restart；重认过期lease与缺失artifact
@@ -1770,11 +1784,12 @@
 验收：恢复有界且可复算，已存artifact优先复用；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V17
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch3_bounded_recovery_handback_primitive_local_green", "artifacts": ["crates/cc-db/src/semantic_recovery.rs", "crates/cc-db/src/lib.rs", "crates/cc-db/tests/semantic_recovery.rs", "crates/cc-semantic/src/recovery.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/tests/semantic_recovery.rs", "artifacts/checkpoints/p6-batch3-20261002/P6-015-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 3 实施轮 cargo test -p cc-db -p cc-semantic 全绿（bounded reclaim 分页收敛、dead-letter 只清点、desired keyset 分页、5 个 kill 模拟端到端）；收口动作②新增原语单测 hand_back_primitive_fences_and_never_consumes_an_attempt（stale token/未知 id 拒绝零写入、成功回 pending attempt 不变、终态 fence、Auxiliary）与集成测试 cache_miss_hand_back_spends_no_attempt_budget（max_attempts=1 下 miss hand-back 不死信、预算完整留给 worker）全绿；收口轮复跑 cc-db+cc-semantic 24 个 test result 全 ok + cargo check --workspace 干净。评审留边界：V17 真实子进程 SIGKILL 正式化归验收轮（当前为进程内 kill 模拟）；dead_letter 页帽化（偏差 6）移交。"}]
+实施备注：2026-10-02 批次 3 收口（评审已 PASS，round11 落账）：有界恢复原语 + recover_scan 编排落地（kill 模拟多轮收敛、已存 artifact 优先复用、死信只清点、ghost fence，11 测试全绿）；收口动作②已落地——cc-db 新增 hand_back_semantic_task 不计 attempt 的 fenced claimed→pending 直写原语，cache-miss hand-back 切换至该原语（原语单测 + 集成测试不烧 attempt）；desired_set_bounded 不变式前提文档声明已加；V17 真实子进程 SIGKILL 正式化归验收轮。
 
-### [ ] P6-016｜GC与发布协调
+### [x] P6-016｜GC与发布协调
 
-状态：`todo`；批次：`P6-D`；优先级：`normal`。
+状态：`done`；批次：`P6-D`；优先级：`normal`。
 范围：`crates/cc-semantic/src/cache.rs`；`crates/cc-semantic/src/publish.rs`
 硬依赖：P5-020, P6-011, P6-015
 步骤：mark/sweep、活跃引用/lease和最短保留期；GC跟publish共同协调
@@ -1782,11 +1797,12 @@
 验收：没有manifest引用刚GC删除产物的竞态，孤儿最终可回收；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V17
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch4_gc_publish_coordination_local_green", "artifacts": ["crates/cc-db/src/semantic_gc_reads.rs", "crates/cc-db/src/lib.rs", "crates/cc-semantic/src/gc.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/tests/semantic_gc.rs", "artifacts/checkpoints/p6-batch4-20261002/P6-016-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 4 实施轮 cargo test -p cc-semantic -p cc-db 全绿（semantic_gc 8 集成：引用保护/宽限回收/收集-清扫交错快照负测试/对偶宽限窗口/有界收敛/corrupt 清扫/temp-半文件+空目录修剪且 quarantine 零触碰/revoked space 保护；semantic_gc_reads 3 内联单测），收口轮复跑全绿。偏差：sweep 落新模块 gc.rs、同步点快照落 cc-db semantic_gc_mark（不改 P6-008/011 密封交付物）。评审留边界：min_retention_secs 配置面与非零下限校验、GC 审计计数落库归接线轮（接线轮 13 项待办表见 artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json）；V17 正式验证矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 4 收口（评审已 PASS，round12 落账）：GC mark/sweep + 一次短读快照同步点 + 3600s 宽限落地（8 集成 + 3 内联单测全绿，quarantine 结构性不可触及有测试守护）；收口边界——宽限参数配置面与非零下限校验、GC 审计落库归接线轮（13 项待办表见 round12 审计文件），V17 正式证据归验收轮。
 
-### [ ] P6-017｜model space切换规划
+### [x] P6-017｜model space切换规划
 
-状态：`todo`；批次：`P6-D`；优先级：`normal`。
+状态：`done`；批次：`P6-D`；优先级：`normal`。
 范围：`crates/cc-semantic/src/spec.rs`；`crates/cc-semantic/src/reconcile.rs`
 硬依赖：P6-016
 步骤：新空间回填/切active/撤销；记录用户revision与未pin限制
@@ -1794,11 +1810,12 @@
 验收：切换时不把不同空间分数混排，旧cache可回滚复用；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V16；V17
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch4_space_switch_protocol_local_green", "artifacts": ["crates/cc-db/src/semantic_space_switch.rs", "crates/cc-db/src/lib.rs", "crates/cc-db/tests/semantic_space_switch.rs", "crates/cc-semantic/src/space_switch.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/tests/space_switch.rs", "artifacts/checkpoints/p6-batch4-20261002/P6-017-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 4 实施轮 cargo test -p cc-db -p cc-semantic 全绿（cc-db semantic_space_switch 10：三边闭转换表/单事务五步切换/revoke 生产消费 own-space 守卫/pinned:false 审计键/epoch 守卫；cc-semantic space_switch 2 端到端：回滚复用 provider 0 调用、revoke 后 GC 衔接），收口轮复跑全绿。偏差：新模块 semantic_space_switch/space_switch（不改简报归属的密封交付物）、首次激活不 bump（P6-004 None=not ready 红线优先）。评审留边界：切换组合根触发面与 semantic_space_switch_log 上限归接线轮（13 项待办表见 artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json）；V16/V17 正式证据归验收轮。"}]
+实施备注：2026-10-02 批次 4 收口（评审已 PASS，round12 落账）：model space 三段切换（回填/单事务切 active/撤销回滚复用）+ revoke 第二生产消费者 + metadata 审计键落地（12 测试全绿，V16 分数不混排/V17 回滚零付费有端到端断言）；收口边界——组合根触发面与切换日志上限归接线轮（13 项待办表见 round12 审计文件），V16/V17 正式证据归验收轮。
 
-### [ ] P6-018｜cache缺失/损坏降级
+### [x] P6-018｜cache缺失/损坏降级
 
-状态：`todo`；批次：`P6-D`；优先级：`normal`。
+状态：`done`；批次：`P6-D`；优先级：`normal`。
 范围：`crates/cc-semantic/src/cache.rs`；`crates/cc-server/src/capability_status.rs`
 硬依赖：P6-017
 步骤：隔离坏记录、语义degraded、本地继续；补嵌受费用策略控制
@@ -1806,11 +1823,12 @@
 验收：不把缺向量当完整空结果，不静默无界重费；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V17；V18
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch4_cache_degrade_budget_local_green", "artifacts": ["crates/cc-semantic/src/degrade.rs", "crates/cc-semantic/src/lib.rs", "crates/cc-semantic/tests/semantic_degrade.rs", "crates/cc-server/src/service_factory.rs", "crates/cc-server/src/capability_status.rs", "artifacts/checkpoints/p6-batch4-20261002/P6-018-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 4 实施轮 cargo test -p cc-semantic -p cc-server -p cc-db 全绿（semantic_degrade 5 端到端：腐坏隔离→预算内补嵌→put 覆盖自愈回路、claimed 交还零 attempt 消耗、预算耗尽死信且 provider 调用停在拒绝点、GC 多轮 quarantine 字节级零触碰、检索降级矩阵；degrade 4 内联 + capability_status 2 单测），收口轮复跑全绿。偏差：quarantine 落新模块 degrade.rs（P6-008 封存红线）、degraded 透出经 QueryServices 可选槽（默认构建零依赖 cc-semantic）。评审留边界：组合根接线（degrade 门面调用点、降级快照转写）归接线轮（13 项待办表见 artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json）；DegradationLedger 跨进程持久化如需亦归接线轮；V17/V18 正式证据归验收轮。"}]
+实施备注：2026-10-02 批次 4 收口（评审已 PASS，round12 落账）：cache 缺失/损坏降级落地——quarantine 双半隔离+诊断 sidecar、re-embed 预算整批准入（拒绝先于 provider 调用、超限 failed 死信带 reason）、degraded 判据与透出槽（11 测试全绿，自愈回路端到端固化）；收口边界——组合根接线（门面调用点/快照转写）归接线轮（13 项待办表见 round12 审计文件），V17/V18 正式证据归验收轮。
 
-### [ ] P6-019｜更新存储/恢复/配置文档
+### [x] P6-019｜更新存储/恢复/配置文档
 
-状态：`todo`；批次：`P6-D`；优先级：`normal`。
+状态：`done`；批次：`P6-D`；优先级：`normal`。
 范围：`docs/internals/STORAGE.md`；`docs/internals/CONCURRENCY.md`；`docs/TROUBLESHOOTING.md`
 硬依赖：P6-018
 步骤：写清at-least-once、两库顺序、恢复步骤与namespace
@@ -1818,11 +1836,12 @@
 验收：不宣称跨模型/两库exactly-once或零重复收费；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V21
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch4_doc_charter_sync_troubleshooting_backfilled", "artifacts": ["DESIGN.md", "docs/internals/STORAGE.md", "docs/internals/CONCURRENCY.md", "docs/internals/INCREMENTAL_RECOVERY.md", "docs/CONFIGURATION.md", "docs/ARCHITECTURE.md", "docs/TROUBLESHOOTING.md", "crates/cc-db/src/semantic_coverage.rs", "crates/cc-db/tests/semantic_space_switch.rs", "artifacts/checkpoints/p6-batch4-20261002/P6-019-IMPLEMENTATION.md"], "limitations": "命令级证据：实施轮 cargo test -p cc-db 全绿（TempDirGuard pid+单调计数修复后 semantic_space_switch 10/10 含两 consume_revoke 用例）+ cargo check --workspace 干净；文档锚点逐条 grep 复核为当前行号、表数 29 基表+5 FTS5 经 CREATE TABLE 计数复核。交付：章程限定式单库表述（DESIGN/STORAGE，ADR-0003 限定修订）+ schema v22 事实订正、CONCURRENCY 两小节、INCREMENTAL_RECOVERY 语义恢复事实节、CONFIGURATION 语义缓存与降级节、semantic_coverage 措辞统一（epoch 声明式口径）、TempDirGuard flaky 修复。TROUBLESHOOTING 偏差 1 移交已由批次 4 收口轮兑现：新增语义缓存损坏/缺失自愈、CODECORTEX_SEMANTIC_CACHE_ROOT 排查、re-embed 预算死信识别与处置、换库语义重建与付费向量复用四条用户排障条目（自 STORAGE crash 点表与 CONFIGURATION 降级语义摘编，未接线处如实注明）。epoch_rules 表→钟映射为声明式口径已在 STORAGE 如实区分（语义三表效应归属为提交点声明，非静态枚举行）。评审留边界：组合根接线如实标注三处；V21 正式验证矩阵证据归验收轮。"}]
+实施备注：2026-10-02 批次 4 收口（评审已 PASS，round12 落账）：章程同步（DESIGN/STORAGE 限定式单库 + schema v22 事实）、CONCURRENCY/INCREMENTAL_RECOVERY/CONFIGURATION 更新、coverage 措辞统一（epoch 随语义状态推进、Auxiliary 永不推进的声明式口径）、TempDirGuard flaky 修复落地；TROUBLESHOOTING 缺口已由收口轮补齐（四条用户排障条目，组合根未接线处如实注明）；V21 正式证据归验收轮。
 
-### [ ] P6-020｜P6无网络语义底座验收
+### [x] P6-020｜P6无网络语义底座验收
 
-状态：`todo`；批次：`P6-D`；优先级：`blocking`。
+状态：`done`；批次：`P6-D`；优先级：`blocking`。
 范围：`docs/roadmap/code-index-v2/`；`artifacts/benchmarks/`
 硬依赖：P6-001, P6-002, P6-003, P6-004, P6-005, P6-006, P6-007, P6-008, P6-009, P6-010, P6-011, P6-012, P6-013, P6-014, P6-015, P6-016, P6-017, P6-018, P6-019
 步骤：G6使用fake执行故障矩阵和exact oracle；检查依赖图/默认包
@@ -1830,13 +1849,14 @@
 验收：publish/fencing/GC/rebuild闭环，仍未冒充真实provider效果；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V13；V14；V16；V17；V18
 回滚：禁用语义worker并撤销新manifest；保留派生cache，按incarnation重建索引。
-证据：尚无
+证据：[{"status": "batch5_acceptance_library_layer_g6_passed_declared_local_scope", "artifacts": ["docs/roadmap/code-index-v2/P6-GATE.json", "artifacts/checkpoints/p6-acceptance-20261002/E1-dependency-default-package.json", "artifacts/checkpoints/p6-acceptance-20261002/E2-fault-matrix-exact-oracle-RECEIPT.json", "artifacts/checkpoints/p6-acceptance-20261002/v18-probe-default-binary.json", "artifacts/checkpoints/p6-acceptance-20261002/regression-workspace.log", "artifacts/checkpoints/p6-acceptance-20261002/EXECUTION-PROGRESS.md", "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json", "artifacts/checkpoints/todolist-completion-audit/round13/p6-acceptance-audit.json"], "limitations": "命令级证据（2026-10-02，head 0de7c890）：①依赖图/默认包——cargo tree -p cc-server -e normal 默认 cc-semantic 边计数 0、--features semantic 计 1（optional+feature，P6-002 允许语义）；cc-semantic 传递闭包零网络客户端 crate；默认/semantic 双口径 cargo build --locked --offline 均 exit 0；默认构建无 cache 目录无第二库文件。②故障矩阵+exact oracle 复放——cargo test -p cc-semantic --locked --offline 两轮 117 passed/0 failed（lib 60 含 fake 六变体 ProviderError 故障矩阵与 exact oracle 16 单测；9 集成套件 57 覆盖 publish CAS/fencing/GC/recovery/degrade/space switch）。③V18 探针——默认二进制 stdio：14 工具契约在册、semantic_state=not_configured、dense_state=disabled、零网络零 key。④全量回归——SDKROOT=… cargo test --workspace --locked --offline exit 0：2051 passed/0 failed/60 ignored（118 套件）。裁决=G6 passed_declared_local_scope_library_layer；边界如实声明：库层完成、组合根未接线（接线轮 13 项待办表，权威位置 round12 审计）、semantic 默认 disabled；带可重放 seed 的全故障矩阵正式回归与真实子进程 SIGKILL 级正式化归属 P7-016（本轮 not_run 进程级，不越权）；fake 完成不冒充真实 provider 效果；不推断 P7+ 任何门。"}]
+实施备注：2026-10-02 批次 5 验收（G6）：fake 故障矩阵+exact oracle 全量复放（117/0 两轮）、依赖图/默认包双口径检查（默认树 0 边、无网络 crate、双构建 exit 0）、V18 默认二进制探针（14 工具、semantic disabled/not_configured）、workspace 全量回归 2051/0/60 exit 0。G6=passed_declared_local_scope_library_layer，定稿于 docs/roadmap/code-index-v2/P6-GATE.json。边界：组合根未接线（13 项待办表）、进程级故障正式化归 P7-016、真实 provider 归 P7 线。
 
 ## P7｜provider与dense端到端
 
-### [ ] P7-001｜实现OpenAI-compatible provider适配
+### [x] P7-001｜实现OpenAI-compatible provider适配
 
-状态：`todo`；批次：`P7-A`；优先级：`normal`。
+状态：`done`；批次：`P7-A`；优先级：`normal`。
 范围：`crates/cc-semantic/src/providers/openai_compatible.rs`；`crates/cc-semantic/src/ports.rs`
 硬依赖：P6-020
 步骤：明确endpoint/base路径和认证；trait不暴露具体客户端类型
@@ -1844,11 +1864,12 @@
 验收：协议stub覆盖成功/错误，provider可替换；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch1_openai_compatible_provider_mock_leg_green", "artifacts": ["crates/cc-semantic/src/providers/openai_compatible.rs", "crates/cc-semantic/src/providers.rs", "artifacts/checkpoints/p7-impl-20261002/P7-001-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 1 实施轮 cargo test -p cc-semantic --locked --offline 全绿（lib 84 passed 含 24 项适配层测试 + 集成套件全绿）+ cargo check --workspace --locked --offline 干净；零网络——cc-semantic 依赖表未动（无 HTTP crate），唯一 transport 为内存 mock，未注入 transport 时不存在任何网络代码路径。双轨口径：mock 腿 done；live 腿 blocked（本轮不授权真实 provider），V15 正式验证矩阵证据 not_run，归 live 解封/验收轮。评审遗留：openai_compatible.rs:218 lint 顺延 hygiene 轮。"}]
+实施备注：2026-10-02 批次 1 收口（评审已 PASS，round14 落账）：OpenAI-compatible 适配层落地——注入式 EmbeddingHttpTransport seam、EmbeddingApiKey 凭据 newtype（Debug 脱敏/无 Display）、六变体 ProviderError 映射、严格响应结构校验、默认 None=fail-closed disabled，24 项 mock 测试全绿；双轨口径——mock 腿 done、live 腿 blocked（用户 2026-10-02 D1/D2 不授权真实 provider），V15 证据 not_run 归 live 解封；评审遗留：openai_compatible.rs:218 lint 顺延 hygiene 轮。
 
-### [ ] P7-002｜模型参数与能力验证
+### [x] P7-002｜模型参数与能力验证
 
-状态：`todo`；批次：`P7-A`；优先级：`normal`。
+状态：`done`；批次：`P7-A`；优先级：`normal`。
 范围：`crates/cc-semantic/src/spec.rs`；`crates/cc-model/src/config.rs`
 硬依赖：P7-001
 步骤：模型revision、dimensions、metric、query instruction显式校验；支持差异不能吞
@@ -1856,11 +1877,12 @@
 验收：供应商不支持dimensions时给错误/配置路径，不伪成功；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15；V18
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch1_model_capability_probe_mock_leg_green", "artifacts": ["crates/cc-semantic/src/capability.rs", "crates/cc-model/src/config.rs", "artifacts/checkpoints/p7-impl-20261002/P7-002-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 1 实施轮 cargo test -p cc-semantic 全绿（lib 108 passed 含 24 项 capability）+ cargo test -p cc-model 全绿（82 passed 含 2 项 semantic 配置节）+ cargo check --workspace 干净；零网络——全部 offline 锁定运行，唯一 transport 为内存 mock。偏差：SemanticProviderConfig 落 cc-model/config.rs 而非 spec.rs，spec.rs 仅引用零改动。双轨口径：mock 腿 done；live 腿 blocked（本轮不授权真实 provider），V15/V18 证据 not_run 归 live 解封/验收轮。评审遗留观察：capability classify 结构化标记维持现状，精化归 hygiene 轮。"}]
+实施备注：2026-10-02 批次 1 收口（评审已 PASS，round14 落账）：能力探测协议落地——capability.rs ModelCapability/DimensionsMode/PROBE_PROTOCOL_VERSION + validate_capability（revision/dimensions/metric/query instruction 显式校验，不伪成功）+ cc-model 首组语义配置键，24 项 capability 测试全绿；偏差如实入账——SemanticProviderConfig 落 cc-model/config.rs，spec.rs 冻结面零改动（新增类型扩展）；双轨口径——mock 腿 done、live 腿 blocked，V15/V18 证据 not_run 归 live 解封；评审遗留观察：capability classify 结构化标记（Mismatch/Unavailable 归类）维持现状，精化归 hygiene 轮。
 
-### [ ] P7-003｜真实输入尺寸与批次规划
+### [x] P7-003｜真实输入尺寸与批次规划
 
-状态：`todo`；批次：`P7-A`；优先级：`normal`。
+状态：`done`；批次：`P7-A`；优先级：`normal`。
 范围：`crates/cc-semantic/src/admission.rs`；`crates/cc-index/src/documents/render.rs`
 硬依赖：P7-002
 步骤：按最终输入计token/bytes/batch；超限重切或明确skip而非平均池化掩盖
@@ -1868,11 +1890,12 @@
 验收：每项和总batch受限，文本与向量所代表文档版本一致；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V09；V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch1_input_budget_batch_planning_mock_leg_green", "artifacts": ["crates/cc-semantic/src/admission.rs", "crates/cc-index/src/documents/render.rs", "artifacts/checkpoints/p7-impl-20261002/P7-003-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 1 实施轮 cargo test -p cc-semantic 全绿（lib 124 passed 含 16 项 admission）+ cargo test -p cc-index 全绿（lib 379 passed 含 2 项 render manifest 测试）+ cargo check --workspace 干净；零网络——依赖表零改动，适配层集成测试唯一 transport 为内存 RecordingTransport。口径声明：admission 全部度量基于 render 产物最终 bytes；admission 层零截断（超限产出显式 Skipped{key,reason}）；token 为声明估算器估算而非精确分词。双轨口径：mock 腿 done；live 腿 blocked（本轮不授权真实 provider），V09/V15 证据 not_run 归 live 解封/验收轮。评审遗留：admission.rs:291 clippy loop-index 顺延 hygiene 轮。"}]
+实施备注：2026-10-02 批次 1 收口（评审已 PASS，round14 落账）：批次规划器落地——InputBudget 三界（items/硬 bytes/估算 tokens）+ render 最终输入 bytes manifest 消费 + first-fit 确定性切分（plan_order）+ 超限显式 Skipped 不掩盖，16 项 admission + 2 项 render manifest 测试全绿；估算口径如实声明（无 tokenizer 不冒充精确 token 数）；双轨口径——mock 腿 done、live 腿 blocked，V09/V15 证据 not_run 归 live 解封；评审遗留：admission.rs:291 clippy loop-index（P7-003 段 plan_order）顺延 hygiene 轮。
 
-### [ ] P7-004｜响应强校验
+### [x] P7-004｜响应强校验
 
-状态：`todo`；批次：`P7-A`；优先级：`normal`。
+状态：`done`；批次：`P7-A`；优先级：`normal`。
 范围：`crates/cc-semantic/src/providers/openai_compatible.rs`
 硬依赖：P7-003
 步骤：数量/index完整且唯一、dim、finite、norm检查；错误向量不缓存
@@ -1880,11 +1903,12 @@
 验收：乱序可正确恢复，重复index/NaN/zero必被拒绝；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15；V16
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch1_strict_response_validation_mock_leg_green", "artifacts": ["crates/cc-semantic/src/providers/openai_compatible.rs", "artifacts/checkpoints/p7-impl-20261002/P7-004-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 1 实施轮 cargo test -p cc-semantic --locked --offline 全绿（lib 140 passed = 前 124 + 新增 16，适配层合计 40 项）+ cargo check --workspace 干净；零网络——依赖表零改动，唯一 transport 为内存 mock；响应体/请求体/凭据零泄漏由测试固化。评审遗留：redirect 验收条款（live 供应商重定向行为验证）归 live 腿解封——适配层现行语义为 3xx 一律非重试 InvalidInput、永不跟随重定向、不泄露凭据；V15/V16 正式证据 not_run 归 live 解封/验收轮。"}]
+实施备注：2026-10-02 批次 1 收口（评审已 PASS，round14 落账）：响应四层强校验门落地——NormPolicy 可配 norm 策略 + 数量/index 恰 0..n（乱序重排/缺口/重复拒绝）+ 维度/finite/零向量拒绝 + model 回显必需比对，新增 16 项强校验测试（适配层合计 40，P7-001 24 项断言零放松）；双轨口径——mock 腿 done、live 腿 blocked，V15/V16 证据 not_run 归 live 解封；评审遗留：redirect 验收条款归 live 解封（适配层 3xx 一律拒绝不跟随，live 供应商 redirect 行为验证 blocked），openai_compatible.rs:218 lint 顺延 hygiene 轮。
 
-### [ ] P7-005｜全局与项目并发限流
+### [x] P7-005｜全局与项目并发限流
 
-状态：`todo`；批次：`P7-A`；优先级：`normal`。
+状态：`done`；批次：`P7-A`；优先级：`normal`。
 范围：`crates/cc-semantic/src/admission.rs`；`crates/cc-server/src/service_factory.rs`
 硬依赖：P7-004
 步骤：共享provider级限额和项目公平队列；避免每调用创建独立无限信号量
@@ -1892,11 +1916,12 @@
 验收：多项目总并发仍受限，单项目不能饿死其他索引；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15；V20
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch1_concurrency_gate_fairness_mock_leg_green", "artifacts": ["crates/cc-semantic/src/admission.rs", "crates/cc-server/src/service_factory.rs", "artifacts/checkpoints/p7-impl-20261002/P7-005-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 1 实施轮 cargo test -p cc-semantic -p cc-model --locked --offline 全绿（307 passed/0 failed，含 16 项 admission gate 测试：单项目不可饿死、全局上限约束总并发、公平队列防插队、pause 语义、超时显式化、Send+Sync 共享）；clippy 本轮新增告警零；组合根单例挂点默认构建维持 no-network closure。双轨口径：mock 腿 done；live 腿 blocked（本轮不授权真实 provider），V15/V20 证据 not_run 归 live 解封/验收轮。评审遗留：既有 lint 5 条顺延 hygiene 轮（cache.rs:102/:126/:127 P6-008 历轮在案、openai_compatible.rs:218、admission.rs:291 clippy loop-index），本轮零代码改动。"}]
+实施备注：2026-10-02 批次 1 收口（评审已 PASS，round14 落账）：并发限流 gate 落地——GateLimits 两级上限（per_project 严格小于全局，cap≥max 拒启防饿死）+ 公平队列（FIFO 防插队）+ rate-limit pause + 超时显式化 + 共享单例挂点（service_factory，cfg(feature="semantic") 默认构建零 cc-semantic 依赖），16 项 gate 测试全绿；Q4 线程模型定案入档（零线程/零定时器，被调用组件）；双轨口径——mock 腿 done、live 腿 blocked，V15/V20 证据 not_run 归 live 解封；评审遗留：既有 lint 5 条顺延 hygiene 轮（本轮新增告警零）。
 
-### [ ] P7-006｜有界重试与断路器
+### [x] P7-006｜有界重试与断路器
 
-状态：`todo`；批次：`P7-B`；优先级：`normal`。
+状态：`done`；批次：`P7-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/providers/openai_compatible.rs`；`crates/cc-semantic/src/worker.rs`
 硬依赖：P6-020, P7-001, P7-005
 步骤：429/5xx/timeout退避与Retry-After；auth/永久错误暂停
@@ -1904,11 +1929,12 @@
 验收：重试次数、deadline和费用封顶，失败原因公开脱敏；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch2_bounded_retry_breaker_mock_leg_green", "artifacts": ["crates/cc-semantic/src/providers/openai_compatible.rs", "crates/cc-semantic/tests/retry_worker_layering.rs", "crates/cc-model/src/config.rs", "crates/cc-server/src/service_factory.rs", "docs/CONFIGURATION.md", "artifacts/checkpoints/p7-impl-20261002/P7-006-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 2 实施轮 cargo test -p cc-semantic -p cc-model --locked --offline 全绿（cc-semantic lib 176 含本任务 20 项单测 + retry_worker_layering 集成 5 项；cc-model lib 84 含 8 新配置键测试）；cc-server --features semantic lib 253 passed；cargo check --workspace 干净；clippy 本轮新增告警零。分层口径测试固化：1 outbox attempt = 1 完整调用层重试序列（attempt 只 +1）、调用层零队列写入（结构性）、C11 重试等待不持任何 DB 锁。双轨口径：mock 腿 done；live 腿 blocked（用户 2026-10-02 D1/D2 不授权真实 provider），V15 正式验证矩阵证据 not_run 归 live 解封/验收轮。评审边界如实入账：失败率阈值变体未预实现（取连续失败一支）；Suspended 消费时序为等待后（等待即冷却语义，双测固化）；断路器开路暴露为 ServerError（冻结六变体无专用变体）；worker 侧 auth/degraded 透出归接线轮（P7-010/P7-014）；retry_max_cost_units 占位费率已由 P7-008 收据层接管；cc-server 首轮 1 例无关 flaky 重跑两次 253/253 全绿。"}]
+实施备注：2026-10-03 批次 2 收口（评审已 PASS，round15 落账）：有界重试 + 三态断路器落地——RetryClock 注入式时钟零线程零定时器、RetryPolicy 五上界（attempts/backoff/deadline/cost cap，重试默认关）+ 指数退避确定性抖动（只缩不涨）、CircuitBreaker 三态（半开单探测槽、AuthError ×10 长窗、429/InvalidInput/Cancelled neutral）+ RetryingProvider 装饰器（429 上报共享 gate、等待后消费 Suspended），分层口径测试固化（1 outbox attempt = 1 完整序列、调用层零队列写入、C11 零 DB 锁）；cc-model 8 新配置键 + 组合根断路器单例（与 gate 同点 first-wins）；双轨口径——mock 腿 done、live 腿 blocked（D1/D2 不授权），V15 证据 not_run 归 live 解封；评审边界如实入账（失败率变体未预实现、开路错误形态 ServerError、worker 侧透出归接线轮）。
 
-### [ ] P7-007｜代码外发与凭据政策
+### [x] P7-007｜代码外发与凭据政策
 
-状态：`todo`；批次：`P7-B`；优先级：`normal`。
+状态：`done`；批次：`P7-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/policy.rs`；`crates/cc-model/src/config.rs`
 硬依赖：P7-006
 步骤：显式opt-in/敏感文件/endpoint协议/redirect；密钥只外部引用
@@ -1916,11 +1942,12 @@
 验收：默认无网络、日志无key/源码、重定向不泄露认证；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15；V18
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch2_egress_credential_policy_mechanism_leg_green", "artifacts": ["crates/cc-semantic/src/policy.rs", "crates/cc-semantic/src/providers/openai_compatible.rs", "crates/cc-model/src/config.rs", "docs/CONFIGURATION.md", "artifacts/checkpoints/p7-impl-20261002/P7-007-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 2 实施轮 cargo test -p cc-semantic -p cc-model --locked --offline 全绿（cc-semantic lib 197 含 policy 20 项 + capability 探针外发审计；cc-model lib 85 含 egress 双键测试）；零网络——cc-semantic 依赖表未动（无 HTTP crate），唯一 transport 为内存 mock。机制五层强制：gate_transport_assembly 装配门（未 opt-in 不构造）/ 构造器 fail-fast / GuardedTransport 运行时守卫（scheme+超时前置）/ EmbeddingHttpTransport trait 契约四条（重定向永不跟随+跳前剥认证）/ audit_egress 声明面恰好等于审计；api_key_ref 仅 env:/file:（内联拒绝不回显）+ 14 断言面泄漏扫描 + redact_for_log；重定向 3xx 非重试 + seam 恰一次请求断言（认证绝不重发）。双轨口径：机制腿 done；live 腿 conditional blocked 归 P7-018（生产 transport 真实重定向/超时/TLS 行为核验、敏感文件外发分类矩阵未开放），V15/V18 正式证据 not_run。评审边界如实入账：zero-on-drop 未实现如实声明（无 static/无缓存/无持久化兜底）；守卫层不拦 3xx（保住更优错误分类，拒收紧守在适配层门）；build_request 私有转 pub 供政策级审计（纯可见性放宽）。"}]
+实施备注：2026-10-03 批次 2 收口（评审已 PASS，round15 落账）：代码外发与凭据政策执行机制腿落地（用户 2026-10-02 D1/D2 决策口径）——新 policy.rs 模块五层强制（装配门/构造器 fail-fast/GuardedTransport/trait 契约四条含重定向永不跟随+剥认证/audit_egress 声明面恰好等于审计）、api_key_ref 仅 env:/file: 内联拒绝不回显 + 14 断言面泄漏扫描 + redact_for_log、egress 双配置键默认闭合态；双轨口径——机制腿 done、live 腿 conditional blocked 归 P7-018（真实 transport 行为核验、敏感文件外发分类矩阵），V15/V18 证据 not_run；评审边界如实入账（zero-on-drop 未实现、守卫不拦 3xx 保住更优错误分类）。
 
-### [ ] P7-008｜费用与不确定尝试收据
+### [x] P7-008｜费用与不确定尝试收据
 
-状态：`todo`；批次：`P7-B`；优先级：`normal`。
+状态：`done`；批次：`P7-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/admission.rs`；`crates/cc-semantic/src/worker.rs`
 硬依赖：P7-007
 步骤：区分reported/estimated tokens、cache reuse和未知重复费用；停机阈值
@@ -1928,11 +1955,12 @@
 验收：无usage不填0费用，重启重试能看见费用不确定性；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V15；V20
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch2_cost_receipts_mock_leg_green", "artifacts": ["crates/cc-semantic/src/admission.rs", "crates/cc-semantic/src/providers/openai_compatible.rs", "artifacts/checkpoints/p7-impl-20261002/P7-008-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 2 实施轮 cargo test -p cc-semantic -p cc-model --locked --offline 全绿（cc-semantic lib 212 含本任务 15 项新增：admission 收据层 7 + RetryingProvider 挂接 8）。核心不变式测试固化：reported usage 恒 None 不填 0（missing_usage_is_unknown_and_never_zero_filled）；unknown_duplicate_risk = attempt>1 且 reported 缺（重启重试费用不确定性可见）；UncertainReason 两变体（BreakerOpen/TimeoutIndeterminate）；CostBudget 调用前拒绝（Some(0) 全拒）；ReceiptLedger 有界环形容器 + 生命周期总额与保留窗聚合双口径分离；收据零敏感内容（零泄漏测试）。双轨口径：mock 腿 done；live 腿 blocked（D1/D2 不授权真实 provider），V15 正式证据 not_run，V20 归接线轮。评审边界如实入账：收据只在内存聚合零落盘（跨进程退化为 outbox attempt_count + unknown_duplicate_risk 组合可观测，落库取舍留 P7-016）；挂接点在 RetryingProvider::run 唯一漏斗而非新建 worker.rs（该文件不存在，P7-006 偏差 4 已裁定）；reported 真实值待端口解冻；零配置键新增（程序化装配面）。"}]
+实施备注：2026-10-03 批次 2 收口（评审已 PASS，round15 落账）：费用与不确定尝试收据落地——admission 收据层（UsageReceipt reported/estimated/cache_reuse 三拆分、reported 恒 None 不填 0、unknown_duplicate_risk 重复计费风险、UncertainReason BreakerOpen/TimeoutIndeterminate、CostBudget 调用前拒绝、ReceiptLedger 有界环形账本生命周期总额与窗口聚合双口径）+ RetryingProvider::run 唯一漏斗挂接（断路器拒/预算拒/每次实际尝试三类收据，占位费率接管 P7-006 常量）；双轨口径——mock 腿 done、live 腿 blocked，V15 证据 not_run、V20 归接线轮；评审边界如实入账（内存聚合零落盘、跨进程退化为 outbox attempt_count 组合可观测、落库取舍留 P7-016、零配置键新增）。
 
-### [ ] P7-009｜查询编码与缓存
+### [x] P7-009｜查询编码与缓存
 
-状态：`todo`；批次：`P7-B`；优先级：`normal`。
+状态：`done`；批次：`P7-B`；优先级：`normal`。
 范围：`crates/cc-semantic/src/spec.rs`；`crates/cc-semantic/src/cache.rs`
 硬依赖：P7-008
 步骤：实现QueryEncodingSpec键和有界query cache；instruction变更失效
@@ -1940,11 +1968,12 @@
 验收：不需无谓重嵌文档，不跨空间复用query向量；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V15
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch2_query_encoding_cache_mock_leg_green", "artifacts": ["crates/cc-semantic/src/cache.rs", "crates/cc-semantic/tests/query_cache.rs", "artifacts/checkpoints/p7-impl-20261002/P7-009-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 2 实施轮 cargo test -p cc-semantic --locked --offline 全绿（lib 212 零回归 + query_cache 新集成套件 17 项）。Q5 裁决入账：缓存键 = namespace + QuerySpecDigest + QueryDigest，不含 semantic_epoch（查询向量为 (spec, 文本) 纯函数、C12 dense 行语义射程不含编码缓存、保守入键为纯浪费；owner 可一键推翻，加字段即全量失效零迁移）；instruction/tokenizer/space 变更 ⇒ spec digest 变 ⇒ 新键，跨空间复用结构性不可达（键级 + 行为级双测固化）；文档路径零接触（query_path_never_touches_the_document_cache 字节级固化）；查询文本零泄漏专项双测；QueryVectorCache 容量 + 字节双硬上限。双轨口径：mock 腿 done；live 腿 blocked（D1/D2 不授权真实 provider），V11/V15 正式证据 not_run（V11 另依赖 P7-010/013 查询执行接线）。评审边界如实入账：键类型落 cache.rs 而非 scope 所列 spec.rs（冻结面零 diff，键无需新 digest 类型）；内存 LRU 非磁盘落位（简报接口草案即 LRU）；零配置键新增（4096 entries / 64 MiB 程序化装配，操作者可调归 P7-014）。"}]
+实施备注：2026-10-03 批次 2 收口（评审已 PASS，round15 落账）：查询编码与缓存落地——QueryCacheKey（namespace + QuerySpecDigest + QueryDigest，Q5 裁决不含 semantic_epoch：查询向量为 (spec,文本) 纯函数、C12 dense 行不覆盖编码缓存，owner 可一键推翻零迁移）+ QueryVectorCache 容量/字节双硬上限 LRU + encode_queries 全链（P7-003 query 批次口径、只重批 miss、错误向量不缓存、Skipped 显式透出）+ query_provider_failure 错误映射；跨空间复用结构性不可达、文档路径零接触、查询文本零泄漏均测试固化；双轨口径——mock 腿 done、live 腿 blocked，V11/V15 证据 not_run；评审边界如实入账（键落 cache.rs 非 spec.rs、内存 LRU 非磁盘、零配置键新增归 P7-014）。
 
-### [ ] P7-010｜dense召回端口接线
+### [x] P7-010｜dense召回端口接线
 
-状态：`todo`；批次：`P7-B`；优先级：`normal`。
+状态：`done`；批次：`P7-B`；优先级：`normal`。
 范围：`crates/cc-search/src/lanes/semantic_adapter.rs`；`crates/cc-server/src/service_factory.rs`
 硬依赖：P7-009
 步骤：将语义服务注入SemanticRecall；返回doc版本/空间/coverage
@@ -1952,7 +1981,8 @@
 验收：搜索不依赖具体HTTP客户端，local策略不调用端口；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V11；V16
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"status": "batch2_dense_recall_port_wiring_mock_leg_green", "artifacts": ["crates/cc-server/src/semantic_wiring.rs", "crates/cc-server/src/engine.rs", "crates/cc-server/src/lib.rs", "crates/cc-db/src/index_db_retrieval.rs", "artifacts/checkpoints/p7-impl-20261002/P7-010-IMPLEMENTATION.md"], "limitations": "命令级证据：批次 2 实施轮 cargo test -p cc-server --features semantic -p cc-semantic --locked --offline 全绿（cc-server lib 263 含 semantic_wiring 10 项；cc-semantic 212 + 集成零回归）；默认构建回归 251 passed；cargo tree 双口径默认 0 边 / feature 1 边（默认构建零 cc-semantic 依赖）；V18 disabled 口径零漂移复跑（cc-eval p5d 三套件 21 passed）；cc-db 173 passed（chunk_ids_by_doc_keys additive 零回归）。最小装配腿：SemanticSubsystem assemble/wire（注入/对称摘除/装配 Err 先于槽写入）、ExactRecallService 生产 recall 供给（C09 filter-before-top-k、CandidateRef.document.doc_version + LaneCoverage.complete、scoring_spec=cosine-exact-v1）、engine.rs set_project 接线 fail-closed、DegradationSnapshot 一行桥接。双轨口径：mock 腿 done；live 腿 blocked（D1/D2 不授权真实 provider），V11/V16 正式证据 not_run。评审边界如实入账：查询路径不内联编码（miss → Unavailable(\"query_vector_not_encoded\")，C10 没执行≠没结果；内联决策归 P7-012/013）；诚实边界——生产侧当前无查询编码调用方，enabled 下 dense lane 恒 Unavailable 直至该决策落地；完整 try_init/调度时机/预算键归 P7-014。"}]
+实施备注：2026-10-03 批次 2 收口（评审已 PASS，round15 落账）：dense 召回端口接线 + 组合根最小装配腿落地——semantic_wiring.rs 新模块（SemanticSubsystem 装配 / wire 注入摘除 / ExactRecallService 生产 recall 供给，产出 doc_version/coverage、scoring_spec=cosine-exact-v1）、engine.rs set_project 接线 fail-closed、cc-db additive 只读 chunk_ids_by_doc_keys、cargo tree 双口径默认零依赖、V18 disabled 口径零漂移；双轨口径——mock 腿 done、live 腿 blocked，V11/V16 证据 not_run；接线账目——已消 3（#4/#5/#8）/部分 1（#1）/待 9 归 P7-011/012/014/015/016。【漏记偏差补录】recall 实现落 crates/cc-server/src/semantic_wiring.rs 而非 tasks.json scope 所列 crates/cc-search/src/lanes/semantic_adapter.rs——架构理由：recall 供给是组合根装配产物（与 gate/breaker 单例同点集中装配，产出 SemanticSubsystem 供 P7-014 全量接线消费），semantic_adapter 是消费侧收据门（panic 捕获/取消/超时/容量分类既有实现），保持零改动即接线不触碰既有检索链；实施记录 §6.1 已申报 cc-db 越界但漏记此条，本条为补录。【随 P7-014 消纳的低风险发现三条】①断路器半开单探测槽与调用层重试预算/收据的时序交互口径需接线轮对齐；②本条漏记偏差本身（scope 按实质兑现，文件名口径已补录）；③engine.rs set_project 接线的表述精度（wire 在字段赋值之后、返回 Err 即整体失败且 self 未被污染的语义，配置/文档面表述需更精确）。
 
 ### [ ] P7-011｜dense范围与hydrate守卫
 
@@ -2050,6 +2080,7 @@
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
 条件：仅在真实provider/LLM调用获得明确授权及预算时执行；缺证据阻止相应live效果声明，不阻止已满足的local发布范围。
 证据：尚无
+实施备注：2026-10-02 用户拍板（D1）：本轮不授权真实付费 provider，本任务维持 conditional 不执行，live 证据栏显式标 blocked；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。
 
 ### [ ] P7-019｜本地加dense的质量/成本消融
 
@@ -2102,6 +2133,7 @@
 验证：V02；V19
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
 证据：尚无
+实施备注：2026-10-02 用户拍板（D3）：真实多仓语料采用公开仓 + 固定 commit（延续 09-BENCHMARK 已锁定的 Flask/cc-switch 先例）；详见 artifacts/checkpoints/p789-blocking-analysis-20261002/DECISIONS-RECORDED.json。
 
 ### [ ] P8-003｜运行外部兼容套件
 

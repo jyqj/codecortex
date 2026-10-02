@@ -15,6 +15,255 @@ pub struct ProjectConfig {
     pub ranking: RankingConfig,
     #[serde(default)]
     pub auto_index: AutoIndexConfig,
+    #[serde(default)]
+    pub semantic: SemanticProviderConfig,
+}
+
+/// Semantic embedding-provider configuration (P7-002: the first semantic
+/// keys in `.codecortex.json`; the `semantic.*` namespace follows the
+/// P7 planning draft, TASK-BRIEFS P7-002).
+///
+/// This is the **declared** surface only: what the operator asserts about
+/// the provider/model. Nothing here reads the environment (the
+/// `api_key_ref` is an external *reference* resolved by the credential
+/// policy layer, P7-007 — the secret itself never enters this struct), and
+/// nothing here constructs a provider by itself. Turning the declaration
+/// into a validated [`cc_model`] space + capability happens in
+/// `cc-semantic::capability` (`resolve_provider`), which rejects every
+/// "support difference" explicitly — a mismatch is a config error that
+/// refuses startup, never a silent default.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct SemanticProviderConfig {
+    /// Master switch. Default `false` (C14: default no-network): with the
+    /// default, every other field may be present but is *inert* — the
+    /// state stays explainable, no provider is resolved, no network path
+    /// is built.
+    #[serde(default)]
+    pub enabled: bool,
+    /// Embedding model id, e.g. `text-embedding-3-small`. Becomes the
+    /// `model_id` of the frozen `VectorSpace` (part of the space identity).
+    #[serde(default)]
+    pub model_id: String,
+    /// Declared output dimension of the model. Required when `enabled`.
+    #[serde(default)]
+    pub dimensions: Option<u32>,
+    /// Declared distance metric. Only `cosine` is admitted by the frozen
+    /// encoding spec; any other value is a config error (explicit, no
+    /// default drift).
+    #[serde(default = "default_semantic_metric")]
+    pub metric: String,
+    /// `configurable`: the endpoint accepts an explicit `dimensions` field
+    /// in the embedding request body; `fixed`: the model has a single
+    /// native dimension and the field must not be sent. Default
+    /// `configurable`.
+    #[serde(default = "default_semantic_dimensions_mode")]
+    pub dimensions_mode: String,
+    /// Base URL of the OpenAI-compatible endpoint, e.g. `https://host/v1`.
+    /// Never a credential.
+    #[serde(default)]
+    pub endpoint: String,
+    /// External *reference* to the API key (e.g. `env:MY_KEY`). The secret
+    /// is resolved outside this struct by the credential policy layer;
+    /// only the reference name is stored.
+    #[serde(default)]
+    pub api_key_ref: Option<String>,
+    /// Declared per-input token limit of the model. Document/query spec
+    /// `max_tokens` must not exceed it (config error otherwise). Required
+    /// when `enabled` — no generous silent default ("支持差异不能吞").
+    #[serde(default)]
+    pub max_input_tokens: Option<u32>,
+    /// Declared maximum batch size accepted by the endpoint. Required when
+    /// `enabled`; bounded by the probe protocol (a probe sends exactly this
+    /// many tiny inputs).
+    #[serde(default)]
+    pub max_batch_items: Option<u32>,
+    /// Declared supported encoding formats (request `encoding_format`
+    /// values). Must include `float` (the only format the adapter sends).
+    #[serde(default = "default_semantic_encoding_formats")]
+    pub encoding_formats: Vec<String>,
+    /// Whether the model accepts instruction prefixes (task descriptions
+    /// prepended to input text). A document/query spec declaring an
+    /// `instruction` against a model with `supports_instruction: false` is
+    /// a config error.
+    #[serde(default)]
+    pub supports_instruction: bool,
+    /// Process-wide cap on concurrent embedding calls to the provider
+    /// (P7-005). `0` = unlimited and is the default (限流默认关闭): the
+    /// shared gate is assembled in permissive mode and never makes a caller
+    /// wait. A value ≥ 1 turns the gate into a hard semaphore.
+    #[serde(default)]
+    pub max_concurrent: u32,
+    /// Per-project share of the provider (`0` = unlimited, the default).
+    /// When set it must be strictly smaller than `max_concurrent`, so one
+    /// project can never hold every permit and starve the others
+    /// (V20: "单项目不能饿死其他索引").
+    #[serde(default)]
+    pub max_concurrent_per_project: u32,
+    /// Default wait a caller spends trying to acquire a concurrency permit
+    /// before giving up with an explicit timeout (milliseconds). A wall-clock
+    /// budget for the *admission wait only* — it never bounds a running
+    /// provider call and never spans a DB transaction (C11).
+    #[serde(default = "default_semantic_acquire_timeout_ms")]
+    pub acquire_timeout_ms: u64,
+    /// Call-layer retry bound (P7-006): TOTAL provider attempts made by the
+    /// retrying decorator within ONE outbox attempt. `0` = call-layer retry
+    /// disabled (the default, 保守值): every provider call is tried exactly
+    /// once and any failure goes straight back through the fenced DB retry.
+    /// A value ≥ 2 enables bounded, backoff-and-deadline-capped retries at
+    /// the provider-call layer; it never consumes the outbox attempt budget.
+    #[serde(default)]
+    pub retry_max_attempts: u32,
+    /// Exponential-backoff base delay between call-layer retries
+    /// (milliseconds). Only meaningful when `retry_max_attempts` ≥ 2.
+    #[serde(default = "default_semantic_retry_base_backoff_ms")]
+    pub retry_base_backoff_ms: u64,
+    /// Cap of the exponential backoff between call-layer retries
+    /// (milliseconds); must be ≥ `retry_base_backoff_ms`.
+    #[serde(default = "default_semantic_retry_max_backoff_ms")]
+    pub retry_max_backoff_ms: u64,
+    /// Total wall-clock budget of ONE call-layer retry sequence
+    /// (milliseconds): once the sequence would overshoot it, the decorator
+    /// gives up and returns the last error instead of sleeping into it.
+    #[serde(default = "default_semantic_retry_total_deadline_ms")]
+    pub retry_total_deadline_ms: u64,
+    /// Whether a `RateLimited` answer's `Retry-After` duration overrides the
+    /// exponential backoff for that retry (default: honored, `true`).
+    #[serde(default = "default_true_fn")]
+    pub retry_respect_retry_after: bool,
+    /// Cost ceiling for ONE call-layer retry sequence, in abstract cost
+    /// units (placeholder rate: 1 unit per provider attempt until the
+    /// receipt layer, P7-008, reports real costs). `None` = no separate
+    /// cost cap beyond the attempt/deadline bounds (the default).
+    #[serde(default)]
+    pub retry_max_cost_units: Option<u64>,
+    /// Consecutive-failure threshold that trips the process-wide provider
+    /// circuit breaker (P7-006). `0` = breaker disabled (never opens).
+    /// Default 5 (保守值): the breaker only ever reacts to *sustained*
+    /// failure and cannot affect any success path, so unlike the retry keys
+    /// it defaults ON.
+    #[serde(default = "default_semantic_breaker_threshold")]
+    pub breaker_failure_threshold: u32,
+    /// How long a tripped breaker stays open before admitting one half-open
+    /// probe (milliseconds). An `AuthError` trip keeps the circuit open for
+    /// ten times this window. Must be ≥ 1 when the breaker is enabled.
+    #[serde(default = "default_semantic_breaker_open_ms")]
+    pub breaker_open_ms: u64,
+    /// Explicit operator opt-in for building ANY provider network transport
+    /// (P7-007 egress policy). Default `false` = the no-network default:
+    /// assembling a transport without this flag is a startup-refusing config
+    /// error (`cc-semantic::policy::gate_transport_assembly` and the adapter
+    /// constructor both enforce it). `enabled` alone does NOT opt in.
+    #[serde(default)]
+    pub network_opt_in: bool,
+    /// Explicit opt-in for plaintext `http://` endpoints (P7-007). Default
+    /// `false` = https only; a plaintext endpoint is rejected by the egress
+    /// policy unless this flag is set.
+    #[serde(default)]
+    pub allow_http: bool,
+    /// Process-lifetime budget of PAID re-embeds for quarantined (corrupt)
+    /// cache inputs (P6-018 degrade facade, wired by P7-014). `None` =
+    /// unbounded (the default, preserving the pre-config-surface behavior);
+    /// a value caps how many provider-paid re-embeds the degradation ledger
+    /// admits this process before further quarantined re-embeds are refused
+    /// before the call and dead-lettered with the reason. First embeddings
+    /// never count against it.
+    #[serde(default)]
+    pub reembed_budget_max: Option<u64>,
+    /// Lease length in seconds of one composition-root worker drain claim
+    /// (P6-007 fencing; wired by P7-014). The claim expires at claim time
+    /// plus this; expiry + reclaim is the crash-recovery path. Must be ≥ 1.
+    #[serde(default = "default_semantic_worker_lease_secs")]
+    pub worker_lease_secs: u64,
+    /// Fresh-timestamp grace of the artifact-cache GC in seconds
+    /// (P6-016 `min_retention_secs`; wired by P7-014). Objects younger than
+    /// this are never collected, so a publish's `put` → manifest-CAS window
+    /// can never race a deletion. Must be ≥ 1 (a zero grace is a config
+    /// error that names the key — the synchronous publish/GC point alone is
+    /// not sufficient at 0, P6-016 口径).
+    #[serde(default = "default_semantic_gc_min_retention_secs")]
+    pub gc_min_retention_secs: u64,
+}
+
+fn default_semantic_worker_lease_secs() -> u64 {
+    600
+}
+
+fn default_semantic_gc_min_retention_secs() -> u64 {
+    3_600
+}
+
+fn default_semantic_acquire_timeout_ms() -> u64 {
+    30_000
+}
+
+fn default_semantic_retry_base_backoff_ms() -> u64 {
+    500
+}
+
+fn default_semantic_retry_max_backoff_ms() -> u64 {
+    8_000
+}
+
+fn default_semantic_retry_total_deadline_ms() -> u64 {
+    30_000
+}
+
+fn default_true_fn() -> bool {
+    true
+}
+
+fn default_semantic_breaker_threshold() -> u32 {
+    5
+}
+
+fn default_semantic_breaker_open_ms() -> u64 {
+    30_000
+}
+
+fn default_semantic_metric() -> String {
+    "cosine".to_owned()
+}
+
+fn default_semantic_dimensions_mode() -> String {
+    "configurable".to_owned()
+}
+
+fn default_semantic_encoding_formats() -> Vec<String> {
+    vec!["float".to_owned()]
+}
+
+impl Default for SemanticProviderConfig {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            model_id: String::new(),
+            dimensions: None,
+            metric: default_semantic_metric(),
+            dimensions_mode: default_semantic_dimensions_mode(),
+            endpoint: String::new(),
+            api_key_ref: None,
+            max_input_tokens: None,
+            max_batch_items: None,
+            encoding_formats: default_semantic_encoding_formats(),
+            supports_instruction: false,
+            max_concurrent: 0,
+            max_concurrent_per_project: 0,
+            acquire_timeout_ms: default_semantic_acquire_timeout_ms(),
+            retry_max_attempts: 0,
+            retry_base_backoff_ms: default_semantic_retry_base_backoff_ms(),
+            retry_max_backoff_ms: default_semantic_retry_max_backoff_ms(),
+            retry_total_deadline_ms: default_semantic_retry_total_deadline_ms(),
+            retry_respect_retry_after: true,
+            retry_max_cost_units: None,
+            breaker_failure_threshold: default_semantic_breaker_threshold(),
+            breaker_open_ms: default_semantic_breaker_open_ms(),
+            network_opt_in: false,
+            allow_http: false,
+            reembed_budget_max: None,
+            worker_lease_secs: default_semantic_worker_lease_secs(),
+            gc_min_retention_secs: default_semantic_gc_min_retention_secs(),
+        }
+    }
 }
 
 /// Auto-indexing configuration
@@ -1265,8 +1514,167 @@ mod tests {
     }
 
     #[test]
-    fn collect_unknown_config_keys_empty_for_fully_valid_config() {
+    fn semantic_section_is_inert_by_default_and_fills_defaults_when_partial() {
+        // P7-002: the semantic section is new; a config without it must keep
+        // the disabled default (C14: default no-network), and a partial
+        // section must fall back to per-field defaults.
+        let without: ProjectConfig =
+            serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
+                .expect("config without semantic section");
+        assert!(!without.semantic.enabled);
+        assert_eq!(without.semantic.metric, "cosine");
+        assert_eq!(without.semantic.dimensions_mode, "configurable");
+        assert_eq!(without.semantic.encoding_formats, vec!["float".to_owned()]);
+        assert!(without.semantic.model_id.is_empty());
+        assert!(without.semantic.dimensions.is_none());
+
+        let partial: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "text-embedding-x", "dimensions": 1536}}"#,
+        )
+        .expect("partial semantic section");
+        assert!(partial.semantic.enabled);
+        assert_eq!(partial.semantic.model_id, "text-embedding-x");
+        assert_eq!(partial.semantic.dimensions, Some(1536));
+        assert_eq!(partial.semantic.metric, "cosine");
+        assert!(partial.semantic.supports_instruction == false);
+        // P7-005: concurrency keys default to off/conservative — unlimited
+        // (`0`) concurrency, explicit 30s admission-wait budget.
+        assert_eq!(without.semantic.max_concurrent, 0);
+        assert_eq!(without.semantic.max_concurrent_per_project, 0);
+        assert_eq!(without.semantic.acquire_timeout_ms, 30_000);
+        assert_eq!(partial.semantic.max_concurrent, 0);
+        assert_eq!(partial.semantic.max_concurrent_per_project, 0);
+    }
+
+    #[test]
+    fn semantic_concurrency_keys_parse_and_default_off() {
+        // P7-005: the operator can raise the shared provider gate explicitly;
+        // absent keys stay at the off/conservative defaults.
+        let explicit: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "m", "dimensions": 8,
+                              "max_concurrent": 4, "max_concurrent_per_project": 2,
+                              "acquire_timeout_ms": 500}}"#,
+        )
+        .expect("semantic concurrency keys");
+        assert_eq!(explicit.semantic.max_concurrent, 4);
+        assert_eq!(explicit.semantic.max_concurrent_per_project, 2);
+        assert_eq!(explicit.semantic.acquire_timeout_ms, 500);
+    }
+
+    #[test]
+    fn semantic_retry_and_breaker_keys_parse_with_conservative_defaults() {
+        // P7-006: call-layer retry defaults OFF (single provider attempt per
+        // outbox attempt — the conservative choice, retries cost money and
+        // latency); the breaker defaults ON with a small consecutive-failure
+        // threshold because it only ever reacts to sustained failure and can
+        // never affect a success path.
+        let without: ProjectConfig =
+            serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
+                .expect("config without semantic section");
+        assert_eq!(without.semantic.retry_max_attempts, 0);
+        assert_eq!(without.semantic.retry_base_backoff_ms, 500);
+        assert_eq!(without.semantic.retry_max_backoff_ms, 8_000);
+        assert_eq!(without.semantic.retry_total_deadline_ms, 30_000);
+        assert!(without.semantic.retry_respect_retry_after);
+        assert_eq!(without.semantic.retry_max_cost_units, None);
+        assert_eq!(without.semantic.breaker_failure_threshold, 5);
+        assert_eq!(without.semantic.breaker_open_ms, 30_000);
+
+        let explicit: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "m", "dimensions": 8,
+                              "retry_max_attempts": 4, "retry_base_backoff_ms": 100,
+                              "retry_max_backoff_ms": 1600, "retry_total_deadline_ms": 5000,
+                              "retry_respect_retry_after": false,
+                              "retry_max_cost_units": 12,
+                              "breaker_failure_threshold": 3, "breaker_open_ms": 1000}}"#,
+        )
+        .expect("semantic retry keys");
+        assert_eq!(explicit.semantic.retry_max_attempts, 4);
+        assert_eq!(explicit.semantic.retry_base_backoff_ms, 100);
+        assert_eq!(explicit.semantic.retry_max_backoff_ms, 1600);
+        assert_eq!(explicit.semantic.retry_total_deadline_ms, 5000);
+        assert!(!explicit.semantic.retry_respect_retry_after);
+        assert_eq!(explicit.semantic.retry_max_cost_units, Some(12));
+        assert_eq!(explicit.semantic.breaker_failure_threshold, 3);
+        assert_eq!(explicit.semantic.breaker_open_ms, 1000);
+    }
+
+    #[test]
+    fn semantic_egress_policy_keys_parse_and_default_closed() {
+        // P7-007: both egress switches default to the closed state — the
+        // no-network default is explicit and plaintext http needs its own
+        // opt-in.
+        let without: ProjectConfig =
+            serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
+                .expect("config without semantic section");
+        assert!(!without.semantic.network_opt_in);
+        assert!(!without.semantic.allow_http);
+
+        let explicit: ProjectConfig = serde_json::from_str(
+            r#"{"semantic": {"enabled": true, "model_id": "m", "dimensions": 8,
+                              "network_opt_in": true, "allow_http": true}}"#,
+        )
+        .expect("semantic egress keys");
+        assert!(explicit.semantic.network_opt_in);
+        assert!(explicit.semantic.allow_http);
+    }
+
+    #[test]
+    fn semantic_section_keys_are_known_config_keys() {
+        // The unknown-key diagnostics diff against the serialized default
+        // config, so the new section must round-trip cleanly.
         let raw = serde_json::json!({
+            "semantic": {
+                "enabled": true,
+                "model_id": "m",
+                "dimensions": 8,
+                "metric": "cosine",
+                "dimensions_mode": "fixed",
+                "endpoint": "https://host/v1",
+                "api_key_ref": "env:KEY",
+                "max_input_tokens": 8192,
+                "max_batch_items": 64,
+                "encoding_formats": ["float"],
+                "supports_instruction": true,
+                "max_concurrent": 4,
+                "max_concurrent_per_project": 2,
+                "acquire_timeout_ms": 30000,
+                "retry_max_attempts": 4,
+                "retry_base_backoff_ms": 100,
+                "retry_max_backoff_ms": 1600,
+                "retry_total_deadline_ms": 5000,
+                "retry_respect_retry_after": true,
+                "retry_max_cost_units": 12,
+                "breaker_failure_threshold": 3,
+                "breaker_open_ms": 1000,
+                "network_opt_in": true,
+                "allow_http": false,
+                "reembed_budget_max": 64,
+                "worker_lease_secs": 300,
+                "gc_min_retention_secs": 1800
+            }
+        });
+        assert!(collect_unknown_config_keys(&raw).is_empty());
+        let full = serde_json::to_value(ProjectConfig::default()).unwrap();
+        assert!(collect_unknown_config_keys(&full).is_empty());
+        // P7-014 wiring keys: budget defaults unbounded, lease/grace carry
+        // their conservative defaults.
+        let parsed: ProjectConfig =
+            serde_json::from_value(serde_json::json!({ "semantic": {
+                "reembed_budget_max": 64, "worker_lease_secs": 300,
+                "gc_min_retention_secs": 1800 } }))
+            .unwrap();
+        assert_eq!(parsed.semantic.reembed_budget_max, Some(64));
+        assert_eq!(parsed.semantic.worker_lease_secs, 300);
+        assert_eq!(parsed.semantic.gc_min_retention_secs, 1800);
+        let defaults = SemanticProviderConfig::default();
+        assert_eq!(defaults.reembed_budget_max, None);
+        assert_eq!(defaults.worker_lease_secs, 600);
+        assert_eq!(defaults.gc_min_retention_secs, 3_600);
+    }
+
+    #[test]
+    fn collect_unknown_config_keys_empty_for_fully_valid_config() {        let raw = serde_json::json!({
             "indexing": { "max_file_bytes": 1024, "max_concurrent_parse": 4 },
             "search": { "lexical_top_k": 8 },
             "ranking": { "overlap_weight": 0.5 },

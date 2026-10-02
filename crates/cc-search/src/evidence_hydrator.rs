@@ -43,6 +43,7 @@ struct VerifiedLayout {
 pub struct EvidenceHydrator<'a> {
     db: &'a IndexDb,
     verifier: SourceVerifier<'a>,
+    dense_fence: crate::semantic_hydrate_guard::DenseFenceGuard<'a>,
     scope: HardScope,
     generation: ReadGeneration,
     control: QueryControl,
@@ -60,6 +61,7 @@ impl<'a> EvidenceHydrator<'a> {
         let result = Self {
             db,
             verifier: SourceVerifier::new(db, root),
+            dense_fence: crate::semantic_hydrate_guard::DenseFenceGuard::new(db),
             scope,
             generation,
             control,
@@ -106,6 +108,16 @@ impl<'a> EvidenceHydrator<'a> {
                 return Err(CcError::Database(
                     "final evidence identity/scope/source mismatch".into(),
                 ));
+            }
+            // P7-011 dense-hit manifest fence (P6-011 read side): a hit that
+            // entered through the dense lane must still be backed by the
+            // document's current publication (active space, same doc_version/
+            // encoding_key). A stale basis is skipped and counted, never
+            // passed off as a complete smaller result.
+            if crate::semantic_hydrate_guard::is_dense_hit(hit)
+                && !self.dense_fence.manifest_current(&reference)?
+            {
+                continue;
             }
             if !self.verifier.path_current(&hit.file_path)? {
                 continue;
@@ -203,6 +215,8 @@ impl<'a> EvidenceHydrator<'a> {
         result["verified_hits"] = serde_json::json!(self.verified_hits);
         result["generation"] = serde_json::json!(self.generation);
         result["scope"] = serde_json::json!("bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot");
+        result[crate::semantic_hydrate_guard::FENCE_DIAGNOSTICS_KEY] =
+            self.dense_fence.diagnostics();
         result
     }
 }

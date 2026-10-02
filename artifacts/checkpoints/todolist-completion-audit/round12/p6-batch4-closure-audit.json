@@ -1,0 +1,105 @@
+{
+  "round": "round12",
+  "date": "2026-10-02",
+  "scope": "P6 batch 4 closure (落账轮): TROUBLESHOOTING 缺口兑现（P6-019 偏差 1 移交）+ tasks.json status flips + evidence backfill + 接线轮 13 项待办表全文收录 + rederivation",
+  "reviewer": "Claude (GLM agent), instructed closure after batch-4 review PASS",
+  "batch4_review_verdict": {
+    "verdict": "PASS",
+    "note": "批次 4 独立评审已 PASS（总裁决由本轮任务指令给定：『P6 批次 4 收口（评审已 PASS）』，移交收口项=TROUBLESHOOTING 缺口兑现）；本审计文件为评审后的落账收口记录，不重复评审本体。评审本体未单独落盘，本文件同时作为收口证据的权威存放位置。"
+  },
+  "troubleshooting_closure": {
+    "disposition": "本轮落地（P6-019 实施记录偏差 1 的移交兑现）",
+    "file": "docs/TROUBLESHOOTING.md",
+    "inserted_section": "## 语义缓存与降级(P6,可选)（插在『配置迁移』与『兼容性与稳定性口径』之间）",
+    "entries": [
+      {
+        "title": "dense 检索少了文档 / 怀疑语义缓存损坏",
+        "content_summary": "纯 Miss（冷缓存）是常态非故障，dense lane 缺席、lexical/graph 不受影响、绝不把缺向量当完整空结果、纯 Miss 永不降级；Corrupt 检索跳过不报错，worker 显式检测点双半隔离进 <root>/quarantine/（.meta.json 证据 + .report.json sidecar），补嵌后 put 覆盖 + 发布 CAS 重新可见即自愈；可见性判据 corrupt_events > 0 || re-embed 预算耗尽 → semantic_state: \"degraded\" + degraded_reason。"
+      },
+      {
+        "title": "CODECORTEX_SEMANTIC_CACHE_ROOT 不生效 / cache 目录没出现",
+        "content_summary": "解析三级序（env 空白视为未设 → macOS ~/Library/Caches/codecortex/semantic → Linux $XDG_CACHE_HOME|~/.cache/codecortex/semantic）；open 零副作用、首个 put 才惰性建目录——目录不存在非故障；namespace 首层跨项目隔离/跨克隆共享、不绑 incarnation；.codecortex.json 无语义相关键、组合根接线归接线轮。"
+      },
+      {
+        "title": "outbox 出现 failed 死信 / 提示 \"re-embed budget exhausted\"",
+        "content_summary": "识别：终态 failed + last_error 含 semantic re-embed budget exhausted，拒绝发生在调用付费 provider 之前、不静默无界重费；死信只清点绝不复活、manifest 行保留、dense 检索降级为空不伪造结果。处置：查 quarantine/.report.json 定位来源 → 排除环境问题后重启进程（进程内预算清零，outbox 行计数为持久审计轨）→ 重推 reconcile 预算内补嵌自愈；首嵌不计入预算；预算与 GC 宽限为调用方参数、尚无配置键。"
+      },
+      {
+        "title": "换库 / 重建索引后,语义要重新付费吗",
+        "content_summary": "缓存完好时不付费：换库后语义三表从零 + semantic_epoch 缺席，reconcile fence 先行 → desired 重导重入队 → cache 命中经五重 fence CAS 重发布零新 provider 调用，仅 miss 回 worker 重嵌；附四行 crash 点恢复表（artifact 写入中 / 写入后发布前 / 发布提交后 / 换库 rename 中后，摘编自 STORAGE.md 恢复步骤与 crash 点节）；明确口径：不宣称跨两库/网络 exactly-once 或零重复收费。"
+      }
+    ],
+    "sources": [
+      "docs/internals/STORAGE.md §语义持久化（P6，schema v22）→ 恢复步骤与 crash 点表、cache 布局/namespace 与降级语义",
+      "docs/CONFIGURATION.md §语义缓存与降级（P6，可选）→ cache 根目录解析、namespace 键、降级语义与 re-embed 预算"
+    ],
+    "unwired_honesty": "降级快照转写（capability_status.rs:100 透出槽已有生产写入点之前）在『损坏的可见性』条目内如实注明：接线完成前该字段尚无生产写入点，事实依据以 outbox last_error 与 quarantine 目录内容为准；cache 根目录/项目身份的组合根接线在 CODECORTEX_SEMANTIC_CACHE_ROOT 条目内如实注明归接线轮。无任何未实现行为被写成已实现。"
+  },
+  "wiring_round_pending_table": {
+    "title": "接线轮 13 项待办表（组合根接线轮工作清单）",
+    "provenance": "批次 4 评审本体未单独落盘；本表由本轮收口依批次 2-4 实施记录的『归接线轮』移交条目与 tasks.json execution_note 批次 2/3 收口段移交清单汇编而成，逐项出处如下；本文件为该表的权威存放位置（tasks.json implementation_notes 与 execution_note 的『13 项待办表位置』即指向本路径）。",
+    "authoritative_location": "artifacts/checkpoints/todolist-completion-audit/round12/p6-batch4-closure-audit.json",
+    "items": [
+      {"no": 1, "item": "try_init 组合根接线与语义子系统初始化", "source": "P6-008 实施记录 limitations（try_init/组合根接线归后续接线轮）；P6-018 §7；批次 2 execution_note"},
+      {"no": 2, "item": "drain/reconcile/recovery/GC 调度时机（四类语义编排的组合根调度）", "source": "P6-019 实施记录 §7（drain/reconcile/recovery/GC 调度时机无生产调用点）；STORAGE.md §语义持久化开篇如实标注"},
+      {"no": 3, "item": "worker drain 外层挂 degrade 门面（quarantine_detected/requeue_after_degrade 生产调用点）", "source": "P6-018 实施记录 §7（组合根接线不做，红线）"},
+      {"no": 4, "item": "降级快照转写（DegradationLedger::snapshot() → QueryServices::set_semantic_degradation）", "source": "P6-018 实施记录 偏差 2 与 §7"},
+      {"no": 5, "item": "cache 根目录与项目身份传入接线（CODECORTEX_SEMANTIC_CACHE_ROOT 部署链路、namespace 项目身份来源）", "source": "P6-019 实施记录 §7（cache 身份传入）；CONFIGURATION.md 语义节接线状态"},
+      {"no": 6, "item": "GC 宽限 min_retention_secs 纳入配置面 + 非零下限配置校验", "source": "P6-016 实施记录 §7（宽限参数与发布延迟关系、min_retention_secs=0 时同步点单独不充分）"},
+      {"no": 7, "item": "GC 审计计数落库（Auxiliary 计数，按需）", "source": "P6-016 实施记录 §7（GcCounters 为返回值，落库归接线/收口轮按需补）"},
+      {"no": 8, "item": "语义 worker 公平化 ORDER BY 注入", "source": "P6-013 实施记录 偏差 3；批次 3 execution_note 移交清单"},
+      {"no": 9, "item": "机会性 reclaim 收窄", "source": "P6-013 实施记录 偏差 7；批次 3 execution_note 移交清单"},
+      {"no": 10, "item": "dead_letter/coverage.failed 页帽化", "source": "P6-015 实施记录 偏差 6；批次 3 execution_note 移交清单"},
+      {"no": 11, "item": "有界 desired 投影回接 reconcile", "source": "批次 3 execution_note 移交清单（归后续接线/评审轮）"},
+      {"no": 12, "item": "dense lane 对覆盖率的消费（范围声明/查询守卫）", "source": "P6-012 收口移交（批次 3 execution_note：归后续接线轮）"},
+      {"no": 13, "item": "semantic_space_switch_log 无界追加的上限（如需）与切换组合根触发面", "source": "P6-017 实施记录 §8 与 偏差 4（接线轮可按需收口）"}
+    ],
+    "footnote_open_items_not_counted": [
+      "P6-014 偏差 5（重入队 bump 口径张力）——批次 3 移交口径为『后续裁决』而非接线轮硬归属，保留待裁决。",
+      "DegradationLedger 跨进程持久化——P6-018 §7 为条件项（如需，metadata 键或 coverage 读面扩展），未计入 13 项。",
+      "P6-017 偏差 5（supersede_live_on 跨空间 supersede 的『重推必经 CAS upsert』前提）——发现记录，仅当未来出现『重推不改行』路径时复查。"
+    ]
+  },
+  "closure_record": {
+    "status_flips": [
+      {"id": "P6-016", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-017", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-018", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true},
+      {"id": "P6-019", "from": "todo", "to": "done", "evidence_backfilled": true, "implementation_notes_appended": true}
+    ],
+    "evidence_targets": "evidence[] 各指向 crates/cc-db、crates/cc-semantic、crates/cc-server 具体改动文件与 artifacts/checkpoints/p6-batch4-20261002/ 对应实施记录（P6-019 另含六份文档与 TROUBLESHOOTING.md）；limitations 段均明示命令级证据范围、实施偏差与评审留边界，并声明 V16/V17/V18/V21 正式验证矩阵证据归验收轮。",
+    "review_boundaries_recorded": {
+      "P6-016": "min_retention_secs 配置面与非零下限校验、GC 审计计数落库归接线轮（待办表第 6/7 项）；V17 正式证据归验收轮。",
+      "P6-017": "切换组合根触发面与 semantic_space_switch_log 上限归接线轮（待办表第 13 项）；V16/V17 正式证据归验收轮。",
+      "P6-018": "degrade 门面调用点与降级快照转写归接线轮（待办表第 3/4 项）；DegradationLedger 跨进程持久化如需归接线轮；V17/V18 正式证据归验收轮。",
+      "P6-019": "组合根接线三处如实标注（归待办表第 1/2/5 项）；TROUBLESHOOTING 偏差 1 已由本轮兑现；epoch_rules 表→钟映射为声明式口径（语义三表效应归属为提交点声明而非静态枚举行，已在 STORAGE.md 如实区分）；V21 正式证据归验收轮。"
+    },
+    "epoch_rules_declarative_note": "epoch_rules.rs 的表→钟审计枚举只覆盖 Index/Evidence 表；语义三表的效应归属是提交点声明（P6-006/011/017 各写路径），STORAGE.md 表→钟映射中语义三表行标注『（声明式）』——文档与实现一致，不存在静态枚举行，本轮收口无代码改动。",
+    "counts_before": {"total": 192, "done": 135, "in_progress": 0, "todo": 57},
+    "counts_after": {"total": 192, "done": 139, "in_progress": 0, "todo": 53},
+    "execution_note": "已追加批次 4 收口段（评审 PASS 引用、TROUBLESHOOTING 兑现、接线轮 13 项待办表位置、epoch_rules 声明式口径、V 系列不推断声明、计数重算、next_task=P6-020）；next_task 由 P6-016 更新为 P6-020；last_implementation_date=2026-10-02"
+  },
+  "rederivation": {
+    "command": "python3 scripts/code_index_plan.py --write",
+    "validation_output_verbatim": "{\"status\": \"passed\", \"task_count\": 192, \"states\": {\"done\": 139, \"todo\": 53}, \"task_sha256\": \"d1701198aa0e67084b0bd1a79858ef14fe469656170243d516fd1c86cc582047\"}",
+    "derived_file": "docs/roadmap/code-index-v2/05-TODO.md（--write 重派生）",
+    "expected_match": "预期 192 / 139 done / 53 todo，实测一致"
+  },
+  "verification": {
+    "workspace_check": {
+      "command": "SDKROOT=/Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk cargo check --workspace --locked --offline",
+      "result_verbatim": "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.15s（零 error / 零 warning；本轮收口仅改文档与 tasks.json，无代码改动，实现轮四份记录的测试证据为批次 4 代码的命令级证据）"
+    },
+    "git_delta": {
+      "command": "git status --short",
+      "result": "本轮收口相对进入时的新增改动仅：docs/TROUBLESHOOTING.md（新 M，本轮编辑）、docs/roadmap/code-index-v2/tasks.json 与 05-TODO.md（本轮重写/重派生，二者此前已处于 M 状态）、artifacts/checkpoints/todolist-completion-audit/round12/（新目录，本文件）。其余 60+ 路径均为批次 1-4 与 P5 线既有未提交改动，本轮零触碰；未 git commit。"
+    }
+  },
+  "redlines_respected": [
+    "未 git commit",
+    "批次 1-4 冻结交付物与冻结链未触碰（本轮改动仅：TROUBLESHOOTING.md 新增节、tasks.json 四任务翻转与元数据、05-TODO.md 重派生、本审计文件）",
+    "status 翻转仅限 P6-016/017/018/019 四个任务（重算计数 139 done / 0 in_progress / 53 todo）",
+    "不推断验收门：P6-020 验收待批次 5，V13/V14/V16/V17/V18/V21 正式矩阵证据均明示归验收轮；G5/M2 维持既有本地口径声明",
+    "TROUBLESHOOTING 条目只写已实现事实：组合根未接线处（降级快照转写、cache 根目录/身份接线、.codecortex.json 无语义键）如实注明"
+  ]
+}

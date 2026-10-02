@@ -1,0 +1,230 @@
+{
+  "binary": "target/debug/codecortex",
+  "steps": {
+    "initialize": {
+      "ok": true,
+      "server_info": {
+        "name": "codecortex",
+        "version": "1.0.0"
+      }
+    },
+    "tools/list": {
+      "count": 14,
+      "names": [
+        "adr",
+        "architecture",
+        "context",
+        "explore",
+        "files",
+        "graph_query",
+        "impact",
+        "index",
+        "ingest_traces",
+        "node",
+        "relations",
+        "search",
+        "status",
+        "trace"
+      ],
+      "contracts": {
+        "adr": {
+          "required": [],
+          "properties": [
+            "action",
+            "adr_id",
+            "context",
+            "decision",
+            "project_path",
+            "status",
+            "title"
+          ]
+        },
+        "architecture": {
+          "required": [],
+          "properties": [
+            "aspect",
+            "filter",
+            "limit",
+            "project_path"
+          ]
+        },
+        "context": {
+          "required": [
+            "task"
+          ],
+          "properties": [
+            "include_source",
+            "intent",
+            "max_symbols",
+            "project_path",
+            "retrieval_strategy",
+            "task"
+          ]
+        },
+        "explore": {
+          "required": [
+            "symbols"
+          ],
+          "properties": [
+            "exact",
+            "file_path",
+            "include_source",
+            "max_callees",
+            "max_callers",
+            "max_candidates",
+            "max_depth",
+            "max_paths",
+            "max_source_per_file",
+            "mode",
+            "outline",
+            "project_path",
+            "symbols"
+          ]
+        },
+        "files": {
+          "required": [],
+          "properties": [
+            "action",
+            "context_lines",
+            "end_line",
+            "path",
+            "project_path",
+            "start_line"
+          ]
+        },
+        "graph_query": {
+          "required": [
+            "query"
+          ],
+          "properties": [
+            "project_path",
+            "query"
+          ]
+        },
+        "impact": {
+          "required": [],
+          "properties": [
+            "base_branch",
+            "confidence_threshold",
+            "file_path",
+            "files",
+            "granularity",
+            "limit",
+            "max_nodes",
+            "max_per_layer",
+            "project_path",
+            "scope"
+          ]
+        },
+        "index": {
+          "required": [
+            "path"
+          ],
+          "properties": [
+            "changed_paths",
+            "full",
+            "path",
+            "removed_paths"
+          ]
+        },
+        "ingest_traces": {
+          "required": [
+            "traces"
+          ],
+          "properties": [
+            "project_path",
+            "traces"
+          ]
+        },
+        "node": {
+          "required": [
+            "symbol"
+          ],
+          "properties": [
+            "include",
+            "project_path",
+            "symbol"
+          ]
+        },
+        "relations": {
+          "required": [
+            "symbol"
+          ],
+          "properties": [
+            "direction",
+            "kind",
+            "limit",
+            "project_path",
+            "symbol"
+          ]
+        },
+        "search": {
+          "required": [
+            "query"
+          ],
+          "properties": [
+            "boost_files",
+            "conversation_queries",
+            "exact",
+            "file_preselect_limit",
+            "intent",
+            "mode",
+            "overlay_files",
+            "path_prefix",
+            "pinned_files",
+            "project_path",
+            "query",
+            "recent_files",
+            "retrieval_strategy",
+            "top_k"
+          ]
+        },
+        "status": {
+          "required": [],
+          "properties": [
+            "aspect",
+            "project_path"
+          ]
+        },
+        "trace": {
+          "required": [
+            "from",
+            "to"
+          ],
+          "properties": [
+            "from",
+            "from_uid",
+            "include_source",
+            "max_depth",
+            "max_snippet_lines",
+            "project_path",
+            "source_mode",
+            "to",
+            "to_uid"
+          ]
+        }
+      }
+    },
+    "capabilities": {
+      "is_error": false,
+      "semantic_state": "not_configured",
+      "dense_state": "disabled",
+      "dense_reason": "provider_and_vector_publication_not_implemented",
+      "structured_head": "{\"result\": {\"capabilities\": {\"graph\": true, \"impact\": true, \"search\": true}, \"has_index\": true, \"has_project\": true, \"indexed_files\": 0, \"indexed_symbols\": 0, \"resolution_freshness\": {\"basis_epoch\": null, \"complete\": true, \"completed_files\": 0, \"index_epoch\": 0, \"reason\": null, \"retry\": null, \"root_count\": 0, \"scope\": \"observed_resolution_invalidations\", \"status\": \"ready\"}, \"retrieval\": {\"default_"
+    },
+    "protocol_error_unknown_tool": {
+      "has_error": true,
+      "code": -32602
+    },
+    "status_call": {
+      "is_error": false,
+      "has_structured": true
+    },
+    "search_call": {
+      "is_error": false,
+      "has_structured": true,
+      "error_content_head": "[{\"type\": \"text\", \"text\": \"{\\\"result\\\":{\\\"evidence_summary\\\":{\\\"files\\\":[],\\\"graph_enrichment\\\":{\\\"callees_added\\\":0,\\\"callers_added\\\":0,\\\"symbols_resolved\\\":0,\\\"tests_found\\\":0},\\\"packing\\\":{\\\"compacted\\\":false,\\\"configured_max_bytes\\\":18000,\\\"continuation\\\":\\\"Use files region/expand on retained re"
+    }
+  },
+  "server_stderr_tail": "0m\u001b[2m:\u001b[0m watcher: counted project files for adaptive debounce \u001b[3mfile_count\u001b[0m\u001b[2m=\u001b[0m1\n\u001b[2m2026-10-02T12:42:29.982629Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::watcher\u001b[0m\u001b[2m:\u001b[0m watcher: adaptive debounce interval computed \u001b[3mdebounce_ms\u001b[0m\u001b[2m=\u001b[0m500\n\u001b[2m2026-10-02T12:42:29.984418Z\u001b[0m \u001b[33m WARN\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m response error \u001b[3mid\u001b[0m\u001b[2m=\u001b[0m4 \u001b[3merror\u001b[0m\u001b[2m=\u001b[0mErrorData { code: ErrorCode(-32602), message: \"tool not found\", data: None }\n\u001b[2m2026-10-02T12:42:29.985305Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::project_session\u001b[0m\u001b[2m:\u001b[0m watcher native subscription ready \u001b[3mnative_start_ms\u001b[0m\u001b[2m=\u001b[0m6\n\u001b[2m2026-10-02T12:42:29.997217Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::mcp\u001b[0m\u001b[2m:\u001b[0m received SIGTERM, initiating graceful shutdown\n\u001b[2m2026-10-02T12:42:29.997214Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m input stream terminated\n\u001b[2m2026-10-02T12:42:29.997275Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[1mserve_inner\u001b[0m\u001b[2m:\u001b[0m \u001b[2mrmcp::service\u001b[0m\u001b[2m:\u001b[0m serve finished \u001b[3mquit_reason\u001b[0m\u001b[2m=\u001b[0mClosed\n\u001b[2m2026-10-02T12:42:29.999417Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_index::memory_budget\u001b[0m\u001b[2m:\u001b[0m memory budget initialized \u001b[3mtotal_ram_mb\u001b[0m\u001b[2m=\u001b[0m65536 \u001b[3mbudget_mb\u001b[0m\u001b[2m=\u001b[0m32768 \u001b[3mfraction\u001b[0m\u001b[2m=\u001b[0m0.5\n\u001b[2m2026-10-02T12:42:30.001745Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_index::indexer_phases::write\u001b[0m\u001b[2m:\u001b[0m generated hierarchy edges \u001b[3mcount\u001b[0m\u001b[2m=\u001b[0m2\n\u001b[2m2026-10-02T12:42:30.002529Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_index::memory_budget\u001b[0m\u001b[2m:\u001b[0m memory budget initialized \u001b[3mtotal_ram_mb\u001b[0m\u001b[2m=\u001b[0m65536 \u001b[3mbudget_mb\u001b[0m\u001b[2m=\u001b[0m32768 \u001b[3mfraction\u001b[0m\u001b[2m=\u001b[0m0.5\n\u001b[2m2026-10-02T12:42:30.025816Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_index::memory_budget\u001b[0m\u001b[2m:\u001b[0m memory budget initialized \u001b[3mtotal_ram_mb\u001b[0m\u001b[2m=\u001b[0m65536 \u001b[3mbudget_mb\u001b[0m\u001b[2m=\u001b[0m32768 \u001b[3mfraction\u001b[0m\u001b[2m=\u001b[0m0.5\n\u001b[2m2026-10-02T12:42:30.986010Z\u001b[0m \u001b[32m INFO\u001b[0m \u001b[2mcc_server::mcp\u001b[0m\u001b[2m:\u001b[0m MCP server shut down gracefully\n"
+}

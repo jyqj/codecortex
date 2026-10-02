@@ -9,6 +9,7 @@ SOURCE = '10303e7'
 def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
 def write(p, value): p.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
 source = subprocess.check_output(['git', 'rev-parse', SOURCE], cwd=REPO, text=True).strip()
+assert (REPO / 'crates/cc-server/tests/p7_v18_parameter_contract.rs').read_bytes() == subprocess.check_output(['git', 'show', source + ':crates/cc-server/tests/p7_v18_parameter_contract.rs'], cwd=REPO), 'Replay requires the frozen source test file, not later appended tests'
 root = HERE / 'negative-matrix'
 root.mkdir()
 env = dict(os.environ, CARGO_HOME='/workspace/.cargo', RUSTUP_HOME='/workspace/.rustup', PATH='/workspace/.cargo/bin:' + os.environ['PATH'], CARGO_BUILD_JOBS='5', CARGO_INCREMENTAL='0')

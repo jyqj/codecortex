@@ -287,10 +287,6 @@ fn digest(bytes: &'static [u8]) -> InputDigest {
     InputDigest::of_input(bytes).expect("input digest")
 }
 
-fn digest_table(bytes: &'static [u8]) -> Vec<(String, &'static [u8])> {
-    vec![(digest(bytes).as_str().to_string(), bytes)]
-}
-
 fn retrieval_hit(world: &World, input: &InputDigest) -> Option<String> {
     let reads = SemanticManifestReads::on(&world.conn);
     let space_digest = world.space.digest().expect("space digest");

@@ -1,0 +1,149 @@
+{
+  "run_id": "cloud-p7-014-20261002",
+  "baseline_sha": "ff458bc591b4e7e444af4464d6eef2513cdb335c",
+  "target_sha": "ddd4f7e38ffff2d1bdd0193d5ccf4054deef82fa",
+  "local_equivalent_sha": "74de039563e20d4c175edaf06d419e369c932283",
+  "tested_tree": "9df8ebdd6db932509211c813797bcc843f6038c4",
+  "environment": {
+    "os": "Linux",
+    "rustc": "1.95.0",
+    "cargo": "1.95.0",
+    "RUSTUP_HOME": "/workspace/.rustup",
+    "CARGO_HOME": "/workspace/.cargo",
+    "SDKROOT": "not required"
+  },
+  "commands": [
+    {
+      "command": "cargo check --workspace --all-targets --locked",
+      "exit_code": 0,
+      "log": "fixed-check.log"
+    },
+    {
+      "command": "cargo test -p cc-server --features semantic --lib --locked",
+      "exit_code": 0,
+      "passed": 278,
+      "log": "semantic-tests-v2.log"
+    },
+    {
+      "command": "cargo test -p cc-server --lib capability_status --locked",
+      "exit_code": 0,
+      "passed": 4,
+      "log": "status-final.log"
+    },
+    {
+      "command": "cargo test --workspace --all-targets --locked --no-fail-fast",
+      "exit_code": 101,
+      "passed": 2250,
+      "failed": 4,
+      "ignored": 60,
+      "log": "workspace-final.log"
+    },
+    {
+      "command": "cargo test -p cc-eval --lib benchmark_fixture --locked",
+      "exit_code": 0,
+      "passed": 1,
+      "log": "benchmark-fixture-rerun.log"
+    },
+    {
+      "command": "cargo test -p cc-eval --test p5d_contract --locked",
+      "exit_code": 0,
+      "passed": 1,
+      "ignored": 1,
+      "log": "p5d-contract.log"
+    },
+    {
+      "command": "CODECORTEX_BENCH_BINARY=/workspace/codecortex/target/debug/codecortex cargo test -p cc-eval --test p5d_contract --locked -- --ignored",
+      "exit_code": 0,
+      "passed": 1,
+      "log": "stdio.log"
+    },
+    {
+      "command": "cargo clippy -p cc-server --lib --features semantic --locked -- -D warnings",
+      "exit_code": 101,
+      "log": "clippy-semantic.log"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 1,
+      "log": "baseline-fmt.log"
+    }
+  ],
+  "review": "self-reviewed; independent review pending; P7-014 not complete",
+  "rollback_status": "revert recovery commit; no schema/credential/provider change",
+  "not_run": [
+    "wired-state stdio lifecycle matrix",
+    "live provider (D1/D2 prohibit calls)",
+    "production worker scheduler acceptance"
+  ],
+  "files": {
+    "model-rerun.log": {
+      "sha256": "5063e06cf97bada649a624b7057eb861f7bc199ce70024c7658a03556214405f",
+      "bytes": 1265
+    },
+    "fixed-check.log": {
+      "sha256": "a8569e37e0280ae0cc9ea1c9e6a86a4759efa922640ce36b63daaca392e18c21",
+      "bytes": 354
+    },
+    "semantic-check.log": {
+      "sha256": "e1933f1607629961cd982bd89aeed73eeaa7cc51fbf37773fa784abcec2d5062",
+      "bytes": 2509
+    },
+    "p5b-rerun.log": {
+      "sha256": "2388aadd3ad0b60071fe4256e0d91a75af026a82b4eb3d628c48a9fed83e3a81",
+      "bytes": 930
+    },
+    "status-test.log": {
+      "sha256": "c047aa1a9a6ac97423078a6c47a38d63074f31638e6c44ed4e28f257e298a9ea",
+      "bytes": 1876
+    },
+    "semantic-tests.log": {
+      "sha256": "d650a92aec4390894956fb32b4c8c4400f18b02ea42325ac956c18b3b1ccd681",
+      "bytes": 22683
+    },
+    "stdio.log": {
+      "sha256": "68762e987e2deed9c8417212312eacecb30ab66c6c8f6173796360f198e7f153",
+      "bytes": 3265
+    },
+    "baseline-fmt.log": {
+      "sha256": "a332134e740ca9b9ee06e873cb29c0d907bfa935931764781e51a9c0ef6d95c0",
+      "bytes": 3370
+    },
+    "status-final.log": {
+      "sha256": "db3c19bdc6318c485746489417e2a904309ec1a433eca9a28605ef7cf24a9410",
+      "bytes": 805
+    },
+    "workspace-final.log": {
+      "sha256": "cc60f867c94d6b4119da9983c2e0c027be037278c4bef111533baeb718ea60e0",
+      "bytes": 231208
+    },
+    "status-test-v2.log": {
+      "sha256": "6f9fabe27b8528d0255de9c23982a5f5f4c573879502346186a8d147d62d5138",
+      "bytes": 1373
+    },
+    "baseline-check-online.log": {
+      "sha256": "1f0b14e1ad4dadf72060f4488ca2cedaee397f6be298cb4b6066f5fc0ec9bbcd",
+      "bytes": 4125
+    },
+    "clippy-semantic.log": {
+      "sha256": "fb8d06104c4ec9c99438bdcaf34bb75f1a9de7a368476b5b8cd3ca49d2021de2",
+      "bytes": 5246
+    },
+    "workspace-test.log": {
+      "sha256": "09ef7638296dd4270a1aab78caf484d46ef07de1a3488f292af324ad080e7f06",
+      "bytes": 29537
+    },
+    "semantic-tests-v2.log": {
+      "sha256": "723850ec180be19b03fe15a3998fb06b6d8876d00d8b0b6c090d2cb78fc50cbb",
+      "bytes": 22039
+    },
+    "benchmark-fixture-rerun.log": {
+      "sha256": "e7203820f0a54f69ccfa8b0f2ed11b39b496026fa9cbe2525b7376525a7f95fd",
+      "bytes": 497
+    },
+    "p5d-contract.log": {
+      "sha256": "ff5b51fcc0d4cc329843c6ce35f7b7884924958b3b845d5d836279086ed7eb7f",
+      "bytes": 550
+    }
+  },
+  "publication_note": "Raw format diff withheld after automatic approval rejection; baseline-fmt.log is a metadata summary and raw remains /tmp/codecortex-baseline-fmt.log."
+}

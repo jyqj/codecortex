@@ -1,6 +1,6 @@
 //! Capability availability is not query coverage or a dense-readiness claim.
 //! Read existing metadata only; never probe a provider or start indexing here.
-use crate::service_factory::{QueryServices, SemanticWiredInfo};
+use crate::service_factory::QueryServices;
 use cc_db::index_db::IndexDb;
 use cc_model::{config::ProjectConfig, query::RetrievalStrategy, CcError, CcResult};
 use serde_json::{json, Value};
@@ -42,7 +42,7 @@ pub(crate) fn snapshot(
         // anything — keep the conservative `port_attached_unverified`
         // wording, and stop claiming "publication not implemented" (the
         // wiring exists; the index is what is absent).
-        if wired.is_some() {
+        if attached && wired.is_some() {
             result["retrieval"]["dense_reason"] = json!(null);
         }
         apply_semantic_degradation(&mut result, services, attached);
@@ -101,7 +101,7 @@ pub(crate) fn snapshot(
     // `port_attached_unverified` wording; an unwired port keeps
     // `not_configured` (V18 口径零漂移). Read-only DB reads, best-effort:
     // a failed read keeps the conservative unverified wording.
-    if let Some(_info) = wired {
+    if attached && wired.is_some() {
         apply_semantic_wired(&mut result, db);
     }
     apply_semantic_degradation(&mut result, services, attached);
@@ -117,13 +117,26 @@ pub(crate) fn snapshot(
 /// stable `dense_reason` naming the gap. Never a ready impersonation: the
 /// unwired and bare-attached wordings are byte-identical to pre-P7-014.
 fn apply_semantic_wired(result: &mut Value, db: &IndexDb) {
-    let pending = db.semantic_outbox_pending();
+    let pending = db.reads().semantic_outbox_pending();
     let coverage = db.reads().semantic_coverage();
-    let (Ok(pending), Ok(coverage)) = (pending, coverage) else {
+    let (Ok(pending), Ok(snapshot)) = (pending, coverage) else {
         return; // conservative: keep `port_attached_unverified` / `disabled`
     };
-    result["retrieval"]["semantic_state"] =
-        json!(if pending > 0 { "backfilling" } else { "ready" });
+    let coverage = snapshot.coverage;
+    if coverage.reason == Some(cc_db::semantic_coverage::ZeroEligibleReason::SemanticNotConfigured)
+    {
+        result["retrieval"]["dense_reason"] = json!("semantic_no_active_space");
+        return;
+    }
+    result["retrieval"]["semantic_state"] = json!(if pending > 0 {
+        "backfilling"
+    } else if coverage.failed > 0 {
+        "failed"
+    } else if coverage.uncovered > 0 {
+        "backfilling"
+    } else {
+        "ready"
+    });
     result["retrieval"]["semantic_pending"] = json!(pending);
     result["retrieval"]["semantic_failed"] = json!(coverage.failed);
     if coverage.eligible > 0 && coverage.uncovered == 0 {
@@ -184,6 +197,89 @@ mod tests {
 
     fn retrieval(json: &Value) -> &Value {
         &json["retrieval"]
+    }
+
+    #[test]
+    fn stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&dir.path().join("index.sqlite3")).unwrap().0;
+        let services = QueryServices::default();
+        services.set_semantic_wired(Some(crate::service_factory::SemanticWiredInfo {
+            model_id: "fake/model".into(),
+            dimensions: 2,
+        }));
+        let result = snapshot(Some(dir.path()), Some(&db), None, &services);
+        assert_eq!(result["retrieval"]["semantic_state"], "not_configured");
+        assert_eq!(result["retrieval"]["dense_state"], "disabled");
+    }
+
+    #[test]
+    fn wired_status_requires_an_active_space_and_reports_publication_gaps() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("index.sqlite3");
+        let db = IndexDb::open(&path).unwrap().0;
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        let base = || {
+            json!({"retrieval": {
+                "semantic_state": "port_attached_unverified", "dense_state": "disabled"
+            }})
+        };
+        let mut result = base();
+        apply_semantic_wired(&mut result, &db);
+        assert_eq!(
+            result["retrieval"]["semantic_state"],
+            "port_attached_unverified"
+        );
+        assert_eq!(result["retrieval"]["dense_state"], "disabled");
+        assert_eq!(
+            result["retrieval"]["dense_reason"],
+            "semantic_no_active_space"
+        );
+
+        conn.execute_batch(
+            "INSERT INTO semantic_spaces(space_id,spec_json,state) VALUES('active','{}','active');
+             INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at)
+               VALUES('src/a.rs','rust','hash',1.0,1,'2026-01-01');
+             INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,text)
+               VALUES('chunk','src/a.rs','rust',0,1,1,'fn a() {}');
+             INSERT INTO document_manifest(doc_key,doc_version,file_path,chunk_id,encoding_key,reference_json,record_json)
+               VALUES('doc','v1','src/a.rs','chunk','encoding','{}','{}');"
+        ).unwrap();
+        let mut result = base();
+        apply_semantic_wired(&mut result, &db);
+        assert_eq!(result["retrieval"]["semantic_state"], "backfilling");
+        assert_eq!(result["retrieval"]["dense_state"], "partial");
+        assert_eq!(result["retrieval"]["dense_desired"], 1);
+        assert_eq!(result["retrieval"]["dense_published"], 0);
+        conn.execute_batch(
+            "INSERT INTO semantic_outbox(doc_key,doc_version,input_digest,space_id,op,state,available_at,created_at,updated_at)
+               VALUES('doc','v1','input','active','embed','pending',0,0,0);",
+        )
+        .unwrap();
+        let mut result = base();
+        apply_semantic_wired(&mut result, &db);
+        assert_eq!(result["retrieval"]["semantic_state"], "backfilling");
+        assert_eq!(result["retrieval"]["semantic_pending"], 1);
+        conn.execute_batch("UPDATE semantic_outbox SET state='failed';")
+            .unwrap();
+        let mut result = base();
+        apply_semantic_wired(&mut result, &db);
+        assert_eq!(result["retrieval"]["semantic_state"], "failed");
+        assert_eq!(result["retrieval"]["semantic_failed"], 1);
+        assert_eq!(result["retrieval"]["dense_state"], "partial");
+        conn.execute_batch("UPDATE semantic_outbox SET state='done';")
+            .unwrap();
+
+        conn.execute_batch(
+            "INSERT INTO semantic_manifest(doc_key,doc_version,file_path,encoding_key,space_id,input_digest,artifact_ref,published_at,published_incarnation)
+               VALUES('doc','v1','src/a.rs','encoding','active','input','artifact','2026-01-01','incarnation');"
+        ).unwrap();
+        let mut result = base();
+        apply_semantic_wired(&mut result, &db);
+        assert_eq!(result["retrieval"]["semantic_state"], "ready");
+        assert_eq!(result["retrieval"]["dense_state"], "ready");
+        assert!(result["retrieval"]["dense_reason"].is_null());
+        assert_eq!(result["retrieval"]["dense_published"], 1);
     }
 
     #[test]

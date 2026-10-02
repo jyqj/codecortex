@@ -11,6 +11,7 @@ cc-model = { path = "../cc-model" }
 # scenario drive cc-index directly; cc-db opens the handle for it.
 cc-index = { path = "../cc-index" }
 cc-db = { path = "../cc-db" }
+cc-semantic = { path = "../cc-semantic", optional = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }
@@ -35,6 +36,7 @@ libc = { workspace = true }
 
 [features]
 default = []
+semantic = ["cc-server/semantic", "dep:cc-semantic"]
 eval-http = ["dep:reqwest"]
 
 [dev-dependencies]

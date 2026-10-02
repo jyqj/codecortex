@@ -921,6 +921,30 @@ mod query_network_contract {
         session.close().await;
     }
 
+    #[tokio::test]
+    async fn denied_authority_local_and_empty_scope_make_no_query_calls() {
+        let probe = Probe::start().await;
+        let mut config = probe.config();
+        config["allow_query_network"] = json!(false);
+        let session = Session::open(Some("auto"), Some(config)).await;
+        session.index().await;
+        if cfg!(feature = "semantic-http") {
+            published(&session, &probe).await;
+        }
+        assert_eq!(
+            encoding_status(&session.status().await)["reason"],
+            "query_network_opt_in_required"
+        );
+        for (tool, key) in [("search", "query"), ("context", "task")] {
+            session.call(tool, json!({key:format!("v18_query_denied_local_{tool}"),"retrieval_strategy":"local"})).await;
+        }
+        let empty = session.call("search", json!({"query":"v18_query_denied_empty_scope","retrieval_strategy":"auto","path_prefix":"absent/"})).await;
+        assert_eq!(empty["evidence_summary"]["search_hits"], 0);
+        assert_eq!(probe.query_calls(), 0);
+        probe.trace(&session);
+        session.close().await;
+    }
+
     // Requires the designated service worker's real producer wiring before
     // execution. No manual query cache priming is permitted in this test.
     #[cfg(feature = "semantic-http")]

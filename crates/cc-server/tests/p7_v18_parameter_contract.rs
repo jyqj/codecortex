@@ -976,6 +976,11 @@ mod query_network_contract {
         let session = Session::open(Some("auto"), Some(probe.config())).await;
         session.index().await;
         published(&session, &probe).await;
+        assert_eq!(
+            encoding_status(&session.status().await)["network_authorized"],
+            true,
+            "zero-traffic cases require a genuinely attached encoder"
+        );
         for (tool, key) in [("search", "query"), ("context", "task")] {
             session
                 .call(

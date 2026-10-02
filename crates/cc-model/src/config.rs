@@ -1732,15 +1732,30 @@ mod tests {
 
     #[test]
     fn find_project_root_with_marker_returns_none_without_marker() {
+        // Exercise the end of the ancestor walk directly. A temp directory
+        // can inherit a host marker (for example /tmp/.git in cloud runners).
+        let temp_root = std::env::temp_dir().canonicalize().unwrap();
+        let filesystem_root = temp_root.ancestors().last().unwrap();
+        assert!(!filesystem_root.join(".git").exists());
+        assert!(!filesystem_root.join(CONFIG_FILE_NAME).exists());
+        assert!(find_project_root_with_marker(Some(filesystem_root)).is_none());
+    }
+
+    #[test]
+    fn find_project_root_unmarked_child_preserves_parent_discovery() {
         let unique = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .unwrap()
             .as_nanos();
         let project_dir = std::env::temp_dir().join(format!("codecortex-no-root-test-{}", unique));
         std::fs::create_dir_all(&project_dir).unwrap();
-
-        assert!(find_project_root_with_marker(Some(&project_dir)).is_none());
-
+        assert!(!project_dir.join(".git").exists());
+        assert!(!project_dir.join(CONFIG_FILE_NAME).exists());
+        assert_eq!(
+            find_project_root_with_marker(Some(&project_dir)),
+            find_project_root_with_marker(project_dir.parent()),
+            "an unmarked child must inherit the parent's nearest marker, if any"
+        );
         let _ = std::fs::remove_dir_all(&project_dir);
     }
 }

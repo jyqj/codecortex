@@ -192,28 +192,60 @@ fn paths(index: &SharedCodeIndex) -> BTreeMap<String, String> {
         .collect::<Result<_, _>>()
         .unwrap()
 }
+// Literal-fixture oracle; production HardScope::passes is under test.
+fn gold_admits(scope: &HardScope, path: &str) -> bool {
+    let prefix = scope
+        .path_prefix
+        .as_deref()
+        .map(|p| p.trim_end_matches('/'));
+    let in_prefix =
+        prefix.is_none_or(|prefix| path == prefix || path.starts_with(&format!("{prefix}/")));
+    let language = if path.ends_with(".py") {
+        Language::Python
+    } else {
+        Language::Rust
+    };
+    in_prefix
+        && scope
+            .languages
+            .as_ref()
+            .is_none_or(|allowed| allowed.contains(&language))
+        && scope
+            .file_paths
+            .as_ref()
+            .is_none_or(|allowed| allowed.iter().any(|p| p == path))
+}
+
 fn check_gold(
     index: &SharedCodeIndex,
     outcome: &LaneOutcome,
     scope: &HardScope,
     k: usize,
+    deleted_top: bool,
 ) -> Value {
     assert_eq!(outcome.status, LaneStatus::Complete);
     assert!(outcome.coverage.complete);
     let paths = paths(index);
+    let fixture_paths: std::collections::BTreeSet<_> = DOCS
+        .iter()
+        .filter(|doc| !deleted_top || doc.0 != "scope/top.rs")
+        .map(|doc| doc.0.to_owned())
+        .collect();
+    assert_eq!(
+        paths
+            .values()
+            .cloned()
+            .collect::<std::collections::BTreeSet<_>>(),
+        fixture_paths
+    );
+    assert_eq!(
+        paths.len(),
+        fixture_paths.len(),
+        "one frozen tiny document per fixture file"
+    );
     let mut expected: Vec<_> = DOCS
         .iter()
-        .filter(|doc| {
-            paths.values().any(|p| p == doc.0)
-                && scope.passes(
-                    doc.0,
-                    if doc.0.ends_with(".py") {
-                        Language::Python
-                    } else {
-                        Language::Rust
-                    },
-                )
-        })
+        .filter(|doc| paths.values().any(|p| p == doc.0) && gold_admits(scope, doc.0))
         .map(|doc| {
             let key = paths
                 .iter()
@@ -263,14 +295,7 @@ async fn public(index: &SharedCodeIndex, scope: &HardScope) -> Value {
     for hit in result.machine_pack["hits"].as_array().unwrap() {
         let path = hit["file_path"].as_str().unwrap();
         assert!(
-            scope.passes(
-                path,
-                if path.ends_with(".py") {
-                    Language::Python
-                } else {
-                    Language::Rust
-                }
-            ),
+            gold_admits(scope, path),
             "hydrate escaped hard scope: {path}"
         );
     }
@@ -368,7 +393,7 @@ async fn independent_hand_cosine_topk_ties_scope_delete_and_space_rejection() {
             ),
         ] {
             let outcome = recall(&index, scope.clone(), k).await;
-            cases.push(json!({"name":name,"scope":scope,"k":k,"result":check_gold(&index,&outcome,&scope,k)}));
+            cases.push(json!({"name":name,"scope":scope,"k":k,"result":check_gold(&index,&outcome,&scope,k,false)}));
         }
         public(&index, &scope).await;
         assert_eq!(
@@ -380,7 +405,7 @@ async fn independent_hand_cosine_topk_ties_scope_delete_and_space_rejection() {
         build(&index, false).await;
         ready(&index).await;
         let after_delete = recall(&index, scope.clone(), 2).await;
-        let deletion = check_gold(&index, &after_delete, &scope, 2);
+        let deletion = check_gold(&index, &after_delete, &scope, 2, true);
         let hydrated = public(&index, &scope).await;
         assert!(hydrated["machine_pack"]["hits"]
             .as_array()

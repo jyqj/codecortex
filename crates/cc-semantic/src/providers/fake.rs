@@ -211,8 +211,8 @@ fn deterministic_vector(kind: &str, space: &VectorSpace, digest: &str, dim: usiz
 
     let mut components = Vec::with_capacity(dim);
     let mut sum_sq = 0.0_f64;
-    for chunk in raw.chunks_exact(4) {
-        let u = u32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]);
+    for chunk in raw.as_chunks::<4>().0 {
+        let u = u32::from_le_bytes(*chunk);
         let v = ((u as f64) * (2.0 / 4_294_967_296.0) - 1.0) as f32;
         sum_sq += (v as f64) * (v as f64);
         components.push(v);
@@ -332,6 +332,41 @@ mod tests {
         for (i, bits) in expected.iter().enumerate() {
             assert_eq!(v[i].to_bits(), *bits, "golden component {i} drifted");
         }
+    }
+
+    #[test]
+    fn minimum_and_odd_dimensions_preserve_complete_v1_golden_bits() {
+        // Captured from the unchanged provider at PR15 base 81b6188 before
+        // replacing the byte-chunk traversal. Check every component on both
+        // paths, including the minimum dimension and an odd component count.
+        let cases: [(u32, &[u32], &[u32]); 2] = [
+            (1, &[1065353216], &[1065353216]),
+            (
+                3,
+                &[1050111676, 1058775766, 3208421561],
+                &[3192059620, 1036231815, 1064968156],
+            ),
+        ];
+        for (dimension, document_bits, query_bits) in cases {
+            let p = provider("fake/chunk-boundary", dimension);
+            let document = p
+                .embed_documents(&[doc("chunk boundary input")])
+                .unwrap()
+                .remove(0);
+            let query = p
+                .embed_queries(&[query("chunk boundary input")])
+                .unwrap()
+                .remove(0);
+            assert_eq!(
+                document.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                document_bits
+            );
+            assert_eq!(
+                query.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+                query_bits
+            );
+        }
+        assert_eq!(FAKE_PROVIDER_ALGORITHM_VERSION, 1);
     }
 
     // ── Space / dimension contract ───────────────────────────────────────

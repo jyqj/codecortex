@@ -1,0 +1,706 @@
+{
+  "data": {
+    "args": {
+      "retrieval_strategy": "local",
+      "task": "needle"
+    },
+    "result": {
+      "evidence_summary": {
+        "files": [
+          "needle.py"
+        ],
+        "graph_enrichment": {
+          "callees_added": 1,
+          "callers_added": 1,
+          "symbols_resolved": 2,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": true,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 2,
+          "original_nodes": 4,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 12205
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating_work; full scope: retrieval-cost schema v1",
+            "fused_candidates": 2,
+            "hydrate_requested": 2,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 2,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 130
+              },
+              "text": {
+                "cache_hits": 2,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 66,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 2,
+              "grep": 2,
+              "lexical": 2,
+              "path": 1
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 2,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 59
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 2,
+            "skipped_duplicates": 4,
+            "soft_scanned": 2,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 2,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 29
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 2,
+                    "utf8_bytes": 66,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 2,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 58
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 1,
+                    "rows": 2,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 23
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lane_receipts": [
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 412,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 220,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 2,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 127,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 2,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": 2,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 1933,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 2,
+              "candidate_details_omitted": true,
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 2
+              },
+              "elapsed_us": 1140,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "deadline_ms": 30000,
+            "details_omitted": true,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 12,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 10,
+              "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+            },
+            "details_omitted": true,
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+            },
+            "ordering": [
+              "exact_identity_first",
+              "rerank_score_desc",
+              "chunk_id_asc"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 2,
+        "selection": {
+          "facets": {
+            "implementation": 2
+          },
+          "input_candidates": 2,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1,
+            2
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 66,
+            "redundant_bytes": 0,
+            "unique_bytes": 66
+          },
+          "requested_limit": 10,
+          "selected": 2,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 66,
+            "redundant_bytes": 0,
+            "unique_bytes": 66
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              235,
+              216,
+              9,
+              58,
+              208,
+              182,
+              198,
+              106,
+              160,
+              227,
+              119,
+              108,
+              9,
+              106,
+              226,
+              23
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 66,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 2
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "needle",
+            "chunk_id": "chunk:needle.py:0",
+            "end_line": 2,
+            "file_path": "needle.py",
+            "fused_score": 0.08989441930618403,
+            "graph_score": 0.07931471805599452,
+            "grep_score": 0.5,
+            "lane": null,
+            "language": "python",
+            "lexical_score": 1.0,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "29b2fa88c6d6c8741c47ad873ba80a25c628b882a28ea3cfaa7fcc69e6982938",
+                "doc_version": "9ba68969fd43b00f97a9fade36d3cd19b8f57a4b7c6dffacb8c050c2e9b29f62",
+                "encoding_key": "78fc8c83484a6639e37e832f30a8eb8310c8ad26eada3a4ec3d936c1f152fede",
+                "entity_key": "16a369932cc2a7589f395b34b3b8def8bbad6a04e00672428487964152c26486"
+              },
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 28,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 18,
+                  "start": 0
+                },
+                "slice_digest": "c748e325d98b5f174763b313c05ece587900d99690eedbce11f75639788c6b8b",
+                "source": {
+                  "byte_len": 66,
+                  "content_digest": "bdb975ad92107a0524d6a7c217816cd1e50bb1d97a36ef892318fbe837bf8857",
+                  "encoding": "utf8",
+                  "snapshot_id": "735799399424072b1b6cc95488ff63f55c094da4b32573a4555bf731c014f141"
+                },
+                "span": {
+                  "end": 28,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "path@1",
+              "lexical@1",
+              "grep@2",
+              "symbol-exact",
+              "fts-summary",
+              "path-token:needle",
+              "symbol:needle",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+3.00"
+            ],
+            "rerank_score": 0.8196888975800265,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:path",
+                0.0196078431372549
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.015384615384615385
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:symbol-exact",
+                0.18
+              ],
+              [
+                "boost:stage-a",
+                0.17600006285704412
+              ],
+              [
+                "boost:graph-rerank",
+                0.023794415416798356
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "function",
+            "symbol_name": "needle",
+            "text": "def needle():\n    return 731"
+          },
+          {
+            "breadcrumb": "neighbor",
+            "chunk_id": "chunk:needle.py:1",
+            "end_line": 5,
+            "file_path": "needle.py",
+            "fused_score": 0.048378582202111615,
+            "graph_score": 0.06931471805599453,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "python",
+            "lexical_score": 0.5,
+            "metadata": {
+              "details_omitted": true,
+              "document": {
+                "doc_key": "3fd56c438273f4e97d76268fc1e74f7bccba6b16d9f0ef414ca67b0829003e65",
+                "doc_version": "09f385ca69393d6173161facbcb1551167f9785fcdd2ccc650f1c531bc0259ed",
+                "encoding_key": "02118b2a2349b99c9efe9684d529683cd659e52f1e28e19c864bc915175c7693",
+                "entity_key": "f8d3da2a91268bb9b93e59ca9b06d751804a9221f3d218b5a8798fab2dc8e40d"
+              },
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 65,
+                  "start": 30
+                },
+                "signature": {
+                  "end": 50,
+                  "start": 30
+                },
+                "slice_digest": "dec7813dc4d5e300de152b45e0cb2a89c688f0a75f1501c57aa7eb68130081dd",
+                "source": {
+                  "byte_len": 66,
+                  "content_digest": "bdb975ad92107a0524d6a7c217816cd1e50bb1d97a36ef892318fbe837bf8857",
+                  "encoding": "utf8",
+                  "snapshot_id": "735799399424072b1b6cc95488ff63f55c094da4b32573a4555bf731c014f141"
+                },
+                "span": {
+                  "end": 66,
+                  "start": 28
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              }
+            },
+            "reasons": [
+              "lexical@2",
+              "grep@1",
+              "fts-summary",
+              "path-token:needle",
+              "symbol:needle",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+3.00"
+            ],
+            "rerank_score": 0.5951730604759541,
+            "score_trace": [
+              [
+                "rrf:lexical",
+                0.021153846153846155
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011538461538461537
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.17600006285704412
+              ],
+              [
+                "boost:graph-rerank",
+                0.020794415416798356
+              ]
+            ],
+            "source": "index",
+            "start_line": 2,
+            "symbol_kind": "function",
+            "symbol_name": "neighbor",
+            "text": "\n\ndef neighbor():\n    return needle()\n"
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "needle",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 10
+      },
+      "nodes": [
+        {
+          "backing_file_path": "needle.py",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 2,
+          "file_path": "needle.py",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:needle.py:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.8196888975800265,
+          "source": "index",
+          "source_end_line": 2,
+          "source_start_line": 1,
+          "span_kind": "reference",
+          "start_line": 1,
+          "text": "",
+          "title": "needle.py needle:1-2",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": "needle.py",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 5,
+          "file_path": "needle.py",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": {
+            "representation": "machine_hit_reference"
+          },
+          "node_id": "search:chunk:needle.py:1",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5951730604759541,
+          "source": "index",
+          "source_end_line": 5,
+          "source_start_line": 2,
+          "span_kind": "reference",
+          "start_line": 2,
+          "text": "",
+          "title": "needle.py neighbor:2-5",
+          "token_estimate": 0
+        },
+        {
+          "backing_file_path": null,
+          "backing_source": null,
+          "confidence": 1.0,
+          "depends_on": [],
+          "end_line": null,
+          "file_path": "needle.py",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": null,
+          "node_id": "graph:caller:uid:ed8e61924345e59a924de3bf",
+          "node_type": "CALL_EDGE",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "neighbor",
+          "score": 0.0,
+          "source": "graph",
+          "source_end_line": null,
+          "source_start_line": null,
+          "span_kind": null,
+          "start_line": 5,
+          "text": "caller: neighbor → needle (needle.py:5)",
+          "title": "Caller: neighbor",
+          "token_estimate": 10
+        },
+        {
+          "backing_file_path": null,
+          "backing_source": null,
+          "confidence": 1.0,
+          "depends_on": [],
+          "end_line": null,
+          "file_path": "needle.py",
+          "freshness": null,
+          "invalidation_keys": [],
+          "metadata": null,
+          "node_id": "graph:callee:uid:3732066f97516c2c2f8efb6e",
+          "node_type": "CALL_EDGE",
+          "rank_explanation": null,
+          "reasons": [],
+          "relation": null,
+          "role": "neighbor",
+          "score": 0.0,
+          "source": "graph",
+          "source_end_line": null,
+          "source_start_line": null,
+          "span_kind": null,
+          "start_line": 5,
+          "text": "callee: neighbor → needle (needle.py:5)",
+          "title": "Callee: needle",
+          "token_estimate": 10
+        }
+      ],
+      "query": "needle",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 5,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 2,
+          "file_path": "needle.py",
+          "label": "needle",
+          "node_id": "search:chunk:needle.py:0",
+          "start_line": 1
+        },
+        {
+          "end_line": 5,
+          "file_path": "needle.py",
+          "label": "neighbor",
+          "node_id": "search:chunk:needle.py:1",
+          "start_line": 2
+        }
+      ],
+      "summary": "Found 2 indexed code result(s) across 1 file(s) for `needle`.",
+      "task": "needle",
+      "token_budget": 4000,
+      "token_estimate": 3052
+    },
+    "tool": "context"
+  },
+  "kind": "call",
+  "test": "enabled_semantic_strategy_reaches_real_wired_query_and_read_only_status"
+}

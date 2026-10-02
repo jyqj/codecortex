@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`7c29f5de944a83114db91fee192692fa29ddfeb7f9d9236da979e60d10a63cfd`。
+> 任务总数：192；源文件 SHA-256：`8a0b00258bf218ca6ccd6c98ce45b8321a6e3a24205db7c6c2a4c6822e823005`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2046,7 +2046,8 @@
 验收：慢模型不会饿死local索引/查询，过期发布0；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V14；V17；V20
 回滚：关闭远程语义与重试，切local；保留outbox/cache和费用收据供恢复。
-证据：尚无
+证据：[{"target_sha": "9a2aa55a24fc0bcbb5009fea31e5b770060672eb", "artifact_paths": ["artifacts/checkpoints/p7-linux-sampler-20261002"], "review": "independent Linux sampler owner; bounded subitem only", "rollback_status": "revert dedicated sampler/evidence commits", "scope": "Linux /proc CPU/RSS unit/overflow/disappeared/unavailable; not full P7-015 acceptance"}]
+实施备注： 独立Linux/proc采样子项PR19源9a2aa55/head640f668已原样纳入recovery：定向8测试20轮160pass、cc-eval lib39pass/5既有ignored、独立strictclippy/formatpass；不是完整P7-015，014/016依赖及资源完整矩阵未关闭，保持todo。
 
 ### [ ] P7-016｜fake全故障矩阵回归
 

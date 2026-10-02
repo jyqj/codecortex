@@ -10132,8 +10132,19 @@
         "M3-engineering",
         "M4-semantic"
       ],
-      "evidence": [],
-      "conditional_dependencies": []
+      "evidence": [
+        {
+          "target_sha": "9a2aa55a24fc0bcbb5009fea31e5b770060672eb",
+          "artifact_paths": [
+            "artifacts/checkpoints/p7-linux-sampler-20261002"
+          ],
+          "review": "independent Linux sampler owner; bounded subitem only",
+          "rollback_status": "revert dedicated sampler/evidence commits",
+          "scope": "Linux /proc CPU/RSS unit/overflow/disappeared/unavailable; not full P7-015 acceptance"
+        }
+      ],
+      "conditional_dependencies": [],
+      "implementation_notes": " 独立Linux/proc采样子项PR19源9a2aa55/head640f668已原样纳入recovery：定向8测试20轮160pass、cc-eval lib39pass/5既有ignored、独立strictclippy/formatpass；不是完整P7-015，014/016依赖及资源完整矩阵未关闭，保持todo。"
     },
     {
       "id": "P7-016",

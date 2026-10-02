@@ -1,0 +1,32 @@
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+   Compiling cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+   Compiling cc-search v1.0.0 (/workspace/codecortex/crates/cc-search)
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized] target(s) in 15.42s
+     Running tests/p7_production_fairness_model_review.rs (/tmp/p7-017-build/debug/deps/p7_production_fairness_model_review-59f6c7e0bdab0019)
+
+running 4 tests
+
+thread 'fifo_background_load_does_not_starve_search_context_or_release_slots_early' (81539) panicked at crates/cc-server/tests/p7_production_fairness_model_review.rs:248:10:
+called `Result::unwrap()` on an `Err` value: RetrievalChanged { attempts: 1 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test fifo_background_load_does_not_starve_search_context_or_release_slots_early ... FAILED
+
+thread 'fifo_foreground_load_does_not_starve_background_or_hold_db_cpu' (81540) panicked at crates/cc-server/tests/p7_production_fairness_model_review.rs:248:10:
+called `Result::unwrap()` on an `Err` value: RetrievalChanged { attempts: 1 }
+test fifo_foreground_load_does_not_starve_background_or_hold_db_cpu ... FAILED
+test close_during_begin_immediate_wait_prevents_configured_space_transition ... ok
+test actual_config_change_requires_explicit_set_project_and_close_fences_old_publication ... ok
+
+failures:
+
+failures:
+    fifo_background_load_does_not_starve_search_context_or_release_slots_early
+    fifo_foreground_load_does_not_starve_background_or_hold_db_cpu
+
+test result: FAILED. 2 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.76s
+
+error: test failed, to rerun pass `-p cc-server --test p7_production_fairness_model_review`

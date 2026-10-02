@@ -1216,7 +1216,7 @@ mod tests {
         }
     }
 
-    fn rendered<'a>(keys: &[&'a str], sizes: &[usize]) -> Vec<(String, Vec<u8>)> {
+    fn rendered(keys: &[&str], sizes: &[usize]) -> Vec<(String, Vec<u8>)> {
         keys.iter()
             .zip(sizes)
             .map(|(key, size)| (key.to_string(), vec![b'a'; *size]))
@@ -2179,27 +2179,31 @@ mod tests {
 
     // ── P7-008 receipts ───────────────────────────────────────────────────
 
+    struct AttemptFixture {
+        attempt: u64,
+        outcome: AttemptOutcome,
+        duration_ms: u64,
+        cost_units: u64,
+        uncertain: Option<UncertainReason>,
+    }
+
     fn receipt(
         space_model: &str,
         path: ReceiptPath,
         items: usize,
         usage: UsageReceipt,
-        attempt: u64,
-        outcome: AttemptOutcome,
-        duration_ms: u64,
-        cost: u64,
-        uncertain: Option<UncertainReason>,
+        attempt: AttemptFixture,
     ) -> ProviderCallReceipt {
         ProviderCallReceipt {
             space_model: space_model.to_owned(),
             path,
             batch_items: items,
             usage,
-            attempt,
-            outcome,
-            duration_ms,
-            cost_units: cost,
-            uncertain,
+            attempt: attempt.attempt,
+            outcome: attempt.outcome,
+            duration_ms: attempt.duration_ms,
+            cost_units: attempt.cost_units,
+            uncertain: attempt.uncertain,
         }
     }
 
@@ -2239,11 +2243,13 @@ mod tests {
                     estimated: Some(7),
                     cache_reuse: false,
                 },
-                1,
-                AttemptOutcome::Succeeded,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2280,11 +2286,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 unknown(Some(4)),
-                1,
-                AttemptOutcome::Failed,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2294,11 +2302,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 unknown(None),
-                2,
-                AttemptOutcome::Failed,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                Some(UncertainReason::TimeoutIndeterminate),
+                AttemptFixture {
+                    attempt: 2,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: Some(UncertainReason::TimeoutIndeterminate),
+                },
             ),
             110,
         );
@@ -2322,11 +2332,13 @@ mod tests {
                 ReceiptPath::Documents,
                 2,
                 est(10),
-                1,
-                AttemptOutcome::Succeeded,
-                12,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 12,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2336,11 +2348,13 @@ mod tests {
                 ReceiptPath::Documents,
                 2,
                 est(10),
-                2,
-                AttemptOutcome::Failed,
-                30,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                Some(UncertainReason::TimeoutIndeterminate),
+                AttemptFixture {
+                    attempt: 2,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 30,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: Some(UncertainReason::TimeoutIndeterminate),
+                },
             ),
             200,
         );
@@ -2350,11 +2364,13 @@ mod tests {
                 ReceiptPath::Queries,
                 1,
                 est(3),
-                1,
-                AttemptOutcome::RejectedByBreaker,
-                0,
-                0,
-                Some(UncertainReason::BreakerOpen),
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::RejectedByBreaker,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: Some(UncertainReason::BreakerOpen),
+                },
             ),
             300,
         );
@@ -2364,11 +2380,13 @@ mod tests {
                 ReceiptPath::Queries,
                 1,
                 est(3),
-                1,
-                AttemptOutcome::RejectedByBudget,
-                0,
-                0,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::RejectedByBudget,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: None,
+                },
             ),
             400,
         );
@@ -2420,11 +2438,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est(10),
-                1,
-                AttemptOutcome::Succeeded,
-                5,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 5,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2435,11 +2455,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est(20),
-                1,
-                AttemptOutcome::Succeeded,
-                7,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 7,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             500,
         );
@@ -2454,7 +2476,7 @@ mod tests {
         assert_eq!(late.estimated_tokens, 20);
         assert_eq!(late.per_space.len(), 1);
         assert_eq!(late.per_space["b"].attempts, 1);
-        assert!(late.per_space.get("a").is_none());
+        assert!(!late.per_space.contains_key("a"));
 
         // Inclusive lower bound: `since=100` keeps the t=100 receipt.
         let late_a = ledger.aggregate(Some(100));
@@ -2476,11 +2498,13 @@ mod tests {
                     estimated: Some(5),
                     cache_reuse: true,
                 },
-                1,
-                AttemptOutcome::Succeeded,
-                0,
-                0,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2545,11 +2569,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est,
-                1,
-                AttemptOutcome::Succeeded,
-                1,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::Succeeded,
+                    duration_ms: 1,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             100,
         );
@@ -2559,11 +2585,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est,
-                2,
-                AttemptOutcome::Failed,
-                1,
-                PROVIDER_ATTEMPT_COST_UNITS,
-                None,
+                AttemptFixture {
+                    attempt: 2,
+                    outcome: AttemptOutcome::Failed,
+                    duration_ms: 1,
+                    cost_units: PROVIDER_ATTEMPT_COST_UNITS,
+                    uncertain: None,
+                },
             ),
             200,
         );
@@ -2573,11 +2601,13 @@ mod tests {
                 ReceiptPath::Documents,
                 1,
                 est,
-                1,
-                AttemptOutcome::RejectedByBudget,
-                0,
-                0,
-                None,
+                AttemptFixture {
+                    attempt: 1,
+                    outcome: AttemptOutcome::RejectedByBudget,
+                    duration_ms: 0,
+                    cost_units: 0,
+                    uncertain: None,
+                },
             ),
             300,
         );

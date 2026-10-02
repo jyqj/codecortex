@@ -2050,7 +2050,14 @@ mod tests {
 
     #[test]
     fn http_429_maps_to_rate_limited_with_retry_after() {
-        let mut response = ok_response(vec![(0, vec![1.0; 0]); 0]);
+        // A zero-repeat initializer evaluates and drops its entry once.
+        // Preserve that empty-vector construction explicitly (the original
+        // repeated 1.0 literal has no side effects), then build the empty data.
+        let discarded_entry = (0_usize, Vec::<f32>::new());
+        drop(discarded_entry);
+        let mut response = ok_response(Vec::new());
+        let body: serde_json::Value = serde_json::from_slice(&response.body).unwrap();
+        assert_eq!(body["data"], serde_json::json!([]));
         response.status = 429;
         response.headers = vec![("Retry-After".to_owned(), "7".to_owned())];
         let p = provider(Some(Arc::new(MockTransport::with_response(response))));

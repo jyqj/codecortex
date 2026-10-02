@@ -19,6 +19,7 @@ pub struct SemanticRuntime {
     provider: ProviderSource,
     cancellation: tokio_util::sync::CancellationToken,
     closed: AtomicBool,
+    lifecycle: cc_db::semantic_publish::LifecycleFence,
     running: AtomicBool,
     requested: AtomicBool,
     backfill_cursor: Mutex<Option<String>>,
@@ -67,6 +68,7 @@ impl SemanticRuntime {
             provider,
             cancellation: tokio_util::sync::CancellationToken::new(),
             closed: AtomicBool::new(false),
+            lifecycle: cc_db::semantic_publish::LifecycleFence::default(),
             running: AtomicBool::new(false),
             requested: AtomicBool::new(false),
             // Reopening an active index must also reconcile missing desired rows.
@@ -104,8 +106,9 @@ impl SemanticRuntime {
         Ok(provider)
     }
     pub fn close(&self) {
-        self.cancellation.cancel();
+        self.lifecycle.close();
         self.closed.store(true, Ordering::Release);
+        self.cancellation.cancel();
     }
     /// Returns false when closed, busy, or outside Tokio. Global capacity waits
     /// asynchronously; coalesced work retains one project pin, without DB locks.
@@ -306,6 +309,7 @@ impl SemanticRuntime {
                 owner: "post-index",
                 max_batch: 16,
                 now_unix: now,
+                lifecycle: Some(&self.lifecycle),
             },
         )?;
         let backfilling = self

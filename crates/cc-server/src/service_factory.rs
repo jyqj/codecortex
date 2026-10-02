@@ -259,6 +259,19 @@ impl QueryServices {
             .write()
             .unwrap_or_else(|p| p.into_inner()) = snapshot;
     }
+    /// Hold the port's read guard through projection update. Replacement
+    /// takes its write guard, so an old instance cannot overwrite live state.
+    #[cfg(feature = "semantic")]
+    pub(crate) fn set_semantic_degradation_for(
+        &self,
+        owner: &Arc<dyn SemanticRecall>,
+        snapshot: SemanticDegradation,
+    ) {
+        let port = self.semantic.read().unwrap_or_else(|p| p.into_inner());
+        if port.as_ref().is_some_and(|live| Arc::ptr_eq(live, owner)) {
+            self.set_semantic_degradation(Some(snapshot));
+        }
+    }
 }
 
 #[cfg(feature = "semantic")]

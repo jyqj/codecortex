@@ -207,6 +207,8 @@ impl<'a> LeaseGuard<'a> {
 /// How one handler invocation ended for its claimed task.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum TaskExit {
+    /// Stop this drain and return to pending without provider-failure backoff.
+    Cancelled { started: bool },
     /// The handler fully disposed of the task: the publish CAS acked it, or
     /// the CAS rejection already wrote the fenced retry / left the row
     /// terminal (`superseded`). The loop must not touch the task again — a
@@ -264,14 +266,32 @@ pub fn drain_pending(
     limits: &WorkerLimits,
     handler: &mut dyn FnMut(&LeaseGuard<'_>) -> CcResult<TaskExit>,
 ) -> CcResult<BatchReport> {
+    drain_pending_with_lifecycle(db, owner, limits, None, handler)
+}
+
+pub fn drain_pending_with_lifecycle(
+    db: &IndexDb,
+    owner: &str,
+    limits: &WorkerLimits,
+    lifecycle: Option<&cc_db::semantic_publish::LifecycleFence>,
+    handler: &mut dyn FnMut(&LeaseGuard<'_>) -> CcResult<TaskExit>,
+) -> CcResult<BatchReport> {
     debug_assert!(
         limits.max_batch >= 1 && limits.lease_secs > 0.0,
         "unvalidated WorkerLimits"
     );
     let mut report = BatchReport::default();
     for _ in 0..limits.max_batch {
+        if lifecycle.is_some_and(|fence| !fence.is_open()) {
+            break;
+        }
         db.reclaim_expired_semantic()?;
-        let Some(task) = db.claim_semantic_ordered(owner, limits.lease_secs, limits.claim_order)?
+        let Some(task) = db.claim_semantic_with_lifecycle(
+            owner,
+            limits.lease_secs,
+            limits.claim_order,
+            lifecycle,
+        )?
         else {
             break;
         };
@@ -282,6 +302,15 @@ pub fn drain_pending(
             lease_secs: limits.lease_secs,
         };
 
+        if lifecycle.is_some_and(|fence| !fence.is_open()) {
+            db.hand_back_cancelled_semantic_task(
+                guard.task().task_id,
+                guard.task().token.as_str(),
+                false,
+            )?;
+            break;
+        }
+
         // Liveness gate immediately before work (merge semantics point 3):
         // a task superseded between its claim statement and here is skipped
         // with zero provider cost and zero writes.
@@ -291,8 +320,24 @@ pub fn drain_pending(
         }
 
         match handler(&guard) {
+            Ok(TaskExit::Cancelled { started }) => {
+                db.hand_back_cancelled_semantic_task(
+                    guard.task().task_id,
+                    guard.task().token.as_str(),
+                    started,
+                )?;
+                break;
+            }
             Ok(TaskExit::Disposed) => report.completed += 1,
             Ok(TaskExit::NeedsRetry { reason }) => {
+                if lifecycle.is_some_and(|fence| !fence.is_open()) {
+                    db.hand_back_cancelled_semantic_task(
+                        guard.task().task_id,
+                        guard.task().token.as_str(),
+                        true,
+                    )?;
+                    break;
+                }
                 if hand_back(db, &guard, &reason, limits)? {
                     report.retried += 1;
                 } else {
@@ -300,6 +345,14 @@ pub fn drain_pending(
                 }
             }
             Err(e) => {
+                if lifecycle.is_some_and(|fence| !fence.is_open()) {
+                    db.hand_back_cancelled_semantic_task(
+                        guard.task().task_id,
+                        guard.task().token.as_str(),
+                        true,
+                    )?;
+                    break;
+                }
                 if hand_back(db, &guard, &format!("{e}"), limits)? {
                     report.retried += 1;
                 } else {
@@ -372,6 +425,9 @@ impl<'a> EmbedHandler<'a> {
 
     /// Process one claimed task (see the struct docs for the order).
     pub fn handle(&self, guard: &LeaseGuard<'_>) -> CcResult<TaskExit> {
+        if self.publisher.is_cancelled() {
+            return Ok(TaskExit::Cancelled { started: false });
+        }
         let task = guard.task();
         if task.op == OutboxOp::Revoke {
             return Ok(TaskExit::NeedsRetry {
@@ -379,6 +435,9 @@ impl<'a> EmbedHandler<'a> {
             });
         }
         let Some(input) = (self.resolve_input)(task)? else {
+            if self.publisher.is_cancelled() {
+                return Ok(TaskExit::Cancelled { started: false });
+            }
             return Ok(TaskExit::NeedsRetry {
                 reason: "embed input unavailable for task".into(),
             });
@@ -392,8 +451,12 @@ impl<'a> EmbedHandler<'a> {
         // Single-input batch: the batch bound per attempt is one; `max_batch`
         // bounds claims per drain (admission), not provider inputs.
         let batch = [input];
+        if self.publisher.is_cancelled() {
+            return Ok(TaskExit::Cancelled { started: false });
+        }
         let vectors = match self.provider.embed_documents(&batch) {
             Ok(vectors) => vectors,
+            Err(ProviderError::Cancelled) => return Ok(TaskExit::Cancelled { started: true }),
             Err(e) => {
                 return Ok(TaskExit::NeedsRetry {
                     reason: provider_reason(&e),
@@ -410,6 +473,7 @@ impl<'a> EmbedHandler<'a> {
             .publisher
             .publish_embedding(task, &vector, now_unix_secs())?
         {
+            PublishVerdict::Cancelled => Ok(TaskExit::Cancelled { started: true }),
             // Acked (and the visible set bumped iff changed) inside the CAS.
             PublishVerdict::Published { .. } => Ok(TaskExit::Disposed),
             // The CAS already wrote the fenced retry (or no-oped against a

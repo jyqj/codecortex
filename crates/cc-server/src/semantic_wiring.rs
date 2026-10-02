@@ -420,6 +420,7 @@ pub(crate) fn attach(services: &QueryServices, subsystem: &SemanticSubsystem) {
 /// side-effect free: no cache content is touched, no worker state is lost
 /// (the outbox and the artifact cache outlive the process).
 pub fn teardown(services: &QueryServices) {
+    services.set_query_encoding_lifecycle(None);
     services.set_semantic_worker(None);
     services.set_semantic(None);
     services.set_semantic_wired(None);

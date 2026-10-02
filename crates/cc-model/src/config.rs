@@ -155,6 +155,10 @@ pub struct SemanticProviderConfig {
     /// constructor both enforce it). `enabled` alone does NOT opt in.
     #[serde(default)]
     pub network_opt_in: bool,
+    /// Separate authorization to send query/task text for query embeddings.
+    /// `network_opt_in` alone never authorizes this path. Default false.
+    #[serde(default)]
+    pub allow_query_network: bool,
     /// Explicit opt-in for plaintext `http://` endpoints (P7-007). Default
     /// `false` = https only; a plaintext endpoint is rejected by the egress
     /// policy unless this flag is set.
@@ -258,6 +262,7 @@ impl Default for SemanticProviderConfig {
             breaker_failure_threshold: default_semantic_breaker_threshold(),
             breaker_open_ms: default_semantic_breaker_open_ms(),
             network_opt_in: false,
+            allow_query_network: false,
             allow_http: false,
             reembed_budget_max: None,
             worker_lease_secs: default_semantic_worker_lease_secs(),
@@ -1608,6 +1613,7 @@ mod tests {
             serde_json::from_str(r#"{"indexing": {"max_file_bytes": 1024}}"#)
                 .expect("config without semantic section");
         assert!(!without.semantic.network_opt_in);
+        assert!(!without.semantic.allow_query_network);
         assert!(!without.semantic.allow_http);
 
         let explicit: ProjectConfig = serde_json::from_str(
@@ -1616,7 +1622,20 @@ mod tests {
         )
         .expect("semantic egress keys");
         assert!(explicit.semantic.network_opt_in);
+        assert!(
+            !explicit.semantic.allow_query_network,
+            "transport opt-in does not authorize query text"
+        );
         assert!(explicit.semantic.allow_http);
+        let query_only: ProjectConfig =
+            serde_json::from_str(r#"{"semantic":{"allow_query_network":true}}"#).unwrap();
+        assert!(query_only.semantic.allow_query_network);
+        assert!(!query_only.semantic.network_opt_in);
+        assert!(!query_only.semantic.enabled);
+        assert!(serde_json::from_str::<ProjectConfig>(
+            r#"{"semantic":{"allow_query_network":"true"}}"#
+        )
+        .is_err());
     }
 
     #[test]

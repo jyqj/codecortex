@@ -17,6 +17,24 @@ pub(crate) fn snapshot(
     let strategy = config.map(|c| c.query.strategy).unwrap_or_default();
     let attached = services.semantic().is_some();
     let wired = services.semantic_wired();
+    let query_opt_in = config.is_some_and(|c| c.semantic.allow_query_network);
+    let query_reason = if project.is_none() {
+        Some("no_project")
+    } else if db.is_none() {
+        Some("closed")
+    } else if !config.is_some_and(|c| c.semantic.enabled) {
+        Some("semantic_disabled")
+    } else if !config.is_some_and(|c| c.semantic.network_opt_in) {
+        Some("network_opt_in_required")
+    } else if !query_opt_in {
+        Some("query_network_opt_in_required")
+    } else if !cfg!(feature = "semantic-http") {
+        Some("semantic_http_feature_required")
+    } else if !services.query_encoding_active() {
+        Some("query_encoder_not_attached")
+    } else {
+        None
+    };
     let mut result = json!({
         "has_project":project.is_some(),"has_index":false,
         "indexed_files":null,"indexed_symbols":null,
@@ -29,6 +47,7 @@ pub(crate) fn snapshot(
             "dense_state":"disabled","dense_reason":"provider_and_vector_publication_not_implemented",
             "generation":null,"resolution_freshness":null,
             "query_coverage":{"state":"not_measured","scope":"per_query_not_global"},
+            "query_encoding":{"configured_opt_in":query_opt_in,"network_authorized":query_reason.is_none(),"reason":query_reason,"request_scope":"nonlocal_nonempty_only"},
             "default_strategy":strategy,
             "default_effective_strategy":if strategy==RetrievalStrategy::Semantic && !attached {None}else if strategy==RetrievalStrategy::Local || !attached {Some(RetrievalStrategy::Local)}else{Some(strategy)},
             "default_query_state":if strategy==RetrievalStrategy::Semantic && !attached{"semantic_unavailable"}else{"requires_index"},
@@ -339,5 +358,49 @@ mod tests {
             retrieval(&result)["semantic_state"],
             "port_attached_unverified"
         );
+    }
+    #[test]
+    fn query_network_authorization_is_separate_and_requires_live_encoder() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = IndexDb::open(&dir.path().join("query-policy.sqlite3"))
+            .unwrap()
+            .0;
+        let services = QueryServices::default();
+        let mut config = ProjectConfig::default();
+        let view = |config: &ProjectConfig| {
+            snapshot(Some(dir.path()), Some(&db), Some(config), &services)["retrieval"]
+                ["query_encoding"]
+                .clone()
+        };
+        assert_eq!(view(&config)["configured_opt_in"], false);
+        config.semantic.enabled = true;
+        config.semantic.network_opt_in = true;
+        assert_eq!(view(&config)["network_authorized"], false);
+        assert_eq!(view(&config)["reason"], "query_network_opt_in_required");
+        config.semantic.allow_query_network = true;
+        assert_eq!(view(&config)["configured_opt_in"], true);
+        assert_eq!(view(&config)["network_authorized"], false);
+        assert_eq!(
+            view(&config)["reason"],
+            if cfg!(feature = "semantic-http") {
+                "query_encoder_not_attached"
+            } else {
+                "semantic_http_feature_required"
+            }
+        );
+        #[cfg(feature = "semantic")]
+        {
+            let retired = std::sync::Arc::new(cc_db::semantic_publish::LifecycleFence::default());
+            let live = std::sync::Arc::new(cc_db::semantic_publish::LifecycleFence::default());
+            services.set_query_encoding_lifecycle(Some(retired.clone()));
+            services.set_query_encoding_lifecycle(Some(live.clone()));
+            retired.close();
+            assert_eq!(
+                view(&config)["network_authorized"],
+                cfg!(feature = "semantic-http")
+            );
+            live.close();
+            assert_eq!(view(&config)["network_authorized"], false);
+        }
     }
 }

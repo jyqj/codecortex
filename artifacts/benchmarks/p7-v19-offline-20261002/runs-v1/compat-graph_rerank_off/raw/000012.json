@@ -1,0 +1,706 @@
+{
+  "evidence_summary": {
+    "files": [
+      "cc-index/src/dirty_closure.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 3,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 14,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15961
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 34,
+        "hydrate_requested": 34,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 34,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 2018
+          },
+          "text": {
+            "cache_hits": 13,
+            "legacy_auto_reads": 0,
+            "storage_reads": 21,
+            "utf8_bytes": 14472,
+            "zstd_decodes": 7
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 1,
+          "graph": 11,
+          "grep": 10,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 680
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 373,
+        "prefilter_failed": false,
+        "prefilter_scanned": 1,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 641,
+        "skipped_duplicates": 301,
+        "soft_scanned": 267,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 267,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 2698
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 267,
+                "utf8_bytes": 79128,
+                "zstd_decodes": 121
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 34,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 762
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 1,
+                "utf8_bytes": 3068,
+                "zstd_decodes": 1
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 640,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5135
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 373,
+                "utf8_bytes": 112530,
+                "zstd_decodes": 193
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 1,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 1
+          },
+          "elapsed_us": 3499,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 402,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 919,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 10,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 641,
+            "scope": "hard_scope",
+            "total_lower_bound": 10
+          },
+          "elapsed_us": 23733,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 11,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 11
+          },
+          "elapsed_us": 3275,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 2,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 34,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 24,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 14472,
+        "redundant_bytes": 0,
+        "unique_bytes": 14472
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 10995,
+        "redundant_bytes": 0,
+        "unique_bytes": 10995
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 4,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          205,
+          155,
+          125,
+          59,
+          21,
+          170,
+          35,
+          80,
+          56,
+          189,
+          135,
+          46,
+          208,
+          103,
+          40,
+          49
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 133683,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 34
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "compute_dirty_closure",
+        "chunk_id": "chunk:cc-index/src/dirty_closure.rs:18",
+        "end_line": 132,
+        "file_path": "cc-index/src/dirty_closure.rs",
+        "fused_score": 0.06238561311371052,
+        "graph_score": 0.3184906649788001,
+        "grep_score": 0.1111111111111111,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.047619047619047616,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "c0b95fce4fb1fd56e858655d584abba9bad1e7e7e5ca9db3e6dc6d8333e56e5a",
+            "doc_version": "65f283686bbe49e0321f273531e5f8d9eaf4e90f350fecab57db77f08bc90f04",
+            "encoding_key": "623cd5a47edbbf90ea93833c7b129e99937f2024b4e0c1e9326254cbb7044199",
+            "entity_key": "e0164c1062942634b7436246fd02d3e234775efcc46217d82bc819587108ba56"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 6050,
+              "start": 5305
+            },
+            "signature": {
+              "end": 5803,
+              "start": 5305
+            },
+            "slice_digest": "ba1fa482f6b350808eae96c26e5cf72f570178030f35e08f255aa9b06d9f3f1d",
+            "source": {
+              "byte_len": 23086,
+              "content_digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b",
+              "encoding": "utf8",
+              "snapshot_id": "808528018bd9b3386ebcf810480eb890c41b3e750e8c16d542adc2d83e498206"
+            },
+            "span": {
+              "end": 6050,
+              "start": 5304
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "exact-target",
+          "exact_symbol@1",
+          "lexical@21",
+          "grep@9",
+          "symbol-exact",
+          "symbol:compute_dirty_closure",
+          "symbol:compute_dirty_closure_resuming",
+          "preselect:token-search:+3.20"
+        ],
+        "rerank_score": 0.7203856131137104,
+        "score_trace": [
+          [
+            "rrf:exact_symbol",
+            0.021568627450980395
+          ],
+          [
+            "rrf:lexical",
+            0.015492957746478875
+          ],
+          [
+            "rrf:grep",
+            0.013559322033898306
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:stage-a",
+            0.128
+          ]
+        ],
+        "source": "index",
+        "start_line": 109,
+        "symbol_kind": "function",
+        "symbol_name": "compute_dirty_closure",
+        "text": "\npub(crate) fn compute_dirty_closure<ImportersFn, PromotableFn, SurfaceChangedFn>(\n    initially_changed: &[String],\n    max_promoted_files: usize,\n    max_rounds: usize,\n    importers_of: ImportersFn,\n    is_promotable: PromotableFn,\n    surface_changed_of: SurfaceChangedFn,\n) -> CcResult<DirtyClosureResult>\nwhere\n    ImportersFn: FnMut(&[String]) -> CcResult<Vec<String>>,\n    PromotableFn: FnMut(&str) -> bool,\n    SurfaceChangedFn: FnMut(&[String], &HashSet<String>) -> CcResult<Vec<String>>,\n{\n    compute_dirty_closure_resuming(\n        initially_changed,\n        &initially_changed.iter().cloned().collect(),\n        max_promoted_files,\n        max_rounds,\n        importers_of,\n        is_promotable,\n        surface_changed_of,\n    )\n}"
+      },
+      {
+        "breadcrumb": "tests > fixpoint_stops_at_round_cap_with_partial_closure",
+        "chunk_id": "chunk:cc-index/src/dirty_closure.rs:71",
+        "end_line": 549,
+        "file_path": "cc-index/src/dirty_closure.rs",
+        "fused_score": 0.02585576603522765,
+        "graph_score": 0.3044522437723423,
+        "grep_score": 1.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "292349a3344d5c75cd0d494ac26f6ee97d8d45ff25c5682fd4e0d6ed07b19430",
+            "doc_version": "ed82a9c1e55466da5ba826cd0d19e7ea98bc5c16a17ed43428ad94c4727c918a",
+            "encoding_key": "b8019438a75915ebc40d36a7b945c4a34c3ddb3be343ca11f9292e7df32da490",
+            "entity_key": "85c9ed3c996eddb27827ddc4b7392cc4e106782074d54a2d45722acf18d0412c"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 22270,
+              "start": 21055
+            },
+            "signature": {
+              "end": 21109,
+              "start": 21055
+            },
+            "slice_digest": "a3d14ef38359661fd10f4ceb24a76e26e8aa9222fcd3f5df0c3a43dd68bc1efe",
+            "source": {
+              "byte_len": 23086,
+              "content_digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b",
+              "encoding": "utf8",
+              "snapshot_id": "808528018bd9b3386ebcf810480eb890c41b3e750e8c16d542adc2d83e498206"
+            },
+            "span": {
+              "end": 22270,
+              "start": 21050
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "grep@1",
+          "symbol:compute_dirty_closure",
+          "symbol:compute_dirty_closure_resuming",
+          "preselect:token-search:+3.20"
+        ],
+        "rerank_score": 0.5038557660352276,
+        "score_trace": [
+          [
+            "rrf:grep",
+            0.01568627450980392
+          ],
+          [
+            "rrf:graph",
+            0.010169491525423728
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:stage-a",
+            0.128
+          ]
+        ],
+        "source": "index",
+        "start_line": 517,
+        "symbol_kind": "function",
+        "symbol_name": "fixpoint_stops_at_round_cap_with_partial_closure",
+        "text": "\n    fn fixpoint_stops_at_round_cap_with_partial_closure() {\n        const CHAIN_LEN: usize = 20;\n        let names: &'static [String] = Box::leak(\n            (0..=CHAIN_LEN)\n                .map(|i| format!(\"f{}.ts\", i))\n                .collect::<Vec<_>>()\n                .into_boxed_slice(),\n        );\n        let graph: HashMap<&'static str, Vec<&'static str>> = (0..CHAIN_LEN)\n            .map(|i| (names[i].as_str(), vec![names[i + 1].as_str()]))\n            .collect();\n\n        let result = compute_dirty_closure(\n            &[names[0].clone()],\n            1000,\n            DIRTY_CLOSURE_MAX_ROUNDS,\n            importers_from_map(graph),\n            |path: &str| path != names[0],\n            |files: &[String], _changed: &HashSet<String>| Ok(files.to_vec()),\n        )\n        .unwrap();\n\n        assert!(result.partial, \"deep chain must hit the round cap\");\n        assert!(!result.budget_exceeded);\n        assert_eq!(\n            result.promoted.len(),\n            DIRTY_CLOSURE_MAX_ROUNDS,\n            \"one promotion per round up to the cap\"\n        );\n        assert_eq!(result.rounds_run, DIRTY_CLOSURE_MAX_ROUNDS);\n        assert_eq!(result.status(), DirtyPropagationStatus::PartialClosure);\n    }"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "compute_dirty_closure",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-index/src/indexer_phases/dirty.rs:30",
+        "document": {
+          "doc_key": "033705a049f221b9cc8487dac4bd4fca4fb833fc3b9674813ef258b0f3490b91",
+          "doc_version": "237fc4882be97d4110ad2735f85250833c1d0f56705b89c1ab17da738798643d",
+          "encoding_key": "c6dbb86e4b612732197c1622cccca94403dbe1b61fe39e09c809913b81f25910",
+          "entity_key": "f1193edac57cafe96e09a45215ee31835b94ebfa26065c106349c6c4ffb9c1a4"
+        },
+        "file_path": "cc-index/src/indexer_phases/dirty.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [],
+        "source_digest": "0acec508376de861e202aa93a3a733e310fe33e9582a648964a3abb81d77f5a1",
+        "source_span": {
+          "end": 10913,
+          "start": 7845
+        },
+        "symbol_kind": "method",
+        "symbol_name": "promoted_export_surfaces_changed"
+      },
+      {
+        "file_path": "cc-index/src/dirty_closure.rs",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "symbol:compute_dirty_closure",
+          "symbol:compute_dirty_closure_resuming"
+        ],
+        "source_digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b"
+      },
+      {
+        "file_path": "cc-index/src/dirty_closure.rs",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "symbol:compute_dirty_closure",
+          "symbol:compute_dirty_closure_resuming"
+        ],
+        "source_digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-index/src/dirty_closure.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:a19b1ad4b9da143825760c79",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 339,
+      "text": "caller: fixpoint_promotes_transitive_importers → compute_dirty_closure (cc-index/src/dirty_closure.rs:339)",
+      "title": "Caller: fixpoint_promotes_transitive_importers",
+      "token_estimate": 27
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-index/src/dirty_closure.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:71e61dc100ffd82a924d4a0a",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 366,
+      "text": "caller: fixpoint_bails_when_round_one_exceeds_budget → compute_dirty_closure (cc-index/src/dirty_closure.rs:366)",
+      "title": "Caller: fixpoint_bails_when_round_one_exceeds_budget",
+      "token_estimate": 28
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-index/src/dirty_closure.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:0f76e5948c1826c19fb5619d",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 123,
+      "text": "callee: compute_dirty_closure → compute_dirty_closure_resuming (cc-index/src/dirty_closure.rs:123)",
+      "title": "Callee: compute_dirty_closure_resuming",
+      "token_estimate": 25
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-index/src/dirty_closure.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:e2ff91f7b9f053223c9c62dc",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 123,
+      "text": "caller: compute_dirty_closure → compute_dirty_closure_resuming (cc-index/src/dirty_closure.rs:123)",
+      "title": "Caller: compute_dirty_closure",
+      "token_estimate": 25
+    }
+  ],
+  "query": "compute_dirty_closure",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "compute_dirty_closure",
+  "token_budget": 4000,
+  "token_estimate": 3991
+}

@@ -1,0 +1,15 @@
+
+running 8 tests
+test benchmark::sampler::process_probe_tests::linux::invalid_units_and_rss_overflow_are_unavailable_cpu_overflow_stays_raw ... ok
+test benchmark::sampler::process_probe_tests::cpu_tick_conversion_is_checked_and_preserves_units ... ok
+test benchmark::sampler::process_probe_tests::linux::malformed_dead_or_mismatched_process_is_unavailable ... ok
+test benchmark::sampler::process_probe_tests::linux::proc_stat_handles_parentheses_whitespace_and_documented_units ... ok
+test benchmark::sampler::process_probe_tests::linux::disabled_probe_is_unavailable_in_an_isolated_process ... ok
+test benchmark::sampler::process_probe_tests::unresponsive_optional_probe_cannot_block_or_accumulate_workers ... ok
+test benchmark::sampler::process_probe_tests::stalled_resource_probe_is_unavailable_not_zero_or_infinite_wait ... ok
+linux child before: {"pid":103705,"resident_bytes":24797184,"resident_method":"Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree","threads":2,"cpu_user_raw":0,"cpu_system_raw":0,"cpu_time_unit":"linux_proc_stat_clock_ticks","cpu_user_ns":0,"cpu_system_ns":0,"timebase_numer":1000000000,"timebase_denom":100,"kernel_release":"6.18.44"}
+linux child after: {"pid":103705,"resident_bytes":24797184,"resident_method":"Linux /proc/PID/stat RSS pages * sysconf page size; kernel estimate; PID only; not a process tree","threads":2,"cpu_user_raw":5,"cpu_system_raw":0,"cpu_time_unit":"linux_proc_stat_clock_ticks","cpu_user_ns":50000000,"cpu_system_ns":0,"timebase_numer":1000000000,"timebase_denom":100,"kernel_release":"6.18.44"}
+test benchmark::sampler::process_probe_tests::linux::live_child_snapshot_is_attributed_monotonic_and_disappears ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 36 filtered out; finished in 0.06s
+

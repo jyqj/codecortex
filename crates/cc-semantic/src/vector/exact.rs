@@ -62,6 +62,7 @@
 //! 拒收").
 
 use cc_db::semantic_manifest_reads::{SemanticManifestReads, SemanticManifestRow};
+use cc_model::query::QueryControl;
 use cc_model::retrieval::HardScope;
 use cc_model::{CcError, CcResult, Language};
 
@@ -138,6 +139,34 @@ pub fn search(
     manifest: &dyn ManifestCandidates,
     q: ExactSearch<'_>,
 ) -> CcResult<Vec<ScoredDoc>> {
+    search_checked(cache, manifest, q, || Ok(()))
+}
+
+/// Cooperative variant of [`search`] with the same scoring and ordering.
+/// Checks cancellation/deadline before work, around each batch read and
+/// candidate score, and before returning the final top-k. An interrupted
+/// scan returns an error, never its accumulated partial top-k as success.
+///
+/// This synchronous function does not preempt a SQL read, cache I/O, or one
+/// cosine computation already in progress. Async callers must run it on a
+/// bounded blocking executor and retain admission until the worker exits;
+/// putting it inside an async future does not make blocking work preemptible.
+pub fn search_controlled(
+    cache: &ArtifactCache,
+    manifest: &dyn ManifestCandidates,
+    q: ExactSearch<'_>,
+    control: &QueryControl,
+) -> CcResult<Vec<ScoredDoc>> {
+    search_checked(cache, manifest, q, || control.check())
+}
+
+fn search_checked(
+    cache: &ArtifactCache,
+    manifest: &dyn ManifestCandidates,
+    q: ExactSearch<'_>,
+    mut checkpoint: impl FnMut() -> CcResult<()>,
+) -> CcResult<Vec<ScoredDoc>> {
+    checkpoint()?;
     q.space.validate()?;
     if q.batch_rows == 0 {
         return Err(CcError::InvalidParams(
@@ -161,18 +190,26 @@ pub fn search(
     let mut cursor = String::new();
     let mut top = TopK::new(q.k);
     loop {
+        checkpoint()?;
         let batch = manifest.next_batch(&cursor, q.batch_rows)?;
+        checkpoint()?;
         if batch.is_empty() {
             break;
         }
         for row in &batch {
+            checkpoint()?;
             cursor = row.doc_key.clone();
-            if let Some(score) = score_candidate(cache, q.space, &space_digest, q.query, q.filter, row)? {
+            if let Some(score) =
+                score_candidate(cache, q.space, &space_digest, q.query, q.filter, row)?
+            {
                 top.offer(row.doc_key.clone(), score);
             }
+            checkpoint()?;
         }
     }
-    Ok(top.finish())
+    let result = top.finish();
+    checkpoint()?;
+    Ok(result)
 }
 
 /// Load-layer pipeline for one row: scope gate → address validation → cache
@@ -539,6 +576,180 @@ mod tests {
                 batch_rows,
             },
         )
+    }
+
+    struct InterruptedSource {
+        inner: MemSource,
+        control: QueryControl,
+        cancel_on_call: Option<usize>,
+        delay: std::time::Duration,
+    }
+
+    impl ManifestCandidates for InterruptedSource {
+        fn next_batch(&self, after: &str, batch_rows: usize) -> CcResult<Vec<SemanticManifestRow>> {
+            let rows = self.inner.next_batch(after, batch_rows)?;
+            if !self.delay.is_zero() {
+                std::thread::sleep(self.delay);
+            }
+            if self.cancel_on_call == Some(self.inner.batches.borrow().len()) {
+                self.control.cancel();
+            }
+            Ok(rows)
+        }
+    }
+
+    fn controlled_fixture(
+        tag: &str,
+    ) -> (
+        TempCache,
+        ArtifactCache,
+        VectorSpace,
+        Vec<SemanticManifestRow>,
+    ) {
+        let (temp, cache) = TempCache::open(tag);
+        let space = space(2);
+        let digest = space.digest().unwrap();
+        let spec = DocumentEncodingSpec::new(space.clone(), None, 8_192, "t")
+            .unwrap()
+            .digest()
+            .unwrap();
+        let rows = ["a", "b", "c"]
+            .into_iter()
+            .map(|key| {
+                let input = InputDigest::new(key.to_string());
+                let reference = cache
+                    .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
+                    .unwrap();
+                row(
+                    key,
+                    &format!("src/{key}.rs"),
+                    "rust",
+                    reference.as_str(),
+                    digest.as_str(),
+                )
+            })
+            .collect();
+        (temp, cache, space, rows)
+    }
+
+    #[test]
+    fn controlled_scan_rejects_cancelled_and_expired_requests_before_loading() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-entry");
+        for expired in [false, true] {
+            let control = QueryControl::new(if expired {
+                std::time::Duration::ZERO
+            } else {
+                std::time::Duration::from_secs(30)
+            })
+            .unwrap();
+            if !expired {
+                control.cancel();
+            }
+            let source = MemSource::new(rows.clone());
+            let result = search_controlled(
+                &cache,
+                &source,
+                ExactSearch {
+                    space: &space,
+                    query: &[1.0, 0.0],
+                    filter: &scope(),
+                    k: 1,
+                    batch_rows: 1,
+                },
+                &control,
+            );
+            assert!(if expired {
+                matches!(result, Err(CcError::QueryTimedOut))
+            } else {
+                matches!(result, Err(CcError::QueryCancelled))
+            });
+            assert!(source.batches.borrow().is_empty());
+        }
+    }
+
+    #[test]
+    fn controlled_scan_discards_accumulated_top_k_on_cancellation() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-cancel");
+        let control = QueryControl::new(std::time::Duration::from_secs(30)).unwrap();
+        let source = InterruptedSource {
+            inner: MemSource::new(rows),
+            control: control.clone(),
+            cancel_on_call: Some(2),
+            delay: std::time::Duration::ZERO,
+        };
+        // Batch one scores a valid published vector and fills the size-one heap.
+        // Cancellation while loading batch two must discard it, not return success.
+        let result = search_controlled(
+            &cache,
+            &source,
+            ExactSearch {
+                space: &space,
+                query: &[1.0, 0.0],
+                filter: &scope(),
+                k: 1,
+                batch_rows: 1,
+            },
+            &control,
+        );
+        assert!(matches!(result, Err(CcError::QueryCancelled)));
+        assert_eq!(source.inner.batches.borrow().len(), 2);
+    }
+
+    #[test]
+    fn controlled_scan_observes_deadline_after_an_uninterruptible_batch_read() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-deadline");
+        let control = QueryControl::new(std::time::Duration::from_millis(100)).unwrap();
+        let source = InterruptedSource {
+            inner: MemSource::new(rows),
+            control: control.clone(),
+            cancel_on_call: None,
+            delay: std::time::Duration::from_millis(120),
+        };
+        let result = search_controlled(
+            &cache,
+            &source,
+            ExactSearch {
+                space: &space,
+                query: &[1.0, 0.0],
+                filter: &scope(),
+                k: 1,
+                batch_rows: 1,
+            },
+            &control,
+        );
+        assert!(matches!(result, Err(CcError::QueryTimedOut)));
+        // One synchronous read may finish late; no further batch is admitted.
+        assert_eq!(source.inner.batches.borrow().len(), 1);
+    }
+
+    #[test]
+    fn controlled_scan_preserves_legacy_filter_top_k_and_score_bits() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-parity");
+        let filter = HardScope {
+            file_paths: Some(vec!["src/b.rs".into(), "src/c.rs".into()]),
+            languages: Some(vec![Language::Rust]),
+            ..Default::default()
+        };
+        let expected = run(&cache, rows.clone(), &[1.0, 0.0], &space, &filter, 1, 2).unwrap();
+        for batch_rows in [1, 2, 8] {
+            let control = QueryControl::new(std::time::Duration::from_secs(30)).unwrap();
+            let actual = search_controlled(
+                &cache,
+                &MemSource::new(rows.clone()),
+                ExactSearch {
+                    space: &space,
+                    query: &[1.0, 0.0],
+                    filter: &filter,
+                    k: 1,
+                    batch_rows,
+                },
+                &control,
+            )
+            .unwrap();
+            assert_eq!(actual, expected);
+            assert_eq!(actual[0].doc_key, "b");
+            assert_eq!(actual[0].score.to_bits(), expected[0].score.to_bits());
+        }
     }
 
     // ── 1. kNN correctness vs the naive reference (hand-computed gold) ───

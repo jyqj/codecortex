@@ -1,0 +1,597 @@
+{
+  "evidence_summary": {
+    "files": [
+      "cc-index/src/dirty_closure.rs",
+      "cc-index/src/indexer_phases/dirty.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 1,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 11,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15558
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 24,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 1428
+          },
+          "text": {
+            "cache_hits": 0,
+            "legacy_auto_reads": 0,
+            "storage_reads": 24,
+            "utf8_bytes": 7191,
+            "zstd_decodes": 8
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 908
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 58,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 641,
+        "skipped_duplicates": 583,
+        "soft_scanned": 583,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 583,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5897
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 583,
+                "utf8_bytes": 178292,
+                "zstd_decodes": 287
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 640,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5135
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 58,
+                "utf8_bytes": 16434,
+                "zstd_decodes": 28
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 210,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 0,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "disabled",
+          "truncation_reason": null,
+          "weight": 0.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 1089,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 641,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 23866,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.0
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 0,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "disabled",
+          "truncation_reason": null,
+          "weight": 0.0
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 7,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 7191,
+        "redundant_bytes": 0,
+        "unique_bytes": 7191
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 5096,
+        "redundant_bytes": 0,
+        "unique_bytes": 5096
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 3,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          215,
+          215,
+          157,
+          45,
+          50,
+          7,
+          58,
+          121,
+          148,
+          220,
+          195,
+          106,
+          175,
+          224,
+          133,
+          159
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 89500,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 24
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "Indexer > promoted_export_surfaces_changed",
+        "chunk_id": "chunk:cc-index/src/indexer_phases/dirty.rs:30",
+        "end_line": 252,
+        "file_path": "cc-index/src/indexer_phases/dirty.rs",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.35263605246161617,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "033705a049f221b9cc8487dac4bd4fca4fb833fc3b9674813ef258b0f3490b91",
+            "doc_version": "237fc4882be97d4110ad2735f85250833c1d0f56705b89c1ab17da738798643d",
+            "encoding_key": "c6dbb86e4b612732197c1622cccca94403dbe1b61fe39e09c809913b81f25910",
+            "entity_key": "f1193edac57cafe96e09a45215ee31835b94ebfa26065c106349c6c4ffb9c1a4"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 10913,
+              "start": 9132
+            },
+            "signature": {
+              "end": 9352,
+              "start": 9132
+            },
+            "slice_digest": "67ac9477d49b3e652e89463fad97aef31603b32580ebd1bd0c728d5e1f29a84b",
+            "source": {
+              "byte_len": 33956,
+              "content_digest": "0acec508376de861e202aa93a3a733e310fe33e9582a648964a3abb81d77f5a1",
+              "encoding": "utf8",
+              "snapshot_id": "b661e5c1741f227792b7c434f0932d633e6ca13b5823f3665576c13c79cad9c5"
+            },
+            "span": {
+              "end": 10913,
+              "start": 7845
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "symbol:reexport_chain_promotes_transitive_importer_incrementally",
+          "preselect:token-search:+1.20"
+        ],
+        "rerank_score": 0.3029019607843137,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.2333333333333333
+          ],
+          [
+            "boost:stage-a",
+            0.048
+          ]
+        ],
+        "source": "index",
+        "start_line": 190,
+        "symbol_kind": "method",
+        "symbol_name": "promoted_export_surfaces_changed",
+        "text": "\n\n    /// Which of the given promoted (DirtyResolveOnly) files' *effective*\n    /// export surfaces changed, given the set of files whose exports changed\n    /// so far (batch hook for `compute_dirty_closure`).\n    ///\n    /// Promoted files are content-unchanged and reloaded without parsing. Their\n    /// persisted file-local declaration evidence stays intact. A changed\n    /// forwarding target can nevertheless affect their importers. Unknown or\n    /// missing surfaces conservatively continue the existing bounded closure;\n    /// known surfaces use resolved forwarding routes. No recursive hashes.\n    ///\n    /// Re-export targets are fetched via one batched\n    /// `reexport_targets_for_files` query per pass (only for files not yet in\n    /// `targets_cache`, which memoizes them across rounds and re-evaluation\n    /// passes), replacing the previous per-file N+1 query.\n    ///\n    /// P2-A records ES direct/two-step forwarding, static CommonJS bindings,\n    /// Rust visibility-qualified use and Python imports. It reuses existing\n    /// resolved import rows; unresolved routes remain a project-model limit.\n    /// Python star interfaces are explicitly Unknown. Dependency events and\n    /// durable remainder reuse this finite-set expansion through reconcile.rs.\n    pub(super) fn promoted_export_surfaces_changed(\n        &self,\n        files: &[String],\n        changed_so_far: &HashSet<String>,\n        targets_cache: &mut HashMap<String, Vec<String>>,\n    ) -> CcResult<Vec<String>> {\n        let missing: Vec<&str> = files\n            .iter()\n            .filter(|path| !targets_cache.contains_key(path.as_str()))\n            .map(|path| path.as_str())\n            .collect();\n        if !missing.is_empty() {\n            let mut fetched = self.db.reads().reexport_targets_for_files(&missing)?;\n            for path in missing {\n                // Files with no resolved re-exports are absent from the batch\n                // result; cache an empty target list so they are not refetched.\n                let targets = fetched.remove(path).unwrap_or_default();\n                targets_cache.insert(path.to_string(), targets);\n            }\n        }\n        let surfaces = self.db.reads().public_surfaces(files)?;\n        Ok(files\n            .iter()\n            .filter(|path| {\n                if surfaces\n                    .get(path.as_str())\n                    .is_none_or(|s| s.fingerprint().is_none() || !s.forwards.is_empty())\n                {\n                    // A facade can acquire a previously missing route. Treat its\n                    // contribution conservatively as changed even when the old\n                    // resolved-import table has no route yet. Finite file sets,\n                    // not recursive hashes, stabilize cycles.\n                    return true;\n                }\n                targets_cache\n                    .get(path.as_str())\n                    .is_some_and(|targets| targets.iter().any(|t| changed_so_far.contains(t)))\n            })\n            .cloned()\n            .collect())\n    }"
+      },
+      {
+        "breadcrumb": "tests > surface_from_reexports",
+        "chunk_id": "chunk:cc-index/src/dirty_closure.rs:50",
+        "end_line": 331,
+        "file_path": "cc-index/src/dirty_closure.rs",
+        "fused_score": 0.021153846153846155,
+        "graph_score": 0.2664949357461537,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "eb0774f817d723aa20db1220bd39eae5effeecf41ee9b2076d958035fe56d915",
+            "doc_version": "6406fdc0c0f5eae053810f2e07d32752df689a0cf1c6ddfad947232110ea425d",
+            "encoding_key": "3348e5fe72fad1c0d83c67a418d59c963fa6ee320b52fc338af244d9521dcaa3",
+            "entity_key": "4295fee4c9ace7a0b2cdec2026548e9cd4f8c1c4c2631d4344dcf31dceacc901"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 14369,
+              "start": 13817
+            },
+            "signature": {
+              "end": 13977,
+              "start": 13817
+            },
+            "slice_digest": "4f74e148df59cb1f668a39ada77cf50418e25403933df95832ec9f7db48d5bef",
+            "source": {
+              "byte_len": 23086,
+              "content_digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b",
+              "encoding": "utf8",
+              "snapshot_id": "808528018bd9b3386ebcf810480eb890c41b3e750e8c16d542adc2d83e498206"
+            },
+            "span": {
+              "end": 14369,
+              "start": 13595
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "symbol:surface_from_reexports",
+          "symbol:fixpoint_reevaluates_promoted_siblings_for_reexport_chains",
+          "preselect:token-search:+2.40"
+        ],
+        "rerank_score": 0.2338205128205128,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "overlap",
+            0.11666666666666665
+          ],
+          [
+            "boost:stage-a",
+            0.096
+          ]
+        ],
+        "source": "index",
+        "start_line": 312,
+        "symbol_kind": "function",
+        "symbol_name": "surface_from_reexports",
+        "text": "\n\n    /// Build a `surface_changed_of` hook from a file → re-export targets map:\n    /// a file's surface changes iff any of its targets is in the\n    /// changed-so-far set (mirrors the production re-export check).\n    fn surface_from_reexports(\n        targets: HashMap<&'static str, Vec<&'static str>>,\n    ) -> impl FnMut(&[String], &HashSet<String>) -> CcResult<Vec<String>> {\n        move |files: &[String], changed: &HashSet<String>| {\n            Ok(files\n                .iter()\n                .filter(|path| {\n                    targets\n                        .get(path.as_str())\n                        .is_some_and(|deps| deps.iter().any(|dep| changed.contains(*dep)))\n                })\n                .cloned()\n                .collect())\n        }\n    }"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "reexport targets cache",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-search/src/plan.rs:104",
+        "document": {
+          "doc_key": "6843bfd04cd1d1e4bf1bf8d9d80ff2b9b43f2d1715c57add1d9ae2b976367abb",
+          "doc_version": "c77bfaca66fc6403781ffd6765c3f3aee38cddfb87e8ecbacaf98542f2abc47b",
+          "encoding_key": "6fada632be9f609807d06067f2310b8333fccad9735dfa219623591a4450af90",
+          "entity_key": "9c3f6900569d38b262a81a4a50973224c8cd622d2f47c25a69e9b313037c7a91"
+        },
+        "file_path": "cc-search/src/plan.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "graph-neighbor"
+        ],
+        "source_digest": "25887b9934b0ac058c482e70185e316338e06ac32bef9de256706f77831ffbc2",
+        "source_span": {
+          "end": 32128,
+          "start": 31934
+        },
+        "symbol_kind": "function",
+        "symbol_name": "test_is_project_doc_adr_directory"
+      },
+      {
+        "file_path": "cc-index/src/dirty_closure.rs",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "symbol:surface_from_reexports",
+          "symbol:fixpoint_reevaluates_promoted_siblings_for_reexport_chains"
+        ],
+        "source_digest": "486a04cf35e0930851621d178164ba10e3ba7476c0c1e6f741a01c622434ae3b"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-index/src/dirty_closure.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:4dc995ea4eafd72c27151301",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 467,
+      "text": "caller: fixpoint_reevaluates_promoted_siblings_for_reexport_chains → surface_from_reexports (cc-index/src/dirty_closure.rs:467)",
+      "title": "Caller: fixpoint_reevaluates_promoted_siblings_for_reexport_chains",
+      "token_estimate": 32
+    }
+  ],
+  "query": "reexport targets cache",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "reexport targets cache",
+  "token_budget": 4000,
+  "token_estimate": 3890
+}

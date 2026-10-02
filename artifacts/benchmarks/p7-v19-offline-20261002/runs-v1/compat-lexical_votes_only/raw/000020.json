@@ -1,0 +1,659 @@
+{
+  "evidence_summary": {
+    "files": [
+      "cc-search/src/plan.rs",
+      "cc-search/src/preselect.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 1,
+      "symbols_resolved": 1,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 12,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15930
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 24,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 1428
+          },
+          "text": {
+            "cache_hits": 4,
+            "legacy_auto_reads": 0,
+            "storage_reads": 20,
+            "utf8_bytes": 16516,
+            "zstd_decodes": 12
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 3710
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 0,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 641,
+        "skipped_duplicates": 641,
+        "soft_scanned": 641,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 6493
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 641,
+                "utf8_bytes": 194726,
+                "zstd_decodes": 315
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 640,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5135
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 301,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 0,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "disabled",
+          "truncation_reason": null,
+          "weight": 0.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 2465,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 641,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 22885,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.0
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 0,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "disabled",
+          "truncation_reason": null,
+          "weight": 0.0
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "trace",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 9,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "trace",
+      "intent_facet_anchors": {
+        "implementation": "chunk:cc-search/src/plan.rs:0"
+      },
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 16516,
+        "redundant_bytes": 0,
+        "unique_bytes": 16516
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 10373,
+        "redundant_bytes": 0,
+        "unique_bytes": 10373
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 5,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          73,
+          252,
+          247,
+          243,
+          43,
+          122,
+          182,
+          215,
+          93,
+          5,
+          171,
+          218,
+          21,
+          32,
+          7,
+          75
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 118438,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 24
+    }
+  },
+  "intent": "trace",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:cc-search/src/plan.rs:0",
+        "end_line": 6,
+        "file_path": "cc-search/src/plan.rs",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "750b1b25c195b2487ff793ab0faf6ed48d34480c0316c747603c0a5459fab162",
+            "doc_version": "36d5465ae56e46cac8dfbf223939274879074e47568296541a627724b9c459ec",
+            "encoding_key": "239a312e7b751abb6fdc6907a313935f5d77026564c9076ef9cefd92bde2c1f3",
+            "entity_key": null
+          },
+          "evidence_priority": "intent_facet",
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "2747b5f1925462cf08aeb088acdcbeabec95782b7cd55d79275220c0ed1e1dbb",
+            "source": {
+              "byte_len": 32458,
+              "content_digest": "25887b9934b0ac058c482e70185e316338e06ac32bef9de256706f77831ffbc2",
+              "encoding": "utf8",
+              "snapshot_id": "99a1787093264f2562bcbce3c7b8b6f98288b030353fd5fefc84d82a7c16c1e1"
+            },
+            "span": {
+              "end": 380,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:CandidateChunk",
+          "symbol:materialized_filters_map_to_chunk_scope",
+          "preselect:fts-summary:+2.23",
+          "preselect:token-search:+8.40"
+        ],
+        "rerank_score": 0.5215686274509803,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.25
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "//! Search planning — normalizes caller requests into a compact execution plan.\n//!\n//! `SearchEngine` owns execution (lane queries, fusion, DB fetch).  `SearchPlan`\n//! owns the caller-facing search semantics that should stay consistent across\n//! those execution steps: DSL normalization, file preselection, lane limits,\n//! materialized filters, and rerank metadata/reasons.\n"
+      },
+      {
+        "breadcrumb": "tests > db_with_call_graph",
+        "chunk_id": "chunk:cc-search/src/preselect.rs:177",
+        "end_line": 1317,
+        "file_path": "cc-search/src/preselect.rs",
+        "fused_score": 0.01929824561403509,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.14285714285714285,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "c2dbdf878b8ae0b299d11c60e118a6580ccdd92cc2565830c7c4d711f4ba2b84",
+            "doc_version": "8c85870bfee29ba7a9af4e6b2febd844e55af95530150be63ab4a3e3ec1cf07b",
+            "encoding_key": "18e5ce0dc63433404f3683456291ef25fb86baec4a5b699bd227a74a4f03b008",
+            "entity_key": "71f0e18d05f4f0740c9b7b678f7f4a325d5a7f55163fb1fa81810cc8cb8d15ad"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 51394,
+              "start": 49093
+            },
+            "signature": {
+              "end": 49139,
+              "start": 49093
+            },
+            "slice_digest": "48e1df03cac7846ec28d4693ac51b4bc825f01e7b21fafa7f3bfb9f6152996ee",
+            "source": {
+              "byte_len": 56042,
+              "content_digest": "cafbc34c82782431c8ff6a7c4c8a43dd16eb42be335515379f6a75837e31bce5",
+              "encoding": "utf8",
+              "snapshot_id": "d25736fb48e64d318f82ce52c3d4e116fc55ca26ae32da09e9aaf54424a0e519"
+            },
+            "span": {
+              "end": 51394,
+              "start": 48931
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@7",
+          "fts-summary",
+          "symbol:graph_neighbors_discovers_callees_and_callers",
+          "symbol:bm25_bonus_is_bounded_and_monotonic",
+          "preselect:fts-summary:+1.52",
+          "preselect:token-search:+7.20"
+        ],
+        "rerank_score": 0.41929824561403506,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.01929824561403509
+          ],
+          [
+            "overlap",
+            0.15
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 1284,
+        "symbol_kind": "function",
+        "symbol_name": "db_with_call_graph",
+        "text": "\n\n    /// Build a DB with symbols that have UIDs and call_edges connecting them,\n    /// then verify that graph neighbor expansion discovers the callee file.\n    fn db_with_call_graph() -> (TempDir, IndexDb) {\n        let tmp = TempDir::new().unwrap();\n        let db = IndexDb::open(&tmp.path().join(\"graph_test.db\")).unwrap().0;\n        let conn = crate::test_seed::seed_conn(&db);\n        conn.execute_batch(\n            \"INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)\n                 VALUES('src/caller.rs', 'Rust', 'h1', 1.0, 100, '2024-01-01');\n             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)\n                 VALUES('src/callee.rs', 'Rust', 'h2', 1.0, 100, '2024-01-01');\n             INSERT INTO files(file_path, language, content_hash, mtime, size, indexed_at)\n                 VALUES('src/reverse_caller.rs', 'Rust', 'h3', 1.0, 100, '2024-01-01');\n\n             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)\n                 VALUES('s1', 'uid:caller:handle_request', 'src/caller.rs', 'handle_request', 'function', 1, 10);\n             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)\n                 VALUES('s2', 'uid:callee:process_data', 'src/callee.rs', 'process_data', 'function', 1, 10);\n             INSERT INTO symbols(symbol_id, symbol_uid, file_path, name, kind, start_line, end_line)\n                 VALUES('s3', 'uid:reverse:invoke_handler', 'src/reverse_caller.rs', 'invoke_handler', 'function', 1, 10);\n\n             -- caller.rs::handle_request calls callee.rs::process_data\n             INSERT INTO call_edges(edge_id, file_path, caller_symbol, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence)\n                 VALUES('e1', 'src/caller.rs', 'handle_request', 'process_data', 5, 'uid:caller:handle_request', 'uid:callee:process_data', 'resolved', 1.0);\n\n             -- reverse_caller.rs::invoke_handler calls caller.rs::handle_request\n             INSERT INTO call_edges(edge_id, file_path, caller_symbol, callee_symbol, line, caller_symbol_uid, callee_symbol_uid, resolution_kind, resolution_confidence)\n                 VALUES('e2', 'src/reverse_caller.rs', 'invoke_handler', 'handle_request', 3, 'uid:reverse:invoke_handler', 'uid:caller:handle_request', 'resolved', 1.0);\",\n        )\n        .unwrap();\n        (tmp, db)\n    }"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "normalize caller requests and materialize file filters",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-model/src/retrieval.rs:0",
+        "document": {
+          "doc_key": "db4db8c84c0bfd4748fc1ee0583202b8a081e23cc77382e39f0ba4c6fd87a5c4",
+          "doc_version": "a1a336519ccd1b2e36c3283f1e6af1cf4da61ffe6bfd2ddee7452786905e250a",
+          "encoding_key": "4bb83f92bd3592e9fb6975f675174647edc88d0d6f9670c351d3291ccec6b181",
+          "entity_key": null
+        },
+        "file_path": "cc-model/src/retrieval.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:CandidateRef",
+          "symbol:absent_and_explicit_empty_roundtrip_differ",
+          "symbol:candidate"
+        ],
+        "source_digest": "8a13523127fa80cc5bf93620100029c9316b791ded000530bddde3e8fb0a4995",
+        "source_span": {
+          "end": 89,
+          "start": 0
+        },
+        "symbol_kind": null,
+        "symbol_name": null
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-search/src/preselect.rs:189",
+        "document": {
+          "doc_key": "123167ba3b696d5a1075f980dd384a2cb338cce3251cfd4d772295e8f8b28527",
+          "doc_version": "83d2350efb1fd74321adf02baf923fabeae1afa3c5b5987c7af1711c9040b444",
+          "encoding_key": "a040553ffede39946ec51229106bd076733fa80268ed2763a047ff0e0f72531d",
+          "entity_key": "ad2f3542cdc81306d52459a5261f0806a6f405a10f4da83ac02ffb986795509e"
+        },
+        "file_path": "cc-search/src/preselect.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:graph_neighbors_discovers_callees_and_callers",
+          "symbol:bm25_bonus_is_bounded_and_monotonic",
+          "symbol:merge_layer_hit_accumulates_and_bills"
+        ],
+        "source_digest": "cafbc34c82782431c8ff6a7c4c8a43dd16eb42be335515379f6a75837e31bce5",
+        "source_span": {
+          "end": 56039,
+          "start": 54573
+        },
+        "symbol_kind": "function",
+        "symbol_name": "preselect_graph_expansion_fires_when_budget_remains"
+      },
+      {
+        "file_path": "cc-search/src/preselect.rs",
+        "kind": "file_reference",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:graph_neighbors_discovers_callees_and_callers",
+          "symbol:bm25_bonus_is_bounded_and_monotonic",
+          "symbol:merge_layer_hit_accumulates_and_bills"
+        ],
+        "source_digest": "cafbc34c82782431c8ff6a7c4c8a43dd16eb42be335515379f6a75837e31bce5"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.75,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-search/src/plan.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:81fce9b4b55e3b73f6ae174f",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 129,
+      "text": "caller: build_configured → normalize_request (cc-search/src/plan.rs:129)",
+      "title": "Caller: build_configured",
+      "token_estimate": 18
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.15,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-search/src/scope.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:1d8b31511ceee331b961b751",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 9,
+      "text": "callee: normalize_request → from (cc-search/src/scope.rs:9)",
+      "title": "Callee: from",
+      "token_estimate": 15
+    }
+  ],
+  "query": "normalize caller requests and materialize file filters",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "normalize caller requests and materialize file filters",
+  "token_budget": 4000,
+  "token_estimate": 3983
+}

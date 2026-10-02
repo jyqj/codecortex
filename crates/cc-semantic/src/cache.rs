@@ -105,7 +105,7 @@ pub fn namespace_key(project_identity: &str) -> CcResult<String> {
             "project identity must be a non-empty string to derive a cache namespace",
         ));
     }
-    Ok(hash(&(NAMESPACE_DOMAIN, project_identity))?)
+    hash(&(NAMESPACE_DOMAIN, project_identity))
 }
 
 fn validate_namespace(namespace: &str) -> CcResult<()> {
@@ -129,6 +129,7 @@ fn validate_namespace(namespace: &str) -> CcResult<()> {
 /// 1. [`CACHE_ROOT_ENV`] override (also the test/deployment seam);
 /// 2. platform convention under `$HOME`: macOS `~/Library/Caches/codecortex/semantic`,
 ///    Linux `$XDG_CACHE_HOME|~/.cache/codecortex/semantic`.
+///
 /// `None` means "no default derivable" — callers must then pass an explicit
 /// root to [`ArtifactCache::open`]. Resolves only; creates nothing.
 pub fn resolve_cache_root() -> Option<PathBuf> {
@@ -326,8 +327,8 @@ impl ArtifactCache {
             ));
         }
         let mut data = Vec::with_capacity(payload.len() / 4);
-        for chunk in payload.chunks_exact(4) {
-            data.push(f32::from_le_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]));
+        for chunk in payload.as_chunks::<4>().0 {
+            data.push(f32::from_le_bytes(*chunk));
         }
         if data.iter().any(|v| !v.is_finite()) {
             return Ok(corrupt("payload contains non-finite values".to_string()));
@@ -834,4 +835,59 @@ pub fn encode_queries<K: Clone>(
         }
     }
     Ok(outcomes)
+}
+
+#[cfg(test)]
+mod decoding_boundary_tests {
+    use super::*;
+    use crate::spec::DocumentEncodingSpec;
+
+    #[test]
+    fn little_endian_bits_and_partial_payload_rejection_are_preserved() {
+        let root = std::env::temp_dir().join(format!(
+            "cc-cache-chunk-boundary-{}-{}",
+            std::process::id(),
+            TEMP_SEQ.fetch_add(1, Ordering::Relaxed)
+        ));
+        let cache = ArtifactCache::open(&root, "chunk-boundary".into()).unwrap();
+        let space = VectorSpace::new("fake/chunk-boundary", 3).unwrap();
+        let input = InputDigest::of_input(b"chunk boundary input").unwrap();
+        let spec = DocumentEncodingSpec::new(space.clone(), None, 8192, "fake-tokenizer")
+            .unwrap()
+            .digest()
+            .unwrap();
+        // Signed zero, smallest positive subnormal and largest finite f32:
+        // numeric equality alone would miss a changed signed-zero encoding.
+        let bits = [0x8000_0000, 0x0000_0001, 0x7f7f_ffff];
+        let data = bits.map(f32::from_bits);
+        cache.put(&space, &input, &spec, &data, 1000).unwrap();
+        let CacheRead::Hit(hit) = cache.get(&space, &input, &spec).unwrap() else {
+            panic!("valid payload was not a hit");
+        };
+        assert_eq!(
+            hit.data.iter().map(|v| v.to_bits()).collect::<Vec<_>>(),
+            bits
+        );
+        let dir = cache.object_dir(&space.digest().unwrap(), &input, &spec);
+        let bin = dir.join(format!("{}.bin", spec.as_str()));
+        let meta = dir.join(format!("{}.meta.json", spec.as_str()));
+        let original = std::fs::read(&bin).unwrap();
+        let mut metadata: ObjectMeta =
+            serde_json::from_slice(&std::fs::read(&meta).unwrap()).unwrap();
+        // Checksum-valid truncations/extensions reach the length gate rather
+        // than being rejected earlier by the checksum gate. Cover all three
+        // possible partial-word remainders and aligned/empty wrong lengths.
+        for length in [0, 8, 9, 10, 11, 13, 14, 15] {
+            let mut payload = original.clone();
+            payload.resize(length, 0xa5);
+            metadata.checksum = bytes_hash(&payload);
+            std::fs::write(&bin, payload).unwrap();
+            std::fs::write(&meta, serde_json::to_vec(&metadata).unwrap()).unwrap();
+            let CacheRead::Corrupt(report) = cache.get(&space, &input, &spec).unwrap() else {
+                panic!("invalid payload length {length} was not rejected");
+            };
+            assert!(report.reason.contains("payload byte length"));
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

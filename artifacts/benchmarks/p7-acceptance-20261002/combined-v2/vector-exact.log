@@ -1,0 +1,31 @@
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.87s
+     Running unittests src/lib.rs (target/debug/deps/cc_semantic-52bd09e05eca4ffb)
+
+running 20 tests
+test vector::exact::tests::controlled_scan_discards_accumulated_top_k_on_cancellation ... ok
+test vector::exact::tests::controlled_scan_preserves_legacy_filter_top_k_and_score_bits ... ok
+test vector::exact::tests::controlled_scan_rejects_cancelled_and_expired_requests_before_loading ... ok
+test vector::exact::tests::batch_loads_never_exceed_the_bounded_batch_knob ... ok
+test vector::exact::tests::degenerate_inputs_are_rejected_or_yield_empty ... ok
+test vector::exact::tests::empty_and_single_element_boundaries ... ok
+test vector::exact::tests::deleted_or_corrupt_cache_objects_degrade_without_failing ... ok
+test vector::exact::tests::fake_provider_embed_cache_search_hits_its_own_documents ... ok
+test vector::exact::tests::equal_scores_tie_break_on_doc_key_ascending ... ok
+test vector::exact::tests::filter_none_admits_every_candidate ... ok
+test vector::exact::tests::foreign_space_and_foreign_ref_rows_never_score ... ok
+test vector::exact::tests::hand_computed_cosine_gold_and_ordering ... ok
+test vector::exact::tests::metric_dispatch_is_cosine_per_the_frozen_spec ... ok
+test vector::exact::tests::missing_language_row_matches_no_language_filter ... ok
+test vector::exact::tests::prefix_file_paths_and_languages_intersect_before_top_k ... ok
+test vector::exact::tests::repeated_runs_are_bitwise_deterministic ... ok
+test vector::exact::tests::some_empty_scope_short_circuits_without_loading_candidates ... ok
+test vector::exact::tests::knn_matches_naive_reference_on_deterministic_corpus ... ok
+test vector::exact::tests::result_is_independent_of_batch_splitting ... ok
+test vector::exact::tests::controlled_scan_observes_deadline_after_an_uninterruptible_batch_read ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 197 filtered out; finished in 0.12s
+

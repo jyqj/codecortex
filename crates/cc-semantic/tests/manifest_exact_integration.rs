@@ -102,8 +102,7 @@ fn run_search(
     space: &VectorSpace,
     query: &[f32],
     filter: &HardScope,
-    k: usize,
-    batch_rows: usize,
+    (k, batch_rows): (usize, usize),
 ) -> cc_model::CcResult<Vec<cc_semantic::vector::exact::ScoredDoc>> {
     let reads = SemanticManifestReads::on(conn);
     let source = space_manifest_reads(&reads, space_digest);
@@ -153,8 +152,7 @@ fn published_rows_round_trip_through_manifest_scan_and_cache() {
         &space,
         &[1.0, 0.0, 0.0],
         &scope(),
-        10,
-        2,
+        (10, 2),
     )
     .expect("search");
     let keys: Vec<_> = got.iter().map(|d| d.doc_key.as_str()).collect();
@@ -201,8 +199,16 @@ fn sql_scan_is_space_isolated_and_keyset_paginated() {
 
     // k = 2 with batch 1 → the keyset walk must still cover exactly the space's
     // three rows, in doc_key order, skipping the foreign-space row.
-    let got =
-        run_search(&cache, &conn, &digest, &space, &[1.0, 1.0], &scope(), 2, 1).expect("search");
+    let got = run_search(
+        &cache,
+        &conn,
+        &digest,
+        &space,
+        &[1.0, 1.0],
+        &scope(),
+        (2, 1),
+    )
+    .expect("search");
     let keys: Vec<_> = got.iter().map(|d| d.doc_key.as_str()).collect();
     assert_eq!(keys, ["a", "b"]);
 }
@@ -247,8 +253,7 @@ fn cascaded_deletion_removes_the_candidate_structurally() {
         &space,
         &[1.0, 0.0],
         &scope(),
-        10,
-        10,
+        (10, 10),
     )
     .expect("search");
     assert_eq!(
@@ -286,8 +291,16 @@ fn hard_scope_language_filter_applies_on_the_real_read_path() {
         languages: Some(vec![Language::Rust]),
         file_paths: None,
     };
-    let got =
-        run_search(&cache, &conn, &digest, &space, &[1.0, 0.0], &filter, 10, 10).expect("search");
+    let got = run_search(
+        &cache,
+        &conn,
+        &digest,
+        &space,
+        &[1.0, 0.0],
+        &filter,
+        (10, 10),
+    )
+    .expect("search");
     assert_eq!(
         got.iter().map(|d| d.doc_key.as_str()).collect::<Vec<_>>(),
         ["rs-doc"]

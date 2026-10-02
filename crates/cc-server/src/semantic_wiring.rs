@@ -706,6 +706,7 @@ pub struct ExactRecallService {
 }
 
 impl ExactRecallService {
+    #[cfg(feature = "semantic-http")]
     pub(crate) fn install_query_encoder(
         &self,
         runtime: std::sync::Weak<crate::semantic_runtime::SemanticRuntime>,

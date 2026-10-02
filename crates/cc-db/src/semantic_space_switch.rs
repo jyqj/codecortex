@@ -515,6 +515,57 @@ pub fn consume_revoke_on(
 }
 
 impl IndexDb {
+    /// Explicit composition-root configured-space transition. Registration,
+    /// activation, old-task supersession and audit revision commit together.
+    /// Writer/BEGIN acquisition precedes lifecycle admission so close never
+    /// waits for an unrelated writer. Retirement cannot commit a late switch.
+    pub fn prepare_semantic_configured_space(
+        &self,
+        space_id: &str,
+        spec_json: &str,
+        revision: &str,
+        expected_incarnation: [u8; 16],
+        lifecycle: &crate::semantic_publish::LifecycleFence,
+    ) -> CcResult<bool> {
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        conn.execute_batch("BEGIN IMMEDIATE;").map_err(db_err)?;
+        let Some(_permit) = lifecycle.enter() else {
+            conn.execute_batch("ROLLBACK;").map_err(db_err)?;
+            return Ok(false);
+        };
+        let outcome = (|| {
+            if crate::read_generation::read_on(&conn)?.incarnation != expected_incarnation {
+                return Ok(false);
+            }
+            if space_state_on(&conn, space_id)?.is_none() {
+                register_space_on(&conn, space_id, spec_json, semantic_outbox::now_unix())?;
+            }
+            let stats =
+                switch_active_space_on(&conn, space_id, revision, semantic_outbox::now_unix())?;
+            if stats.visible_set_switched {
+                IndexDb::bump_semantic_epoch_on(&conn)?;
+            }
+            Ok(true)
+        })();
+        match outcome {
+            Ok(true) => {
+                if let Err(error) = conn.execute_batch("COMMIT;") {
+                    let _ = conn.execute_batch("ROLLBACK;");
+                    return Err(db_err(error));
+                }
+                Ok(true)
+            }
+            Ok(false) => {
+                conn.execute_batch("ROLLBACK;").map_err(db_err)?;
+                Ok(false)
+            }
+            Err(error) => {
+                let _ = conn.execute_batch("ROLLBACK;");
+                Err(error)
+            }
+        }
+    }
+
     /// Register a new `backfilling` space (brief step 1, state carrier).
     /// Auxiliary: a `backfilling` row is invisible to every reader, no epoch
     /// moves. Refuses an existing row in any state.

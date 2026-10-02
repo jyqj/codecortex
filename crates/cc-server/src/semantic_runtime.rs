@@ -11,6 +11,16 @@ use std::sync::{
     Arc, Mutex, OnceLock,
 };
 
+/// Apply the query absolute deadline and cancellation to an injected HTTP
+/// transport before provider assembly. Wrapping performs no network I/O.
+pub fn query_transport_with_budget(
+    transport: Arc<dyn cc_semantic::providers::openai_compatible::EmbeddingHttpTransport>,
+    control: cc_model::query::QueryControl,
+    cancellation: tokio_util::sync::CancellationToken,
+) -> Arc<dyn cc_semantic::providers::openai_compatible::EmbeddingHttpTransport> {
+    crate::semantic_query_encoding::query_deadline_transport(transport, control, cancellation)
+}
+
 pub struct SemanticRuntime {
     db: Arc<IndexDb>,
     subsystem: Arc<SemanticSubsystem>,
@@ -24,6 +34,7 @@ pub struct SemanticRuntime {
     running: AtomicBool,
     requested: AtomicBool,
     backfill_cursor: Mutex<Option<String>>,
+    configured_transition: Mutex<Option<String>>,
 }
 type ProviderFactory = dyn Fn(tokio_util::sync::CancellationToken) -> CcResult<Arc<dyn EmbeddingProvider>>
     + Send
@@ -75,6 +86,7 @@ impl SemanticRuntime {
             requested: AtomicBool::new(false),
             // Reopening an active index must also reconcile missing desired rows.
             backfill_cursor: Mutex::new(Some(String::new())),
+            configured_transition: Mutex::new(None),
         }))
     }
     /// Lazy factory seam: the factory runs once per finite blocking job, and
@@ -106,6 +118,17 @@ impl SemanticRuntime {
             ));
         }
         Ok(provider)
+    }
+    /// Explicit operator configuration/provider installation authority.
+    /// Stores a revision only; SQL and provider work remain caller-driven.
+    pub(crate) fn authorize_configured_space_transition(&self) {
+        *self
+            .configured_transition
+            .lock()
+            .unwrap_or_else(|p| p.into_inner()) = Some(format!(
+            "configured-doc-spec:{}",
+            self.subsystem.doc_spec.as_str()
+        ));
     }
     pub(crate) async fn encode_query(
         self: &Arc<Self>,
@@ -235,9 +258,37 @@ impl SemanticRuntime {
         ) {
             return Ok(false);
         }
-        // Explicit opt-in provider installation is the bootstrap authority.
-        // Existing spaces are never silently switched by an indexing round.
+        // Only the explicit composition-root install/configuration event
+        // grants transition authority; ordinary index rounds cannot switch.
         let space_id = self.subsystem.space.digest()?;
+        let revision = self
+            .configured_transition
+            .lock()
+            .map_err(|_| cc_model::CcError::Database("configured transition poisoned".into()))?
+            .clone();
+        if let Some(revision) = revision {
+            let spec = cc_semantic::spec::DocumentEncodingSpec::new(
+                self.subsystem.space.clone(),
+                None,
+                self.subsystem.query_spec.max_tokens(),
+                cc_model::chunk_policy::TOKEN_ESTIMATOR,
+            )?;
+            if !self.db.prepare_semantic_configured_space(
+                space_id.as_str(),
+                &cc_semantic::space_switch::space_spec_json(&spec)?,
+                &revision,
+                incarnation,
+                &self.lifecycle,
+            )? {
+                return Ok(false);
+            }
+            *self.configured_transition.lock().map_err(|_| {
+                cc_model::CcError::Database("configured transition poisoned".into())
+            })? = None;
+            *self.backfill_cursor.lock().map_err(|_| {
+                cc_model::CcError::Database("worker backfill cursor poisoned".into())
+            })? = Some(String::new());
+        }
         match self.db.semantic_active_space()? {
             Some(active) if active != space_id.as_str() => {
                 return Err(cc_model::CcError::InvalidParams(
@@ -449,7 +500,7 @@ pub fn from_config(
             ) as Arc<dyn EmbeddingProvider>)
         })?;
     if query_config.allow_query_network {
-        use crate::semantic_query_encoding::{query_deadline_transport, QueryEncodingContext};
+        use crate::semantic_query_encoding::QueryEncodingContext;
         // Hard partition: foreground cannot consume either background slot.
         // Both classes acquire the same FIFO provider gate for each attempt.
         static FOREGROUND: OnceLock<Arc<tokio::sync::Semaphore>> = OnceLock::new();
@@ -480,7 +531,7 @@ pub fn from_config(
                                 &raw_config,
                                 transport_token.clone(),
                             )?;
-                        Ok(query_deadline_transport(
+                        Ok(query_transport_with_budget(
                             raw,
                             transport_control,
                             transport_token,

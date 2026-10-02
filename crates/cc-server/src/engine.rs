@@ -238,6 +238,9 @@ impl CodeIndex {
             self.semantic_subsystem = semantic_subsystem;
             #[cfg(feature = "semantic-http")]
             {
+                if let Some(worker) = &semantic_runtime {
+                    worker.authorize_configured_space_transition();
+                }
                 self.semantic_runtime = semantic_runtime;
             }
         }
@@ -314,9 +317,11 @@ impl CodeIndex {
             self.query_services.clone(),
             provider,
         )?;
-        if let Some(old) = self.semantic_runtime.replace(worker) {
+        if let Some(old) = self.semantic_runtime.take() {
             old.close();
         }
+        worker.authorize_configured_space_transition();
+        self.semantic_runtime = Some(worker);
         Ok(())
     }
     #[cfg(feature = "semantic")]

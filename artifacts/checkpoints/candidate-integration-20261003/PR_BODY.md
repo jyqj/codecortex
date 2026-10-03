@@ -1,0 +1,5 @@
+本候选以已接受 PR117 `098ebd9c08031e0b652e7b021d8abbc9e8b19c3d` 为比较基线，保留 PR121 `0a8169a` 为祖先，通过可追踪的三方生产/tests 差异整合 PR114 FIFO、PR119 parallel、PR122 retry。完整 canonical DirectWriter DDL/index restoration 没有回退；from_config 同 Arc gate、parallel runtime 和 retry tests 共存，未带入巨量无关历史 artifacts。
+
+限定验证：真实 loopback doc/query provider + shared gate + queue/runtime 在默认串行/width2、显式4/2、共享16claim、一项普通503 retry继续ready、不提前backoff、close/cancel/physical join等组合路径通过；7个隔离production/组合case、3个精确runtime回归、队列10+9、FIFO20、canonical rebuild2、strict Clippy/fmt通过。每条命令、binary/source SHA及失败/not_run记录见 `artifacts/checkpoints/candidate-integration-20261003/README.md` 与 `verified-final/`。
+
+**最终验收 BLOCKED，保持 draft。** 父转达独立 gate review 完整REJECT：P1 `ProjectSession::new` 吞gate Config并回退/缓存被拒项目路径，后续指定路径仍Ok；本任务不扩改session/core startup，父另立修复。另一独立review仍待父收敛。PR120对旧5cce6eb的REJECT、旧global5/project3和NeedsRetry导致10ready滞留反例原证据保留。局部tests或CI绿色不能关闭P1。正式性能/100k、live provider、heldout、GC/WAL fault、完整HTTP17协议重跑not_run；中央TODO只追加已验证局部证据，不关闭任务或性能验收。无merge/forcepush/deploy。

@@ -1,0 +1,119 @@
+[
+  {
+    "name": "rustc-version",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "-Vv"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "rustc-version.log"
+  },
+  {
+    "name": "build-server",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--lib",
+      "--locked",
+      "--offline",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "build-server.log"
+  },
+  {
+    "name": "shared_provider_gate_cases_in_fresh_processes",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::shared_provider_gate_tests::shared_provider_gate_cases_in_fresh_processes",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "shared_provider_gate_cases_in_fresh_processes.log"
+  },
+  {
+    "name": "recoverable_retry_drains_other_ready_documents",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::tests::recoverable_retry_drains_other_ready_documents",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "recoverable_retry_drains_other_ready_documents.log"
+  },
+  {
+    "name": "recoverable_retry_width_zero_drains_other_ready_documents",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::tests::recoverable_retry_width_zero_drains_other_ready_documents",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "recoverable_retry_width_zero_drains_other_ready_documents.log"
+  },
+  {
+    "name": "bounded_parallel_pins_running_and_factory_survive_until_physical_join",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::tests::bounded_parallel_pins_running_and_factory_survive_until_physical_join",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "bounded_parallel_pins_running_and_factory_survive_until_physical_join.log"
+  },
+  {
+    "name": "build-queues",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-semantic",
+      "--test",
+      "bounded_parallel",
+      "--test",
+      "queue_worker",
+      "--locked",
+      "--offline",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "build-queues.log"
+  },
+  {
+    "name": "queue_worker",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/queue_worker-31cf8d5dd14bb52a",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "queue_worker.log"
+  },
+  {
+    "name": "bounded_parallel",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/bounded_parallel-76fe7340d767772b",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": false,
+    "log": "bounded_parallel.log"
+  }
+]

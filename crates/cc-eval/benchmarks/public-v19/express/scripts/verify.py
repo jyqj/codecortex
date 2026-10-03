@@ -4,7 +4,7 @@ import argparse,hashlib,json,subprocess
 from pathlib import Path
 P=Path(__file__).resolve().parents[1]
 def sha(b):return hashlib.sha256(b).hexdigest()
-a=argparse.ArgumentParser();a.add_argument('--block',choices=['first-020','full-100'],default='full-100');a.add_argument('--evaluator',required=True);a.add_argument('--upstream',type=Path);o=a.parse_args()
+a=argparse.ArgumentParser();a.add_argument('--block',choices=['first-020','full-100','supplement-002','public-dev-102'],default='full-100');a.add_argument('--evaluator',required=True);a.add_argument('--upstream',type=Path);o=a.parse_args()
 lock=json.loads((P/'provenance/source-lock.json').read_text());commit=lock['upstream_lock']['source_sha'];assert sha((P/'license/LICENSE').read_bytes())==lock['license_sha256']
 if o.upstream:
  assert subprocess.check_output(['git','-C',str(o.upstream),'rev-parse','HEAD'],text=True).strip()==commit

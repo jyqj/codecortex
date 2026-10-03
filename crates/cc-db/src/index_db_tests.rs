@@ -809,3 +809,432 @@ fn test_metadata_safe_with_injection_key() {
     let get_normal = db.get_metadata("normal_key");
     assert!(get_normal.is_ok(), "metadata table should still exist");
 }
+
+// Normal API regression: a real canonical schema, shared insert helpers and swap.
+use cc_model::identity::{bytes_hash, DocumentBatch, DocumentDelta, DocumentRecord};
+use cc_model::retrieval::EmbeddingInput;
+use cc_model::source::{ByteSpan, ChunkSource, SourceEncoding, SourceIdentity};
+use cc_model::ChunkRecord;
+
+fn rebuild_document_unit(
+    rel_path: &str,
+    text: &str,
+    content_hash: &str,
+) -> (FileWriteUnit, String) {
+    let snapshot_id = bytes_hash(b"snapshot");
+    let slice_digest = bytes_hash(text.as_bytes());
+    // Both must be 64-hex digests (ChunkSource::validate hash_ok gate); the
+    // unit's content_hash must equal the source's content_digest.
+    let content_digest = bytes_hash(content_hash.as_bytes());
+    let source = ChunkSource {
+        source: SourceIdentity {
+            snapshot_id: snapshot_id.clone(),
+            content_digest: content_digest.clone(),
+            byte_len: text.len(),
+            encoding: SourceEncoding::Utf8,
+        },
+        span: ByteSpan::new(0, text.len()).unwrap(),
+        slice_digest: slice_digest.clone(),
+        boundary: "chunk".into(),
+        owner: None,
+        signature: None,
+    };
+    let input = EmbeddingInput {
+        format_version: 1,
+        text: text.to_string(),
+        input_hash: slice_digest.clone(),
+        render_key: "test-render".into(),
+        source_range: ByteSpan::new(0, text.len()).unwrap(),
+        source_snapshot_id: snapshot_id,
+        source_slice_digest: slice_digest,
+        metadata_truncated: false,
+        token_estimate: cc_model::approx_tokens(text),
+        token_estimator: cc_model::chunk_policy::TOKEN_ESTIMATOR.into(),
+    };
+    let chunk = ChunkRecord {
+        source: Some(source),
+        chunk_id: format!("{rel_path}:0"),
+        file_path: rel_path.to_string(),
+        language: Language::Rust,
+        chunk_index: 0,
+        start_line: 1,
+        end_line: 1,
+        breadcrumb: String::new(),
+        text: text.to_string(),
+        symbol_name: None,
+        symbol_kind: None,
+        token_estimate: cc_model::approx_tokens(text),
+        parser_tier: ParserTier::TreeSitter,
+        parser_confidence: 1.0,
+    };
+    let policy = bytes_hash(b"policy");
+    let record = DocumentRecord::new(&chunk, &policy, 0, "{\"v\":1}", Ok(input)).unwrap();
+    let doc_key = record.reference.doc_key.clone();
+    let unit = FileWriteUnit {
+        rel_path: rel_path.to_string(),
+        language: Language::Rust,
+        content_hash: content_digest,
+        mtime: 1.0,
+        size: text.len() as u64,
+        outcome: ParseOutcome {
+            document_spec: Some(cc_model::identity::hash(&record.encoding_spec).unwrap()),
+            documents: Some(DocumentBatch {
+                records: vec![record],
+                delta: DocumentDelta {
+                    upsert: Vec::new(),
+                    removed: Vec::new(),
+                    ..Default::default()
+                },
+            }),
+            chunk_policy: Some(policy),
+            chunks: vec![chunk],
+            ..Default::default()
+        },
+    };
+    (unit, doc_key)
+}
+
+fn rebuild_fixture() -> FileWriteUnit {
+    let (mut unit, _) =
+        rebuild_document_unit("src/c.rs", "canonical searchable body", "source-hash");
+    unit.outcome.summary = "canonical summary".into();
+    unit.outcome.symbols.push(
+        serde_json::from_value(serde_json::json!({
+            "symbol_id": "symbol-1", "file_path": "src/c.rs", "name": "CanonicalHandler",
+            "kind": "function", "start_line": 1, "end_line": 1, "start_col": 0,
+            "end_col": 20, "parser_tier": "tree_sitter", "parser_confidence": 1.0,
+            "is_default_export": false
+        }))
+        .unwrap(),
+    );
+    unit.outcome.literal_index.push(cc_model::LiteralRecord {
+        literal_id: "literal-1".into(),
+        file_path: "src/c.rs".into(),
+        literal: "canonical".into(),
+        literal_kind: "string".into(),
+        line: 1,
+        container: None,
+        confidence: 1.0,
+        enclosing_symbol_uid: None,
+        key_path: None,
+    });
+    unit
+}
+
+fn rebuild_write_fixture(conn: &Connection, unit: &FileWriteUnit) -> cc_model::CcResult<()> {
+    IndexDb::insert_file_data(conn, unit)?;
+    conn.execute_batch("UPDATE files SET indexed_at='fixture-time';
+        INSERT INTO semantic_spaces VALUES('space','{}','active','fixture-time');
+        INSERT INTO semantic_manifest SELECT doc_key,doc_version,file_path,encoding_key,
+            'digest','space','artifact','fixture-time','fixture-incarnation' FROM document_manifest;
+        INSERT INTO semantic_outbox(doc_key,doc_version,input_digest,space_id,op,state,available_at,created_at,updated_at)
+            SELECT doc_key,doc_version,'digest','space','embed','pending',1,'fixture-time','fixture-time' FROM document_manifest;
+        INSERT INTO metadata VALUES('fixture','preserved');")
+        .map_err(crate::sql_util::db_err)?;
+    // This runs before swap/reopen, so reopen cannot conceal missing triggers.
+    let expected = Connection::open_in_memory().unwrap();
+    expected
+        .execute_batch(crate::index_migrate::FULL_SCHEMA_SQL)
+        .unwrap();
+    let non_indexes = |conn: &Connection| {
+        rebuild_objects(conn)
+            .into_iter()
+            .filter(|(kind, _, _)| kind != "index")
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(non_indexes(conn), non_indexes(&expected));
+    assert_eq!(
+        conn.query_row("SELECT count(*) FROM symbols_fts", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        conn.query_row("SELECT count(*) FROM file_paths_fts", [], |r| r
+            .get::<_, i64>(0))
+            .unwrap(),
+        1
+    );
+    assert_eq!(
+        conn.query_row(
+            "SELECT count(*) FROM sqlite_schema WHERE type='index' AND sql IS NOT NULL",
+            [],
+            |r| r.get::<_, i64>(0)
+        )
+        .unwrap(),
+        0
+    );
+    Ok(())
+}
+
+fn rebuild_objects(conn: &Connection) -> Vec<(String, String, Option<String>)> {
+    conn.prepare("SELECT type,name,sql FROM sqlite_schema ORDER BY type,name")
+        .unwrap()
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)))
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap()
+}
+
+fn rebuild_rows(conn: &Connection, sql: &str) -> Vec<Vec<rusqlite::types::Value>> {
+    let mut stmt = conn.prepare(sql).unwrap();
+    let columns = stmt.column_count();
+    stmt.query_map([], |r| (0..columns).map(|i| r.get(i)).collect())
+        .unwrap()
+        .collect::<rusqlite::Result<_>>()
+        .unwrap()
+}
+
+fn assert_rebuild_fts_aligned(conn: &Connection) {
+    for (base, fts, columns) in [
+        ("files", "file_paths_fts", "rowid,file_path"),
+        ("symbols", "symbols_fts", "rowid,name,symbol_id,file_path"),
+        (
+            "chunks",
+            "chunks_fts",
+            "rowid,chunk_id,file_path,breadcrumb,symbol_name,text",
+        ),
+        (
+            "files",
+            "files_fts",
+            "rowid,file_path,summary,content_excerpt",
+        ),
+        (
+            "literal_index",
+            "literal_fts",
+            "rowid,literal_id,file_path,literal,literal_kind",
+        ),
+    ] {
+        assert_eq!(
+            rebuild_rows(
+                conn,
+                &format!("SELECT {columns} FROM {base} ORDER BY rowid")
+            ),
+            rebuild_rows(conn, &format!("SELECT {columns} FROM {fts} ORDER BY rowid")),
+            "{base}/{fts}"
+        );
+    }
+}
+
+#[test]
+fn direct_rebuild_canonical_schema_matches_normal_temp_path() {
+    let tmp = TempDir::new().unwrap();
+    let direct = IndexDb::open(&tmp.path().join("direct.sqlite3")).unwrap().0;
+    let normal = IndexDb::open(&tmp.path().join("normal.sqlite3")).unwrap().0;
+    let unit = rebuild_fixture();
+    for db in [&direct, &normal] {
+        db.set_metadata("index_epoch", "7").unwrap();
+        db.set_metadata("evidence_epoch", "11").unwrap();
+        db.set_metadata("semantic_epoch", "5").unwrap();
+    }
+    let before = direct.reads().read_generation().unwrap();
+    direct
+        .rebuild_with_direct_writer(|conn| rebuild_write_fixture(conn, &unit))
+        .unwrap();
+    normal
+        .rebuild_with_temp_db(|conn| rebuild_write_fixture(conn, &unit))
+        .unwrap();
+    let a = direct.read_conn().unwrap();
+    let b = normal.read_conn().unwrap();
+    assert_eq!(rebuild_objects(&a), rebuild_objects(&b));
+    for (kind, name, _) in rebuild_objects(&a) {
+        if kind == "table" {
+            // Every canonical table (including FTS and semantic objects) is usable.
+            a.prepare(&format!("SELECT * FROM \"{name}\" LIMIT 0"))
+                .unwrap();
+        }
+    }
+    for table in [
+        "files",
+        "chunks",
+        "symbols",
+        "literal_index",
+        "document_manifest",
+        "semantic_manifest",
+        "semantic_outbox",
+        "semantic_spaces",
+        "symbols_fts",
+        "chunks_fts",
+        "files_fts",
+        "file_paths_fts",
+        "literal_fts",
+    ] {
+        assert_eq!(
+            rebuild_rows(&a, &format!("SELECT rowid,* FROM {table} ORDER BY rowid")),
+            rebuild_rows(&b, &format!("SELECT rowid,* FROM {table} ORDER BY rowid")),
+            "{table}"
+        );
+    }
+    assert_eq!(
+        rebuild_rows(
+            &a,
+            "SELECT * FROM metadata WHERE key != 'index_incarnation' ORDER BY key"
+        ),
+        rebuild_rows(
+            &b,
+            "SELECT * FROM metadata WHERE key != 'index_incarnation' ORDER BY key"
+        )
+    );
+    let generation = direct.reads().read_generation().unwrap();
+    assert_ne!(generation.incarnation, before.incarnation);
+    assert_ne!(
+        generation.incarnation,
+        normal.reads().read_generation().unwrap().incarnation
+    );
+    assert_eq!(generation.index_epoch, 8);
+    assert_eq!(generation.evidence_epoch, 12);
+    // Fresh rebuild resets optional semantic content clock, as the normal path does.
+    assert_eq!(generation.semantic_epoch, None);
+    assert_eq!(
+        a.pragma_query_value(None, "user_version", |r| r.get::<_, i64>(0))
+            .unwrap(),
+        crate::index_migrate::CURRENT_SCHEMA_VERSION as i64
+    );
+    for (fts, query) in [
+        ("symbols_fts", "Canonical"),
+        ("chunks_fts", "searchable"),
+        ("files_fts", "summary"),
+        ("file_paths_fts", "src"),
+        ("literal_fts", "canonical"),
+    ] {
+        let sql = format!("SELECT rowid FROM {fts} WHERE {fts} MATCH '{query}' ORDER BY rowid");
+        let hits = rebuild_rows(&a, &sql);
+        assert_eq!(hits.len(), 1, "{fts}");
+        assert_eq!(hits, rebuild_rows(&b, &sql));
+    }
+    assert_rebuild_fts_aligned(&a);
+    drop(a);
+    drop(b);
+
+    // Exercise INSERT / UPDATE / DELETE triggers on the completed normal DB.
+    let conn = Connection::open(direct.admin().db_path()).unwrap();
+    conn.execute_batch("INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at) VALUES('probe/old.rs','rust','hash',1,1,'now');
+        INSERT INTO symbols(symbol_id,file_path,name,kind,start_line,end_line) VALUES('probe','src/c.rs','BeforeName','function',1,1);").unwrap();
+    assert_eq!(
+        rebuild_rows(
+            &conn,
+            "SELECT name FROM symbols_fts WHERE symbols_fts MATCH 'Before'"
+        ),
+        vec![vec![rusqlite::types::Value::Text("BeforeName".into())]]
+    );
+    conn.execute_batch(
+        "UPDATE symbols SET name='AfterName' WHERE symbol_id='probe';
+        UPDATE files SET file_path='probe/new.rs' WHERE file_path='probe/old.rs';",
+    )
+    .unwrap();
+    assert!(rebuild_rows(
+        &conn,
+        "SELECT rowid FROM symbols_fts WHERE symbols_fts MATCH 'Before'"
+    )
+    .is_empty());
+    assert_eq!(
+        rebuild_rows(
+            &conn,
+            "SELECT name FROM symbols_fts WHERE symbols_fts MATCH 'After'"
+        )
+        .len(),
+        1
+    );
+    assert!(rebuild_rows(
+        &conn,
+        "SELECT rowid FROM file_paths_fts WHERE file_paths_fts MATCH 'old'"
+    )
+    .is_empty());
+    assert_eq!(
+        rebuild_rows(
+            &conn,
+            "SELECT rowid FROM file_paths_fts WHERE file_paths_fts MATCH 'new'"
+        )
+        .len(),
+        1
+    );
+    conn.execute_batch("DELETE FROM symbols WHERE symbol_id='probe'; DELETE FROM files WHERE file_path='probe/new.rs';").unwrap();
+    assert_rebuild_fts_aligned(&conn);
+    // Prove chunk_document_delete itself cleans manifests, without FK help.
+    conn.execute_batch("PRAGMA foreign_keys=OFF;
+        INSERT INTO chunks(chunk_id,file_path,language,chunk_index,start_line,end_line,text)
+            VALUES('probe-chunk','src/c.rs','rust',1,1,1,'probe');
+        INSERT INTO document_manifest(doc_key,doc_version,file_path,chunk_id,reference_json,record_json)
+            VALUES('probe-doc','v','src/c.rs','probe-chunk','{}','{}');
+        DELETE FROM chunks WHERE chunk_id='probe-chunk';").unwrap();
+    assert!(rebuild_rows(
+        &conn,
+        "SELECT * FROM document_manifest WHERE doc_key='probe-doc'"
+    )
+    .is_empty());
+    drop(conn);
+
+    // Application-maintained FTS uses the production replacement/deletion seam.
+    let mut updated = unit.clone();
+    updated.outcome.summary = "updated summary".into();
+    direct.replace_files_batch(&[updated]).unwrap();
+    assert_rebuild_fts_aligned(&direct.read_conn().unwrap());
+    direct
+        .writes()
+        .remove_files_batch(&["src/c.rs".into()])
+        .unwrap();
+    let conn = direct.read_conn().unwrap();
+    assert_rebuild_fts_aligned(&conn);
+    for table in [
+        "files",
+        "chunks",
+        "document_manifest",
+        "semantic_manifest",
+        "symbols",
+        "literal_index",
+    ] {
+        assert!(
+            rebuild_rows(&conn, &format!("SELECT * FROM {table}")).is_empty(),
+            "dangling {table}"
+        );
+    }
+    assert_eq!(
+        conn.query_row("PRAGMA integrity_check", [], |r| r.get::<_, String>(0))
+            .unwrap(),
+        "ok"
+    );
+}
+
+#[test]
+fn direct_rebuild_callback_and_index_errors_leave_live_database_unchanged() {
+    let tmp = TempDir::new().unwrap();
+    let db = IndexDb::open(&tmp.path().join("index.sqlite3")).unwrap().0;
+    let unit = rebuild_fixture();
+    db.replace_files_batch(std::slice::from_ref(&unit)).unwrap();
+    let before = db.reads().read_generation().unwrap();
+    let rows = rebuild_rows(&db.read_conn().unwrap(), "SELECT * FROM chunks");
+    let err = db
+        .rebuild_with_direct_writer(|conn| {
+            IndexDb::insert_file_data(conn, &unit)?;
+            Err(cc_model::CcError::Database(
+                "ordinary callback error".into(),
+            ))
+        })
+        .unwrap_err();
+    assert!(err.to_string().contains("ordinary callback error"));
+    assert_eq!(db.reads().read_generation().unwrap(), before);
+    assert_eq!(
+        rebuild_rows(&db.read_conn().unwrap(), "SELECT * FROM chunks"),
+        rows
+    );
+    let err = db.rebuild_with_direct_writer(|conn| {
+        conn.execute_batch("INSERT INTO semantic_outbox(doc_key,doc_version,input_digest,space_id,op,state,available_at,created_at,updated_at)
+            VALUES('doc','v','digest','space','embed','pending',1,'now','now'),
+                  ('doc','v','digest','space','embed','pending',1,'now','now');")
+            .map_err(crate::sql_util::db_err)
+    }).unwrap_err();
+    assert!(err.to_string().contains("indexes:"));
+    assert_eq!(db.reads().read_generation().unwrap(), before);
+    assert_eq!(
+        rebuild_rows(&db.read_conn().unwrap(), "SELECT * FROM chunks"),
+        rows
+    );
+    // A regular retry succeeds after the API error; no fault injection.
+    db.rebuild_with_direct_writer(|conn| IndexDb::insert_file_data(conn, &unit))
+        .unwrap();
+    assert_ne!(
+        db.reads().read_generation().unwrap().incarnation,
+        before.incarnation
+    );
+    assert_rebuild_fts_aligned(&db.read_conn().unwrap());
+}

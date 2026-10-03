@@ -1,0 +1,46 @@
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.45s
+     Running tests/p7_v05_v11_independent_review.rs (target/debug/deps/p7_v05_v11_independent_review-aaf8b96c1cb91fa1)
+
+running 6 tests
+2026-10-03T00:27:32.371851Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-03T00:27:32.373016Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-03T00:27:32.384002Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-03T00:27:32.384136Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T00:27:32.384904Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T00:27:32.385060Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T00:27:32.385936Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.395997Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-03T00:27:32.396124Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T00:27:32.396424Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T00:27:32.396667Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T00:27:32.397284Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.439614Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpYtgq50/project/.codecortex/index.sqlite3.tmp
+2026-10-03T00:27:32.441054Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/.tmpnFxHgc/project/.codecortex/index.sqlite3.tmp
+2026-10-03T00:27:32.451838Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-03T00:27:32.453343Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-03T00:27:32.455449Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-03T00:27:32.460534Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-03T00:27:32.460717Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.461390Z  INFO cc_db::index_db_rebuild: full rebuild: recreating indexes
+2026-10-03T00:27:32.466731Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.467054Z  INFO cc_db::index_db_rebuild: full rebuild: temp database ready for swap
+2026-10-03T00:27:32.467235Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.470537Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.473846Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.477672Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T00:27:32.522959Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-03T00:27:32.523045Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-03T00:27:32.523264Z  INFO cc_server::mcp: MCP server shut down gracefully
+test public_bm25_contribution_matches_independent_sql_order_and_is_nonzero ... ok
+test real_mixed_source_reads_exhaust_at_three_without_an_envelope ... ok
+test real_source_stages_straddling_writer_commit_are_discarded_then_recovered ... ok
+test changed_generation_control_errors_short_circuit_and_stable_errors_survive ... ok
+2026-10-03T00:27:32.966555Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-03T00:27:32.966771Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-03T00:27:32.967268Z  INFO cc_server::mcp: MCP server shut down gracefully
+test public_local_dsl_returns_complete_literal_domain_and_warm_cache_stays_scoped ... ok
+test nested_real_generation_fences_have_a_finite_nine_work_attempt_bound ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.68s
+

@@ -1,0 +1,16 @@
+{
+  "logical_tables_equal": true,
+  "table_count": 60,
+  "all_metadata_and_files_chunks_document_semantic_manifests_equal": true,
+  "user_version_equal": true,
+  "sqlite_schema_added": [
+    [
+      "index",
+      "semantic_outbox_fifo_pending",
+      "semantic_outbox",
+      "CREATE INDEX semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending'"
+    ]
+  ],
+  "sqlite_schema_removed": [],
+  "note": "File bytes, rootpages, schema_version, WAL frames excluded as physical SQLite changes. Source content is a persisted unchanged-hash/text fixture; no real reparse/provider run."
+}

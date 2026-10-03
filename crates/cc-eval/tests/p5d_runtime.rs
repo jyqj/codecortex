@@ -133,7 +133,7 @@ fn explicit_unconfigured_semantic_is_never_reported_ready() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn concurrent_cold_routes_share_one_instance_and_build_gate() {
     let d = project("local");
-    let s = ProjectSession::new(None);
+    let s = ProjectSession::new(None).unwrap();
     let barrier = Arc::new(tokio::sync::Barrier::new(8));
     let mut jobs = tokio::task::JoinSet::new();
     for _ in 0..8 {
@@ -161,7 +161,7 @@ async fn concurrent_cold_routes_share_one_instance_and_build_gate() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn inflight_recall_survives_idle_and_lru_then_reclaims_resources() {
     let d = project("local");
-    let s = ProjectSession::new(Some(d.path()));
+    let s = ProjectSession::new(Some(d.path())).unwrap();
     let rt = s.active_index().await;
     rt.write().unwrap().build_index(true).unwrap();
     let id = rt.read().unwrap().index_db().unwrap().admin().instance_id();
@@ -249,7 +249,7 @@ async fn inflight_recall_survives_idle_and_lru_then_reclaims_resources() {
 #[tokio::test(flavor = "current_thread")]
 async fn idle_sweep_never_waits_for_write_or_build_lock() {
     let d = project("local");
-    let s = ProjectSession::new(Some(d.path()));
+    let s = ProjectSession::new(Some(d.path())).unwrap();
     let rt = s.active_index().await;
     let (start_tx, start_rx) = tokio::sync::oneshot::channel();
     let (release_tx, release_rx) = std::sync::mpsc::channel();
@@ -283,7 +283,7 @@ async fn idle_sweep_never_waits_for_write_or_build_lock() {
 #[tokio::test]
 async fn dropping_session_stops_recurring_tasks_and_releases_cached_db() {
     let d = project("local");
-    let s = ProjectSession::new(Some(d.path()));
+    let s = ProjectSession::new(Some(d.path())).unwrap();
     let rt = s.active_index().await;
     let weak = Arc::downgrade(&rt);
     drop(rt);
@@ -345,7 +345,7 @@ async fn explicit_context_policy_cannot_bypass_optional_port_via_direct_symbols(
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn cancelled_blocking_work_keeps_pin_until_actual_exit() {
     let d = project("local");
-    let session = ProjectSession::new(Some(d.path()));
+    let session = ProjectSession::new(Some(d.path())).unwrap();
     let rt = session.active_index().await;
     let handle = QueryHandle::capture(&rt).unwrap();
     let control = QueryControl::new(Duration::from_secs(10)).unwrap();
@@ -393,7 +393,7 @@ async fn shutdown_prevents_late_watcher_and_idle_restart() {
         r#"{"auto_index":{"enabled":true}}"#,
     )
     .unwrap();
-    let session = ProjectSession::new(Some(d.path()));
+    let session = ProjectSession::new(Some(d.path())).unwrap();
     assert!(
         cc_model::config::load_project_config(d.path())
             .auto_index

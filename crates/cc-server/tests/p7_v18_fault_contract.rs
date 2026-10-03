@@ -211,8 +211,11 @@ async fn provider_server_transport_timeout_faults_and_recovery_keep_honest_publi
         let source = root.path().join("fixture.rs");
         std::fs::write(&source, "pub fn needle() -> u32 { 731 }\n").unwrap();
         let (server_io, client_io) = tokio::io::duplex(65536);
-        let server_task =
-            tokio::spawn(CodeCortexMcpServer::new(Some(root.path())).serve(server_io));
+        let server_task = tokio::spawn(
+            CodeCortexMcpServer::new(Some(root.path()))
+                .unwrap()
+                .serve(server_io),
+        );
         let client = ().serve(client_io).await.unwrap();
         let server = server_task.await.unwrap().unwrap();
         assert_eq!(client.list_all_tools().await.unwrap().len(), 14);
@@ -298,7 +301,11 @@ async fn unconfigured_auto_stays_local_and_explicit_semantic_is_a_public_error()
     )
     .unwrap();
     let (server_io, client_io) = tokio::io::duplex(65536);
-    let task = tokio::spawn(CodeCortexMcpServer::new(Some(root.path())).serve(server_io));
+    let task = tokio::spawn(
+        CodeCortexMcpServer::new(Some(root.path()))
+            .unwrap()
+            .serve(server_io),
+    );
     let client = ().serve(client_io).await.unwrap();
     let server = task.await.unwrap().unwrap();
     call(&client, "index", json!({"full":true,"path":root.path()})).await;

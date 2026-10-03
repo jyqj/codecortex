@@ -44,7 +44,7 @@ async fn mcp_cancel_notification_stops_search_and_context_optional_recall() {
     let dir = tempfile::tempdir().unwrap();
     std::fs::write(dir.path().join(".codecortex.json"),r#"{"auto_index":{"enabled":false},"indexing":{"db_read_pool_size":1},"query":{"strategy":"auto","deadline_ms":10000,"semantic_timeout_ms":8000}}"#).unwrap();
     std::fs::write(dir.path().join("a.py"), "def needle():\n    return 7\n").unwrap();
-    let server = CodeCortexMcpServer::new(Some(dir.path()));
+    let server = CodeCortexMcpServer::new(Some(dir.path())).unwrap();
     let runtime = server.project_session.active_index().await;
     runtime.write().unwrap().build_index(true).unwrap();
     let fake = Arc::new(PendingRecall {

@@ -590,12 +590,12 @@ impl CodeCortexMcpServer {
 // ═══════════════════════════════════════════════════════════════════════
 
 impl CodeCortexMcpServer {
-    pub fn new(project_path: Option<&std::path::Path>) -> Self {
+    pub fn new(project_path: Option<&std::path::Path>) -> cc_model::CcResult<Self> {
         let tool_router = Self::tool_router();
-        Self {
-            project_session: ProjectSession::new(project_path),
+        Ok(Self {
+            project_session: ProjectSession::new(project_path)?,
             tool_router,
-        }
+        })
     }
 
     fn touch_activity(&self) {
@@ -798,7 +798,7 @@ async fn shutdown_signal() {
 }
 
 pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_model::CcResult<()> {
-    let server = CodeCortexMcpServer::new(project_path.as_deref());
+    let server = CodeCortexMcpServer::new(project_path.as_deref())?;
     server
         .project_session
         .start_initial_project_tasks(project_path.as_deref());

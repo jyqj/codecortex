@@ -1,0 +1,162 @@
+[
+  {
+    "family_id": "requests.api.cookie-conflict-lookup",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "holdout",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "_find_no_duplicates tracks a matching value and raises CookieConflictError on the second match, KeyError on absence.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar._find_no_duplicates",
+        "start_line": 423,
+        "end_line": 452,
+        "start_byte": 14534,
+        "end_byte": 15961,
+        "span_sha256": "562dc8e9407f8b48cfe3028b0a46094bd18afe54809b3af4c582d716561f499b",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null
+  },
+  {
+    "family_id": "requests.behavior.none-setting-removal",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "holdout",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "merge_setting copies session values, updates request values and deletes all None-valued keys; non-mappings return the request value.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "merge_setting",
+        "start_line": 76,
+        "end_line": 105,
+        "start_byte": 1824,
+        "end_byte": 2984,
+        "span_sha256": "6036e5fff12742aa56f64f2998751027039b438c0a743151c769c0482b523489",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null
+  },
+  {
+    "family_id": "requests.behavior.json-body-precedence",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "holdout",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "JSON is used only when data is falsey and json is not None; dumps uses allow_nan=False, ValueError becomes InvalidJSONError, and strings are UTF-8 encoded.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_body",
+        "start_line": 576,
+        "end_line": 652,
+        "start_byte": 18281,
+        "end_byte": 21334,
+        "span_sha256": "1ea920c6cecbd5b6f3dd9e253dd8044ebf9a7dd11b21d5257314b3fa1c5479b9",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null
+  },
+  {
+    "family_id": "requests.chain.header-validation",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "holdout",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "prepare_headers calls check_header_validity for each pair. It validates name and value through _validate_header_part, which selects str/bytes regexes and raises InvalidHeader for invalid type or match.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.prepare_headers",
+        "start_line": 565,
+        "end_line": 574,
+        "start_byte": 17839,
+        "end_byte": 18275,
+        "span_sha256": "0135a83d5abd5534747a1572f562a5919222b72e47e4b319e7dc21a8934babea",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "check_header_validity",
+        "start_line": 1087,
+        "end_line": 1095,
+        "start_byte": 33705,
+        "end_byte": 34070,
+        "span_sha256": "b1d57c2ee735c48e8b69e9771e9d1d6afa575411851f409a6b0e7fb713320789",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "_validate_header_part",
+        "start_line": 1098,
+        "end_line": 1119,
+        "start_byte": 34073,
+        "end_byte": 34983,
+        "span_sha256": "cc506210525ba55c0353578e2b0d090cf417fc68c88d5132491e29665cb656e9",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "models:PreparedRequest.prepare_headers",
+        "callee": "utils:check_header_validity",
+        "expression": "check_header_validity(header)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "start_byte": 18148,
+        "end_byte": 18177,
+        "line": 572,
+        "kind": "call"
+      },
+      {
+        "caller": "utils:check_header_validity",
+        "callee": "utils:_validate_header_part",
+        "expression": "_validate_header_part(header, value, 1)",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "start_byte": 34031,
+        "end_byte": 34070,
+        "line": 1095,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null
+  },
+  {
+    "family_id": "requests.config.ca-env-precedence",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "holdout",
+    "status": "candidate_not_independently_reviewed",
+    "rationale": "Only under trust_env and verify is True or None, REQUESTS_CA_BUNDLE wins over CURL_CA_BUNDLE, then settings merge with Session values.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/sessions.py",
+        "symbol": "Session.merge_environment_settings",
+        "start_line": 831,
+        "end_line": 868,
+        "start_byte": 30982,
+        "end_byte": 32382,
+        "span_sha256": "06010d57dc781d0b8d487454d6e8df78ce89a418fd6cc8a4799035e7310a92b9",
+        "file_sha256": "3d2089736ced93b2b405624a943f866d22652b17df06a85eb010f86272fc3e7d"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null
+  }
+]

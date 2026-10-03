@@ -1,0 +1,77 @@
+{
+  "status": "author_integrity_verified_not_independent_review",
+  "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "admitted_source_files": 20,
+  "license_verified": true,
+  "families": 20,
+  "dev": 15,
+  "holdout": 5,
+  "absence_checks": [
+    {
+      "family_hash": "18d3d8f79d335df2a31f9548126ee9f131df86b2fc81255e9e1464084a136925",
+      "scope": "entire src/requests/hooks.py; built-in HOOKS declaration and its consumers",
+      "checked": {
+        "method": "AST literal declaration and source-read consumers",
+        "values": [
+          "response"
+        ]
+      }
+    },
+    {
+      "family_hash": "7e4351c50408c11fcabcb85f01ab0abea3e02fada22e111468abdbeb42255a6d",
+      "scope": "src/requests/auth.py HTTPDigestAuth.build_digest_header implementation only",
+      "checked": {
+        "method": "literal guard plus author source-read exhaustive scoped implementation",
+        "implementation_sha256": "a0b8a932428d46c6819c10756d787c3d817e49590f3d98434966bea27261bdb6"
+      }
+    },
+    {
+      "family_hash": "d106b08bf656d35bdc21d6fe1cf215f60f6da4cc188d82fcd02f29e695ccea1c",
+      "scope": "class definitions and async function definitions in src/requests/sessions.py only",
+      "checked": {
+        "method": "AST class enumeration",
+        "class_names": [
+          "Session",
+          "SessionRedirectMixin"
+        ]
+      }
+    }
+  ],
+  "retrieval_executed": false,
+  "sha256": {
+    "questions/holdout.jsonl": "98fe775fde8e7aa02363d69c9034ca8230777bf903db042e12b1662c7d7496c2",
+    "questions/dev.jsonl": "5b41d237a3c42f311f1f87b1629e865e12c30b5d05f03bc8224a89f6fd9c14f6",
+    "gold/holdout.json": "4bb8908e559fa58de06c66bde93f6e6ba1bfdc83cfe4afb44b53e5fedbebc983",
+    "gold/dev.json": "85cbefe98f7da525a15f96ab916f4d2be1da79c0c09fc0085f86113c2131c47a",
+    "questions/specifications.json": "5bded6c74510773876c551b882bd1eb96bd413a21dc2c699f551de113a9da9ca",
+    "suite-dev.json": "a26fff6bbdff31388a9713a429ad9efac015ace67647f863a0df3727c59f8184",
+    "suite-holdout.json": "abf6144f58590ff1bbc3f10e02ea2e9034b40f294dca35fc72ebf6a38ff377e3"
+  },
+  "evaluator": {
+    "binary_sha256": "481bcaf82b4c982d10978a45adca1ada0eb8681288fc6df2dc82ae1851dd8342",
+    "validations": [
+      {
+        "command": [
+          "/workspace/codecortex/target/debug/cc-eval",
+          "validate",
+          "--suite",
+          "/workspace/codecortex/crates/cc-eval/benchmarks/public-v19/requests/suite-dev.json"
+        ],
+        "exit_code": 0,
+        "stdout": "V19 Requests candidate dev: 15 queries, 20 admitted files, locks valid\n",
+        "stderr": ""
+      },
+      {
+        "command": [
+          "/workspace/codecortex/target/debug/cc-eval",
+          "validate",
+          "--suite",
+          "/workspace/codecortex/crates/cc-eval/benchmarks/public-v19/requests/suite-holdout.json"
+        ],
+        "exit_code": 0,
+        "stdout": "V19 Requests candidate holdout: 5 queries, 20 admitted files, locks valid\n",
+        "stderr": ""
+      }
+    ]
+  }
+}

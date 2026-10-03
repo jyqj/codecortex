@@ -47,3 +47,9 @@ Failurediagnosis doesnot waivePartial orrepairgoldtoscorebetter: sevenvalidLocal
 ## 独立崩溃恢复准备（不开始 P7-016）
 
 PR81 / ee46fa564714ef75b2d839e5e37364cd35fd7406：四个完成持久化边界×三份不同合成输入，12 个自有子进程真实 SIGKILL，原生产 API reopen/recovery 成功；27 次后续扫描无操作，各任务 provider 总调用 1。只记 prepared：P7-016→P7-015→P7-014 硬前置未满足，task 仍 todo；完整 V17/016、内部 put/CAS、staging/GC 及 production stdio 启动恢复 not_run。证据见 artifacts/checkpoints/cloud-p7-crash-preparation-20261003/receipt.json。014 保持 in_progress，余真实 V19质量/custody/live条件 blocked；已接受当前 V11 不重开。
+
+## staging/GC 第二独立 prepared
+
+PR84 / a83aa1bd4d0c7bbc6a9ce9d5d7c19a226c607bd3：15场景21自有SIGKILL，实际staging写事务内及build/swap完成边界；GC collect后另一进程claim或publish，sweep保护引用/live任务，orphan对照实际删除。证据 artifacts/checkpoints/cloud-p7-staging-gc-prepared-20261003/receipt.json。内部WAL删除→rename/GC mark→unlink未测（无hook，方案仅提案）；generic pin没有API。原发布引用/cache保全，显式caller恢复零provider，不是stdio自动恢复。P7-016仍todo且prepared，不改变已接受门/014blocked条件。
+
+PR85 成本 canonical：response返回/cache未落盘三kill每场景2fakecalls；PR81旧九任务1call仅完成边界域，手工rollback非productionCAS。真实原attempt费用unknown、新retry有duplicate risk，不把无receipt置0。现in-memory ledger不证明跨crash exactly-once；成本规范边界见本块crash-cost-canonical.json，旧证据不改。

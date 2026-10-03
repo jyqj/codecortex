@@ -1,4 +1,6 @@
-# PR123 local attempt pipeline candidate — HOLD
+# PR123 attempt pipeline candidate — contract verified; delivery status below
+
+The initial HOLD diagnosis below is retained as history. The parent subsequently ruled that strict clock expiry is not the existing contract; the new oracle verifies token fencing without changing DB policy.
 
 Source: `11f5b76273a16b520e6b6e01ad32a0a6743173fb`.
 Fixed starting head: `513a98c9a94b15ec77153df41af26fa3c8c0b5e8`.
@@ -25,8 +27,26 @@ Direct installed Rust 1.95 compiler/toolchain; original Cargo.lock, locked depen
 - A broader runtime command was interrupted during compilation; no broad-suite result is claimed.
 - git diff whitespace check passed before final formatting; final check recorded by local commit workflow. Full workspace suite, release build, benchmark, 100k workload, independent review and remote CI: not run.
 
-## Required parent decision
+## Original HOLD diagnosis (superseded by parent contract ruling)
 
 HOLD: publish CAS checks claimed state and lease token, but does not compare lease_expires_at with current time. Expiry alone therefore does not reject publication; expiry followed by reclaim invalidates the token. Renewal also accepts an unreclaimed token after expiry. A strict elapsed-lease fence requires the shared DB publish contract to change atomically. A queue-side time check cannot cover cache-write/publication races and is not a substitute. DB production changes are outside this delegated ownership; no workaround or weakened assertion was introduced. The deliberately failing regression remains reviewable locally. This candidate is not production-ready and claims no performance improvement.
 
 No previous diagnostic/experiment artifacts, raw logs, source copies or restricted file sets were copied or staged.
+
+
+## Parent ruling and new contract verification
+
+Parent explicitly withdrew the stricter elapsed-lease requirement: semantic_outbox.rs lines 17–22 define task_id + token + claimed fencing; expiry enables reclaim, and token invalidation after reclaim/re-claim prevents old writes. No production DB, publisher or lease policy was changed.
+
+Original local candidate commit: `c13e7fa9e1e485b5b9243243483dfd92d2ecdad2`. The original strict-clock test and its observed four publications remain intact. That test is now explicitly ignored as an unimplemented, inapplicable stronger policy; the prior failure is not converted into a passing result.
+
+New independent `attempt_lease_contract.rs` oracle was authored in this task and run identically on:
+
+- Fixed original head `513a98c9a94b15ec77153df41af26fa3c8c0b5e8`, original width 2 (`CC_CONTRACT_EXPECT_WIDTH=2`).
+- Current candidate on that same head, new width 4 (`CC_CONTRACT_EXPECT_WIDTH=4`).
+
+Each run passes three controlled normal-API cases. Beyond the measured current lease expiry: unreclaimed tokens publish successfully (2/4); actual reclaim API reclaims exactly 2/4 and old publications return LeaseLost; after fresh claim with different tokens, old publications still return LeaseLost and replacement publications succeed (2/4). Stale renew/retry writes also return false. No clock/row mutation, DB corruption, kill, WAL or GC test is used. Only this newly written oracle file was copied to the detached original-head worktree; no previous source copies or experiment artifacts were reused.
+
+Candidate bounded_parallel after this ruling: 12 passed, 1 ignored (the original stronger-policy assertion). Frozen 1 MiB accepted-input bound now tested. Existing HTTP/runtime results above are historical and unchanged. The EROFS target and combined serial failure were not rerun or relocated. Added width-one production combination remains not run; it cannot replace those earlier failures. Thus full production-cache acceptance remains unverified; no production-readiness or performance claim is made.
+
+Denied GitHub action was read-only metadata lookup: `gh pr view 123 --repo jyqj/codecortex --json baseRefName,headRefName,headRefOid,state,url`; endpoint `POST https://api.github.com/graphql`, response `Forbidden`. This was not a git push or PR-create attempt, nor an automatic-approval-review rejection. The denied API was not retried and no alternate identity or API route was used. At the earlier HOLD checkpoint, push was unattempted; the authorized new-code git delivery attempt is recorded separately after execution. Draft PR creation has not been attempted because its metadata preflight is denied. Remote CI remains not run.

@@ -571,6 +571,7 @@ fn pipeline_width_is_capped_by_small_claim_budget() {
 }
 
 #[test]
+#[ignore = "parent ruling: stronger strict-clock policy is not the existing token-fencing contract; original failed result retained in checkpoint"]
 fn slow_provider_beyond_lease_cannot_publish_and_old_tokens_cannot_ack() {
     let f = Fixture::new(4);
     let h = Arc::new(Hold::default());

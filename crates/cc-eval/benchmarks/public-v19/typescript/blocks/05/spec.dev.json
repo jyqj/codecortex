@@ -1,0 +1,198 @@
+[
+  {
+    "slug": "line-position-search-api",
+    "domain": "exact_api",
+    "query": "Locate computeLineOfPosition, the binary search for the zero-based line containing an offset.",
+    "targets": [
+      "api/node/node.ts|computeLineOfPosition"
+    ],
+    "rationale": "Returns exact line start matches or low-1 after binary search, assuming the initial line starts at zero.",
+    "links": [],
+    "family": "v19.typescript.f0082"
+  },
+  {
+    "slug": "filesystem-string-array-guard-api",
+    "domain": "exact_api",
+    "query": "Locate isStringArray, the filesystem callback guard validating arrays of strings.",
+    "targets": [
+      "api/fsCallbacks.ts|isStringArray"
+    ],
+    "rationale": "Requires Array.isArray and every element to have string type.",
+    "links": [],
+    "family": "v19.typescript.f0083"
+  },
+  {
+    "slug": "msgpack-output-slice-api",
+    "domain": "exact_api",
+    "query": "Locate MsgpackWriter.finish, the accessor returning the used output byte slice.",
+    "targets": [
+      "api/node/msgpack.ts|MsgpackWriter.finish"
+    ],
+    "rationale": "Returns buf.subarray(0,pos), preserving only bytes written so far.",
+    "links": [],
+    "family": "v19.typescript.f0084"
+  },
+  {
+    "slug": "optional-remote-file-metadata-facets",
+    "domain": "architecture_facets",
+    "query": "Identify remote source-file accessors for canonical file name, content mapper and virtual file name that use a structured-data sentinel for absence.",
+    "targets": [
+      "api/node/node.ts|RemoteSourceFile.canonicalSourceFileName",
+      "api/node/node.ts|RemoteSourceFile.contentMapper",
+      "api/node/node.ts|RemoteSourceFile.virtualFileName"
+    ],
+    "rationale": "Each accessor reads its extended-data string index and returns undefined for NO_STRUCTURED_DATA; name fields use getFileName and mapper uses getString.",
+    "links": [],
+    "family": "v19.typescript.f0089"
+  },
+  {
+    "slug": "jsdoc-runtime-traversal-order-facets",
+    "domain": "architecture_facets",
+    "query": "Identify callback and generator traversal implementations whose JSDoc name/type child order depends on isNameFirst.",
+    "targets": [
+      "ast/visitor.ts|forEachChildOfJSDocParameterOrPropertyTag",
+      "ast/visitor.ts|yieldEachChildOfJSDocParameterOrPropertyTag"
+    ],
+    "rationale": "Both visit tagName first, then name/type in runtime-selected order and comments last; truthy callback/generator feedback stops traversal.",
+    "links": [],
+    "family": "v19.typescript.f0090"
+  },
+  {
+    "slug": "sync-callback-error-contract-facets",
+    "domain": "architecture_facets",
+    "query": "Identify synchronous callback dispatch error handling and the outer request-loop callback branch, including why callback errors abort the request.",
+    "targets": [
+      "api/syncChannel.ts|SyncRpcChannel.handleCall",
+      "api/syncChannel.ts|SyncRpcChannel.requestBytesSync"
+    ],
+    "rationale": "Unknown/throwing callbacks send MSG_CALL_ERROR and throw; the request loop calls handleCall for MSG_CALL, so unrecoverable callback errors exit the synchronous request.",
+    "links": [],
+    "family": "v19.typescript.f0091"
+  },
+  {
+    "slug": "sync-payload-byte-accounting-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace synchronous request payload-byte measurements from the channel into the client timing sample and accumulated totals.",
+    "targets": [
+      "api/syncChannel.ts|SyncRpcChannel.requestBytesSync",
+      "api/sync/client.ts|Client.recordTiming",
+      "api/timing.ts|TimingCollector.record"
+    ],
+    "rationale": "Channel measures payload bytes excluding tuple framing in lastBytesSent/Received; client recordTiming reads those fields and passes them to the shared collector.",
+    "links": [
+      [
+        0,
+        1,
+        "this.lastBytesSent =",
+        "data producer for client lastBytesSent read"
+      ],
+      [
+        1,
+        0,
+        "this.channel.lastBytesSent",
+        "reads producer channel field"
+      ],
+      [
+        1,
+        2,
+        "this.timing.record({",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0093"
+  },
+  {
+    "slug": "jsdoc-type-expression-guard-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace JSDoc child updating into the hand-written type-expression guard and its syntax-kind classifier.",
+    "targets": [
+      "ast/visitor.ts|visitEachChildOfJSDocParameterOrPropertyTag",
+      "ast/is.ts|isTypeNode",
+      "ast/is.ts|isTypeNodeKind"
+    ],
+    "rationale": "The visitor passes isTypeNode to visitNode for typeExpression; isTypeNode delegates node.kind classification to isTypeNodeKind. Generated visitor/factory definitions are excluded from this chain evidence.",
+    "links": [
+      [
+        0,
+        1,
+        "isTypeNode);",
+        "passes guard callback"
+      ],
+      [
+        1,
+        2,
+        "isTypeNodeKind(node.kind)",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0094"
+  },
+  {
+    "slug": "async-filesystem-result-encoding-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace asynchronous registered filesystem handlers from host callback invocation into the shared wire result encoder.",
+    "targets": [
+      "api/async/client.ts|Client.registerFSCallbacks",
+      "api/fsCallbacks.ts|encodeFileSystemCallbackResult"
+    ],
+    "rationale": "Each configured operation registers an onRequest handler, checks function shape and encodes its callback result; writeFile additionally unpacks path/data arguments.",
+    "links": [
+      [
+        0,
+        1,
+        "encodeFileSystemCallbackResult(name, callback(fileName))",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0095"
+  },
+  {
+    "slug": "sync-tuple-framing-error",
+    "domain": "config_error",
+    "query": "Where does the synchronous channel reject a response tuple whose array marker is not fixed-array-three, or whose message-type marker is unsupported?",
+    "targets": [
+      "api/syncChannel.ts|SyncRpcChannel.readTuple"
+    ],
+    "rationale": "The reader requires 0x93, then accepts positive fixint or uint8 for message type before reading two binary fields.",
+    "links": [],
+    "family": "v19.typescript.f0096"
+  },
+  {
+    "slug": "diagnostic-directive-tuple-error",
+    "domain": "config_error",
+    "query": "Where does remote-source diagnostic directive decoding reject a tuple that does not have exactly six fields?",
+    "targets": [
+      "api/node/node.ts|RemoteSourceFile.diagnosticDirectives"
+    ],
+    "rationale": "Each directive must have array header length six before original/virtual ranges, policy and unusedCode are read.",
+    "links": [],
+    "family": "v19.typescript.f0097"
+  },
+  {
+    "slug": "cache-time-to-live-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/sourceFileCache.ts only, locate time-to-live expiry of cached source files based on elapsed time.",
+    "scope": "api/sourceFileCache.ts",
+    "absent_tokens": [
+      "Date.now",
+      "setTimeout",
+      "ttl",
+      "expiresAt"
+    ],
+    "rationale": "The complete cache evicts by owner refs and explicit clear/release paths, not by elapsed time, clocks, timers or expiry timestamps.",
+    "family": "v19.typescript.f0098"
+  },
+  {
+    "slug": "path-realpath-io-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/path.ts only, locate filesystem realpath or symlink traversal performed during path normalization.",
+    "scope": "api/path.ts",
+    "absent_tokens": [
+      "node:fs",
+      "realpathSync",
+      "readlink"
+    ],
+    "rationale": "The complete module handles lexical roots, separators, segments, keys and URI conversion. Its normalization helpers do not consult disk or follow symlinks.",
+    "family": "v19.typescript.f0100"
+  }
+]

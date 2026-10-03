@@ -222,7 +222,7 @@ pub(in crate::resolver) fn is_type_like(kind: SymbolKind) -> bool {
 ///
 /// Filters out:
 /// - Built-in primitives (int, str, bool, float, void, any, None, etc.)
-/// - Empty strings
+/// - Empty strings and punctuation-only tokens (e.g. variadic tuple ellipsis)
 /// - Single-char type params (T, K, V, etc.)
 pub(in crate::resolver) fn type_atoms(raw: &str) -> Vec<String> {
     // Remove pointer/reference prefixes
@@ -233,7 +233,9 @@ pub(in crate::resolver) fn type_atoms(raw: &str) -> Vec<String> {
     let mut current = String::new();
     for ch in s.chars() {
         match ch {
-            '<' | '>' | '[' | ']' | ',' | '|' | '(' | ')' | ' ' => {
+            ch if ch.is_whitespace()
+                || matches!(ch, '<' | '>' | '[' | ']' | ',' | '|' | '(' | ')') =>
+            {
                 let token = current.trim().to_string();
                 if !token.is_empty() {
                     atoms.push(token);
@@ -300,7 +302,47 @@ pub(in crate::resolver) fn type_atoms(raw: &str) -> Vec<String> {
             if a.len() == 1 && a.chars().next().unwrap().is_ascii_uppercase() {
                 return false;
             }
-            !a.is_empty()
+            // Type syntax such as Python ellipsis is not a named type. Keep
+            // unknown names conservatively; this is not a type grammar validator.
+            a.chars().any(char::is_alphanumeric)
         })
         .collect()
+}
+
+#[cfg(test)]
+mod type_atom_regression_tests {
+    use super::type_atoms;
+
+    #[test]
+    fn variadic_tuple_keeps_named_types_without_punctuation_edges() {
+        assert_eq!(type_atoms("tuple[Widget, ...]"), ["tuple", "Widget"]);
+        assert_eq!(type_atoms("tuple[int, ...] | None"), ["tuple"]);
+        for raw in ["", " \t\n", "...", "::", "?", "&", "***", "_"] {
+            assert!(type_atoms(raw).is_empty(), "{raw:?}");
+        }
+    }
+
+    #[test]
+    fn qualified_generic_union_and_unicode_types_remain_dependencies() {
+        assert_eq!(
+            type_atoms("Vec<Result<pkg::Widget, net.Error>> | 数据.类型"),
+            ["Vec", "Result", "pkg::Widget", "net.Error", "数据.类型"]
+        );
+        assert_eq!(type_atoms("*http.Client"), ["http.Client"]);
+        assert_eq!(type_atoms("Dict[str, Any]"), ["Dict"]);
+        assert_eq!(type_atoms("Option<T>"), ["Option"]);
+        assert_eq!(
+            type_atoms("Pair<\tLeft,\nRight>"),
+            ["Pair", "Left", "Right"]
+        );
+    }
+
+    #[test]
+    fn unknown_type_spellings_are_not_silently_discarded() {
+        // Preserve identifiers even when this helper cannot validate the grammar.
+        assert_eq!(
+            type_atoms("_Private | Type? | pkg. | 123"),
+            ["_Private", "Type?", "pkg.", "123"]
+        );
+    }
 }

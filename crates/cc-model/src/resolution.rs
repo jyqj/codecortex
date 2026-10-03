@@ -369,9 +369,12 @@ pub fn resolution_name_keys(raw: &str) -> BTreeSet<String> {
         return BTreeSet::new();
     }
     let dotted = raw.replace("::", ".");
-    let leaf = dotted.rsplit('.').next().unwrap_or(raw);
+    let leaf = dotted.rsplit('.').next().unwrap_or(raw).trim();
     [raw.to_lowercase(), leaf.to_lowercase()]
         .into_iter()
+        // Keep the exact spelling even for an unknown/malformed query, but
+        // a trailing separator does not identify an empty-name dependency.
+        .filter(|key| !key.is_empty())
         .collect()
 }
 
@@ -425,5 +428,51 @@ impl ResolutionCoverage {
                 ResolutionOutcome::Unsupported { .. } => self.unsupported += 1,
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod name_key_regression_tests {
+    use super::*;
+
+    #[test]
+    fn qualified_and_unicode_names_keep_exact_and_leaf_invalidation_keys() {
+        for (raw, expected) in [
+            ("pkg.Type", vec!["pkg.type", "type"]),
+            ("pkg::Type", vec!["pkg::type", "type"]),
+            (" 数据.类型 ", vec!["数据.类型", "类型"]),
+            ("École.Élève", vec!["école.élève", "élève"]),
+            ("_Hidden", vec!["_hidden"]),
+        ] {
+            assert_eq!(
+                resolution_name_keys(raw),
+                expected.into_iter().map(String::from).collect()
+            );
+        }
+    }
+
+    #[test]
+    fn trailing_separator_and_punctuation_never_create_empty_leaf_keys() {
+        for raw in ["...", ".", "::", "pkg.", "pkg::", "pkg.   ", "?"] {
+            let keys = resolution_name_keys(raw);
+            assert!(keys.contains(&raw.trim().to_lowercase()), "{raw:?}");
+            assert!(!keys.contains(""), "{raw:?}");
+            let mut manifest = ResolutionManifest::new();
+            for key in keys {
+                manifest.dependency(DependencyKind::NameBucket, key);
+            }
+            manifest.validate().unwrap();
+        }
+        assert!(resolution_name_keys("").is_empty());
+        assert!(resolution_name_keys(" \t\n").is_empty());
+    }
+
+    #[test]
+    fn explicit_empty_dependency_still_fails_strict_validation() {
+        let mut manifest = ResolutionManifest::new();
+        manifest.dependency(DependencyKind::NameBucket, "");
+        assert!(
+            matches!(manifest.validate(), Err(CcError::InvalidParams(reason)) if reason.contains("invalid dependency key"))
+        );
     }
 }

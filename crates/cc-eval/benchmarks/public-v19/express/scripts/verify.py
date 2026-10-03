@@ -28,7 +28,11 @@ for r in rows:
         assert sha(b[start:end])==e['sha256'] and b[start:end].decode()==e['text'] and e['source_sha']==commit
         if not r['no_answer']:
             alt=r['answers'][i]['alternatives'][0]; assert alt['path']==e['path'] and alt['span']=={'start':start,'end':end} and alt['symbol']['name']==e['symbol']
-    for edge in an['chain_edges']:assert edge['relation'] and all(0<=i<len(an['source_evidence']) for i in edge['supporting_evidence'])
+    for edge in an['chain_edges']:
+        assert edge['relation'] and all(0<=i<len(an['source_evidence']) for i in edge['supporting_evidence'])
+        for side in ['from','to']:
+            endpoint=edge[side]; e=an['source_evidence'][endpoint['evidence_index']]; assert endpoint['path']==e['path'] and endpoint['symbol']==e['symbol']
+    if r['category']=='crossfile-chain':assert len({e['path'] for e in an['source_evidence']})>=2
     if r['no_answer']:
         assert not r['answers'] and not r['expected_files']; proof=an['absence_proof']; files=proof['scope_files']
         assert files==sorted(f['path'] for f in lock['files'])

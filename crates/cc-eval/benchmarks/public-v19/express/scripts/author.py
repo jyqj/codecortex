@@ -23,7 +23,7 @@ add('architecture/facets','mounted-inheritance','mount-lifecycle','Which prototy
 add('crossfile-chain','query-parser-pipeline','query-parser','Trace the query parser setting from app.set to the request query getter.','app.set compiles the setting into query parser fn using compileQueryParser; the query getter reads it and invokes it on parseurl query text, or returns a null-prototype empty object when disabled.',[(A,351,383,'set'),(U,162,183,'compileQueryParser'),(Q,230,243,'query')],['app.set -> compileQueryParser','query -> app.get(query parser fn)','query -> compiled parser'])
 add('crossfile-chain','proxy-protocol-pipeline','proxy-trust','Trace how a numeric trust proxy setting affects the protocol getter.','app.set installs compileTrust(val); numeric trust allows hop indices less than val. protocol tests the socket address at hop 0 before accepting the first trimmed X-Forwarded-Proto value.',[(A,351,383,'set'),(U,194,212,'compileTrust'),(Q,297,314,'protocol')],['app.set -> compileTrust','protocol -> app.get(trust proxy fn)','protocol -> trust(socket.remoteAddress,0)'])
 add('crossfile-chain','etag-generation-pipeline','etag','Trace weak ETag configuration to response body ETag generation.','app.set compiles weak into wetag; the generator converts non-Buffers to Buffer and calls etag with weak options. res.send calls etag fn when no ETag is already set and a body length exists.',[(A,351,383,'set'),(U,130,151,'compileETag'),(U,51,51,'wetag'),(U,249,257,'createETagGenerator'),(R,168,206,'send')],['app.set -> compileETag','compileETag -> wetag','wetag -> createETagGenerator','send -> etag fn'])
-add('crossfile-chain','render-resolution-pipeline','view-resolution','Trace res.render to the source that searches for a view file and an index fallback.','res.render calls app.render, which constructs the configured View. View calls lookup, lookup iterates roots and calls resolve; resolve checks dir/file first, then dir/basename(file,ext)/index+ext.',[(R,896,920,'render'),(A,522,570,'render'),(V,52,91,'View'),(V,104,121,'lookup'),(V,169,186,'resolve')],['res.render -> app.render','app.render -> new View','View -> lookup','lookup -> resolve'])
+add('crossfile-chain','render-resolution-pipeline','view-resolution','Trace res.render to the source that searches for a view file and an index fallback.','res.render calls app.render, which constructs the configured View. View calls lookup, lookup iterates roots and calls resolve; resolve checks dir/file first, then dir/basename(file,ext)/index+ext.',[(R,896,920,'render'),(A,522,570,'render'),(V,52,95,'View'),(V,104,121,'lookup'),(V,169,186,'resolve')],['res.render -> app.render','app.render -> new View','View -> lookup','lookup -> resolve'])
 add('config/error','invalid-etag-setting','etag','Where is an unrecognized ETag setting rejected and what error is raised?','compileETag throws TypeError with unknown value for etag function followed by the value.',[(U,130,151,'compileETag')])
 add('config/error','relative-sendfile-error','file-transfer','What precondition rejects a relative path passed to res.sendFile?','If options.root is absent and path is not absolute, sendFile throws TypeError: path must be absolute or specify root to res.sendFile.',[(R,375,402,'sendFile')])
 add('hardnegative/noanswer','no-local-router-matcher','router-boundary','Within admitted index.js and lib/*.js only, where is the Router dependency\'s path-to-regexp matching algorithm implemented?','No implementation exists in this scope. Express imports Router and delegates; external router package code is excluded.',[(E,15,21,'Router import'),(A,26,26,'Router import'),(A,256,258,'route')],absence={'absent':'path matching algorithm implementation','boundary':'external router module','tokens':['path-to-regexp','function match','class Layer']})
@@ -48,9 +48,12 @@ def build(count):
         split='holdout' if int(ch[:16],16)%4==0 else 'dev'
         ev=[evidence(e) for e in s['evidence']]; no=s['absence'] is not None
         annotations={'status':'candidate_pending_independent_review','author_role':'B/express','source_sha':SHA,'family_sha256':fh,'related_family_cluster':cluster,'split_hash_sha256':ch,'split_status':'local_candidate_hash_75_25_not_global_freeze','answer_rationale':s['answer'],'source_evidence':ev,'chain_edges':[{'from_evidence':i,'to_evidence':i+1,'relation':edge} for i,edge in enumerate(s['edges'])], 'reviewer':None,'retrieval_inspected':False}
-        # Explicit relation text is authoritative; endpoint indices are supplied only for adjacent evidence.
         if s['edges']:
-            annotations['chain_edges']=[{'relation':edge,'supporting_evidence':list(range(len(ev)))} for edge in s['edges']]
+            endpoint_pairs=CHAIN_ENDPOINTS[s['key']]
+            assert len(endpoint_pairs)==len(s['edges'])
+            annotations['chain_edges']=[]
+            for relation,(src,dst) in zip(s['edges'],endpoint_pairs):
+                annotations['chain_edges'].append({'relation':relation,'from':{'evidence_index':src,'path':ev[src]['path'],'symbol':ev[src]['symbol']},'to':{'evidence_index':dst,'path':ev[dst]['path'],'symbol':ev[dst]['symbol']},'supporting_evidence':sorted(set([src,dst]))})
         if no:
             files=sorted(p.relative_to(ROOT/'source').as_posix() for p in (ROOT/'source').rglob('*.js'))
             checks=[]
@@ -69,4 +72,36 @@ def build(count):
     from collections import Counter
     write_json(out/'inventory.json',{'candidate_families':len(rows),'independently_reviewed_families':0,'by_category':dict(Counter(r['category'] for r in rows)),'by_split':dict(Counter(r['split'] for r in rows)),'local_split_rule':'sha256(related cluster), first 64 bits modulo 4: 0 holdout, otherwise dev; probabilistic 75/25 target','family_set_sha256':digest('\n'.join(sorted(r['query_family'] for r in rows)).encode()),'questions_sha256':digest((out/'questions.jsonl').read_bytes()),'global_freeze':False,'retrieval_run':False})
     print(name,len(rows))
+CHAIN_ENDPOINTS={
+ 'application-prototype-wiring':[(0,1)], 'mounted-inheritance':[(1,0)],
+ 'query-parser-pipeline':[(0,1),(2,0),(2,1)],
+ 'proxy-protocol-pipeline':[(0,1),(2,0),(2,1)],
+ 'etag-generation-pipeline':[(0,1),(1,2),(2,3),(4,3)],
+ 'render-resolution-pipeline':[(0,1),(1,2),(2,3),(3,4)],
+ 'app-call-to-dispatch':[(0,1),(1,1)],
+ 'default-subdomain-offset':[(0,1),(1,0)],
+ 'json-settings-serialization':[(0,1),(1,2),(1,3)],
+ 'jsonp-config-query':[(0,1),(1,2),(2,2)],
+ 'freshness-response-feedback':[(0,1),(1,0),(0,0)],
+ 'stale-fresh-inversion':[(0,1),(1,2)],
+ 'protocol-secure-derivation':[(0,1),(1,3),(2,3)],
+ 'host-hostname-subdomains':[(0,1),(2,3),(3,4),(4,1)],
+ 'format-normalization':[(0,1),(0,2),(0,2)],
+ 'string-send-charset':[(0,1),(0,2)],
+ 'render-default-response-flow':[(0,1),(1,2),(2,3),(3,0)],
+ 'render-response-locals':[(0,1),(1,2),(2,2)],
+ 'verb-route-delegation':[(0,1),(1,2),(2,2)],
+ 'file-transfer-etag-switch':[(0,1),(1,2),(2,2)],
+ 'proxy-client-ip':[(0,1),(2,0),(2,2)],
+ 'default-error-dispatch':[(0,1),(1,2),(2,1)]
+}
+from additional import extend
+extend(add,E,A,Q,R,U,V)
+RELATED_CLUSTER_CANONICAL={
+ 'proxy-ips':'proxy-trust','proxy-host':'proxy-trust','hostname':'proxy-trust','proxy-ip':'proxy-trust','subdomains':'proxy-trust',
+ 'view-engine':'view-system','view-engine-cache':'view-system','view-render':'view-system','view-resolution':'view-system','view-lookup':'view-system','view-cache':'view-system','view-render-errors':'view-system','render-locals':'view-system','render-default-callback':'view-system',
+ 'json-stringify':'json-body','send-body-dispatch':'json-body',
+ 'response-mime':'mime-normalization'
+}
+for spec in S:spec['cluster']=RELATED_CLUSTER_CANONICAL.get(spec['cluster'],spec['cluster'])
 if __name__=='__main__':build(int(sys.argv[1]) if len(sys.argv)>1 else len(S))

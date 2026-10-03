@@ -1,0 +1,165 @@
+{
+  "scope": "synthetic parse/resolver only; no full-index/corpus/migration acceptance",
+  "runs": [
+    {
+      "label": "original",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "type_atom_identifier_tests",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/tmp/type-atom-original",
+      "target": "/tmp/type-atom-target-original",
+      "exit_code": 101,
+      "expected_exit_code": 101,
+      "log_sha256": "410843353cde6ca9fb0984c3c347a18863a69b5e74dc144080b4d75209712c2f"
+    },
+    {
+      "label": "pr103",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "type_atom_identifier_tests",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/tmp/type-atom-pr103",
+      "target": "/tmp/type-atom-target-pr103",
+      "exit_code": 101,
+      "expected_exit_code": 101,
+      "log_sha256": "eee58bf79f0612cbd82745aaaab33ac974c83aebb293c55d37d60f19c5317694"
+    },
+    {
+      "label": "fixed",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "type_atom_identifier_tests",
+        "--",
+        "--nocapture"
+      ],
+      "cwd": "/workspace/codecortex",
+      "target": "/tmp/type-atom-target-fixed",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log_sha256": "add85ff1e0752f917564fb5970313c1e2793917c87f9c3e874b44d1b054f743e"
+    },
+    {
+      "label": "fixed-resolver",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "--lib",
+        "resolver::"
+      ],
+      "cwd": "/workspace/codecortex",
+      "target": "/tmp/type-atom-target-fixed",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log_sha256": "bd028ea4db5f9d3e9cab49dbd5f0eb06da820d3b2f786e6a331b0409fab01da1"
+    },
+    {
+      "label": "fixed-model",
+      "command": [
+        "cargo",
+        "test",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-model",
+        "--lib",
+        "resolution::"
+      ],
+      "cwd": "/workspace/codecortex",
+      "target": "/tmp/type-atom-target-fixed",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log_sha256": "565c0004afd6d36e7d4879c99d629fef4df73da7738e9217efcb6611c7774326"
+    },
+    {
+      "label": "fixed-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--offline",
+        "--locked",
+        "-p",
+        "cc-index",
+        "-p",
+        "cc-model",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "cwd": "/workspace/codecortex",
+      "target": "/tmp/type-atom-target-fixed",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log_sha256": "49954bf463344a2757d3c2d434e2b5638b96d3f3a03642c41185250a612fa27a"
+    },
+    {
+      "label": "fixed-fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "cwd": "/workspace/codecortex",
+      "target": "/tmp/type-atom-target-fixed",
+      "exit_code": 0,
+      "expected_exit_code": 0,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "original": {
+    "base_sha": "ace2bc7983be2955831c9384e44d1bdd0749c909",
+    "overlay": "test module only",
+    "harness_sha256": "938b0e07051ade24280bee3350eba2bcf16887a21c7b6cce63e16086e28ca090",
+    "helper_sha256": "7e6deaf6636320a0029f185ec70af5b5369e14c8901ab5a6675835aea8c5c456",
+    "model_sha256": "f91969fe6d78855a16edd146b89e197e3149a7c76473d83d66b77db5896b2b08",
+    "cargo_lock_sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000"
+  },
+  "pr103": {
+    "base_sha": "da5b05ee08d84fd336d5a98f25da7cae176daebf",
+    "overlay": "test module only",
+    "harness_sha256": "938b0e07051ade24280bee3350eba2bcf16887a21c7b6cce63e16086e28ca090",
+    "helper_sha256": "cde14290a996771bfc79a0a6f194c6fcae377916dc140e2f3aa50bb8d44c8ae0",
+    "model_sha256": "43221251b105d4f41e368aa6b95ba1476e66f363c4fe7c6d1ccceaf713ec3cca",
+    "cargo_lock_sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000"
+  },
+  "fixed": {
+    "base_sha": "da5b05ee08d84fd336d5a98f25da7cae176daebf",
+    "overlay": "local repair",
+    "harness_sha256": "938b0e07051ade24280bee3350eba2bcf16887a21c7b6cce63e16086e28ca090",
+    "helper_sha256": "48423f474abd90ad11c6e943036793ff5b01faf710cd412037e77a686ff7f2a0",
+    "model_sha256": "43221251b105d4f41e368aa6b95ba1476e66f363c4fe7c6d1ccceaf713ec3cca",
+    "cargo_lock_sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000"
+  },
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "independent_negative_evidence_sha": "7f650a5f8338e0d1ad2d8e8592ae31c89b34047c",
+  "all_expected_exit_codes": true
+}

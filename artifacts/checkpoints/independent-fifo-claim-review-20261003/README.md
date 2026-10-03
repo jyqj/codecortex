@@ -52,6 +52,6 @@ prepare.py 使用现有 `/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-lin
 - [x] direct rebuild 真实失败及旧版对照，失败不抹除。
 - [x] Supplementary synthetic mutants、失败修正记录与 not_run。
 - [x] PR114 lint 修复 head 三 production 字节身份；不重做冻结实验。
-- [ ] 仅本目录 commit/push、自有 draft PR、核 remote head；完成即停。
+- [x] 仅本目录 commit/push、自有 draft PR115、核 initial remote head；receipt-only final head 见最终响应，完成即停。
 
-Review 交付状态由 delivery.json 和最终响应给出；发布不是集成授权。
+Review 交付：[draft PR115](https://github.com/jyqj/codecortex/pull/115)，initial head `efab4d240a2ed6d906edde81c3aa36a1b99ae5ed` 已由远端 ref 和下载对象核验，全部60个路径仅在本目录。delivery.json、initial-remote-verification.log 和最终响应记录交付；发布不是集成授权。

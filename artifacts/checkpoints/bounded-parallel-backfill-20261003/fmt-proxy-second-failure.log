@@ -1,0 +1,4 @@
+Captured stderr from the continuation shell's cargo fmt --all subcommand:
+error: could not create home directory: '/home/agent/.rustup': Read-only file system (os error 30)
+
+The subsequent real Cargo check did execute independently and returned a missing reqwest offline-cache error (check-real-toolchain.log). No rustup initialization/root change was attempted; actual rustfmt binary was later executed under the parent's explicit authorization of existing real binaries.

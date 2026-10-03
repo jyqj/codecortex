@@ -1,0 +1,45 @@
+   Compiling cc-semantic v1.0.0 (/workspace/bounded-parallel/crates/cc-semantic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.71s
+     Running tests/bounded_parallel.rs (/workspace/codecortex/target/debug/deps/bounded_parallel-76fe7340d767772b)
+
+running 7 tests
+
+thread 'ordinary_document_edit_fences_old_attempt_while_neighbor_publishes' (3989) panicked at crates/cc-semantic/tests/bounded_parallel.rs:136:129:
+called `Result::unwrap()` on an `Err` value: SqlInputError { error: Error { code: Unknown, extended_code: 1 }, msg: "no such column: attempts", sql: "SELECT attempts FROM semantic_outbox WHERE doc_key='d0' AND doc_version='v2'", offset: 7 }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test ordinary_document_edit_fences_old_attempt_while_neighbor_publishes ... FAILED
+
+thread 'both_parallel_errors_propagate_after_join_and_retry_each_independent_token' (3987) panicked at crates/cc-semantic/tests/bounded_parallel.rs:47:100:
+called `Result::unwrap()` on an `Err` value: SqlInputError { error: Error { code: Unknown, extended_code: 1 }, msg: "no such column: attempts", sql: "SELECT task_id,state,attempts FROM semantic_outbox ORDER BY task_id", offset: 21 }
+test both_parallel_errors_propagate_after_join_and_retry_each_independent_token ... FAILED
+
+thread 'ordinary_provider_failure_retries_both_and_stops_new_claims' (3990) panicked at crates/cc-semantic/tests/bounded_parallel.rs:47:100:
+called `Result::unwrap()` on an `Err` value: SqlInputError { error: Error { code: Unknown, extended_code: 1 }, msg: "no such column: attempts", sql: "SELECT task_id,state,attempts FROM semantic_outbox ORDER BY task_id", offset: 21 }
+test ordinary_provider_failure_retries_both_and_stops_new_claims ... FAILED
+
+thread 'close_joins_two_started_attempts_and_restores_pending_with_spent_attempts' (3988) panicked at crates/cc-semantic/tests/bounded_parallel.rs:47:100:
+called `Result::unwrap()` on an `Err` value: SqlInputError { error: Error { code: Unknown, extended_code: 1 }, msg: "no such column: attempts", sql: "SELECT task_id,state,attempts FROM semantic_outbox ORDER BY task_id", offset: 21 }
+test close_joins_two_started_attempts_and_restores_pending_with_spent_attempts ... FAILED
+test ordinary_space_switch_fences_started_publications_and_stops_claiming_new_space ... ok
+
+thread 'unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls' (4013) panicked at crates/cc-semantic/tests/bounded_parallel.rs:47:100:
+called `Result::unwrap()` on an `Err` value: SqlInputError { error: Error { code: Unknown, extended_code: 1 }, msg: "no such column: attempts", sql: "SELECT task_id,state,attempts FROM semantic_outbox ORDER BY task_id", offset: 21 }
+test unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls ... FAILED
+
+thread 'width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared' (4017) panicked at crates/cc-semantic/tests/bounded_parallel.rs:47:100:
+called `Result::unwrap()` on an `Err` value: SqlInputError { error: Error { code: Unknown, extended_code: 1 }, msg: "no such column: attempts", sql: "SELECT task_id,state,attempts FROM semantic_outbox ORDER BY task_id", offset: 21 }
+test width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared ... FAILED
+
+failures:
+
+failures:
+    both_parallel_errors_propagate_after_join_and_retry_each_independent_token
+    close_joins_two_started_attempts_and_restores_pending_with_spent_attempts
+    ordinary_document_edit_fences_old_attempt_while_neighbor_publishes
+    ordinary_provider_failure_retries_both_and_stops_new_claims
+    unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls
+    width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared
+
+test result: FAILED. 1 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+error: test failed, to rerun pass `-p cc-semantic --test bounded_parallel`

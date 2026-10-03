@@ -1,0 +1,270 @@
+diff --git a/crates/cc-semantic/src/queue.rs b/crates/cc-semantic/src/queue.rs
+index 141364f..e959f35 100644
+--- a/crates/cc-semantic/src/queue.rs
++++ b/crates/cc-semantic/src/queue.rs
+@@ -11,7 +11,8 @@
+ //!
+ //! ## No implicit resident process (ADR red line)
+ //!
+-//! Nothing in this module spawns a thread, timer, or daemon. [`drain_pending`]
++//! The serial API spawns no threads; the parallel API uses joined scoped workers.
++//! Neither API starts a timer or daemon. [`drain_pending`]
+ //! is an EXPLICIT, caller-driven drain: it claims at most
+ //! [`WorkerLimits::max_batch`] tasks, processes each through the caller's
+ //! handler, and returns a [`BatchReport`] — whether to drain again, when, and
+@@ -364,6 +365,132 @@ pub fn drain_pending_with_lifecycle(
+     Ok(report)
+ }
+ 
++/// Finite joined drain. Claims linearize under one admission mutex in the DB's
++/// configured FIFO order; completion order is intentionally unspecified. Width
++/// is two only for an explicit per-project bound >= 2 (zero stays serial).
++/// No DB lock/connection survives claim, renewal, handler or join boundaries.
++/// Old FnMut serial APIs retain their existing behavior. This API propagates
++/// handler errors after fenced retry and physical joins, and stops on retry,
++/// cancellation or an active-space change. Every claim has its own lease/token.
++pub fn drain_pending_parallel_with_lifecycle(
++    db: &IndexDb,
++    owner: &str,
++    limits: &WorkerLimits,
++    lifecycle: Option<&cc_db::semantic_publish::LifecycleFence>,
++    max_concurrent_per_project: usize,
++    handler: &(dyn Fn(&LeaseGuard<'_>) -> CcResult<TaskExit> + Sync),
++) -> CcResult<BatchReport> {
++    use std::sync::{atomic::{AtomicBool, Ordering}, Mutex};
++    let width = if max_concurrent_per_project >= 2 { 2 } else { 1 };
++    let initial_space = db.semantic_active_space()?;
++    let admitted = Mutex::new(0usize);
++    let stopped = AtomicBool::new(false);
++    let cancelled = || {
++        stopped.load(Ordering::Acquire) || lifecycle.is_some_and(|f| !f.is_open())
++    };
++    let work = || -> CcResult<BatchReport> {
++        let mut report = BatchReport::default();
++        let result = (|| -> CcResult<()> {
++            loop {
++                let task = {
++                    let mut count = admitted.lock().map_err(|_| {
++                        CcError::Database("parallel claim admission poisoned".into())
++                    })?;
++                    if cancelled() || *count >= limits.max_batch
++                        || db.semantic_active_space()? != initial_space {
++                        stopped.store(true, Ordering::Release);
++                        break;
++                    }
++                    db.reclaim_expired_semantic()?;
++                    let Some(task) = db.claim_semantic_with_lifecycle(
++                        owner, limits.lease_secs, limits.claim_order, lifecycle,
++                    )? else { break; };
++                    *count += 1;
++                    task
++                }; // admission and every DB transaction are released before work.
++                report.claimed += 1;
++                let guard = LeaseGuard { db, task, lease_secs: limits.lease_secs };
++                if cancelled() || initial_space.as_deref() != Some(guard.task().space_id.as_str())
++                    || db.semantic_active_space()? != initial_space {
++                    stopped.store(true, Ordering::Release);
++                    db.hand_back_cancelled_semantic_task(
++                        guard.task().task_id, &guard.task().token, false,
++                    )?;
++                    break;
++                }
++                if !guard.renew()? {
++                    report.lease_lost += 1;
++                    continue;
++                }
++                let exit = handler(&guard);
++                match exit {
++                    Ok(TaskExit::Disposed) => report.completed += 1,
++                    Ok(TaskExit::Cancelled { started }) => {
++                        stopped.store(true, Ordering::Release);
++                        db.hand_back_cancelled_semantic_task(
++                            guard.task().task_id, &guard.task().token, started,
++                        )?;
++                        break;
++                    }
++                    Ok(TaskExit::NeedsRetry { reason }) => {
++                        stopped.store(true, Ordering::Release);
++                        if lifecycle.is_some_and(|f| !f.is_open()) {
++                            db.hand_back_cancelled_semantic_task(
++                                guard.task().task_id, &guard.task().token, true,
++                            )?;
++                        } else if hand_back(db, &guard, &reason, limits)? {
++                            report.retried += 1;
++                        } else { report.lease_lost += 1; }
++                        break;
++                    }
++                    Err(error) => {
++                        stopped.store(true, Ordering::Release);
++                        if lifecycle.is_some_and(|f| !f.is_open()) {
++                            db.hand_back_cancelled_semantic_task(
++                                guard.task().task_id, &guard.task().token, true,
++                            )?;
++                        } else { hand_back(db, &guard, &error.to_string(), limits)?; }
++                        return Err(error);
++                    }
++                }
++            }
++            Ok(())
++        })();
++        if result.is_err() { stopped.store(true, Ordering::Release); }
++        result.map(|()| report)
++    };
++    std::thread::scope(|scope| {
++        // Exactly width workers for the whole finite drain, never per-document spawn.
++        let workers: Vec<_> = (0..width).map(|_| scope.spawn(|| {
++            let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(work));
++            match result {
++                Ok(result) => result,
++                Err(_) => {
++                    stopped.store(true, Ordering::Release);
++                    Err(CcError::Database("parallel attempt panicked; lease recovery retained".into()))
++                }
++            }
++        })).collect();
++        let mut total = BatchReport::default();
++        let mut first_error = None;
++        for worker in workers {
++            match worker.join().expect("worker panic is captured") {
++                Ok(report) => {
++                    total.claimed += report.claimed;
++                    total.completed += report.completed;
++                    total.retried += report.retried;
++                    total.lease_lost += report.lease_lost;
++                }
++                Err(error) => {
++                    tracing::warn!(%error, "bounded parallel attempt failed");
++                    if first_error.is_none() { first_error = Some(error); }
++                }
++            }
++        }
++        match first_error { Some(error) => Err(error), None => Ok(total) }
++    })
++}
++
+ /// Real-clock unix seconds for publish timestamps (the worker is the
+ /// runtime-side caller; deterministic tests inject their own clock through
+ /// the raw `*_on` primitives, as everywhere else in this crate).
+diff --git a/crates/cc-server/src/semantic_runtime.rs b/crates/cc-server/src/semantic_runtime.rs
+index 0029391..9df2cce 100644
+--- a/crates/cc-server/src/semantic_runtime.rs
++++ b/crates/cc-server/src/semantic_runtime.rs
+@@ -361,7 +361,7 @@ impl SemanticRuntime {
+             .unwrap_or_default()
+             .as_secs() as i64;
+         let provider = FencedProvider(self, provider);
+-        let outcome = semantic_wiring::drain_worker_batch(
++        let outcome = semantic_wiring::drain_worker_batch_parallel(
+             &self.db,
+             &self.subsystem,
+             &self.services,
+diff --git a/crates/cc-server/src/semantic_wiring.rs b/crates/cc-server/src/semantic_wiring.rs
+index 9e5b4c5..6e4410b 100644
+--- a/crates/cc-server/src/semantic_wiring.rs
++++ b/crates/cc-server/src/semantic_wiring.rs
+@@ -192,6 +192,8 @@ pub struct SemanticSubsystem {
+     pub doc_spec: DocSpecDigest,
+     /// Worker drain lease seconds (`semantic.worker_lease_secs`).
+     pub lease_secs: f64,
++    /// Internal attempt width from existing explicit per-project admission config.
++    pub(crate) max_concurrent_per_project: usize,
+     /// GC fresh-timestamp grace seconds (`semantic.gc_min_retention_secs`,
+     /// validated ≥ 1 at assembly).
+     pub gc_min_retention_secs: i64,
+@@ -348,6 +350,7 @@ pub fn assemble_with(
+         query_spec,
+         doc_spec,
+         lease_secs: config.semantic.worker_lease_secs as f64,
++        max_concurrent_per_project: config.semantic.max_concurrent_per_project as usize,
+         gc_min_retention_secs: config.semantic.gc_min_retention_secs as i64,
+     }))
+ }
+@@ -600,6 +603,88 @@ pub fn drain_worker_batch(
+     })
+ }
+ 
++pub(crate) fn drain_worker_batch_parallel(
++    db: &Arc<IndexDb>,
++    subsystem: &SemanticSubsystem,
++    services: &QueryServices,
++    provider: &dyn EmbeddingProvider,
++    resolve_input: &(dyn Fn(&ClaimedTask) -> CcResult<Option<DocumentInput>> + Sync),
++    options: WorkerDrainOptions<'_>,
++) -> CcResult<DrainOutcome> {
++    let WorkerDrainOptions {
++        owner,
++        max_batch,
++        now_unix,
++        lifecycle,
++    } = options;
++    let limits = cc_semantic::queue::WorkerLimits::validated(
++        max_batch,
++        subsystem.lease_secs,
++        WORKER_BACKOFF_SECS,
++        WORKER_MAX_ATTEMPTS,
++    )?;
++    // The publish CAS fence compares against the incarnation on the spot
++    // (a ghost process is refused with zero writes, P6-014 fence).
++    let incarnation = db.reads().read_generation()?.incarnation;
++    let quarantined = std::sync::atomic::AtomicUsize::new(0);
++    let requeued_after_degrade = std::sync::atomic::AtomicUsize::new(0);
++    let report = cc_semantic::queue::drain_pending_parallel_with_lifecycle(
++        db,
++        owner,
++        &limits,
++        lifecycle,
++        subsystem.max_concurrent_per_project,
++        &|guard: &LeaseGuard<'_>| {
++            // Degrade pre-check: a corrupt artifact must never reach the
++            // provider. Quarantine + requeue WITHOUT consuming the attempt
++            // budget; the task was disposed by the degrade path itself, so the
++            // loop must not touch it again.
++            let task = guard.task();
++            let input = cc_semantic::degrade::task_input(task);
++            if let CacheRead::Corrupt(report) =
++                subsystem
++                    .cache
++                    .get(&subsystem.space, &input, &subsystem.doc_spec)?
++            {
++                let record = quarantine_detected(
++                    &subsystem.cache,
++                    &subsystem.ledger,
++                    &subsystem.space,
++                    &input,
++                    &subsystem.doc_spec,
++                    &report,
++                    now_unix,
++                )?;
++                quarantined.fetch_add(usize::from(record.is_some()), std::sync::atomic::Ordering::Relaxed);
++                if requeue_after_degrade(
++                    db,
++                    task,
++                    "semantic degrade: corrupt cache artifact quarantined, task requeued",
++                )? {
++                    requeued_after_degrade.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
++                }
++                return Ok(TaskExit::Disposed);
++            }
++            let publisher = Publisher::new(
++                db, &subsystem.cache, &subsystem.space, &subsystem.doc_spec, incarnation,
++            )?.with_lifecycle(lifecycle);
++            EmbedHandler::new(publisher, provider, resolve_input).handle(guard)
++        },
++    );
++    // 状态轮询转写: the probe's degradation view follows the worker, not
++    // the assembly instant.
++    let owner: Arc<dyn cc_model::semantic::SemanticRecall> = subsystem.recall.clone();
++    services.set_semantic_degradation_for(
++        &owner,
++        SemanticDegradation::from(subsystem.ledger.snapshot()),
++    );
++    Ok(DrainOutcome {
++        batch: report?,
++        quarantined: quarantined.load(std::sync::atomic::Ordering::Relaxed),
++        requeued_after_degrade: requeued_after_degrade.load(std::sync::atomic::Ordering::Relaxed),
++    })
++}
++
+ /// Explicit GC convergence (接线待办 6): bounded rounds of `run_gc_pass`
+ /// until the namespace tree is exhausted or the round cap trips. `now_unix`
+ /// is the caller's clock (P6-007 discipline); the grace comes from the

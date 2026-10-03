@@ -1,0 +1,52 @@
+{
+  "base": "52a50730b58e2b59351449fc80f65771b24c26a8",
+  "candidate_branch": "perf/bounded-parallel-backfill-20261003",
+  "production_accepted": false,
+  "canonical": "PR113 ee4c4fc (not changed)",
+  "official_toolchain_bin": "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin",
+  "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+  "candidate_source_sha256": {
+    "crates/cc-semantic/src/queue.rs": "aa80b5be53d075448af88f86301350a561d9d62452d30210026b5e40257a3521",
+    "crates/cc-server/src/semantic_runtime.rs": "ef58b4a89d9619a2a70eba89aaf0b2aa62c55c32597cfc41c05eabb93ec96e36",
+    "crates/cc-server/src/semantic_wiring.rs": "d1ecd89ba9f537adca58d8430c40bbaa4a733a409ce3c6e2121719045a08d9c5",
+    "crates/cc-semantic/tests/bounded_parallel.rs": "1d2b52386bf90bf27e39bfcb3814dfd20fcbea88686845d9084719eec1efeea2"
+  },
+  "unchanged_db_sources": {
+    "crates/cc-db/src/semantic_outbox.rs": {
+      "base_sha256": "67745644d49f9e5d281bf2b1abffb6075c8f2025a652d6bb979f02b109a08e97",
+      "current_sha256": "67745644d49f9e5d281bf2b1abffb6075c8f2025a652d6bb979f02b109a08e97",
+      "frozen_807f471_sha256": "67745644d49f9e5d281bf2b1abffb6075c8f2025a652d6bb979f02b109a08e97"
+    },
+    "crates/cc-db/src/index_migrate.rs": {
+      "base_sha256": "8987b0d2d7fc46634e45cd2f04e15b97756833108c0b8bd199d4e7cba991b55d",
+      "current_sha256": "8987b0d2d7fc46634e45cd2f04e15b97756833108c0b8bd199d4e7cba991b55d",
+      "frozen_807f471_sha256": "8987b0d2d7fc46634e45cd2f04e15b97756833108c0b8bd199d4e7cba991b55d"
+    },
+    "crates/cc-db/src/sql/index_v1.sql": {
+      "base_sha256": "a6ffa4911557211897fb8aaf9b3a61bffd2355714b32d0ce1915cf109f5e8be2",
+      "current_sha256": "a6ffa4911557211897fb8aaf9b3a61bffd2355714b32d0ce1915cf109f5e8be2",
+      "frozen_807f471_sha256": "a6ffa4911557211897fb8aaf9b3a61bffd2355714b32d0ce1915cf109f5e8be2"
+    }
+  },
+  "binaries": {
+    "baseline": "da1045d8395ec8643cc85351d55ddad4101ff81adf2f26e1a499e23a2080e170",
+    "candidate": "5a840a16f3d0e922a102a5b42d86930d68e7b10ead1329523dc86f66ae432593"
+  },
+  "fixed_source_commit": "5cce6eb3af90b79c786d30f349ca6a674dfcd4a1",
+  "fixed_source_remote": "https://github.com/jyqj/codecortex/commit/5cce6eb3af90b79c786d30f349ca6a674dfcd4a1",
+  "current_source_sha256": {
+    "crates/cc-semantic/src/queue.rs": "aa80b5be53d075448af88f86301350a561d9d62452d30210026b5e40257a3521",
+    "crates/cc-server/src/semantic_runtime.rs": "01b78970710b04c9dd2df25e8d27553c41ff0011e3caca5d347fc7abc280be4b",
+    "crates/cc-server/src/semantic_wiring.rs": "d1ecd89ba9f537adca58d8430c40bbaa4a733a409ce3c6e2121719045a08d9c5",
+    "crates/cc-semantic/tests/bounded_parallel.rs": "3799d95ef9727e68583bce141856039865a9809b8a81d4a710e36689422c7cdd"
+  },
+  "late_parent_followups": {
+    "changes": "only cfg(test) runtime helpers/counterexample and integration-test normal-enqueue fixture added after AB; production unchanged",
+    "runtime_production_prefix_sha256": "52a60b70f8e4b4816723e468bb22de4051c23665683fc58200da61fe1a053616",
+    "runtime_production_prefix_equal_to_measured_source": true,
+    "frozen_ab_file_hashes_retained": "candidate_source_sha256",
+    "counterexample_is_not_limit_contract_pass": true
+  },
+  "gate_policy_unmodified": true,
+  "gate_first_wins_blocker": true
+}

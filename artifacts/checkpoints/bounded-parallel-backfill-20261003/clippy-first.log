@@ -1,0 +1,58 @@
+    Checking parking_lot_core v0.9.12
+    Checking rand v0.10.3
+    Checking rusqlite v0.40.1
+    Checking cc-model v1.0.0 (/workspace/bounded-parallel/crates/cc-model)
+    Checking parking_lot v0.12.5
+    Checking scheduled-thread-pool v0.2.7
+    Checking r2d2 v0.8.10
+    Checking uuid v1.23.0
+    Checking tokio v1.50.0
+    Checking getrandom v0.2.17
+    Checking r2d2_sqlite v0.35.0
+    Checking ring v0.17.14
+    Checking nix v0.31.2
+    Checking rustls-webpki v0.103.15
+    Checking inotify-sys v0.1.8
+    Checking dirs-sys v0.4.1
+    Checking inotify v0.11.5
+    Checking notify-types v2.1.0
+    Checking rustls v0.23.45
+    Checking notify v8.2.0
+    Checking dirs v5.0.1
+    Checking hyper v1.11.1
+    Checking tower v0.5.3
+    Checking tower-http v0.6.11
+    Checking hyper-util v0.1.21
+    Checking tokio-util v0.7.18
+    Checking tokio-rustls v0.26.5
+    Checking tokio-stream v0.1.18
+    Checking process-wrap v9.1.0
+    Checking rmcp v2.2.0
+    Checking hyper-rustls v0.27.10
+    Checking reqwest v0.12.28
+    Checking cc-db v1.0.0 (/workspace/bounded-parallel/crates/cc-db)
+    Checking cc-parsers v1.0.0 (/workspace/bounded-parallel/crates/cc-parsers)
+    Checking cc-semantic v1.0.0 (/workspace/bounded-parallel/crates/cc-semantic)
+    Checking cc-index v1.0.0 (/workspace/bounded-parallel/crates/cc-index)
+    Checking cc-search v1.0.0 (/workspace/bounded-parallel/crates/cc-search)
+    Checking cc-server v1.0.0 (/workspace/bounded-parallel/crates/cc-server)
+error: this call to `clone` can be replaced with `std::slice::from_ref`
+    --> crates/cc-server/src/semantic_runtime.rs:1230:67
+     |
+1230 |             assert_eq!(wrap("c", blocked.clone()).embed_documents(&[input.clone()]), Err(ProviderError::Timeout));
+     |                                                                   ^^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&input)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#cloned_ref_to_slice_refs
+     = note: `-D clippy::cloned-ref-to-slice-refs` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::cloned_ref_to_slice_refs)]`
+
+error: this call to `clone` can be replaced with `std::slice::from_ref`
+    --> crates/cc-server/src/semantic_runtime.rs:1238:63
+     |
+1238 |         assert_eq!(wrap("a", blocked.clone()).embed_documents(&[input.clone()]), Err(ProviderError::Timeout));
+     |                                                               ^^^^^^^^^^^^^^^^ help: try: `std::slice::from_ref(&input)`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#cloned_ref_to_slice_refs
+
+error: could not compile `cc-server` (lib test) due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

@@ -1,0 +1,442 @@
+{
+  "order": [
+    "baseline1k/5k",
+    "candidate1k/5k",
+    "candidate-repeat1k/5k",
+    "baseline-repeat1k/5k"
+  ],
+  "pairs": [
+    {
+      "n": 1000,
+      "base": "baseline",
+      "candidate": "candidate",
+      "ready_change_percent": -23.49396518206861,
+      "physical_write_change_percent": 0.41700661771371106
+    },
+    {
+      "n": 1000,
+      "base": "baseline-repeat",
+      "candidate": "candidate-repeat",
+      "ready_change_percent": -31.258052205287136,
+      "physical_write_change_percent": 0.30518205166942813
+    },
+    {
+      "n": 5000,
+      "base": "baseline",
+      "candidate": "candidate",
+      "ready_change_percent": -23.639680708326505,
+      "physical_write_change_percent": 0.05086886357790199
+    },
+    {
+      "n": 5000,
+      "base": "baseline-repeat",
+      "candidate": "candidate-repeat",
+      "ready_change_percent": -17.98034895544367,
+      "physical_write_change_percent": 0.23443163482450569
+    }
+  ],
+  "rows": [
+    {
+      "case": "baseline",
+      "n": 1000,
+      "ready": true,
+      "cold_s": 0.2124404159999358,
+      "observed_ready_s": 3.4244183890000386,
+      "index_plus_ready_s": 3.6368588049999744,
+      "actual_claimed_done": 1000,
+      "attempt_count": 1000,
+      "claim_call_count_including_empty": 1001,
+      "claim_sum_s": 0.071491106,
+      "provider_actual_peak": 1,
+      "provider_calls": 1000,
+      "round_sum_s": 3.28661101,
+      "durable_put_sum_s": 2.165696171,
+      "publish_cas_sum_s": 0.206740115,
+      "process_io": {
+        "rchar": 58770012,
+        "wchar": 122846921,
+        "syscr": 20380,
+        "syscw": 60699,
+        "read_bytes": 0,
+        "write_bytes": 135548928,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 72,
+      "cpu_system_ticks": 55,
+      "rss_hwm_bytes": 54083584,
+      "rss_final_bytes": 53673984,
+      "rss_sampled_max_bytes": 53673984,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10061072,
+          "allocated_bytes": 10063872
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11145216,
+          "allocated_bytes": 11145216
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        }
+      ]
+    },
+    {
+      "case": "baseline",
+      "n": 5000,
+      "ready": true,
+      "cold_s": 0.9812296370000695,
+      "observed_ready_s": 15.352851883999847,
+      "index_plus_ready_s": 16.334081520999916,
+      "actual_claimed_done": 5000,
+      "attempt_count": 5000,
+      "claim_call_count_including_empty": 5001,
+      "claim_sum_s": 0.39596886,
+      "provider_actual_peak": 1,
+      "provider_calls": 5000,
+      "round_sum_s": 15.171862583,
+      "durable_put_sum_s": 9.4713634,
+      "publish_cas_sum_s": 1.026914425,
+      "process_io": {
+        "rchar": 406730804,
+        "wchar": 701721441,
+        "syscr": 128747,
+        "syscw": 340206,
+        "read_bytes": 0,
+        "write_bytes": 700530688,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 343,
+      "cpu_system_ticks": 269,
+      "rss_hwm_bytes": 156237824,
+      "rss_final_bytes": 155942912,
+      "rss_sampled_max_bytes": 155942912,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4260112,
+          "allocated_bytes": 4263936
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53071872,
+          "allocated_bytes": 53071872
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        }
+      ]
+    },
+    {
+      "case": "candidate",
+      "n": 1000,
+      "ready": true,
+      "cold_s": 0.2110410850000335,
+      "observed_ready_s": 2.619886725000015,
+      "index_plus_ready_s": 2.8309278100000483,
+      "actual_claimed_done": 1000,
+      "attempt_count": 1000,
+      "claim_call_count_including_empty": 1002,
+      "claim_sum_s": 0.095686371,
+      "provider_actual_peak": 2,
+      "provider_calls": 1000,
+      "round_sum_s": 2.605233061,
+      "durable_put_sum_s": 3.125323886,
+      "publish_cas_sum_s": 0.262107073,
+      "process_io": {
+        "rchar": 87822449,
+        "wchar": 123357176,
+        "syscr": 27469,
+        "syscw": 60506,
+        "read_bytes": 24576,
+        "write_bytes": 136114176,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 75,
+      "cpu_system_ticks": 61,
+      "rss_hwm_bytes": 52801536,
+      "rss_final_bytes": 52469760,
+      "rss_sampled_max_bytes": 52469760,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10061072,
+          "allocated_bytes": 10063872
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11137024,
+          "allocated_bytes": 11137024
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        }
+      ]
+    },
+    {
+      "case": "candidate",
+      "n": 5000,
+      "ready": true,
+      "cold_s": 0.9494539040001655,
+      "observed_ready_s": 11.723486718999993,
+      "index_plus_ready_s": 12.672940623000159,
+      "actual_claimed_done": 5000,
+      "attempt_count": 5000,
+      "claim_call_count_including_empty": 5002,
+      "claim_sum_s": 0.44880974,
+      "provider_actual_peak": 2,
+      "provider_calls": 5000,
+      "round_sum_s": 11.581117368,
+      "durable_put_sum_s": 12.530529884,
+      "publish_cas_sum_s": 1.721601296,
+      "process_io": {
+        "rchar": 549437312,
+        "wchar": 701997963,
+        "syscr": 163569,
+        "syscw": 338298,
+        "read_bytes": 16384,
+        "write_bytes": 700887040,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 385,
+      "cpu_system_ticks": 275,
+      "rss_hwm_bytes": 153817088,
+      "rss_final_bytes": 153669632,
+      "rss_sampled_max_bytes": 153800704,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4198312,
+          "allocated_bytes": 4198400
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53084160,
+          "allocated_bytes": 53084160
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        }
+      ]
+    },
+    {
+      "case": "candidate-repeat",
+      "n": 1000,
+      "ready": true,
+      "cold_s": 0.19711716100005106,
+      "observed_ready_s": 2.2151206710000224,
+      "index_plus_ready_s": 2.4122378320000735,
+      "actual_claimed_done": 1000,
+      "attempt_count": 1000,
+      "claim_call_count_including_empty": 1002,
+      "claim_sum_s": 0.084002277,
+      "provider_actual_peak": 2,
+      "provider_calls": 1000,
+      "round_sum_s": 2.181809584,
+      "durable_put_sum_s": 2.423575466,
+      "publish_cas_sum_s": 0.242563764,
+      "process_io": {
+        "rchar": 87490432,
+        "wchar": 123231105,
+        "syscr": 27386,
+        "syscw": 60396,
+        "read_bytes": 0,
+        "write_bytes": 135970816,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 64,
+      "cpu_system_ticks": 60,
+      "rss_hwm_bytes": 52449280,
+      "rss_final_bytes": 52305920,
+      "rss_sampled_max_bytes": 52305920,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-repeat-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10061072,
+          "allocated_bytes": 10063872
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-repeat-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11153408,
+          "allocated_bytes": 11153408
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-repeat-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        }
+      ]
+    },
+    {
+      "case": "candidate-repeat",
+      "n": 5000,
+      "ready": true,
+      "cold_s": 0.9111751139998887,
+      "observed_ready_s": 11.935407278999719,
+      "index_plus_ready_s": 12.846582392999608,
+      "actual_claimed_done": 5000,
+      "attempt_count": 5000,
+      "claim_call_count_including_empty": 5002,
+      "claim_sum_s": 0.481176605,
+      "provider_actual_peak": 2,
+      "provider_calls": 5000,
+      "round_sum_s": 11.734599247,
+      "durable_put_sum_s": 12.838004087,
+      "publish_cas_sum_s": 1.548427908,
+      "process_io": {
+        "rchar": 551755780,
+        "wchar": 703310870,
+        "syscr": 164136,
+        "syscw": 338846,
+        "read_bytes": 163840,
+        "write_bytes": 702271488,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 400,
+      "cpu_system_ticks": 253,
+      "rss_hwm_bytes": 156540928,
+      "rss_final_bytes": 155983872,
+      "rss_sampled_max_bytes": 155983872,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-repeat-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4206552,
+          "allocated_bytes": 4206592
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-repeat-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53018624,
+          "allocated_bytes": 53018624
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/candidate-repeat-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        }
+      ]
+    },
+    {
+      "case": "baseline-repeat",
+      "n": 1000,
+      "ready": true,
+      "cold_s": 0.19575517499970374,
+      "observed_ready_s": 3.222371116999966,
+      "index_plus_ready_s": 3.4181262919996698,
+      "actual_claimed_done": 1000,
+      "attempt_count": 1000,
+      "claim_call_count_including_empty": 1001,
+      "claim_sum_s": 0.058387287,
+      "provider_actual_peak": 1,
+      "provider_calls": 1000,
+      "round_sum_s": 3.021896633,
+      "durable_put_sum_s": 1.956276395,
+      "publish_cas_sum_s": 0.180332133,
+      "process_io": {
+        "rchar": 58986983,
+        "wchar": 122842070,
+        "syscr": 20432,
+        "syscw": 60701,
+        "read_bytes": 0,
+        "write_bytes": 135557120,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 66,
+      "cpu_system_ticks": 50,
+      "rss_hwm_bytes": 53575680,
+      "rss_final_bytes": 53215232,
+      "rss_sampled_max_bytes": 53346304,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-repeat-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10061072,
+          "allocated_bytes": 10063872
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-repeat-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11145216,
+          "allocated_bytes": 11145216
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-repeat-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        }
+      ]
+    },
+    {
+      "case": "baseline-repeat",
+      "n": 5000,
+      "ready": true,
+      "cold_s": 0.9200091309999152,
+      "observed_ready_s": 14.551887415999772,
+      "index_plus_ready_s": 15.471896546999687,
+      "actual_claimed_done": 5000,
+      "attempt_count": 5000,
+      "claim_call_count_including_empty": 5001,
+      "claim_sum_s": 0.393779576,
+      "provider_actual_peak": 1,
+      "provider_calls": 5000,
+      "round_sum_s": 14.487219059,
+      "durable_put_sum_s": 8.886513696,
+      "publish_cas_sum_s": 0.95025197,
+      "process_io": {
+        "rchar": 401491531,
+        "wchar": 701805417,
+        "syscr": 127464,
+        "syscw": 340505,
+        "read_bytes": 0,
+        "write_bytes": 700628992,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 332,
+      "cpu_system_ticks": 265,
+      "rss_hwm_bytes": 158355456,
+      "rss_final_bytes": 158048256,
+      "rss_sampled_max_bytes": 158048256,
+      "full_process_tree": "unknown (owned root separately observed, never zero-filled)",
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-repeat-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4280712,
+          "allocated_bytes": 4284416
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-repeat-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53080064,
+          "allocated_bytes": 53080064
+        },
+        {
+          "path": "/workspace/bounded-parallel/artifacts/checkpoints/bounded-parallel-backfill-20261003/baseline-repeat-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        }
+      ]
+    }
+  ],
+  "notes": [
+    "Exactly two finite synthetic pairs, no statistical significance or production acceptance.",
+    "Original real release MCP/fake loopback HTTP/128 dims/config4+2/claim16/poll.2/90s termination retained.",
+    "Source input bytes, sorted real HTTP body hashes, normalized config and n calls/attempts/publications agree across all cases.",
+    "Same temporary timing probes and actual admitted-call concurrency counter on both binaries; no probes land in production.",
+    "Claim timing sums include per-call DB waits and empty probes; parallel durable-put/provider timing sums overlap and are not wall-time components.",
+    "/proc cumulative IO covers startup/index/drain/status/probes; read_bytes=0 may reflect cache, not zero read work.",
+    "Root RSS HWM is reported; full process tree is unknown.",
+    "Formal PR116 failed 100k pair remains unaccepted; earlier PR114 5k index-alone regression remains retained; no new100k."
+  ]
+}

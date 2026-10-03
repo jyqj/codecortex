@@ -1,0 +1,208 @@
+diff --git a/crates/cc-db/src/lib.rs b/crates/cc-db/src/lib.rs
+index 4f80819..8b24468 100644
+--- a/crates/cc-db/src/lib.rs
++++ b/crates/cc-db/src/lib.rs
+@@ -49,6 +49,7 @@ pub mod semantic_coverage;
+ pub mod semantic_gc_reads;
+ pub mod semantic_manifest_reads;
+ pub mod semantic_outbox;
++pub mod phase_cost;
+ pub mod semantic_publish;
+ pub mod semantic_queue;
+ pub mod semantic_rebuild;
+diff --git a/crates/cc-semantic/src/publish.rs b/crates/cc-semantic/src/publish.rs
+index 22213d0..8554703 100644
+--- a/crates/cc-semantic/src/publish.rs
++++ b/crates/cc-semantic/src/publish.rs
+@@ -116,6 +116,7 @@ impl<'a> Publisher<'a> {
+         vector: &[f32],
+         now_unix: i64,
+     ) -> CcResult<PublishVerdict> {
++        let _publish_span = cc_db::phase_cost::span("publish_total_inclusive");
+         let input = InputDigest::new(task.input_digest.clone());
+ 
+         // 1. artifact durable FIRST (idempotent: same tuple converges to the
+@@ -123,9 +124,7 @@ impl<'a> Publisher<'a> {
+         //    failure (dimension mismatch, NaN/Inf payload, I/O) ends the
+         //    attempt before the database is touched.
+         let artifact_ref: ArtifactRef =
+-            match self
+-                .cache
+-                .put(self.space, &input, self.doc_spec, vector, now_unix)
++            match cc_db::phase_cost::measure("cache_durable_put", || self.cache.put(self.space, &input, self.doc_spec, vector, now_unix))
+             {
+                 Ok(reference) => reference,
+                 Err(e) => {
+@@ -138,7 +137,7 @@ impl<'a> Publisher<'a> {
+         // 2. presence + verification gate: the object must read back as Hit
+         //    under the exact ref we are about to publish. A miss or corrupt
+         //    object means the manifest must not gain a row referencing it.
+-        match self.cache.get(self.space, &input, self.doc_spec)? {
++        match cc_db::phase_cost::measure("cache_readback", || self.cache.get(self.space, &input, self.doc_spec))? {
+             CacheRead::Hit(verified) if verified.artifact_ref == artifact_ref => {}
+             CacheRead::Hit(_) => {
+                 return Ok(PublishVerdict::ArtifactNotVerified {
+@@ -175,9 +174,7 @@ impl<'a> Publisher<'a> {
+             max_attempts: PUBLISH_MAX_ATTEMPTS,
+             now_unix: now_unix as f64,
+         };
+-        let Some(outcome) = self
+-            .db
+-            .publish_semantic_with_lifecycle(&request, self.lifecycle)?
++        let Some(outcome) = cc_db::phase_cost::measure("publish_cas", || self.db.publish_semantic_with_lifecycle(&request, self.lifecycle))?
+         else {
+             return Ok(PublishVerdict::Cancelled);
+         };
+diff --git a/crates/cc-semantic/src/queue.rs b/crates/cc-semantic/src/queue.rs
+index fbfe342..6d3654a 100644
+--- a/crates/cc-semantic/src/queue.rs
++++ b/crates/cc-semantic/src/queue.rs
+@@ -286,13 +286,13 @@ pub fn drain_pending_with_lifecycle(
+         if lifecycle.is_some_and(|fence| !fence.is_open()) {
+             break;
+         }
+-        db.reclaim_expired_semantic()?;
+-        let Some(task) = db.claim_semantic_with_lifecycle(
++        cc_db::phase_cost::measure("reclaim", || db.reclaim_expired_semantic())?;
++        let Some(task) = cc_db::phase_cost::measure("claim", || db.claim_semantic_with_lifecycle(
+             owner,
+             limits.lease_secs,
+             limits.claim_order,
+             lifecycle,
+-        )?
++        ))?
+         else {
+             break;
+         };
+@@ -315,7 +315,7 @@ pub fn drain_pending_with_lifecycle(
+         // Liveness gate immediately before work (merge semantics point 3):
+         // a task superseded between its claim statement and here is skipped
+         // with zero provider cost and zero writes.
+-        if !guard.renew()? {
++        if !cc_db::phase_cost::measure("renew", || guard.renew())? {
+             report.lease_lost += 1;
+             continue;
+         }
+@@ -408,13 +408,13 @@ pub fn drain_pending_parallel_with_lifecycle(
+                     if *count >= limits.max_batch {
+                         break;
+                     }
+-                    db.reclaim_expired_semantic()?;
+-                    let Some(task) = db.claim_semantic_with_lifecycle(
++                    cc_db::phase_cost::measure("reclaim", || db.reclaim_expired_semantic())?;
++                    let Some(task) = cc_db::phase_cost::measure("claim", || db.claim_semantic_with_lifecycle(
+                         owner,
+                         limits.lease_secs,
+                         limits.claim_order,
+                         lifecycle,
+-                    )?
++                    ))?
+                     else {
+                         break;
+                     };
+@@ -449,7 +449,7 @@ pub fn drain_pending_parallel_with_lifecycle(
+                     if cancel {
+                         return Ok(None);
+                     }
+-                    guard.renew().map(Some)
++                    cc_db::phase_cost::measure("renew", || guard.renew()).map(Some)
+                 });
+                 match prework {
+                     Ok(Some(false)) => {
+@@ -648,7 +648,7 @@ impl<'a> EmbedHandler<'a> {
+                 reason: "revoke tasks are not consumable by the embed handler (P6-017)".into(),
+             });
+         }
+-        let Some(input) = (self.resolve_input)(task)? else {
++        let Some(input) = cc_db::phase_cost::measure("input_resolve", || (self.resolve_input)(task))? else {
+             if self.publisher.is_cancelled() {
+                 return Ok(TaskExit::Cancelled { started: false });
+             }
+@@ -668,7 +668,7 @@ impl<'a> EmbedHandler<'a> {
+         if self.publisher.is_cancelled() {
+             return Ok(TaskExit::Cancelled { started: false });
+         }
+-        let vectors = match self.provider.embed_documents(&batch) {
++        let vectors = match cc_db::phase_cost::measure("provider_including_cache_lookup", || self.provider.embed_documents(&batch)) {
+             Ok(vectors) => vectors,
+             Err(ProviderError::Cancelled) => return Ok(TaskExit::Cancelled { started: true }),
+             Err(e) => {
+diff --git a/crates/cc-server/src/semantic_runtime.rs b/crates/cc-server/src/semantic_runtime.rs
+index b934d07..d82a812 100644
+--- a/crates/cc-server/src/semantic_runtime.rs
++++ b/crates/cc-server/src/semantic_runtime.rs
+@@ -248,6 +248,8 @@ impl SemanticRuntime {
+         self.run_round_with(self.resolve_provider()?.as_ref())
+     }
+     fn run_round_with(&self, provider: &dyn EmbeddingProvider) -> CcResult<bool> {
++        let round_span = cc_db::phase_cost::span("round_total_inclusive");
++        let reconcile_span = cc_db::phase_cost::span("round_reconcile");
+         if self.closed.load(Ordering::Acquire) {
+             return Ok(false);
+         }
+@@ -356,6 +358,7 @@ impl SemanticRuntime {
+                 *cursor = page.next_cursor;
+             }
+         }
++        drop(reconcile_span);
+         let now = std::time::SystemTime::now()
+             .duration_since(std::time::UNIX_EPOCH)
+             .unwrap_or_default()
+@@ -391,7 +394,10 @@ impl SemanticRuntime {
+             .lock()
+             .map_err(|_| cc_model::CcError::Database("worker backfill cursor poisoned".into()))?
+             .is_some();
+-        Ok(!self.closed.load(Ordering::Acquire) && (backfilling || outcome.batch.claimed == 16))
++        let more = !self.closed.load(Ordering::Acquire) && (backfilling || outcome.batch.claimed == 16);
++        drop(round_span);
++        cc_db::phase_cost::flush();
++        Ok(more)
+     }
+ }
+ struct FencedProvider<'a>(&'a SemanticRuntime, &'a dyn EmbeddingProvider);
+@@ -405,6 +411,7 @@ impl EmbeddingProvider for FencedProvider<'_> {
+         }
+         // Reopening/reconciling never repays for a verified durable artifact.
+         // Cache IO finishes before the fallback provider call.
++        let cache_span = cc_db::phase_cost::span("provider_cache_lookup_nested");
+         let mut cached = Vec::with_capacity(batch.len());
+         for input in batch {
+             match self.0.subsystem.cache.get(
+@@ -419,6 +426,7 @@ impl EmbeddingProvider for FencedProvider<'_> {
+                 }
+             }
+         }
++        drop(cache_span);
+         let result = if !batch.is_empty() && cached.len() == batch.len() {
+             Ok(cached)
+         } else {
+@@ -639,7 +647,9 @@ impl AdmittedProvider {
+             return Err(ProviderError::Cancelled);
+         }
+         self.check_control()?;
++        let call_active = cc_db::phase_cost::active_span();
+         let result = call();
++        drop(call_active);
+         self.check_control()?;
+         if self.cancellation.is_cancelled() {
+             return Err(ProviderError::Cancelled);
+diff --git a/crates/cc-db/src/phase_cost.rs b/crates/cc-db/src/phase_cost.rs
+new file mode 100644
+--- /dev/null
++++ b/crates/cc-db/src/phase_cost.rs
+@@ -0,0 +1,15 @@
++//! Temporary diagnostic timer. No production schema or semantics change.
++use std::{collections::BTreeMap, sync::{Mutex,OnceLock}, time::Instant};
++static DATA: OnceLock<Mutex<BTreeMap<&'static str,Vec<u64>>>> = OnceLock::new();
++pub struct Span(&'static str,Instant);
++pub fn span(name: &'static str)->Span { Span(name,Instant::now()) }
++impl Drop for Span { fn drop(&mut self) { let ns=self.1.elapsed().as_nanos() as u64; DATA.get_or_init(Default::default).lock().unwrap().entry(self.0).or_default().push(ns); } }
++pub fn measure<T>(name: &'static str, f:impl FnOnce()->T)->T { let _span=span(name); f() }
++pub fn flush() { eprintln!("PROVIDER_CONCURRENCY {}",serde_json::json!({"peak":PEAK.swap(0,Ordering::SeqCst),"live":LIVE.load(Ordering::SeqCst)})); let data=std::mem::take(&mut *DATA.get_or_init(Default::default).lock().unwrap()); eprintln!("PHASE_COST {}",serde_json::to_string(&data).unwrap()); }
++
++use std::sync::atomic::{AtomicUsize,Ordering};
++static LIVE:AtomicUsize=AtomicUsize::new(0);
++static PEAK:AtomicUsize=AtomicUsize::new(0);
++pub struct Active;
++pub fn active_span()->Active{let n=LIVE.fetch_add(1,Ordering::SeqCst)+1;PEAK.fetch_max(n,Ordering::SeqCst);Active}
++impl Drop for Active{fn drop(&mut self){LIVE.fetch_sub(1,Ordering::SeqCst);}}

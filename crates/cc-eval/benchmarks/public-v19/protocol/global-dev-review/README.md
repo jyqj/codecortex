@@ -43,3 +43,7 @@ Initial receipts are retained: first prototype wrongly treated formal/global sco
 ## 后续 Gin 差量
 
 原两 repo frozen block 保持不变。可选三 repo 复现与计数见 [gin-extension/README.md](gin-extension/README.md)；运行时显式传入 `--include-gin`。
+
+## 四 repo 差量
+
+TypeScript固定公开dev与本地pair裁定见 [typescript-extension/README.md](typescript-extension/README.md)，使用独立 `check_four_repo.py`。原两repo/三repo回执均保留。

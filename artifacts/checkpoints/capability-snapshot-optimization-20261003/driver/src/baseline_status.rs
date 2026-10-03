@@ -1,7 +1,7 @@
 //! Capability availability is not query coverage or a dense-readiness claim.
 //! Read existing metadata only; never probe a provider or start indexing here.
 use crate::service_factory::QueryServices;
-use cc_db::{capability_read::CapabilitySemanticSnapshot, index_db::IndexDb};
+use cc_db::index_db::IndexDb;
 use cc_model::{config::ProjectConfig, query::RetrievalStrategy, CcError, CcResult};
 use serde_json::{json, Value};
 use std::path::Path;
@@ -18,7 +18,7 @@ pub(crate) fn snapshot(
 }
 
 // The observer is an internal seam for deterministic publication interleavings.
-pub(super) fn snapshot_observing(
+fn snapshot_observing(
     project: Option<&Path>,
     db: Option<&IndexDb>,
     config: Option<&ProjectConfig>,
@@ -67,7 +67,7 @@ pub(super) fn snapshot_observing(
             "execution":services.pool.stats(),"execution_scope":"process_shared_not_project_local"
         }
     });
-    let (Some(_project), Some(db)) = (project, db) else {
+    let (Some(project), Some(db)) = (project, db) else {
         // No live index: an attached+wired port cannot be verified against
         // anything — keep the conservative `port_attached_unverified`
         // wording, and stop claiming "publication not implemented" (the
@@ -85,34 +85,22 @@ pub(super) fn snapshot_observing(
     // port (host-side injection without wiring) keeps the honest
     // `port_attached_unverified` wording; an unwired port keeps
     // `not_configured` (V18 口径零漂移). Read-only DB reads, best-effort:
-    // a failed typed read keeps the conservative error/unverified result.
+    // a failed read keeps the conservative unverified wording.
     let observed = (|| -> CcResult<_> {
         for _ in 0..3 {
-            // Every database value comes from one short SQLite snapshot.
-            // The transaction and its lease end before any fresh checkout.
-            let snapshot = db
-                .reads()
-                .capability_snapshot(attached && wired.is_some())?;
-            let before = snapshot.generation;
+            let before = db.reads().read_generation()?;
+            let stats = db.reads().stats(project)?;
+            let freshness = db.reads().resolution_freshness()?;
             if db.reads().read_generation()? != before {
                 continue;
             }
             observed_root();
             let mut semantic = result.clone();
             if attached && wired.is_some() {
-                if let Some(coverage) = snapshot.semantic.as_ref() {
-                    apply_semantic_snapshot(&mut semantic, coverage);
-                }
+                apply_semantic_wired(&mut semantic, db);
                 #[cfg(feature = "semantic")]
                 if let Some(wired_info) = wired.as_ref() {
-                    apply_configured_space_snapshot(
-                        &mut semantic,
-                        snapshot
-                            .semantic
-                            .as_ref()
-                            .and_then(|s| s.active_space.as_deref()),
-                        wired_info,
-                    );
+                    apply_configured_space_state(&mut semantic, db, wired_info);
                 }
                 if let Some(reason) = services
                     .semantic_worker()
@@ -122,25 +110,23 @@ pub(super) fn snapshot_observing(
                     semantic["retrieval"]["semantic_worker_reason"] = json!(reason);
                 }
             }
-            // Preserve latest status: a concurrent publication discards this
-            // complete snapshot. No coverage retry or cross-connection counts.
-            // This retains the existing fence, not a new swap coordination claim.
+            // Coverage may perform its own retry, so its snapshot and all
+            // semantic/configured-space reads must remain inside this outer
+            // fence. Never combine an earlier root epoch with later readiness.
             if db.reads().read_generation()? == before {
-                return Ok((snapshot, semantic));
+                return Ok((before, stats, freshness, semantic));
             }
         }
         Err(CcError::RetrievalChanged { attempts: 3 })
     })();
     match observed {
-        Ok((snapshot, semantic)) => {
-            let generation = snapshot.generation;
-            let freshness = snapshot.resolution_freshness;
+        Ok((generation, stats, freshness, semantic)) => {
             result = semantic;
             result["has_index"] = json!(true);
-            result["indexed_files"] = json!(snapshot.indexed_files);
-            result["indexed_symbols"] = json!(snapshot.indexed_symbols);
+            result["indexed_files"] = json!(stats.indexed_files);
+            result["indexed_symbols"] = json!(stats.indexed_symbols);
             result["capabilities"] = json!({"search":true,"graph":true,"impact":true});
-            result["retrieval"]["index_state"] = json!(if snapshot.indexed_files == 0 {
+            result["retrieval"]["index_state"] = json!(if stats.indexed_files == 0 {
                 "empty"
             } else {
                 "available"
@@ -173,14 +159,14 @@ pub(super) fn snapshot_observing(
 }
 
 #[cfg(feature = "semantic")]
-fn apply_configured_space_snapshot(
+fn apply_configured_space_state(
     result: &mut Value,
-    active: Option<&str>,
+    db: &IndexDb,
     wired: &crate::service_factory::SemanticWiredInfo,
 ) {
     let expected = cc_semantic::types::VectorSpace::new(&wired.model_id, wired.dimensions)
         .and_then(|space| space.digest());
-    if let (Ok(expected), Some(active)) = (expected, active) {
+    if let (Ok(expected), Ok(Some(active))) = (expected, db.semantic_active_space()) {
         if active != expected.as_str() {
             result["retrieval"]["semantic_state"] = json!("backfilling");
             result["retrieval"]["dense_state"] = json!("partial");
@@ -188,25 +174,6 @@ fn apply_configured_space_snapshot(
             result["retrieval"]["dense_published"] = json!(0);
         }
     }
-}
-
-// Keep the original helper fixtures and assertions intact while exercising
-// the production projection with the typed database observation.
-#[cfg(all(test, feature = "semantic"))]
-fn apply_configured_space_state(
-    result: &mut Value,
-    db: &IndexDb,
-    wired: &crate::service_factory::SemanticWiredInfo,
-) {
-    let snapshot = db.reads().capability_snapshot(true).unwrap();
-    apply_configured_space_snapshot(
-        result,
-        snapshot
-            .semantic
-            .as_ref()
-            .and_then(|s| s.active_space.as_deref()),
-        wired,
-    );
 }
 
 /// The wired-port state projection (P7-014). `semantic_state`:
@@ -217,30 +184,35 @@ fn apply_configured_space_state(
 /// `partial` otherwise, with `dense_published`/`dense_desired` counts and a
 /// stable `dense_reason` naming the gap. Never a ready impersonation: the
 /// unwired and bare-attached wordings are byte-identical to pre-P7-014.
-fn apply_semantic_snapshot(result: &mut Value, coverage: &CapabilitySemanticSnapshot) {
-    if coverage.active_space.is_none() {
+fn apply_semantic_wired(result: &mut Value, db: &IndexDb) {
+    let pending = db.reads().semantic_outbox_pending();
+    let coverage = db.reads().semantic_coverage();
+    let (Ok(pending), Ok(snapshot)) = (pending, coverage) else {
+        return; // conservative: keep `port_attached_unverified` / `disabled`
+    };
+    let coverage = snapshot.coverage;
+    if coverage.reason == Some(cc_db::semantic_coverage::ZeroEligibleReason::SemanticNotConfigured)
+    {
         result["retrieval"]["dense_reason"] = json!("semantic_no_active_space");
         return;
     }
-    let pending = coverage.pending;
-    let uncovered = coverage.eligible.saturating_sub(coverage.published);
     result["retrieval"]["semantic_state"] = json!(if pending > 0 {
         "backfilling"
     } else if coverage.failed > 0 {
         "failed"
-    } else if uncovered > 0 {
+    } else if coverage.uncovered > 0 {
         "backfilling"
     } else {
         "ready"
     });
     result["retrieval"]["semantic_pending"] = json!(pending);
     result["retrieval"]["semantic_failed"] = json!(coverage.failed);
-    if coverage.eligible > 0 && uncovered == 0 {
+    if coverage.eligible > 0 && coverage.uncovered == 0 {
         result["retrieval"]["dense_state"] = json!("ready");
         result["retrieval"]["dense_reason"] = json!(null);
     } else {
         result["retrieval"]["dense_state"] = json!("partial");
-        result["retrieval"]["dense_reason"] = json!(if uncovered > 0 {
+        result["retrieval"]["dense_reason"] = json!(if coverage.uncovered > 0 {
             "semantic_coverage_uncovered"
         } else {
             "semantic_no_eligible_documents"
@@ -248,12 +220,6 @@ fn apply_semantic_snapshot(result: &mut Value, coverage: &CapabilitySemanticSnap
     }
     result["retrieval"]["dense_published"] = json!(coverage.published);
     result["retrieval"]["dense_desired"] = json!(coverage.eligible);
-}
-
-#[cfg(test)]
-fn apply_semantic_wired(result: &mut Value, db: &IndexDb) {
-    let snapshot = db.reads().capability_snapshot(true).unwrap();
-    apply_semantic_snapshot(result, snapshot.semantic.as_ref().unwrap());
 }
 
 /// P6-018 degraded 透出 (P6-012 deviation-1 hand-over): when the optional

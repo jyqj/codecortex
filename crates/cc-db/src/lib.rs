@@ -5,6 +5,7 @@
 //! `admin()` / `retrieval()` / `graph_reads()`) split the method surface.
 //! Deep dive: `docs/internals/STORAGE.md`.
 
+pub mod capability_read;
 mod community_carry;
 pub mod direct_writer;
 pub mod document_store;

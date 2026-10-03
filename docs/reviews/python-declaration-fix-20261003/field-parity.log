@@ -1,0 +1,9 @@
+PASS engine: all 5 normal-method hits byte-value-identical in every field including scores/traces/source/document/qname
+PASS engine: unchanged native evaluator, original micro gold, correct=1 / wrong=0; original missing baseline=0 retained
+PASS mcp: all 5 normal-method hits byte-value-identical in every field including scores/traces/source/document/qname
+PASS mcp: unchanged native evaluator, original micro gold, correct=1 / wrong=0; original missing baseline=0 retained
+PASS Inner engine: [('Inner', 'class', 'Outer.Inner'), ('Outer', 'class', 'Outer'), ('pulse', 'method', 'Outer.Inner.pulse')]; exact original source slices and canonical wrapper owners
+PASS Inner mcp: [('Inner', 'class', 'Outer.Inner'), ('Outer', 'class', 'Outer'), ('pulse', 'method', 'Outer.Inner.pulse')]; exact original source slices and canonical wrapper owners
+PASS Outer engine: [('Inner', 'class', 'Outer.Inner'), ('Outer', 'class', 'Outer'), ('pulse', 'method', 'Outer.Inner.pulse')]; exact original source slices and canonical wrapper owners
+PASS Outer mcp: [('Inner', 'class', 'Outer.Inner'), ('Outer', 'class', 'Outer'), ('pulse', 'method', 'Outer.Inner.pulse')]; exact original source slices and canonical wrapper owners
+PASS decorated-class regression repaired: no false Function class identity; independent Inner and pulse results remain

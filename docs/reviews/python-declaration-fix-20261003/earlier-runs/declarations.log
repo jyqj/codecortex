@@ -1,0 +1,24 @@
+   Compiling cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.07s
+     Running tests/python_declaration_identity.rs (/workspace/scratch/python-kind/target/debug/deps/python_declaration_identity-61282226684dd101)
+
+running 2 tests
+test classes_keep_canonical_envelopes_members_uids_and_lexical_parents ... FAILED
+test decorated_class_members_are_not_lost_in_small_or_split_chunks ... ok
+
+failures:
+
+---- classes_keep_canonical_envelopes_members_uids_and_lexical_parents stdout ----
+
+thread 'classes_keep_canonical_envelopes_members_uids_and_lexical_parents' (12697) panicked at crates/cc-index/tests/python_declaration_identity.rs:86:13:
+missing source proof factory.容器
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    classes_keep_canonical_envelopes_members_uids_and_lexical_parents
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p cc-index --test python_declaration_identity`

@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`ec45af6c83572d7bc280b0859175e76c607e950de7ae354ba7cfd66d34aabee3`。
+> 任务总数：192；源文件 SHA-256：`00d2706603e28dce5b0d6d9ce27add1f3b724866cfd4821b707a97e4ca39fbcd`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2022,6 +2022,8 @@
   `artifacts/checkpoints/qname-source-identity-implementation-20261003/README.md`。
   V19 和父项保持开放；公开 DEV、规模/发行认证及其他平台未验。
 
+
+2026-10-03 新独立 Python AST 声明修复，基于 PR132/fd5146b；冻结源码 f4df9a83514e6ba901143547368ce4a3bee21940。decorated class 只有 canonical wrapper Class，按真实 AST 分派、遍历成员与 decorator 引用；函数提取器拒绝 class，boundary hint 需类别/名称兼容，保留合法 Method 和其它语言分类。原 PR134/fb8ca8a REJECT 证据逐字保留；原 parser 红例4/0，原公开 omission 断言仍按原样失败于正确 Class qname，非冒充全绿；新公开 exact source/SQL proof2/0、lifecycle7/0、diagnostic1/0。冻结树 bounded parser248/index14/public10/search298共570/0/0，locked Rust1.95 fmt/strictclippy通过；真实 engine/MCP Outer/Inner 均保留 Outer Class、Inner Class、pulse Method，普通5hit所有字段/score/source/document逐值相同；未改 native scorer/微型gold，correct1/wrong0。完整记录 docs/reviews/python-declaration-fix-20261003/README.md 与 source-manifest.json；生产只改 Python parser/references 和必要 boundary guard，schema_guard 由另 worker 负责，DB 独审未替代。原任务/status/acceptance不翻done，V19及父项仍开放，待原线程独立最终审阅；排除旧runtime/GC-WAL/kill/staging/EROFS/private-localdiag/42export，不运行包含旧worker用例的broad suites。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 

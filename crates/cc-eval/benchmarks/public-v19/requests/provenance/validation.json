@@ -1,0 +1,140 @@
+{
+  "status": "author_integrity_verified_not_independent_review",
+  "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "admitted_source_files": 20,
+  "license_verified": true,
+  "families": 75,
+  "dev": 75,
+  "holdout_bodies_in_public_projection": 0,
+  "holdout_custody_status": "holdout_custody_blocked",
+  "absence_checks": [
+    {
+      "family_hash": "a0685fe5113715b284d129c156e183dce3e5836ce283b77ae524cb289d34ca46",
+      "scope": "entire src/requests/hooks.py; built-in HOOKS declaration and its consumers",
+      "checked": {
+        "method": "AST literal declaration and source-read consumers",
+        "values": [
+          "response"
+        ]
+      }
+    },
+    {
+      "family_hash": "c06fb46b1bce63b26cc89920f8e907ce7d2c527fa6555f25f2d78242e6055d1c",
+      "scope": "src/requests/auth.py HTTPDigestAuth.build_digest_header implementation only",
+      "checked": {
+        "method": "literal guard plus author source-read exhaustive scoped implementation",
+        "implementation_sha256": "a0b8a932428d46c6819c10756d787c3d817e49590f3d98434966bea27261bdb6"
+      }
+    },
+    {
+      "family_hash": "3ef1892fecc0544928ae02c825657127642007e8685b4e0eff11e3c90985ef59",
+      "scope": "class definitions and async function definitions in src/requests/sessions.py only",
+      "checked": {
+        "method": "AST class enumeration",
+        "class_names": [
+          "Session",
+          "SessionRedirectMixin"
+        ]
+      }
+    },
+    {
+      "family_hash": "dc7294c18961bd662889c19e1bf4787be7b175453cffce9e673f9d76ffcef229",
+      "scope": "src/requests/sessions.py Session.send direct implementation; excludes behavior of user-supplied hooks/adapters/jars",
+      "checked": {
+        "method": "AST complete scoped call enumeration plus author semantic source read",
+        "calls": [
+          "ValueError",
+          "_is_prepared",
+          "adapter.send",
+          "dispatch_hook",
+          "extract_cookies_to_jar",
+          "history.insert",
+          "history.pop",
+          "isinstance",
+          "kwargs.get",
+          "kwargs.pop",
+          "kwargs.setdefault",
+          "next",
+          "preferred_clock",
+          "resolve_proxies",
+          "self.get_adapter",
+          "self.resolve_redirects",
+          "timedelta"
+        ],
+        "implementation_sha256": "ee680a2136df9d7eb8fd90129c9c29701597a3158fadd119dd67021339be7ef0"
+      }
+    },
+    {
+      "family_hash": "4e1cf4b51cfd08b988d94ed4ad18b4c498b71c41907e95c3ceb4234d39b4139f",
+      "scope": "src/requests/adapters.py HTTPAdapter.add_headers base implementation only, not Session default_headers or subclass overrides",
+      "checked": {
+        "method": "AST complete scoped call enumeration plus author semantic source read",
+        "calls": [],
+        "implementation_sha256": "057e4fb9067e09dcf3d4b16470f4fe277ee3b70b6a9f3247c60cf3c0222ec884"
+      }
+    },
+    {
+      "family_hash": "65594118e1111e9dbfb193e222e2141e40bc67df6fad3eb4187dbb30c33a17e4",
+      "scope": "src/requests/cookies.py MockRequest.add_header implementation only",
+      "checked": {
+        "method": "literal guard plus author source-read exhaustive scoped implementation",
+        "implementation_sha256": "3aeea21b4358b4bc8eedf064fa7596395e7c5eca671b681f77fadd818beb50bc"
+      }
+    },
+    {
+      "family_hash": "d6d720d87e2bb234982f4e8a3d4681632c698b0a8776a50668c6c73d11a08aa3",
+      "scope": "src/requests/auth.py AuthBase.__call__ base body only; excludes third-party subclasses",
+      "checked": {
+        "method": "literal guard plus author source-read exhaustive scoped implementation",
+        "implementation_sha256": "9f3c81a143ff49d499ca984a38371e8d0b0789e9bc7e23e53abd1acb53464c15"
+      }
+    },
+    {
+      "family_hash": "de0eddc08d2295e63e8852b6cdc9e5ff544114b495540ab49184edc219e5025d",
+      "scope": "src/requests/models.py Response.links getter only; excludes code consuming the returned mapping",
+      "checked": {
+        "method": "AST complete scoped call enumeration plus author semantic source read",
+        "calls": [
+          "link.get",
+          "parse_header_links",
+          "self.headers.get"
+        ],
+        "implementation_sha256": "3ea196282a4dcb2145e32d01700645a05101136887694e333a2c36f86519d45d"
+      }
+    }
+  ],
+  "retrieval_executed": false,
+  "sha256": {
+    "queries.compat.dev.jsonl": "a631cc77287e59fb3271e0b80f67dd3f407509cf46a8c18c398089248f568f72",
+    "queries.native.dev.jsonl": "88fca60fa2f1b1e6605c5dcbc8abf03d69df1d94998eee85d36cadd3b7d9f8ab",
+    "questions/specifications.json": "998349a8bc83fdb76f5d41e8e9a795706046b897e15160efdb1d8be72796ba56",
+    "gold/dev.json": "709109c2bae81a600f16796c77363b8a3b7ec2c391d7da411eda683532be46b9",
+    "suite-native-dev.json": "49397f7a3d97a27d752749404ba44670033eaa0bc6d777d4e3e6a7c9a3041892",
+    "suite-compat-dev.json": "c0fa8a590685b5223322ba088d0d93cf2712b42761d15e7d3d72d1b404efcd9e"
+  },
+  "evaluator": {
+    "binary_sha256": "481bcaf82b4c982d10978a45adca1ada0eb8681288fc6df2dc82ae1851dd8342",
+    "validations": [
+      {
+        "command": [
+          "/workspace/codecortex/target/debug/cc-eval",
+          "validate",
+          "--suite",
+          "/workspace/codecortex/crates/cc-eval/benchmarks/public-v19/requests/suite-native-dev.json"
+        ],
+        "exit_code": 0,
+        "diagnostics_sha256": "5210c3970c4703e86e871bdf9c55bdfc0a4b00c12b0ab32a2124562320a2ff67"
+      },
+      {
+        "command": [
+          "/workspace/codecortex/target/debug/cc-eval",
+          "validate",
+          "--suite",
+          "/workspace/codecortex/crates/cc-eval/benchmarks/public-v19/requests/suite-compat-dev.json"
+        ],
+        "exit_code": 0,
+        "diagnostics_sha256": "db0e8d7df7482575a6fc2d61c10aad26fb315661a75a8aa547e45bdafa5b3e21"
+      }
+    ]
+  }
+}

@@ -16,7 +16,7 @@ def audit(root):
                     calls=db.execute('SELECT count(*) FROM call_edges').fetchone()[0],
                     manifests=len(manifests), versions=sorted({m['version'] for m in manifests}),
                     empty_keys=db.execute("SELECT count(*) FROM resolution_dependencies WHERE key='' ").fetchone()[0],
-                    punctuation_types=sum(1 for m in manifests for r in m['records'] if r['site_kind']=='semantic' and r['query'] and not any(c.isalnum() for c in r['query'])),
+                    punctuation_types=sum(1 for m in manifests for r in m['records'] if r['site_kind']=='semantic' and r['query'].strip() in {'...', '.', '::', '?', '|', '&', '*', '[', ']', '(', ')', ','}),
                     duplicate_sites=sum(len(m['records'])-len({(r['site_kind'],r['site_id']) for r in m['records']}) for m in manifests))
 
 def run(binary, root, full, logfile):

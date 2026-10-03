@@ -12,4 +12,6 @@
 
 验证：workspace all-targets 2340/0、65原有ignored，146 suite；clippy workspace all-targets -D warnings 通过；fmt通过。原始日志 gzip 保留，SHA见 validation-log-manifest.json。PR101首次链接和clippy首次执行因磁盘满失败，清理生成缓存后重试通过；额外独立eval首次执行同样磁盘满，后按实际lib测试范围重试。不是全V20或发布性能证明。
 
-验收阻塞：父提供 Requests 独立 review BOUNDED_REJECT（合法 `_`/`__`/`$`/`℘` 类型被过滤）。本树不得标 accepted，等待新修复 owner 的精确 SHA 和同一 reviewer 复验。Go 独立 review PR104 `06478892104347a846cdfdb81f843574e188634b` 远端核验一致；范围为 Go 修复，不证明迁移。PR101 cold review 尚待父结论。live/heldout质量及完整性能gate继续 blocked。
+验收阻塞：父提供 Requests 独立 review BOUNDED_REJECT（合法 `_`/`__`/`$`/`℘` 类型被过滤）。本树不得标 accepted，等待新修复 owner 的精确 SHA 和同一 reviewer 复验。Go 独立 review PR104 `06478892104347a846cdfdb81f843574e188634b` 远端核验一致；范围为 Go 修复，不证明迁移。Requests 负证据精确 SHA `7f650a5f8338e0d1ad2d8e8592ae31c89b34047c` 已取回且确认为43个review文件。PR101 cold block 独立 review `70c2a640160060e34cd530e18e02a8c95885063f` 支持c70c68f优化块，不证明100k/fullV20。live/heldout质量及完整性能gate继续 blocked。
+
+综合 draft PR 的查询入口返回明确 GitHub GraphQL `Forbidden`，已停止对应动作，不换路绕过；集成分支已正常推送并核验。诊断脚本只把明确的ellipsis/分隔符当作标点类型反例，不以alphanumeric推断合法标识符；它不修改生产函数。

@@ -2,6 +2,8 @@
 """Finite unchanged-PR58 replay and source-bound new stdio supplement."""
 import hashlib,json,os,pathlib,re,subprocess,time
 HERE=pathlib.Path(__file__).resolve().parent;ROOT=HERE.parents[2]
+EVID=pathlib.Path(os.environ.get('P7_GATE_REVIEW_OUTPUT',str(HERE))).resolve()
+if EVID != HERE: EVID.mkdir(parents=True)
 BASE='83a6b54ab1e71db033264e3b4e8d4f0a1d5319ad'
 SOURCE='ed6663e9af270552d3217e64363416f8f5daa1a5'
 sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
@@ -14,7 +16,7 @@ for path in tracked:
   p=ROOT/path;assert p.read_bytes()==subprocess.check_output(['git','show',BASE+':'+path],cwd=ROOT),path;proof[path]=sha(p)
 for name in ['audit_scope.py','audit_frozen.py','lifecycle_stdio.py','probe_public_source.py']:
  assert (HERE/name).read_bytes()==subprocess.check_output(['git','show',SOURCE+':'+str((HERE/name).relative_to(ROOT))],cwd=ROOT)
-write(HERE/'fixed-source-proof.json',{'baseline_sha':BASE,'review_source_sha':SOURCE,'tracked_sha256':proof,'production_and_main_oracle_ledger_edits':False})
+write(EVID/'fixed-source-proof.json',{'baseline_sha':BASE,'review_source_sha':SOURCE,'tracked_sha256':proof,'production_and_main_oracle_ledger_edits':False})
 runs=[]
 def run(cmd,path,extra=None):
  path.mkdir(parents=True)
@@ -25,7 +27,7 @@ def run(cmd,path,extra=None):
 
 for feature in ['semantic','semantic-http']:
  for rep in range(1,6):
-  path=HERE/'matrix'/feature/f'{rep:02}'
+  path=EVID/'matrix'/feature/f'{rep:02}'
   cmd=['cargo','test','-p','cc-server','--test','p7_v05_all_lane_scope','--features',feature,'--locked','--offline','--','--nocapture']
   rc,elapsed=run(cmd,path,{'P7_ALL_LANE_SCOPE_OUTPUT':str(path/'raw')})
   raw=path/'raw/all-lane-scope.json'
@@ -39,7 +41,7 @@ for feature in ['semantic','semantic-http']:
 
 binary=ROOT/'target/debug/codecortex'
 for rep in range(1,4):
- path=HERE/'matrix'/'lifecycle'/f'{rep:02}'
+ path=EVID/'matrix'/'lifecycle'/f'{rep:02}'
  cmd=['python3',str(HERE/'lifecycle_stdio.py'),str(binary),str(path/'raw')]
  rc,elapsed=run(cmd,path)
  summary=json.loads((path/'raw/summary.json').read_text())
@@ -47,7 +49,7 @@ for rep in range(1,4):
  write(path/'receipt.json',receipt);runs.append(receipt)
  assert rc==0 and summary['passed'] is True and len(summary['cases'])==13 and summary['costs']['document_posts']==summary['costs']['query_posts']==4,'failure retained'
  print('lifecycle',rep,'13 checkpoints passed',flush=True)
- path=HERE/'matrix'/'public-source'/f'{rep:02}'
+ path=EVID/'matrix'/'public-source'/f'{rep:02}'
  cmd=['python3',str(HERE/'probe_public_source.py'),str(binary),str(path/'raw')]
  rc,elapsed=run(cmd,path)
  summary=json.loads((path/'raw/coordinate-result.json').read_text())
@@ -55,4 +57,4 @@ for rep in range(1,4):
  write(path/'receipt.json',receipt);runs.append(receipt)
  assert rc==0 and len(summary['rows'])==2 and summary['line_coordinates_closed'],'failure retained'
  print('public source',rep,'two tool responses passed',flush=True)
-write(HERE/'matrix/summary.json',{'baseline_sha':BASE,'review_source_sha':SOURCE,'command_runs':len(runs),'unchanged_rust_test_passes':10,'lifecycle_runs':3,'lifecycle_checkpoints':39,'public_source_tool_responses':6,'failed':0,'ignored':0,'distinct_quality_questions':0,'runs':runs,'D1_D2':'unchanged','SIGKILL_P7_016':'not_run'})
+write(EVID/'matrix/summary.json',{'baseline_sha':BASE,'review_source_sha':SOURCE,'command_runs':len(runs),'unchanged_rust_test_passes':10,'lifecycle_runs':3,'lifecycle_checkpoints':39,'public_source_tool_responses':6,'failed':0,'ignored':0,'distinct_quality_questions':0,'runs':runs,'D1_D2':'unchanged','SIGKILL_P7_016':'not_run'})

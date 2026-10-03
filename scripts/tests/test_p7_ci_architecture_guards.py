@@ -70,7 +70,8 @@ class SchemaDeclarationMutations(unittest.TestCase):
         MODULE['schema_contract'](self.current, self.migration)
 
     def test_wrong_or_missing_schema_fails(self):
-        for schema in [21, 22, 23, 25, '24', None, True]:
+        current = self.current['database_schema']
+        for schema in [21, 22, 23, current - 1, current + 1, str(current), None, True]:
             with self.subTest(schema=schema):
                 declaration = copy.deepcopy(self.current)
                 declaration['database_schema'] = schema

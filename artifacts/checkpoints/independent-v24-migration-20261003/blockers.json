@@ -1,0 +1,19 @@
+{
+  "status": "BLOCKED_INDEPENDENT_EXECUTION",
+  "observed_commands": ["/workspace/.cargo/bin/rustc -Vv", "/workspace/.cargo/bin/cargo -V"],
+  "observed_error": "error: could not create home directory: '/home/agent/.rustup': Read-only file system (os error 30)",
+  "default_path_probe": "rustc and cargo not found",
+  "action_stopped": "rustup toolchain actions, independent product build and dependent native migration runs",
+  "cause": "filesystem read-only denial; not an automatic approval review rejection",
+  "no_permission_changes": true,
+  "no_alternate_toolchain_or_home_retry": true,
+  "product_builds": 0,
+  "product_migration_runs": 0,
+  "product_regression_runs": 0,
+  "product_pinned_runs": 0,
+  "real_provider_calls": 0,
+  "pr_action": "gh pr list --repo jyqj/codecortex --state all --head codex/cloud-index-fix-integration --json number,url,baseRefName,headRefOid,isDraft",
+  "pr_action_error": "Post https://api.github.com/graphql: Forbidden",
+  "pr_action_exit": 1,
+  "draft_pr_status": "BLOCKED; no create request, alternate API, address or credential retry"
+}

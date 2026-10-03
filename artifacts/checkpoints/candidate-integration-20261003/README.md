@@ -50,7 +50,7 @@
 - `queue.log`：本轮误写不存在的 target `queue_consumer`，exit101；更正为 `queue_worker`，原日志保留。
 - `clippy.log`：一次 cargo clippy误走子命令rustup代理，只读 `/home/agent/.rustup` exit1；没有重试该路径/更改HOME/RUSTUP_HOME/权限。现成真实 cargo-clippy 直接调用通过。
 - `verified/`：首版证据解析器将 `10 passed` 中的子串 `0 passed` 误判为未执行，bounded tests实际上 exit0/10passed；修为完整数字解析后在 `verified-final/`重放。原解析失败receipt/log保留，不称产品失败或隐藏工具错误。
-- 首次最终全delta diff-check捕获raw transcript末尾空行，见 `diff-raw-log-eof.log`；为保留原日志字节，本目录 `.gitattributes` 只对 `.log` 关闭 blank-at-eof 检查，其余 whitespace/code检查不变。随后全delta diff-check通过。
+- 首次最终全delta diff-check捕获raw transcript末尾空行，见 `diff-raw-log-eof.log`；为保留原日志字节，本目录 `.gitattributes` 只对 `.log` 关闭 blank-at-eof 检查，其余 whitespace/code检查不变。随后候选相对PR121新增delta diff-check通过；相对PR117仍有继承PR121原日志EOF空行告警，历史原字节未改，不称全delta绿色。
 
 复现：仓库根运行 `python3 artifacts/checkpoints/candidate-integration-20261003/replay.py /tmp/cc-candidate-replay`。脚本只编译指定 package/target，并按全名执行runtime相关case，不选宽泛runtime或被拒用例；忽略旧反例不会计作pass。
 

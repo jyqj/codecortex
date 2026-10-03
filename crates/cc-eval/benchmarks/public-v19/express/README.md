@@ -44,3 +44,17 @@ python3 crates/cc-eval/benchmarks/public-v19/express/provenance/protocol-v1/chec
 `intake/supplement-002` 是两条新 dev 候选的 native/compat 块；`intake/public-dev-102` 是旧 dev 字节加新块字节的公开联合投影。合计 **102 个作者候选 ID、100 个待审组件、70 native dev /59 compat dev**。新增 holdout 为 0；原 32 个 would-be holdout 的污染/隔离/custody 阻塞不变。accepted/独立审查仍 0。联合集包含旧块与补块，不能重复累计。
 
 `corpus-receipt-supplement.json` 记录原文件逐字节保留验证、当前正文 SHA256、四个新增 suite BLAKE3 locks、checker 与 source/span 收据。`review/public-dev-review-entry.json` 是跨仓独立审查入口，只列 7 个公开源文件、MIT license、70/59 dev gold、suite 和必要 counts/hash 验证材料的精确 SHA256/Git blob；不列受隔离 would-be holdout 正文或旧 Git 历史。入口 allowlist 是证据范围，不冒充访问控制。
+
+## PR71 独立 review 后的公开 dev 修订 v1
+
+固定独立审查 `24affebcaab1caa9acd08841233867c89931dbf3` 对 PR68+PR69 的 70 public dev 行判定为 62 accept /8 needschange（68 visible components:60 accept /8 needschange）；另一个两行 pair 要求 source-task equivalence 裁决。作者不改审查者 namespace/原收据、不把作者修补自签为 accept。
+
+`intake/dev-repair-v1` 是独立版本。仅 `f0063、f0065、f0068、f0069、f0077、f0079、f0080、f0102` 的 8 native 行及相应 compat 元数据变化，其余 62 个先前 accepted native 行原字节不变。原 source、gold、suite、旧 receipt、32 个 blocked would-be holdout 承诺和既有合并关系全部保留；没有历史/holdout 正文读取，没有排名。旧与新逐行 SHA256、理由、固定 review 错误码保存在 `review/dev-repair-v1-row-mapping.json`。
+
+修订纠正 methods 引用至实际 import；external router/proxy-addr/finalhandler 目标用明确排除边界和真实 import/call-site anchors 描述，不再伪造内部 self-edge；query parser 是配置依赖的 dynamic callback；fresh 的 header/status 目标绑定 res.get/res.status；logerror 的 env 读取绑定 generated app.get→app.set；传输错误分支成为 f0102 primary，setup 保留 required secondary。源事实/查询不为产品成绩改变；external declaration/code 仍未纳入。
+
+`relations.dev-repair-v1.json` 保留原两对关系，并保守提出 f0063/f0077 的同任务组件（Node METHODS 到动态 verb binding 的义务重叠，长链的额外 route 义务不独立计样本）。canonical f0063，两条仍 dev；无 split 移动。此项是待指定独立 reviewer/global adjudicator 裁决的作者提案，不是已冻结关系。提案总组件为 **99** /公开 dev 67；不为保持 100 造题或拒绝合并。原组件版本仍完整保留。
+
+当前仍是 70 native /59 compat public dev，8 修订待同一独立 reviewer 复验，作者新增 accepted 为 **0**。32 个 holdout 的暴露/隔离/custody blocked 不变。原 62 行的独立接受依据仅为 PR71 原字节签署，不代表这 8 个新字节被审查过。
+
+`corpus-receipt-dev-repair-v1.json` 汇总版本/原接受状态/待审计数/实际验证哈希；`review/public-dev-review-entry-repair-v1.json` 提供仅公开源、修订 dev gold、精确行/字节证据、哈希映射和固定独立决议的 allowlist。共同 checker 与实际 evaluator native/compat validate 通过；链/facet语义必须独立复验，输入通过不替代审查。

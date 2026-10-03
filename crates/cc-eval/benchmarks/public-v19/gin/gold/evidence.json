@@ -748,5 +748,919 @@
       },
       "conclusion": "Absent within binding/json.go: decodeJSON uses local codec decoder flags and validate; no schema fetch or network call."
     }
+  },
+  {
+    "family": "gin.v19.wrap-http-handler",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "8ac8cdaf3c9450cb7cd1ea973190e99c4634f674e235c1e3d7f570114a0fb6ae",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "utils.go",
+        "symbol": "WrapH",
+        "start_line": 55,
+        "end_line": 59,
+        "span": {
+          "start": 1393,
+          "end": 1500
+        },
+        "sha256": "6070f28ef6c9b244d5d92c0112e6bf9dc4cac11b81210671884297d578440433"
+      }
+    ],
+    "literal_answer": "WrapH returns a closure invoking h.ServeHTTP(c.Writer,c.Request).",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.delete-context-key",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "cc63dadfbefd381deb02ccee0c1f7c578890c5c8d68a819d5d863b7276de9e0d",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Delete",
+        "start_line": 491,
+        "end_line": 497,
+        "span": {
+          "start": 14691,
+          "end": 14807
+        },
+        "sha256": "8606c70e5b5bc1a188293290ad50ee20c13034c460a37f5fff7be6646ec2169c"
+      }
+    ],
+    "literal_answer": "Context.Delete obtains c.mu.Lock and deletes the key only when Keys is non-nil.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.query-map",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "382965f6ee404ee39e23be2ba78079adb24ca814faa27724b2ee5aae524a5130",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.GetQueryMap",
+        "start_line": 603,
+        "end_line": 606,
+        "span": {
+          "start": 18066,
+          "end": 18203
+        },
+        "sha256": "b99c0cb4da1ba1c304a9c37eaa1c213838be8d40f276b10d8a6d8b3b5fc0397a"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "getMapFromFormData",
+        "start_line": 683,
+        "end_line": 704,
+        "span": {
+          "start": 21085,
+          "end": 21539
+        },
+        "sha256": "88a6f9d58d381a037e86d1ce982ce7558839ca3652216a28b6ee8efa7b11f0a3"
+      }
+    ],
+    "literal_answer": "GetQueryMap initializes queryCache and calls getMapFromFormData, which maps key[subkey] to the first value.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.typed-value",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "f6a98cfed4446a60831c0751c2382a407b4c33a830d9ed497b08825d77bcaf7a",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "getTyped",
+        "start_line": 312,
+        "end_line": 317,
+        "span": {
+          "start": 8735,
+          "end": 8864
+        },
+        "sha256": "fd577dfa5b4d4d51a0a3fdf62f3fb4ce462284861e5a5852be9ef31a342a1196"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.GetString",
+        "start_line": 320,
+        "end_line": 322,
+        "span": {
+          "start": 8934,
+          "end": 9014
+        },
+        "sha256": "0160aaff8bdb87a88fc6465cd0bdaeebeefefd45b7b3e5c8afcc4d9cc9ee4f0f"
+      }
+    ],
+    "literal_answer": "getTyped[T] obtains Get, type-asserts to T without coercion, and returns the zero T on absent, nil or wrong-type values.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.query-empty-presence",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "a95bcd72236ef0e31da70ae95a01d85ef68f3834167ae10fa82ea5aac6c126dc",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.DefaultQuery",
+        "start_line": 547,
+        "end_line": 552,
+        "span": {
+          "start": 16371,
+          "end": 16516
+        },
+        "sha256": "093d34aadd97054565bb44fdbb25a592dbb8eceff110be320a3b6ee56259c24b"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.GetQuery",
+        "start_line": 563,
+        "end_line": 568,
+        "span": {
+          "start": 16899,
+          "end": 17045
+        },
+        "sha256": "017e773c667e9c0722e2be20b8c0253d462cb7a6011201f10bef388eed371eec"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.GetQueryArray",
+        "start_line": 589,
+        "end_line": 593,
+        "span": {
+          "start": 17643,
+          "end": 17777
+        },
+        "sha256": "9aa6bc873b3dd1e7c18156695fd0c9ef22f7956612f393f909754f052e6a1b2a"
+      }
+    ],
+    "literal_answer": "A present empty value remains empty: GetQuery returns first value with presence true; DefaultQuery uses fallback only when GetQuery reports false.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.cookie-data-defaults",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "2d504bac74757f579b3ef401833e76dcbab4f568de4e4567a6e8fdfd025218cf",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.SetCookieData",
+        "start_line": 1177,
+        "end_line": 1185,
+        "span": {
+          "start": 37264,
+          "end": 37485
+        },
+        "sha256": "b8cf692df3ec8b29d9bb50eeaa89a810a55fb306903e0be6012eb26d216d177d"
+      }
+    ],
+    "literal_answer": "It mutates Path to / and SameSite to the stored c.sameSite; explicitly set SameSite is preserved, then http.SetCookie is called.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.filefs-restore",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "0aadde7bb64e3dcae137f6d1fbe7ac0e557a4a9fa3e36e9dad161d9d8abf20d6",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.FileFromFS",
+        "start_line": 1345,
+        "end_line": 1353,
+        "span": {
+          "start": 42992,
+          "end": 43222
+        },
+        "sha256": "6ab65ff722bca2e39d3ecbf3bb2defc69a14ceae5f8ed55a1e36d2ff5fce54ac"
+      }
+    ],
+    "literal_answer": "It temporarily assigns filepath for http.FileServer and defers restoration of the original URL.Path.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.h-xml-root",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "749f82696c10da341afe9c5f9d1e9ced37ca747dc3401befe68e8896d98cef57",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "utils.go",
+        "symbol": "H.MarshalXML",
+        "start_line": 65,
+        "end_line": 84,
+        "span": {
+          "start": 1620,
+          "end": 2068
+        },
+        "sha256": "846f2c0085904cec20b7e82fdb53216b1159d3b2d59b16a25eeda6e83912ba3f"
+      }
+    ],
+    "literal_answer": "It replaces the root name with map, emits one child named after each key using EncodeElement, and closes the map token.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.binding-body-contract",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "f139e6586afbf7545e925d73c38995b37905ac057008033877cf8f8ffcee5396",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "Binding",
+        "start_line": 32,
+        "end_line": 35,
+        "span": {
+          "start": 1098,
+          "end": 1171
+        },
+        "sha256": "6e65053efe1e50c612afb54d203ad7a4cfa029f11cd21cfa4d755b72ed9a0b47"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "BindingBody",
+        "start_line": 39,
+        "end_line": 42,
+        "span": {
+          "start": 1318,
+          "end": 1386
+        },
+        "sha256": "ff1b075c6a295954585a8eafc9746f818e9fb83e6855a7bfd85b47e4ebef9751"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "BindingUri",
+        "start_line": 46,
+        "end_line": 49,
+        "span": {
+          "start": 1492,
+          "end": 1577
+        },
+        "sha256": "af2147dbbf4c5210af3f55b3f61c350953ea71ad819d62f185293b564e202de5"
+      }
+    ],
+    "literal_answer": "Binding has Name and Bind(*http.Request,any); BindingBody embeds Binding and adds BindBody([]byte,any); BindingUri has Name and BindUri(map[string][]string,any).",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.response-commit-state",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "e1b38ecc9fa6c75610f0653efa59dd94762d554c830ef3187b57d9e44d696129",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "response_writer.go",
+        "symbol": "responseWriter.reset",
+        "start_line": 61,
+        "end_line": 65,
+        "span": {
+          "start": 1256,
+          "end": 1391
+        },
+        "sha256": "56a5594c81dac4d2878ef7eb333f4d8fdf5a1c7451df01dd19995c95edc1dea5"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "response_writer.go",
+        "symbol": "responseWriter.Written",
+        "start_line": 106,
+        "end_line": 108,
+        "span": {
+          "start": 2194,
+          "end": 2265
+        },
+        "sha256": "d37785a7314a1bca34c3bd1c87d1e9af0d334a8488207b7e11729098a4cacc30"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "response_writer.go",
+        "symbol": "responseWriter.WriteHeaderNow",
+        "start_line": 77,
+        "end_line": 82,
+        "span": {
+          "start": 1649,
+          "end": 1770
+        },
+        "sha256": "304b086fecf835f36645f54ee13148be79e87e7f85637f3e105a849fbee1ecf5"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "response_writer.go",
+        "symbol": "responseWriter.Write",
+        "start_line": 84,
+        "end_line": 89,
+        "span": {
+          "start": 1772,
+          "end": 1918
+        },
+        "sha256": "6fd20dde2e9e0907fe49d21e205cd743826c65e8b4f9e7085363be973fed23f9"
+      }
+    ],
+    "literal_answer": "reset sets size to noWritten (-1) and status to defaultStatus; Written compares size to noWritten; WriteHeaderNow changes size to 0 and sends stored status; Write commits first then adds returned byte count.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.context-request-fallback",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "16cc57f13181e0374e5f9876b20b772f1d8525e078bd76779cf76e7918f6dc49",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.hasRequestContext",
+        "start_line": 1494,
+        "end_line": 1498,
+        "span": {
+          "start": 46998,
+          "end": 47218
+        },
+        "sha256": "33d2b6eac5e61176f98dfa2cb77751c6b744cccfc417c13e501e3147a4c6a1a7"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Deadline",
+        "start_line": 1501,
+        "end_line": 1506,
+        "span": {
+          "start": 47309,
+          "end": 47451
+        },
+        "sha256": "ca38b2df2e7d58c66c099f036c8eca3871d6d3843bd8b57f1d284749666a00d8"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Done",
+        "start_line": 1509,
+        "end_line": 1514,
+        "span": {
+          "start": 47535,
+          "end": 47659
+        },
+        "sha256": "0a949b03238a36039d2c53d806a937b58f226c4a866184a657eb1e33b959e7c7"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Err",
+        "start_line": 1517,
+        "end_line": 1522,
+        "span": {
+          "start": 47711,
+          "end": 47823
+        },
+        "sha256": "a8df88fd5a4b1e4a0ab35ec5f431c86bd0238c18f0c68c5683c8ff8ba8fa9114"
+      }
+    ],
+    "literal_answer": "hasRequestContext requires non-nil engine with ContextWithFallback and non-nil Request.Context; without it Deadline returns zero/false and Done/Err return nil.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.directory-listing-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "8b68279673792252be12c25176c85c980579b4c44d1d4dcd45bff45acb88aa35",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "routergroup.go",
+        "symbol": "RouterGroup.Static",
+        "start_line": 236,
+        "end_line": 238,
+        "span": {
+          "start": 8869,
+          "end": 8995
+        },
+        "sha256": "0e83aa885c6aa97d608f2c3006a57cb129009f23e3f70bd0d06098dd96c64d5f"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "fs.go",
+        "symbol": "Dir",
+        "start_line": 42,
+        "end_line": 50,
+        "span": {
+          "start": 1238,
+          "end": 1395
+        },
+        "sha256": "78a1d21637e61a5f49e0d4a11501722f223f3d41bb337044d7eaf8d1bf690a07"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "fs.go",
+        "symbol": "OnlyFilesFS.Open",
+        "start_line": 18,
+        "end_line": 25,
+        "span": {
+          "start": 431,
+          "end": 605
+        },
+        "sha256": "dd703507b41efa389ed0fabc13c4e65ac50b4ac96b47089e1aa78b3c5b4723f1"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "fs.go",
+        "symbol": "neutralizedReaddirFile.Readdir",
+        "start_line": 33,
+        "end_line": 36,
+        "span": {
+          "start": 827,
+          "end": 953
+        },
+        "sha256": "86dd63b95b62741bdd65e188f1800782aa9dfd4f3893279feed0276df8388a1a"
+      }
+    ],
+    "literal_answer": "Static calls StaticFS with Dir(root,false); Dir returns OnlyFilesFS; its Open wraps opened files in neutralizedReaddirFile whose Readdir returns nil,nil.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "constructs filesystem"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "returned filesystem Open"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 4,
+        "relation": "returned file Readdir"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.header-binding-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "d067becc7d1cda51836a5b2202bf476a7ef462e347e67f5a636dbfe73d08ed17",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBindHeader",
+        "start_line": 925,
+        "end_line": 927,
+        "span": {
+          "start": 28975,
+          "end": 29074
+        },
+        "sha256": "15cccecf2df8167f8d62f97cf35750c51f9fc3353f3360629e1c7b9ffdbc500e"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/header.go",
+        "symbol": "headerBinding.Bind",
+        "start_line": 19,
+        "end_line": 25,
+        "span": {
+          "start": 314,
+          "end": 468
+        },
+        "sha256": "9fe8615a4ad01368fb5f144d5cc364ffce9a8216188ab1f4baa65e0b7b302156"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/header.go",
+        "symbol": "mapHeader",
+        "start_line": 27,
+        "end_line": 29,
+        "span": {
+          "start": 470,
+          "end": 579
+        },
+        "sha256": "b767f593f3a295eda0531f77e7d334eb9910d231a3972f7616cf683d726773fd"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/header.go",
+        "symbol": "headerSource.TrySet",
+        "start_line": 35,
+        "end_line": 37,
+        "span": {
+          "start": 654,
+          "end": 867
+        },
+        "sha256": "6e218f8930f094a269ad13cd8d26e95d2f802925737756fe7f7586e1abcd0420"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "setByForm",
+        "start_line": 245,
+        "end_line": 321,
+        "span": {
+          "start": 6411,
+          "end": 8395
+        },
+        "sha256": "1db0a5d5c183f6176d6f6ba9be99a73fe14c3aafb41bcc9ec07a6228eb7d36df"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBindWith",
+        "start_line": 941,
+        "end_line": 943,
+        "span": {
+          "start": 29541,
+          "end": 29642
+        },
+        "sha256": "cb37911e22b49e307cc43e7b031bb8372b6fa30671e6f11a452a36d9e5d04d61"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "mappingByPtr",
+        "start_line": 79,
+        "end_line": 82,
+        "span": {
+          "start": 2068,
+          "end": 2209
+        },
+        "sha256": "990b40b7cec5e0fa88a9c5d3528fb8d66815a9532ac718df42ac3df64f66bc86"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "mapping",
+        "start_line": 84,
+        "end_line": 136,
+        "span": {
+          "start": 2211,
+          "end": 3300
+        },
+        "sha256": "d821454d63f2939919240396531282c396b7ab7057d66aaf4e68868e2bdd23a8"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "tryToSetValue",
+        "start_line": 145,
+        "end_line": 180,
+        "span": {
+          "start": 3509,
+          "end": 4566
+        },
+        "sha256": "7b1bc9aa1cd4d0503a267834d8a07050623636f5e5e36949d876e62c6ef60bfa"
+      }
+    ],
+    "literal_answer": "ShouldBindHeader calls ShouldBindWith(binding.Header); headerBinding.Bind calls mapHeader; mapHeader uses headerSource and tag header; TrySet canonicalizes tagValue then calls setByForm.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 6,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 6,
+        "to_facet": 2,
+        "relation": "Binding dispatch"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 7,
+        "relation": "calls with headerSource"
+      },
+      {
+        "from_facet": 7,
+        "to_facet": 8,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 8,
+        "to_facet": 9,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 9,
+        "to_facet": 4,
+        "relation": "setter dispatch"
+      },
+      {
+        "from_facet": 4,
+        "to_facet": 5,
+        "relation": "calls"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.contenttype-flags-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "57b224e1007c8e325691938c36df990083041be6978152cf1084d742ac659cef",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBind",
+        "start_line": 860,
+        "end_line": 863,
+        "span": {
+          "start": 26895,
+          "end": 27032
+        },
+        "sha256": "9ff39974861bd9fd4df5d41a3bd927100d1cb0ab66276c2763c4b46e7564f3a9"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ContentType",
+        "start_line": 1058,
+        "end_line": 1060,
+        "span": {
+          "start": 33673,
+          "end": 33768
+        },
+        "sha256": "f4be24a8e88a0c4755f95efbef957ca4bd818643b8a1cea4e189906cb7bceeb2"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "utils.go",
+        "symbol": "filterFlags",
+        "start_line": 92,
+        "end_line": 99,
+        "span": {
+          "start": 2143,
+          "end": 2297
+        },
+        "sha256": "25649c7584c3331950509eb1248bbec49bd1907ac249732478739d77daba61ff"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "binding.Default",
+        "start_line": 95,
+        "end_line": 120,
+        "span": {
+          "start": 3701,
+          "end": 4182
+        },
+        "sha256": "0d3f60661d73d45150f560427eab0da1e9cb07a99a272df1fb52160379fe118d"
+      }
+    ],
+    "literal_answer": "ContentType passes the Content-Type request header through filterFlags, which cuts at the first space or semicolon; ShouldBind passes that result into binding.Default.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "gets MIME"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "strips flags"
+      },
+      {
+        "from_facet": 1,
+        "to_facet": 4,
+        "relation": "selects binding"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.data-length-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "9f7752b65cbdde65716091e0695697408228343a58ac15e4bd90d961cf49a4a8",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Data",
+        "start_line": 1322,
+        "end_line": 1327,
+        "span": {
+          "start": 42182,
+          "end": 42333
+        },
+        "sha256": "19a374bff8c1b182db6e1d369556642bdedcad17f782c5ee45d8df9d1fba050e"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/data.go",
+        "symbol": "Data.Render",
+        "start_line": 19,
+        "end_line": 26,
+        "span": {
+          "start": 379,
+          "end": 582
+        },
+        "sha256": "15aa1e3cdafba0eee35916ba75eff89126e0c6c4a95dc947ca5e11f0eb506685"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Render",
+        "start_line": 1201,
+        "end_line": 1215,
+        "span": {
+          "start": 37975,
+          "end": 38262
+        },
+        "sha256": "435b2083c4fa8b3c3f0d2609253003c783ee203a23ac21843ad9056ef16a7066"
+      }
+    ],
+    "literal_answer": "Context.Data creates render.Data with caller MIME and bytes; Data.Render writes content type and sets Content-Length to len(Data) only when nonempty, then writes bytes.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 3,
+        "relation": "calls with render.Data"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 2,
+        "relation": "Render dispatch"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.redirect-status-range",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "7214dfa9140cd6d38c597a17bc92ef5116f14333e0f20911bdc48d61fdc4525f",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/redirect.go",
+        "symbol": "Redirect.Render",
+        "start_line": 20,
+        "end_line": 26,
+        "span": {
+          "start": 477,
+          "end": 783
+        },
+        "sha256": "8084440f4422817f56e67526189d83b518532e5faa31ccb61916d42b2dbaf778"
+      }
+    ],
+    "literal_answer": "It accepts 300 through 308 inclusive and also 201; other codes panic before http.Redirect.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.upload-directory-mode",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "1e15fb5ba7b464b0f5b4b3618c013c21f7dc1527ac52a7572eb27267c9620294",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.SaveUploadedFile",
+        "start_line": 733,
+        "end_line": 768,
+        "span": {
+          "start": 22553,
+          "end": 23497
+        },
+        "sha256": "1215cf7e037d88f9befe999e61da6829a28b1e4b32d734ee015be22b40e6d1ab"
+      }
+    ],
+    "literal_answer": "Default mode is 0750 or first optional perm; MkdirAll creates the destination directory, and Chmod happens only if prior Stat returned os.ErrNotExist. Existing directories are not chmodded.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.no-pdf-page-parser",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "cd6f9db5fa8a1134cdc11636cdc58b6421a3b3e406f5b3304119c8e3a139d300",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/pdf.go",
+        "symbol": "PDF.Render",
+        "start_line": 17,
+        "end_line": 21,
+        "span": {
+          "start": 378,
+          "end": 492
+        },
+        "sha256": "94a0631c7f399f3cdba6d0b33b55d0ad850e18ab232ff44aa8c142821be8c0a6"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/pdf.go",
+        "symbol": "PDF.WriteContentType",
+        "start_line": 24,
+        "end_line": 26,
+        "span": {
+          "start": 557,
+          "end": 650
+        },
+        "sha256": "32d6056d29731633a9bb05c63d1e423a8ff682728f04544ab5c8ee22f11204b9"
+      }
+    ],
+    "literal_answer": "No PDF parser exists in this scope. PDF.Render sets MIME and writes the supplied byte slice unchanged.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "render/pdf.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "render/pdf.go": "4384b4ea9aa3787c7991a872b34bc66b77aca1ee0c73e35e27b613da9d7e1afd"
+      },
+      "conclusion": "No PDF parser exists in this scope. PDF.Render sets MIME and writes the supplied byte slice unchanged."
+    }
+  },
+  {
+    "family": "gin.v19.no-fs-authorization",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "e81745166a259b6df4edc54cd7b4ca3b44b65b85660ee18c9ce5ed36a648c32e",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "fs.go",
+        "symbol": "OnlyFilesFS.Open",
+        "start_line": 18,
+        "end_line": 25,
+        "span": {
+          "start": 431,
+          "end": 605
+        },
+        "sha256": "dd703507b41efa389ed0fabc13c4e65ac50b4ac96b47089e1aa78b3c5b4723f1"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "fs.go",
+        "symbol": "neutralizedReaddirFile.Readdir",
+        "start_line": 33,
+        "end_line": 36,
+        "span": {
+          "start": 827,
+          "end": 953
+        },
+        "sha256": "86dd63b95b62741bdd65e188f1800782aa9dfd4f3893279feed0276df8388a1a"
+      }
+    ],
+    "literal_answer": "No authentication/ACL implementation in fs.go. Open delegates to the supplied filesystem and wraps Readdir; the wrapper disables directory listing.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "fs.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "fs.go": "adc80ccabbe903cd7be2ae755ebc879629cb77e59a22c94957c679ddeab5a791"
+      },
+      "conclusion": "No authentication/ACL implementation in fs.go. Open delegates to the supplied filesystem and wraps Readdir; the wrapper disables directory listing."
+    }
+  },
+  {
+    "family": "gin.v19.no-query-body-merge",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "4821d0b9717c8a0b9d12a3c1d216bd4b226e5c22adb8e56a5c73d5be4cd8b2cd",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/query.go",
+        "symbol": "queryBinding.Bind",
+        "start_line": 15,
+        "end_line": 21,
+        "span": {
+          "start": 286,
+          "end": 459
+        },
+        "sha256": "e0dc2caa9336c70f1e3a752efecb9c3e8774142f67353210bc1c58de54a18c92"
+      }
+    ],
+    "literal_answer": "No body decoder or merge exists in this file. queryBinding.Bind reads req.URL.Query(), maps it and validates.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "binding/query.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "binding/query.go": "65e8a3f81069398c364049951aae37e0316598b0601967a4f44efaeced9e26be"
+      },
+      "conclusion": "No body decoder or merge exists in this file. queryBinding.Bind reads req.URL.Query(), maps it and validates."
+    }
   }
 ]

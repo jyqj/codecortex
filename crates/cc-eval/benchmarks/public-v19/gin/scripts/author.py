@@ -27,6 +27,9 @@ add('no-reader-gzip','hardnegative/noanswer','Within render/reader.go, where doe
 add('no-auth-oauth','hardnegative/noanswer','Within auth.go, which routine refreshes OAuth bearer tokens using a remote token endpoint?', 'Absent within auth.go: implemented paths build Basic values, compare credential strings, and authorize accounts locally; no token endpoint or HTTP client.',[('auth.go','func authorizationHeader','authorizationHeader'),('auth.go','func BasicAuthForRealm','BasicAuthForRealm'),('auth.go','func BasicAuthForProxy','BasicAuthForProxy')],no=True)
 add('no-json-schema','hardnegative/noanswer','Within binding/json.go, where is a remote JSON Schema URL fetched before decoding?', 'Absent within binding/json.go: decodeJSON uses local codec decoder flags and validate; no schema fetch or network call.',[('binding/json.go','func decodeJSON','decodeJSON')],no=True)
 
+for block in sorted(BASE.joinpath("scripts").glob("block*.py")):
+ exec(compile(block.read_text(),str(block),"exec"),globals())
+
 def evidence(ref):
  path,prefix,symbol=ref; b=(BASE/'source'/path).read_bytes(); needle=prefix.encode(); starts=[m.start() for m in re.finditer(re.escape(needle),b) if m.start()==0 or b[m.start()-1]==10]; assert len(starts)==1,(path,prefix,starts)
  start=starts[0]; end=b.index(b'\n}',start)+2
@@ -35,7 +38,7 @@ def main():
  limit=int(sys.argv[1]) if len(sys.argv)>1 else len(SPECS); specs=SPECS[:limit]; rows=[]; gold=[]
  for s in specs:
   family='gin.v19.'+s['key']; h=hashlib.sha256(family.encode()).hexdigest(); split='holdout' if int(h,16)%4==0 else 'dev'; ev=[evidence(r) for r in s['refs']]
-  answers=[] if s['no_answer'] else [dict(id=f'facet-{i+1}',primary=True,grade=3,alternatives=[dict(path=e['path'],symbol=dict(name=e['symbol'].split('.')[-1],qname=None,kind='function'),span=e['span'])]) for i,e in enumerate(ev)]
+  answers=[] if s['no_answer'] else [dict(id=f'facet-{i+1}',primary=True,grade=3,alternatives=[dict(path=e['path'],symbol=dict(name=e['symbol'].split('.')[-1],qname=None,kind='interface' if s['refs'][i][1].startswith('type ') else 'function'),span=e['span'])]) for i,e in enumerate(ev)]
   scope=sorted(set(e['path'] for e in ev))
   ann=dict(status='candidate_not_independently_reviewed',source_sha=SHA,family_sha256=h,gold_evidence=ev,literal_answer=s['literal_answer'],chain_edges=[dict(from_facet=a+1,to_facet=b+1,relation=c) for a,b,c in s['edges']])
   if s['no_answer']: ann['absence_review']=dict(scope=scope,method='author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection',scope_sha256={p:hashlib.sha256((BASE/'source'/p).read_bytes()).hexdigest() for p in scope},conclusion=s['literal_answer'])

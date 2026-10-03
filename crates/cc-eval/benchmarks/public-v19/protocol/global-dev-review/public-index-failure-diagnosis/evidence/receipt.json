@@ -1,0 +1,91 @@
+{
+  "baseline_build_receipt_sha256": "e56f82fe9fa1f17f4c9c783688134144bbd8d6d497cb74f7bcb42bd888f5af64",
+  "baseline_plan_sha256": "a17bab15d7ffcced8ed33d32fabed46a1c25f49da5aec12b29bc960595d742ee",
+  "binary_sha256": "4e2f101137591c5bbc3bdc6d660cd7c2989e0b72fbacc0bb89d1a79b9ba8fe77",
+  "cleanup_timeout": "initial exploratory child terminate/wait timed out; corrected kill/wait for retained run",
+  "compiler_command": [
+    "rustc",
+    "--edition=2021",
+    "/workspace/codecortex/crates/cc-eval/benchmarks/public-v19/protocol/global-dev-review/public-index-failure-diagnosis/component_probe.rs",
+    "-L",
+    "dependency=/tmp/p7-017-build/debug/deps",
+    "--extern",
+    "cc_model=/tmp/p7-017-build/debug/deps/libcc_model-9a1e9183b913f74e.rlib",
+    "--extern",
+    "cc_parsers=/tmp/p7-017-build/debug/deps/libcc_parsers-087f974a3087b50e.rlib",
+    "-o",
+    "/tmp/v19-public-index-diagnosis/component-probe"
+  ],
+  "compiler_exit_code": 0,
+  "component_binary_sha256": "3e30a7277d5e9ea953fbbe5d8a7846e3cd4f281fb9eef2ed7b421dc34ce948c7",
+  "gold_changes": 0,
+  "index_calls": 9,
+  "live_provider_calls": 0,
+  "original_sources": [
+    {
+      "path": "requests/source/src/requests/exceptions.py",
+      "sha256": "c5e18f3352454968e337bb3056f0867df2f37c0a0d2c1a77dc05e7e0b3c0411b"
+    },
+    {
+      "path": "gin/source/context.go",
+      "sha256": "b2336e5768f9175f2855c7df91bb48de0bbb533d74f6a6e7c3af5576491524ce"
+    }
+  ],
+  "prior_exploratory_index_calls": 9,
+  "production_changes": 0,
+  "production_source_files_verified": 375,
+  "rlib_sha256": {
+    "/tmp/p7-017-build/debug/deps/libcc_model-9a1e9183b913f74e.rlib": "b5e0acd553c316d68e2465789450ad753043933e4a5d6b1e9fa95430b559e76c",
+    "/tmp/p7-017-build/debug/deps/libcc_parsers-087f974a3087b50e.rlib": "d2002439abe2e34dcb4b766529ca17c02270a9c6367214431fa3994df13f57ee"
+  },
+  "search_calls": 0,
+  "source_sha": "78b0ce52cb2ff4c53c53893b9f7dd469269806b8",
+  "tests": [
+    {
+      "error": "case.py: invalid resolution manifest: invalid dependency key",
+      "expected_matched": true,
+      "label": "python_variadic_tuple"
+    },
+    {
+      "error": null,
+      "expected_matched": true,
+      "label": "python_nonvariadic_control"
+    },
+    {
+      "error": null,
+      "expected_matched": true,
+      "label": "python_scalar_control"
+    },
+    {
+      "error": "case.go: invalid resolution manifest: conflicting duplicate call site call:219091e8d474ecda",
+      "expected_matched": true,
+      "label": "go_nested_selector"
+    },
+    {
+      "error": "case.go: invalid resolution manifest: conflicting duplicate call site call:219091e8d474ecda",
+      "expected_matched": true,
+      "label": "go_three_nested_selectors"
+    },
+    {
+      "error": null,
+      "expected_matched": true,
+      "label": "go_separate_selector_control"
+    },
+    {
+      "error": null,
+      "expected_matched": true,
+      "label": "go_nested_arguments_control"
+    },
+    {
+      "error": "src/requests/exceptions.py: invalid resolution manifest: invalid dependency key",
+      "expected_matched": true,
+      "label": "requests_original_source"
+    },
+    {
+      "error": "context.go: invalid resolution manifest: conflicting duplicate call site call:385a3223e8cfb7ea",
+      "expected_matched": true,
+      "label": "gin_original_source"
+    }
+  ],
+  "total_diagnostic_index_calls": 18
+}

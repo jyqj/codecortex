@@ -75,9 +75,64 @@ fn declaration_kind(node: Node<'_>) -> Option<SymbolKind> {
     }
     Some(base)
 }
+/// Follow only declaration-name edges, never return types or parameter children.
+/// Unknown C/C++ declarators deliberately have no publishable name.
+fn declarator_name(mut node: Node<'_>) -> Option<Node<'_>> {
+    for _ in 0..64 {
+        node = match node.kind() {
+            "identifier" | "field_identifier" | "destructor_name" | "operator_name" => {
+                return Some(node);
+            }
+            "function_declarator" | "pointer_declarator" => {
+                node.child_by_field_name("declarator")?
+            }
+            "qualified_identifier" | "template_function" | "template_method" => {
+                node.child_by_field_name("name")?
+            }
+            "reference_declarator" => node.named_child(0)?,
+            "parenthesized_declarator" => {
+                let mut cursor = node.walk();
+                let mut children = node
+                    .named_children(&mut cursor)
+                    .filter(|n| n.kind() != "ms_call_modifier");
+                let child = children.next()?;
+                if children.next().is_some() {
+                    return None;
+                }
+                child
+            }
+            _ => return None,
+        };
+    }
+    None
+}
+fn declaration_name(node: Node<'_>) -> Option<Node<'_>> {
+    if node.kind() == "function_definition" {
+        if let Some(declarator) = node.child_by_field_name("declarator") {
+            return declarator_name(declarator);
+        }
+    }
+    node.child_by_field_name("name")
+        .or_else(|| {
+            // Rust impl owners use their type; a callable's return type is never its name.
+            (node.kind() == "impl_item")
+                .then(|| node.child_by_field_name("type"))
+                .flatten()
+        })
+        .or_else(|| {
+            node.named_child(0)
+                .filter(|n| matches!(n.kind(), "variable_declarator" | "type_spec" | "type_alias"))
+                .and_then(|n| n.child_by_field_name("name"))
+        })
+}
 fn compatible_hint(node: Node<'_>, hint: &SymbolRecord, source: &[u8]) -> bool {
-    if node
-        .child_by_field_name("name")
+    if node.kind() == "function_definition"
+        && node.child_by_field_name("declarator").is_some()
+        && declaration_name(node).is_none()
+    {
+        return false;
+    }
+    if declaration_name(node)
         .and_then(|n| n.utf8_text(source).ok())
         .is_some_and(|name| name != hint.name)
     {
@@ -313,18 +368,7 @@ pub fn extract(
                         });
                     let name = if kind == BoundaryKind::Symbol {
                         hint.map(|s| s.name.clone()).or_else(|| {
-                            node.child_by_field_name("name")
-                                .or_else(|| node.child_by_field_name("type"))
-                                .or_else(|| {
-                                    node.named_child(0)
-                                        .filter(|n| {
-                                            matches!(
-                                                n.kind(),
-                                                "variable_declarator" | "type_spec" | "type_alias"
-                                            )
-                                        })
-                                        .and_then(|n| n.child_by_field_name("name"))
-                                })
+                            declaration_name(node)
                                 .and_then(|n| n.utf8_text(source.bytes()).ok())
                                 .map(|s| s.chars().take(256).collect())
                         })

@@ -61,7 +61,7 @@ for raw in oldnative.splitlines(keepends=True):
   a['graph_constraints']=edges;p['chain_edges']=copy.deepcopy(edges);reason='External proxyaddr target is distinct from ip; trust is a stored/read argument data dependency, not a direct ip -> app.set call.'
  elif f=='v19.express.f0080':
   get_i=add_evidence(q,ev(A,471,482,'methods.forEach'));set_i=add_evidence(q,ev(A,351,355,'set'))
-  get_target=internal(q,get_i);get_target.update(kind='dynamic_internal_member',member='get',definition_expression='app[method]',resolution_condition="method === 'get' && arguments.length === 1",resolved_target='generated app.get(setting) wrapper')
+  get_target=internal(q,get_i);get_target.update(kind='dynamic_internal_member',symbol='app.get',declared_source_symbol='methods.forEach',member='get',definition_expression='app[method]',resolution_condition="method === 'get' && arguments.length === 1",resolved_target='generated app.get(setting) wrapper')
   edges=[edge(q,0,internal(q,1),'callable app invokes handle with next argument','call_internal',ev(E,37,39,'createApplication')),
    edge(q,1,external('finalhandler','finalhandler',ev(A,16,16,'finalhandler'),'finalhandler(req, res, options)'),'handle constructs external finalhandler if callback is absent','call_external',ev(A,152,157,'handle')),
    edge(q,1,internal(q,2),'handle registers bound logerror as onerror callback','callback_registration',ev(A,154,157,'handle')),

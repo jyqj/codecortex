@@ -39,9 +39,11 @@ for q in rows:
   for side in ['from','to']:
    endpoint=edge[side]
    if 'evidence_index' in endpoint:
-    e=author['source_evidence'][endpoint['evidence_index']];assert endpoint['path']==e['path'] and endpoint['symbol']==e['symbol']
+    e=author['source_evidence'][endpoint['evidence_index']];assert endpoint['path']==e['path']
     if endpoint.get('kind')=='dynamic_internal_member':
+     assert endpoint['declared_source_symbol']==e['symbol'] and endpoint['symbol']=='app.'+endpoint['member']
      assert endpoint['definition_expression'] in e['text'] and endpoint['resolution_condition'] in e['text']
+    else:assert endpoint['symbol']==e['symbol']
    else:
     assert side=='to' and endpoint['kind'] in ['external_boundary','dynamic_callback']
     assert endpoint['binding_evidence'] and endpoint['target_expression']

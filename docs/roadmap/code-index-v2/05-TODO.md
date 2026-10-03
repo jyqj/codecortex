@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`e642e58d5fc0288aba3faa087a0a2bc08a944e111a675d44da60c0960aabbb37`。
+> 任务总数：192；源文件 SHA-256：`0fce5846b928d9858d3957db2e2a379c76cff6bb338bd66cc41e59e84281941f`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2043,6 +2043,15 @@ SQL文档追加校正：保留原implementation README历史语句，明确assoc
 上一节schema declaration drift是历史阻塞记录，现root明确授权同步当前权威声明：MODULE_CAPABILITIES.json database_schema 24→25；project_model_version原本3，与生产PROJECT_MODEL_VERSION=3一致，无须改动。生产CURRENT_SCHEMA_VERSION=25、rebuild_on_mismatch guard及所有能力状态/限额/验收计数原样。检查现行机器可读database_schema/project_model_version/module_model/schema版本声明，只有该当前权威遗漏；P3-D rollback、旧v24 fixture/pins及历史checkpoint均原样。未找到依赖该字段的文档生成器，无其它派生文档更新。
 
 确切声明修复树验证：strict Python architecture mutation9/9（含generation及schema负例）、check_module_architecture报告schema25/model3/rebuild_on_mismatch passed；direct Rust1.95 locked ci_schema_guard_contract4/4 + semantic_schema6/6，fmt --check通过。生产源码/Cargo/lock仍保持前述396文件聚合hash；原schema guard脚本无diff。日志SHA256：{"authorized-declaration-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "authorized-declaration-module-guard.log": "12f6bb985f4fb64870bb586d497961121f074222c721b518b5d6b8d66fd8a446", "authorized-declaration-python.log": "cc9b00b26d5a720ff10d0018d0a96146cc273d399873654f3fa5766e826bafd8", "authorized-declaration-rust.log": "9bfb5dcc9f50681bcd2a6e02426dae54398778f3956ec694005a3fe35e95d3d3"}. 同PR135续推，历史失败不覆盖，全部task status/acceptance不变；新head CI单独回读，不沿用旧head结果。
+
+
+### root授权后续：P1-D originating SQL契约迁移（2026-10-03）
+
+前节65899b719a224d14bddb4e8af6721734175d6931精确CI271/run37160207523/check111311916823已completed/failure，MSRV/security success；所有4个schema contract通过，fmt/clippy/default-target compile通过，Default regression停于p1d_cost.rs:40实际statements9/旧期待1。完整check日志本环境保留SHA256 d9d553e06d985817ca108678de7ce33b86185aca3aef8bce36cfb028d3702ea6，不改名为新head验收。
+
+root明确授权只更正迁移后成本测试：真实fixture的2 Python函数各有1持久化identity关系，通过实际SQL独立核对src/a.py→needle、src/b.py→other；load_on四分项association/surviving symbol/current file-document/stored source proof均实际计费，加batch1精确9statements/10rows。逐chunk真实读取要求5/5；不改为>=1、不忽略VM、不改计费/预算/阈值。新增已预热文本缓存后移除owned fixture identity负控，cold/warm均只返回缺qname、正文不变，精确batch+absence probe2statements/1row，VM真实正计数，冷读1/暖读0+cachehit1，warm与repeat全部work相等证明cached statement counterreset；empty0statements/0rows/0textreads/0cachehits。原冷暖SQL相等、压缩解码、utf8成本、stale cache回源及corrupt source失败断言保留。独立DB reviewer只读核对全部分项和product不变，未编辑/执行。
+
+执行仅cargo test -p cc-eval --test p1d_cost --locked，directRust1.95/-Dwarnings，5passed/0failed/1ignored；exact target clippy warnings denied及workspace fmt通过。未运行p1d_cost_probe ignored规模、MCPignored或其他broad/excluded targets。原630source-manifest保留历史不重写：现628相符，仅ci_schema_guard_contract.rs及p1d_cost.rs两个测试改变；生产396项仍前述hash逐字不变。日志SHA256：{"p1d-cost-clippy.log": "309623d0888abccd8fb2b401aee9dc60b25027740c808ce36ce1ec3f44bfac1b", "p1d-cost-fixed.log": "33e72d5077e82ec298b9cb04ffcbca72946692fca51be9f9d50a8d790f7554dd", "p1d-cost-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}. task状态/验收不变，同PR135继续draft，后续exacthead CI独立回读，不冒充总request/fullcost或质量认证。
 
 
 ### [ ] P7-012｜融合与部分覆盖语义

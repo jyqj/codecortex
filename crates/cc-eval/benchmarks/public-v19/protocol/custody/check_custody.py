@@ -18,7 +18,7 @@ SHARD_KEYS = {'repo_id', 'author_commit', 'candidate_ids', 'pending_components',
               'independent_gold_reviewed', 'query_file_sha256', 'gold_file_sha256', 'relation_graph_sha256',
               'first_public_visibility_utc', 'first_shared_visibility_utc', 'could_view_principals_audit_sha256',
               'actual_readers_audit_sha256', 'tuning_read_audit_sha256', 'exposure_disclosure_sha256',
-              'custody_receipt_sha256', 'unknown_actual_readers', 'status'}
+              'custody_receipt_sha256', 'author_count_receipt_sha256', 'unknown_actual_readers', 'status'}
 COUNTS = ['candidate_ids', 'pending_components', 'public_dev_native', 'public_dev_compat',
           'would_be_holdout_ids', 'known_exposed_ids_lower_bound', 'independent_gold_reviewed']
 
@@ -64,12 +64,13 @@ def audit(obj, raw_sha256):
             seen.add(repo)
             if not re.fullmatch('[0-9a-f]{40}', str(s['author_commit'])):
                 errors['author_commit'] += 1
-            if any(type(s[k]) is not int or s[k] < 0 for k in COUNTS):
+            if any((s[k] is None and k not in ('pending_components', 'public_dev_compat')) or
+                   (s[k] is not None and (type(s[k]) is not int or s[k] < 0)) for k in COUNTS):
                 raise ValueError
             if (s['known_exposed_ids_lower_bound'] > s['would_be_holdout_ids']
                     or s['would_be_holdout_ids'] > s['candidate_ids']
-                    or s['pending_components'] > s['candidate_ids']
-                    or s['public_dev_compat'] > s['public_dev_native']
+                    or (s['pending_components'] is not None and s['pending_components'] > s['candidate_ids'])
+                    or (s['public_dev_compat'] is not None and s['public_dev_compat'] > s['public_dev_native'])
                     or s['public_dev_native'] > s['candidate_ids']):
                 errors['count_bounds'] += 1
             for key, value in s.items():

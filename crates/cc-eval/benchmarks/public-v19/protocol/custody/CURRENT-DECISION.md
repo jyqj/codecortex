@@ -1,14 +1,15 @@
 # Custody decision v1 — counts/hash only
 
-Observed2026-10-03T02:25:07Z. Parent supplied exact commits/counts; no query, gold, source bodies, old/isolated holdout blobs or branch trees were read by this custody task. No ranking was executed. Parent's Express/Requests independent dev reviewers continue; a duplicate local Express reviewer was immediately stopped before any tool/read/write.
+Count update observed2026-10-03T02:34:16Z; capability checks remain the earlier02:25:07Z observations. Parent supplied exact commits/counts; no query, gold, source bodies, old/isolated holdout blobs or branch trees were read by this custody task. No ranking was executed. Parent's Express/Requests independent dev reviewers continue; a duplicate local Express reviewer was immediately stopped before any tool/read/write.
 
 | Shard / exact author commit | Candidate IDs / pending components | Public dev native / compat | Would-be holdout IDs | Known exposed / clean held-out |
 |---|---|---|---:|---|
 | Express `a739431b6595bb44e79130843e27e2cde2d34eb1` |100 /98|68 /57|32|32 public-history exposed /0 clean|
 | Requests `67f89aff2392ced113327cfe8f671cd153c7e0c8` |100 /86|75 /67|25|at least2 first-batch public; all25 custody blocked /0 clean|
 | Gin `77d8707110afcb9935d29117ddf6162df4cef277` |100 /100 candidate families, independent review0|67 /55|33|33 exposed to public history/shared workspace, exact intersection unknown /0 clean|
+| TypeScript `4c01f627bd6df73e70bfe1dbdc42b2a9234e797a` |100 /component count unknown|73 /compat count unknown|27|at least5 historical-public; all27 custody blocked /0 clean|
 
-These are ID/variant counts, not ninety independent global families. Affected global components require the frozen relation graph; their exact count is unknown. Known exposure lower bound is67 IDs across these three shards; clean held-out is0. Requests' remaining23 have **unknown custody**, not presumed private. Pending components are not independent accepted gold. Requests'3 adapted-helper licenses were reported not admitted; current source/license review remains separately open. TypeScript earlier20 provisional candidates15/5, serde/vite source blocks, other new blocks need the same history/custody check; initial push alone does not certify privacy. Do not convert draft/dev labels into clean holdout.
+These are ID/variant counts, not117 independent global families. TypeScript author count receipt SHA256 is `f7709f4afc0fd19cf581e88b24b11f631aceeb224b1dabbb149cd03bb4f845a5`. Latest Express dev count is parent-reported69; latest commit/compat count were not supplied, so the earlier exact-SHA68/57 snapshot remains labelled historical rather than binding69 to that old commit. Affected global components require the frozen relation graph; their exact count is unknown. Four-repository total is117 would-beholdout IDs, known reported-exposure lower bound72 IDs, clean held-out0. Requests' remaining23 and TypeScript's remaining22 have **unknown custody**, not presumed private. Missing serde/vite candidates and all other unknowns are not inferred. Pending components are not independent accepted gold. Requests'3 adapted-helper licenses were reported not admitted; current source/license review remains separately open. The initial TypeScript20/15/5 is superseded by its100/73/27 final count-only report; serde/vite source blocks and any other new blocks need the same history/custody check; initial push alone does not certify privacy. Do not convert draft/dev labels into clean holdout.
 
 ## What is established, what is unknown
 

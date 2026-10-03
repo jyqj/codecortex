@@ -20,8 +20,8 @@ class Custody(unittest.TestCase):
     def test_current_counts_do_not_certify_clean(self):
         r = self.run_snapshot()
         self.assertEqual(r['errors'], {})
-        self.assertEqual(r['would_be_holdout_ids'], 90)
-        self.assertEqual(r['known_exposed_ids_lower_bound'], 67)
+        self.assertEqual(r['would_be_holdout_ids'], 117)
+        self.assertEqual(r['known_exposed_ids_lower_bound'], 72)
         self.assertEqual(r['clean_holdout_ids_certified_by_checker'], 0)
         self.assertEqual(r['shards'][1]['remaining_without_confirmed_exposure_ids'], 23)
 
@@ -43,6 +43,15 @@ class Custody(unittest.TestCase):
             if k.endswith('_sha256'):b[k] = 'b'*64
         r = self.run_snapshot()
         self.assertEqual(r['shards'][0]['status'], 'requires_independent_custody_verification')
+        self.assertEqual(r['clean_holdout_ids_certified_by_checker'], 0)
+
+    def test_unknown_counts_stay_unknown_without_inference(self):
+        s = self.snapshot['shards'][3]
+        self.assertIsNone(s['pending_components'])
+        self.assertIsNone(s['public_dev_compat'])
+        r = self.run_snapshot()
+        self.assertEqual(r['errors'], {})
+        self.assertEqual(r['shards'][3]['remaining_without_confirmed_exposure_ids'], 22)
         self.assertEqual(r['clean_holdout_ids_certified_by_checker'], 0)
 
     def test_unknown_body_metadata_field_rejected_not_echoed(self):

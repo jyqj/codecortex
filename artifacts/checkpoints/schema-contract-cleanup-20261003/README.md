@@ -13,7 +13,7 @@
 
 ## 有限验证
 
-所有以下命令退出 0，日志均在本目录：
+所有以下命令退出 0，日志均在本目录（Rust 日志仅去除终端末尾空行；implementation.diff 用零行上下文，避免证据文件自身引入空白告警）：
 
 ```sh
 python3 scripts/check_module_architecture.py

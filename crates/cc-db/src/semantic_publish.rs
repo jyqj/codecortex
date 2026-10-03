@@ -530,3 +530,7 @@ impl IndexDb {
 #[cfg(test)]
 #[path = "semantic_publish_group_tests.rs"]
 mod group_tests;
+
+#[cfg(test)]
+#[path = "semantic_publish_independent_review.rs"]
+mod independent_review;

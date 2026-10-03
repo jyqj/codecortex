@@ -5,6 +5,7 @@ import io
 import copy
 import json
 import runpy
+import re
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -70,7 +71,8 @@ class SchemaDeclarationMutations(unittest.TestCase):
         MODULE['schema_contract'](self.current, self.migration)
 
     def test_wrong_or_missing_schema_fails(self):
-        current = self.current['database_schema']
+        # Derive invalid fixtures from production, even if the declaration is stale.
+        current = int(re.search(r'pub const CURRENT_SCHEMA_VERSION: u32 = (\d+);', self.migration)[1])
         for schema in [21, 22, 23, current - 1, current + 1, str(current), None, True]:
             with self.subTest(schema=schema):
                 declaration = copy.deepcopy(self.current)

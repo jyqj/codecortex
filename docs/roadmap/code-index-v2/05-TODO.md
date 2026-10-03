@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`0dccec40cfec18a69ba3f81973f7178b11606302a893e69a590afbb507385982`。
+> 任务总数：192；源文件 SHA-256：`c7a574c9aac3844116c5d2247fec090c1203f23e39316b4342df962901011ad4`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2034,6 +2034,8 @@
 SQL文档追加校正：保留原implementation README历史语句，明确association SELECT计费仅originating row hydration；父线程独审冷4row的14statements/16rows/642VMsteps是局部测量，final verify_source_records manifest及load_on(None)额外身份SELECT在cold/warm均不在originating receipt，不是总request SQL或全成本有界证明。实现/预算/排名/质量未改。
 
 日志仅保存在本次环境/tmp/ci-schema-v25-evidence/，不是远端持久交付；历史失败和实际验证日志SHA256：{"baseline-python.log": "e00e24273051de2cee5bbe34daf7b0ff031eaebadf31b5faceefa526fe8f7331", "baseline-rust.log": "1e778987d1ac517c285ed2146b5285414bb1bdf54785a4c399baf46fcbaee3f0", "ci267-check.log": "bb18feb17b541c04be6a7ce64bef8403953afe6290513cc635f84b7dcba9a3e8", "ci268-check.log": "d4b6e6fa21b6ed1b2b72c5466e0586b7c8dfc2d0f9edbc7668d20732418273c7", "clippy-fixed-env.log": "79a742cc17a61c223cbea900f29fe6dcdbf6e266e2ece219ea7fdf7860f7cd8a", "clippy.log": "ff4d4f6fe753fcbc5e86a231ea2e8eb2ab546a884d5aa7c3b545dfae4f45d6fd", "fixed-python.log": "e00e24273051de2cee5bbe34daf7b0ff031eaebadf31b5faceefa526fe8f7331", "fixed-rust.log": "28afec3a5a9b2837b06204c0adef7e2f77fa2bba056a0d48eb4a2974c2e5de36", "fmt-fixed-env.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "fmt.log": "ff4d4f6fe753fcbc5e86a231ea2e8eb2ab546a884d5aa7c3b545dfae4f45d6fd"}.
+
+独立最终review：DB确认v24历史fixture同blob/不变量保留；parser指出负例应从生产常量而非仍24的声明派生，已修正为读取production CURRENT_SCHEMA_VERSION后生成前驱/未来/字符串输入；真实declaration mismatch阻塞保持。
 
 
 ### [ ] P7-012｜融合与部分覆盖语义

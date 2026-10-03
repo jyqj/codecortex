@@ -48,12 +48,12 @@ def run(binary, root, full, logfile):
             try: process.wait(timeout=5)
             except subprocess.TimeoutExpired: process.kill(); process.wait()
 
-def success(item):
+def success(item, schema=24, manifest=3):
     r=item['response']
     assert 'error' not in r and not r.get('result',{}).get('isError'), r
     for key in ('empty_keys','punctuation_types','duplicate_sites'):
         assert item['after'][key] == 0, item
-    assert item['after']['schema'] == 23 and item['after']['versions'] == [2], item
+    assert item['after']['schema'] == schema and item['after']['versions'] == [manifest], item
 
 def main():
     p=argparse.ArgumentParser()
@@ -83,7 +83,7 @@ def main():
         else:
             assert old_error is None and old['after']['schema']==22 and old['after']['versions']==[1],old
         upgraded=run(a.new,root,False,a.output/(label+'-new.stderr')); success(upgraded)
-        assert upgraded['opened']['schema']==23 and upgraded['opened']['files']==0,upgraded
+        assert upgraded['opened']['schema']==24 and upgraded['opened']['files']==0,upgraded
         assert old['after']['generation']['index_incarnation'] != upgraded['after']['generation']['index_incarnation']
         noop=run(a.new,root,False,a.output/(label+'-noop.stderr'));success(noop)
         assert noop['after']==upgraded['after'],(noop,upgraded)

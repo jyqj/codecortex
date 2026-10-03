@@ -4,8 +4,10 @@
 use crate::{CcError, CcResult};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
-// v2 excludes punctuation-only type atoms and empty derived leaf buckets.
-pub const RESOLUTION_VERSION: u32 = 2;
+// v3 preserves legal symbolic/Unicode type names while excluding ellipsis.
+// Public intermediate v2 manifests can contain missing type evidence; schema
+// v24 rebuilds those persisted rows, and this boundary rejects legacy payloads.
+pub const RESOLUTION_VERSION: u32 = 3;
 /// Syntax proves a binding exists but its target is not statically supported.
 /// Do not replace it with a coincidental global name or type-catalog fallback.
 pub const PARSER_UNSUPPORTED_BINDING: &str = "parser_unsupported_binding";
@@ -437,12 +439,16 @@ mod name_key_regression_tests {
     use super::*;
 
     #[test]
-    fn legacy_manifest_version_is_rejected() {
-        let legacy = r#"{"version":1,"records":[],"dependencies":[],"complete":true,"omitted_records":0,"reasons":[]}"#;
-        let manifest: ResolutionManifest = serde_json::from_str(legacy).unwrap();
-        assert!(
-            matches!(manifest.validate(), Err(CcError::InvalidParams(reason)) if reason.contains("unsupported version"))
-        );
+    fn legacy_manifest_versions_are_rejected() {
+        for version in [1, 2] {
+            let legacy = format!(
+                r#"{{"version":{version},"records":[],"dependencies":[],"complete":true,"omitted_records":0,"reasons":[]}}"#
+            );
+            let manifest: ResolutionManifest = serde_json::from_str(&legacy).unwrap();
+            assert!(
+                matches!(manifest.validate(), Err(CcError::InvalidParams(reason)) if reason.contains("unsupported version"))
+            );
+        }
         assert!(ResolutionManifest::new().validate().is_ok());
     }
 

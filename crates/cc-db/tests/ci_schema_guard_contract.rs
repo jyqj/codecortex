@@ -39,12 +39,12 @@ fn check_semantic_objects(conn: &Connection) {
 }
 
 #[test]
-fn fresh_index_really_initializes_declared_v23() {
+fn fresh_index_really_initializes_declared_v24() {
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join("fresh.sqlite3");
     let (db, status) = IndexDb::open(&path).unwrap();
     assert_eq!(status, SchemaStatus::Initialized);
-    assert_eq!(db.reads().schema_version().unwrap(), 23);
+    assert_eq!(db.reads().schema_version().unwrap(), 24);
     let conn = Connection::open(&path).unwrap();
     check_semantic_objects(&conn);
     assert_ne!(db.reads().read_generation().unwrap().incarnation, [0; 16]);
@@ -64,7 +64,7 @@ fn committed_v21_upgrade_invalidates_legacy_rows_and_incarnation() {
     drop(conn);
     let (db, status) = IndexDb::open(&path).unwrap();
     assert_eq!(status, SchemaStatus::Initialized);
-    assert_eq!(db.reads().schema_version().unwrap(), 23);
+    assert_eq!(db.reads().schema_version().unwrap(), 24);
     let generation = db.reads().read_generation().unwrap();
     assert_ne!(generation.incarnation, [1; 16]);
     assert!(generation.index_epoch > 17 && generation.evidence_epoch > 19);
@@ -84,7 +84,7 @@ fn committed_v21_upgrade_invalidates_legacy_rows_and_incarnation() {
 
 #[test]
 fn nonadjacent_versions_still_require_rebuild() {
-    for stored in [20, 22, 24] {
+    for stored in [20, 22, 23, 25] {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute_batch(HISTORICAL_V21).unwrap();
         conn.pragma_update(None, "user_version", stored).unwrap();

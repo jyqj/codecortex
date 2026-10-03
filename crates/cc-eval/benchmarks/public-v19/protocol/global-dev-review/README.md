@@ -39,3 +39,7 @@ The checker verifies the binary SHA256/actual compiler target/build exit and exa
 Eight meaningful tests pass: real four-suite scoped admission, source/root-license/BSD-notice tampering, incomplete independent acceptance, non-dev split drift, refusal before loading a non-allowlisted query file, and transitive component counting. Synthetic mutations run in temporary read-only-derived layouts; author corpus remains untouched.
 
 Initial receipts are retained: first prototype wrongly treated formal/global scope-limit codes as content errors; corrected development gate permits only the three explicit unclosed formal scope codes and still leaves formal counters0. A second prototype incorrectly demanded PR75 ancestry in PR80; replaced with exact byte equality of their four independent frozen review record files. No question, gold, source or author assertion was relaxed/edited to pass either check. Actual final receipts have0 errors.
+
+## 后续 Gin 差量
+
+原两 repo frozen block 保持不变。可选三 repo 复现与计数见 [gin-extension/README.md](gin-extension/README.md)；运行时显式传入 `--include-gin`。

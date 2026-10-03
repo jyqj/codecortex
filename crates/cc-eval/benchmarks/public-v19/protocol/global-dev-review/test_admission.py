@@ -11,13 +11,48 @@ EVALUATOR=Path('/tmp/p7-017-build/debug/cc-eval')
 
 
 class Admission(unittest.TestCase):
-    def run_case(self,mutator=None):
+    def run_case(self,mutator=None,include_gin=False):
         original=m.load_blob
         def altered(commit,path,proofs):
             raw=original(commit,path,proofs)
             return mutator(commit,path,raw) if mutator else raw
         with tempfile.TemporaryDirectory() as td,patch.object(m,'load_blob',altered):
-            return m.audit(EVALUATOR,Path(td))
+            return m.audit(EVALUATOR,Path(td),include_gin=include_gin)
+
+    def test_gin_extension_six_validations_and_public_scope(self):
+        r=self.run_case(include_gin=True);self.assertEqual(r['errors'],{})
+        self.assertEqual(r['development_admitted_native_rows'],228)
+        self.assertEqual(r['repo_results']['gin']['local_components'],66)
+        self.assertEqual(r['repo_results']['gin']['current_content_hash_accept'],67)
+        self.assertEqual(r['global_review']['conservative_global_correlation_components'],208)
+        self.assertEqual(r['global_review']['cross_pairs_automatically_checked'],17157)
+        self.assertEqual(r['clean_holdout'],0);self.assertEqual(r['protected_body_reads'],0)
+        self.assertEqual(sum(len(x['actual_evaluator_validations']) for x in r['repo_results'].values()),6)
+
+    def test_gin_upstream_proof_tamper_blocks(self):
+        def mutate(c,p,b):
+            if p.endswith('reviews/gin/provenance/upstream-admission.json'):
+                d=json.loads(b);d['inventory'][0]['upstream_and_snapshot_git_blob']='0'*40;return json.dumps(d).encode()
+            return b
+        r=self.run_case(mutate,include_gin=True)
+        self.assertIn('GIN_UPSTREAM_BYTES_DRIFT',r['errors']);self.assertEqual(r['development_admitted_native_rows'],0)
+
+    def test_gin_reviewed_row_commitment_tamper_blocks(self):
+        def mutate(c,p,b):
+            if p.endswith('reviews/gin/repair-v2/dev-004-repair-review.json'):
+                d=json.loads(b);d['retained_prior_acceptance'][0]['native_row_sha256']='0'*64;return json.dumps(d).encode()
+            return b
+        r=self.run_case(mutate,include_gin=True);self.assertIn('GIN_ROW_REVIEW_BINDING',r['errors'])
+
+    def test_gin_non_allowlisted_query_is_rejected_before_read(self):
+        def mutate(c,p,b):
+            if p.endswith('/gin/suite-native-dev.json'):
+                d=json.loads(b);d['queries']='forbidden.jsonl';return json.dumps(d).encode()
+            self.assertNotIn('forbidden',p);return b
+        with self.assertRaisesRegex(ValueError,'QUERY_OUTSIDE_CURRENT_DEV_ALLOWLIST'):self.run_case(mutate,include_gin=True)
+
+    def test_two_repo_frozen_receipt_is_preserved(self):
+        r=self.run_case();self.assertEqual(r,json.loads((HERE/'evidence/admission.json').read_text()))
 
     def test_real_four_suite_dev_admission_and_scope(self):
         r=self.run_case();self.assertEqual(r['errors'],{});self.assertEqual(r['development_admitted_native_rows'],161)

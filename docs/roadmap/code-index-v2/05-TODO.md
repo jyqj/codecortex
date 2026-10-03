@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`00d2706603e28dce5b0d6d9ce27add1f3b724866cfd4821b707a97e4ca39fbcd`。
+> 任务总数：192；源文件 SHA-256：`8a13a789b848a5f4674f43187c1daa58bc3803a8121061b800712d103e08582a`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2023,7 +2023,7 @@
   V19 和父项保持开放；公开 DEV、规模/发行认证及其他平台未验。
 
 
-2026-10-03 新独立 Python AST 声明修复，基于 PR132/fd5146b；冻结源码 f4df9a83514e6ba901143547368ce4a3bee21940。decorated class 只有 canonical wrapper Class，按真实 AST 分派、遍历成员与 decorator 引用；函数提取器拒绝 class，boundary hint 需类别/名称兼容，保留合法 Method 和其它语言分类。原 PR134/fb8ca8a REJECT 证据逐字保留；原 parser 红例4/0，原公开 omission 断言仍按原样失败于正确 Class qname，非冒充全绿；新公开 exact source/SQL proof2/0、lifecycle7/0、diagnostic1/0。冻结树 bounded parser248/index14/public10/search298共570/0/0，locked Rust1.95 fmt/strictclippy通过；真实 engine/MCP Outer/Inner 均保留 Outer Class、Inner Class、pulse Method，普通5hit所有字段/score/source/document逐值相同；未改 native scorer/微型gold，correct1/wrong0。完整记录 docs/reviews/python-declaration-fix-20261003/README.md 与 source-manifest.json；生产只改 Python parser/references 和必要 boundary guard，schema_guard 由另 worker 负责，DB 独审未替代。原任务/status/acceptance不翻done，V19及父项仍开放，待原线程独立最终审阅；排除旧runtime/GC-WAL/kill/staging/EROFS/private-localdiag/42export，不运行包含旧worker用例的broad suites。
+2026-10-03 新独立 Python AST 声明修复，基于 PR132/fd5146b；冻结源码 f4df9a83514e6ba901143547368ce4a3bee21940。decorated class 只有 canonical wrapper Class，按真实 AST 分派、遍历成员与 decorator 引用；函数提取器拒绝 class，boundary hint 需类别/名称兼容，保留合法 Method 和其它语言分类。原 PR134/fb8ca8a REJECT 证据逐字保留；原 parser 红例4/0，原公开 omission 断言仍按原样失败于正确 Class qname，非冒充全绿；新公开 exact source/SQL proof2/0、lifecycle7/0、diagnostic1/0。冻结树 bounded parser248/index14/public10/search298共570/0/0，locked Rust1.95 fmt/strictclippy通过；真实 engine/MCP Outer/Inner 均保留 Outer Class、Inner Class、pulse Method，普通5hit所有字段/score/source/document逐值相同；未改 native scorer/微型gold，correct1/wrong0。完整记录 docs/reviews/python-declaration-fix-20261003/README.md 与 source-manifest.json；生产只改 Python parser/references 和必要 boundary guard，schema_guard 由另 worker 负责，DB 独审未替代。原任务/status/acceptance不翻done，V19及父项仍开放，待原线程独立最终审阅；排除旧runtime/GC-WAL/kill/staging/EROFS/private-localdiag/42export，不运行包含旧worker用例的broad suites。 2026-10-03 独立 C/C++ boundary regression 修复：固定代码 aa271e52b9c2aa52e05696af96ac52116963e57e，base PR136 dbeefb4；PR134 final61390db 的 namespace/template leaf 红例根因为错误 Method hint 拒绝后把返回类型 T 当 name。仅 boundaries.rs 沿真实 declarator 提取 identifier/qualified/template/operator/destructor/pointer/reference 名称并校验 hint name，kind guard 不放宽，未知 conversion 保守 omit；旧 C++ namespace taxonomy 原有债不改，leaf Function/qname省略，不构造identity。原微型gold/scorer/fixture/budgets不变，真实 engine/MCP native recall10 0→1，Python普通5hit完整字段/score/source/document与Class/Class/Method proof保留；C/Go/JS/Rust/TS symbols/chunks/identities逐值不变。Rust1.95 locked bounded parser252/index30/public11/search298=591pass/0fail/1既有childhelper ignored；新四test精确base2pass2fail→fixed4pass0fail，strictparserclippy/fmt过。证据 docs/reviews/cpp-boundary-declarator-fix-20261003/README.md，原REJECT/旧失败不改；排除旧worker及包含suite、GC/WAL/kill/staging/EROFS/private/42export、publicDEV/规模、PR135CI；prioritypressure worker独占不碰。任务状态/父项/V19不翻done，等待独立最终审阅。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 

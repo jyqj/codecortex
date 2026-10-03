@@ -4,7 +4,7 @@
 
 ## 新 blocker：普通 NeedsRetry 使 ready rows 无人续调
 
-`queue.rs:495` 将 NeedsRetry 设置全局 stopped 并退出；runtime `semantic_runtime.rs:396` 只按 `backfilling || claimed == 16` 决定 more，schedule 在 more=false/requested=false 后归还运行所有权。
+`queue.rs:496-497` 将 NeedsRetry 设置全局 stopped 并退出；runtime `semantic_runtime.rs:394` 只按 `backfilling || claimed == 16` 决定 more，schedule 在 more=false/requested=false 后归还运行所有权。
 
 独立正常 fixture 使用真实 CodeIndex/build_index 生成 12 个有效 document records，真实 IndexDb、真实 runtime API、真实 AdmittedProvider，以及明确有效 ProviderGate 4/2。有限合成 provider 普通返回 ServerError；EmbedHandler 转成 NeedsRetry，未注入 DB/IO 故障。实际 schedule 完成时：12 rows，2 provider calls，10 pending 且 available_at<=当前带小数秒时间，10 attempt_count=0；running=false、pins=0、requested=false、gate.in_flight=0。单 round 返回 more=false、cursor=None、同样 ready=10。没有等待更久、修改源或更换终止规则来消除反例。
 

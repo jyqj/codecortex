@@ -1,0 +1,147 @@
+{
+  "source_sha": "83a6b54ab1e71db033264e3b4e8d4f0a1d5319ad",
+  "build_command": [
+    "cargo",
+    "build",
+    "-p",
+    "cc-eval",
+    "--bin",
+    "cc-eval",
+    "--locked",
+    "--offline",
+    "--message-format=json"
+  ],
+  "build_exit_code": 0,
+  "compiler_artifact": {
+    "reason": "compiler-artifact",
+    "package_id": "path+file:///workspace/codecortex/crates/cc-eval#1.0.0",
+    "manifest_path": "/workspace/codecortex/crates/cc-eval/Cargo.toml",
+    "target": {
+      "kind": [
+        "bin"
+      ],
+      "crate_types": [
+        "bin"
+      ],
+      "name": "cc-eval",
+      "src_path": "/workspace/codecortex/crates/cc-eval/src/bin/cc-eval.rs",
+      "edition": "2021",
+      "doc": true,
+      "doctest": false,
+      "test": true
+    },
+    "profile": {
+      "opt_level": "0",
+      "debuginfo": 0,
+      "debug_assertions": true,
+      "overflow_checks": true,
+      "test": false
+    },
+    "features": [
+      "default"
+    ],
+    "filenames": [
+      "/tmp/p7-017-build/debug/cc-eval"
+    ],
+    "executable": "/tmp/p7-017-build/debug/cc-eval",
+    "fresh": false
+  },
+  "binary_sha256": "13a3fcabc4ea03e7007f82c380784df2347d18a213401b916d549b4e10c1c955",
+  "runs": [
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json"
+      ],
+      "exit_code": 0,
+      "stdout": "P1-A current CodeCortex source subset: 14 queries, 9 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p0-python-api.json"
+      ],
+      "exit_code": 0,
+      "stdout": "P0 python API mutation: 1 queries, 2 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p0-rust-api.json"
+      ],
+      "exit_code": 0,
+      "stdout": "P0 rust API mutation: 1 queries, 2 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p0-smoke.json"
+      ],
+      "exit_code": 0,
+      "stdout": "P0 authored smoke: 11 queries, 3 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p1b-exact.json"
+      ],
+      "exit_code": 0,
+      "stdout": "P1-B authored exact and component-scope contracts: 8 queries, 4 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p1c-bm25.json"
+      ],
+      "exit_code": 0,
+      "stdout": "p1c-bm25: 1 queries, 4 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p1c-intents.json"
+      ],
+      "exit_code": 0,
+      "stdout": "P1-C paired EN/ZH intentions (authored dev): 18 queries, 6 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "/tmp/p7-017-build/debug/cc-eval",
+        "validate",
+        "--suite",
+        "crates/cc-eval/benchmarks/manifests/p1c-softscope.json"
+      ],
+      "exit_code": 0,
+      "stdout": "p1c-softscope: 2 queries, 4 admitted files, locks valid\n",
+      "stderr": ""
+    }
+  ],
+  "not_run": [
+    "current production retrieval baseline",
+    "historical freeze raw replay",
+    "600 question corpus generation",
+    "live semantic ablation",
+    "full workspace tests"
+  ]
+}

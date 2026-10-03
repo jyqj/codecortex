@@ -1,0 +1,142 @@
+{
+  "run_id": "p7-v05-32ce36a-a34ddca2-scope-v1-20261003",
+  "source_sha": "32ce36ad424f5279fc0d2c37191e1f3dbb2eddb8",
+  "production_sha": "c8c20b5b7d416372ee06ed5e248663c48912064e",
+  "production_fingerprints_unchanged": 379,
+  "corpus": {
+    "range": {
+      "scope/needle.py": 731,
+      "scope/sub/needle.py": 732,
+      "scope/needle.rs": 733,
+      "outside/needle.py": 999
+    },
+    "range_vectors": [
+      1,
+      0
+    ],
+    "dsl_cases": 6,
+    "policies": [
+      "local",
+      "auto",
+      "semantic"
+    ],
+    "tools": [
+      "search",
+      "context"
+    ],
+    "bm25": {
+      "strong": "src/alpha/alpha/a.py",
+      "weak": "src/alpha/noise/b.py",
+      "noise_files": 12,
+      "query": "alpha"
+    }
+  },
+  "corpus_digest": "a34ddca2e13fb5f1f22677301f25762bcbedbb590794ef8230b7371112fe3ff2",
+  "scoring_digest": "6dcdede0f80808eae69f44891c83d7e09b5c51c9b32caa0370f6f7a5c5ecfba0",
+  "test_sources": {
+    "crates/cc-server/tests/p7_v05_scope_public.rs": "d7a1fae95ba3d796b06c0c3d365b81f7c3da67ce294434480be7059e29dcef75",
+    "crates/cc-eval/tests/p1a_retrieval.rs": "81c496667c01362b0133be6a2d16324060c09d5a2e3cb254e3ecfc8deced5e2d"
+  },
+  "cargo_artifacts": [
+    {
+      "reason": "compiler-artifact",
+      "package_id": "path+file:///workspace/codecortex/crates/cc-server#1.0.0",
+      "manifest_path": "/workspace/codecortex/crates/cc-server/Cargo.toml",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "p7_v05_scope_public",
+        "src_path": "/workspace/codecortex/crates/cc-server/tests/p7_v05_scope_public.rs",
+        "edition": "2021",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [
+        "semantic",
+        "semantic-http"
+      ],
+      "filenames": [
+        "/workspace/codecortex/target/debug/deps/p7_v05_scope_public-c23309398b98023e"
+      ],
+      "executable": "/workspace/codecortex/target/debug/deps/p7_v05_scope_public-c23309398b98023e",
+      "fresh": true
+    },
+    {
+      "reason": "compiler-artifact",
+      "package_id": "path+file:///workspace/codecortex/crates/cc-eval#1.0.0",
+      "manifest_path": "/workspace/codecortex/crates/cc-eval/Cargo.toml",
+      "target": {
+        "kind": [
+          "test"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "p1a_retrieval",
+        "src_path": "/workspace/codecortex/crates/cc-eval/tests/p1a_retrieval.rs",
+        "edition": "2021",
+        "doc": false,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "0",
+        "debuginfo": 2,
+        "debug_assertions": true,
+        "overflow_checks": true,
+        "test": true
+      },
+      "features": [
+        "default"
+      ],
+      "filenames": [
+        "/workspace/codecortex/target/debug/deps/p1a_retrieval-dd0fa9698d84e62a"
+      ],
+      "executable": "/workspace/codecortex/target/debug/deps/p1a_retrieval-dd0fa9698d84e62a",
+      "fresh": true
+    }
+  ],
+  "binaries": {
+    "/workspace/codecortex/target/debug/deps/p7_v05_scope_public-c23309398b98023e": "2669721360b17a9ebf6ee8822c70afcefe0b323fa6b4af0367d84bef9804d098",
+    "/workspace/codecortex/target/debug/deps/p1a_retrieval-dd0fa9698d84e62a": "adc4bd2f4921f1a581e1a20705fb3219cf80fc0f4e6a8920f5214686c56d3f3e"
+  },
+  "product_binary_sha256": "1e509765b399003e4878e0b943461c5c0631bb147f93ba04463e2d2232ca6be2",
+  "levels": [
+    "L2 local lane raw candidate identity/path via actual SQLite catalog",
+    "L3 product MCP stdio DSL/hydration and public BM25 contribution"
+  ],
+  "warm_build": true,
+  "cold_build": false,
+  "holdout": false,
+  "live_provider": false,
+  "repetitions": 5,
+  "raw_file_sha256": {
+    "03/local-lanes.json": "b10eb77d9c753f2fca34db0eab04ed8c3adb0a275a8f19d39b1ffdc5df1557d8",
+    "03/bm25.json": "10cf08b388159f95bf9bab17a8fe48be8971e012c846ffba2b8870529aaec611",
+    "03/232291-.tmpDYlN4B-dsl-range-hydration.json": "57eaaf042f8b5bcc2cc07ff531c346040525fd42bbb587b199e98e78bf91d9b4",
+    "05/232777-.tmp74CT98-dsl-range-hydration.json": "b52803dd479243aacd053543a1b01f5a968377409e48c4a8af75122bf62d3e65",
+    "05/local-lanes.json": "899ccd105867f882fb8b98f67b225fa3fb1a6a9ea6c2b3a1ffd9ba95b70d6c85",
+    "05/bm25.json": "b62a5ad58c02240a3b0b46eca8f49a397b748fd37c2e49efe517f51d75011953",
+    "01/local-lanes.json": "5224a72b4014027628124b12c412bb8fa9709a556905ec63c55281e107eef72d",
+    "01/231805-.tmpBNnZfp-dsl-range-hydration.json": "26ab49836960952cb5692cc43f4cf5365712395d700b33d7662020e13d1c1240",
+    "01/bm25.json": "f57e77b8031958196096b2fc1f1054613fdbf66e532064f0ebdc9ab64fb39667",
+    "04/232533-.tmpzYasqj-dsl-range-hydration.json": "0d31bd153ecc29bf3750ec7ee1f79a46245fef79d91c12fba35c4543d5d16c39",
+    "04/local-lanes.json": "614879b5ff0ddeb9a8568f96deb140988b4ea72f60c334375a4c686b1bb12e6d",
+    "04/bm25.json": "4513addc5d9b60c514569ef3fa532844a8473e9e6549f50f071acb6f6c007842",
+    "02/local-lanes.json": "b212f8dfb8c7bdb178f228777b70422a84f0bf52e29a4ccea0a27b06247322e4",
+    "02/bm25.json": "9fca9028fe5b510294a06210b4dff8dca9fe618d7c6b2a2adf0e71964a67e0fe",
+    "02/232048-.tmpBAPaHc-dsl-range-hydration.json": "273aa9c06a30ea41043f0231be4ddd413453078f9b1dc9112809b03aca48d1ab"
+  }
+}

@@ -1,7 +1,7 @@
 # Pending independent cross-review
 
-Status: candidate_not_independently_reviewed. Author cannot sign this receipt.
+100 source-derived author draft IDs, 0 independently reviewed/accepted. Public dev:67; intended holdout:33, all confirmatory holdout quarantined/custody blocked. Author has not self-signed.
 
-Proposed reviewer from PR60: F / Vite author, subject to integrator assignment. No independent reviewer identity or decision is asserted here.
+Proposed reviewer: F / Vite author, subject to integrator assignment. Reviewer identity/signature is not asserted. See review-receipt.json and corpus-receipt.json; protocol SHA is fixed to 03abe24950f1fa89de3cce0a4e1d44d01e9aa0d6.
 
-Review each family for distinct factual intent, admitted-source SHA and literal correctness, exact line/byte boundaries and symbol identity, alternative/facet sufficiency, genuine cross-file call/data edges, and whole-file absence within stated no-answer scope. Compare globally related families before freezing splits; aliases/translations stay together. Record accept/reject/quarantine decisions and reviewer identity against input hashes. Native evaluator only validates input locks/schema/spans, not independent review or graph-chain quality.
+Review literal answers, source byte/line/symbol bounds, facet requirements/alternatives, exact chain call/dispatch/data edges, full-file bounded absence and task independence. Determine global equivalence components before freeze; mere shared symbols/topics are not enough. Preserve disputes as quarantine and old commitments. Separately audit public history exposure and shared-workspace custody; deleting current files does not restore holdout secrecy. No accepted holdout without independent authorized access boundary and versioned contamination adjudication. No retrieval ranking has been read.

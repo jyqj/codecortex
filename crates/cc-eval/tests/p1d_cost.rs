@@ -29,6 +29,21 @@ fn measured_hydration_reuses_text_and_resets_cached_statement_counters() {
         .unwrap()
         .collect::<Result<Vec<_>, _>>()
         .unwrap();
+    let identities: Vec<(String, String)> = conn
+        .prepare("SELECT c.file_path, json_extract(i.record_json,'$.qname') FROM chunks c JOIN chunk_symbol_identity i ON i.chunk_id=c.chunk_id ORDER BY c.file_path")
+        .unwrap()
+        .query_map([], |r| Ok((r.get(0)?, r.get(1)?)))
+        .unwrap()
+        .collect::<Result<_, _>>()
+        .unwrap();
+    assert_eq!(ids.len(), 2);
+    assert_eq!(
+        identities,
+        vec![
+            ("src/a.py".into(), "needle".into()),
+            ("src/b.py".into(), "other".into())
+        ]
+    );
     drop(conn);
     let refs: Vec<_> = ids.iter().map(String::as_str).collect();
     let cold = db
@@ -37,8 +52,22 @@ fn measured_hydration_reuses_text_and_resets_cached_statement_counters() {
         .unwrap();
     assert_eq!(cold.work.text.storage_reads, cold.rows.len());
     assert!(cold.work.text.zstd_decodes > 0);
-    assert_eq!(cold.work.sql.statements, 1);
+    assert_eq!(cold.rows.len(), 2);
+    assert!(cold.rows.iter().all(|r| r.qname.is_some()));
+    // One batch hydration SELECT plus four SELECTs per admitted identity:
+    // association, surviving symbol, current file/document, stored source proof.
+    assert_eq!(cold.work.sql.statements, 9);
+    assert_eq!(cold.work.sql.rows, 10);
     assert!(cold.work.sql.vm_steps.unwrap() > 0);
+    for id in &refs {
+        let single = db
+            .retrieval()
+            .chunk_rows_by_ids_with_work(&[*id], &HashMap::new())
+            .unwrap();
+        assert_eq!(single.work.sql.statements, 5);
+        assert_eq!(single.work.sql.rows, 5);
+        assert!(single.work.sql.vm_steps.unwrap() > 0);
+    }
     let cache: HashMap<_, _> = cold
         .rows
         .iter()
@@ -58,6 +87,93 @@ fn measured_hydration_reuses_text_and_resets_cached_statement_counters() {
         .chunk_rows_by_ids_with_work(&[], &cache)
         .unwrap();
     assert_eq!(empty.work.sql.statements, 0);
+    let repeated = db
+        .retrieval()
+        .chunk_rows_by_ids_with_work(&refs, &cache)
+        .unwrap();
+    assert_eq!(repeated.work, warm.work);
+}
+
+#[test]
+fn absent_identity_probe_is_charged_without_reusing_cached_authority() {
+    let (_d, index) = fixture();
+    let db = index.index_db().unwrap();
+    let conn = db.read_conn().unwrap();
+    let id: String = conn
+        .query_row(
+            "SELECT chunk_id FROM chunks WHERE file_path='src/a.py'",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(
+        conn.query_row::<i64, _, _>(
+            "SELECT count(*) FROM chunk_symbol_identity WHERE chunk_id=?1",
+            [&id],
+            |r| r.get(0)
+        )
+        .unwrap(),
+        1
+    );
+    drop(conn);
+    let with_identity = db
+        .retrieval()
+        .chunk_rows_by_ids_with_work(&[&id], &HashMap::new())
+        .unwrap();
+    assert_eq!(with_identity.rows[0].qname.as_deref(), Some("needle"));
+    assert_eq!(with_identity.work.sql.statements, 5);
+    let cache = HashMap::from([(
+        id.clone(),
+        Arc::<str>::from(with_identity.rows[0].text.as_str()),
+    )]);
+    let writer = rusqlite::Connection::open(db.admin().db_path()).unwrap();
+    assert_eq!(
+        writer
+            .execute("DELETE FROM chunk_symbol_identity WHERE chunk_id=?1", [&id])
+            .unwrap(),
+        1
+    );
+    drop(writer);
+
+    let cold = db
+        .retrieval()
+        .chunk_rows_by_ids_with_work(&[&id], &HashMap::new())
+        .unwrap();
+    let warm = db
+        .retrieval()
+        .chunk_rows_by_ids_with_work(&[&id], &cache)
+        .unwrap();
+    assert_eq!(cold.rows.len(), 1);
+    assert_eq!(warm.rows.len(), 1);
+    assert!(cold.rows[0].qname.is_none());
+    assert!(warm.rows[0].qname.is_none());
+    assert_eq!(cold.rows[0].text, with_identity.rows[0].text);
+    assert_eq!(warm.rows[0].text, cold.rows[0].text);
+    // The batch SELECT and empty association probe both count; the probe
+    // returns no row and performs no surviving-symbol/document/source reads.
+    assert_eq!(cold.work.sql.statements, 2);
+    assert_eq!(cold.work.sql.rows, 1);
+    assert!(cold.work.sql.vm_steps.unwrap() > 0);
+    assert_eq!(warm.work.sql, cold.work.sql);
+    assert_eq!(cold.work.text.storage_reads, 1);
+    assert_eq!(cold.work.text.cache_hits, 0);
+    assert_eq!(warm.work.text.storage_reads, 0);
+    assert_eq!(warm.work.text.zstd_decodes, 0);
+    assert_eq!(warm.work.text.cache_hits, 1);
+    assert_eq!(warm.work.text.utf8_bytes, cold.work.text.utf8_bytes);
+    let repeated = db
+        .retrieval()
+        .chunk_rows_by_ids_with_work(&[&id], &cache)
+        .unwrap();
+    assert_eq!(repeated.work, warm.work);
+    let empty = db
+        .retrieval()
+        .chunk_rows_by_ids_with_work(&[], &cache)
+        .unwrap();
+    assert_eq!(empty.work.sql.statements, 0);
+    assert_eq!(empty.work.sql.rows, 0);
+    assert_eq!(empty.work.text.storage_reads, 0);
+    assert_eq!(empty.work.text.cache_hits, 0);
 }
 #[test]
 fn cached_text_is_a_hint_not_authority_for_versioned_rows() {

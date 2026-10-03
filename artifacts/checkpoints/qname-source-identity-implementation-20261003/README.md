@@ -76,3 +76,16 @@ unchanged. Parent independent review is pending; V19/parent items remain open.
 
 `source-manifest.json` binds the actual workspace sources/lock and local receipt
 driver by content hash; it deliberately avoids a circular final commit SHA.
+
+## SQL receipt scope correction (2026-10-03)
+
+The earlier “Association SELECTs are charged” statement describes originating
+row hydration only. The existing receipt records originating work, not all SQL
+executed by a request or repeated work on a cache hit. Independent DB review
+measured cold four-row hydration at 14 statements / 16 rows / 642 VM steps.
+`verify_source_records` performs additional manifest validation and
+`load_on(None)` identity SELECTs on both cold and warm paths; those reads are
+outside the originating receipt. The measurement is bounded fixture evidence,
+not a total-request SQL or full-cost bound. The historical statement above is
+retained with this scope correction; implementation, receipt accounting,
+budgets, ranking, scores and quality conclusions are unchanged.

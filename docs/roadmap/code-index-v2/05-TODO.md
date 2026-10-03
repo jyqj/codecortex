@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`ec45af6c83572d7bc280b0859175e76c607e950de7ae354ba7cfd66d34aabee3`。
+> 任务总数：192；源文件 SHA-256：`0fce5846b928d9858d3957db2e2a379c76cff6bb338bd66cc41e59e84281941f`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2021,6 +2021,37 @@
 - [ ] 原线程独立最终代码审阅：`pending`。实施收据见
   `artifacts/checkpoints/qname-source-identity-implementation-20261003/README.md`。
   V19 和父项保持开放；公开 DEV、规模/发行认证及其他平台未验。
+
+
+### CI schema fixtures 窄修收据（2026-10-03）
+
+基线 fd5146baf5a62f977ce5ed4682c16f485aef9da3；生产来源 4e3e5355d8e4c642574eb84bdf73b7373bf3c4a7。CI267/run37158541249/check111306910874 与 CI268/run37158771266/check111307589624 日志均直接核实三红；本地 Rust1.95 精确target复现3fail后保留原日志，不重跑/覆盖历史CI。两处fresh/v21重建断言改读CURRENT_SCHEMA_VERSION；历史v21 SQL原样。nonadjacent不再把当前25作为旧版负例，保留20/22/23并覆盖CURRENT+1。新增真实v24 SQL逐字来自88f2cf099c8b81f3acef485fd5ac9b01c63ce790，git blob d4b00ccf92b4b643b9830322105204533b378aa8；独立断言直接migrate Mismatch24且schema/version/旧行未变，正常open重建清旧行/更换incarnation/提升epochs/安装身份对象，reopen代际稳定。已有真实v24 parser数据库fixture用途和字节未动。Python schema mutation负例改为旧版/未来版/当前版本字符串，不降低生产schema guard。
+
+实际验证：cargo test -p cc-db --test ci_schema_guard_contract --test semantic_schema --locked，Rust1.95/-D warnings，4+6 passed/0fail/0ignore；精确cc-db contract clippy warnings denied及workspace fmt --check通过。初次cargo fmt/clippy调用因未指定RUSTUP_HOME触及只读/home/agent/.rustup而失败，日志保留；补环境指向已有/workspace/.rustup后通过，无安装/权限/产品改动。Python精确test_p7_ci_architecture_guards.py在baseline及修后均因MODULE_CAPABILITIES.json仍声明24而production25于import被严格guard拒绝；这是独立声明漂移阻塞，本批不改声明/guard、不声称Python或全CI通过。两位只读DB/parser reviewer均确认产品rebuild契约合理，旧25负例进入current物理FIFO维护才造成缺semantic_outbox；未编辑产品。另收到父线程DB独审2d5aec12e8dbd54b5a223d93aae048c8f18b2cbb报告信息，未将其13/13计作本批执行。
+
+生产396文件（crates/**/src/**、Cargo manifests/lock）逐字对照4e3e535，变化0；排序(path,SHA256)JSON聚合SHA256 c608ba6aaa0c3eacb27b48ef1e661c198841f351f722c50a7015545fd1d6bbdc。原630项source-manifest保持原件不重写，其中629项仍相符，唯一差异为本次ci_schema_guard_contract.rs测试；不将原manifest称为新测试树全相符。所有tasks status/acceptance字段不变，父项开放。未执行runtime分页/reopen、包含它的broad suites、旧GC/WAL/kill/staging/EROFS、private localdiag及42文件export，无merge/deploy。
+
+SQL文档追加校正：保留原implementation README历史语句，明确association SELECT计费仅originating row hydration；父线程独审冷4row的14statements/16rows/642VMsteps是局部测量，final verify_source_records manifest及load_on(None)额外身份SELECT在cold/warm均不在originating receipt，不是总request SQL或全成本有界证明。实现/预算/排名/质量未改。
+
+日志仅保存在本次环境/tmp/ci-schema-v25-evidence/，不是远端持久交付；历史失败和实际验证日志SHA256：{"baseline-python.log": "e00e24273051de2cee5bbe34daf7b0ff031eaebadf31b5faceefa526fe8f7331", "baseline-rust.log": "1e778987d1ac517c285ed2146b5285414bb1bdf54785a4c399baf46fcbaee3f0", "ci267-check.log": "bb18feb17b541c04be6a7ce64bef8403953afe6290513cc635f84b7dcba9a3e8", "ci268-check.log": "d4b6e6fa21b6ed1b2b72c5466e0586b7c8dfc2d0f9edbc7668d20732418273c7", "clippy-fixed-env.log": "79a742cc17a61c223cbea900f29fe6dcdbf6e266e2ece219ea7fdf7860f7cd8a", "clippy.log": "ff4d4f6fe753fcbc5e86a231ea2e8eb2ab546a884d5aa7c3b545dfae4f45d6fd", "fixed-python.log": "e00e24273051de2cee5bbe34daf7b0ff031eaebadf31b5faceefa526fe8f7331", "fixed-rust.log": "28afec3a5a9b2837b06204c0adef7e2f77fa2bba056a0d48eb4a2974c2e5de36", "fmt-fixed-env.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "fmt.log": "ff4d4f6fe753fcbc5e86a231ea2e8eb2ab546a884d5aa7c3b545dfae4f45d6fd"}.
+
+独立最终review：DB确认v24历史fixture同blob/不变量保留；parser指出负例应从生产常量而非仍24的声明派生，已修正为读取production CURRENT_SCHEMA_VERSION后生成前驱/未来/字符串输入；真实declaration mismatch阻塞保持。
+
+
+### root授权后续：当前版本声明同步（2026-10-03）
+
+上一节schema declaration drift是历史阻塞记录，现root明确授权同步当前权威声明：MODULE_CAPABILITIES.json database_schema 24→25；project_model_version原本3，与生产PROJECT_MODEL_VERSION=3一致，无须改动。生产CURRENT_SCHEMA_VERSION=25、rebuild_on_mismatch guard及所有能力状态/限额/验收计数原样。检查现行机器可读database_schema/project_model_version/module_model/schema版本声明，只有该当前权威遗漏；P3-D rollback、旧v24 fixture/pins及历史checkpoint均原样。未找到依赖该字段的文档生成器，无其它派生文档更新。
+
+确切声明修复树验证：strict Python architecture mutation9/9（含generation及schema负例）、check_module_architecture报告schema25/model3/rebuild_on_mismatch passed；direct Rust1.95 locked ci_schema_guard_contract4/4 + semantic_schema6/6，fmt --check通过。生产源码/Cargo/lock仍保持前述396文件聚合hash；原schema guard脚本无diff。日志SHA256：{"authorized-declaration-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "authorized-declaration-module-guard.log": "12f6bb985f4fb64870bb586d497961121f074222c721b518b5d6b8d66fd8a446", "authorized-declaration-python.log": "cc9b00b26d5a720ff10d0018d0a96146cc273d399873654f3fa5766e826bafd8", "authorized-declaration-rust.log": "9bfb5dcc9f50681bcd2a6e02426dae54398778f3956ec694005a3fe35e95d3d3"}. 同PR135续推，历史失败不覆盖，全部task status/acceptance不变；新head CI单独回读，不沿用旧head结果。
+
+
+### root授权后续：P1-D originating SQL契约迁移（2026-10-03）
+
+前节65899b719a224d14bddb4e8af6721734175d6931精确CI271/run37160207523/check111311916823已completed/failure，MSRV/security success；所有4个schema contract通过，fmt/clippy/default-target compile通过，Default regression停于p1d_cost.rs:40实际statements9/旧期待1。完整check日志本环境保留SHA256 d9d553e06d985817ca108678de7ce33b86185aca3aef8bce36cfb028d3702ea6，不改名为新head验收。
+
+root明确授权只更正迁移后成本测试：真实fixture的2 Python函数各有1持久化identity关系，通过实际SQL独立核对src/a.py→needle、src/b.py→other；load_on四分项association/surviving symbol/current file-document/stored source proof均实际计费，加batch1精确9statements/10rows。逐chunk真实读取要求5/5；不改为>=1、不忽略VM、不改计费/预算/阈值。新增已预热文本缓存后移除owned fixture identity负控，cold/warm均只返回缺qname、正文不变，精确batch+absence probe2statements/1row，VM真实正计数，冷读1/暖读0+cachehit1，warm与repeat全部work相等证明cached statement counterreset；empty0statements/0rows/0textreads/0cachehits。原冷暖SQL相等、压缩解码、utf8成本、stale cache回源及corrupt source失败断言保留。独立DB reviewer只读核对全部分项和product不变，未编辑/执行。
+
+执行仅cargo test -p cc-eval --test p1d_cost --locked，directRust1.95/-Dwarnings，5passed/0failed/1ignored；exact target clippy warnings denied及workspace fmt通过。未运行p1d_cost_probe ignored规模、MCPignored或其他broad/excluded targets。原630source-manifest保留历史不重写：现628相符，仅ci_schema_guard_contract.rs及p1d_cost.rs两个测试改变；生产396项仍前述hash逐字不变。日志SHA256：{"p1d-cost-clippy.log": "309623d0888abccd8fb2b401aee9dc60b25027740c808ce36ce1ec3f44bfac1b", "p1d-cost-fixed.log": "33e72d5077e82ec298b9cb04ffcbca72946692fca51be9f9d50a8d790f7554dd", "p1d-cost-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}. task状态/验收不变，同PR135继续draft，后续exacthead CI独立回读，不冒充总request/fullcost或质量认证。
 
 
 ### [ ] P7-012｜融合与部分覆盖语义

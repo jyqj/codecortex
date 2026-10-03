@@ -1,0 +1,30 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+   Compiling cc-semantic v1.0.0 (/workspace/parallel-retry-progress/crates/cc-semantic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.64s
+     Running tests/queue_worker.rs (/workspace/codecortex/target/debug/deps/queue_worker-31cf8d5dd14bb52a)
+
+running 9 tests
+test drop_of_undisposed_lease_leaves_the_claim_recoverable ... ok
+test drain_publishes_end_to_end_through_the_fake_provider ... ok
+test one_drain_claims_at_most_max_batch ... ok
+test retry_budget_exhaustion_dead_letters_without_further_claims ... ok
+test drain_claim_order_defaults_to_fifo_and_rotation_is_opt_in ... ok
+test worker_limits_reject_structurally_meaningless_bounds ... ok
+test superseded_mid_flight_claim_never_publishes_the_old_version ... ok
+test three_rapid_edits_coalesce_into_one_task_and_one_embed ... ok
+test expired_and_reclaimed_lease_cannot_renew_but_the_successor_publishes ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/retry_worker_layering.rs (/workspace/codecortex/target/debug/deps/retry_worker_layering-5c0a8b3b69a9326b)
+
+running 5 tests
+test planned_batches_keep_fresh_retry_budgets_and_the_gate_wired ... ok
+test tripped_breaker_fails_fast_in_the_drain_without_provider_or_attempt_cost ... ok
+test call_layer_retry_publishes_within_a_single_db_attempt ... ok
+test retry_waits_hold_no_db_lock_and_the_fenced_write_still_lands ... ok
+test call_layer_exhaustion_hands_back_and_the_db_budget_dead_letters ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.26s
+

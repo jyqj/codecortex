@@ -16,8 +16,12 @@ tests/docs/assets/ext/CI 等不索引、不打包；无二进制或私密代码�
 不是由工具生成的依赖包。`utils.py` 的 `parse_list_header`、`parse_dict_header`、
 `unquote_header_value` 带 Werkzeug 许可使用来源注释，原样保留，全部排除在 gold 定位范围外；
 详见 `license/inclusion-review.json`。为保持真实上游完整文件 byte span，源码文件仍原样包含
-这三段。当前 evaluator 不支持按函数排除索引，所以这里只保证 gold 排除，不声称检索时
-已过滤其字节；独立许可审查尚未完成，不将导入范围标为无第三方来源。
+这三段。已核得历史 Requests 引入提交 `9966017a…` 与固定 BSD-licensed Werkzeug
+`d902d2c0…`，三函数归一化实现 AST 完全一致。完整 BSD LICENSE/AUTHORS、
+原始 copyright/permission notices 和历史 Requests ISC LICENSE/NOTICE 均保留于
+`license/werkzeug-0.6.2/`；详见 `license/THIRD-PARTY-NOTICES.md` 与 `lineage.json`。
+当前 evaluator 不支持按函数排除索引；原始完整 source bytes 的准入有明确许可链和归属
+材料，但不声称分片无第三方来源，独立许可接受仍为 pending，gold 排除决定保持不变。
 LICENSE/NOTICE 保持原始字节；不下载 certifi CA bundle、
 urllib3、idna、chardet、charset_normalizer 的实现到源码分片。
 

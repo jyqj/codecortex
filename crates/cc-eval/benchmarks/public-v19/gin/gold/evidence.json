@@ -1662,5 +1662,825 @@
       },
       "conclusion": "No body decoder or merge exists in this file. queryBinding.Bind reads req.URL.Query(), maps it and validates."
     }
+  },
+  {
+    "family": "gin.v19.custom-form-tag",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "934821e3fac3f423e5479f5331606e67564a5e90710aec8687d24db54a1f803d",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "MapFormWithTag",
+        "start_line": 40,
+        "end_line": 42,
+        "span": {
+          "start": 912,
+          "end": 1025
+        },
+        "sha256": "539bf90680ae8879e171454daf5b2756fb807522189b0c02a065d691d68d8b95"
+      }
+    ],
+    "literal_answer": "binding.MapFormWithTag delegates to mapFormByTag with the supplied tag.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.handler-full-path",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "87a297a807e5b83915260fd57e3653f9163b982f1040f5d77a4d2dc10e9ad613",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.FullPath",
+        "start_line": 186,
+        "end_line": 188,
+        "span": {
+          "start": 4767,
+          "end": 4825
+        },
+        "sha256": "bc986dbfa68a23d96cee734619816696bce68a32611c6864ee38b3edaa7ed99a"
+      }
+    ],
+    "literal_answer": "Context.FullPath returns c.fullPath; the documented route /user/:id is returned as the pattern.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.custom-recovery",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "ec8b083741fd576b33bf3ad793e42dc4574de0a84c799e33ade17d6b5a87d593",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "recovery.go",
+        "symbol": "CustomRecoveryWithWriter",
+        "start_line": 53,
+        "end_line": 92,
+        "span": {
+          "start": 1435,
+          "end": 2685
+        },
+        "sha256": "c577c09a476c6a0d9f684964339fd6179fa64769568c5f2f9c3f5c7947b5f8a4"
+      }
+    ],
+    "literal_answer": "CustomRecoveryWithWriter(out, handle) installs deferred recovery and invokes the provided handle for recoverable non-broken-connection panics.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.bind-unmarshal-interface",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "998737ffac2073bad07e807873db42725e1938af9f27bddba518e4be91a93221",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "BindUnmarshaler",
+        "start_line": 183,
+        "end_line": 186,
+        "span": {
+          "start": 4644,
+          "end": 4789
+        },
+        "sha256": "0c3e27f094331e751604ee8d97a0b5cd014e3af8168863938b842e58042a4953"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "trySetCustom",
+        "start_line": 191,
+        "end_line": 197,
+        "span": {
+          "start": 4992,
+          "end": 5199
+        },
+        "sha256": "579a33810a19a0083eb3802edac78a60af790e529b4bf67178bd68cab106606f"
+      }
+    ],
+    "literal_answer": "BindUnmarshaler declares UnmarshalParam(string) error; trySetCustom detects it on the address of the value and uses it.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.secure-json-array",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "a42866eba193c73aa971050414b8b33611820f21f14ed7286a8763c59e11bb83",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/json.go",
+        "symbol": "SecureJSON.Render",
+        "start_line": 94,
+        "end_line": 109,
+        "span": {
+          "start": 2297,
+          "end": 2751
+        },
+        "sha256": "ee2a1ca1742cd993131eab427012717c34b56d7554729f1577131dbc6da0dffe"
+      }
+    ],
+    "literal_answer": "SecureJSON.Render checks that marshaled bytes start with [ and end with ]; only arrays receive the prefix, which is written before the JSON.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.form-map-last",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "630608ff9c309770af69eda928d1b02776a383d595df348c45cb5aaa2416487e",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "setFormMap",
+        "start_line": 528,
+        "end_line": 550,
+        "span": {
+          "start": 13173,
+          "end": 13601
+        },
+        "sha256": "60a0ba972b278e7e7d2aec3004355033c9e2902a5864d08a280020031ce8eaf2"
+      }
+    ],
+    "literal_answer": "setFormMap assigns v[len(v)-1], the last value; map[string][]string receives maps.Copy of the full lists.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.protobuf-validation",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "332e044499911c5ad4ad719349dcba83d9989b6a5f4eba0269e92579db4c4a1a",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/protobuf.go",
+        "symbol": "protobufBinding.BindBody",
+        "start_line": 29,
+        "end_line": 41,
+        "span": {
+          "start": 518,
+          "end": 922
+        },
+        "sha256": "57596e06348984c10947a3880f72ea60ada3b11e137fa2ea1e5ddad4ebc0ee86"
+      }
+    ],
+    "literal_answer": "The object must implement proto.Message; proto.Unmarshal errors propagate, but on success it returns nil without validate(obj).",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.header-empty-delete",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "f6989983fdaa40a6670b3cb9b78b035f27952528a68aee4fa99804e816aa05dc",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Header",
+        "start_line": 1129,
+        "end_line": 1135,
+        "span": {
+          "start": 35891,
+          "end": 36032
+        },
+        "sha256": "32e9fd8d7f2cd28ad7bd527c6c4f20c30913f626549cc201b2270fac766e1845"
+      }
+    ],
+    "literal_answer": "It deletes the response header and returns; nonempty values are set.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.body-binding-cache",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "82590bef1363d76f6a23d0297a5a9f14bc73a8d0f330b27c34063625124bcd2e",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBindBodyWith",
+        "start_line": 950,
+        "end_line": 965,
+        "span": {
+          "start": 29930,
+          "end": 30284
+        },
+        "sha256": "b4ae4f1c27d5f6c51b3c084a26e489fc6d6fbe0bc397fc8fe14a80a85256c80c"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Get",
+        "start_line": 297,
+        "end_line": 302,
+        "span": {
+          "start": 8365,
+          "end": 8497
+        },
+        "sha256": "9479bc476e23e33f5ec378cad7dbe4fc2269889263e67fe71c31dd233ec2f15d"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Set",
+        "start_line": 285,
+        "end_line": 293,
+        "span": {
+          "start": 8092,
+          "end": 8245
+        },
+        "sha256": "0e1ee75542276a48a1ad7a6f3977ff8c3854b20acc55da10fac9f8aa420212c1"
+      }
+    ],
+    "literal_answer": "It looks up BodyBytesKey and accepts a []byte value; absent usable bytes are read with io.ReadAll and stored via Set; the selected BindingBody receives BindBody(body,obj).",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.group-middleware-layout",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "1aef587eb08124b1e6accc7903f4538e9b738c9169863d4ba88da6e633478c85",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "routergroup.go",
+        "symbol": "RouterGroup.Group",
+        "start_line": 96,
+        "end_line": 102,
+        "span": {
+          "start": 3034,
+          "end": 3279
+        },
+        "sha256": "15200f680d21583c676a59653ba1d99279758f0319be6cda6fad6877f4433fa8"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "routergroup.go",
+        "symbol": "RouterGroup.combineHandlers",
+        "start_line": 281,
+        "end_line": 288,
+        "span": {
+          "start": 10357,
+          "end": 10714
+        },
+        "sha256": "9d8969c863525cc301d7ca2f367c53881d5615496d23b564036de65ecfe3d388"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "routergroup.go",
+        "symbol": "RouterGroup.calculateAbsolutePath",
+        "start_line": 290,
+        "end_line": 292,
+        "span": {
+          "start": 10716,
+          "end": 10843
+        },
+        "sha256": "35fded69a4430ca78873ea57dfdce6bab76c3dea21272fbee94fe16fa20f25d6"
+      }
+    ],
+    "literal_answer": "It creates a fresh RouterGroup using combineHandlers for parent-first middleware, calculateAbsolutePath for prefix and the same engine; combineHandlers allocates a new chain and checks the abortIndex limit.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.parser-priority",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "23347e724b6edc27d1fe313644ed7414211b310244241fe0c7627d6fb4534b64",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "setByForm",
+        "start_line": 245,
+        "end_line": 321,
+        "span": {
+          "start": 6411,
+          "end": 8395
+        },
+        "sha256": "1db0a5d5c183f6176d6f6ba9be99a73fe14c3aafb41bcc9ec07a6228eb7d36df"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "trySetUsingParser",
+        "start_line": 201,
+        "end_line": 211,
+        "span": {
+          "start": 5420,
+          "end": 5734
+        },
+        "sha256": "acace9eb2f3b7b032099b2c7febf720b1cfce52f9b7082802d5f7aa0a4e8ad19"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "trySetCustom",
+        "start_line": 191,
+        "end_line": 197,
+        "span": {
+          "start": 4992,
+          "end": 5199
+        },
+        "sha256": "579a33810a19a0083eb3802edac78a60af790e529b4bf67178bd68cab106606f"
+      }
+    ],
+    "literal_answer": "setByForm first tries trySetUsingParser then trySetCustom; only if neither handles the value does slice/array splitting or setWithProperType occur. TextUnmarshaler is supported by the parser tag; custom interface dispatch uses UnmarshalParam.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.bind-middleware-object-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "098373eb4c98050e2aab6635265a959b14f9fc6209331e35ef0f135c4a6f16ac",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "utils.go",
+        "symbol": "Bind",
+        "start_line": 30,
+        "end_line": 45,
+        "span": {
+          "start": 756,
+          "end": 1112
+        },
+        "sha256": "b17879e494a578a3996ae1b1c829bd6b10058f7099a295835b2f20d3dc6fd1c1"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Bind",
+        "start_line": 779,
+        "end_line": 782,
+        "span": {
+          "start": 24002,
+          "end": 24131
+        },
+        "sha256": "fa568ccacb6418f7a1c36f93aef297e55b13227f0e3e34d0b96b9d71de41ad18"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "binding.Default",
+        "start_line": 95,
+        "end_line": 120,
+        "span": {
+          "start": 3701,
+          "end": 4182
+        },
+        "sha256": "0d3f60661d73d45150f560427eab0da1e9cb07a99a272df1fb52160379fe118d"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.MustBindWith",
+        "start_line": 832,
+        "end_line": 849,
+        "span": {
+          "start": 25734,
+          "end": 26380
+        },
+        "sha256": "839f2d6f460a1201d705206596dc75e4059b3faf755cf622155e736fac345f3b"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Set",
+        "start_line": 285,
+        "end_line": 293,
+        "span": {
+          "start": 8092,
+          "end": 8245
+        },
+        "sha256": "0e1ee75542276a48a1ad7a6f3977ff8c3854b20acc55da10fac9f8aa420212c1"
+      }
+    ],
+    "literal_answer": "utils.Bind rejects pointer input, captures its type, creates a fresh pointer with reflect.New per request, calls Context.Bind, and stores it under BindKey only on nil error; Context.Bind selects binding.Default and calls MustBindWith.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "selects binding"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 4,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 1,
+        "to_facet": 5,
+        "relation": "stores success object"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.secure-prefix-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "587579af0b8eb0bb44c5a3491c1aee3300d30cd39eca2695f190019384693fdb",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "gin.go",
+        "symbol": "Engine.SecureJsonPrefix",
+        "start_line": 288,
+        "end_line": 291,
+        "span": {
+          "start": 10125,
+          "end": 10239
+        },
+        "sha256": "7f20c707665341ec413d205465b579de36470b5b3fb4015f2d62ecf596c20ad3"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.SecureJSON",
+        "start_line": 1241,
+        "end_line": 1243,
+        "span": {
+          "start": 39310,
+          "end": 39442
+        },
+        "sha256": "b59997836e68ef5984cab4fd175f6761ea0b71a4702678b9b14b7a70c72ca244"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Render",
+        "start_line": 1201,
+        "end_line": 1215,
+        "span": {
+          "start": 37975,
+          "end": 38262
+        },
+        "sha256": "435b2083c4fa8b3c3f0d2609253003c783ee203a23ac21843ad9056ef16a7066"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/json.go",
+        "symbol": "SecureJSON.Render",
+        "start_line": 94,
+        "end_line": 109,
+        "span": {
+          "start": 2297,
+          "end": 2751
+        },
+        "sha256": "ee2a1ca1742cd993131eab427012717c34b56d7554729f1577131dbc6da0dffe"
+      }
+    ],
+    "literal_answer": "SecureJsonPrefix stores engine.secureJSONPrefix; Context.SecureJSON reads it into render.SecureJSON.Prefix and passes that renderer through Context.Render; SecureJSON.Render writes Prefix only around array-shaped JSON.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "secureJSONPrefix data flow"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 4,
+        "relation": "Render dispatch"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.errorlogger-filter-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "21a2a1ff698ec9b3b9fa648303d9a8af37336d21b2073b7549d7eacdd342bdb8",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "logger.go",
+        "symbol": "ErrorLoggerT",
+        "start_line": 212,
+        "end_line": 220,
+        "span": {
+          "start": 5690,
+          "end": 5861
+        },
+        "sha256": "fef2f75573f971ad6a2975e0a0416cd96447e43a9b5f92d1b1ffa2648c7dd290"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "errors.go",
+        "symbol": "errorMsgs.ByType",
+        "start_line": 98,
+        "end_line": 112,
+        "span": {
+          "start": 2345,
+          "end": 2597
+        },
+        "sha256": "927bd2ab65971c052487bf2fc3853fd4871ad35680e17bea9f9cd76e9cad1ef4"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "errors.go",
+        "symbol": "Error.IsType",
+        "start_line": 87,
+        "end_line": 89,
+        "span": {
+          "start": 1956,
+          "end": 2037
+        },
+        "sha256": "62f83a3db3d80cc9470cf1073643241d560af43f8a6de29a2c4d6cc501fb9f06"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.JSON",
+        "start_line": 1259,
+        "end_line": 1261,
+        "span": {
+          "start": 40044,
+          "end": 40129
+        },
+        "sha256": "7b40781f9fb31e8bda2014ec6f007fa13461f71f6c0c3803096e338796c5b093"
+      }
+    ],
+    "literal_answer": "Its middleware calls Next then c.Errors.ByType(typ); only a nonempty result is passed to Context.JSON(-1,errors). ByType uses bitmask IsType, except ErrorTypeAny returns the whole slice.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "filters errors"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "bitmask predicate"
+      },
+      {
+        "from_facet": 1,
+        "to_facet": 4,
+        "relation": "renders filtered result"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.uri-params-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "6ee1b0208a4e8d8d2e87cd519ab50dd1d3c6f79896304b2df3668f8411b9cb51",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBindUri",
+        "start_line": 931,
+        "end_line": 937,
+        "span": {
+          "start": 29228,
+          "end": 29425
+        },
+        "sha256": "3bce0938c26160cc4f72cc4dda5efcc8ca7a44220099819601fb8e9637038adb"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/uri.go",
+        "symbol": "uriBinding.BindUri",
+        "start_line": 13,
+        "end_line": 18,
+        "span": {
+          "start": 253,
+          "end": 398
+        },
+        "sha256": "2048d6426a501129d295f156833c413db852e15ce0bdd5c06ae3c37f80b9af0a"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "mapURI",
+        "start_line": 32,
+        "end_line": 34,
+        "span": {
+          "start": 722,
+          "end": 811
+        },
+        "sha256": "2d511a75843a0d9a1711ae981c52e8eea5d5b1327445ab67e6fb9443d5200918"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "mapFormByTag",
+        "start_line": 46,
+        "end_line": 63,
+        "span": {
+          "start": 1067,
+          "end": 1522
+        },
+        "sha256": "a49bc5eb02f28b527dcbc67f38fa97e1ac027a1e7df56da3bf9c461938d8fa5e"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "mappingByPtr",
+        "start_line": 79,
+        "end_line": 82,
+        "span": {
+          "start": 2068,
+          "end": 2209
+        },
+        "sha256": "990b40b7cec5e0fa88a9c5d3528fb8d66815a9532ac718df42ac3df64f66bc86"
+      }
+    ],
+    "literal_answer": "ShouldBindUri builds map[string][]string from Params and invokes Uri.BindUri; uriBinding.BindUri calls mapURI; mapURI calls mapFormByTag with uri, which handles maps or uses mappingByPtr.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "BindingUri dispatch"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 4,
+        "relation": "uses uri tag"
+      },
+      {
+        "from_facet": 4,
+        "to_facet": 5,
+        "relation": "struct mapping fallback"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.time-tag-location",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "2aa59c7100a89fdeafd89b5a4758e2c3845fbf4c520ecf9ccc39bee1d8e84de4",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/form_mapping.go",
+        "symbol": "setTimeField",
+        "start_line": 434,
+        "end_line": 488,
+        "span": {
+          "start": 11231,
+          "end": 12334
+        },
+        "sha256": "fa13397b2b49553a9ad6baee63780c65bd75fcab7d3029df2121515e9cf8b632"
+      }
+    ],
+    "literal_answer": "Default format is RFC3339; empty input sets zero time; unix-family formats parse epochs; otherwise Local is overridden by time_utc then time_location, whose LoadLocation error propagates, before ParseInLocation.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.broken-connection-recovery",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "d968561dd551340a70d3317e39a1c326f7e2856d6ccb4d03973dcecb09594dd2",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "recovery.go",
+        "symbol": "CustomRecoveryWithWriter",
+        "start_line": 53,
+        "end_line": 92,
+        "span": {
+          "start": 1435,
+          "end": 2685
+        },
+        "sha256": "c577c09a476c6a0d9f684964339fd6179fa64769568c5f2f9c3f5c7947b5f8a4"
+      }
+    ],
+    "literal_answer": "errors.Is marks these as broken connection; it records the error and aborts without calling the custom recovery handler to write a status. Other panics invoke handle(c,rec).",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.no-xml-json-flags",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "81638ace4e689c7bd7197fa070070228c7ad2b80b49e39addf3649e35f7b3a88",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/xml.go",
+        "symbol": "decodeXML",
+        "start_line": 28,
+        "end_line": 34,
+        "span": {
+          "start": 517,
+          "end": 676
+        },
+        "sha256": "a64b065932b75755ceabec9cc694a0c5ab43ff5508fd335299b06e9b841e0764"
+      }
+    ],
+    "literal_answer": "Absent within binding/xml.go. decodeXML uses xml.NewDecoder, Decode and validate; the JSON decoder flag is not consulted here.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "binding/xml.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "binding/xml.go": "02ada76ed4d142b4d3e1813c068c2c43e9e01c19276eda5c875039355947b18a"
+      },
+      "conclusion": "Absent within binding/xml.go. decodeXML uses xml.NewDecoder, Decode and validate; the JSON decoder flag is not consulted here."
+    }
+  },
+  {
+    "family": "gin.v19.no-mode-hot-reload",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "530f672aabd122bd530358493e02ee4dffbcb4fbf943d34564a639eb4d7717cb",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "mode.go",
+        "symbol": "init",
+        "start_line": 52,
+        "end_line": 55,
+        "span": {
+          "start": 1193,
+          "end": 1254
+        },
+        "sha256": "4ddb2daabe457a16f2d8edb7367ed4a8f0f316a4abc77383410a844d8351a4a6"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "mode.go",
+        "symbol": "SetMode",
+        "start_line": 58,
+        "end_line": 78,
+        "span": {
+          "start": 1308,
+          "end": 1760
+        },
+        "sha256": "3d6129c202bf942d8908e6417ab356926fdb2e2ce7330f71aa5fd635fbd1cb95"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "mode.go",
+        "symbol": "Mode",
+        "start_line": 98,
+        "end_line": 100,
+        "span": {
+          "start": 2400,
+          "end": 2455
+        },
+        "sha256": "6dc3007cab81e2cbafc86f81f9be1f97c6e6762b996edb8d076b23cbdd5540b0"
+      }
+    ],
+    "literal_answer": "No watcher or reload loop in mode.go. init reads GIN_MODE once and calls SetMode; subsequent changes require explicit SetMode.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "mode.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "mode.go": "ce47afda3ca06f979b1689e1340c604f72639d2d8dfca5265bec56f7bb6dfb7e"
+      },
+      "conclusion": "No watcher or reload loop in mode.go. init reads GIN_MODE once and calls SetMode; subsequent changes require explicit SetMode."
+    }
+  },
+  {
+    "family": "gin.v19.no-string-template",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "bb560b87f085f166e6f170409ded14cb1da1ad8bf1c4ef1a4e6b70d4ef660069",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/text.go",
+        "symbol": "WriteString",
+        "start_line": 33,
+        "end_line": 41,
+        "span": {
+          "start": 835,
+          "end": 1090
+        },
+        "sha256": "13e7ea56a8a1582320fa9e3a3f8e6a77eee61c7e86f347059027e36b927f5445"
+      }
+    ],
+    "literal_answer": "No template execution path exists in render/text.go. WriteString uses fmt.Fprintf only when formatting arguments exist, otherwise writes the literal format bytes.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "render/text.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "render/text.go": "577425b4241128ad49c23799008966c731a1cc81392b2b5104857fbfdc311a1b"
+      },
+      "conclusion": "No template execution path exists in render/text.go. WriteString uses fmt.Fprintf only when formatting arguments exist, otherwise writes the literal format bytes."
+    }
   }
 ]

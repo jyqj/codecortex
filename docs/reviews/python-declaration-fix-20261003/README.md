@@ -90,7 +90,8 @@ python3 scripts/code_index_plan.py
 旧审查目录 hashes、新证据 hashes。原审查 REJECT/log/output 均保持 PR134 字节。
 `earlier-runs/` 保留早期自有 fixture 的失败与修正过程：Go declaration 缺少
 fallback name、默认完整 function chunk 未独立拆出 local class、bare decorator
-引用遗漏、SQL 测试错误使用不存在的 qname 列，以及一次编辑脚本的匹配失败。
+引用遗漏、SQL 测试错误使用不存在的 qname 列。
+另一次编辑脚本匹配失败只出现在会话工具输出，不是 native 测试结果。
 前三者的边界/引用修正或符合既有 chunk 模型的测试校正均体现在冻结源码；
 SQL 检查改为读取实际 `record_json`。这些早期日志不冒充冻结源码 PASS。
 

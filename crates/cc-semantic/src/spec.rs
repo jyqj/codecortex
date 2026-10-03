@@ -7,9 +7,10 @@
 //!
 //! This module freezes, as of `ENCODING_SPEC_VERSION`:
 //!
-//! - the **space identity** ([`VectorSpace`]): `model_id` is part of the
-//!   identity, `dimension` is not — two spaces with equal dimension but
-//!   different `model_id` always yield different [`SpaceDigest`]s;
+//! - the **space identity** ([`VectorSpace`]): the complete frozen tuple
+//!   `(model_id, dimension, distance, spec_version)` enters [`SpaceDigest`].
+//!   Equal dimension alone does not identify a space; different models or
+//!   dimensions produce different digests;
 //! - the **three-way digest split**: space identity (`SpaceDigest`),
 //!   document encoding spec (`DocSpecDigest`), query encoding spec
 //!   (`QuerySpecDigest`). Query-only changes (instruction/limits) never touch
@@ -84,9 +85,9 @@ pub enum DistanceMetric {
 
 /// Frozen vector-space identity.
 ///
-/// `model_id` is part of the space identity; `dimension` is not — two spaces
-/// with the same dimension but different models are different spaces and must
-/// never be mixed (ADR-0003 constraint table, P6-003).
+/// The complete `(model_id, dimension, distance, spec_version)` tuple is the
+/// space identity. Equal dimension alone does not identify a space: distinct
+/// models or dimensions must never be mixed (ADR-0003 constraint table, P6-003).
 ///
 /// Fields are private by design: the only sanctioned construction path is
 /// [`VectorSpace::new`], which stamps the current

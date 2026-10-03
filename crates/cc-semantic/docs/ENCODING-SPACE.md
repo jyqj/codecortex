@@ -27,8 +27,10 @@
 - `DistanceMetric`：封闭枚举，v1 仅 `Cosine`。新增变体必须与版本 bump 同轮落地
   （`VectorSpace::validate` 的 `match` 是编译期准入门）。
 - `VectorSpace`：`{model_id, dimension, distance, spec_version}`，字段私有。
-  **`model_id` 进身份，`dimension` 不进**——同维度不同 `model_id` 必然不同
-  `SpaceDigest`，这是"同维度不同模型不可混用"的第一层拒绝。
+  **四字段全部进入身份**：`SpaceDigest` 对域标签与完整冻结 tuple 进行哈希。
+  维度相同不足以判定空间相同；同维度不同 `model_id` 或同模型不同维度均
+  产生不同 `SpaceDigest`，不能混用。这遵循 ADR-0003 的完整 digest 约束。
+  此处订正旧文字“dimension 不进”；既有 v1 序列化、digest 公式和缓存布局不变。
 - `DocumentEncodingSpec` / `QueryEncodingSpec`：同形四字段
   `{space, instruction, max_tokens, tokenizer}`，**刻意为两个不同类型**：
   query 侧任何变化只改 `QuerySpecDigest`，永不触碰 `DocSpecDigest`

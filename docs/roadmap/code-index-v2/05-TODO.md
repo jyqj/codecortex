@@ -2533,3 +2533,14 @@
 回滚：关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。
 条件：本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。
 证据：尚无
+
+## 本批附录：公开 hit 的来源绑定 qname（2026-10-03）
+
+- [ ] 来源绑定限定符号身份贯通：`awaiting_design_review`；基线
+  `88f2cf099c8b81f3acef485fd5ac9b01c63ce790`；设计见
+  [QNAME_SOURCE_IDENTITY_DESIGN.md](QNAME_SOURCE_IDENTITY_DESIGN.md)。
+  现有持久化关系不足，拟议 schema 25 需原线程先审阅，当前保持 24/3。
+- [ ] 产品实现、完整生命周期/代际拒绝测试及原 native evaluator 微型 gold
+  验证：`blocked_on_design_review`，没有产品通过声明。
+- [ ] 原线程独立代码审阅：`pending`。本附录不关闭 V19 或任何父项，
+  不重跑公开 DEV，不修改评分、排名、预算或冻结 gold。

@@ -1,0 +1,651 @@
+{
+  "source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+  "evidence_sha": "a8452be903e1a88c935e267f5d76879ce7ee2716",
+  "scope": "final isolated failed 100k run only; no product execution; no heldout/private/provider reads",
+  "binary_receipt": {
+    "source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+    "source_tree": "7f9ea467c1705822aa403de7d273419ddfb45864",
+    "command": [
+      "cargo",
+      "build",
+      "--release",
+      "-p",
+      "cc-server",
+      "--bin",
+      "codecortex",
+      "--no-default-features",
+      "--features",
+      "semantic-http",
+      "--locked",
+      "--message-format=json-render-diagnostics"
+    ],
+    "profile": "release",
+    "target_dir": "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/target",
+    "environment": {
+      "CARGO_HOME": "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/cargo",
+      "RUSTUP_HOME": "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/rustup",
+      "TMPDIR": "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/tmp",
+      "CARGO_TARGET_DIR": "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/target",
+      "CARGO_BUILD_JOBS": "4"
+    },
+    "timeout_seconds": 900,
+    "guard_memory_bytes": 12884901888,
+    "guard_disk_reserve_bytes": 4294967296,
+    "sample_interval_seconds": 0.5,
+    "guard_stop": null,
+    "rustc": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "cargo": "cargo 1.95.0 (f2d3ce0bd 2026-03-21)\nrelease: 1.95.0\ncommit-hash: f2d3ce0bd7f24a49f8f72d9000448f8838c4e850\ncommit-date: 2026-03-21\nhost: x86_64-unknown-linux-gnu\nlibgit2: 1.9.2 (sys:0.20.4 vendored)\nlibcurl: 8.15.0-DEV (sys:0.4.83+curl-8.15.0 vendored ssl:OpenSSL/3.5.4)\nssl: OpenSSL 3.5.4 30 Sep 2025\nos: Debian 13.0.0 [64-bit]\n",
+    "build_exit_code": 0,
+    "wall_seconds": 146.20495808200002,
+    "compiler_artifact": {
+      "reason": "compiler-artifact",
+      "package_id": "path+file:///workspace/codecortex/crates/cc-server#1.0.0",
+      "manifest_path": "/workspace/codecortex/crates/cc-server/Cargo.toml",
+      "target": {
+        "kind": [
+          "bin"
+        ],
+        "crate_types": [
+          "bin"
+        ],
+        "name": "codecortex",
+        "src_path": "/workspace/codecortex/crates/cc-server/src/main.rs",
+        "edition": "2021",
+        "doc": true,
+        "doctest": false,
+        "test": true
+      },
+      "profile": {
+        "opt_level": "3",
+        "debuginfo": 0,
+        "debug_assertions": false,
+        "overflow_checks": false,
+        "test": false
+      },
+      "features": [
+        "semantic",
+        "semantic-http"
+      ],
+      "filenames": [
+        "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/target/release/codecortex"
+      ],
+      "executable": "/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/runtime/target/release/codecortex",
+      "fresh": false
+    },
+    "binary_sha256": "1dc3dbff22f9fda053c7e7eac6d11d27f0a7271cec28b902057e632be21b9b27"
+  },
+  "source_identity": {
+    "source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+    "core_coldscan_sha": "c70c68f2ff9b4ac40c635652858f56d2d0a06518",
+    "existing_independent_50k_review_sha": "70c2a640160060e34cd530e18e02a8c95885063f",
+    "source_tree": "7f9ea467c1705822aa403de7d273419ddfb45864",
+    "files": {
+      "Cargo.toml": {
+        "sha256": "53fdb9015f1e3c2c043db4016ece8f81b5760f3a9c4eee0a9c9ada428327d6fa",
+        "git_blob": "c376fdc70465a237022de8a05b7b27cc28f72cc8"
+      },
+      "Cargo.lock": {
+        "sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
+        "git_blob": "c83b9a3dae16231117e3c3c12dc56479988e1b24"
+      },
+      "crates/cc-server/Cargo.toml": {
+        "sha256": "867140f1a44758e9486f0453fdb671dca69811c5ae3afea4e831f1d420d38949",
+        "git_blob": "b43687e2190c7a814675483998d7186fa49e5f8b"
+      },
+      "scripts/p7_release_resource_preparation.py": {
+        "sha256": "a76865a466252f5863c8e0ad278c4c6814093d4a4a629a9409acf2e6b916901b",
+        "git_blob": "73fd58a4cb1f20d5297ebe533b3c88196870bd75"
+      }
+    },
+    "agent_instructions_found": [],
+    "instructions_read": [
+      "CONTRIBUTING.md",
+      "Cargo.toml",
+      "crates/cc-server/Cargo.toml",
+      "crates/cc-eval/Cargo.toml",
+      "scripts/p7_release_resource_preparation.py",
+      "scripts/p7_stdio_build_receipt.py",
+      "fixed review run_cold_product.py"
+    ],
+    "scope": "artifacts/checkpoints/independent-100k-release-20261003 only",
+    "root_tasks_TODO_version_production": "read only",
+    "heldout": "not read or run",
+    "old_session": "not resumed",
+    "runtime_build_profile": {
+      "release": "thin LTO, codegen-units=1, strip=true",
+      "features": [
+        "semantic",
+        "semantic-http"
+      ],
+      "no_default_features": true
+    }
+  },
+  "http": {
+    "requests": 29696,
+    "input_count": 1,
+    "observed_peak_inflight": 1,
+    "first_gated_request_ms": 2634.081104,
+    "ungated_server_span_ms": {
+      "n": 29695,
+      "sum": 7693.80669,
+      "mean": 0.2590943488802829,
+      "p50": 0.242804,
+      "p90": 0.3351630000000001,
+      "p95": 0.37487329999999996,
+      "p99": 0.5177578000000002,
+      "max": 7.648866
+    },
+    "returned_to_next_entered_ms": {
+      "n": 29695,
+      "sum": 302222.944119,
+      "mean": 10.177570099983162,
+      "p50": 8.412718,
+      "p90": 14.8866724,
+      "p95": 19.217333299999996,
+      "p99": 66.40288404000003,
+      "max": 279.247584
+    },
+    "entered_to_next_entered_ms": {
+      "n": 29694,
+      "sum": 309912.892605,
+      "mean": 10.436885990604162,
+      "p50": 8.667121999999999,
+      "p90": 15.179676200000001,
+      "p95": 19.52462485,
+      "p99": 66.63467869999997,
+      "max": 279.548285
+    },
+    "postgate_span_s": 309.916750809,
+    "postgate_returned_per_s": 95.81605357724231,
+    "ungated_server_fraction": 0.024825398013873897,
+    "boundaries_ms": {
+      "within_16": {
+        "n": 27840,
+        "sum": 235555.799179,
+        "mean": 8.461056004992816,
+        "p50": 8.120305,
+        "p90": 13.374409900000005,
+        "p95": 15.305480049999998,
+        "p99": 19.574337210000003,
+        "max": 279.247584
+      },
+      "round_16": {
+        "n": 1855,
+        "sum": 66667.14494,
+        "mean": 35.93916169272237,
+        "p50": 26.222666,
+        "p90": 77.58304000000001,
+        "p95": 90.65677499999998,
+        "p99": 106.50297642000001,
+        "max": 182.311669
+      },
+      "job_1024": {
+        "n": 28,
+        "sum": 1012.951778,
+        "mean": 36.17684921428572,
+        "p50": 29.7968285,
+        "p90": 72.8056571,
+        "p95": 75.26890429999999,
+        "p99": 80.01529245,
+        "max": 81.468882
+      },
+      "before_cursor_exhaustion": {
+        "n": 24999,
+        "sum": 243880.697259,
+        "mean": 9.755618115084603,
+        "p50": 7.600189,
+        "p90": 14.053394599999999,
+        "p95": 19.337862099999988,
+        "p99": 71.48498410000003,
+        "max": 279.247584
+      },
+      "after_cursor_exhaustion": {
+        "n": 4671,
+        "sum": 58045.548656,
+        "mean": 12.426792690216228,
+        "p50": 11.891028,
+        "p90": 16.76211,
+        "p95": 19.045383,
+        "p99": 23.427167300000026,
+        "max": 278.595718
+      }
+    }
+  },
+  "status": {
+    "requests": 293,
+    "window_s": 301.987382129,
+    "wire_ms": {
+      "n": 293,
+      "sum": 243501.981928,
+      "mean": 831.0647847372014,
+      "p50": 689.159016,
+      "p90": 2001.6243256000002,
+      "p95": 2274.2521666,
+      "p99": 2561.462424639999,
+      "max": 2748.86398
+    },
+    "union_fraction": 0.8063316427703698,
+    "returned_during_rpc": 19656,
+    "during_rpc_returned_per_s": 80.72213558332348,
+    "outside_rpc_returned_per_s": 157.13323271134712,
+    "state_counts": {
+      "port_attached_unverified": 292,
+      "backfilling": 1
+    },
+    "error_counts": {
+      "index changed during retrieval after 3 attempts; retry the query": 292,
+      "null": 1
+    },
+    "poll_sleep_ms": {
+      "n": 292,
+      "sum": 58485.400201,
+      "mean": 200.29246644178082,
+      "p50": 200.248307,
+      "p90": 200.34688989999998,
+      "p95": 200.42150974999998,
+      "p99": 201.18461852,
+      "max": 202.991559
+    }
+  },
+  "windows_30s": [
+    {
+      "start_ns": 503525779030,
+      "end_ns": 533525779030,
+      "wall_s": 30.0,
+      "returned": 6492,
+      "returned_per_s": 216.4,
+      "pending_proxy_start": 100000,
+      "pending_proxy_end": 93508,
+      "sample_wall_s": 29.969704167,
+      "cpu_s": 27.56,
+      "cpu_cores": 0.9195953302183958,
+      "io_delta": {
+        "rchar": 25989651447,
+        "wchar": 743443336,
+        "syscr": 6370074,
+        "syscw": 356683,
+        "read_bytes": 0,
+        "write_bytes": 827174912,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.40809900693333334,
+      "inside_poll_per_s": 170.62852923018403,
+      "outside_poll_per_s": 247.95813554267195
+    },
+    {
+      "start_ns": 533525779030,
+      "end_ns": 563525779030,
+      "wall_s": 30.0,
+      "returned": 4166,
+      "returned_per_s": 138.86666666666667,
+      "pending_proxy_start": 93508,
+      "pending_proxy_end": 89342,
+      "sample_wall_s": 29.986063739,
+      "cpu_s": 39.43,
+      "cpu_cores": 1.3149441801765125,
+      "io_delta": {
+        "rchar": 40164954987,
+        "wchar": 502716839,
+        "syscr": 9821907,
+        "syscw": 235546,
+        "read_bytes": 0,
+        "write_bytes": 540483584,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.6951329608333333,
+      "inside_poll_per_s": 126.64243863188126,
+      "outside_poll_per_s": 166.73935454709303
+    },
+    {
+      "start_ns": 563525779030,
+      "end_ns": 593525779030,
+      "wall_s": 30.0,
+      "returned": 2958,
+      "returned_per_s": 98.6,
+      "pending_proxy_start": 89342,
+      "pending_proxy_end": 86384,
+      "sample_wall_s": 29.976989123,
+      "cpu_s": 42.64,
+      "cpu_cores": 1.4224243744107123,
+      "io_delta": {
+        "rchar": 41050763712,
+        "wchar": 355455684,
+        "syscr": 10033531,
+        "syscw": 167052,
+        "read_bytes": 0,
+        "write_bytes": 386166784,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.7885566055,
+      "inside_poll_per_s": 92.74328922393806,
+      "outside_poll_per_s": 120.4420063671777
+    },
+    {
+      "start_ns": 593525779030,
+      "end_ns": 623525779030,
+      "wall_s": 30.0,
+      "returned": 2774,
+      "returned_per_s": 92.46666666666667,
+      "pending_proxy_start": 86384,
+      "pending_proxy_end": 83610,
+      "sample_wall_s": 29.979930668,
+      "cpu_s": 45.24,
+      "cpu_cores": 1.509009493750708,
+      "io_delta": {
+        "rchar": 42024032534,
+        "wchar": 335007417,
+        "syscr": 10270428,
+        "syscw": 156888,
+        "read_bytes": 0,
+        "write_bytes": 360050688,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8331024502,
+      "inside_poll_per_s": 87.26417739204483,
+      "outside_poll_per_s": 118.4359308471206
+    },
+    {
+      "start_ns": 623525779030,
+      "end_ns": 653525779030,
+      "wall_s": 30.0,
+      "returned": 2247,
+      "returned_per_s": 74.9,
+      "pending_proxy_start": 83610,
+      "pending_proxy_end": 81363,
+      "sample_wall_s": 29.979138257,
+      "cpu_s": 45.69,
+      "cpu_cores": 1.524059818141423,
+      "io_delta": {
+        "rchar": 39765138587,
+        "wchar": 270524155,
+        "syscr": 9716913,
+        "syscw": 126821,
+        "read_bytes": 0,
+        "write_bytes": 292343808,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8560567891666667,
+      "inside_poll_per_s": 70.28349921181777,
+      "outside_poll_per_s": 102.35518054680973
+    },
+    {
+      "start_ns": 653525779030,
+      "end_ns": 683525779030,
+      "wall_s": 30.0,
+      "returned": 2035,
+      "returned_per_s": 67.83333333333333,
+      "pending_proxy_start": 81363,
+      "pending_proxy_end": 79328,
+      "sample_wall_s": 29.970005668,
+      "cpu_s": 46.73,
+      "cpu_cores": 1.5592255976746516,
+      "io_delta": {
+        "rchar": 39200511052,
+        "wchar": 245280585,
+        "syscr": 9578250,
+        "syscw": 114892,
+        "read_bytes": 0,
+        "write_bytes": 265428992,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8818573098,
+      "inside_poll_per_s": 64.29611612887716,
+      "outside_poll_per_s": 94.23632824414331
+    },
+    {
+      "start_ns": 683525779030,
+      "end_ns": 713525779030,
+      "wall_s": 30.0,
+      "returned": 1970,
+      "returned_per_s": 65.66666666666667,
+      "pending_proxy_start": 79328,
+      "pending_proxy_end": 77358,
+      "sample_wall_s": 29.992724103,
+      "cpu_s": 47.67,
+      "cpu_cores": 1.5893854734999495,
+      "io_delta": {
+        "rchar": 41071123584,
+        "wchar": 238347637,
+        "syscr": 10034698,
+        "syscw": 111724,
+        "read_bytes": 0,
+        "write_bytes": 259002368,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8948578767666666,
+      "inside_poll_per_s": 62.57976987624142,
+      "outside_poll_per_s": 91.93904754247944
+    },
+    {
+      "start_ns": 713525779030,
+      "end_ns": 743525779030,
+      "wall_s": 30.0,
+      "returned": 1758,
+      "returned_per_s": 58.6,
+      "pending_proxy_start": 77358,
+      "pending_proxy_end": 75600,
+      "sample_wall_s": 29.962545811,
+      "cpu_s": 47.3,
+      "cpu_cores": 1.5786375529757217,
+      "io_delta": {
+        "rchar": 39788891648,
+        "wchar": 210993853,
+        "syscr": 9720833,
+        "syscw": 98918,
+        "read_bytes": 0,
+        "write_bytes": 228241408,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8931760165,
+      "inside_poll_per_s": 55.494847321246525,
+      "outside_poll_per_s": 84.56278297591602
+    },
+    {
+      "start_ns": 743525779030,
+      "end_ns": 773525779030,
+      "wall_s": 30.0,
+      "returned": 2105,
+      "returned_per_s": 70.16666666666667,
+      "pending_proxy_start": 75600,
+      "pending_proxy_end": 73495,
+      "sample_wall_s": 29.985349083,
+      "cpu_s": 48.02,
+      "cpu_cores": 1.6014487564270057,
+      "io_delta": {
+        "rchar": 41869795917,
+        "wchar": 232593554,
+        "syscr": 10230195,
+        "syscw": 110863,
+        "read_bytes": 0,
+        "write_bytes": 256323584,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8998630576,
+      "inside_poll_per_s": 67.71400694662024,
+      "outside_poll_per_s": 92.2070627686085
+    },
+    {
+      "start_ns": 773525779030,
+      "end_ns": 803525779030,
+      "wall_s": 30.0,
+      "returned": 2182,
+      "returned_per_s": 72.73333333333333,
+      "pending_proxy_start": 73495,
+      "pending_proxy_end": 71313,
+      "sample_wall_s": 29.975993709,
+      "cpu_s": 47.89,
+      "cpu_cores": 1.5976117577587259,
+      "io_delta": {
+        "rchar": 41477572697,
+        "wchar": 229070509,
+        "syscr": 10134729,
+        "syscw": 110391,
+        "read_bytes": 0,
+        "write_bytes": 254554112,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 0.8997845866666667,
+      "inside_poll_per_s": 70.05380428536347,
+      "outside_poll_per_s": 96.79149820732832
+    },
+    {
+      "start_ns": 803525779030,
+      "end_ns": 805513161159,
+      "wall_s": 1.987382129,
+      "returned": 159,
+      "returned_per_s": 80.00474477447614,
+      "pending_proxy_start": 71313,
+      "pending_proxy_end": 71154,
+      "sample_wall_s": 1.977261157,
+      "cpu_s": 3.4,
+      "cpu_cores": 1.7195502920608883,
+      "io_delta": {
+        "rchar": 3295113700,
+        "wchar": 16992963,
+        "syscr": 805077,
+        "syscw": 8112,
+        "read_bytes": 0,
+        "write_bytes": 18649088,
+        "cancelled_write_bytes": 0
+      },
+      "poll_fraction": 1.0,
+      "inside_poll_per_s": 80.00474477447614,
+      "outside_poll_per_s": null
+    }
+  ],
+  "measurement_window": {
+    "start_ns": 503525779030,
+    "end_ns": 805513161159,
+    "wall_s": 301.987382129,
+    "returned": 28846,
+    "returned_per_s": 95.52054723822152,
+    "pending_proxy_start": 100000,
+    "pending_proxy_end": 71154,
+    "sample_wall_s": 301.963754805,
+    "cpu_s": 441.81,
+    "cpu_cores": 1.4631226197505356,
+    "io_delta": {
+      "rchar": 395906912360,
+      "wchar": 3382026628,
+      "syscr": 96767814,
+      "syscw": 1598730,
+      "read_bytes": 0,
+      "write_bytes": 3690246144,
+      "cancelled_write_bytes": 0
+    }
+  },
+  "cleanup_tail": {
+    "start_ns": 805513161159,
+    "end_ns": 813447770033,
+    "wall_s": 7.934608874,
+    "returned": 850,
+    "returned_per_s": 107.12563322248516,
+    "pending_proxy_start": 71154,
+    "pending_proxy_end": 70304,
+    "sample_wall_s": 7.909919308,
+    "cpu_s": 5.74,
+    "cpu_cores": 0.7256711195769887,
+    "io_delta": {
+      "rchar": 52923102,
+      "wchar": 87704035,
+      "syscr": 16171,
+      "syscw": 42610,
+      "read_bytes": 0,
+      "write_bytes": 103407616,
+      "cancelled_write_bytes": 0
+    }
+  },
+  "limitations": [
+    "HTTP entered follows request body read; returned follows response write and log lock acquisition: not provider client RTT.",
+    "returned-to-entered includes provider response decode/admission/cache put + verify/CAS/claim/renew/input and occasional reconciliation/job turnover; no per-phase hooks.",
+    "No fsync duration/syscall trace, SQL profile or no-poll counterfactual; wall fractions are not causal CPU cost shares.",
+    "pending proxy = 100000 - HTTP returns; publication slightly lags HTTP and claims are separate. Final done=29696 is cleanup-after-failure count.",
+    "clock is shared monotonic_ns; resources sampled ~20ms, non-atomic root PID only; read_bytes is attributed storage reads, rchar includes cached reads.",
+    "Single failed run: descriptive quantiles, no replicate confidence interval; adjacent requests autocorrelated."
+  ],
+  "source_files": {
+    "crates/cc-server/src/semantic_runtime.rs": {
+      "sha256": "357a1a9bad5f4e6d15f43adf23f0f9cfc987f9b8c294de3a7eb85795b4916fe4",
+      "bytes": 43028
+    },
+    "crates/cc-server/src/capability_status.rs": {
+      "sha256": "a58d87a2caa7446e531e612ba79d142d426e8d9c808b0cdf3b0ff8e8582a0ea7",
+      "bytes": 30730
+    },
+    "crates/cc-server/src/semantic_wiring.rs": {
+      "sha256": "219121412c7a12c5228eea96de77722701024139301d96394b064a3de0542478",
+      "bytes": 86565
+    },
+    "crates/cc-semantic/src/queue.rs": {
+      "sha256": "2cea30a1bbe8f05f9573b7fd7fc77388a3004faa84860e2c740db3d6716299b7",
+      "bytes": 20494
+    },
+    "crates/cc-semantic/src/cache.rs": {
+      "sha256": "ae00b119b1d11cfce6916c28ad54899655fdbb77122536375a74895d852937d1",
+      "bytes": 39127
+    },
+    "crates/cc-semantic/src/publish.rs": {
+      "sha256": "266f01841afc452512e70fb273a36cd11e800a1a0be807423872e03c7f2631b2",
+      "bytes": 8838
+    },
+    "crates/cc-db/src/document_store.rs": {
+      "sha256": "45b23cce977e09d986ebaf8c31d21a17decb880c5419006c6fc7349f2eb4f404",
+      "bytes": 14077
+    },
+    "crates/cc-db/src/semantic_queue.rs": {
+      "sha256": "78452087441c24209358c7da0bd825e13344735425b151ee72035e9db20023ae",
+      "bytes": 6987
+    },
+    "crates/cc-db/src/semantic_outbox.rs": {
+      "sha256": "2a120833203c73046f3186b006a6534a88dbfd98b17dd6c5ded7ccd4bbef3ce4",
+      "bytes": 28387
+    },
+    "crates/cc-db/src/sql/index_v1.sql": {
+      "sha256": "5854fa73c2dc87e8818da005954c07f7f69e60b697f97db2b0889b2e29c4eb0f",
+      "bytes": 24236
+    },
+    "crates/cc-db/src/semantic_coverage.rs": {
+      "sha256": "ae4d09198d6ed7b605e43d55d2b80af05ba5a1d708963ac3a8bac56aef64947c",
+      "bytes": 25912
+    },
+    "crates/cc-db/src/index_db.rs": {
+      "sha256": "d6aaf6db6cc94ab3f8dd454940593de57b2a50dc1aa8fe364d917f5c05161d1d",
+      "bytes": 48993
+    }
+  },
+  "resource_by_poll_exposure": {
+    "poll": {
+      "wall_s": 237.4977085870006,
+      "cpu_s": 394.3499999999868,
+      "rchar": 380771082842,
+      "wchar": 2300070324,
+      "syscr": 93034537,
+      "syscw": 1068417,
+      "read_bytes": 0,
+      "write_bytes": 2489655296,
+      "cancelled_write_bytes": 0
+    },
+    "gap": {
+      "wall_s": 52.475530853999956,
+      "cpu_s": 34.82000000000042,
+      "rchar": 3590227620,
+      "wchar": 848602408,
+      "syscr": 908480,
+      "syscw": 431909,
+      "read_bytes": 0,
+      "write_bytes": 975818752,
+      "cancelled_write_bytes": 0
+    },
+    "mixed": {
+      "wall_s": 11.990515363999997,
+      "cpu_s": 12.639999999999871,
+      "rchar": 11545601898,
+      "wchar": 233353896,
+      "syscr": 2824797,
+      "syscw": 98404,
+      "read_bytes": 0,
+      "write_bytes": 224772096,
+      "cancelled_write_bytes": 0
+    }
+  }
+}

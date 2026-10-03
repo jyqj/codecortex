@@ -1,0 +1,56 @@
+{
+  "version": "public-dev-declaration-kind-v2-candidate",
+  "status": "not_admitted",
+  "base_commit": "6c1416109003bcff0c1911307a4af5bd48870517",
+  "original_admission_commit": "5385f5a7a2a875c6d5cbd049bdde039bf71bbf32",
+  "original_admission_sha256": "b4388ca60612f6734719b348bf30e05dd0752b7b754f47cc078b590e35c1e425",
+  "python": "3.12.14",
+  "go_version": "go1.23.12",
+  "go_archive_sha256": "d3847fef834e9db11bf64e3fb34db9c04db14e068eeb064f49af747010454f90",
+  "go_ast_helper_source_sha256": "4e5f4d290e3aaeddaea8295d59514f0fe5b318f04db935d43af3e392a2b17d8f",
+  "self_authored_tests_passed": 12,
+  "fixed_review_replayed_exact": true,
+  "source_bound_alternatives_verified": 268,
+  "source_files_verified": 41,
+  "candidate_kind_deltas": 166,
+  "non_kind_byte_changes": 0,
+  "source_binding_changes": 0,
+  "gold_source_map_changes": 0,
+  "compat_projection_changes": 0,
+  "retained_legal_files_byte_verified": 9,
+  "original_input_or_raw_or_score_writes": 0,
+  "changes_outside_owned_directory": 0,
+  "new_retrieval_runs": 0,
+  "live_provider_calls": 0,
+  "new_scores": 0,
+  "new_independent_samples": 0,
+  "newly_admitted_rows": 0,
+  "cargo_fmt": {
+    "status": "passed",
+    "toolchain": "1.95.0-x86_64-unknown-linux-gnu",
+    "command": "cargo fmt --all -- --check",
+    "exit_code": 0
+  },
+  "cargo_clippy": {
+    "status": "blocked_missing_offline_dependency",
+    "command": "cargo clippy --offline --workspace --all-targets -- -D warnings",
+    "exit_code": 101,
+    "reason": "No matching package libc in local crates.io index. No product code changed; no dependency/network recovery performed."
+  },
+  "rust_workspace_and_cc_eval_corpus_tests": {
+    "status": "not_run",
+    "reason": "Same unresolved offline dependency prevents Rust workspace checks; this candidate performs no new retrieval/evaluation and owns only the new artifact directory."
+  },
+  "environment_discovery": [
+    "cargo initially absent from PATH; rustup shim default home read-only; resolved by direct installed toolchain path without changing HOME or filesystem permissions",
+    "usr/bin/go is an unrelated program; used existing review-pinned official compiler archive instead",
+    "Initial importlib oracle loading generated one ignored review.cpython-312.pyc in the old review directory. Removed this generated cache and replaced loading with verified compile/exec that writes no bytecode outside the owned directory. All original files remained byte-identical."
+  ],
+  "whitespace_check": {
+    "status": "passed_with_cr_at_eol",
+    "retained_legal_bytes_normalized": false
+  },
+  "independent_root_review": "pending; construction verification is not admission",
+  "product_default_selector_changed": false,
+  "four_repo_scores_merged": false
+}

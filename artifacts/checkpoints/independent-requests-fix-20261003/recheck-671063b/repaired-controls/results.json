@@ -1,0 +1,1118 @@
+{
+  "atom_controls": [
+    {
+      "actual": [
+        "Mapping",
+        "pkg.Account",
+        "Sequence",
+        "domain::Receipt",
+        "café.Étiquette"
+      ],
+      "expected": [
+        "Mapping",
+        "pkg.Account",
+        "Sequence",
+        "domain::Receipt",
+        "café.Étiquette"
+      ],
+      "passed": true,
+      "raw": "Mapping[pkg.Account, Sequence[domain::Receipt]] | café.Étiquette"
+    },
+    {
+      "actual": [
+        "tuple",
+        "订单"
+      ],
+      "expected": [
+        "tuple",
+        "订单"
+      ],
+      "passed": true,
+      "raw": "tuple[订单, ...]"
+    },
+    {
+      "actual": [
+        "Envelope",
+        "Alpha",
+        "Beta",
+        "Gamma"
+      ],
+      "expected": [
+        "Envelope",
+        "Alpha",
+        "Beta",
+        "Gamma"
+      ],
+      "passed": true,
+      "raw": "Envelope< Alpha,\tBeta\nGamma>"
+    },
+    {
+      "actual": [
+        "_Internal",
+        "*Pointer"
+      ],
+      "expected": [
+        "_Internal",
+        "*Pointer"
+      ],
+      "passed": true,
+      "raw": "&_Internal | *Pointer"
+    },
+    {
+      "actual": [
+        "List"
+      ],
+      "expected": [
+        "List"
+      ],
+      "passed": true,
+      "raw": "List[int] | None"
+    },
+    {
+      "actual": [
+        "tuple",
+        "tuple",
+        "Node"
+      ],
+      "expected": [
+        "tuple",
+        "tuple",
+        "Node"
+      ],
+      "passed": true,
+      "raw": "tuple[tuple[Node, ...], ...]"
+    }
+  ],
+  "fixed": true,
+  "fixtures": [
+    {
+      "name": "old-negative",
+      "result": {
+        "dependency_count": 4,
+        "empty_dependencies": 0,
+        "report": {
+          "build_explain": {
+            "gate_decisions": [
+              {
+                "pass": "synthesis_round",
+                "reason": "both signatures changed",
+                "run": true
+              },
+              {
+                "pass": "community",
+                "reason": "full rebuild",
+                "run": true
+              },
+              {
+                "pass": "git_cochange",
+                "reason": "cache key changed",
+                "run": true
+              },
+              {
+                "pass": "infra",
+                "reason": "signature algorithm changed",
+                "run": true
+              },
+              {
+                "pass": "adr",
+                "reason": "no recorded signature",
+                "run": true
+              }
+            ]
+          },
+          "chunk_policy": {
+            "bytes": 16384,
+            "chars": 16384,
+            "estimated_tokens": 4096,
+            "lines": 80,
+            "merge_min_bytes": 256
+          },
+          "chunks_total": 3,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 1,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 1,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 3
+          },
+          "elapsed_ms": 265,
+          "files_added": 1,
+          "files_parsed": 1,
+          "files_removed": 0,
+          "files_scanned": 1,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 118,
+            "parse_ms": 34,
+            "postprocess_ms": 0,
+            "resolve_ms": 0,
+            "scan_diff_ms": 7,
+            "write_ms": 10
+          },
+          "project_model": {
+            "catalog_files": 1,
+            "changed_configs": [],
+            "config_inputs": 0,
+            "config_parse_cache_hits": 0,
+            "config_reads": 0,
+            "config_root_probes": 5,
+            "config_roots": 0,
+            "diagnostics": [],
+            "go_fact_cache_hits": 0,
+            "go_source_reads": 0,
+            "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+            "inventory_source": "shared_walk",
+            "modes": [],
+            "rust_fact_cache_hits": 0,
+            "rust_source_reads": 0,
+            "version": 3
+          },
+          "public_surface_coverage": {
+            "known": 1,
+            "known_empty": 0,
+            "parsed_files": 1,
+            "unknown": 0,
+            "unknown_reasons": {}
+          },
+          "resolution_coverage": {
+            "ambiguous": 0,
+            "incomplete_files": 0,
+            "modules_ambiguous": 0,
+            "modules_external": 0,
+            "modules_resolved": 0,
+            "modules_unknown": 0,
+            "modules_unresolved": 0,
+            "modules_unsupported": 0,
+            "omitted_records": 0,
+            "packages_resolved": 0,
+            "processed_files": 1,
+            "resolved": 1,
+            "unresolved": 2,
+            "unsupported": 0
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 3,
+          "used_parallel_parse": false
+        },
+        "validated_manifests": [
+          {
+            "dependencies": [
+              {
+                "key": "sample.py",
+                "kind": "target_surface"
+              },
+              {
+                "key": "exception",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "fault",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "tuple",
+                "kind": "name_bucket"
+              }
+            ],
+            "path": "sample.py"
+          }
+        ]
+      }
+    },
+    {
+      "name": "nonvariadic",
+      "result": {
+        "dependency_count": 4,
+        "empty_dependencies": 0,
+        "report": {
+          "build_explain": {
+            "gate_decisions": [
+              {
+                "pass": "synthesis_round",
+                "reason": "both signatures changed",
+                "run": true
+              },
+              {
+                "pass": "community",
+                "reason": "full rebuild",
+                "run": true
+              },
+              {
+                "pass": "git_cochange",
+                "reason": "cache key changed",
+                "run": true
+              },
+              {
+                "pass": "infra",
+                "reason": "signature algorithm changed",
+                "run": true
+              },
+              {
+                "pass": "adr",
+                "reason": "no recorded signature",
+                "run": true
+              }
+            ]
+          },
+          "chunk_policy": {
+            "bytes": 16384,
+            "chars": 16384,
+            "estimated_tokens": 4096,
+            "lines": 80,
+            "merge_min_bytes": 256
+          },
+          "chunks_total": 3,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 1,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 1,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 3
+          },
+          "elapsed_ms": 189,
+          "files_added": 1,
+          "files_parsed": 1,
+          "files_removed": 0,
+          "files_scanned": 1,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 108,
+            "parse_ms": 1,
+            "postprocess_ms": 0,
+            "resolve_ms": 0,
+            "scan_diff_ms": 4,
+            "write_ms": 11
+          },
+          "project_model": {
+            "catalog_files": 1,
+            "changed_configs": [],
+            "config_inputs": 0,
+            "config_parse_cache_hits": 0,
+            "config_reads": 0,
+            "config_root_probes": 5,
+            "config_roots": 0,
+            "diagnostics": [],
+            "go_fact_cache_hits": 0,
+            "go_source_reads": 0,
+            "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+            "inventory_source": "shared_walk",
+            "modes": [],
+            "rust_fact_cache_hits": 0,
+            "rust_source_reads": 0,
+            "version": 3
+          },
+          "public_surface_coverage": {
+            "known": 1,
+            "known_empty": 0,
+            "parsed_files": 1,
+            "unknown": 0,
+            "unknown_reasons": {}
+          },
+          "resolution_coverage": {
+            "ambiguous": 0,
+            "incomplete_files": 0,
+            "modules_ambiguous": 0,
+            "modules_external": 0,
+            "modules_resolved": 0,
+            "modules_unknown": 0,
+            "modules_unresolved": 0,
+            "modules_unsupported": 0,
+            "omitted_records": 0,
+            "packages_resolved": 0,
+            "processed_files": 1,
+            "resolved": 1,
+            "unresolved": 2,
+            "unsupported": 0
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 3,
+          "used_parallel_parse": false
+        },
+        "validated_manifests": [
+          {
+            "dependencies": [
+              {
+                "key": "sample.py",
+                "kind": "target_surface"
+              },
+              {
+                "key": "exception",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "fault",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "tuple",
+                "kind": "name_bucket"
+              }
+            ],
+            "path": "sample.py"
+          }
+        ]
+      }
+    },
+    {
+      "name": "named-variadic",
+      "result": {
+        "dependency_count": 5,
+        "empty_dependencies": 0,
+        "report": {
+          "build_explain": {
+            "gate_decisions": [
+              {
+                "pass": "synthesis_round",
+                "reason": "both signatures changed",
+                "run": true
+              },
+              {
+                "pass": "community",
+                "reason": "full rebuild",
+                "run": true
+              },
+              {
+                "pass": "git_cochange",
+                "reason": "cache key changed",
+                "run": true
+              },
+              {
+                "pass": "infra",
+                "reason": "signature algorithm changed",
+                "run": true
+              },
+              {
+                "pass": "adr",
+                "reason": "no recorded signature",
+                "run": true
+              }
+            ]
+          },
+          "chunk_policy": {
+            "bytes": 16384,
+            "chars": 16384,
+            "estimated_tokens": 4096,
+            "lines": 80,
+            "merge_min_bytes": 256
+          },
+          "chunks_total": 3,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 1,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 1,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 3
+          },
+          "elapsed_ms": 189,
+          "files_added": 1,
+          "files_parsed": 1,
+          "files_removed": 0,
+          "files_scanned": 1,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 105,
+            "parse_ms": 1,
+            "postprocess_ms": 0,
+            "resolve_ms": 0,
+            "scan_diff_ms": 4,
+            "write_ms": 11
+          },
+          "project_model": {
+            "catalog_files": 1,
+            "changed_configs": [],
+            "config_inputs": 0,
+            "config_parse_cache_hits": 0,
+            "config_reads": 0,
+            "config_root_probes": 5,
+            "config_roots": 0,
+            "diagnostics": [],
+            "go_fact_cache_hits": 0,
+            "go_source_reads": 0,
+            "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+            "inventory_source": "shared_walk",
+            "modes": [],
+            "rust_fact_cache_hits": 0,
+            "rust_source_reads": 0,
+            "version": 3
+          },
+          "public_surface_coverage": {
+            "known": 1,
+            "known_empty": 0,
+            "parsed_files": 1,
+            "unknown": 0,
+            "unknown_reasons": {}
+          },
+          "resolution_coverage": {
+            "ambiguous": 0,
+            "incomplete_files": 0,
+            "modules_ambiguous": 0,
+            "modules_external": 0,
+            "modules_resolved": 0,
+            "modules_unknown": 0,
+            "modules_unresolved": 0,
+            "modules_unsupported": 0,
+            "omitted_records": 0,
+            "packages_resolved": 0,
+            "processed_files": 1,
+            "resolved": 2,
+            "unresolved": 2,
+            "unsupported": 0
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 3,
+          "used_parallel_parse": false
+        },
+        "validated_manifests": [
+          {
+            "dependencies": [
+              {
+                "key": "sample.py",
+                "kind": "target_surface"
+              },
+              {
+                "key": "exception",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "fault",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "packet",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "tuple",
+                "kind": "name_bucket"
+              }
+            ],
+            "path": "sample.py"
+          }
+        ]
+      }
+    },
+    {
+      "name": "unicode-union",
+      "result": {
+        "dependency_count": 5,
+        "empty_dependencies": 0,
+        "report": {
+          "build_explain": {
+            "gate_decisions": [
+              {
+                "pass": "synthesis_round",
+                "reason": "both signatures changed",
+                "run": true
+              },
+              {
+                "pass": "community",
+                "reason": "full rebuild",
+                "run": true
+              },
+              {
+                "pass": "git_cochange",
+                "reason": "cache key changed",
+                "run": true
+              },
+              {
+                "pass": "infra",
+                "reason": "signature algorithm changed",
+                "run": true
+              },
+              {
+                "pass": "adr",
+                "reason": "no recorded signature",
+                "run": true
+              }
+            ]
+          },
+          "chunk_policy": {
+            "bytes": 16384,
+            "chars": 16384,
+            "estimated_tokens": 4096,
+            "lines": 80,
+            "merge_min_bytes": 256
+          },
+          "chunks_total": 4,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 1,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 1,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 4
+          },
+          "elapsed_ms": 188,
+          "files_added": 1,
+          "files_parsed": 1,
+          "files_removed": 0,
+          "files_scanned": 1,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 105,
+            "parse_ms": 2,
+            "postprocess_ms": 0,
+            "resolve_ms": 0,
+            "scan_diff_ms": 4,
+            "write_ms": 10
+          },
+          "project_model": {
+            "catalog_files": 1,
+            "changed_configs": [],
+            "config_inputs": 0,
+            "config_parse_cache_hits": 0,
+            "config_reads": 0,
+            "config_root_probes": 5,
+            "config_roots": 0,
+            "diagnostics": [],
+            "go_fact_cache_hits": 0,
+            "go_source_reads": 0,
+            "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+            "inventory_source": "shared_walk",
+            "modes": [],
+            "rust_fact_cache_hits": 0,
+            "rust_source_reads": 0,
+            "version": 3
+          },
+          "public_surface_coverage": {
+            "known": 1,
+            "known_empty": 0,
+            "parsed_files": 1,
+            "unknown": 0,
+            "unknown_reasons": {}
+          },
+          "resolution_coverage": {
+            "ambiguous": 0,
+            "incomplete_files": 0,
+            "modules_ambiguous": 0,
+            "modules_external": 0,
+            "modules_resolved": 0,
+            "modules_unknown": 0,
+            "modules_unresolved": 0,
+            "modules_unsupported": 0,
+            "omitted_records": 0,
+            "packages_resolved": 0,
+            "processed_files": 1,
+            "resolved": 3,
+            "unresolved": 1,
+            "unsupported": 0
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 4,
+          "used_parallel_parse": false
+        },
+        "validated_manifests": [
+          {
+            "dependencies": [
+              {
+                "key": "sample.py",
+                "kind": "target_surface"
+              },
+              {
+                "key": "list",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "owner",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "receipt",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "订单",
+                "kind": "name_bucket"
+              }
+            ],
+            "path": "sample.py"
+          }
+        ]
+      }
+    },
+    {
+      "name": "qualified",
+      "result": {
+        "dependency_count": 13,
+        "empty_dependencies": 0,
+        "report": {
+          "build_explain": {
+            "gate_decisions": [
+              {
+                "pass": "synthesis_round",
+                "reason": "both signatures changed",
+                "run": true
+              },
+              {
+                "pass": "community",
+                "reason": "full rebuild",
+                "run": true
+              },
+              {
+                "pass": "git_cochange",
+                "reason": "cache key changed",
+                "run": true
+              },
+              {
+                "pass": "infra",
+                "reason": "signature algorithm changed",
+                "run": true
+              },
+              {
+                "pass": "adr",
+                "reason": "no recorded signature",
+                "run": true
+              }
+            ]
+          },
+          "chunk_policy": {
+            "bytes": 16384,
+            "chars": 16384,
+            "estimated_tokens": 4096,
+            "lines": 80,
+            "merge_min_bytes": 256
+          },
+          "chunks_total": 3,
+          "dirty_plan": {
+            "dependency_sql": {
+              "fullscan_steps": 0,
+              "rows": 0,
+              "sorts": 0,
+              "statements": 0,
+              "vm_steps": 0
+            },
+            "file_budget": 0,
+            "parsed_files": 1,
+            "reasons": [],
+            "rebased": false,
+            "resumed": false,
+            "selected_dependents": 0
+          },
+          "document_changes": {
+            "files_projected": 1,
+            "removed": 0,
+            "render_failed": 0,
+            "reusable_inputs": 0,
+            "unchanged": 0,
+            "upserted": 3
+          },
+          "elapsed_ms": 182,
+          "files_added": 1,
+          "files_parsed": 1,
+          "files_removed": 0,
+          "files_scanned": 1,
+          "files_skipped": 0,
+          "files_updated": 0,
+          "parse_errors": [],
+          "phase_timing": {
+            "analysis_ms": 103,
+            "parse_ms": 1,
+            "postprocess_ms": 0,
+            "resolve_ms": 0,
+            "scan_diff_ms": 4,
+            "write_ms": 9
+          },
+          "project_model": {
+            "catalog_files": 1,
+            "changed_configs": [],
+            "config_inputs": 0,
+            "config_parse_cache_hits": 0,
+            "config_reads": 0,
+            "config_root_probes": 5,
+            "config_roots": 0,
+            "diagnostics": [],
+            "go_fact_cache_hits": 0,
+            "go_source_reads": 0,
+            "input_digest": "6608a5a5cd33639a82b1be8d943f3148241d6520b8e0d9930909feaaf0ec5b8c",
+            "inventory_source": "shared_walk",
+            "modes": [],
+            "rust_fact_cache_hits": 0,
+            "rust_source_reads": 0,
+            "version": 3
+          },
+          "public_surface_coverage": {
+            "known": 1,
+            "known_empty": 0,
+            "parsed_files": 1,
+            "unknown": 0,
+            "unknown_reasons": {}
+          },
+          "resolution_coverage": {
+            "ambiguous": 0,
+            "incomplete_files": 0,
+            "modules_ambiguous": 0,
+            "modules_external": 0,
+            "modules_resolved": 0,
+            "modules_unknown": 1,
+            "modules_unresolved": 0,
+            "modules_unsupported": 0,
+            "omitted_records": 0,
+            "packages_resolved": 0,
+            "processed_files": 1,
+            "resolved": 1,
+            "unresolved": 2,
+            "unsupported": 0
+          },
+          "resolution_freshness": {
+            "basis_epoch": null,
+            "complete": true,
+            "completed_files": 0,
+            "index_epoch": 6,
+            "reason": null,
+            "retry": null,
+            "root_count": 0,
+            "scope": "observed_resolution_invalidations",
+            "status": "ready"
+          },
+          "symbols_total": 2,
+          "used_parallel_parse": false
+        },
+        "validated_manifests": [
+          {
+            "dependencies": [
+              {
+                "key": "sample.py",
+                "kind": "target_surface"
+              },
+              {
+                "key": "*",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "dict",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "domain",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "domain.invoice",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "invoice",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "owner",
+                "kind": "name_bucket"
+              },
+              {
+                "key": "domain.py",
+                "kind": "missing_path"
+              },
+              {
+                "key": "domain/__init__.py",
+                "kind": "missing_path"
+              },
+              {
+                "key": "src/domain.py",
+                "kind": "missing_path"
+              },
+              {
+                "key": "src/domain/__init__.py",
+                "kind": "missing_path"
+              },
+              {
+                "key": "*",
+                "kind": "module_config"
+              },
+              {
+                "key": "*",
+                "kind": "file_inventory"
+              }
+            ],
+            "path": "sample.py"
+          }
+        ]
+      }
+    }
+  ],
+  "identifier_boundaries": [
+    {
+      "actual": [
+        "_"
+      ],
+      "raw": "_"
+    },
+    {
+      "actual": [
+        "__"
+      ],
+      "raw": "__"
+    },
+    {
+      "actual": [
+        "$"
+      ],
+      "raw": "$"
+    },
+    {
+      "actual": [
+        "$$"
+      ],
+      "raw": "$$"
+    },
+    {
+      "actual": [
+        "℘"
+      ],
+      "raw": "℘"
+    },
+    {
+      "actual": [
+        "℮"
+      ],
+      "raw": "℮"
+    },
+    {
+      "actual": [
+        "a·b"
+      ],
+      "raw": "a·b"
+    },
+    {
+      "actual": [
+        "Á"
+      ],
+      "raw": "Á"
+    },
+    {
+      "actual": [
+        "pkg::℘"
+      ],
+      "raw": "pkg::℘"
+    },
+    {
+      "actual": [
+        "ns.$"
+      ],
+      "raw": "ns.$"
+    },
+    {
+      "actual": [
+        "module.__"
+      ],
+      "raw": "module.__"
+    },
+    {
+      "actual": [
+        "…"
+      ],
+      "raw": "…"
+    },
+    {
+      "actual": [
+        "⚙"
+      ],
+      "raw": "⚙"
+    },
+    {
+      "actual": [
+        "_",
+        "__",
+        "$",
+        "℘",
+        "℮"
+      ],
+      "raw": "_ | __ | $ | ℘ | ℮"
+    },
+    {
+      "actual": [
+        "Pair",
+        "_",
+        "pkg::℘",
+        "ns.$"
+      ],
+      "raw": "Pair<_, pkg::℘> | ns.$"
+    }
+  ],
+  "name_keys": [
+    {
+      "keys": [
+        "account",
+        "pkg::account"
+      ],
+      "raw": "pkg::Account"
+    },
+    {
+      "keys": [
+        "café.étiquette",
+        "étiquette"
+      ],
+      "raw": "café.Étiquette"
+    },
+    {
+      "keys": [
+        "状态",
+        "订单.状态"
+      ],
+      "raw": "订单.状态"
+    },
+    {
+      "keys": [
+        "..."
+      ],
+      "raw": "..."
+    },
+    {
+      "keys": [
+        "pkg."
+      ],
+      "raw": "pkg.\t"
+    },
+    {
+      "keys": [
+        "::"
+      ],
+      "raw": "::"
+    },
+    {
+      "keys": [],
+      "raw": ""
+    }
+  ],
+  "punctuation": [
+    {
+      "actual": [],
+      "raw": "..."
+    },
+    {
+      "actual": [],
+      "raw": "::"
+    },
+    {
+      "actual": [],
+      "raw": "???"
+    },
+    {
+      "actual": [],
+      "raw": "---"
+    },
+    {
+      "actual": [],
+      "raw": "***"
+    },
+    {
+      "actual": [],
+      "raw": "&&"
+    },
+    {
+      "actual": [],
+      "raw": "!!"
+    }
+  ],
+  "strict_validator_error": "invalid resolution manifest: invalid dependency key"
+}

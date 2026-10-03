@@ -1,0 +1,69 @@
+   Compiling serde_core v1.0.228
+   Compiling serde v1.0.228
+   Compiling regex-automata v0.4.14
+   Compiling crossbeam-epoch v0.9.20
+   Compiling hashbrown v0.17.1
+   Compiling log v0.4.29
+   Compiling serde_json v1.0.149
+   Compiling tracing-core v0.1.36
+   Compiling chacha20 v0.10.2
+   Compiling crossbeam-deque v0.8.6
+   Compiling rand v0.10.3
+   Compiling tracing v0.1.44
+   Compiling hashlink v0.12.1
+   Compiling r2d2 v0.8.10
+   Compiling rusqlite v0.40.1
+   Compiling uuid v1.23.0
+   Compiling rayon-core v1.13.0
+   Compiling lru v0.18.2
+   Compiling rayon v1.11.0
+   Compiling regex v1.12.3
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling chrono v0.4.44
+   Compiling toml_edit v0.22.27
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling tree-sitter v0.24.7
+   Compiling r2d2_sqlite v0.35.0
+   Compiling globset v0.4.18
+   Compiling mio v1.2.0
+   Compiling ignore v0.4.25
+   Compiling toml v0.8.23
+   Compiling tokio v1.50.0
+   Compiling tempfile v3.27.0
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+   Compiling cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+   Compiling cc-search v1.0.0 (/workspace/codecortex/crates/cc-search)
+error[E0277]: can't compare `usize` with `std::option::Option<u64>`
+   --> crates/cc-search/src/lanes/budget_boundary_tests.rs:63:9
+    |
+ 63 |         assert_eq!(run.lexical_work.rows, Some(n as u64));
+    |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ no implementation for `usize == std::option::Option<u64>`
+    |
+    = help: the trait `PartialEq<std::option::Option<u64>>` is not implemented for `usize`
+help: the following other types implement trait `PartialEq<Rhs>`
+   --> /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/cmp.rs:1876:12
+    |
+    = note: `usize` implements `PartialEq`
+   ::: /rustc/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/cmp.rs:1900:5
+    |
+    = note: in this macro invocation
+    |
+   ::: /workspace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde_json-1.0.149/src/value/partial_eq.rs:76:13
+    |
+ 76 |               impl PartialEq<Value> for $ty {
+    |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ `usize` implements `PartialEq<serde_json::Value>`
+...
+ 97 | / partialeq_numeric! {
+ 98 | |     eq_i64[i8 i16 i32 i64 isize]
+ 99 | |     eq_u64[u8 u16 u32 u64 usize]
+100 | |     eq_f32[f32]
+101 | |     eq_f64[f64]
+102 | |     eq_bool[bool]
+103 | | }
+    | |_- in this macro invocation
+    = note: this error originates in the macro `assert_eq` which comes from the expansion of the macro `partialeq_numeric` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `cc-search` (lib test) due to 1 previous error

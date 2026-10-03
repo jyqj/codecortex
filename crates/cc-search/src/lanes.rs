@@ -19,6 +19,9 @@ use cc_model::{CcError, CcResult};
 
 use crate::plan::{language_from_path, parse_language_name, SearchPlan};
 
+#[cfg(test)]
+#[path = "lanes/budget_boundary_tests.rs"]
+mod budget_boundary_tests;
 #[path = "lanes/exact_symbol.rs"]
 mod exact_symbol;
 #[path = "lanes/path.rs"]

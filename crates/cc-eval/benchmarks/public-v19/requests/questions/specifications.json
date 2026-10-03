@@ -1177,5 +1177,229 @@
     "answer": "links reads header, parses entries, indexes by rel or URL and returns mapping; no HTTP transport operation or recursion occurs in the getter.",
     "global_family": "v19.requests.f0078",
     "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0101",
+    "global_family": "v19.requests.f0101",
+    "protocol_split": "dev",
+    "cluster": "archive-member-extraction",
+    "category": "behavior",
+    "question": "How does extract_zipped_paths find an archive/member boundary in a nonexistent path, and when does it return the original path instead of an extracted temporary file?",
+    "refs": [
+      "utils:extract_zipped_paths"
+    ],
+    "answer": "Existing paths return unchanged. The function walks path parents to a valid archive boundary, checks is_zipfile and member membership, otherwise returns the original path. A valid member is read into mkstemp with matching suffix and fd is closed in finally.",
+    "independence": "New archive-member resolution/extraction workflow; previous atomic_open question concerns atomic destination replacement, not archive traversal or member lookup."
+  },
+  {
+    "id": "v19.requests.f0102",
+    "global_family": "v19.requests.f0102",
+    "protocol_split": "dev",
+    "cluster": "key-value-input-validation",
+    "category": "config_error",
+    "question": "Which key/value input normalizer rejects primitive str, bytes, bool and int inputs but accepts mappings with items() or iterable pairs, and what does None return?",
+    "refs": [
+      "utils:to_key_val_list"
+    ],
+    "answer": "to_key_val_list returns None for None, raises ValueError for str/bytes/bool/int, returns list(value.items()) for SupportsItems and list(value) otherwise.",
+    "independence": "New primitive-input rejection and mapping structural protocol contract; old parameter encoding question concerns expansion/encoding of valid pair values."
+  },
+  {
+    "id": "v19.requests.f0103",
+    "global_family": "v19.requests.f0103",
+    "protocol_split": "dev",
+    "cluster": "cookie-pickle-lock",
+    "category": "architecture_facets",
+    "question": "How is RequestsCookieJar's unpickleable lock excluded from serialization and recreated when restoring jar state?",
+    "refs": [
+      "cookies:RequestsCookieJar.__getstate__",
+      "cookies:RequestsCookieJar.__setstate__"
+    ],
+    "answer": "__getstate__ copies __dict__ and removes _cookies_lock; __setstate__ restores state then creates threading.RLock when the lock is absent.",
+    "independence": "Cookie-jar synchronization serialization is distinct from existing Response raw-stream serialization and HTTPAdapter pool recreation."
+  },
+  {
+    "id": "v19.requests.f0104",
+    "global_family": "v19.requests.f0104",
+    "protocol_split": "dev",
+    "cluster": "cookie-quoted-value-sanitization",
+    "category": "behavior",
+    "question": "What transformation does RequestsCookieJar.set_cookie apply to a non-None value enclosed in double quotes before delegating to the stdlib jar?",
+    "refs": [
+      "cookies:RequestsCookieJar.set_cookie"
+    ],
+    "answer": "Only a non-None value starting and ending with a double quote is transformed; occurrences of backslash-double-quote are removed with value.replace, then super().set_cookie is called.",
+    "independence": "New low-level cookie-value escape sanitization; prior set(name,None) deletion and create_cookie metadata questions have different triggers and outputs."
+  },
+  {
+    "id": "v19.requests.f0105",
+    "global_family": "v19.requests.f0105",
+    "protocol_split": "dev",
+    "cluster": "morsel-expiration-precedence",
+    "category": "behavior",
+    "question": "When converting a Morsel to a Cookie, how does max-age take precedence over expires, what clock/time conversion is used, and how is a noninteger max-age reported?",
+    "refs": [
+      "cookies:morsel_to_cookie"
+    ],
+    "answer": "Truthy max-age wins and yields int(time.time()+int(max-age)); invalid integer raises TypeError. Otherwise expires parses the GMT template and calendar.timegm converts it. create_cookie receives the computed expiry.",
+    "independence": "New expiration computation and precedence; the previous cookie factory question only specified default fields/validation flags."
+  },
+  {
+    "id": "v19.requests.f0108",
+    "global_family": "v19.requests.f0108",
+    "protocol_split": "dev",
+    "cluster": "cookie-multiple-domains-actual-condition",
+    "category": "hardnegative",
+    "question": "Read the actual multiple_domains implementation rather than its name: does it become True on a repeated non-None domain or on encountering a second distinct domain?",
+    "refs": [
+      "cookies:RequestsCookieJar.multiple_domains"
+    ],
+    "answer": "The literal condition returns True when a non-None cookie.domain is already in the accumulated list. Two distinct domains alone do not satisfy that condition. This records pinned source behavior without fixing or normalizing the apparent name/doc mismatch.",
+    "independence": "New literal repeated-domain predicate behavior, separate from name/domain/path cookie lookup conflicts or cookie merging."
+  },
+  {
+    "id": "v19.requests.f0109",
+    "global_family": "v19.requests.f0109",
+    "protocol_split": "dev",
+    "cluster": "prepared-copy-aliasing",
+    "category": "architecture_facets",
+    "question": "When PreparedRequest.copy constructs a new object, which of headers, cookie jar, body and hooks are copied versus reused, and is body_position retained?",
+    "refs": [
+      "models:PreparedRequest.copy",
+      "cookies:_copy_cookie_jar"
+    ],
+    "answer": "copy makes a new PreparedRequest, copies headers if present and uses _copy_cookie_jar; body and hooks are assigned directly, so are reused; _body_position is retained. Generic cookie jars are copied with individual Cookie copies.",
+    "independence": "New PreparedRequest mutable alias/copy boundary; prior jar.update copy behavior concerns incoming cookie updates rather than request clone semantics."
+  },
+  {
+    "id": "v19.requests.f0110",
+    "global_family": "v19.requests.f0110",
+    "protocol_split": "dev",
+    "cluster": "digest-challenge-replay-budget",
+    "category": "crossfile",
+    "question": "Trace Digest challenge replay from HTTPDigestAuth.handle_401 through response consumption/close and PreparedRequest.copy: what response-class and retry-budget guards prevent unlimited retries?",
+    "refs": [
+      "auth:HTTPDigestAuth.handle_401",
+      "models:Response.close",
+      "models:PreparedRequest.copy"
+    ],
+    "edges": [
+      [
+        "auth:HTTPDigestAuth.handle_401",
+        "models:Response.close",
+        "r.close()"
+      ],
+      [
+        "auth:HTTPDigestAuth.handle_401",
+        "models:PreparedRequest.copy",
+        "r.request.copy()"
+      ]
+    ],
+    "answer": "handle_401 returns immediately outside400..499. With a Digest challenge and num_401_calls<2 it increments the counter, consumes content and closes, copies request, regenerates cookies/auth and sends via r.connection. Other paths reset counter to1 and return the original response.",
+    "independence": "New challenge replay eligibility and bounded resend workflow; prior Digest qop absence, nonce-count construction and thread initialization cover different stages."
+  },
+  {
+    "id": "v19.requests.f0111",
+    "global_family": "v19.requests.f0111",
+    "protocol_split": "dev",
+    "cluster": "idna-host-normalization",
+    "category": "behavior",
+    "question": "Which PreparedRequest helper applies IDNA UTS46 host encoding, how is its output decoded, and which external error becomes UnicodeError?",
+    "refs": [
+      "models:PreparedRequest._get_idna_encoded_host"
+    ],
+    "answer": "_get_idna_encoded_host invokes idna.encode(host,uts46=True).decode('utf-8') and catches idna.IDNAError to raise UnicodeError.",
+    "independence": "New concrete IDNA algorithm option/error boundary; prior URL missing-schema/wildcard errors and ASCII predicate are not this host normalization task."
+  },
+  {
+    "id": "v19.requests.f0112",
+    "global_family": "v19.requests.f0112",
+    "protocol_split": "dev",
+    "cluster": "response-content-producer-selection",
+    "category": "behavior",
+    "question": "In Response.iter_content, how is a raw object with a stream method read differently from an ordinary file-like raw object, and when is content_consumed marked?",
+    "refs": [
+      "models:Response.iter_content"
+    ],
+    "answer": "generate uses raw.stream(chunk_size,decode_content=True) when available; otherwise loops raw.read(chunk_size) until falsey chunk. _content_consumed becomes True after generator exhaustion.",
+    "independence": "New producer capability dispatch/exhaustion lifecycle; prior consumed-stream rejection and ReadTimeout wrapper ask about failure envelopes, not source capability selection."
+  },
+  {
+    "id": "v19.requests.f0113",
+    "global_family": "v19.requests.f0113",
+    "protocol_split": "dev",
+    "cluster": "adapter-pool-disposal",
+    "category": "architecture_facets",
+    "question": "What resources does HTTPAdapter.close clear, including proxy managers already created by the adapter?",
+    "refs": [
+      "adapters:HTTPAdapter.close"
+    ],
+    "answer": "close calls self.poolmanager.clear(), then proxy.clear() for every manager in self.proxy_manager.values(). It does not merely close one Response raw stream.",
+    "independence": "New adapter-owned pool/cache resource disposal; old Response.close question concerns one raw stream and connection release, not clearing all adapter pools."
+  },
+  {
+    "id": "v19.requests.f0114",
+    "global_family": "v19.requests.f0114",
+    "protocol_split": "dev",
+    "cluster": "adapter-wire-chunked-flag",
+    "category": "behavior",
+    "question": "Before HTTPAdapter.send calls urllib3, how is its chunked flag derived from request.body and the presence of Content-Length, and where is that flag passed?",
+    "refs": [
+      "adapters:HTTPAdapter.send"
+    ],
+    "answer": "chunked is not(body is None or 'Content-Length' in request.headers). The flag is passed as chunked=chunked to conn.urlopen. An existing length header disables chunking even if the body exists.",
+    "independence": "New transport framing boolean passed to urllib3; existing prepare_content_length and streamed-files errors are body preparation stages, not this wire flag decision."
+  },
+  {
+    "id": "v19.requests.f0115",
+    "global_family": "v19.requests.f0115",
+    "protocol_split": "dev",
+    "cluster": "adapter-maxretry-reason-translation",
+    "category": "config_error",
+    "question": "When HTTPAdapter.send catches MaxRetryError, how do its reason types map to ConnectTimeout, RetryError, ProxyError, SSLError or the fallback ConnectionError?",
+    "refs": [
+      "adapters:HTTPAdapter.send"
+    ],
+    "answer": "ConnectTimeoutError excluding NewConnectionError becomes ConnectTimeout; ResponseError becomes RetryError; urllib3 proxy/SSL reasons become corresponding Requests exceptions; other reasons fall back ConnectionError with request context.",
+    "independence": "New MaxRetryError reason discrimination, distinct from timeout-argument validation or stream-time ReadTimeoutError conversion."
+  },
+  {
+    "id": "v19.requests.f0116",
+    "global_family": "v19.requests.f0116",
+    "protocol_split": "dev",
+    "cluster": "cryptography-version-warning",
+    "category": "config_error",
+    "question": "How does the import helper _check_cryptography treat an unparsable version versus a numeric version older than1.3.4, and does it abort import?",
+    "refs": [
+      "__init__:_check_cryptography"
+    ],
+    "answer": "It tries integer version components; ValueError silently returns. Versions lexicographically less than[1,3,4] emit RequestsDependencyWarning about slowdown; no exception abort is implemented here.",
+    "independence": "New optional cryptography version diagnostic, distinct from urllib3/chardet/charset-normalizer compatibility bounds."
+  },
+  {
+    "id": "v19.requests.f0117",
+    "global_family": "v19.requests.f0117",
+    "protocol_split": "dev",
+    "cluster": "bug-report-dependency-state",
+    "category": "architecture_facets",
+    "question": "Where does the bug-report info helper assemble SSL and HTTP dependency versions and expose whether PyOpenSSL or charset_normalizer is being used?",
+    "refs": [
+      "help:info"
+    ],
+    "answer": "info assembles platform,implementation,system_ssl and dependency version dictionaries; using_pyopenssl is pyopenssl is not None, using_charset_normalizer is chardet is None, and requests.version is included.",
+    "independence": "New diagnostic dependency report schema/usage flags; old _implementation task only concerns Python interpreter name/version selection."
+  },
+  {
+    "id": "v19.requests.f0120",
+    "global_family": "v19.requests.f0120",
+    "protocol_split": "dev",
+    "cluster": "cookie-policy-host-override",
+    "category": "behavior",
+    "question": "How does cookies.MockRequest.get_full_url reconstruct the URL for CookieJar policy when the prepared request contains an explicit Host header?",
+    "refs": [
+      "cookies:MockRequest.get_full_url"
+    ],
+    "answer": "Without Host it returns original URL. With Host, it converts header to native UTF-8 string, parses original URL and reconstructs with Host as netloc, retaining scheme,path,params,query,fragment.",
+    "independence": "New Host-header influence on cookie policy URL, not the prior generic CookieJar wrapper architecture or cookie extraction guard."
   }
 ]

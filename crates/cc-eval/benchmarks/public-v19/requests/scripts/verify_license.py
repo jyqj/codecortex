@@ -68,7 +68,7 @@ def main():
     assert (ROOT / "source/src/requests/utils.py").read_text().count("From mitsuhiko/werkzeug (used with permission).") == 3
     print(json.dumps(dict(status="license_lineage_and_notices_verified_not_independent_acceptance",
                          helper_count=3, license_sha256=digest((folder / "LICENSE").read_bytes()),
-                         source_and_gold_changed=False)))
+                         license_check_mutates_source_or_gold=False)))
 
 
 if __name__ == "__main__":

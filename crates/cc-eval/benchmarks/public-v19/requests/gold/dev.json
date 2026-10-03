@@ -2712,5 +2712,472 @@
     },
     "scope": "src/requests/models.py Response.links getter only; excludes code consuming the returned mapping",
     "global_family": "v19.requests.f0078"
+  },
+  {
+    "family_id": "v19.requests.f0101",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0101",
+    "rationale": "Existing paths return unchanged. The function walks path parents to a valid archive boundary, checks is_zipfile and member membership, otherwise returns the original path. A valid member is read into mkstemp with matching suffix and fd is closed in finally.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "extract_zipped_paths",
+        "start_line": 290,
+        "end_line": 325,
+        "start_byte": 8945,
+        "end_byte": 10398,
+        "span_sha256": "7916bab8df6598032c316d47deafcf16918dcc2643f15ff79bb432d87d2e24f8",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New archive-member resolution/extraction workflow; previous atomic_open question concerns atomic destination replacement, not archive traversal or member lookup."
+  },
+  {
+    "family_id": "v19.requests.f0102",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0102",
+    "rationale": "to_key_val_list returns None for None, raises ValueError for str/bytes/bool/int, returns list(value.items()) for SupportsItems and list(value) otherwise.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/utils.py",
+        "symbol": "to_key_val_list",
+        "start_line": 376,
+        "end_line": 404,
+        "start_byte": 11876,
+        "end_byte": 12734,
+        "span_sha256": "bcd3e2541135e62a5c74ac0293b6581e63f57d2ee04a55928e26f22c5710a344",
+        "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New primitive-input rejection and mapping structural protocol contract; old parameter encoding question concerns expansion/encoding of valid pair values."
+  },
+  {
+    "family_id": "v19.requests.f0103",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0103",
+    "rationale": "__getstate__ copies __dict__ and removes _cookies_lock; __setstate__ restores state then creates threading.RLock when the lock is absent.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.__getstate__",
+        "start_line": 454,
+        "end_line": 459,
+        "start_byte": 15967,
+        "end_byte": 16215,
+        "span_sha256": "83d9243fb8ccd5cb2266abba0bb17fc322be05e625578bc12e4f7b06c08b5d92",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.__setstate__",
+        "start_line": 461,
+        "end_line": 465,
+        "start_byte": 16221,
+        "end_byte": 16478,
+        "span_sha256": "12b35273f6413c1338bb3d6f56b560c2e35799aef7142c6fa8e1ff9021850d0d",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "Cookie-jar synchronization serialization is distinct from existing Response raw-stream serialization and HTTPAdapter pool recreation."
+  },
+  {
+    "family_id": "v19.requests.f0104",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0104",
+    "rationale": "Only a non-None value starting and ending with a double quote is transformed; occurrences of backslash-double-quote are removed with value.replace, then super().set_cookie is called.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.set_cookie",
+        "start_line": 382,
+        "end_line": 389,
+        "start_byte": 12904,
+        "end_byte": 13233,
+        "span_sha256": "ba27b194d4944f27d0d13f95098410f1100d651103d6c9316b1519a4af274456",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New low-level cookie-value escape sanitization; prior set(name,None) deletion and create_cookie metadata questions have different triggers and outputs."
+  },
+  {
+    "family_id": "v19.requests.f0105",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0105",
+    "rationale": "Truthy max-age wins and yields int(time.time()+int(max-age)); invalid integer raises TypeError. Otherwise expires parses the GMT template and calendar.timegm converts it. create_cookie receives the computed expiry.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "morsel_to_cookie",
+        "start_line": 531,
+        "end_line": 557,
+        "start_byte": 18457,
+        "end_byte": 19431,
+        "span_sha256": "294003fd63844222bb2aee099a0e7a4048fee9c00fc6b4f5158368da97d56783",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New expiration computation and precedence; the previous cookie factory question only specified default fields/validation flags."
+  },
+  {
+    "family_id": "v19.requests.f0108",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0108",
+    "rationale": "The literal condition returns True when a non-None cookie.domain is already in the accumulated list. Two distinct domains alone do not satisfy that condition. This records pinned source behavior without fixing or normalizing the apparent name/doc mismatch.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "RequestsCookieJar.multiple_domains",
+        "start_line": 318,
+        "end_line": 329,
+        "start_byte": 10483,
+        "end_byte": 10943,
+        "span_sha256": "cb4f9c5448ad69260f984029ec9a4528203286822034e9be24c2ce73fd76d453",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New literal repeated-domain predicate behavior, separate from name/domain/path cookie lookup conflicts or cookie merging."
+  },
+  {
+    "family_id": "v19.requests.f0109",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0109",
+    "rationale": "copy makes a new PreparedRequest, copies headers if present and uses _copy_cookie_jar; body and hooks are assigned directly, so are reused; _body_position is retained. Generic cookie jars are copied with individual Cookie copies.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.copy",
+        "start_line": 456,
+        "end_line": 465,
+        "start_byte": 14139,
+        "end_byte": 14538,
+        "span_sha256": "2bc725af77812fe9698027d3545df4edacaaf68f6009cb95880f3df672f1cb59",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "_copy_cookie_jar",
+        "start_line": 479,
+        "end_line": 491,
+        "start_byte": 16834,
+        "end_byte": 17344,
+        "span_sha256": "514b0e21429f8738133299684eb7edee7d253a1cfbe4ad3eddac0c51a3ff8b18",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New PreparedRequest mutable alias/copy boundary; prior jar.update copy behavior concerns incoming cookie updates rather than request clone semantics."
+  },
+  {
+    "family_id": "v19.requests.f0110",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0110",
+    "rationale": "handle_401 returns immediately outside400..499. With a Digest challenge and num_401_calls<2 it increments the counter, consumes content and closes, copies request, regenerates cookies/auth and sends via r.connection. Other paths reset counter to1 and return the original response.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "symbol": "HTTPDigestAuth.handle_401",
+        "start_line": 273,
+        "end_line": 319,
+        "start_byte": 8955,
+        "end_byte": 10772,
+        "span_sha256": "0e52767c0fea552c35b03ea00e282fdfdf0af8651b83cb3dde778495e3e43419",
+        "file_sha256": "fdc8bb34a8a5a088b169ca13277d107b0bc94ee63ed5e89dd4f5569d9b2bb04c"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.close",
+        "start_line": 1173,
+        "end_line": 1184,
+        "start_byte": 41010,
+        "end_byte": 41461,
+        "span_sha256": "143242910eaebd91ec7a8738c7e6ca8b15cc87367780d12ebe2c71fa1b23fa49",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      },
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest.copy",
+        "start_line": 456,
+        "end_line": 465,
+        "start_byte": 14139,
+        "end_byte": 14538,
+        "span_sha256": "2bc725af77812fe9698027d3545df4edacaaf68f6009cb95880f3df672f1cb59",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [
+      {
+        "caller": "auth:HTTPDigestAuth.handle_401",
+        "callee": "models:Response.close",
+        "expression": "r.close()",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "start_byte": 10141,
+        "end_byte": 10150,
+        "line": 301,
+        "kind": "call"
+      },
+      {
+        "caller": "auth:HTTPDigestAuth.handle_401",
+        "callee": "models:PreparedRequest.copy",
+        "expression": "r.request.copy()",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/auth.py",
+        "start_byte": 10170,
+        "end_byte": 10186,
+        "line": 302,
+        "kind": "call"
+      }
+    ],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New challenge replay eligibility and bounded resend workflow; prior Digest qop absence, nonce-count construction and thread initialization cover different stages."
+  },
+  {
+    "family_id": "v19.requests.f0111",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0111",
+    "rationale": "_get_idna_encoded_host invokes idna.encode(host,uts46=True).decode('utf-8') and catches idna.IDNAError to raise UnicodeError.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "PreparedRequest._get_idna_encoded_host",
+        "start_line": 474,
+        "end_line": 481,
+        "start_byte": 14796,
+        "end_byte": 15022,
+        "span_sha256": "1a862a5b333e6e29c1dca6d1593bee2aff2a20bd1f6a1719b3968f6f43096eff",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New concrete IDNA algorithm option/error boundary; prior URL missing-schema/wildcard errors and ASCII predicate are not this host normalization task."
+  },
+  {
+    "family_id": "v19.requests.f0112",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0112",
+    "rationale": "generate uses raw.stream(chunk_size,decode_content=True) when available; otherwise loops raw.read(chunk_size) until falsey chunk. _content_consumed becomes True after generator exhaustion.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/models.py",
+        "symbol": "Response.iter_content",
+        "start_line": 914,
+        "end_line": 977,
+        "start_byte": 31300,
+        "end_byte": 33949,
+        "span_sha256": "323e273ccf71610659ffc370524d1e1eead7da13682fe35090212476dfb23838",
+        "file_sha256": "a3351c3c12a86bf5ed211533875350bc4791e9327a685f8c19ba54343e471e26"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New producer capability dispatch/exhaustion lifecycle; prior consumed-stream rejection and ReadTimeout wrapper ask about failure envelopes, not source capability selection."
+  },
+  {
+    "family_id": "v19.requests.f0113",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0113",
+    "rationale": "close calls self.poolmanager.clear(), then proxy.clear() for every manager in self.proxy_manager.values(). It does not merely close one Response raw stream.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.close",
+        "start_line": 555,
+        "end_line": 563,
+        "start_byte": 20484,
+        "end_byte": 20794,
+        "span_sha256": "beef193f63d82514af4d2cbd223d7b6fdcba79946e537302c51967c06f6c3e42",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New adapter-owned pool/cache resource disposal; old Response.close question concerns one raw stream and connection release, not clearing all adapter pools."
+  },
+  {
+    "family_id": "v19.requests.f0114",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0114",
+    "rationale": "chunked is not(body is None or 'Content-Length' in request.headers). The flag is passed as chunked=chunked to conn.urlopen. An existing length header disables chunking even if the body exists.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.send",
+        "start_line": 634,
+        "end_line": 748,
+        "start_byte": 23494,
+        "end_byte": 27991,
+        "span_sha256": "97de1691e5648992827654eea0bcb74982ffbbca45597f2a215fbb4e938b4177",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New transport framing boolean passed to urllib3; existing prepare_content_length and streamed-files errors are body preparation stages, not this wire flag decision."
+  },
+  {
+    "family_id": "v19.requests.f0115",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0115",
+    "rationale": "ConnectTimeoutError excluding NewConnectionError becomes ConnectTimeout; ResponseError becomes RetryError; urllib3 proxy/SSL reasons become corresponding Requests exceptions; other reasons fall back ConnectionError with request context.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/adapters.py",
+        "symbol": "HTTPAdapter.send",
+        "start_line": 634,
+        "end_line": 748,
+        "start_byte": 23494,
+        "end_byte": 27991,
+        "span_sha256": "97de1691e5648992827654eea0bcb74982ffbbca45597f2a215fbb4e938b4177",
+        "file_sha256": "cc9b1b02694fee0353481fbad84fe3ddbedec4441dba54df7914c63f2aa85937"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New MaxRetryError reason discrimination, distinct from timeout-argument validation or stream-time ReadTimeoutError conversion."
+  },
+  {
+    "family_id": "v19.requests.f0116",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0116",
+    "rationale": "It tries integer version components; ValueError silently returns. Versions lexicographically less than[1,3,4] emit RequestsDependencyWarning about slowdown; no exception abort is implemented here.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/__init__.py",
+        "symbol": "_check_cryptography",
+        "start_line": 99,
+        "end_line": 108,
+        "start_byte": 2693,
+        "end_byte": 3114,
+        "span_sha256": "1f3c146012288ed8eb0b6d4e0dd286d3f4fd4b0b83d369f4550a2d7b297c6211",
+        "file_sha256": "80534322a1a3167d8775829ee220a6acf4fe455f3f778c4b8e94bcf7fadfa0b5"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New optional cryptography version diagnostic, distinct from urllib3/chardet/charset-normalizer compatibility bounds."
+  },
+  {
+    "family_id": "v19.requests.f0117",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0117",
+    "rationale": "info assembles platform,implementation,system_ssl and dependency version dictionaries; using_pyopenssl is pyopenssl is not None, using_charset_normalizer is chardet is None, and requests.version is included.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/help.py",
+        "symbol": "info",
+        "start_line": 67,
+        "end_line": 123,
+        "start_byte": 2020,
+        "end_byte": 3905,
+        "span_sha256": "7d372a2b71cc4b46cbe533d1ca5146d56706f2eee994b6f88e529dacc2d886c0",
+        "file_sha256": "e5845e93980b2e25be418fb7fe0b8e6e999fef8f84afc5a43f4546efdc24691f"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New diagnostic dependency report schema/usage flags; old _implementation task only concerns Python interpreter name/version selection."
+  },
+  {
+    "family_id": "v19.requests.f0120",
+    "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+    "split": "dev",
+    "status": "candidate_not_independently_reviewed",
+    "global_family": "v19.requests.f0120",
+    "rationale": "Without Host it returns original URL. With Host, it converts header to native UTF-8 string, parses original URL and reconstructs with Host as netloc, retaining scheme,path,params,query,fragment.",
+    "evidence": [
+      {
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "path": "src/requests/cookies.py",
+        "symbol": "MockRequest.get_full_url",
+        "start_line": 60,
+        "end_line": 78,
+        "start_byte": 1701,
+        "end_byte": 2375,
+        "span_sha256": "0df6317816a943d481393987cf1058b3a4288c5ad1cbc7c2086c4dfda15cadb4",
+        "file_sha256": "05d12b965c76f229803e17aef1c9969d712e4f4d0f6a06c05e0a47212fd5b417"
+      }
+    ],
+    "edges": [],
+    "absence": null,
+    "scope": null,
+    "independence_proposal": "New Host-header influence on cookie policy URL, not the prior generic CookieJar wrapper architecture or cookie extraction guard."
   }
 ]

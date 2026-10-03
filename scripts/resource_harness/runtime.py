@@ -65,6 +65,9 @@ def memory_snapshot(group, *, scope):
         'group_identity_error': identity_error, 'members': identity,
         'memory_current_bytes': current,
         'memory_stat_counters': stat,
+        'memory_events': _read(group / 'memory.events', counters),
+        'memory_max': _read(group / 'memory.max', str),
+        'cpu_max': _read(group / 'cpu.max', str),
         'composition_bytes': {k: (stat['value'] or {}).get(k) for k in
                               ('anon', 'file', 'slab', 'slab_reclaimable', 'slab_unreclaimable')},
         'atomic': False,
@@ -194,8 +197,10 @@ class StdioRPC:
         self.process, self.journal, self.phase = process, journal, phase
         self.pending = PendingRPC(journal)
         self.write_lock = threading.Lock()
-        self.reader = threading.Thread(target=self._read, name='harness-rpc-reader')
-        self.exit_watcher = threading.Thread(target=self._exit, name='harness-rpc-exit')
+        # Incomplete owned cleanup is reported by the driver. A retained pipe
+        # must not turn an explicit cleanup failure into an unbounded CLI hang.
+        self.reader = threading.Thread(target=self._read, name='harness-rpc-reader', daemon=True)
+        self.exit_watcher = threading.Thread(target=self._exit, name='harness-rpc-exit', daemon=True)
         self.reader.start()
         self.exit_watcher.start()
 
@@ -220,15 +225,27 @@ class StdioRPC:
         # the reader still drains/logs late lines before the caller closes logs.
         self.pending.terminal('process_exit', exit_code=code)
 
-    def rpc(self, method, params, *, timeout=RPC_TIMEOUT_SECONDS):
+    def rpc(self, method, params, *, timeout=RPC_TIMEOUT_SECONDS, offered=None, on_timing=None):
+        offered = offered or time.monotonic_ns()
         request, waiter = self.pending.register(method, params, phase=self.phase())
         try:
             with self.write_lock:
+                sent = time.monotonic_ns()
+                self.journal.emit('rpc_send', phase=self.phase(), request_id=request['id'],
+                                  offered_ns=offered, sent_ns=sent)
                 self.process.stdin.write(json.dumps(request) + '\n')
                 self.process.stdin.flush()
         except (OSError, ValueError) as exc:
             self.pending.terminal('write_error', repr(exc))
-        return self.pending.wait(request, waiter, timeout)
+        result = self.pending.wait(request, waiter, timeout)
+        finish = time.monotonic_ns()
+        if on_timing:
+            on_timing(dict(offered_ns=offered, sent_ns=sent, finish_ns=finish,
+                           client_queue_ms=(sent-offered)/1e6,
+                           wire_to_response_ms=(finish-sent)/1e6,
+                           offered_to_response_ms=(finish-offered)/1e6,
+                           backend_queue_ms=None, backend_service_ms=None))
+        return result
 
     def notify_guard(self, reason, **details):
         return self.pending.terminal('resource_guard', reason, **details)

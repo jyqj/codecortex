@@ -18,7 +18,7 @@ def snapshot(pid):
         io={k:int(v) for k,v in (x.split(':') for x in pathlib.Path(f'/proc/{pid}/io').read_text().splitlines())}
         status=pathlib.Path(f'/proc/{pid}/status').read_text().splitlines()
         vm={x.split(':')[0]:int(x.split()[1])*1024 for x in status if x.startswith(('VmRSS:','VmHWM:'))}
-        return {'pid':pid,'rss_bytes':int(a[21])*os.sysconf('SC_PAGE_SIZE'),'vmrss_bytes':vm.get('VmRSS'),'vmhwm_bytes':vm.get('VmHWM'),'threads':int(a[17]),'cpu_user_ticks':int(a[11]),'cpu_system_ticks':int(a[12]),'cpu_ticks_per_second':os.sysconf('SC_CLK_TCK'),'io':io,'children':pathlib.Path(f'/proc/{pid}/task/{pid}/children').read_text().split()}
+        return {'pid':pid,'rss_bytes':int(a[21])*os.sysconf('SC_PAGE_SIZE'),'vmrss_bytes':vm.get('VmRSS'),'vmhwm_bytes':vm.get('VmHWM'),'threads':int(a[17]),'cpu_user_ticks':int(a[11]),'cpu_system_ticks':int(a[12]),'cpu_ticks_per_second':os.sysconf('SC_CLK_TCK'),'io':io,'children':None,'descendant_listing':'unavailable_on_this_proc_mount','start_time_ticks':int(a[19])}
     except (OSError,ValueError): return None
 
 def tree_snapshot(pid):
@@ -32,7 +32,7 @@ def tree_snapshot(pid):
             for p in pathlib.Path(f'/proc/{current}/task').glob('*/children'):
                 todo.extend(int(x) for x in p.read_text().split())
         except OSError:pass
-    return {'root_pid':pid,'observed_pids':sorted(seen),'rss_bytes':sum(x['rss_bytes'] for x in rows),'threads':sum(x['threads'] for x in rows),'snapshots':rows,'method':'20ms PID-tree samples from owned parent relationships; short-lived child may escape sampling'}
+    return {'root_pid':pid,'observed_pids':sorted(seen),'root_rss_bytes':rows[0]['rss_bytes'] if rows else None,'rss_bytes':None,'threads':None,'snapshots':rows,'method':'owned root PID observed; full process tree unavailable on proc mount, never zero-filled'}
 
 def mock(root):
     lock=threading.Lock(); sequence=0
@@ -60,7 +60,7 @@ def mock(root):
             except (BrokenPipeError,ConnectionResetError): pass
             with lock:
                 with (root/'http.jsonl').open('a') as f:f.write(json.dumps({'event':'returned','sequence':seq,'input_count':len(body['input']),'time_ns':time.monotonic_ns(),'synthetic_usage_units':len(body['input'])})+'\n')
-    server=http.server.ThreadingHTTPServer(('127.0.0.1',0),Handler)
+    server=http.server.ThreadingHTTPServer(('127.0.0.1',int(os.environ.get('P7_RESOURCE_PORT','0'))),Handler)
     write(root/'http-port.json',{'port':server.server_port,'pid':os.getpid()})
     server.serve_forever()
 
@@ -139,6 +139,10 @@ def run(args):
     out=args.output.resolve();out.mkdir() # refuse overwriting evidence
     binary=args.binary.resolve();summary={'status':'running_prepared','source_sha':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),'binary':str(binary),'binary_sha256':digest(binary),'profile':'debug','cells':[],'scales':[],'not_run':[],'full_P7_015':False,'full_V20':False}
     environment={'cpu_max':pathlib.Path('/sys/fs/cgroup/cpu.max').read_text().strip(),'memory_max':pathlib.Path('/sys/fs/cgroup/memory.max').read_text().strip(),'memory_stat':pathlib.Path('/sys/fs/cgroup/memory.stat').read_text(),'memory_events':pathlib.Path('/sys/fs/cgroup/memory.events').read_text(),'affinity':sorted(os.sched_getaffinity(0)),'tmp_available_bytes':free(out),'workspace_available_bytes':free(pathlib.Path('/workspace')),'device':out.stat().st_dev,'platform':dict(zip(("sysname","nodename","release","version","machine"),os.uname())),'page_size':os.sysconf('SC_PAGE_SIZE'),'clock_ticks':os.sysconf('SC_CLK_TCK'),'sample_interval_ms':20,'reclaimable_file_cache_not_free_RAM':True};write(out/'environment.json',environment)
+    import socket
+    with socket.socket() as temporary_socket:
+        temporary_socket.bind(('127.0.0.1',0));fixed_port=temporary_socket.getsockname()[1]
+    summary['fixed_endpoint']=f'http://127.0.0.1:{fixed_port}/v1'
     for n in args.scales:
         if free(out)<1024**3:
             summary['not_run'].append({'scale':n,'reason':'tmp_preflight_less_than_1GiB_reserve','actual_free':free(out)});continue
@@ -146,7 +150,7 @@ def run(args):
         try:
             for i in range(n):(root/'src'/f'file_{i:05}.rs').write_text(source(i))
             input_manifest=[{'path':str(p.relative_to(root)),'bytes':p.stat().st_size,'sha256':digest(p)} for p in sorted((root/'src').glob('*.rs'))];write(case/'source-inputs.json',input_manifest)
-            mocklog=(case/'model-stderr.log').open('wb');mock_process=subprocess.Popen([sys.executable,str(pathlib.Path(__file__).resolve()),'--mock',str(case)],stdout=mocklog,stderr=mocklog)
+            mocklog=(case/'model-stderr.log').open('wb');mock_process=subprocess.Popen([sys.executable,str(pathlib.Path(__file__).resolve()),'--mock',str(case)],stdout=mocklog,stderr=mocklog,env={**os.environ,'P7_RESOURCE_PORT':str(fixed_port)})
             wait_file(case/'http-port.json');port=json.loads((case/'http-port.json').read_text())['port']
             config={'auto_index':{'enabled':False},'indexing':{'max_concurrent_parse':4},'query':{'strategy':'local','deadline_ms':30000,'lane_timeout_ms':20000,'semantic_timeout_ms':5000,'semantic_top_k':24},'semantic':{'enabled':True,'network_opt_in':True,'allow_query_network':False,'model_id':'fake/resource-preparation','dimensions':128,'max_input_tokens':8192,'max_batch_items':16,'endpoint':f'http://127.0.0.1:{port}/v1','allow_http':True,'api_key_ref':'env:P7_RESOURCE_DUMMY','max_concurrent':4,'max_concurrent_per_project':2,'retry_max_attempts':1,'retry_total_deadline_ms':120000,'breaker_failure_threshold':100}}
             write(root/'.codecortex.json',config);write(case/'config.json',config)

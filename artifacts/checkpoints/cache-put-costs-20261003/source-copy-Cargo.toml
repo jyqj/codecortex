@@ -1,0 +1,77 @@
+[workspace]
+resolver = "2"
+members = ["crates/cc-model", "crates/cc-db", "crates/cc-semantic"]
+
+[workspace.package]
+version = "1.0.0"
+edition = "2021"
+# MSRV 1.95: rusqlite 0.40 / libsqlite3-sys 0.38 use `cfg_select!` (stabilized in 1.95).
+rust-version = "1.95"
+license = "MIT"
+
+[workspace.dependencies]
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["float_roundtrip"] }
+
+# Error handling
+thiserror = "2"
+
+# SQLite
+rusqlite = { version = "0.40", features = ["bundled", "vtab", "functions"] }
+r2d2 = "0.8"
+r2d2_sqlite = "0.35"
+
+# Hashing
+blake3 = "1"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Directories
+dirs = "5"
+
+# Async
+tokio = { version = "1", features = ["full"] }
+
+# Parallelism
+rayon = "1"
+
+# File watching
+notify = "8.2"
+
+# File scanning (gitignore-aware)
+ignore = "0.4"
+
+# Tree-sitter
+tree-sitter = "0.24"
+tree-sitter-python = "0.23"
+tree-sitter-javascript = "0.23"
+tree-sitter-typescript = "0.23"
+tree-sitter-rust = "0.23"
+tree-sitter-go = "0.23"
+tree-sitter-java = "0.23"
+tree-sitter-c = "0.23"
+tree-sitter-cpp = "0.23"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Regex
+regex = "1"
+
+# LRU cache
+lru = "0.18.2"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+libc = "0.2"
+
+# MCP
+rmcp = { version = "2.2", features = ["server", "transport-io"] }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true

@@ -14,6 +14,17 @@ pub(crate) fn snapshot(
     config: Option<&ProjectConfig>,
     services: &QueryServices,
 ) -> Value {
+    snapshot_observing(project, db, config, services, || {})
+}
+
+// The observer is an internal seam for deterministic publication interleavings.
+fn snapshot_observing(
+    project: Option<&Path>,
+    db: Option<&IndexDb>,
+    config: Option<&ProjectConfig>,
+    services: &QueryServices,
+    mut observed_root: impl FnMut(),
+) -> Value {
     let strategy = config.map(|c| c.query.strategy).unwrap_or_default();
     let attached = services.semantic().is_some();
     let wired = services.semantic_wired();
@@ -67,19 +78,50 @@ pub(crate) fn snapshot(
         apply_semantic_degradation(&mut result, services, attached);
         return result;
     };
+    // P7-014 real state machine: an attached port that came from a
+    // successful composition-root wiring reports the true lifecycle states
+    // (`backfilling` while the active space has live outbox work, `ready`
+    // once the dense publication covers the eligible set). A bare attached
+    // port (host-side injection without wiring) keeps the honest
+    // `port_attached_unverified` wording; an unwired port keeps
+    // `not_configured` (V18 口径零漂移). Read-only DB reads, best-effort:
+    // a failed read keeps the conservative unverified wording.
     let observed = (|| -> CcResult<_> {
         for _ in 0..3 {
             let before = db.reads().read_generation()?;
             let stats = db.reads().stats(project)?;
             let freshness = db.reads().resolution_freshness()?;
+            if db.reads().read_generation()? != before {
+                continue;
+            }
+            observed_root();
+            let mut semantic = result.clone();
+            if attached && wired.is_some() {
+                apply_semantic_wired(&mut semantic, db);
+                #[cfg(feature = "semantic")]
+                if let Some(wired_info) = wired.as_ref() {
+                    apply_configured_space_state(&mut semantic, db, wired_info);
+                }
+                if let Some(reason) = services
+                    .semantic_worker()
+                    .and_then(|state| state.failure_reason())
+                {
+                    semantic["retrieval"]["semantic_state"] = json!("failed");
+                    semantic["retrieval"]["semantic_worker_reason"] = json!(reason);
+                }
+            }
+            // Coverage may perform its own retry, so its snapshot and all
+            // semantic/configured-space reads must remain inside this outer
+            // fence. Never combine an earlier root epoch with later readiness.
             if db.reads().read_generation()? == before {
-                return Ok((before, stats, freshness));
+                return Ok((before, stats, freshness, semantic));
             }
         }
         Err(CcError::RetrievalChanged { attempts: 3 })
     })();
     match observed {
-        Ok((generation, stats, freshness)) => {
+        Ok((generation, stats, freshness, semantic)) => {
+            result = semantic;
             result["has_index"] = json!(true);
             result["indexed_files"] = json!(stats.indexed_files);
             result["indexed_symbols"] = json!(stats.indexed_symbols);
@@ -111,28 +153,6 @@ pub(crate) fn snapshot(
         result["retrieval"]["default_query_state"] = json!("invalid_config");
         result["retrieval"]["local_state"] = json!("invalid_config");
         result["retrieval"]["config_error"] = json!(error.to_string());
-    }
-    // P7-014 real state machine: an attached port that came from a
-    // successful composition-root wiring reports the true lifecycle states
-    // (`backfilling` while the active space has live outbox work, `ready`
-    // once the dense publication covers the eligible set). A bare attached
-    // port (host-side injection without wiring) keeps the honest
-    // `port_attached_unverified` wording; an unwired port keeps
-    // `not_configured` (V18 口径零漂移). Read-only DB reads, best-effort:
-    // a failed read keeps the conservative unverified wording.
-    if attached && wired.is_some() {
-        apply_semantic_wired(&mut result, db);
-        #[cfg(feature = "semantic")]
-        if let Some(wired_info) = wired.as_ref() {
-            apply_configured_space_state(&mut result, db, wired_info);
-        }
-        if let Some(reason) = services
-            .semantic_worker()
-            .and_then(|state| state.failure_reason())
-        {
-            result["retrieval"]["semantic_state"] = json!("failed");
-            result["retrieval"]["semantic_worker_reason"] = json!(reason);
-        }
     }
     apply_semantic_degradation(&mut result, services, attached);
     result
@@ -454,5 +474,202 @@ mod tests {
             "semantic_configured_space_pending"
         );
         assert_eq!(result["retrieval"]["dense_published"], 0);
+    }
+    #[cfg(feature = "semantic")]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn real_worker_publication_between_status_reads_never_mixes_epochs() {
+        use cc_semantic::{
+            ports::{DocumentInput, EmbeddingProvider, ProviderError, QueryInput},
+            providers::fake::{FakeProvider, FakeProviderConfig},
+        };
+        use std::sync::{Arc, Condvar, Mutex};
+        use std::time::{Duration, Instant};
+        struct Held {
+            inner: FakeProvider,
+            entered: Mutex<Option<tokio::sync::oneshot::Sender<()>>>,
+            release: Arc<(Mutex<bool>, Condvar)>,
+        }
+        impl EmbeddingProvider for Held {
+            fn space(&self) -> &cc_semantic::types::VectorSpace {
+                self.inner.space()
+            }
+            fn embed_documents(
+                &self,
+                inputs: &[DocumentInput],
+            ) -> Result<Vec<Vec<f32>>, ProviderError> {
+                if let Some(tx) = self.entered.lock().unwrap().take() {
+                    tx.send(()).unwrap();
+                }
+                let (lock, wake) = &*self.release;
+                let mut released = lock.lock().unwrap();
+                let deadline = Instant::now() + Duration::from_secs(5);
+                while !*released {
+                    assert!(Instant::now() < deadline);
+                    released = wake
+                        .wait_timeout(released, Duration::from_millis(5))
+                        .unwrap()
+                        .0;
+                }
+                self.inner.embed_documents(inputs)
+            }
+            fn embed_queries(&self, inputs: &[QueryInput]) -> Result<Vec<Vec<f32>>, ProviderError> {
+                self.inner.embed_queries(inputs)
+            }
+        }
+        struct Release(Arc<(Mutex<bool>, Condvar)>);
+        impl Drop for Release {
+            fn drop(&mut self) {
+                *self.0 .0.lock().unwrap() = true;
+                self.0 .1.notify_all();
+            }
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let mut config = ProjectConfig::default();
+        config.indexing.db_read_pool_size = Some(1);
+        config.semantic.enabled = true;
+        config.semantic.model_id = "fake/status-interleave".into();
+        config.semantic.dimensions = Some(2);
+        config.semantic.max_input_tokens = Some(8192);
+        config.semantic.max_batch_items = Some(16);
+        config.semantic.endpoint = "https://semantic.invalid/v1".into();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        std::fs::write(dir.path().join("one.rs"), "pub fn one() -> u32 { 947 }\n").unwrap();
+        let mut index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+        index.build_index(false).unwrap();
+        let handle = index.query_handle().unwrap();
+        let subsystem = Arc::new(
+            crate::semantic_wiring::assemble_with(
+                &dir.path().to_string_lossy(),
+                &config,
+                handle.db.clone(),
+                |key| {
+                    (key == cc_semantic::cache::CACHE_ROOT_ENV)
+                        .then(|| dir.path().join("cache").to_string_lossy().into_owned())
+                },
+                false,
+            )
+            .unwrap()
+            .unwrap(),
+        );
+        crate::semantic_wiring::attach(&handle.services, &subsystem);
+        let (entered, waiting) = tokio::sync::oneshot::channel();
+        let release = Arc::new((Mutex::new(false), Condvar::new()));
+        let guard = Release(release.clone());
+        let worker = crate::semantic_runtime::SemanticRuntime::new(
+            handle.db.clone(),
+            subsystem.clone(),
+            handle.services.clone(),
+            Arc::new(Held {
+                inner: FakeProvider::new(FakeProviderConfig::new(subsystem.space.clone())),
+                entered: Mutex::new(Some(entered)),
+                release: release.clone(),
+            }),
+        )
+        .unwrap();
+        assert!(worker.schedule());
+        tokio::time::timeout(Duration::from_secs(5), waiting)
+            .await
+            .unwrap()
+            .unwrap();
+        let before = handle.db.reads().read_generation().unwrap();
+        assert_eq!(
+            handle
+                .db
+                .reads()
+                .semantic_coverage()
+                .unwrap()
+                .coverage
+                .published,
+            0
+        );
+        let mut reads = 0;
+        let status = snapshot_observing(
+            Some(dir.path()),
+            Some(&handle.db),
+            Some(&config),
+            &handle.services,
+            || {
+                reads += 1;
+                if reads != 1 {
+                    return;
+                }
+                *release.0.lock().unwrap() = true;
+                release.1.notify_all();
+                let deadline = Instant::now() + Duration::from_secs(5);
+                while {
+                    let coverage = handle.db.reads().semantic_coverage().unwrap().coverage;
+                    coverage.published == 0 || coverage.uncovered != 0
+                } {
+                    assert!(
+                        Instant::now() < deadline,
+                        "real worker must commit within original bound: coverage={:?}, worker={:?}",
+                        handle.db.reads().semantic_coverage().unwrap(),
+                        handle
+                            .services
+                            .semantic_worker()
+                            .and_then(|s| s.failure_reason())
+                    );
+                    std::thread::sleep(Duration::from_millis(1));
+                }
+            },
+        );
+        drop(guard);
+        let after = handle.db.reads().read_generation().unwrap();
+        assert_eq!(after.incarnation, before.incarnation);
+        assert_eq!(after.index_epoch, before.index_epoch);
+        assert_eq!(after.evidence_epoch, before.evidence_epoch);
+        assert!(after.semantic_epoch > before.semantic_epoch);
+        assert_eq!(status["retrieval"]["dense_state"], "ready");
+        assert!(status["retrieval"]["dense_published"].as_u64().unwrap() > 0);
+        assert_eq!(
+            status["retrieval"]["dense_published"],
+            status["retrieval"]["dense_desired"]
+        );
+        assert_eq!(
+            status["retrieval"]["generation"],
+            json!(after),
+            "ready must carry the actual publication epoch, never the earlier root epoch"
+        );
+        assert_eq!(
+            reads, 2,
+            "one crossed snapshot is discarded; the next consistent snapshot wins"
+        );
+        eprintln!(
+            "STATUS_INTERLEAVE {}",
+            json!({"before":before,"after":after,"returned":status["retrieval"]["generation"],"root_attempts":reads,"dense_state":status["retrieval"]["dense_state"]})
+        );
+        worker.close();
+        index.close();
+    }
+    #[cfg(feature = "semantic")]
+    #[test]
+    fn status_churn_has_three_attempt_ceiling_and_no_ready_snapshot() {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("one.rs");
+        std::fs::write(&file, "pub fn one() -> u32 { 731 }\n").unwrap();
+        let mut index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+        index.build_index(false).unwrap();
+        let db = index.index_db().unwrap().clone();
+        let services = QueryServices::default();
+        let mut attempts = 0;
+        let status = snapshot_observing(Some(dir.path()), Some(&db), None, &services, || {
+            attempts += 1;
+            std::fs::write(
+                &file,
+                format!("pub fn one() -> u32 {{ {} }}\n", 947 + attempts),
+            )
+            .unwrap();
+            index.build_index(false).unwrap();
+        });
+        assert_eq!(attempts, 3);
+        assert_eq!(status["retrieval"]["index_state"], "error");
+        assert_eq!(status["retrieval"]["default_query_state"], "unavailable");
+        assert_eq!(status["retrieval"]["error"]["retryable"], true);
+        assert!(status["retrieval"]["generation"].is_null());
+        assert_eq!(status["retrieval"]["dense_state"], "disabled");
     }
 }

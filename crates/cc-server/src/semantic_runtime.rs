@@ -456,6 +456,12 @@ pub fn from_config(
     if !config.enabled || !config.network_opt_in {
         return Ok(None);
     }
+    // Even unlimited providers capture the shared gate: later idle adoption
+    // must apply to every existing document and query wrapper.
+    let gate = Some(crate::service_factory::configured_semantic_provider_gate(
+        config,
+    )?);
+    let query_gate = gate.clone();
     let retry = RetryPolicy::from_provider_config(config)?;
     let query_config = config.clone();
     let config = config.clone();
@@ -476,8 +482,6 @@ pub fn from_config(
                 .ok_or_else(|| {
                     cc_model::CcError::Config("semantic worker provider disabled".into())
                 })?;
-            let gate =
-                (config.max_concurrent > 0).then(crate::service_factory::semantic_provider_gate);
             let admitted = Arc::new(AdmittedProvider {
                 inner: provider,
                 gate: gate.clone(),
@@ -491,7 +495,7 @@ pub fn from_config(
                     admitted,
                     retry.clone(),
                     crate::service_factory::semantic_circuit_breaker(),
-                    gate,
+                    gate.clone(),
                 )
                 .with_receipts(
                     receipts.clone(),
@@ -539,8 +543,7 @@ pub fn from_config(
                     },
                 )?
                 .ok_or_else(|| cc_model::CcError::Config("query provider disabled".into()))?;
-                let gate = (query_config.max_concurrent > 0)
-                    .then(crate::service_factory::semantic_provider_gate);
+                let gate = query_gate.clone();
                 let admitted = Arc::new(AdmittedProvider {
                     inner: provider,
                     gate: gate.clone(),
@@ -1069,3 +1072,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(all(test, feature = "semantic-http"))]
+#[path = "shared_provider_gate_tests.rs"]
+mod shared_provider_gate_tests;

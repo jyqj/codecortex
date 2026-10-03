@@ -427,6 +427,12 @@ pub struct GateLimits {
     pub max_concurrent_per_project: Option<usize>,
 }
 
+impl Default for GateLimits {
+    fn default() -> Self {
+        Self::permissive()
+    }
+}
+
 impl GateLimits {
     /// Default-off limits: unlimited concurrency, no per-project split.
     pub fn permissive() -> Self {
@@ -507,6 +513,9 @@ struct Waiter {
 
 #[derive(Debug, Default)]
 struct GateState {
+    // Policy and admission share one synchronization boundary.
+    limits: GateLimits,
+    explicitly_configured: bool,
     in_flight: usize,
     per_project: HashMap<String, usize>,
     /// FIFO of waiting callers; a freshly arriving caller joins the BACK
@@ -522,7 +531,6 @@ struct GateState {
 
 #[derive(Debug)]
 struct GateCore {
-    limits: GateLimits,
     state: Mutex<GateState>,
     released: Condvar,
 }
@@ -558,11 +566,49 @@ impl ProviderGate {
     pub fn new(limits: GateLimits) -> Self {
         Self {
             core: std::sync::Arc::new(GateCore {
-                limits,
-                state: Mutex::new(GateState::default()),
+                state: Mutex::new(GateState {
+                    limits,
+                    explicitly_configured: limits != GateLimits::permissive(),
+                    ..GateState::default()
+                }),
                 released: Condvar::new(),
             }),
         }
+    }
+
+    /// Adopt the first explicit caps in place, preserving all captured handles.
+    /// A permissive/default request inherits the existing policy and cannot relax it.
+    /// Admission, release and policy adoption use the same mutex. Outstanding
+    /// calls or tickets refuse adoption; no permit is revoked or state reset.
+    pub fn configure_limits(&self, limits: GateLimits) -> CcResult<()> {
+        GateLimits::validated(limits.max_concurrent, limits.max_concurrent_per_project)
+            .map_err(|error| CcError::Config(format!("semantic.max_concurrent*: {error}")))?;
+        let mut st = self.core.state.lock().unwrap_or_else(|p| p.into_inner());
+        if limits == GateLimits::permissive() {
+            return Ok(());
+        }
+        if st.explicitly_configured {
+            return if st.limits == limits {
+                Ok(())
+            } else {
+                Err(CcError::Config(format!(
+                    "semantic.max_concurrent/max_concurrent_per_project conflict: existing {:?}, requested {:?}",
+                    st.limits, limits
+                )))
+            };
+        }
+        if st.in_flight != 0
+            || !st.per_project.is_empty()
+            || !st.queue.is_empty()
+            || !st.granted_tickets.is_empty()
+        {
+            return Err(CcError::Config(
+                "semantic.max_concurrent/max_concurrent_per_project cannot adopt explicit caps while the shared provider gate is busy".into(),
+            ));
+        }
+        st.limits = limits;
+        st.explicitly_configured = true;
+        Ok(())
     }
 
     /// Fallible constructor shorthand over [`GateLimits::validated`].
@@ -579,8 +625,9 @@ impl ProviderGate {
     /// Map the `semantic.*` configuration keys (P7-002 section, P7-005
     /// keys) onto a gate. `Ok(None)` = 限流关闭: the provider is not enabled
     /// or `max_concurrent` is left at the default `0` (unlimited) — callers
-    /// then run without a gate at all. Any invalid combination is a config
-    /// error that names the key, never a silent fallback.
+    /// may leave a standalone gate unconfigured. Production callers must still
+    /// share the process gate so subsequent explicit caps apply. Invalid
+    /// combinations name the key rather than falling back silently.
     pub fn from_provider_config(config: &SemanticProviderConfig) -> CcResult<Option<Self>> {
         if !config.enabled || config.max_concurrent == 0 {
             return Ok(None);
@@ -620,7 +667,7 @@ impl ProviderGate {
         // barge ahead of the fair queue.
         if Self::suspended_for(&mut st).is_none()
             && st.queue.is_empty()
-            && Self::admits(&core.limits, &st, project)
+            && Self::admits(&st.limits, &st, project)
         {
             Self::consume(&mut st, project);
             return Ok(ProviderPermit {
@@ -737,8 +784,8 @@ impl ProviderGate {
         let mut st = core.state.lock().unwrap_or_else(|p| p.into_inner());
         let suspended_for = Self::suspended_for(&mut st);
         GateSnapshot {
-            max_concurrent: core.limits.max_concurrent,
-            max_concurrent_per_project: core.limits.max_concurrent_per_project,
+            max_concurrent: st.limits.max_concurrent,
+            max_concurrent_per_project: st.limits.max_concurrent_per_project,
             in_flight: st.in_flight,
             waiting: st.queue.len(),
             per_project_in_flight: st
@@ -782,13 +829,13 @@ impl ProviderGate {
 /// capacity lasts, SKIPPING a head whose project share is full (no
 /// head-of-line starvation). Grants are recorded by ticket; the waiter
 /// removes its own ticket on wake. No grants during a 429 pause.
-fn core_scan(core: &GateCore, st: &mut GateState) {
+fn core_scan(_core: &GateCore, st: &mut GateState) {
     if st.cooldown_until.is_some() {
         return;
     }
     let mut index = 0;
-    while index < st.queue.len() && st.in_flight < core.limits.max_concurrent {
-        let project_ok = match core.limits.max_concurrent_per_project {
+    while index < st.queue.len() && st.in_flight < st.limits.max_concurrent {
+        let project_ok = match st.limits.max_concurrent_per_project {
             None => true,
             Some(cap) => {
                 st.per_project
@@ -2621,5 +2668,141 @@ mod tests {
         // Lifetime counters survive eviction: 2 charged attempts total.
         assert_eq!(ledger.total_cost_units(), 2 * PROVIDER_ATTEMPT_COST_UNITS);
         assert_eq!(ledger.budget_refusals(), 1);
+    }
+}
+
+#[cfg(test)]
+mod policy_adoption_tests {
+    use super::*;
+    use std::sync::{Arc, Barrier};
+
+    fn caps() -> GateLimits {
+        GateLimits::validated(4, Some(2)).unwrap()
+    }
+
+    #[test]
+    fn idle_adoption_keeps_core_cooldown_and_policy_is_once_only() {
+        let gate = ProviderGate::new(GateLimits::permissive());
+        let captured = gate.clone();
+        gate.note_rate_limited(Duration::from_secs(10));
+        let until = gate.core.state.lock().unwrap().cooldown_until;
+        gate.configure_limits(caps()).unwrap();
+        assert!(Arc::ptr_eq(&gate.core, &captured.core));
+        assert_eq!(captured.snapshot().max_concurrent, 4);
+        assert_eq!(gate.core.state.lock().unwrap().cooldown_until, until);
+        gate.resume();
+        let permit = captured.try_acquire_permit("a", Duration::ZERO).unwrap();
+        gate.configure_limits(caps()).unwrap(); // also idempotent while busy
+        assert!(matches!(
+            gate.configure_limits(GateLimits::validated(5, Some(2)).unwrap()),
+            Err(CcError::Config(_))
+        ));
+        gate.configure_limits(GateLimits::permissive()).unwrap();
+        assert_eq!(gate.snapshot().max_concurrent, 4);
+        drop(permit);
+        assert_eq!(gate.snapshot().in_flight, 0);
+    }
+
+    #[test]
+    fn busy_adoption_refuses_and_old_permit_releases_before_retry() {
+        let gate = ProviderGate::new(GateLimits::permissive());
+        let permit = gate.try_acquire_permit("old", Duration::ZERO).unwrap();
+        assert!(matches!(
+            gate.configure_limits(caps()),
+            Err(CcError::Config(_))
+        ));
+        assert_eq!(gate.snapshot().max_concurrent, usize::MAX);
+        assert_eq!(gate.snapshot().per_project_in_flight["old"], 1);
+        drop(permit);
+        gate.configure_limits(caps()).unwrap();
+        assert_eq!(gate.snapshot().in_flight, 0);
+        assert!(gate.snapshot().per_project_in_flight.is_empty());
+    }
+
+    #[test]
+    fn residual_waiters_grants_and_project_counts_each_prevent_adoption() {
+        // Local gate white-box safety guard test. Never modifies a process registry.
+        for kind in 0..3 {
+            let gate = ProviderGate::new(GateLimits::permissive());
+            {
+                let mut state = gate.core.state.lock().unwrap();
+                match kind {
+                    0 => state.queue.push_back(Waiter {
+                        ticket: 7,
+                        project: "a".into(),
+                    }),
+                    1 => {
+                        state.granted_tickets.insert(7);
+                    }
+                    _ => {
+                        state.per_project.insert("a".into(), 1);
+                    }
+                }
+            }
+            assert!(matches!(
+                gate.configure_limits(caps()),
+                Err(CcError::Config(_))
+            ));
+            assert_eq!(gate.snapshot().max_concurrent, usize::MAX);
+        }
+    }
+
+    #[test]
+    fn concurrent_adoption_and_acquire_have_one_linearization_boundary() {
+        for _ in 0..64 {
+            let gate = ProviderGate::new(GateLimits::permissive());
+            let start = Arc::new(Barrier::new(2));
+            let finish = Arc::new(Barrier::new(2));
+            std::thread::scope(|scope| {
+                let g = gate.clone();
+                let a = start.clone();
+                let b = finish.clone();
+                let acquire = scope.spawn(move || {
+                    a.wait();
+                    let permit = g.try_acquire_permit("old", Duration::ZERO).unwrap();
+                    b.wait();
+                    drop(permit);
+                });
+                start.wait();
+                let result = gate.configure_limits(caps());
+                let snapshot = gate.snapshot();
+                match result {
+                    Ok(()) => assert_eq!(snapshot.max_concurrent, 4),
+                    Err(CcError::Config(_)) => {
+                        assert_eq!(snapshot.max_concurrent, usize::MAX);
+                        assert_eq!(snapshot.in_flight, 1);
+                    }
+                    Err(error) => panic!("unexpected error {error}"),
+                }
+                finish.wait();
+                acquire.join().unwrap();
+            });
+            assert_eq!(gate.snapshot().in_flight, 0);
+            gate.configure_limits(caps()).unwrap();
+        }
+    }
+
+    #[test]
+    fn concurrent_explicit_init_equal_caps_succeed_and_different_caps_conflict() {
+        let gate = ProviderGate::new(GateLimits::permissive());
+        std::thread::scope(|scope| {
+            let a = scope.spawn(|| gate.configure_limits(caps()));
+            let b = scope.spawn(|| gate.configure_limits(caps()));
+            a.join().unwrap().unwrap();
+            b.join().unwrap().unwrap();
+        });
+        let other = GateLimits::validated(6, Some(3)).unwrap();
+        assert!(matches!(
+            gate.configure_limits(other),
+            Err(CcError::Config(_))
+        ));
+        assert!(matches!(
+            gate.configure_limits(GateLimits {
+                max_concurrent: 0,
+                max_concurrent_per_project: None
+            }),
+            Err(CcError::Config(_))
+        ));
+        assert_eq!(gate.snapshot().max_concurrent, 4);
     }
 }

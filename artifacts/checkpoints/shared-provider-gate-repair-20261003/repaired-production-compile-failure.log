@@ -1,0 +1,22 @@
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+error[E0507]: cannot move out of `gate`, a captured variable in an `Fn` closure
+   --> crates/cc-server/src/semantic_runtime.rs:496:21
+    |
+459 |     let gate = Some(crate::service_factory::configured_semantic_provider_gate(
+    |         ---- captured outer variable
+...
+470 |         SemanticRuntime::new_with_factory(db, subsystem, services, move |cancellation| {
+    |                                                                    ------------------- captured by this `Fn` closure
+...
+496 |                     gate,
+    |                     ^^^^ move occurs because `gate` has type `std::option::Option<std::sync::Arc<ProviderGate>>`, which does not implement the `Copy` trait
+    |
+help: `Fn` and `FnMut` closures require captured values to be able to be consumed multiple times, but `FnOnce` closures may consume them only once
+   --> crates/cc-server/src/semantic_runtime.rs:98:23
+    |
+ 98 |         factory: impl Fn(tokio_util::sync::CancellationToken) -> CcResult<Arc<dyn EmbeddingProvider>>
+    |                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0507`.
+error: could not compile `cc-server` (lib test) due to 1 previous error

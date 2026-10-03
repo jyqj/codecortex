@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`8c924140f328b5669aa97c80b0b796ddc752d3e0afb29e7d373111b7042ebf40`。
+> 任务总数：192；源文件 SHA-256：`e0763f07561f3c61b572f94867c8a7e1eb0680312419a48b298c94b3e20ca078`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2116,6 +2116,14 @@
 条件依赖：[{"task": "P7-018", "when": "live semantic-effect certification; not required for engineering/fake profile"}]
 证据：[{"target_sha": "d6a54a28eb17a1f71f9924a94e05877801c17037", "artifact_paths": ["docs/roadmap/code-index-v2/P7-REMAINING-GATES.json", "artifacts/checkpoints/cloud-p7-formal-gate-scope-20261003/receipt.json"], "scope": "37 authority rows; V05 combined raw/hydrate gap declared L2 closed; independently verified specific status race closed; full gates/task remain open", "review": "PR57 frozen120pass unchanged; combined current dualfeature10/0; newV05 main-owned block pending independent review"}, {"target_sha": "79193f09ffd40c9e3d30ab6c1e0e2c8cc3a372db", "status": "candidate_limited_combination_verified_final_acceptance_blocked", "artifact_paths": ["artifacts/checkpoints/candidate-integration-20261003/README.md", "artifacts/checkpoints/candidate-integration-20261003/sources.json", "artifacts/checkpoints/candidate-integration-20261003/verified-final/receipts.json"], "scope": "PR117+121 canonical baseline; production-only three-way FIFO+parallel+retry; finite loopback actual doc/query gate+queue/runtime width0/2, 4/2 caps, shared batch16, ordinary retry/backoff, close/cancel/join; exact original regressions", "limitations": "仅候选限定集成；父最终验收未完成。PR120对旧5cce6eb的REJECT保留。父转达独立gate review完整验收REJECT：P1 ProjectSession::new吞gate Config后回退空index并缓存到被拒项目路径，后续指定路径仍Ok；本轮不扩改session/core startup，由父另立修复。另一独立复审仍待父收敛；CI/draft GitHub API权限阻塞保留，性能/100k not_run。"}]
 实施备注： 2026-10-03 精确剩余gate矩阵37row落P7-REMAINING-GATES.json，逐项固定source/证据、层级、断言缺口、输入规模与授权条件；V05八/V16六有declared范围证据，不冒充完整gate，V16尚余正式整合判定非强加100k/C8/16（归V20）。新增039d035真实worker/query编码/recall与六raw lane同域L2，7文件11case66lane receipts148候选21hits；跨文件Python graph邻居真实出现，scope排除，完整literal final sets/非空源码/kind-name断言，双feature各1/0，strictclippy/fmt过；semantic scope为真实port手工输入，不冒充新L3 DSL接线。PR57两提交原样纳入，冻结3d独立40commands120pass/原V11断言20轮/真实worker3次churn，specific statusrace关闭；新组合dualfeature两target10/0，260owner文件未改。旧P5 quality raw目录此checkout缺失，V19不能凭prose关闭；六项offline可推进，真实语义消融D1D2授权blocked。PR54精确c445 CI146及PR56精确4eac CI147直接回读success。task状态不翻done。 2026-10-03 独立候选最小集成：PR117/121为祖先，三方生产差异整合FIFO/parallel/retry，20文档真实loopback工厂组合width0/2、4/2、16claim、普通retry继续ready及close/cancel/join限定通过。完整验收仍blocked：父转达gate review P1 ProjectSession::new吞Config回退并缓存被拒路径，未关闭，不在此轮扩改；旧PR120拒绝结论保留，其他独立复审待父。性能/100k未运行，P7-020及P8-005状态不翻done。
+#### 2026-10-03 startup P1 新独立组合限定验证
+
+新分支 `candidate/integrate-startup-gate-parallel-retry-20261003`，固定 base `8ac869194534a154269a3ed424dd51976400e375`；仅三方应用 startup 生产 `6011116a1bb6f069c1d4b65cc20fe9f19b9b0003` 的 crates 差异（来源 head `2d4d033860551157b2500521b0f53ec3a6811f15`），最终生产/测试 source `11f5b76273a16b520e6b6e01ad32a0a6743173fb`。原 queue/runtime/wiring/admission/DirectWriter/SQL 及其他未适配 crate 文件逐字等于 base；必要调用点和新测试保留，新 stdio fixture 显式 own cache。
+
+实际完成：default 全 workspace/all-target no-run + 严格 Clippy；semantic-http 全 workspace/all-target check + 严格 Clippy + 所有相关运行 targets no-run；startup 两个 isolated 叶子、default stdio/None 两个、semantic-http 三个共 7 叶子通过（实际 `run_mcp_server` Config 拒绝、无新增 task、cache/live 不登记、None/合法项目与 retry/reopen 正常）；原组合七隔离叶子 + retry/parallel/queue/FIFO/DirectWriter 共 51 叶子通过。fmt/diff check 通过。证据：`artifacts/checkpoints/startup-candidate-integration-20261003/{receipts.json,sources.json,selected-binary-identity.json}`。
+
+这些是新组合限定验证，不是 startup 独立复审或父最终 accept。首次离线 reqwest 缺失、一次宽泛 semantic-http 全 workspace executable 链接磁盘耗尽及 stdio harness 可执行替换 Text file busy 均保留事实，后续精确 no-run/全 target check 与 atomic replace 完成。旧 100k 失败、旧组合完整验收 REJECT 和 parallel 性能未验收不改写；本轮 100k、真实 provider、heldout、GC/WAL crash/kill 均 not_run。P7-020/P8-005 及完整任务状态不翻 done；release 构建准备与远端交付回执另见同目录。
+
 
 ## P8｜规模、质量与发行认证
 
@@ -2520,11 +2528,3 @@
 回滚：关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。
 条件：本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。
 证据：尚无
-
-#### 2026-10-03 startup P1 新独立组合限定验证
-
-新分支 `candidate/integrate-startup-gate-parallel-retry-20261003`，固定 base `8ac869194534a154269a3ed424dd51976400e375`；仅三方应用 startup 生产 `6011116a1bb6f069c1d4b65cc20fe9f19b9b0003` 的 crates 差异（来源 head `2d4d033860551157b2500521b0f53ec3a6811f15`），最终生产/测试 source `11f5b76273a16b520e6b6e01ad32a0a6743173fb`。原 queue/runtime/wiring/admission/DirectWriter/SQL 及其他未适配 crate 文件逐字等于 base；必要调用点和新测试保留，新 stdio fixture 显式 own cache。
-
-实际完成：default 全 workspace/all-target no-run + 严格 Clippy；semantic-http 全 workspace/all-target check + 严格 Clippy + 所有相关运行 targets no-run；startup 两个 isolated 叶子、default stdio/None 两个、semantic-http 三个共 7 叶子通过（实际 `run_mcp_server` Config 拒绝、无新增 task、cache/live 不登记、None/合法项目与 retry/reopen 正常）；原组合七隔离叶子 + retry/parallel/queue/FIFO/DirectWriter 共 51 叶子通过。fmt/diff check 通过。证据：`artifacts/checkpoints/startup-candidate-integration-20261003/{receipts.json,sources.json,selected-binary-identity.json}`。
-
-这些是新组合限定验证，不是 startup 独立复审或父最终 accept。首次离线 reqwest 缺失、一次宽泛 semantic-http 全 workspace executable 链接磁盘耗尽及 stdio harness 可执行替换 Text file busy 均保留事实，后续精确 no-run/全 target check 与 atomic replace 完成。旧 100k 失败、旧组合完整验收 REJECT 和 parallel 性能未验收不改写；本轮 100k、真实 provider、heldout、GC/WAL crash/kill 均 not_run。P7-020/P8-005 及完整任务状态不翻 done；release 构建准备与远端交付回执另见同目录。

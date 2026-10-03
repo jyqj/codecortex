@@ -26,3 +26,5 @@ not_run：Express/TypeScript、原 TypeScript pilot、全四 repo aggregate、ca
 新 raw 归档仅本轮 run/replay evidence（包括已准入公开 DEV query/gold 与返回 source 片段），不含整库 source、binary 或 db。retained-notices.tar.gz 保留本组9份已准入 license/NOTICE/归属文档原字节；不归档旧源码证明文件。readback-receipt.json 核验解压、4套离线 replay 和 analysis 重算均逐字节一致；exit1 保持失败，不包装为 pass。
 
 未重跑全仓 tests/clippy/fmt：本次仅 frozen DEV baseline，用户明确排除故障 tests，不改产品；验证为 locked build、hash intake、完整 schedule、run/replay、archive readback/source inventory。
+
+发布：本组证据 commit `ed5428efd2b60e4e71aac540ec0c5a68af1a1ece` 已 push，origin remote SHA 实际核对一致。`gh pr view131` 元数据读取返回 GraphQL Forbidden 后停止，未替换通道。授权 draft PR 创建仅尝试一次，同样 `Post https://api.github.com/graphql: Forbidden`、exit1；没有 PR，已停止创建，不使用 REST/browser/其它账号替代。实际 command/stdout/stderr 在 draft-pr-receipt.json。可用交付为已 push 分支 `public-dev-current-group-pygo-20261003`，等待 GitHub 授权恢复；不把 push 成功说成 PR 成功。

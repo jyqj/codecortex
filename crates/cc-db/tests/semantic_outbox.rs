@@ -896,9 +896,8 @@ fn guarded_fifo_matches_original_cas_through_retry_and_clock_boundaries() {
         }
     }
     let original="UPDATE semantic_outbox SET state='claimed',lease_token=lower(hex(randomblob(16))),lease_expires_at=?1+?2,claim_owner=?3,attempt_count=attempt_count+1,updated_at=?4 WHERE task_id=(SELECT task_id FROM semantic_outbox WHERE space_id=?5 AND state='pending' AND available_at<=?1 ORDER BY task_id ASC LIMIT 1) RETURNING task_id,lease_token";
-    fn normalized(
-        c: &rusqlite::Connection,
-    ) -> Vec<(
+    // task id, state, attempts, readiness, lease expiry, owner and last error.
+    type NormalizedLeaseRow = (
         i64,
         String,
         i64,
@@ -906,7 +905,8 @@ fn guarded_fifo_matches_original_cas_through_retry_and_clock_boundaries() {
         Option<f64>,
         Option<String>,
         Option<String>,
-    )> {
+    );
+    fn normalized(c: &rusqlite::Connection) -> Vec<NormalizedLeaseRow> {
         c.prepare("SELECT task_id,state,attempt_count,available_at,lease_expires_at,claim_owner,last_error FROM semantic_outbox ORDER BY task_id").unwrap().query_map([],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?))).unwrap().map(Result::unwrap).collect()
     }
     for (step, now) in [999.0, 1000.0, 1001.0, 1004.0, 1005.0, 1050.0, 1051.0]

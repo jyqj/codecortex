@@ -147,3 +147,24 @@ against origin and connector PR metadata. No concrete Forbidden, Username error
 or approval rejection occurred. Final receipt commit adds evidence only.
 Independent review and any production integration decision belong to the parent;
 this task ends after final remote verification, without further experiments.
+
+## PR114 Clippy delivery repair
+
+Frozen performance/review head remains `807f4710495a38bc6631549da2ab9623c83684b8`.
+CI run 37122692030 / job 111201777748 reported `clippy::type_complexity` in the
+finite-clock test's seven-field Vec return type. The repair adds only a local
+`NormalizedLeaseRow` alias and its field-order comment. SQL, row mapping, all
+seven fields, comparisons and assertions remain unchanged; no lint allowance.
+Production performance remains unaccepted; no integration, merge or new experiment.
+
+- [x] Add meaningful local test alias only (`semantic_outbox.rs` test diff).
+- [x] Outbox tests: 20 passed (`clippy-fix/outbox-tests.log`).
+- [x] cc-db all-target Clippy with -D warnings (`clippy-fix/clippy.log`).
+- [x] Workspace fmt and diff checks (`clippy-fix/validation.json` and logs).
+- [x] Frozen source/protocol audit (`clippy-fix/byte-identity.json`): three
+      production files, DEV manifest/query locks and eight performance/probe/AB
+      files byte-identical; the only crate change is the test alias.
+
+The repair is delivered on the existing PR114 branch; exact new remote/PR head
+verification is supplied in the final response. The frozen 807f471 measurements
+and source identities remain valid for independent review and parent-owned AB.

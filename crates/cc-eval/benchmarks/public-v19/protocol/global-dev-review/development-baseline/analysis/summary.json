@@ -1,0 +1,796 @@
+{
+  "schema_version": 1,
+  "scope": "development_only_one_default_product_arm",
+  "measurement_integrity": "invalid_or_incomplete",
+  "errors": {
+    "MISSING_OR_DUPLICATE_SCHEDULED_ROWS": 4,
+    "INFRASTRUCTURE_FAILURE": 4,
+    "RUN_INTEGRITY_EXIT": 4,
+    "GLOBAL_SCHEDULE_INCOMPLETE": 1
+  },
+  "preregistration_receipt_sha256": "a17bab15d7ffcced8ed33d32fabed46a1c25f49da5aec12b29bc960595d742ee",
+  "source_sha": "78b0ce52cb2ff4c53c53893b9f7dd469269806b8",
+  "actual_binary_sha256": {
+    "cc-eval": "04b546e45c75aca8ebfc9ee0c50f541aaab8fb3d53a620004d8c00982d2ba606",
+    "codecortex": "4e2f101137591c5bbc3bdc6d660cd7c2989e0b72fbacc0bb89d1a79b9ba8fe77"
+  },
+  "admission_sha256": "b4388ca60612f6734719b348bf30e05dd0752b7b754f47cc078b590e35c1e425",
+  "query_counts": {
+    "native": 301,
+    "compat": 256
+  },
+  "scheduled_rows": {
+    "native": 903,
+    "compat": 768
+  },
+  "observed_row_count": 783,
+  "row_status_counts": {
+    "partial": 783
+  },
+  "suite_results": [
+    {
+      "key": "express-intake-dev-repair-v1-native",
+      "repo": "express",
+      "profile": "native",
+      "scheduled_rows": 210,
+      "observed_rows": 210,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 243,
+      "row_status_counts": {
+        "partial": 210
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 70,
+        "measured_rows": 210,
+        "mean_top1": 0.0847457627118644,
+        "mean_ndcg10": 0.09728174058268214,
+        "category_means": {
+          "api_usage": [
+            0.0,
+            0.0
+          ],
+          "architecture_understanding": [
+            0.18181818181818182,
+            0.23770301179339207
+          ],
+          "call_chain": [
+            0.0,
+            0.008920683189352475
+          ],
+          "component_location": [
+            0.0,
+            0.0
+          ],
+          "configuration_lookup": [
+            0.0,
+            0.0
+          ],
+          "error_handling": [
+            0.25,
+            0.25
+          ],
+          "semantic_feature": [
+            0.14285714285714285,
+            0.14285714285714285
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "express-intake-dev-repair-v1-compat",
+      "repo": "express",
+      "profile": "compat",
+      "scheduled_rows": 177,
+      "observed_rows": 177,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 177,
+      "row_status_counts": {
+        "partial": 177
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 59,
+        "measured_rows": 177,
+        "mean_top1": 0.8135593220338984,
+        "mean_ndcg10": 0.7839612853369903,
+        "category_means": {
+          "api_usage": [
+            0.6666666666666666,
+            0.7718216255952429
+          ],
+          "architecture_understanding": [
+            0.7272727272727273,
+            0.8173316775839686
+          ],
+          "call_chain": [
+            1.0,
+            0.551235809042724
+          ],
+          "component_location": [
+            1.0,
+            0.9200625111439562
+          ],
+          "configuration_lookup": [
+            0.0,
+            0.6309297535714575
+          ],
+          "error_handling": [
+            0.5,
+            0.8154648767857288
+          ],
+          "semantic_feature": [
+            0.9285714285714286,
+            0.9736378395408184
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "requests-.-native",
+      "repo": "requests",
+      "profile": "native",
+      "scheduled_rows": 273,
+      "observed_rows": 0,
+      "complete_schedule": false,
+      "run_exit_code": 2,
+      "replay_exit_code": 2,
+      "gate_status": "invalid_measurement",
+      "gate_reason_count": 2,
+      "row_status_counts": {},
+      "unchanged_scorer_descriptive_summary": "not_run; prepare failed and zero-filled missing scorer cases are not observations",
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": "protocol/infrastructure error: Mcp error: -32602: src/requests/exceptions.py: invalid resolution manifest: invalid dependency key"
+    },
+    {
+      "key": "requests-.-compat",
+      "repo": "requests",
+      "profile": "compat",
+      "scheduled_rows": 249,
+      "observed_rows": 0,
+      "complete_schedule": false,
+      "run_exit_code": 2,
+      "replay_exit_code": 2,
+      "gate_status": "invalid_measurement",
+      "gate_reason_count": 2,
+      "row_status_counts": {},
+      "unchanged_scorer_descriptive_summary": "not_run; prepare failed and zero-filled missing scorer cases are not observations",
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": "protocol/infrastructure error: Mcp error: -32602: src/requests/exceptions.py: invalid resolution manifest: invalid dependency key"
+    },
+    {
+      "key": "gin-.-native",
+      "repo": "gin",
+      "profile": "native",
+      "scheduled_rows": 201,
+      "observed_rows": 0,
+      "complete_schedule": false,
+      "run_exit_code": 2,
+      "replay_exit_code": 2,
+      "gate_status": "invalid_measurement",
+      "gate_reason_count": 2,
+      "row_status_counts": {},
+      "unchanged_scorer_descriptive_summary": "not_run; prepare failed and zero-filled missing scorer cases are not observations",
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": "protocol/infrastructure error: Mcp error: -32602: context.go: invalid resolution manifest: conflicting duplicate call site call:385a3223e8cfb7ea"
+    },
+    {
+      "key": "gin-.-compat",
+      "repo": "gin",
+      "profile": "compat",
+      "scheduled_rows": 165,
+      "observed_rows": 0,
+      "complete_schedule": false,
+      "run_exit_code": 2,
+      "replay_exit_code": 2,
+      "gate_status": "invalid_measurement",
+      "gate_reason_count": 2,
+      "row_status_counts": {},
+      "unchanged_scorer_descriptive_summary": "not_run; prepare failed and zero-filled missing scorer cases are not observations",
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": "protocol/infrastructure error: Mcp error: -32602: context.go: invalid resolution manifest: conflicting duplicate call site call:385a3223e8cfb7ea"
+    },
+    {
+      "key": "typescript-blocks-01-migration-native",
+      "repo": "typescript",
+      "profile": "native",
+      "scheduled_rows": 45,
+      "observed_rows": 45,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 54,
+      "row_status_counts": {
+        "partial": 45
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 15,
+        "measured_rows": 45,
+        "mean_top1": 0.5,
+        "mean_ndcg10": 0.5642290661302584,
+        "category_means": {
+          "architecture_understanding": [
+            0.0,
+            0.22206143322439895
+          ],
+          "call_chain": [
+            0.0,
+            0.10887530903810089
+          ],
+          "error_handling": [
+            0.0,
+            0.0
+          ],
+          "semantic_feature": [
+            1.0,
+            1.0
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-01-migration-compat",
+      "repo": "typescript",
+      "profile": "compat",
+      "scheduled_rows": 36,
+      "observed_rows": 36,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 36,
+      "row_status_counts": {
+        "partial": 36
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 12,
+        "measured_rows": 36,
+        "mean_top1": 0.9166666666666666,
+        "mean_ndcg10": 0.8301863911340779,
+        "category_means": {
+          "architecture_understanding": [
+            1.0,
+            1.0
+          ],
+          "call_chain": [
+            1.0,
+            0.654078897869645
+          ],
+          "error_handling": [
+            0.0,
+            0.0
+          ],
+          "semantic_feature": [
+            1.0,
+            1.0
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-02-native",
+      "repo": "typescript",
+      "profile": "native",
+      "scheduled_rows": 45,
+      "observed_rows": 45,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 54,
+      "row_status_counts": {
+        "partial": 45
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 15,
+        "measured_rows": 45,
+        "mean_top1": 0.4166666666666667,
+        "mean_ndcg10": 0.5601951131832635,
+        "category_means": {
+          "architecture_understanding": [
+            0.3333333333333333,
+            0.446553679901617
+          ],
+          "call_chain": [
+            0.0,
+            0.6913401592471553
+          ],
+          "error_handling": [
+            0.5,
+            0.5
+          ],
+          "semantic_feature": [
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-02-compat",
+      "repo": "typescript",
+      "profile": "compat",
+      "scheduled_rows": 36,
+      "observed_rows": 36,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 36,
+      "row_status_counts": {
+        "partial": 36
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 12,
+        "measured_rows": 36,
+        "mean_top1": 0.75,
+        "mean_ndcg10": 0.791805997809254,
+        "category_means": {
+          "architecture_understanding": [
+            0.6666666666666666,
+            0.8769765845238192
+          ],
+          "call_chain": [
+            1.0,
+            0.6199062332840657
+          ],
+          "error_handling": [
+            0.5,
+            0.8154648767857288
+          ],
+          "semantic_feature": [
+            0.6666666666666666,
+            0.6666666666666666
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-03-native",
+      "repo": "typescript",
+      "profile": "native",
+      "scheduled_rows": 48,
+      "observed_rows": 48,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 57,
+      "row_status_counts": {
+        "partial": 48
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 16,
+        "measured_rows": 48,
+        "mean_top1": 0.5384615384615384,
+        "mean_ndcg10": 0.5217002612900399,
+        "category_means": {
+          "architecture_understanding": [
+            0.3333333333333333,
+            0.39106560501896376
+          ],
+          "call_chain": [
+            0.6666666666666666,
+            0.4246862463693453
+          ],
+          "error_handling": [
+            1.0,
+            0.8519590445170673
+          ],
+          "semantic_feature": [
+            0.25,
+            0.4077324383928643
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-03-compat",
+      "repo": "typescript",
+      "profile": "compat",
+      "scheduled_rows": 39,
+      "observed_rows": 39,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 39,
+      "row_status_counts": {
+        "partial": 39
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 13,
+        "measured_rows": 39,
+        "mean_top1": 0.8461538461538461,
+        "mean_ndcg10": 0.8762397913079482,
+        "category_means": {
+          "architecture_understanding": [
+            1.0,
+            1.0
+          ],
+          "call_chain": [
+            1.0,
+            0.9200625111439562
+          ],
+          "error_handling": [
+            1.0,
+            1.0
+          ],
+          "semantic_feature": [
+            0.5,
+            0.6577324383928644
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-04-native",
+      "repo": "typescript",
+      "profile": "native",
+      "scheduled_rows": 42,
+      "observed_rows": 42,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 51,
+      "row_status_counts": {
+        "partial": 42
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 14,
+        "measured_rows": 42,
+        "mean_top1": 0.36363636363636365,
+        "mean_ndcg10": 0.44895976836777396,
+        "category_means": {
+          "architecture_understanding": [
+            0.0,
+            0.23463936301137822
+          ],
+          "call_chain": [
+            0.0,
+            0.23463936301137822
+          ],
+          "error_handling": [
+            0.5,
+            0.5
+          ],
+          "semantic_feature": [
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-04-compat",
+      "repo": "typescript",
+      "profile": "compat",
+      "scheduled_rows": 33,
+      "observed_rows": 33,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 33,
+      "row_status_counts": {
+        "partial": 33
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 11,
+        "measured_rows": 33,
+        "mean_top1": 0.6363636363636364,
+        "mean_ndcg10": 0.6028117957792234,
+        "category_means": {
+          "architecture_understanding": [
+            0.5,
+            0.4298593499260986
+          ],
+          "call_chain": [
+            1.0,
+            0.5701406500739014
+          ],
+          "error_handling": [
+            0.5,
+            0.8154648767857288
+          ],
+          "semantic_feature": [
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-05-native",
+      "repo": "typescript",
+      "profile": "native",
+      "scheduled_rows": 39,
+      "observed_rows": 39,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 45,
+      "row_status_counts": {
+        "partial": 39
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 13,
+        "measured_rows": 39,
+        "mean_top1": 0.45454545454545453,
+        "mean_ndcg10": 0.4972071569111597,
+        "category_means": {
+          "architecture_understanding": [
+            0.3333333333333333,
+            0.3333333333333333
+          ],
+          "call_chain": [
+            0.0,
+            0.15642624200758548
+          ],
+          "error_handling": [
+            0.5,
+            0.5
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    },
+    {
+      "key": "typescript-blocks-05-compat",
+      "repo": "typescript",
+      "profile": "compat",
+      "scheduled_rows": 33,
+      "observed_rows": 33,
+      "complete_schedule": true,
+      "run_exit_code": 1,
+      "replay_exit_code": 1,
+      "gate_status": "gate_failed",
+      "gate_reason_count": 33,
+      "row_status_counts": {
+        "partial": 33
+      },
+      "unchanged_scorer_descriptive_summary": {
+        "queries": 11,
+        "measured_rows": 33,
+        "mean_top1": 0.8181818181818182,
+        "mean_ndcg10": 0.8056681880868076,
+        "category_means": {
+          "architecture_understanding": [
+            0.3333333333333333,
+            0.7539531690476383
+          ],
+          "call_chain": [
+            1.0,
+            0.533496853937323
+          ],
+          "error_handling": [
+            1.0,
+            1.0
+          ],
+          "symbol_location": [
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "existing_success_no_match_latency_summary": {
+        "samples": 0,
+        "p50_us": null,
+        "p95_us": null,
+        "max_us": null,
+        "tail_claim": "insufficient_for_tail_claim"
+      },
+      "infrastructure_failure": null
+    }
+  ],
+  "global_correlation_components": 280,
+  "paired_answerable_projection_keys": 256,
+  "complete_paired_answerable_projections": 118,
+  "incomplete_paired_answerable_projections": 138,
+  "native_no_answer_queries": 45,
+  "native_no_answer_scheduled_rows": 135,
+  "native_no_answer_observed_rows": 75,
+  "native_no_answer_missing_rows": 60,
+  "strict_no_answer_observed_rows": {
+    "incorrect": 75
+  },
+  "existing_scorer_no_answer_observed_rows": {
+    "incorrect": 75
+  },
+  "global_no_answer_accuracy": "invalid/not_computed_when_scheduled_rows_missing",
+  "no_answer_rule_discrepancy_count": 0,
+  "quality_status": "not_certified; noncomplete rows/no-answer failures and development contamination retained",
+  "source_evidence": {
+    "returned_hits": 2643,
+    "invalid_hits": 0,
+    "unverified_hits": 0,
+    "unknown_never_means_verified": true
+  },
+  "cost_availability": {
+    "originating_work_receipts": 783,
+    "unavailable_receipts": 888,
+    "observed_rows_without_work_receipt": 0,
+    "missing_rows_without_observed_cost": 888,
+    "token_money_cost": "not_applicable_to_default_nonsemantic_local_product; no paid provider calls; no inferred zero hidden work",
+    "interpretation": "originating work is not current cache-hit work; full costs.jsonl retained"
+  },
+  "all_status_rpc_elapsed_us": {
+    "samples": 783,
+    "min": 17373,
+    "max": 168632,
+    "sum": 78360730,
+    "mean": 100077.56066411239,
+    "interpretation": "observed response time including Partial/failures; not complete-retrieval latency or release/tail certification"
+  },
+  "descriptive_supported_scorer_means": null,
+  "candidate_minus_baseline_paired_intervals": "not_run; one product arm, native/compat are distinct scoring projections",
+  "existing_evaluator_bootstrap": "raw per-suite diagnostics only; 2000 unstratified family draws are not preregistered10000 global paired intervals",
+  "unsupported": {
+    "required_facet_coverage": "not_implemented",
+    "graph_correctness": "not_implemented",
+    "Recall20": "not_implemented",
+    "SymbolAccuracy": "not_implemented",
+    "DuplicationRate": "not_implemented",
+    "full_freshness": "not_run",
+    "semantic_ablation": "not_run",
+    "release_performance": "not_run"
+  },
+  "formal_600_accepted": 0,
+  "clean_holdout": 0,
+  "protected_body_reads": 0,
+  "live_provider_calls": 0
+}

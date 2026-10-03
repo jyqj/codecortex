@@ -1,72 +1,44 @@
 --- fixed-source/crates/cc-semantic/src/cache.rs
 +++ instrumented-copy/crates/cc-semantic/src/cache.rs
-@@ -415,6 +415,7 @@
-         vector: &[f32],
-         now_unix: i64,
-     ) -> CcResult<ArtifactRef> {
+@@ -417,0 +418 @@
 +        let t = std::time::Instant::now();
-         space.validate()?;
-         let space_digest = space.digest()?;
-         if vector.len() != space.dimension() as usize {
-@@ -428,7 +429,11 @@
-             return Err(invalid("vector contains NaN or infinite components"));
-         }
- 
+@@ -430,0 +432,2 @@
 +        diag::record(0, t);
 +        let t = std::time::Instant::now();
-         let payload: Vec<u8> = vector.iter().flat_map(|v| v.to_le_bytes()).collect();
+@@ -431,0 +435,2 @@
 +        diag::record(1, t);
 +        let t = std::time::Instant::now();
-         let checksum = bytes_hash(&payload);
-         let meta = ObjectMeta {
-             format_version: CACHE_FORMAT_VERSION,
-@@ -441,14 +446,29 @@
-             spec_digest: spec.as_str().to_string(),
-         };
- 
+@@ -443,0 +449,2 @@
 +        diag::record(2, t);
 +        let t = std::time::Instant::now();
-         let dir = self.object_dir(&space_digest, input, spec);
+@@ -444,0 +452,2 @@
 +        diag::record(3, t);
 +        let t = std::time::Instant::now();
-         std::fs::create_dir_all(&dir)?;
+@@ -445,0 +455,2 @@
 +        diag::record(4, t);
 +        let t = std::time::Instant::now();
-         atomic_write(&dir.join(format!("{}.bin", spec.as_str())), &payload)?;
+@@ -446,0 +458,5 @@
 +        diag::record(8, t);
 +        let t = std::time::Instant::now();
 +        let meta_payload = serde_json::to_vec(&meta)?;
 +        diag::record(5, t);
 +        let t = std::time::Instant::now();
-         atomic_write(
-             &dir.join(format!("{}.meta.json", spec.as_str())),
+@@ -449 +465 @@
 -            &serde_json::to_vec(&meta)?,
 +            &meta_payload,
-         )?;
+@@ -451 +467,5 @@
 -        Ok(self.reference(&space_digest, input, spec, &checksum))
 +        diag::record(9, t);
 +        let t = std::time::Instant::now();
 +        let reference = self.reference(&space_digest, input, spec, &checksum);
 +        diag::record(6, t);
 +        Ok(reference)
-     }
- 
-     /// Discardable semantics: remove both halves of an object so subsequent
-@@ -509,6 +529,8 @@
- /// fsync, rename over the target (POSIX atomic replace; the supported
- /// deployment targets are macOS/Linux), best-effort parent-dir fsync.
- fn atomic_write(target: &Path, payload: &[u8]) -> CcResult<()> {
+@@ -511,0 +532,2 @@
 +    let base = if target.extension().and_then(|s| s.to_str()) == Some("bin") { 10 } else { 20 };
 +    let t = std::time::Instant::now();
-     let parent = target
-         .parent()
-         .ok_or_else(|| invalid("cache target must live inside a directory"))?;
-@@ -521,19 +543,21 @@
-         std::process::id(),
-         TEMP_SEQ.fetch_add(1, Ordering::Relaxed),
-     ));
+@@ -523,0 +546 @@
 +    diag::record(base, t);
-     let write = || -> std::io::Result<()> {
+@@ -525,5 +548,5 @@
 -        let mut file = std::fs::File::create(&temp)?;
 -        file.write_all(payload)?;
 -        file.sync_all()?;
@@ -77,23 +49,13 @@
 +        diag::measure(base+3, || file.sync_all())?;
 +        diag::measure(base+4, || drop(file));
 +        diag::measure(base+5, || std::fs::rename(&temp, target))
-     };
-     if let Err(e) = write() {
-         let _ = std::fs::remove_file(&temp);
-         return Err(e.into());
-     }
+@@ -535,2 +558,3 @@
 -    if let Ok(dir) = std::fs::File::open(parent) {
 -        let _ = dir.sync_all();
 +    if let Ok(dir) = diag::measure(base+6, || std::fs::File::open(parent)) {
 +        let _ = diag::measure(base+7, || dir.sync_all());
 +        diag::measure(base+8, || drop(dir));
-     }
-     Ok(())
- }
-@@ -949,3 +973,16 @@
-         std::fs::remove_dir_all(root).unwrap();
-     }
- }
+@@ -951,0 +976,13 @@
 +
 +/// Diagnostic-only source-copy counters; no production change.
 +pub mod diag {

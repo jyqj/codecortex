@@ -43,4 +43,4 @@ pub mod diag {
 }
 '''
 (p/'source/crates/cc-semantic/src/cache.rs').write_text(s)
-(p/'instrumentation.patch').write_text(''.join(difflib.unified_diff(original.splitlines(True),s.splitlines(True),fromfile='fixed-source/crates/cc-semantic/src/cache.rs',tofile='instrumented-copy/crates/cc-semantic/src/cache.rs')))
+(p/'instrumentation.patch').write_text(''.join(difflib.unified_diff(original.splitlines(True),s.splitlines(True),fromfile='fixed-source/crates/cc-semantic/src/cache.rs',tofile='instrumented-copy/crates/cc-semantic/src/cache.rs',n=0)))

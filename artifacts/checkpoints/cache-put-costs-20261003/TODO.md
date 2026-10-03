@@ -6,5 +6,7 @@
 - [x] 正常合成 1k × new/rewrite，get 全量验证、保留 normalrun。
 - [x] 先回传关键计时，记录扰动与嵌套。
 - [x] 静态建议/风险与 normalrun 证据，核生产 diff 为空。
-- [ ] evidence-only commit/push、核 remotehead。
-- [ ] draft PR：blocked，gh PR API 返回 Forbidden，停止对应 action。
+- [x] evidence-only commit/push；首个提交 bcb8260694f5485b4c4a3908d30dbc4931b54a9a remotehead 一致。最终 receipt 另提交并核 head。
+- [!] draft PR：blocked，gh PR API 返回 Forbidden，停止对应 action。
+
+完成即停：无后续 5k/100k、生产优化或 fault 动作。

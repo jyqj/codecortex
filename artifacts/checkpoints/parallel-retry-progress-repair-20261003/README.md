@@ -53,3 +53,7 @@ Clippy：直接官方 `cargo-clippy clippy --locked --offline -p cc-semantic -p 
 ## 父补充 review
 
 只读核对 PR120 `c6e0d13811ad2d315dfc3c797f170ab61c68567f` 元数据：独立 reviewer 对冻结源 REJECT/HOLD，真实有效4/2局部门控+AdmittedProvider观察12项中10 ready遗留，width0亦停；11项独立tests为其证据，不计作本块 tests。此处修复不代其宣布接受，需父按新源码重审。
+
+## 交付
+
+自有 draft PR122：https://github.com/jyqj/codecortex/pull/122；base=PR119 evidence head `8c7c764`，修复源码提交 `7bc4935aeb4ff650618e0341e5f42b0e665418c6`，git ls-remote 与 connector 创建快照都确认该 head。此后仅追加本块交付 receipt / identity 全 runtime byte-check / TODO，不改实测生产源码。最终 evidence head 在交付回复核验；不 merge，不改变 PR117/119/120。first-wins 阻断保留，仍需父对新源码重新审查。

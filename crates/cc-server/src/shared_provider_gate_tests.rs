@@ -56,6 +56,9 @@ struct Loopback {
 }
 impl Loopback {
     fn new() -> Self {
+        Self::with_one_failure(false)
+    }
+    fn with_one_failure(fail_first: bool) -> Self {
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();
         let endpoint = format!("http://{}/v1", listener.local_addr().unwrap());
         listener.set_nonblocking(true).unwrap();
@@ -63,6 +66,7 @@ impl Loopback {
         let stop = Arc::new(AtomicBool::new(false));
         let worker_hold = hold.clone();
         let worker_stop = stop.clone();
+        let sequence = Arc::new(std::sync::atomic::AtomicUsize::new(0));
         let worker = std::thread::spawn(move || {
             std::thread::scope(|scope| {
                 let end = Instant::now() + Duration::from_secs(15);
@@ -70,6 +74,7 @@ impl Loopback {
                     match listener.accept() {
                         Ok((mut stream, _)) => {
                             let hold = worker_hold.clone();
+                            let sequence = sequence.clone();
                             scope.spawn(move || {
                                 stream.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
                                 stream.set_write_timeout(Some(Duration::from_secs(2))).unwrap();
@@ -85,9 +90,14 @@ impl Loopback {
                                         if bytes.len() >= split + 4 + length { break; }
                                     }
                                 }
+                                let split = bytes.windows(4).position(|w| w == b"\r\n\r\n").unwrap();
+                                let request: serde_json::Value = serde_json::from_slice(&bytes[split + 4..]).unwrap();
+                                let inputs = request["input"].as_array().unwrap().len();
+                                let first = sequence.fetch_add(1, Ordering::SeqCst) == 0;
                                 hold.enter();
-                                let body = r#"{"model":"synthetic-gate","data":[{"index":0,"embedding":[1.0,0.0]}]}"#;
-                                write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body).unwrap();
+                                let status = if fail_first && first { "503 Service Unavailable" } else { "200 OK" };
+                                let body = serde_json::json!({"model":"synthetic-gate", "data": (0..inputs).map(|index| serde_json::json!({"index":index,"embedding":[1.0,0.0]})).collect::<Vec<_>>()}).to_string();
+                                write!(stream, "HTTP/1.1 {status}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body).unwrap();
                             });
                         }
                         Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
@@ -195,6 +205,9 @@ fn shared_provider_gate_cases_in_fresh_processes() {
         "busy_config_errors_propagate",
         "concurrent_registry_init_and_acquire",
         "disabled_is_inert",
+        "combined_queue_serial",
+        "combined_queue_width_two",
+        "combined_production_close",
     ] {
         let name = format!("semantic_runtime::shared_provider_gate_tests::{name}");
         let output = std::process::Command::new(std::env::current_exe().unwrap())
@@ -396,4 +409,207 @@ fn disabled_is_inert() {
     println!(
         "DEFAULT_DISABLED cache_lookups=0 credential_lookups=0 transport_builds=0 provider_calls=0"
     );
+}
+
+// Self-authored finite combination: real production HTTP factories, shared gate,
+// document store, FIFO queue and runtime round. Only synthetic /tmp data/cache.
+fn combined_queue(width: u32) {
+    let dir = tempfile::tempdir_in("/tmp").unwrap();
+    let server = Loopback::with_one_failure(true);
+    let key = dir.path().join("synthetic-key");
+    std::fs::write(&key, "synthetic-only").unwrap();
+    let mut cfg = config();
+    cfg.auto_index.enabled = false;
+    cfg.semantic.network_opt_in = true;
+    cfg.semantic.allow_query_network = true;
+    cfg.semantic.allow_http = true;
+    cfg.semantic.endpoint = server.endpoint.clone();
+    cfg.semantic.api_key_ref = Some(format!("file:{}", key.display()));
+    cfg.semantic.acquire_timeout_ms = 60;
+    cfg.semantic.retry_max_attempts = 1;
+    // Initialize actual default wrappers first. Explicit caps are adopted later.
+    let neighbor = runtime(dir.path(), "neighbor", &cfg);
+    let neighbor_doc = neighbor.resolve_provider().unwrap();
+    let neighbor_query = query_provider(&neighbor);
+    cfg.semantic.max_concurrent_per_project = width;
+    std::fs::write(
+        dir.path().join(".codecortex.json"),
+        serde_json::to_vec(&cfg).unwrap(),
+    )
+    .unwrap();
+    for n in 0..20 {
+        std::fs::write(
+            dir.path().join(format!("combo_{n}.rs")),
+            format!("pub fn combo_{n}() -> u32 {{ {n} }}\n"),
+        )
+        .unwrap();
+    }
+    let index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+    let retired = index.semantic_runtime().unwrap();
+    retired.close();
+    let index = Arc::new(std::sync::RwLock::new(index));
+    crate::handlers::core::build_index(index, true).unwrap();
+    let worker = from_config(
+        retired.db.clone(),
+        retired.subsystem.clone(),
+        Arc::new(QueryServices::default()),
+        &cfg.semantic,
+    )
+    .unwrap()
+    .unwrap();
+    let doc = worker.resolve_provider().unwrap();
+    let query = query_provider(&worker);
+    let mut explicit = cfg.clone();
+    explicit.semantic.max_concurrent = 4;
+    explicit.semantic.max_concurrent_per_project = 2;
+    assemble(dir.path(), "adopt", &explicit).unwrap();
+    let gate = service_factory::semantic_provider_gate();
+    let actual_width = if width == 0 { 1 } else { 2 };
+    std::thread::scope(|scope| {
+        let round = scope.spawn(|| worker.run_round().unwrap());
+        server.hold.wait(actual_width);
+        let query_call = scope.spawn(|| {
+            if width == 0 {
+                call(query.as_ref(), true)
+            } else {
+                call(neighbor_query.as_ref(), true)
+            }
+        });
+        server.hold.wait(actual_width + 1);
+        let neighbor_call = scope.spawn(|| call(neighbor_doc.as_ref(), false));
+        server.hold.wait(actual_width + 2);
+        let extra = (width == 0).then(|| scope.spawn(|| call(neighbor_query.as_ref(), true)));
+        server.hold.wait(4);
+        let snap = gate.snapshot();
+        assert_eq!(snap.max_concurrent, 4);
+        assert_eq!(snap.max_concurrent_per_project, Some(2));
+        assert_eq!(snap.in_flight, 4);
+        assert!(snap.per_project_in_flight.values().all(|count| *count <= 2));
+        assert_eq!(call(doc.as_ref(), false), Err(ProviderError::Timeout));
+        assert_eq!(server.hold.calls(), 4);
+        server.hold.release();
+        assert!(
+            round.join().unwrap(),
+            "first batch fills the finite 16-claim budget"
+        );
+        query_call.join().unwrap().unwrap();
+        neighbor_call.join().unwrap().unwrap();
+        if let Some(extra) = extra {
+            extra.join().unwrap().unwrap();
+        }
+    });
+    let counts = || {
+        let conn = worker.db.read_conn().unwrap();
+        conn.query_row("SELECT count(*),sum(attempt_count),sum(state='done'),sum(state='pending' AND attempt_count=0),sum(state='pending' AND attempt_count=1 AND available_at>unixepoch('now')),sum(state='claimed') FROM semantic_outbox", [], |r| Ok((r.get::<_,i64>(0)?,r.get::<_,i64>(1)?,r.get::<_,i64>(2)?,r.get::<_,i64>(3)?,r.get::<_,i64>(4)?,r.get::<_,i64>(5)?))).unwrap()
+    };
+    assert_eq!(counts(), (20, 16, 15, 4, 1, 0));
+    assert!(!worker.run_round().unwrap());
+    assert_eq!(counts(), (20, 20, 19, 0, 1, 0));
+    let before = server.hold.calls();
+    assert!(!worker.run_round().unwrap());
+    assert_eq!(server.hold.calls(), before, "backoff cannot be paid early");
+    assert_eq!(gate.snapshot().in_flight, 0);
+    worker.close();
+    assert!(worker.cancellation.is_cancelled());
+    assert!(!worker.run_round().unwrap());
+    assert_eq!(server.hold.calls(), before);
+    assert_eq!(counts(), (20, 20, 19, 0, 1, 0));
+    let conn = worker.db.read_conn().unwrap();
+    let bad: i64 = conn.query_row("SELECT count(*) FROM semantic_outbox WHERE state='pending' AND lease_token IS NOT NULL", [], |r| r.get(0)).unwrap();
+    assert_eq!(bad, 0);
+    println!("COMBINED width={width} actual_width={actual_width} global=4 project=2 first_claims=16 first_done=15 ready_after_retry=4 final_done=19 backoff=1 early_retry_calls=0 closed_calls=0 live_claims=0 gate_after_join=0");
+}
+#[test]
+#[ignore = "invoked by isolated parent harness"]
+fn combined_queue_serial() {
+    combined_queue(0);
+}
+#[test]
+#[ignore = "invoked by isolated parent harness"]
+fn combined_queue_width_two() {
+    combined_queue(2);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+#[ignore = "invoked by isolated parent harness"]
+async fn combined_production_close() {
+    let dir = tempfile::tempdir_in("/tmp").unwrap();
+    let server = Loopback::new();
+    let key = dir.path().join("synthetic-key");
+    std::fs::write(&key, "synthetic-only").unwrap();
+    let mut cfg = config();
+    cfg.auto_index.enabled = false;
+    cfg.semantic.network_opt_in = true;
+    cfg.semantic.allow_query_network = true;
+    cfg.semantic.allow_http = true;
+    cfg.semantic.endpoint = server.endpoint.clone();
+    cfg.semantic.api_key_ref = Some(format!("file:{}", key.display()));
+    cfg.semantic.max_concurrent = 4;
+    cfg.semantic.max_concurrent_per_project = 2;
+    std::fs::write(
+        dir.path().join(".codecortex.json"),
+        serde_json::to_vec(&cfg).unwrap(),
+    )
+    .unwrap();
+    for n in 0..4 {
+        std::fs::write(
+            dir.path().join(format!("close_{n}.rs")),
+            format!("pub fn close_{n}() -> u32 {{ {n} }}\n"),
+        )
+        .unwrap();
+    }
+    let index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+    let retired = index.semantic_runtime().unwrap();
+    retired.close();
+    let index = Arc::new(std::sync::RwLock::new(index));
+    tokio::task::spawn_blocking(move || crate::handlers::core::build_index(index, true))
+        .await
+        .unwrap()
+        .unwrap();
+    let worker = from_config(
+        retired.db.clone(),
+        retired.subsystem.clone(),
+        Arc::new(QueryServices::default()),
+        &cfg.semantic,
+    )
+    .unwrap()
+    .unwrap();
+    assert!(worker.schedule());
+    let hold = server.hold.clone();
+    tokio::task::spawn_blocking(move || hold.wait(2))
+        .await
+        .unwrap();
+    let gate = service_factory::semantic_provider_gate();
+    assert_eq!(gate.snapshot().in_flight, 2);
+    assert!(worker.running.load(Ordering::Acquire));
+    assert_eq!(worker.services.query_pins(), 1);
+    worker.close();
+    assert!(worker.cancellation.is_cancelled());
+    assert!(!worker.schedule());
+    server.hold.release();
+    let end = Instant::now() + Duration::from_secs(5);
+    while worker.running.load(Ordering::Acquire) {
+        assert!(
+            Instant::now() < end,
+            "real provider workers did not physically join"
+        );
+        tokio::time::sleep(Duration::from_millis(5)).await;
+    }
+    assert_eq!(gate.snapshot().in_flight, 0);
+    assert_eq!(worker.services.query_pins(), 0);
+    assert_eq!(server.hold.calls(), 2);
+    let conn = worker.db.read_conn().unwrap();
+    let counts: (i64,i64,i64,i64) = conn.query_row("SELECT sum(attempt_count),sum(state='claimed'),sum(state='done'),sum(state='pending' AND lease_token IS NOT NULL) FROM semantic_outbox", [], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).unwrap();
+    assert_eq!(counts, (2, 0, 0, 0));
+    assert_eq!(
+        worker
+            .db
+            .reads()
+            .semantic_coverage()
+            .unwrap()
+            .coverage
+            .published,
+        0
+    );
+    println!("COMBINED_CLOSE actual_http=2 cancel=true running_before=1 pins_before=1 after_join_running=0 pins=0 gate=0 started=2 claimed=0 done=0 pending_token=0 published=0");
 }

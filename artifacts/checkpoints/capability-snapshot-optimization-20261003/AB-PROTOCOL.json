@@ -1,0 +1,47 @@
+{
+  "source_sha": "11af963c33cfa68cc9497e355464c1d6d058adac",
+  "binary_sha256": "dfb5b92fd7b32dcf87ea6dc19195d8342fcf991ec6f34c5e8b6bad1cb47db1bf",
+  "source_files_sha256": {
+    "crates/cc-server/src/capability_status.rs": "0a57e96cb0b72d53463f1388b8a4b80632f01573750e33e02dfb7f8f19938c59",
+    "crates/cc-db/src/capability_read.rs": "732e45a55b1ddbdb394f4a279eba051e58721ea6dd9286903c89e00d8a213ee9",
+    "crates/cc-db/src/freshness_store.rs": "3057b87981457b51f07601df6414788cc0fbfe0439f23c5fb0a481e10d1a6efc",
+    "crates/cc-db/src/lib.rs": "fb483d92daf526290c1570299a058cb2895b4cb8c75c16daca4c1b56b34a1480",
+    "driver/src/main.rs": "ff82f8545d4e4a84d767087fbc57798663037fcbf03eab7490f9df7348f09615",
+    "driver/src/baseline_status.rs": "a58d87a2caa7446e531e612ba79d142d426e8d9c808b0cdf3b0ff8e8582a0ea7",
+    "driver/Cargo.toml": "f653a2faa21558998452a0ebb5b22833a0888cd059d841bfe0c16fc1b048610e",
+    "driver/Cargo.lock": "a73f665662d474e7cd22dfa111f8da46f3b6dc5b2f19d76edfb0756d27af70ec"
+  },
+  "compiler": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "platform": "Linux-6.18.44-x86_64-with-glibc2.41",
+  "profile": "release opt-level=3 thin LTO codegen-units=1; same binary/mode switch",
+  "baseline": "exact final6db4d396e5d994388ada1e97c3d28947ffdb9c81 capability_status.rs, all other production source shared with candidate; freshness extraction preserves old SQL/transaction",
+  "protocol": {
+    "sizes": [
+      1000,
+      5000
+    ],
+    "pairs_per_size": 2,
+    "orders": [
+      "baseline,candidate",
+      "candidate,baseline"
+    ],
+    "poll_gap_ms": 200,
+    "deadline_seconds": 120,
+    "dimensions": 2,
+    "pool_size": 1,
+    "batch": 16,
+    "steady_status_calls": 128,
+    "generator": "file_{i:05}.rs: pub fn resource_{i:05}() -> u32 { i } newline",
+    "cache": "independent cold tempfile per process",
+    "provider": "real SemanticRuntime with local Gated FakeProvider, no HTTP",
+    "polling": "same initial-release/serial call/sleep200ms logic in both arms; actual start-to-start intervals include status service time",
+    "level": "in-process actual production status and worker; not MCP transport/100k/network provider"
+  },
+  "generator_sha256": {
+    "1000": "b46c85c3edcc28718201e239e710c889763307772f5ae72c3f9435f12225c7f8",
+    "5000": "54f782848efec359990d45450f8a40f51c29dbf043b0ad7117e5008ff73669de"
+  },
+  "real_provider_calls": 0,
+  "kill_fault_gc_wal": "not run",
+  "heldout_read": false
+}

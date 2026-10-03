@@ -1,0 +1,28 @@
+{
+  "status": "design_contract_blocker_no_production_changes",
+  "repository": "jyqj/codecortex",
+  "branch": "capability-snapshot-optimization-20261003",
+  "base_branch": "codex/cloud-index-fix-integration",
+  "base_sha": "6db4d396e5d994388ada1e97c3d28947ffdb9c81",
+  "design_commit": "3c6b3f7879e98c5e5aca4c5f3b2d4d999b1e0255",
+  "remote_design_sha_verified": "3c6b3f7879e98c5e5aca4c5f3b2d4d999b1e0255",
+  "push_exit_code": 0,
+  "draft_pr": {
+    "status": "blocked",
+    "exit_code": 1,
+    "error": "Post https://api.github.com/graphql: Forbidden",
+    "action": "gh pr create --repo jyqj/codecortex --draft --base codex/cloud-index-fix-integration --head capability-snapshot-optimization-20261003 --title \"docs: decide capability snapshot as-of versus latest contract\" --body-file artifacts/checkpoints/capability-snapshot-optimization-20261003/PR-BODY.md",
+    "stopped_on_specific_rejection": true,
+    "alternate_permissions_credentials_channels_used": false
+  },
+  "checks": [
+    "prepare_design.py source byte identity and frozen oracle assertions",
+    "git apply --check PROPOSED-DB-ONLY.patch",
+    "git diff --check"
+  ],
+  "runtime_tests": "not_run_design_only",
+  "fixed_1k_5k_AB": "not_run_no_accepted_candidate",
+  "independent_100k": "not_run_separate_task",
+  "merge_forcepush_deploy": "not performed",
+  "note": "Receipt is a follow-up commit; final branch HEAD remote verification reported separately."
+}

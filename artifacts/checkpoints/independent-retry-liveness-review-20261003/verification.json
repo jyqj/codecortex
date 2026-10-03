@@ -1,0 +1,36 @@
+{
+  "tracked_export_byte_comparison": "pass; see summary.json",
+  "final_binary_and_oracle_hashes": "pass; see identity and minimal receipts",
+  "historical_failed_oracle_snapshot_hashes": "pass; all four retained snapshots match identities",
+  "production_CI_Cargo_diff_to_fixed_head": "empty",
+  "all_staged_paths_within_authorized_checkpoint": true,
+  "git_diff_cached_check": {
+    "exit": 2,
+    "findings": "only unaltered raw log trailing whitespace / blank EOF; preserved deliberately"
+  },
+  "git_diff_cached_check_excluding_raw_logs": 0,
+  "fixed_tests": {
+    "passed": 7,
+    "failed": 0,
+    "cargo_exit": 0
+  },
+  "old_tests": {
+    "passed": 4,
+    "failed": 3,
+    "cargo_exit": 101
+  },
+  "minimal": {
+    "fixed_exit": 0,
+    "old_exit": 101
+  },
+  "not_run": [
+    "semantic_runtime::tests::post_index_worker_crosses_pages_and_reopen_reuses_artifacts",
+    "semantic_runtime::tests broad group",
+    "author tests",
+    "external provider",
+    "heldout",
+    "100k",
+    "GC/WAL crash/fault",
+    "PR121 shared-gate combination"
+  ]
+}

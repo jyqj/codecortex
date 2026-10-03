@@ -1,0 +1,6 @@
+2026-10-03 /workspace/retry-review
+$ gh pr view 122 --repo jyqj/codecortex --json number,title,headRefOid,headRefName,baseRefName,url,isDraft
+Post "https://api.github.com/graphql": Forbidden
+$ gh pr view 120 --repo jyqj/codecortex --json number,headRefOid,url
+Post "https://api.github.com/graphql": Forbidden
+Both were issued in one initial shell invocation. No GitHub API action was retried after observing these results. PR API actions stopped; no alternate identity or connector route used. Draft creation is blocked by this authorization refusal.

@@ -1,0 +1,41 @@
+diff --git a/crates/cc-semantic/src/queue.rs b/crates/cc-semantic/src/queue.rs
+index fbfe342..5521d0f 100644
+--- a/crates/cc-semantic/src/queue.rs
++++ b/crates/cc-semantic/src/queue.rs
+@@ -370,8 +370,10 @@ pub fn drain_pending_with_lifecycle(
+ /// is two only for an explicit per-project bound >= 2 (zero stays serial).
+ /// No DB lock/connection survives claim, renewal, handler or join boundaries.
+ /// Old FnMut serial APIs retain their existing behavior. This API propagates
+-/// handler errors after fenced retry and physical joins, and stops on retry,
+-/// cancellation or an active-space change. Every claim has its own lease/token.
++/// handler errors after fenced retry and physical joins, and stops on unhandled
++/// errors, cancellation or an active-space change. Handled retries continue
++/// draining other ready tasks within the shared finite claim budget. Every claim
++/// has its own lease/token.
+ pub fn drain_pending_parallel_with_lifecycle(
+     db: &IndexDb,
+     owner: &str,
+@@ -494,19 +496,21 @@ pub fn drain_pending_parallel_with_lifecycle(
+                         break;
+                     }
+                     Ok(TaskExit::NeedsRetry { reason }) => {
+-                        stopped.store(true, Ordering::Release);
+                         if lifecycle.is_some_and(|f| !f.is_open()) {
++                            stopped.store(true, Ordering::Release);
+                             db.hand_back_cancelled_semantic_task(
+                                 guard.task().task_id,
+                                 &guard.task().token,
+                                 true,
+                             )?;
++                            break;
+                         } else if hand_back(db, &guard, &reason, limits)? {
+                             report.retried += 1;
+                         } else {
+                             report.lease_lost += 1;
+                         }
+-                        break;
++                        // This expected result has been fenced into backoff;
++                        // it does not cancel ready work owned by this drain.
+                     }
+                     Err(error) => {
+                         stopped.store(true, Ordering::Release);

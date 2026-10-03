@@ -1,0 +1,72 @@
+   Compiling cc-server v1.0.0 (/workspace/retry-review/artifacts/checkpoints/independent-retry-liveness-review-20261003/source/fixed/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 6.93s
+     Running unittests src/lib.rs (retry-review/artifacts/checkpoints/independent-retry-liveness-review-20261003/target/fixed/debug/deps/cc_server-95cb67417ad6e0e1)
+
+running 7 tests
+test semantic_runtime::fresh_retry_oracle::fresh_close_join_with_success_and_server_error ... 
+thread 'tokio-rt-worker' (13894) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 20
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'semantic_runtime::fresh_retry_oracle::fresh_close_join_with_success_and_server_error' (13892) panicked at crates/cc-server/src/fresh_retry_oracle.rs:323:14:
+called `Result::unwrap()` on an `Err` value: JoinError::Panic(Id(3), "assertion `left == right` failed\n  left: 0\n right: 20", ...)
+FAILED
+test semantic_runtime::fresh_retry_oracle::fresh_closed_needs_retry_hands_back_claims_without_continuation ... 
+thread 'semantic_runtime::fresh_retry_oracle::fresh_closed_needs_retry_hands_back_claims_without_continuation' (13960) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 20
+FAILED
+test semantic_runtime::fresh_retry_oracle::fresh_minimal_12_document_reproduction ... 
+thread 'tokio-rt-worker' (13977) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 12
+
+thread 'semantic_runtime::fresh_retry_oracle::fresh_minimal_12_document_reproduction' (13974) panicked at crates/cc-server/src/fresh_retry_oracle.rs:495:14:
+called `Result::unwrap()` on an `Err` value: JoinError::Panic(Id(6), "assertion `left == right` failed\n  left: 0\n right: 12", ...)
+FAILED
+test semantic_runtime::fresh_retry_oracle::fresh_retry_matrix_same_acceptance_old_and_fixed ... 
+thread 'tokio-rt-worker' (13994) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 4
+
+thread 'semantic_runtime::fresh_retry_oracle::fresh_retry_matrix_same_acceptance_old_and_fixed' (13991) panicked at crates/cc-server/src/fresh_retry_oracle.rs:245:26:
+called `Result::unwrap()` on an `Err` value: JoinError::Panic(Id(9), "assertion `left == right` failed\n  left: 0\n right: 4", ...)
+FAILED
+test semantic_runtime::fresh_retry_oracle::fresh_retry_round_budget_16 ... 
+thread 'semantic_runtime::fresh_retry_oracle::fresh_retry_round_budget_16' (14008) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 33
+FAILED
+test semantic_runtime::fresh_retry_oracle::fresh_unhandled_error_waits_for_companion_join ... 
+thread 'semantic_runtime::fresh_retry_oracle::fresh_unhandled_error_waits_for_companion_join' (14022) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 6
+FAILED
+test semantic_runtime::fresh_retry_oracle::fresh_unstarted_cancel_and_stale_token_fence ... 
+thread 'semantic_runtime::fresh_retry_oracle::fresh_unstarted_cancel_and_stale_token_fence' (14037) panicked at crates/cc-server/src/fresh_retry_oracle.rs:145:5:
+assertion `left == right` failed
+  left: 0
+ right: 6
+FAILED
+
+failures:
+
+failures:
+    semantic_runtime::fresh_retry_oracle::fresh_close_join_with_success_and_server_error
+    semantic_runtime::fresh_retry_oracle::fresh_closed_needs_retry_hands_back_claims_without_continuation
+    semantic_runtime::fresh_retry_oracle::fresh_minimal_12_document_reproduction
+    semantic_runtime::fresh_retry_oracle::fresh_retry_matrix_same_acceptance_old_and_fixed
+    semantic_runtime::fresh_retry_oracle::fresh_retry_round_budget_16
+    semantic_runtime::fresh_retry_oracle::fresh_unhandled_error_waits_for_companion_join
+    semantic_runtime::fresh_retry_oracle::fresh_unstarted_cancel_and_stale_token_fence
+
+test result: FAILED. 0 passed; 7 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.88s
+
+error: test failed, to rerun pass `-p cc-server --lib`

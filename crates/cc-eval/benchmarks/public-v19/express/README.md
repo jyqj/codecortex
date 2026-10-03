@@ -1,32 +1,36 @@
-# Express V19 独立作者候选分片
+# Express V19 作者候选分片：协议迁移与 custody 阻塞
 
-此分片只提供新版本 corpus 候选；独立审查完成数为 **0**。作者 B 不签独立 review。基线是 PR60 `bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29`，公共源码是 `expressjs/express@7ef98448f8b38099ab1ded55e458538ad47a51e7`，不得追 HEAD。
+作者起草 **100 个候选家族，独立审查/accepted 均为 0**。固定基线 PR60 `bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29`；源码为 `expressjs/express@7ef98448f8b38099ab1ded55e458538ad47a51e7`，MIT license SHA256 `95a5762890e5c1c9808921cef095661fc482c5e1f0bba31446ac85595df6237c` 已原字节核验。只修改本目录，不改公共 registry、生产、scorer 或 ledger。
 
-`provenance/source-lock.json` 记录原始锁、MIT 许可证 SHA256、7 个允许文件的 Git blob/SHA256/大小与完整排除路径。仅纳入原字节 `index.js`、`lib/*.js`；所有第三方依赖实现、示例、测试、资源、生成物与其他文件不参与检索。许可证在 `license/LICENSE`，其固定 SHA256 为 `95a5762890e5c1c9808921cef095661fc482c5e1f0bba31446ac85595df6237c`。
+已迁移共同协议 PR65 `03abe24950f1fa89de3cce0a4e1d44d01e9aa0d6`。`provenance/protocol-v1` 是此次读到的必要协议原字节副本及哈希收据，未修改 protocol 原目录。公开当前树仅含 **68 native dev** / **57 compat dev** 家族正文；11 个 dev no-answer 不进入 compat。阈值规则产生 **32 would-be holdout** 家族，因公开暴露/无受限 custody，确认性 holdout 全部隔离，accepted holdout 为 **0**。
 
-`blocks/block-020` 是首个 20 家族代表块的修订，`blocks/block-100` 是包含它的完整 100 家族候选集；二者累计是 **100**，不可计成 120。完整集覆盖 20 API、20 行为、15 架构、20 跨文件链、10 配置/错误、15 hard-negative/no-answer（其中 12 为 bounded no-answer，3 为有纠正答案的 hard negative）。当前 72 dev / 28 holdout；相关 cluster 优先保持一致，因此实际比例不是强行 75/25。问题、答案及逐条精确证据在 `questions.jsonl`，gold 不在 source 内。每行是 evaluator Query 合同，不改共享 registry；suite 的 source 是原字节快照，因此 `commit:null`，真实上游 SHA 在每条证据及 provenance 中绑定。`suite.source.digest` 与 query lock 由本基线 evaluator 的显式 freeze 计算 BLAKE3；额外审计哈希是 SHA256。
+## 暴露与迁移记录
 
-稳定 family ID 不随措辞、排序变化。相关事实通过 `related_family_cluster` 绑定，用其 SHA256 前 64 位模 4，0 为 holdout，其余 dev；这是本分片候选 75/25 概率分配，实际数见 inventory，尚非全局冻结。任何改写必须复用 family/cluster。向生产调参者仅报告 inventory 数量、哈希、覆盖和阻碍；不要传递 holdout 问题或 gold 正文。
+首块提交 `336b962ffe7cb5d144273cfc2f45b0526ecba8bc` / draft PR62 公开了初始 20 候选正文；后来 `2cf6495f5115f4694d219ced5a09abda3f0c8be1` 已推送全部 100 候选正文及作者输入。共同协议到达时这些正文已存在公开 Git 历史和共享工作区。**删除当前文件不恢复保密**，不能宣称这些候选仍是 untouched holdout，也不能把哈希收据当作真实 custody。没有指定独立受限保管者，状态 `holdout_custody_blocked`。历史访问与污染审计待独立 custodian 完成；现有所有 would-be holdout 均隔离于确认性评测之外。
 
-`source_evidence` 保存固定 SHA、路径、符号、1-based inclusive 行范围、0-based half-open 字节范围、span 文本与哈希。答案组表达 facet/替代答案候选。`chain_edges` 记录关系及支持证据；当前 evaluator 无原生链评分，且多 primary 组不等于所有 facet 都被命中。no-answer 仅在明确列出的 7 文件范围成立，由完整源阅读、邻近正证据/外部边界和字面检查支撑；字面检查不是通用语义缺失证明，独立 reviewer 必须审查。
+`provenance/id-split-migration.json` 按已提交的原始起草行序一次性分配 `v19.express.f0001` 至 `f0100`，保留逐条原 ID、原 split、旧/新行哈希和暴露 commit。未挑 key、换盐或重平衡。`relations.json` 提出两个本仓正负 counterpart 的组件关联，canonical 是最小成员；尚待指定 global reviewer 审定，不代签跨仓关系冻结。100 draft family IDs 对应 **98 候选组件**，不是 100 已认证独立统计样本。
 
-## 复现
+按协议 SHA256(`codecortex-public-v19-split-v1\n` + canonical global-family)，前 64 位 big-endian <2^62 为 holdout，否则 dev。现有 68/32 是固定概率划分结果，不是强行 75/25。原作者 72/28、最初 14/6 等仅为旧候选分类，哈希和迁移理由仍保留；没有排名观察。后续发现组件交叉 split 时必须版本化隔离/裁决。
 
-从仓库根目录，在临时目录克隆公开 Express，并 checkout 上述固定 SHA。构建当前 PR60 合同的 evaluator（公共 crates.io 构建依赖不属于检索源），不要启用真实 provider 或运行 search backend：
+## 当前交付
+
+`intake/first-020` 是原首块经协议迁移后的公开 dev 投影（12 native / 9 compat，8 would-be holdout 仅哈希/计数）；`intake/full-100` 包含首块，二者累计 100 draft，不能加成 120。`blocks/*/inventory.json` 和旧 validation 收据仅为历史候选承诺，不是当前可运行套件。当前运行入口是 intake 中的分离 native/compat suite。
+
+源读起草覆盖 20 API、20 behavior、15 architecture/facets、20 跨文件链、10 config/error、15 hard-negative/no-answer（12 bounded no-answer，3 有纠正答案的 hard negative）。此分布是作者候选义务统计；新协议使用实际 evaluator 类别，并保留 `annotations.v19.original_category`。不同措辞不另计家族；独立 reviewer 可合并事实重叠候选，不能为维持 100 拒绝合并。
+
+`source-manifest.json`、`provenance/source-lock.json` 记录 7 个手写核心 JS 允许文件的 Git blob/SHA256/大小、真实源 SHA、许可证与完整排除清单。索引源只含 `index.js` 和 `lib/*.js` 原字节，不含依赖实现、测试资产、示例、gold 或二进制。source 是明确标注的快照，因此 evaluator `commit:null`；原上游 clean checkout 与源字节比对通过不等于快照 Git cleanliness。
+
+`queries.native.dev.jsonl` 的所有额外字段归入 `annotations.v19`；主要义务 first group grade3，其他必需义务 grade2，各 facet 指向具体组。原字节 span 为 0-based UTF8 [start,end)，行范围 1-based inclusive。链边绑定 from/to 源证据索引；bounded no-answer 明确列出全部 7 个文件范围与邻近边界证据及字面检查，不能以 rank 判空。当前 evaluator 尚无必需 facet/graph 正确性指标，native 通过仅证明输入完整性。compat 稳定投影 literal paths，排除 no-answer，不冒充 span/facet/链评分。
+
+## 复现与审查
+
+构建 PR60 合同的 cc-eval，公开 crates.io 依赖缺失记录在 review；未运行任何检索/provider/调参。克隆公开 Express 并 checkout 固定 SHA，再运行：
 
 ```sh
-PATH=/workspace/.cargo/bin:$PATH RUSTUP_HOME=/workspace/.rustup CARGO_HOME=/workspace/.cargo cargo build -p cc-eval --bin cc-eval --locked --target-dir /tmp/express-eval-build
-python3 crates/cc-eval/benchmarks/public-v19/express/scripts/verify.py --block block-020 --evaluator /tmp/express-eval-build/debug/cc-eval --upstream /tmp/express-v19
+python3 crates/cc-eval/benchmarks/public-v19/express/scripts/verify.py --block full-100 --evaluator /tmp/express-eval-build/debug/cc-eval --upstream /tmp/express-v19
+python3 crates/cc-eval/benchmarks/public-v19/express/provenance/protocol-v1/check.py --shard express:native=crates/cc-eval/benchmarks/public-v19/express/intake/full-100/queries.native.dev.jsonl --shard express:compat=crates/cc-eval/benchmarks/public-v19/express/intake/full-100/queries.compat.dev.jsonl --relations crates/cc-eval/benchmarks/public-v19/express/relations.json --evaluator /tmp/express-eval-build/debug/cc-eval --suite crates/cc-eval/benchmarks/public-v19/express/intake/full-100/suite.native.dev.json --suite crates/cc-eval/benchmarks/public-v19/express/intake/full-100/suite.compat.dev.json --output crates/cc-eval/benchmarks/public-v19/express/review/protocol-check-full-100.json
 ```
 
-`author.py 20` 可重建首块未 freeze 的作者输入；重建后必须显式 `cc-eval freeze --suite .../suite.json` 再 validate。正常 verify 不刷新 lock。完整集可运行 `author.py 100` 并对 block-100 执行相同流程；它将读取人工源读输入 `scripts/additional.py`。`review/*validation.json` 保留源比对、精确 span 与实际 Rust validate 结果；它不是独立 gold 审查或质量验收。离线构建缺 `reqwest` 的记录和随后公共依赖构建记录保留。
+正常 verify/check 不刷新 BLAKE3 lock；命令仅输出数量、哈希、状态。`migrate_protocol.py` 复现历史固定 commit 的迁移，would-be holdout 只在进程内计算 exact-byte commitment，不落盘、不打印正文；这不是独立 custody，也不挽救历史污染。重建 dev suite 后须显式 author freeze 再 validate。协议 checker 通过，四个实际 native/compat dev suite validate 通过；源/span检查收据在 review，质量结论仍无。
 
-## 待独立复核
-
-按 PR60 轮换建议交由作者 C 复核：许可证与源锁、scope 的第三方边界、每条答案语义与 span、facet 可接受替代、链边、no-answer 检查充分性、跨 family/跨仓模板泄漏与 split 关联。使用 `review/reviewer-template.json` 的空 receipt，由审查者独立提交；作者不能填签名。此分片不代表旧 306 raw 恢复、live 质量结论或 V19 门禁关闭。
-
-## 候选修订记录
-
-首块提交 `336b962ffe7cb5d144273cfc2f45b0526ecba8bc` / draft PR62 保留了初始 20 家族版本。100 家族作者复查修订 View 构造证据以覆盖实际 lookup 调用，链边增加明确 from/to 证据索引，相关地址处理和视图事实归入共同 split cluster，并消除一个仅 strong/weak 替换的 ETag 链模板。当前 20 家族修订为 15 dev / 5 holdout，100 集为 72 / 28；此前 14 / 6 与 78 / 22 均是作者候选阶段数字，不是冻结结果。20 家族 ID 集哈希未变。独立审查者应以完整 100 家族 PR 的当前字节为准。
-
-所有家族均由源事实而非排名结果定义；相关 cluster 的多条候选有不同检验义务（API、错误、状态、数据路径等），不是已认证统计独立样本。审查者可以合并/隔离事实重叠的候选；100 是作者提交数量，不能替代独立审查通过数。不得为了维持目标数字拒绝合并。
+`corpus-receipt.json`、`review-receipt.json` 只报告计数、哈希、作者/空审查者、暴露和 custody 状态。后续需作者 C / 指定 global reviewer 独立核验源/gold/家族/组件/负例/替代答案，再由独立 custodian 审计访问边界。作者不能签自己的独立 review。所有 formal complete block / accepted 计数保持 0，直到独立审查与 custody 条件真实满足。本成果不是已丢失历史 306 raw，也不是 live 质量结论。

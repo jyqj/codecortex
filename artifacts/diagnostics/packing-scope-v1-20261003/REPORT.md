@@ -90,3 +90,7 @@ cargo test --locked -j 2 -p cc-eval --test diag_p5e_stage_receipts_20261003 -- d
 ```
 
 `summary.json` 是可读阶段/矩阵索引；`full-receipts.tar.gz` 保存 baseline/fixed 全阶段、合同 JSON 与完整日志，`manifest.json` 保存各原始文件 SHA256、固定 source 和工具入口。tasks.json 只追加 P5-019 的实施备注，再生成 TODO；不改变任务状态，不关闭 V19 或质量父项。等待独立验收，未 merge/deploy。
+
+## GitHub 交接
+
+normal origin push 已成功，分支 `codex/packing-scope-v1-20261003`，首次推送 head `a51c692`。唯一一次 `gh pr create --draft`（base `fix/cpp-boundary-declarator`，head 本分支）返回 exit 1：`Post "https://api.github.com/graphql": Forbidden`。按用户指令停止，未重试或走替代 API；draft 未创建。这是 GitHub API 权限阻塞，不是测试失败或自动审批拒绝。后续最终 SHA 由交接响应给出；所有后续提交仅 docs/task-source/evidence，fixed source 产品树不变。未 merge/deploy。

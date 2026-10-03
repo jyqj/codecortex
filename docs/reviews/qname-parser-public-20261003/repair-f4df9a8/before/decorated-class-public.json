@@ -1,0 +1,2756 @@
+{
+  "Inner": {
+    "engine": {
+      "evidence_summary": {
+        "files": [
+          "classes.py"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": false,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 1,
+          "original_nodes": 1,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 13329
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+            "fused_candidates": 1,
+            "hydrate_requested": 1,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 5,
+                "sorts": 0,
+                "statements": 5,
+                "vm_steps": 189
+              },
+              "text": {
+                "cache_hits": 1,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 88,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 1,
+              "grep": 1,
+              "lexical": 1,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 1,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 38
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 1,
+            "skipped_duplicates": 2,
+            "soft_scanned": 1,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 19
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 1,
+                    "utf8_bytes": 88,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 36
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 15
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lanes": [
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": true,
+                  "lane_id": "exact_symbol",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "exact-symbol-name-qname-signature-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 310,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 268,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": -1e-6,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 214,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": 1,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1834,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "graph",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "call-graph-one-hop-uid-byte-anchor-v2",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1644,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+            "deadline_ms": 30000,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+            "obligations": [
+              {
+                "lane_id": "exact_symbol",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "path",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "lexical",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "grep",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "graph",
+                "role": "supporting",
+                "timeout_ms": 20000
+              }
+            ],
+            "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+            },
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+            },
+            "ordering": [
+              "exact-target first (identity tier, not an additive score)",
+              "rerank_score descending = sum(score_trace)",
+              "chunk_id ascending"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 1,
+        "selection": {
+          "facets": {
+            "implementation": 1
+          },
+          "input_candidates": 1,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "requested_limit": 20,
+          "selected": 1,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [
+            "chunk:classes.py:0"
+          ],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              35,
+              34,
+              109,
+              209,
+              156,
+              150,
+              31,
+              37,
+              94,
+              158,
+              195,
+              49,
+              130,
+              241,
+              226,
+              14
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 88,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 1
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "Outer",
+            "chunk_id": "chunk:classes.py:0",
+            "end_line": 5,
+            "file_path": "classes.py",
+            "fused_score": 0.07058823529411765,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "python",
+            "lexical_score": 1.0,
+            "metadata": {
+              "document": {
+                "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+              },
+              "evidence_priority": "distinctive_source_support",
+              "qname": "Outer",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 87,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 27,
+                  "start": 0
+                },
+                "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "source": {
+                  "byte_len": 88,
+                  "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                  "encoding": "utf8",
+                  "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+                },
+                "span": {
+                  "end": 88,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary",
+                "symbol:Inner"
+              ],
+              "stage_a_file_score": 3.400000999999,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400000999999
+                ],
+                [
+                  "token-search",
+                  2.0
+                ]
+              ]
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "lexical@1",
+              "grep@1",
+              "fts-summary",
+              "symbol:Inner",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5565882752940776,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "function",
+            "symbol_name": "Outer",
+            "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n"
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "Inner",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "classes.py",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 5,
+          "file_path": "classes.py",
+          "freshness": null,
+          "invalidation_keys": [
+            "classes.py"
+          ],
+          "metadata": {
+            "document": {
+              "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+              "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+              "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+              "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+            },
+            "evidence_priority": "distinctive_source_support",
+            "qname": "Outer",
+            "source_evidence": {
+              "boundary": "symbol",
+              "owner": {
+                "end": 87,
+                "start": 0
+              },
+              "signature": {
+                "end": 27,
+                "start": 0
+              },
+              "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+              "source": {
+                "byte_len": 88,
+                "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "encoding": "utf8",
+                "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+              },
+              "span": {
+                "end": 88,
+                "start": 0
+              }
+            },
+            "source_freshness": {
+              "disk_checked": true,
+              "hydrator": "current-document-scope-source-generation-v1",
+              "status": "current_verified"
+            },
+            "stage_a_file_reasons": [
+              "fts-summary",
+              "symbol:Inner"
+            ],
+            "stage_a_file_score": 3.400000999999,
+            "stage_a_files_considered": 1,
+            "stage_a_layer_scores": [
+              [
+                "fts-summary",
+                1.400000999999
+              ],
+              [
+                "token-search",
+                2.0
+              ]
+            ]
+          },
+          "node_id": "search:chunk:classes.py:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [
+            "exact-target",
+            "exact_symbol@1",
+            "lexical@1",
+            "grep@1",
+            "fts-summary",
+            "symbol:Inner",
+            "preselect:fts-summary:+1.40",
+            "preselect:token-search:+2.00"
+          ],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5565882752940776,
+          "source": "index",
+          "source_end_line": 5,
+          "source_start_line": 1,
+          "span_kind": "indexed_chunk",
+          "start_line": 1,
+          "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+          "title": "classes.py Outer:1-5",
+          "token_estimate": 22
+        }
+      ],
+      "query": "Inner",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Task: code-index search\nIntent: locate\nQuery: Inner\n\n## 1. classes.py:1-5\n@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 5,
+          "file_path": "classes.py",
+          "label": "Outer",
+          "node_id": "search:chunk:classes.py:0",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 1 indexed code result(s) across 1 file(s) for `Inner`.",
+      "task": "Inner",
+      "token_budget": 4000,
+      "token_estimate": 3333
+    },
+    "mcp": {
+      "evidence_summary": {
+        "files": [
+          "classes.py"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": false,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 1,
+          "original_nodes": 1,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 13528
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+            "fused_candidates": 1,
+            "hydrate_requested": 1,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 5,
+                "sorts": 0,
+                "statements": 5,
+                "vm_steps": 189
+              },
+              "text": {
+                "cache_hits": 1,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 88,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 1,
+              "grep": 1,
+              "lexical": 1,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 1,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 38
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 1,
+            "skipped_duplicates": 2,
+            "soft_scanned": 1,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 19
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 1,
+                    "utf8_bytes": 88,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 36
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 15
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lanes": [
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": true,
+                  "lane_id": "exact_symbol",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "exact-symbol-name-qname-signature-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 269,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 210,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": -1e-6,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 192,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": 1,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1621,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "graph",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "call-graph-one-hop-uid-byte-anchor-v2",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1037,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+            "deadline_ms": 30000,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+            "obligations": [
+              {
+                "lane_id": "exact_symbol",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "path",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "lexical",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "grep",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "graph",
+                "role": "supporting",
+                "timeout_ms": 20000
+              }
+            ],
+            "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+            },
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+            },
+            "ordering": [
+              "exact-target first (identity tier, not an additive score)",
+              "rerank_score descending = sum(score_trace)",
+              "chunk_id ascending"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 1,
+        "selection": {
+          "facets": {
+            "implementation": 1
+          },
+          "input_candidates": 1,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "requested_limit": 20,
+          "selected": 1,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [
+            "chunk:classes.py:0"
+          ],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              35,
+              34,
+              109,
+              209,
+              156,
+              150,
+              31,
+              37,
+              94,
+              158,
+              195,
+              49,
+              130,
+              241,
+              226,
+              14
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 88,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 1
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "Outer",
+            "chunk_id": "chunk:classes.py:0",
+            "end_line": 5,
+            "file_path": "classes.py",
+            "fused_score": 0.07058823529411765,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "python",
+            "lexical_score": 1.0,
+            "metadata": {
+              "document": {
+                "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+              },
+              "evidence_priority": "distinctive_source_support",
+              "qname": "Outer",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 87,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 27,
+                  "start": 0
+                },
+                "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "source": {
+                  "byte_len": 88,
+                  "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                  "encoding": "utf8",
+                  "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+                },
+                "span": {
+                  "end": 88,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary",
+                "symbol:Inner"
+              ],
+              "stage_a_file_score": 3.400000999999,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400000999999
+                ],
+                [
+                  "token-search",
+                  2.0
+                ]
+              ]
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "lexical@1",
+              "grep@1",
+              "fts-summary",
+              "symbol:Inner",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.5565882752940776,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "function",
+            "symbol_name": "Outer",
+            "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n"
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "Inner",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "classes.py",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 5,
+          "file_path": "classes.py",
+          "freshness": null,
+          "invalidation_keys": [
+            "classes.py"
+          ],
+          "metadata": {
+            "document": {
+              "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+              "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+              "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+              "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+            },
+            "evidence_priority": "distinctive_source_support",
+            "qname": "Outer",
+            "source_evidence": {
+              "boundary": "symbol",
+              "owner": {
+                "end": 87,
+                "start": 0
+              },
+              "signature": {
+                "end": 27,
+                "start": 0
+              },
+              "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+              "source": {
+                "byte_len": 88,
+                "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "encoding": "utf8",
+                "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+              },
+              "span": {
+                "end": 88,
+                "start": 0
+              }
+            },
+            "source_freshness": {
+              "disk_checked": true,
+              "hydrator": "current-document-scope-source-generation-v1",
+              "status": "current_verified"
+            },
+            "stage_a_file_reasons": [
+              "fts-summary",
+              "symbol:Inner"
+            ],
+            "stage_a_file_score": 3.400000999999,
+            "stage_a_files_considered": 1,
+            "stage_a_layer_scores": [
+              [
+                "fts-summary",
+                1.400000999999
+              ],
+              [
+                "token-search",
+                2.0
+              ]
+            ]
+          },
+          "node_id": "search:chunk:classes.py:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [
+            "exact-target",
+            "exact_symbol@1",
+            "lexical@1",
+            "grep@1",
+            "fts-summary",
+            "symbol:Inner",
+            "preselect:fts-summary:+1.40",
+            "preselect:token-search:+2.00"
+          ],
+          "relation": null,
+          "role": "primary",
+          "score": 0.5565882752940776,
+          "source": "index",
+          "source_end_line": 5,
+          "source_start_line": 1,
+          "span_kind": "indexed_chunk",
+          "start_line": 1,
+          "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+          "title": "classes.py Outer:1-5",
+          "token_estimate": 22
+        }
+      ],
+      "query": "Inner",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Task: code-index search\nIntent: locate\nQuery: Inner\n\n## 1. classes.py:1-5\n@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 5,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 5,
+          "file_path": "classes.py",
+          "label": "Outer",
+          "node_id": "search:chunk:classes.py:0",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 1 indexed code result(s) across 1 file(s) for `Inner`.",
+      "task": "Inner",
+      "token_budget": 4000,
+      "token_estimate": 3382
+    }
+  },
+  "Outer": {
+    "engine": {
+      "evidence_summary": {
+        "files": [
+          "classes.py"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": false,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 1,
+          "original_nodes": 1,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 13406
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+            "fused_candidates": 1,
+            "hydrate_requested": 1,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 5,
+                "sorts": 0,
+                "statements": 5,
+                "vm_steps": 189
+              },
+              "text": {
+                "cache_hits": 1,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 88,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 1,
+              "grep": 1,
+              "lexical": 1,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 1,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 38
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 1,
+            "skipped_duplicates": 2,
+            "soft_scanned": 1,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 19
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 1,
+                    "utf8_bytes": 88,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 36
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 15
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lanes": [
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": true,
+                  "lane_id": "exact_symbol",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "exact-symbol-name-qname-signature-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 2742,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 334,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": -1.6923076923076922e-6,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 2788,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": 1,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 2406,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "graph",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "call-graph-one-hop-uid-byte-anchor-v2",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1509,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+            "deadline_ms": 30000,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+            "obligations": [
+              {
+                "lane_id": "exact_symbol",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "path",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "lexical",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "grep",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "graph",
+                "role": "supporting",
+                "timeout_ms": 20000
+              }
+            ],
+            "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+            },
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+            },
+            "ordering": [
+              "exact-target first (identity tier, not an additive score)",
+              "rerank_score descending = sum(score_trace)",
+              "chunk_id ascending"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 1,
+        "selection": {
+          "facets": {
+            "implementation": 1
+          },
+          "input_candidates": 1,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "requested_limit": 20,
+          "selected": 1,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [
+            "chunk:classes.py:0"
+          ],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              35,
+              34,
+              109,
+              209,
+              156,
+              150,
+              31,
+              37,
+              94,
+              158,
+              195,
+              49,
+              130,
+              241,
+              226,
+              14
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 88,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 1
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "Outer",
+            "chunk_id": "chunk:classes.py:0",
+            "end_line": 5,
+            "file_path": "classes.py",
+            "fused_score": 0.07058823529411765,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "python",
+            "lexical_score": 1.0,
+            "metadata": {
+              "document": {
+                "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+              },
+              "evidence_priority": "distinctive_source_support",
+              "qname": "Outer",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 87,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 27,
+                  "start": 0
+                },
+                "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "source": {
+                  "byte_len": 88,
+                  "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                  "encoding": "utf8",
+                  "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+                },
+                "span": {
+                  "end": 88,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary",
+                "symbol:Outer"
+              ],
+              "stage_a_file_score": 3.400000999999,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400000999999
+                ],
+                [
+                  "token-search",
+                  2.0
+                ]
+              ]
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "lexical@1",
+              "grep@1",
+              "symbol-exact",
+              "fts-summary",
+              "symbol:Outer",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.7365882752940777,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:symbol-exact",
+                0.18
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "function",
+            "symbol_name": "Outer",
+            "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n"
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "Outer",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "classes.py",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 5,
+          "file_path": "classes.py",
+          "freshness": null,
+          "invalidation_keys": [
+            "classes.py"
+          ],
+          "metadata": {
+            "document": {
+              "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+              "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+              "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+              "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+            },
+            "evidence_priority": "distinctive_source_support",
+            "qname": "Outer",
+            "source_evidence": {
+              "boundary": "symbol",
+              "owner": {
+                "end": 87,
+                "start": 0
+              },
+              "signature": {
+                "end": 27,
+                "start": 0
+              },
+              "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+              "source": {
+                "byte_len": 88,
+                "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "encoding": "utf8",
+                "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+              },
+              "span": {
+                "end": 88,
+                "start": 0
+              }
+            },
+            "source_freshness": {
+              "disk_checked": true,
+              "hydrator": "current-document-scope-source-generation-v1",
+              "status": "current_verified"
+            },
+            "stage_a_file_reasons": [
+              "fts-summary",
+              "symbol:Outer"
+            ],
+            "stage_a_file_score": 3.400000999999,
+            "stage_a_files_considered": 1,
+            "stage_a_layer_scores": [
+              [
+                "fts-summary",
+                1.400000999999
+              ],
+              [
+                "token-search",
+                2.0
+              ]
+            ]
+          },
+          "node_id": "search:chunk:classes.py:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [
+            "exact-target",
+            "exact_symbol@1",
+            "lexical@1",
+            "grep@1",
+            "symbol-exact",
+            "fts-summary",
+            "symbol:Outer",
+            "preselect:fts-summary:+1.40",
+            "preselect:token-search:+2.00"
+          ],
+          "relation": null,
+          "role": "primary",
+          "score": 0.7365882752940777,
+          "source": "index",
+          "source_end_line": 5,
+          "source_start_line": 1,
+          "span_kind": "indexed_chunk",
+          "start_line": 1,
+          "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+          "title": "classes.py Outer:1-5",
+          "token_estimate": 22
+        }
+      ],
+      "query": "Outer",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Task: code-index search\nIntent: locate\nQuery: Outer\n\n## 1. classes.py:1-5\n@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 5,
+          "file_path": "classes.py",
+          "label": "Outer",
+          "node_id": "search:chunk:classes.py:0",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 1 indexed code result(s) across 1 file(s) for `Outer`.",
+      "task": "Outer",
+      "token_budget": 4000,
+      "token_estimate": 3352
+    },
+    "mcp": {
+      "evidence_summary": {
+        "files": [
+          "classes.py"
+        ],
+        "graph_enrichment": {
+          "callees_added": 0,
+          "callers_added": 0,
+          "symbols_resolved": 1,
+          "tests_found": 0
+        },
+        "packing": {
+          "compacted": false,
+          "configured_max_bytes": 18000,
+          "continuation": "Use files region/expand on retained references; recheck source version.",
+          "limit_bytes": 16000,
+          "omitted_hits": 0,
+          "omitted_nodes": 0,
+          "original_hits": 1,
+          "original_nodes": 1,
+          "partial": false,
+          "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+          "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+          "used_bytes": 13604
+        },
+        "retrieval": {
+          "cost": {
+            "coverage": "originating query work; lexical FTS and hydration SQL here; grep stage SQL in grep.stages; excludes preselection/exact lookup/graph SQL, FTS internal work and storage I/O; not total cost or a hard limit",
+            "fused_candidates": 1,
+            "hydrate_requested": 1,
+            "hydration": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 5,
+                "sorts": 0,
+                "statements": 5,
+                "vm_steps": 189
+              },
+              "text": {
+                "cache_hits": 1,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 88,
+                "zstd_decodes": 0
+              }
+            },
+            "lane_candidates": {
+              "exact_symbol": 1,
+              "graph": 1,
+              "grep": 1,
+              "lexical": 1,
+              "path": 0
+            },
+            "lexical_sql": {
+              "fullscan_steps": 0,
+              "rows": 1,
+              "sorts": 1,
+              "statements": 1,
+              "vm_steps": 38
+            },
+            "schema_version": 1
+          },
+          "grep": {
+            "fallback_scanned": 0,
+            "prefilter_failed": false,
+            "prefilter_scanned": 0,
+            "reason": null,
+            "scan_cap": 20000,
+            "scanned": 1,
+            "skipped_duplicates": 2,
+            "soft_scanned": 1,
+            "stages": [
+              {
+                "stage": "soft",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 19
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 1,
+                    "utf8_bytes": 88,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "prefilter",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 1,
+                    "statements": 1,
+                    "vm_steps": 36
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              },
+              {
+                "stage": "fallback",
+                "work": {
+                  "sql": {
+                    "fullscan_steps": 0,
+                    "rows": 1,
+                    "sorts": 0,
+                    "statements": 1,
+                    "vm_steps": 15
+                  },
+                  "text": {
+                    "cache_hits": 0,
+                    "legacy_auto_reads": 0,
+                    "storage_reads": 0,
+                    "utf8_bytes": 0,
+                    "zstd_decodes": 0
+                  }
+                }
+              }
+            ],
+            "status": "complete"
+          },
+          "lanes": [
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": true,
+                  "lane_id": "exact_symbol",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "exact-symbol-name-qname-signature-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 740,
+              "lane_id": "exact_symbol",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 0,
+              "candidates": [],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 0
+              },
+              "elapsed_us": 509,
+              "lane_id": "path",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.0
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "lexical",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": -1.6923076923076922e-6,
+                  "schema_version": 1,
+                  "scoring_spec": "fts5-bm25-order-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1672,
+              "lane_id": "lexical",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 1.1
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "grep",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "bounded-case-insensitive-literal-v1",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": 1,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1879,
+              "lane_id": "grep",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.8
+            },
+            {
+              "candidate_count": 1,
+              "candidates": [
+                {
+                  "document": {
+                    "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                    "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                    "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                    "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+                  },
+                  "exact_identity": false,
+                  "lane_id": "graph",
+                  "lane_rank": 1,
+                  "legacy_chunk_id": "chunk:classes.py:0",
+                  "raw_score": 1.0,
+                  "schema_version": 1,
+                  "scoring_spec": "call-graph-one-hop-uid-byte-anchor-v2",
+                  "source_span": {
+                    "end": 88,
+                    "start": 0
+                  }
+                }
+              ],
+              "coverage": {
+                "complete": true,
+                "examined": null,
+                "scope": "hard_scope",
+                "total_lower_bound": 1
+              },
+              "elapsed_us": 1925,
+              "lane_id": "graph",
+              "schema_version": 1,
+              "status": "complete",
+              "truncation_reason": null,
+              "weight": 0.6
+            }
+          ],
+          "policy": {
+            "completeness": "all_executed_lane_limits_remain_visible; obligation_role_does_not_erase_partial",
+            "deadline_ms": 30000,
+            "effective": "local",
+            "graph_source_mapping": "uid_byte_declaration_document; complete_mapping_is_not_whole_symbol_body_coverage",
+            "intent": "locate",
+            "lane_timeout_ms": 20000,
+            "no_answer": "empty_partial_is_not_absence; no_semantic_absence_claim_from_weak_rank",
+            "obligations": [
+              {
+                "lane_id": "exact_symbol",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "path",
+                "role": "identity",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "lexical",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "grep",
+                "role": "source",
+                "timeout_ms": 20000
+              },
+              {
+                "lane_id": "graph",
+                "role": "supporting",
+                "timeout_ms": 20000
+              }
+            ],
+            "path_source_domain": "canonical_scoped_existing_path_docs; else_bounded_tokens; not_whole_file_coverage",
+            "requested": "local",
+            "semantic_state": "disabled",
+            "semantic_timeout_ms": 5000,
+            "semantic_top_k": 24,
+            "version": "query-policy-local-semantic-canonical-path-domain-v4"
+          },
+          "scope": {
+            "budget": {
+              "exact_symbol_candidates": 24,
+              "grep_candidates": 20,
+              "grep_enabled": true,
+              "grep_scan_cap": 20000,
+              "lexical_candidates": 24,
+              "path_candidates": 24,
+              "rerank_window": 40,
+              "top_k": 20,
+              "units": "candidate limits count chunks; grep_scan_cap counts decompressions, not SQL work, total memory or time; cached diagnostics describe originating computation, not work repeated on a cache hit"
+            },
+            "hard": {
+              "empty": false,
+              "explicit_file_count": null,
+              "languages": null,
+              "path_prefix": null,
+              "path_prefix_truncated": false,
+              "semantics": "conjunctive_repository_relative_case_sensitive_components; empty means contradictory/explicit-empty constraint, not an inventory count"
+            },
+            "ordering": [
+              "exact-target first (identity tier, not an additive score)",
+              "rerank_score descending = sum(score_trace)",
+              "chunk_id ascending"
+            ],
+            "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+            "schema_version": 1,
+            "soft": {
+              "contributions": "per-hit score_trace is the additive bill; stage_a_layer_scores explain its capped stage-a component and must not be added twice; raw hint and excluded paths omitted",
+              "hint_entries": {
+                "overlay": 0,
+                "pinned": 0,
+                "recent": 0,
+                "working": 0
+              },
+              "preselected_count": 1,
+              "role": "ranking_and_scan_priority_only"
+            }
+          }
+        },
+        "search_hits": 1,
+        "selection": {
+          "facets": {
+            "implementation": 1
+          },
+          "input_candidates": 1,
+          "intent": "locate",
+          "intent_facet_anchors": {},
+          "limit_omitted": 0,
+          "original_ranks": [
+            1
+          ],
+          "overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "requested_limit": 20,
+          "selected": 1,
+          "selected_overlap": {
+            "fully_covered_candidates": 0,
+            "input_bytes": 88,
+            "redundant_bytes": 0,
+            "unique_bytes": 88
+          },
+          "source_covered_omissions": 0,
+          "source_support_anchors": [
+            "chunk:classes.py:0"
+          ],
+          "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+          "spec": "anchored-facets-distinctive-source-union-v2",
+          "unmet_facets": []
+        },
+        "source_freshness": {
+          "budget_exhausted": false,
+          "checked_files": 1,
+          "dense_manifest_fence": {
+            "checked": 0,
+            "skip_disposition": "stale_publication_skipped",
+            "skipped": 0
+          },
+          "generation": {
+            "evidence_epoch": 1,
+            "incarnation": [
+              35,
+              34,
+              109,
+              209,
+              156,
+              150,
+              31,
+              37,
+              94,
+              158,
+              195,
+              49,
+              130,
+              241,
+              226,
+              14
+            ],
+            "index_epoch": 5,
+            "semantic_epoch": null
+          },
+          "hydrator": "current-document-scope-source-generation-v1",
+          "omitted_files": {},
+          "partial": false,
+          "read_budget_charged": 88,
+          "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+          "verified_hits": 1
+        }
+      },
+      "intent": "locate",
+      "invalidations": [],
+      "machine_pack": {
+        "hits": [
+          {
+            "breadcrumb": "Outer",
+            "chunk_id": "chunk:classes.py:0",
+            "end_line": 5,
+            "file_path": "classes.py",
+            "fused_score": 0.07058823529411765,
+            "graph_score": 0.0,
+            "grep_score": 1.0,
+            "lane": null,
+            "language": "python",
+            "lexical_score": 1.0,
+            "metadata": {
+              "document": {
+                "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+                "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+                "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+                "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+              },
+              "evidence_priority": "distinctive_source_support",
+              "qname": "Outer",
+              "source_evidence": {
+                "boundary": "symbol",
+                "owner": {
+                  "end": 87,
+                  "start": 0
+                },
+                "signature": {
+                  "end": 27,
+                  "start": 0
+                },
+                "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "source": {
+                  "byte_len": 88,
+                  "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                  "encoding": "utf8",
+                  "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+                },
+                "span": {
+                  "end": 88,
+                  "start": 0
+                }
+              },
+              "source_freshness": {
+                "disk_checked": true,
+                "hydrator": "current-document-scope-source-generation-v1",
+                "status": "current_verified"
+              },
+              "stage_a_file_reasons": [
+                "fts-summary",
+                "symbol:Outer"
+              ],
+              "stage_a_file_score": 3.400000999999,
+              "stage_a_files_considered": 1,
+              "stage_a_layer_scores": [
+                [
+                  "fts-summary",
+                  1.400000999999
+                ],
+                [
+                  "token-search",
+                  2.0
+                ]
+              ]
+            },
+            "reasons": [
+              "exact-target",
+              "exact_symbol@1",
+              "lexical@1",
+              "grep@1",
+              "symbol-exact",
+              "fts-summary",
+              "symbol:Outer",
+              "preselect:fts-summary:+1.40",
+              "preselect:token-search:+2.00"
+            ],
+            "rerank_score": 0.7365882752940777,
+            "score_trace": [
+              [
+                "rrf:exact_symbol",
+                0.021568627450980395
+              ],
+              [
+                "rrf:lexical",
+                0.021568627450980395
+              ],
+              [
+                "rrf:grep",
+                0.01568627450980392
+              ],
+              [
+                "rrf:graph",
+                0.011764705882352941
+              ],
+              [
+                "overlap",
+                0.35
+              ],
+              [
+                "boost:symbol-exact",
+                0.18
+              ],
+              [
+                "boost:stage-a",
+                0.13600003999996
+              ]
+            ],
+            "source": "index",
+            "start_line": 1,
+            "symbol_kind": "function",
+            "symbol_name": "Outer",
+            "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n"
+          }
+        ],
+        "kind": "code_index_context",
+        "query": "Outer",
+        "repo_size_tier": "Tiny",
+        "token_budget": 4000,
+        "top_k": 20
+      },
+      "nodes": [
+        {
+          "backing_file_path": "classes.py",
+          "backing_source": null,
+          "confidence": 0.8,
+          "depends_on": [],
+          "end_line": 5,
+          "file_path": "classes.py",
+          "freshness": null,
+          "invalidation_keys": [
+            "classes.py"
+          ],
+          "metadata": {
+            "document": {
+              "doc_key": "c55f8d8a915f242b808cc601f08f50225227d64d88e715a8cc4357b034e36d36",
+              "doc_version": "777b732549fa11bc76795cdd4b020084cebe2fa1e865d43d534925924251c6d2",
+              "encoding_key": "7c4e56269fc7ad06e19bdc3fd7ebbcee0498534a6a068ef768057a4a4f687d50",
+              "entity_key": "ebc889975ee450c53892114cbf2e978cd5cd58736227c70c65aa4d0c734fd77a"
+            },
+            "evidence_priority": "distinctive_source_support",
+            "qname": "Outer",
+            "source_evidence": {
+              "boundary": "symbol",
+              "owner": {
+                "end": 87,
+                "start": 0
+              },
+              "signature": {
+                "end": 27,
+                "start": 0
+              },
+              "slice_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+              "source": {
+                "byte_len": 88,
+                "content_digest": "3770f33d9953121918fc40e1a2ff043207ac6ff74303d55eb44d9a791dff1617",
+                "encoding": "utf8",
+                "snapshot_id": "cb2a0a7498e480a88460a7aa4d478384de6a62ccbd3565a8e60f763c167f8abf"
+              },
+              "span": {
+                "end": 88,
+                "start": 0
+              }
+            },
+            "source_freshness": {
+              "disk_checked": true,
+              "hydrator": "current-document-scope-source-generation-v1",
+              "status": "current_verified"
+            },
+            "stage_a_file_reasons": [
+              "fts-summary",
+              "symbol:Outer"
+            ],
+            "stage_a_file_score": 3.400000999999,
+            "stage_a_files_considered": 1,
+            "stage_a_layer_scores": [
+              [
+                "fts-summary",
+                1.400000999999
+              ],
+              [
+                "token-search",
+                2.0
+              ]
+            ]
+          },
+          "node_id": "search:chunk:classes.py:0",
+          "node_type": "SEARCH_HIT",
+          "rank_explanation": null,
+          "reasons": [
+            "exact-target",
+            "exact_symbol@1",
+            "lexical@1",
+            "grep@1",
+            "symbol-exact",
+            "fts-summary",
+            "symbol:Outer",
+            "preselect:fts-summary:+1.40",
+            "preselect:token-search:+2.00"
+          ],
+          "relation": null,
+          "role": "primary",
+          "score": 0.7365882752940777,
+          "source": "index",
+          "source_end_line": 5,
+          "source_start_line": 1,
+          "span_kind": "indexed_chunk",
+          "start_line": 1,
+          "text": "@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+          "title": "classes.py Outer:1-5",
+          "token_estimate": 22
+        }
+      ],
+      "query": "Outer",
+      "reasons": [
+        "hybrid search over code index",
+        "graph-enriched"
+      ],
+      "rendered_prompt": "Task: code-index search\nIntent: locate\nQuery: Outer\n\n## 1. classes.py:1-5\n@decorate\nclass Outer:\n    @decorate\n    class Inner:\n        def pulse(self): return 1\n",
+      "resolution_freshness": {
+        "basis_epoch": null,
+        "complete": true,
+        "completed_files": 0,
+        "index_epoch": 5,
+        "reason": null,
+        "retry": null,
+        "root_count": 0,
+        "scope": "observed_resolution_invalidations",
+        "status": "ready"
+      },
+      "revision": 0,
+      "spans": [
+        {
+          "end_line": 5,
+          "file_path": "classes.py",
+          "label": "Outer",
+          "node_id": "search:chunk:classes.py:0",
+          "start_line": 1
+        }
+      ],
+      "summary": "Found 1 indexed code result(s) across 1 file(s) for `Outer`.",
+      "task": "Outer",
+      "token_budget": 4000,
+      "token_estimate": 3401
+    }
+  }
+}

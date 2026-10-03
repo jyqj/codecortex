@@ -89,9 +89,22 @@ fn open(
 }
 fn durable(path: &Path, bytes: &[u8]) {
     use std::io::Write;
-    let mut f = std::fs::File::create(path).unwrap();
+    // Existence is the cross-process publication signal. Write and sync a
+    // sibling first so the observer can never see an empty/partial payload.
+    let temporary = path.with_file_name(format!(
+        ".{}.{}.publishing",
+        path.file_name().unwrap().to_string_lossy(),
+        std::process::id()
+    ));
+    let mut f = std::fs::File::create(&temporary).unwrap();
     f.write_all(bytes).unwrap();
     f.sync_all().unwrap();
+    drop(f);
+    std::fs::rename(&temporary, path).unwrap();
+    std::fs::File::open(path.parent().unwrap())
+        .unwrap()
+        .sync_all()
+        .unwrap();
 }
 fn signal_and_wait(root: &Path) -> ! {
     durable(

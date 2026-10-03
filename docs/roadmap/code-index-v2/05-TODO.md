@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`85c771e79166e2d7e596ffff44c514d7c9c41966641c3c8cb3e64cd7c5c469b2`。
+> 任务总数：192；源文件 SHA-256：`ec45af6c83572d7bc280b0859175e76c607e950de7ae354ba7cfd66d34aabee3`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -1997,6 +1997,32 @@
 证据：[{"target_sha": "c4dfa324143a8406ee7f54e1337c54c1e1700118", "worktree_digest": "dbf3939146b6ca532972e999de3e94f16438b608", "artifact_paths": ["artifacts/checkpoints/cloud-p7-014-20261002/integration-receipt.json"], "review": "integration self-review; prior independent fixes tracked by source SHA; full task review pending", "rollback_status": "revert individual integration/format commits; schemas/dependencies unchanged", "scope": "partial integration evidence only; full task acceptance remains pending"}, {"target_sha": "24db8bbe14e7b47bc5cc413bbf7c66a0be8f2710", "worktree_digest": "5721d0d639e0cfc66437c9ff48af15a016ee4bb7", "artifact_paths": ["artifacts/benchmarks/p7-acceptance-20261002/combined-v2/matrix.json", "artifacts/benchmarks/p7-acceptance-20261002/combined-v2/receipt.json"], "review": "independent offline matrix owner; integration review; declared subchecks only", "rollback_status": "revert new tests/evidence commits independently", "scope": "V05/V16 L1-L2 scope/exact, V11/V15 fault/cache/cancellation mechanisms; no unconditional full validation closure"}, {"target_sha": "2d48f2628ae7c745fcab1a21dd784eae4582a193", "artifact_paths": ["artifacts/benchmarks/p7-v16-2d48f26-9bdab23f-cosine-v1-20261002/report.md", "artifacts/benchmarks/p7-v16-2d48f26-9bdab23f-cosine-v1-20261002/integration-receipt.json", "artifacts/benchmarks/p7-v16-2d48f26-9bdab23f-cosine-v1-20261002/offline-gaps.md"], "scope": "V16 independent hand-vector production L2 subset five runs 5/0/0, 90 gold cases; independent integration targets20/0/0. Bounded-memory/full V05/V11/V16 pending; no holdout/live quality claim", "review": "integration hand oracle; PR43 six independent production cases and PR44 actual product stdio 155/0/0 preserved unchanged"}, {"target_sha": "715ab33e83ecb6c65228c18ed55e0fa6604ca0a6", "artifact_paths": ["artifacts/benchmarks/p7-v11-715ab33-ff968c63-generation-v1-20261002/report.md", "artifacts/benchmarks/p7-v11-715ab33-ff968c63-generation-v1-20261002/gate-assertions.json"], "scope": "V11 production mixed-generation L3 and finite-retry L2 subset; five fixed-source executions10/0/0, no full V05/V11 closure", "review": "integration owner; independent review pending; PR43/44 and V16 files untouched"}, {"target_sha": "32ce36ad424f5279fc0d2c37191e1f3dbb2eddb8", "artifact_paths": ["artifacts/benchmarks/p7-v05-32ce36a-a34ddca2-scope-v1-20261003/report.md", "artifacts/benchmarks/p7-v05-32ce36a-a34ddca2-scope-v1-20261003/gate-assertions-updated.json", "artifacts/benchmarks/p7-v16-independent-review-20261002/README.md", "artifacts/benchmarks/p7-v16-2d48f26-9bdab23f-cosine-v1-20261002/canonical-errata.json"], "scope": "V05 scoped production L2/L3 five rounds15/0/0; independent V16 PR47 proof limits corrected and nonunit/actual insertion variants retained; PR48 resource blocker explicitly open", "review": "V05 integration self-validation pending independent review; PR47 independent V16 audit preserved unchanged"}, {"target_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3", "artifact_paths": ["artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003/report.md", "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003/cache-key-requirements.json", "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003/formal-validation-map.json", "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003/integration-receipt.json"], "scope": "production cache behavior five rounds15/0/0; bounded ArtifactCache original counterexample replay/resource2/0/0; all full gates pending independent consolidation", "review": "main integration self-validation; PR48/50 owner source/evidence unchanged; current independent reviewer pending"}, {"target_sha": "3dceedf3dcee851b3b2e4d4938bba11d76c63326", "artifact_paths": ["artifacts/checkpoints/cloud-p7-status-generation-fix-20261003/receipt.json", "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003/deterministic-interleaves.json", "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003/immutable-sources.json"], "scope": "bounded readiness race correction and unchanged independent V05/V11/P1 integration; full task not complete", "review": "integration self-replay; original independent reviewer must verify readiness fix SHA"}, {"target_sha": "d6a54a28eb17a1f71f9924a94e05877801c17037", "artifact_paths": ["docs/roadmap/code-index-v2/P7-REMAINING-GATES.json", "artifacts/checkpoints/cloud-p7-formal-gate-scope-20261003/receipt.json"], "scope": "37 authority rows; V05 combined raw/hydrate gap declared L2 closed; independently verified specific status race closed; full gates/task remain open", "review": "PR57 frozen120pass unchanged; combined current dualfeature10/0; newV05 main-owned block pending independent review"}]
 实施备注：2026-10-02 父对话独立复核报告：带 languages 请求会忽略未覆盖文档，Rust eligible=1/published=0 仍报 Complete 已复现；scope guard 修复由独立任务负责。保持 todo，修复与当前 SHA 复验前不收口。 修复 PR #6 SHA46d6e5b 已非破坏性集成至 b738a6a；最终格式源码 c4dfa324 上四 crate lib975/0/1通过，正式 V05/V16 尚未全跑，保持 todo。 新独立矩阵PR14源24db8bb/58e20d0已原样纳入recovery；20轮semantic7/default2共180pass、PR12各4pass为既有精确基线证据，未升级成新SHA验收或整gate通过。原wiring许可释放竞态已最小等待两个计数归零，正式复验仍需绑定当前SHA。 2026-10-03 PR54冻结源码3dceedf：原样纳入PR52三提交及PR53；真实worker强制发布交错复现ready/root epoch1与实际2混拼，完整status读取纳入同一三次generation fence后五轮40/0，严格两次返回2；真实incremental churn严格三次retryable无generation/ready。原公共V11断言未改，public+independent五轮45/0，扩展六target27/0，default status5/0，strictclippy/fmt过。PR53独立P1七测试新树7/0，cache.rs逐字等于db9841e，仅关闭64MiB读前无界allocation具体P1；全V05/V11/V16/P7-015/V20及014仍未收口。原PR52失败、default cache夹具失败及错target命令保留文件hash，不冒充race或通过。CI144精确源码当次仍运行；原PR50/51精确CI由父核验success。 2026-10-03 精确剩余gate矩阵37row落P7-REMAINING-GATES.json，逐项固定source/证据、层级、断言缺口、输入规模与授权条件；V05八/V16六有declared范围证据，不冒充完整gate，V16尚余正式整合判定非强加100k/C8/16（归V20）。新增039d035真实worker/query编码/recall与六raw lane同域L2，7文件11case66lane receipts148候选21hits；跨文件Python graph邻居真实出现，scope排除，完整literal final sets/非空源码/kind-name断言，双feature各1/0，strictclippy/fmt过；semantic scope为真实port手工输入，不冒充新L3 DSL接线。PR57两提交原样纳入，冻结3d独立40commands120pass/原V11断言20轮/真实worker3次churn，specific statusrace关闭；新组合dualfeature两target10/0，260owner文件未改。旧P5 quality raw目录此checkout缺失，V19不能凭prose关闭；六项offline可推进，真实语义消融D1D2授权blocked。PR54精确c445 CI146及PR56精确4eac CI147直接回读success。task状态不翻done。
 
+## 本批附录：公开 hit 的来源绑定 qname（2026-10-03）
+
+- [ ] 来源绑定限定符号身份贯通：`awaiting_design_review`；基线
+  `88f2cf099c8b81f3acef485fd5ac9b01c63ce790`；设计见
+  [QNAME_SOURCE_IDENTITY_DESIGN.md](QNAME_SOURCE_IDENTITY_DESIGN.md)。
+  现有持久化关系不足，拟议 schema 25 需原线程先审阅，当前保持 24/3。
+- [ ] 产品实现、完整生命周期/代际拒绝测试及原 native evaluator 微型 gold
+  验证：`blocked_on_design_review`，没有产品通过声明。
+- [ ] 原线程独立代码审阅：`pending`。本附录不关闭 V19 或任何父项，
+  不重跑公开 DEV，不修改评分、排名、预算或冻结 gold。
+
+### 本批后续实施收据（保留上节 pending 状态的历史记录）
+
+- [x] 原线程已审阅 `bc22dc9` 并批准 schema 25 / module model 3，沿
+  PR 132 实施来源绑定身份；真实文件事务验证写后符号存活，cold/warm
+  读取核对完整来源/文档/符号关系，公开 hit 新增 `metadata.qname`。
+- [x] 有界验收：17 个本批产品测试、183 parser + 298 search 回归、
+  5 schema + 10 epoch + 1 FIFO 回归、直接 Rust 1.95 locked fmt/clippy。
+  未改 native evaluator 的独立微型 gold 实跑为 missing=0 / correct=1 /
+  wrong-qname=0；真实 MCP JSON-RPC 同样 correct=1 / wrong=0。
+  原 hit 字段、score trace、source/document proof 未变。
+- [ ] 原线程独立最终代码审阅：`pending`。实施收据见
+  `artifacts/checkpoints/qname-source-identity-implementation-20261003/README.md`。
+  V19 和父项保持开放；公开 DEV、规模/发行认证及其他平台未验。
+
+
 ### [ ] P7-012｜融合与部分覆盖语义
 
 状态：`todo`；批次：`P7-C`；优先级：`normal`。
@@ -2533,28 +2559,3 @@
 回滚：关闭该可选增强并回exact/local；清理未选择依赖，不改变主线事实。
 条件：本phase为分项收益决策后的可选增强；决策可关闭实现分支，状态必须显式deferred并说明证据。
 证据：尚无
-
-## 本批附录：公开 hit 的来源绑定 qname（2026-10-03）
-
-- [ ] 来源绑定限定符号身份贯通：`awaiting_design_review`；基线
-  `88f2cf099c8b81f3acef485fd5ac9b01c63ce790`；设计见
-  [QNAME_SOURCE_IDENTITY_DESIGN.md](QNAME_SOURCE_IDENTITY_DESIGN.md)。
-  现有持久化关系不足，拟议 schema 25 需原线程先审阅，当前保持 24/3。
-- [ ] 产品实现、完整生命周期/代际拒绝测试及原 native evaluator 微型 gold
-  验证：`blocked_on_design_review`，没有产品通过声明。
-- [ ] 原线程独立代码审阅：`pending`。本附录不关闭 V19 或任何父项，
-  不重跑公开 DEV，不修改评分、排名、预算或冻结 gold。
-
-### 本批后续实施收据（保留上节 pending 状态的历史记录）
-
-- [x] 原线程已审阅 `bc22dc9` 并批准 schema 25 / module model 3，沿
-  PR 132 实施来源绑定身份；真实文件事务验证写后符号存活，cold/warm
-  读取核对完整来源/文档/符号关系，公开 hit 新增 `metadata.qname`。
-- [x] 有界验收：17 个本批产品测试、183 parser + 298 search 回归、
-  5 schema + 10 epoch + 1 FIFO 回归、直接 Rust 1.95 locked fmt/clippy。
-  未改 native evaluator 的独立微型 gold 实跑为 missing=0 / correct=1 /
-  wrong-qname=0；真实 MCP JSON-RPC 同样 correct=1 / wrong=0。
-  原 hit 字段、score trace、source/document proof 未变。
-- [ ] 原线程独立最终代码审阅：`pending`。实施收据见
-  `artifacts/checkpoints/qname-source-identity-implementation-20261003/README.md`。
-  V19 和父项保持开放；公开 DEV、规模/发行认证及其他平台未验。

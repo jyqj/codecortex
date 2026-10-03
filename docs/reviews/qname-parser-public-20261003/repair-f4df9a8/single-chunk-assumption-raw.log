@@ -1,0 +1,33 @@
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s
+     Running tests/independent_qname_repair_guard.rs (/workspace/scratch/qname-review/target/debug/deps/independent_qname_repair_guard-39a44e046183375b)
+
+running 2 tests
+test decorator_owners_and_canonical_class_method_are_not_duplicated ... ok
+test real_language_guard_snapshot ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/independent_qname_repair_public.rs (/workspace/scratch/qname-review/target/debug/deps/independent_qname_repair_public-f52056ec157acbf6)
+
+running 1 test
+test decorated_classes_have_exact_surviving_public_class_and_method_proofs ... FAILED
+
+failures:
+
+---- decorated_classes_have_exact_surviving_public_class_and_method_proofs stdout ----
+
+thread 'decorated_classes_have_exact_surviving_public_class_and_method_proofs' (19116) panicked at crates/cc-server/tests/independent_qname_repair_public.rs:16:13:
+assertion `left == right` failed: independent chunk Outer
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    decorated_classes_have_exact_surviving_public_class_and_method_proofs
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.51s
+
+error: test failed, to rerun pass `-p cc-server --test independent_qname_repair_public`

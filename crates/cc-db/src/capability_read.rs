@@ -1,10 +1,11 @@
 //! Typed capability observation on one short, read-only SQLite transaction.
 //! First SELECT pins one deferred read transaction. All projected database
 //! fields share that SQLite snapshot and its strict ReadGeneration. The server
-//! retains its latest-generation fence after this transaction and lease end.
-//! This read alone does not certify live-path identity during database swap.
+//! reports this generation as an observation, never as response-time latest.
+//! File identity is checked at the read boundaries. The separate typed identity
+//! validation checks incarnation after this transaction and lease end.
 use crate::{index_db::ReadOps, sql_util::db_err};
-use cc_model::{freshness::ResolutionFreshness, generation::ReadGeneration, CcResult};
+use cc_model::{freshness::ResolutionFreshness, generation::ReadGeneration, CcError, CcResult};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct CapabilityReadSnapshot {
@@ -25,13 +26,28 @@ pub struct CapabilitySemanticSnapshot {
 }
 
 impl ReadOps<'_> {
-    /// Only an observation of this leased DB incarnation. Ordinary publications
-    /// may commit before return. Caller must retain the existing latest fence
-    /// and independently verify live database identity before projecting ready.
+    /// All projected database values share one observed generation. Ordinary
+    /// publications may commit before return without invalidating the observation.
+    /// A detected main-file replacement refuses this lease; unsupported file
+    /// identity validation fails closed. Call validate_capability_identity after
+    /// releasing this transaction/lease and observing separate process state.
     /// No nested checkout; include_semantic=false avoids semantic counting.
     pub fn capability_snapshot(&self, include_semantic: bool) -> CcResult<CapabilityReadSnapshot> {
         let conn = self.0.read_conn()?;
         snapshot_on(&conn, include_semantic, || {})
+    }
+
+    /// Cheap identity control read, not an epoch fence or another counts snapshot.
+    /// Call only after capability_snapshot has released its lease (pool size 1).
+    /// False means a detectable replacement/incarnation change. Unverifiable
+    /// VFS identity and SQL errors propagate; they are never assumed unmoved.
+    pub fn validate_capability_identity(&self, expected_incarnation: [u8; 16]) -> CcResult<bool> {
+        let conn = self.0.read_conn()?;
+        if !file_identity_on(&conn)? {
+            return Ok(false);
+        }
+        let observed = crate::read_generation::read_on(&conn)?;
+        Ok(file_identity_on(&conn)? && observed.incarnation == expected_incarnation)
     }
 }
 
@@ -41,6 +57,9 @@ fn snapshot_on(
     include_semantic: bool,
     observed_generation: impl FnOnce(),
 ) -> CcResult<CapabilityReadSnapshot> {
+    if !file_identity_on(conn)? {
+        return Err(CcError::RetrievalChanged { attempts: 1 });
+    }
     let tx = conn.unchecked_transaction().map_err(db_err)?;
     let generation = crate::read_generation::read_on(&tx)?;
     observed_generation();
@@ -81,6 +100,9 @@ fn snapshot_on(
         None
     };
     tx.commit().map_err(db_err)?;
+    if !file_identity_on(conn)? {
+        return Err(CcError::RetrievalChanged { attempts: 1 });
+    }
     Ok(CapabilityReadSnapshot {
         generation,
         indexed_files,
@@ -88,6 +110,35 @@ fn snapshot_on(
         resolution_freshness,
         semantic,
     })
+}
+
+/// Inspect the SQLite main file actually opened by this connection. Merely
+/// statting the pathname would miss an old pooled lease after a rename.
+fn file_identity_on(conn: &rusqlite::Connection) -> CcResult<bool> {
+    let mut moved: std::ffi::c_int = -1;
+    // SAFETY: the borrowed connection/lease keeps its sqlite3 handle alive and
+    // exclusively used for this call. "main" is a static NUL-terminated name;
+    // HAS_MOVED accepts a writable C int, which remains live for the whole call.
+    // This file-control is read-only. No raw handle leaves cc-db.
+    let code = unsafe {
+        rusqlite::ffi::sqlite3_file_control(
+            conn.handle(),
+            c"main".as_ptr(),
+            rusqlite::ffi::SQLITE_FCNTL_HAS_MOVED,
+            (&mut moved as *mut std::ffi::c_int).cast(),
+        )
+    };
+    file_identity_result(code, moved)
+}
+
+fn file_identity_result(code: std::ffi::c_int, moved: std::ffi::c_int) -> CcResult<bool> {
+    match (code, moved) {
+        (rusqlite::ffi::SQLITE_OK, 0) => Ok(true),
+        (rusqlite::ffi::SQLITE_OK, 1) => Ok(false),
+        _ => Err(CcError::Database(format!(
+            "capability identity unverified: SQLite HAS_MOVED code={code}, result={moved}; diagnostic unavailable on this VFS"
+        ))),
+    }
 }
 
 #[cfg(test)]
@@ -164,5 +215,96 @@ mod tests {
         assert_eq!(snapshot.generation, before);
         assert!(snapshot.semantic.is_none());
         assert_eq!(db.reads().read_generation().unwrap(), before);
+    }
+
+    #[test]
+    fn unsupported_error_and_undefined_identity_results_are_never_unmoved() {
+        for (code, moved) in [
+            (rusqlite::ffi::SQLITE_NOTFOUND, -1),
+            (rusqlite::ffi::SQLITE_IOERR, 0),
+            (rusqlite::ffi::SQLITE_OK, -1),
+            (rusqlite::ffi::SQLITE_OK, 2),
+        ] {
+            let error = file_identity_result(code, moved).unwrap_err();
+            assert!(error.to_string().contains("identity unverified"));
+        }
+        assert!(file_identity_result(rusqlite::ffi::SQLITE_OK, 0).unwrap());
+        assert!(!file_identity_result(rusqlite::ffi::SQLITE_OK, 1).unwrap());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn normal_rename_checks_the_actual_open_file_without_rebuild_or_wal() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("standalone-delete-journal.db");
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        conn.execute_batch("PRAGMA journal_mode=DELETE; CREATE TABLE sample(value TEXT); INSERT INTO sample VALUES('old');").unwrap();
+        assert!(file_identity_on(&conn).unwrap());
+        std::fs::rename(&path, dir.path().join("old-file.db")).unwrap();
+        let replacement = rusqlite::Connection::open(&path).unwrap();
+        replacement
+            .execute_batch("CREATE TABLE sample(value TEXT); INSERT INTO sample VALUES('new');")
+            .unwrap();
+        assert!(
+            !file_identity_on(&conn).unwrap(),
+            "old lease must not impersonate the new pathname"
+        );
+        assert!(file_identity_on(&replacement).unwrap());
+        assert_eq!(
+            conn.query_row("SELECT value FROM sample", [], |r| r.get::<_, String>(0))
+                .unwrap(),
+            "old"
+        );
+        assert!(!path.with_extension("db-wal").exists());
+    }
+
+    #[test]
+    fn incarnation_validation_rejects_in_place_replacement_but_not_epoch_churn() {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("incarnation.db");
+        let db = IndexDb::open_with_read_pool_size(&path, 1).unwrap().0;
+        let snapshot = db.reads().capability_snapshot(false).unwrap();
+        let writer = rusqlite::Connection::open(&path).unwrap();
+        writer.execute_batch("INSERT INTO metadata(key,value) VALUES('semantic_epoch','42') ON CONFLICT(key) DO UPDATE SET value=excluded.value;").unwrap();
+        assert!(db
+            .reads()
+            .validate_capability_identity(snapshot.generation.incarnation)
+            .unwrap());
+        crate::read_generation::renew(&writer).unwrap();
+        assert!(!db
+            .reads()
+            .validate_capability_identity(snapshot.generation.incarnation)
+            .unwrap());
+        let current = db.reads().capability_snapshot(false).unwrap();
+        assert_ne!(
+            snapshot.generation.incarnation,
+            current.generation.incarnation
+        );
+        assert!(db
+            .reads()
+            .validate_capability_identity(current.generation.incarnation)
+            .unwrap());
+    }
+
+    #[test]
+    fn missing_count_table_errors_are_not_zero_or_a_partial_ready_snapshot() {
+        let dir = tempfile::tempdir().unwrap();
+        let conn = rusqlite::Connection::open(dir.path().join("minimal-schema.db")).unwrap();
+        conn.execute_batch("CREATE TABLE metadata(key TEXT PRIMARY KEY,value TEXT);")
+            .unwrap();
+        crate::read_generation::ensure(&conn).unwrap();
+        conn.execute_batch("PRAGMA query_only=ON;").unwrap();
+        let changes = conn.total_changes();
+        let error = snapshot_on(&conn, false, || {}).unwrap_err();
+        assert!(error.to_string().contains("no such table: files"));
+        assert!(
+            conn.is_autocommit(),
+            "failed read transaction must release its snapshot"
+        );
+        assert_eq!(
+            conn.total_changes(),
+            changes,
+            "no read-side identity/schema repair"
+        );
     }
 }

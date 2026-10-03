@@ -6,7 +6,7 @@ use cc_model::{config::ProjectConfig, query::RetrievalStrategy, CcError, CcResul
 use serde_json::{json, Value};
 use std::path::Path;
 
-pub const CAPABILITY_SPEC: &str = "retrieval-capabilities-v1";
+pub const CAPABILITY_SPEC: &str = "retrieval-capabilities-v2";
 
 pub(crate) fn snapshot(
     project: Option<&Path>,
@@ -52,6 +52,9 @@ pub(super) fn snapshot_observing(
         "capabilities":{"search":false,"graph":false,"impact":false},
         "retrieval":{
             "spec":CAPABILITY_SPEC,
+            "consistency":"point_in_time", "generation_scope":"observed_database_snapshot",
+            "identity_validation":"not_observed", "service_state_scope":"process_observed_separately",
+            "semantic_active_space":null,
             "index_state":if project.is_none(){"no_project"}else{"closed"},
             "local_state":"unavailable",
             "semantic_state":if attached{"port_attached_unverified"}else{"not_configured"},
@@ -90,13 +93,10 @@ pub(super) fn snapshot_observing(
         for _ in 0..3 {
             // Every database value comes from one short SQLite snapshot.
             // The transaction and its lease end before any fresh checkout.
-            let snapshot = db
-                .reads()
-                .capability_snapshot(attached && wired.is_some())?;
-            let before = snapshot.generation;
-            if db.reads().read_generation()? != before {
-                continue;
-            }
+            let snapshot = match db.reads().capability_snapshot(attached && wired.is_some()) {
+                Err(CcError::RetrievalChanged { .. }) => continue,
+                observed => observed?,
+            };
             observed_root();
             let mut semantic = result.clone();
             if attached && wired.is_some() {
@@ -122,10 +122,12 @@ pub(super) fn snapshot_observing(
                     semantic["retrieval"]["semantic_worker_reason"] = json!(reason);
                 }
             }
-            // Preserve latest status: a concurrent publication discards this
-            // complete snapshot. No coverage retry or cross-connection counts.
-            // This retains the existing fence, not a new swap coordination claim.
-            if db.reads().read_generation()? == before {
+            // Ordinary epochs may advance: all values remain one observation.
+            // Retry only detectable database identity changes, never publish churn.
+            if db
+                .reads()
+                .validate_capability_identity(snapshot.generation.incarnation)?
+            {
                 return Ok((snapshot, semantic));
             }
         }
@@ -151,6 +153,11 @@ pub(super) fn snapshot_observing(
                 "resolution_pending"
             });
             result["retrieval"]["generation"] = json!(generation);
+            result["retrieval"]["identity_validation"] = json!("checked_at_observation_boundary");
+            result["retrieval"]["semantic_active_space"] = json!(snapshot
+                .semantic
+                .as_ref()
+                .and_then(|s| s.active_space.as_deref()));
             result["retrieval"]["resolution_freshness"] = json!(freshness);
             if strategy != RetrievalStrategy::Semantic || attached {
                 result["retrieval"]["default_query_state"] =
@@ -160,7 +167,7 @@ pub(super) fn snapshot_observing(
         Err(error) => {
             result["retrieval"]["index_state"] = json!("error");
             result["retrieval"]["default_query_state"] = json!("unavailable");
-            result["retrieval"]["error"] = json!({"message":error.to_string().chars().take(512).collect::<String>(),"retryable":matches!(error,CcError::RetrievalChanged{..})});
+            result["retrieval"]["error"] = json!({"code":"capability_observation_unavailable","identity":"unverified","message":error.to_string().chars().take(512).collect::<String>(),"retryable":matches!(error,CcError::RetrievalChanged{..})});
         }
     }
     if let Some(error) = config.and_then(|c| c.query.validate().err()) {
@@ -279,4 +286,3 @@ fn apply_semantic_degradation(result: &mut Value, services: &QueryServices, atta
     result["retrieval"]["semantic_state"] = json!("degraded");
     result["retrieval"]["degraded_reason"] = json!(degradation.degraded_reasons);
 }
-

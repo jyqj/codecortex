@@ -1,0 +1,101 @@
+[
+  {
+    "name": "v2-format",
+    "argv": [
+      "/workspace/.cargo/bin/cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 1.7477377830000478,
+    "log": "v2-format.log"
+  },
+  {
+    "name": "v2-db-tests",
+    "argv": [
+      "/workspace/.cargo/bin/cargo",
+      "test",
+      "-p",
+      "cc-db",
+      "--lib",
+      "capability_read",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 1.5343376710002303,
+    "log": "v2-db-tests.log"
+  },
+  {
+    "name": "v2-original-coverage-tests",
+    "argv": [
+      "/workspace/.cargo/bin/cargo",
+      "test",
+      "-p",
+      "cc-db",
+      "--test",
+      "semantic_coverage",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 5.332373509000263,
+    "log": "v2-original-coverage-tests.log"
+  },
+  {
+    "name": "v2-default-status-tests",
+    "argv": [
+      "/workspace/.cargo/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--lib",
+      "capability_status::tests",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 21.91539376999981,
+    "log": "v2-default-status-tests.log"
+  },
+  {
+    "name": "v2-production-status-tests",
+    "argv": [
+      "/workspace/.cargo/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--lib",
+      "capability_status::tests",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 5.873882004000279,
+    "log": "v2-production-status-tests.log"
+  },
+  {
+    "name": "v2-current-oracles",
+    "argv": [
+      "/workspace/.cargo/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--test",
+      "p7_status_snapshot_independent_review",
+      "--locked",
+      "--offline",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 101,
+    "seconds": 3.1724130689999583,
+    "log": "v2-current-oracles.log"
+  }
+]

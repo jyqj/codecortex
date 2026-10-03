@@ -183,7 +183,7 @@ fn trace(label: &str, value: Value) {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn forced_real_worker_publication_invalidates_first_snapshot_and_accepts_second() {
+async fn forced_real_worker_publication_returns_complete_old_then_new_observations() {
     let world = World::held().await;
     let before = world.db.reads().read_generation().unwrap();
     let mut attempts = 0;
@@ -202,24 +202,41 @@ async fn forced_real_worker_publication_invalidates_first_snapshot_and_accepts_s
     );
     let after = world.db.reads().read_generation().unwrap();
     let coverage = world.db.reads().semantic_coverage().unwrap();
+    assert_v2(&status);
     assert_eq!(before.incarnation, after.incarnation);
     assert_eq!(before.index_epoch, after.index_epoch);
     assert_eq!(before.evidence_epoch, after.evidence_epoch);
     assert!(after.semantic_epoch > before.semantic_epoch);
-    assert_eq!(attempts, 2);
-    assert_eq!(status["retrieval"]["generation"], json!(after));
-    assert_eq!(json!(coverage.generation), json!(after));
-    assert_eq!(status["retrieval"]["dense_state"], "ready");
-    assert_eq!(
-        status["retrieval"]["dense_published"],
-        coverage.coverage.published
-    );
+    assert_eq!(attempts, 1);
+    assert_v2(&status);
+    assert_eq!(status["retrieval"]["generation"], json!(before));
+    assert_eq!(status["retrieval"]["dense_state"], "partial");
+    assert_eq!(status["retrieval"]["dense_published"], 0);
     assert_eq!(
         status["retrieval"]["dense_desired"],
         coverage.coverage.eligible
     );
-    assert_eq!(status["retrieval"]["semantic_pending"], 0);
+    assert_eq!(status["retrieval"]["semantic_pending"], 1);
+    assert_eq!(status["retrieval"]["semantic_state"], "backfilling");
     assert!(!status["retrieval"]["error"].is_object());
+    let settled = super::snapshot(
+        Some(world.root.path()),
+        Some(&world.db),
+        Some(&world.config),
+        &world.services,
+    );
+    assert_v2(&settled);
+    assert_eq!(settled["retrieval"]["generation"], json!(after));
+    assert_eq!(settled["retrieval"]["dense_state"], "ready");
+    assert_eq!(
+        settled["retrieval"]["dense_published"],
+        coverage.coverage.published
+    );
+    assert_eq!(
+        settled["retrieval"]["dense_desired"],
+        coverage.coverage.eligible
+    );
+    assert_eq!(settled["retrieval"]["semantic_pending"], 0);
     trace(
         "forced-worker-crossing",
         json!({"before":before,"after":after,"coverage":{"generation":coverage.generation,"published":coverage.coverage.published,"eligible":coverage.coverage.eligible,"uncovered":coverage.coverage.uncovered,"failed":coverage.coverage.failed},"status":status,"root_attempts":attempts,"provider_calls":world.entered.load(Ordering::SeqCst),"real_worker":true,"level":"L2 exact-source observer"}),
@@ -248,49 +265,65 @@ async fn legacy_status_counterexample_pairs_old_root_with_new_real_publication()
     assert_ne!(status["retrieval"]["generation"], json!(after));
     assert_eq!(status["retrieval"]["dense_state"], "ready");
     assert_eq!(status["retrieval"]["dense_published"], 1);
+    assert!(
+        status["retrieval"]["generation"] == json!(before)
+            && status["retrieval"]["dense_published"] != 0,
+        "historical counterexample remains old-root/new-coverage and is forbidden in v2"
+    );
     trace(
         "legacy-counterexample",
         json!({"before":before,"after":after,"status":status,"callbacks":callbacks,"real_worker":true,"legacy_code_with_observer_only":true,"old_ready_generation_inconsistent":true}),
     );
 }
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn each_attempt_real_rebuild_and_worker_publish_exhausts_at_three_without_ready() {
+async fn ordinary_real_worker_publication_never_restarts_the_statistics() {
     let mut world = World::held().await;
     world.release();
     world.published(1);
-    let mut attempts = 0;
-    let mut committed = Vec::new();
     let start = Instant::now();
-    let db = world.db.clone();
-    let config = world.config.clone();
-    let root = world.root.path().to_path_buf();
-    let services = QueryServices(world.services.0.clone());
-    let status =
-        super::snapshot_observing(Some(&root), Some(&db), Some(&config), &services, || {
-            attempts += 1;
-            std::fs::write(
-                root.join("one.rs"),
-                format!("pub fn one() -> u32 {{ {} }}\n", 947 + attempts),
-            )
-            .unwrap();
-            world.index.build_index(false).unwrap();
-            world.worker.schedule();
-            world.published(attempts + 1);
-            committed.push(db.reads().read_generation().unwrap());
-        });
-    assert_eq!(attempts, 3);
+    let mut committed = Vec::new();
+    for poll in 0..3 {
+        let before = world.db.reads().read_generation().unwrap();
+        let coverage_before = world.db.reads().semantic_coverage().unwrap().coverage;
+        let mut attempts = 0;
+        let db = world.db.clone();
+        let config = world.config.clone();
+        let root = world.root.path().to_path_buf();
+        let services = QueryServices(world.services.0.clone());
+        let status =
+            super::snapshot_observing(Some(&root), Some(&db), Some(&config), &services, || {
+                attempts += 1;
+                std::fs::write(
+                    root.join("one.rs"),
+                    format!("pub fn one() -> u32 {{ {} }}\n", 948 + poll),
+                )
+                .unwrap();
+                world.index.build_index(false).unwrap();
+                world.worker.schedule();
+                world.published(poll + 2);
+            });
+        committed.push(db.reads().read_generation().unwrap());
+        assert_eq!(attempts, 1);
+        assert_v2(&status);
+        assert_eq!(status["retrieval"]["index_state"], "available");
+        assert_eq!(status["retrieval"]["generation"], json!(before));
+        assert_eq!(
+            status["retrieval"]["dense_published"],
+            coverage_before.published
+        );
+        assert_eq!(
+            status["retrieval"]["dense_desired"],
+            coverage_before.eligible
+        );
+        assert_eq!(status["retrieval"]["dense_state"], "ready");
+        assert_eq!(status["retrieval"]["semantic_pending"], 0);
+        assert!(!status["retrieval"]["error"].is_object());
+    }
     assert!(start.elapsed() < Duration::from_secs(3));
     assert_eq!(world.entered.load(Ordering::SeqCst), 4);
-    assert_eq!(status["retrieval"]["index_state"], "error");
-    assert_eq!(status["retrieval"]["default_query_state"], "unavailable");
-    assert_eq!(status["retrieval"]["error"]["retryable"], true);
-    assert!(status["retrieval"]["generation"].is_null());
-    assert_ne!(status["retrieval"]["dense_state"], "ready");
-    assert_ne!(status["retrieval"]["semantic_state"], "ready");
-    assert!(status["retrieval"]["dense_published"].is_null());
     trace(
-        "real-worker-churn",
-        json!({"root_attempts":attempts,"committed":committed,"status":status,"provider_calls":world.entered.load(Ordering::SeqCst),"elapsed_ms":start.elapsed().as_millis(),"real_worker":true}),
+        "point-in-time-real-worker-churn",
+        json!({"observations":3,"attempts_per_observation":1,"committed":committed,"provider_calls":world.entered.load(Ordering::SeqCst),"elapsed_ms":start.elapsed().as_millis(),"real_worker":true}),
     );
 }
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -305,6 +338,7 @@ async fn stable_status_matches_coverage_and_configured_space_mismatch_stays_part
         Some(&world.config),
         &world.services,
     );
+    assert_v2(&status);
     let coverage = world.db.reads().semantic_coverage().unwrap();
     assert_eq!(
         json!(coverage.generation),
@@ -344,5 +378,56 @@ async fn stable_status_matches_coverage_and_configured_space_mismatch_stays_part
     trace(
         "stable-configured-space",
         json!({"coverage":{"generation":coverage.generation,"published":coverage.coverage.published,"eligible":coverage.coverage.eligible,"uncovered":coverage.coverage.uncovered,"failed":coverage.coverage.failed},"stable":status,"mismatch":mismatch,"query_network_path_excluded":true}),
+    );
+}
+
+fn assert_v2(status: &Value) {
+    assert_eq!(status["retrieval"]["spec"], "retrieval-capabilities-v2");
+    assert_eq!(status["retrieval"]["consistency"], "point_in_time");
+    assert_eq!(
+        status["retrieval"]["generation_scope"],
+        "observed_database_snapshot"
+    );
+    assert_eq!(
+        status["retrieval"]["identity_validation"],
+        "checked_at_observation_boundary"
+    );
+    assert_eq!(
+        status["retrieval"]["service_state_scope"],
+        "process_observed_separately"
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn degradation_overrides_ready_in_separate_process_scope() {
+    let world = World::held().await;
+    world.release();
+    world.published(1);
+    world
+        .services
+        .set_semantic_degradation(Some(crate::service_factory::SemanticDegradation {
+            degraded: true,
+            degraded_reasons: vec!["synthetic observed degradation".into()],
+            ..Default::default()
+        }));
+    let status = super::snapshot(
+        Some(world.root.path()),
+        Some(&world.db),
+        Some(&world.config),
+        &world.services,
+    );
+    assert_v2(&status);
+    assert_eq!(status["retrieval"]["semantic_state"], "degraded");
+    assert_eq!(
+        status["retrieval"]["degraded_reason"][0],
+        "synthetic observed degradation"
+    );
+    assert_eq!(
+        status["retrieval"]["dense_published"],
+        status["retrieval"]["dense_desired"]
+    );
+    assert_eq!(
+        status["retrieval"]["generation"],
+        json!(world.db.reads().read_generation().unwrap())
     );
 }

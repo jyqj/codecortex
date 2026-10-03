@@ -105,6 +105,11 @@ async fn main() {
         candidate_status::snapshot(Some(root.path()), Some(&db), Some(&config), &wrapper)
     };
     let initial = call_status();
+    assert_eq!(initial["retrieval"]["spec"], if mode == "baseline" { "retrieval-capabilities-v1" } else { "retrieval-capabilities-v2" });
+    if mode == "candidate" {
+        assert_eq!(initial["retrieval"]["consistency"], "point_in_time");
+        assert_eq!(initial["retrieval"]["identity_validation"], "checked_at_observation_boundary");
+    }
     assert_eq!(initial["retrieval"]["semantic_state"], "backfilling");
     assert_eq!(initial["retrieval"]["dense_desired"], n);
     assert_eq!(initial["retrieval"]["dense_published"], 0);
@@ -117,6 +122,11 @@ async fn main() {
         let sent_ms = start.elapsed().as_secs_f64()*1000.0;
         let t = Instant::now();
         let status = call_status();
+        if mode == "candidate" {
+            assert_eq!(status["retrieval"]["spec"], "retrieval-capabilities-v2");
+            assert_eq!(status["retrieval"]["generation_scope"], "observed_database_snapshot");
+            assert_eq!(status["retrieval"]["service_state_scope"], "process_observed_separately");
+        }
         let elapsed_ms = t.elapsed().as_secs_f64()*1000.0;
         ready = status["retrieval"]["dense_state"] == "ready"
             && status["retrieval"]["semantic_pending"] == 0;

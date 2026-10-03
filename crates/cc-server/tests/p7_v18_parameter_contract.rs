@@ -163,7 +163,18 @@ impl Session {
         .await;
     }
     async fn status(&self) -> Value {
-        self.call("status", json!({"aspect":"capabilities"})).await
+        let status = self.call("status", json!({"aspect":"capabilities"})).await;
+        assert_eq!(status["retrieval"]["spec"], "retrieval-capabilities-v2");
+        assert_eq!(status["retrieval"]["consistency"], "point_in_time");
+        assert_eq!(
+            status["retrieval"]["generation_scope"],
+            "observed_database_snapshot"
+        );
+        assert_eq!(
+            status["retrieval"]["service_state_scope"],
+            "process_observed_separately"
+        );
+        status
     }
     async fn close(self) {
         self.client.cancel().await.unwrap();

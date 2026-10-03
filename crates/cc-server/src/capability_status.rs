@@ -6,7 +6,7 @@ use cc_model::{config::ProjectConfig, query::RetrievalStrategy, CcError, CcResul
 use serde_json::{json, Value};
 use std::path::Path;
 
-pub const CAPABILITY_SPEC: &str = "retrieval-capabilities-v1";
+pub const CAPABILITY_SPEC: &str = "retrieval-capabilities-v2";
 
 pub(crate) fn snapshot(
     project: Option<&Path>,
@@ -52,6 +52,9 @@ pub(super) fn snapshot_observing(
         "capabilities":{"search":false,"graph":false,"impact":false},
         "retrieval":{
             "spec":CAPABILITY_SPEC,
+            "consistency":"point_in_time", "generation_scope":"observed_database_snapshot",
+            "identity_validation":"not_observed", "service_state_scope":"process_observed_separately",
+            "semantic_active_space":null,
             "index_state":if project.is_none(){"no_project"}else{"closed"},
             "local_state":"unavailable",
             "semantic_state":if attached{"port_attached_unverified"}else{"not_configured"},
@@ -90,13 +93,10 @@ pub(super) fn snapshot_observing(
         for _ in 0..3 {
             // Every database value comes from one short SQLite snapshot.
             // The transaction and its lease end before any fresh checkout.
-            let snapshot = db
-                .reads()
-                .capability_snapshot(attached && wired.is_some())?;
-            let before = snapshot.generation;
-            if db.reads().read_generation()? != before {
-                continue;
-            }
+            let snapshot = match db.reads().capability_snapshot(attached && wired.is_some()) {
+                Err(CcError::RetrievalChanged { .. }) => continue,
+                observed => observed?,
+            };
             observed_root();
             let mut semantic = result.clone();
             if attached && wired.is_some() {
@@ -122,10 +122,12 @@ pub(super) fn snapshot_observing(
                     semantic["retrieval"]["semantic_worker_reason"] = json!(reason);
                 }
             }
-            // Preserve latest status: a concurrent publication discards this
-            // complete snapshot. No coverage retry or cross-connection counts.
-            // This retains the existing fence, not a new swap coordination claim.
-            if db.reads().read_generation()? == before {
+            // Ordinary epochs may advance: all values remain one observation.
+            // Retry only detectable database identity changes, never publish churn.
+            if db
+                .reads()
+                .validate_capability_identity(snapshot.generation.incarnation)?
+            {
                 return Ok((snapshot, semantic));
             }
         }
@@ -151,6 +153,11 @@ pub(super) fn snapshot_observing(
                 "resolution_pending"
             });
             result["retrieval"]["generation"] = json!(generation);
+            result["retrieval"]["identity_validation"] = json!("checked_at_observation_boundary");
+            result["retrieval"]["semantic_active_space"] = json!(snapshot
+                .semantic
+                .as_ref()
+                .and_then(|s| s.active_space.as_deref()));
             result["retrieval"]["resolution_freshness"] = json!(freshness);
             if strategy != RetrievalStrategy::Semantic || attached {
                 result["retrieval"]["default_query_state"] =
@@ -160,7 +167,7 @@ pub(super) fn snapshot_observing(
         Err(error) => {
             result["retrieval"]["index_state"] = json!("error");
             result["retrieval"]["default_query_state"] = json!("unavailable");
-            result["retrieval"]["error"] = json!({"message":error.to_string().chars().take(512).collect::<String>(),"retryable":matches!(error,CcError::RetrievalChanged{..})});
+            result["retrieval"]["error"] = json!({"code":"capability_observation_unavailable","identity":"unverified","message":error.to_string().chars().take(512).collect::<String>(),"retryable":matches!(error,CcError::RetrievalChanged{..})});
         }
     }
     if let Some(error) = config.and_then(|c| c.query.validate().err()) {
@@ -657,21 +664,42 @@ mod tests {
         assert_eq!(after.index_epoch, before.index_epoch);
         assert_eq!(after.evidence_epoch, before.evidence_epoch);
         assert!(after.semantic_epoch > before.semantic_epoch);
-        assert_eq!(status["retrieval"]["dense_state"], "ready");
-        assert!(status["retrieval"]["dense_published"].as_u64().unwrap() > 0);
+        assert_eq!(status["retrieval"]["spec"], "retrieval-capabilities-v2");
+        assert_eq!(status["retrieval"]["consistency"], "point_in_time");
         assert_eq!(
-            status["retrieval"]["dense_published"],
-            status["retrieval"]["dense_desired"]
+            status["retrieval"]["generation_scope"],
+            "observed_database_snapshot"
         );
+        assert_eq!(
+            status["retrieval"]["identity_validation"],
+            "checked_at_observation_boundary"
+        );
+        assert_eq!(status["retrieval"]["dense_state"], "partial");
+        assert_eq!(status["retrieval"]["semantic_state"], "backfilling");
+        assert_eq!(status["retrieval"]["dense_published"], 0);
+        assert!(status["retrieval"]["dense_desired"].as_u64().unwrap() > 0);
         assert_eq!(
             status["retrieval"]["generation"],
-            json!(after),
-            "ready must carry the actual publication epoch, never the earlier root epoch"
+            json!(before),
+            "the complete old observation must never acquire later coverage"
         );
         assert_eq!(
-            reads, 2,
-            "one crossed snapshot is discarded; the next consistent snapshot wins"
+            reads, 1,
+            "ordinary publication never restarts the count transaction"
         );
+        let settled = snapshot(
+            Some(dir.path()),
+            Some(&handle.db),
+            Some(&config),
+            &handle.services,
+        );
+        assert_eq!(settled["retrieval"]["dense_state"], "ready");
+        assert_eq!(settled["retrieval"]["generation"], json!(after));
+        assert_eq!(
+            settled["retrieval"]["dense_published"],
+            settled["retrieval"]["dense_desired"]
+        );
+        assert_eq!(settled["retrieval"]["semantic_pending"], 0);
         eprintln!(
             "STATUS_INTERLEAVE {}",
             json!({"before":before,"after":after,"returned":status["retrieval"]["generation"],"root_attempts":reads,"dense_state":status["retrieval"]["dense_state"]})
@@ -681,7 +709,7 @@ mod tests {
     }
     #[cfg(feature = "semantic")]
     #[test]
-    fn status_churn_has_three_attempt_ceiling_and_no_ready_snapshot() {
+    fn ordinary_index_churn_returns_one_complete_observation_per_poll() {
         let dir = tempfile::tempdir().unwrap();
         let file = dir.path().join("one.rs");
         std::fs::write(&file, "pub fn one() -> u32 { 731 }\n").unwrap();
@@ -689,21 +717,87 @@ mod tests {
         index.build_index(false).unwrap();
         let db = index.index_db().unwrap().clone();
         let services = QueryServices::default();
+        let start = std::time::Instant::now();
+        for poll in 0..8 {
+            let before = db.reads().read_generation().unwrap();
+            let mut attempts = 0;
+            let status = snapshot_observing(Some(dir.path()), Some(&db), None, &services, || {
+                attempts += 1;
+                std::fs::write(&file, format!("pub fn one() -> u32 {{ {} }}\n", 947 + poll))
+                    .unwrap();
+                index.build_index(false).unwrap();
+            });
+            assert_eq!(attempts, 1);
+            assert_eq!(status["retrieval"]["index_state"], "available");
+            assert_eq!(
+                status["retrieval"]["default_query_state"],
+                "available_with_per_query_checks"
+            );
+            assert!(!status["retrieval"]["error"].is_object());
+            assert_eq!(status["retrieval"]["generation"], json!(before));
+            assert_eq!(status["indexed_files"], 1);
+            assert_eq!(status["indexed_symbols"], 1);
+            assert_eq!(status["retrieval"]["dense_state"], "disabled");
+        }
+        assert!(start.elapsed() < std::time::Duration::from_secs(3));
+    }
+
+    #[test]
+    fn detectable_incarnation_change_retries_then_returns_only_the_new_observation() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = IndexDb::open_with_read_pool_size(&dir.path().join("identity.db"), 1)
+            .unwrap()
+            .0;
+        let services = QueryServices::default();
+        let before = db.reads().read_generation().unwrap();
         let mut attempts = 0;
         let status = snapshot_observing(Some(dir.path()), Some(&db), None, &services, || {
             attempts += 1;
-            std::fs::write(
-                &file,
-                format!("pub fn one() -> u32 {{ {} }}\n", 947 + attempts),
-            )
-            .unwrap();
-            index.build_index(false).unwrap();
+            if attempts == 1 {
+                db.writes()
+                    .set_metadata("index_incarnation", "11111111111111111111111111111111")
+                    .unwrap();
+            }
         });
+        let after = db.reads().read_generation().unwrap();
+        assert_ne!(before.incarnation, after.incarnation);
+        assert_eq!(attempts, 2);
+        assert_eq!(status["retrieval"]["generation"], json!(after));
+        assert_eq!(
+            status["retrieval"]["identity_validation"],
+            "checked_at_observation_boundary"
+        );
+        assert_eq!(status["retrieval"]["index_state"], "empty");
+        assert_eq!(status["indexed_files"], 0);
+        assert!(!status["retrieval"]["error"].is_object());
+    }
+
+    #[test]
+    fn identity_churn_is_bounded_and_never_reports_old_database_ready() {
+        let dir = tempfile::tempdir().unwrap();
+        let db = IndexDb::open_with_read_pool_size(&dir.path().join("identity.db"), 1)
+            .unwrap()
+            .0;
+        let mut attempts = 0;
+        let status = snapshot_observing(
+            Some(dir.path()),
+            Some(&db),
+            None,
+            &QueryServices::default(),
+            || {
+                attempts += 1;
+                db.writes()
+                    .set_metadata("index_incarnation", &format!("{attempts:032x}"))
+                    .unwrap();
+            },
+        );
         assert_eq!(attempts, 3);
         assert_eq!(status["retrieval"]["index_state"], "error");
-        assert_eq!(status["retrieval"]["default_query_state"], "unavailable");
-        assert_eq!(status["retrieval"]["error"]["retryable"], true);
         assert!(status["retrieval"]["generation"].is_null());
-        assert_eq!(status["retrieval"]["dense_state"], "disabled");
+        assert!(status["indexed_files"].is_null());
+        assert_eq!(status["retrieval"]["identity_validation"], "not_observed");
+        assert_eq!(status["retrieval"]["error"]["identity"], "unverified");
+        assert_eq!(status["retrieval"]["error"]["retryable"], true);
+        assert_ne!(status["retrieval"]["dense_state"], "ready");
     }
 }

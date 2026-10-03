@@ -57,69 +57,22 @@ fn fresh_database_carries_semantic_tables_at_current_version() {
     }
 }
 
-/// End-to-end upgrade: a v21 file database opens through `IndexDb::open`,
-/// migrates in place (`Migrated`), keeps every old row (including the
-/// persisted incarnation/epoch vector) and gains the new tables.
+/// Historical v21 rows must be rebuilt under the corrected parser/resolver.
 #[test]
-fn v21_file_database_opens_migrated_with_data_intact() {
+fn v21_file_database_requires_reindex() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("index.sqlite3");
-    {
-        let conn = rusqlite::Connection::open(&path).unwrap();
-        assert_eq!(migrate_index_db(&conn).unwrap(), SchemaStatus::Initialized);
-        seed_document(&conn);
-        conn.execute_batch(
-            "INSERT INTO metadata(key,value) VALUES('index_epoch','7'),('evidence_epoch','3');",
-        )
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    conn.execute_batch(include_str!("fixtures/p7-ci-schema-v21.sql"))
         .unwrap();
-        let incarnation: String = conn
-            .query_row(
-                "SELECT value FROM metadata WHERE key='index_incarnation'",
-                [],
-                |r| r.get(0),
-            )
-            .unwrap();
-        // Degrade the file to the v21 predecessor shape.
-        conn.execute_batch(
-            "DROP INDEX semantic_manifest_space; DROP INDEX semantic_manifest_file;
-             DROP INDEX semantic_manifest_artifact;
-             DROP INDEX semantic_outbox_ready; DROP INDEX semantic_outbox_doc;
-             DROP INDEX semantic_outbox_live_per_doc;
-             DROP TABLE semantic_manifest; DROP TABLE semantic_outbox;
-             DROP TABLE semantic_spaces;
-             PRAGMA user_version = 21;",
-        )
-        .unwrap();
-
-        let (db, status) = IndexDb::open(&path).unwrap();
-        assert_eq!(status, SchemaStatus::Migrated { from: 21 });
-        assert_eq!(db.reads().schema_version().unwrap(), CURRENT_SCHEMA_VERSION);
-
-        // Old rows untouched, persisted identity preserved (no renewal —
-        // that is reserved for the rebuild/swap protocol).
-        let gen = db.reads().read_generation().unwrap();
-        assert_eq!(gen.index_epoch, 7);
-        assert_eq!(gen.evidence_epoch, 3);
-        let mut expected = [0u8; 16];
-        for (i, byte) in incarnation.as_bytes().chunks(2).enumerate() {
-            expected[i] = u8::from_str_radix(std::str::from_utf8(byte).unwrap(), 16).unwrap();
-        }
-        assert_eq!(gen.incarnation, expected);
-        let manifest_rows: i64 = db
-            .read_conn()
-            .unwrap()
-            .query_row(
-                "SELECT count(*) FROM document_manifest WHERE doc_key='d1'",
-                [],
-                |r| r.get(0),
-            )
-            .unwrap();
-        assert_eq!(manifest_rows, 1);
-    }
-    // Reopening the upgraded file is stable and non-destructive.
+    conn.pragma_update(None, "user_version", 21).unwrap();
+    drop(conn);
     let (db, status) = IndexDb::open(&path).unwrap();
-    assert_eq!(status, SchemaStatus::UpToDate);
+    assert_eq!(status, SchemaStatus::Initialized);
     assert_eq!(db.reads().schema_version().unwrap(), CURRENT_SCHEMA_VERSION);
+    drop(db);
+    let (_, status) = IndexDb::open(&path).unwrap();
+    assert_eq!(status, SchemaStatus::UpToDate);
 }
 
 #[test]

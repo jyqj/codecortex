@@ -39,64 +39,41 @@ fn check_semantic_objects(conn: &Connection) {
 }
 
 #[test]
-fn fresh_index_really_initializes_declared_v22() {
+fn fresh_index_really_initializes_declared_v23() {
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join("fresh.sqlite3");
     let (db, status) = IndexDb::open(&path).unwrap();
     assert_eq!(status, SchemaStatus::Initialized);
-    assert_eq!(db.reads().schema_version().unwrap(), 22);
+    assert_eq!(db.reads().schema_version().unwrap(), 23);
     let conn = Connection::open(&path).unwrap();
     check_semantic_objects(&conn);
     assert_ne!(db.reads().read_generation().unwrap().incarnation, [0; 16]);
 }
 
 #[test]
-fn committed_v21_upgrade_preserves_legacy_objects_rows_fts_and_incarnation() {
+fn committed_v21_upgrade_invalidates_legacy_rows_and_incarnation() {
     let root = tempfile::tempdir().unwrap();
     let path = root.path().join("old.sqlite3");
     let conn = Connection::open(&path).unwrap();
     conn.execute_batch(HISTORICAL_V21).unwrap();
     conn.pragma_update(None, "user_version", 21).unwrap();
     conn.execute_batch("INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at) VALUES('sentinel.rs','rust','synthetic-legacy-hash',1,17,'2026-01-01'); INSERT INTO metadata(key,value) VALUES('index_incarnation','01010101010101010101010101010101'),('index_epoch','17'),('evidence_epoch','19');").unwrap();
-    let before = legacy_objects(&conn);
-    assert!(before
+    assert!(legacy_objects(&conn)
         .iter()
         .all(|(name, _, _)| name != "semantic_manifest"));
     drop(conn);
     let (db, status) = IndexDb::open(&path).unwrap();
-    assert_eq!(status, SchemaStatus::Migrated { from: 21 });
-    assert_eq!(db.reads().schema_version().unwrap(), 22);
+    assert_eq!(status, SchemaStatus::Initialized);
+    assert_eq!(db.reads().schema_version().unwrap(), 23);
     let generation = db.reads().read_generation().unwrap();
-    assert_eq!(generation.incarnation, [1; 16]);
-    assert_eq!(
-        (generation.index_epoch, generation.evidence_epoch),
-        (17, 19)
-    );
+    assert_ne!(generation.incarnation, [1; 16]);
+    assert!(generation.index_epoch > 17 && generation.evidence_epoch > 19);
     let conn = Connection::open(&path).unwrap();
-    let legacy_after: Vec<_> = legacy_objects(&conn)
-        .into_iter()
-        .filter(|(name, _, _)| before.iter().any(|(old, _, _)| old == name))
-        .collect();
     assert_eq!(
-        legacy_after, before,
-        "additive migration must not replace legacy schema objects"
+        conn.query_row("SELECT count(*) FROM files", [], |r| r.get::<_, i64>(0))
+            .unwrap(),
+        0
     );
-    let hash: String = conn
-        .query_row(
-            "SELECT content_hash FROM files WHERE file_path='sentinel.rs'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
-    assert_eq!(hash, "synthetic-legacy-hash");
-    let fts: String = conn
-        .query_row(
-            "SELECT file_path FROM file_paths_fts WHERE file_paths_fts MATCH 'sentinel'",
-            [],
-            |r| r.get(0),
-        )
-        .unwrap();
-    assert_eq!(fts, "sentinel.rs");
     check_semantic_objects(&conn);
     drop(conn);
     drop(db);
@@ -107,7 +84,7 @@ fn committed_v21_upgrade_preserves_legacy_objects_rows_fts_and_incarnation() {
 
 #[test]
 fn nonadjacent_versions_still_require_rebuild() {
-    for stored in [20, 23] {
+    for stored in [20, 22, 24] {
         let conn = Connection::open_in_memory().unwrap();
         conn.execute_batch(HISTORICAL_V21).unwrap();
         conn.pragma_update(None, "user_version", stored).unwrap();

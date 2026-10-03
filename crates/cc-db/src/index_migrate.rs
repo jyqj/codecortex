@@ -30,16 +30,12 @@ use rusqlite::Connection;
 /// `semantic_outbox`, `semantic_spaces`) plus their indexes. The delta is
 /// purely additive `CREATE ... IF NOT EXISTS` statements — no existing table,
 /// column or FTS trigger is touched — so the adjacent v21 database migrates
-/// in place (see [`ADDITIVE_MIGRATION_FROM`]); older and newer databases keep
+/// in place at v22; v23 supersedes that exception and all older databases keep
 /// the rebuild-on-mismatch contract.
-pub const CURRENT_SCHEMA_VERSION: u32 = 22;
-
-/// The only stored version that migrates in place to
-/// [`CURRENT_SCHEMA_VERSION`]. Valid solely because the v21→v22 delta adds
-/// tables/indexes without altering any existing object. The next version bump
-/// must re-evaluate this: a non-additive delta must stay on the
-/// rebuild-on-mismatch path (and this constant must not be advanced).
-pub(crate) const ADDITIVE_MIGRATION_FROM: u32 = 21;
+/// v23 invalidates persisted parse and derived resolution rows after the Go
+/// call-site identity and punctuation-only type dependency fixes. Unchanged
+/// source must be reparsed; v21 must not bypass this via additive migration.
+pub const CURRENT_SCHEMA_VERSION: u32 = 23;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -47,8 +43,6 @@ pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 ///
 /// Returns `Ok(Initialized)` if the database was freshly created (version was 0).
 /// Returns `Ok(UpToDate)` if the version already matches.
-/// Returns `Ok(Migrated)` if the stored version was the adjacent additive
-/// predecessor — the missing objects were created in place, data preserved.
 /// Returns `Ok(Mismatch)` for any other stored version — the caller should
 /// destructively reset the database and retry.
 pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
@@ -62,26 +56,6 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
     }
 
     if stored != 0 {
-        if stored == ADDITIVE_MIGRATION_FROM {
-            // Additive in-place migration: FULL_SCHEMA_SQL is entirely
-            // `CREATE ... IF NOT EXISTS`, so re-applying it only creates the
-            // objects the stored version lacks. Existing rows, tables and the
-            // FTS maintenance model are untouched; the persisted incarnation
-            // is deliberately preserved (renewal is reserved for the
-            // rebuild/swap protocol).
-            tracing::info!(
-                from = stored,
-                to = CURRENT_SCHEMA_VERSION,
-                "applying additive schema migration"
-            );
-            conn.execute_batch(FULL_SCHEMA_SQL).map_err(|e| {
-                cc_model::CcError::Database(format!("additive schema migration failed: {}", e))
-            })?;
-            conn.pragma_update(None, "user_version", CURRENT_SCHEMA_VERSION)
-                .map_err(db_err)?;
-            crate::read_generation::ensure(conn)?;
-            return Ok(SchemaStatus::Migrated { from: stored });
-        }
         tracing::warn!(
             stored_version = stored,
             expected_version = CURRENT_SCHEMA_VERSION,
@@ -155,82 +129,21 @@ mod tests {
         assert_eq!(status, SchemaStatus::Mismatch { stored: 99 });
     }
 
-    /// The adjacent predecessor (v21) migrates in place: the v22 delta is
-    /// purely additive, so existing rows survive and only the missing objects
-    /// are created. Re-opening the migrated database is `UpToDate`.
+    /// Semantic fixes require reparse even when table layout is unchanged.
     #[test]
-    fn adjacent_version_migrates_in_place_preserving_rows() {
-        let conn = Connection::open_in_memory().unwrap();
-        conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
-        conn.execute_batch(
-            "INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at) \
-             VALUES('old.rs','rust','hash',1.0,10,'2026-01-01');",
-        )
-        .unwrap();
-        // Simulate the v21 predecessor by dropping the v22-only objects.
-        conn.execute_batch(
-            "DROP INDEX semantic_manifest_space; DROP INDEX semantic_manifest_file;
-             DROP INDEX semantic_manifest_artifact;
-             DROP INDEX semantic_outbox_ready; DROP INDEX semantic_outbox_doc;
-             DROP INDEX semantic_outbox_live_per_doc;
-             DROP TABLE semantic_manifest; DROP TABLE semantic_outbox;
-             DROP TABLE semantic_spaces;",
-        )
-        .unwrap();
-        conn.pragma_update(None, "user_version", ADDITIVE_MIGRATION_FROM)
-            .unwrap();
-
-        let status = migrate_index_db(&conn).unwrap();
-        assert_eq!(
-            status,
-            SchemaStatus::Migrated {
-                from: ADDITIVE_MIGRATION_FROM
-            }
-        );
-
-        let version: u32 = conn
-            .pragma_query_value(None, "user_version", |row| row.get(0))
-            .unwrap();
-        assert_eq!(version, CURRENT_SCHEMA_VERSION);
-
-        // Old data untouched.
-        let files: i64 = conn
-            .query_row(
-                "SELECT count(*) FROM files WHERE file_path='old.rs'",
-                [],
-                |r| r.get(0),
-            )
-            .unwrap();
-        assert_eq!(files, 1);
-
-        // All new objects present (tables, plain indexes, partial unique).
-        for object in [
-            "semantic_manifest",
-            "semantic_outbox",
-            "semantic_spaces",
-            "semantic_manifest_space",
-            "semantic_manifest_file",
-            "semantic_manifest_artifact",
-            "semantic_outbox_ready",
-            "semantic_outbox_doc",
-            "semantic_outbox_live_per_doc",
-        ] {
-            let found: i64 = conn
-                .query_row(
-                    "SELECT count(*) FROM sqlite_master WHERE name=?1",
-                    [object],
-                    |r| r.get(0),
-                )
-                .unwrap();
-            assert_eq!(found, 1, "{object} missing after migration");
+    fn legacy_parse_and_resolution_versions_require_rebuild() {
+        for stored in [21, 22] {
+            let conn = Connection::open_in_memory().unwrap();
+            conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
+            conn.pragma_update(None, "user_version", stored).unwrap();
+            assert_eq!(
+                migrate_index_db(&conn).unwrap(),
+                SchemaStatus::Mismatch { stored }
+            );
         }
-
-        // Idempotent: the migrated database opens as UpToDate.
-        assert_eq!(migrate_index_db(&conn).unwrap(), SchemaStatus::UpToDate);
     }
 
-    /// Versions other than the adjacent predecessor keep the
-    /// rebuild-on-mismatch contract (no in-place attempt).
+    /// Other stored versions also keep the rebuild-on-mismatch contract.
     #[test]
     fn non_adjacent_versions_keep_rebuild_on_mismatch() {
         for stored in [1u32, 20u32] {

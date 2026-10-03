@@ -11,3 +11,5 @@
 不改 `index_db_edges.rs`、作者三个生产函数。2026-10-03 正式移交 ledger；本轮只写可证实的集成验收，不关闭 live/heldout 或性能质量 gate。两项独立 review 待其他新 session 提供。只创建综合 draft PR，不 merge/force-push/deploy。
 
 正式移交后基线改为 PR101 `574f7598662334c63e020da136c87f4f7281554d`，新组合 SHA `fb73dd7fed5fadbd1b0b2fab54f754968505749e`，保留 PR101 `c70c68f` 原优化函数。旧基线 worktree 专用于实际旧负例与旧库生成。
+
+当前验收阻塞：Requests 独立 review BOUNDED_REJECT，合法符号类型过滤回归；两个函数已经临时交新修复owner，本任务不改。Go独立review PR104 `06478892104347a846cdfdb81f843574e188634b` 远端核验一致。旧pinned handle真实跨版本验证完成，但不替代独立review和完整性能/质量gate。

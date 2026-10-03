@@ -38,3 +38,5 @@ python3 artifacts/checkpoints/type-atom-identifier-repair-20261003/replay.py \
 ```
 
 `replay.py` 使用同一 test 文件覆盖两个 isolated baseline 的专属测试，并只追加私有测试模块注册；offline/locked，不读取评测语料。返回 0 仅表示退出码符合上述预期，正式接受仍需新 reviewer 对最终 fixed SHA 独立复验。
+
+交付：修复提交 `778b20deed43db6c11a310a58910ba4b0ed2f3ad` 已推送到 `fix/type-atom-identifier-regression`，首次远端 fetch 核对 SHA/tree 完全一致；随后只追加交付状态文档。创建本修复 draft PR 的一次请求返回 `Post https://api.github.com/graphql: Forbidden`，已停止，无更改权限/credentials 或替代通道。`PR_BODY.md` 是准备好的 PR 文案，`draft-pr.log` 保留原始拒绝，`delivery.json` 保存首次 SHA/tree 核对。新 reviewer 应使用最终分支 head 复验；该 head 的生产函数和测试源码哈希仍与 `receipt.json` 一致。

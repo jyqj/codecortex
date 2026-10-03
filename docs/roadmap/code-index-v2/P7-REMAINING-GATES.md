@@ -53,3 +53,9 @@ PR81 / ee46fa564714ef75b2d839e5e37364cd35fd7406：四个完成持久化边界×�
 PR84 / a83aa1bd4d0c7bbc6a9ce9d5d7c19a226c607bd3：15场景21自有SIGKILL，实际staging写事务内及build/swap完成边界；GC collect后另一进程claim或publish，sweep保护引用/live任务，orphan对照实际删除。证据 artifacts/checkpoints/cloud-p7-staging-gc-prepared-20261003/receipt.json。内部WAL删除→rename/GC mark→unlink未测（无hook，方案仅提案）；generic pin没有API。原发布引用/cache保全，显式caller恢复零provider，不是stdio自动恢复。P7-016仍todo且prepared，不改变已接受门/014blocked条件。
 
 PR85 成本 canonical：response返回/cache未落盘三kill每场景2fakecalls；PR81旧九任务1call仅完成边界域，手工rollback非productionCAS。真实原attempt费用unknown、新retry有duplicate risk，不把无receipt置0。现in-memory ledger不证明跨crash exactly-once；成本规范边界见本块crash-cost-canonical.json，旧证据不改。
+
+## 资源 prepared / 四repo开发准入摘要
+
+PR89/dee17f9真实semantic-http debug stdio：1k/5k/10k×C1/4/8/16×2profile=24完整cells/768rawquery，rootPID资源有效，tree/内部queue/service/锁等待无接口null。50k cold index实际SQL变量超限失败，100k未运行，不是OOM；release/tmp构建与修复下一块，完整V20及015/016仍todo。证据 artifacts/checkpoints/cloud-p7-resource-prepared-20261003/receipt.json。
+
+仅count/hash/metadata接收PR86→90→91四repo固定development-admitted301native/256compat、100source/476spans、16validate/8protocolcheck/18regression errors{}；33801crosspairs0exactdup，280correlation不是独立600单位。admission hash b4388ca60612f6734719b348bf30e05dd0752b7b754f47cc078b590e35c1e425；formal600/cleanholdout/正式20blocks/ranking均0，两repo来源及custody/live/stats/质量open。未fetch/读新gold，旧回执不改。

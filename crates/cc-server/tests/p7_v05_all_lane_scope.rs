@@ -359,7 +359,7 @@ async fn actual_graph_dense_and_hydrate_share_literal_hard_domain_and_symbol_fil
                 let source = DOCS.iter().find(|x| x.0 == *path).unwrap().1.as_bytes();
                 let span = candidate.source_span;
                 assert!(
-                    span.start < span.end && span.end as usize <= source.len(),
+                    span.start < span.end && span.end <= source.len(),
                     "{case}: independent source bounds"
                 );
             }

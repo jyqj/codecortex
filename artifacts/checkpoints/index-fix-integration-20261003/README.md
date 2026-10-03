@@ -15,3 +15,5 @@
 验收阻塞：父提供 Requests 独立 review BOUNDED_REJECT（合法 `_`/`__`/`$`/`℘` 类型被过滤）。本树不得标 accepted，等待新修复 owner 的精确 SHA 和同一 reviewer 复验。Go 独立 review PR104 `06478892104347a846cdfdb81f843574e188634b` 远端核验一致；范围为 Go 修复，不证明迁移。Requests 负证据精确 SHA `7f650a5f8338e0d1ad2d8e8592ae31c89b34047c` 已取回且确认为43个review文件。PR101 cold block 独立 review `70c2a640160060e34cd530e18e02a8c95885063f` 支持c70c68f优化块，不证明100k/fullV20。live/heldout质量及完整性能gate继续 blocked。
 
 综合 draft PR 的查询入口返回明确 GitHub GraphQL `Forbidden`，已停止对应动作，不换路绕过；集成分支已正常推送并核验。诊断脚本只把明确的ellipsis/分隔符当作标点类型反例，不以alphanumeric推断合法标识符；它不修改生产函数。
+
+历史阶段之后已完成固定修复671063b集成及schema24/manifest3的限定迁移闭环。最新执行源码9ebdb155与结果见[final-v24](final-v24/README.md)，不改写上述原BOUNDED_REJECT/中间23结果。完整allfeatures仍有失败，PR操作仍Forbidden，当前不宣称全CI/性能/质量验收。

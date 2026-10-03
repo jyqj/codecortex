@@ -1164,16 +1164,29 @@
   },
   "index_fix_integration": {
     "baseline_sha": "574f7598662334c63e020da136c87f4f7281554d",
-    "production_source_sha": "57bedbaf193e28be34271a290d28c90dc662b613",
-    "status": "blocked_requests_independent_review",
+    "production_source_sha": "9ebdb155c64e094b3d774be41dbe7ab8c4e222c1",
+    "status": "bounded_algorithm_cache_pass_full_ci_blocked",
     "go_review_sha": "06478892104347a846cdfdb81f843574e188634b",
-    "requests_review": "BOUNDED_REJECT; awaiting new owner repair and same reviewer recheck",
-    "cache_upgrade": "actual old PR101 v22/v1 to new v23/v2: reopens/reindexes/noops and old pinned handle/manifest boundary passed",
-    "evidence": "artifacts/checkpoints/index-fix-integration-20261003",
+    "requests_review": "Original103 remains BOUNDED_REJECT; fixed671 independently BOUNDED_PASS",
+    "cache_upgrade": "actual v22/v1 and intermediate v23/v2 to v24/v3:10 legal identifier paths, reopens/reindexes/stable noops; both old pinned handles/readers tested",
+    "evidence": "artifacts/checkpoints/index-fix-integration-20261003/final-v24",
     "full_quality_and_performance_gates": "unchanged; no acceptance claim",
     "requests_review_sha": "7f650a5f8338e0d1ad2d8e8592ae31c89b34047c",
     "cold_block_review_sha": "70c2a640160060e34cd530e18e02a8c95885063f",
     "cold_block_review_scope": "bounded pass for c70c68f optimization; no fullV20",
-    "draft_pr": "blocked: GitHub GraphQL returned explicit Forbidden; no alternate entry or retry"
+    "draft_pr": "blocked: GitHub GraphQL returned explicit Forbidden; no alternate entry or retry",
+    "repair_sha": "671063b11af8cb40a0d526098de82e684dd24aca",
+    "repair_independent_recheck_sha": "9e0c34aa5d487aa026953300b9a54ddbd5ca37b2",
+    "schema_version": 24,
+    "manifest_version": 3,
+    "same_v23_counterfactual": "confirmed5/5 unchanged-source noops keep missing edges; same binary fresh gives5/5 targetUID edges",
+    "full_feature_validation": "2474passed/4failed/68ignored; full run failed, isolated fixture retry passed, lifecycle baseline reproduces, explicit readonly cache writes stopped; no skips added"
+  },
+  "unverified_parent_static_boundaries": {
+    "source_sha": "574f7598662334c63e020da136c87f4f7281554d",
+    "gc_stale_mark_vs_same_path_replacement": "static concurrency hypothesis; no experiment or fix claimed",
+    "gc_deleted_count": "remove_quiet ignores errors while deleted increments unconditionally; parent static confirmed, unpatched",
+    "wal_rename_write_connection_window": "static hypothesis; higher-level serialization still requires review",
+    "fault_execution": "platform blocked separate GC/WAL task; no alternate execution; full crash not accepted"
   }
 }

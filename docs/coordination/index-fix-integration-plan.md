@@ -13,3 +13,5 @@
 正式移交后基线改为 PR101 `574f7598662334c63e020da136c87f4f7281554d`，新组合 SHA `fb73dd7fed5fadbd1b0b2fab54f754968505749e`，保留 PR101 `c70c68f` 原优化函数。旧基线 worktree 专用于实际旧负例与旧库生成。
 
 当前验收阻塞：Requests 独立 review BOUNDED_REJECT，合法符号类型过滤回归；两个函数已经临时交新修复owner，本任务不改。Go独立review PR104 `06478892104347a846cdfdb81f843574e188634b` 远端核验一致。旧pinned handle真实跨版本验证完成，但不替代独立review和完整性能/质量gate。
+
+最终限定闭环：独立复验9e0c34a批准固定修复671063b；未bump组合bf10b64对真实旧v23五库仍no-op缺边，fresh同binary均恢复1边；父条件决定显式schema24/manifest3，固定source9ebdb155。v22/v23→v24两路径10组、旧pinned与manifest边界、Requests20/Gin109完成。default核心/迁移及allfeaturesclippy/fmt通过；完整allfeatures4失败保留，禁止称全CI绿。GC/WAL新静态边界只进ledger，不扩故障执行。本轮结束后停止开发。

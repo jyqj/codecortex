@@ -14,14 +14,18 @@ def schema_contract(declaration,migration):
         match=re.search(r'pub(?:\(crate\))? const '+name+r': u32 = (\d+);',migration)
         assert match,'schema contract constant missing: '+name
         return int(match[1])
-    assert declaration['database_schema']==constant('CURRENT_SCHEMA_VERSION')
-    predecessor=declaration['database_schema_compatibility']['additive_migration_from']
-    assert predecessor==constant('ADDITIVE_MIGRATION_FROM')
-    assert predecessor+1==declaration['database_schema']
+    # This is a declaration consistency check, not dynamic migration evidence.
+    # Rust contract tests separately prove rebuild and generation behavior.
+    assert type(declaration.get('database_schema')) is int, 'database_schema must be an integer'
+    assert declaration['database_schema']==constant('CURRENT_SCHEMA_VERSION'), 'database_schema differs from production'
+    compatibility=declaration.get('database_schema_compatibility')
+    assert isinstance(compatibility,dict), 'database_schema_compatibility declaration missing'
+    assert set(compatibility)=={'policy','contract_tests'}, 'schema compatibility fields missing or unsupported (including legacy additive assumptions)'
+    assert compatibility['policy']=='rebuild_on_mismatch', 'unsupported schema compatibility policy'
+    assert compatibility['contract_tests']==['crates/cc-db/tests/ci_schema_guard_contract.rs'], 'schema contract test reference differs from current Rust guard'
 
 schema_contract(caps,(root/'crates/cc-db/src/index_migrate.rs').read_text())
 compat=caps['database_schema_compatibility']
-assert compat['contract_tests']==['crates/cc-db/tests/ci_schema_guard_contract.rs']
 assert caps['project_model_version']==number('crates/cc-model/src/project_model.rs','PROJECT_MODEL_VERSION')
 assert not (root/'crates/cc-parsers/src/import_resolver.rs').exists()
 for directory in ['crates/cc-parsers/src','crates/cc-index/src']:
@@ -36,4 +40,4 @@ for value in caps['languages'].values():paths.extend(value['tests'])
 assert all((root/p).is_file() for p in paths)
 for p in ['docs/LANGUAGES.md','docs/CONFIGURATION.md','docs/internals/INDEXING.md']:
     assert 'MODULE_INPUT_SAFETY.md' in (root/p).read_text(),p
-print(json.dumps({'status':'passed','database_schema':caps['database_schema'],'project_model_version':caps['project_model_version'],'legacy_module_path_removed':True,'module_io_guard':'narrow lexical source guard; not complete static analysis','declared_test_files':sorted(set(paths))},indent=2))
+print(json.dumps({'status':'passed','database_schema':caps['database_schema'],'database_schema_policy':compat['policy'],'project_model_version':caps['project_model_version'],'legacy_module_path_removed':True,'module_io_guard':'narrow lexical source guard; not complete static analysis','declared_test_files':sorted(set(paths))},indent=2))

@@ -1,0 +1,38 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.27s
+     Running unittests src/lib.rs (/workspace/codecortex/target/debug/deps/cc_server-95cb67417ad6e0e1)
+
+running 15 tests
+test project_session::startup_tests::busy_startup_and_retry ... ignored, isolated_startup_regressions starts a fresh process
+test project_session::startup_tests::conflicting_startup_and_path_switch ... ignored, isolated_startup_regressions starts a fresh process
+test project_session::tests::cached_project_reopens_transparently_after_idle_eviction ... ok
+test project_session::tests::idle_sweep_skips_reader_then_reclaims_every_cached_instance ... ok
+
+running 1 test
+BUSY: CodeIndex/session/server/run_mcp_server=Config; None valid; cache/live absent; active unchanged; old permit preserved/released; retry initializes real project
+test project_session::startup_tests::busy_startup_and_retry ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.15s
+
+
+test project_session::tests::p1d_watcher_tick_keeps_known_pending_batch_until_manual_gate_released ... ok
+
+running 1 test
+CONFLICT: all startup boundaries=Config; failed switch preserves active/cache/live; corrected config retries; A/B identity and idle reopen work; plain project valid
+test project_session::startup_tests::conflicting_startup_and_path_switch ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 338 filtered out; finished in 0.16s
+
+
+test project_session::startup_tests::isolated_startup_regressions ... ok
+test project_session::tests::p2c_watcher_drains_durable_debt_without_new_events ... ok
+test project_session::tests::p3c_watcher_rescan_reconciles_unlisted_config_and_retries_failed_build ... ok
+test project_session::tests::maybe_auto_index_builds_then_skips_when_fresh ... ok
+test project_session::tests::p5d_cancelled_cold_client_keeps_initializer_fenced_until_publication ... ok
+test project_session::tests::p5d_hot_cache_does_not_wait_behind_cold_registry ... ok
+test project_session::tests::p5d_active_reopen_lock_wait_does_not_block_async_scheduler ... ok
+test project_session::tests::close_idle_instances_closes_cached_non_active_projects ... ok
+test project_session::tests::set_active_project_reopens_evicted_cache_entry ... ok
+test project_session::tests::watcher_busy_tick_preserves_pending_events ... ok
+
+test result: ok. 13 passed; 0 failed; 2 ignored; 0 measured; 324 filtered out; finished in 9.68s
+

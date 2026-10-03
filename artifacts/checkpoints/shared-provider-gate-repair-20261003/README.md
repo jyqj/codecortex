@@ -46,3 +46,7 @@
 - [ ] **另列未解：circuit breaker 的 first-wins。** 本修复不改变它、不声称全部 policy 重配已解决。
 - [ ] 既有 runtime 默认 cache EROFS 测试仍失败；不在本次权限/源码范围修复。
 - [ ] 新 head 全远端 CI / 最终接受由父继续审查；本交付不 merge。
+
+## 2026-10-03 startup propagation scope correction
+
+The earlier statement that existing `ProjectSession` initialization propagated errors with `?` was incorrect: fixed PR121 still swallowed a failed explicit project and cached an empty runtime under that path. The separate [startup-error repair checkpoint](../mcp-startup-project-errors-20261003/README.md) preserves an independent fixed-base counterexample including actual `run_mcp_server`, and the bounded fallible-constructor repair. Its own TODO records API Forbidden/NOT RUN and pending integration. This correction does not turn the gate checkpoint into overall acceptance or release parallel HOLD.

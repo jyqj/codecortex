@@ -195,8 +195,11 @@ async fn public_query_opt_in_nonempty_cache_local_empty_and_partial() {
         )
         .unwrap();
         let (server_io, client_io) = tokio::io::duplex(65536);
-        let server_task =
-            tokio::spawn(CodeCortexMcpServer::new(Some(root.path())).serve(server_io));
+        let server_task = tokio::spawn(
+            CodeCortexMcpServer::new(Some(root.path()))
+                .unwrap()
+                .serve(server_io),
+        );
         let client = ().serve(client_io).await.unwrap();
         let server = server_task.await.unwrap().unwrap();
         call(&client, "index", json!({"full":true,"path":root.path()})).await;

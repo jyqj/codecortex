@@ -1,0 +1,12 @@
+diff --git a/crates/cc-server/src/project_session.rs b/crates/cc-server/src/project_session.rs
+index 77d9938..152aa7c 100644
+--- a/crates/cc-server/src/project_session.rs
++++ b/crates/cc-server/src/project_session.rs
+@@ -1190,3 +1190,7 @@ mod tests {
+         session.shutdown().await;
+     }
+ }
++
++#[cfg(all(test, feature = "semantic"))]
++#[path = "startup_counterexample.rs"]
++mod startup_counterexample;

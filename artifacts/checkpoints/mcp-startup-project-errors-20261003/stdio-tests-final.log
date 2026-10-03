@@ -1,0 +1,19 @@
+   Compiling cc-server v1.0.0 (/workspace/codecortex-startup-fix/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.26s
+     Running tests/mcp_startup.rs (/workspace/codecortex/target/debug/deps/mcp_startup-c64c3178e1319298)
+
+running 3 tests
+2026-10-03T15:11:16.331756Z  INFO cc_db::index_migrate: initializing index schema version=24
+test none_session_completes_mcp_initialization ... ok
+test rejected_project_exits_before_stdio_handshake ... ok
+2026-10-03T15:11:16.355611Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2025-11-25"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "rmcp", title: None, version: "2.2.0", description: None, icons: None, website_url: None } })
+2026-10-03T15:11:16.355705Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T15:11:16.356109Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T15:11:16.357688Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T15:11:16.359409Z  INFO serve_inner: rmcp::service: input stream terminated
+2026-10-03T15:11:16.359472Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Closed
+2026-10-03T15:11:16.359710Z  INFO cc_server::mcp: MCP server shut down gracefully
+test normal_project_completes_stdio_initialization ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+

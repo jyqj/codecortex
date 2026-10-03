@@ -1,0 +1,98 @@
+[
+  {
+    "log": "stdio-tests-final.log",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--locked",
+      "--offline",
+      "--test",
+      "mcp_startup",
+      "--",
+      "--nocapture"
+    ],
+    "exit": 0
+  },
+  {
+    "log": "mcp-query-tests.log",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--locked",
+      "--offline",
+      "--lib",
+      "mcp::query_tests::"
+    ],
+    "exit": 0
+  },
+  {
+    "log": "eval-callers.log",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "cc-eval",
+      "--features",
+      "cc-server/semantic-http",
+      "--locked",
+      "--offline",
+      "--test",
+      "p5d_runtime"
+    ],
+    "exit": 0
+  },
+  {
+    "log": "check-default.log",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--all-targets",
+      "--locked",
+      "--offline"
+    ],
+    "exit": 0
+  },
+  {
+    "log": "check-final.log",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--all-targets",
+      "--features",
+      "cc-server/semantic-http",
+      "--locked",
+      "--offline"
+    ],
+    "exit": 0
+  },
+  {
+    "log": "clippy.log",
+    "command": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-clippy",
+      "clippy",
+      "-p",
+      "cc-server",
+      "-p",
+      "cc-eval",
+      "--all-targets",
+      "--features",
+      "cc-server/semantic-http",
+      "--locked",
+      "--offline",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  }
+]

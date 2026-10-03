@@ -1,0 +1,62 @@
+{
+  "env": {
+    "PATH_prefix": "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin",
+    "CARGO_HOME": "/workspace/.cargo",
+    "CARGO_TARGET_DIR": "/workspace/codecortex/target"
+  },
+  "earlier_runs": [
+    {
+      "log": "check.log",
+      "exit": 101,
+      "command": "cargo check --workspace --all-targets --features cc-server/semantic-http --locked --offline"
+    },
+    {
+      "log": "check-online.log",
+      "exit": 0,
+      "command": "cargo check --workspace --all-targets --features cc-server/semantic-http --locked"
+    },
+    {
+      "log": "startup-tests.log",
+      "exit": 0,
+      "command": "cargo test -p cc-server --features semantic-http --locked --offline --lib project_session::startup_tests::isolated_startup_regressions -- --exact --nocapture"
+    },
+    {
+      "log": "session-tests.log",
+      "exit": 0,
+      "command": "cargo test -p cc-server --features semantic-http --locked --offline --lib project_session:: -- --nocapture"
+    },
+    {
+      "log": "base-counterexample.log",
+      "exit": 0,
+      "cwd": "/workspace/codecortex-startup-baseline",
+      "command": "cargo test -p cc-server --features semantic-http --locked --offline --lib project_session::startup_counterexample::busy_initialization_publishes_empty_project_identity -- --exact --nocapture < /dev/null"
+    },
+    {
+      "log": "session-tests-final.log",
+      "exit": 0,
+      "command": "cargo test -p cc-server --features semantic-http --locked --offline --lib project_session:: -- --nocapture"
+    },
+    {
+      "log": "stdio-tests.log",
+      "exit": 0,
+      "command": "cargo test -p cc-server --features semantic-http --locked --offline --test mcp_startup -- --nocapture",
+      "limitation": "CLI None case auto-discovered /tmp; superseded, no None evidence"
+    },
+    {
+      "log": "api-forbidden.log",
+      "exit": 1,
+      "state": "stopped; draft and CI not run"
+    }
+  ],
+  "not_run": [
+    "known EROFS post_index_worker_crosses_pages_and_reopen_reuses_artifacts",
+    "broad semantic runtime groups",
+    "real provider",
+    "heldout",
+    "100k",
+    "GC/WAL fault/kill",
+    "new-head remote CI",
+    "draft PR creation"
+  ],
+  "final_checks": "final-check-receipts.json"
+}

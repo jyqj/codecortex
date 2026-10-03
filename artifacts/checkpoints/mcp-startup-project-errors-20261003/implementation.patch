@@ -1,0 +1,319 @@
+diff --git a/crates/cc-eval/src/runner.rs b/crates/cc-eval/src/runner.rs
+index b1b13fe..e771db4 100644
+--- a/crates/cc-eval/src/runner.rs
++++ b/crates/cc-eval/src/runner.rs
+@@ -98,7 +98,7 @@ impl CodeIndexBackend {
+         // serves over stdio.
+         let project = project_path.to_path_buf();
+         let client = runtime.block_on(async {
+-            let server = CodeCortexMcpServer::new(Some(&project));
++            let server = CodeCortexMcpServer::new(Some(&project))?;
+             let (server_io, client_io) = tokio::io::duplex(1 << 20);
+             tokio::spawn(async move {
+                 match rmcp::serve_server(server, server_io).await {
+diff --git a/crates/cc-eval/tests/p5d_cost.rs b/crates/cc-eval/tests/p5d_cost.rs
+index ae2a128..a662b60 100644
+--- a/crates/cc-eval/tests/p5d_cost.rs
++++ b/crates/cc-eval/tests/p5d_cost.rs
+@@ -11,7 +11,7 @@ async fn release_idle_sweep_preserves_pins_and_recovers_after_release() {
+     for pin_count in [0, 4, 8, 16] {
+         for repetition in 0..3 {
+             let root = tempfile::tempdir().unwrap();
+-            let session = ProjectSession::new(None);
++            let session = ProjectSession::new(None).unwrap();
+             let mut runtimes = Vec::new();
+             let mut weak_dbs = Vec::new();
+             for n in 0..16 {
+diff --git a/crates/cc-eval/tests/p5d_runtime.rs b/crates/cc-eval/tests/p5d_runtime.rs
+index 8bca657..83538eb 100644
+--- a/crates/cc-eval/tests/p5d_runtime.rs
++++ b/crates/cc-eval/tests/p5d_runtime.rs
+@@ -133,7 +133,7 @@ fn explicit_unconfigured_semantic_is_never_reported_ready() {
+ #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+ async fn concurrent_cold_routes_share_one_instance_and_build_gate() {
+     let d = project("local");
+-    let s = ProjectSession::new(None);
++    let s = ProjectSession::new(None).unwrap();
+     let barrier = Arc::new(tokio::sync::Barrier::new(8));
+     let mut jobs = tokio::task::JoinSet::new();
+     for _ in 0..8 {
+@@ -161,7 +161,7 @@ async fn concurrent_cold_routes_share_one_instance_and_build_gate() {
+ #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+ async fn inflight_recall_survives_idle_and_lru_then_reclaims_resources() {
+     let d = project("local");
+-    let s = ProjectSession::new(Some(d.path()));
++    let s = ProjectSession::new(Some(d.path())).unwrap();
+     let rt = s.active_index().await;
+     rt.write().unwrap().build_index(true).unwrap();
+     let id = rt.read().unwrap().index_db().unwrap().admin().instance_id();
+@@ -249,7 +249,7 @@ async fn inflight_recall_survives_idle_and_lru_then_reclaims_resources() {
+ #[tokio::test(flavor = "current_thread")]
+ async fn idle_sweep_never_waits_for_write_or_build_lock() {
+     let d = project("local");
+-    let s = ProjectSession::new(Some(d.path()));
++    let s = ProjectSession::new(Some(d.path())).unwrap();
+     let rt = s.active_index().await;
+     let (start_tx, start_rx) = tokio::sync::oneshot::channel();
+     let (release_tx, release_rx) = std::sync::mpsc::channel();
+@@ -283,7 +283,7 @@ async fn idle_sweep_never_waits_for_write_or_build_lock() {
+ #[tokio::test]
+ async fn dropping_session_stops_recurring_tasks_and_releases_cached_db() {
+     let d = project("local");
+-    let s = ProjectSession::new(Some(d.path()));
++    let s = ProjectSession::new(Some(d.path())).unwrap();
+     let rt = s.active_index().await;
+     let weak = Arc::downgrade(&rt);
+     drop(rt);
+@@ -345,7 +345,7 @@ async fn explicit_context_policy_cannot_bypass_optional_port_via_direct_symbols(
+ #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+ async fn cancelled_blocking_work_keeps_pin_until_actual_exit() {
+     let d = project("local");
+-    let session = ProjectSession::new(Some(d.path()));
++    let session = ProjectSession::new(Some(d.path())).unwrap();
+     let rt = session.active_index().await;
+     let handle = QueryHandle::capture(&rt).unwrap();
+     let control = QueryControl::new(Duration::from_secs(10)).unwrap();
+@@ -393,7 +393,7 @@ async fn shutdown_prevents_late_watcher_and_idle_restart() {
+         r#"{"auto_index":{"enabled":true}}"#,
+     )
+     .unwrap();
+-    let session = ProjectSession::new(Some(d.path()));
++    let session = ProjectSession::new(Some(d.path())).unwrap();
+     assert!(
+         cc_model::config::load_project_config(d.path())
+             .auto_index
+diff --git a/crates/cc-server/src/mcp.rs b/crates/cc-server/src/mcp.rs
+index 444cf9d..9a01818 100644
+--- a/crates/cc-server/src/mcp.rs
++++ b/crates/cc-server/src/mcp.rs
+@@ -590,12 +590,12 @@ impl CodeCortexMcpServer {
+ // ═══════════════════════════════════════════════════════════════════════
+ 
+ impl CodeCortexMcpServer {
+-    pub fn new(project_path: Option<&std::path::Path>) -> Self {
++    pub fn new(project_path: Option<&std::path::Path>) -> cc_model::CcResult<Self> {
+         let tool_router = Self::tool_router();
+-        Self {
+-            project_session: ProjectSession::new(project_path),
++        Ok(Self {
++            project_session: ProjectSession::new(project_path)?,
+             tool_router,
+-        }
++        })
+     }
+ 
+     fn touch_activity(&self) {
+@@ -798,7 +798,7 @@ async fn shutdown_signal() {
+ }
+ 
+ pub async fn run_mcp_server(project_path: Option<std::path::PathBuf>) -> cc_model::CcResult<()> {
+-    let server = CodeCortexMcpServer::new(project_path.as_deref());
++    let server = CodeCortexMcpServer::new(project_path.as_deref())?;
+     server
+         .project_session
+         .start_initial_project_tasks(project_path.as_deref());
+diff --git a/crates/cc-server/src/mcp_query_tests.rs b/crates/cc-server/src/mcp_query_tests.rs
+index fb09138..0fd3edf 100644
+--- a/crates/cc-server/src/mcp_query_tests.rs
++++ b/crates/cc-server/src/mcp_query_tests.rs
+@@ -44,7 +44,7 @@ async fn mcp_cancel_notification_stops_search_and_context_optional_recall() {
+     let dir = tempfile::tempdir().unwrap();
+     std::fs::write(dir.path().join(".codecortex.json"),r#"{"auto_index":{"enabled":false},"indexing":{"db_read_pool_size":1},"query":{"strategy":"auto","deadline_ms":10000,"semantic_timeout_ms":8000}}"#).unwrap();
+     std::fs::write(dir.path().join("a.py"), "def needle():\n    return 7\n").unwrap();
+-    let server = CodeCortexMcpServer::new(Some(dir.path()));
++    let server = CodeCortexMcpServer::new(Some(dir.path())).unwrap();
+     let runtime = server.project_session.active_index().await;
+     runtime.write().unwrap().build_index(true).unwrap();
+     let fake = Arc::new(PendingRecall {
+diff --git a/crates/cc-server/src/project_session.rs b/crates/cc-server/src/project_session.rs
+index 77d9938..6e3f854 100644
+--- a/crates/cc-server/src/project_session.rs
++++ b/crates/cc-server/src/project_session.rs
+@@ -32,12 +32,6 @@ impl ProjectServices {
+         })
+     }
+ 
+-    fn empty() -> Self {
+-        Self {
+-            index: Arc::new(RwLock::new(CodeIndex::empty())),
+-        }
+-    }
+-
+     fn index(&self) -> SharedCodeIndex {
+         self.index.clone()
+     }
+@@ -67,14 +61,11 @@ pub struct ProjectSession {
+ }
+ 
+ impl ProjectSession {
+-    pub fn new(project_path: Option<&Path>) -> Self {
+-        let services = ProjectServices::new(project_path).unwrap_or_else(|e| {
+-            tracing::warn!("failed to initialize project: {}", e);
+-            ProjectServices::new(None).unwrap_or_else(|e2| {
+-                tracing::error!("fatal: cannot create empty CodeIndex either: {}", e2);
+-                ProjectServices::empty()
+-            })
+-        });
++    /// Initialize before publishing any project identity or session task owner.
++    /// An explicit project error must reach the caller; `None` is a separate,
++    /// valid session choice rather than a fallback for rejected projects.
++    pub fn new(project_path: Option<&Path>) -> CcResult<Self> {
++        let services = ProjectServices::new(project_path)?;
+ 
+         let mut initial_cache = LruCache::new(NonZeroUsize::new(PROJECT_CACHE_CAPACITY).unwrap());
+         if let Some(path) = project_path {
+@@ -85,14 +76,14 @@ impl ProjectSession {
+         if let Some(path) = project_path {
+             live_projects.insert(normalize_path(path), Arc::downgrade(&services.index));
+         }
+-        Self {
++        Ok(Self {
+             active: Arc::new(tokio::sync::RwLock::new(services)),
+             project_cache: Arc::new(tokio::sync::Mutex::new(initial_cache)),
+             live_projects: Arc::new(tokio::sync::Mutex::new(live_projects)),
+             last_activity: Arc::new(Mutex::new(Instant::now())),
+             auto_indexing: Arc::new(AtomicBool::new(false)),
+             tasks: Arc::default(),
+-        }
++        })
+     }
+ 
+     pub async fn active_index(&self) -> SharedCodeIndex {
+@@ -594,7 +585,7 @@ mod tests {
+     #[tokio::test]
+     async fn p5d_hot_cache_does_not_wait_behind_cold_registry() {
+         let dir = TempDir::new().unwrap();
+-        let session = ProjectSession::new(Some(dir.path()));
++        let session = ProjectSession::new(Some(dir.path())).unwrap();
+         let original = session.active_index().await;
+         let _cold = session.live_projects.lock().await;
+         let routed = tokio::time::timeout(
+@@ -611,7 +602,7 @@ mod tests {
+     async fn p5d_cancelled_cold_client_keeps_initializer_fenced_until_publication() {
+         let dir = TempDir::new().unwrap();
+         let path = normalize_path(dir.path());
+-        let session = ProjectSession::new(None);
++        let session = ProjectSession::new(None).unwrap();
+         // Block the initializer's cache lookup without stalling the scheduler.
+         let cache = session.project_cache.clone().lock_owned().await;
+         let caller = session.clone();
+@@ -656,7 +647,7 @@ mod tests {
+     #[tokio::test(flavor = "current_thread")]
+     async fn p5d_active_reopen_lock_wait_does_not_block_async_scheduler() {
+         let dir = TempDir::new().unwrap();
+-        let session = ProjectSession::new(Some(dir.path()));
++        let session = ProjectSession::new(Some(dir.path())).unwrap();
+         let index = session.active_index().await;
+         let (start_tx, start_rx) = tokio::sync::oneshot::channel();
+         let (release_tx, release_rx) = std::sync::mpsc::channel();
+@@ -714,7 +705,7 @@ mod tests {
+         let dir = TempDir::new().unwrap();
+         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+ 
+-        let session = ProjectSession::new(Some(dir.path()));
++        let session = ProjectSession::new(Some(dir.path())).unwrap();
+         session.maybe_auto_index();
+         assert!(
+             wait_for_auto_index(&session, Duration::from_secs(30)).await,
+@@ -764,7 +755,7 @@ mod tests {
+         std::fs::write(dir_b.path().join("lib.rs"), "pub fn b() -> i32 { 2 }\n").unwrap();
+ 
+         // A is created first, then B becomes active; A stays cached non-active.
+-        let session = ProjectSession::new(Some(dir_a.path()));
++        let session = ProjectSession::new(Some(dir_a.path())).unwrap();
+         let index_a = session.active_index().await;
+         session
+             .set_active_project(dir_b.path().to_path_buf())
+@@ -822,7 +813,7 @@ mod tests {
+     async fn idle_sweep_skips_reader_then_reclaims_every_cached_instance() {
+         let a = TempDir::new().unwrap();
+         let b = TempDir::new().unwrap();
+-        let session = ProjectSession::new(Some(a.path()));
++        let session = ProjectSession::new(Some(a.path())).unwrap();
+         let index_a = session.active_index().await;
+         // Route B without starting an unrelated native watcher: the reader
+         // below deterministically supplies the actual contention boundary.
+@@ -868,7 +859,7 @@ mod tests {
+         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+         let raw_path = dir.path().to_str().unwrap().to_string();
+ 
+-        let session = ProjectSession::new(Some(dir.path()));
++        let session = ProjectSession::new(Some(dir.path())).unwrap();
+         let index = session
+             .index_for_project_path(Some(&raw_path))
+             .await
+@@ -909,7 +900,7 @@ mod tests {
+         let dir_b = TempDir::new().unwrap();
+         std::fs::write(dir_b.path().join("lib.rs"), "pub fn b() -> i32 { 2 }\n").unwrap();
+ 
+-        let session = ProjectSession::new(Some(dir_a.path()));
++        let session = ProjectSession::new(Some(dir_a.path())).unwrap();
+         let index_a = session.active_index().await;
+ 
+         // Simulate idle eviction on A, then switch the active project away.
+@@ -1118,7 +1109,7 @@ mod tests {
+         let dir = TempDir::new().unwrap();
+         std::fs::write(dir.path().join("lib.rs"), "pub fn answer() -> i32 { 42 }\n").unwrap();
+ 
+-        let session = ProjectSession::new(Some(dir.path()));
++        let session = ProjectSession::new(Some(dir.path())).unwrap();
+         session.maybe_auto_index();
+         assert!(
+             wait_for_auto_index(&session, Duration::from_secs(30)).await,
+@@ -1190,3 +1181,7 @@ mod tests {
+         session.shutdown().await;
+     }
+ }
++
++#[cfg(all(test, feature = "semantic"))]
++#[path = "project_startup_tests.rs"]
++mod startup_tests;
+diff --git a/crates/cc-server/tests/p7_query_production.rs b/crates/cc-server/tests/p7_query_production.rs
+index 410c62a..2307932 100644
+--- a/crates/cc-server/tests/p7_query_production.rs
++++ b/crates/cc-server/tests/p7_query_production.rs
+@@ -195,8 +195,11 @@ async fn public_query_opt_in_nonempty_cache_local_empty_and_partial() {
+         )
+         .unwrap();
+         let (server_io, client_io) = tokio::io::duplex(65536);
+-        let server_task =
+-            tokio::spawn(CodeCortexMcpServer::new(Some(root.path())).serve(server_io));
++        let server_task = tokio::spawn(
++            CodeCortexMcpServer::new(Some(root.path()))
++                .unwrap()
++                .serve(server_io),
++        );
+         let client = ().serve(client_io).await.unwrap();
+         let server = server_task.await.unwrap().unwrap();
+         call(&client, "index", json!({"full":true,"path":root.path()})).await;
+diff --git a/crates/cc-server/tests/p7_v18_fault_contract.rs b/crates/cc-server/tests/p7_v18_fault_contract.rs
+index fddc493..20d342a 100644
+--- a/crates/cc-server/tests/p7_v18_fault_contract.rs
++++ b/crates/cc-server/tests/p7_v18_fault_contract.rs
+@@ -211,8 +211,11 @@ async fn provider_server_transport_timeout_faults_and_recovery_keep_honest_publi
+         let source = root.path().join("fixture.rs");
+         std::fs::write(&source, "pub fn needle() -> u32 { 731 }\n").unwrap();
+         let (server_io, client_io) = tokio::io::duplex(65536);
+-        let server_task =
+-            tokio::spawn(CodeCortexMcpServer::new(Some(root.path())).serve(server_io));
++        let server_task = tokio::spawn(
++            CodeCortexMcpServer::new(Some(root.path()))
++                .unwrap()
++                .serve(server_io),
++        );
+         let client = ().serve(client_io).await.unwrap();
+         let server = server_task.await.unwrap().unwrap();
+         assert_eq!(client.list_all_tools().await.unwrap().len(), 14);
+@@ -298,7 +301,11 @@ async fn unconfigured_auto_stays_local_and_explicit_semantic_is_a_public_error()
+     )
+     .unwrap();
+     let (server_io, client_io) = tokio::io::duplex(65536);
+-    let task = tokio::spawn(CodeCortexMcpServer::new(Some(root.path())).serve(server_io));
++    let task = tokio::spawn(
++        CodeCortexMcpServer::new(Some(root.path()))
++            .unwrap()
++            .serve(server_io),
++    );
+     let client = ().serve(client_io).await.unwrap();
+     let server = task.await.unwrap().unwrap();
+     call(&client, "index", json!({"full":true,"path":root.path()})).await;

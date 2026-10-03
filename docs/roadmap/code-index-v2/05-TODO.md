@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`c7a574c9aac3844116c5d2247fec090c1203f23e39316b4342df962901011ad4`。
+> 任务总数：192；源文件 SHA-256：`e642e58d5fc0288aba3faa087a0a2bc08a944e111a675d44da60c0960aabbb37`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2036,6 +2036,13 @@ SQL文档追加校正：保留原implementation README历史语句，明确assoc
 日志仅保存在本次环境/tmp/ci-schema-v25-evidence/，不是远端持久交付；历史失败和实际验证日志SHA256：{"baseline-python.log": "e00e24273051de2cee5bbe34daf7b0ff031eaebadf31b5faceefa526fe8f7331", "baseline-rust.log": "1e778987d1ac517c285ed2146b5285414bb1bdf54785a4c399baf46fcbaee3f0", "ci267-check.log": "bb18feb17b541c04be6a7ce64bef8403953afe6290513cc635f84b7dcba9a3e8", "ci268-check.log": "d4b6e6fa21b6ed1b2b72c5466e0586b7c8dfc2d0f9edbc7668d20732418273c7", "clippy-fixed-env.log": "79a742cc17a61c223cbea900f29fe6dcdbf6e266e2ece219ea7fdf7860f7cd8a", "clippy.log": "ff4d4f6fe753fcbc5e86a231ea2e8eb2ab546a884d5aa7c3b545dfae4f45d6fd", "fixed-python.log": "e00e24273051de2cee5bbe34daf7b0ff031eaebadf31b5faceefa526fe8f7331", "fixed-rust.log": "28afec3a5a9b2837b06204c0adef7e2f77fa2bba056a0d48eb4a2974c2e5de36", "fmt-fixed-env.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "fmt.log": "ff4d4f6fe753fcbc5e86a231ea2e8eb2ab546a884d5aa7c3b545dfae4f45d6fd"}.
 
 独立最终review：DB确认v24历史fixture同blob/不变量保留；parser指出负例应从生产常量而非仍24的声明派生，已修正为读取production CURRENT_SCHEMA_VERSION后生成前驱/未来/字符串输入；真实declaration mismatch阻塞保持。
+
+
+### root授权后续：当前版本声明同步（2026-10-03）
+
+上一节schema declaration drift是历史阻塞记录，现root明确授权同步当前权威声明：MODULE_CAPABILITIES.json database_schema 24→25；project_model_version原本3，与生产PROJECT_MODEL_VERSION=3一致，无须改动。生产CURRENT_SCHEMA_VERSION=25、rebuild_on_mismatch guard及所有能力状态/限额/验收计数原样。检查现行机器可读database_schema/project_model_version/module_model/schema版本声明，只有该当前权威遗漏；P3-D rollback、旧v24 fixture/pins及历史checkpoint均原样。未找到依赖该字段的文档生成器，无其它派生文档更新。
+
+确切声明修复树验证：strict Python architecture mutation9/9（含generation及schema负例）、check_module_architecture报告schema25/model3/rebuild_on_mismatch passed；direct Rust1.95 locked ci_schema_guard_contract4/4 + semantic_schema6/6，fmt --check通过。生产源码/Cargo/lock仍保持前述396文件聚合hash；原schema guard脚本无diff。日志SHA256：{"authorized-declaration-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "authorized-declaration-module-guard.log": "12f6bb985f4fb64870bb586d497961121f074222c721b518b5d6b8d66fd8a446", "authorized-declaration-python.log": "cc9b00b26d5a720ff10d0018d0a96146cc273d399873654f3fa5766e826bafd8", "authorized-declaration-rust.log": "9bfb5dcc9f50681bcd2a6e02426dae54398778f3956ec694005a3fe35e95d3d3"}. 同PR135续推，历史失败不覆盖，全部task status/acceptance不变；新head CI单独回读，不沿用旧head结果。
 
 
 ### [ ] P7-012｜融合与部分覆盖语义

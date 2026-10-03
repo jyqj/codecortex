@@ -571,8 +571,26 @@ pub fn claim_next_fair_on(
     // linkage instead of silently drifting away from the typed machine.
     debug_assert!(OutboxState::Pending.can_transition_to(OutboxState::Claimed));
     let ts = timestamp_text(now_unix)?;
-    let sql = format!(
-        "UPDATE semantic_outbox \
+    // Guard the ordered pending scan with the existing ready access path. An
+    // all-future queue must not scan the entire FIFO index. A future prefix can
+    // still be linear; selecting min ready task_id preserves strict FIFO.
+    let sql = match fairness {
+        ClaimFairness::Fifo => "UPDATE semantic_outbox \
+         SET state='claimed', lease_token=lower(hex(randomblob(16))), \
+             lease_expires_at=?1+?2, claim_owner=?3, attempt_count=attempt_count+1, \
+             updated_at=?4 \
+         WHERE task_id = CASE WHEN EXISTS(SELECT 1 FROM semantic_outbox \
+                          INDEXED BY semantic_outbox_ready \
+                          WHERE state='pending' AND available_at<=?1 AND space_id=?5) \
+                        THEN (SELECT task_id FROM semantic_outbox \
+                          INDEXED BY semantic_outbox_fifo_pending \
+                          WHERE space_id=?5 AND state='pending' AND available_at<=?1 \
+                          ORDER BY task_id ASC LIMIT 1) ELSE NULL END \
+         RETURNING task_id, lease_token, doc_key, doc_version, input_digest, op, \
+                   lease_expires_at"
+            .to_owned(),
+        ClaimFairness::DocRoundRobin => format!(
+            "UPDATE semantic_outbox \
          SET state='claimed', lease_token=lower(hex(randomblob(16))), \
              lease_expires_at=?1+?2, claim_owner=?3, attempt_count=attempt_count+1, \
              updated_at=?4 \
@@ -581,8 +599,9 @@ pub fn claim_next_fair_on(
                           ORDER BY {} LIMIT 1) \
          RETURNING task_id, lease_token, doc_key, doc_version, input_digest, op, \
                    lease_expires_at",
-        fairness.order_clause()
-    );
+            fairness.order_clause()
+        ),
+    };
     let mut stmt = conn.prepare_cached(&sql).map_err(db_err)?;
     let mut rows = stmt
         .query(rusqlite::params![now_unix, lease_secs, owner, ts, space_id])

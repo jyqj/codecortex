@@ -213,11 +213,11 @@ mod tests {
         let input = rendered_input("def sample():\n    return 1\n");
         let entry = manifest(&input).unwrap();
         assert_eq!(entry.bytes, input.text.as_bytes());
-        assert_eq!(entry.token_estimator, cc_model::chunk_policy::TOKEN_ESTIMATOR);
         assert_eq!(
-            entry.token_estimate,
-            cc_model::approx_tokens(&input.text)
+            entry.token_estimator,
+            cc_model::chunk_policy::TOKEN_ESTIMATOR
         );
+        assert_eq!(entry.token_estimate, cc_model::approx_tokens(&input.text));
         assert_eq!(entry.metadata_truncated, input.metadata_truncated);
         // The bytes are the FINAL input (framing prefix + header + source),
         // not the raw chunk text.
@@ -233,7 +233,7 @@ mod tests {
         assert!(manifest(&foreign).is_err());
 
         let mut drifted = rendered_input("def sample():\n    return 1\n");
-        drifted.token_estimate = drifted.token_estimate + 1;
+        drifted.token_estimate += 1;
         assert!(manifest(&drifted).is_err());
     }
 }

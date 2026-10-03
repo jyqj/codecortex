@@ -147,7 +147,33 @@ impl IndexDb {
     /// own attempt, not this primitive's).
     ///
     /// Auxiliary: no epoch ever moves (P6-004 taxonomy).
-    pub fn hand_back_semantic_task(&self, task_id: i64, token: &str, reason: &str) -> CcResult<bool> {
+    pub fn hand_back_semantic_task(
+        &self,
+        task_id: i64,
+        token: &str,
+        reason: &str,
+    ) -> CcResult<bool> {
+        self.hand_back_semantic_task_inner(task_id, token, reason, false)
+    }
+
+    /// Cancellation is not a provider failure. Refund a claim that never
+    /// started work; an admitted in-flight attempt keeps its prior charge.
+    pub fn hand_back_cancelled_semantic_task(
+        &self,
+        task_id: i64,
+        token: &str,
+        started: bool,
+    ) -> CcResult<bool> {
+        self.hand_back_semantic_task_inner(task_id, token, "semantic runtime cancelled", !started)
+    }
+
+    fn hand_back_semantic_task_inner(
+        &self,
+        task_id: i64,
+        token: &str,
+        reason: &str,
+        refund_claim: bool,
+    ) -> CcResult<bool> {
         debug_assert!(OutboxState::Claimed.can_transition_to(OutboxState::Pending));
         let conn = self.write_conn.lock().map_err(db_err)?;
         let now = semantic_outbox::now_unix();
@@ -156,11 +182,19 @@ impl IndexDb {
             .prepare_cached(
                 "UPDATE semantic_outbox \
                  SET state='pending', available_at=?1, lease_token=NULL, \
-                     lease_expires_at=NULL, claim_owner=NULL, last_error=?2, updated_at=?3 \
+                     lease_expires_at=NULL, claim_owner=NULL, last_error=?2, updated_at=?3, \
+                     attempt_count=MAX(0,attempt_count-?6) \
                  WHERE task_id=?4 AND lease_token=?5 AND state='claimed'",
             )
             .map_err(db_err)?
-            .execute(rusqlite::params![now, reason, ts, task_id, token])
+            .execute(rusqlite::params![
+                now,
+                reason,
+                ts,
+                task_id,
+                token,
+                i64::from(refund_claim)
+            ])
             .map_err(db_err)?;
         Ok(updated == 1)
     }

@@ -559,8 +559,8 @@ mod tests {
                 Ok(())
             });
         writer.join().unwrap();
-        let (generation, _) = result
-            .expect("fence must ride out a finite commit storm with bounded backoff");
+        let (generation, _) =
+            result.expect("fence must ride out a finite commit storm with bounded backoff");
         assert_eq!(generation, engine.db.reads().read_generation().unwrap());
         assert!(calls.load(Ordering::SeqCst) >= 2, "storm did not race");
     }

@@ -137,15 +137,15 @@ impl<'a> SemanticManifestReads<'a> {
         let mut stmt = self
             .conn
             .prepare_cached(
-            "SELECT m.doc_key, m.doc_version, m.file_path, m.input_digest, \
+                "SELECT m.doc_key, m.doc_version, m.file_path, m.input_digest, \
                     m.space_id, m.artifact_ref, f.language \
              FROM semantic_manifest AS m \
              LEFT JOIN files AS f ON f.file_path = m.file_path \
              WHERE m.space_id = ?1 AND m.doc_key > ?2 \
              ORDER BY m.doc_key ASC \
              LIMIT ?3",
-        )
-        .map_err(crate::sql_util::db_err)?;
+            )
+            .map_err(crate::sql_util::db_err)?;
         let rows = stmt
             .query_map(
                 rusqlite::params![space_id, after_doc_key, batch_rows as i64],
@@ -184,13 +184,7 @@ mod tests {
 
     /// Insert the full FK chain (files → chunks → document_manifest →
     /// semantic_manifest) for one candidate row.
-    fn seed(
-        conn: &Connection,
-        doc_key: &str,
-        file_path: &str,
-        language: &str,
-        space_id: &str,
-    ) {
+    fn seed(conn: &Connection, doc_key: &str, file_path: &str, language: &str, space_id: &str) {
         conn.execute_batch(&format!(
             "INSERT INTO files(file_path,language,content_hash,mtime,size,indexed_at) \
              VALUES('{file_path}','{language}','hash',1.0,1,'2026-01-01');
@@ -224,7 +218,10 @@ mod tests {
             .scan_space("sp", first.last().unwrap().doc_key.as_str(), 2)
             .unwrap();
         assert_eq!(
-            second.iter().map(|r| r.doc_key.as_str()).collect::<Vec<_>>(),
+            second
+                .iter()
+                .map(|r| r.doc_key.as_str())
+                .collect::<Vec<_>>(),
             ["d3"]
         );
 
@@ -248,7 +245,9 @@ mod tests {
     fn scan_joins_language_and_carries_provenance_columns() {
         let conn = v22_conn();
         seed(&conn, "d1", "a.rs", "rust", "sp");
-        let row = &SemanticManifestReads::on(&conn).scan_space("sp", "", 10).unwrap()[0];
+        let row = &SemanticManifestReads::on(&conn)
+            .scan_space("sp", "", 10)
+            .unwrap()[0];
         assert_eq!(row.language.as_deref(), Some("rust"));
         assert_eq!(row.doc_version, "v1");
         assert_eq!(row.input_digest, "in-d1");

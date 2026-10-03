@@ -62,6 +62,7 @@
 //! 拒收").
 
 use cc_db::semantic_manifest_reads::{SemanticManifestReads, SemanticManifestRow};
+use cc_model::query::QueryControl;
 use cc_model::retrieval::HardScope;
 use cc_model::{CcError, CcResult, Language};
 
@@ -78,7 +79,11 @@ use crate::types::{DocSpecDigest, InputDigest, SpaceDigest};
 /// `batch_rows` of them. [`SemanticManifestReads`] is the sanctioned
 /// production source (adapter below); tests substitute an in-memory source.
 pub trait ManifestCandidates {
-    fn next_batch(&self, after_doc_key: &str, batch_rows: usize) -> CcResult<Vec<SemanticManifestRow>>;
+    fn next_batch(
+        &self,
+        after_doc_key: &str,
+        batch_rows: usize,
+    ) -> CcResult<Vec<SemanticManifestRow>>;
 }
 
 /// Production adapter: a [`SemanticManifestReads`] handle pinned to one query
@@ -103,8 +108,13 @@ pub fn space_manifest_reads<'a>(
 }
 
 impl ManifestCandidates for SpaceScopedManifestReads<'_> {
-    fn next_batch(&self, after_doc_key: &str, batch_rows: usize) -> CcResult<Vec<SemanticManifestRow>> {
-        self.reads.scan_space(&self.space_id, after_doc_key, batch_rows)
+    fn next_batch(
+        &self,
+        after_doc_key: &str,
+        batch_rows: usize,
+    ) -> CcResult<Vec<SemanticManifestRow>> {
+        self.reads
+            .scan_space(&self.space_id, after_doc_key, batch_rows)
     }
 }
 
@@ -138,6 +148,34 @@ pub fn search(
     manifest: &dyn ManifestCandidates,
     q: ExactSearch<'_>,
 ) -> CcResult<Vec<ScoredDoc>> {
+    search_checked(cache, manifest, q, || Ok(()))
+}
+
+/// Cooperative variant of [`search`] with the same scoring and ordering.
+/// Checks cancellation/deadline before work, around each batch read and
+/// candidate score, and before returning the final top-k. An interrupted
+/// scan returns an error, never its accumulated partial top-k as success.
+///
+/// This synchronous function does not preempt a SQL read, cache I/O, or one
+/// cosine computation already in progress. Async callers must run it on a
+/// bounded blocking executor and retain admission until the worker exits;
+/// putting it inside an async future does not make blocking work preemptible.
+pub fn search_controlled(
+    cache: &ArtifactCache,
+    manifest: &dyn ManifestCandidates,
+    q: ExactSearch<'_>,
+    control: &QueryControl,
+) -> CcResult<Vec<ScoredDoc>> {
+    search_checked(cache, manifest, q, || control.check())
+}
+
+fn search_checked(
+    cache: &ArtifactCache,
+    manifest: &dyn ManifestCandidates,
+    q: ExactSearch<'_>,
+    mut checkpoint: impl FnMut() -> CcResult<()>,
+) -> CcResult<Vec<ScoredDoc>> {
+    checkpoint()?;
     q.space.validate()?;
     if q.batch_rows == 0 {
         return Err(CcError::InvalidParams(
@@ -161,18 +199,26 @@ pub fn search(
     let mut cursor = String::new();
     let mut top = TopK::new(q.k);
     loop {
+        checkpoint()?;
         let batch = manifest.next_batch(&cursor, q.batch_rows)?;
+        checkpoint()?;
         if batch.is_empty() {
             break;
         }
         for row in &batch {
+            checkpoint()?;
             cursor = row.doc_key.clone();
-            if let Some(score) = score_candidate(cache, q.space, &space_digest, q.query, q.filter, row)? {
+            if let Some(score) =
+                score_candidate(cache, q.space, &space_digest, q.query, q.filter, row)?
+            {
                 top.offer(row.doc_key.clone(), score);
             }
+            checkpoint()?;
         }
     }
-    Ok(top.finish())
+    let result = top.finish();
+    checkpoint()?;
+    Ok(result)
 }
 
 /// Load-layer pipeline for one row: scope gate → address validation → cache
@@ -338,18 +384,15 @@ impl TopK {
     }
 
     fn offer(&mut self, doc_key: String, score: f64) {
-        self.heap.push(std::cmp::Reverse(Candidate { score, doc_key }));
+        self.heap
+            .push(std::cmp::Reverse(Candidate { score, doc_key }));
         if self.heap.len() > self.k {
             self.heap.pop(); // drops the least desirable survivor
         }
     }
 
     fn finish(self) -> Vec<ScoredDoc> {
-        let mut best: Vec<Candidate> = self
-            .heap
-            .into_iter()
-            .map(|reverse| reverse.0)
-            .collect();
+        let mut best: Vec<Candidate> = self.heap.into_iter().map(|reverse| reverse.0).collect();
         // Descending desirability = (score desc, doc_key asc). `sort` is
         // stable, but the order is total so stability is not load-bearing.
         best.sort_by(|a, b| b.cmp(a));
@@ -417,7 +460,13 @@ mod tests {
         }
     }
 
-    fn row(doc_key: &str, file_path: &str, language: &str, artifact_ref: &str, space_id: &str) -> SemanticManifestRow {
+    fn row(
+        doc_key: &str,
+        file_path: &str,
+        language: &str,
+        artifact_ref: &str,
+        space_id: &str,
+    ) -> SemanticManifestRow {
         SemanticManifestRow {
             doc_key: doc_key.into(),
             doc_version: "v1".into(),
@@ -441,8 +490,7 @@ mod tests {
                 std::process::id(),
                 SEQ.fetch_add(1, Ordering::SeqCst)
             ));
-            let cache =
-                ArtifactCache::open(&root, format!("ns-{tag}")).expect("open cache");
+            let cache = ArtifactCache::open(&root, format!("ns-{tag}")).expect("open cache");
             (Self { root }, cache)
         }
     }
@@ -500,9 +548,7 @@ mod tests {
             .iter()
             .map(|(key, v)| (key.clone(), reference_cosine(query, v)))
             .collect();
-        scored.sort_by(|a, b| {
-            b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0))
-        });
+        scored.sort_by(|a, b| b.1.total_cmp(&a.1).then_with(|| a.0.cmp(&b.0)));
         scored.truncate(k);
         scored
     }
@@ -541,6 +587,180 @@ mod tests {
         )
     }
 
+    struct InterruptedSource {
+        inner: MemSource,
+        control: QueryControl,
+        cancel_on_call: Option<usize>,
+        delay: std::time::Duration,
+    }
+
+    impl ManifestCandidates for InterruptedSource {
+        fn next_batch(&self, after: &str, batch_rows: usize) -> CcResult<Vec<SemanticManifestRow>> {
+            let rows = self.inner.next_batch(after, batch_rows)?;
+            if !self.delay.is_zero() {
+                std::thread::sleep(self.delay);
+            }
+            if self.cancel_on_call == Some(self.inner.batches.borrow().len()) {
+                self.control.cancel();
+            }
+            Ok(rows)
+        }
+    }
+
+    fn controlled_fixture(
+        tag: &str,
+    ) -> (
+        TempCache,
+        ArtifactCache,
+        VectorSpace,
+        Vec<SemanticManifestRow>,
+    ) {
+        let (temp, cache) = TempCache::open(tag);
+        let space = space(2);
+        let digest = space.digest().unwrap();
+        let spec = DocumentEncodingSpec::new(space.clone(), None, 8_192, "t")
+            .unwrap()
+            .digest()
+            .unwrap();
+        let rows = ["a", "b", "c"]
+            .into_iter()
+            .map(|key| {
+                let input = InputDigest::new(key.to_string());
+                let reference = cache
+                    .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
+                    .unwrap();
+                row(
+                    key,
+                    &format!("src/{key}.rs"),
+                    "rust",
+                    reference.as_str(),
+                    digest.as_str(),
+                )
+            })
+            .collect();
+        (temp, cache, space, rows)
+    }
+
+    #[test]
+    fn controlled_scan_rejects_cancelled_and_expired_requests_before_loading() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-entry");
+        for expired in [false, true] {
+            let control = QueryControl::new(if expired {
+                std::time::Duration::ZERO
+            } else {
+                std::time::Duration::from_secs(30)
+            })
+            .unwrap();
+            if !expired {
+                control.cancel();
+            }
+            let source = MemSource::new(rows.clone());
+            let result = search_controlled(
+                &cache,
+                &source,
+                ExactSearch {
+                    space: &space,
+                    query: &[1.0, 0.0],
+                    filter: &scope(),
+                    k: 1,
+                    batch_rows: 1,
+                },
+                &control,
+            );
+            assert!(if expired {
+                matches!(result, Err(CcError::QueryTimedOut))
+            } else {
+                matches!(result, Err(CcError::QueryCancelled))
+            });
+            assert!(source.batches.borrow().is_empty());
+        }
+    }
+
+    #[test]
+    fn controlled_scan_discards_accumulated_top_k_on_cancellation() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-cancel");
+        let control = QueryControl::new(std::time::Duration::from_secs(30)).unwrap();
+        let source = InterruptedSource {
+            inner: MemSource::new(rows),
+            control: control.clone(),
+            cancel_on_call: Some(2),
+            delay: std::time::Duration::ZERO,
+        };
+        // Batch one scores a valid published vector and fills the size-one heap.
+        // Cancellation while loading batch two must discard it, not return success.
+        let result = search_controlled(
+            &cache,
+            &source,
+            ExactSearch {
+                space: &space,
+                query: &[1.0, 0.0],
+                filter: &scope(),
+                k: 1,
+                batch_rows: 1,
+            },
+            &control,
+        );
+        assert!(matches!(result, Err(CcError::QueryCancelled)));
+        assert_eq!(source.inner.batches.borrow().len(), 2);
+    }
+
+    #[test]
+    fn controlled_scan_observes_deadline_after_an_uninterruptible_batch_read() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-deadline");
+        let control = QueryControl::new(std::time::Duration::from_millis(100)).unwrap();
+        let source = InterruptedSource {
+            inner: MemSource::new(rows),
+            control: control.clone(),
+            cancel_on_call: None,
+            delay: std::time::Duration::from_millis(120),
+        };
+        let result = search_controlled(
+            &cache,
+            &source,
+            ExactSearch {
+                space: &space,
+                query: &[1.0, 0.0],
+                filter: &scope(),
+                k: 1,
+                batch_rows: 1,
+            },
+            &control,
+        );
+        assert!(matches!(result, Err(CcError::QueryTimedOut)));
+        // One synchronous read may finish late; no further batch is admitted.
+        assert_eq!(source.inner.batches.borrow().len(), 1);
+    }
+
+    #[test]
+    fn controlled_scan_preserves_legacy_filter_top_k_and_score_bits() {
+        let (_temp, cache, space, rows) = controlled_fixture("control-parity");
+        let filter = HardScope {
+            file_paths: Some(vec!["src/b.rs".into(), "src/c.rs".into()]),
+            languages: Some(vec![Language::Rust]),
+            ..Default::default()
+        };
+        let expected = run(&cache, rows.clone(), &[1.0, 0.0], &space, &filter, 1, 2).unwrap();
+        for batch_rows in [1, 2, 8] {
+            let control = QueryControl::new(std::time::Duration::from_secs(30)).unwrap();
+            let actual = search_controlled(
+                &cache,
+                &MemSource::new(rows.clone()),
+                ExactSearch {
+                    space: &space,
+                    query: &[1.0, 0.0],
+                    filter: &filter,
+                    k: 1,
+                    batch_rows,
+                },
+                &control,
+            )
+            .unwrap();
+            assert_eq!(actual, expected);
+            assert_eq!(actual[0].doc_key, "b");
+            assert_eq!(actual[0].score.to_bits(), expected[0].score.to_bits());
+        }
+    }
+
     // ── 1. kNN correctness vs the naive reference (hand-computed gold) ───
 
     #[test]
@@ -567,7 +787,13 @@ mod tests {
             let reference = cache
                 .put(&space, &input, &spec, vector, 1_000)
                 .expect("put");
-            rows.push(row(key, format!("{key}.rs").as_str(), "rust", reference.as_str(), digest.as_str()));
+            rows.push(row(
+                key,
+                format!("{key}.rs").as_str(),
+                "rust",
+                reference.as_str(),
+                digest.as_str(),
+            ));
         }
         let query = [1.0_f32, 0.0, 0.0];
         let result = run(&cache, rows, &query, &space, &scope(), 4, 2).expect("search");
@@ -650,9 +876,20 @@ mod tests {
 
         let baseline = run(&cache, rows.clone(), &query, &space, &scope(), 5, 4).expect("baseline");
         for batch_rows in [1_usize, 2, 16, 17, 100] {
-            let other = run(&cache, rows.clone(), &query, &space, &scope(), 5, batch_rows)
-                .expect("batched run");
-            assert_eq!(baseline, other, "batch_rows={batch_rows} changed the result");
+            let other = run(
+                &cache,
+                rows.clone(),
+                &query,
+                &space,
+                &scope(),
+                5,
+                batch_rows,
+            )
+            .expect("batched run");
+            assert_eq!(
+                baseline, other,
+                "batch_rows={batch_rows} changed the result"
+            );
         }
     }
 
@@ -774,7 +1011,13 @@ mod tests {
             let reference = cache
                 .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
                 .expect("put");
-            rows.push(row(key, path, language, reference.as_str(), digest.as_str()));
+            rows.push(row(
+                key,
+                path,
+                language,
+                reference.as_str(),
+                digest.as_str(),
+            ));
         }
         let query = [1.0_f32, 0.0];
 
@@ -796,7 +1039,8 @@ mod tests {
             languages: Some(vec![Language::Rust]),
             file_paths: None,
         };
-        let got = run(&cache, rows.clone(), &query, &space, &prefix_rust, 10, 2).expect("prefix+lang");
+        let got =
+            run(&cache, rows.clone(), &query, &space, &prefix_rust, 10, 2).expect("prefix+lang");
         assert_eq!(
             got.iter().map(|d| d.doc_key.as_str()).collect::<Vec<_>>(),
             ["a", "d"]
@@ -822,7 +1066,13 @@ mod tests {
         let (_temp, cache) = TempCache::open("scope-lang-none");
         let space = space(2);
         let digest = space.digest().expect("digest");
-        let mut orphan = row("x", "x.rs", "rust", "cas.v1:ns:sp:in:spec:ck", digest.as_str());
+        let mut orphan = row(
+            "x",
+            "x.rs",
+            "rust",
+            "cas.v1:ns:sp:in:spec:ck",
+            digest.as_str(),
+        );
         // points at a real object so it would be scorable if admitted
         let spec = DocumentEncodingSpec::new(space.clone(), None, 8_192, "t")
             .expect("spec")
@@ -841,11 +1091,27 @@ mod tests {
         };
         let mut no_language = orphan.clone();
         no_language.language = None;
-        let got = run(&cache, vec![no_language.clone()], &[1.0, 0.0], &space, &languages, 10, 1)
-            .expect("filtered");
+        let got = run(
+            &cache,
+            vec![no_language.clone()],
+            &[1.0, 0.0],
+            &space,
+            &languages,
+            10,
+            1,
+        )
+        .expect("filtered");
         assert!(got.is_empty(), "None language must fail a languages filter");
-        let got = run(&cache, vec![no_language], &[1.0, 0.0], &space, &scope(), 10, 1)
-            .expect("unfiltered");
+        let got = run(
+            &cache,
+            vec![no_language],
+            &[1.0, 0.0],
+            &space,
+            &scope(),
+            10,
+            1,
+        )
+        .expect("unfiltered");
         assert_eq!(got.len(), 1);
     }
 
@@ -929,8 +1195,15 @@ mod tests {
         let reference = cache
             .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
             .expect("put");
-        let rows = vec![row("d", "d.rs", "rust", reference.as_str(), space.digest().expect("d").as_str())];
-        let got = run(&cache, rows, &[0.0, 0.0], &space, &scope(), 1, 1).expect("zero query w/ docs");
+        let rows = vec![row(
+            "d",
+            "d.rs",
+            "rust",
+            reference.as_str(),
+            space.digest().expect("d").as_str(),
+        )];
+        let got =
+            run(&cache, rows, &[0.0, 0.0], &space, &scope(), 1, 1).expect("zero query w/ docs");
         assert!(got.is_empty());
 
         // Zero document vector among valid ones: the zero doc is skipped.
@@ -950,7 +1223,10 @@ mod tests {
             "d",
             "d.rs",
             "rust",
-            cache.put(&space, &input, &spec, &[1.0, 0.0], 1_000).expect("put").as_str(),
+            cache
+                .put(&space, &input, &spec, &[1.0, 0.0], 1_000)
+                .expect("put")
+                .as_str(),
             space.digest().expect("d").as_str(),
         ));
         let got = run(&cache, rows, &[1.0, 0.0], &space, &scope(), 5, 1).expect("zero doc");
@@ -1091,10 +1367,17 @@ mod tests {
         .expect("search");
         assert_eq!(got.len(), 3);
         let batches = source.batches.borrow();
-        assert!(batches.iter().all(|&b| b == 4), "every request ≤ batch_rows");
+        assert!(
+            batches.iter().all(|&b| b == 4),
+            "every request ≤ batch_rows"
+        );
         // 11 rows / batch 4 → keyset walks 4,4,3 then stops on the empty batch
         // (the MemSource records the request, so 4 requests total).
-        assert_eq!(batches.len(), 4, "one request per keyset step incl. terminator");
+        assert_eq!(
+            batches.len(),
+            4,
+            "one request per keyset step incl. terminator"
+        );
     }
 
     // ── 7. Space isolation, deletion, and degradation ────────────────────
@@ -1119,9 +1402,21 @@ mod tests {
             // Row published under a different space id — the load layer (SQL
             // WHERE space_id) excludes it; the ref check here is defense in
             // depth.
-            row("foreign-space", "f.rs", "rust", mine.as_str(), other_digest.as_str()),
+            row(
+                "foreign-space",
+                "f.rs",
+                "rust",
+                mine.as_str(),
+                other_digest.as_str(),
+            ),
             // Correct space id but the ref carries a foreign space digest.
-            row("foreign-ref", "g.rs", "rust", &format!("cas.v1:ns-digest:{}:in:spec:ck", other_digest.as_str()), digest.as_str()),
+            row(
+                "foreign-ref",
+                "g.rs",
+                "rust",
+                &format!("cas.v1:ns-digest:{}:in:spec:ck", other_digest.as_str()),
+                digest.as_str(),
+            ),
             // Unparseable ref.
             row("bad-ref", "h.rs", "rust", "not-a-ref", digest.as_str()),
             // Ref input digest disagrees with the row's input digest.
@@ -1129,7 +1424,11 @@ mod tests {
                 "mismatched-input",
                 "i.rs",
                 "rust",
-                &format!("cas.v1:ns-digest:{}:other-input:{}:ck", digest.as_str(), spec.as_str()),
+                &format!(
+                    "cas.v1:ns-digest:{}:other-input:{}:ck",
+                    digest.as_str(),
+                    spec.as_str()
+                ),
                 digest.as_str(),
             ),
             // The one legitimate row.
@@ -1211,7 +1510,10 @@ mod tests {
             let reference = cache
                 .put(&space, &input.input_digest, &spec_digest, vector, 1_000)
                 .expect("put");
-            let key = format!("doc-{}", input.input_digest.as_str().get(..8).unwrap_or("x"));
+            let key = format!(
+                "doc-{}",
+                input.input_digest.as_str().get(..8).unwrap_or("x")
+            );
             corpus.push((key.clone(), vector.to_vec()));
             let mut candidate = row(
                 &key,
@@ -1235,6 +1537,8 @@ mod tests {
         assert_docs_eq(&got, &expected);
         // The embedded query itself is never a document: doc/query paths are
         // domain separated by the provider and only document rows were loaded.
-        assert!(got.iter().all(|d| corpus.iter().any(|(key, _)| *key == d.doc_key)));
+        assert!(got
+            .iter()
+            .all(|d| corpus.iter().any(|(key, _)| *key == d.doc_key)));
     }
 }

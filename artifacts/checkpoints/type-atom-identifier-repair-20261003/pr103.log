@@ -1,0 +1,62 @@
+   Compiling cc-index v1.0.0 (/tmp/type-atom-pr103/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.48s
+     Running unittests src/lib.rs (/tmp/type-atom-target-pr103/debug/deps/cc_index-a48fb0f9c0e2b4e7)
+
+running 7 tests
+test resolver::helpers::type_atom_identifier_tests::explicit_empty_dependency_remains_strictly_invalid ... ok
+test resolver::helpers::type_atom_identifier_tests::punctuation_atoms_remain_excluded ... ok
+
+thread 'resolver::helpers::type_atom_identifier_tests::qualified_generic_union_atoms' (14397) panicked at crates/cc-index/src/resolver/type_atom_identifier_tests.rs:107:5:
+assertion `left == right` failed
+  left: ["Box", "pkg._", "pkg::__", "Wrap", "数据.类型"]
+ right: ["Box", "pkg._", "pkg::__", "Wrap", "$", "℘", "数据.类型"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test resolver::helpers::type_atom_identifier_tests::qualified_generic_union_atoms ... FAILED
+test resolver::helpers::type_atom_identifier_tests::qualified_name_keys_never_create_empty_dependencies ... ok
+synthetic.py "_": uses_type=false name_bucket=false
+test resolver::helpers::type_atom_identifier_tests::parsed_variadic_tuple_keeps_names_without_pseudo_atom ... ok
+synthetic.py "__": uses_type=false name_bucket=false
+synthetic.py "℘": uses_type=false name_bucket=false
+synthetic.py "℮": uses_type=false name_bucket=false
+synthetic.py "\u{1885}": uses_type=true name_bucket=true
+synthetic.py "\u{1886}": uses_type=true name_bucket=true
+synthetic.py "A\u{301}": uses_type=true name_bucket=true
+synthetic.py "数据": uses_type=true name_bucket=true
+synthetic.ts "_": uses_type=false name_bucket=true
+synthetic.ts "__": uses_type=false name_bucket=true
+synthetic.ts "$": uses_type=false name_bucket=true
+synthetic.ts "$$": uses_type=false name_bucket=true
+synthetic.ts "_$": uses_type=false name_bucket=true
+synthetic.ts "$_": uses_type=false name_bucket=true
+synthetic.ts "℘": uses_type=false name_bucket=true
+synthetic.ts "A\u{301}": uses_type=true name_bucket=true
+
+thread 'resolver::helpers::type_atom_identifier_tests::parser_identifiers_keep_uses_type_and_name_dependencies' (14395) panicked at crates/cc-index/src/resolver/type_atom_identifier_tests.rs:73:5:
+synthetic.py "_": edge=false, dependency=false
+synthetic.py "__": edge=false, dependency=false
+synthetic.py "℘": edge=false, dependency=false
+synthetic.py "℮": edge=false, dependency=false
+synthetic.ts "_": edge=false, dependency=true
+synthetic.ts "__": edge=false, dependency=true
+synthetic.ts "$": edge=false, dependency=true
+synthetic.ts "$$": edge=false, dependency=true
+synthetic.ts "_$": edge=false, dependency=true
+synthetic.ts "$_": edge=false, dependency=true
+synthetic.ts "℘": edge=false, dependency=true
+test resolver::helpers::type_atom_identifier_tests::parser_identifiers_keep_uses_type_and_name_dependencies ... FAILED
+dropped XID_Start scalars: ["℘", "℮"]
+
+thread 'resolver::helpers::type_atom_identifier_tests::unicode_identifier_start_domain_is_preserved' (14399) panicked at crates/cc-index/src/resolver/type_atom_identifier_tests.rs:96:5:
+assertion failed: dropped.is_empty()
+test resolver::helpers::type_atom_identifier_tests::unicode_identifier_start_domain_is_preserved ... FAILED
+
+failures:
+
+failures:
+    resolver::helpers::type_atom_identifier_tests::parser_identifiers_keep_uses_type_and_name_dependencies
+    resolver::helpers::type_atom_identifier_tests::qualified_generic_union_atoms
+    resolver::helpers::type_atom_identifier_tests::unicode_identifier_start_domain_is_preserved
+
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 383 filtered out; finished in 0.66s
+
+error: test failed, to rerun pass `-p cc-index --lib`

@@ -149,13 +149,8 @@ impl World {
 
     /// A 冻结 spec 路径（register + activate，走本任务协议而非裸 SQL）。
     fn activate_a(&self, revision: &str) {
-        let spec = DocumentEncodingSpec::new(
-            self.space_a.clone(),
-            None,
-            8_192,
-            "fake-tokenizer",
-        )
-        .unwrap();
+        let spec =
+            DocumentEncodingSpec::new(self.space_a.clone(), None, 8_192, "fake-tokenizer").unwrap();
         register_backfill_space(&self.db, &spec).unwrap();
         activate_space(&self.db, &self.space_a, revision).unwrap();
     }
@@ -219,7 +214,12 @@ impl World {
 
     /// P6-013 worker drain：认领 active 空间任务，按 resolver 表喂
     /// FakeProvider，五 fence CAS 发布。`space`/`provider` 绑定当前 active。
-    fn drain(&self, table: &[(String, &'static [u8])], space: &VectorSpace, provider: &FakeProvider) {
+    fn drain(
+        &self,
+        table: &[(String, &'static [u8])],
+        space: &VectorSpace,
+        provider: &FakeProvider,
+    ) {
         drain_pending(&self.db, "worker", &self.limits(), &mut |guard| {
             embed_once(self, guard, table, space, provider)
         })
@@ -285,7 +285,8 @@ fn embed_once(
 
 fn fresh_conn(path: &std::path::Path) -> rusqlite::Connection {
     let conn = rusqlite::Connection::open(path).unwrap();
-    conn.busy_timeout(std::time::Duration::from_secs(5)).unwrap();
+    conn.busy_timeout(std::time::Duration::from_secs(5))
+        .unwrap();
     conn.execute_batch("PRAGMA foreign_keys=ON;").unwrap();
     conn
 }
@@ -321,7 +322,10 @@ fn switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollbac
     assert_eq!(hits_a.len(), 2, "A 下两文档可检索");
     assert!(run_search(&world.cache, &world.conn, &world.space_b, &[0.5, 0.5]).is_empty());
     let epoch_published = world.semantic_epoch();
-    assert!(epoch_published.unwrap() >= 1, "首次发布把 semantic_epoch 从 absent 推到 >=1");
+    assert!(
+        epoch_published.unwrap() >= 1,
+        "首次发布把 semantic_epoch 从 absent 推到 >=1"
+    );
 
     // 1. 回填：注册 B（backfilling）+ 全量 desired 入 B 队列。
     let spec_b_full =
@@ -334,13 +338,24 @@ fn switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollbac
     assert_eq!(world.outbox_count(&b_digest, "embed", "pending"), 2);
     // epoch 口径（P6-006 Q4 约定，随已交付的 rebuild-plan 入队门面）：队列
     // 状态实际变化 → bump 一次（后续切换断言依赖该基线）。
-    assert_eq!(world.semantic_epoch().unwrap(), epoch_published.unwrap() + 1);
+    assert_eq!(
+        world.semantic_epoch().unwrap(),
+        epoch_published.unwrap() + 1
+    );
 
     // 2. 并存窗口语义：worker 只认领 active（A）——A 队列空 → 零消费，
     //    B 的回填任务原封不动；dense lane 也只读 active（上面已验）。
     world.drain(&table, &world.space_a, &world.provider_a);
-    assert_eq!(world.provider_a.call_count(), 2, "并存窗口内零新 provider 调用");
-    assert_eq!(world.outbox_count(&b_digest, "embed", "pending"), 2, "B 回填任务切换前不被认领");
+    assert_eq!(
+        world.provider_a.call_count(),
+        2,
+        "并存窗口内零新 provider 调用"
+    );
+    assert_eq!(
+        world.outbox_count(&b_digest, "embed", "pending"),
+        2,
+        "B 回填任务切换前不被认领"
+    );
 
     // 3. 切 active（单事务：B→active、A→revoked、A live 任务 supersede、
     //    每 A manifest 行一个 revoke 任务、审计事件）。
@@ -348,13 +363,19 @@ fn switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollbac
     assert!(switch.activated && switch.old_revoked && switch.visible_set_switched);
     assert_eq!(switch.previous_active.as_deref(), Some(a_digest.as_str()));
     assert_eq!(switch.revoke_tasks_enqueued, 2);
-    assert_eq!(switch.superseded_live_tasks, 0, "A 队列已耗尽，无 live 任务可 supersede");
+    assert_eq!(
+        switch.superseded_live_tasks, 0,
+        "A 队列已耗尽，无 live 任务可 supersede"
+    );
     assert_eq!(
         world.semantic_epoch().unwrap(),
         epoch_published.unwrap() + 2,
         "可见集合切换 → 恰一次 bump（+1 来自回填入队，P6-006 约定）"
     );
-    assert_eq!(world.db.semantic_active_space().unwrap().as_deref(), Some(b_digest.as_str()));
+    assert_eq!(
+        world.db.semantic_active_space().unwrap().as_deref(),
+        Some(b_digest.as_str())
+    );
 
     // 切换瞬间检索口径：active=B，B 尚无发布行 → 查询为空；A 行虽在
     // manifest 但已不属于 active 指针下的可见集合（结构上不混排）。
@@ -362,14 +383,22 @@ fn switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollbac
 
     // 4. 撤销：消费 A 的 revoke 任务——own-space 行删除 + fenced ack。
     let a_space_id = a_digest.clone();
-    let drain = drain_space_revocations(&world.db, &a_space_id, "revoker", 60.0, 0.0, 3, 64).unwrap();
-    assert_eq!((drain.claimed, drain.revoked, drain.visible_changes), (2, 2, 2));
+    let drain =
+        drain_space_revocations(&world.db, &a_space_id, "revoker", 60.0, 0.0, 3, 64).unwrap();
+    assert_eq!(
+        (drain.claimed, drain.revoked, drain.visible_changes),
+        (2, 2, 2)
+    );
     assert_eq!(world.manifest_count(), 0, "旧空间可见集合行全部移除");
     assert_eq!(world.outbox_count(&a_digest, "revoke", "done"), 2);
 
     // 5. 新空间 embed：worker 认领 active=B 的回填任务，provider_b 恰好 2 次。
     world.drain(&table, &world.space_b, &world.provider_b);
-    assert_eq!(world.provider_b.call_count(), 2, "新空间 embed 恰好按任务数付费");
+    assert_eq!(
+        world.provider_b.call_count(),
+        2,
+        "新空间 embed 恰好按任务数付费"
+    );
     assert_eq!(world.manifest_count(), 2);
     assert_eq!(world.outbox_count(&b_digest, "embed", "done"), 2);
 
@@ -387,7 +416,10 @@ fn switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollbac
     let calls_before_rollback = world.provider_a.call_count() + world.provider_b.call_count();
     let rollback = activate_space(&world.db, &world.space_a, "rev-rollback").unwrap();
     assert!(rollback.activated && rollback.old_revoked && rollback.visible_set_switched);
-    assert_eq!(rollback.revoke_tasks_enqueued, 2, "回滚同时为 B 的行产生 revoke 任务");
+    assert_eq!(
+        rollback.revoke_tasks_enqueued, 2,
+        "回滚同时为 B 的行产生 revoke 任务"
+    );
     let desired = world.db.semantic_rebuild_desired_set().unwrap();
     world.db.enqueue_semantic_rebuild_plan(&desired).unwrap();
     let verdict = reconcile_after_rebuild(
@@ -423,11 +455,20 @@ fn switch_end_to_end_new_embeds_old_revokes_retrieval_sees_only_new_then_rollbac
     //    实质完成，不存在悬挂的 revoked 行。
     assert_eq!(world.outbox_count(&b_digest, "revoke", "superseded"), 2);
     assert_eq!(world.outbox_count(&b_digest, "revoke", "pending"), 0);
-    let drain_b = drain_space_revocations(&world.db, &b_digest, "revoker", 60.0, 0.0, 3, 64).unwrap();
-    assert_eq!((drain_b.claimed, drain_b.revoked, drain_b.visible_changes), (0, 0, 0), "撤销队列已收敛");
+    let drain_b =
+        drain_space_revocations(&world.db, &b_digest, "revoker", 60.0, 0.0, 3, 64).unwrap();
+    assert_eq!(
+        (drain_b.claimed, drain_b.revoked, drain_b.visible_changes),
+        (0, 0, 0),
+        "撤销队列已收敛"
+    );
     assert_eq!(world.manifest_count(), 2, "只剩 A 的两行");
     assert_eq!(
-        world.conn.query_row("SELECT DISTINCT space_id FROM semantic_manifest", [], |r| r.get::<_, String>(0)).unwrap(),
+        world
+            .conn
+            .query_row("SELECT DISTINCT space_id FROM semantic_manifest", [], |r| r
+                .get::<_, String>(0))
+            .unwrap(),
         a_digest,
         "可见集合无 revoked 空间残留"
     );
@@ -488,7 +529,10 @@ fn revoked_space_objects_become_gc_eligible_after_revoke_drain() {
 
     // revoke 后：旧对象成为孤儿，过期 GC pass 可回收；回收后读 = Miss。
     let (counters, _, _) = run_gc_pass(&world.db, &world.cache, &aged_cfg, None).unwrap();
-    assert_eq!(counters.deleted_objects, 1, "revoke 后旧空间对象可被 GC 回收");
+    assert_eq!(
+        counters.deleted_objects, 1,
+        "revoke 后旧空间对象可被 GC 回收"
+    );
     let read = world
         .cache
         .get(&world.space_a, &input_a, &world.spec_a)

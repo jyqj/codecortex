@@ -1,0 +1,54 @@
+   Compiling cc-index v1.0.0 (/tmp/type-atom-original/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.61s
+     Running unittests src/lib.rs (/tmp/type-atom-target-original/debug/deps/cc_index-a48fb0f9c0e2b4e7)
+
+running 7 tests
+
+thread 'resolver::helpers::type_atom_identifier_tests::punctuation_atoms_remain_excluded' (14107) panicked at crates/cc-index/src/resolver/type_atom_identifier_tests.rs:141:5:
+assertion `left == right` failed
+  left: ["tuple", "Widget", "..."]
+ right: ["tuple", "Widget"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test resolver::helpers::type_atom_identifier_tests::explicit_empty_dependency_remains_strictly_invalid ... ok
+test resolver::helpers::type_atom_identifier_tests::punctuation_atoms_remain_excluded ... FAILED
+test resolver::helpers::type_atom_identifier_tests::qualified_generic_union_atoms ... ok
+
+thread 'resolver::helpers::type_atom_identifier_tests::qualified_name_keys_never_create_empty_dependencies' (14109) panicked at crates/cc-index/src/resolver/type_atom_identifier_tests.rs:164:9:
+"pkg."
+test resolver::helpers::type_atom_identifier_tests::qualified_name_keys_never_create_empty_dependencies ... FAILED
+synthetic.py "_": uses_type=true name_bucket=true
+
+thread 'resolver::helpers::type_atom_identifier_tests::parsed_variadic_tuple_keeps_names_without_pseudo_atom' (14105) panicked at crates/cc-index/src/resolver/type_atom_identifier_tests.rs:130:5:
+assertion `left == right` failed
+  left: ["tuple", "Widget", "..."]
+ right: ["tuple", "Widget"]
+test resolver::helpers::type_atom_identifier_tests::parsed_variadic_tuple_keeps_names_without_pseudo_atom ... FAILED
+synthetic.py "__": uses_type=true name_bucket=true
+synthetic.py "℘": uses_type=true name_bucket=true
+synthetic.py "℮": uses_type=true name_bucket=true
+synthetic.py "\u{1885}": uses_type=true name_bucket=true
+synthetic.py "\u{1886}": uses_type=true name_bucket=true
+synthetic.py "A\u{301}": uses_type=true name_bucket=true
+synthetic.py "数据": uses_type=true name_bucket=true
+synthetic.ts "_": uses_type=true name_bucket=true
+synthetic.ts "__": uses_type=true name_bucket=true
+synthetic.ts "$": uses_type=true name_bucket=true
+synthetic.ts "$$": uses_type=true name_bucket=true
+synthetic.ts "_$": uses_type=true name_bucket=true
+synthetic.ts "$_": uses_type=true name_bucket=true
+synthetic.ts "℘": uses_type=true name_bucket=true
+synthetic.ts "A\u{301}": uses_type=true name_bucket=true
+test resolver::helpers::type_atom_identifier_tests::parser_identifiers_keep_uses_type_and_name_dependencies ... ok
+dropped XID_Start scalars: []
+test resolver::helpers::type_atom_identifier_tests::unicode_identifier_start_domain_is_preserved ... ok
+
+failures:
+
+failures:
+    resolver::helpers::type_atom_identifier_tests::parsed_variadic_tuple_keeps_names_without_pseudo_atom
+    resolver::helpers::type_atom_identifier_tests::punctuation_atoms_remain_excluded
+    resolver::helpers::type_atom_identifier_tests::qualified_name_keys_never_create_empty_dependencies
+
+test result: FAILED. 4 passed; 3 failed; 0 ignored; 0 measured; 380 filtered out; finished in 0.68s
+
+error: test failed, to rerun pass `-p cc-index --lib`

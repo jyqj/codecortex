@@ -98,8 +98,18 @@ fn split_build_once(
     // The build gate (held by our caller) keeps the DB stable until stage 3.
     let staged = CodeIndex::compute_postprocess(&inputs, full, auto_file_limit, written)?;
     // Stage 3 — short write lock: apply the typed deltas + bookkeeping.
-    let mut rt = super::lock_index_write(runtime)?;
-    rt.apply_postprocess(&inputs, full, auto_file_limit, staged)
+    let report = {
+        let mut rt = super::lock_index_write(runtime)?;
+        rt.apply_postprocess(&inputs, full, auto_file_limit, staged)?
+    };
+    #[cfg(feature = "semantic")]
+    {
+        let worker = super::lock_index(runtime)?.semantic_runtime();
+        if let Some(worker) = worker {
+            worker.schedule();
+        }
+    }
+    Ok(report)
 }
 
 pub fn index_status(runtime: SharedCodeIndex) -> CcResult<serde_json::Value> {

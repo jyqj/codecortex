@@ -1,0 +1,746 @@
+{
+  "source_commit_sha": "24db8bbe14e7b47bc5cc413bbf7c66a0be8f2710",
+  "integration_base_sha": "d6462c163abe6ca92d2ae0a2cf967b1ad2433e22",
+  "source_tree_sha": "5721d0d639e0cfc66437c9ff48af15a016ee4bb7",
+  "base_branch": "codex/cloud-p7-integration",
+  "test_source_sha256": "b1532544acae541db7c0f927063b9649aa9fb4d142a154b5435d3d705d2ca0f2",
+  "toolchain": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "dirty": "",
+  "commands": [
+    {
+      "name": "matrix-semantic",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic",
+        "--test",
+        "p7_acceptance_matrix",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "matrix-semantic.log",
+      "log_sha256": "0d16d1396220230d359e4ca1f038298ec845875ae8637c9094ccdabc17d697b1",
+      "counts": [
+        [
+          7,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "matrix-default",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--test",
+        "p7_acceptance_matrix",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "matrix-default.log",
+      "log_sha256": "ad8d2f609de5f408f3679fbdd7fffff007af9d35cbb5ad8d00edb03b2abdf36c",
+      "counts": [
+        [
+          2,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "search-lib",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "search-lib.log",
+      "log_sha256": "bf2fed94c371dfc15e7638fc1ddae5f9591beb4f32ff4f556a96ffc691c46bc8",
+      "counts": [
+        [
+          298,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "vector-exact",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--lib",
+        "vector::exact::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "vector-exact.log",
+      "log_sha256": "54cbef5df367ffdff4dd1840e2bbb08e8073a3b8265e6466f907b7c45b604832",
+      "counts": [
+        [
+          20,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "lock-span",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p5b_execution",
+        "slow_fake_does_not_hold_codeindex_lock_or_the_only_sql_connection",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "lock-span.log",
+      "log_sha256": "25dc0263e085416f6509824affe3e83257248c11281b31186d7296f96b8a0845",
+      "counts": [
+        [
+          1,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "new-test-only-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--no-deps",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic",
+        "--test",
+        "p7_acceptance_matrix",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "new-test-only-clippy.log",
+      "log_sha256": "ce2ad24333c0b300028c5a7205343640a05e51fa5e0e15b3b50fda68028ac4dd",
+      "counts": []
+    },
+    {
+      "name": "fake-provider",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--lib",
+        "providers::fake",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "fake-provider.log",
+      "log_sha256": "4947a114466b173aa5c8482396ab8d8c71c593b6c1bb749cdbbb9d8d83d87bcf",
+      "counts": [
+        [
+          16,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "partial-budget",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--test",
+        "p7_partial_budget",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "partial-budget.log",
+      "log_sha256": "f31b5bb3e28158ac9b6633e8eb02b7360ce1e31623ddf96c97d50426999c05e1",
+      "counts": [
+        [
+          4,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "partial-budget-semantic",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-eval",
+        "--features",
+        "cc-server/semantic",
+        "--test",
+        "p7_partial_budget",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "partial-budget-semantic.log",
+      "log_sha256": "c2cd091b5a84244d3a55db9014e7b5043c931dacb28a1a30840f3295e2083051",
+      "counts": [
+        [
+          4,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "fusion",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "fusion::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "fusion.log",
+      "log_sha256": "3abaf048a0cc255c7f86b573fd2dcc47fc9bd2ef92a17603c3dff310774dfa95",
+      "counts": [
+        [
+          10,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "hydration",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "semantic_hydrate_guard::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "hydration.log",
+      "log_sha256": "13f3f0e5f9f38034087cd3eb0756399bfdd6189677a43478fbc6a5b1b53867da",
+      "counts": [
+        [
+          7,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "execution",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-search",
+        "--lib",
+        "execution::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "execution.log",
+      "log_sha256": "2e22eb15b3ef4c4d8690f3f264ed6edf5bcbf08a6230be0355559fe542aec3a2",
+      "counts": [
+        [
+          5,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "scope",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic",
+        "--lib",
+        "semantic_scope_guard::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "scope.log",
+      "log_sha256": "9e5d3c9d0e40f0a8e420a825ed8ca5b8d48b68ab7abc00eed2bdefda6b20e558",
+      "counts": [
+        [
+          12,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "wiring",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic",
+        "--lib",
+        "semantic_wiring::tests",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "wiring.log",
+      "log_sha256": "71c940c854e3746780c879ae373957818f2672b18208d8461a50a4dd18f9718e",
+      "counts": [
+        [
+          16,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "exact-manifest",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--test",
+        "manifest_exact_integration",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "exact-manifest.log",
+      "log_sha256": "8be0e9cc45a1821e426f634db7d1666b32c2cdf4c83b025d927207d509b04d66",
+      "counts": [
+        [
+          4,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "query-cache",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--test",
+        "query_cache",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "query-cache.log",
+      "log_sha256": "f006e90f85e90d12994bdecafc67bf4ac8b630692ff1681b2eecf7033860eb4d",
+      "counts": [
+        [
+          17,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "provider",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--lib",
+        "providers::openai_compatible",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "provider.log",
+      "log_sha256": "84b0bec6d259ddae481e3a996767fda7b2023337b8c6abd2128b598679f47c59",
+      "counts": [
+        [
+          69,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "admission",
+      "argv": [
+        "cargo",
+        "test",
+        "-p",
+        "cc-semantic",
+        "--lib",
+        "admission::",
+        "--locked",
+        "--offline"
+      ],
+      "exit": 0,
+      "log": "admission.log",
+      "log_sha256": "3a86590232b38964bb87e1aca023e78a0e28929a6ff128745fd59a3ab8344c29",
+      "counts": [
+        [
+          39,
+          0,
+          0
+        ]
+      ]
+    },
+    {
+      "name": "new-test-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "-p",
+        "cc-server",
+        "--features",
+        "semantic",
+        "--test",
+        "p7_acceptance_matrix",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "log": "new-test-clippy.log",
+      "log_sha256": "95120d2d9b60bb6acd0b51aa1a7e62eb6b51c0a6640ef152782cdfa6aa58586c",
+      "counts": []
+    },
+    {
+      "name": "new-test-default-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "-p",
+        "cc-server",
+        "--test",
+        "p7_acceptance_matrix",
+        "--locked",
+        "--offline",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "log": "new-test-default-clippy.log",
+      "log_sha256": "6845cbfbde67faf31fd4be2504b6d98e67127012ce4a46a48e1e076ae3b31d34",
+      "counts": []
+    },
+    {
+      "name": "new-test-format",
+      "argv": [
+        "rustfmt",
+        "--check",
+        "--edition",
+        "2021",
+        "crates/cc-server/tests/p7_acceptance_matrix.rs"
+      ],
+      "exit": 0,
+      "log": "new-test-format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "counts": []
+    }
+  ],
+  "repeats": [
+    {
+      "variant": "matrix-semantic",
+      "binary": "target/debug/deps/p7_acceptance_matrix-74ed71a1c2a625fb",
+      "binary_sha256": "11f0a7673e37b07390c9c8772ad7e17a49395085772a8ce683770547b57bbeaf",
+      "results": [
+        {
+          "iteration": 1,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-01.log",
+          "sha256": "60085db0206dd97c789e327b158f3b38be784570501158b5701ec73f56a9bfaf"
+        },
+        {
+          "iteration": 2,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-02.log",
+          "sha256": "967a8ab62146cad1c872aa67f1103f6768b3866635a52d06ad5318b65f32915e"
+        },
+        {
+          "iteration": 3,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-03.log",
+          "sha256": "21d4c000f7fad5e1c27dbb3fa6690db44f57471ebb5520154e65c2fe7e4fbd9b"
+        },
+        {
+          "iteration": 4,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-04.log",
+          "sha256": "6f96eadbce72d25c4b8b06a76234663899791613a414d33c37ed281124b2844c"
+        },
+        {
+          "iteration": 5,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-05.log",
+          "sha256": "60085db0206dd97c789e327b158f3b38be784570501158b5701ec73f56a9bfaf"
+        },
+        {
+          "iteration": 6,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-06.log",
+          "sha256": "f8179571dedba66855a2c14a07c8b4c8f639951fea9631e29b3e42db861a255d"
+        },
+        {
+          "iteration": 7,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-07.log",
+          "sha256": "f8179571dedba66855a2c14a07c8b4c8f639951fea9631e29b3e42db861a255d"
+        },
+        {
+          "iteration": 8,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-08.log",
+          "sha256": "422e8c5e592c6362899b189a50a1726f1d928a60e62ccb7dd110967649de4f09"
+        },
+        {
+          "iteration": 9,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-09.log",
+          "sha256": "6fea8ffbd00f15400dc8ba3d42e37f253ba475a0a8770155edc4ed5a1d9d42d2"
+        },
+        {
+          "iteration": 10,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-10.log",
+          "sha256": "422e8c5e592c6362899b189a50a1726f1d928a60e62ccb7dd110967649de4f09"
+        },
+        {
+          "iteration": 11,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-11.log",
+          "sha256": "422e8c5e592c6362899b189a50a1726f1d928a60e62ccb7dd110967649de4f09"
+        },
+        {
+          "iteration": 12,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-12.log",
+          "sha256": "8709d6eb0203bba528c93a8df396184ce024b7a7864084c14d152936574c30a6"
+        },
+        {
+          "iteration": 13,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-13.log",
+          "sha256": "21d4c000f7fad5e1c27dbb3fa6690db44f57471ebb5520154e65c2fe7e4fbd9b"
+        },
+        {
+          "iteration": 14,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-14.log",
+          "sha256": "21d4c000f7fad5e1c27dbb3fa6690db44f57471ebb5520154e65c2fe7e4fbd9b"
+        },
+        {
+          "iteration": 15,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-15.log",
+          "sha256": "60085db0206dd97c789e327b158f3b38be784570501158b5701ec73f56a9bfaf"
+        },
+        {
+          "iteration": 16,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-16.log",
+          "sha256": "6f96eadbce72d25c4b8b06a76234663899791613a414d33c37ed281124b2844c"
+        },
+        {
+          "iteration": 17,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-17.log",
+          "sha256": "6fea8ffbd00f15400dc8ba3d42e37f253ba475a0a8770155edc4ed5a1d9d42d2"
+        },
+        {
+          "iteration": 18,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-18.log",
+          "sha256": "21d4c000f7fad5e1c27dbb3fa6690db44f57471ebb5520154e65c2fe7e4fbd9b"
+        },
+        {
+          "iteration": 19,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-19.log",
+          "sha256": "f0c836925f69650f0eac3b8eb38242774ff04969233b59f295b6cd1a8d2d01e7"
+        },
+        {
+          "iteration": 20,
+          "exit": 0,
+          "log": "matrix-semantic-repeat-20.log",
+          "sha256": "422e8c5e592c6362899b189a50a1726f1d928a60e62ccb7dd110967649de4f09"
+        }
+      ]
+    },
+    {
+      "variant": "matrix-default",
+      "binary": "target/debug/deps/p7_acceptance_matrix-9fb308b6d8efbd32",
+      "binary_sha256": "db44a66086802b6eaf3c5fef1cc3cc44874204f08bfcd36002f784c8fb9cf548",
+      "results": [
+        {
+          "iteration": 1,
+          "exit": 0,
+          "log": "matrix-default-repeat-01.log",
+          "sha256": "f53c18e74a0fe0b45a1474f543f39f3a162ceb841ba99702b8f20778c9582fdb"
+        },
+        {
+          "iteration": 2,
+          "exit": 0,
+          "log": "matrix-default-repeat-02.log",
+          "sha256": "f53c18e74a0fe0b45a1474f543f39f3a162ceb841ba99702b8f20778c9582fdb"
+        },
+        {
+          "iteration": 3,
+          "exit": 0,
+          "log": "matrix-default-repeat-03.log",
+          "sha256": "7545518e6bfbb82f1878e84156b68cc9bd6698d94c237f7745be5b6a614b1f1a"
+        },
+        {
+          "iteration": 4,
+          "exit": 0,
+          "log": "matrix-default-repeat-04.log",
+          "sha256": "7d3e3478e1f69ff1d641ea5256db233e5ad15b59ea79bdf520c309b493f93fb5"
+        },
+        {
+          "iteration": 5,
+          "exit": 0,
+          "log": "matrix-default-repeat-05.log",
+          "sha256": "cbcc8a3f17f3e26d56ef08df4e1849aa166f2a755a2862caaefd47da8e08c93d"
+        },
+        {
+          "iteration": 6,
+          "exit": 0,
+          "log": "matrix-default-repeat-06.log",
+          "sha256": "f53c18e74a0fe0b45a1474f543f39f3a162ceb841ba99702b8f20778c9582fdb"
+        },
+        {
+          "iteration": 7,
+          "exit": 0,
+          "log": "matrix-default-repeat-07.log",
+          "sha256": "2912f2f951e229f6689af5c564574d4e27fa86bf23c44d9a1bb27cdf33b744f7"
+        },
+        {
+          "iteration": 8,
+          "exit": 0,
+          "log": "matrix-default-repeat-08.log",
+          "sha256": "2912f2f951e229f6689af5c564574d4e27fa86bf23c44d9a1bb27cdf33b744f7"
+        },
+        {
+          "iteration": 9,
+          "exit": 0,
+          "log": "matrix-default-repeat-09.log",
+          "sha256": "cbcc8a3f17f3e26d56ef08df4e1849aa166f2a755a2862caaefd47da8e08c93d"
+        },
+        {
+          "iteration": 10,
+          "exit": 0,
+          "log": "matrix-default-repeat-10.log",
+          "sha256": "2912f2f951e229f6689af5c564574d4e27fa86bf23c44d9a1bb27cdf33b744f7"
+        },
+        {
+          "iteration": 11,
+          "exit": 0,
+          "log": "matrix-default-repeat-11.log",
+          "sha256": "cbcc8a3f17f3e26d56ef08df4e1849aa166f2a755a2862caaefd47da8e08c93d"
+        },
+        {
+          "iteration": 12,
+          "exit": 0,
+          "log": "matrix-default-repeat-12.log",
+          "sha256": "cbcc8a3f17f3e26d56ef08df4e1849aa166f2a755a2862caaefd47da8e08c93d"
+        },
+        {
+          "iteration": 13,
+          "exit": 0,
+          "log": "matrix-default-repeat-13.log",
+          "sha256": "f53c18e74a0fe0b45a1474f543f39f3a162ceb841ba99702b8f20778c9582fdb"
+        },
+        {
+          "iteration": 14,
+          "exit": 0,
+          "log": "matrix-default-repeat-14.log",
+          "sha256": "f53c18e74a0fe0b45a1474f543f39f3a162ceb841ba99702b8f20778c9582fdb"
+        },
+        {
+          "iteration": 15,
+          "exit": 0,
+          "log": "matrix-default-repeat-15.log",
+          "sha256": "2912f2f951e229f6689af5c564574d4e27fa86bf23c44d9a1bb27cdf33b744f7"
+        },
+        {
+          "iteration": 16,
+          "exit": 0,
+          "log": "matrix-default-repeat-16.log",
+          "sha256": "7d3e3478e1f69ff1d641ea5256db233e5ad15b59ea79bdf520c309b493f93fb5"
+        },
+        {
+          "iteration": 17,
+          "exit": 0,
+          "log": "matrix-default-repeat-17.log",
+          "sha256": "7545518e6bfbb82f1878e84156b68cc9bd6698d94c237f7745be5b6a614b1f1a"
+        },
+        {
+          "iteration": 18,
+          "exit": 0,
+          "log": "matrix-default-repeat-18.log",
+          "sha256": "a420537474c037faef9e895338a0f34a3869f6751012bd18975f20a068cd2655"
+        },
+        {
+          "iteration": 19,
+          "exit": 0,
+          "log": "matrix-default-repeat-19.log",
+          "sha256": "f53c18e74a0fe0b45a1474f543f39f3a162ceb841ba99702b8f20778c9582fdb"
+        },
+        {
+          "iteration": 20,
+          "exit": 0,
+          "log": "matrix-default-repeat-20.log",
+          "sha256": "7545518e6bfbb82f1878e84156b68cc9bd6698d94c237f7745be5b6a614b1f1a"
+        }
+      ]
+    }
+  ],
+  "boundary": "L1/L2 only; synthetic vectors and in-memory HTTP seam, zero sockets; not live, stdio, holdout, release performance or real costs"
+}

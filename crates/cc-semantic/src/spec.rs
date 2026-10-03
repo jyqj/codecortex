@@ -7,9 +7,10 @@
 //!
 //! This module freezes, as of `ENCODING_SPEC_VERSION`:
 //!
-//! - the **space identity** ([`VectorSpace`]): `model_id` is part of the
-//!   identity, `dimension` is not — two spaces with equal dimension but
-//!   different `model_id` always yield different [`SpaceDigest`]s;
+//! - the **space identity** ([`VectorSpace`]): the complete frozen tuple
+//!   `(model_id, dimension, distance, spec_version)` enters [`SpaceDigest`].
+//!   Equal dimension alone does not identify a space; different models or
+//!   dimensions produce different digests;
 //! - the **three-way digest split**: space identity (`SpaceDigest`),
 //!   document encoding spec (`DocSpecDigest`), query encoding spec
 //!   (`QuerySpecDigest`). Query-only changes (instruction/limits) never touch
@@ -84,9 +85,9 @@ pub enum DistanceMetric {
 
 /// Frozen vector-space identity.
 ///
-/// `model_id` is part of the space identity; `dimension` is not — two spaces
-/// with the same dimension but different models are different spaces and must
-/// never be mixed (ADR-0003 constraint table, P6-003).
+/// The complete `(model_id, dimension, distance, spec_version)` tuple is the
+/// space identity. Equal dimension alone does not identify a space: distinct
+/// models or dimensions must never be mixed (ADR-0003 constraint table, P6-003).
 ///
 /// Fields are private by design: the only sanctioned construction path is
 /// [`VectorSpace::new`], which stamps the current
@@ -166,10 +167,7 @@ impl VectorSpace {
     /// dimension, different model must not be mixed" (V16).
     pub fn digest(&self) -> CcResult<SpaceDigest> {
         self.validate()?;
-        Ok(SpaceDigest::new(hash(&(
-            SPACE_DIGEST_DOMAIN,
-            self,
-        ))?))
+        Ok(SpaceDigest::new(hash(&(SPACE_DIGEST_DOMAIN, self))?))
     }
 }
 
@@ -245,7 +243,12 @@ impl DocumentEncodingSpec {
     }
 
     pub fn validate(&self) -> CcResult<()> {
-        validate_spec_fields(&self.space, &self.instruction, self.max_tokens, &self.tokenizer)
+        validate_spec_fields(
+            &self.space,
+            &self.instruction,
+            self.max_tokens,
+            &self.tokenizer,
+        )
     }
 
     pub fn space(&self) -> &VectorSpace {
@@ -268,10 +271,7 @@ impl DocumentEncodingSpec {
     /// `(DOC_SPEC_DIGEST_DOMAIN, self)`.
     pub fn digest(&self) -> CcResult<DocSpecDigest> {
         self.validate()?;
-        Ok(DocSpecDigest::new(hash(&(
-            DOC_SPEC_DIGEST_DOMAIN,
-            self,
-        ))?))
+        Ok(DocSpecDigest::new(hash(&(DOC_SPEC_DIGEST_DOMAIN, self))?))
     }
 }
 
@@ -294,7 +294,12 @@ impl QueryEncodingSpec {
     }
 
     pub fn validate(&self) -> CcResult<()> {
-        validate_spec_fields(&self.space, &self.instruction, self.max_tokens, &self.tokenizer)
+        validate_spec_fields(
+            &self.space,
+            &self.instruction,
+            self.max_tokens,
+            &self.tokenizer,
+        )
     }
 
     pub fn space(&self) -> &VectorSpace {
@@ -341,7 +346,9 @@ pub fn validate_input_bytes(bytes: &[u8]) -> CcResult<()> {
         )));
     }
     if std::str::from_utf8(bytes).is_err() {
-        return Err(invalid("input bytes must be canonical UTF-8 text (spec v1)"));
+        return Err(invalid(
+            "input bytes must be canonical UTF-8 text (spec v1)",
+        ));
     }
     Ok(())
 }
@@ -388,10 +395,7 @@ mod tests {
         let b = space("fake/model-b", 8);
         assert_ne!(a, b);
         assert_eq!(a.dimension(), b.dimension());
-        assert_ne!(
-            a.digest().expect("digest a"),
-            b.digest().expect("digest b")
-        );
+        assert_ne!(a.digest().expect("digest a"), b.digest().expect("digest b"));
     }
 
     #[test]
@@ -448,7 +452,13 @@ mod tests {
         assert!(DocumentEncodingSpec::new(s.clone(), None, MAX_MAX_TOKENS + 1, "t").is_err());
         assert!(DocumentEncodingSpec::new(s.clone(), None, 8_192, "").is_err());
         assert!(DocumentEncodingSpec::new(s.clone(), Some(String::new()), 8_192, "t").is_err());
-        assert!(DocumentEncodingSpec::new(s.clone(), Some("x".repeat(MAX_INSTRUCTION_BYTES + 1)), 8_192, "t").is_err());
+        assert!(DocumentEncodingSpec::new(
+            s.clone(),
+            Some("x".repeat(MAX_INSTRUCTION_BYTES + 1)),
+            8_192,
+            "t"
+        )
+        .is_err());
         assert!(QueryEncodingSpec::new(s.clone(), None, 0, "t").is_err());
         assert!(QueryEncodingSpec::new(s, None, 8_192, "").is_err());
     }

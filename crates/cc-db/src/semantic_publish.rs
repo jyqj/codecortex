@@ -61,6 +61,36 @@ use crate::index_db::IndexDb;
 use crate::semantic_outbox::{self, OutboxState};
 use crate::sql_util::db_err;
 
+/// Incarnation-local runtime fence. Take it only AFTER acquiring a SQLite
+/// write transaction, and release it after commit. Closing never waits on
+/// SQLite contention, and a close that completes precedes all later writes.
+#[derive(Debug)]
+pub struct LifecycleFence(std::sync::Mutex<bool>);
+pub struct LifecyclePermit<'a> {
+    _guard: std::sync::MutexGuard<'a, bool>,
+}
+impl Default for LifecycleFence {
+    fn default() -> Self {
+        Self(std::sync::Mutex::new(true))
+    }
+}
+impl LifecycleFence {
+    pub fn close(&self) {
+        *self.0.lock().unwrap_or_else(|p| p.into_inner()) = false;
+    }
+    pub fn is_open(&self) -> bool {
+        self.0.lock().map(|open| *open).unwrap_or(false)
+    }
+    pub fn enter(&self) -> Option<LifecyclePermit<'_>> {
+        let open = self.0.lock().ok()?;
+        if *open {
+            Some(LifecyclePermit { _guard: open })
+        } else {
+            None
+        }
+    }
+}
+
 /// Why the publish CAS refused to write (the five fences, one variant each,
 /// plus the vanished-base-row case). A rejection is a clean loss: zero
 /// manifest writes, zero epoch bumps.
@@ -353,9 +383,29 @@ impl IndexDb {
     /// `expected_incarnation` is the worker's startup snapshot; a mismatch
     /// fences the whole attempt out (ADR-0003 rebuild fencing).
     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+        // Unscoped library callers retain their frozen behavior.
+        self.publish_semantic_with_lifecycle(req, None)
+            .map(|outcome| outcome.expect("unscoped publish"))
+    }
+
+    pub fn publish_semantic_with_lifecycle(
+        &self,
+        req: &PublishRequest<'_>,
+        lifecycle: Option<&LifecycleFence>,
+    ) -> CcResult<Option<PublishOutcome>> {
         let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("BEGIN IMMEDIATE;")
             .map_err(|e| CcError::Database(format!("begin publish: {e}")))?;
+        let _lifecycle = match lifecycle {
+            Some(fence) => match fence.enter() {
+                Some(permit) => Some(permit),
+                None => {
+                    conn.execute_batch("ROLLBACK;").map_err(db_err)?;
+                    return Ok(None);
+                }
+            },
+            None => None,
+        };
         let outcome = match publish_and_ack_on(&conn, req) {
             Ok(outcome) => outcome,
             Err(e) => {
@@ -372,7 +422,7 @@ impl IndexDb {
             }
         }
         match conn.execute_batch("COMMIT;") {
-            Ok(()) => Ok(outcome),
+            Ok(()) => Ok(Some(outcome)),
             Err(e) => {
                 let _ = conn.execute_batch("ROLLBACK;");
                 Err(CcError::Database(format!("commit publish: {e}")))

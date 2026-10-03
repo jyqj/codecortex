@@ -104,6 +104,10 @@ pub struct CodeIndex {
     pub(crate) index_db: Option<Arc<IndexDb>>,
     engine: Option<Arc<SearchEngine>>,
     query_services: Arc<crate::service_factory::QueryServices>,
+    #[cfg(feature = "semantic")]
+    semantic_subsystem: Option<Arc<crate::semantic_wiring::SemanticSubsystem>>,
+    #[cfg(feature = "semantic")]
+    semantic_runtime: Option<Arc<crate::semantic_runtime::SemanticRuntime>>,
     pub(crate) repo_tier: Option<RepoSizeTier>,
     /// True when the DB was freshly created (Initialized) or rebuilt after a
     /// schema mismatch — signals that an auto-index build is needed.
@@ -168,6 +172,10 @@ impl CodeIndex {
             index_db: None,
             engine: None,
             query_services: Arc::new(crate::service_factory::QueryServices::default()),
+            #[cfg(feature = "semantic")]
+            semantic_subsystem: None,
+            #[cfg(feature = "semantic")]
+            semantic_runtime: None,
             repo_tier: None,
             needs_initial_index: false,
             build_gate: Arc::new(std::sync::Mutex::new(())),
@@ -192,12 +200,49 @@ impl CodeIndex {
         let repo_tier = Some(RepoSizeTier::from_file_count(estimated_files));
         let engine = SearchEngine::new(db.clone(), &config, repo_tier);
 
-        if self
+        let query_services = if self
             .project_path
             .as_ref()
             .is_some_and(|old| old != &project)
         {
-            self.query_services = Arc::new(crate::service_factory::QueryServices::default());
+            Arc::new(crate::service_factory::QueryServices::default())
+        } else {
+            self.query_services.clone()
+        };
+        // Validate and assemble before publishing any new project state.
+        // Initialization resolves configuration only; it never calls a provider.
+        #[cfg(feature = "semantic")]
+        let semantic_subsystem =
+            crate::semantic_wiring::assemble(&project.to_string_lossy(), &config, db.clone())?
+                .map(Arc::new);
+        #[cfg(feature = "semantic-http")]
+        let semantic_runtime = match semantic_subsystem.as_ref() {
+            Some(subsystem) => crate::semantic_runtime::from_config(
+                db.clone(),
+                subsystem.clone(),
+                query_services.clone(),
+                &config.semantic,
+            )?,
+            None => None,
+        };
+        self.query_services = query_services;
+        #[cfg(feature = "semantic")]
+        {
+            if let Some(worker) = self.semantic_runtime.take() {
+                worker.close();
+            }
+            match semantic_subsystem.as_ref() {
+                Some(subsystem) => crate::semantic_wiring::attach(&self.query_services, subsystem),
+                None => crate::semantic_wiring::teardown(&self.query_services),
+            }
+            self.semantic_subsystem = semantic_subsystem;
+            #[cfg(feature = "semantic-http")]
+            {
+                if let Some(worker) = &semantic_runtime {
+                    worker.authorize_configured_space_transition();
+                }
+                self.semantic_runtime = semantic_runtime;
+            }
         }
         self.project_path = Some(project);
         self.config = Some(config);
@@ -208,18 +253,6 @@ impl CodeIndex {
             schema_status,
             cc_db::index_migrate::SchemaStatus::Initialized
         );
-
-        // P7-010 minimal assembly leg: attach (or detach) the optional
-        // semantic subsystem on the freshly-set project. A config error in
-        // the `semantic` section refuses set_project (fail-closed, no silent
-        // default); the default build compiles none of this.
-        #[cfg(feature = "semantic")]
-        crate::semantic_wiring::wire(
-            &self.query_services,
-            &self.project_path.as_ref().expect("just set").to_string_lossy(),
-            self.config.as_ref().expect("just set"),
-            self.index_db.as_ref().expect("just set").clone(),
-        )?;
 
         if auto_index {
             // set_project itself succeeded (project/db/engine are all set);
@@ -245,8 +278,55 @@ impl CodeIndex {
         if let Some(db) = &self.index_db {
             crate::graph_read_model::evict_project(db.admin().instance_id());
         }
+        #[cfg(feature = "semantic")]
+        {
+            if let Some(worker) = self.semantic_runtime.take() {
+                worker.close();
+            }
+            crate::semantic_wiring::teardown(&self.query_services);
+            self.semantic_subsystem = None;
+        }
         self.engine = None;
         self.index_db = None;
+    }
+
+    /// Owned initialization handle for lock-free, caller-driven scheduling.
+    /// Cloning this handle performs no provider call and starts no worker.
+    #[cfg(feature = "semantic")]
+    pub fn semantic_subsystem(&self) -> Option<Arc<crate::semantic_wiring::SemanticSubsystem>> {
+        self.semantic_subsystem.clone()
+    }
+
+    /// Attach an explicitly authorized provider; installation performs no I/O.
+    #[cfg(feature = "semantic")]
+    pub fn install_semantic_provider(
+        &mut self,
+        provider: Arc<dyn cc_semantic::ports::EmbeddingProvider>,
+    ) -> CcResult<()> {
+        let subsystem = self
+            .semantic_subsystem
+            .clone()
+            .ok_or_else(|| CcError::InvalidParams("semantic subsystem disabled".into()))?;
+        let db = self
+            .index_db
+            .clone()
+            .ok_or_else(|| CcError::InvalidParams("project closed".into()))?;
+        let worker = crate::semantic_runtime::SemanticRuntime::new(
+            db,
+            subsystem,
+            self.query_services.clone(),
+            provider,
+        )?;
+        if let Some(old) = self.semantic_runtime.take() {
+            old.close();
+        }
+        worker.authorize_configured_space_transition();
+        self.semantic_runtime = Some(worker);
+        Ok(())
+    }
+    #[cfg(feature = "semantic")]
+    pub fn semantic_runtime(&self) -> Option<Arc<crate::semantic_runtime::SemanticRuntime>> {
+        self.semantic_runtime.clone()
     }
 
     pub fn is_closed(&self) -> bool {
@@ -1341,6 +1421,64 @@ mod tests {
         idx.reopen().unwrap();
         assert!(!idx.is_closed());
         assert!(idx.index_db.is_some());
+    }
+
+    #[cfg(feature = "semantic")]
+    #[test]
+    fn semantic_initialization_failure_preserves_the_previous_project() {
+        let old = TempDir::new().unwrap();
+        let rejected = TempDir::new().unwrap();
+        let mut idx = CodeIndex::new(Some(old.path())).unwrap();
+        let original_db = idx.index_db.as_ref().unwrap().clone();
+        std::fs::write(
+            rejected.path().join(".codecortex.json"),
+            r#"{"semantic":{"enabled":true}}"#,
+        )
+        .unwrap();
+        assert!(idx.set_project(rejected.path(), false).is_err());
+        assert_eq!(idx.project_path.as_deref(), Some(old.path()));
+        assert!(Arc::ptr_eq(&original_db, idx.index_db.as_ref().unwrap()));
+        assert!(idx.semantic_subsystem().is_none());
+    }
+
+    #[cfg(feature = "semantic")]
+    #[test]
+    fn semantic_lifecycle_retains_handle_and_tears_down_before_reopen() {
+        let dir = TempDir::new().unwrap();
+        let mut config = ProjectConfig::default();
+        config.semantic.enabled = true;
+        config.semantic.model_id = "fake/model-lifecycle".into();
+        config.semantic.dimensions = Some(2);
+        config.semantic.max_input_tokens = Some(8192);
+        config.semantic.max_batch_items = Some(16);
+        config.semantic.endpoint = "https://semantic.invalid/v1".into();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        let mut idx = CodeIndex::new(Some(dir.path())).unwrap();
+        assert!(idx.semantic_subsystem().is_some());
+        assert!(idx.query_services.semantic().is_some());
+        assert!(idx.query_services.semantic_wired().is_some());
+        idx.close();
+        assert!(idx.semantic_subsystem().is_none());
+        assert!(idx.query_services.semantic().is_none());
+        assert!(idx.query_services.semantic_wired().is_none());
+        assert!(idx.query_services.semantic_degradation().is_none());
+        idx.reopen().unwrap();
+        assert!(idx.semantic_subsystem().is_some());
+        assert!(idx.query_services.semantic().is_some());
+        config.semantic.enabled = false;
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        idx.close();
+        idx.reopen().unwrap();
+        assert!(idx.semantic_subsystem().is_none());
+        assert!(idx.query_services.semantic().is_none());
     }
 
     // ── is_closed is false when no project set ──────────────────────

@@ -1,0 +1,33 @@
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.67s
+     Running tests/v11_consumption_independent_review.rs (target/debug/deps/v11_consumption_independent_review-74208d6661c6daa9)
+
+running 2 tests
+test literal_graph_scope_and_analytic_captured_ranking ... FAILED
+test final_envelope_matches_reopened_cold_domain_and_obeys_real_budgets ... FAILED
+
+failures:
+
+---- literal_graph_scope_and_analytic_captured_ranking stdout ----
+
+thread 'literal_graph_scope_and_analytic_captured_ranking' (111516) panicked at crates/cc-server/tests/v11_consumption_independent_review.rs:68:9:
+assertion `left == right` failed
+  left: "def needle():\n    return 111\n"
+ right: "def needle():\n    return 111"
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- final_envelope_matches_reopened_cold_domain_and_obeys_real_budgets stdout ----
+
+thread 'final_envelope_matches_reopened_cold_domain_and_obeys_real_budgets' (111515) panicked at crates/cc-server/tests/v11_consumption_independent_review.rs:229:9:
+assertion `left == right` failed
+  left: "def needle():\n    return 111\n"
+ right: "def needle():\n    return 111"
+
+
+failures:
+    final_envelope_matches_reopened_cold_domain_and_obeys_real_budgets
+    literal_graph_scope_and_analytic_captured_ranking
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+error: test failed, to rerun pass `-p cc-server --test v11_consumption_independent_review`

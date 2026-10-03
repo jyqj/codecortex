@@ -80,9 +80,7 @@ use serde::Serialize;
 use cc_model::{CcError, CcResult};
 
 use crate::index_db::IndexDb;
-use crate::semantic_outbox::{
-    self, ClaimedTask, OutboxUpsert, OutboxWriteStats, OutboxState,
-};
+use crate::semantic_outbox::{self, ClaimedTask, OutboxState, OutboxUpsert, OutboxWriteStats};
 use crate::sql_util::{db_err, sql_in_placeholders, IN_BATCH_SIZE};
 
 /// Metadata key carrying the append-only switch event log.
@@ -187,11 +185,16 @@ fn timestamp_text(now_unix: f64) -> CcResult<String> {
     let nanos = ((now_unix - secs as f64) * 1e9).round() as u32;
     chrono::DateTime::from_timestamp(secs, nanos)
         .map(|dt| dt.to_rfc3339())
-        .ok_or_else(|| CcError::InvalidParams("semantic space switch timestamp out of range".into()))
+        .ok_or_else(|| {
+            CcError::InvalidParams("semantic space switch timestamp out of range".into())
+        })
 }
 
 /// Read one space's current state (+`activated_at`), or `None` when unknown.
-pub fn space_state_on(conn: &Connection, space_id: &str) -> CcResult<Option<(SpaceState, Option<String>)>> {
+pub fn space_state_on(
+    conn: &Connection,
+    space_id: &str,
+) -> CcResult<Option<(SpaceState, Option<String>)>> {
     let raw = conn
         .query_row(
             "SELECT state, activated_at FROM semantic_spaces WHERE space_id=?1",
@@ -335,7 +338,9 @@ pub fn switch_active_space_on(
 
     if let Some(old_space_id) = &previous_active {
         let revoked = conn
-            .prepare_cached("UPDATE semantic_spaces SET state='revoked' WHERE space_id=?1 AND state='active'")
+            .prepare_cached(
+                "UPDATE semantic_spaces SET state='revoked' WHERE space_id=?1 AND state='active'",
+            )
             .map_err(db_err)?
             .execute([old_space_id])
             .map_err(db_err)?;
@@ -510,6 +515,57 @@ pub fn consume_revoke_on(
 }
 
 impl IndexDb {
+    /// Explicit composition-root configured-space transition. Registration,
+    /// activation, old-task supersession and audit revision commit together.
+    /// Writer/BEGIN acquisition precedes lifecycle admission so close never
+    /// waits for an unrelated writer. Retirement cannot commit a late switch.
+    pub fn prepare_semantic_configured_space(
+        &self,
+        space_id: &str,
+        spec_json: &str,
+        revision: &str,
+        expected_incarnation: [u8; 16],
+        lifecycle: &crate::semantic_publish::LifecycleFence,
+    ) -> CcResult<bool> {
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        conn.execute_batch("BEGIN IMMEDIATE;").map_err(db_err)?;
+        let Some(_permit) = lifecycle.enter() else {
+            conn.execute_batch("ROLLBACK;").map_err(db_err)?;
+            return Ok(false);
+        };
+        let outcome = (|| {
+            if crate::read_generation::read_on(&conn)?.incarnation != expected_incarnation {
+                return Ok(false);
+            }
+            if space_state_on(&conn, space_id)?.is_none() {
+                register_space_on(&conn, space_id, spec_json, semantic_outbox::now_unix())?;
+            }
+            let stats =
+                switch_active_space_on(&conn, space_id, revision, semantic_outbox::now_unix())?;
+            if stats.visible_set_switched {
+                IndexDb::bump_semantic_epoch_on(&conn)?;
+            }
+            Ok(true)
+        })();
+        match outcome {
+            Ok(true) => {
+                if let Err(error) = conn.execute_batch("COMMIT;") {
+                    let _ = conn.execute_batch("ROLLBACK;");
+                    return Err(db_err(error));
+                }
+                Ok(true)
+            }
+            Ok(false) => {
+                conn.execute_batch("ROLLBACK;").map_err(db_err)?;
+                Ok(false)
+            }
+            Err(error) => {
+                let _ = conn.execute_batch("ROLLBACK;");
+                Err(error)
+            }
+        }
+    }
+
     /// Register a new `backfilling` space (brief step 1, state carrier).
     /// Auxiliary: a `backfilling` row is invisible to every reader, no epoch
     /// moves. Refuses an existing row in any state.
@@ -543,8 +599,7 @@ impl IndexDb {
         let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("BEGIN IMMEDIATE;")
             .map_err(|e| CcError::Database(format!("begin backfill enqueue: {e}")))?;
-        let outcome =
-            enqueue_backfill_on(&conn, space_id, upserts, semantic_outbox::now_unix());
+        let outcome = enqueue_backfill_on(&conn, space_id, upserts, semantic_outbox::now_unix());
         let outcome = match outcome {
             Ok(stats) => {
                 if stats.changed_semantic_state() {
@@ -584,8 +639,12 @@ impl IndexDb {
         let conn = self.write_conn.lock().map_err(db_err)?;
         conn.execute_batch("BEGIN IMMEDIATE;")
             .map_err(|e| CcError::Database(format!("begin space switch: {e}")))?;
-        let outcome =
-            switch_active_space_on(&conn, new_space_id, trigger_revision, semantic_outbox::now_unix());
+        let outcome = switch_active_space_on(
+            &conn,
+            new_space_id,
+            trigger_revision,
+            semantic_outbox::now_unix(),
+        );
         let outcome = match outcome {
             Ok(stats) => {
                 if stats.visible_set_switched {

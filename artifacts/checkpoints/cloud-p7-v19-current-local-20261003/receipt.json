@@ -1,0 +1,419 @@
+{
+  "run_id": "v19-current-6f3-local-20261003",
+  "executed_source_sha": "6f3cee1f2d23b43af5271bcaeaea67b931fd4fb7",
+  "source_tree": "33cc169f90704e5be3ecbd37ec4d904732612147",
+  "integration_review_docs_head": "4dc3687a9b2efb8d4bd93908f319a833169dc10b",
+  "product_package": "default/no-default-features",
+  "actual_product_features": [],
+  "product_binary_sha256": "ef339ca364f837515321a16d3438e02fb565fee1d2534629a87cab3118d31247",
+  "product_binary_local_path": "/tmp/v19-current-6f3-build/codecortex",
+  "eval_binary_sha256": "481bcaf82b4c982d10978a45adca1ada0eb8681288fc6df2dc82ae1851dd8342",
+  "engine_manifest_binary_blake3": "eee677bb64a4e4f9a35475759ba715921b49cdb37bd99d8dbd532660e06663f8",
+  "hash_algorithm_note": "Build receipt uses SHA256; evaluator manifest uses BLAKE3 per manifest.rs. Each separately verified against the same actual product bytes; never compare hashes across algorithms.",
+  "profile": "smoke; CLI does not admit baseline; exact unsupported-example failure preserved",
+  "gold_or_production_changed": false,
+  "new_holdout_read_or_tuned": false,
+  "old_missing_306_receipt_reused": false,
+  "paid_provider_or_query_network": false,
+  "validation_counts": {
+    "suites_validated": 8,
+    "suites_run": 8,
+    "suites_replayed": 8,
+    "native_questions": 56,
+    "native_positive_questions": 53,
+    "measured_rows": 164,
+    "row_status_counts": {
+      "partial": 63,
+      "no_match": 33,
+      "success": 68
+    },
+    "run_gate_exit_zero_suites": 6,
+    "run_gate_exit_one_suites": 2,
+    "replay_gate_matches_run": true,
+    "replay_every_file_hash_unchanged": true,
+    "protocol_or_infrastructure_errors": 0,
+    "invalid_source_hits": 0,
+    "unverified_source_hits": 0,
+    "invalid_material_questions": 1,
+    "invalid_material_rows": 3,
+    "partial_rows": 63
+  },
+  "scoring_separation": {
+    "native": "codecortex-native-v1 unchanged per-suite observations including R09",
+    "compat": "not_run: eight authorized manifests are native; no separately locked compatibility input. No gold/profile conversion invented."
+  },
+  "supplemental_material_valid_positive_observation": {
+    "questions": 52,
+    "excluded_invalid_question_ids": [
+      "R09"
+    ],
+    "raw_and_published_denominator_preserved": true,
+    "macro_question_top1": 0.8076923076923077,
+    "macro_question_ndcg10": 0.8173076923076923,
+    "scope": "descriptive small dev question means including Partial; not certified full-result quality or release threshold; unchanged original metrics retained"
+  },
+  "scope_gaps": {
+    "external_reviewed_public_multi_repo_questions": 0,
+    "target_external_public_questions": "approximately600; gap600 at PR60 audit",
+    "holdout_questions": 0,
+    "gold_symbol_constrained_questions": 19,
+    "gold_span_constrained_questions": 0,
+    "chain_gold_questions": 0,
+    "chain_scorer": "not implemented by current skeleton",
+    "paired_stratified_bootstrap_release_quality": "not run; original small within-run family CI retained and not substituted",
+    "live_semantic_quality_cost_ablation": "authorization blocked; not run"
+  },
+  "suites": [
+    {
+      "suite": "p0-codecortex-subset",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 14,
+      "native_measured_rows": 42,
+      "native_top1": 0.8571428571428571,
+      "native_ndcg10": 0.8571428571428571,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "partial": 39,
+        "no_match": 3
+      },
+      "run_gate": {
+        "status": "gate_failed",
+        "exit_code": 1,
+        "reasons": [
+          "R11 Partial",
+          "R12 Partial",
+          "R10 Partial",
+          "R01 Partial",
+          "R04 Partial",
+          "R05 Partial",
+          "R13 Partial",
+          "R03 Partial",
+          "R07 Partial",
+          "R02 Partial",
+          "R14 Partial",
+          "R06 Partial",
+          "R08 Partial",
+          "R11 Partial",
+          "R14 Partial",
+          "R04 Partial",
+          "R08 Partial",
+          "R06 Partial",
+          "R07 Partial",
+          "R02 Partial",
+          "R10 Partial",
+          "R12 Partial",
+          "R13 Partial",
+          "R05 Partial",
+          "R03 Partial",
+          "R01 Partial",
+          "R01 Partial",
+          "R08 Partial",
+          "R02 Partial",
+          "R05 Partial",
+          "R11 Partial",
+          "R07 Partial",
+          "R12 Partial",
+          "R13 Partial",
+          "R10 Partial",
+          "R03 Partial",
+          "R14 Partial",
+          "R04 Partial",
+          "R06 Partial"
+        ]
+      },
+      "replay_exit": 1,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 42,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": [
+        "R09"
+      ]
+    },
+    {
+      "suite": "p0-python-api",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 1,
+      "native_measured_rows": 1,
+      "native_top1": 1.0,
+      "native_ndcg10": 1.0,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 1
+      },
+      "run_gate": {
+        "status": "baseline_recorded_not_quality_certified",
+        "exit_code": 0,
+        "reasons": []
+      },
+      "replay_exit": 0,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 1,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    },
+    {
+      "suite": "p0-rust-api",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 1,
+      "native_measured_rows": 1,
+      "native_top1": 1.0,
+      "native_ndcg10": 1.0,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 1
+      },
+      "run_gate": {
+        "status": "baseline_recorded_not_quality_certified",
+        "exit_code": 0,
+        "reasons": []
+      },
+      "replay_exit": 0,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 1,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    },
+    {
+      "suite": "p0-smoke",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 11,
+      "native_measured_rows": 33,
+      "native_top1": 0.7,
+      "native_ndcg10": 0.7,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 21,
+        "no_match": 12
+      },
+      "run_gate": {
+        "status": "baseline_recorded_not_quality_certified",
+        "exit_code": 0,
+        "reasons": []
+      },
+      "replay_exit": 0,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 33,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    },
+    {
+      "suite": "p1b-exact",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 8,
+      "native_measured_rows": 24,
+      "native_top1": 1.0,
+      "native_ndcg10": 1.0,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 24
+      },
+      "run_gate": {
+        "status": "baseline_recorded_not_quality_certified",
+        "exit_code": 0,
+        "reasons": []
+      },
+      "replay_exit": 0,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 24,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    },
+    {
+      "suite": "p1c-bm25",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 1,
+      "native_measured_rows": 3,
+      "native_top1": 1.0,
+      "native_ndcg10": 1.0,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 3
+      },
+      "run_gate": {
+        "status": "baseline_recorded_not_quality_certified",
+        "exit_code": 0,
+        "reasons": []
+      },
+      "replay_exit": 0,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 3,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    },
+    {
+      "suite": "p1c-intents",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 18,
+      "native_measured_rows": 54,
+      "native_top1": 0.625,
+      "native_ndcg10": 0.65625,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 12,
+        "no_match": 18,
+        "partial": 24
+      },
+      "run_gate": {
+        "status": "gate_failed",
+        "exit_code": 1,
+        "reasons": [
+          "I10 Partial",
+          "I07 Partial",
+          "I05 Partial",
+          "I15 Partial",
+          "I11 Partial",
+          "I03 Partial",
+          "I06 Partial",
+          "I09 Partial",
+          "I03 Partial",
+          "I15 Partial",
+          "I10 Partial",
+          "I11 Partial",
+          "I06 Partial",
+          "I09 Partial",
+          "I05 Partial",
+          "I07 Partial",
+          "I10 Partial",
+          "I09 Partial",
+          "I05 Partial",
+          "I15 Partial",
+          "I11 Partial",
+          "I03 Partial",
+          "I06 Partial",
+          "I07 Partial"
+        ]
+      },
+      "replay_exit": 1,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 54,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    },
+    {
+      "suite": "p1c-softscope",
+      "native_scoring": "codecortex-native-v1",
+      "native_queries": 2,
+      "native_measured_rows": 6,
+      "native_top1": 1.0,
+      "native_ndcg10": 1.0,
+      "compat_scoring": "not_run_no_locked_compat_input",
+      "compat_queries": 0,
+      "compat_top1": null,
+      "compat_ndcg10": null,
+      "row_status_counts": {
+        "success": 6
+      },
+      "run_gate": {
+        "status": "baseline_recorded_not_quality_certified",
+        "exit_code": 0,
+        "reasons": []
+      },
+      "replay_exit": 0,
+      "replay_all_file_hashes_unchanged": true,
+      "raw_rows": 6,
+      "invalid_hits": 0,
+      "unverified_hits": 0,
+      "known_invalid_material_ids": []
+    }
+  ],
+  "S11": {
+    "new_run_rows": [
+      {
+        "status": "no_match",
+        "hits": 0
+      },
+      {
+        "status": "no_match",
+        "hits": 0
+      },
+      {
+        "status": "no_match",
+        "hits": 0
+      }
+    ],
+    "new_scope": "three no_match empty actual stdio responses at this exact new source; historical earlier no-answer failures remain preserved unchanged; not a general no-answer guarantee"
+  },
+  "PR63_import": {
+    "source_sha": "9b963d00182f44a728b4bf995ff877f604fef292",
+    "imported_original_files": 181,
+    "byte_identical": true,
+    "current_production_cargo_fingerprints_match": 388,
+    "formal_raw_validator_exit": 0,
+    "validator_run": "copied /tmp evidence only; original owner receipt not overwritten",
+    "gate_recommendations": "V05 literal offline minimum and V16 exact-backend minimum accepted from fixed source/independent raw; V18 literal public compatibility minimum and supplemental lifecycle rows accepted. No broader kinds/corpus/scale/crash certification."
+  },
+  "CI_provenance": {
+    "fixed_independent_baseline": "83a6b54 CI149/run37086891986 completed/success; current388 production/Cargo fingerprints equal",
+    "PR61_source": "7447896 CI152/run37087920844 completed/success direct read",
+    "PR61_final": "6f3cee1 CI153/run37088161304 completed/success including check/MSRV/security direct read",
+    "fresh_current_whole_workspace": "not_run; inherited receipts not relabelled"
+  },
+  "gate_decision": "V19/current-local bounded measurement/replay requirement satisfied; gate_failed Partial and R09 invalid remain. V19 quality/corpus/holdout/facet/span/compat/statistics/live requirements open. P7-014 remains in_progress.",
+  "hash_algorithm_preliminary_assertion": "Receipt assembler initially compared evaluator BLAKE3 to build SHA256 and stopped before writing final receipt. Corrected to independently verify both algorithms against the actual binary. This was an assembler assumption, not a product or evaluator failure.",
+  "PR66_import": {
+    "original_source_sha": "c9ae3031800f90704a9c3f08acdbafb078c498f2",
+    "independent_test_source_sha": "4ca575a711d10c224f442b66de65df3881688415",
+    "combined_executed_head": "5de088172afb5fbdbdeb23310835378818af2b01",
+    "original_files": 20,
+    "byte_identical": true,
+    "provenance_verifier_exit": 0,
+    "combined_validation": "HTTP original3+review2=5pass/0fail; scoped strict clippy/fmt pass",
+    "setup_failure": "Initial V11_REVIEW_OUTPUT directory missing caused only raw write failures; mkdir then unchanged assertions passed. Preserved local log hash.",
+    "scope": "Literal paths/exact bytes/analytic+2score, local/dense warm-vs-reopened current envelope, pinnedrerank and actual packing budget consumer; three bounded current rows independently accepted, future crossversion/fullV11 not certified"
+  },
+  "combined_review_log_hashes": [
+    {
+      "local_filename": "/tmp/v19-pr66-combined-test.log",
+      "sha256": "707a60139ba1d7403a122d573f1b9fab5e31247d00403604bd92cc021d6fb97e",
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/v19-pr66-combined-fixed-test.log",
+      "sha256": "e569444696c7f101671dc5c1e99d9341735bef5f28da83e8d64fb4ae5298eec7",
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/v19-pr66-combined-clippy.log",
+      "sha256": "041639007e9ef21a3d20d26d13ac27d5344560b5dfaa667e1653ef098417f3b2",
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/v19-final-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/v19-pr66-import-verify.log",
+      "sha256": "57d96e819d54d52a25c6e64594cb45569894d0aa77c3d37e007dc73e0b9de5f2",
+      "uploaded": false
+    }
+  ]
+}

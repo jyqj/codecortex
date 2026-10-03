@@ -1,0 +1,14 @@
+2026-10-03T05:10:50.819322Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2024-11-05"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "index-fix-upgrade", title: None, version: "1", description: None, icons: None, website_url: None } })
+2026-10-03T05:10:50.819471Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T05:10:50.822529Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T05:10:50.823304Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T05:10:50.823949Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T05:10:53.100079Z  INFO cc_index::indexer: pre-resolve framework enrichment active resolvers=["gin"] has_go_router=true
+2026-10-03T05:10:55.017490Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/workspace/index-fix-public-gin/.codecortex/index.sqlite3.tmp
+2026-10-03T05:10:55.145801Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-03T05:10:55.155107Z  WARN cc_db::index_db_rebuild: full rebuild failed, cleaning up temp db err=context_test.go: invalid resolution manifest: invalid dependency key
+2026-10-03T05:10:55.187348Z  WARN serve_inner: rmcp::service: response error id=2 error=ErrorData { code: ErrorCode(-32602), message: "context_test.go: invalid resolution manifest: invalid dependency key", data: None }
+2026-10-03T05:10:55.191471Z  INFO cc_server::mcp: received SIGTERM, initiating graceful shutdown
+2026-10-03T05:10:55.191617Z  INFO serve_inner: rmcp::service: task cancelled
+2026-10-03T05:10:55.191702Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Cancelled
+2026-10-03T05:10:55.191756Z  INFO cc_server::mcp: MCP server shut down gracefully

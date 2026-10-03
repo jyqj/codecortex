@@ -1,0 +1,59 @@
+    Blocking waiting for file lock on artifact directory
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 22.79s
+     Running unittests src/lib.rs (target/debug/deps/cc_server-95cb67417ad6e0e1)
+
+running 11 tests
+test semantic_runtime::shared_provider_gate_tests::busy_config_errors_propagate ... ignored, invoked by isolated parent harness
+test semantic_runtime::shared_provider_gate_tests::concurrent_registry_init_and_acquire ... ignored, invoked by isolated parent harness
+test semantic_runtime::shared_provider_gate_tests::disabled_is_inert ... ignored, invoked by isolated parent harness
+test semantic_runtime::shared_provider_gate_tests::production_wrappers_adopt_and_enforce ... ignored, invoked by isolated parent harness
+test semantic_runtime::tests::busy_project_rejects_duplicate_and_closed_schedule_releases_pin ... ok
+test semantic_runtime::tests::closed_round_and_missing_executor_never_contact_provider ... ok
+test semantic_runtime::tests::lazy_factory_failure_is_visible_and_retired_state_cannot_override_replacement ... ok
+
+running 1 test
+PRODUCTION_GATE upper_global=4 upper_project=2 actual_http_held=4 old_default_doc_and_query=true neighbor=true default_after_explicit=true arc_identity=true released=0
+test semantic_runtime::shared_provider_gate_tests::production_wrappers_adopt_and_enforce ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 335 filtered out; finished in 0.26s
+
+
+running 1 test
+BUSY_CONFIG wiring_and_runtime_errors=true old_permit_release=true retry_adoption=true
+test semantic_runtime::shared_provider_gate_tests::busy_config_errors_propagate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 335 filtered out; finished in 0.09s
+
+
+running 1 test
+REGISTRY_RACE same_arc=true linearized_adoption_or_busy=true released=0
+test semantic_runtime::shared_provider_gate_tests::concurrent_registry_init_and_acquire ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 335 filtered out; finished in 0.00s
+
+
+running 1 test
+DEFAULT_DISABLED cache_lookups=0 credential_lookups=0 transport_builds=0 provider_calls=0
+test semantic_runtime::shared_provider_gate_tests::disabled_is_inert ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 335 filtered out; finished in 0.03s
+
+test semantic_runtime::shared_provider_gate_tests::shared_provider_gate_cases_in_fresh_processes ... ok
+
+thread 'semantic_runtime::tests::post_index_worker_crosses_pages_and_reopen_reuses_artifacts' (5772) panicked at crates/cc-server/src/semantic_runtime.rs:793:9:
+assertion `left == right` failed: coverage=SemanticCoverage { eligible: 1100, published: 0, uncovered: 1100, failed: 0, stale: 0, reason: None }; errors=cache put failed: IO error: Read-only file system (os error 30); worker=None
+  left: 1100
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test semantic_runtime::tests::post_index_worker_crosses_pages_and_reopen_reuses_artifacts ... FAILED
+test semantic_runtime::tests::provider_wait_releases_index_and_db_locks_and_close_fences_publication ... ok
+test semantic_runtime::tests::reopen_preserves_live_retry_budget_and_terminal_failure ... ok
+
+failures:
+
+failures:
+    semantic_runtime::tests::post_index_worker_crosses_pages_and_reopen_reuses_artifacts
+
+test result: FAILED. 6 passed; 1 failed; 4 ignored; 0 measured; 325 filtered out; finished in 2.99s
+
+error: test failed, to rerun pass `-p cc-server --lib`

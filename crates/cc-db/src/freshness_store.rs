@@ -56,32 +56,41 @@ impl ReadOps<'_> {
         let conn = self.0.read_conn()?;
         let tx = conn.unchecked_transaction().map_err(db_err)?;
         let epoch = IndexDb::read_generation_on(&tx)?.index_epoch;
-        let mut result = ResolutionFreshness::ready(epoch);
-        let row: Option<(u32,String,String,u32,u32)> = tx.query_row(
-            "SELECT version,basis_epoch,reason,root_count,completed_files FROM resolution_frontier WHERE id=1", [],
-            |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).optional().map_err(db_err)?;
-        if let Some((version, basis, reason, roots, completed)) = row {
-            if version != RECONCILE_VERSION {
-                return Err(CcError::Database(
-                    "unsupported resolution frontier version".into(),
-                ));
-            }
-            result.status = "incomplete".into();
-            result.complete = false;
-            result.basis_epoch = Some(basis.parse().map_err(db_err)?);
-            result.root_count = roots as usize;
-            result.completed_files = completed as usize;
-            result.reason = Some(reason.clone());
-            result.retry = Some(
-                if reason == "disabled" {
-                    "enable dirty propagation and run incremental index, or request full index"
-                } else {
-                    "run incremental index to resume bounded work, or request full index"
-                }
-                .into(),
-            );
-        }
+        let result = resolution_freshness_on(&tx, epoch)?;
         tx.commit().map_err(db_err)?;
         Ok(result)
     }
+}
+
+/// Same-connection summary; caller owns the read transaction and epoch.
+pub(crate) fn resolution_freshness_on(
+    conn: &Connection,
+    epoch: u64,
+) -> CcResult<ResolutionFreshness> {
+    let mut result = ResolutionFreshness::ready(epoch);
+    let row: Option<(u32,String,String,u32,u32)> = conn.query_row(
+        "SELECT version,basis_epoch,reason,root_count,completed_files FROM resolution_frontier WHERE id=1", [],
+        |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?))).optional().map_err(db_err)?;
+    if let Some((version, basis, reason, roots, completed)) = row {
+        if version != RECONCILE_VERSION {
+            return Err(CcError::Database(
+                "unsupported resolution frontier version".into(),
+            ));
+        }
+        result.status = "incomplete".into();
+        result.complete = false;
+        result.basis_epoch = Some(basis.parse().map_err(db_err)?);
+        result.root_count = roots as usize;
+        result.completed_files = completed as usize;
+        result.reason = Some(reason.clone());
+        result.retry = Some(
+            if reason == "disabled" {
+                "enable dirty propagation and run incremental index, or request full index"
+            } else {
+                "run incremental index to resume bounded work, or request full index"
+            }
+            .into(),
+        );
+    }
+    Ok(result)
 }

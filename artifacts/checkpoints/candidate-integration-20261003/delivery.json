@@ -1,0 +1,63 @@
+{
+  "initial_api_read": {
+    "argv": [
+      "gh",
+      "pr",
+      "view",
+      "120",
+      "--json",
+      "url,title,body"
+    ],
+    "exit_code": 1,
+    "output": "Post \"https://api.github.com/graphql\": Forbidden",
+    "status": "blocked_forbidden_action_stopped"
+  },
+  "final_acceptance": "blocked_P1_session_config_fallback_plus_parent_review",
+  "performance_100k": "not_run",
+  "branch": "candidate/integrate-gate-parallel-retry-20261003",
+  "pushed_sha": "1276fb9fd3ca37f9857c86f88a20a87c7ccbcc1f",
+  "remote_sha": "1276fb9fd3ca37f9857c86f88a20a87c7ccbcc1f",
+  "push": {
+    "exit_code": 0,
+    "log": "push.log"
+  },
+  "base_branch": "fix/direct-writer-schema-20261003",
+  "checked_at_utc": "2026-10-03T15:01:26.859393+00:00",
+  "draft_create": {
+    "argv": [
+      "gh",
+      "pr",
+      "create",
+      "--draft",
+      "--base",
+      "fix/direct-writer-schema-20261003",
+      "--head",
+      "candidate/integrate-gate-parallel-retry-20261003",
+      "--title",
+      "draft: integrate FIFO parallel retry and shared gate (P1 acceptance blocked)",
+      "--body-file",
+      "artifacts/checkpoints/candidate-integration-20261003/PR_BODY.md"
+    ],
+    "exit_code": 1,
+    "output": "Post \"https://api.github.com/graphql\": Forbidden\n",
+    "status": "blocked_forbidden_action_stopped"
+  },
+  "ci_query": {
+    "argv": [
+      "gh",
+      "run",
+      "list",
+      "--branch",
+      "candidate/integrate-gate-parallel-retry-20261003",
+      "--limit",
+      "5",
+      "--json",
+      "databaseId,headSha,status,conclusion,url"
+    ],
+    "exit_code": 1,
+    "output": "failed to get runs: Get \"https://api.github.com/repos/jyqj/codecortex/actions/runs?per_page=5&exclude_pull_requests=true&branch=candidate%2Fintegrate-gate-parallel-retry-20261003\": Forbidden\n",
+    "status": "blocked_forbidden_action_stopped"
+  },
+  "after_delivery_source_sha256_unchanged": true,
+  "final_receipt_commit_changes": "docs/evidence only; final remote SHA reported outside self-referential commit"
+}

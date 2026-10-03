@@ -295,17 +295,17 @@ fn hand_back_primitive_fences_and_never_consumes_an_attempt() {
             |r| r.get(0),
         )
         .unwrap();
-    assert!(last_error.contains("cache miss"), "reason persisted for audit");
+    assert!(
+        last_error.contains("cache miss"),
+        "reason persisted for audit"
+    );
 
     // Terminal-state fence: once the task is done, no hand-back resurrects it.
     let task = world.db.claim_semantic("worker", 60.0).unwrap().unwrap();
-    assert!(cc_db::semantic_outbox::ack_done_on(
-        &world.conn,
-        task.task_id,
-        &task.token,
-        2_000.0
-    )
-    .unwrap());
+    assert!(
+        cc_db::semantic_outbox::ack_done_on(&world.conn, task.task_id, &task.token, 2_000.0)
+            .unwrap()
+    );
     assert!(!world
         .db
         .hand_back_semantic_task(task.task_id, &task.token, "late")

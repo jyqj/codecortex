@@ -1,0 +1,20 @@
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.63s
+     Running tests/cache_key_review_behavior.rs (target/debug/deps/cache_key_review_behavior-dcb71c8cc79b587a)
+
+running 2 tests
+
+thread 'production_service_adapter_and_consumer_preserve_distinct_cached_values' (107132) panicked at crates/cc-server/tests/cache_key_review_behavior.rs:269:14:
+called `Result::unwrap()` on an `Err` value: Other("query encoding failed")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test production_service_adapter_and_consumer_preserve_distinct_cached_values ... FAILED
+test public_schema_mismatch_reopen_serves_new_source_without_old_result_cache ... ok
+
+failures:
+
+failures:
+    production_service_adapter_and_consumer_preserve_distinct_cached_values
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+error: test failed, to rerun pass `-p cc-server --test cache_key_review_behavior`

@@ -1,0 +1,646 @@
+{
+  "evidence_summary": {
+    "files": [
+      "cc-db/src/index_migrate.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 0,
+      "callers_added": 0,
+      "symbols_resolved": 0,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 8,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 10,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15897
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 24,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 1428
+          },
+          "text": {
+            "cache_hits": 5,
+            "legacy_auto_reads": 0,
+            "storage_reads": 19,
+            "utf8_bytes": 10457,
+            "zstd_decodes": 7
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 5,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 1694
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 350,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 641,
+        "skipped_duplicates": 291,
+        "soft_scanned": 291,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 291,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 2946
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 291,
+                "utf8_bytes": 89578,
+                "zstd_decodes": 131
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 640,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5135
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 350,
+                "utf8_bytes": 105148,
+                "zstd_decodes": 184
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 6000,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 495,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 6967,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 641,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 22689,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 5,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 5
+          },
+          "elapsed_us": 2358,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 3,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 10457,
+        "redundant_bytes": 0,
+        "unique_bytes": 10457
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 6807,
+        "redundant_bytes": 0,
+        "unique_bytes": 6807
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 3,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          81,
+          92,
+          209,
+          141,
+          144,
+          214,
+          149,
+          74,
+          106,
+          184,
+          236,
+          7,
+          84,
+          57,
+          161,
+          132
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 54135,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 24
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:cc-db/src/index_migrate.rs:0",
+        "end_line": 1,
+        "file_path": "cc-db/src/index_migrate.rs",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "9f4b80e1bd36e3a78f04329a1e2495f6e9ffa663ad6c1ae0992367617f328683",
+            "doc_version": "7ffaa42f9eabca89207a58091639fc6fa559c99e858d1879b7f05ee84f6e879e",
+            "encoding_key": "6a2c5e2be90b1a93917bd2f66f820389dc915efe15ab7ff7933f1924f0b72932",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "d0d2a991d775d09e0e1176807c7220adb38ea3eddedd029a4db07784a2d27446",
+            "source": {
+              "byte_len": 10450,
+              "content_digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73",
+              "encoding": "utf8",
+              "snapshot_id": "6361e3d3255661160b6adcbc839999d621a28a7eabc0d9ee495c0263a4a7eb4a"
+            },
+            "span": {
+              "end": 69,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:non_adjacent_versions_keep_rebuild_on_mismatch",
+          "symbol:SchemaStatus",
+          "preselect:fts-summary:+2.30",
+          "preselect:token-search:+6.00"
+        ],
+        "rerank_score": 0.6215686274509804,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "//! Index database schema management (rebuild-on-mismatch strategy).\n"
+      },
+      {
+        "breadcrumb": "migrate_index_db",
+        "chunk_id": "chunk:cc-db/src/index_migrate.rs:5",
+        "end_line": 105,
+        "file_path": "cc-db/src/index_migrate.rs",
+        "fused_score": 0.028651026392961874,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.08333333333333333,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "5dc09070a4692b6ea0e6a1c4e99094ba99183342fc1a16f8803f62d20406502f",
+            "doc_version": "cca6cdd8e7e0feb10c9dd9460de4d4c9826fd3d478c5eb405468c3516684023b",
+            "encoding_key": "5732058cd8c42b9ab45e7d7cfe34f36212ead33d8b0ed1b523bd3dacfc5fd2bc",
+            "entity_key": "c051778a67ab53c688e6a91b40df4e38ca04fae14a4d117b0190c7bf5e303aa3"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 5357,
+              "start": 3237
+            },
+            "signature": {
+              "end": 3306,
+              "start": 3237
+            },
+            "slice_digest": "5fd74a0380d920b1cabcef70d790265cd89f30ab5369b4a292842908c5fb3731",
+            "source": {
+              "byte_len": 10450,
+              "content_digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73",
+              "encoding": "utf8",
+              "snapshot_id": "6361e3d3255661160b6adcbc839999d621a28a7eabc0d9ee495c0263a4a7eb4a"
+            },
+            "span": {
+              "end": 5357,
+              "start": 2736
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@12",
+          "fts-summary",
+          "symbol:non_adjacent_versions_keep_rebuild_on_mismatch",
+          "symbol:SchemaStatus",
+          "preselect:fts-summary:+2.30",
+          "preselect:token-search:+6.00"
+        ],
+        "rerank_score": 0.5586510263929618,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.017741935483870968
+          ],
+          [
+            "rrf:graph",
+            0.010909090909090908
+          ],
+          [
+            "overlap",
+            0.27999999999999997
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 44,
+        "symbol_kind": "function",
+        "symbol_name": "migrate_index_db",
+        "text": "\n\n/// Check the stored schema version and apply the full schema if needed.\n///\n/// Returns `Ok(Initialized)` if the database was freshly created (version was 0).\n/// Returns `Ok(UpToDate)` if the version already matches.\n/// Returns `Ok(Migrated)` if the stored version was the adjacent additive\n/// predecessor — the missing objects were created in place, data preserved.\n/// Returns `Ok(Mismatch)` for any other stored version — the caller should\n/// destructively reset the database and retry.\npub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {\n    let stored = conn\n        .pragma_query_value(None, \"user_version\", |row| row.get::<_, u32>(0))\n        .map_err(db_err)?;\n\n    if stored == CURRENT_SCHEMA_VERSION {\n        crate::read_generation::ensure(conn)?;\n        return Ok(SchemaStatus::UpToDate);\n    }\n\n    if stored != 0 {\n        if stored == ADDITIVE_MIGRATION_FROM {\n            // Additive in-place migration: FULL_SCHEMA_SQL is entirely\n            // `CREATE ... IF NOT EXISTS`, so re-applying it only creates the\n            // objects the stored version lacks. Existing rows, tables and the\n            // FTS maintenance model are untouched; the persisted incarnation\n            // is deliberately preserved (renewal is reserved for the\n            // rebuild/swap protocol).\n            tracing::info!(\n                from = stored,\n                to = CURRENT_SCHEMA_VERSION,\n                \"applying additive schema migration\"\n            );\n            conn.execute_batch(FULL_SCHEMA_SQL).map_err(|e| {\n                cc_model::CcError::Database(format!(\"additive schema migration failed: {}\", e))\n            })?;\n            conn.pragma_update(None, \"user_version\", CURRENT_SCHEMA_VERSION)\n                .map_err(db_err)?;\n            crate::read_generation::ensure(conn)?;\n            return Ok(SchemaStatus::Migrated { from: stored });\n        }\n        tracing::warn!(\n            stored_version = stored,\n            expected_version = CURRENT_SCHEMA_VERSION,\n            \"index schema version mismatch, rebuild required\"\n        );\n        return Ok(SchemaStatus::Mismatch { stored });\n    }\n\n    // Fresh database (version 0): apply full schema.\n    tracing::info!(\n        version = CURRENT_SCHEMA_VERSION,\n        \"initializing index schema\"\n    );\n    conn.execute_batch(FULL_SCHEMA_SQL)\n        .map_err(|e| cc_model::CcError::Database(format!(\"schema init failed: {}\", e)))?;\n    conn.pragma_update(None, \"user_version\", CURRENT_SCHEMA_VERSION)\n        .map_err(db_err)?;\n\n    crate::read_generation::ensure(conn)?;\n    Ok(SchemaStatus::Initialized)\n}"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "rebuild on database schema mismatch",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-db/src/index_migrate.rs:2",
+        "document": {
+          "doc_key": "ce6c293819ef912a630e1e8f98bf6fc5e1241f12f843a6d7b357ebdd8a661539",
+          "doc_version": "f3d4a69f62f3dc4e143f6e33c5ad165432082af51ad8ed31539a1670ab84e4f9",
+          "encoding_key": "ca1089011a3e3aa215986808817258271db9f0848ee49d85bdf0662b64332062",
+          "entity_key": "6634b9012753713e145962a52551f8ed829ea57e2333bccf802b2fa001568cef"
+        },
+        "file_path": "cc-db/src/index_migrate.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:non_adjacent_versions_keep_rebuild_on_mismatch",
+          "symbol:SchemaStatus",
+          "symbol:fresh_db_initializes_schema"
+        ],
+        "source_digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73",
+        "source_span": {
+          "end": 2260,
+          "start": 150
+        },
+        "symbol_kind": "variable",
+        "symbol_name": "CURRENT_SCHEMA_VERSION"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-db/src/index_migrate.rs:8",
+        "document": {
+          "doc_key": "2a2f9b8a8bbc83b4f63351a671adb2827921ba8a406a177c62bf65be900ba51a",
+          "doc_version": "faf1b9e09d7776f8278cf66fa0ab7dbe88c231505e9773efcf16b70cdecac1c7",
+          "encoding_key": "bb1a31eeee6df1d0e7188eba79acebd6ae9802a9411a09508efa1b7afedc6455",
+          "entity_key": "9810367c147e3750a2873a83d5c07b9c9354ecaec3871b8e4b753b08ebfce528"
+        },
+        "file_path": "cc-db/src/index_migrate.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:non_adjacent_versions_keep_rebuild_on_mismatch",
+          "symbol:SchemaStatus",
+          "symbol:fresh_db_initializes_schema"
+        ],
+        "source_digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73",
+        "source_span": {
+          "end": 5870,
+          "start": 5439
+        },
+        "symbol_kind": "enum",
+        "symbol_name": "SchemaStatus"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-db/src/index_migrate.rs:20",
+        "document": {
+          "doc_key": "817f9112bc339c5223b47126d9bf00dc33d2f626707f45a8bca7b860e7471aa6",
+          "doc_version": "5541fab40fc6d18d52bfd0c0e77318798124240c424625b1ec27ad711435f4ed",
+          "encoding_key": "b1839a147abf23b5f70126b2622c5d84985e2253f48fada4ca7276322a4f5293",
+          "entity_key": "39057677f6ea69ae831dd804696351c42bb17928dd4e450aad8287788868cc7b"
+        },
+        "file_path": "cc-db/src/index_migrate.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:non_adjacent_versions_keep_rebuild_on_mismatch",
+          "symbol:SchemaStatus",
+          "symbol:fresh_db_initializes_schema"
+        ],
+        "source_digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73",
+        "source_span": {
+          "end": 9994,
+          "start": 9870
+        },
+        "symbol_kind": "module",
+        "symbol_name": "tests"
+      },
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-db/src/index_migrate.rs:3",
+        "document": {
+          "doc_key": "3e88cca57ca1fd0d00c5f8a9ad157169974d377762f72168ccedab17a84eed05",
+          "doc_version": "1a10a11f45b568ba6fc68dab4dd6d42a067a785dfccc6cc978fec11678817318",
+          "encoding_key": "1dcf6fa962ea6558072568791eb7a639b45b17f138bffdb0fe45046fb89333e0",
+          "entity_key": "25c1ef1fc2d66a31c3724ebbb325afe4337a6bebb23a098a8fa95b0c6f51d3bb"
+        },
+        "file_path": "cc-db/src/index_migrate.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "fts-summary",
+          "symbol:non_adjacent_versions_keep_rebuild_on_mismatch",
+          "symbol:SchemaStatus",
+          "symbol:fresh_db_initializes_schema"
+        ],
+        "source_digest": "88490e562431f8ce081f6fad8ad6ad17b9776079f217ac597880d56b41863b73",
+        "source_span": {
+          "end": 2660,
+          "start": 2260
+        },
+        "symbol_kind": "variable",
+        "symbol_name": "ADDITIVE_MIGRATION_FROM"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [],
+  "query": "rebuild on database schema mismatch",
+  "reasons": [
+    "hybrid search over code index"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "rebuild on database schema mismatch",
+  "token_budget": 4000,
+  "token_estimate": 3975
+}

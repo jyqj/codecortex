@@ -803,3 +803,193 @@ fn remove_files_batch_supersedes_without_embed() {
         Some(2)
     );
 }
+
+/// An actual pre-index v24 disk database is repaired by normal IndexDb open;
+/// every logical table (including unchanged parse evidence and generations)
+/// stays byte-for-byte equal across first and repeated opens.
+#[test]
+fn fifo_physical_index_preserves_existing_v24_logical_data() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("index.sqlite3");
+    let conn = rusqlite::Connection::open(&path).unwrap();
+    cc_db::index_migrate::migrate_index_db(&conn).unwrap();
+    seed_active_space(&conn, "sp");
+    seed_manifest_row(&conn, "unchanged", "unchanged.rs");
+    seed_outbox_task(&conn, "queued", "pending", 1000.0);
+    conn.execute_batch("INSERT INTO metadata(key,value) VALUES('index_epoch','17'),('evidence_epoch','23'),('semantic_epoch','31'); DROP INDEX semantic_outbox_fifo_pending;").unwrap();
+    fn snapshot(c: &rusqlite::Connection) -> Vec<(String, Vec<Vec<rusqlite::types::Value>>)> {
+        let tables: Vec<String> = c
+            .prepare("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name")
+            .unwrap()
+            .query_map([], |r| r.get(0))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect();
+        tables
+            .into_iter()
+            .map(|name| {
+                let sql = format!("SELECT * FROM \"{}\"", name.replace('"', "\"\""));
+                let width = c.prepare(&sql).unwrap().column_count();
+                let order = (1..=width)
+                    .map(|i| i.to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                let mut stmt = c.prepare(&format!("{sql} ORDER BY {order}")).unwrap();
+                let width = stmt.column_count();
+                let rows = stmt
+                    .query_map([], |r| {
+                        (0..width)
+                            .map(|i| r.get(i))
+                            .collect::<rusqlite::Result<Vec<rusqlite::types::Value>>>()
+                    })
+                    .unwrap()
+                    .map(Result::unwrap)
+                    .collect();
+                (name, rows)
+            })
+            .collect()
+    }
+    let before = snapshot(&conn);
+    drop(conn);
+    for _ in 0..2 {
+        let (db, status) = IndexDb::open(&path).unwrap();
+        assert_eq!(status, cc_db::index_migrate::SchemaStatus::UpToDate);
+        drop(db);
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        assert_eq!(
+            conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
+                .unwrap(),
+            24
+        );
+        assert_eq!(snapshot(&conn), before);
+        let sql: String = conn
+            .query_row(
+                "SELECT sql FROM sqlite_master WHERE name='semantic_outbox_fifo_pending'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert!(sql.contains("(space_id,task_id,available_at) WHERE state='pending'"));
+        assert!(!sql.contains("UNIQUE"));
+    }
+}
+
+#[test]
+fn guarded_fifo_matches_original_cas_through_retry_and_clock_boundaries() {
+    use cc_db::semantic_outbox::{ack_done_on, claim_next_on, retry_on};
+    use rusqlite::{params, OptionalExtension};
+    let old = v22_conn();
+    let new = v22_conn();
+    old.execute_batch("DROP INDEX semantic_outbox_fifo_pending")
+        .unwrap();
+    for c in [&old, &new] {
+        for (i, state, space, time) in [
+            (1, "pending", "sp", 1050.0),
+            (2, "done", "sp", 900.0),
+            (3, "pending", "other", 900.0),
+            (4, "superseded", "sp", 900.0),
+            (5, "claimed", "sp", 900.0),
+            (6, "pending", "sp", 1000.0),
+            (7, "pending", "sp", 1000.0),
+        ] {
+            c.execute("INSERT INTO semantic_outbox(task_id,doc_key,doc_version,input_digest,space_id,op,state,available_at,created_at,updated_at) VALUES(?1,?2,'v','in',?3,'embed',?4,?5,'created','updated')", params![i,format!("doc{i}"),space,state,time]).unwrap();
+        }
+    }
+    let original="UPDATE semantic_outbox SET state='claimed',lease_token=lower(hex(randomblob(16))),lease_expires_at=?1+?2,claim_owner=?3,attempt_count=attempt_count+1,updated_at=?4 WHERE task_id=(SELECT task_id FROM semantic_outbox WHERE space_id=?5 AND state='pending' AND available_at<=?1 ORDER BY task_id ASC LIMIT 1) RETURNING task_id,lease_token";
+    // task id, state, attempts, readiness, lease expiry, owner and last error.
+    type NormalizedLeaseRow = (
+        i64,
+        String,
+        i64,
+        f64,
+        Option<f64>,
+        Option<String>,
+        Option<String>,
+    );
+    fn normalized(c: &rusqlite::Connection) -> Vec<NormalizedLeaseRow> {
+        c.prepare("SELECT task_id,state,attempt_count,available_at,lease_expires_at,claim_owner,last_error FROM semantic_outbox ORDER BY task_id").unwrap().query_map([],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?,r.get(4)?,r.get(5)?,r.get(6)?))).unwrap().map(Result::unwrap).collect()
+    }
+    for (step, now) in [999.0, 1000.0, 1001.0, 1004.0, 1005.0, 1050.0, 1051.0]
+        .into_iter()
+        .enumerate()
+    {
+        let a: Option<(i64, String)> = old
+            .query_row(
+                original,
+                params![now, 60.0, "owner", "updated", "sp"],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .optional()
+            .unwrap();
+        let b = claim_next_on(&new, "sp", "owner", now, 60.0).unwrap();
+        assert_eq!(a.as_ref().map(|x| x.0), b.as_ref().map(|x| x.task_id));
+        if let (Some((id, token)), Some(task)) = (a, b) {
+            assert_eq!(task.token.len(), 32);
+            assert_eq!(task.lease_expires_at, now + 60.0);
+            if step == 1 {
+                assert!(retry_on(&old, id, &token, "retry", now, 5.0, 3).unwrap());
+                assert!(retry_on(&new, id, &task.token, "retry", now, 5.0, 3).unwrap());
+                assert!(!ack_done_on(&new, id, &task.token, now).unwrap());
+            } else {
+                assert!(ack_done_on(&old, id, &token, now).unwrap());
+                assert!(ack_done_on(&new, id, &task.token, now).unwrap());
+            }
+        }
+        assert_eq!(normalized(&old), normalized(&new));
+    }
+}
+
+#[test]
+fn original_and_guarded_fifo_have_identical_normal_cas_competition() {
+    use cc_db::semantic_outbox::claim_next_on;
+    use rusqlite::OptionalExtension;
+    use std::sync::{Arc, Barrier};
+    let original = "UPDATE semantic_outbox SET state='claimed',lease_token=lower(hex(randomblob(16))),lease_expires_at=?1+?2,claim_owner=?3,attempt_count=attempt_count+1,updated_at=?4 WHERE task_id=(SELECT task_id FROM semantic_outbox WHERE space_id=?5 AND state='pending' AND available_at<=?1 ORDER BY task_id ASC LIMIT 1) RETURNING task_id";
+    for candidate in [false, true] {
+        let dir = tempfile::tempdir().unwrap();
+        let path = dir.path().join("race.sqlite3");
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        cc_db::index_migrate::migrate_index_db(&conn).unwrap();
+        seed_outbox_task(&conn, "only", "pending", 1000.0);
+        if !candidate {
+            conn.execute_batch("DROP INDEX semantic_outbox_fifo_pending")
+                .unwrap();
+        }
+        drop(conn);
+        let barrier = Arc::new(Barrier::new(2));
+        let workers: Vec<_> = (0..2)
+            .map(|_| {
+                let path = path.clone();
+                let barrier = barrier.clone();
+                std::thread::spawn(move || {
+                    let conn = rusqlite::Connection::open(path).unwrap();
+                    conn.busy_timeout(std::time::Duration::from_secs(5))
+                        .unwrap();
+                    barrier.wait();
+                    conn.execute_batch("BEGIN IMMEDIATE").unwrap();
+                    let task = if candidate {
+                        claim_next_on(&conn, "sp", "owner", 1000.0, 60.0)
+                            .unwrap()
+                            .map(|x| x.task_id)
+                    } else {
+                        conn.query_row(
+                            original,
+                            rusqlite::params![1000.0, 60.0, "owner", "updated", "sp"],
+                            |r| r.get::<_, i64>(0),
+                        )
+                        .optional()
+                        .unwrap()
+                    };
+                    conn.execute_batch("COMMIT").unwrap();
+                    task
+                })
+            })
+            .collect();
+        let mut won: Vec<_> = workers.into_iter().map(|w| w.join().unwrap()).collect();
+        won.sort();
+        assert_eq!(won, vec![None, Some(1)]);
+        let conn = rusqlite::Connection::open(&path).unwrap();
+        let state:(String,i64,f64,i64)=conn.query_row("SELECT state,attempt_count,lease_expires_at,length(lease_token) FROM semantic_outbox",[],|r|Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).unwrap();
+        assert_eq!(state, ("claimed".into(), 1, 1060.0, 32));
+    }
+}

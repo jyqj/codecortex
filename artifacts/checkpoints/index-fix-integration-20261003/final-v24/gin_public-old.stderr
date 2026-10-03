@@ -1,0 +1,15 @@
+2026-10-03T05:52:41.964578Z  INFO cc_db::index_migrate: initializing index schema version=22
+2026-10-03T05:52:42.209977Z  INFO serve_inner: rmcp::service: Service initialized as server peer_info=Some(InitializeRequestParams { meta: None, protocol_version: ProtocolVersion("2024-11-05"), capabilities: ClientCapabilities { experimental: None, extensions: None, roots: None, sampling: None, elicitation: None, tasks: None }, client_info: Implementation { name: "index-fix-upgrade", title: None, version: "1", description: None, icons: None, website_url: None } })
+2026-10-03T05:52:42.210165Z  INFO cc_server::mcp: MCP server started on stdio
+2026-10-03T05:52:42.216629Z  INFO serve_inner: rmcp::service: received notification notification=InitializedNotification(NotificationNoParam { method: InitializedNotificationMethod, extensions: Extensions })
+2026-10-03T05:52:42.217052Z  INFO serve_inner: rmcp::handler::server: client initialized
+2026-10-03T05:52:42.218300Z  INFO cc_index::memory_budget: memory budget initialized total_ram_mb=18007 budget_mb=9003 fraction=0.5
+2026-10-03T05:52:42.594024Z  INFO cc_index::indexer: pre-resolve framework enrichment active resolvers=["gin"] has_go_router=true
+2026-10-03T05:52:42.732104Z  INFO cc_db::index_db_rebuild: full rebuild: creating temp database tmp=/tmp/index-fix-upgrade-v24-public/gin_public/.codecortex/index.sqlite3.tmp
+2026-10-03T05:52:42.756633Z  INFO cc_db::index_db_rebuild: full rebuild: writing data to temp database
+2026-10-03T05:52:42.770040Z  WARN cc_db::index_db_rebuild: full rebuild failed, cleaning up temp db err=context.go: invalid resolution manifest: conflicting duplicate call site call:385a3223e8cfb7ea
+2026-10-03T05:52:42.788325Z  WARN serve_inner: rmcp::service: response error id=2 error=ErrorData { code: ErrorCode(-32602), message: "context.go: invalid resolution manifest: conflicting duplicate call site call:385a3223e8cfb7ea", data: None }
+2026-10-03T05:52:42.794291Z  INFO cc_server::mcp: received SIGTERM, initiating graceful shutdown
+2026-10-03T05:52:42.794432Z  INFO serve_inner: rmcp::service: task cancelled
+2026-10-03T05:52:42.796254Z  INFO cc_server::mcp: MCP server shut down gracefully
+2026-10-03T05:52:42.796272Z  INFO serve_inner: rmcp::service: serve finished quit_reason=Cancelled

@@ -1,0 +1,44 @@
+{
+  "run_id": "cloud-p7-014-lifecycle-20261002",
+  "baseline_sha": "fbce1df1239bcd0ba0dea2714aadb1c62a00b64d",
+  "target_sha": "ca5326a627e52bd1ec75ce84a73d95e1f8ac6970",
+  "local_equivalent_sha": "68de2075cc7bdafac0650dad07aa1f034265de41",
+  "tested_tree": "88b3552bee04dd119d010310bf8d58ff98d93537",
+  "source_file": "crates/cc-server/src/engine.rs",
+  "source_sha256": "37c28d0f4a8b6cb88997bae63aaf0f496d3b833342a112ca827e25bb1a3117d6",
+  "commands": [
+    {
+      "command": "cargo test -p cc-server --features semantic --lib engine::tests::semantic_ --locked",
+      "exit_code": 0,
+      "passed": 2,
+      "log": "lifecycle-tests.log"
+    },
+    {
+      "command": "cargo test -p cc-server --lib --locked",
+      "exit_code": 0,
+      "passed": 253,
+      "log": "lifecycle-default.log"
+    },
+    {
+      "command": "cargo test -p cc-server --features semantic --lib --locked",
+      "exit_code": 0,
+      "passed": 280,
+      "log": "lifecycle-semantic.log"
+    }
+  ],
+  "review": "self-reviewed; independent integration review pending",
+  "rollback_status": "revert lifecycle commit; no schema or provider change",
+  "remaining": [
+    "production worker scheduling",
+    "wired-state stdio matrix",
+    "P7-011 scope and P7-013 cancellation fixes pending separate review"
+  ],
+  "task_status": "P7-014 remains in_progress",
+  "CI_baseline": {
+    "run_id": 37056005574,
+    "conclusion": "failure",
+    "msrv": "passed",
+    "check": "format failed; remaining steps skipped",
+    "security": "audit 1 vulnerability/6 warnings and Checks API permission failure"
+  }
+}

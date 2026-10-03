@@ -5,6 +5,7 @@
 //! `admin()` / `retrieval()` / `graph_reads()`) split the method surface.
 //! Deep dive: `docs/internals/STORAGE.md`.
 
+pub mod capability_read;
 mod community_carry;
 pub mod direct_writer;
 pub mod document_store;
@@ -49,10 +50,10 @@ pub mod semantic_gc_reads;
 pub mod semantic_manifest_reads;
 pub mod semantic_outbox;
 pub mod semantic_publish;
-pub mod semantic_space_switch;
 pub mod semantic_queue;
 pub mod semantic_rebuild;
 pub mod semantic_recovery;
+pub mod semantic_space_switch;
 pub mod snapshot_write_txn;
 pub mod sql_util;
 pub mod unit_of_work;

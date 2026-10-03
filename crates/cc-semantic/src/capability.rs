@@ -74,7 +74,7 @@ use crate::providers::openai_compatible::{
     HttpRequest, NormPolicy,
 };
 use crate::spec::{
-    DocumentEncodingSpec, DistanceMetric, QueryEncodingSpec, MAX_MAX_TOKENS, MAX_MODEL_ID_BYTES,
+    DistanceMetric, DocumentEncodingSpec, QueryEncodingSpec, MAX_MAX_TOKENS, MAX_MODEL_ID_BYTES,
     MIN_DIMENSION, MIN_MAX_TOKENS,
 };
 use crate::types::{SpaceDigest, VectorSpace};
@@ -285,7 +285,8 @@ impl CapabilityProbeError {
 fn classify(error: crate::ports::ProviderError) -> CapabilityProbeError {
     match error {
         crate::ports::ProviderError::InvalidInput(message)
-            if message.contains("dimension") || message.contains("does not match configured model") =>
+            if message.contains("dimension")
+                || message.contains("does not match configured model") =>
         {
             CapabilityProbeError::Mismatch(message)
         }
@@ -334,9 +335,7 @@ impl CapabilityProber {
             ));
         }
         if !trimmed.starts_with("http://") && !trimmed.starts_with("https://") {
-            return Err(config_error(
-                "semantic.endpoint must be an http(s) URL",
-            ));
+            return Err(config_error("semantic.endpoint must be an http(s) URL"));
         }
         Ok(Self {
             endpoint: trimmed.to_owned(),
@@ -362,11 +361,11 @@ impl CapabilityProber {
     ) -> Result<VerifiedCapability, CapabilityProbeError> {
         self.probe_dimension(space, capability)?;
         self.probe_batch_limit(space, capability)?;
-        let space_digest = space
-            .digest()
-            .map_err(|error| CapabilityProbeError::Unavailable(
-                crate::ports::ProviderError::InvalidInput(error.to_string()),
-            ))?;
+        let space_digest = space.digest().map_err(|error| {
+            CapabilityProbeError::Unavailable(crate::ports::ProviderError::InvalidInput(
+                error.to_string(),
+            ))
+        })?;
         Ok(VerifiedCapability {
             model_id: capability.model_id.clone(),
             dimension: capability.dimensions,
@@ -438,7 +437,9 @@ impl CapabilityProber {
             // always "capability unknown", mapped through the same provider
             // taxonomy the adapter uses.
             Err(error) => {
-                return Err(CapabilityProbeError::Unavailable(map_transport_error(error)))
+                return Err(CapabilityProbeError::Unavailable(map_transport_error(
+                    error,
+                )))
             }
         };
         // The probe shares the full P7-004 strong gate; it only ever asserts
@@ -450,12 +451,7 @@ impl CapabilityProber {
             .map_err(classify)
     }
 
-    fn build_request(
-        &self,
-        space: &VectorSpace,
-        items: u32,
-        with_dimensions: bool,
-    ) -> HttpRequest {
+    fn build_request(&self, space: &VectorSpace, items: u32, with_dimensions: bool) -> HttpRequest {
         let inputs: Vec<String> = (0..items)
             .map(|i| format!("{PROBE_TEXT} batch item {i}"))
             .collect();
@@ -771,10 +767,7 @@ mod tests {
                 .collect();
             HttpResponse {
                 status,
-                headers: vec![(
-                    "Content-Type".to_owned(),
-                    "application/json".to_owned(),
-                )],
+                headers: vec![("Content-Type".to_owned(), "application/json".to_owned())],
                 body: serde_json::to_vec(&serde_json::json!({
                     "object": "list",
                     "model": model,
@@ -840,8 +833,13 @@ mod tests {
     }
 
     fn query_spec(space: &VectorSpace) -> QueryEncodingSpec {
-        QueryEncodingSpec::new(space.clone(), Some("code search query".into()), 512, "cl100k")
-            .expect("valid query spec")
+        QueryEncodingSpec::new(
+            space.clone(),
+            Some("code search query".into()),
+            512,
+            "cl100k",
+        )
+        .expect("valid query spec")
     }
 
     fn ok_probe_responses(batch: usize) -> Vec<HttpResponse> {
@@ -1001,14 +999,20 @@ mod tests {
     fn disabled_config_is_rejected_by_resolve() {
         let mut config = enabled_config();
         config.enabled = false;
-        assert_config_error(resolve_provider(&config).map(|_| ()), "semantic.enabled is false");
+        assert_config_error(
+            resolve_provider(&config).map(|_| ()),
+            "semantic.enabled is false",
+        );
     }
 
     #[test]
     fn missing_required_fields_name_their_config_keys() {
         let mut config = enabled_config();
         config.dimensions = None;
-        assert_config_error(resolve_provider(&config).map(|_| ()), "semantic.dimensions is required");
+        assert_config_error(
+            resolve_provider(&config).map(|_| ()),
+            "semantic.dimensions is required",
+        );
 
         let mut config = enabled_config();
         config.max_input_tokens = None;
@@ -1026,7 +1030,10 @@ mod tests {
 
         let mut config = enabled_config();
         config.model_id = String::new();
-        assert_config_error(resolve_provider(&config).map(|_| ()), "semantic.model_id is required");
+        assert_config_error(
+            resolve_provider(&config).map(|_| ()),
+            "semantic.model_id is required",
+        );
     }
 
     #[test]
@@ -1037,36 +1044,39 @@ mod tests {
 
         let mut config = enabled_config();
         config.dimensions_mode = "auto".to_owned();
-        assert_config_error(resolve_provider(&config).map(|_| ()), "semantic.dimensions_mode");
+        assert_config_error(
+            resolve_provider(&config).map(|_| ()),
+            "semantic.dimensions_mode",
+        );
 
         let mut config = enabled_config();
         config.encoding_formats = vec!["base64".to_owned()];
-        assert_config_error(resolve_provider(&config).map(|_| ()), "semantic.encoding_formats");
+        assert_config_error(
+            resolve_provider(&config).map(|_| ()),
+            "semantic.encoding_formats",
+        );
     }
 
     #[test]
     fn batch_items_outside_the_probe_protocol_bound_are_rejected() {
         let mut config = enabled_config();
         config.max_batch_items = Some(0);
-        assert_config_error(resolve_provider(&config).map(|_| ()), "semantic.max_batch_items");
+        assert_config_error(
+            resolve_provider(&config).map(|_| ()),
+            "semantic.max_batch_items",
+        );
 
         let mut config = enabled_config();
         config.max_batch_items = Some(MAX_PROBE_BATCH_ITEMS + 1);
-        assert_config_error(
-            resolve_provider(&config).map(|_| ()),
-            "probe protocol",
-        );
+        assert_config_error(resolve_provider(&config).map(|_| ()), "probe protocol");
     }
 
     #[test]
     fn prober_rejects_bad_endpoints_as_config_errors() {
         let transport = Arc::new(ProbeMockTransport::default());
-        let error = CapabilityProber::new(
-            transport.clone(),
-            "ftp://nope",
-            EmbeddingApiKey::new("k"),
-        )
-        .unwrap_err();
+        let error =
+            CapabilityProber::new(transport.clone(), "ftp://nope", EmbeddingApiKey::new("k"))
+                .unwrap_err();
         assert!(matches!(error, CcError::Config(message) if message.contains("http(s)")));
         let error = CapabilityProber::new(transport, "", EmbeddingApiKey::new("k")).unwrap_err();
         assert!(matches!(error, CcError::Config(message) if message.contains("non-empty")));
@@ -1091,20 +1101,30 @@ mod tests {
         let requests = transport.requests.lock().unwrap();
         assert_eq!(requests.len(), 2, "one dimension probe + one batch probe");
         let dimension_request = &requests[0];
-        assert_eq!(dimension_request.url, "https://provider.invalid/v1/embeddings");
+        assert_eq!(
+            dimension_request.url,
+            "https://provider.invalid/v1/embeddings"
+        );
         let body: serde_json::Value = serde_json::from_slice(&dimension_request.body).unwrap();
         assert_eq!(body["dimensions"], serde_json::json!(DIM));
         assert_eq!(body["encoding_format"], "float");
         assert_eq!(body["model"], MODEL);
         assert_eq!(body["input"].as_array().unwrap().len(), 1);
-        assert!(dimension_request
-            .headers
-            .iter()
-            .any(|(k, v)| k.eq_ignore_ascii_case("authorization") && v == "Bearer sk-probe-secret"));
+        assert!(
+            dimension_request
+                .headers
+                .iter()
+                .any(|(k, v)| k.eq_ignore_ascii_case("authorization")
+                    && v == "Bearer sk-probe-secret")
+        );
 
         let batch_request = &requests[1];
         let body: serde_json::Value = serde_json::from_slice(&batch_request.body).unwrap();
-        assert_eq!(body["input"].as_array().unwrap().len(), 3, "declared batch limit");
+        assert_eq!(
+            body["input"].as_array().unwrap().len(),
+            3,
+            "declared batch limit"
+        );
     }
 
     #[test]
@@ -1128,7 +1148,12 @@ mod tests {
                         body: b"unknown parameter".to_vec(),
                     })
                 } else {
-                    Ok(ProbeMockTransport::embeddings_response(200, MODEL, DIM as usize, 1))
+                    Ok(ProbeMockTransport::embeddings_response(
+                        200,
+                        MODEL,
+                        DIM as usize,
+                        1,
+                    ))
                 }
             }
         }
@@ -1163,7 +1188,10 @@ mod tests {
         prober.probe(&space(), &cap).expect("fixed-mode probe");
         for request in transport.requests.lock().unwrap().iter() {
             let body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
-            assert!(body.get("dimensions").is_none(), "fixed mode must not send the field");
+            assert!(
+                body.get("dimensions").is_none(),
+                "fixed mode must not send the field"
+            );
         }
     }
 
@@ -1179,20 +1207,33 @@ mod tests {
             .expect("configurable probe");
         for request in transport.requests.lock().unwrap().iter() {
             let body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
-            let mut keys: Vec<&str> =
-                body.as_object().unwrap().keys().map(String::as_str).collect();
+            let mut keys: Vec<&str> = body
+                .as_object()
+                .unwrap()
+                .keys()
+                .map(String::as_str)
+                .collect();
             keys.sort_unstable();
-            assert_eq!(keys, vec!["dimensions", "encoding_format", "input", "model"]);
+            assert_eq!(
+                keys,
+                vec!["dimensions", "encoding_format", "input", "model"]
+            );
         }
 
         let transport = Arc::new(ProbeMockTransport::with_ok(ok_probe_responses(3)));
         let mut cap = capability();
         cap.dimensions_mode = DimensionsMode::Fixed;
-        prober(transport.clone()).probe(&space(), &cap).expect("fixed probe");
+        prober(transport.clone())
+            .probe(&space(), &cap)
+            .expect("fixed probe");
         for request in transport.requests.lock().unwrap().iter() {
             let body: serde_json::Value = serde_json::from_slice(&request.body).unwrap();
-            let mut keys: Vec<&str> =
-                body.as_object().unwrap().keys().map(String::as_str).collect();
+            let mut keys: Vec<&str> = body
+                .as_object()
+                .unwrap()
+                .keys()
+                .map(String::as_str)
+                .collect();
             keys.sort_unstable();
             assert_eq!(keys, vec!["encoding_format", "input", "model"]);
         }
@@ -1207,7 +1248,10 @@ mod tests {
         let mut cap = capability();
         cap.dimensions_mode = DimensionsMode::Fixed;
         let verdict = prober.probe(&space(), &cap).unwrap_err();
-        assert!(verdict.is_mismatch(), "declared dimension contradicted: {verdict:?}");
+        assert!(
+            verdict.is_mismatch(),
+            "declared dimension contradicted: {verdict:?}"
+        );
         assert!(matches!(
             verdict.into_config_error(),
             CcError::Config(message) if message.contains("capability probe contradicts")
@@ -1233,7 +1277,9 @@ mod tests {
             ProbeMockTransport::embeddings_response(200, MODEL, DIM as usize, 1),
             ProbeMockTransport::embeddings_response(200, MODEL, DIM as usize, 2),
         ]));
-        let verdict = prober(transport).probe(&space(), &capability()).unwrap_err();
+        let verdict = prober(transport)
+            .probe(&space(), &capability())
+            .unwrap_err();
         assert!(matches!(verdict, CapabilityProbeError::Unavailable(_)));
     }
 
@@ -1245,9 +1291,12 @@ mod tests {
             TransportError::Io("connection reset".to_owned()),
         ];
         for transport_error in cases {
-            let transport = Arc::new(ProbeMockTransport::with_ok(Vec::new())
-                .into_scripted_error(transport_error));
-            let verdict = prober(transport).probe(&space(), &capability()).unwrap_err();
+            let transport = Arc::new(
+                ProbeMockTransport::with_ok(Vec::new()).into_scripted_error(transport_error),
+            );
+            let verdict = prober(transport)
+                .probe(&space(), &capability())
+                .unwrap_err();
             match verdict {
                 CapabilityProbeError::Unavailable(ProviderError::Timeout) => {}
                 CapabilityProbeError::Unavailable(ProviderError::Cancelled) => {}
@@ -1293,9 +1342,8 @@ mod tests {
 
         // A failing probe leaves the cache untouched (verdict still
         // available from the earlier success, cache size unchanged).
-        let failing = Arc::new(
-            ProbeMockTransport::default().into_scripted_error(TransportError::Timeout),
-        );
+        let failing =
+            Arc::new(ProbeMockTransport::default().into_scripted_error(TransportError::Timeout));
         let failing_prober = CapabilityProber::new(
             failing,
             "https://provider.invalid/v1",
@@ -1327,9 +1375,10 @@ mod tests {
     #[test]
     fn probe_errors_never_leak_the_api_key() {
         let key = "sk-probe-secret-value";
-        let transport = Arc::new(ProbeMockTransport::default().into_scripted_error(
-            TransportError::Io("connection reset".to_owned()),
-        ));
+        let transport = Arc::new(
+            ProbeMockTransport::default()
+                .into_scripted_error(TransportError::Io("connection reset".to_owned())),
+        );
         let prober = CapabilityProber::new(
             transport,
             "https://provider.invalid/v1",

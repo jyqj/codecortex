@@ -74,6 +74,26 @@ fn semantic_candidate(runtime: &SharedCodeIndex) -> LaneOutcome {
     candidate.exact_identity = false;
     candidate.raw_score = 0.8;
     candidate.scoring_spec = "fake-recall-test-v1".into();
+    // The dense hydration fence requires a current publication even for a
+    // synthetic recall port. Seed metadata only; no provider/model is called.
+    let conn = rusqlite::Connection::open(index.index_db().unwrap().admin().db_path()).unwrap();
+    conn.execute(
+        "INSERT INTO semantic_spaces(space_id,spec_json,state) VALUES('fake-recall-test','{}','active')",
+        [],
+    )
+    .unwrap();
+    conn.execute(
+        "INSERT INTO semantic_manifest(doc_key,doc_version,file_path,encoding_key,\
+         input_digest,space_id,artifact_ref,published_at,published_incarnation) \
+         VALUES(?1,?2,'target.py',?3,'synthetic-input','fake-recall-test',\
+         'synthetic-artifact','2026-01-01','synthetic-incarnation')",
+        rusqlite::params![
+            candidate.document.doc_key,
+            candidate.document.doc_version,
+            candidate.document.encoding_key,
+        ],
+    )
+    .unwrap();
     LaneOutcome {
         candidate_count: 1,
         candidates: vec![candidate],
@@ -315,6 +335,14 @@ async fn semantic_candidates_are_hydrated_from_current_scoped_documents() {
         .iter()
         .any(|h| h["file_path"] == "target.py"));
     assert_eq!(lane(&value, "semantic")["candidate_count"], 1);
+    assert_eq!(
+        value.evidence_summary["source_freshness"]["dense_manifest_fence"]["checked"],
+        1
+    );
+    assert_eq!(
+        value.evidence_summary["source_freshness"]["dense_manifest_fence"]["skipped"], 0,
+        "synthetic candidate must pass the real publication fence"
+    );
     for hit in value.machine_pack["hits"].as_array().unwrap() {
         let sum: f64 = hit["score_trace"]
             .as_array()

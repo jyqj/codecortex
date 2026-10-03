@@ -1,0 +1,115 @@
+{
+  "status": "prepared_independent_not_task_acceptance",
+  "source_sha": "ee46fa564714ef75b2d839e5e37364cd35fd7406",
+  "base_sha": "1cfca4e942ec93aa1ad82a0e569bb28e24f7da6b",
+  "pr": "https://github.com/jyqj/codecortex/pull/81",
+  "task_status": {
+    "P7-014": "in_progress_blocked_remaining_V19_quality_custody_and_live_conditions",
+    "P7-015": "todo",
+    "P7-016": "todo"
+  },
+  "hard_dependency_chain": [
+    "P7-016 -> P6-020(done), P7-015(todo)",
+    "P7-015 -> P7-014(in_progress)"
+  ],
+  "authorities": [
+    "docs/roadmap/code-index-v2/tasks.json",
+    "docs/roadmap/code-index-v2/06-VALIDATION.md: V14/V17",
+    "docs/internals/STORAGE.md: recovery steps and crash table"
+  ],
+  "layer": "L2 unchanged production APIs in real killed Unix child; explicit caller-driven reopening/recovery, not production stdio auto-recovery",
+  "command": "P7_CRASH_EVIDENCE_DIR=/tmp/p7-crash-preparation-final CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 cargo test --locked --offline -p cc-semantic --test p7_crash_preparation -- --nocapture",
+  "toolchain": "rustc 1.95.0 (59807616e 2026-04-14)",
+  "test_result": {
+    "passed": 1,
+    "failed": 0,
+    "ignored_child_entry": 1,
+    "actual_sigkill_children": 12,
+    "input_seeds": [
+      17,
+      29,
+      43
+    ],
+    "distinct_input_digests": 3,
+    "boundaries": [
+      "uncommitted outbox/projection transaction",
+      "committed lease before embedding",
+      "durable artifact before publish",
+      "committed manifest and ack"
+    ],
+    "post_settlement_noop_recovery_scans": 27
+  },
+  "test_binary": {
+    "path": "/workspace/codecortex/target/debug/deps/p7_crash_preparation-a3455c8d75dee08d",
+    "sha256": "4c45f4f317e33edbc471f76a61770655e44980840ab4ccf0d7ba77e43b31ba44",
+    "size_bytes": 64045288
+  },
+  "regression": {
+    "command": "cargo test --locked --offline -p cc-semantic --test semantic_recovery --test publish_cas --test queue_worker",
+    "per_target_pass_counts": [
+      4,
+      9,
+      6
+    ],
+    "passed": 19,
+    "failed": 0,
+    "ignored": 0
+  },
+  "checks": {
+    "strict_scoped_clippy": "passed",
+    "workspace_fmt": "passed",
+    "production_Cargo_and_existing_tests": "unchanged"
+  },
+  "cost_scope": "all successful FakeProvider only; each of nine task scenarios one call total; no paid-currency or billing ledger proof. attempt_count counts claims (3/2/1), not provider calls; no-op scans add none.",
+  "not_run": [
+    "kill inside atomic_write or CAS internals",
+    "power loss/fsync storage crash guarantees",
+    "staging rename/rebuild SIGKILL",
+    "cache corruption/delete/GC-publish competition",
+    "process-level production stdio startup recovery",
+    "full seeded retry/close/rebuild/delete/lease/GC P7-016 matrix",
+    "live provider/quality/holdout"
+  ],
+  "environment": "workspace-only synthetic directories; killed only child handles created by this test; no signals to other processes, lease timestamp SQL forging, network, permissions or credential changes; retained temp databases/cache originals local",
+  "preliminary_run": "run1 passed twelve same-input boundary scenarios; final uses three distinct seed-specific inputs. Before execution, corrected draft harness SQL column/claim-count expectation from production schema; no production failure or implementation repair.",
+  "logs_local_only": [
+    {
+      "path": "/tmp/p7-crash-preparation-build.log",
+      "sha256": "2c329c655ebc260a790b17bb435b3b09e0e67cca6f504fef03526fdcd1c1c09a",
+      "size_bytes": 382
+    },
+    {
+      "path": "/tmp/p7-crash-preparation-run1.log",
+      "sha256": "479c25d0717ff0bdb3119cc91ce3ed307e24bf5dab417ebd50cdf1d8f6f1b553",
+      "size_bytes": 522
+    },
+    {
+      "path": "/tmp/p7-crash-preparation-final.log",
+      "sha256": "5c2ff8564dbb63d57bc696f9437ddfb60f22d6e9adb2b370cd703b3a96dd8ed4",
+      "size_bytes": 522
+    },
+    {
+      "path": "/tmp/p7-crash-preparation-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size_bytes": 0
+    },
+    {
+      "path": "/tmp/p7-crash-preparation-clippy.log",
+      "sha256": "de1040c1d3439c88108b47942d783b3575c52bdeb12ce1ade27be9c819db4f58",
+      "size_bytes": 279
+    },
+    {
+      "path": "/tmp/p7-crash-preparation-regression.log",
+      "sha256": "b6ac3d952cf9c3dbaddb36485e7606e86876300bdbc79db0297c6c3cf357599a",
+      "size_bytes": 2033
+    }
+  ],
+  "prior_source_CI": {
+    "sha": "1cfca4e942ec93aa1ad82a0e569bb28e24f7da6b",
+    "run_id": 37091133133,
+    "run_number": 176,
+    "status": "completed",
+    "conclusion": "success",
+    "read_directly": true
+  }
+}

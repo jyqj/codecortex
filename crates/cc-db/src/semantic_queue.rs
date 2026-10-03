@@ -74,20 +74,39 @@ impl IndexDb {
         lease_secs: f64,
         fairness: ClaimFairness,
     ) -> CcResult<Option<ClaimedTask>> {
+        self.claim_semantic_with_lifecycle(owner, lease_secs, fairness, None)
+    }
+
+    pub fn claim_semantic_with_lifecycle(
+        &self,
+        owner: &str,
+        lease_secs: f64,
+        fairness: ClaimFairness,
+        lifecycle: Option<&crate::semantic_publish::LifecycleFence>,
+    ) -> CcResult<Option<ClaimedTask>> {
         let conn = self.write_conn.lock().map_err(db_err)?;
-        queue_txn(&conn, "claim", |conn| {
-            let Some(space_id) = semantic_outbox::active_space_on(conn)? else {
-                return Ok(None);
+        let (task, _lifecycle) = queue_txn(&conn, "claim", |conn| {
+            let permit = match lifecycle {
+                Some(fence) => match fence.enter() {
+                    Some(permit) => Some(permit),
+                    None => return Ok((None, None)),
+                },
+                None => None,
             };
-            semantic_outbox::claim_next_fair_on(
+            let Some(space_id) = semantic_outbox::active_space_on(conn)? else {
+                return Ok((None, permit));
+            };
+            let task = semantic_outbox::claim_next_fair_on(
                 conn,
                 &space_id,
                 owner,
                 semantic_outbox::now_unix(),
                 lease_secs,
                 fairness,
-            )
-        })
+            )?;
+            Ok((task, permit))
+        })?;
+        Ok(task)
     }
 
     /// Heartbeat: extend the caller's lease to (caller clock) + `lease_secs`.

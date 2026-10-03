@@ -62,18 +62,57 @@ class GenerationGuardMutations(unittest.TestCase):
             GUARD['generation_contract'](sources)
 
 class SchemaDeclarationMutations(unittest.TestCase):
-    def test_current_contract_and_wrong_schema_or_predecessor(self):
-        current = json.loads((ROOT / 'docs/internals/MODULE_CAPABILITIES.json').read_text())
-        migration = (ROOT / 'crates/cc-db/src/index_migrate.rs').read_text()
-        MODULE['schema_contract'](current, migration)
-        old = copy.deepcopy(current)
-        old['database_schema'] = 21
+    def setUp(self):
+        self.current = json.loads((ROOT / 'docs/internals/MODULE_CAPABILITIES.json').read_text())
+        self.migration = (ROOT / 'crates/cc-db/src/index_migrate.rs').read_text()
+
+    def test_current_contract(self):
+        MODULE['schema_contract'](self.current, self.migration)
+
+    def test_wrong_or_missing_schema_fails(self):
+        for schema in [21, 22, 23, 25, '24', None, True]:
+            with self.subTest(schema=schema):
+                declaration = copy.deepcopy(self.current)
+                declaration['database_schema'] = schema
+                with self.assertRaises(AssertionError):
+                    MODULE['schema_contract'](declaration, self.migration)
+        del self.current['database_schema']
         with self.assertRaises(AssertionError):
-            MODULE['schema_contract'](old, migration)
-        wrong_predecessor = copy.deepcopy(current)
-        wrong_predecessor['database_schema_compatibility']['additive_migration_from'] = 20
+            MODULE['schema_contract'](self.current, self.migration)
+
+    def test_wrong_missing_or_contradictory_policy_fails(self):
+        current = self.current['database_schema_compatibility']
+        cases = [None, {}, {'contract_tests': current['contract_tests']}]
+        for policy in ['adjacent_additive', 'unknown', None]:
+            cases.append({**current, 'policy': policy})
+        for predecessor in [21, 23, None]:
+            cases.append({**current, 'additive_migration_from': predecessor})
+        cases.append({'additive_migration_from': 21, 'contract_tests': current['contract_tests']})
+        for compatibility in cases:
+            with self.subTest(compatibility=compatibility):
+                declaration = copy.deepcopy(self.current)
+                declaration['database_schema_compatibility'] = compatibility
+                with self.assertRaises(AssertionError):
+                    MODULE['schema_contract'](declaration, self.migration)
+        del self.current['database_schema_compatibility']
         with self.assertRaises(AssertionError):
-            MODULE['schema_contract'](wrong_predecessor, migration)
+            MODULE['schema_contract'](self.current, self.migration)
+
+    def test_missing_or_stale_rust_guard_reference_fails(self):
+        for tests in [[], ['crates/cc-db/tests/missing.rs'], None]:
+            with self.subTest(tests=tests):
+                declaration = copy.deepcopy(self.current)
+                declaration['database_schema_compatibility']['contract_tests'] = tests
+                with self.assertRaises(AssertionError):
+                    MODULE['schema_contract'](declaration, self.migration)
+        del self.current['database_schema_compatibility']['contract_tests']
+        with self.assertRaises(AssertionError):
+            MODULE['schema_contract'](self.current, self.migration)
+
+    def test_missing_production_version_fails(self):
+        migration = self.migration.replace('const CURRENT_SCHEMA_VERSION:', 'const REMOVED_SCHEMA_VERSION:')
+        with self.assertRaises(AssertionError):
+            MODULE['schema_contract'](self.current, migration)
 
 if __name__ == '__main__':
     unittest.main()

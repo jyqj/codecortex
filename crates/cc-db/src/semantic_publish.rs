@@ -373,6 +373,102 @@ fn rejected(
 }
 
 impl IndexDb {
+    /// Publish at most four ready DB requests atomically, in input order.
+    /// The receiver is the single DB owner; all requests must share one
+    /// expected incarnation and the supplied lifecycle. Cache preparation,
+    /// verification and HTTP work remain entirely the caller's responsibility.
+    /// This opt-in facade is not wired into the production queue.
+    ///
+    /// Empty input returns `Some(vec![])` without accessing the DB or lifecycle.
+    /// Oversize groups, repeated task IDs, tokens or documents, and mixed
+    /// expected incarnations are InvalidParams before acquiring the DB lock.
+    /// A closed lifecycle returns None, with no writes. Live incarnation and
+    /// all other fences are still checked by the original per-item CAS.
+    ///
+    /// Rejections commit their original token-fenced retry alongside valid
+    /// publications. Each changed item bumps the epoch once; Q4 duplicates
+    /// do not. Readers see the whole group together, and close may wait for
+    /// up to four DB publications once the shared permit has been acquired.
+    /// Any SQL/ack/epoch/commit error returns no partial outcomes and attempts
+    /// rollback of the entire transaction. A COMMIT error may be ambiguous:
+    /// callers must reconcile current task/token/manifest state, rather than
+    /// assume nothing committed or blindly replay the prepared requests.
+    pub fn publish_semantic_group(
+        &self,
+        requests: &[PublishRequest<'_>],
+        lifecycle: &LifecycleFence,
+    ) -> CcResult<Option<Vec<PublishOutcome>>> {
+        self.publish_semantic_group_after_item(requests, lifecycle, |_, _| {})
+    }
+
+    // Private controlled seam for temporary-DB tests to observe an in-flight
+    // transaction. The normal facade supplies a no-op; no external callbacks.
+    fn publish_semantic_group_after_item(
+        &self,
+        requests: &[PublishRequest<'_>],
+        lifecycle: &LifecycleFence,
+        mut after_item: impl FnMut(&Connection, usize),
+    ) -> CcResult<Option<Vec<PublishOutcome>>> {
+        if requests.len() > 4 {
+            return Err(CcError::InvalidParams(
+                "semantic publication group exceeds four requests".into(),
+            ));
+        }
+        let Some(first) = requests.first() else {
+            return Ok(Some(Vec::new()));
+        };
+        for (index, req) in requests.iter().enumerate() {
+            if req.expected_incarnation != first.expected_incarnation {
+                return Err(CcError::InvalidParams(
+                    "semantic publication group mixes expected incarnations".into(),
+                ));
+            }
+            if requests[..index].iter().any(|prior| {
+                prior.task_id == req.task_id
+                    || prior.lease_token == req.lease_token
+                    || prior.doc_key == req.doc_key
+            }) {
+                return Err(CcError::InvalidParams(
+                    "semantic publication group repeats a task, token or document".into(),
+                ));
+            }
+        }
+        let conn = self.write_conn.lock().map_err(db_err)?;
+        conn.execute_batch("BEGIN IMMEDIATE;")
+            .map_err(|e| CcError::Database(format!("begin publish group: {e}")))?;
+        let Some(_permit) = lifecycle.enter() else {
+            conn.execute_batch("ROLLBACK;").map_err(db_err)?;
+            return Ok(None);
+        };
+        let mut outcomes = Vec::with_capacity(requests.len());
+        for (index, req) in requests.iter().enumerate() {
+            let outcome = match publish_and_ack_on(&conn, req) {
+                Ok(outcome) => outcome,
+                Err(e) => {
+                    let _ = conn.execute_batch("ROLLBACK;");
+                    return Err(e);
+                }
+            };
+            if outcome.published && outcome.visible_set_changed {
+                if let Err(e) = IndexDb::bump_semantic_epoch_on(&conn) {
+                    let _ = conn.execute_batch("ROLLBACK;");
+                    return Err(e);
+                }
+            }
+            outcomes.push(outcome);
+            after_item(&conn, index);
+        }
+        match conn.execute_batch("COMMIT;") {
+            Ok(()) => Ok(Some(outcomes)),
+            Err(e) => {
+                let _ = conn.execute_batch("ROLLBACK;");
+                Err(CcError::Database(format!(
+                    "commit publish group (outcome may be uncertain; reconcile state): {e}"
+                )))
+            }
+        }
+    }
+
     /// Publish one finished embedding: one `IMMEDIATE` short transaction over
     /// the write connection running [`publish_and_ack_on`], committing the
     /// `Semantic` effect exactly when the visible set actually changed
@@ -430,3 +526,7 @@ impl IndexDb {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "semantic_publish_group_tests.rs"]
+mod group_tests;

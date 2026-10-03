@@ -1,0 +1,158 @@
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded chacha20 v0.10.2
+  Downloaded rand v0.10.3
+   Compiling serde_core v1.0.228
+   Compiling memchr v2.8.0
+   Compiling serde v1.0.228
+   Compiling chacha20 v0.10.2
+   Compiling serde_json v1.0.149
+   Compiling rand v0.10.3
+   Compiling tracing-core v0.1.36
+   Compiling aho-corasick v1.1.4
+   Compiling log v0.4.29
+   Compiling rusqlite v0.40.1
+   Compiling r2d2 v0.8.10
+   Compiling tracing v0.1.44
+   Compiling uuid v1.23.0
+   Compiling regex-automata v0.4.14
+   Compiling tempfile v3.27.0
+   Compiling chrono v0.4.44
+   Compiling r2d2_sqlite v0.35.0
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling regex v1.12.3
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:55:20
+    |
+ 55 |     let out = f.db.publish_semantic_group(&f.requests(), &LifecycleFence::default()).unwrap().unwrap();
+    |                    ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:77:20
+    |
+ 77 |     let out = f.db.publish_semantic_group(&[req[2].clone(), req[1].clone(), req[0].clone()], &LifecycleFence::default()).unwrap().u...
+    |                    ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:97:18
+    |
+ 97 |     assert!(f.db.publish_semantic_group(&req[1..], &LifecycleFence::default()).is_err()); // second item fails
+    |                  ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:99:18
+    |
+ 99 |     assert!(f.db.publish_semantic_group(&req, &LifecycleFence::default()).is_err());
+    |                  ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:102:18
+    |
+102 |     assert!(f.db.publish_semantic_group(&f.requests(), &LifecycleFence::default()).unwrap().is_some());
+    |                  ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:115:22
+    |
+115 |         assert!(f.db.publish_semantic_group(&f.requests(), &LifecycleFence::default()).is_err());
+    |                      ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:126:21
+    |
+126 |     assert_eq!(f.db.publish_semantic_group(&f.requests(), &fence).unwrap(), None);
+    |                     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:143:21
+    |
+143 |     assert_eq!(f.db.publish_semantic_group(&[], &fence).unwrap(), Some(vec![]));
+    |                     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:153:31
+    |
+153 |         assert!(matches!(f.db.publish_semantic_group(invalid, &fence), Err(CcError::InvalidParams(_))));
+    |                               ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group_after_item` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:178:24
+    |
+178 |             publish_db.publish_semantic_group_after_item(&requests, &publish_fence, |_, index| {
+    |             -----------^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic_fenced` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_rebuild.rs:146:5
+    |
+146 |     pub fn publish_semantic_fenced(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+error[E0599]: no method named `publish_semantic_group` found for struct `std::sync::Arc<index_db::IndexDb>` in the current scope
+   --> crates/cc-db/src/semantic_publish_group_tests.rs:201:21
+    |
+201 |     assert_eq!(f.db.publish_semantic_group(&f.requests(), &fence).unwrap(), None);
+    |                     ^^^^^^^^^^^^^^^^^^^^^^
+    |
+help: there is a method `publish_semantic` with a similar name, but with different arguments
+   --> crates/cc-db/src/semantic_publish.rs:385:5
+    |
+385 |     pub fn publish_semantic(&self, req: &PublishRequest<'_>) -> CcResult<PublishOutcome> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `cc-db` (lib test) due to 11 previous errors

@@ -1,0 +1,35 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.10s
+     Running tests/semantic_lease.rs (target/debug/deps/semantic_lease-32fcd19286be735a)
+
+running 9 tests
+test claim_skips_future_and_serves_oldest_with_identity ... ok
+test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+test concurrent_claim_exactly_one_winner ... ok
+test retry_exhaustion_dead_letters_to_failed ... ok
+test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+test superseded_task_unclaimable_and_unackable ... ok
+test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+test wrong_token_and_owner_mismatch_are_fenced ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/semantic_publish.rs (target/debug/deps/semantic_publish-4377230d88a8da24)
+
+running 11 tests
+test deleted_document_is_fenced_out ... ok
+test expired_reclaimed_lease_fences_the_old_publish ... ok
+test facade_rejection_commits_retry_without_any_epoch_bump ... ok
+test duplicate_ack_of_identical_content_acks_without_bumping ... ok
+test non_active_space_is_fenced_out ... ok
+test lost_lease_is_fenced_out_without_touching_anything ... ok
+test input_digest_mismatch_is_fenced_out ... ok
+test publish_cas_happy_path_bumps_semantic_exactly_once ... ok
+test stale_doc_version_cannot_attach_to_a_newer_document ... ok
+test rejection_retries_with_backoff_then_dead_letters_on_exhaustion ... ok
+test stale_incarnation_is_fenced_out ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+

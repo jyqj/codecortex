@@ -18,8 +18,8 @@ def audit(root,output):
             for lane in r.get('lane_receipts',[]):
                 lanes[lane['lane_id']+'::'+lane['status']]+=1
                 if lane['truncation_reason'] is not None:reasons[lane['lane_id']+'::'+lane['truncation_reason']]+=1
-    result={'scope':'observed_public_full_run_only; counts of returned originating lane receipts, not current cache work',
-        'observed_rows':rows,'missing_rows_no_lane_observation':1671-rows,'observed_rows_without_lane_receipts':missing_receipts,
+    result={'scope':'observed_public_group_js_full_run_only; counts of returned originating lane receipts, not current cache work',
+        'observed_rows':rows,'missing_rows_no_lane_observation':783-rows,'observed_rows_without_lane_receipts':missing_receipts,
         'lane_status_counts':dict(sorted(lanes.items())),'lane_truncation_reason_counts':dict(sorted(reasons.items())),
         'semantic_state_counts':dict(semantic),'effective_policy_counts':dict(policies),'retrieval_calls':0}
     output.write_text(json.dumps(result,indent=2)+'\n');print(json.dumps(result))

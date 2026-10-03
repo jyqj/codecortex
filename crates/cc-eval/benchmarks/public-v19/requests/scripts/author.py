@@ -50,6 +50,9 @@ def reference(key):
 
 def main():
     specs = json.loads((ROOT / "questions/specifications.json").read_text())
+    extension = ROOT / "questions/extension-specifications.json"
+    if extension.exists():
+        specs += json.loads(extension.read_text())
     if len(sys.argv) > 1:
         specs = specs[:int(sys.argv[1])]
     # Exact 75/25 for this candidate batch; related families are indivisible.
@@ -128,4 +131,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit("Legacy quota authoring disabled after protocol-v1 migration. Use verify.py for public dev reproduction; migrate_protocol.py requires original custody-blocked draft inputs and is not a holdout custody solution.")

@@ -1,22 +1,1181 @@
 [
- {"id":"requests.api.session-lifetime","cluster":"api-lifetime","category":"exact_api","question":"Which top-level Requests function opens a temporary Session in a context manager to perform a generic HTTP request?","refs":["api:request"],"answer":"api.request uses with sessions.Session() and delegates session.request, ensuring session close on exit."},
- {"id":"requests.api.head-default","cluster":"head-default","category":"exact_api","question":"Locate the top-level HEAD helper that defaults allow_redirects to False while preserving an explicit caller value.","refs":["api:head"],"answer":"head uses kwargs.setdefault rather than overriding an explicit value, then dispatches request('head', ...)."},
- {"id":"requests.api.proxy-auth-handler","cluster":"proxy-basic","category":"exact_api","question":"Which authentication callable attaches a Proxy-Authorization header rather than Authorization?","refs":["auth:HTTPProxyAuth.__call__"],"answer":"HTTPProxyAuth.__call__ writes Proxy-Authorization using _basic_auth_str."},
- {"id":"requests.api.cookie-conflict-lookup","cluster":"cookie-conflict","category":"exact_api","question":"Locate the cookie-jar lookup implementation that raises CookieConflictError on multiple matches after optional domain/path filtering.","refs":["cookies:RequestsCookieJar._find_no_duplicates"],"answer":"_find_no_duplicates tracks a matching value and raises CookieConflictError on the second match, KeyError on absence."},
- {"id":"requests.behavior.none-setting-removal","cluster":"setting-merge","category":"behavior","question":"When a request mapping overrides a Session mapping with a None-valued key, does the merged setting retain that key, and where is this decided?","refs":["sessions:merge_setting"],"answer":"merge_setting copies session values, updates request values and deletes all None-valued keys; non-mappings return the request value."},
- {"id":"requests.behavior.redirect-auth-origin","cluster":"redirect-auth","category":"behavior","question":"How does redirect authorization stripping treat host changes, standard-port HTTP to HTTPS upgrades, and equivalent default ports?","refs":["sessions:SessionRedirectMixin.should_strip_auth"],"answer":"Host changes strip auth. Same-host standard HTTP-to-HTTPS upgrades retain it. Same-scheme equivalent default ports retain it; other port/scheme changes strip."},
- {"id":"requests.behavior.json-body-precedence","cluster":"body-json","category":"behavior","question":"When preparing a request body, under which condition is the json argument serialized, how is NaN handled, and how is the resulting string encoded?","refs":["models:PreparedRequest.prepare_body"],"answer":"JSON is used only when data is falsey and json is not None; dumps uses allow_nan=False, ValueError becomes InvalidJSONError, and strings are UTF-8 encoded."},
- {"id":"requests.behavior.hook-replacement","cluster":"hook-dispatch","category":"behavior","question":"Can a response hook replace the response passed to later hooks, and what happens when the hook returns None?","refs":["hooks:dispatch_hook"],"answer":"dispatch_hook passes current hook_data sequentially; a non-None return replaces it and None preserves it."},
- {"id":"requests.facets.preparation-order","cluster":"prepare-order","category":"architecture_facets","question":"Locate the request-preparation coordinator and show the order that lets authentication see the completed body and lets authentication register hooks before user hooks are prepared.","refs":["models:PreparedRequest.prepare","models:PreparedRequest.prepare_auth","models:PreparedRequest.prepare_hooks"],"answer":"prepare runs method/url/headers/cookies/body/auth/hooks in order. prepare_auth can mutate the request and recomputes length; prepare_hooks then registers provided hooks."},
- {"id":"requests.facets.adapter-routing","cluster":"adapter-route","category":"architecture_facets","question":"Which two Session operations make a more specific URL-prefix adapter take precedence over a shorter prefix, with case-insensitive selection?","refs":["sessions:Session.mount","sessions:Session.get_adapter"],"answer":"mount sorts longer prefixes first by moving shorter entries; get_adapter scans that order with lowercase prefix matching."},
- {"id":"requests.facets.response-release","cluster":"response-release","category":"architecture_facets","question":"What are the separate responsibilities of consuming Response.content and Response.close for a raw stream and connection release?","refs":["models:Response.content","models:Response.close"],"answer":"content joins iter_content and marks consumed. close closes raw only if not consumed, and calls release_conn when present."},
- {"id":"requests.chain.response-hooks","cluster":"hook-dispatch","category":"crossfile","question":"Trace the response from Session.send into the hook dispatcher: where does the adapter result become replaceable hook data?","refs":["sessions:Session.send","hooks:dispatch_hook"],"edges":[["sessions:Session.send","hooks:dispatch_hook","dispatch_hook(\"response\", hooks, r, **kwargs)"]],"answer":"Session.send receives adapter.send result, sets elapsed, then dispatches response hooks and assigns the returned response."},
- {"id":"requests.chain.header-validation","cluster":"header-validation","category":"crossfile","question":"Trace how PreparedRequest.prepare_headers rejects invalid header values using the shared validator implementation.","refs":["models:PreparedRequest.prepare_headers","utils:check_header_validity","utils:_validate_header_part"],"edges":[["models:PreparedRequest.prepare_headers","utils:check_header_validity","check_header_validity(header)"],["utils:check_header_validity","utils:_validate_header_part","_validate_header_part(header, value, 1)"]],"answer":"prepare_headers calls check_header_validity for each pair. It validates name and value through _validate_header_part, which selects str/bytes regexes and raises InvalidHeader for invalid type or match."},
- {"id":"requests.chain.json-codec-guess","cluster":"json-decode","category":"crossfile","question":"Trace the encoding guess used by Response.json when the response has no explicit encoding and enough body bytes; which helper handles BOM and null patterns?","refs":["models:Response.json","utils:guess_json_utf"],"edges":[["models:Response.json","utils:guess_json_utf","guess_json_utf(self.content)"]],"answer":"Response.json calls guess_json_utf on content when no encoding and length >3; the helper detects UTF BOMs or UTF-16/32 null placement, otherwise UTF-8 or None."},
- {"id":"requests.chain.redirect-rewind","cluster":"body-rewind","category":"crossfile","question":"Follow a redirected request with a recorded body position and a length or transfer header to the helper that seeks back or raises UnrewindableBodyError.","refs":["sessions:SessionRedirectMixin.resolve_redirects","utils:rewind_body"],"edges":[["sessions:SessionRedirectMixin.resolve_redirects","utils:rewind_body","rewind_body(prepared_request)"]],"answer":"resolve_redirects considers non-None position plus Content-Length/Transfer-Encoding rewindable, then rewind_body seeks an integer position and raises on failed seek or unusable position."},
- {"id":"requests.config.ca-env-precedence","cluster":"ca-environment","category":"config_error","question":"Which Session code consults REQUESTS_CA_BUNDLE before CURL_CA_BUNDLE, and under what trust_env and verify conditions?","refs":["sessions:Session.merge_environment_settings"],"answer":"Only under trust_env and verify is True or None, REQUESTS_CA_BUNDLE wins over CURL_CA_BUNDLE, then settings merge with Session values."},
- {"id":"requests.error.timeout-shape","cluster":"adapter-timeout","category":"config_error","question":"Where does the HTTP adapter reject a timeout tuple that cannot be unpacked into connect/read values, while also accepting an existing TimeoutSauce object?","refs":["adapters:HTTPAdapter.send"],"answer":"send unpacks tuple into connect/read and catches ValueError with a helpful error; TimeoutSauce passes through and scalar becomes both timeouts."},
- {"id":"requests.absence.request-hook","cluster":"hook-types","category":"hardnegative","question":"Within requests.hooks at this pinned source, locate the built-in 'request' hook event registration alongside the response event. Return no answer if this module defines no such event.","refs":["hooks:default_hooks","hooks:dispatch_hook"],"no_answer":true,"prefix":"src/requests","scope":"entire src/requests/hooks.py; built-in HOOKS declaration and its consumers","absence":{"type":"assignment_not_member","module":"hooks","name":"HOOKS","missing":"request"},"answer":"The HOOKS constant contains only response; default_hooks derives its keys from that constant. dispatch_hook accepts arbitrary keys but does not register built-in request events."},
- {"id":"requests.absence.digest-auth-int","cluster":"digest-qop","category":"hardnegative","question":"Within HTTPDigestAuth.build_digest_header, locate the implemented auth-int entity-body digest computation. Return no answer if that qop is left unimplemented.","refs":["auth:HTTPDigestAuth.build_digest_header"],"no_answer":true,"prefix":"src/requests","scope":"src/requests/auth.py HTTPDigestAuth.build_digest_header implementation only","absence":{"type":"required_literal","ref":"auth:HTTPDigestAuth.build_digest_header","literal":"# XXX handle auth-int.","also":"return None"},"answer":"The function sets entdig=None, handles absent qop or auth, and returns None in the remaining qop branch with an explicit auth-int TODO. No entity-body digest is implemented in this scope."},
- {"id":"requests.absence.async-session","cluster":"async-session","category":"hardnegative","question":"Within the public classes defined by src/requests/sessions.py, locate AsyncSession's asynchronous request implementation. Return no answer if no AsyncSession class exists in this module.","refs":["sessions:Session.request"],"no_answer":true,"prefix":"src/requests","scope":"class definitions and async function definitions in src/requests/sessions.py only","absence":{"type":"missing_class","module":"sessions","name":"AsyncSession"},"answer":"The source defines synchronous Session/SessionRedirectMixin; AST class enumeration has no AsyncSession. This does not claim third-party async adapters are impossible."}
+  {
+    "id": "v19.requests.f0001",
+    "cluster": "api-lifetime",
+    "category": "exact_api",
+    "question": "Which top-level Requests function opens a temporary Session in a context manager to perform a generic HTTP request?",
+    "refs": [
+      "api:request"
+    ],
+    "answer": "api.request uses with sessions.Session() and delegates session.request, ensuring session close on exit.",
+    "global_family": "v19.requests.f0001",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0002",
+    "cluster": "head-default",
+    "category": "exact_api",
+    "question": "Locate the top-level HEAD helper that defaults allow_redirects to False while preserving an explicit caller value.",
+    "refs": [
+      "api:head"
+    ],
+    "answer": "head uses kwargs.setdefault rather than overriding an explicit value, then dispatches request('head', ...).",
+    "global_family": "v19.requests.f0002",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0003",
+    "cluster": "proxy-basic",
+    "category": "exact_api",
+    "question": "Which authentication callable attaches a Proxy-Authorization header rather than Authorization?",
+    "refs": [
+      "auth:HTTPProxyAuth.__call__"
+    ],
+    "answer": "HTTPProxyAuth.__call__ writes Proxy-Authorization using _basic_auth_str.",
+    "global_family": "v19.requests.f0003",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0004",
+    "cluster": "cookie-conflict",
+    "category": "exact_api",
+    "question": "Locate the cookie-jar lookup implementation that raises CookieConflictError on multiple matches after optional domain/path filtering.",
+    "refs": [
+      "cookies:RequestsCookieJar._find_no_duplicates"
+    ],
+    "answer": "_find_no_duplicates tracks a matching value and raises CookieConflictError on the second match, KeyError on absence.",
+    "global_family": "v19.requests.f0004",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0006",
+    "cluster": "redirect-auth",
+    "category": "behavior",
+    "question": "How does redirect authorization stripping treat host changes, standard-port HTTP to HTTPS upgrades, and equivalent default ports?",
+    "refs": [
+      "sessions:SessionRedirectMixin.should_strip_auth"
+    ],
+    "answer": "Host changes strip auth. Same-host standard HTTP-to-HTTPS upgrades retain it. Same-scheme equivalent default ports retain it; other port/scheme changes strip.",
+    "global_family": "v19.requests.f0006",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0007",
+    "cluster": "body-json",
+    "category": "behavior",
+    "question": "When preparing a request body, under which condition is the json argument serialized, how is NaN handled, and how is the resulting string encoded?",
+    "refs": [
+      "models:PreparedRequest.prepare_body"
+    ],
+    "answer": "JSON is used only when data is falsey and json is not None; dumps uses allow_nan=False, ValueError becomes InvalidJSONError, and strings are UTF-8 encoded.",
+    "global_family": "v19.requests.f0007",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0008",
+    "cluster": "hook-dispatch",
+    "category": "behavior",
+    "question": "Can a response hook replace the response passed to later hooks, and what happens when the hook returns None?",
+    "refs": [
+      "hooks:dispatch_hook"
+    ],
+    "answer": "dispatch_hook passes current hook_data sequentially; a non-None return replaces it and None preserves it.",
+    "global_family": "v19.requests.f0008",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0009",
+    "cluster": "prepare-order",
+    "category": "architecture_facets",
+    "question": "Locate the request-preparation coordinator and show the order that lets authentication see the completed body and lets authentication register hooks before user hooks are prepared.",
+    "refs": [
+      "models:PreparedRequest.prepare",
+      "models:PreparedRequest.prepare_auth",
+      "models:PreparedRequest.prepare_hooks"
+    ],
+    "answer": "prepare runs method/url/headers/cookies/body/auth/hooks in order. prepare_auth can mutate the request and recomputes length; prepare_hooks then registers provided hooks.",
+    "global_family": "v19.requests.f0009",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0010",
+    "cluster": "adapter-route",
+    "category": "architecture_facets",
+    "question": "Which two Session operations make a more specific URL-prefix adapter take precedence over a shorter prefix, with case-insensitive selection?",
+    "refs": [
+      "sessions:Session.mount",
+      "sessions:Session.get_adapter"
+    ],
+    "answer": "mount sorts longer prefixes first by moving shorter entries; get_adapter scans that order with lowercase prefix matching.",
+    "global_family": "v19.requests.f0010",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0012",
+    "cluster": "hook-dispatch",
+    "category": "crossfile",
+    "question": "Trace the response from Session.send into the hook dispatcher: where does the adapter result become replaceable hook data?",
+    "refs": [
+      "sessions:Session.send",
+      "hooks:dispatch_hook"
+    ],
+    "edges": [
+      [
+        "sessions:Session.send",
+        "hooks:dispatch_hook",
+        "dispatch_hook(\"response\", hooks, r, **kwargs)"
+      ]
+    ],
+    "answer": "Session.send receives adapter.send result, sets elapsed, then dispatches response hooks and assigns the returned response.",
+    "global_family": "v19.requests.f0008",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0013",
+    "cluster": "header-validation",
+    "category": "crossfile",
+    "question": "Trace how PreparedRequest.prepare_headers rejects invalid header values using the shared validator implementation.",
+    "refs": [
+      "models:PreparedRequest.prepare_headers",
+      "utils:check_header_validity",
+      "utils:_validate_header_part"
+    ],
+    "edges": [
+      [
+        "models:PreparedRequest.prepare_headers",
+        "utils:check_header_validity",
+        "check_header_validity(header)"
+      ],
+      [
+        "utils:check_header_validity",
+        "utils:_validate_header_part",
+        "_validate_header_part(header, value, 1)"
+      ]
+    ],
+    "answer": "prepare_headers calls check_header_validity for each pair. It validates name and value through _validate_header_part, which selects str/bytes regexes and raises InvalidHeader for invalid type or match.",
+    "global_family": "v19.requests.f0013",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0014",
+    "cluster": "json-decode",
+    "category": "crossfile",
+    "question": "Trace the encoding guess used by Response.json when the response has no explicit encoding and enough body bytes; which helper handles BOM and null patterns?",
+    "refs": [
+      "models:Response.json",
+      "utils:guess_json_utf"
+    ],
+    "edges": [
+      [
+        "models:Response.json",
+        "utils:guess_json_utf",
+        "guess_json_utf(self.content)"
+      ]
+    ],
+    "answer": "Response.json calls guess_json_utf on content when no encoding and length >3; the helper detects UTF BOMs or UTF-16/32 null placement, otherwise UTF-8 or None.",
+    "global_family": "v19.requests.f0014",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0015",
+    "cluster": "body-rewind",
+    "category": "crossfile",
+    "question": "Follow a redirected request with a recorded body position and a length or transfer header to the helper that seeks back or raises UnrewindableBodyError.",
+    "refs": [
+      "sessions:SessionRedirectMixin.resolve_redirects",
+      "utils:rewind_body"
+    ],
+    "edges": [
+      [
+        "sessions:SessionRedirectMixin.resolve_redirects",
+        "utils:rewind_body",
+        "rewind_body(prepared_request)"
+      ]
+    ],
+    "answer": "resolve_redirects considers non-None position plus Content-Length/Transfer-Encoding rewindable, then rewind_body seeks an integer position and raises on failed seek or unusable position.",
+    "global_family": "v19.requests.f0015",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0016",
+    "cluster": "ca-environment",
+    "category": "config_error",
+    "question": "Which Session code consults REQUESTS_CA_BUNDLE before CURL_CA_BUNDLE, and under what trust_env and verify conditions?",
+    "refs": [
+      "sessions:Session.merge_environment_settings"
+    ],
+    "answer": "Only under trust_env and verify is True or None, REQUESTS_CA_BUNDLE wins over CURL_CA_BUNDLE, then settings merge with Session values.",
+    "global_family": "v19.requests.f0016",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0017",
+    "cluster": "adapter-timeout",
+    "category": "config_error",
+    "question": "Where does the HTTP adapter reject a timeout tuple that cannot be unpacked into connect/read values, while also accepting an existing TimeoutSauce object?",
+    "refs": [
+      "adapters:HTTPAdapter.send"
+    ],
+    "answer": "send unpacks tuple into connect/read and catches ValueError with a helpful error; TimeoutSauce passes through and scalar becomes both timeouts.",
+    "global_family": "v19.requests.f0017",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0018",
+    "cluster": "hook-types",
+    "category": "hardnegative",
+    "question": "Within requests.hooks at this pinned source, locate the built-in 'request' hook event registration alongside the response event. Return no answer if this module defines no such event.",
+    "refs": [
+      "hooks:default_hooks",
+      "hooks:dispatch_hook"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "entire src/requests/hooks.py; built-in HOOKS declaration and its consumers",
+    "absence": {
+      "type": "assignment_not_member",
+      "module": "hooks",
+      "name": "HOOKS",
+      "missing": "request"
+    },
+    "answer": "The HOOKS constant contains only response; default_hooks derives its keys from that constant. dispatch_hook accepts arbitrary keys but does not register built-in request events.",
+    "global_family": "v19.requests.f0018",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0019",
+    "cluster": "digest-qop",
+    "category": "hardnegative",
+    "question": "Within HTTPDigestAuth.build_digest_header, locate the implemented auth-int entity-body digest computation. Return no answer if that qop is left unimplemented.",
+    "refs": [
+      "auth:HTTPDigestAuth.build_digest_header"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "src/requests/auth.py HTTPDigestAuth.build_digest_header implementation only",
+    "absence": {
+      "type": "required_literal",
+      "ref": "auth:HTTPDigestAuth.build_digest_header",
+      "literal": "# XXX handle auth-int.",
+      "also": "return None"
+    },
+    "answer": "The function sets entdig=None, handles absent qop or auth, and returns None in the remaining qop branch with an explicit auth-int TODO. No entity-body digest is implemented in this scope.",
+    "global_family": "v19.requests.f0019",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0020",
+    "cluster": "async-session",
+    "category": "hardnegative",
+    "question": "Within the public classes defined by src/requests/sessions.py, locate AsyncSession's asynchronous request implementation. Return no answer if no AsyncSession class exists in this module.",
+    "refs": [
+      "sessions:Session.request"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "class definitions and async function definitions in src/requests/sessions.py only",
+    "absence": {
+      "type": "missing_class",
+      "module": "sessions",
+      "name": "AsyncSession"
+    },
+    "answer": "The source defines synchronous Session/SessionRedirectMixin; AST class enumeration has no AsyncSession. This does not claim third-party async adapters are impossible.",
+    "global_family": "v19.requests.f0020",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0022",
+    "cluster": "filename-hint",
+    "category": "exact_api",
+    "question": "Which utility extracts a basename from a file object's name but ignores placeholder names enclosed in angle brackets?",
+    "refs": [
+      "utils:guess_filename"
+    ],
+    "answer": "guess_filename reads obj.name, accepts a basestring not bracketed by < and >, and returns os.path.basename.",
+    "global_family": "v19.requests.f0022",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0023",
+    "cluster": "atomic-write",
+    "category": "exact_api",
+    "question": "Locate the context manager that writes through a temporary binary file and atomically replaces the destination, removing the temporary file after an exception.",
+    "refs": [
+      "utils:atomic_open"
+    ],
+    "answer": "atomic_open creates a temp file in the destination directory, yields a binary handler, replaces destination after success, and removes temporary file on BaseException.",
+    "global_family": "v19.requests.f0023",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0025",
+    "cluster": "url-defragauth",
+    "category": "exact_api",
+    "question": "Locate the utility that removes both a fragment and URL userinfo before reconstructing a URL.",
+    "refs": [
+      "utils:urldefragauth"
+    ],
+    "answer": "urldefragauth parses URL, repairs netloc/path, drops userinfo with rsplit('@',1), then reconstructs with empty fragment.",
+    "global_family": "v19.requests.f0025",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0026",
+    "cluster": "native-string",
+    "category": "exact_api",
+    "question": "Which internal helper returns native strings unchanged and decodes bytes with an ASCII default that a caller may override?",
+    "refs": [
+      "_internal_utils:to_native_string"
+    ],
+    "answer": "to_native_string preserves builtin_str and otherwise calls decode(encoding), with encoding default ascii.",
+    "global_family": "v19.requests.f0026",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0027",
+    "cluster": "ascii-check",
+    "category": "exact_api",
+    "question": "Locate the internal Unicode-only predicate that returns False when ASCII encoding raises UnicodeEncodeError.",
+    "refs": [
+      "_internal_utils:unicode_is_ascii"
+    ],
+    "answer": "unicode_is_ascii asserts str, tries encode('ascii') and catches UnicodeEncodeError.",
+    "global_family": "v19.requests.f0027",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0028",
+    "cluster": "cookie-create",
+    "category": "exact_api",
+    "question": "Which cookie factory defaults to an empty domain and slash path, computes domain/port/path flags and rejects unknown kwargs?",
+    "refs": [
+      "cookies:create_cookie"
+    ],
+    "answer": "create_cookie builds an underspecified cookie, default domain '', path '/', HttpOnly rest entry; validates kwargs, updates flags and constructs cookielib.Cookie.",
+    "global_family": "v19.requests.f0028",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0029",
+    "cluster": "cookie-convert",
+    "category": "exact_api",
+    "question": "Locate the dictionary-to-CookieJar conversion function that optionally preserves names already present when overwrite is False.",
+    "refs": [
+      "cookies:cookiejar_from_dict"
+    ],
+    "answer": "cookiejar_from_dict creates RequestsCookieJar if absent, records existing names, and only calls set_cookie for names permitted by overwrite.",
+    "global_family": "v19.requests.f0029",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0033",
+    "cluster": "diagnostic-platform",
+    "category": "exact_api",
+    "question": "Locate the diagnostic helper that reports Python implementation name and version, including PyPy non-final release level.",
+    "refs": [
+      "help:_implementation"
+    ],
+    "answer": "_implementation uses platform.python_implementation; CPython/Jython/IronPython use platform version, PyPy builds from pypy_version_info, unknown uses Unknown.",
+    "global_family": "v19.requests.f0033",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0034",
+    "cluster": "slice-iterator",
+    "category": "exact_api",
+    "question": "Which utility yields successive slices of a string or bytes and treats a None or non-positive slice length as the whole input length?",
+    "refs": [
+      "utils:iter_slices"
+    ],
+    "answer": "iter_slices normalizes slice_length then yields string[pos:pos+slice_length] until exhausted.",
+    "global_family": "v19.requests.f0034",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0037",
+    "cluster": "hook-merge",
+    "category": "behavior",
+    "question": "Why does an empty per-request response hook list not erase Session response hooks during merge?",
+    "refs": [
+      "sessions:merge_hooks"
+    ],
+    "answer": "merge_hooks returns session_hooks when request_hooks is None or has response=[]; an empty session response list instead returns request_hooks.",
+    "global_family": "v19.requests.f0037",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0038",
+    "cluster": "redirect-method",
+    "category": "behavior",
+    "question": "Which redirect status/method combinations rewrite a request to GET, and how is HEAD treated?",
+    "refs": [
+      "sessions:SessionRedirectMixin.rebuild_method"
+    ],
+    "answer": "303 and302 rewrite all methods except HEAD;301 rewrites POST only. Other cases preserve the method.",
+    "global_family": "v19.requests.f0038",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0039",
+    "cluster": "redirect-location",
+    "category": "behavior",
+    "question": "How is a redirect Location header repaired when underlying HTTP decoding produced Latin-1 text for UTF-8 bytes?",
+    "refs": [
+      "sessions:SessionRedirectMixin.get_redirect_target"
+    ],
+    "answer": "get_redirect_target checks is_redirect then encodes location as latin1 and decodes through to_native_string(...,'utf8'); non-redirect returns None.",
+    "global_family": "v19.requests.f0039",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0040",
+    "cluster": "header-casing",
+    "category": "behavior",
+    "question": "How does CaseInsensitiveDict preserve the most recently assigned spelling of a header while still looking it up without case sensitivity?",
+    "refs": [
+      "structures:CaseInsensitiveDict.__setitem__",
+      "structures:CaseInsensitiveDict.__getitem__",
+      "structures:CaseInsensitiveDict.__iter__"
+    ],
+    "answer": "It indexes _store by key.lower(), stores (original_key,value), looks up by lowercase and iterates stored cased keys.",
+    "global_family": "v19.requests.f0040",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0042",
+    "cluster": "url-non-http",
+    "category": "behavior",
+    "question": "When preparing a URL with a colon that does not start with http, does Requests parse and normalize it or preserve it directly?",
+    "refs": [
+      "models:PreparedRequest.prepare_url"
+    ],
+    "answer": "prepare_url converts bytes/objects to str, strips leading whitespace and directly sets self.url then returns for non-http colon-containing schemes.",
+    "global_family": "v19.requests.f0042",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0046",
+    "cluster": "digest-state",
+    "category": "behavior",
+    "question": "How does HTTPDigestAuth avoid initializing challenge/nonce/body-position state more than once per thread?",
+    "refs": [
+      "auth:HTTPDigestAuth.__init__",
+      "auth:HTTPDigestAuth.init_per_thread_state"
+    ],
+    "answer": "__init__ creates threading.local; init_per_thread_state checks its init marker then seeds last_nonce,nonce_count,chal,pos,num_401_calls.",
+    "global_family": "v19.requests.f0046",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0047",
+    "cluster": "digest-nonce",
+    "category": "behavior",
+    "question": "How is the Digest authentication nonce count updated when a challenge repeats versus changes, and how is the count formatted?",
+    "refs": [
+      "auth:HTTPDigestAuth.build_digest_header"
+    ],
+    "answer": "A repeated nonce increments nonce_count; a new nonce resets it to1; ncvalue is eight lowercase hex digits and last_nonce is updated after supported qop processing.",
+    "global_family": "v19.requests.f0047",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0048",
+    "cluster": "response-text",
+    "category": "behavior",
+    "question": "How does Response.text fall back when encoding is unset or the selected codec is invalid, and how are undecodable characters treated?",
+    "refs": [
+      "models:Response.text",
+      "models:Response.apparent_encoding"
+    ],
+    "answer": "Empty content returns ''; unset encoding uses apparent_encoding; decode uses errors='replace', with LookupError/TypeError fallback to default decoding.",
+    "global_family": "v19.requests.f0048",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0049",
+    "cluster": "response-lines",
+    "category": "behavior",
+    "question": "How does Response.iter_lines keep a line split across content chunks and emit a remaining partial line after exhaustion?",
+    "refs": [
+      "models:Response.iter_lines"
+    ],
+    "answer": "It prepends pending to the next chunk, splits using delimiter or splitlines, saves a trailing incomplete line and yields final pending after the loop.",
+    "global_family": "v19.requests.f0049",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0050",
+    "cluster": "proxy-bypass",
+    "category": "behavior",
+    "question": "How does no_proxy matching distinguish IPv4 CIDR entries from hostname suffixes, and what does a hostname-less URL do?",
+    "refs": [
+      "utils:should_bypass_proxies"
+    ],
+    "answer": "Hostname-less URL returns True; IPv4 uses CIDR membership or exact IP; non-IP hosts strip leading dot and compare host or host:port, then dot-prefixed suffix; platform bypass is checked too.",
+    "global_family": "v19.requests.f0050",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0051",
+    "cluster": "environment-restore",
+    "category": "behavior",
+    "question": "Does set_environ restore a previous environment variable even when its context exits through an exception, and what does value=None do?",
+    "refs": [
+      "utils:set_environ"
+    ],
+    "answer": "It uses finally to delete a newly added variable or restore the old value. value None leaves the environment untouched.",
+    "global_family": "v19.requests.f0051",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0053",
+    "cluster": "request-prepare",
+    "category": "architecture_facets",
+    "question": "Show the boundary between user Request construction and creation of its transport-ready PreparedRequest, including how fields flow through prepare.",
+    "refs": [
+      "models:Request.__init__",
+      "models:Request.prepare",
+      "models:PreparedRequest.__init__"
+    ],
+    "answer": "Request stores user fields and hooks. Request.prepare creates PreparedRequest and forwards method,url,headers,files,data,json,params,auth,cookies,hooks. PreparedRequest initializes separate body/header/cookie state.",
+    "global_family": "v19.requests.f0053",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0054",
+    "cluster": "cookie-policy",
+    "category": "architecture_facets",
+    "question": "Which request/response wrapper classes adapt Requests objects to stdlib CookieJar's expected interfaces during response-cookie extraction?",
+    "refs": [
+      "cookies:MockRequest",
+      "cookies:MockResponse",
+      "cookies:extract_cookies_to_jar"
+    ],
+    "answer": "MockRequest exposes URL/header/origin policy interface and collects added headers; MockResponse.info exposes HTTPMessage headers. extract_cookies_to_jar constructs them from original HTTP response and calls jar.extract_cookies.",
+    "global_family": "v19.requests.f0054",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0055",
+    "cluster": "pool-serialize",
+    "category": "architecture_facets",
+    "question": "How does HTTPAdapter restore pool settings after unpickling without trying to pickle its lambda-containing poolmanager or proxy managers?",
+    "refs": [
+      "adapters:HTTPAdapter.__getstate__",
+      "adapters:HTTPAdapter.__setstate__",
+      "adapters:HTTPAdapter.init_poolmanager"
+    ],
+    "answer": "__getstate__ serializes declared attrs; __setstate__ resets proxy_manager/config, restores attrs and calls init_poolmanager with saved connection count,maxsize,block.",
+    "global_family": "v19.requests.f0055",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0056",
+    "cluster": "tls-pool",
+    "category": "architecture_facets",
+    "question": "Which adapter boundary separates connection host parameters from TLS pool kwargs, and how are verification directories versus CA files represented?",
+    "refs": [
+      "adapters:HTTPAdapter.build_connection_pool_key_attributes",
+      "adapters:_urllib3_request_context"
+    ],
+    "answer": "build_connection_pool_key_attributes delegates _urllib3_request_context; it returns scheme/host/port separately from cert_reqs,ca_certs or ca_cert_dir and optional cert_file/key_file.",
+    "global_family": "v19.requests.f0056",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0058",
+    "cluster": "response-pickle",
+    "category": "architecture_facets",
+    "question": "Why does Response pickling consume content and why does restoring a Response set raw=None and content_consumed=True?",
+    "refs": [
+      "models:Response.__getstate__",
+      "models:Response.__setstate__"
+    ],
+    "answer": "__getstate__ ensures content read and returns declared attrs; __setstate__ restores attrs, marks consumed, removes raw stream. Serialized response carries data rather than a live connection.",
+    "global_family": "v19.requests.f0058",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0059",
+    "cluster": "session-defaults",
+    "category": "architecture_facets",
+    "question": "Where are default Session components assembled: headers, response hooks, cookie jar and HTTP/HTTPS adapters?",
+    "refs": [
+      "sessions:Session.__init__",
+      "utils:default_headers",
+      "hooks:default_hooks"
+    ],
+    "answer": "Session.__init__ uses default_headers/default_hooks/cookiejar_from_dict, then mounts HTTPAdapter on https:// and http://. Session also owns verify,cert,trust_env and redirect cap.",
+    "global_family": "v19.requests.f0059",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0060",
+    "cluster": "response-build",
+    "category": "architecture_facets",
+    "question": "Locate the adapter seam that converts urllib3 response state into Requests.Response while preserving raw transport, originating request and adapter context.",
+    "refs": [
+      "adapters:HTTPAdapter.build_response",
+      "models:Response.__init__"
+    ],
+    "answer": "build_response creates Response, copies status,case-insensitive headers,encoding,raw,reason,url,cookies; assigns request and connection=self.",
+    "global_family": "v19.requests.f0060",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0061",
+    "cluster": "proxy-resolve",
+    "category": "architecture_facets",
+    "question": "How do resolve_proxies and get_environ_proxies cooperate with trust_env, no_proxy and explicitly provided scheme mappings?",
+    "refs": [
+      "utils:resolve_proxies",
+      "utils:get_environ_proxies",
+      "utils:should_bypass_proxies"
+    ],
+    "answer": "resolve_proxies copies explicit mapping; when trust_env and not bypass, reads environment mappings and setdefaults selected scheme. get_environ_proxies returns empty on bypass else getproxies.",
+    "global_family": "v19.requests.f0061",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0063",
+    "cluster": "json-error-class",
+    "category": "architecture_facets",
+    "question": "How does Requests.JSONDecodeError combine Requests error semantics with the selected JSON decoder error and preserve compatible pickling?",
+    "refs": [
+      "exceptions:JSONDecodeError.__init__",
+      "exceptions:JSONDecodeError.__reduce__",
+      "exceptions:InvalidJSONError"
+    ],
+    "answer": "Constructor initializes CompatJSONDecodeError before InvalidJSONError using its args; __reduce__ delegates the compatible JSON error rather than IOError MRO.",
+    "global_family": "v19.requests.f0063",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0064",
+    "cluster": "prepared-guard",
+    "category": "architecture_facets",
+    "question": "What is the distinction between runtime and type-checking behavior of the internal is_prepared guard?",
+    "refs": [
+      "_types:is_prepared"
+    ],
+    "answer": "Under TYPE_CHECKING is_prepared checks URL and method non-None to narrow to _ValidatedRequest; at runtime it intentionally returns True to avoid AssertionError.",
+    "global_family": "v19.requests.f0064",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0065",
+    "cluster": "api-lifetime",
+    "category": "crossfile",
+    "question": "Trace the generic top-level request into Session.request: where do user kwargs enter request preparation and transport dispatch?",
+    "refs": [
+      "api:request",
+      "sessions:Session.request"
+    ],
+    "edges": [
+      [
+        "api:request",
+        "sessions:Session.request",
+        "session.request(method=method, url=url, **kwargs)"
+      ]
+    ],
+    "answer": "api.request delegates inside temporary Session; Session.request builds Request, prepares it, merges environment settings and calls send with timeout/allow_redirects plus settings.",
+    "global_family": "v19.requests.f0001",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0066",
+    "cluster": "request-prepare",
+    "category": "crossfile",
+    "question": "Trace Session.prepare_request into PreparedRequest.prepare, including merged headers/params/auth/cookies/hooks.",
+    "refs": [
+      "sessions:Session.prepare_request",
+      "models:PreparedRequest.prepare"
+    ],
+    "edges": [
+      [
+        "sessions:Session.prepare_request",
+        "models:PreparedRequest.prepare",
+        "p.prepare("
+      ]
+    ],
+    "answer": "Session.prepare_request constructs merged cookies and optionally netrc auth, creates PreparedRequest, calls p.prepare with merged settings and user body/files/json.",
+    "global_family": "v19.requests.f0053",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0067",
+    "cluster": "auth-tuple",
+    "category": "crossfile",
+    "question": "Follow a two-element auth tuple from PreparedRequest.prepare_auth to the Basic authentication callable and encoded Authorization header.",
+    "refs": [
+      "models:PreparedRequest.prepare_auth",
+      "auth:HTTPBasicAuth.__call__",
+      "auth:_basic_auth_str"
+    ],
+    "edges": [
+      [
+        "models:PreparedRequest.prepare_auth",
+        "auth:HTTPBasicAuth.__call__",
+        "r = auth_handler(self)"
+      ],
+      [
+        "auth:HTTPBasicAuth.__call__",
+        "auth:_basic_auth_str",
+        "_basic_auth_str(self.username, self.password)"
+      ]
+    ],
+    "answer": "prepare_auth wraps a two-item tuple in HTTPBasicAuth then invokes auth_handler(self); __call__ writes Authorization using latin1 username/password bytes joined by colon and base64 encoded.",
+    "global_family": "v19.requests.f0067",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0068",
+    "cluster": "cookie-header",
+    "category": "crossfile",
+    "question": "Trace PreparedRequest cookie preparation to the CookieJar-to-header bridge and the mock request collecting the resulting Cookie header.",
+    "refs": [
+      "models:PreparedRequest.prepare_cookies",
+      "cookies:get_cookie_header",
+      "cookies:MockRequest.get_new_headers"
+    ],
+    "edges": [
+      [
+        "models:PreparedRequest.prepare_cookies",
+        "cookies:get_cookie_header",
+        "get_cookie_header(cookies_jar, self)"
+      ],
+      [
+        "cookies:get_cookie_header",
+        "cookies:MockRequest.get_new_headers",
+        "r.get_new_headers()"
+      ]
+    ],
+    "answer": "prepare_cookies normalizes a jar and calls get_cookie_header; it wraps MockRequest, lets jar.add_cookie_header add new headers and returns collected Cookie, which prepares into self.headers.",
+    "global_family": "v19.requests.f0068",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0069",
+    "cluster": "header-encoding",
+    "category": "crossfile",
+    "question": "Trace how an adapter assigns Response.encoding from Content-Type, including explicit charset, text default and application/json default.",
+    "refs": [
+      "adapters:HTTPAdapter.build_response",
+      "utils:get_encoding_from_headers",
+      "utils:_parse_content_type_header"
+    ],
+    "edges": [
+      [
+        "adapters:HTTPAdapter.build_response",
+        "utils:get_encoding_from_headers",
+        "get_encoding_from_headers(response.headers)"
+      ],
+      [
+        "utils:get_encoding_from_headers",
+        "utils:_parse_content_type_header",
+        "_parse_content_type_header(content_type)"
+      ]
+    ],
+    "answer": "build_response invokes get_encoding_from_headers. Its parser lowercases parameter keys; explicit charset wins, text defaults ISO-8859-1, application/json defaults utf-8, absent/other types give None.",
+    "global_family": "v19.requests.f0069",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0071",
+    "cluster": "proxy-rebuild",
+    "category": "crossfile",
+    "question": "Trace redirect proxy rebuilding from SessionRedirectMixin through resolve_proxies and Basic proxy credentials, including prevention of header leakage into TLS tunnels.",
+    "refs": [
+      "sessions:SessionRedirectMixin.rebuild_proxies",
+      "utils:resolve_proxies",
+      "auth:_basic_auth_str"
+    ],
+    "edges": [
+      [
+        "sessions:SessionRedirectMixin.rebuild_proxies",
+        "utils:resolve_proxies",
+        "resolve_proxies(prepared_request, proxies, self.trust_env)"
+      ],
+      [
+        "sessions:SessionRedirectMixin.rebuild_proxies",
+        "auth:_basic_auth_str",
+        "_basic_auth_str(username, password)"
+      ]
+    ],
+    "answer": "rebuild_proxies resolves new mapping, removes prior Proxy-Authorization, reads credentials from scheme proxy and adds Basic header only for non-https with both credentials.",
+    "global_family": "v19.requests.f0071",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0073",
+    "cluster": "proxy-basic",
+    "category": "crossfile",
+    "question": "Follow HTTPAdapter.proxy_headers from proxy URL credentials into the Basic header generator.",
+    "refs": [
+      "adapters:HTTPAdapter.proxy_headers",
+      "utils:get_auth_from_url",
+      "auth:_basic_auth_str"
+    ],
+    "edges": [
+      [
+        "adapters:HTTPAdapter.proxy_headers",
+        "utils:get_auth_from_url",
+        "get_auth_from_url(proxy)"
+      ],
+      [
+        "adapters:HTTPAdapter.proxy_headers",
+        "auth:_basic_auth_str",
+        "_basic_auth_str(username, password)"
+      ]
+    ],
+    "answer": "proxy_headers calls get_auth_from_url to percent-decode user/password and, if username is present, creates Proxy-Authorization with _basic_auth_str.",
+    "global_family": "v19.requests.f0003",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0074",
+    "cluster": "filename-hint",
+    "category": "crossfile",
+    "question": "Trace multipart upload filename inference when a file input is not an explicit tuple, from the request encoder into guess_filename.",
+    "refs": [
+      "models:RequestEncodingMixin._encode_files",
+      "utils:guess_filename"
+    ],
+    "edges": [
+      [
+        "models:RequestEncodingMixin._encode_files",
+        "utils:guess_filename",
+        "guess_filename(v) or k"
+      ]
+    ],
+    "answer": "_encode_files uses guess_filename(v) or field key for non-tuple inputs, reads readable content, creates RequestField and delegates multipart encoding.",
+    "global_family": "v19.requests.f0022",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0078",
+    "cluster": "links-fetch-absence",
+    "category": "crossfile",
+    "question": "Trace Response.links through Link header parsing into its returned mapping, showing how URL and rel fields determine the keys.",
+    "refs": [
+      "models:Response.links",
+      "utils:parse_header_links"
+    ],
+    "edges": [
+      [
+        "models:Response.links",
+        "utils:parse_header_links",
+        "parse_header_links(header)"
+      ]
+    ],
+    "answer": "links passes header to parse_header_links, which splits entries on comma plus angle bracket and parses semicolon parameters. The getter keys each entry by rel if present, otherwise url.",
+    "global_family": "v19.requests.f0078",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0079",
+    "cluster": "cookie-policy",
+    "category": "crossfile",
+    "question": "Trace adapter response-cookie extraction into the cookie bridge, and identify its guard when urllib3 exposes no original HTTP response.",
+    "refs": [
+      "adapters:HTTPAdapter.build_response",
+      "cookies:extract_cookies_to_jar"
+    ],
+    "edges": [
+      [
+        "adapters:HTTPAdapter.build_response",
+        "cookies:extract_cookies_to_jar",
+        "extract_cookies_to_jar(response.cookies, req, resp)"
+      ]
+    ],
+    "answer": "build_response calls extract_cookies_to_jar on response.cookies; bridge returns if no usable _original_response, otherwise wraps request/HTTPMessage and invokes jar.extract_cookies.",
+    "global_family": "v19.requests.f0054",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0080",
+    "cluster": "cookie-convert",
+    "category": "crossfile",
+    "question": "Trace Session.prepare_request's cookie bootstrap and merge of Session and request cookies through cookiejar_from_dict and merge_cookies, including distinct mapping versus CookieJar behavior.",
+    "refs": [
+      "sessions:Session.prepare_request",
+      "cookies:cookiejar_from_dict",
+      "cookies:merge_cookies"
+    ],
+    "edges": [
+      [
+        "sessions:Session.prepare_request",
+        "cookies:cookiejar_from_dict",
+        "cookiejar_from_dict(cookies)"
+      ],
+      [
+        "sessions:Session.prepare_request",
+        "cookies:merge_cookies",
+        "merge_cookies(RequestsCookieJar(), self.cookies)"
+      ]
+    ],
+    "answer": "prepare_request bootstraps mapping request cookies into a CookieJar, merges Session jar into a new RequestsCookieJar then request cookies into that jar. merge_cookies mappings use overwrite=False; CookieJar inputs use update or per-cookie set_cookie.",
+    "global_family": "v19.requests.f0029",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0082",
+    "cluster": "tls-file-error",
+    "category": "config_error",
+    "question": "Where are a nonexistent CA bundle, client certificate and client private-key path rejected before transport proceeds?",
+    "refs": [
+      "adapters:HTTPAdapter.cert_verify"
+    ],
+    "answer": "cert_verify checks chosen HTTPS CA location and raises OSError if invalid; client cert_file/key_file are likewise existence-checked and rejected with path-specific OSError.",
+    "global_family": "v19.requests.f0082",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0083",
+    "cluster": "redirect-cap",
+    "category": "config_error",
+    "question": "Where does redirect traversal enforce Session.max_redirects, and what response object is attached to TooManyRedirects?",
+    "refs": [
+      "sessions:SessionRedirectMixin.resolve_redirects",
+      "sessions:Session.__init__"
+    ],
+    "answer": "resolve_redirects updates history then checks len(resp.history)>=max_redirects, raises TooManyRedirects(response=resp); Session initializes limit from DEFAULT_REDIRECT_LIMIT.",
+    "global_family": "v19.requests.f0083",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0084",
+    "cluster": "socks-missing",
+    "category": "config_error",
+    "question": "Which fallback raises InvalidSchema when urllib3 SOCKS support cannot be imported?",
+    "refs": [
+      "adapters:SOCKSProxyManager"
+    ],
+    "answer": "The local SOCKSProxyManager fallback is defined under except ImportError and raises InvalidSchema('Missing dependencies for SOCKS support.').",
+    "global_family": "v19.requests.f0084",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0086",
+    "cluster": "streamed-body-error",
+    "category": "config_error",
+    "question": "Where is combining an iterable streamed body and files rejected, and which exception states that the two modes are mutually exclusive?",
+    "refs": [
+      "models:PreparedRequest.prepare_body"
+    ],
+    "answer": "The iterable/non-str-bytes-list-tuple-Mapping branch raises NotImplementedError('Streamed bodies and files are mutually exclusive.') when files is truthy.",
+    "global_family": "v19.requests.f0086",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0087",
+    "cluster": "stream-consumed",
+    "category": "config_error",
+    "question": "Where does attempting to iterate a previously consumed response stream without a cached bytes body raise StreamConsumedError?",
+    "refs": [
+      "models:Response.iter_content",
+      "exceptions:StreamConsumedError"
+    ],
+    "answer": "iter_content raises StreamConsumedError when _content_consumed and _content is bool, whereas cached bytes use iter_slices. StreamConsumedError inherits RequestException and TypeError.",
+    "global_family": "v19.requests.f0087",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0089",
+    "cluster": "response-truthy",
+    "category": "hardnegative",
+    "question": "Find the implementation governing Response truthiness for a 302 or 404; do not assume True means the status is exactly 200.",
+    "refs": [
+      "models:Response.__bool__",
+      "models:Response.ok",
+      "models:Response.raise_for_status"
+    ],
+    "answer": "__bool__ returns self.ok; ok catches HTTPError from raise_for_status. 302 raises no error and is truthy;404 raises HTTPError and is falsey, without requiring status200.",
+    "global_family": "v19.requests.f0089",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0090",
+    "cluster": "stream-timeout-error",
+    "category": "hardnegative",
+    "question": "When urllib3 raises ReadTimeoutError during Response.iter_content, find the wrapper actually raised there rather than the similarly named Requests.ReadTimeout used by adapter.send.",
+    "refs": [
+      "models:Response.iter_content"
+    ],
+    "answer": "The nested generate in iter_content catches ReadTimeoutError and raises ConnectionError(e). This scoped stream stage differs from HTTPAdapter.send's ReadTimeout wrapper.",
+    "global_family": "v19.requests.f0090",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0091",
+    "cluster": "connection-deprecated",
+    "category": "hardnegative",
+    "question": "An HTTPAdapter subclass overrides get_connection, but the current send path uses which connection method? Locate the call and the legacy deprecation evidence.",
+    "refs": [
+      "adapters:HTTPAdapter.send",
+      "adapters:HTTPAdapter.get_connection",
+      "adapters:HTTPAdapter.get_connection_with_tls_context"
+    ],
+    "answer": "send uses get_connection_with_tls_context; get_connection emits a DeprecationWarning directing Requests>=2.32.2 subclass authors to the TLS-aware method.",
+    "global_family": "v19.requests.f0091",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0092",
+    "cluster": "status-lookup",
+    "category": "hardnegative",
+    "question": "For requests.codes, locate why dictionary-style lookup reads attributes populated by status-code initialization rather than the inherited dict's entries.",
+    "refs": [
+      "status_codes:_init",
+      "structures:LookupDict.__getitem__",
+      "structures:LookupDict.get"
+    ],
+    "answer": "_init populates codes using setattr; LookupDict.__getitem__ and get read self.__dict__, not base dict storage, and default to None or caller default.",
+    "global_family": "v19.requests.f0092",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0093",
+    "cluster": "cookie-conflict",
+    "category": "hardnegative",
+    "question": "Which internal cookie lookup deliberately returns the first match on a name collision instead of raising the conflict error used by the dict-like lookup?",
+    "refs": [
+      "cookies:RequestsCookieJar._find",
+      "cookies:RequestsCookieJar._find_no_duplicates"
+    ],
+    "answer": "_find returns the first filtered match or KeyError, explicitly allowing arbitrary selection on conflicts. _find_no_duplicates is the conflict-checking counterpart.",
+    "global_family": "v19.requests.f0004",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0094",
+    "cluster": "cidr-version",
+    "category": "hardnegative",
+    "question": "Locate the no_proxy CIDR validity check and determine whether it validates IPv6 networks or only IPv4 syntax/masks.",
+    "refs": [
+      "utils:is_valid_cidr",
+      "utils:address_in_network"
+    ],
+    "answer": "is_valid_cidr requires one slash, integer mask1..32 and socket.inet_aton address; address_in_network likewise uses inet_aton. These implementations are IPv4-only, not IPv6 CIDR validators.",
+    "global_family": "v19.requests.f0094",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0096",
+    "cluster": "cookie-disk-absence",
+    "category": "hardnegative",
+    "question": "Within Session.send, locate automatic saving of the session cookie jar to a file after the response. Return no answer if this function only updates the in-memory jar.",
+    "refs": [
+      "sessions:Session.send"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "src/requests/sessions.py Session.send direct implementation; excludes behavior of user-supplied hooks/adapters/jars",
+    "absence": {
+      "type": "no_calls",
+      "ref": "sessions:Session.send",
+      "missing": [
+        "self.cookies.save",
+        "self.cookies.dump",
+        "open"
+      ],
+      "anchor": "extract_cookies_to_jar(self.cookies, request, r.raw)"
+    },
+    "answer": "send extracts response/history cookies into self.cookies, follows redirects and consumes content. No direct save/dump/file-open cookie persistence is implemented in this scope; custom user code is excluded.",
+    "global_family": "v19.requests.f0096",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0097",
+    "cluster": "adapter-add-headers",
+    "category": "hardnegative",
+    "question": "Within the base HTTPAdapter.add_headers implementation, locate automatic User-Agent insertion. Return no answer if this extension point does nothing by default.",
+    "refs": [
+      "adapters:HTTPAdapter.add_headers"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "src/requests/adapters.py HTTPAdapter.add_headers base implementation only, not Session default_headers or subclass overrides",
+    "absence": {
+      "type": "no_calls",
+      "ref": "adapters:HTTPAdapter.add_headers",
+      "missing": [
+        "default_user_agent",
+        "request.headers.update",
+        "request.headers.setdefault"
+      ],
+      "anchor": "pass"
+    },
+    "answer": "The method body is only its docstring and pass; documentation explicitly says nothing by default. Session header setup occurs elsewhere and is outside the requested extension point.",
+    "global_family": "v19.requests.f0097",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0098",
+    "cluster": "cookie-mock-add",
+    "category": "hardnegative",
+    "question": "Within cookies.MockRequest.add_header, locate an implemented generic header mutation. Return no answer if this method explicitly refuses it in favor of add_unredirected_header.",
+    "refs": [
+      "cookies:MockRequest.add_header"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "src/requests/cookies.py MockRequest.add_header implementation only",
+    "absence": {
+      "type": "required_literal",
+      "ref": "cookies:MockRequest.add_header",
+      "literal": "raise NotImplementedError(",
+      "also": "Cookie headers should be added with add_unredirected_header()"
+    },
+    "answer": "The entire body raises NotImplementedError directing use of add_unredirected_header; no generic mutation implementation exists in this method.",
+    "global_family": "v19.requests.f0098",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0099",
+    "cluster": "authbase-refresh",
+    "category": "hardnegative",
+    "question": "Within AuthBase.__call__, locate built-in OAuth token-refresh handling. Return no answer if the base callable requires an implementation from a subclass.",
+    "refs": [
+      "auth:AuthBase.__call__"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "src/requests/auth.py AuthBase.__call__ base body only; excludes third-party subclasses",
+    "absence": {
+      "type": "required_literal",
+      "ref": "auth:AuthBase.__call__",
+      "literal": "raise NotImplementedError",
+      "also": "Auth hooks must be callable."
+    },
+    "answer": "AuthBase.__call__ only raises NotImplementedError; it contains no token-refresh implementation and is a subclass hook contract.",
+    "global_family": "v19.requests.f0099",
+    "protocol_split": "dev"
+  },
+  {
+    "id": "v19.requests.f0100",
+    "cluster": "links-fetch-absence",
+    "category": "hardnegative",
+    "question": "Within Response.links, locate HTTP requests recursively fetching pages referenced by the Link header. Return no answer if it only parses and indexes header entries.",
+    "refs": [
+      "models:Response.links"
+    ],
+    "no_answer": true,
+    "prefix": "src/requests",
+    "scope": "src/requests/models.py Response.links getter only; excludes code consuming the returned mapping",
+    "absence": {
+      "type": "no_calls",
+      "ref": "models:Response.links",
+      "missing": [
+        "requests.get",
+        "requests.request",
+        "self.connection.send",
+        "get"
+      ],
+      "anchor": "parse_header_links(header)"
+    },
+    "answer": "links reads header, parses entries, indexes by rel or URL and returns mapping; no HTTP transport operation or recursion occurs in the getter.",
+    "global_family": "v19.requests.f0078",
+    "protocol_split": "dev"
+  }
 ]

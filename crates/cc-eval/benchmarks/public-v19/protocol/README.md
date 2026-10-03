@@ -1,0 +1,22 @@
+# Public V19 protocol checkpoint
+
+Start with [AUTHOR-START.md](AUTHOR-START.md); exact evaluator field layout is in [evaluator-query.schema.json](evaluator-query.schema.json). [PREREGISTRATION.md](PREREGISTRATION.md) and [preregistration.json](preregistration.json) freeze the integration/measurement decisions before ranking. [source-locks.json](source-locks.json) is retained public candidate metadata, not imported-source proof. [authority-locks.json](authority-locks.json) identifies exact unchanged evaluator/normative source bytes. Files in this directory are owned by the independent protocol author only.
+
+Quick author's read-only format check, from repository root:
+
+```sh
+python3 crates/cc-eval/benchmarks/public-v19/protocol/check.py \
+  --shard serde:native=<serde-dev-native.jsonl> \
+  --shard serde:compat=<serde-dev-compat.jsonl> \
+  --output /tmp/v19-counts-only-receipt.json
+```
+
+Supply other explicit shards with repeated `--shard REPO:PROFILE=FILE`, optionally a frozen `--relations` file. Checker stdout contains only status/count/receipt hash; JSON receipt has hashes/counts/error-code totals, no query, gold, intent, path or global-family bodies. It reads explicit input only and does not rank, download, refresh locks or write shard files. Requires locally installed Python jsonschema; missing dependency blocks, never installs or changes credentials. Exact text normalization detects duplicates, not semantic task equivalence. `--custodian` permits checking held-out records only in already authorized independent restricted custody; the flag creates no access control. Otherwise any real holdout row rejects public intake. Checker cannot establish reviewer authenticity, source/gold correctness, license/source byte integrity or holdout secrecy.
+
+A separate actual evaluator validation can be requested with `--evaluator <exact-receipted-cc-eval> --suite <native-dev-suite> --suite <compat-dev-suite>`. It captures diagnostics as hashes only; never echoes evaluator diagnostics to tuning owners. Evaluation failures block rather than refresh input. Its `validate` proves source/query/schema locks, not independent gold quality. Note native/compat suites use BLAKE3 locks while public commitments use SHA256.
+
+`examples/` is one invented greeting function and one synthetic query in native/compat format. It is NOT serde source, is NOT an accepted repo question, and contributes0 reviewed families. Its row uses a locked candidate metadata value solely to demonstrate the field shape; `synthetic_example_not_corpus=true`, pending review and suite name make the distinction explicit. The example source uses snapshot-only lock commit=null and never claims a real pinned checkout. Its new manifests were explicitly frozen with the unchanged evaluator, then both validated with real CLI; no existing corpus/gold was changed. Test sentinel holdout bodies are invented temporary fixtures, not actual held-out corpus content.
+
+`test_check.py` contains13 meaningful protocol counterexamples: native/compat structure, unknown top-level metadata, SHA drift, global split, public holdout rejection/counts-only custody reporting, duplicate variants, self-review rejection, registered/unregistered component and cross-split leakage, no-answer incompatibility, invalid span/facet/path/grade and fixed deterministic split vectors. It reports no real corpus content.
+
+Runtime sample budget/seed/bootstrap/split and zero exact CI margin are preregistered design choices;09's degradation thresholds remain review triggers. Planned global bootstrap, native facet/graph/Recall20 and strict no_match status audit are not falsely labelled implemented. A family-only split does not certify D5 held-out repository/module generalization. Expected75/25 is not forced exact count. Six independently reviewed100-family blocks are a target, currently0 completed here. Reported serde/vite access refusals and lack of independent holdout custody remain explicit blockers; no refused source was downloaded by this task.

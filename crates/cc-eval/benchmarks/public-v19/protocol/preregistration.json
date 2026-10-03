@@ -1,0 +1,87 @@
+{
+  "protocol_version": 1,
+  "base_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+  "corpus_status": "preparation_only",
+  "completed_reviewed_questions": 0,
+  "target_reviewed_families": 600,
+  "repos": [
+    "serde",
+    "express",
+    "typescript",
+    "requests",
+    "gin",
+    "vite"
+  ],
+  "split": {
+    "algorithm": "sha256-first64-big-endian-threshold",
+    "prefix": "codecortex-public-v19-split-v1\n",
+    "holdout_threshold": 4611686018427387904,
+    "ratio_design": "expected_75_dev_25_holdout_not_exact_quota",
+    "unit": "canonical_global_family_component",
+    "cross_split_link": "quarantine"
+  },
+  "runtime": {
+    "top_k": 10,
+    "timeout_ms": 30000,
+    "repetitions": 3,
+    "warmup": 0,
+    "seed": 20261003,
+    "allowed_offline_arms": [
+      "default-product-local-only",
+      "rg"
+    ],
+    "live_semantic": "authorization_blocked"
+  },
+  "statistics": {
+    "primary": "family-balanced-repository-macro",
+    "report": [
+      "query_micro",
+      "repo_macro",
+      "repo_category_cells",
+      "category_macro",
+      "family_balanced",
+      "per_query_paired_deltas",
+      "failure_denominators"
+    ],
+    "bootstrap": {
+      "version": "planned-v19-global-paired-cluster-v1",
+      "implemented": false,
+      "draws": 10000,
+      "seed": 20261003,
+      "ci": 0.95,
+      "quantile": "nearest_rank",
+      "strata": "repository-membership-signature",
+      "sampling_unit": "global-family-component",
+      "pairing": "carry_all_arm_and_repo_outcomes",
+      "minimum_independent_components": 2
+    }
+  },
+  "margins": {
+    "authority_review_trigger_ndcg_absolute": 0.01,
+    "authority_review_trigger_top1_absolute": 0.01,
+    "review_triggers_are_acceptance_margins": false,
+    "future_semantic_gain_lower_ci_strictly_greater_than": 0,
+    "future_exact_ndcg_lower_ci_at_least": 0,
+    "future_exact_top1_lower_ci_at_least": 0,
+    "exact_zero_margin_origin": "conservative_preregistered_design_decision_not_normative_numeric_requirement"
+  },
+  "reported_access_blocks": {
+    "serde": "parent_reported_PR60_Forbidden_base_absent",
+    "vite": "parent_reported_fixed_public_tree_CONNECT_403_base_available",
+    "other_four": "not_generalized_unknown"
+  },
+  "scorer_gaps": [
+    "facet_coverage",
+    "graph_correctness",
+    "recall20",
+    "global_stratified_paired_bootstrap",
+    "strict_no_match_vs_success_empty_audit"
+  ],
+  "holdout_custody": "requires_separate_authorized_access_boundary_not_shared_workspace_or_public_git",
+  "independently_verified_real_imports_by_protocol": 0,
+  "parent_reported_candidate_families": {
+    "gin": 20,
+    "typescript": 20
+  },
+  "parent_reported_provisional_splits_frozen": false
+}

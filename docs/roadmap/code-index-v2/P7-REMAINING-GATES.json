@@ -1,0 +1,736 @@
+{
+  "authority": [
+    "06-VALIDATION.md sections2/3/4",
+    "02-CONTRACTS.md C09-C14",
+    "09-BENCHMARK.md D2 and sections9/10"
+  ],
+  "integration_head": "d6a54a28eb17a1f71f9924a94e05877801c17037",
+  "task_authority": "tasks.json; TODO generated",
+  "definition": "closed_declared_subset applies only to listed requirement scope, not full gate or future workloads; source_sha labels frozen test/evidence checkpoint, actual production attestation remains in cited manifest",
+  "full_gate_status": {
+    "V05": "open",
+    "V11": "open",
+    "V16": "open",
+    "V18": "open",
+    "V19": "open"
+  },
+  "selected_offline_gap": [
+    "V05/all-lanes",
+    "V05/dsl"
+  ],
+  "rows": [
+    {
+      "gate": "V05",
+      "id": "bm25",
+      "requirement": "BM25 contribution monotonicity",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2ae064d30d15ab1348320b0af3f694a010a7e3fe",
+          "path": "artifacts/checkpoints/p7-v05-v11-independent-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "One independent strict-positive ordered pair; no universal final rank monotonicity claim",
+      "required_input_or_sample": "5 original pair observations + independent repeated pair oracle",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "soft",
+      "requirement": "Soft hints/preselection never become hard scope; legal outside-preselection hits reachable",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "32ce36ad424f5279fc0d2c37191e1f3dbb2eddb8",
+          "path": "artifacts/benchmarks/p7-v05-32ce36a-a34ddca2-scope-v1-20261003"
+        },
+        {
+          "source_sha": "2ae064d30d15ab1348320b0af3f694a010a7e3fe",
+          "path": "artifacts/checkpoints/p7-v05-v11-independent-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "No new repeat required for covered fixtures; wider hints/graph neighbors belong all-lane row",
+      "required_input_or_sample": "180 public DSL observations with outside hints/preselect1",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "empty",
+      "requirement": "Some(empty) files/languages stays empty",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "32ce36ad424f5279fc0d2c37191e1f3dbb2eddb8",
+          "path": "artifacts/benchmarks/p7-v05-32ce36a-a34ddca2-scope-v1-20261003"
+        },
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Explicit empty public and raw local/dense cases; graph positive counterpart outstanding below",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "intersection",
+      "requirement": "Caller language/path/files intersect DSL domain",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "32ce36ad424f5279fc0d2c37191e1f3dbb2eddb8",
+          "path": "artifacts/benchmarks/p7-v05-32ce36a-a34ddca2-scope-v1-20261003"
+        },
+        {
+          "source_sha": "2ae064d30d15ab1348320b0af3f694a010a7e3fe",
+          "path": "artifacts/checkpoints/p7-v05-v11-independent-20261003"
+        },
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Frozen literal complete path oracles; remaining kind/name and raw graph rows separate",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "dsl",
+      "requirement": "DSL path/lang repetition/conflicts plus supported kind/name",
+      "level": "L1-L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2ae064d30d15ab1348320b0af3f694a010a7e3fe",
+          "path": "artifacts/checkpoints/p7-v05-v11-independent-20261003"
+        },
+        {
+          "source_sha": "039d035b19dec4b0aba0a2a4aef76f862ccdeb1e",
+          "path": "artifacts/checkpoints/cloud-p7-formal-gate-scope-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Function/class, needle/Needle/absent name literal final sets now covered; quoted type alias/other language symbol kinds remain unmeasured; final symbol filters are distinct from file hard scope",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "all-lanes",
+      "requirement": "All exact/path/lexical/grep/graph/dense candidates obey independent hard domain",
+      "level": "L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "32ce36ad424f5279fc0d2c37191e1f3dbb2eddb8",
+          "path": "artifacts/benchmarks/p7-v05-32ce36a-a34ddca2-scope-v1-20261003"
+        },
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        },
+        {
+          "source_sha": "039d035b19dec4b0aba0a2a4aef76f862ccdeb1e",
+          "path": "artifacts/checkpoints/cloud-p7-formal-gate-scope-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "New11cases66lane receipts148candidates21hits; all six lanes nonempty positive, real parsed cross-file graph neighbor, literal path/version/source bounds and full final sets. Authored SemanticRequest scope tests actual recall; existing L3 dispatch evidence remains separately attributed",
+      "required_input_or_sample": "7synthetic parsed files,1connection pool,dim2,k50,11cases; both semantic/HTTP feature profiles; no network",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "path-normalization",
+      "requirement": "Case/component boundaries, Windows separators, traversal/root refusal",
+      "level": "L1/L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "c8c20b5b7d416372ee06ed5e248663c48912064e",
+          "path": "artifacts/checkpoints/cloud-p7-model-transition-20261002/receipt.json"
+        },
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "repo_path three unit contracts included in exactc8 workspace2383; production bytes unchanged; actual Windows filesystem execution not certified",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V05",
+      "id": "hydrate",
+      "requirement": "Final hydrate/source spans never cross hard domain and use nonempty exact source bytes",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2ae064d30d15ab1348320b0af3f694a010a7e3fe",
+          "path": "artifacts/checkpoints/p7-v05-v11-independent-20261003"
+        },
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Covered literal public/source oracle; new combined raw/final same domain can strengthen conjunction",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "deadline",
+      "requirement": "Total deadline and cancellation propagate to provider/CPU path",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "027fc86d20950cbdc4b6e59aabebe39a4c6e6d70",
+          "path": "artifacts/checkpoints/p7-query-public-independent-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Held headers/body search/context and cancel verified; not immediate interruption of blocking HTTP",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "capacity",
+      "requirement": "Bounded threads/jobs, physical pin/capacity survives abandoned future until exit",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "cb71d53c66aa51fa8798abe26326d7aad38e8c7b",
+          "path": "artifacts/benchmarks/p7-production-independent-20261002"
+        },
+        {
+          "source_sha": "027fc86d20950cbdc4b6e59aabebe39a4c6e6d70",
+          "path": "artifacts/checkpoints/p7-query-public-independent-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Physical capacity/pin bound covered; no universal process-thread SLA or C8/16 perf claim",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "locks",
+      "requirement": "One read connection and no DB/index lock over network waits",
+      "level": "L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "cb71d53c66aa51fa8798abe26326d7aad38e8c7b",
+          "path": "artifacts/benchmarks/p7-production-independent-20261002"
+        },
+        {
+          "source_sha": "3dceedf3dcee851b3b2e4d4938bba11d76c63326",
+          "path": "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Real provider wait permits local query/write/delete and CPU progress; fixed fixtures",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "generation",
+      "requirement": "Cross-generation reads reject; finite retry ceiling",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "3dceedf3dcee851b3b2e4d4938bba11d76c63326",
+          "path": "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003"
+        },
+        {
+          "source_sha": "2ae064d30d15ab1348320b0af3f694a010a7e3fe",
+          "path": "artifacts/checkpoints/p7-v05-v11-independent-20261003"
+        },
+        {
+          "source_sha": "7b7db3710b036913fb9cd1203cff0e31d9342327",
+          "path": "artifacts/checkpoints/p7-status-fence-independent-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Specific readiness race closed: independent40commands120pass at exact3d; original public20rounds unchanged; L2 exact-source observer with real worker, prefix hash-bound and nonexecuting private query-auth bridge; bounded3worker churn. Other query stage/future quiescence claims not expanded",
+      "required_input_or_sample": "Five deterministic1->2 status interleavings; five public repetitions; exact3 per fence",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "query-keys",
+      "requirement": "Query vector namespace/space/spec/exact-byte identity; original warm value reused",
+      "level": "L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "8b6d9a1d9a7c05700d2de8611dbc20918647e527",
+          "path": "artifacts/checkpoints/cloud-p7-cache-identity-integration-20261003"
+        },
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "11 distinct-value consumer cases9 adapter POST +13 original cases; no public instruction configuration exists",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "local-keys",
+      "requirement": "Local cache incarnation/index/hard scope/query/policy",
+      "level": "L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        },
+        {
+          "source_sha": "8b6d9a1d9a7c05700d2de8611dbc20918647e527",
+          "path": "artifacts/checkpoints/cloud-p7-cache-identity-integration-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "21 request forms, hard-set permutations, ordered hints and actual rebuild/reopen covered; complete config fields next row",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "immutable",
+      "requirement": "Complete immutable ranking/search/query config and repository tier fingerprint",
+      "level": "L2",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Enumerate public configurable dependency fields; cold/warm distinct consumed results across changed domains; every tier needed",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "graph-keys",
+      "requirement": "Graph cache evidence epoch and graph limits",
+      "level": "L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Six graph limits+budget, evidence-only miss/local hit, rebuild; graph top_k-only/permutation variants not yet directly observed",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "graph-extra",
+      "requirement": "Remaining graph top_k/permutation cache axes",
+      "level": "L2",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Independent consumed-result/call-count oracle for top_k-only and unordered scope sets",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "dense-context",
+      "requirement": "Dense semantic epoch/space/query spec; final context all generations/selector/budget/rerank",
+      "level": "L2/L3",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        },
+        {
+          "source_sha": "3dceedf3dcee851b3b2e4d4938bba11d76c63326",
+          "path": "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003"
+        },
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Direct instrumented dense result-cache bypass and final-context dependency consumption are not all mapped; compare warm vs fresh after semantic-only publication, not duplicate model switch",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V11",
+      "id": "derived",
+      "requirement": "Derived file/symbol/directory seed+parser/project-model/resolution version; chunk source doc version",
+      "level": "L2",
+      "status": "not_run_cross_build",
+      "evidence": [
+        {
+          "source_sha": "8b6d9a1d9a7c05700d2de8611dbc20918647e527",
+          "path": "artifacts/checkpoints/cloud-p7-cache-identity-integration-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Actual incompatible schema domain reset covered; real parser/rule cross-build upgrade and old pinned handles remain unexecuted",
+      "required_input_or_sample": "Two isolated fixed builds with admitted version transition; existing fixture hashes locked",
+      "execution_condition": "offline separate build runner; not live-model blocker"
+    },
+    {
+      "gate": "V11",
+      "id": "frozen-spec",
+      "requirement": "Metric/tokenizer/encoding static alternatives",
+      "level": "L1/L2",
+      "status": "not_run_cross_build",
+      "evidence": [
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Only Cosine/current version/one estimator admitted; unsupported tokenizer fail-closed covered. Future alternate version requires cross-build invalidation, not manual test key mutation",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V16",
+      "id": "cosine",
+      "requirement": "Independent nonunit positive/negative analytic cosine and top-k",
+      "level": "L1/L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Declared exact backend and configured model transition covered; no ANN/quality claim",
+      "required_input_or_sample": "8 nonunit docs,3 actual DB insertion orders; original15fixtures90 receipts separately",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V16",
+      "id": "tie",
+      "requirement": "Ties deterministic by document key; actual insertion orders",
+      "level": "L1/L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Declared exact backend and configured model transition covered; no ANN/quality claim",
+      "required_input_or_sample": "8 nonunit docs,3 actual DB insertion orders; original15fixtures90 receipts separately",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V16",
+      "id": "filter",
+      "requirement": "Hard scope filters before top-k",
+      "level": "L1/L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Declared exact backend and configured model transition covered; no ANN/quality claim",
+      "required_input_or_sample": "8 nonunit docs,3 actual DB insertion orders; original15fixtures90 receipts separately",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V16",
+      "id": "delete",
+      "requirement": "Deleted document never returned",
+      "level": "L1/L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Declared exact backend and configured model transition covered; no ANN/quality claim",
+      "required_input_or_sample": "8 nonunit docs,3 actual DB insertion orders; original15fixtures90 receipts separately",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V16",
+      "id": "space",
+      "requirement": "Distinct active/configured spaces never mixed",
+      "level": "L1/L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
+          "path": "artifacts/benchmarks/p7-v16-independent-review-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Declared exact backend and configured model transition covered; no ANN/quality claim",
+      "required_input_or_sample": "8 nonunit docs,3 actual DB insertion orders; original15fixtures90 receipts separately",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V16",
+      "id": "memory",
+      "requirement": "Bounded exact scan/cache reads",
+      "level": "L2",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
+          "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        },
+        {
+          "source_sha": "ed978e69b63ae932119eaa9530ac1ba929e7e0f3",
+          "path": "artifacts/benchmarks/p7-cache-independent-review-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Specific oversized prevalidation allocation defect independently closed; no whole-process asymptotic/RSS peak guarantee",
+      "required_input_or_sample": "N1000/8000/16000 x C1/4,dim128,batch64,k10,2 scans;64MiB corruption +3x10k soak; debug Linux; V20 C8/16/100k separate",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V18",
+      "id": "tools",
+      "requirement": "All14 tools and old hybrid/symbol modes remain",
+      "level": "L1-L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "027fc86d20950cbdc4b6e59aabebe39a4c6e6d70",
+          "path": "artifacts/checkpoints/p7-query-public-independent-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Frozen full parameter suite three profiles; no removed tests; public schema/default/legacy array checked",
+      "required_input_or_sample": "default8 +semantic9 +HTTP12 each5 rounds; overlaps not unique-question totals",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V18",
+      "id": "params",
+      "requirement": "New strategy/config passes schema/sanitize/dispatch/handler/status",
+      "level": "L1-L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "027fc86d20950cbdc4b6e59aabebe39a4c6e6d70",
+          "path": "artifacts/checkpoints/p7-query-public-independent-20261002"
+        },
+        {
+          "source_sha": "3dceedf3dcee851b3b2e4d4938bba11d76c63326",
+          "path": "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Feature/authority/default/invalid/bypass gates and actual public wired search/context covered; readiness correction separately reviewed",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V18",
+      "id": "offline",
+      "requirement": "Default no provider network/no key/no semantic cache; auto local equivalence",
+      "level": "L2/L3",
+      "status": "closed_declared_subset",
+      "evidence": [
+        {
+          "source_sha": "027fc86d20950cbdc4b6e59aabebe39a4c6e6d70",
+          "path": "artifacts/checkpoints/p7-query-public-independent-20261002"
+        },
+        {
+          "source_sha": "5c0c0632791a2e0d2f27afe9659845f0aced786c",
+          "path": "artifacts/checkpoints/cloud-p7-recovery-20261002/validation-receipt.json"
+        }
+      ],
+      "remaining_assertion_or_condition": "Existing seccomp default/semantic receipts and three-profile contract retained; fresh cold release packaging belongsV01/V21, not silently green",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V18",
+      "id": "lifecycle",
+      "requirement": "Wired disabled/unconfigured/backfilling/failed/ready, restart/revoke/error",
+      "level": "L2/L3",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "3dceedf3dcee851b3b2e4d4938bba11d76c63326",
+          "path": "artifacts/checkpoints/cloud-p7-status-generation-fix-20261003"
+        },
+        {
+          "source_sha": "027fc86d20950cbdc4b6e59aabebe39a4c6e6d70",
+          "path": "artifacts/checkpoints/p7-query-public-independent-20261002"
+        },
+        {
+          "source_sha": "cb71d53c66aa51fa8798abe26326d7aad38e8c7b",
+          "path": "artifacts/benchmarks/p7-production-independent-20261002"
+        }
+      ],
+      "remaining_assertion_or_condition": "Evidence spread across PR21/32/43/44/54: need one formal lifecycle row map with exact status/HTTP/document costs; SIGKILL crash matrix P7-016 remains open, not required by mere14-tool assertion",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V19",
+      "id": "report",
+      "requirement": "Compat/native separate metrics and paired per-question difference",
+      "level": "L3/L4",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
+          "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        }
+      ],
+      "remaining_assertion_or_condition": "Historical declaration inP5-GATE only; cited raw p5e-g5-freeze directory is absent in this recovered checkout. Retrieve/verify original locked raw evidence or rerun exact fixed public corpus; cannot close from prose",
+      "required_input_or_sample": "51 questions306 requests; preserved failure/Partial/S11; historical source",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V19",
+      "id": "corpus",
+      "requirement": "Public real multi-repository reviewed corpus + hard negatives",
+      "level": "L3/L4",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
+          "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        }
+      ],
+      "remaining_assertion_or_condition": "Inventory frozen public repos/licenses and independent gold; add reviewed questions, reject synthetic repeats as independentquestions",
+      "required_input_or_sample": "09-BENCHMARK D2>=6repos Rust/JS/TS/Python/Go+mixed,~600 reviewed questions",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V19",
+      "id": "holdout",
+      "requirement": "Held-out split independent of tuning, immutable gold",
+      "level": "L3/L4",
+      "status": "open_offline",
+      "evidence": [],
+      "remaining_assertion_or_condition": "Lock provenance/split/query-family IDs; independently reviewed gold; parent-owned independent reviewer needed",
+      "required_input_or_sample": "~600 total reviewedquestions; no mandate600holdout or fabricated threshold",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V19",
+      "id": "facet-span",
+      "requirement": "Native answer groups/facet coverage/exact source span and chain facts",
+      "level": "L3/L4",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
+          "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        }
+      ],
+      "remaining_assertion_or_condition": "Use deterministic reviewed corpus native assertions; raw file-hit score cannot certify facets/spans/chain",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V19",
+      "id": "statistics",
+      "requirement": "Macro repo/category and micro mean; stratified paired bootstrap CI; failures/inconclusive",
+      "level": "L3/L4",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
+          "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        }
+      ],
+      "remaining_assertion_or_condition": "Use fixed same device/config paired full new corpus; quality repeats not independentqueries; pre-register margins before scoring",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    },
+    {
+      "gate": "V19",
+      "id": "ablation",
+      "requirement": "Local vs local+dense quality/cost with semantic holdout CI lower bound>0; exact no substantial regression",
+      "level": "L3/L4",
+      "status": "blocked_authorization",
+      "evidence": [],
+      "remaining_assertion_or_condition": "No permission to paid/live providers or private-source egress; FakeProvider cannot validate semantic quality. Local deterministic corpus work remainsoffline",
+      "required_input_or_sample": "Frozen heldout, costs incl uncertain attempts, exact-class paired scores; margins09section10",
+      "execution_condition": "live provider and corpus transmission require explicit authorization; D1/D2 stay unchanged"
+    },
+    {
+      "gate": "V19",
+      "id": "current-local",
+      "requirement": "Current SHA quality regression on existing public fixed corpus",
+      "level": "L3",
+      "status": "open_offline",
+      "evidence": [
+        {
+          "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
+          "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        }
+      ],
+      "remaining_assertion_or_condition": "Historical local result is not automatically current SHA acceptance; compare same gold/raw parser/scorer under exact current binary, retain known failures",
+      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "execution_condition": "offline"
+    }
+  ],
+  "selected_offline_gap_result": {
+    "source_sha": "039d035b19dec4b0aba0a2a4aef76f862ccdeb1e",
+    "status": "passed_declared_L2_subset",
+    "evidence": "artifacts/checkpoints/cloud-p7-formal-gate-scope-20261003/receipt.json"
+  },
+  "full_gate_blockers": {
+    "V05": [
+      "New raw graph/dense and kind/name block independent review pending; L3 kind/name and quoted type alias breadth not measured; complete gate row consolidation pending"
+    ],
+    "V11": [
+      "Three explicit offline cache rows and two cross-build rows remain as listed; readiness race is closed and not a remaining implementation blocker"
+    ],
+    "V16": [
+      "All six minimum requirements have declared exact-backend evidence; consolidated gate/source acceptance decision remains pending, rather than additional arbitrary repetitions. No numeric100k/C8/16 minimum exists inV16; those remainV20"
+    ],
+    "V18": [
+      "Complete wired lifecycle per-state/cost/error/restart evidence consolidation; existing parameter/default-package requirements bounded-closed"
+    ],
+    "V19": [
+      "Six offline requirements and one live semantic ablation authorization blocker; historical raw corpus evidence missing from recovered checkout"
+    ]
+  },
+  "row_summary": {
+    "V05": {
+      "closed_declared_subset": 8
+    },
+    "V11": {
+      "closed_declared_subset": 7,
+      "open_offline": 3,
+      "not_run_cross_build": 2
+    },
+    "V16": {
+      "closed_declared_subset": 6
+    },
+    "V18": {
+      "closed_declared_subset": 3,
+      "open_offline": 1
+    },
+    "V19": {
+      "open_offline": 6,
+      "blocked_authorization": 1
+    }
+  }
+}

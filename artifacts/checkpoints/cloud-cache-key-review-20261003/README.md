@@ -2,6 +2,8 @@
 
 Frozen subject: `a7efaae70cd0828b1a1b2d811e20176d855394b3` (PR51, based on PR49). PR50 read ownership remains with the main owner. This branch adds only `crates/cc-server/tests/cache_key_review_behavior.rs` and this dedicated evidence directory. All production, Cargo, PR51 tests and ledger bytes remain unchanged.
 
+Remote PR51 currently points to receipt commit `41cea9f5f108eab9f571e0b5ed84bf613f85f7d0`. Its delta from the frozen subject contains only benchmark evidence/ledger updates, with no production or test change. Its published `cache-key-requirements.json` explicitly marks derived-version axes not_run, immutable config/tier partial, sealed alternatives not runtime-selectable, and full_V11_closed=false; the formal map/gate also leave full V11/V16 open. This independent conclusion agrees with that declared scope. Referenced PR46/47 integrated lifecycle assertions were not independently replayed by this review; this supplement does not replace their evidence.
+
 Conclusion: PR51's tested query/result-cache axes have real behavioral evidence; their provider-call/counter oracles are not merely duplicate hash implementations. The independent supplement now checks **distinct cached values consumed by production code** and a real incompatible-schema reopen. No additional production cache-key defect was established in this bounded review. It does **not** certify all C12/V11 dimensions: parser/project-model version changes, cross-build encoding/document/policy/selector/schema-spec changes and integrated public semantic model/instruction transitions remain unmeasured here. A documentation conflict is identified below.
 
 ## Authority and dependency partitions

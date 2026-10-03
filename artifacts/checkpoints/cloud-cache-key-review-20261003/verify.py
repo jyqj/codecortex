@@ -9,6 +9,13 @@ import subprocess
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 BASE = "a7efaae70cd0828b1a1b2d811e20176d855394b3"
+RECEIPT = "41cea9f5f108eab9f571e0b5ed84bf613f85f7d0"
+receipt_dir = "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003/"
+receipt_raw = subprocess.check_output(["git","show",RECEIPT+":"+receipt_dir+"cache-key-requirements.json"],cwd=ROOT)
+declared = json.loads(receipt_raw)
+assert not declared["full_V11_closed"]
+delta = subprocess.check_output(["git","diff","--name-only",BASE,RECEIPT],cwd=ROOT).decode().splitlines()
+assert all(p.startswith("artifacts/") or p in ["docs/roadmap/code-index-v2/tasks.json","docs/roadmap/code-index-v2/05-TODO.md"] for p in delta)
 rows = {}
 for tool in ("msrv", "199"):
     query = json.loads((HERE / f"observations-{tool}/distinct-query-consumption.json").read_text())
@@ -58,6 +65,9 @@ assert "QueryCacheKey" not in code and "DefaultHasher" not in code
 assert "panic!(\"production cache consumer missed a populated key\")" in code
 assert "Finished" in (HERE / "clippy-199.log").read_text()
 summary = {"frozen_subject_sha":BASE,"status":"PASS bounded independent review; not full C12/V11 acceptance",
+           "later_pr51_receipt_sha":RECEIPT,"later_receipt_has_no_production_or_test_delta":True,
+           "published_requirements_sha256":hashlib.sha256(receipt_raw).hexdigest(),
+           "published_scope":"partial/frozen/not_run axes explicit; full_V11_closed=false; independently reviewed declaration, not rerun of referenced PR46/47",
            "oracle":"provider/factory counts plus distinct production cache-consumer outputs; no test key construction",
            "observed":rows,"frozen_files_sha256":hashes,"new_test_sha256":hashlib.sha256(test.read_bytes()).hexdigest(),
            "production_and_subject_tests_unchanged":True,"strict_clippy_199":"PASS",

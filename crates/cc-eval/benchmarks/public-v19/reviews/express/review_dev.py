@@ -66,6 +66,18 @@ def audit(limit):
     assert all(r["split"] == "dev" for r in [*native, *compat.values()])
     assert len({r["query_family"] for r in native}) == 68
     assert sum(r["no_answer"] for r in native) == 11
+    relation_map = {}
+    for component in load("relations.json")["components"]:
+        members = component["members"]
+        assert component["global_family"] == min(members)
+        assert all(member in {r["query_family"] for r in native} for member in members)
+        for member in members:
+            assert member not in relation_map
+            relation_map[member] = component["global_family"]
+    assert len(relation_map) == 4
+    for row in native:
+        assert row["annotations"]["v19"]["global_family"] == relation_map.get(row["query_family"], row["query_family"])
+    assert len({" ".join(r["query"].lower().split()) for r in native}) == len(native)
     selected = native[:limit]
     decisions = []
     # Manual source-task/edge review, frozen to exact row bytes at AUTHOR.

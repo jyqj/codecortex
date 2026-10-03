@@ -2,7 +2,7 @@
   "production_source_sha": "c70c68f2ff9b4ac40c635652858f56d2d0a06518",
   "binary_sha256": "8786768e6301bfa699df32e801644b56abc0d3c5b86a8244f83100f653445f92",
   "official_profile": "release/semantic-http/original INFO logging",
-  "scope": "stop-requested live checkpoint; NOT final50k acceptance",
+  "scope": "completed50k release prepared block; stop-requested final handoff, not fullV20",
   "completed_cold_wire_ms": 10524.815298,
   "completed_query_cells": 8,
   "completed_query_requests": 256,
@@ -85,14 +85,17 @@
     }
   ],
   "processes": {
-    "product": null,
+    "product": {
+      "pid": 354244,
+      "state": "absent"
+    },
     "runner": {
       "pid": 354241,
-      "start_time_ticks": 2986855
+      "state": "absent"
     },
     "model": {
       "pid": 354243,
-      "start_time_ticks": 2987132
+      "state": "absent"
     }
   },
   "exec_session_id": 20354,
@@ -101,7 +104,7 @@
   "runtime_output": "/tmp/p7-empty-test-population-release-50k",
   "new_work_after_checkpoint": "stopped per parent; no larger scale/newoptimization/versionintegration",
   "next_acceptance": [
-    "current naturalready50000semanticmanifest/integrityFK/productexit0; not yet certified here",
+    "current50k ready/count/integrity/FK/exit allreadbackpassed; independent review/latestCI pending, no new run in oldsession",
     "separate new session owns coldopt/resource/integration; actualnewversion after fixedRequests/Gin semantics",
     "exact newHEAD CI and independent review for c70 emptycandidate fix",
     "100knot_run; capacity preflight and >=1GiBreserve before any future run",
@@ -307,5 +310,16 @@
   ],
   "full_P7_014": false,
   "full_P7_015": false,
-  "full_V20": false
+  "full_V20": false,
+  "final_readback": {
+    "summary": "completed_prepared",
+    "semantic_state": "ready",
+    "files": 50000,
+    "semantic_manifest": 50000,
+    "integrity": "ok",
+    "foreign_key_errors": 0,
+    "product_exit_code": 0,
+    "sampled_root_peak_RSS_bytes": 2060541952,
+    "backfill_drain_ms": 179242.94246499994
+  }
 }

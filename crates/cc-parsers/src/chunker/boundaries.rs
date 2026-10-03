@@ -27,9 +27,73 @@ fn symbol_kind(kind: &str) -> Option<SymbolKind> {
         "struct_item" | "struct_specifier" | "type_declaration" => SymbolKind::Class,
         "interface_declaration" | "trait_item" => SymbolKind::Interface,
         "enum_item" | "enum_declaration" | "enum_specifier" => SymbolKind::Enum,
-        "mod_item" | "namespace_definition" => SymbolKind::Module,
+        "mod_item" => SymbolKind::Module,
+        "namespace_definition" => SymbolKind::Namespace,
         _ => return None,
     })
+}
+/// Parser labels may refine a declaration, but cannot change its AST family.
+/// Python and Rust share callable node kinds between functions and methods;
+/// the nearest lexical declaration supplies that distinction.
+fn declaration_kind(node: Node<'_>) -> Option<SymbolKind> {
+    let base = symbol_kind(node.kind())?;
+    if matches!(node.kind(), "function_definition" | "function_item") {
+        let mut parent = node.parent();
+        while let Some(p) = parent {
+            if matches!(
+                p.kind(),
+                "class_definition"
+                    | "class_specifier"
+                    | "struct_specifier"
+                    | "impl_item"
+                    | "trait_item"
+            ) {
+                return Some(SymbolKind::Method);
+            }
+            if symbol_kind(p.kind()).is_some() {
+                break;
+            }
+            parent = p.parent();
+        }
+    }
+    if matches!(node.kind(), "lexical_declaration" | "variable_declaration") && body(node).is_some()
+    {
+        return Some(SymbolKind::Function);
+    }
+    if node.kind() == "type_declaration" {
+        let mut cursor = node.walk();
+        let spec = node
+            .named_children(&mut cursor)
+            .find(|n| matches!(n.kind(), "type_spec" | "type_alias"));
+        if let Some(spec) = spec {
+            return Some(match spec.child_by_field_name("type").map(|n| n.kind()) {
+                Some("struct_type") => SymbolKind::Class,
+                Some("interface_type") => SymbolKind::Interface,
+                _ => SymbolKind::TypeAlias,
+            });
+        }
+    }
+    Some(base)
+}
+fn compatible_hint(node: Node<'_>, hint: &SymbolRecord, source: &[u8]) -> bool {
+    if node
+        .child_by_field_name("name")
+        .and_then(|n| n.utf8_text(source).ok())
+        .is_some_and(|name| name != hint.name)
+    {
+        return false;
+    }
+    let expected = declaration_kind(node);
+    expected == Some(hint.kind)
+        // JS/TS function declarations inherit their parser's class container.
+        || (matches!(node.kind(), "function_declaration" | "generator_function_declaration")
+            && matches!(hint.kind, SymbolKind::Function | SymbolKind::Method))
+        // A C++ out-of-class member is expressed through a qualified declarator.
+        || (node.kind() == "function_definition" && hint.kind == SymbolKind::Method
+            && node.child_by_field_name("declarator")
+                .and_then(|n| n.child_by_field_name("declarator"))
+                .is_some_and(|n| n.kind() == "qualified_identifier"))
+        || (matches!(node.kind(), "const_item" | "static_item") && hint.kind == SymbolKind::Constant)
 }
 fn classify(kind: &str) -> Option<BoundaryKind> {
     // The declaration child owns the wrapper span; do not hide its identity
@@ -238,11 +302,14 @@ pub fn extract(
                             (owner.start_position().row + 1) as u32,
                             owner.start_position().column as u32,
                         ))
+                        .filter(|s| compatible_hint(node, s, source.bytes()))
                         .or_else(|| {
-                            names.get(&(
-                                (node.start_position().row + 1) as u32,
-                                node.start_position().column as u32,
-                            ))
+                            names
+                                .get(&(
+                                    (node.start_position().row + 1) as u32,
+                                    node.start_position().column as u32,
+                                ))
+                                .filter(|s| compatible_hint(node, s, source.bytes()))
                         });
                     let name = if kind == BoundaryKind::Symbol {
                         hint.map(|s| s.name.clone()).or_else(|| {
@@ -250,7 +317,12 @@ pub fn extract(
                                 .or_else(|| node.child_by_field_name("type"))
                                 .or_else(|| {
                                     node.named_child(0)
-                                        .filter(|n| n.kind() == "variable_declarator")
+                                        .filter(|n| {
+                                            matches!(
+                                                n.kind(),
+                                                "variable_declarator" | "type_spec" | "type_alias"
+                                            )
+                                        })
                                         .and_then(|n| n.child_by_field_name("name"))
                                 })
                                 .and_then(|n| n.utf8_text(source.bytes()).ok())
@@ -279,7 +351,7 @@ pub fn extract(
                         parent,
                         kind,
                         name,
-                        symbol_kind: hint.map(|s| s.kind).or_else(|| symbol_kind(node.kind())),
+                        symbol_kind: hint.map(|s| s.kind).or_else(|| declaration_kind(node)),
                         signature,
                         leading_comment,
                         documentation: if kind == BoundaryKind::Symbol {

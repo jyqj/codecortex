@@ -76,6 +76,10 @@ impl PythonParser {
             *node
         };
 
+        if func_node.kind() != "function_definition" {
+            return None;
+        }
+
         let name_node = func_node.child_by_field_name("name")?;
         let name = name_node.utf8_text(source).ok()?;
         let params = func_node
@@ -133,7 +137,7 @@ impl PythonParser {
             parser_tier: ParserTier::Semantic,
             parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
-            parent_symbol_id: None,
+            parent_symbol_id: lexical_parent_id(node, file_path),
             scope_id: None,
             export_name: None,
             is_default_export: false,
@@ -154,11 +158,15 @@ impl PythonParser {
         source: &[u8],
         file_path: &str,
     ) -> Option<SymbolRecord> {
-        let name_node = node.child_by_field_name("name")?;
+        let class_node = declaration_node(*node)?;
+        if class_node.kind() != "class_definition" {
+            return None;
+        }
+        let name_node = class_node.child_by_field_name("name")?;
         let name = name_node.utf8_text(source).ok()?;
 
         // Include superclass list in signature if present
-        let superclasses = node
+        let superclasses = class_node
             .child_by_field_name("superclasses")
             .and_then(|n| n.utf8_text(source).ok());
         let signature = match superclasses {
@@ -193,7 +201,7 @@ impl PythonParser {
             parser_tier: ParserTier::Semantic,
             parser_confidence: ParserTier::Semantic.element_confidence(ElementKind::Symbol),
             qname: Some(qname),
-            parent_symbol_id: None,
+            parent_symbol_id: lexical_parent_id(node, file_path),
             scope_id: None,
             export_name: None,
             is_default_export: false,
@@ -710,108 +718,14 @@ impl PythonParser {
         _parent_container: Option<&str>,
     ) {
         if let Some(sym) = self.extract_class(node, source, file_path) {
-            let class_name = sym.qname.clone().unwrap_or_else(|| sym.name.clone());
-            let class_id = sym.symbol_id.clone();
             ctx.symbols.push(sym);
-
-            // Recurse into the class body with class_name as container
-            if let Some(body) = node.child_by_field_name("body") {
-                let mut body_cursor = body.walk();
-                for member in body.children(&mut body_cursor) {
-                    match member.kind() {
-                        "function_definition" | "decorated_definition" => {
-                            // Extract method via the same function helper
-                            self.handle_member_function(
-                                &member,
-                                source,
-                                file_path,
-                                ctx,
-                                &class_name,
-                                &class_id,
-                            );
-                        }
-                        // Nested class
-                        "class_definition" => {
-                            self.handle_class_def(
-                                &member,
-                                source,
-                                file_path,
-                                ctx,
-                                Some(&class_name),
-                            );
-                        }
-                        _ => {
-                            // Still recurse for calls, raise, etc. inside class body
-                            self.visit_node_recursive(
-                                &member,
-                                source,
-                                file_path,
-                                ctx,
-                                Some(&class_name),
-                            );
-                        }
-                    }
+            // Traverse the actual declaration's children once. Decorators are
+            // evaluated in the enclosing scope; wrappers introduce no scope.
+            if let Some(declaration) = declaration_node(*node) {
+                let mut cursor = declaration.walk();
+                for child in declaration.children(&mut cursor) {
+                    self.visit_node_recursive(&child, source, file_path, ctx, None);
                 }
-            }
-        }
-    }
-
-    /// Handle a method (function_definition or decorated_definition) inside a class body.
-    fn handle_member_function(
-        &self,
-        node: &tree_sitter::Node,
-        source: &[u8],
-        file_path: &str,
-        ctx: &mut PythonExtractCtx,
-        class_name: &str,
-        class_id: &str,
-    ) {
-        // Extract route edges if decorated
-        if node.kind() == "decorated_definition" {
-            let func_node = node.child_by_field_name("definition");
-            if let Some(func_node) = func_node {
-                let name = func_node
-                    .child_by_field_name("name")
-                    .and_then(|n| n.utf8_text(source).ok());
-                if let Some(name) = name {
-                    let qname = format!("{}.{}", class_name, name);
-                    // First extract the method symbol
-                    if let Some(method) =
-                        self.extract_function(node, source, file_path, Some(class_name))
-                    {
-                        let mut m = method;
-                        m.parent_symbol_id = Some(class_id.to_string());
-                        m.kind = SymbolKind::Method;
-                        let sid = m.symbol_id.clone();
-                        ctx.symbols.push(m);
-                        // Now extract route edges from decorators
-                        let routes =
-                            self.extract_route_edges(node, source, file_path, &qname, Some(&sid));
-                        ctx.route_edges.extend(routes);
-                    }
-                }
-            }
-            // Recurse into the entire decorated_definition for calls/raise/etc.
-            let mut child_cursor = node.walk();
-            for child in node.children(&mut child_cursor) {
-                // Skip decorator nodes themselves for recursion
-                if child.kind() == "decorator" {
-                    continue;
-                }
-                self.visit_node_recursive(&child, source, file_path, ctx, Some(class_name));
-            }
-        } else {
-            // Plain function_definition inside class
-            if let Some(method) = self.extract_function(node, source, file_path, Some(class_name)) {
-                let mut m = method;
-                m.parent_symbol_id = Some(class_id.to_string());
-                m.kind = SymbolKind::Method;
-                ctx.symbols.push(m);
-            }
-            // Recurse into function body for calls, raise, etc.
-            let mut child_cursor = node.walk();
-            for child in node.children(&mut child_cursor) {
-                self.visit_node_recursive(&child, source, file_path, ctx, Some(class_name));
             }
         }
     }
@@ -831,8 +745,8 @@ impl PythonParser {
         // Note: children are recursed by the caller (visit_node_recursive)
     }
 
-    /// Handle a decorated_definition at module level or outside a class.
-    /// Extracts the function symbol + route edges from decorators, then recurses.
+    /// Dispatch the decorated declaration by its actual AST kind.
+    /// Only functions contribute route edges; every decorator is traversed.
     fn handle_decorated_def(
         &self,
         node: &tree_sitter::Node,
@@ -841,6 +755,18 @@ impl PythonParser {
         ctx: &mut PythonExtractCtx,
         container: Option<&str>,
     ) {
+        if declaration_node(*node).is_some_and(|n| n.kind() == "class_definition") {
+            self.handle_class_def(node, source, file_path, ctx, container);
+            let mut cursor = node.walk();
+            for decorator in node
+                .named_children(&mut cursor)
+                .filter(|n| n.kind() == "decorator")
+            {
+                self.visit_node_recursive(&decorator, source, file_path, ctx, container);
+            }
+            return;
+        }
+
         // Extract the function symbol
         if let Some(sym) = self.extract_function(node, source, file_path, container) {
             let func_qname = sym.qname.clone().unwrap_or_else(|| sym.name.clone());
@@ -858,6 +784,36 @@ impl PythonParser {
             self.visit_node_recursive(&child, source, file_path, ctx, container);
         }
     }
+}
+
+/// The wrapper is the canonical source envelope; its child decides taxonomy.
+fn declaration_node(node: tree_sitter::Node<'_>) -> Option<tree_sitter::Node<'_>> {
+    if node.kind() == "decorated_definition" {
+        node.child_by_field_name("definition")
+    } else {
+        Some(node)
+    }
+}
+
+/// Link to the nearest lexical declaration using its canonical wrapper ID.
+fn lexical_parent_id(node: &tree_sitter::Node<'_>, path: &str) -> Option<String> {
+    let mut parent = node.parent();
+    while let Some(ancestor) = parent {
+        if matches!(ancestor.kind(), "function_definition" | "class_definition") {
+            let owner = ancestor
+                .parent()
+                .filter(|p| p.kind() == "decorated_definition")
+                .unwrap_or(ancestor);
+            return Some(StableId::edge_id(
+                "sym",
+                path,
+                owner.start_position().row as u32 + 1,
+                owner.start_position().column as u32,
+            ));
+        }
+        parent = ancestor.parent();
+    }
+    None
 }
 
 /// Native dotted lexical qnames, preserving the existing direct-class convention.
@@ -1106,6 +1062,31 @@ impl FileParser for PythonParser {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn function_extractor_rejects_class_nodes_and_wrappers() {
+        let p = PythonParser::new();
+        for code in [
+            "class Plain: pass\n",
+            "@first\n@second\nclass Decorated: pass\n",
+        ] {
+            let mut parser = tree_sitter::Parser::new();
+            parser.set_language(&p.language).unwrap();
+            let tree = parser.parse(code, None).unwrap();
+            let declaration = tree.root_node().named_child(0).unwrap();
+            assert!(p
+                .extract_function(&declaration, code.as_bytes(), "a.py", None)
+                .is_none());
+            if let Some(inner) = declaration.child_by_field_name("definition") {
+                assert!(p
+                    .extract_function(&inner, code.as_bytes(), "a.py", None)
+                    .is_none());
+            }
+            assert!(p
+                .extract_class(&declaration, code.as_bytes(), "a.py")
+                .is_some());
+        }
+    }
 
     #[test]
     fn parse_simple_python() {

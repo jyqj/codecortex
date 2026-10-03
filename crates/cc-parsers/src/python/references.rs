@@ -232,6 +232,26 @@ impl<'a> Extractor<'a> {
                 }
                 return;
             }
+            "decorator" => {
+                if let Some(expression) = node.named_child(0) {
+                    if matches!(expression.kind(), "identifier" | "attribute") {
+                        let token = expression
+                            .child_by_field_name("attribute")
+                            .unwrap_or(expression);
+                        let reference = self.reference(
+                            token,
+                            owner,
+                            text(expression, self.source),
+                            "identifier",
+                            expression.kind() == "identifier",
+                        );
+                        self.refs.push(reference);
+                    } else {
+                        self.walk(expression, owner);
+                    }
+                }
+                return;
+            }
             "lambda" => {
                 let mut scope = Scope::default();
                 if let Some(params) = node.child_by_field_name("parameters") {

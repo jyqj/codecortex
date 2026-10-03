@@ -1,0 +1,387 @@
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.69s
+     Running tests/python_declaration_identity.rs (/workspace/scratch/python-kind/target/debug/deps/python_declaration_identity-61282226684dd101)
+
+running 1 test
+
+thread 'classes_keep_canonical_envelopes_members_uids_and_lexical_parents' (12795) panicked at crates/cc-index/tests/python_declaration_identity.rs:86:13:
+missing source proof factory.容器; decorators=""; chunks=[
+    ChunkRecord {
+        source: Some(
+            ChunkSource {
+                source: SourceIdentity {
+                    snapshot_id: "49c2fc24eb031a6cfc4298e88fdd4b0233d19f5d47a4311bbbcad42667272abf",
+                    content_digest: "4ace21d1f3e763660c45b5c188db2457731b5f2d2477448405e21520ad7e456c",
+                    byte_len: 413,
+                    encoding: Utf8,
+                },
+                span: ByteSpan {
+                    start: 0,
+                    end: 22,
+                },
+                slice_digest: "e154f525e98bd359b0ff343f96e85b958b5da109d524245a6bb9dfa267145723",
+                boundary: "symbol",
+                owner: Some(
+                    ByteSpan {
+                        start: 0,
+                        end: 22,
+                    },
+                ),
+                signature: Some(
+                    ByteSpan {
+                        start: 0,
+                        end: 14,
+                    },
+                ),
+            },
+        ),
+        chunk_id: "chunk:micro.py:0",
+        file_path: "micro.py",
+        language: Python,
+        chunk_index: 0,
+        start_line: 1,
+        end_line: 1,
+        breadcrumb: "helper",
+        text: "def helper(): return 1",
+        symbol_name: Some(
+            "helper",
+        ),
+        symbol_kind: Some(
+            Function,
+        ),
+        token_estimate: 6,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+    },
+    ChunkRecord {
+        source: Some(
+            ChunkSource {
+                source: SourceIdentity {
+                    snapshot_id: "49c2fc24eb031a6cfc4298e88fdd4b0233d19f5d47a4311bbbcad42667272abf",
+                    content_digest: "4ace21d1f3e763660c45b5c188db2457731b5f2d2477448405e21520ad7e456c",
+                    byte_len: 413,
+                    encoding: Utf8,
+                },
+                span: ByteSpan {
+                    start: 22,
+                    end: 413,
+                },
+                slice_digest: "ea747c63c1d59230cc377d6dbd6ddb4ef381883c01676fd208127ef4827689da",
+                boundary: "symbol",
+                owner: Some(
+                    ByteSpan {
+                        start: 24,
+                        end: 411,
+                    },
+                ),
+                signature: Some(
+                    ByteSpan {
+                        start: 24,
+                        end: 44,
+                    },
+                ),
+            },
+        ),
+        chunk_id: "chunk:micro.py:1",
+        file_path: "micro.py",
+        language: Python,
+        chunk_index: 1,
+        start_line: 1,
+        end_line: 14,
+        breadcrumb: "factory",
+        text: "\r\ndef factory():\r\n    if ready:\r\n        class 容器(Base):\r\n            if ready:\r\n                @decorate\r\n                class Inner:\r\n                    @staticmethod\r\n                    def pulse():\r\n                        def leaf(): return helper()\r\n                        return leaf()\r\n            @property\r\n            def value(self): return helper()\r\n    return 容器\r\n",
+        symbol_name: Some(
+            "factory",
+        ),
+        symbol_kind: Some(
+            Function,
+        ),
+        token_estimate: 98,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+    },
+]; symbols=[
+    SymbolRecord {
+        symbol_id: "sym:ded2f40062da5a7a",
+        file_path: "micro.py",
+        name: "helper",
+        kind: Function,
+        container: None,
+        start_line: 1,
+        end_line: 1,
+        start_col: 0,
+        end_col: 22,
+        signature: Some(
+            "def helper()",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "helper",
+        ),
+        parent_symbol_id: None,
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:40df449910f62a7574627a6b",
+        ),
+        framework_role: None,
+        receiver_type: None,
+        param_types: None,
+        return_type: None,
+        param_count: Some(
+            0,
+        ),
+        base_types: None,
+        implements: None,
+    },
+    SymbolRecord {
+        symbol_id: "sym:96b4ea4e63044ade",
+        file_path: "micro.py",
+        name: "factory",
+        kind: Function,
+        container: None,
+        start_line: 2,
+        end_line: 14,
+        start_col: 0,
+        end_col: 17,
+        signature: Some(
+            "def factory()",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "factory",
+        ),
+        parent_symbol_id: None,
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:642839dfac76ac48a23a8ff6",
+        ),
+        framework_role: None,
+        receiver_type: None,
+        param_types: None,
+        return_type: None,
+        param_count: Some(
+            0,
+        ),
+        base_types: None,
+        implements: None,
+    },
+    SymbolRecord {
+        symbol_id: "sym:f851e0941f5478dc",
+        file_path: "micro.py",
+        name: "容器",
+        kind: Class,
+        container: Some(
+            "factory",
+        ),
+        start_line: 4,
+        end_line: 13,
+        start_col: 8,
+        end_col: 44,
+        signature: Some(
+            "class 容器(Base)",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "factory.容器",
+        ),
+        parent_symbol_id: Some(
+            "sym:96b4ea4e63044ade",
+        ),
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:f3ad85ad0cb96266783f5d0e",
+        ),
+        framework_role: None,
+        receiver_type: None,
+        param_types: None,
+        return_type: None,
+        param_count: None,
+        base_types: None,
+        implements: None,
+    },
+    SymbolRecord {
+        symbol_id: "sym:891c071fc8263e36",
+        file_path: "micro.py",
+        name: "Inner",
+        kind: Class,
+        container: Some(
+            "factory.容器",
+        ),
+        start_line: 6,
+        end_line: 11,
+        start_col: 16,
+        end_col: 37,
+        signature: Some(
+            "class Inner",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "factory.容器.Inner",
+        ),
+        parent_symbol_id: Some(
+            "sym:f851e0941f5478dc",
+        ),
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:6c1966ada69586e032ba2775",
+        ),
+        framework_role: None,
+        receiver_type: None,
+        param_types: None,
+        return_type: None,
+        param_count: None,
+        base_types: None,
+        implements: None,
+    },
+    SymbolRecord {
+        symbol_id: "sym:dae913c325b97cf5",
+        file_path: "micro.py",
+        name: "pulse",
+        kind: Method,
+        container: Some(
+            "factory.容器.Inner",
+        ),
+        start_line: 8,
+        end_line: 11,
+        start_col: 20,
+        end_col: 37,
+        signature: Some(
+            "def pulse()",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "factory.容器.Inner.pulse",
+        ),
+        parent_symbol_id: Some(
+            "sym:891c071fc8263e36",
+        ),
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:436ed3192c83088a1a0e44ea",
+        ),
+        framework_role: None,
+        receiver_type: Some(
+            "factory.容器.Inner",
+        ),
+        param_types: None,
+        return_type: None,
+        param_count: Some(
+            0,
+        ),
+        base_types: None,
+        implements: None,
+    },
+    SymbolRecord {
+        symbol_id: "sym:d5e8dbc7b19cbee7",
+        file_path: "micro.py",
+        name: "leaf",
+        kind: Function,
+        container: Some(
+            "factory.容器.Inner.pulse",
+        ),
+        start_line: 10,
+        end_line: 10,
+        start_col: 24,
+        end_col: 51,
+        signature: Some(
+            "def leaf()",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "factory.容器.Inner.pulse.leaf",
+        ),
+        parent_symbol_id: Some(
+            "sym:dae913c325b97cf5",
+        ),
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:2b6114e27ea3f0713dabc068",
+        ),
+        framework_role: None,
+        receiver_type: None,
+        param_types: None,
+        return_type: None,
+        param_count: Some(
+            0,
+        ),
+        base_types: None,
+        implements: None,
+    },
+    SymbolRecord {
+        symbol_id: "sym:4b96b7365acb075f",
+        file_path: "micro.py",
+        name: "value",
+        kind: Method,
+        container: Some(
+            "factory.容器",
+        ),
+        start_line: 12,
+        end_line: 13,
+        start_col: 12,
+        end_col: 44,
+        signature: Some(
+            "def value(self)",
+        ),
+        doc: None,
+        parser_tier: Semantic,
+        parser_confidence: 0.85,
+        qname: Some(
+            "factory.容器.value",
+        ),
+        parent_symbol_id: Some(
+            "sym:f851e0941f5478dc",
+        ),
+        scope_id: None,
+        export_name: None,
+        is_default_export: false,
+        symbol_uid: Some(
+            "uid:984b240ef73d37db96b6a461",
+        ),
+        framework_role: None,
+        receiver_type: Some(
+            "factory.容器",
+        ),
+        param_types: None,
+        return_type: None,
+        param_count: Some(
+            0,
+        ),
+        base_types: None,
+        implements: None,
+    },
+]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test classes_keep_canonical_envelopes_members_uids_and_lexical_parents ... FAILED
+
+failures:
+
+failures:
+    classes_keep_canonical_envelopes_members_uids_and_lexical_parents
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.03s
+
+error: test failed, to rerun pass `-p cc-index --test python_declaration_identity`

@@ -1,0 +1,52 @@
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.84s
+     Running tests/semantic_lease.rs (target/debug/deps/semantic_lease-32fcd19286be735a)
+
+running 9 tests
+test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+test concurrent_claim_exactly_one_winner ... ok
+test claim_skips_future_and_serves_oldest_with_identity ... ok
+test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+test superseded_task_unclaimable_and_unackable ... ok
+test retry_exhaustion_dead_letters_to_failed ... ok
+test wrong_token_and_owner_mismatch_are_fenced ... ok
+test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.10s
+
+     Running tests/semantic_outbox.rs (target/debug/deps/semantic_outbox-947815958ab5b588)
+
+running 20 tests
+test duplicate_live_upsert_conflicts_fail_stop ... ok
+test failed_batch_rolls_back_no_half_task ... ok
+test file_removal_revokes_manifest_and_supersedes_without_embed ... ok
+test incremental_batch_with_active_space_enqueues_embed_and_bumps_semantic_once ... ok
+test guarded_fifo_matches_original_cas_through_retry_and_clock_boundaries ... ok
+test fifo_physical_index_preserves_existing_v24_logical_data ... ok
+test incremental_batch_without_active_space_keeps_default_behavior ... ok
+test no_active_space_is_a_full_noop ... ok
+test ready_query_filters_and_orders ... ok
+test ready_query_uses_the_ready_index ... ok
+test removals_revoke_manifest_and_supersede_without_embed ... ok
+test remove_files_batch_supersedes_without_embed ... ok
+test rewritten_doc_keeps_exactly_one_live_embed ... ok
+test state_transition_table_is_exact ... ok
+test replace_files_batch_enqueues_embed_with_semantic_effect ... ok
+test rollback_leaves_no_outbox_or_manifest_trace ... ok
+test transition_guards_in_database ... ok
+test original_and_guarded_fifo_have_identical_normal_cas_competition ... ok
+test two_active_spaces_fail_stop ... ok
+test upsert_supersedes_old_and_enqueues_one_pending_embed ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+     Running tests/semantic_queue.rs (target/debug/deps/semantic_queue-bc0ce0e66b295529)
+
+running 3 tests
+test facade_reclaim_returns_only_expired_leases_to_pending ... ok
+test facade_claim_renew_and_retry_keep_the_fenced_semantics ... ok
+test claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+

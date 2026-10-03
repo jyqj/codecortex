@@ -1,0 +1,331 @@
+{
+  "order": [
+    "baseline 1k/5k",
+    "candidate 1k/5k",
+    "candidate-repeat 1k/5k",
+    "baseline-repeat 1k/5k"
+  ],
+  "timer_note": "Identical temporary Instant/Mutex Vec diagnostic spans on both binaries. Process IO includes startup/index/drain/status/logging; /proc physical read_bytes=0 can mean cached reads. Two pairs, no statistical significance or 100k claim.",
+  "rows": [
+    {
+      "case": "baseline",
+      "n": 1000,
+      "cold_s": 0.273938730999987,
+      "observed_ready_s": 4.708100893999983,
+      "claim_s": 0.253089729,
+      "claim_count": 1001,
+      "round_s": 4.587654936,
+      "durable_put_s": 2.842205907,
+      "publish_cas_s": 0.255061344,
+      "process_io": {
+        "rchar": 60257431,
+        "wchar": 117303905,
+        "syscr": 20745,
+        "syscw": 57124,
+        "read_bytes": 0,
+        "write_bytes": 129970176,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 93,
+      "cpu_system_ticks": 105,
+      "hwm_bytes": 53182464,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11149312,
+          "allocated_bytes": 11149312
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10048712,
+          "allocated_bytes": 10051584
+        }
+      ]
+    },
+    {
+      "case": "baseline",
+      "n": 5000,
+      "cold_s": 1.1680321469999626,
+      "observed_ready_s": 22.965229168999997,
+      "claim_s": 1.488313605,
+      "claim_count": 5001,
+      "round_s": 22.933909208,
+      "durable_put_s": 13.304689212,
+      "publish_cas_s": 1.588393002,
+      "process_io": {
+        "rchar": 446093700,
+        "wchar": 671948578,
+        "syscr": 138388,
+        "syscw": 322141,
+        "read_bytes": 0,
+        "write_bytes": 670584832,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 587,
+      "cpu_system_ticks": 415,
+      "hwm_bytes": 154128384,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53018624,
+          "allocated_bytes": 53018624
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4210672,
+          "allocated_bytes": 4210688
+        }
+      ]
+    },
+    {
+      "case": "candidate",
+      "n": 1000,
+      "cold_s": 0.26074831899995843,
+      "observed_ready_s": 4.449088512000003,
+      "claim_s": 0.093441322,
+      "claim_count": 1001,
+      "round_s": 4.268665621,
+      "durable_put_s": 2.656470593,
+      "publish_cas_s": 0.291873818,
+      "process_io": {
+        "rchar": 60191806,
+        "wchar": 122869922,
+        "syscr": 20730,
+        "syscw": 59691,
+        "read_bytes": 0,
+        "write_bytes": 135553024,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 96,
+      "cpu_system_ticks": 84,
+      "hwm_bytes": 54337536,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11145216,
+          "allocated_bytes": 11145216
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10061072,
+          "allocated_bytes": 10063872
+        }
+      ]
+    },
+    {
+      "case": "candidate",
+      "n": 5000,
+      "cold_s": 1.2298988100000088,
+      "observed_ready_s": 25.963015335000023,
+      "claim_s": 0.620561161,
+      "claim_count": 5001,
+      "round_s": 25.775662331,
+      "durable_put_s": 15.924069099,
+      "publish_cas_s": 1.634576207,
+      "process_io": {
+        "rchar": 466157694,
+        "wchar": 701248622,
+        "syscr": 143302,
+        "syscw": 335379,
+        "read_bytes": 0,
+        "write_bytes": 700022784,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 523,
+      "cpu_system_ticks": 483,
+      "hwm_bytes": 158154752,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53030912,
+          "allocated_bytes": 53030912
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4276592,
+          "allocated_bytes": 4280320
+        }
+      ]
+    },
+    {
+      "case": "candidate-repeat",
+      "n": 1000,
+      "cold_s": 0.2591156779999437,
+      "observed_ready_s": 4.652012032999892,
+      "claim_s": 0.083801172,
+      "claim_count": 1001,
+      "round_s": 4.459208227,
+      "durable_put_s": 2.813946211,
+      "publish_cas_s": 0.252348921,
+      "process_io": {
+        "rchar": 60675265,
+        "wchar": 122875070,
+        "syscr": 20846,
+        "syscw": 59692,
+        "read_bytes": 0,
+        "write_bytes": 135544832,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 86,
+      "cpu_system_ticks": 91,
+      "hwm_bytes": 54452224,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-repeat-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-repeat-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11145216,
+          "allocated_bytes": 11145216
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-repeat-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10061072,
+          "allocated_bytes": 10063872
+        }
+      ]
+    },
+    {
+      "case": "candidate-repeat",
+      "n": 5000,
+      "cold_s": 1.2589475349999475,
+      "observed_ready_s": 26.65367534699999,
+      "claim_s": 0.698317579,
+      "claim_count": 5001,
+      "round_s": 26.488924778,
+      "durable_put_s": 16.57972796,
+      "publish_cas_s": 1.595652691,
+      "process_io": {
+        "rchar": 474071672,
+        "wchar": 702139742,
+        "syscr": 145238,
+        "syscw": 335600,
+        "read_bytes": 0,
+        "write_bytes": 700665856,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 542,
+      "cpu_system_ticks": 466,
+      "hwm_bytes": 164659200,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-repeat-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-repeat-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53080064,
+          "allocated_bytes": 53080064
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/candidate-repeat-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4280712,
+          "allocated_bytes": 4284416
+        }
+      ]
+    },
+    {
+      "case": "baseline-repeat",
+      "n": 1000,
+      "cold_s": 0.2390409390000059,
+      "observed_ready_s": 4.470517851000068,
+      "claim_s": 0.119653855,
+      "claim_count": 1001,
+      "round_s": 4.460288313,
+      "durable_put_s": 2.81640638,
+      "publish_cas_s": 0.274072279,
+      "process_io": {
+        "rchar": 59892800,
+        "wchar": 117299360,
+        "syscr": 20657,
+        "syscw": 57123,
+        "read_bytes": 0,
+        "write_bytes": 129974272,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 91,
+      "cpu_system_ticks": 88,
+      "hwm_bytes": 54489088,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-repeat-n1000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 32768,
+          "allocated_bytes": 32768
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-repeat-n1000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 11149312,
+          "allocated_bytes": 11149312
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-repeat-n1000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 10048712,
+          "allocated_bytes": 10051584
+        }
+      ]
+    },
+    {
+      "case": "baseline-repeat",
+      "n": 5000,
+      "cold_s": 1.207222981999962,
+      "observed_ready_s": 25.051171295000017,
+      "claim_s": 1.531806327,
+      "claim_count": 5001,
+      "round_s": 25.032876102,
+      "durable_put_s": 15.06228284,
+      "publish_cas_s": 1.576669907,
+      "process_io": {
+        "rchar": 458026635,
+        "wchar": 672068183,
+        "syscr": 141313,
+        "syscw": 322167,
+        "read_bytes": 0,
+        "write_bytes": 670658560,
+        "cancelled_write_bytes": 0
+      },
+      "cpu_user_ticks": 611,
+      "cpu_system_ticks": 460,
+      "hwm_bytes": 159752192,
+      "db_files_at_ready": [
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-repeat-n5000/repo/.codecortex/index.sqlite3-shm",
+          "logical_bytes": 98304,
+          "allocated_bytes": 98304
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-repeat-n5000/repo/.codecortex/index.sqlite3",
+          "logical_bytes": 53018624,
+          "allocated_bytes": 53018624
+        },
+        {
+          "path": "/workspace/codecortex/artifacts/checkpoints/fifo-claim-index-20261003/baseline-repeat-n5000/repo/.codecortex/index.sqlite3-wal",
+          "logical_bytes": 4210672,
+          "allocated_bytes": 4210688
+        }
+      ]
+    }
+  ]
+}

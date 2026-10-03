@@ -99,3 +99,7 @@ cargo test --locked -j 2 -p cc-eval --test diag_p5e_stage_receipts_20261003 -- d
 本环境额外设置 `RUSTUP_HOME=/workspace/.rustup`、`CARGO_HOME=/workspace/.cargo`、PATH 指向已有工具链；没有改 HOME。原始 evidence 有不可覆盖断言，复跑必须使用新目录。没有运行 broad suites、旧 `post_index_worker_crosses_pages_and_reopen_reuses_artifacts`、GC/WAL/kill/staging 压力、private localdiag/42export 或 publicDEV gold/规模读取与运行。未使用 gh auth probe；ordinary origin fetch 成功。GitHub PR metadata 的只读 GraphQL 请求返回 `Forbidden`，因此停止后续 PR API 操作，不绕路；尚未创建 draft。产品修复等待 root 指定具体切面，未 merge/deploy。
 
 最终提交文件的 targeted clippy（只两个新测试 target，`-D warnings`）通过；rustfmt 与 diff whitespace 检查通过。最终 stage test 在不设置证据环境变量时也通过，避免把记录器配置当作 CI 必需条件。相关日志附在本目录。
+
+## 后续 source 衔接（root 提供，未扩展本次运行矩阵）
+
+root 后续指出：PR136 的 Python P1 已关闭；C++ namespace function hint 被拒后误取 return type `T` 为 name 的 P2 已另行修复，最终 product source 为 `aa271e52b9c2aa52e05696af96ac52116963e57e`，head 为 `49e0330754e6451e7eb5e91863f432ce7eaf816c`。据 root，该修复仅让 boundaries 使用真实 declarator name，未放宽 kind guard。本包的 fixture 仅有 Python/TypeScript，因此预计与该 C++ 变更无关；这是基于变更范围的判断，不是对新 source 的实测结论。按 root 指示，不扩大矩阵，保留原 base/current/PR136 的固定因果证据。若授权后续生产 packing 修复，应以这个最终 C++ fix source 为起点，避免覆盖已修复内容；本包没有在新 source 上实施产品修复。

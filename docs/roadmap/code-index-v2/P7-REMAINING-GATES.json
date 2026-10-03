@@ -4,7 +4,7 @@
     "02-CONTRACTS.md C09-C14",
     "09-BENCHMARK.md D2 and sections9/10"
   ],
-  "integration_head": "d6a54a28eb17a1f71f9924a94e05877801c17037",
+  "integration_head": "d94fb13616261ec879002e91fb3e46b2c73c31f6",
   "task_authority": "tasks.json; TODO generated",
   "definition": "closed_declared_subset applies only to listed requirement scope, not full gate or future workloads; source_sha labels frozen test/evidence checkpoint, actual production attestation remains in cited manifest",
   "full_gate_status": {
@@ -14,10 +14,7 @@
     "V18": "open",
     "V19": "open"
   },
-  "selected_offline_gap": [
-    "V05/all-lanes",
-    "V05/dsl"
-  ],
+  "selected_offline_gap": "V11 immutable,graph-extra,dense-context actual consumption",
   "rows": [
     {
       "gate": "V05",
@@ -308,15 +305,19 @@
       "id": "immutable",
       "requirement": "Complete immutable ranking/search/query config and repository tier fingerprint",
       "level": "L2",
-      "status": "open_offline",
+      "status": "closed_declared_subset",
       "evidence": [
         {
           "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
           "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        },
+        {
+          "source_sha": "744789649d1e0f2f3b41077ec3d1f5caacbff0cc",
+          "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Enumerate public configurable dependency fields; cold/warm distinct consumed results across changed domains; every tier needed",
-      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "remaining_assertion_or_condition": "50 explicit fields: isolated immutable local+graph cold/warm/fresh consumers and old-domain reuse; all5tier states actual preselection120/120/120/150/200.13score changes observed; inactive field branches not claimed. Independent review/formal decision pending; no same-engine config mutation admitted.",
+      "required_input_or_sample": "30 parsed synthetic files; tier-only220 files; one read connection; dim2 local synthetic provider; exact source HTTP8/0 +semantic3/0; no numeric repetition minimum added",
       "execution_condition": "offline"
     },
     {
@@ -340,23 +341,27 @@
       "id": "graph-extra",
       "requirement": "Remaining graph top_k/permutation cache axes",
       "level": "L2",
-      "status": "open_offline",
+      "status": "closed_declared_subset",
       "evidence": [
         {
           "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
           "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        },
+        {
+          "source_sha": "744789649d1e0f2f3b41077ec3d1f5caacbff0cc",
+          "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Independent consumed-result/call-count oracle for top_k-only and unordered scope sets",
-      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "remaining_assertion_or_condition": "Actual top_k_only1 vs context30, changedtop_k2, unordered file/language sets graph Arc hit and fresh-equivalent. Independent review pending.",
+      "required_input_or_sample": "30 parsed synthetic files; tier-only220 files; one read connection; dim2 local synthetic provider; exact source HTTP8/0 +semantic3/0; no numeric repetition minimum added",
       "execution_condition": "offline"
     },
     {
       "gate": "V11",
       "id": "dense-context",
       "requirement": "Dense semantic epoch/space/query spec; final context all generations/selector/budget/rerank",
-      "level": "L2/L3",
-      "status": "open_offline",
+      "level": "L2",
+      "status": "closed_declared_subset",
       "evidence": [
         {
           "source_sha": "2edf2009af1dbc91443a9f030e96103fc8fd056f",
@@ -369,10 +374,14 @@
         {
           "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
           "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        },
+        {
+          "source_sha": "744789649d1e0f2f3b41077ec3d1f5caacbff0cc",
+          "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Direct instrumented dense result-cache bypass and final-context dependency consumption are not all mapped; compare warm vs fresh after semantic-only publication, not duplicate model switch",
-      "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
+      "remaining_assertion_or_condition": "Real worker semantic-only publication; local/graph warm entries retained; current final hydration generation refreshed. Real encoder/recall nonzero dense candidates; repeat2local+2graph misses/no hits, public QueryHandle2graph misses; freshly selected/packed intent/top_k. No final envelope LRU. Cross-build selector/budget versions not admitted and remain conditional not-run; independent review pending.",
+      "required_input_or_sample": "30 parsed synthetic files; tier-only220 files; one read connection; dim2 local synthetic provider; exact source HTTP8/0 +semantic3/0; no numeric repetition minimum added",
       "execution_condition": "offline"
     },
     {
@@ -385,11 +394,21 @@
         {
           "source_sha": "8b6d9a1d9a7c05700d2de8611dbc20918647e527",
           "path": "artifacts/checkpoints/cloud-p7-cache-identity-integration-20261003"
+        },
+        {
+          "source_sha": "bf6c121fe209e2bd601a0dc19d61e221a78cd2e3",
+          "path": "artifacts/checkpoints/cloud-cross-build-admission-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Actual incompatible schema domain reset covered; real parser/rule cross-build upgrade and old pinned handles remain unexecuted",
+      "remaining_assertion_or_condition": "PR59 immutable admission history found no supported parser/rule/frozen-spec successor;0builds/0runtime/oldpin/reopen untested. Future real admitted transition triggers this upgrade gate; never bump constants to fabricate acceptance.",
       "required_input_or_sample": "Two isolated fixed builds with admitted version transition; existing fixture hashes locked",
-      "execution_condition": "offline separate build runner; not live-model blocker"
+      "execution_condition": "conditional future actual product-supported parser/rule or encoding/metric/tokenizer version successor; offline two-build runner; zero runtime executions",
+      "applicability": {
+        "current_feature_set": "Only existing frozen versions admitted. Unsupported alternatives are N/A for current functionality, not a migration pass.",
+        "authority": "02-CONTRACTS C12 unconditionally requires complete present cache dependencies; 06-VALIDATION V11 requires key completeness. Neither mandates inventing a supported version successor.",
+        "runtime_upgrade_acceptance": "Strictly not_run_cross_build. Applies when an actual supported successor is supplied; schema21->22 compatible migration does not substitute.",
+        "current_release_decision": "No available cross-build executable transition; cannot use missing hypothetical successor as production implementation defect, or mark this upgrade test passed. Current dependency correctness/formal review remains separately assessed."
+      }
     },
     {
       "gate": "V11",
@@ -401,11 +420,21 @@
         {
           "source_sha": "a7efaae70cd0828b1a1b2d811e20176d855394b3",
           "path": "artifacts/benchmarks/p7-cachekeys-a7efaae-52cc1cbf-keys-v1-20261003"
+        },
+        {
+          "source_sha": "bf6c121fe209e2bd601a0dc19d61e221a78cd2e3",
+          "path": "artifacts/checkpoints/cloud-cross-build-admission-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Only Cosine/current version/one estimator admitted; unsupported tokenizer fail-closed covered. Future alternate version requires cross-build invalidation, not manual test key mutation",
+      "remaining_assertion_or_condition": "PR59 immutable admission history found no supported parser/rule/frozen-spec successor;0builds/0runtime/oldpin/reopen untested. Future real admitted transition triggers this upgrade gate; never bump constants to fabricate acceptance.",
       "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
-      "execution_condition": "offline"
+      "execution_condition": "conditional future actual product-supported parser/rule or encoding/metric/tokenizer version successor; offline two-build runner; zero runtime executions",
+      "applicability": {
+        "current_feature_set": "Only existing frozen versions admitted. Unsupported alternatives are N/A for current functionality, not a migration pass.",
+        "authority": "02-CONTRACTS C12 unconditionally requires complete present cache dependencies; 06-VALIDATION V11 requires key completeness. Neither mandates inventing a supported version successor.",
+        "runtime_upgrade_acceptance": "Strictly not_run_cross_build. Applies when an actual supported successor is supplied; schema21->22 compatible migration does not substitute.",
+        "current_release_decision": "No available cross-build executable transition; cannot use missing hypothetical successor as production implementation defect, or mark this upgrade test passed. Current dependency correctness/formal review remains separately assessed."
+      }
     },
     {
       "gate": "V16",
@@ -597,9 +626,13 @@
         {
           "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
           "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        },
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Historical declaration inP5-GATE only; cited raw p5e-g5-freeze directory is absent in this recovered checkout. Retrieve/verify original locked raw evidence or rerun exact fixed public corpus; cannot close from prose",
+      "remaining_assertion_or_condition": "Final freeze raw absent in inspected reachable history.102retained earlier summary/manifest hashes match;v1/v3 each51questions153rows bind different source/binary from final306 declaration and cannot be combined/reconstructed. Recovery needs original owner verifiable archive; newly labelled baseline remains possible.",
       "required_input_or_sample": "51 questions306 requests; preserved failure/Partial/S11; historical source",
       "execution_condition": "offline"
     },
@@ -613,9 +646,13 @@
         {
           "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
           "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        },
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Inventory frozen public repos/licenses and independent gold; add reviewed questions, reject synthetic repeats as independentquestions",
+      "remaining_assertion_or_condition": "Audit56dev/0holdout (14own-source+42synthetic), external multi-repo independently reviewed completed0/approximately600, gap600. Six public candidates pinned SHA/license. Parent started six exclusive authors20family blocks toward100each plus protocol preregistration; no generated/reviewed/frozen rows imported or claimed here; only count/hash summaries consumed.",
       "required_input_or_sample": "09-BENCHMARK D2>=6repos Rust/JS/TS/Python/Go+mixed,~600 reviewed questions",
       "execution_condition": "offline"
     },
@@ -625,8 +662,13 @@
       "requirement": "Held-out split independent of tuning, immutable gold",
       "level": "L3/L4",
       "status": "open_offline",
-      "evidence": [],
-      "remaining_assertion_or_condition": "Lock provenance/split/query-family IDs; independently reviewed gold; parent-owned independent reviewer needed",
+      "evidence": [
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
+        }
+      ],
+      "remaining_assertion_or_condition": "Current0holdout; family-disjoint split/dedup preregistration owned by parent protocol author; frozen candidate holdout gold not read by main or used for tuning. Proposed450dev/150holdout is not a normative target or completed result.",
       "required_input_or_sample": "~600 total reviewedquestions; no mandate600holdout or fabricated threshold",
       "execution_condition": "offline"
     },
@@ -640,6 +682,10 @@
         {
           "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
           "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        },
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
         }
       ],
       "remaining_assertion_or_condition": "Use deterministic reviewed corpus native assertions; raw file-hit score cannot certify facets/spans/chain",
@@ -656,6 +702,10 @@
         {
           "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
           "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        },
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
         }
       ],
       "remaining_assertion_or_condition": "Use fixed same device/config paired full new corpus; quality repeats not independentqueries; pre-register margins before scoring",
@@ -668,7 +718,12 @@
       "requirement": "Local vs local+dense quality/cost with semantic holdout CI lower bound>0; exact no substantial regression",
       "level": "L3/L4",
       "status": "blocked_authorization",
-      "evidence": [],
+      "evidence": [
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
+        }
+      ],
       "remaining_assertion_or_condition": "No permission to paid/live providers or private-source egress; FakeProvider cannot validate semantic quality. Local deterministic corpus work remainsoffline",
       "required_input_or_sample": "Frozen heldout, costs incl uncertain attempts, exact-class paired scores; margins09section10",
       "execution_condition": "live provider and corpus transmission require explicit authorization; D1/D2 stay unchanged"
@@ -683,24 +738,24 @@
         {
           "source_sha": "0de7c890fcb2a152b4b21eafc4d8ad1a2c3885a6",
           "path": "docs/roadmap/code-index-v2/P5-GATE.json"
+        },
+        {
+          "source_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+          "path": "artifacts/checkpoints/v19-corpus-audit-20261003"
         }
       ],
-      "remaining_assertion_or_condition": "Historical local result is not automatically current SHA acceptance; compare same gold/raw parser/scorer under exact current binary, retain known failures",
+      "remaining_assertion_or_condition": "PR60 actual offline locked evaluator build and eight read-only suite validations pass; input integrity only. Current production retrieval, historical replay, quality/cost baseline not run. Missing historical raw does not block a distinctly identified new local baseline.",
       "required_input_or_sample": "No numeric minimum in Vxx row; scope stated per receipt",
       "execution_condition": "offline"
     }
   ],
-  "selected_offline_gap_result": {
-    "source_sha": "039d035b19dec4b0aba0a2a4aef76f862ccdeb1e",
-    "status": "passed_declared_L2_subset",
-    "evidence": "artifacts/checkpoints/cloud-p7-formal-gate-scope-20261003/receipt.json"
-  },
+  "selected_offline_gap_result": "Three bounded L2 rows closed on7447896 dual profiles; independent review/formal consolidation pending; no production fix needed.",
   "full_gate_blockers": {
     "V05": [
       "New raw graph/dense and kind/name block independent review pending; L3 kind/name and quoted type alias breadth not measured; complete gate row consolidation pending"
     ],
     "V11": [
-      "Three explicit offline cache rows and two cross-build rows remain as listed; readiness race is closed and not a remaining implementation blocker"
+      "Three current offline cache rows have bounded exact-source evidence; independent review/current gate consolidation pending. Two future actual-supported-transition upgrade rows strictlynot_run_cross_build; no invented successor/current runtime acceptance. Readiness defect independently closed."
     ],
     "V16": [
       "All six minimum requirements have declared exact-backend evidence; consolidated gate/source acceptance decision remains pending, rather than additional arbitrary repetitions. No numeric100k/C8/16 minimum exists inV16; those remainV20"
@@ -709,7 +764,7 @@
       "Complete wired lifecycle per-state/cost/error/restart evidence consolidation; existing parameter/default-package requirements bounded-closed"
     ],
     "V19": [
-      "Six offline requirements and one live semantic ablation authorization blocker; historical raw corpus evidence missing from recovered checkout"
+      "Six offline requirements remain. Historical final raw recovery requires owner archive; does not block new public corpus/current local baseline. External independent reviewed corpus0/600 at audit; six parent authors/protocol prepare separately. Live semantic quality/cost ablation authorization-blocked."
     ]
   },
   "row_summary": {
@@ -717,8 +772,7 @@
       "closed_declared_subset": 8
     },
     "V11": {
-      "closed_declared_subset": 7,
-      "open_offline": 3,
+      "closed_declared_subset": 10,
       "not_run_cross_build": 2
     },
     "V16": {

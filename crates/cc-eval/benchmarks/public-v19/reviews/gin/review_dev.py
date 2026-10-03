@@ -52,6 +52,10 @@ def audit(limit):
     assert len({r["query_family"] for r in rows}) == len(rows)
     assert len({" ".join(r["query"].lower().split()) for r in rows}) == len(rows)
     manual = {14: ["R_PRIMARY_NOT_DISTINGUISHING_FACET"]}
+    if limit == 67:
+        manual.update({26: ["C_TASK_EQUIVALENCE_REVIEW_NEEDED"],
+                       31: ["C_TASK_EQUIVALENCE_REVIEW_NEEDED"],
+                       47: ["R_STATUS_PRECONDITION_MISSING"]})
     decisions = []
     for ordinal, r in enumerate(rows[:limit], 1):
         a = r["annotations"]["v19"]
@@ -101,8 +105,37 @@ def audit(limit):
             for e in edge["evidence"]:
                 verify_evidence(e)
         codes = manual.get(ordinal, [])
-        decisions.append({"row_sha256": sha(lines[ordinal - 1]), "family_id_sha256": sha(r["query_family"].encode()), "component_id_sha256": sha(a["global_family"].encode()), "evidence_sha256": [e["sha256"] for e in evidence], "decision": "needschange" if codes else "accept", "error_codes": codes, "source_facts": "accept", "span_facets_projection_structure": "accept", "bounded_noanswer_scope": "accept" if r["no_answer"] else "not_applicable", "global_cross_repository_and_blocked_holdout_review": "not_run_scope_not_supplied"})
-    return {"author_current_sha": AUTHOR, "source_sha": SOURCE, "protocol_sha": PROTOCOL, "reviewer_id": REVIEWER, "author_id": "gin-author-cloud", "native_file_sha256": sha(native_raw), "compat_file_sha256": sha(compat_raw), "license_sha256": manifest["license_sha256"], "source_manifest_sha256": sha(read("source-manifest.json")), "source_inventory": inventory, "source_scope": "existing_authorized_immutable_repository_snapshot; upstream_commit_not_independently_fetched", "counts": {"public_dev_reviewed": len(decisions), "accept": sum(d["decision"] == "accept" for d in decisions), "reject": 0, "needschange": sum(d["decision"] == "needschange" for d in decisions), "visible_singleton_components": len(decisions), "holdout_body_reads": 0, "historical_candidate_body_reads": 0, "ranking_runs": 0, "blocked_holdout": 33, "accepted_confirmatory_holdout": 0, "formal_complete20_blocks": 0}, "rows": decisions, "components": [{"component_id_sha256": d["component_id_sha256"], "member_family_sha256": [d["family_id_sha256"]], "decision": d["decision"], "error_codes": d["error_codes"], "scope": "visible_dev_local_only"} for d in decisions], "error_code_counts": dict(collections.Counter(c for d in decisions for c in d["error_codes"])), "scope_error_codes": ["G_CROSS_REPOSITORY_AND_BLOCKED_COMPONENTS_UNREVIEWED", "H_CUSTODY_BLOCKED_33", "U_UPSTREAM_GIT_ORIGIN_NOT_INDEPENDENTLY_REPLAYED"]}
+        decisions.append({"row_sha256": sha(lines[ordinal - 1]), "family_id_sha256": sha(r["query_family"].encode()), "component_id_sha256": sha(a["global_family"].encode()), "evidence_sha256": [e["sha256"] for e in evidence], "decision": "needschange" if codes else "accept", "error_codes": codes, "source_facts": "needschange" if ordinal == 47 else "accept", "span_facets_projection_structure": "accept", "bounded_noanswer_scope": "accept" if r["no_answer"] else "not_applicable", "global_cross_repository_and_blocked_holdout_review": "not_run_scope_not_supplied"})
+    result = {"author_current_sha": AUTHOR, "source_sha": SOURCE, "protocol_sha": PROTOCOL, "reviewer_id": REVIEWER, "author_id": "gin-author-cloud", "native_file_sha256": sha(native_raw), "compat_file_sha256": sha(compat_raw), "license_sha256": manifest["license_sha256"], "source_manifest_sha256": sha(read("source-manifest.json")), "source_inventory": inventory, "source_scope": "existing_authorized_immutable_repository_snapshot; upstream_commit_not_independently_fetched", "counts": {"public_dev_reviewed": len(decisions), "accept": sum(d["decision"] == "accept" for d in decisions), "reject": 0, "needschange": sum(d["decision"] == "needschange" for d in decisions), "visible_singleton_components": len(decisions), "holdout_body_reads": 0, "historical_candidate_body_reads": 0, "ranking_runs": 0, "blocked_holdout": 33, "accepted_confirmatory_holdout": 0, "formal_complete20_blocks": 0}, "rows": decisions, "components": [{"component_id_sha256": d["component_id_sha256"], "member_family_sha256": [d["family_id_sha256"]], "decision": d["decision"], "error_codes": d["error_codes"], "scope": "visible_dev_local_only"} for d in decisions], "error_code_counts": dict(collections.Counter(c for d in decisions for c in d["error_codes"])), "scope_error_codes": ["G_CROSS_REPOSITORY_AND_BLOCKED_COMPONENTS_UNREVIEWED", "H_CUSTODY_BLOCKED_33", "U_UPSTREAM_GIT_ORIGIN_NOT_INDEPENDENTLY_REPLAYED"]}
+    if limit == 67:
+        lock_raw = read("provenance/source-lock.json")
+        lock = json.loads(lock_raw)
+        assert lock["source_sha"] == SOURCE and lock["repository"] == "gin-gonic/gin"
+        assert lock["license_declared"] == "MIT"
+        assert lock["license_files"][0]["sha256"] == manifest["license_sha256"]
+        assert lock["license_files"][0]["bytes"] == len(read("license/LICENSE"))
+        result["source_lock_sha256"] = sha(lock_raw)
+        result["component_disputes"] = [{
+            "member_family_sha256": [decisions[i - 1]["family_id_sha256"] for i in (26, 31)],
+            "member_row_sha256": [decisions[i - 1]["row_sha256"] for i in (26, 31)],
+            "shared_evidence_sha256": sorted(set(decisions[25]["evidence_sha256"]) & set(decisions[30]["evidence_sha256"])),
+            "error_code": "C_TASK_EQUIVALENCE_REVIEW_NEEDED",
+            "disposition": "same_core_answer_obligation_with_additional_chain_facets; designated_global_adjudication_required; no_merge_or_resplit_performed"
+        }]
+        result["counts"].update({"bounded_noanswer_reviewed": 12,
+                                 "component_dispute_pairs": 1,
+                                 "locally_accepted_components": 63,
+                                 "components_needing_change_or_adjudication": 4})
+        result["manual_semantic_review"] = {
+            "completed": True,
+            "automated_checker_scope": "byte_structure_projection_and_receipt_replay_only; semantic_decisions_are_manual",
+            "facts_spans_facets_chains_absence": "all_current_public_dev_reviewed_against_admitted_source",
+            "hard_negative_scope": "full_declared_admitted_files; no_external_provider_or_excluded_source_behavior_claim",
+            "component_boundary": "shared_file_or_broad_topic_alone_not_equivalence; one_core_answer_obligation_pair_flagged; global_and_blocked_members_unreviewed",
+            "first20_receipt": "unchanged_previously_frozen_dev_only_block; no_formal_combined_block_claim"
+        }
+    return result
+
 
 
 if __name__ == "__main__":

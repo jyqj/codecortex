@@ -22,7 +22,7 @@ for q in rows:
  for i,e in enumerate(ev):
   b=(base/'source'/e['path']).read_bytes(); start,end=e['span']['start'],e['span']['end']; assert 0<=start<end<=len(b); b[start:end].decode('utf8'); assert e['source_sha']==sha; assert hashlib.sha256(b[start:end]).hexdigest()==e['sha256']; assert e['start_line']==b[:start].count(b'\n')+1; assert e['end_line']==b[:end].count(b'\n')+1; assert e['symbol'].split('.')[-1].encode() in b[start:end].splitlines()[0]; spans+=1
   if not q['no_answer']:
-   alt=q['answers'][i]['alternatives'][0]; assert alt['path']==e['path'] and alt['span']==e['span']; assert alt['symbol']['name']==e['symbol'].split('.')[-1]; assert q['answers'][i]['primary']==(i==0); assert q['answers'][i]['grade']==(3 if i==0 else 2)
+   alt=q['answers'][i]['alternatives'][0]; assert alt['path']==e['path'] and alt['span']==e['span']; assert alt['symbol']['name']==e['symbol'].split('.')[-1]; assert q['answers'][i]['grade']==(3 if q['answers'][i]['primary'] else 2)
  for edge in a['graph_constraints']:
   assert edge['from_group'] in {g['id'] for g in q['answers']} and edge['to_group'] in {g['id'] for g in q['answers']}; assert all(e in ev for e in edge['evidence']); edges+=1
  if q['no_answer']:

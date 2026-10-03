@@ -1,7 +1,7 @@
-# Pending independent cross-review
+# Independent dev review and revision v2
 
-100 source-derived author draft IDs, 0 independently reviewed/accepted. Public dev:67; intended holdout:33, all confirmatory holdout quarantined/custody blocked. Author has not self-signed.
+PR76 fixed 0ecfc52a14e423a1d37b81240667d4c1511076cb reviewed author77d8707:63 accept and4 needschange, with source-origin/global/custody limitations preserved. Exact reviewer receipt is dev-067-independent-review.json.
 
-Proposed reviewer: F / Vite author, subject to integrator assignment. Reviewer identity/signature is not asserted. See review-receipt.json and corpus-receipt.json; protocol SHA is fixed to 03abe24950f1fa89de3cce0a4e1d44d01e9aa0d6.
+The accepted63 native/compat row bytes and gold object fragments are unchanged. Four public-dev rows were versioned: distinguishing primary1, explicit HTTP200 status premise1, conservative component linkage2. They form3 proposed components pending same-reviewer recheck/global adjudication. Current public dev67 rows/66 proposed components; overall100 draft IDs/99 proposed components. No100-independent-component claim remains. The33 custody-blocked records stay quarantined and untouched, eligible confirmatory holdout0; formal complete20 blocks0. Author has not self-signed.
 
-Review literal answers, source byte/line/symbol bounds, facet requirements/alternatives, exact chain call/dispatch/data edges, full-file bounded absence and task independence. Determine global equivalence components before freeze; mere shared symbols/topics are not enough. Preserve disputes as quarantine and old commitments. Separately audit public history exposure and shared-workspace custody; deleting current files does not restore holdout secrecy. No accepted holdout without independent authorized access boundary and versioned contamination adjudication. No retrieval ranking has been read.
+See ../provenance/dev-revision-v2.json for exact before/after commitments and independent review hash. Recheck only the four revised public dev rows, the relation and their projections at the new fixed author SHA; no holdout body access is authorized here.

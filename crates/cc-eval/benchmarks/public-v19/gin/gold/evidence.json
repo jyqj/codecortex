@@ -1105,7 +1105,17 @@
         "sha256": "af2147dbbf4c5210af3f55b3f61c350953ea71ad819d62f185293b564e202de5"
       }
     ],
-    "literal_answer": "Binding has Name and Bind(*http.Request,any); BindingBody embeds Binding and adds BindBody([]byte,any); BindingUri has Name and BindUri(map[string][]string,any)."
+    "literal_answer": "Binding has Name and Bind(*http.Request,any); BindingBody embeds Binding and adds BindBody([]byte,any); BindingUri has Name and BindUri(map[string][]string,any).",
+    "revision": {
+      "version": 2,
+      "review_commit": "0ecfc52a14e423a1d37b81240667d4c1511076cb",
+      "review_receipt_sha256": "ed9b3afeca246ec7754a46ebce014bf0d83d8fb89e14c6223c4df37440e9f6a2",
+      "previous_row_sha256": "6b8e03582228d52a4e5d4c04010e8e0d410722915ab94fef6fe2886e53744688",
+      "resolved_error_codes": [
+        "R_PRIMARY_NOT_DISTINGUISHING_FACET"
+      ],
+      "re_review_status": "pending"
+    }
   },
   {
     "family": "v19.gin.f0032",
@@ -2442,7 +2452,22 @@
         "sha256": "ee2a1ca1742cd993131eab427012717c34b56d7554729f1577131dbc6da0dffe"
       }
     ],
-    "literal_answer": "SecureJSON.Render checks that marshaled bytes start with [ and end with ]; only arrays receive the prefix, which is written before the JSON."
+    "literal_answer": "SecureJSON.Render checks that marshaled bytes start with [ and end with ]; only arrays receive the prefix, which is written before the JSON.",
+    "component_link_status": "author_proposed_conservative_merge_pending_designated_global_adjudication",
+    "component_members": [
+      "v19.gin.f0045",
+      "v19.gin.f0053"
+    ],
+    "revision": {
+      "version": 2,
+      "review_commit": "0ecfc52a14e423a1d37b81240667d4c1511076cb",
+      "review_receipt_sha256": "ed9b3afeca246ec7754a46ebce014bf0d83d8fb89e14c6223c4df37440e9f6a2",
+      "previous_row_sha256": "ba7c07defd4a25e33bcda02c2978c14084500670b270a6b4111c7ab33567808b",
+      "resolved_error_codes": [
+        "C_TASK_EQUIVALENCE_REVIEW_NEEDED"
+      ],
+      "re_review_status": "pending"
+    }
   },
   {
     "family": "v19.gin.f0046",
@@ -2643,7 +2668,7 @@
     "protocol_version": 1,
     "repo_id": "gin",
     "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
-    "global_family": "v19.gin.f0053",
+    "global_family": "v19.gin.f0045",
     "intent": "Trace an Engine.SecureJsonPrefix setting to the bytes emitted by Context.SecureJSON.",
     "query_language": "en",
     "hard_scope": {
@@ -2827,7 +2852,22 @@
         "sha256": "ee2a1ca1742cd993131eab427012717c34b56d7554729f1577131dbc6da0dffe"
       }
     ],
-    "literal_answer": "SecureJsonPrefix stores engine.secureJSONPrefix; Context.SecureJSON reads it into render.SecureJSON.Prefix and passes that renderer through Context.Render; SecureJSON.Render writes Prefix only around array-shaped JSON."
+    "literal_answer": "SecureJsonPrefix stores engine.secureJSONPrefix; Context.SecureJSON reads it into render.SecureJSON.Prefix and passes that renderer through Context.Render; SecureJSON.Render writes Prefix only around array-shaped JSON.",
+    "component_link_status": "author_proposed_conservative_merge_pending_designated_global_adjudication",
+    "component_members": [
+      "v19.gin.f0045",
+      "v19.gin.f0053"
+    ],
+    "revision": {
+      "version": 2,
+      "review_commit": "0ecfc52a14e423a1d37b81240667d4c1511076cb",
+      "review_receipt_sha256": "ed9b3afeca246ec7754a46ebce014bf0d83d8fb89e14c6223c4df37440e9f6a2",
+      "previous_row_sha256": "7420e1298e0dc90aeda12285b72e47d8128eec144beb3cea7a9dcf2488d59773",
+      "resolved_error_codes": [
+        "C_TASK_EQUIVALENCE_REVIEW_NEEDED"
+      ],
+      "re_review_status": "pending"
+    }
   },
   {
     "family": "v19.gin.f0054",
@@ -4194,7 +4234,7 @@
     "repo_id": "gin",
     "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
     "global_family": "v19.gin.f0075",
-    "intent": "What happens when Context.HTML is used without a configured HTML renderer?",
+    "intent": "For an HTTP 200 response, what happens when Context.HTML is used without a configured HTML renderer?",
     "query_language": "en",
     "hard_scope": {
       "path_prefix": null
@@ -4291,7 +4331,8 @@
             },
             "sha256": "d359b0829f88b2a3258e8c476d29594016a46bea8aad585240a0cfd64ed5c3d3"
           }
-        ]
+        ],
+        "precondition": "bodyAllowedForStatus(200) == true"
       },
       {
         "from_group": "facet-3",
@@ -4324,7 +4365,8 @@
             },
             "sha256": "435b2083c4fa8b3c3f0d2609253003c783ee203a23ac21843ad9056ef16a7066"
           }
-        ]
+        ],
+        "precondition": "bodyAllowedForStatus(200) == true"
       },
       {
         "from_group": "facet-2",
@@ -4357,7 +4399,8 @@
             },
             "sha256": "61e7f71e460e1dc3989d22d06aee44add59e95c614b220abdc8ecee7c5b110e0"
           }
-        ]
+        ],
+        "precondition": "bodyAllowedForStatus(200) == true"
       },
       {
         "from_group": "facet-2",
@@ -4390,7 +4433,8 @@
             },
             "sha256": "618471a465049532e20daf9a30dd75b1618787b6a69c20cb6f636afeeb62fe31"
           }
-        ]
+        ],
+        "precondition": "bodyAllowedForStatus(200) == true"
       }
     ],
     "mutation_profile": "none",
@@ -4460,7 +4504,33 @@
         "sha256": "618471a465049532e20daf9a30dd75b1618787b6a69c20cb6f636afeeb62fe31"
       }
     ],
-    "literal_answer": "Context.HTML calls Context.Render with an empty render.HTML; HTML.Render sets content type then returns errHTMLRendererNotConfigured on nil Template; Context.Render records the error and aborts."
+    "literal_answer": "For HTTP 200, bodyAllowedForStatus permits a body. Context.HTML calls Context.Render with an empty render.HTML; HTML.Render sets content type then returns errHTMLRendererNotConfigured on nil Template; Context.Render records the error and aborts.",
+    "status_precondition": {
+      "status_code": 200,
+      "body_allowed": true,
+      "source_evidence": {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "bodyAllowedForStatus",
+        "start_line": 1109,
+        "end_line": 1119,
+        "span": {
+          "start": 35330,
+          "end": 35588
+        },
+        "sha256": "c40487e2e4404966245198315f91880434ee89a3a6187c8b2ac95ca59e47e3ee"
+      }
+    },
+    "revision": {
+      "version": 2,
+      "review_commit": "0ecfc52a14e423a1d37b81240667d4c1511076cb",
+      "review_receipt_sha256": "ed9b3afeca246ec7754a46ebce014bf0d83d8fb89e14c6223c4df37440e9f6a2",
+      "previous_row_sha256": "f6d4726ab4064d8da683e0976f692555ae110b9f493ae29a0eb30946a1426235",
+      "resolved_error_codes": [
+        "R_STATUS_PRECONDITION_MISSING"
+      ],
+      "re_review_status": "pending"
+    }
   },
   {
     "family": "v19.gin.f0076",

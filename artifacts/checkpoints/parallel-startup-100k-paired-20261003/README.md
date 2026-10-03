@@ -82,3 +82,5 @@ RSS 为原20ms非原子采样，不是精确峰值/PSS。children 不可读则�
 source-identity.json、reference-hashes.json、逐版 derivation.patch、build receipt、pair-builds-ready.json、pair-execution.json、compressed input/resource/RPC/HTTP logs、deadline/cleanup snapshots、verification.json、supplemental-analysis.json、paired-decision.json 与 SHA256SUMS 是本次证据。compare.py / supplement.py 可只读重放；runtime/live repo/cache/targets 本地留存，Git 排除。
 
 交付授权为本目录证据 commit/push/draft PR及远端验证；不 merge/forcepush/deploy。结果与真实访问阻塞先报告，交付完成即停。
+
+交付：Draft PR https://github.com/jyqj/codecortex/pull/124 ，初始证据 commit f2841d43cebf49c57a4c5305bbad907fc881ba97。origin 已核实初始 SHA；仅本目录121个文件。后续仅交付回执，不增加实测。

@@ -100,6 +100,22 @@ policy。每项有具体独立事实说明，不是旧问题翻译或改写；�
 25旧拟holdout状态/hash完全保持blocked，正式可用holdout=0；另4reserved未撰写不计入25。
 只公开dev的独立审查入口：`review/DEV-REVIEW.md`。完整许可/来源审查尚待另一作者签署。
 
+## 首批内容审查后的 f0022 修订
+
+独立 review72 fixed `ed3b998731bca26d1682dd455e47530453e71caa` 审查旧作者
+`67f89aff…`：20 records /19拟议组件，内容19accept /0reject /1needs_change，suite准入0。
+原始公开 dev review receipt 原样保存在 `review/external/ed3b…/dev20-review.json`，
+不替换原审查者结论。其许可阻塞判定针对旧来源审查证据，后续 PR70 的完整归属仍需复审。
+
+按 `UNQUALIFIED_INPUT_TYPE_BEHAVIOR_CLAIM` 限定 f0022 为 `obj.name` 的非空Python
+`str`（不含bytes），gold准确描述独立的首字符 `<` **或**末字符 `>` 拒绝条件。
+bytes索引是整数，不能把同一字符过滤承诺扩展到bytes。源代码未改，旧答案定位/symbol/
+span/grades/ID/component/split未变；只修任务范围与解释，不依据排名。
+同一canonical ID以`annotations.v19.author_revision=2`版本化；
+`review/f0022-revision-history.json`保留旧native/compat/gold/spec记录和新旧canonical hashes。
+其余19内容accept的Query/gold hash逐一核验未变。f0022复审pending，正式accepted仍0。
+复审入口及许可/新增dev关联见 `review/rereview-request.json`；旧25holdout commitments不变。
+
 ## 复现（仓库根目录）
 
 ```sh

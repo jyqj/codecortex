@@ -608,7 +608,7 @@
     "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
     "split": "dev",
     "status": "candidate_not_independently_reviewed",
-    "rationale": "guess_filename reads obj.name, accepts a basestring not bracketed by < and >, and returns os.path.basename.",
+    "rationale": "Within the non-empty Python str input scope, guess_filename reads obj.name and returns os.path.basename(name) only when name[0] != '<' and name[-1] != '>'. A name starting with '<' OR ending with '>' fails the guard and yields implicit None. The scope excludes bytes: byte indexing yields integers, so the existing character comparisons do not establish the same placeholder filtering for bytes.",
     "evidence": [
       {
         "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
@@ -624,8 +624,17 @@
     ],
     "edges": [],
     "absence": null,
-    "scope": null,
-    "global_family": "v19.requests.f0022"
+    "scope": "obj.name is a non-empty Python str; excludes bytes and non-str inputs. This is a task scope restriction, not a source behavior change.",
+    "global_family": "v19.requests.f0022",
+    "input_scope": {
+      "attribute": "obj.name",
+      "type": "Python str",
+      "non_empty": true,
+      "excluded_input_types": [
+        "bytes"
+      ]
+    },
+    "author_revision": 2
   },
   {
     "family_id": "v19.requests.f0023",

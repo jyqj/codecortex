@@ -17,6 +17,8 @@ def split(component):
 
 
 def main():
+    if (ROOT / "queries.native.dev.jsonl").exists():
+        raise SystemExit("One-time migration already completed; replaying legacy drafts would overwrite later review corrections. Use verify.py, not migration, on current public dev.")
     old = ROOT / ".preprotocol-local"
     specs = json.loads((old / "questions/specifications.json").read_text())
     specs += json.loads((old / "questions/extension-specifications.json").read_text())

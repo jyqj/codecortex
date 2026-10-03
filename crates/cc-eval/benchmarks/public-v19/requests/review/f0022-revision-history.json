@@ -1,0 +1,332 @@
+{
+  "family_id": "v19.requests.f0022",
+  "query_id": "v19.requests.f0022.en01",
+  "id_and_global_component_unchanged": true,
+  "split_unchanged": "dev",
+  "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+  "source_and_symbol_byte_spans_unchanged": true,
+  "ranking_seen": false,
+  "review_commit": "ed3b998731bca26d1682dd455e47530453e71caa",
+  "review_file_sha256": "44629248a74b2249703196bfa8bbd196f2fd674de27b628842b3f0970956f2dc",
+  "trigger_reason_codes": [
+    "SOURCE_FACTS_MANUALLY_REVIEWED",
+    "AST_SPANS_AND_HASHES_VERIFIED",
+    "NATIVE_COMPAT_FACET_CONTRACT_VERIFIED",
+    "NO_RANKING_OBSERVED",
+    "UNQUALIFIED_INPUT_TYPE_BEHAVIOR_CLAIM"
+  ],
+  "old_author_head": "a9941df988bad756b39be6cc7807d6708368f031",
+  "revisions": [
+    {
+      "revision": 1,
+      "native_query": {
+        "id": "v19.requests.f0022.en01",
+        "query_family": "v19.requests.f0022",
+        "category": "symbol_location",
+        "difficulty": 2,
+        "language": "python",
+        "split": "dev",
+        "query": "Which utility extracts a basename from a file object's name but ignores placeholder names enclosed in angle brackets?",
+        "path_prefix": null,
+        "no_answer": false,
+        "expected_files": [],
+        "answers": [
+          {
+            "id": "facet-1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "src/requests/utils.py",
+                "symbol": {
+                  "name": "guess_filename",
+                  "qname": "requests.utils.guess_filename",
+                  "kind": "function"
+                },
+                "span": {
+                  "start": 8603,
+                  "end": 8868
+                }
+              }
+            ]
+          }
+        ],
+        "annotations": {
+          "v19": {
+            "protocol_version": 1,
+            "repo_id": "requests",
+            "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "global_family": "v19.requests.f0022",
+            "intent": "Which utility extracts a basename from a file object's name but ignores placeholder names enclosed in angle brackets?",
+            "query_language": "en",
+            "hard_scope": {
+              "path_prefix": null
+            },
+            "facets": [
+              {
+                "id": "facet-1",
+                "group_id": "facet-1",
+                "required": true
+              }
+            ],
+            "graph_constraints": [],
+            "mutation_profile": "none",
+            "review_status": "pending",
+            "author_id": "requests-independent-author",
+            "task_category": "exact_api",
+            "component_status": "author_proposal_pending_global_review"
+          }
+        }
+      },
+      "compat_query": {
+        "id": "v19.requests.f0022.en01",
+        "query_family": "v19.requests.f0022",
+        "category": "symbol_location",
+        "difficulty": 2,
+        "language": "python",
+        "split": "dev",
+        "query": "Which utility extracts a basename from a file object's name but ignores placeholder names enclosed in angle brackets?",
+        "path_prefix": null,
+        "no_answer": false,
+        "expected_files": [
+          "src/requests/utils.py"
+        ],
+        "answers": [],
+        "annotations": {
+          "v19": {
+            "protocol_version": 1,
+            "repo_id": "requests",
+            "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "global_family": "v19.requests.f0022",
+            "intent": "Which utility extracts a basename from a file object's name but ignores placeholder names enclosed in angle brackets?",
+            "query_language": "en",
+            "hard_scope": {
+              "path_prefix": null
+            },
+            "facets": [],
+            "graph_constraints": [],
+            "mutation_profile": "none",
+            "review_status": "pending",
+            "author_id": "requests-independent-author",
+            "task_category": "exact_api",
+            "component_status": "author_proposal_pending_global_review"
+          }
+        }
+      },
+      "gold": {
+        "family_id": "v19.requests.f0022",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "split": "dev",
+        "status": "candidate_not_independently_reviewed",
+        "rationale": "guess_filename reads obj.name, accepts a basestring not bracketed by < and >, and returns os.path.basename.",
+        "evidence": [
+          {
+            "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "path": "src/requests/utils.py",
+            "symbol": "guess_filename",
+            "start_line": 283,
+            "end_line": 287,
+            "start_byte": 8603,
+            "end_byte": 8868,
+            "span_sha256": "5a0c4dbf5498ed6d5df0f5d5b5720cc71e06efbc7b974b8fedf8180ca05fc5ac",
+            "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+          }
+        ],
+        "edges": [],
+        "absence": null,
+        "scope": null,
+        "global_family": "v19.requests.f0022"
+      },
+      "specification": {
+        "id": "v19.requests.f0022",
+        "cluster": "filename-hint",
+        "category": "exact_api",
+        "question": "Which utility extracts a basename from a file object's name but ignores placeholder names enclosed in angle brackets?",
+        "refs": [
+          "utils:guess_filename"
+        ],
+        "answer": "guess_filename reads obj.name, accepts a basestring not bracketed by < and >, and returns os.path.basename.",
+        "global_family": "v19.requests.f0022",
+        "protocol_split": "dev"
+      },
+      "canonical_native_sha256": "6d1be537308f049d686d955abe9aab9524a9427625f66c5b188dff9b38acac4f",
+      "canonical_gold_sha256": "98bdb0d192b58a6fb71ef53f0f0d26a923c01fa4a929fc04a1f86fa8ac07187d",
+      "independent_decision": "needs_change"
+    },
+    {
+      "revision": 2,
+      "native_query": {
+        "id": "v19.requests.f0022.en01",
+        "query_family": "v19.requests.f0022",
+        "category": "symbol_location",
+        "difficulty": 2,
+        "language": "python",
+        "split": "dev",
+        "query": "For a file object's non-empty Python str name (not bytes), which utility returns os.path.basename only when the name neither starts with '<' nor ends with '>'?",
+        "path_prefix": null,
+        "no_answer": false,
+        "expected_files": [],
+        "answers": [
+          {
+            "id": "facet-1",
+            "primary": true,
+            "grade": 3,
+            "alternatives": [
+              {
+                "path": "src/requests/utils.py",
+                "symbol": {
+                  "name": "guess_filename",
+                  "qname": "requests.utils.guess_filename",
+                  "kind": "function"
+                },
+                "span": {
+                  "start": 8603,
+                  "end": 8868
+                }
+              }
+            ]
+          }
+        ],
+        "annotations": {
+          "v19": {
+            "protocol_version": 1,
+            "repo_id": "requests",
+            "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "global_family": "v19.requests.f0022",
+            "intent": "For a file object's non-empty Python str name (not bytes), which utility returns os.path.basename only when the name neither starts with '<' nor ends with '>'?",
+            "query_language": "en",
+            "hard_scope": {
+              "path_prefix": null
+            },
+            "facets": [
+              {
+                "id": "facet-1",
+                "group_id": "facet-1",
+                "required": true
+              }
+            ],
+            "graph_constraints": [],
+            "mutation_profile": "none",
+            "review_status": "pending",
+            "author_id": "requests-independent-author",
+            "task_category": "exact_api",
+            "component_status": "author_proposal_pending_global_review",
+            "input_scope": {
+              "attribute": "obj.name",
+              "type": "Python str",
+              "non_empty": true,
+              "excluded_input_types": [
+                "bytes"
+              ]
+            },
+            "author_revision": 2,
+            "revision_reason": "UNQUALIFIED_INPUT_TYPE_BEHAVIOR_CLAIM"
+          }
+        }
+      },
+      "compat_query": {
+        "id": "v19.requests.f0022.en01",
+        "query_family": "v19.requests.f0022",
+        "category": "symbol_location",
+        "difficulty": 2,
+        "language": "python",
+        "split": "dev",
+        "query": "For a file object's non-empty Python str name (not bytes), which utility returns os.path.basename only when the name neither starts with '<' nor ends with '>'?",
+        "path_prefix": null,
+        "no_answer": false,
+        "expected_files": [
+          "src/requests/utils.py"
+        ],
+        "answers": [],
+        "annotations": {
+          "v19": {
+            "protocol_version": 1,
+            "repo_id": "requests",
+            "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "global_family": "v19.requests.f0022",
+            "intent": "For a file object's non-empty Python str name (not bytes), which utility returns os.path.basename only when the name neither starts with '<' nor ends with '>'?",
+            "query_language": "en",
+            "hard_scope": {
+              "path_prefix": null
+            },
+            "facets": [],
+            "graph_constraints": [],
+            "mutation_profile": "none",
+            "review_status": "pending",
+            "author_id": "requests-independent-author",
+            "task_category": "exact_api",
+            "component_status": "author_proposal_pending_global_review",
+            "input_scope": {
+              "attribute": "obj.name",
+              "type": "Python str",
+              "non_empty": true,
+              "excluded_input_types": [
+                "bytes"
+              ]
+            },
+            "author_revision": 2,
+            "revision_reason": "UNQUALIFIED_INPUT_TYPE_BEHAVIOR_CLAIM"
+          }
+        }
+      },
+      "gold": {
+        "family_id": "v19.requests.f0022",
+        "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "split": "dev",
+        "status": "candidate_not_independently_reviewed",
+        "rationale": "Within the non-empty Python str input scope, guess_filename reads obj.name and returns os.path.basename(name) only when name[0] != '<' and name[-1] != '>'. A name starting with '<' OR ending with '>' fails the guard and yields implicit None. The scope excludes bytes: byte indexing yields integers, so the existing character comparisons do not establish the same placeholder filtering for bytes.",
+        "evidence": [
+          {
+            "source_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "path": "src/requests/utils.py",
+            "symbol": "guess_filename",
+            "start_line": 283,
+            "end_line": 287,
+            "start_byte": 8603,
+            "end_byte": 8868,
+            "span_sha256": "5a0c4dbf5498ed6d5df0f5d5b5720cc71e06efbc7b974b8fedf8180ca05fc5ac",
+            "file_sha256": "b879cb3f671cf1c28e8ff9b2b02151bcdb8974b4820a514cfdd1f5a038443cd2"
+          }
+        ],
+        "edges": [],
+        "absence": null,
+        "scope": "obj.name is a non-empty Python str; excludes bytes and non-str inputs. This is a task scope restriction, not a source behavior change.",
+        "global_family": "v19.requests.f0022",
+        "input_scope": {
+          "attribute": "obj.name",
+          "type": "Python str",
+          "non_empty": true,
+          "excluded_input_types": [
+            "bytes"
+          ]
+        },
+        "author_revision": 2
+      },
+      "specification": {
+        "id": "v19.requests.f0022",
+        "cluster": "filename-hint",
+        "category": "exact_api",
+        "question": "For a file object's non-empty Python str name (not bytes), which utility returns os.path.basename only when the name neither starts with '<' nor ends with '>'?",
+        "refs": [
+          "utils:guess_filename"
+        ],
+        "answer": "Within the non-empty Python str input scope, guess_filename reads obj.name and returns os.path.basename(name) only when name[0] != '<' and name[-1] != '>'. A name starting with '<' OR ending with '>' fails the guard and yields implicit None. The scope excludes bytes: byte indexing yields integers, so the existing character comparisons do not establish the same placeholder filtering for bytes.",
+        "global_family": "v19.requests.f0022",
+        "protocol_split": "dev",
+        "scope": "obj.name is a non-empty Python str; excludes bytes and non-str inputs. This is a task scope restriction, not a source behavior change.",
+        "input_scope": {
+          "attribute": "obj.name",
+          "type": "Python str",
+          "non_empty": true,
+          "excluded_input_types": [
+            "bytes"
+          ]
+        },
+        "author_revision": 2
+      },
+      "canonical_native_sha256": "f85ebd8ad78b41830597178f8e94914aef24c3112977b7da2ed39503d90246a0",
+      "canonical_gold_sha256": "688841203d6ef94f75f0ea06fd4848c802e8d7cb04800118f088679cc5324370",
+      "independent_decision": "pending_rereview"
+    }
+  ]
+}

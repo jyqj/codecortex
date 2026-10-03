@@ -192,6 +192,8 @@ pub struct SemanticSubsystem {
     pub doc_spec: DocSpecDigest,
     /// Worker drain lease seconds (`semantic.worker_lease_secs`).
     pub lease_secs: f64,
+    /// Internal attempt width from existing explicit per-project admission config.
+    pub(crate) max_concurrent_per_project: usize,
     /// GC fresh-timestamp grace seconds (`semantic.gc_min_retention_secs`,
     /// validated ≥ 1 at assembly).
     pub gc_min_retention_secs: i64,
@@ -334,6 +336,7 @@ pub fn assemble_with(
         query_spec,
         doc_spec,
         lease_secs: config.semantic.worker_lease_secs as f64,
+        max_concurrent_per_project: config.semantic.max_concurrent_per_project as usize,
         gc_min_retention_secs: config.semantic.gc_min_retention_secs as i64,
     }))
 }
@@ -583,6 +586,99 @@ pub fn drain_worker_batch(
         batch: report,
         quarantined,
         requeued_after_degrade,
+    })
+}
+
+pub(crate) fn drain_worker_batch_parallel(
+    db: &Arc<IndexDb>,
+    subsystem: &SemanticSubsystem,
+    services: &QueryServices,
+    provider: &dyn EmbeddingProvider,
+    resolve_input: &(dyn Fn(&ClaimedTask) -> CcResult<Option<DocumentInput>> + Sync),
+    options: WorkerDrainOptions<'_>,
+) -> CcResult<DrainOutcome> {
+    let WorkerDrainOptions {
+        owner,
+        max_batch,
+        now_unix,
+        lifecycle,
+    } = options;
+    let limits = cc_semantic::queue::WorkerLimits::validated(
+        max_batch,
+        subsystem.lease_secs,
+        WORKER_BACKOFF_SECS,
+        WORKER_MAX_ATTEMPTS,
+    )?;
+    // The publish CAS fence compares against the incarnation on the spot
+    // (a ghost process is refused with zero writes, P6-014 fence).
+    let incarnation = db.reads().read_generation()?.incarnation;
+    let quarantined = std::sync::atomic::AtomicUsize::new(0);
+    let requeued_after_degrade = std::sync::atomic::AtomicUsize::new(0);
+    let report = cc_semantic::queue::drain_pending_parallel_with_lifecycle(
+        db,
+        owner,
+        &limits,
+        lifecycle,
+        subsystem.max_concurrent_per_project,
+        &|guard: &LeaseGuard<'_>| {
+            // Degrade pre-check: a corrupt artifact must never reach the
+            // provider. Quarantine + requeue WITHOUT consuming the attempt
+            // budget; the task was disposed by the degrade path itself, so the
+            // loop must not touch it again.
+            if db.semantic_active_space()?.as_deref() != Some(subsystem.space.digest()?.as_str()) {
+                return Ok(TaskExit::Cancelled { started: false });
+            }
+            let task = guard.task();
+            let input = cc_semantic::degrade::task_input(task);
+            if let CacheRead::Corrupt(report) =
+                subsystem
+                    .cache
+                    .get(&subsystem.space, &input, &subsystem.doc_spec)?
+            {
+                let record = quarantine_detected(
+                    &subsystem.cache,
+                    &subsystem.ledger,
+                    &subsystem.space,
+                    &input,
+                    &subsystem.doc_spec,
+                    &report,
+                    now_unix,
+                )?;
+                quarantined.fetch_add(
+                    usize::from(record.is_some()),
+                    std::sync::atomic::Ordering::Relaxed,
+                );
+                if requeue_after_degrade(
+                    db,
+                    task,
+                    "semantic degrade: corrupt cache artifact quarantined, task requeued",
+                )? {
+                    requeued_after_degrade.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                }
+                return Ok(TaskExit::Disposed);
+            }
+            let publisher = Publisher::new(
+                db,
+                &subsystem.cache,
+                &subsystem.space,
+                &subsystem.doc_spec,
+                incarnation,
+            )?
+            .with_lifecycle(lifecycle);
+            EmbedHandler::new(publisher, provider, resolve_input).handle(guard)
+        },
+    );
+    // 状态轮询转写: the probe's degradation view follows the worker, not
+    // the assembly instant.
+    let owner: Arc<dyn cc_model::semantic::SemanticRecall> = subsystem.recall.clone();
+    services.set_semantic_degradation_for(
+        &owner,
+        SemanticDegradation::from(subsystem.ledger.snapshot()),
+    );
+    Ok(DrainOutcome {
+        batch: report?,
+        quarantined: quarantined.load(std::sync::atomic::Ordering::Relaxed),
+        requeued_after_degrade: requeued_after_degrade.load(std::sync::atomic::Ordering::Relaxed),
     })
 }
 

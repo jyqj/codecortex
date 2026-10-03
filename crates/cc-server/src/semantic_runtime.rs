@@ -361,7 +361,7 @@ impl SemanticRuntime {
             .unwrap_or_default()
             .as_secs() as i64;
         let provider = FencedProvider(self, provider);
-        let outcome = semantic_wiring::drain_worker_batch(
+        let outcome = semantic_wiring::drain_worker_batch_parallel(
             &self.db,
             &self.subsystem,
             &self.services,
@@ -1070,6 +1070,449 @@ mod tests {
             index.capabilities_info()["retrieval"]["semantic_state"],
             "failed"
         );
+    }
+    // New fixtures explicitly own /tmp repository and cache locations. These
+    // tests never revisit previously refused fixture/cache targets.
+    #[cfg(feature = "semantic-http")]
+    #[derive(Default)]
+    struct BoundedHold {
+        state: Mutex<(usize, bool)>,
+        wake: std::sync::Condvar,
+    }
+    #[cfg(feature = "semantic-http")]
+    impl BoundedHold {
+        fn enter(&self) {
+            let mut state = self.state.lock().unwrap();
+            state.0 += 1;
+            self.wake.notify_all();
+            while !state.1 {
+                let (next, timeout) = self
+                    .wake
+                    .wait_timeout(state, std::time::Duration::from_secs(10))
+                    .unwrap();
+                state = next;
+                assert!(!timeout.timed_out(), "finite synthetic hold exceeded");
+            }
+        }
+        fn wait(&self, n: usize) {
+            let mut state = self.state.lock().unwrap();
+            while state.0 < n {
+                let (next, timeout) = self
+                    .wake
+                    .wait_timeout(state, std::time::Duration::from_secs(10))
+                    .unwrap();
+                state = next;
+                assert!(
+                    !timeout.timed_out(),
+                    "parallel provider calls did not enter"
+                );
+            }
+        }
+        fn release(&self) {
+            self.state.lock().unwrap().1 = true;
+            self.wake.notify_all();
+        }
+    }
+    #[cfg(feature = "semantic-http")]
+    struct BoundedRelease(Arc<BoundedHold>);
+    #[cfg(feature = "semantic-http")]
+    impl Drop for BoundedRelease {
+        fn drop(&mut self) {
+            self.0.release();
+        }
+    }
+    #[cfg(feature = "semantic-http")]
+    struct BoundedProvider {
+        fake: FakeProvider,
+        hold: Arc<BoundedHold>,
+    }
+    #[cfg(feature = "semantic-http")]
+    impl EmbeddingProvider for BoundedProvider {
+        fn space(&self) -> &cc_semantic::types::VectorSpace {
+            self.fake.space()
+        }
+        fn embed_documents(
+            &self,
+            inputs: &[DocumentInput],
+        ) -> Result<Vec<Vec<f32>>, ProviderError> {
+            self.hold.enter();
+            self.fake.embed_documents(inputs)
+        }
+        fn embed_queries(&self, inputs: &[QueryInput]) -> Result<Vec<Vec<f32>>, ProviderError> {
+            self.hold.enter();
+            self.fake.embed_queries(inputs)
+        }
+    }
+    #[cfg(feature = "semantic-http")]
+    struct BoundedFactoryLifetime {
+        provider: AdmittedProvider,
+        created: std::thread::ThreadId,
+        dropped: Arc<Mutex<Option<std::thread::ThreadId>>>,
+    }
+    #[cfg(feature = "semantic-http")]
+    impl Drop for BoundedFactoryLifetime {
+        fn drop(&mut self) {
+            let thread = std::thread::current().id();
+            assert_eq!(
+                thread, self.created,
+                "provider must drop on its finite blocking job thread"
+            );
+            *self.dropped.lock().unwrap() = Some(thread);
+        }
+    }
+    #[cfg(feature = "semantic-http")]
+    impl EmbeddingProvider for BoundedFactoryLifetime {
+        fn space(&self) -> &cc_semantic::types::VectorSpace {
+            self.provider.space()
+        }
+        fn embed_documents(
+            &self,
+            inputs: &[DocumentInput],
+        ) -> Result<Vec<Vec<f32>>, ProviderError> {
+            self.provider.embed_documents(inputs)
+        }
+        fn embed_queries(&self, inputs: &[QueryInput]) -> Result<Vec<Vec<f32>>, ProviderError> {
+            self.provider.embed_queries(inputs)
+        }
+    }
+    #[cfg(feature = "semantic-http")]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn bounded_parallel_pins_running_and_factory_survive_until_physical_join() {
+        let _serial = test_gate().lock().await;
+        let dir = tempfile::tempdir_in("/tmp").unwrap();
+        let mut config = ProjectConfig::default();
+        config.auto_index.enabled = false;
+        config.semantic.enabled = true;
+        config.semantic.model_id = "fake/bounded-runtime".into();
+        config.semantic.dimensions = Some(2);
+        config.semantic.max_input_tokens = Some(8192);
+        config.semantic.max_batch_items = Some(16);
+        config.semantic.max_concurrent = 4;
+        config.semantic.max_concurrent_per_project = 2;
+        config.semantic.endpoint = "https://semantic.invalid/v1".into();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        for n in 0..24 {
+            std::fs::write(
+                dir.path().join(format!("s{n}.rs")),
+                format!("pub fn bounded_{n}() -> u32 {{ {n} }}\n"),
+            )
+            .unwrap();
+        }
+        let mut index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+        let subsystem = index.semantic_subsystem().unwrap();
+        index
+            .install_semantic_provider(Arc::new(FakeProvider::new(FakeProviderConfig::new(
+                subsystem.space.clone(),
+            ))))
+            .unwrap();
+        let retired = index.semantic_runtime().unwrap();
+        retired.close(); // build leaves the newly queued work for our finite factory.
+        let index = Arc::new(std::sync::RwLock::new(index));
+        let build = index.clone();
+        tokio::task::spawn_blocking(move || crate::handlers::core::build_index(build, true))
+            .await
+            .unwrap()
+            .unwrap();
+        let hold = Arc::new(BoundedHold::default());
+        let release = BoundedRelease(hold.clone());
+        let gate = Arc::new(cc_semantic::admission::ProviderGate::validated(4, Some(2)).unwrap());
+        let dropped = Arc::new(Mutex::new(None));
+        let factory_calls = Arc::new(std::sync::atomic::AtomicUsize::new(0));
+        let worker = SemanticRuntime::new_with_factory(
+            retired.db.clone(),
+            subsystem.clone(),
+            retired.services.clone(),
+            {
+                let hold = hold.clone();
+                let gate = gate.clone();
+                let dropped = dropped.clone();
+                let calls = factory_calls.clone();
+                move |cancellation| {
+                    calls.fetch_add(1, Ordering::SeqCst);
+                    Ok(Arc::new(BoundedFactoryLifetime {
+                        created: std::thread::current().id(),
+                        dropped: dropped.clone(),
+                        provider: AdmittedProvider {
+                            inner: Arc::new(BoundedProvider {
+                                fake: FakeProvider::new(FakeProviderConfig::new(
+                                    subsystem.space.clone(),
+                                )),
+                                hold: hold.clone(),
+                            }),
+                            gate: Some(gate.clone()),
+                            namespace: "bounded-a".into(),
+                            wait: std::time::Duration::from_secs(1),
+                            cancellation,
+                            control: None,
+                        },
+                    }) as Arc<dyn EmbeddingProvider>)
+                }
+            },
+        )
+        .unwrap();
+        worker.authorize_configured_space_transition();
+        assert!(worker.schedule());
+        let waiting = hold.clone();
+        tokio::task::spawn_blocking(move || waiting.wait(2))
+            .await
+            .unwrap();
+        assert!(!worker.schedule(), "one coordinator still owns the project");
+        assert!(worker.running.load(Ordering::Acquire));
+        assert_eq!(worker.services.query_pins(), 1);
+        let snapshot = gate.snapshot();
+        assert_eq!(snapshot.in_flight, 2);
+        assert_eq!(snapshot.per_project_in_flight["bounded-a"], 2);
+        let neighbor = Arc::new(FakeProvider::new(FakeProviderConfig::new(
+            worker.subsystem.space.clone(),
+        )));
+        let other = AdmittedProvider {
+            inner: neighbor.clone(),
+            gate: Some(gate.clone()),
+            namespace: "bounded-b".into(),
+            wait: std::time::Duration::from_millis(100),
+            cancellation: tokio_util::sync::CancellationToken::new(),
+            control: None,
+        };
+        tokio::task::spawn_blocking(move || {
+            other.embed_documents(&[DocumentInput::from_bytes(b"finite neighbor").unwrap()])
+        })
+        .await
+        .unwrap()
+        .unwrap();
+        assert_eq!(
+            neighbor.call_count(),
+            1,
+            "one project leaves capacity for its neighbor"
+        );
+        let db = worker.db.clone();
+        tokio::task::spawn_blocking(move || {
+            db.reads().read_generation().unwrap();
+            db.enqueue_semantic_rebuild_plan(&[]).unwrap();
+        })
+        .await
+        .unwrap();
+        worker.close();
+        assert_eq!(worker.services.query_pins(), 1);
+        assert!(worker.running.load(Ordering::Acquire));
+        assert!(dropped.lock().unwrap().is_none());
+        assert!(!worker.schedule());
+        drop(release);
+        wait_for_idle(&worker).await;
+        assert_eq!(gate.snapshot().in_flight, 0);
+        assert_eq!(worker.services.query_pins(), 0);
+        assert!(dropped.lock().unwrap().is_some());
+        assert_eq!(factory_calls.load(Ordering::SeqCst), 1);
+        let conn = worker.db.read_conn().unwrap();
+        let started: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM semantic_outbox WHERE attempt_count=1",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        assert_eq!(started, 2);
+        assert_eq!(
+            worker
+                .db
+                .reads()
+                .semantic_coverage()
+                .unwrap()
+                .coverage
+                .published,
+            0
+        );
+        println!("bounded runtime provider_peak=2 pins_before_close=1 pins_after_close=1 pins_after_join=0 factory_calls=1 neighbor_calls=1 started_claims=2");
+    }
+    #[cfg(feature = "semantic-http")]
+    #[test]
+    fn bounded_parallel_real_admitted_provider_global_and_project_gates_limit_every_call() {
+        let space = cc_semantic::types::VectorSpace::new("fake/bounded-gates", 2).unwrap();
+        let gate = Arc::new(cc_semantic::admission::ProviderGate::validated(4, Some(2)).unwrap());
+        let hold = Arc::new(BoundedHold::default());
+        let _release = BoundedRelease(hold.clone());
+        let provider = Arc::new(BoundedProvider {
+            fake: FakeProvider::new(FakeProviderConfig::new(space.clone())),
+            hold: hold.clone(),
+        });
+        let wrap = |namespace: &str, inner: Arc<dyn EmbeddingProvider>| AdmittedProvider {
+            inner,
+            gate: Some(gate.clone()),
+            namespace: namespace.into(),
+            wait: std::time::Duration::from_millis(50),
+            cancellation: tokio_util::sync::CancellationToken::new(),
+            control: None,
+        };
+        let input = DocumentInput::from_bytes(b"finite admission").unwrap();
+        std::thread::scope(|scope| {
+            let workers: Vec<_> = ["a", "a", "b", "b"]
+                .into_iter()
+                .map(|project| {
+                    let admitted = wrap(project, provider.clone());
+                    let input = input.clone();
+                    scope.spawn(move || admitted.embed_documents(&[input]))
+                })
+                .collect();
+            hold.wait(4);
+            assert_eq!(gate.snapshot().in_flight, 4);
+            assert_eq!(gate.snapshot().per_project_in_flight["a"], 2);
+            let blocked = Arc::new(FakeProvider::new(FakeProviderConfig::new(space.clone())));
+            assert_eq!(
+                wrap("c", blocked.clone()).embed_documents(std::slice::from_ref(&input)),
+                Err(ProviderError::Timeout)
+            );
+            assert_eq!(blocked.call_count(), 0);
+            hold.release();
+            for worker in workers {
+                worker.join().unwrap().unwrap();
+            }
+        });
+        let first = gate
+            .try_acquire_permit("a", std::time::Duration::from_millis(50))
+            .unwrap();
+        let second = gate
+            .try_acquire_permit("a", std::time::Duration::from_millis(50))
+            .unwrap();
+        let blocked = Arc::new(FakeProvider::new(FakeProviderConfig::new(space)));
+        assert_eq!(
+            wrap("a", blocked.clone()).embed_documents(std::slice::from_ref(&input)),
+            Err(ProviderError::Timeout)
+        );
+        assert_eq!(blocked.call_count(), 0);
+        assert_eq!(
+            gate.snapshot().in_flight,
+            2,
+            "per-project gate binds even with global headroom"
+        );
+        drop((first, second));
+        println!("bounded gates actual_global_peak=4 per_project_peak=2 blocked_provider_calls=0");
+    }
+    #[test]
+    fn bounded_parallel_default_disabled_has_zero_provider_factory_calls() {
+        let dir = tempfile::tempdir_in("/tmp").unwrap();
+        let db = Arc::new(IndexDb::open(&dir.path().join("index.db")).unwrap().0);
+        let config = ProjectConfig::default();
+        let subsystem = semantic_wiring::assemble_with(
+            "finite-default",
+            &config,
+            db,
+            |_| panic!("disabled configuration must not even resolve a cache root"),
+            false,
+        )
+        .unwrap();
+        assert!(subsystem.is_none());
+        assert!(!config.semantic.network_opt_in);
+        println!("bounded default disabled provider_calls=0 cache_root_lookups=0");
+    }
+    /// Run alone in a fresh test process. A normal unlimited project assembly
+    /// initializes the health facade's lazy permissive shared gate; subsequent
+    /// explicit 4+2 project assembly keeps that same permissive gate. This is
+    /// retained counterexample evidence, not a passing limit-contract assertion.
+    #[cfg(feature = "semantic-http")]
+    #[test]
+    #[ignore = "retained first-wins counterexample; run alone in a fresh test process"]
+    fn bounded_parallel_existing_first_wins_counterexample() {
+        let dir = tempfile::tempdir_in("/tmp").unwrap();
+        let mut config = ProjectConfig::default();
+        config.semantic.enabled = true;
+        config.semantic.model_id = "fake/first-wins-counterexample".into();
+        config.semantic.dimensions = Some(2);
+        config.semantic.max_input_tokens = Some(8192);
+        config.semantic.max_batch_items = Some(16);
+        config.semantic.endpoint = "https://semantic.invalid/v1".into();
+        let lookup = |name: &str| {
+            (name == cc_semantic::cache::CACHE_ROOT_ENV).then(|| {
+                dir.path()
+                    .join("owned-cache")
+                    .to_string_lossy()
+                    .into_owned()
+            })
+        };
+        let db = Arc::new(IndexDb::open(&dir.path().join("first.db")).unwrap().0);
+        let first =
+            semantic_wiring::assemble_with("normal-first-unlimited", &config, db, lookup, false)
+                .unwrap()
+                .unwrap();
+        let shared = crate::service_factory::semantic_provider_gate();
+        assert_eq!(shared.snapshot().max_concurrent, usize::MAX);
+        assert_eq!(shared.snapshot().max_concurrent_per_project, None);
+        config.semantic.max_concurrent = 4;
+        config.semantic.max_concurrent_per_project = 2;
+        let db = Arc::new(IndexDb::open(&dir.path().join("second.db")).unwrap().0);
+        semantic_wiring::assemble_with("normal-second-explicit", &config, db, lookup, false)
+            .unwrap()
+            .unwrap();
+        let effective = crate::service_factory::semantic_provider_gate();
+        assert!(Arc::ptr_eq(&shared, &effective));
+        assert_eq!(
+            effective.snapshot().max_concurrent,
+            usize::MAX,
+            "existing first-wins preserves permissive gate despite requested global4"
+        );
+        assert_eq!(
+            effective.snapshot().max_concurrent_per_project,
+            None,
+            "existing first-wins preserves no project cap despite requested project2"
+        );
+        let hold = Arc::new(BoundedHold::default());
+        let _release = BoundedRelease(hold.clone());
+        let provider = Arc::new(BoundedProvider {
+            fake: FakeProvider::new(FakeProviderConfig::new(first.space.clone())),
+            hold: hold.clone(),
+        });
+        let input =
+            DocumentInput::from_bytes(b"normal synthetic shared-gate counterexample").unwrap();
+        std::thread::scope(|scope| {
+            let workers: Vec<_> = [
+                ("explicit-b", false),
+                ("explicit-b", false),
+                ("explicit-b", true),
+                ("explicit-c", false),
+                ("explicit-c", false),
+            ]
+            .into_iter()
+            .map(|(project, query)| {
+                let admitted = AdmittedProvider {
+                    inner: provider.clone(),
+                    gate: Some(crate::service_factory::semantic_provider_gate()),
+                    namespace: project.into(),
+                    wait: std::time::Duration::from_millis(100),
+                    cancellation: tokio_util::sync::CancellationToken::new(),
+                    control: None,
+                };
+                let input = input.clone();
+                scope.spawn(move || {
+                    if query {
+                        admitted.embed_queries(&[QueryInput::from_bytes(
+                            b"finite query alongside two bounded document attempts",
+                        )
+                        .unwrap()])
+                    } else {
+                        admitted.embed_documents(&[input])
+                    }
+                })
+            })
+            .collect();
+            hold.wait(5);
+            let snapshot = effective.snapshot();
+            assert_eq!(
+                snapshot.in_flight, 5,
+                "actual decorated calls exceed requested global4"
+            );
+            assert_eq!(
+                snapshot.per_project_in_flight["explicit-b"], 3,
+                "actual decorated calls exceed requested project2"
+            );
+            println!("FIRST_WINS_COUNTEREXAMPLE requested_global=4 requested_project=2 effective_global={} effective_project={:?} decorated_provider_active=5 explicit_b_active=3 b_document_attempts=2 b_queries=1 c_document_attempts=2",snapshot.max_concurrent,snapshot.max_concurrent_per_project);
+            hold.release();
+            for worker in workers {
+                worker.join().unwrap().unwrap();
+            }
+        });
+        assert_eq!(effective.snapshot().in_flight, 0);
     }
 }
 

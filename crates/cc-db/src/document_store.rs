@@ -329,12 +329,15 @@ pub fn verify_source_records(db: &IndexDb, hits: &[cc_model::SearchHit]) -> CcRe
             }
             let qname = crate::symbol_identity_store::load_on(
                 conn,
-                &id,
-                &hit.file_path,
-                Some(&actual),
-                Some(&source),
-                hit.symbol_name.as_deref(),
-                hit.symbol_kind.map(|k| k.as_str()),
+                crate::symbol_identity_store::Projection {
+                    chunk_id: &id,
+                    path: &hit.file_path,
+                    document: Some(&actual),
+                    proof: Some(&source),
+                    name: hit.symbol_name.as_deref(),
+                    kind: hit.symbol_kind.map(|k| k.as_str()),
+                },
+                None,
             )?;
             if hit.metadata.get("qname").and_then(|v| v.as_str()) != qname.as_deref()
                 || hit.metadata.get("qname").is_some_and(|v| !v.is_string())

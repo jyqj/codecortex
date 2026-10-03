@@ -106,3 +106,12 @@ and does not certify a qname by itself.
   no ranking, score, budget, Partial, taxonomy, public DEV or frozen gold edits.
 
 These are pending checks, not passed receipts. Parent items/V19 remain open.
+
+## Later implementation record (2026-10-03)
+
+The original pending design text above is retained as history. The parent
+subsequently reviewed commit `bc22dc9` and approved schema 25, module model 3,
+rebuild-on-mismatch and the same source-bound association package on PR 132.
+Current code and bounded acceptance receipts are recorded separately in
+`artifacts/checkpoints/qname-source-identity-implementation-20261003/README.md`.
+Independent parent review and V19 certification are not implied by this record.

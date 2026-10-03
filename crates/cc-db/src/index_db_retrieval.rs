@@ -923,12 +923,15 @@ impl<'a> RetrievalReadModel<'a> {
                     let kind: Option<String> = row.get(7)?;
                     let qname = crate::symbol_identity_store::load_on(
                         conn,
-                        &chunk_id,
-                        &path,
-                        document.as_ref(),
-                        source_evidence.as_ref(),
-                        name.as_deref(),
-                        kind.as_deref(),
+                        crate::symbol_identity_store::Projection {
+                            chunk_id: &chunk_id,
+                            path: &path,
+                            document: document.as_ref(),
+                            proof: source_evidence.as_ref(),
+                            name: name.as_deref(),
+                            kind: kind.as_deref(),
+                        },
+                        Some(&mut work.sql),
                     )
                     .map_err(|e| {
                         rusqlite::Error::FromSqlConversionFailure(

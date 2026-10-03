@@ -2544,3 +2544,17 @@
   验证：`blocked_on_design_review`，没有产品通过声明。
 - [ ] 原线程独立代码审阅：`pending`。本附录不关闭 V19 或任何父项，
   不重跑公开 DEV，不修改评分、排名、预算或冻结 gold。
+
+### 本批后续实施收据（保留上节 pending 状态的历史记录）
+
+- [x] 原线程已审阅 `bc22dc9` 并批准 schema 25 / module model 3，沿
+  PR 132 实施来源绑定身份；真实文件事务验证写后符号存活，cold/warm
+  读取核对完整来源/文档/符号关系，公开 hit 新增 `metadata.qname`。
+- [x] 有界验收：17 个本批产品测试、183 parser + 298 search 回归、
+  5 schema + 10 epoch + 1 FIFO 回归、直接 Rust 1.95 locked fmt/clippy。
+  未改 native evaluator 的独立微型 gold 实跑为 missing=0 / correct=1 /
+  wrong-qname=0；真实 MCP JSON-RPC 同样 correct=1 / wrong=0。
+  原 hit 字段、score trace、source/document proof 未变。
+- [ ] 原线程独立最终代码审阅：`pending`。实施收据见
+  `artifacts/checkpoints/qname-source-identity-implementation-20261003/README.md`。
+  V19 和父项保持开放；公开 DEV、规模/发行认证及其他平台未验。

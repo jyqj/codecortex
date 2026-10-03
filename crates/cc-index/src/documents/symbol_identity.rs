@@ -33,6 +33,15 @@ pub fn prepare(
             .or_default()
             .push(s);
     }
+    let mut owners = BTreeMap::<_, Vec<_>>::new();
+    for boundary in &structure.boundaries {
+        if boundary.kind == BoundaryKind::Symbol {
+            owners
+                .entry((boundary.span.start, boundary.span.end))
+                .or_default()
+                .push(boundary);
+        }
+    }
     let mut identities = Vec::new();
     for chunk in &outcome.chunks {
         let Some(proof) = &chunk.source else {
@@ -51,14 +60,14 @@ pub fn prepare(
         if source.slice(owner).is_err() {
             continue;
         }
-        let mut boundaries = structure
-            .boundaries
-            .iter()
-            .filter(|b| b.kind == BoundaryKind::Symbol && b.span == owner);
-        let Some(boundary) = boundaries.next() else {
+        let Some(boundaries) = owners.get(&(owner.start, owner.end)) else {
             continue;
         };
-        if boundaries.next().is_some() || boundary.signature != proof.signature {
+        if boundaries.len() != 1 {
+            continue;
+        }
+        let boundary = boundaries[0];
+        if boundary.signature != proof.signature {
             continue;
         }
         // Only this declaration's body or its explicitly attached leading

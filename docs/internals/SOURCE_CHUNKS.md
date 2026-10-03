@@ -21,6 +21,10 @@ document and symbol rows on one SQLite read snapshot, within the existing query
 generation fence. Contradictory persisted relationships fail closed. Valid
 relationships add `metadata.qname`; absence does not trigger inferred identity.
 Document rendering, source proof shape, old hit fields and ranking remain intact.
+Identity SELECTs performed during ordinary hydration are included in its
+existing SQL work counters; this adds no budget or ranking policy. Owner and
+candidate maps retain every exact-span candidate, so lookup does not repeatedly
+scan the entire file or deduplicate ambiguities into authority.
 
 Python native qnames now preserve dotted lexical ancestry. A function nested in
 a function or method remains `Function` and has no receiver; a direct class

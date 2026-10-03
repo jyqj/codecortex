@@ -29,7 +29,8 @@ def run(argv, receipt):
         raise SystemExit(result.returncode)
     # Keep exact lines, removing only the trailing blank line for diff hygiene.
     p = out / receipt
-    p.write_text(p.read_text().rstrip() + "\n")
+    text = p.read_text().rstrip()
+    p.write_text(text + ("\n" if text else ""))
 
 run([cargo, "fmt", "--all", "--", "--check"], "fmt.log")
 run([cargo, "clippy", "--locked", "--workspace", "--all-targets", "--", "-D", "warnings"], "clippy.log")

@@ -49,9 +49,20 @@ fn main() {
     };
     let (missing, missing_status) = normalize(&baseline);
     let (verified, status) = normalize(&current);
+    let backend = cc_eval::runner::CodeIndexBackend::open_existing(root).unwrap();
+    let wire_current = backend
+        .call_tool(
+            "search",
+            &json!({"query":"needle","top_k":10,"mode":"hybrid"}),
+        )
+        .unwrap();
+    let (wire_hits, wire_status) = normalize(&wire_current);
     let baseline_score = metrics::native(&missing, &query);
     let correct_score = metrics::native(&verified, &query);
     let wrong_score = metrics::native(&verified, &wrong);
+    let wire_score = metrics::native(&wire_hits, &query);
+    assert_eq!(wire_score, correct_score);
+    assert_eq!(metrics::native(&wire_hits, &wrong).recall10, Some(0.0));
     assert_eq!(baseline_score.recall10, Some(0.0));
     assert_eq!(correct_score.recall10, Some(1.0));
     assert_eq!(wrong_score.recall10, Some(0.0));
@@ -72,6 +83,7 @@ fn main() {
     std::fs::create_dir_all(out).unwrap();
     for (file, value) in [
         ("public-context-current.json", current),
+        ("public-mcp-current.json", wire_current),
         ("micro-gold.json", serde_json::to_value(&query).unwrap()),
         (
             "wrong-qname-gold.json",
@@ -79,10 +91,10 @@ fn main() {
         ),
         (
             "native-scores.json",
-            json!({"missing_identity":baseline_score,"correct_identity":correct_score,"wrong_qname":wrong_score,"baseline_status":missing_status,"current_status":status,"original_hit_fields_and_score_trace":"unchanged","source_proof":"verified_from_full_original_fixture_bytes"}),
+            json!({"missing_identity":baseline_score,"correct_identity":correct_score,"wrong_qname":wrong_score,"mcp_wire_correct_identity":wire_score,"mcp_wire_status":wire_status,"baseline_status":missing_status,"current_status":status,"original_hit_fields_and_score_trace":"unchanged","source_proof":"verified_from_full_original_fixture_bytes"}),
         ),
     ] {
         std::fs::write(out.join(file), serde_json::to_vec_pretty(&value).unwrap()).unwrap();
     }
-    println!("native micro gold: missing recall10=0, correct recall10=1, wrong qname recall10=0; all original hit fields/score traces/source/document identities unchanged");
+    println!("native micro gold: missing recall10=0, correct recall10=1, wrong qname recall10=0; actual MCP JSON-RPC correct recall10=1 and wrong qname=0; all original hit fields/score traces/source/document identities unchanged");
 }

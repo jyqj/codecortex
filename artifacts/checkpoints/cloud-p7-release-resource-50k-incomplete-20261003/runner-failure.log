@@ -1,0 +1,45 @@
+Traceback (most recent call last):
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 158, in run
+    product.phase='cold-empty-index-build';t=time.monotonic_ns();data=product.tool('index',{'path':str(root)});builds.append({'profile':product.phase,'duration_ms':(time.monotonic_ns()-t)/1e6,'result':data})
+                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 103, in tool
+    value=self.rpc('tools/call',{'name':name,'arguments':args},**kw)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 96, in rpc
+    value=q.get(timeout=timeout);finish=time.monotonic_ns()
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/queue.py", line 179, in get
+    raise Empty
+_queue.Empty
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 109, in close
+    try:self.p.wait(timeout=15)
+        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 2045, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['/tmp/p7-resource-release-build/codecortex', 'mcp', '--project-path', '/tmp/p7-release-resource-50k/n50000/repo']' timed out after 15 seconds
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 217, in <module>
+    p=argparse.ArgumentParser();p.add_argument('--binary',type=pathlib.Path,required=True);p.add_argument('--build-receipt',type=pathlib.Path,required=True);p.add_argument('--output',type=pathlib.Path,required=True);p.add_argument('--scales',type=int,nargs='+',default=[1000]);p.add_argument('--concurrency',type=int,nargs='+',default=[1,4,8,16]);p.add_argument('--samples',type=int,default=32);p.add_argument('--drain-timeout',type=int,default=180);run(p.parse_args())
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                  ^^^^^^^^^^^^^^^^^^^
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 209, in run
+    if product:product.close()
+               ^^^^^^^^^^^^^^^
+  File "/workspace/codecortex/scripts/p7_release_resource_preparation.py", line 110, in close
+    except subprocess.TimeoutExpired:self.p.terminate();self.p.wait(timeout=15)
+                                                        ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1264, in wait
+    return self._wait(timeout=timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 2045, in _wait
+    raise TimeoutExpired(self.args, timeout)
+subprocess.TimeoutExpired: Command '['/tmp/p7-resource-release-build/codecortex', 'mcp', '--project-path', '/tmp/p7-release-resource-50k/n50000/repo']' timed out after 15 seconds

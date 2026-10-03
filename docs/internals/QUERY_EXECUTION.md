@@ -81,6 +81,23 @@ hard scope 不扩大。packing v4 保 rank one，然后保实际 intent-facet、
 source-support，最后 incidental/comment/reference；空间仍不足则明确
 Partial/omission。低预算下先把 scope 的解释性长文压成版本化短标签，
 所有 scope/budget 数值、ordering、source proof、score trace 与状态保留。
+
+最终 packing 对下列**精确生产常量**使用说明标签（schema v1）；仅在预算
+触发压缩时映射，未知标签（包括已知值的前后缀）不改字节。此表是完整
+语义定义，不把说明缩写解释为增强证明。所有计数、预算、priority、排序、
+qname、document 和 source proof 不变，重打包不会恢复先前遗漏正文。
+
+| 字段 / 完整生产说明 | 标签 | 完整语义 |
+| --- | --- | --- |
+| `selection.source_support_scope`: `literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity` | `cue_window:v1` | 仅已验证 `2 * top_k` 窗口的 literal program cue；不是全局唯一或 exact identity。保留上文 source-support 的 token/owner/signature 定义。 |
+| `source_freshness.scope`: `bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot` | `disk_generation:v1` | 有界逐文件磁盘校验加 optimistic full read generation 检查；不是 atomic filesystem snapshot，文件校验后仍可能变化。 |
+| `source_freshness.scope`: `bounded per-file disk verification; not an atomic filesystem or whole-query snapshot` | `disk_files:v1` | 有界逐文件磁盘校验；不是 atomic filesystem 或 whole-query snapshot，也不声明 full read generation。 |
+
+核心 pack 后 public handler 添加 resolution freshness 再 pack 属现有双重
+预算边界；本修复提供说明字段余量，不重构 pipeline，不承诺任意宽的
+其他 caller metadata 都能保留所有正文。无法容纳完整证据时仍返回诚实
+Partial/omission 或明确 budget error。
+
 旧 packing v2/v3 仅由评测 decoder 按各自状态读取用于 immutable baseline
 对照，不升级旧 Partial；新 source-v2 必须完整重新验收。
 

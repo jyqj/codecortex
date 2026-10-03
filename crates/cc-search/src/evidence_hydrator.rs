@@ -1,5 +1,8 @@
 //! Final source validation of ranked hits. Retrieval scores are immutable;
 //! untrusted locators never become source facts without current DB + disk proof.
+/// Exact production explanation; compact wire labels are defined in QUERY_EXECUTION.md.
+pub const SOURCE_FRESHNESS_SCOPE: &str = "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot";
+
 use crate::evidence::SourceVerifier;
 use cc_db::index_db::IndexDb;
 use cc_model::{
@@ -223,7 +226,7 @@ impl<'a> EvidenceHydrator<'a> {
         result["hydrator"] = serde_json::json!(HYDRATOR_SPEC);
         result["verified_hits"] = serde_json::json!(self.verified_hits);
         result["generation"] = serde_json::json!(self.generation);
-        result["scope"] = serde_json::json!("bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot");
+        result["scope"] = serde_json::json!(SOURCE_FRESHNESS_SCOPE);
         result[crate::semantic_hydrate_guard::FENCE_DIAGNOSTICS_KEY] =
             self.dense_fence.diagnostics();
         result

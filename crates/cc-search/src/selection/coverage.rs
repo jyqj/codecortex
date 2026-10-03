@@ -1,5 +1,8 @@
 //! Preserve the highest-ranked anchor; reserve bounded evidence facets only
 //! from the already-ranked, validated candidate window. Never rewrite scores.
+/// Exact production explanation; compact wire labels are defined in QUERY_EXECUTION.md.
+pub const SOURCE_SUPPORT_SCOPE: &str = "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity";
+
 use super::{
     overlap::{OverlapStats, SourceCoverage},
     SELECTION_SPEC,
@@ -288,7 +291,7 @@ pub fn select_with_query(
                 .filter(|index| chosen.contains(index))
                 .map(|&index| ranked[index].chunk_id.clone())
                 .collect(),
-            source_support_scope: "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity".into(),
+            source_support_scope: SOURCE_SUPPORT_SCOPE.into(),
             intent_facet_anchors,
         },
     ))

@@ -265,6 +265,32 @@ pub fn pack_value(mut value: Value, max_bytes: usize) -> CcResult<Value> {
         }
         policy["details_omitted"] = json!(true);
     }
+    // Exact production explanations only. Unknown/caller labels and every
+    // numeric count, source identity and priority remain untouched. Labels are
+    // versioned by QUERY_EXECUTION.md; reapplying this mapping is a no-op.
+    for (pointer, known, compact) in [
+        (
+            "/evidence_summary/selection/source_support_scope",
+            super::coverage::SOURCE_SUPPORT_SCOPE,
+            "cue_window:v1",
+        ),
+        (
+            "/evidence_summary/source_freshness/scope",
+            crate::evidence_hydrator::SOURCE_FRESHNESS_SCOPE,
+            "disk_generation:v1",
+        ),
+        (
+            "/evidence_summary/source_freshness/scope",
+            crate::evidence::SOURCE_FRESHNESS_SCOPE,
+            "disk_files:v1",
+        ),
+    ] {
+        if let Some(label) = value.pointer_mut(pointer) {
+            if label.as_str() == Some(known) {
+                *label = json!(compact);
+            }
+        }
+    }
     // Verbose schema prose is not source evidence. Keep every scope/budget
     // value and the exact ordering semantics, but use documented terse labels
     // before dropping any body or required facet. No scan/error/partial count

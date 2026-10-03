@@ -429,22 +429,26 @@ impl IndexDb {
         const SEED_COLUMNS: &str = "symbol_id,file_path,name,kind,container,start_line,end_line,\
              qname,export_name,is_default_export,symbol_uid,receiver_type,param_count,\
              base_types,implements";
-        let sql = if excluded_files.is_empty() {
+        // One JSON array parameter avoids SQLite's variable limit when a
+        // cold build excludes tens of thousands of freshly parsed files.
+        // The bundled SQLite already provides JSON for document/recovery
+        // reads; this keeps string equality, duplicates and the read snapshot.
+        let excluded_json = if excluded_files.is_empty() {
+            None
+        } else {
+            Some(serde_json::to_string(excluded_files)?)
+        };
+        let sql = if excluded_json.is_none() {
             format!("SELECT {SEED_COLUMNS} FROM symbols ORDER BY file_path,start_line")
         } else {
-            let placeholders = excluded_files
-                .iter()
-                .map(|_| "?")
-                .collect::<Vec<_>>()
-                .join(",");
             format!(
-                "SELECT {SEED_COLUMNS} FROM symbols WHERE file_path NOT IN ({}) ORDER BY file_path,start_line",
-                placeholders
+                "SELECT {SEED_COLUMNS} FROM symbols WHERE file_path NOT IN \
+                 (SELECT value FROM json_each(?1)) ORDER BY file_path,start_line"
             )
         };
 
         let mut stmt = conn.prepare(&sql).map_err(db_err)?;
-        let params: Vec<&dyn rusqlite::types::ToSql> = excluded_files
+        let params: Vec<&dyn rusqlite::types::ToSql> = excluded_json
             .iter()
             .map(|p| p as &dyn rusqlite::types::ToSql)
             .collect();

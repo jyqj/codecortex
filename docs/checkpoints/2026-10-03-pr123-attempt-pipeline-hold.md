@@ -50,3 +50,12 @@ Each run passes three controlled normal-API cases. Beyond the measured current l
 Candidate bounded_parallel after this ruling: 12 passed, 1 ignored (the original stronger-policy assertion). Frozen 1 MiB accepted-input bound now tested. Existing HTTP/runtime results above are historical and unchanged. The EROFS target and combined serial failure were not rerun or relocated. Added width-one production combination remains not run; it cannot replace those earlier failures. Thus full production-cache acceptance remains unverified; no production-readiness or performance claim is made.
 
 Denied GitHub action was read-only metadata lookup: `gh pr view 123 --repo jyqj/codecortex --json baseRefName,headRefName,headRefOid,state,url`; endpoint `POST https://api.github.com/graphql`, response `Forbidden`. This was not a git push or PR-create attempt, nor an automatic-approval-review rejection. The denied API was not retried and no alternate identity or API route was used. At the earlier HOLD checkpoint, push was unattempted; the authorized new-code git delivery attempt is recorded separately after execution. Draft PR creation has not been attempted because its metadata preflight is denied. Remote CI remains not run.
+
+
+## Final isolated candidate validation
+
+A subsequent concurrent bounded_parallel run, after both worktrees shared a build target, aborted on a five-second synthetic close hold timeout and poisoned cleanup. It did not produce a passing suite result. Build-target reuse and scheduling are possible contributors, not a proven diagnosis; that failure is preserved here.
+
+A new, candidate-only target directory rebuilt from the candidate path using original Cargo.lock and the installed direct compiler. `cargo test --locked --offline -p cc-semantic --test bounded_parallel --test attempt_lease_contract -- --test-threads=1` then passed: oracle 1/1, bounded queue 12/12 with the original stricter-clock assertion explicitly ignored. No timeout or concurrency threshold was relaxed. No EROFS fixture was rerun. The identical oracle file SHA-256 on both worktrees is `58730a414bc5724879fab272ee2d59279e21830692bbda4b35d88d9f2ef5b121`.
+
+This closes the current token-contract verification. Production-cache acceptance, the unrun width-one HTTP combination, independent review, benchmarks and CI remain as stated above. Authorized new-code push will be attempted once on the existing origin identity; any rejection ends remote delivery without retry or alternate route. PR-create has not been attempted.

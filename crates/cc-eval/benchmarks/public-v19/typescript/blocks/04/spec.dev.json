@@ -1,0 +1,186 @@
+[
+  {
+    "slug": "ensure-separator-api",
+    "domain": "exact_api",
+    "query": "Locate ensureTrailingDirectorySeparator, the helper appending a path separator when needed.",
+    "targets": [
+      "api/path.ts|ensureTrailingDirectorySeparator"
+    ],
+    "rationale": "Returns the path unchanged when its separator predicate is true; otherwise appends directorySeparator.",
+    "links": [],
+    "family": "v19.typescript.f0062"
+  },
+  {
+    "slug": "protocol-symbol-response-validator-api",
+    "domain": "exact_api",
+    "query": "Locate validateSymbolResponse, the protocol response assertion delegating reference-owner validation.",
+    "targets": [
+      "api/proto.ts|validateSymbolResponse"
+    ],
+    "rationale": "The assertion passes response.reference into validateSymbolOwner.",
+    "links": [],
+    "family": "v19.typescript.f0064"
+  },
+  {
+    "slug": "async-graceful-process-close",
+    "domain": "behavior",
+    "query": "Where does asynchronous client close wait for a pending connection and end child stdin to unblock the server read loop?",
+    "targets": [
+      "api/async/client.ts|Client.close"
+    ],
+    "rationale": "close waits for connecting to settle, marks closed, disposes connection/socket, ends spawned-process stdin, clears handles and marks disconnected.",
+    "links": [],
+    "family": "v19.typescript.f0065"
+  },
+  {
+    "slug": "legacy-span-map-feature-default",
+    "domain": "behavior",
+    "query": "Where does a five-field binary span-map tuple acquire all features while a six-field tuple supplies its own feature flags?",
+    "targets": [
+      "api/node/node.ts|RemoteSourceFile.spanMap"
+    ],
+    "rationale": "The getter accepts tuple lengths five or six, reads the optional sixth features value or defaults to SpanMapFeature.All, then creates segment ranges.",
+    "links": [],
+    "family": "v19.typescript.f0067"
+  },
+  {
+    "slug": "rooted-path-canonicalization",
+    "domain": "behavior",
+    "query": "Where is a path resolved against the current directory, checked for rootedness and normalized so a bare root gains a trailing separator?",
+    "targets": [
+      "api/path.ts|toRootedPath"
+    ],
+    "rationale": "Rejects empty and URL query/fragment cases, uses getNormalizedAbsolutePath, rejects a non-rooted result and adds a separator to a bare root.",
+    "links": [],
+    "family": "v19.typescript.f0068"
+  },
+  {
+    "slug": "callback-value-vs-missing-contract",
+    "domain": "architecture_facets",
+    "query": "Identify host filesystem read/stat callback contracts and the wire result encoder distinguishing missing, sentinel and value responses.",
+    "targets": [
+      "api/fs.ts|FileSystemCallbacks",
+      "api/fsCallbacks.ts|encodeFileSystemCallbackResult"
+    ],
+    "rationale": "readFile/stat undefined represent missing; supported sentinels produce named kind; other operations require validated values, and writes/removals return value without data.",
+    "links": [],
+    "family": "v19.typescript.f0069"
+  },
+  {
+    "slug": "binary-fixed-and-extended-node-data",
+    "domain": "architecture_facets",
+    "query": "Identify the node-data discriminator dispatcher and the source-file/template/literal extended-data writer.",
+    "targets": [
+      "api/node/encoder.ts|getNodeData",
+      "api/node/encoder.ts|recordExtendedData"
+    ],
+    "rationale": "getNodeData combines common bits with child mask, string index or extended offset; recordExtendedData has separate source-file, template and other literal layouts.",
+    "links": [],
+    "family": "v19.typescript.f0070"
+  },
+  {
+    "slug": "fetched-node-denominator-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace remote source-file construction into timing counters for fetched files and materializable nodes, excluding sentinel/root slots.",
+    "targets": [
+      "api/node/node.ts|RemoteSourceFile.constructor",
+      "api/timing.ts|TimingCollector.recordSourceFileFetched"
+    ],
+    "rationale": "The constructor passes max(0,nodes.length-2); the collector increments files fetched and adds that node denominator.",
+    "links": [
+      [
+        0,
+        1,
+        "recordSourceFileFetched(Math.max(0, this.nodes.length - 2))",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0072"
+  },
+  {
+    "slug": "sync-tuple-bin-framing-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace the synchronous channel tuple writer into the binary-header size and writing helpers for method and payload fields.",
+    "targets": [
+      "api/syncChannel.ts|SyncRpcChannel.writeTuple",
+      "api/node/msgpack.ts|binHeaderSize",
+      "api/node/msgpack.ts|writeBinHeader"
+    ],
+    "rationale": "writeTuple computes binary field header sizes and writes the fixed three-element frame with binary method/payload fields in small-buffer or large-payload paths.",
+    "links": [
+      [
+        0,
+        1,
+        "binHeaderSize(nameLen)",
+        "calls"
+      ],
+      [
+        0,
+        2,
+        "writeBinHeader(this.writeBuf",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0075"
+  },
+  {
+    "slug": "document-uri-syntax-error",
+    "domain": "config_error",
+    "query": "Where does documentURIToFileName reject malformed file URLs or a non-file URI with no colon?",
+    "targets": [
+      "api/path.ts|documentURIToFileName"
+    ],
+    "rationale": "Invalid file URL parsing throws invalid file URI; non-file input without a scheme colon throws invalid URI.",
+    "links": [],
+    "family": "v19.typescript.f0076"
+  },
+  {
+    "slug": "stale-cached-record-retention-error",
+    "domain": "config_error",
+    "query": "Where is retaining an already-evicted or replaced source-file record rejected by identity comparison against the node-ID index?",
+    "targets": [
+      "api/sourceFileCache.ts|SourceFileCache.retainRecord"
+    ],
+    "rationale": "The current recordsByNodeId entry must be the same record object; otherwise retention throws before adding a snapshot reference.",
+    "links": [],
+    "family": "v19.typescript.f0077"
+  },
+  {
+    "slug": "diagnostic-source-read-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/diagnosticFormatter.ts only, locate code reading a source file from disk to obtain diagnostic context lines.",
+    "scope": "api/diagnosticFormatter.ts",
+    "absent_tokens": [
+      "readFile",
+      "node:fs"
+    ],
+    "rationale": "The complete formatter consumes sourceLines already present in diagnostics and host formatting callbacks; it does not read source text from disk.",
+    "family": "v19.typescript.f0078"
+  },
+  {
+    "slug": "filesystem-code-execution-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/fsCallbacks.ts only, locate execution of a compiler plugin or external content-mapper process.",
+    "scope": "api/fsCallbacks.ts",
+    "absent_tokens": [
+      "spawn",
+      "execFile",
+      "runExternalCode"
+    ],
+    "rationale": "The complete module configures filesystem sentinels/callback names and validates returned values. It launches no process and runs no compiler plugin; external-code process policy is outside this file.",
+    "family": "v19.typescript.f0079"
+  },
+  {
+    "slug": "source-hash-signature-verification-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/node/node.infrastructure.ts only, locate cryptographic signature verification of a binary source-file response.",
+    "scope": "api/node/node.infrastructure.ts",
+    "absent_tokens": [
+      "verifySignature",
+      "node:crypto",
+      "publicKey"
+    ],
+    "rationale": "The complete infrastructure reads stored hash/parse/identity header words and node fields. A formatted hash accessor is not a signature-verification implementation; no cryptographic verification API exists here.",
+    "family": "v19.typescript.f0080"
+  }
+]

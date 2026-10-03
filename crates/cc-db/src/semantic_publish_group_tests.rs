@@ -6,6 +6,23 @@ use crate::semantic_outbox::{
 use std::sync::{mpsc, Arc};
 use std::time::Duration;
 
+// Snapshot columns follow the SELECT order below; naming these row shapes
+// keeps the fixture's state comparison readable without nested return types.
+type OutboxSnapshotRow = (
+    i64,
+    String,
+    Option<String>,
+    i64,
+    Option<f64>,
+    Option<String>,
+);
+type ManifestSnapshotRow = (String, String);
+type PublicationSnapshot = (
+    Vec<OutboxSnapshotRow>,
+    Vec<ManifestSnapshotRow>,
+    Option<u64>,
+);
+
 struct Fixture {
     _dir: tempfile::TempDir,
     db: Arc<IndexDb>,
@@ -78,20 +95,7 @@ impl Fixture {
             })
             .collect()
     }
-    fn snapshot(
-        &self,
-    ) -> (
-        Vec<(
-            i64,
-            String,
-            Option<String>,
-            i64,
-            Option<f64>,
-            Option<String>,
-        )>,
-        Vec<(String, String)>,
-        Option<u64>,
-    ) {
+    fn snapshot(&self) -> PublicationSnapshot {
         let mut tasks = self.conn.prepare("SELECT task_id,state,lease_token,attempt_count,available_at,last_error FROM semantic_outbox ORDER BY task_id").unwrap();
         let tasks = tasks
             .query_map([], |r| {

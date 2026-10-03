@@ -52,4 +52,20 @@ CARGO_HOME=/workspace/.cargo PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-un
 - [ ] cache warm 优化与 cache 验证：本轮未做。
 - [ ] 性能/资源/实际吞吐：后续另行授权；当前未知，不能宣称提速。
 - [x] branch `codex/bounded-db-publication` 已正常 push；connector 明确确认创建 [Draft PR #127](https://github.com/jyqj/codecortex/pull/127)，`draft=true`、`merged=false`，base `candidate/integrate-startup-gate-parallel-retry-20261003` 的 SHA 正是 `513a98c9a94b15ec77153df41af26fa3c8c0b5e8`。创建回执时间 `2026-10-03T19:31:22Z`，当时 head `13a18e0931e1d84242cd21b7a0c2b066208f193f`，2 commits、6 files。随后只追加此文档回执提交。
-- [ ] 远端 CI 未查询/未验证；此前 GitHub CLI REST 和 GraphQL 元数据读取均返回 Forbidden，connector 初次读取返回 Transport closed；后续 connector draft 创建已成功，不能把早期读取失败说成最终 PR 创建失败。未 merge/deploy。
+- [ ] 修复后的远端 CI 待验证；原失败见下方父级读取回执。此前 GitHub CLI REST 和 GraphQL 元数据读取均返回 Forbidden，connector 初次读取返回 Transport closed；后续 connector draft 创建已成功，不能把早期读取失败说成最终 PR 创建失败。未 merge/deploy。
+
+
+## PR127 同一交付 CI 收口
+
+保留原失败：父级已实读 [run 37148227715 / check job 111276455639](https://github.com/jyqj/codecortex/actions/runs/37148227715/job/111276455639)，security、msrv 成功；check 在 Rust 1.99 的 Clippy `-D warnings` 门失败，定位 `semantic_publish_group_tests.rs:83` 的 snapshot 嵌套 tuple 返回类型触发 `clippy::type_complexity`。这是父级传回的实际读取结果，本环境没有重新下载原远端日志，也不把它改写成通过。
+
+修复仅把直属新测试的返回类型抽为 `OutboxSnapshotRow`、`ManifestSnapshotRow`、`PublicationSnapshot` 三个命名 type；查询、测试断言和语义未改。不添加 allow，不弱化 `.github/workflows/ci.yml` 的原门。`semantic_publish.rs` 与独审固定提交 `9f47a21a75a7f997c83a58020919a4eedfb85b3b` byte-identical，Cargo.lock 和 CI 配置亦未变，可供独审再核专项 diff。
+
+本地只使用现有官方 direct **1.95.0**（未安装其他 toolchain）。Clippy 首次通过 cargo 子命令发现 Cargo_HOME/bin 的 rustup proxy 尝试访问只读默认 rustup home，即停止；随后直接调用已安装 `cargo-clippy`，并明确 `CARGO` 为同一官方 direct cargo。没有修改 HOME、安装工具链或更改权限。
+
+```sh
+CARGO_HOME=/workspace/.cargo CARGO=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:$PATH /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-clippy clippy --locked -p cc-db --all-targets -- -D warnings
+CARGO_HOME=/workspace/.cargo PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:$PATH cargo test --locked -p cc-db --lib semantic_publish::group_tests
+```
+
+同一 direct 1.95.0 的 `cargo-fmt --all -- --check` exit 0（显式 CARGO/RUSTFMT 指向官方 direct binary），最终 diff check 通过。相关 cc-db all-targets Clippy 原 warnings 门 exit 0：[ci-fix-clippy-1.95.log](bounded-db-publication-evidence/ci-fix-clippy-1.95.log)。9/9 专项通过：[ci-fix-tests-1.95.log](bounded-db-publication-evidence/ci-fix-tests-1.95.log)。本地 1.95 结果不能代替修复后远端 1.99 CI 的实际运行结果。新 facade 仍未接线、性能未知，未新增 cache 验证、未 merge/deploy。

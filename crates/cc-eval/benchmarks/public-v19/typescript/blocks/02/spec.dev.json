@@ -1,0 +1,193 @@
+[
+  {
+    "slug": "binary-header-size",
+    "domain": "exact_api",
+    "query": "Locate binHeaderSize, the helper computing MessagePack binary-field header length.",
+    "targets": [
+      "api/node/msgpack.ts|binHeaderSize"
+    ],
+    "rationale": "The API returns 2, 3 or 5 for the binary payload length bands.",
+    "links": [],
+    "family": "v19.typescript.f0021"
+  },
+  {
+    "slug": "live-source-record-lookup",
+    "domain": "exact_api",
+    "query": "Locate the source-file cache method finding a live record by source-file node ID without retaining it.",
+    "targets": [
+      "api/sourceFileCache.ts|SourceFileCache.findRecord"
+    ],
+    "rationale": "findRecord reads recordsByNodeId and does not create or retain a record.",
+    "links": [],
+    "family": "v19.typescript.f0023"
+  },
+  {
+    "slug": "concurrent-connect-dedup",
+    "domain": "behavior",
+    "query": "Where are concurrent asynchronous connection attempts coalesced into one promise, with that promise cleared when it settles?",
+    "targets": [
+      "api/async/client.ts|Client.connect"
+    ],
+    "rationale": "Closed clients reject, connected clients resolve, and connecting uses nullish assignment with finally cleanup.",
+    "links": [],
+    "family": "v19.typescript.f0025"
+  },
+  {
+    "slug": "async-request-pagination",
+    "domain": "behavior",
+    "query": "Where does the asynchronous request queue send a singleton directly, otherwise retrieve batch continuation pages and resolve or reject each queued item?",
+    "targets": [
+      "api/async/client.ts|Client.doBatch"
+    ],
+    "rationale": "A singleton bypasses batchRequests; multi-request pages accumulate responses; item errors and outer errors reject promises.",
+    "links": [],
+    "family": "v19.typescript.f0026"
+  },
+  {
+    "slug": "snapshot-selective-carryover",
+    "domain": "behavior",
+    "query": "Where does cache retention skip removed projects and changed/deleted paths while carrying unchanged file references into a new snapshot?",
+    "targets": [
+      "api/sourceFileCache.ts|SourceFileCache.retainForSnapshot"
+    ],
+    "rationale": "removedProjects are skipped; changedFiles and deletedFiles form an invalid-path set; remaining matching previous refs are carried over.",
+    "links": [],
+    "family": "v19.typescript.f0027"
+  },
+  {
+    "slug": "client-server-timing-contracts",
+    "domain": "architecture_facets",
+    "query": "Identify the client request timing shape and the server processing-time sample shape, including how their latency fields differ.",
+    "targets": [
+      "api/timing.ts|RequestTiming",
+      "api/timing.ts|ServerRequestTiming"
+    ],
+    "rationale": "Client timing includes round trip and transfer bytes plus optional folded server fields; server samples contain method, processingTimeMs and timestamp.",
+    "links": [],
+    "family": "v19.typescript.f0029"
+  },
+  {
+    "slug": "snapshot-and-lease-ownership",
+    "domain": "architecture_facets",
+    "query": "Identify both ownership paths for cached source files and their corresponding release entry points.",
+    "targets": [
+      "api/sourceFileCache.ts|SourceFileCache.set",
+      "api/sourceFileCache.ts|SourceFileCache.setForLease",
+      "api/sourceFileCache.ts|SourceFileCache.releaseSnapshot",
+      "api/sourceFileCache.ts|SourceFileCache.releaseLease"
+    ],
+    "rationale": "Snapshot/project references and direct leases share cached identity but use different ref keys and owner-index maps.",
+    "links": [],
+    "family": "v19.typescript.f0030"
+  },
+  {
+    "slug": "remote-node-source-adapter",
+    "domain": "architecture_facets",
+    "query": "Identify the source-file interface supplying binary offsets and node materialization, and the remote-node base that relies on that adapter.",
+    "targets": [
+      "api/node/node.infrastructure.ts|SourceFileInfo",
+      "api/node/node.infrastructure.ts|RemoteNodeBase"
+    ],
+    "rationale": "SourceFileInfo separates offsets/decoder/materialization from the concrete remote source file; RemoteNodeBase accesses the interface through sourceFile.",
+    "links": [],
+    "family": "v19.typescript.f0031"
+  },
+  {
+    "slug": "msgpack-string-encoding-flow",
+    "domain": "crossfile_chain",
+    "query": "Trace MessagePack string writing to the WTF-8 encoder before selecting a string-length header and copying encoded bytes.",
+    "targets": [
+      "api/node/msgpack.ts|MsgpackWriter.writeString",
+      "api/node/wtf8.ts|encodeWtf8"
+    ],
+    "rationale": "writeString calls encodeWtf8, chooses a header using encoded byte length, then copies the bytes into the output buffer.",
+    "links": [
+      [
+        0,
+        1,
+        "encodeWtf8(str)",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0033"
+  },
+  {
+    "slug": "remote-content-hash-access",
+    "domain": "crossfile_chain",
+    "query": "Trace a remote source-file contentHash getter to the binary-header hash reader and its word-order conversion.",
+    "targets": [
+      "api/node/node.ts|RemoteSourceFile.contentHash",
+      "api/node/node.infrastructure.ts|readSourceFileHash"
+    ],
+    "rationale": "The getter passes its DataView to readSourceFileHash; the reader formats hi1, hi0, lo1, lo0 as padded hex words.",
+    "links": [
+      [
+        0,
+        1,
+        "readSourceFileHash(this.view)",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0034"
+  },
+  {
+    "slug": "safe-lease-header-validation",
+    "domain": "config_error",
+    "query": "Where are source-file lease IDs rejected when zero or outside JavaScript safe-integer range?",
+    "targets": [
+      "api/node/node.infrastructure.ts|readSourceFileLease"
+    ],
+    "rationale": "The uint64 lease must be nonzero and at most Number.MAX_SAFE_INTEGER before conversion to Number.",
+    "links": [],
+    "family": "v19.typescript.f0036"
+  },
+  {
+    "slug": "sync-client-socket-rejection",
+    "domain": "config_error",
+    "query": "Where does the synchronous client explicitly reject socket-mode options before creating a channel?",
+    "targets": [
+      "api/sync/client.ts|Client.constructor"
+    ],
+    "rationale": "The constructor rejects !isSpawnOptions with Socket connections are not yet supported in the sync client.",
+    "links": [],
+    "family": "v19.typescript.f0037"
+  },
+  {
+    "slug": "timing-percentile-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/timing.ts only, locate a p99 or percentile latency estimator.",
+    "scope": "api/timing.ts",
+    "absent_tokens": [
+      "percentile",
+      "p99"
+    ],
+    "rationale": "The entire module keeps totals and a five-request ring and folds server timings; it provides no percentile estimator.",
+    "family": "v19.typescript.f0038"
+  },
+  {
+    "slug": "cache-disk-persistence-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/sourceFileCache.ts only, locate serialization of the cache to persistent disk storage.",
+    "scope": "api/sourceFileCache.ts",
+    "absent_tokens": [
+      "node:fs",
+      "writeFile",
+      "serialize"
+    ],
+    "rationale": "The entire module stores Maps, Sets and source objects in memory; ownership release and clear alter local maps, with no disk writer or serializer.",
+    "family": "v19.typescript.f0039"
+  },
+  {
+    "slug": "modifier-symbol-resolution-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/ast/modifiers.ts only, locate identifier binding or declaration-symbol resolution.",
+    "scope": "ast/modifiers.ts",
+    "absent_tokens": [
+      "resolveSymbol",
+      "bind",
+      "getSymbol"
+    ],
+    "rationale": "The complete module has one switch mapping syntax kinds to flags; it does not bind identifiers or resolve declarations.",
+    "family": "v19.typescript.f0040"
+  }
+]

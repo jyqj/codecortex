@@ -1,0 +1,13 @@
+--- PR116/analyze.py
++++ baseline/analyze.py
+@@ -12,8 +12,8 @@
+         for line in f:yield json.loads(line)
+ def write(p,v):p.write_text(json.dumps(v,ensure_ascii=False,indent=2)+'\n')
+ s=read(OUT/'summary.json');build=read(OUT/'build-receipt.json')
+-assert build['source_sha']==s['source_sha']=='807f4710495a38bc6631549da2ab9623c83684b8'
+-assert s['production_sha']=='c73128b500c2a19daa8a293caa52afb711b03516'
++assert build['source_sha']==s['source_sha']=='098ebd9c08031e0b652e7b021d8abbc9e8b19c3d'
++assert s['production_sha']=='098ebd9c08031e0b652e7b021d8abbc9e8b19c3d'
+ assert build['build_exit_code']==0 and build['guard_stop'] is None
+ assert sorted(build['compiler_artifact']['features'])==['semantic','semantic-http']
+ assert build['compiler_artifact']['profile']['opt_level']=='3'

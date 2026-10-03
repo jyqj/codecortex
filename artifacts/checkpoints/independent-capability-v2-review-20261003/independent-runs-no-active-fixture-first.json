@@ -1,0 +1,61 @@
+[
+  {
+    "name": "independent-db",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-db",
+      "--lib",
+      "independent_v2",
+      "--offline",
+      "--",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "cwd": "harness",
+    "exit_code": 0,
+    "seconds": 1.218912930999977,
+    "log": "independent-db.log"
+  },
+  {
+    "name": "independent-default",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--lib",
+      "independent_v2",
+      "--offline",
+      "--",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "cwd": "harness",
+    "exit_code": 0,
+    "seconds": 5.461718685000051,
+    "log": "independent-default.log"
+  },
+  {
+    "name": "independent-http",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--lib",
+      "independent_v2",
+      "--offline",
+      "--",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "cwd": "harness",
+    "exit_code": 101,
+    "seconds": 17.659935732000008,
+    "log": "independent-http.log"
+  }
+]

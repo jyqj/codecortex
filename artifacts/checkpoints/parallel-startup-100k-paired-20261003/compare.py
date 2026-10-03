@@ -57,7 +57,13 @@ for label in ['baseline','candidate']:
    if x['event']=='returned' and x['sequence'] in hp:httpcounts[name].setdefault('server_duration_ms_values',[]).append((x['time_ns']-hp[x['sequence']]['time_ns'])/1e6)
    if x['event']=='entered':hp[x['sequence']]=x
   httpcounts[name]['server_duration_ms']=stats(httpcounts[name].pop('server_duration_ms_values',[]))
-  httpcounts[name]['request_enter_gap_ms']=stats([(b['time_ns']-a['time_ns'])/1e6 for a,b in zip(ent,ent[1:])])
+  append_gaps=[(b['time_ns']-a['time_ns'])/1e6 for a,b in zip(ent,ent[1:])]
+  chronological=sorted(ent,key=lambda x:x['time_ns'])
+  httpcounts[name]['request_enter_gap_ms']=stats([(b['time_ns']-a['time_ns'])/1e6 for a,b in zip(chronological,chronological[1:])])
+  httpcounts[name]['request_enter_gap_order']='time_ns_sorted'
+  httpcounts[name]['request_enter_gap_append_order_diagnostic_ms']=stats(append_gaps)
+  httpcounts[name]['append_timestamp_inversion_count']=sum(gap<0 for gap in append_gaps)
+  httpcounts[name]['request_enter_gap_note']='Original fixture samples entered time_ns before acquiring its logging lock, then appends under lock. Signed gaps in append order diagnose timestamp/log-order inversions, not negative elapsed arrival intervals. Reported request_enter_gap_ms uses sorted recorded time_ns; body read precedes this timestamp, so it is not socket arrival spacing.'
  cold=next((x['result']['wall_seconds'] for x in s['checks'] if x['name']=='cold_index'),None)
  ready=next((x['result']['drain_wall_seconds'] for x in s['checks'] if x['name']=='ready_manifest_integrity_fk'),None)
  tail=read(case/'cleanup-tail-db.json') if (case/'cleanup-tail-db.json').exists() else None

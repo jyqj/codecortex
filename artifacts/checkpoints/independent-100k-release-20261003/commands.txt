@@ -1,0 +1,66 @@
+# Fresh task; initial cwd /workspace, repository /workspace/codecortex.
+# All new repo content is under artifacts/checkpoints/independent-100k-release-20261003/.
+# Read-only discovery (no AGENTS.md or local SKILL files found):
+pwd
+rg --files -g AGENTS.md -g '*SKILL*' -g Cargo.toml -g '*synthetic*' -g '*100k*' -g '*50k*' -g '!heldout/**' -g '!target/**'
+git status --short
+git remote -v
+git rev-parse HEAD
+cat CONTRIBUTING.md
+cat Cargo.toml
+cat crates/cc-server/Cargo.toml
+cat crates/cc-eval/Cargo.toml
+cat HANDOVER-20261003.md
+find .. -name AGENTS.md -not -path '*/target/*'
+# Initial fixed commits absent locally; fetch succeeded:
+git fetch origin 574f7598662334c63e020da136c87f4f7281554d 70c2a640160060e34cd530e18e02a8c95885063f
+git switch -c evidence/independent-100k-release-20261003 574f7598662334c63e020da136c87f4f7281554d
+git show 70c2a640160060e34cd530e18e02a8c95885063f:artifacts/checkpoints/empty-test-edges-independent-review-20261003/run_cold_product.py
+cat scripts/p7_release_resource_preparation.py
+cat scripts/p7_stdio_build_receipt.py
+git merge-base --is-ancestor c70c68f2ff9b4ac40c635652858f56d2d0a06518 HEAD
+df -h .
+free -m
+cat /sys/fs/cgroup/memory.max
+cat /sys/fs/cgroup/cpu.max
+rustc -V  # exit 127, initially unavailable
+cargo -V  # exit 127, initially unavailable
+ls /root/.cargo/bin  # Permission denied; stopped this action, no escalation or alternate access
+ls /home/agent/.cargo/bin  # own HOME location absent
+# Public Rust toolchain installation, no source upload. All writes stay in authorized directory:
+curl --fail --location --max-time 60 https://sh.rustup.rs -o artifacts/checkpoints/independent-100k-release-20261003/rustup-init.sh
+mkdir -p artifacts/checkpoints/independent-100k-release-20261003/runtime/tmp
+CARGO_HOME=$PWD/artifacts/checkpoints/independent-100k-release-20261003/runtime/cargo RUSTUP_HOME=$PWD/artifacts/checkpoints/independent-100k-release-20261003/runtime/rustup TMPDIR=$PWD/artifacts/checkpoints/independent-100k-release-20261003/runtime/tmp sh artifacts/checkpoints/independent-100k-release-20261003/rustup-init.sh -y --no-modify-path --profile minimal --default-toolchain 1.95.0 > artifacts/checkpoints/independent-100k-release-20261003/toolchain-install.log 2>&1
+python3 artifacts/checkpoints/independent-100k-release-20261003/build.py > artifacts/checkpoints/independent-100k-release-20261003/build-run.log 2>&1
+# Exact cargo argv, environment, source tree/hash, binary hash, artifact/profile and wall time: build-receipt.json.
+# Attempt 01: original run.py saved as run-attempt01.py; generated nested fixture accidentally inherited Git history.
+python3 artifacts/checkpoints/independent-100k-release-20261003/run.py > artifacts/checkpoints/independent-100k-release-20261003/run.log 2>&1
+kill -INT 4615  # intentional stop; attempt01 retains exit 1, traceback, logs and not_run
+# Move attempt01 observations unchanged under attempt01/. Added empty nested synthetic git repository.
+# Attempt 02: original script saved as run-attempt02.py; KeyError due to misspelled assertion table name.
+python3 artifacts/checkpoints/independent-100k-release-20261003/run.py > artifacts/checkpoints/independent-100k-release-20261003/run.log 2>&1
+# Move attempt02 observations unchanged under attempt02/. Correct only cochange_edges -> co_change_edges.
+# Attempt 03: final run.py, same baseline, binary, seed/size, deadlines and resource guards.
+python3 artifacts/checkpoints/independent-100k-release-20261003/run.py > artifacts/checkpoints/independent-100k-release-20261003/run.log 2>&1
+# All subprocess argv and RPC arguments are fully specified in build.py/run.py and captured RPC logs.
+gh auth status  # existing GH_TOKEN invalid; no credentials printed, no alternate channel used
+
+# Remote read: exit 1, GraphQL Forbidden; specific action stopped.
+git ls-remote origin refs/pull/101/head > artifacts/checkpoints/independent-100k-release-20261003/remote-baseline.txt
+gh pr view 101 --repo jyqj/codecortex --json number,headRefOid,baseRefName,isDraft,url > artifacts/checkpoints/independent-100k-release-20261003/remote-pr101.json 2> artifacts/checkpoints/independent-100k-release-20261003/remote-pr101-error.log
+# Post-failure: read-only driver.db_report(repo) + driver.totals(src/cache); no product rerun or timeout change.
+# Captured failure-db.json, last-observed-status.json (last retained RPC), retained-local-data.json.
+python3 artifacts/checkpoints/independent-100k-release-20261003/analyze.py > artifacts/checkpoints/independent-100k-release-20261003/analyze.log
+python3 artifacts/checkpoints/independent-100k-release-20261003/verify.py > artifacts/checkpoints/independent-100k-release-20261003/verify.log
+
+# Postprocessing: byte-preserving gzip of full cold-result.json and summary.json for all 3 attempts, and toolchain-install.log.
+# analyze.py/verify.py accept either uncompressed or gzipped JSON; no test outcomes/thresholds changed.
+python3 artifacts/checkpoints/independent-100k-release-20261003/verify.py > artifacts/checkpoints/independent-100k-release-20261003/verify.log
+# Authorized delivery, no force/merge/deploy; API draft blocked by Forbidden, no alternate channel:
+git add -- artifacts/checkpoints/independent-100k-release-20261003
+git diff --cached --check
+git commit -m "test: retain fixed PR101 synthetic 100k release timeout evidence"
+git push -u origin evidence/independent-100k-release-20261003
+git ls-remote origin refs/heads/evidence/independent-100k-release-20261003
+
+# Post-failure inspection heredoc is preserved verbatim in inspect_failure.py (not rerun after recording).

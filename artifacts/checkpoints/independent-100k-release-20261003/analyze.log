@@ -1,0 +1,32 @@
+{
+  "attempts": [
+    {
+      "name": "attempt01",
+      "status": "failed",
+      "wall_seconds": 72.25152225000005,
+      "peak_product_root_rss_bytes": 1899958272,
+      "runner_exit_code": 1
+    },
+    {
+      "name": "attempt02",
+      "status": "failed",
+      "wall_seconds": 35.168011275000026,
+      "peak_product_root_rss_bytes": 1713823744,
+      "runner_exit_code": 1
+    },
+    {
+      "name": "attempt03",
+      "status": "failed",
+      "wall_seconds": 341.135546776,
+      "peak_product_root_rss_bytes": 2032357376,
+      "runner_exit_code": 1
+    }
+  ],
+  "limitations": [
+    "/proc/<pid>/task/<tid>/children unavailable in this mount: descendant coverage incomplete; root RSS must not be called full process-tree RSS",
+    "20ms requested sampler interval; Python/GIL/IO pauses and sampling gaps can miss transient peaks; VmHWM is root-process kernel high-water only",
+    "RSS counts resident pages, not PSS; known-process RSS sums can double-count shared pages",
+    "build resources measure cgroup memory including page cache/other processes, not build process-tree RSS",
+    "single measured successful 100k run, simple one-function files and deterministic synthetic constant vectors; no statistical tail, realistic corpus or complete V20 claim"
+  ]
+}

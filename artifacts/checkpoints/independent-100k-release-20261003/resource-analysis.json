@@ -1,0 +1,179 @@
+{
+  "limitations": [
+    "/proc/<pid>/task/<tid>/children unavailable in this mount: descendant coverage incomplete; root RSS must not be called full process-tree RSS",
+    "20ms requested sampler interval; Python/GIL/IO pauses and sampling gaps can miss transient peaks; VmHWM is root-process kernel high-water only",
+    "RSS counts resident pages, not PSS; known-process RSS sums can double-count shared pages",
+    "build resources measure cgroup memory including page cache/other processes, not build process-tree RSS",
+    "single measured successful 100k run, simple one-function files and deterministic synthetic constant vectors; no statistical tail, realistic corpus or complete V20 claim"
+  ],
+  "attempts": [
+    {
+      "name": "attempt01",
+      "status": "failed",
+      "wall_seconds": 72.25152225000005,
+      "failures": [
+        {
+          "phase": "backfill-drain",
+          "type": "KeyboardInterrupt",
+          "error": "",
+          "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/run.py\", line 104, in <module>\n    time.sleep(.2)\nKeyboardInterrupt\n"
+        }
+      ],
+      "not_run": [
+        "ready_manifest_integrity_fk",
+        "bounded_concurrency",
+        "normal_exit",
+        "reopen_stability"
+      ],
+      "phases": {
+        "startup": {
+          "samples": 2,
+          "peak_product_root_rss_bytes": 7122944,
+          "peak_product_root_vmhwm_bytes": 7323648,
+          "peak_known_product_model_runner_sum_rss_bytes": 27353088,
+          "peak_cgroup_memory_current_bytes": 2634862592,
+          "tree_coverage_error_samples": 2,
+          "maximum_sample_gap_ms": 20.628454
+        },
+        "cold-empty-index-build": {
+          "samples": 1183,
+          "peak_product_root_rss_bytes": 1645387776,
+          "peak_product_root_vmhwm_bytes": 1700962304,
+          "peak_known_product_model_runner_sum_rss_bytes": 1682681856,
+          "peak_cgroup_memory_current_bytes": 5894279168,
+          "tree_coverage_error_samples": 1183,
+          "maximum_sample_gap_ms": 42.421716
+        },
+        "backfill-drain": {
+          "samples": 1950,
+          "peak_product_root_rss_bytes": 1899958272,
+          "peak_product_root_vmhwm_bytes": 1900220416,
+          "peak_known_product_model_runner_sum_rss_bytes": 1962229760,
+          "peak_cgroup_memory_current_bytes": 5345759232,
+          "tree_coverage_error_samples": 1950,
+          "maximum_sample_gap_ms": 24.743355
+        }
+      },
+      "runner_exit_code": 1,
+      "mock_http_events": {
+        "entered": 8192,
+        "returned": 8192
+      },
+      "mock_http_items": {
+        "entered": 8192,
+        "returned": 8192
+      },
+      "peak_product_root_rss_bytes": 1899958272
+    },
+    {
+      "name": "attempt02",
+      "status": "failed",
+      "wall_seconds": 35.168011275000026,
+      "failures": [
+        {
+          "phase": "cold-empty-index-build",
+          "type": "KeyError",
+          "error": "'cochange_edges'",
+          "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/run.py\", line 101, in <module>\n    assert held[\"counts\"][\"edge_tables\"][\"cochange_edges\"]==0 and held[\"counts\"][\"edge_tables\"][\"test_edges\"]==0,held\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^\nKeyError: 'cochange_edges'\n"
+        }
+      ],
+      "not_run": [
+        "ready_manifest_integrity_fk",
+        "bounded_concurrency",
+        "normal_exit",
+        "reopen_stability"
+      ],
+      "phases": {
+        "startup": {
+          "samples": 2,
+          "peak_product_root_rss_bytes": 7053312,
+          "peak_product_root_vmhwm_bytes": 7192576,
+          "peak_known_product_model_runner_sum_rss_bytes": 27242496,
+          "peak_cgroup_memory_current_bytes": 4455870464,
+          "tree_coverage_error_samples": 2,
+          "maximum_sample_gap_ms": 20.597669
+        },
+        "cold-empty-index-build": {
+          "samples": 1372,
+          "peak_product_root_rss_bytes": 1713823744,
+          "peak_product_root_vmhwm_bytes": 1714130944,
+          "peak_known_product_model_runner_sum_rss_bytes": 1783087104,
+          "peak_cgroup_memory_current_bytes": 7715446784,
+          "tree_coverage_error_samples": 1372,
+          "maximum_sample_gap_ms": 54.850252
+        }
+      },
+      "runner_exit_code": 1,
+      "mock_http_events": {
+        "entered": 1024,
+        "returned": 1024
+      },
+      "mock_http_items": {
+        "entered": 1024,
+        "returned": 1024
+      },
+      "peak_product_root_rss_bytes": 1713823744
+    },
+    {
+      "name": "attempt03",
+      "status": "failed",
+      "wall_seconds": 341.135546776,
+      "failures": [
+        {
+          "phase": "backfill-drain",
+          "type": "TimeoutError",
+          "error": "backfill did not become ready in 300s",
+          "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/independent-100k-release-20261003/run.py\", line 106, in <module>\n    if time.monotonic()>=deadline:raise TimeoutError(\"backfill did not become ready in 300s\")\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: backfill did not become ready in 300s\n"
+        }
+      ],
+      "not_run": [
+        "ready_manifest_integrity_fk",
+        "bounded_concurrency",
+        "normal_exit",
+        "reopen_stability"
+      ],
+      "phases": {
+        "startup": {
+          "samples": 2,
+          "peak_product_root_rss_bytes": 6987776,
+          "peak_product_root_vmhwm_bytes": 7122944,
+          "peak_known_product_model_runner_sum_rss_bytes": 27402240,
+          "peak_cgroup_memory_current_bytes": 6022139904,
+          "tree_coverage_error_samples": 2,
+          "maximum_sample_gap_ms": 20.58388
+        },
+        "cold-empty-index-build": {
+          "samples": 1166,
+          "peak_product_root_rss_bytes": 1664888832,
+          "peak_product_root_vmhwm_bytes": 1689006080,
+          "peak_known_product_model_runner_sum_rss_bytes": 1702313984,
+          "peak_cgroup_memory_current_bytes": 9269948416,
+          "tree_coverage_error_samples": 1166,
+          "maximum_sample_gap_ms": 30.559688
+        },
+        "backfill-drain": {
+          "samples": 14842,
+          "peak_product_root_rss_bytes": 2032357376,
+          "peak_product_root_vmhwm_bytes": 2032590848,
+          "peak_known_product_model_runner_sum_rss_bytes": 2095992832,
+          "peak_cgroup_memory_current_bytes": 9594331136,
+          "tree_coverage_error_samples": 14842,
+          "maximum_sample_gap_ms": 27.725475
+        }
+      },
+      "runner_exit_code": 1,
+      "mock_http_events": {
+        "entered": 29696,
+        "returned": 29696
+      },
+      "mock_http_items": {
+        "entered": 29696,
+        "returned": 29696
+      },
+      "peak_product_root_rss_bytes": 2032357376
+    }
+  ],
+  "build_resources": {
+    "max_cgroup_memory_current": 3890491392
+  }
+}

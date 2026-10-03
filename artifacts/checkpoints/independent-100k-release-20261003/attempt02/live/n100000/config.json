@@ -1,0 +1,32 @@
+{
+  "auto_index": {
+    "enabled": false
+  },
+  "indexing": {
+    "max_concurrent_parse": 4
+  },
+  "query": {
+    "strategy": "local",
+    "deadline_ms": 30000,
+    "lane_timeout_ms": 20000,
+    "semantic_timeout_ms": 5000,
+    "semantic_top_k": 24
+  },
+  "semantic": {
+    "enabled": true,
+    "network_opt_in": true,
+    "allow_query_network": false,
+    "model_id": "fake/resource-preparation",
+    "dimensions": 128,
+    "max_input_tokens": 8192,
+    "max_batch_items": 16,
+    "endpoint": "http://127.0.0.1:43403/v1",
+    "allow_http": true,
+    "api_key_ref": "env:P7_RESOURCE_DUMMY",
+    "max_concurrent": 4,
+    "max_concurrent_per_project": 2,
+    "retry_max_attempts": 1,
+    "retry_total_deadline_ms": 120000,
+    "breaker_failure_threshold": 100
+  }
+}

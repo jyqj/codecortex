@@ -1,0 +1,15 @@
+# Bounded independent status-fence repair review
+
+Fixed PR54 `3dceedf3dcee851b3b2e4d4938bba11d76c63326`. Prior PR52 failure and all original test/assertion bytes remain retained. The candidate changes production capability_status.rs, plus previously integrated cache/resource/review changes; do not describe this as an assertion-only fix or assume old production fingerprints match.
+
+Only new review entry/support fixtures and this evidence directory are owned. No production, primary test, ledger, dependency or cache.rs edit. Canonical source is frozen before repeated runs.
+
+Independent L2 observer fixture compiles the exact candidate capability_status.rs non-test prefix into an isolated module and uses its existing private observer. Actual cc-server QueryServices, SemanticRuntime, semantic wiring subsystem and SQLite database are used. Test bridge dereferences the real QueryServices; its otherwise inaccessible query_encoding_active method panics if executed. Fixtures explicitly disable network opt-in/query authority, so this unrelated private authorization path must never run. Public setters install the same recall/wiring/degradation slots as private attach; no fake status implementation or manual vector cache insertion. The injected synthetic provider gates actual document embedding and actual worker manifest commit.
+
+Old-path counterexample: compile the old 1a6f602 non-test status prefix with only renamed entry/observer argument/callback immediately before semantic projection. Release a real held worker after the old root capture. Check real epoch advancement, ready publication and the incorrectly old returned epoch. Do not count this as executing the old original product binary; PR52's actual old stdio failure remains the original product evidence.
+
+Candidate cases: forced publication after root capture discards first snapshot, stable second attempt returns root generation identical to independent coverage; real rebuild+worker publication on every observer exhausts exactly three attempts, retryable error with null generation/no ready/publication claim; stable coverage/pending/root agree; configured-space mismatch remains partial/backfilling with zero configured dense publication.
+
+Canonical bounds: original unchanged p7_v11_generation_public complete target 20 runs with semantic-http; independent four-case fixture 10 runs with semantic and 10 with semantic-http. All commands/actual binary digests/source prefixes/raw JSON bound, failures retained rather than rerun to green. Original public tool test exercises real built product stdio with toy loopback. Observer fixture is L2 exact-source instrumentation, not a public API or pure product-black-box test. No live provider, real credential or source egress. D1/D2 unchanged.
+
+Status internal consistency is evaluated within one accepted snapshot. A later legitimate query/status may have a higher epoch; do not make cross-request epoch equality a general requirement. Full V05/V11/P7-014 and unseen provider/config/runtime races are not closed by this bounded repair review.

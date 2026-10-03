@@ -1,0 +1,11 @@
+# first-wins 最小后续修复边界（提议，未实施）
+
+实际反例已经用独立进程和真实shared gate/decorator确认，不改配置数字或上限断言来规避。
+
+最小方案可只触及已授权 semantic_wiring/semantic_runtime：显式bounded config初始化返回原共享gate后，读effective snapshot与requested有限上限比较。如果有效global比requested大，或requested project cap存在但effective None/更大，明确CcError::Config拒绝装配；有效更严格可以保留并如实报告。runtime production factory装配点复核/共享同一guard，不能用自制semaphore或把configured数字当effective限额。
+
+保留现有singleton Arc、全部in-flight permit和waiters，避免替换gate产生双重全局预算。不改ProviderGate框架、schema、配置或provider调用路径，不造线程调度框架。
+
+需要父亲审定的政策：这个方案会把已有“先unlimited后显式bounded但仍默默unlimited”转换为明确启动/装配失败。若要求自动收紧已存活gate，必须另外授权cc-semantic admission/shared-gate生命周期的最小扩边，涉及现存permit/waiters，不能本候选自行扩大。
+
+后续精确验证应包含fresh显式4/2真实shared装配与decorated provider峰值、先permissive后bounded拒绝且后者0calls、有效更严格配置报告、neighbor和旧in-flight permit保全。当前局部gate测试不算这些共享装配验证通过。

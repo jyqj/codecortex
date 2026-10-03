@@ -1,0 +1,20 @@
+   Compiling cc-semantic v1.0.0 (/workspace/bounded-parallel/crates/cc-semantic)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.48s
+     Running tests/bounded_parallel.rs (/workspace/codecortex/target/debug/deps/bounded_parallel-76fe7340d767772b)
+
+running 7 tests
+test ordinary_document_edit_fences_old_attempt_while_neighbor_publishes ... ok
+test both_parallel_errors_propagate_after_join_and_retry_each_independent_token ... ok
+test ordinary_provider_failure_retries_both_and_stops_new_claims ... ok
+close joined=2 provider_peak=2 started_attempts=2 subsequent_claims=0
+test close_joins_two_started_attempts_and_restores_pending_with_spent_attempts ... ok
+test ordinary_space_switch_fences_started_publications_and_stops_claiming_new_space ... ok
+test unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls ... ok
+bounded width=0 provider_peak=1 claims=16 unique_tokens=16 done=16 pending=24
+bounded width=1 provider_peak=1 claims=16 unique_tokens=16 done=16 pending=24
+bounded width=2 provider_peak=2 claims=16 unique_tokens=16 done=16 pending=24
+bounded width=4 provider_peak=2 claims=16 unique_tokens=16 done=16 pending=24
+test width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.58s
+

@@ -1,0 +1,67 @@
+   Compiling serde_core v1.0.228
+   Compiling memchr v2.8.0
+   Compiling serde v1.0.228
+   Compiling chacha20 v0.10.2
+   Compiling serde_json v1.0.149
+   Compiling tracing-core v0.1.36
+   Compiling rand v0.10.3
+   Compiling aho-corasick v1.1.4
+   Compiling log v0.4.29
+   Compiling r2d2 v0.8.10
+   Compiling uuid v1.23.0
+   Compiling tracing v0.1.44
+   Compiling r2d2_sqlite v0.35.0
+   Compiling regex-automata v0.4.14
+   Compiling chrono v0.4.44
+   Compiling cc-model v1.0.0 (/workspace/bounded-parallel/crates/cc-model)
+   Compiling regex v1.12.3
+   Compiling cc-db v1.0.0 (/workspace/bounded-parallel/crates/cc-db)
+   Compiling cc-semantic v1.0.0 (/workspace/bounded-parallel/crates/cc-semantic)
+error[E0277]: the trait bound `usize: FromSql` is not satisfied
+   --> crates/cc-semantic/tests/bounded_parallel.rs:128:176
+    |
+128 | ...FROM semantic_manifest",[],|r|r.get::<_,usize>(0)).unwrap(),0);
+    |                                    ---     ^^^^^ the trait `FromSql` is not implemented for `usize`
+    |                                    |
+    |                                    required by a bound introduced by this call
+    |
+    = help: the following other types implement trait `FromSql`:
+              f32
+              f64
+              i16
+              i32
+              i64
+              i8
+              isize
+              u16
+            and 2 others
+note: required by a bound in `Row::<'_>::get`
+   --> /workspace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rusqlite-0.40.1/src/row.rs:285:32
+    |
+285 |     pub fn get<I: RowIndex, T: FromSql>(&self, idx: I) -> Result<T> {
+    |                                ^^^^^^^ required by this bound in `Row::<'_>::get`
+
+error[E0277]: the trait bound `usize: FromSql` is not satisfied
+   --> crates/cc-semantic/tests/bounded_parallel.rs:134:154
+    |
+134 | ...y='d0' AND doc_version='v1'",[],|r|r.get(0)).unwrap();assert_eq!(count,0);
+    |                                         ^^^ the trait `FromSql` is not implemented for `usize`
+    |
+    = help: the following other types implement trait `FromSql`:
+              f32
+              f64
+              i16
+              i32
+              i64
+              i8
+              isize
+              u16
+            and 2 others
+note: required by a bound in `Row::<'_>::get`
+   --> /workspace/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rusqlite-0.40.1/src/row.rs:285:32
+    |
+285 |     pub fn get<I: RowIndex, T: FromSql>(&self, idx: I) -> Result<T> {
+    |                                ^^^^^^^ required by this bound in `Row::<'_>::get`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `cc-semantic` (test "bounded_parallel") due to 2 previous errors

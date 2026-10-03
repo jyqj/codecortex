@@ -649,6 +649,11 @@ fn local_and_graph_cache_axes_force_real_misses_and_preserve_equivalent_sets() {
         overlay_file_paths,
         Some(vec!["outside/needle.py".into()])
     );
+    axis!("empty-boost", boost_file_paths, Some(vec![]));
+    axis!("empty-conversation", conversation_queries, Some(vec![]));
+    axis!("empty-recent", recent_file_paths, Some(vec![]));
+    axis!("empty-pinned", pinned_file_paths, Some(vec![]));
+    axis!("empty-overlay", overlay_file_paths, Some(vec![]));
     let mut receipts = Vec::new();
     for (axis, request) in variants {
         let before = engine.cache_stats();
@@ -791,6 +796,9 @@ fn local_and_graph_cache_axes_force_real_misses_and_preserve_equivalent_sets() {
         assert!(Arc::ptr_eq(&cold, &warm));
         receipts.push(json!({"axis":format!("graph-{axis}"),"expected":"miss then hit","same_allocation_on_warm":true}));
     }
+    // More than32 variants can legitimately evict the early baseline.
+    // Rewarm explicitly before testing dependency-specific invalidation.
+    engine.search(&base).unwrap();
     let before = db.reads().read_generation().unwrap();
     let stats = engine.cache_stats();
     db.writes()

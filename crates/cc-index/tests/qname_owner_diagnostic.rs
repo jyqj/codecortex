@@ -85,14 +85,14 @@ fn go_long_method_fragments_have_exact_method_owner_not_neighbor_or_type() {
 }
 
 #[test]
-fn python_nested_symbol_baseline_requires_scope_review_before_public_identity() {
+fn python_nested_symbol_preserves_lexical_function_scope() {
     let text = "def outer():\n    def inner():\n        return '中文'\n    return inner()\n";
     let parsed = ParserRegistry::new()
         .parse("nested.py", text, Language::Python)
         .unwrap();
     let inner = parsed.symbols.iter().find(|s| s.name == "inner").unwrap();
-    // A stored parser qname is not automatically a qualified lexical identity.
-    // Do not paper over this with chunk breadcrumbs during hydration.
-    assert_eq!(inner.qname.as_deref(), Some("inner"));
-    assert_eq!(inner.container, None);
+    assert_eq!(inner.qname.as_deref(), Some("outer.inner"));
+    assert_eq!(inner.container.as_deref(), Some("outer"));
+    assert_eq!(inner.kind, cc_model::SymbolKind::Function);
+    assert_eq!(inner.receiver_type, None);
 }

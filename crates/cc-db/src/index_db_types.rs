@@ -212,6 +212,7 @@ pub struct ChunkCandidateRow {
 /// Full chunk row with decoded text, returned by `chunk_rows_by_ids`.
 #[derive(Debug, Clone)]
 pub struct ChunkDetailRow {
+    pub qname: Option<String>,
     pub document: Option<cc_model::identity::DocumentRef>,
     pub source_evidence: Option<cc_model::source::ChunkSource>,
     pub chunk_id: String,

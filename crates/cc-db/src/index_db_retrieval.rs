@@ -796,7 +796,9 @@ impl<'a> RetrievalReadModel<'a> {
                 work,
             });
         }
-        let conn = self.db.read_conn()?;
+        let pooled = self.db.read_conn()?;
+        let snapshot = pooled.unchecked_transaction().map_err(db_err)?;
+        let conn = &*snapshot;
         let mut results = Vec::with_capacity(chunk_ids.len());
         for batch in chunk_ids.chunks(IN_BATCH_SIZE) {
             let sql = format!(
@@ -917,7 +919,26 @@ impl<'a> RetrievalReadModel<'a> {
                             ));
                         }
                     }
+                    let name: Option<String> = row.get(6)?;
+                    let kind: Option<String> = row.get(7)?;
+                    let qname = crate::symbol_identity_store::load_on(
+                        conn,
+                        &chunk_id,
+                        &path,
+                        document.as_ref(),
+                        source_evidence.as_ref(),
+                        name.as_deref(),
+                        kind.as_deref(),
+                    )
+                    .map_err(|e| {
+                        rusqlite::Error::FromSqlConversionFailure(
+                            11,
+                            rusqlite::types::Type::Text,
+                            Box::new(e),
+                        )
+                    })?;
                     Ok(ChunkDetailRow {
+                        qname,
                         document,
                         source_evidence,
                         chunk_id,

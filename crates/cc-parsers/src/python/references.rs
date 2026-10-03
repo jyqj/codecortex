@@ -46,7 +46,7 @@ impl<'a> Extractor<'a> {
                     let name = text(name, self.source).to_string();
                     let sym = self
                         .symbols
-                        .get(&(node.start_position().row as u32 + 1, name.clone()))
+                        .get(&(declaration_line(node), name.clone()))
                         .copied();
                     scope
                         .definitions
@@ -207,7 +207,7 @@ impl<'a> Extractor<'a> {
                     .unwrap_or("");
                 let symbol = self
                     .symbols
-                    .get(&(node.start_position().row as u32 + 1, name.into()))
+                    .get(&(declaration_line(node), name.into()))
                     .copied();
                 let is_class = node.kind() == "class_definition";
                 let mut scope = Scope {
@@ -389,4 +389,14 @@ pub(super) fn extract(
     e.calls
         .sort_by_key(|c| (c.line, c.start_col, c.edge_id.clone()));
     (e.refs, e.calls)
+}
+
+// Decorated definitions have one canonical symbol on the wrapper envelope.
+fn declaration_line(node: Node<'_>) -> u32 {
+    node.parent()
+        .filter(|p| p.kind() == "decorated_definition")
+        .unwrap_or(node)
+        .start_position()
+        .row as u32
+        + 1
 }

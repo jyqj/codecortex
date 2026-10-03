@@ -104,6 +104,21 @@ CREATE TABLE IF NOT EXISTS chunks (
 CREATE INDEX IF NOT EXISTS idx_chunks_file ON chunks(file_path, chunk_index);
 CREATE INDEX IF NOT EXISTS idx_chunks_symbol ON chunks(symbol_name);
 
+-- Original parser declaration authority, published in the file transaction.
+CREATE TABLE IF NOT EXISTS chunk_symbol_identity (
+    chunk_id TEXT PRIMARY KEY REFERENCES chunks(chunk_id) ON DELETE CASCADE,
+    file_path TEXT NOT NULL,
+    doc_key TEXT NOT NULL REFERENCES document_manifest(doc_key) ON DELETE CASCADE,
+    doc_version TEXT NOT NULL,
+    symbol_id TEXT NOT NULL,
+    format_version INTEGER NOT NULL CHECK(format_version=1),
+    record_json TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS chunk_symbol_identity_path ON chunk_symbol_identity(file_path);
+CREATE TRIGGER IF NOT EXISTS chunk_symbol_identity_delete AFTER DELETE ON chunks BEGIN
+    DELETE FROM chunk_symbol_identity WHERE chunk_id=OLD.chunk_id;
+END;
+
 -- rowid aligned with chunks.rowid (application-maintained).
 -- Explicit cleanup also works on rebuild connections with FK checks disabled.
 CREATE TRIGGER IF NOT EXISTS chunk_document_delete AFTER DELETE ON chunks BEGIN

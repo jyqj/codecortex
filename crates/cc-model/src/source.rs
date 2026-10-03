@@ -199,6 +199,37 @@ pub struct SyntaxBoundary {
     #[serde(default)]
     pub documentation: Option<ByteSpan>,
 }
+impl SyntaxBoundary {
+    /// A partition may retain adjacent whitespace, but never another
+    /// declaration's body. Leading documentation is an explicit AST relation.
+    pub fn owns_chunk(&self, proof: &ChunkSource, text: &str) -> bool {
+        let permitted_start = self.leading_comment.map_or(self.span.start, |s| s.start);
+        let permitted = ByteSpan {
+            start: permitted_start,
+            end: self.span.end,
+        };
+        if permitted.contains(proof.span) {
+            return true;
+        }
+        if proof.span.end <= permitted.start || proof.span.start >= permitted.end {
+            return false;
+        }
+        let whitespace = |span: ByteSpan| {
+            text.get(span.start..span.end)
+                .is_some_and(|s| s.chars().all(char::is_whitespace))
+        };
+        (proof.span.start >= permitted.start
+            || whitespace(ByteSpan {
+                start: 0,
+                end: permitted.start - proof.span.start,
+            }))
+            && (proof.span.end <= permitted.end
+                || whitespace(ByteSpan {
+                    start: permitted.end - proof.span.start,
+                    end: text.len(),
+                }))
+    }
+}
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct SourceStructure {

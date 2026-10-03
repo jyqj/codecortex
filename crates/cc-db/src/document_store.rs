@@ -298,7 +298,9 @@ pub fn verify_source_records(db: &IndexDb, hits: &[cc_model::SearchHit]) -> CcRe
         return Ok(());
     }
     let ids: Vec<_> = by_id.keys().copied().collect();
-    let conn = db.read_conn()?;
+    let pooled = db.read_conn()?;
+    let snapshot = pooled.unchecked_transaction().map_err(db_err)?;
+    let conn = &*snapshot;
     let mut found = 0;
     for batch in ids.chunks(crate::sql_util::IN_BATCH_SIZE) {
         let sql = format!(
@@ -324,6 +326,20 @@ pub fn verify_source_records(db: &IndexDb, hits: &[cc_model::SearchHit]) -> CcRe
                 return Err(CcError::Database(
                     "final manifest reference mismatch".into(),
                 ));
+            }
+            let qname = crate::symbol_identity_store::load_on(
+                conn,
+                &id,
+                &hit.file_path,
+                Some(&actual),
+                Some(&source),
+                hit.symbol_name.as_deref(),
+                hit.symbol_kind.map(|k| k.as_str()),
+            )?;
+            if hit.metadata.get("qname").and_then(|v| v.as_str()) != qname.as_deref()
+                || hit.metadata.get("qname").is_some_and(|v| !v.is_string())
+            {
+                return Err(CcError::Database("final qname association mismatch".into()));
             }
             found += 1;
         }

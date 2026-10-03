@@ -15,6 +15,9 @@ use serde::{Deserialize, Serialize};
 /// The complete output of parsing a single source file.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ParseOutcome {
+    /// Proven declaration associations prepared against the original parser snapshot.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub symbol_identities: Vec<crate::symbol_identity::ChunkSymbolIdentity>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub document_spec: Option<String>,
     /// Prepared document projections; None for raw parser/synthetic/dirty-only units.
@@ -54,6 +57,7 @@ pub struct ParseOutcome {
 impl Default for ParseOutcome {
     fn default() -> Self {
         Self {
+            symbol_identities: Vec::new(),
             document_spec: None,
             documents: None,
             chunk_policy: None,

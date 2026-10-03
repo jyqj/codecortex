@@ -67,7 +67,7 @@ impl PythonParser {
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
-        container: Option<&str>,
+        _container: Option<&str>,
     ) -> Option<SymbolRecord> {
         // Handle decorated_definition by unwrapping
         let func_node = if node.kind() == "decorated_definition" {
@@ -99,12 +99,13 @@ impl PythonParser {
             .unwrap_or(params);
         let (param_types, param_count) = extract_python_param_types(params_inner);
 
-        let qname = match container {
-            Some(c) => format!("{}.{}", c, name),
-            None => name.to_string(),
-        };
-
-        let kind = if container.is_some() {
+        // Lexical scope comes from the parser tree, never from chunk labels.
+        // A function nested in a method has a function parent, not a receiver.
+        let (container, class_parent) = lexical_container(node, source);
+        let qname = container
+            .as_ref()
+            .map_or_else(|| name.to_string(), |c| format!("{c}.{name}"));
+        let kind = if class_parent {
             SymbolKind::Method
         } else {
             SymbolKind::Function
@@ -122,7 +123,7 @@ impl PythonParser {
             file_path: file_path.to_string(),
             name: name.to_string(),
             kind,
-            container: container.map(String::from),
+            container: container.clone(),
             start_line: node.start_position().row as u32 + 1,
             end_line: node.end_position().row as u32 + 1,
             start_col: node.start_position().column as u32,
@@ -138,7 +139,7 @@ impl PythonParser {
             is_default_export: false,
             symbol_uid: Some(symbol_uid),
             framework_role: None,
-            receiver_type: container.map(String::from),
+            receiver_type: class_parent.then_some(container).flatten(),
             param_types,
             return_type: return_type_text.map(String::from),
             param_count: Some(param_count),
@@ -165,7 +166,10 @@ impl PythonParser {
             None => format!("class {}", name),
         };
 
-        let qname = name.to_string();
+        let (container, _) = lexical_container(node, source);
+        let qname = container
+            .as_ref()
+            .map_or_else(|| name.to_string(), |c| format!("{c}.{name}"));
         let symbol_id = StableId::edge_id(
             "sym",
             file_path,
@@ -179,7 +183,7 @@ impl PythonParser {
             file_path: file_path.to_string(),
             name: name.to_string(),
             kind: SymbolKind::Class,
-            container: None,
+            container,
             start_line: node.start_position().row as u32 + 1,
             end_line: node.end_position().row as u32 + 1,
             start_col: node.start_position().column as u32,
@@ -618,7 +622,13 @@ impl PythonParser {
                 return; // children handled inside handle_class_def
             }
             // ── Function / decorated function at module level or nested ─
-            "function_definition" => {
+            // The wrapper already emitted the decorated declaration. A second
+            // symbol for its inner node would replace the source envelope in SQL.
+            "function_definition"
+                if node
+                    .parent()
+                    .is_none_or(|p| p.kind() != "decorated_definition") =>
+            {
                 self.handle_function_def(node, source, file_path, ctx, container);
                 // Do NOT return — we still recurse into the body for calls,
                 // raise statements, etc.
@@ -700,7 +710,7 @@ impl PythonParser {
         _parent_container: Option<&str>,
     ) {
         if let Some(sym) = self.extract_class(node, source, file_path) {
-            let class_name = sym.name.clone();
+            let class_name = sym.qname.clone().unwrap_or_else(|| sym.name.clone());
             let class_id = sym.symbol_id.clone();
             ctx.symbols.push(sym);
 
@@ -848,6 +858,31 @@ impl PythonParser {
             self.visit_node_recursive(&child, source, file_path, ctx, container);
         }
     }
+}
+
+/// Native dotted lexical qnames, preserving the existing direct-class convention.
+/// Decorator wrappers introduce no scope; the nearest declaration decides kind.
+fn lexical_container(node: &tree_sitter::Node<'_>, source: &[u8]) -> (Option<String>, bool) {
+    let mut parent = node.parent();
+    let mut names = Vec::new();
+    let mut nearest_class = None;
+    while let Some(ancestor) = parent {
+        if matches!(ancestor.kind(), "function_definition" | "class_definition") {
+            nearest_class.get_or_insert(ancestor.kind() == "class_definition");
+            if let Some(name) = ancestor
+                .child_by_field_name("name")
+                .and_then(|n| n.utf8_text(source).ok())
+            {
+                names.push(name);
+            }
+        }
+        parent = ancestor.parent();
+    }
+    names.reverse();
+    (
+        (!names.is_empty()).then(|| names.join(".")),
+        nearest_class.unwrap_or(false),
+    )
 }
 
 /// Accumulator for single-pass DFS extraction results.

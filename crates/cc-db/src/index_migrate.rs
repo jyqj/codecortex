@@ -38,7 +38,9 @@ use rusqlite::Connection;
 /// v24 rebuilds the publicly generated v23 intermediate indexes: that
 /// resolver rejected legal symbolic/Unicode type names. Keeping v23 would
 /// skip unchanged files and preserve those missing type edges/dependencies.
-pub const CURRENT_SCHEMA_VERSION: u32 = 24;
+// v25 reparses unchanged source to establish source-bound parser identities
+// and corrected Python lexical qnames. No legacy association backfill.
+pub const CURRENT_SCHEMA_VERSION: u32 = 25;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -55,7 +57,8 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
         .map_err(db_err)?;
 
     if stored == CURRENT_SCHEMA_VERSION {
-        // Performance-only access path, also installed on pre-index v24 databases.
+        // Performance-only access path, also installed on current-schema
+        // databases missing this physical index. v24 follows the rebuild guard.
         // Keep this separate from semantic migrations: no reparse, version bump,
         // row rewrite, incarnation replacement or epoch movement. Errors propagate
         // through the normal writable open seam; never bypass read-only refusal.

@@ -1,10 +1,9 @@
-//! Real v24 public-output baseline, to be replaced by identity-positive tests
-//! after the proposed schema/association design is reviewed.
+//! Source-bound public output; the captured v24 baseline remains in artifacts.
 use cc_model::source::{ChunkSource, SourceSnapshot};
 use cc_server::engine::CodeIndex;
 
 #[test]
-fn v24_public_hit_omits_qname_despite_exact_indexed_parser_symbol() {
+fn public_hit_carries_only_exact_indexed_parser_qname() {
     let root = tempfile::tempdir().unwrap();
     std::fs::write(
         root.path().join(".codecortex.json"),
@@ -34,7 +33,7 @@ fn v24_public_hit_omits_qname_despite_exact_indexed_parser_symbol() {
         if hit["symbol_name"] != "needle" {
             continue;
         }
-        assert!(hit["metadata"].get("qname").is_none());
+
         let proof: ChunkSource =
             serde_json::from_value(hit["metadata"]["source_evidence"].clone()).unwrap();
         assert_eq!(proof.source, *source.identity());
@@ -54,6 +53,7 @@ fn v24_public_hit_omits_qname_despite_exact_indexed_parser_symbol() {
             .collect::<Result<_, _>>()
             .unwrap();
         assert_eq!(matches.len(), 1);
+        assert_eq!(hit["metadata"]["qname"], matches[0]);
         names.push(matches[0].clone());
     }
     names.sort();
@@ -61,6 +61,6 @@ fn v24_public_hit_omits_qname_despite_exact_indexed_parser_symbol() {
     assert_eq!(
         conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        24
+        25
     );
 }

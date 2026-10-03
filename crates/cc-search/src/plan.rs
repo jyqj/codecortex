@@ -69,6 +69,7 @@ pub(crate) struct LaneRanks<'a> {
 
 #[derive(Debug)]
 pub(crate) struct CandidateChunk {
+    pub qname: Option<String>,
     pub document: Option<cc_model::identity::DocumentRef>,
     pub source_evidence: Option<cc_model::source::ChunkSource>,
     pub chunk_id: String,
@@ -357,6 +358,7 @@ impl SearchPlan {
         lane_ranks: &LaneRanks<'_>,
     ) -> Option<SearchHit> {
         let CandidateChunk {
+            qname,
             document,
             source_evidence,
             chunk_id,
@@ -511,6 +513,9 @@ impl SearchPlan {
 
         dedupe_reasons(&mut reasons);
         let mut metadata = self.rerank_metadata(&file_path, stage_a_score);
+        if let Some(qname) = qname {
+            metadata["qname"] = serde_json::json!(qname);
+        }
         metadata["source_freshness"] =
             serde_json::json!({"status":"indexed_snapshot","disk_checked":false});
         if let Some(reference) = document {
@@ -652,6 +657,7 @@ impl<'a> LaneRanks<'a> {
 impl From<cc_db::index_db::ChunkDetailRow> for CandidateChunk {
     fn from(row: cc_db::index_db::ChunkDetailRow) -> Self {
         Self {
+            qname: row.qname,
             chunk_id: row.chunk_id,
             source_evidence: row.source_evidence,
             document: row.document,

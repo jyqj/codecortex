@@ -814,6 +814,7 @@ impl RetrievalLane for FakeLane {
 
 fn fake_candidate_chunk() -> CandidateChunk {
     CandidateChunk {
+        qname: None,
         document: None,
         source_evidence: None,
         chunk_id: "chunk:src/x.rs".to_string(),

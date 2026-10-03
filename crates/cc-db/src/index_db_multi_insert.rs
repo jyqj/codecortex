@@ -286,6 +286,9 @@ impl IndexDb {
         // symbols
         let symbols: Vec<_> = units.iter().flat_map(|f| &f.outcome.symbols).collect();
         Self::insert_symbols_multi(conn, &symbols, true)?;
+        for file in units {
+            crate::symbol_identity_store::insert_on(conn, file)?;
+        }
 
         // imports
         let imports: Vec<_> = units.iter().flat_map(|f| &f.outcome.imports).collect();

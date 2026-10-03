@@ -42,6 +42,7 @@ pub mod search;
 pub mod semantic;
 pub mod source;
 pub mod symbol;
+pub mod symbol_identity;
 pub mod type_assign;
 
 // Re-export top-level types for convenience

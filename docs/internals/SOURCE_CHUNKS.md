@@ -1,5 +1,43 @@
 # Original source snapshots and hierarchical chunks (P4-A)
 
+## Source-bound symbol identity (schema 25)
+
+`chunk_symbol_identity` records format-v1 parser declaration associations in
+the same file transaction as symbols, original chunks and documents. Prepare
+uses the scanner-confirmed original snapshot and complete validated AST
+boundaries: both declaration byte endpoints must match exactly one original
+parser record, with the same file, name and kind as the chunk's existing labels.
+No breadcrumb/title/name concatenation or current-disk lookup supplies qname.
+The chunk must belong to the declaration body or its explicitly attached
+documentation; adjacent whitespace retained by the source partition is allowed,
+but a same-name neighbor's body is not. Ambiguous, missing, partial/fallback or
+legacy proof yields no association. Transaction insertion additionally requires
+that the exact symbol survived the actual SQL uniqueness/replacement rules.
+
+The stored association binds source snapshot/digest, exact owner coordinates,
+document key/version, symbol ID/UID/name/kind and parser qname. Cold hydration
+and warm final-hit validation check this relationship with current source,
+document and symbol rows on one SQLite read snapshot, within the existing query
+generation fence. Contradictory persisted relationships fail closed. Valid
+relationships add `metadata.qname`; absence does not trigger inferred identity.
+Document rendering, source proof shape, old hit fields and ranking remain intact.
+Identity SELECTs performed during ordinary hydration are included in its
+existing SQL work counters; this adds no budget or ranking policy. Owner and
+candidate maps retain every exact-span candidate, so lookup does not repeatedly
+scan the entire file or deduplicate ambiguities into authority.
+
+Python native qnames now preserve dotted lexical ancestry. A function nested in
+a function or method remains `Function` and has no receiver; a direct class
+member remains `Method`. A decorated function has one canonical wrapper symbol,
+so its inner node cannot replace the declaration envelope in SQL. Other parser
+languages retain their existing qname conventions. The module model stays v3;
+schema 25 requires reparsing through existing rebuild-on-mismatch, not legacy
+backfill or an in-place additive migration. Tests use owned caches only.
+
+The original P4-A historical description follows. Implementation scope and
+executed receipts are in
+`artifacts/checkpoints/qname-source-identity-implementation-20261003/`.
+
 `cc-model::source::SourceSnapshot` borrows original bytes, computes a versioned encoding-aware snapshot identity and a separate raw-byte BLAKE3 digest, and builds one LF-based line-offset index. Invalid UTF-8 has an opaque raw identity but is never lossily converted into source text. The current production parser interface accepts UTF-8 only. CRLF, BOM and the final newline remain part of the original slice. Byte spans are half-open; occupied line ranges are 1-based inclusive, byte columns are zero-based. An EOF point after LF does not create an extra occupied line.
 
 `SourceStructure` owns bounded symbol/block/statement/comment coordinates copied during the existing parser task. `chunker/boundaries.rs` traverses a borrowed tree with a cursor and does not invoke a parser. The full AST is released with the existing task; no Node or Tree is retained in ParseOutcome. Traversal has 250000 visited-node, 50000-boundary and 512-depth limits. Syntax errors or truncation are explicit partial capability, not exact semantic proof. Rust/Go compact project-model extraction is a separate existing pass; a single language-parse test does not claim the entire index pipeline parses only once.

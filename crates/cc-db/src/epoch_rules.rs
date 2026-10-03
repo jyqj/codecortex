@@ -144,6 +144,11 @@ impl std::fmt::Debug for EffectSet {
 /// [`boost_http_edge_confidence_clock`].
 pub const EPOCH_RULES: &[(&str, EpochClock, &str)] = &[
     (
+        "chunk_symbol_identity",
+        EpochClock::Index,
+        "parser declaration identity commits with indexed source documents",
+    ),
+    (
         "resolution_frontier",
         EpochClock::Index,
         "resolution debt and file facts commit together",
@@ -373,6 +378,7 @@ mod tests {
             "resolution_dependencies",
             "literal_index",
             "chunks",
+            "chunk_symbol_identity",
             "http_call_edges",
         ];
 

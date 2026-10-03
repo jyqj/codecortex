@@ -804,11 +804,11 @@ fn remove_files_batch_supersedes_without_embed() {
     );
 }
 
-/// An actual pre-index v24 disk database is repaired by normal IndexDb open;
+/// A current-schema disk database missing the physical FIFO index is repaired by normal open;
 /// every logical table (including unchanged parse evidence and generations)
 /// stays byte-for-byte equal across first and repeated opens.
 #[test]
-fn fifo_physical_index_preserves_existing_v24_logical_data() {
+fn fifo_physical_index_preserves_existing_current_logical_data() {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join("index.sqlite3");
     let conn = rusqlite::Connection::open(&path).unwrap();
@@ -859,7 +859,7 @@ fn fifo_physical_index_preserves_existing_v24_logical_data() {
         assert_eq!(
             conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
                 .unwrap(),
-            24
+            cc_db::index_migrate::CURRENT_SCHEMA_VERSION
         );
         assert_eq!(snapshot(&conn), before);
         let sql: String = conn

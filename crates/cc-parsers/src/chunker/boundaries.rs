@@ -233,10 +233,17 @@ pub fn extract(
                     end: owner.end_byte(),
                 };
                 if !span.is_empty() && source.slice(span).is_ok() {
-                    let hint = names.get(&(
-                        (node.start_position().row + 1) as u32,
-                        node.start_position().column as u32,
-                    ));
+                    let hint = names
+                        .get(&(
+                            (owner.start_position().row + 1) as u32,
+                            owner.start_position().column as u32,
+                        ))
+                        .or_else(|| {
+                            names.get(&(
+                                (node.start_position().row + 1) as u32,
+                                node.start_position().column as u32,
+                            ))
+                        });
                     let name = if kind == BoundaryKind::Symbol {
                         hint.map(|s| s.name.clone()).or_else(|| {
                             node.child_by_field_name("name")

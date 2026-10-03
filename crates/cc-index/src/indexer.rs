@@ -873,6 +873,9 @@ impl Indexer {
                 crate::documents::delta::prepare(&snapshot, &outcome, &previous)
                     .map_err(|e| (rel_path.clone(), e.to_string()))?,
             );
+            outcome.symbol_identities =
+                crate::documents::symbol_identity::prepare(&snapshot, &outcome)
+                    .map_err(|e| (rel_path.clone(), e.to_string()))?;
 
             model.apply_imports(&rel_path, &mut outcome);
 

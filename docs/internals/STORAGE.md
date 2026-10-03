@@ -392,8 +392,16 @@ worker 是唯一付费方）→ 死信只清点**绝不复活**。`converged` �
 
 ## Schema 版本策略
 
-`user_version` pragma 记录 schema 版本（当前 **v22**，
+`user_version` pragma 记录 schema 版本（当前 **v25**，
 `CURRENT_SCHEMA_VERSION` 在 `index_migrate.rs:35`）。打开库时按存储版本分派：
+
+当前 v25 守卫优先于以下历史 v21→v22 迁移记录：所有非零旧版本（包括
+v24）走既有 rebuild-on-mismatch，没有新增原位迁移。v25 的
+`chunk_symbol_identity` 关联原始来源、文档版本与真实 parser 符号，并与
+文件事实同事务写入/删除、推进 `index_epoch`；旧索引无法通过空表补建
+获得身份，必须重解析。模块模型保持 v3。cold/warm 读取同时验证关联与
+符号存活，详见 [SOURCE_CHUNKS.md](SOURCE_CHUNKS.md)。升级测试只使用
+自有临时缓存，真实 v24 合成夹具的重建收据见本批 implementation 目录。
 
 - **相邻加法迁移（v21 → v22）**：v22 相对 v21 的 delta 全部是
   `CREATE TABLE/INDEX ... IF NOT EXISTS`（P6 语义三表 + 7 索引），因此 v21

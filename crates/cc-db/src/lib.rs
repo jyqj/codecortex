@@ -27,6 +27,7 @@ mod index_db_retrieval;
 mod index_db_types;
 mod index_db_write_batch;
 mod statement_work;
+mod symbol_identity_store;
 
 pub use framework_scan::{FileFrameworkAggregate, FrameworkScanSession};
 pub use index_db::{MaintenanceOps, ReadOps, WriteOps};

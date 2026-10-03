@@ -28,6 +28,10 @@ jobs:
       - name: Test
         run: cargo test --workspace --all-targets
 
+      - name: Semantic HTTP capability snapshot and normal stdio query fence
+        timeout-minutes: 30
+        run: python3 artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py --output-dir "$RUNNER_TEMP/semantic-http-ci-regression"
+
       - name: Eval suite
         run: cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture
 

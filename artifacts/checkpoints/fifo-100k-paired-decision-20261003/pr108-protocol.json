@@ -1,0 +1,48 @@
+{
+  "formal_samples_max": 1,
+  "old_evidence_sha": "a8452be903e1a88c935e267f5d76879ce7ee2716",
+  "old_failure_preserved": {
+    "cold_seconds": 21.638,
+    "ready_deadline_seconds": 300,
+    "ready": false,
+    "semantic_manifest_cleanup_tail": 29696
+  },
+  "production_sha": "11af963c33cfa68cc9497e355464c1d6d058adac",
+  "source_sha": "29b03a0fec6bfde92aac9c41dce996ebb2d08cc7",
+  "build": "fresh target release no-default-features semantic-http -> semantic+semantic-http; locked; 4 jobs",
+  "unchanged": [
+    "source(i,value=0)",
+    "files 100000",
+    "dimensions 128",
+    "fake loopback HTTP",
+    "batch16",
+    "max_concurrent4/per_project2",
+    "parse4",
+    "poll gap .2s",
+    "ready300s",
+    "index/search RPC300s",
+    "normal EOF15s",
+    "overall900s",
+    "memory guard12GiB/disk reserve4GiB"
+  ],
+  "changes": [
+    "source/build identity",
+    "explicit v2 consistency and identity/scope assertions",
+    "timestamped boundary read-only counts and cleanup tail distinguished",
+    "record status errors/timing",
+    "controlled EOF cleanup recorded; no kill escalation"
+  ],
+  "generator_sha256": "a76865a466252f5863c8e0ad278c4c6814093d4a4a629a9409acf2e6b916901b",
+  "generator_diff_vs_old_evidence": "",
+  "status_contract": "ADR-0004; observed_database_snapshot, not response-time latest or query authority",
+  "not_certified": [
+    "semantic quality",
+    "real provider health",
+    "full V20",
+    "independent correctness review",
+    "cross-platform identity validation"
+  ],
+  "credential": "synthetic-resource-only dummy bearer loopback only; no real provider; no heldout; no private source transfer",
+  "denied_action_policy": "never repeat rejected permissions; HOME unchanged",
+  "resource_sampling": "root and observable process tree; children unavailable unknown not 0; sampled RSS not exact peak/PSS"
+}

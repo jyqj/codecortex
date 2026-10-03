@@ -1,0 +1,18 @@
+
+running 1 test
+RETRY_PROGRESS calls=2 done=0 ready_stranded=2 retry_backoff=2 cursor=None requested=false running=false pins=0 rows=[(1, "pending", 1, 1791037148.368318, None, Some("provider timeout")), (2, "pending", 1, 1791037148.4186614, None, Some("cache put failed: IO error: Read-only file system (os error 30)")), (3, "pending", 0, 1791037118.3657205, None, None), (4, "pending", 0, 1791037118.3657205, None, None)]
+
+thread 'semantic_runtime::tests::recoverable_retry_drains_other_ready_documents' (15191) panicked at crates/cc-server/src/semantic_runtime.rs:760:9:
+assertion `left == right` failed: one started timeout retains fenced backoff
+  left: 2
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test semantic_runtime::tests::recoverable_retry_drains_other_ready_documents ... FAILED
+
+failures:
+
+failures:
+    semantic_runtime::tests::recoverable_retry_drains_other_ready_documents
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 336 filtered out; finished in 0.19s
+

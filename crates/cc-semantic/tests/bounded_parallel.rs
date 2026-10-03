@@ -317,7 +317,101 @@ fn both_parallel_errors_propagate_after_join_and_retry_each_independent_token() 
     assert!(f.rows()[2..].iter().all(|r| r.2 == 0));
 }
 #[test]
-fn ordinary_provider_failure_retries_both_and_stops_new_claims() {
+fn closed_lifecycle_during_handled_retry_still_stops_claims() {
+    let f = Fixture::new(4);
+    let fence = LifecycleFence::default();
+    let report = drain(
+        &f.db,
+        "retry-close",
+        &f.limits(16),
+        Some(&fence),
+        1,
+        &|_| {
+            fence.close();
+            Ok(TaskExit::NeedsRetry {
+                reason: "ordinary late provider timeout".into(),
+            })
+        },
+    )
+    .unwrap();
+    assert_eq!(report.claimed, 1);
+    assert_eq!(report.retried, 0);
+    assert!(f.rows().iter().all(|r| r.1 == "pending"));
+    assert_eq!(f.rows()[0].2, 1);
+    assert!(f.rows()[1..].iter().all(|r| r.2 == 0));
+}
+#[test]
+fn handled_retry_keeps_shared_budget_and_independent_tokens() {
+    for width in [0, 1, 2, 4] {
+        let f = Fixture::new(20);
+        let bad = Provider::new(&f, None, true);
+        let good = Provider::new(&f, None, false);
+        let seen = Mutex::new(Vec::new());
+        let handler = |g: &LeaseGuard<'_>| {
+            seen.lock()
+                .unwrap()
+                .push((g.task().task_id, g.task().token.clone()));
+            f.handle(if g.task().task_id == 1 { &bad } else { &good }, g, None)
+        };
+        let first = drain(
+            &f.db,
+            "retry-progress",
+            &f.limits(16),
+            None,
+            width,
+            &handler,
+        )
+        .unwrap();
+        assert_eq!(first.claimed, 16);
+        assert_eq!(first.retried, 1);
+        assert_eq!(first.completed, 15);
+        assert_eq!(bad.calls.load(Ordering::SeqCst), 1);
+        assert_eq!(good.calls.load(Ordering::SeqCst), 15);
+        assert_eq!(f.rows()[0].1, "pending");
+        assert_eq!(f.rows()[0].2, 1);
+        assert!(f.rows()[16..].iter().all(|r| r.1 == "pending" && r.2 == 0));
+        let second = drain(
+            &f.db,
+            "retry-progress-next",
+            &f.limits(16),
+            None,
+            width,
+            &handler,
+        )
+        .unwrap();
+        assert_eq!(second.claimed, 4);
+        assert_eq!(second.completed, 4);
+        assert_eq!(second.retried, 0);
+        assert_eq!(
+            bad.calls.load(Ordering::SeqCst),
+            1,
+            "backoff is not immediately retried"
+        );
+        let seen = seen.lock().unwrap();
+        assert_eq!(seen.len(), 20);
+        assert_eq!(
+            seen.iter()
+                .map(|r| r.0)
+                .collect::<std::collections::HashSet<_>>()
+                .len(),
+            20
+        );
+        assert_eq!(
+            seen.iter()
+                .map(|r| &r.1)
+                .collect::<std::collections::HashSet<_>>()
+                .len(),
+            20
+        );
+        let conn = f.db.read_conn().unwrap();
+        let ready: i64 = conn.query_row("SELECT COUNT(*) FROM semantic_outbox WHERE state='pending' AND available_at<=unixepoch('now','subsec')", [], |r| r.get(0)).unwrap();
+        assert_eq!(ready, 0);
+        assert!(f.rows().iter().all(|r| r.2 == 1));
+        println!("retry progress width={width} shared_claims=16+4 unique_tokens=20 retried=1 ready_stranded=0");
+    }
+}
+#[test]
+fn ordinary_provider_failure_retries_within_the_shared_finite_budget() {
     let f = Fixture::new(20);
     let h = Arc::new(Hold::default());
     let p = Provider::new(&f, Some(h.clone()), true);
@@ -332,11 +426,11 @@ fn ordinary_provider_failure_retries_both_and_stops_new_claims() {
         h.release();
         job.join().unwrap().unwrap()
     });
-    assert_eq!(r.claimed, 2);
-    assert_eq!(r.retried, 2);
-    assert_eq!(p.calls.load(Ordering::SeqCst), 2);
-    assert!(f.rows()[..2].iter().all(|r| r.1 == "pending" && r.2 == 1));
-    assert!(f.rows()[2..].iter().all(|r| r.2 == 0));
+    assert_eq!(r.claimed, 16);
+    assert_eq!(r.retried, 16);
+    assert_eq!(p.calls.load(Ordering::SeqCst), 16);
+    assert!(f.rows()[..16].iter().all(|r| r.1 == "pending" && r.2 == 1));
+    assert!(f.rows()[16..].iter().all(|r| r.2 == 0));
 }
 #[test]
 fn ordinary_space_switch_fences_started_publications_and_stops_claiming_new_space() {

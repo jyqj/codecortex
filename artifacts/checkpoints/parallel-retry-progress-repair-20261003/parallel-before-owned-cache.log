@@ -1,0 +1,19 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.30s
+     Running unittests src/lib.rs (/workspace/codecortex/target/debug/deps/cc_server-95cb67417ad6e0e1)
+
+running 1 test
+RETRY_PROGRESS calls=2 done=1 ready_stranded=2 retry_backoff=1 cursor=None requested=false running=false pins=0 rows=[(1, "pending", 1, 1791037031.0098073, None, Some("provider timeout")), (2, "done", 1, 1791037001.005637, Some("3b1a27416a71cee45381dc98e316d65b"), None), (3, "pending", 0, 1791037001.005637, None, None), (4, "pending", 0, 1791037001.005637, None, None)]
+
+thread 'semantic_runtime::tests::recoverable_retry_frozen_parallel_counterexample' (8492) panicked at crates/cc-server/src/semantic_runtime.rs:762:9:
+no physical claim survives idle
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test semantic_runtime::tests::recoverable_retry_frozen_parallel_counterexample ... FAILED
+
+failures:
+
+failures:
+    semantic_runtime::tests::recoverable_retry_frozen_parallel_counterexample
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 336 filtered out; finished in 0.17s
+
+error: test failed, to rerun pass `-p cc-server --lib`

@@ -1,0 +1,13 @@
+   Compiling cc-server v1.0.0 (/workspace/parallel-retry-progress/crates/cc-server)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.77s
+     Running unittests src/lib.rs (/workspace/codecortex/target/debug/deps/cc_server-95cb67417ad6e0e1)
+
+running 3 tests
+test semantic_runtime::tests::recoverable_retry_frozen_parallel_counterexample ... ignored, retained frozen parallel counterexample; run on 5cce6eb with this test-only fixture
+RETRY_PROGRESS width=2 calls=4 done=3 ready_stranded=0 retry_backoff=1 cursor=None requested=false running=false pins=0 rows=[(1, "pending", 1, 1791037482.0452209, None, Some("provider timeout")), (2, "done", 1, 1791037452.0433123, Some("b4a1e201d65e46ac1ca9cb7f7201f79f"), None), (3, "done", 1, 1791037452.0433123, Some("95680592079cd66e7c62ba1860028cf8"), None), (4, "done", 1, 1791037452.0433123, Some("532193cdc6745cc3d182999295962b12"), None)]
+test semantic_runtime::tests::recoverable_retry_drains_other_ready_documents ... ok
+RETRY_PROGRESS width=0 calls=4 done=3 ready_stranded=0 retry_backoff=1 cursor=None requested=false running=false pins=0 rows=[(1, "pending", 1, 1791037482.2430506, None, Some("provider timeout")), (2, "done", 1, 1791037452.2415414, Some("4b2017e8d8463b9b9a742a7f02f53514"), None), (3, "done", 1, 1791037452.2415414, Some("c0a99469fec8e0fbf65fda3e6066eeda"), None), (4, "done", 1, 1791037452.2415414, Some("1f8dc9fb4e068040df2e7ae05e92601e"), None)]
+test semantic_runtime::tests::recoverable_retry_width_zero_drains_other_ready_documents ... ok
+
+test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 335 filtered out; finished in 0.48s
+

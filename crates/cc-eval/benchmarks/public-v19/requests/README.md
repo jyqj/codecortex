@@ -80,6 +80,26 @@ facet/graph correctness metric。全部输出保持 pending，作者不签独立
 完整性/输入校验和 draft PR，尚不是协议定义的 reviewed complete20/100 block。
 本作者停在候选准备和 migration，不用重复题补足14组件，也不签自己的审查。
 
+## 后续公开 dev 扩展（无排名）
+
+在许可修正后，按连续 serial `f0101`…`f0120` 预留20个位置。协议阈值得到16dev /
+4holdout，未尝试重编号或配额调整。本轮仅撰写16个公开 dev，4个 holdout serial 保持
+allocated/not_drafted/pending_custody，不生成或公开其正文，也不把它们算作源码候选。
+`review/serial-reservation-0101-0120.json` 与 `dev-extension-receipt.json` 记录完整去向。
+
+新增任务涉及 archive 路径解析、primitive 参数拒绝、cookie 序列化锁/值清洗/expiry、
+字面重复-domain 判定、PreparedRequest clone alias、Digest challenge replay、IDNA、
+response producer 分派、adapter pool disposal/framing/retry reason、依赖诊断和 Host-cookie
+policy。每项有具体独立事实说明，不是旧问题翻译或改写；最终等价裁定仍由其他作者完成。
+旧75native/67compat行原始字节、旧gold对象、25拟holdout commitments 和 migration映射均
+核对未变，未按得分调整 gold；source BLAKE3 锁保持不变。
+
+当前 **116源码候选 IDs、102拟议关联组件**（82dev/20blocked holdout components），
+公开 **91native dev /83compat dev**，8dev no-answer，独立accepted仍0。
+这16个新singleton使拟议组件准备达到100目标，但不是102已接受独立样本。
+25旧拟holdout状态/hash完全保持blocked，正式可用holdout=0；另4reserved未撰写不计入25。
+只公开dev的独立审查入口：`review/DEV-REVIEW.md`。完整许可/来源审查尚待另一作者签署。
+
 ## 复现（仓库根目录）
 
 ```sh

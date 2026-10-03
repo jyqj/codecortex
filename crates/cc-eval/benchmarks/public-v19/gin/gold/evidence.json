@@ -1,0 +1,752 @@
+[
+  {
+    "family": "gin.v19.main-handler",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "817be83a4a7f4fab5d354a28a6dac9c0de8234321a5eb619e6a89e7ac6607b5d",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Handler",
+        "start_line": 176,
+        "end_line": 178,
+        "span": {
+          "start": 4498,
+          "end": 4567
+        },
+        "sha256": "bebcdefc8ba0bf51b1b04fd26f195aee3981ba9544f2039dbcc5a11e60624518"
+      }
+    ],
+    "literal_answer": "Context.Handler returns c.handlers.Last().",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.proxy-auth",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "264396cbf475cebeb1923d4011403ef6e8dea6b4c578243bebf8ef802c437b99",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "auth.go",
+        "symbol": "BasicAuthForProxy",
+        "start_line": 98,
+        "end_line": 116,
+        "span": {
+          "start": 3090,
+          "end": 3837
+        },
+        "sha256": "659a97529a5bab4fffaea19439453c13b38f5480d1b83cefa5bad4cfc7e33844"
+      }
+    ],
+    "literal_answer": "BasicAuthForProxy reads Proxy-Authorization, emits Proxy-Authenticate and 407 on failure, and stores AuthProxyUserKey on success.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.template-delims",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "6dfe717a98ccb82950437f06c0dc95297d1af33d0c985a9895ea16744ca45891",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "gin.go",
+        "symbol": "Engine.Delims",
+        "start_line": 282,
+        "end_line": 285,
+        "span": {
+          "start": 9917,
+          "end": 10049
+        },
+        "sha256": "d60823b704414226d6855cbee8d18fed3915f9e3668c64809169c26e1ca65df0"
+      }
+    ],
+    "literal_answer": "Engine.Delims stores render.Delims{Left:left, Right:right} and returns engine.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.writer-unwrap",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "fb6d45c6c277d8454b1f556bc867920c1fe0231ac4507eb99e651f12812630a1",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "response_writer.go",
+        "symbol": "responseWriter.Unwrap",
+        "start_line": 57,
+        "end_line": 59,
+        "span": {
+          "start": 1172,
+          "end": 1254
+        },
+        "sha256": "cf7ad43564563cba2299fdd89adec9814d80d55596e4f5dff476ca48c428033e"
+      }
+    ],
+    "literal_answer": "responseWriter.Unwrap returns w.ResponseWriter.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.abort-current",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "8602c5ac0c1ff5f8dee4acdefebabf794a7eb2008f0d7cf2030653eb2ea93c82",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Abort",
+        "start_line": 216,
+        "end_line": 218,
+        "span": {
+          "start": 5744,
+          "end": 5795
+        },
+        "sha256": "618471a465049532e20daf9a30dd75b1618787b6a69c20cb6f636afeeb62fe31"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Next",
+        "start_line": 197,
+        "end_line": 205,
+        "span": {
+          "start": 5095,
+          "end": 5256
+        },
+        "sha256": "3f9985be326eb84e03c950029c6f55d8d590148ad31008b4382f234fe17fc1f0"
+      }
+    ],
+    "literal_answer": "Abort sets index to abortIndex; it does not return from the current handler. Next advances index and only invokes pending handlers while index is below chain length.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.get-binding",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "e17a4f29aff5b172312be64de79c120abf50baba53c702cd5a341d58f18c99b4",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "binding.Default",
+        "start_line": 95,
+        "end_line": 120,
+        "span": {
+          "start": 3701,
+          "end": 4182
+        },
+        "sha256": "0d3f60661d73d45150f560427eab0da1e9cb07a99a272df1fb52160379fe118d"
+      }
+    ],
+    "literal_answer": "GET is checked before contentType and returns Form.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.reader-header",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "fc18cf8f1657163dabd178201780fbc0febf8678ee447663a6cfd400584573a6",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/reader.go",
+        "symbol": "Reader.writeHeaders",
+        "start_line": 41,
+        "end_line": 48,
+        "span": {
+          "start": 1032,
+          "end": 1194
+        },
+        "sha256": "2bd4f5e3590863c204057cbc4eb4e5de5443a8b400c2052c5d1ec009b4558a69"
+      }
+    ],
+    "literal_answer": "Reader.writeHeaders sets each header only when header.Get(k) is empty.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.error-metadata",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "be0c5d299a1b7098fe9416c20f78b94d1a42b7d9a09a0b39cfcf4381175cb018",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "errors.go",
+        "symbol": "Error.JSON",
+        "start_line": 55,
+        "end_line": 74,
+        "span": {
+          "start": 1235,
+          "end": 1677
+        },
+        "sha256": "aa35f3a7d0f9ca207aad016017e98158715c5100537a93feda65aa0ace710e93"
+      }
+    ],
+    "literal_answer": "Struct metadata is returned directly; map entries are copied into H; other metadata goes under meta; error text is added only if error key is absent.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.default-engine",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "c7d857cd1face86c8fe32012c25e80513468012d33228ba0bfb65908134816f6",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "gin.go",
+        "symbol": "New",
+        "start_line": 215,
+        "end_line": 247,
+        "span": {
+          "start": 7825,
+          "end": 8918
+        },
+        "sha256": "8244531c4f3d5e4dd33033df8b63e7623bca79693a17144145e714e7b68df6da"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "gin.go",
+        "symbol": "Default",
+        "start_line": 250,
+        "end_line": 255,
+        "span": {
+          "start": 9016,
+          "end": 9168
+        },
+        "sha256": "f0ef6f07b3928c0199710eed1eb99344df2043d1b14dd277f57010fc66d9cf3f"
+      }
+    ],
+    "literal_answer": "New creates the engine and applies its opts; Default calls New without opts, attaches Logger and Recovery, then applies its opts.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.context-copy",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "3874d1b6575a775e88efb1effa77000c08c3231a2b6b009d776495c473c3c829",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Copy",
+        "start_line": 122,
+        "end_line": 154,
+        "span": {
+          "start": 3243,
+          "end": 3873
+        },
+        "sha256": "d259a1e39ceca5bbb9d47b980131bddd0f97e9899a2068217b8e337a6a7c972e"
+      }
+    ],
+    "literal_answer": "It shares Request and engine, detaches underlying ResponseWriter, uses abortIndex and nil handlers, clones Keys and copies Params, Errors, Accepted.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.validator-init",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "aac41ec2803c70106566081cb81ff2fc46f67ab53d7e983607bce8183a1ae945",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/default_validator.go",
+        "symbol": "defaultValidator.lazyinit",
+        "start_line": 93,
+        "end_line": 98,
+        "span": {
+          "start": 2210,
+          "end": 2341
+        },
+        "sha256": "6555714db2a6cc31a62d6cfd743b213470d9d39a2d96faccaed134d6498d6195"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/default_validator.go",
+        "symbol": "defaultValidator.Engine",
+        "start_line": 88,
+        "end_line": 91,
+        "span": {
+          "start": 2132,
+          "end": 2208
+        },
+        "sha256": "b1a20e9622591be60d3324c9f5ae8dfea5411480fb2f7efa4515b0e7bcbbd000"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/default_validator.go",
+        "symbol": "defaultValidator.validateStruct",
+        "start_line": 79,
+        "end_line": 82,
+        "span": {
+          "start": 1740,
+          "end": 1845
+        },
+        "sha256": "e1cabd480341f196d05290bb1161e937b5e5cef9a133bf771caa3951fa1d1bd2"
+      }
+    ],
+    "literal_answer": "defaultValidator.lazyinit uses sync.Once, validator.New(), SetTagName(\"binding\"); Engine and validateStruct both initialize lazily.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.json-binding-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "bfc8529150809493b7fc41aa624cda79d7cd7ceaa0d084ccdc9f715fb6cf8e20",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBindJSON",
+        "start_line": 889,
+        "end_line": 891,
+        "span": {
+          "start": 27507,
+          "end": 27602
+        },
+        "sha256": "5b93d3b98e23b75a3f942ce27142f480ffcd1936e0a918bff7db3b2a1f6e7bab"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ShouldBindWith",
+        "start_line": 941,
+        "end_line": 943,
+        "span": {
+          "start": 29541,
+          "end": 29642
+        },
+        "sha256": "cb37911e22b49e307cc43e7b031bb8372b6fa30671e6f11a452a36d9e5d04d61"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/json.go",
+        "symbol": "jsonBinding.Bind",
+        "start_line": 33,
+        "end_line": 38,
+        "span": {
+          "start": 962,
+          "end": 1135
+        },
+        "sha256": "a249d3d6e6739992b916c10b5a99e5c07546682e3a1354355e2e9e9bd6d49323"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/json.go",
+        "symbol": "decodeJSON",
+        "start_line": 44,
+        "end_line": 56,
+        "span": {
+          "start": 1245,
+          "end": 1542
+        },
+        "sha256": "1962b1b12f8652665134ce777bb534c7fbb3b8709a00d16192883fe428a5d53b"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/binding.go",
+        "symbol": "binding.validate",
+        "start_line": 122,
+        "end_line": 127,
+        "span": {
+          "start": 4184,
+          "end": 4293
+        },
+        "sha256": "0bc276dbaf551b78c662e809008723146383bf4caa107dc6530247977c1302b2"
+      }
+    ],
+    "literal_answer": "ShouldBindJSON calls ShouldBindWith with binding.JSON; ShouldBindWith calls b.Bind; jsonBinding.Bind calls decodeJSON; decodeJSON decodes then validate; validate delegates to Validator.ValidateStruct unless nil.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "Binding dispatch"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 4,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 4,
+        "to_facet": 5,
+        "relation": "calls"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.client-ip-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "5fac31aea3a43ac9c2855854c36bd979fdfbae6d0bdb231b95a4c99529d9520d",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.ClientIP",
+        "start_line": 997,
+        "end_line": 1046,
+        "span": {
+          "start": 31725,
+          "end": 33349
+        },
+        "sha256": "6d348466ac51d6599483d6fab81d23d31e2ea2928dc0a7bd4f258c81520de54d"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "gin.go",
+        "symbol": "Engine.isTrustedProxy",
+        "start_line": 492,
+        "end_line": 502,
+        "span": {
+          "start": 16853,
+          "end": 17065
+        },
+        "sha256": "7bcc10cc5a4de4dce38dc04da0956f42834321ae3289d5379a451b798b7e3b6b"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "gin.go",
+        "symbol": "Engine.validateHeader",
+        "start_line": 505,
+        "end_line": 524,
+        "span": {
+          "start": 17160,
+          "end": 17664
+        },
+        "sha256": "02c1644297e124e36244067383b1b266559d045f7925032f85491a7b6a644139"
+      }
+    ],
+    "literal_answer": "After platform overrides, ClientIP obtains remote IP and checks isTrustedProxy (or trusts a Unix listener); with forwarding enabled it passes configured header values to validateHeader, which parses right-to-left and stops at the first untrusted or leftmost valid IP.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "trust check"
+      },
+      {
+        "from_facet": 1,
+        "to_facet": 3,
+        "relation": "header validation"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 2,
+        "relation": "right-to-left proxy trust"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.json-render-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "d00283eb5a3f417db5fc8c7100e2cc571ff5a6961ec99cbc758ef7798505ed73",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.JSON",
+        "start_line": 1259,
+        "end_line": 1261,
+        "span": {
+          "start": 40044,
+          "end": 40129
+        },
+        "sha256": "7b40781f9fb31e8bda2014ec6f007fa13461f71f6c0c3803096e338796c5b093"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.Render",
+        "start_line": 1201,
+        "end_line": 1215,
+        "span": {
+          "start": 37975,
+          "end": 38262
+        },
+        "sha256": "435b2083c4fa8b3c3f0d2609253003c783ee203a23ac21843ad9056ef16a7066"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/json.go",
+        "symbol": "JSON.Render",
+        "start_line": 57,
+        "end_line": 59,
+        "span": {
+          "start": 1180,
+          "end": 1262
+        },
+        "sha256": "ede9698c1f90723f8bd7e7bd1581ebb6d2e04cf9c0f32faae5e846f1b65e223a"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/json.go",
+        "symbol": "WriteJSON",
+        "start_line": 67,
+        "end_line": 75,
+        "span": {
+          "start": 1501,
+          "end": 1710
+        },
+        "sha256": "46817038917a258311d52fd1a8f131d03ff6e30f99ed4171a7c24fb06ba771ac"
+      }
+    ],
+    "literal_answer": "Context.JSON calls Render with render.JSON; Context.Render sets status and calls renderer.Render (or content type only for bodyless statuses); JSON.Render calls WriteJSON, which marshals via json.API and writes bytes.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 2,
+        "relation": "calls"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "renderer dispatch"
+      },
+      {
+        "from_facet": 3,
+        "to_facet": 4,
+        "relation": "calls"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.auth-byte-chain",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "70d3818fd18c5e4806fe2786a0132f8014723e2b20d8eb5c04c7a729526f61fb",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "auth.go",
+        "symbol": "authorizationHeader",
+        "start_line": 91,
+        "end_line": 94,
+        "span": {
+          "start": 2759,
+          "end": 2932
+        },
+        "sha256": "f85d3aae70667c20e11bd7ff944d777b2eeb8eefe1dddb1b374359386c085a74"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "auth.go",
+        "symbol": "authPairs.searchCredential",
+        "start_line": 32,
+        "end_line": 42,
+        "span": {
+          "start": 712,
+          "end": 1017
+        },
+        "sha256": "3fb5c412dc68b076edc8c092033cca8604f75854eedc0ddc0ff2f6ca9b3be004"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "internal/bytesconv/bytesconv.go",
+        "symbol": "bytesconv.StringToBytes",
+        "start_line": 13,
+        "end_line": 15,
+        "span": {
+          "start": 368,
+          "end": 458
+        },
+        "sha256": "24b946b7a909282d41cd9cb7e3eea7e53869a5fab8bec43bec75b5debd66ee59"
+      }
+    ],
+    "literal_answer": "authorizationHeader joins user:password and base64 encodes bytesconv.StringToBytes; searchCredential compares converted strings with subtle.ConstantTimeCompare; StringToBytes uses unsafe.Slice and unsafe.StringData.",
+    "chain_edges": [
+      {
+        "from_facet": 1,
+        "to_facet": 3,
+        "relation": "string conversion"
+      },
+      {
+        "from_facet": 2,
+        "to_facet": 3,
+        "relation": "constant-time comparison inputs"
+      }
+    ]
+  },
+  {
+    "family": "gin.v19.bind-size-error",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "58c5513bcd60b3e94c82f943823bf779d0d9d7c10de9e2926c08651ed3641af2",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "context.go",
+        "symbol": "Context.MustBindWith",
+        "start_line": 832,
+        "end_line": 849,
+        "span": {
+          "start": 25734,
+          "end": 26380
+        },
+        "sha256": "839f2d6f460a1201d705206596dc75e4059b3faf755cf622155e736fac345f3b"
+      }
+    ],
+    "literal_answer": "errors.As to *http.MaxBytesError selects 413; other errors select 400; both abort, attach ErrorTypeBind, and return the error.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.mode-invalid",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "82f16ca5b9dbe6c66d3dc014a5310d7d582724142b51d90114a06fad9ed4250c",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "mode.go",
+        "symbol": "SetMode",
+        "start_line": 58,
+        "end_line": 78,
+        "span": {
+          "start": 1308,
+          "end": 1760
+        },
+        "sha256": "3d6129c202bf942d8908e6417ab356926fdb2e2ce7330f71aa5fd635fbd1cb95"
+      }
+    ],
+    "literal_answer": "Unknown modes panic; empty selects TestMode when test.v flag exists, otherwise DebugMode.",
+    "chain_edges": []
+  },
+  {
+    "family": "gin.v19.no-reader-gzip",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "986faedde69e5b6534c2829ed05ea5403463e2dd639c4db508cc303a3a3fbfeb",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/reader.go",
+        "symbol": "Reader.Render",
+        "start_line": 22,
+        "end_line": 33,
+        "span": {
+          "start": 500,
+          "end": 806
+        },
+        "sha256": "23af031a3145873369cc604821740516ecd43d2ebd840ea5e9948b3b0979128e"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "render/reader.go",
+        "symbol": "Reader.writeHeaders",
+        "start_line": 41,
+        "end_line": 48,
+        "span": {
+          "start": 1032,
+          "end": 1194
+        },
+        "sha256": "2bd4f5e3590863c204057cbc4eb4e5de5443a8b400c2052c5d1ec009b4558a69"
+      }
+    ],
+    "literal_answer": "No such implementation in render/reader.go. Render calls io.Copy directly; WriteContentType and writeHeaders only set headers.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "render/reader.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "render/reader.go": "be509151872af8fbce922ad971843c2faa7cc5f7e49ad921bc290281f39b1786"
+      },
+      "conclusion": "No such implementation in render/reader.go. Render calls io.Copy directly; WriteContentType and writeHeaders only set headers."
+    }
+  },
+  {
+    "family": "gin.v19.no-auth-oauth",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "86ea078d143a9bc542f261b3b5a0968948951235d55a794e816a5b62d3a08b6d",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "auth.go",
+        "symbol": "authorizationHeader",
+        "start_line": 91,
+        "end_line": 94,
+        "span": {
+          "start": 2759,
+          "end": 2932
+        },
+        "sha256": "f85d3aae70667c20e11bd7ff944d777b2eeb8eefe1dddb1b374359386c085a74"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "auth.go",
+        "symbol": "BasicAuthForRealm",
+        "start_line": 48,
+        "end_line": 68,
+        "span": {
+          "start": 1360,
+          "end": 2099
+        },
+        "sha256": "6ac7399f16c7155fbea695fa971a7a292a7ce2da0a0037296650f8a6e19ad5bd"
+      },
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "auth.go",
+        "symbol": "BasicAuthForProxy",
+        "start_line": 98,
+        "end_line": 116,
+        "span": {
+          "start": 3090,
+          "end": 3837
+        },
+        "sha256": "659a97529a5bab4fffaea19439453c13b38f5480d1b83cefa5bad4cfc7e33844"
+      }
+    ],
+    "literal_answer": "Absent within auth.go: implemented paths build Basic values, compare credential strings, and authorize accounts locally; no token endpoint or HTTP client.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "auth.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "auth.go": "be38ef38614d2b9488d0e73ff2f8b432fc61cc90f4b7e071d0bbf78d898464c1"
+      },
+      "conclusion": "Absent within auth.go: implemented paths build Basic values, compare credential strings, and authorize accounts locally; no token endpoint or HTTP client."
+    }
+  },
+  {
+    "family": "gin.v19.no-json-schema",
+    "status": "candidate_not_independently_reviewed",
+    "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+    "family_sha256": "ff0745b3f6c2ebc506bab007de67af0a7668194f9c77e6c29b2b1090e4806958",
+    "gold_evidence": [
+      {
+        "source_sha": "43fe48e8a0f44af783116cdb010725e6bb50255f",
+        "path": "binding/json.go",
+        "symbol": "decodeJSON",
+        "start_line": 44,
+        "end_line": 56,
+        "span": {
+          "start": 1245,
+          "end": 1542
+        },
+        "sha256": "1962b1b12f8652665134ce777bb534c7fbb3b8709a00d16192883fe428a5d53b"
+      }
+    ],
+    "literal_answer": "Absent within binding/json.go: decodeJSON uses local codec decoder flags and validate; no schema fetch or network call.",
+    "chain_edges": [],
+    "absence_review": {
+      "scope": [
+        "binding/json.go"
+      ],
+      "method": "author read entirety of each scoped file; compare near-miss evidence; no retrieval rank inspection",
+      "scope_sha256": {
+        "binding/json.go": "d243c6e10cf15fb599b2251359c822604029af7d4e1cfa415a58d7b9939f9c44"
+      },
+      "conclusion": "Absent within binding/json.go: decodeJSON uses local codec decoder flags and validate; no schema fetch or network call."
+    }
+  }
+]

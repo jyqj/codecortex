@@ -1,0 +1,38 @@
+--- candidate/run.py
++++ preflight/candidate/run.py
+@@ -6,7 +6,7 @@
+ ROOT=pathlib.Path('/workspace/localwidth4-candidate')
+ SHA="e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207"
+ SEED=0
+-COUNT=100000
++COUNT=32
+ spec=importlib.util.spec_from_file_location("preparation",ROOT/"scripts/p7_release_resource_preparation.py")
+ driver=importlib.util.module_from_spec(spec);spec.loader.exec_module(driver)
+ write=driver.write
+@@ -132,6 +132,17 @@
+     held=driver.db_report(repo);write(case/"held-db.json",held)
+     assert held["counts"]["files"]==COUNT and held["integrity"]=="ok" and held["foreign_key_errors"]==0
+     assert held["counts"]["edge_tables"]["co_change_edges"]==0 and held["counts"]["edge_tables"]["test_edges"]==0,held
++    hold_started=time.monotonic_ns()
++    time.sleep(.5)
++    held_events=[json.loads(line) for line in (case/'http.jsonl').read_text().splitlines()]
++    enters=[e for e in held_events if e['event']=='entered']
++    returns=[e for e in held_events if e['event']=='returned']
++    held_status=v2_status(product)
++    preflight={'time_ns':time.monotonic_ns(),'hold_started_ns':hold_started,'actual_http_held':len(enters),'actual_returned':len(returns),'actual_batch_sizes':[e['input_count'] for e in enters],'configured_caps':{'global':4,'per_project':2},'held_status':held_status,'runtime_effective_caps':'unknown: status does not expose semantic gate caps','no_execution_counter_as_gate':True,'independent_acceptance':False}
++    write(OUT/'sharedgate-preflight.json',preflight)
++    assert len(enters)==2 and not returns,preflight
++    assert held_status['semantic_state']=='backfilling',held_status
++    check('controlled_http_hold',preflight)
+     (case/"http-release").touch();current_phase=product.phase="backfill-drain";t=time.monotonic();drain_start=t;deadline=t+300
+     summary["drain_start_ns"]=time.monotonic_ns();summary["ready_deadline_monotonic"]=deadline;persist()
+     boundary_stop=threading.Event();boundary_thread=threading.Thread(target=boundary_observer,daemon=True);boundary_thread.start()
+@@ -148,7 +159,7 @@
+     assert final["counts"]["files"]==final["counts"]["document_manifest"]==final["counts"]["semantic_manifest"]==COUNT
+     assert final["integrity"]=="ok" and final["foreign_key_errors"]==0
+     check("ready_manifest_integrity_fk",{"drain_wall_seconds":ready_wall,"db":final,"status":status});completed.add("ready_manifest_integrity_fk")
+-    queries=["resource_00000","resource_00001","resource_50000","resource_99999"]
++    queries=["resource_00000","resource_00001","resource_00016","resource_00031"]
+     current_phase=product.phase="serial-reference"
+     def query(p,q):
+         t=time.monotonic();value=p.tool("search",{"query":q,"retrieval_strategy":"local","top_k":5});hits=value["machine_pack"]["hits"]

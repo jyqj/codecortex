@@ -701,6 +701,162 @@ mod tests {
         (dir, runtime, provider)
     }
 
+    // A normal expected provider timeout, followed by finite successful calls.
+    // The latency gives the companion time to finish its already-started call
+    // after the timeout is recorded; no system fault or external provider.
+    struct RetryProgressProvider {
+        fake: FakeProvider,
+        calls: std::sync::atomic::AtomicUsize,
+        worker: Mutex<std::sync::Weak<SemanticRuntime>>,
+    }
+    impl EmbeddingProvider for RetryProgressProvider {
+        fn space(&self) -> &cc_semantic::types::VectorSpace {
+            self.fake.space()
+        }
+        fn embed_documents(
+            &self,
+            inputs: &[DocumentInput],
+        ) -> Result<Vec<Vec<f32>>, ProviderError> {
+            let worker = self.worker.lock().unwrap().upgrade().unwrap();
+            assert!(worker.running.load(Ordering::Acquire));
+            assert_eq!(
+                worker.services.query_pins(),
+                1,
+                "physical attempt retains coordinator pin"
+            );
+            if self.calls.fetch_add(1, Ordering::SeqCst) == 0 {
+                return Err(ProviderError::Timeout);
+            }
+            self.fake.embed_documents(inputs)
+        }
+        fn embed_queries(&self, inputs: &[QueryInput]) -> Result<Vec<Vec<f32>>, ProviderError> {
+            self.fake.embed_queries(inputs)
+        }
+    }
+    type RetryProgressRow = (i64, String, u32, f64, Option<String>, Option<String>);
+    async fn retry_progress_fixture(expect_stranded: bool, width: u32) {
+        let _serial = test_gate().lock().await;
+        let dir = tempfile::tempdir_in("/tmp").unwrap();
+        let mut config = ProjectConfig::default();
+        config.semantic.enabled = true;
+        config.semantic.model_id = "fake/retry-progress".into();
+        config.semantic.dimensions = Some(2);
+        config.semantic.max_input_tokens = Some(8192);
+        config.semantic.max_batch_items = Some(16);
+        config.semantic.max_concurrent_per_project = width;
+        config.semantic.endpoint = "https://semantic.invalid/v1".into();
+        std::fs::write(
+            dir.path().join(".codecortex.json"),
+            serde_json::to_vec(&config).unwrap(),
+        )
+        .unwrap();
+        let mut index = crate::engine::CodeIndex::new(Some(dir.path())).unwrap();
+        let mut fake_config =
+            FakeProviderConfig::new(index.semantic_subsystem().unwrap().space.clone());
+        fake_config.delay_per_call = std::time::Duration::from_millis(50);
+        let provider = Arc::new(RetryProgressProvider {
+            fake: FakeProvider::new(fake_config),
+            calls: std::sync::atomic::AtomicUsize::new(0),
+            worker: Mutex::new(std::sync::Weak::new()),
+        });
+        index.install_semantic_provider(provider.clone()).unwrap();
+        let worker = index.semantic_runtime().unwrap();
+        *provider.worker.lock().unwrap() = Arc::downgrade(&worker);
+        // Exhaust the real cursor through an empty scheduled bootstrap, rather
+        // than changing internal cursor state or relying on bare idle SQL.
+        assert!(worker.schedule());
+        wait_for_idle(&worker).await;
+        assert!(worker.backfill_cursor.lock().unwrap().is_none());
+        assert_eq!(provider.calls.load(Ordering::SeqCst), 0);
+        for n in 0..4 {
+            std::fs::write(
+                dir.path().join(format!("retry_{n}.rs")),
+                format!("pub fn retry_{n}() -> u32 {{ {n} }}\n"),
+            )
+            .unwrap();
+        }
+        let shared = Arc::new(std::sync::RwLock::new(index));
+        let build = shared.clone();
+        tokio::task::spawn_blocking(move || crate::handlers::core::build_index(build, true))
+            .await
+            .unwrap()
+            .unwrap();
+        wait_for_idle(&worker).await;
+        let conn = worker.db.read_conn().unwrap();
+        let rows: Vec<RetryProgressRow> = conn
+            .prepare("SELECT task_id,state,attempt_count,available_at,lease_token,last_error FROM semantic_outbox ORDER BY task_id")
+            .unwrap()
+            .query_map([], |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?, r.get(3)?, r.get(4)?, r.get(5)?)))
+            .unwrap()
+            .map(Result::unwrap)
+            .collect();
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap()
+            .as_secs_f64();
+        let ready = rows
+            .iter()
+            .filter(|r| r.1 == "pending" && r.3 <= now)
+            .count();
+        let done = rows.iter().filter(|r| r.1 == "done").count();
+        let retry: Vec<_> = rows
+            .iter()
+            .filter(|r| r.1 == "pending" && r.2 == 1 && r.3 > now)
+            .collect();
+        let calls = provider.calls.load(Ordering::SeqCst);
+        println!("RETRY_PROGRESS width={width} calls={calls} done={done} ready_stranded={ready} retry_backoff={} cursor={:?} requested={} running={} pins={} rows={rows:?}", retry.len(), worker.backfill_cursor.lock().unwrap(),worker.requested.load(Ordering::Acquire),worker.running.load(Ordering::Acquire),worker.services.query_pins());
+        assert_eq!(rows.len(), 4);
+        assert_eq!(retry.len(), 1, "one started timeout retains fenced backoff");
+        assert!(retry[0].5.is_some());
+        assert!(
+            rows.iter()
+                .all(|r| r.1 != "claimed" && (r.1 != "pending" || r.4.is_none())),
+            "no live claim survives idle; done retains its historical token"
+        );
+        assert!(
+            rows.iter().all(|r| r.2 <= 1),
+            "no double attempt or immediate retry"
+        );
+        assert!(worker.backfill_cursor.lock().unwrap().is_none());
+        assert!(!worker.requested.load(Ordering::Acquire));
+        assert_eq!(worker.services.query_pins(), 0);
+        assert!(
+            worker.status.failure_reason().is_none(),
+            "NeedsRetry is handled, not a runtime Err"
+        );
+        if expect_stranded {
+            assert!(ready > 0 && calls < 4 && done < 3);
+        } else {
+            assert_eq!(ready, 0);
+            assert_eq!(done, 3);
+            assert_eq!(calls, 4);
+            assert!(rows.iter().all(|r| r.2 == 1));
+        }
+        // A subsequent ordinary request before available_at does not pay for
+        // the timeout again. Future-backoff wakeup remains outside this fix.
+        drop(conn);
+        assert!(worker.schedule());
+        wait_for_idle(&worker).await;
+        assert_eq!(
+            provider.calls.load(Ordering::SeqCst),
+            if expect_stranded { 4 } else { calls }
+        );
+        worker.close();
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn recoverable_retry_drains_other_ready_documents() {
+        retry_progress_fixture(false, 2).await;
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn recoverable_retry_width_zero_drains_other_ready_documents() {
+        retry_progress_fixture(false, 0).await;
+    }
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    #[ignore = "retained frozen parallel counterexample; run on 5cce6eb with this test-only fixture"]
+    async fn recoverable_retry_frozen_parallel_counterexample() {
+        retry_progress_fixture(true, 2).await;
+    }
+
     #[test]
     fn closed_round_and_missing_executor_never_contact_provider() {
         let (_dir, runtime, provider) = runtime();

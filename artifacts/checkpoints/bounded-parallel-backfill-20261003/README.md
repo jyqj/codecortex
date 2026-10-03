@@ -58,3 +58,5 @@ PR116 `9a4f97877f1b18af77013f7bed7cd047994e26f3`正式100k单pair300s仍均未re
 初始rustup代理写 `/home/agent/.rustup` EROFS及第二次cargo-fmt选代理的失败全部保留；没有重试初始化、改HOME/RUSTUP_HOME、chmod/remount或安装toolchain。父随后明确授权已存在真实官方binary路径的独立执行。实际Cargo依赖缺reqwest后按授权从官方registry获取，Cargo.lock未改。真实rustfmt/Clippy路径直接执行且成功。原编译错误（不存在tracing/space字段）、新fixture列名/FromSql错误、Clippy错误原日志保留，未伪造初次通过。
 
 交付仍是draft review候选；没有Forbidden/自动审批拒绝、真实provider/heldout、GC/WAL kill/crash/fault、正式100k、merge/forcepush/deploy。本轮在证据和draft交付后停止，共享gate修复/生产决定归父。
+
+交付 draft：https://github.com/jyqj/codecortex/pull/119。connector 创建结果确认 owner=jyqj、draft=true、base=52a50730、head=7d3e3b6；源码固定5cce6eb，后续evidence-only提交不改crates。最终receipt提交head由最终交付回复另行核验。源码diff whitespace检查通过；raw日志EOF空行和unified patch必要context空格为保全原证据未规范化，whole-evidence whitespace检查原失败另保留，不能称其通过。

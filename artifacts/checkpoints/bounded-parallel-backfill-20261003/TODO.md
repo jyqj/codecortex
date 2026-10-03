@@ -8,7 +8,7 @@
 - [x] Source identity frozen; three DB production files match PR114 and frozen807f471.
 - [x] Source identity then original-protocol 1k/5k paired AB twice; ready/claim/providerpeak/IO/RSS with raw failures/order/noise preserved.
 - [x] Source-only commit 5cce6eb3af90b79c786d30f349ca6a674dfcd4a1 pushed; native remote exact verified.
-- [ ] Evidence commit / self-owned draft PR / connector remote verification, then stop.
+- [x] Evidence commit7d3e3b6 / own draftPR119 / connector base+head+owner verified; final receipt head separately verified in delivery.
 - [ ] BLOCKED parent decision: effective shared first-wins gate does not honor later4/2; no production acceptance or100k.
 
 - [x] Parent followups: actual shared gate doc2+query1+neighbor-doc2 counterexample retained; normal-enqueue partial claimed2/completed2/ready0; source fixed for review.

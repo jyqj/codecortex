@@ -1,0 +1,1913 @@
+{
+  "integrate_production": false,
+  "performance_acceptance": false,
+  "reason": "Both fail the unchanged 300s readiness gate; more partial work is not a pass.",
+  "statistical_significance": "not claimed; exactly one pre-registered sequential pair",
+  "prior_5k_regression": {
+    "baseline_ready_seconds": [
+      22.965,
+      25.051
+    ],
+    "candidate_ready_seconds": [
+      25.963,
+      26.654
+    ],
+    "physical_write_increase_percent": 4.4,
+    "retained": true
+  },
+  "old_PR108": "not current control",
+  "production_changed": false,
+  "correctness_review": "independent; not covered by evidence replay",
+  "results": {
+    "baseline": {
+      "source_sha": "5ffbadcf48e26523b2eb46beda0d187a2e2e29cd",
+      "production_sha": "11af963c33cfa68cc9497e355464c1d6d058adac",
+      "binary_sha256": "48e9cb9c9b1b30d38ef8944aaf1e51e5ce801fb16f48629d0b044fd4de2f168c",
+      "status": "failed",
+      "cold_seconds": 36.066913796999984,
+      "ready_seconds": null,
+      "cold_plus_ready_seconds": null,
+      "readiness_pass": false,
+      "boundary": {
+        "label": "300s boundary read-only observation; actual time recorded; never cleanup counts",
+        "read_start_ns": 1084807547962,
+        "elapsed_drain_seconds": 300.0001575079999,
+        "snapshot_query_start_ns": 1084808301590,
+        "snapshot_elapsed_drain_seconds": 300.00091136000003,
+        "counts": {
+          "files": 100000,
+          "symbols": 100000,
+          "chunks": 100000,
+          "document_manifest": 100000,
+          "semantic_manifest": 25081
+        },
+        "outbox_states": {
+          "done": 25081,
+          "pending": 74919
+        },
+        "read_end_ns": 1084862262327
+      },
+      "cleanup_tail": {
+        "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/baseline/live/n100000/repo/.codecortex/index.sqlite3",
+        "counts": {
+          "files": 100000,
+          "symbols": 100000,
+          "chunks": 100000,
+          "document_manifest": 100000,
+          "semantic_manifest": 25600,
+          "edge_tables": {
+            "call_edges": 0,
+            "test_edges": 0,
+            "data_flow_edges": 0,
+            "co_change_edges": 0,
+            "http_call_edges": 0,
+            "semantic_edges": 200000,
+            "infra_edges": 0
+          },
+          "outbox_states": {
+            "done": 25600,
+            "pending": 74400
+          },
+          "attempt_count": 25600
+        },
+        "integrity": "ok",
+        "foreign_key_errors": 0,
+        "files": [
+          {
+            "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/baseline/live/n100000/repo/.codecortex/index.sqlite3-shm",
+            "logical_bytes": 32768,
+            "allocated_bytes": 32768
+          },
+          {
+            "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/baseline/live/n100000/repo/.codecortex/index.sqlite3-wal",
+            "logical_bytes": 0,
+            "allocated_bytes": 0
+          },
+          {
+            "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/baseline/live/n100000/repo/.codecortex/index.sqlite3",
+            "logical_bytes": 945823744,
+            "allocated_bytes": 945827840
+          }
+        ],
+        "inspection_phase": "after cleanup; not within 300s ready deadline",
+        "elapsed_drain_seconds": 311.13571551300004
+      },
+      "ready_final": null,
+      "not_run": [
+        "ready_manifest_integrity_fk",
+        "bounded_concurrency",
+        "normal_exit",
+        "reopen_stability"
+      ],
+      "failures": [
+        {
+          "phase": "backfill-drain",
+          "type": "TimeoutError",
+          "error": "backfill did not become ready in 300s",
+          "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/baseline/run.py\", line 137, in <module>\n    if time.monotonic()>=deadline:raise TimeoutError(\"backfill did not become ready in 300s\")\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: backfill did not become ready in 300s\n"
+        }
+      ],
+      "post_ready_normal_exit_check": false,
+      "cleanup_exit": {
+        "exit_code": 0,
+        "forced": false,
+        "wall_seconds": 7.084515706000047
+      },
+      "process_exits": [
+        {
+          "exit_code": 0,
+          "forced": false,
+          "wall_seconds": 7.084515706000047
+        }
+      ],
+      "status_observations": 1335,
+      "status_errors": 0,
+      "rpc_errors": [],
+      "status_latency_ms": {
+        "count": 1335,
+        "min_ms": 10.016108,
+        "p50_ms": 22.738597,
+        "p95_ms": 34.760127,
+        "max_ms": 185.773581
+      },
+      "poll_gap_ms": {
+        "count": 1334,
+        "min": 200.425523,
+        "p50": 200.664577,
+        "p95": 201.767196,
+        "max": 256.166566
+      },
+      "http": {
+        "pre_release": {
+          "entered_requests": 1,
+          "entered_inputs": 1,
+          "returned_requests": 0,
+          "returned_inputs": 0,
+          "actual_batch_sizes": {
+            "1": 1
+          },
+          "server_duration_ms": {
+            "count": 0,
+            "min": null,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          "request_enter_gap_ms": {
+            "count": 0,
+            "min": null,
+            "p50": null,
+            "p95": null,
+            "max": null
+          }
+        },
+        "within300s": {
+          "entered_requests": 25080,
+          "entered_inputs": 25080,
+          "returned_requests": 25081,
+          "returned_inputs": 25081,
+          "actual_batch_sizes": {
+            "1": 25080
+          },
+          "server_duration_ms": {
+            "count": 25081,
+            "min": 0.172479,
+            "p50": 0.318219,
+            "p95": 0.578697,
+            "max": 3729.540974
+          },
+          "request_enter_gap_ms": {
+            "count": 25079,
+            "min": 3.232595,
+            "p50": 10.177346,
+            "p95": 25.983396,
+            "max": 210.765717
+          }
+        },
+        "cleanup_tail": {
+          "entered_requests": 519,
+          "entered_inputs": 519,
+          "returned_requests": 519,
+          "returned_inputs": 519,
+          "actual_batch_sizes": {
+            "1": 519
+          },
+          "server_duration_ms": {
+            "count": 519,
+            "min": 0.233278,
+            "p50": 0.293483,
+            "p95": 0.503518,
+            "max": 2.014866
+          },
+          "request_enter_gap_ms": {
+            "count": 518,
+            "min": 10.93872,
+            "p50": 13.223127,
+            "p95": 17.06099,
+            "max": 27.459366
+          }
+        }
+      },
+      "resources": {
+        "phase_counters": {
+          "startup": {
+            "product": {
+              "samples": 3,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10200,
+                "cpu_user_seconds": 0.0,
+                "cpu_system_seconds": 0.0,
+                "io": {
+                  "rchar": 5700,
+                  "wchar": 0,
+                  "syscr": 10,
+                  "syscw": 0,
+                  "read_bytes": 0,
+                  "write_bytes": 0,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1986560,
+                "rss_bytes": 1720320
+              },
+              "last": {
+                "pid": 10200,
+                "cpu_user_seconds": 0.02,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 10239,
+                  "wchar": 4620,
+                  "syscr": 29,
+                  "syscw": 3,
+                  "read_bytes": 0,
+                  "write_bytes": 32768,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 9465856,
+                "rss_bytes": 9236480
+              },
+              "sampled_max_rss_bytes": 9236480,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.02,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 4539,
+                  "wchar": 4620,
+                  "syscr": 19,
+                  "syscw": 3,
+                  "read_bytes": 0,
+                  "write_bytes": 32768,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 0,
+              "unknown_samples": 3,
+              "first": null,
+              "last": null,
+              "sampled_max_rss_bytes": null,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown."
+            },
+            "runner": {
+              "samples": 3,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10194,
+                "cpu_user_seconds": 9.5,
+                "cpu_system_seconds": 3.14,
+                "io": {
+                  "rchar": 39385761,
+                  "wchar": 8380662,
+                  "syscr": 1398,
+                  "syscw": 100206,
+                  "read_bytes": 24576,
+                  "write_bytes": 443269120,
+                  "cancelled_write_bytes": 4096
+                },
+                "vmhwm_bytes": 51064832,
+                "rss_bytes": 22204416
+              },
+              "last": {
+                "pid": 10194,
+                "cpu_user_seconds": 9.5,
+                "cpu_system_seconds": 3.14,
+                "io": {
+                  "rchar": 39395342,
+                  "wchar": 8384656,
+                  "syscr": 1440,
+                  "syscw": 100208,
+                  "read_bytes": 24576,
+                  "write_bytes": 443273216,
+                  "cancelled_write_bytes": 4096
+                },
+                "vmhwm_bytes": 51064832,
+                "rss_bytes": 22204416
+              },
+              "sampled_max_rss_bytes": 22204416,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.0,
+                "cpu_system_seconds": 0.0,
+                "io": {
+                  "rchar": 9581,
+                  "wchar": 3994,
+                  "syscr": 42,
+                  "syscw": 2,
+                  "read_bytes": 0,
+                  "write_bytes": 4096,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            }
+          },
+          "cold-empty-index-build": {
+            "product": {
+              "samples": 1860,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10200,
+                "cpu_user_seconds": 0.03,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 139410,
+                  "wchar": 1667738,
+                  "syscr": 113,
+                  "syscw": 815,
+                  "read_bytes": 0,
+                  "write_bytes": 1712128,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 16273408,
+                "rss_bytes": 15769600
+              },
+              "last": {
+                "pid": 10200,
+                "cpu_user_seconds": 38.81,
+                "cpu_system_seconds": 8.51,
+                "io": {
+                  "rchar": 1958548945,
+                  "wchar": 4353131873,
+                  "syscr": 677761,
+                  "syscw": 2101072,
+                  "read_bytes": 0,
+                  "write_bytes": 1659682816,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1702150144,
+                "rss_bytes": 1561964544
+              },
+              "sampled_max_rss_bytes": 1691402240,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 38.78,
+                "cpu_system_seconds": 8.5,
+                "io": {
+                  "rchar": 1958409535,
+                  "wchar": 4351464135,
+                  "syscr": 677648,
+                  "syscw": 2100257,
+                  "read_bytes": 0,
+                  "write_bytes": 1657970688,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 1860,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10199,
+                "cpu_user_seconds": 0.05,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 36,
+                  "syscr": 225,
+                  "syscw": 1,
+                  "read_bytes": 4096,
+                  "write_bytes": 8192,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 17694720,
+                "rss_bytes": 17563648
+              },
+              "last": {
+                "pid": 10199,
+                "cpu_user_seconds": 0.1,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 217,
+                  "syscr": 225,
+                  "syscw": 2,
+                  "read_bytes": 4096,
+                  "write_bytes": 12288,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 18284544,
+                "rss_bytes": 18219008
+              },
+              "sampled_max_rss_bytes": 18219008,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.05,
+                "cpu_system_seconds": 0.0,
+                "io": {
+                  "rchar": 0,
+                  "wchar": 181,
+                  "syscr": 0,
+                  "syscw": 1,
+                  "read_bytes": 0,
+                  "write_bytes": 4096,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "runner": {
+              "samples": 1860,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10194,
+                "cpu_user_seconds": 9.5,
+                "cpu_system_seconds": 3.15,
+                "io": {
+                  "rchar": 39426516,
+                  "wchar": 8447497,
+                  "syscr": 1464,
+                  "syscw": 100217,
+                  "read_bytes": 24576,
+                  "write_bytes": 443338752,
+                  "cancelled_write_bytes": 4096
+                },
+                "vmhwm_bytes": 51064832,
+                "rss_bytes": 22335488
+              },
+              "last": {
+                "pid": 10194,
+                "cpu_user_seconds": 13.86,
+                "cpu_system_seconds": 4.79,
+                "io": {
+                  "rchar": 5046256472,
+                  "wchar": 26545135,
+                  "syscr": 1269535,
+                  "syscw": 102079,
+                  "read_bytes": 24576,
+                  "write_bytes": 461455360,
+                  "cancelled_write_bytes": 8192
+                },
+                "vmhwm_bytes": 78880768,
+                "rss_bytes": 53153792
+              },
+              "sampled_max_rss_bytes": 75735040,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 4.36,
+                "cpu_system_seconds": 1.64,
+                "io": {
+                  "rchar": 5006829956,
+                  "wchar": 18097638,
+                  "syscr": 1268071,
+                  "syscw": 1862,
+                  "read_bytes": 0,
+                  "write_bytes": 18116608,
+                  "cancelled_write_bytes": 4096
+                }
+              }
+            }
+          },
+          "backfill-drain": {
+            "product": {
+              "samples": 14103,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10200,
+                "cpu_user_seconds": 38.82,
+                "cpu_system_seconds": 8.51,
+                "io": {
+                  "rchar": 1958696955,
+                  "wchar": 4353448328,
+                  "syscr": 677816,
+                  "syscw": 2101247,
+                  "read_bytes": 0,
+                  "write_bytes": 1660104704,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1702150144,
+                "rss_bytes": 1561964544
+              },
+              "last": {
+                "pid": 10200,
+                "cpu_user_seconds": 220.49,
+                "cpu_system_seconds": 49.55,
+                "io": {
+                  "rchar": 54466329845,
+                  "wchar": 7265609667,
+                  "syscr": 13594509,
+                  "syscw": 3494908,
+                  "read_bytes": 0,
+                  "write_bytes": 4973936640,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1942204416,
+                "rss_bytes": 1941680128
+              },
+              "sampled_max_rss_bytes": 1941680128,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 181.67,
+                "cpu_system_seconds": 41.04,
+                "io": {
+                  "rchar": 52507632890,
+                  "wchar": 2912161339,
+                  "syscr": 12916693,
+                  "syscw": 1393661,
+                  "read_bytes": 0,
+                  "write_bytes": 3313831936,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 14103,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10199,
+                "cpu_user_seconds": 0.1,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 1770,
+                  "syscr": 225,
+                  "syscw": 13,
+                  "read_bytes": 4096,
+                  "write_bytes": 12288,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 18345984,
+                "rss_bytes": 18219008
+              },
+              "last": {
+                "pid": 10199,
+                "cpu_user_seconds": 9.09,
+                "cpu_system_seconds": 3.95,
+                "io": {
+                  "rchar": 2315280,
+                  "wchar": 7437779,
+                  "syscr": 226,
+                  "syscw": 50171,
+                  "read_bytes": 4096,
+                  "write_bytes": 7454720,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 19447808,
+                "rss_bytes": 18759680
+              },
+              "sampled_max_rss_bytes": 19054592,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 8.99,
+                "cpu_system_seconds": 3.94,
+                "io": {
+                  "rchar": 1,
+                  "wchar": 7436009,
+                  "syscr": 1,
+                  "syscw": 50158,
+                  "read_bytes": 0,
+                  "write_bytes": 7442432,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "runner": {
+              "samples": 14103,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10194,
+                "cpu_user_seconds": 13.9,
+                "cpu_system_seconds": 4.8,
+                "io": {
+                  "rchar": 5055310979,
+                  "wchar": 30056885,
+                  "syscr": 1271770,
+                  "syscw": 102082,
+                  "read_bytes": 24576,
+                  "write_bytes": 464973824,
+                  "cancelled_write_bytes": 8192
+                },
+                "vmhwm_bytes": 78880768,
+                "rss_bytes": 53972992
+              },
+              "last": {
+                "pid": 10194,
+                "cpu_user_seconds": 28.1,
+                "cpu_system_seconds": 8.32,
+                "io": {
+                  "rchar": 5192672914,
+                  "wchar": 102106806,
+                  "syscr": 1655358,
+                  "syscw": 121528,
+                  "read_bytes": 24576,
+                  "write_bytes": 538378240,
+                  "cancelled_write_bytes": 12288
+                },
+                "vmhwm_bytes": 78880768,
+                "rss_bytes": 54206464
+              },
+              "sampled_max_rss_bytes": 54206464,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 14.2,
+                "cpu_system_seconds": 3.52,
+                "io": {
+                  "rchar": 137361935,
+                  "wchar": 72049921,
+                  "syscr": 383588,
+                  "syscw": 19446,
+                  "read_bytes": 0,
+                  "write_bytes": 73404416,
+                  "cancelled_write_bytes": 4096
+                }
+              }
+            }
+          },
+          "normal-eof-exit": {
+            "product": {
+              "samples": 333,
+              "unknown_samples": 5,
+              "first": {
+                "pid": 10200,
+                "cpu_user_seconds": 220.56,
+                "cpu_system_seconds": 49.55,
+                "io": {
+                  "rchar": 54466430939,
+                  "wchar": 7265819443,
+                  "syscr": 13594546,
+                  "syscw": 3495036,
+                  "read_bytes": 0,
+                  "write_bytes": 4974190592,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1942089728,
+                "rss_bytes": 1941680128
+              },
+              "last": {
+                "pid": 10200,
+                "cpu_user_seconds": 225.19,
+                "cpu_system_seconds": 49.95,
+                "io": {
+                  "rchar": 54498527323,
+                  "wchar": 7318490682,
+                  "syscr": 13604345,
+                  "syscw": 3520699,
+                  "read_bytes": 0,
+                  "write_bytes": 5035180032,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1942089728,
+                "rss_bytes": 1941680128
+              },
+              "sampled_max_rss_bytes": 1941680128,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 4.63,
+                "cpu_system_seconds": 0.4,
+                "io": {
+                  "rchar": 32096384,
+                  "wchar": 52671239,
+                  "syscr": 9799,
+                  "syscw": 25663,
+                  "read_bytes": 0,
+                  "write_bytes": 60989440,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 338,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10199,
+                "cpu_user_seconds": 9.09,
+                "cpu_system_seconds": 3.95,
+                "io": {
+                  "rchar": 2315280,
+                  "wchar": 7438377,
+                  "syscr": 226,
+                  "syscw": 50175,
+                  "read_bytes": 4096,
+                  "write_bytes": 7458816,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 19447808,
+                "rss_bytes": 18759680
+              },
+              "last": {
+                "pid": 10199,
+                "cpu_user_seconds": 9.24,
+                "cpu_system_seconds": 4.01,
+                "io": {
+                  "rchar": 2315280,
+                  "wchar": 7591764,
+                  "syscr": 226,
+                  "syscw": 51201,
+                  "read_bytes": 4096,
+                  "write_bytes": 7610368,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 19447808,
+                "rss_bytes": 18759680
+              },
+              "sampled_max_rss_bytes": 18759680,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.15,
+                "cpu_system_seconds": 0.06,
+                "io": {
+                  "rchar": 0,
+                  "wchar": 153387,
+                  "syscr": 0,
+                  "syscw": 1026,
+                  "read_bytes": 0,
+                  "write_bytes": 151552,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "runner": {
+              "samples": 338,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 10194,
+                "cpu_user_seconds": 28.13,
+                "cpu_system_seconds": 8.34,
+                "io": {
+                  "rchar": 5192679401,
+                  "wchar": 106306999,
+                  "syscr": 1655386,
+                  "syscw": 121530,
+                  "read_bytes": 24576,
+                  "write_bytes": 542584832,
+                  "cancelled_write_bytes": 12288
+                },
+                "vmhwm_bytes": 78880768,
+                "rss_bytes": 47185920
+              },
+              "last": {
+                "pid": 10194,
+                "cpu_user_seconds": 28.35,
+                "cpu_system_seconds": 8.4,
+                "io": {
+                  "rchar": 5194847525,
+                  "wchar": 107432487,
+                  "syscr": 1664109,
+                  "syscw": 121867,
+                  "read_bytes": 24576,
+                  "write_bytes": 543711232,
+                  "cancelled_write_bytes": 12288
+                },
+                "vmhwm_bytes": 78880768,
+                "rss_bytes": 47185920
+              },
+              "sampled_max_rss_bytes": 47185920,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.22,
+                "cpu_system_seconds": 0.06,
+                "io": {
+                  "rchar": 2168124,
+                  "wchar": 1125488,
+                  "syscr": 8723,
+                  "syscw": 337,
+                  "read_bytes": 0,
+                  "write_bytes": 1126400,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            }
+          }
+        },
+        "root_and_server_observations": {
+          "product": {
+            "first": {
+              "pid": 10200,
+              "cpu_user_seconds": 0.0,
+              "cpu_system_seconds": 0.0,
+              "io": {
+                "rchar": 5700,
+                "wchar": 0,
+                "syscr": 10,
+                "syscw": 0,
+                "read_bytes": 0,
+                "write_bytes": 0,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 1986560,
+              "rss_bytes": 1720320
+            },
+            "last": {
+              "pid": 10200,
+              "cpu_user_seconds": 225.19,
+              "cpu_system_seconds": 49.95,
+              "io": {
+                "rchar": 54498527323,
+                "wchar": 7318490682,
+                "syscr": 13604345,
+                "syscw": 3520699,
+                "read_bytes": 0,
+                "write_bytes": 5035180032,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 1942089728,
+              "rss_bytes": 1941680128
+            },
+            "sampled_max_rss_bytes": 1941680128
+          },
+          "model": {
+            "first": {
+              "pid": 10199,
+              "cpu_user_seconds": 0.05,
+              "cpu_system_seconds": 0.01,
+              "io": {
+                "rchar": 2315279,
+                "wchar": 36,
+                "syscr": 225,
+                "syscw": 1,
+                "read_bytes": 4096,
+                "write_bytes": 8192,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 17694720,
+              "rss_bytes": 17563648
+            },
+            "last": {
+              "pid": 10199,
+              "cpu_user_seconds": 9.24,
+              "cpu_system_seconds": 4.01,
+              "io": {
+                "rchar": 2315280,
+                "wchar": 7591764,
+                "syscr": 226,
+                "syscw": 51201,
+                "read_bytes": 4096,
+                "write_bytes": 7610368,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 19447808,
+              "rss_bytes": 18759680
+            },
+            "sampled_max_rss_bytes": 19054592
+          },
+          "runner": {
+            "first": {
+              "pid": 10194,
+              "cpu_user_seconds": 9.5,
+              "cpu_system_seconds": 3.14,
+              "io": {
+                "rchar": 39385761,
+                "wchar": 8380662,
+                "syscr": 1398,
+                "syscw": 100206,
+                "read_bytes": 24576,
+                "write_bytes": 443269120,
+                "cancelled_write_bytes": 4096
+              },
+              "vmhwm_bytes": 51064832,
+              "rss_bytes": 22204416
+            },
+            "last": {
+              "pid": 10194,
+              "cpu_user_seconds": 28.35,
+              "cpu_system_seconds": 8.4,
+              "io": {
+                "rchar": 5194847525,
+                "wchar": 107432487,
+                "syscr": 1664109,
+                "syscw": 121867,
+                "read_bytes": 24576,
+                "write_bytes": 543711232,
+                "cancelled_write_bytes": 12288
+              },
+              "vmhwm_bytes": 78880768,
+              "rss_bytes": 47185920
+            },
+            "sampled_max_rss_bytes": 75735040
+          }
+        },
+        "sampled_rss": {
+          "phases": {
+            "startup": {
+              "samples": 3,
+              "root_rss_max_bytes": 9236480,
+              "root_rss_median_bytes": 6995968,
+              "root_unreadable_samples": 0,
+              "observable_tree_sampled_sum_max_bytes": 9236480,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 11,
+              "observable_pids": [
+                10200
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 3741556736
+            },
+            "cold-empty-index-build": {
+              "samples": 1860,
+              "root_rss_max_bytes": 1691402240,
+              "root_rss_median_bytes": 1588772864.0,
+              "root_unreadable_samples": 0,
+              "observable_tree_sampled_sum_max_bytes": 1691664384,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 28940,
+              "observable_pids": [
+                10200
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 7005913088
+            },
+            "backfill-drain": {
+              "samples": 14103,
+              "root_rss_max_bytes": 1941680128,
+              "root_rss_median_bytes": 1910878208,
+              "root_unreadable_samples": 0,
+              "observable_tree_sampled_sum_max_bytes": 1941680128,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 253681,
+              "observable_pids": [
+                10200
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 7141842944
+            },
+            "normal-eof-exit": {
+              "samples": 338,
+              "root_rss_max_bytes": 1941680128,
+              "root_rss_median_bytes": 1941680128,
+              "root_unreadable_samples": 5,
+              "observable_tree_sampled_sum_max_bytes": 1941680128,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 3343,
+              "observable_pids": [
+                10200
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 7146577920
+            }
+          },
+          "limits": "non-atomic 20ms sampled RSS, shared-page double counting, not PSS or exact lifetime peak; cgroup includes harness/build/cache and is not product RSS"
+        },
+        "complete_process_tree": "unknown if coverage errors; sampled sum is not complete tree or PSS"
+      },
+      "ready_deadline_seconds": 300
+    },
+    "candidate": {
+      "source_sha": "807f4710495a38bc6631549da2ab9623c83684b8",
+      "production_sha": "c73128b500c2a19daa8a293caa52afb711b03516",
+      "binary_sha256": "c024019060ad3fe8eaeacb041b2b22b31f3fcfef436b63c558a7ff5799e7f549",
+      "status": "failed",
+      "cold_seconds": 29.67985507100002,
+      "ready_seconds": null,
+      "cold_plus_ready_seconds": null,
+      "readiness_pass": false,
+      "boundary": {
+        "label": "300s boundary read-only observation; actual time recorded; never cleanup counts",
+        "read_start_ns": 1444088754053,
+        "elapsed_drain_seconds": 300.0001214990002,
+        "snapshot_query_start_ns": 1444089480546,
+        "snapshot_elapsed_drain_seconds": 300.00084804000016,
+        "counts": {
+          "files": 100000,
+          "symbols": 100000,
+          "chunks": 100000,
+          "document_manifest": 100000,
+          "semantic_manifest": 48809
+        },
+        "outbox_states": {
+          "claimed": 1,
+          "done": 48809,
+          "pending": 51190
+        },
+        "read_end_ns": 1444142336505
+      },
+      "cleanup_tail": {
+        "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/candidate/live/n100000/repo/.codecortex/index.sqlite3",
+        "counts": {
+          "files": 100000,
+          "symbols": 100000,
+          "chunks": 100000,
+          "document_manifest": 100000,
+          "semantic_manifest": 49152,
+          "edge_tables": {
+            "call_edges": 0,
+            "test_edges": 0,
+            "data_flow_edges": 0,
+            "co_change_edges": 0,
+            "http_call_edges": 0,
+            "semantic_edges": 200000,
+            "infra_edges": 0
+          },
+          "outbox_states": {
+            "done": 49152,
+            "pending": 50848
+          },
+          "attempt_count": 49152
+        },
+        "integrity": "ok",
+        "foreign_key_errors": 0,
+        "files": [
+          {
+            "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/candidate/live/n100000/repo/.codecortex/index.sqlite3-shm",
+            "logical_bytes": 32768,
+            "allocated_bytes": 32768
+          },
+          {
+            "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/candidate/live/n100000/repo/.codecortex/index.sqlite3-wal",
+            "logical_bytes": 0,
+            "allocated_bytes": 0
+          },
+          {
+            "path": "/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/candidate/live/n100000/repo/.codecortex/index.sqlite3",
+            "logical_bytes": 983085056,
+            "allocated_bytes": 983089152
+          }
+        ],
+        "inspection_phase": "after cleanup; not within 300s ready deadline",
+        "elapsed_drain_seconds": 305.4566256280002
+      },
+      "ready_final": null,
+      "not_run": [
+        "ready_manifest_integrity_fk",
+        "bounded_concurrency",
+        "normal_exit",
+        "reopen_stability"
+      ],
+      "failures": [
+        {
+          "phase": "backfill-drain",
+          "type": "TimeoutError",
+          "error": "backfill did not become ready in 300s",
+          "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/artifacts/checkpoints/fifo-100k-paired-decision-20261003/candidate/run.py\", line 137, in <module>\n    if time.monotonic()>=deadline:raise TimeoutError(\"backfill did not become ready in 300s\")\n                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTimeoutError: backfill did not become ready in 300s\n"
+        }
+      ],
+      "post_ready_normal_exit_check": false,
+      "cleanup_exit": {
+        "exit_code": 0,
+        "forced": false,
+        "wall_seconds": 1.5184336239999539
+      },
+      "process_exits": [
+        {
+          "exit_code": 0,
+          "forced": false,
+          "wall_seconds": 1.5184336239999539
+        }
+      ],
+      "status_observations": 1334,
+      "status_errors": 0,
+      "rpc_errors": [],
+      "status_latency_ms": {
+        "count": 1334,
+        "min_ms": 9.3649,
+        "p50_ms": 22.591509000000002,
+        "p95_ms": 37.826438,
+        "max_ms": 131.265854
+      },
+      "poll_gap_ms": {
+        "count": 1333,
+        "min": 200.408368,
+        "p50": 200.674016,
+        "p95": 202.00471,
+        "max": 294.073653
+      },
+      "http": {
+        "pre_release": {
+          "entered_requests": 1,
+          "entered_inputs": 1,
+          "returned_requests": 0,
+          "returned_inputs": 0,
+          "actual_batch_sizes": {
+            "1": 1
+          },
+          "server_duration_ms": {
+            "count": 0,
+            "min": null,
+            "p50": null,
+            "p95": null,
+            "max": null
+          },
+          "request_enter_gap_ms": {
+            "count": 0,
+            "min": null,
+            "p50": null,
+            "p95": null,
+            "max": null
+          }
+        },
+        "within300s": {
+          "entered_requests": 48808,
+          "entered_inputs": 48808,
+          "returned_requests": 48809,
+          "returned_inputs": 48809,
+          "actual_batch_sizes": {
+            "1": 48808
+          },
+          "server_duration_ms": {
+            "count": 48809,
+            "min": 0.173262,
+            "p50": 0.27825,
+            "p95": 0.554316,
+            "max": 3868.302683
+          },
+          "request_enter_gap_ms": {
+            "count": 48807,
+            "min": 2.948158,
+            "p50": 4.748613,
+            "p95": 11.810249,
+            "max": 1143.838391
+          }
+        },
+        "cleanup_tail": {
+          "entered_requests": 343,
+          "entered_inputs": 343,
+          "returned_requests": 343,
+          "returned_inputs": 343,
+          "actual_batch_sizes": {
+            "1": 343
+          },
+          "server_duration_ms": {
+            "count": 343,
+            "min": 0.189816,
+            "p50": 0.282607,
+            "p95": 0.471155,
+            "max": 3.439153
+          },
+          "request_enter_gap_ms": {
+            "count": 342,
+            "min": 3.087758,
+            "p50": 4.289639,
+            "p95": 6.283095,
+            "max": 23.255097
+          }
+        }
+      },
+      "resources": {
+        "phase_counters": {
+          "startup": {
+            "product": {
+              "samples": 3,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35952,
+                "cpu_user_seconds": 0.0,
+                "cpu_system_seconds": 0.0,
+                "io": {
+                  "rchar": 5700,
+                  "wchar": 0,
+                  "syscr": 10,
+                  "syscw": 0,
+                  "read_bytes": 0,
+                  "write_bytes": 0,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 802816,
+                "rss_bytes": 409600
+              },
+              "last": {
+                "pid": 35952,
+                "cpu_user_seconds": 0.02,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 14355,
+                  "wchar": 4753,
+                  "syscr": 31,
+                  "syscw": 13,
+                  "read_bytes": 0,
+                  "write_bytes": 65536,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 9482240,
+                "rss_bytes": 9220096
+              },
+              "sampled_max_rss_bytes": 9220096,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.02,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 8655,
+                  "wchar": 4753,
+                  "syscr": 21,
+                  "syscw": 13,
+                  "read_bytes": 0,
+                  "write_bytes": 65536,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 0,
+              "unknown_samples": 3,
+              "first": null,
+              "last": null,
+              "sampled_max_rss_bytes": null,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown."
+            },
+            "runner": {
+              "samples": 3,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35938,
+                "cpu_user_seconds": 8.91,
+                "cpu_system_seconds": 2.56,
+                "io": {
+                  "rchar": 39391933,
+                  "wchar": 8380665,
+                  "syscr": 1374,
+                  "syscw": 100206,
+                  "read_bytes": 0,
+                  "write_bytes": 443428864,
+                  "cancelled_write_bytes": 4096
+                },
+                "vmhwm_bytes": 51113984,
+                "rss_bytes": 21106688
+              },
+              "last": {
+                "pid": 35938,
+                "cpu_user_seconds": 8.91,
+                "cpu_system_seconds": 2.56,
+                "io": {
+                  "rchar": 39401518,
+                  "wchar": 8384654,
+                  "syscr": 1416,
+                  "syscw": 100208,
+                  "read_bytes": 0,
+                  "write_bytes": 443432960,
+                  "cancelled_write_bytes": 4096
+                },
+                "vmhwm_bytes": 51113984,
+                "rss_bytes": 21106688
+              },
+              "sampled_max_rss_bytes": 21106688,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.0,
+                "cpu_system_seconds": 0.0,
+                "io": {
+                  "rchar": 9585,
+                  "wchar": 3989,
+                  "syscr": 42,
+                  "syscw": 2,
+                  "read_bytes": 0,
+                  "write_bytes": 4096,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            }
+          },
+          "cold-empty-index-build": {
+            "product": {
+              "samples": 1581,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35952,
+                "cpu_user_seconds": 0.04,
+                "cpu_system_seconds": 0.02,
+                "io": {
+                  "rchar": 139415,
+                  "wchar": 1680122,
+                  "syscr": 113,
+                  "syscw": 824,
+                  "read_bytes": 0,
+                  "write_bytes": 1716224,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 16793600,
+                "rss_bytes": 16232448
+              },
+              "last": {
+                "pid": 35952,
+                "cpu_user_seconds": 31.93,
+                "cpu_system_seconds": 6.31,
+                "io": {
+                  "rchar": 1958561220,
+                  "wchar": 4353164801,
+                  "syscr": 677764,
+                  "syscw": 2101086,
+                  "read_bytes": 0,
+                  "write_bytes": 1659695104,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1691889664,
+                "rss_bytes": 1550114816
+              },
+              "sampled_max_rss_bytes": 1688481792,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 31.89,
+                "cpu_system_seconds": 6.29,
+                "io": {
+                  "rchar": 1958421805,
+                  "wchar": 4351484679,
+                  "syscr": 677651,
+                  "syscw": 2100262,
+                  "read_bytes": 0,
+                  "write_bytes": 1657978880,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 1581,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35951,
+                "cpu_user_seconds": 0.06,
+                "cpu_system_seconds": 0.0,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 36,
+                  "syscr": 225,
+                  "syscw": 1,
+                  "read_bytes": 0,
+                  "write_bytes": 8192,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 17690624,
+                "rss_bytes": 17563648
+              },
+              "last": {
+                "pid": 35951,
+                "cpu_user_seconds": 0.11,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 218,
+                  "syscr": 225,
+                  "syscw": 2,
+                  "read_bytes": 0,
+                  "write_bytes": 12288,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 18280448,
+                "rss_bytes": 17956864
+              },
+              "sampled_max_rss_bytes": 17956864,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.05,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 0,
+                  "wchar": 182,
+                  "syscr": 0,
+                  "syscw": 1,
+                  "read_bytes": 0,
+                  "write_bytes": 4096,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "runner": {
+              "samples": 1581,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35938,
+                "cpu_user_seconds": 8.91,
+                "cpu_system_seconds": 2.56,
+                "io": {
+                  "rchar": 39432693,
+                  "wchar": 8447505,
+                  "syscr": 1440,
+                  "syscw": 100217,
+                  "read_bytes": 0,
+                  "write_bytes": 443498496,
+                  "cancelled_write_bytes": 4096
+                },
+                "vmhwm_bytes": 51113984,
+                "rss_bytes": 21237760
+              },
+              "last": {
+                "pid": 35938,
+                "cpu_user_seconds": 12.71,
+                "cpu_system_seconds": 4.31,
+                "io": {
+                  "rchar": 5041110080,
+                  "wchar": 25392257,
+                  "syscr": 1261310,
+                  "syscw": 101800,
+                  "read_bytes": 0,
+                  "write_bytes": 460447744,
+                  "cancelled_write_bytes": 8192
+                },
+                "vmhwm_bytes": 78843904,
+                "rss_bytes": 52985856
+              },
+              "sampled_max_rss_bytes": 74911744,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 3.8,
+                "cpu_system_seconds": 1.75,
+                "io": {
+                  "rchar": 5001677387,
+                  "wchar": 16944752,
+                  "syscr": 1259870,
+                  "syscw": 1583,
+                  "read_bytes": 0,
+                  "write_bytes": 16949248,
+                  "cancelled_write_bytes": 4096
+                }
+              }
+            }
+          },
+          "backfill-drain": {
+            "product": {
+              "samples": 14018,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35952,
+                "cpu_user_seconds": 31.93,
+                "cpu_system_seconds": 6.31,
+                "io": {
+                  "rchar": 1958561220,
+                  "wchar": 4353165731,
+                  "syscr": 677764,
+                  "syscw": 2101088,
+                  "read_bytes": 0,
+                  "write_bytes": 1659727872,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1691889664,
+                "rss_bytes": 1550114816
+              },
+              "last": {
+                "pid": 35952,
+                "cpu_user_seconds": 110.73,
+                "cpu_system_seconds": 61.2,
+                "io": {
+                  "rchar": 48172952527,
+                  "wchar": 10059251770,
+                  "syscr": 12149050,
+                  "syscw": 4836493,
+                  "read_bytes": 4096,
+                  "write_bytes": 8147451904,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1977712640,
+                "rss_bytes": 1942515712
+              },
+              "sampled_max_rss_bytes": 1977581568,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 78.8,
+                "cpu_system_seconds": 54.89,
+                "io": {
+                  "rchar": 46214391307,
+                  "wchar": 5706086039,
+                  "syscr": 11471286,
+                  "syscw": 2735405,
+                  "read_bytes": 4096,
+                  "write_bytes": 6487724032,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "model": {
+              "samples": 14018,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35951,
+                "cpu_user_seconds": 0.11,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 1782,
+                  "syscr": 225,
+                  "syscw": 13,
+                  "read_bytes": 0,
+                  "write_bytes": 12288,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 18337792,
+                "rss_bytes": 18087936
+              },
+              "last": {
+                "pid": 35951,
+                "cpu_user_seconds": 15.06,
+                "cpu_system_seconds": 7.15,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 14578293,
+                  "syscr": 225,
+                  "syscw": 97663,
+                  "read_bytes": 0,
+                  "write_bytes": 14606336,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 19214336,
+                "rss_bytes": 19038208
+              },
+              "sampled_max_rss_bytes": 19038208,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 14.95,
+                "cpu_system_seconds": 7.14,
+                "io": {
+                  "rchar": 0,
+                  "wchar": 14576511,
+                  "syscr": 0,
+                  "syscw": 97650,
+                  "read_bytes": 0,
+                  "write_bytes": 14594048,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "runner": {
+              "samples": 14018,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35938,
+                "cpu_user_seconds": 12.75,
+                "cpu_system_seconds": 4.32,
+                "io": {
+                  "rchar": 5053551978,
+                  "wchar": 25397663,
+                  "syscr": 1264372,
+                  "syscw": 101802,
+                  "read_bytes": 0,
+                  "write_bytes": 462557184,
+                  "cancelled_write_bytes": 8192
+                },
+                "vmhwm_bytes": 78843904,
+                "rss_bytes": 54808576
+              },
+              "last": {
+                "pid": 35938,
+                "cpu_user_seconds": 28.1,
+                "cpu_system_seconds": 8.27,
+                "io": {
+                  "rchar": 5200548774,
+                  "wchar": 103149429,
+                  "syscr": 1648230,
+                  "syscw": 121161,
+                  "read_bytes": 0,
+                  "write_bytes": 539574272,
+                  "cancelled_write_bytes": 12288
+                },
+                "vmhwm_bytes": 78843904,
+                "rss_bytes": 50827264
+              },
+              "sampled_max_rss_bytes": 54808576,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 15.35,
+                "cpu_system_seconds": 3.95,
+                "io": {
+                  "rchar": 146996796,
+                  "wchar": 77751766,
+                  "syscr": 383858,
+                  "syscw": 19359,
+                  "read_bytes": 0,
+                  "write_bytes": 77017088,
+                  "cancelled_write_bytes": 4096
+                }
+              }
+            }
+          },
+          "normal-eof-exit": {
+            "product": {
+              "samples": 70,
+              "unknown_samples": 2,
+              "first": {
+                "pid": 35952,
+                "cpu_user_seconds": 110.74,
+                "cpu_system_seconds": 61.21,
+                "io": {
+                  "rchar": 48173615051,
+                  "wchar": 10060316114,
+                  "syscr": 12149259,
+                  "syscw": 4837079,
+                  "read_bytes": 4096,
+                  "write_bytes": 8148709376,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 1977712640,
+                "rss_bytes": 1942515712
+              },
+              "last": {
+                "pid": 35952,
+                "cpu_user_seconds": 110.92,
+                "cpu_system_seconds": 61.46,
+                "io": {
+                  "rchar": 48196252275,
+                  "wchar": 10096107076,
+                  "syscr": 12156004,
+                  "syscw": 4854165,
+                  "read_bytes": 4096,
+                  "write_bytes": 8189644800,
+                  "cancelled_write_bytes": 32768
+                },
+                "vmhwm_bytes": 1977712640,
+                "rss_bytes": 1740242944
+              },
+              "sampled_max_rss_bytes": 1942515712,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.18,
+                "cpu_system_seconds": 0.25,
+                "io": {
+                  "rchar": 22637224,
+                  "wchar": 35790962,
+                  "syscr": 6745,
+                  "syscw": 17086,
+                  "read_bytes": 0,
+                  "write_bytes": 40935424,
+                  "cancelled_write_bytes": 32768
+                }
+              }
+            },
+            "model": {
+              "samples": 72,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35951,
+                "cpu_user_seconds": 15.07,
+                "cpu_system_seconds": 7.15,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 14579489,
+                  "syscr": 225,
+                  "syscw": 97671,
+                  "read_bytes": 0,
+                  "write_bytes": 14606336,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 19214336,
+                "rss_bytes": 19038208
+              },
+              "last": {
+                "pid": 35951,
+                "cpu_user_seconds": 15.16,
+                "cpu_system_seconds": 7.19,
+                "io": {
+                  "rchar": 2315279,
+                  "wchar": 14674272,
+                  "syscr": 225,
+                  "syscw": 98305,
+                  "read_bytes": 0,
+                  "write_bytes": 14700544,
+                  "cancelled_write_bytes": 0
+                },
+                "vmhwm_bytes": 19214336,
+                "rss_bytes": 19038208
+              },
+              "sampled_max_rss_bytes": 19038208,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.09,
+                "cpu_system_seconds": 0.04,
+                "io": {
+                  "rchar": 0,
+                  "wchar": 94783,
+                  "syscr": 0,
+                  "syscw": 634,
+                  "read_bytes": 0,
+                  "write_bytes": 94208,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            },
+            "runner": {
+              "samples": 72,
+              "unknown_samples": 0,
+              "first": {
+                "pid": 35938,
+                "cpu_user_seconds": 28.1,
+                "cpu_system_seconds": 8.27,
+                "io": {
+                  "rchar": 5200555262,
+                  "wchar": 103153617,
+                  "syscr": 1648256,
+                  "syscw": 121162,
+                  "read_bytes": 0,
+                  "write_bytes": 539578368,
+                  "cancelled_write_bytes": 12288
+                },
+                "vmhwm_bytes": 78843904,
+                "rss_bytes": 50827264
+              },
+              "last": {
+                "pid": 35938,
+                "cpu_user_seconds": 28.15,
+                "cpu_system_seconds": 8.28,
+                "io": {
+                  "rchar": 5201010067,
+                  "wchar": 103391002,
+                  "syscr": 1650087,
+                  "syscw": 121233,
+                  "read_bytes": 0,
+                  "write_bytes": 539815936,
+                  "cancelled_write_bytes": 12288
+                },
+                "vmhwm_bytes": 78843904,
+                "rss_bytes": 50827264
+              },
+              "sampled_max_rss_bytes": 50827264,
+              "counter_note": "Root lifetime cumulative counters; sampled endpoints omit any work after last readable sample. Phase delta is difference of sampled endpoints; absence is unknown.",
+              "sampled_delta": {
+                "cpu_user_seconds": 0.05,
+                "cpu_system_seconds": 0.01,
+                "io": {
+                  "rchar": 454805,
+                  "wchar": 237385,
+                  "syscr": 1831,
+                  "syscw": 71,
+                  "read_bytes": 0,
+                  "write_bytes": 237568,
+                  "cancelled_write_bytes": 0
+                }
+              }
+            }
+          }
+        },
+        "root_and_server_observations": {
+          "product": {
+            "first": {
+              "pid": 35952,
+              "cpu_user_seconds": 0.0,
+              "cpu_system_seconds": 0.0,
+              "io": {
+                "rchar": 5700,
+                "wchar": 0,
+                "syscr": 10,
+                "syscw": 0,
+                "read_bytes": 0,
+                "write_bytes": 0,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 802816,
+              "rss_bytes": 409600
+            },
+            "last": {
+              "pid": 35952,
+              "cpu_user_seconds": 110.92,
+              "cpu_system_seconds": 61.46,
+              "io": {
+                "rchar": 48196252275,
+                "wchar": 10096107076,
+                "syscr": 12156004,
+                "syscw": 4854165,
+                "read_bytes": 4096,
+                "write_bytes": 8189644800,
+                "cancelled_write_bytes": 32768
+              },
+              "vmhwm_bytes": 1977712640,
+              "rss_bytes": 1740242944
+            },
+            "sampled_max_rss_bytes": 1977581568
+          },
+          "model": {
+            "first": {
+              "pid": 35951,
+              "cpu_user_seconds": 0.06,
+              "cpu_system_seconds": 0.0,
+              "io": {
+                "rchar": 2315279,
+                "wchar": 36,
+                "syscr": 225,
+                "syscw": 1,
+                "read_bytes": 0,
+                "write_bytes": 8192,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 17690624,
+              "rss_bytes": 17563648
+            },
+            "last": {
+              "pid": 35951,
+              "cpu_user_seconds": 15.16,
+              "cpu_system_seconds": 7.19,
+              "io": {
+                "rchar": 2315279,
+                "wchar": 14674272,
+                "syscr": 225,
+                "syscw": 98305,
+                "read_bytes": 0,
+                "write_bytes": 14700544,
+                "cancelled_write_bytes": 0
+              },
+              "vmhwm_bytes": 19214336,
+              "rss_bytes": 19038208
+            },
+            "sampled_max_rss_bytes": 19038208
+          },
+          "runner": {
+            "first": {
+              "pid": 35938,
+              "cpu_user_seconds": 8.91,
+              "cpu_system_seconds": 2.56,
+              "io": {
+                "rchar": 39391933,
+                "wchar": 8380665,
+                "syscr": 1374,
+                "syscw": 100206,
+                "read_bytes": 0,
+                "write_bytes": 443428864,
+                "cancelled_write_bytes": 4096
+              },
+              "vmhwm_bytes": 51113984,
+              "rss_bytes": 21106688
+            },
+            "last": {
+              "pid": 35938,
+              "cpu_user_seconds": 28.15,
+              "cpu_system_seconds": 8.28,
+              "io": {
+                "rchar": 5201010067,
+                "wchar": 103391002,
+                "syscr": 1650087,
+                "syscw": 121233,
+                "read_bytes": 0,
+                "write_bytes": 539815936,
+                "cancelled_write_bytes": 12288
+              },
+              "vmhwm_bytes": 78843904,
+              "rss_bytes": 50827264
+            },
+            "sampled_max_rss_bytes": 74911744
+          }
+        },
+        "sampled_rss": {
+          "phases": {
+            "startup": {
+              "samples": 3,
+              "root_rss_max_bytes": 9220096,
+              "root_rss_median_bytes": 6934528,
+              "root_unreadable_samples": 0,
+              "observable_tree_sampled_sum_max_bytes": 9220096,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 11,
+              "observable_pids": [
+                35952
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 6132568064
+            },
+            "cold-empty-index-build": {
+              "samples": 1581,
+              "root_rss_max_bytes": 1688481792,
+              "root_rss_median_bytes": 1586343936,
+              "root_unreadable_samples": 0,
+              "observable_tree_sampled_sum_max_bytes": 1688875008,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 24211,
+              "observable_pids": [
+                35952
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 9385377792
+            },
+            "backfill-drain": {
+              "samples": 14018,
+              "root_rss_max_bytes": 1977581568,
+              "root_rss_median_bytes": 1941991424.0,
+              "root_unreadable_samples": 0,
+              "observable_tree_sampled_sum_max_bytes": 1977581568,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 238165,
+              "observable_pids": [
+                35952
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 10220974080
+            },
+            "normal-eof-exit": {
+              "samples": 72,
+              "root_rss_max_bytes": 1942515712,
+              "root_rss_median_bytes": 1942515712.0,
+              "root_unreadable_samples": 2,
+              "observable_tree_sampled_sum_max_bytes": 1942515712,
+              "complete_tree_rss_max_bytes": null,
+              "tree_coverage_errors": 704,
+              "observable_pids": [
+                35952
+              ],
+              "children_coverage": "unknown",
+              "cgroup_memory_current_max_bytes": 10230468608
+            }
+          },
+          "limits": "non-atomic 20ms sampled RSS, shared-page double counting, not PSS or exact lifetime peak; cgroup includes harness/build/cache and is not product RSS"
+        },
+        "complete_process_tree": "unknown if coverage errors; sampled sum is not complete tree or PSS"
+      },
+      "ready_deadline_seconds": 300
+    }
+  },
+  "verification": {
+    "same_input_bytes": true,
+    "same_config": true,
+    "same_static_environment": true,
+    "original_protocol_identity_retention_replay": "passed both",
+    "formal_runs_per_variant": 1
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "status": "bounded_support_not_full_V20",
+  "review_target": "ace2bc7983be2955831c9384e44d1bdd0749c909",
+  "production_source": "85692bb526ce5a9fdd7c92aa71d9392e498a7cf6",
+  "legacy_source": "ff6ceecd556465a09cc93c44fde26ac5a51f2aef",
+  "source_file": "crates/cc-db/src/index_db_query.rs",
+  "source_sha256_by_commit": {
+    "ff6ceecd556465a09cc93c44fde26ac5a51f2aef": "eb39dc7abfbe915d1b3b2187931438d52d940edcb1256a0972f26b72236ae72b",
+    "85692bb526ce5a9fdd7c92aa71d9392e498a7cf6": "d06dda09e00d3b4b02ed54d45e8fe7d38db4242ab592bab49d3e012522de70cd"
+  },
+  "fixed_command": "CARGO_TARGET_DIR=/tmp/resolver-bind-independent-target CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 cargo test --locked --offline -p cc-db --test resolver_bind_independent_review -- --nocapture --test-threads=1",
+  "legacy_command": "RESOLVER_REVIEW_LEGACY=1 CARGO_TARGET_DIR=/tmp/resolver-bind-independent-target CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 cargo test --locked --offline -p cc-db --test resolver_bind_independent_review -- --exact actual_legacy_overflow_or_fixed_large_inputs --nocapture",
+  "legacy_cwd": "/tmp/resolver-bind-independent-old",
+  "resource_command": "Python subprocess.run fixed copied binary --nocapture --test-threads=1; resource.getrusage(RUSAGE_CHILDREN), fresh Python parent with only this child, compile excluded",
+  "resource_binary": {
+    "binary": "/tmp/resolver-bind-independent-fixed-bin",
+    "sha256": "c9b3290299dcd0424357a4476e0369e99a6c0e03f7732af75637b0018635e875",
+    "exit_code": 0,
+    "wall_seconds": 13.478995236000628,
+    "user_seconds": 12.47064,
+    "system_seconds": 0.9747629999999999,
+    "max_rss_kib_linux": 104868,
+    "scope": "one debug test process, compile excluded; includes fixture and oracle allocations; concurrent main release workload uncontrolled"
+  },
+  "legacy_binary_local": {
+    "path": "/tmp/resolver-bind-independent-target/debug/deps/resolver_bind_independent_review-f7d975c6f953b8b7",
+    "sha256": "f8b43cb09664fd5d1c18fa1790b163d6db0afa6998e6f3573b673d7a1dd1cab3"
+  },
+  "toolchain": "rustc 1.95.0",
+  "fixed_test_result": {
+    "passed": 4,
+    "failed": 0,
+    "ignored": 0
+  },
+  "legacy_negative_test_result": {
+    "passed_expected_overflow": 1,
+    "failed": 0
+  },
+  "checks": {
+    "strict_scoped_clippy": "passed",
+    "rustfmt_scoped": "passed",
+    "identical_test_source_in_legacy_and_fixed": true,
+    "original_production_tests_Cargo_ledger_corpus_unchanged": true
+  },
+  "resource_limit": "observational only; not constant memory/time or arbitrary huge input guarantee",
+  "not_covered": [
+    "aggregate baseline cache exhaustive behavior",
+    "concurrent writer snapshot stress",
+    "other SQLite builds",
+    "inputs beyond 200003 items or 4MiB single string",
+    "extreme escape expansion",
+    "OOM/cancellation budgets",
+    "full release resource acceptance",
+    "full V20 acceptance"
+  ],
+  "files": [
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/README.md",
+      "bytes": 5696,
+      "sha256": "5c4593d96f92d563ebc748bcfec2c68abf8e2fb2eda41a5dcaa495ee23cfe3f2"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/clippy.log",
+      "bytes": 1951,
+      "sha256": "4a47d9b03a4d803366d6c7aa3b300ce953514afa2237bd41383f1f21327ceeca"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/fixed-resource.log",
+      "bytes": 1021,
+      "sha256": "32e88c4822394f5817c5a0a0a44ba141c12ef85771a18b80d6e33502ee335348"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/fixed-results.json",
+      "bytes": 889,
+      "sha256": "20334b1c3661d99ee52ad9b5f8ed9a18eb519f517e248efb076b1b7dab90ce64"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/initial-fixed.log",
+      "bytes": 3511,
+      "sha256": "eee53b56f85db174ee72321994ec2ceeb05f48e6e9fd05a14e5fad4d451e3b05"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/legacy-results.json",
+      "bytes": 134,
+      "sha256": "8a7ebc8f15475d3392b2c5e6546e6d13f34e6c94e940f4563cf53659fc429f0f"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/legacy.log",
+      "bytes": 665,
+      "sha256": "975166ad4ffb3f1ad4a0aa105a96423f878c435c7dab67dc3e55aea0b48d9860"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/resource.json",
+      "bytes": 437,
+      "sha256": "e23aa111340425b156b4a38ae7a052fdc6c5baf7de0602a490a8f610bef5cb3c"
+    },
+    {
+      "path": "artifacts/checkpoints/resolver-bind-independent-review-20261003/verify.py",
+      "bytes": 2013,
+      "sha256": "2fae19a17a54f3ecb85e88ad8fd4609de0191c96ea56d14ca05b544a6f30bfd0"
+    },
+    {
+      "path": "crates/cc-db/tests/resolver_bind_independent_review.rs",
+      "bytes": 8112,
+      "sha256": "d1413a76a6c4542e624d663d56121063b79f3f9bc9c095cb17eb10155e5de765"
+    }
+  ],
+  "clippy_command": "cargo clippy --locked --offline -p cc-db --test resolver_bind_independent_review -- -D warnings"
+}

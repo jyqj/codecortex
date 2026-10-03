@@ -1451,6 +1451,23 @@ mod tests {
         })
         .await
         .unwrap();
+        let end = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        loop {
+            let conn = worker.db.read_conn().unwrap();
+            let claimed: i64 = conn
+                .query_row(
+                    "SELECT count(*) FROM semantic_outbox WHERE state='claimed'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            if claimed == 4 && gate.snapshot().waiting == 2 {
+                break;
+            }
+            assert!(claimed <= 4);
+            assert!(std::time::Instant::now() < end);
+            tokio::time::sleep(std::time::Duration::from_millis(1)).await;
+        }
         worker.close();
         assert_eq!(worker.services.query_pins(), 1);
         assert!(worker.running.load(Ordering::Acquire));
@@ -1470,7 +1487,8 @@ mod tests {
                 |r| r.get(0),
             )
             .unwrap();
-        assert_eq!(started, 2);
+        // Both HTTP calls plus both gate waiters entered the local handler.
+        assert_eq!(started, 4);
         assert_eq!(
             worker
                 .db
@@ -1481,7 +1499,7 @@ mod tests {
                 .published,
             0
         );
-        println!("bounded runtime provider_peak=2 pins_before_close=1 pins_after_close=1 pins_after_join=0 factory_calls=1 neighbor_calls=1 started_claims=2");
+        println!("bounded runtime provider_peak=2 pins_before_close=1 pins_after_close=1 pins_after_join=0 factory_calls=1 neighbor_calls=1 started_claims=4");
     }
     #[cfg(feature = "semantic-http")]
     #[test]

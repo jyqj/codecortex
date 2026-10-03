@@ -205,7 +205,7 @@ impl EmbeddingProvider for Provider {
 }
 #[test]
 fn width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_shared() {
-    for (width, peak) in [(0, 1), (1, 1), (2, 2), (4, 2)] {
+    for (width, peak) in [(0, 1), (1, 1), (2, 4), (4, 4), (usize::MAX, 4)] {
         let f = Fixture::new(40);
         let h = Arc::new(Hold::default());
         let p = Provider::new(&f, Some(h.clone()), false);
@@ -245,7 +245,7 @@ fn width_zero_and_one_are_serial_two_and_larger_are_bounded_and_fifo_budget_is_s
     }
 }
 #[test]
-fn close_joins_two_started_attempts_and_restores_pending_with_spent_attempts() {
+fn close_joins_four_started_attempts_and_restores_pending_with_spent_attempts() {
     let f = Fixture::new(20);
     let fence = LifecycleFence::default();
     let h = Arc::new(Hold::default());
@@ -257,18 +257,18 @@ fn close_joins_two_started_attempts_and_restores_pending_with_spent_attempts() {
                 f.handle(&p, g, Some(&fence))
             })
         });
-        h.wait(2);
+        h.wait(4);
         fence.close();
-        assert_eq!(p.active.load(Ordering::SeqCst), 2);
+        assert_eq!(p.active.load(Ordering::SeqCst), 4);
         h.release();
         let r = job.join().unwrap().unwrap();
-        assert_eq!(r.claimed, 2);
+        assert_eq!(r.claimed, 4);
         assert_eq!(r.completed, 0);
     });
     assert_eq!(p.active.load(Ordering::SeqCst), 0);
-    assert!(f.rows()[..2].iter().all(|r| r.1 == "pending" && r.2 == 1));
-    assert!(f.rows()[2..].iter().all(|r| r.2 == 0));
-    println!("close joined=2 provider_peak=2 started_attempts=2 subsequent_claims=0");
+    assert!(f.rows()[..4].iter().all(|r| r.1 == "pending" && r.2 == 1));
+    assert!(f.rows()[4..].iter().all(|r| r.2 == 0));
+    println!("close joined=4 provider_peak=4 started_attempts=4 subsequent_claims=0");
 }
 #[test]
 fn unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls() {
@@ -290,7 +290,7 @@ fn unstarted_cancel_does_not_consume_attempt_and_preclosed_has_zero_calls() {
     assert_eq!(p.calls.load(Ordering::SeqCst), 0);
 }
 #[test]
-fn both_parallel_errors_propagate_after_join_and_retry_each_independent_token() {
+fn all_four_parallel_errors_propagate_after_join_and_retry_each_independent_token() {
     let f = Fixture::new(20);
     let h = Arc::new(Hold::default());
     let error = std::thread::scope(|s| {
@@ -304,17 +304,17 @@ fn both_parallel_errors_propagate_after_join_and_retry_each_independent_token() 
                 )))
             })
         });
-        h.wait(2);
+        h.wait(4);
         h.release();
         job.join().unwrap().unwrap_err()
     });
     let text = error.to_string();
     assert!(
-        text.contains("synthetic error 1") && text.contains("synthetic error 2"),
+        (1..=4).all(|id| text.contains(&format!("synthetic error {id}"))),
         "{text}"
     );
-    assert!(f.rows()[..2].iter().all(|r| r.1 == "pending" && r.2 == 1));
-    assert!(f.rows()[2..].iter().all(|r| r.2 == 0));
+    assert!(f.rows()[..4].iter().all(|r| r.1 == "pending" && r.2 == 1));
+    assert!(f.rows()[4..].iter().all(|r| r.2 == 0));
 }
 #[test]
 fn closed_lifecycle_during_handled_retry_still_stops_claims() {
@@ -444,7 +444,7 @@ fn ordinary_space_switch_fences_started_publications_and_stops_claiming_new_spac
                 f.handle(&p, g, None)
             })
         });
-        h.wait(2);
+        h.wait(4);
         let spec = DocumentEncodingSpec::new(
             VectorSpace::new("fake/new-space", 2).unwrap(),
             None,
@@ -458,8 +458,8 @@ fn ordinary_space_switch_fences_started_publications_and_stops_claiming_new_spac
         h.release();
         job.join().unwrap().unwrap()
     });
-    assert!(r.claimed <= 2);
-    assert_eq!(p.calls.load(Ordering::SeqCst), 2);
+    assert_eq!(r.claimed, 4);
+    assert_eq!(p.calls.load(Ordering::SeqCst), 4);
     assert_eq!(
         f.db.read_conn()
             .unwrap()
@@ -539,4 +539,77 @@ fn normal_enqueue_during_one_inflight_attempt_is_drained_despite_peer_empty_clai
     assert!(f.rows().iter().all(|r| r.1 == "done" && r.2 == 1));
     assert_eq!(p.calls.load(Ordering::SeqCst), 2);
     println!("bounded partial drain initial_ready=1 normal_enqueued=1 claimed=2 completed=2 ready_stranded=0 empty_claim_budget=0");
+}
+
+// New candidate checks use only normal claim/publish/reclaim APIs and synthetic data.
+#[test]
+fn pipeline_width_is_capped_by_small_claim_budget() {
+    for batch in [1, 2, 3] {
+        let f = Fixture::new(8);
+        let h = Arc::new(Hold::default());
+        let p = Provider::new(&f, Some(h.clone()), false);
+        std::thread::scope(|scope| {
+            let _release = Release(&h);
+            let job = scope.spawn(|| {
+                drain(
+                    &f.db,
+                    "small-budget",
+                    &f.limits(batch),
+                    None,
+                    usize::MAX,
+                    &|g| f.handle(&p, g, None),
+                )
+            });
+            h.wait(batch);
+            assert_eq!(p.active.load(Ordering::SeqCst), batch);
+            h.release();
+            let report = job.join().unwrap().unwrap();
+            assert_eq!((report.claimed, report.completed), (batch, batch));
+        });
+        assert_eq!(p.peak.load(Ordering::SeqCst), batch);
+    }
+}
+
+#[test]
+fn slow_provider_beyond_lease_cannot_publish_and_old_tokens_cannot_ack() {
+    let f = Fixture::new(4);
+    let h = Arc::new(Hold::default());
+    let p = Provider::new(&f, Some(h.clone()), false);
+    let tokens = Mutex::new(Vec::new());
+    let limits = WorkerLimits::validated(4, 0.1, 30.0, 3).unwrap();
+    std::thread::scope(|scope| {
+        let _release = Release(&h);
+        let job = scope.spawn(|| {
+            drain(&f.db, "slow", &limits, None, 2, &|g| {
+                tokens
+                    .lock()
+                    .unwrap()
+                    .push((g.task().task_id, g.task().token.clone()));
+                f.handle(&p, g, None)
+            })
+        });
+        h.wait(4);
+        std::thread::sleep(Duration::from_millis(200));
+        h.release();
+        assert_eq!(job.join().unwrap().unwrap().claimed, 4);
+    });
+    let conn = f.db.read_conn().unwrap();
+    let publications: i64 = conn
+        .query_row("SELECT COUNT(*) FROM semantic_manifest", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(publications, 0);
+    drop(conn);
+    f.db.reclaim_expired_semantic().unwrap();
+    for (id, token) in tokens.into_inner().unwrap() {
+        assert!(!f.db.renew_semantic_lease(id, &token, 60.0).unwrap());
+    }
+    assert!(f.rows().iter().all(|r| r.1 == "pending" && r.2 == 1));
+}
+
+#[test]
+fn frozen_input_byte_budget_is_not_increased_by_pipeline() {
+    let max = cc_semantic::spec::MAX_INPUT_BYTES;
+    assert_eq!(max, 1_048_576);
+    assert!(DocumentInput::from_bytes(&vec![b'x'; max]).is_ok());
+    assert!(DocumentInput::from_bytes(&vec![b'x'; max + 1]).is_err());
 }

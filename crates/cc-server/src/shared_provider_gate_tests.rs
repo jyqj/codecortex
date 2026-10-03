@@ -206,6 +206,7 @@ fn shared_provider_gate_cases_in_fresh_processes() {
         "concurrent_registry_init_and_acquire",
         "disabled_is_inert",
         "combined_queue_serial",
+        "combined_queue_width_one",
         "combined_queue_width_two",
         "combined_production_close",
     ] {
@@ -413,6 +414,45 @@ fn disabled_is_inert() {
 
 // Self-authored finite combination: real production HTTP factories, shared gate,
 // document store, FIFO queue and runtime round. Only synthetic /tmp data/cache.
+fn wait_gate_waiters(gate: &cc_semantic::admission::ProviderGate, count: usize) {
+    let end = Instant::now() + Duration::from_secs(5);
+    loop {
+        let waiting = gate.snapshot().waiting;
+        if waiting == count {
+            return;
+        }
+        assert!(waiting < count, "gate waiter bound exceeded");
+        assert!(
+            Instant::now() < end,
+            "local handlers did not reach HTTP admission"
+        );
+        std::thread::sleep(Duration::from_millis(1));
+    }
+}
+
+fn wait_claimed(worker: &SemanticRuntime, count: i64) {
+    let end = Instant::now() + Duration::from_secs(5);
+    loop {
+        let conn = worker.db.read_conn().unwrap();
+        let claimed: i64 = conn
+            .query_row(
+                "SELECT count(*) FROM semantic_outbox WHERE state='claimed'",
+                [],
+                |r| r.get(0),
+            )
+            .unwrap();
+        if claimed == count {
+            return;
+        }
+        assert!(claimed < count, "local attempt budget exceeded: {claimed}");
+        assert!(
+            Instant::now() < end,
+            "local attempts did not enter: {claimed}"
+        );
+        std::thread::sleep(Duration::from_millis(1));
+    }
+}
+
 fn combined_queue(width: u32) {
     let dir = tempfile::tempdir_in("/tmp").unwrap();
     let server = Loopback::with_one_failure(true);
@@ -425,7 +465,7 @@ fn combined_queue(width: u32) {
     cfg.semantic.allow_http = true;
     cfg.semantic.endpoint = server.endpoint.clone();
     cfg.semantic.api_key_ref = Some(format!("file:{}", key.display()));
-    cfg.semantic.acquire_timeout_ms = 60;
+    cfg.semantic.acquire_timeout_ms = 1000;
     cfg.semantic.retry_max_attempts = 1;
     // Initialize actual default wrappers first. Explicit caps are adopted later.
     let neighbor = runtime(dir.path(), "neighbor", &cfg);
@@ -464,12 +504,24 @@ fn combined_queue(width: u32) {
     explicit.semantic.max_concurrent_per_project = 2;
     assemble(dir.path(), "adopt", &explicit).unwrap();
     let gate = service_factory::semantic_provider_gate();
-    let actual_width = if width == 0 { 1 } else { 2 };
+    let actual_width = if width < 2 { 1 } else { 2 };
     std::thread::scope(|scope| {
         let round = scope.spawn(|| worker.run_round().unwrap());
         server.hold.wait(actual_width);
+        let local_width = if width < 2 { 1 } else { 4 };
+        wait_claimed(&worker, local_width);
+        wait_gate_waiters(&gate, (local_width as usize).saturating_sub(actual_width));
+        assert_eq!(
+            gate.snapshot().per_project_in_flight[&worker.subsystem.namespace],
+            actual_width
+        );
+        assert_eq!(
+            server.hold.calls(),
+            actual_width,
+            "HTTP quota remains separate from local attempts"
+        );
         let query_call = scope.spawn(|| {
-            if width == 0 {
+            if width < 2 {
                 call(query.as_ref(), true)
             } else {
                 call(neighbor_query.as_ref(), true)
@@ -478,7 +530,7 @@ fn combined_queue(width: u32) {
         server.hold.wait(actual_width + 1);
         let neighbor_call = scope.spawn(|| call(neighbor_doc.as_ref(), false));
         server.hold.wait(actual_width + 2);
-        let extra = (width == 0).then(|| scope.spawn(|| call(neighbor_query.as_ref(), true)));
+        let extra = (width < 2).then(|| scope.spawn(|| call(neighbor_query.as_ref(), true)));
         server.hold.wait(4);
         let snap = gate.snapshot();
         assert_eq!(snap.max_concurrent, 4);
@@ -523,6 +575,11 @@ fn combined_queue(width: u32) {
 #[ignore = "invoked by isolated parent harness"]
 fn combined_queue_serial() {
     combined_queue(0);
+}
+#[test]
+#[ignore = "invoked by isolated parent harness"]
+fn combined_queue_width_one() {
+    combined_queue(1);
 }
 #[test]
 #[ignore = "invoked by isolated parent harness"]
@@ -580,7 +637,10 @@ async fn combined_production_close() {
         .await
         .unwrap();
     let gate = service_factory::semantic_provider_gate();
+    wait_claimed(&worker, 4);
+    wait_gate_waiters(&gate, 2);
     assert_eq!(gate.snapshot().in_flight, 2);
+    assert_eq!(server.hold.calls(), 2);
     assert!(worker.running.load(Ordering::Acquire));
     assert_eq!(worker.services.query_pins(), 1);
     worker.close();
@@ -600,7 +660,7 @@ async fn combined_production_close() {
     assert_eq!(server.hold.calls(), 2);
     let conn = worker.db.read_conn().unwrap();
     let counts: (i64,i64,i64,i64) = conn.query_row("SELECT sum(attempt_count),sum(state='claimed'),sum(state='done'),sum(state='pending' AND lease_token IS NOT NULL) FROM semantic_outbox", [], |r| Ok((r.get(0)?,r.get(1)?,r.get(2)?,r.get(3)?))).unwrap();
-    assert_eq!(counts, (2, 0, 0, 0));
+    assert_eq!(counts, (4, 0, 0, 0));
     assert_eq!(
         worker
             .db
@@ -611,5 +671,5 @@ async fn combined_production_close() {
             .published,
         0
     );
-    println!("COMBINED_CLOSE actual_http=2 cancel=true running_before=1 pins_before=1 after_join_running=0 pins=0 gate=0 started=2 claimed=0 done=0 pending_token=0 published=0");
+    println!("COMBINED_CLOSE actual_http=2 cancel=true running_before=1 pins_before=1 after_join_running=0 pins=0 gate=0 local_attempts=4 started=4 claimed=0 done=0 pending_token=0 published=0");
 }

@@ -367,7 +367,11 @@ pub fn drain_pending_with_lifecycle(
 
 /// Finite joined drain. Claims linearize under one admission mutex in the DB's
 /// configured FIFO order; completion order is intentionally unspecified. Width
-/// is two only for an explicit per-project bound >= 2 (zero stays serial).
+/// is at most four only for an explicit per-project HTTP bound >= 2; zero and
+/// one retain a single local worker. The HTTP bound is enforced independently
+/// by the existing shared provider gate, not by this whole-attempt executor.
+/// Width is also capped by the finite claim budget: no per-document threads,
+/// no batch-sized input prefetch. Each worker owns at most one input/vector.
 /// No DB lock/connection survives claim, renewal, handler or join boundaries.
 /// Old FnMut serial APIs retain their existing behavior. This API propagates
 /// handler errors after fenced retry and physical joins, and stops on unhandled
@@ -387,10 +391,11 @@ pub fn drain_pending_parallel_with_lifecycle(
         Mutex,
     };
     let width = if max_concurrent_per_project >= 2 {
-        2
+        4
     } else {
         1
-    };
+    }
+    .min(limits.max_batch);
     let initial_space = db.semantic_active_space()?;
     let admitted = Mutex::new(0usize);
     let stopped = AtomicBool::new(false);

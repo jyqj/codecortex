@@ -59,5 +59,5 @@
 1. 新 P1 startup/session Config吞错+缓存被拒路径：独立gate review完整REJECT，未修，父另立任务；核心gate局部pass不能关闭。
 2. 另一独立复审与父组合验收待完成；旧PR120拒绝对旧源仍有效。
 3. 性能正式验收/AB/100k、真实live效果、heldout、GC/WAL故障、完整HTTP17协议重跑均 **not_run**；本轮仅继承正常路径已接受协议，未扩大执行。
-4. GitHub `gh pr view 120` 返回 `Forbidden`：动作停止，不换路线/身份。候选commit/push、draft create和CI的具体结果以 `delivery.json` 为准，未读CI就不称绿色。
+4. 正常push已成功，首个交付head `1276fb9fd3ca37f9857c86f88a20a87c7ccbcc1f` 与remote一致。GitHub `gh pr view 120`、授权draft create、CI run list均各返回 `Forbidden`：对应动作停止，不换路线/身份。**draft PR未创建；CI状态unknown/blocked**。准备好的正文为 `PR_BODY.md`；`delivery.json`及原logs保留所有结果。其后仅补此失败交付回执并正常push，最终remote SHA在父收到的最终答复中明确，不伪造draft链接。
 5. 中央任务只追加局部证据和P1限制，P7-020/P8-005保持todo，性能验收不关闭。派生中央TODO由正常plan脚本生成。

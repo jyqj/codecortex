@@ -59,3 +59,9 @@ PR85 成本 canonical：response返回/cache未落盘三kill每场景2fakecalls�
 PR89/dee17f9真实semantic-http debug stdio：1k/5k/10k×C1/4/8/16×2profile=24完整cells/768rawquery，rootPID资源有效，tree/内部queue/service/锁等待无接口null。50k cold index实际SQL变量超限失败，100k未运行，不是OOM；release/tmp构建与修复下一块，完整V20及015/016仍todo。证据 artifacts/checkpoints/cloud-p7-resource-prepared-20261003/receipt.json。
 
 仅count/hash/metadata接收PR86→90→91四repo固定development-admitted301native/256compat、100source/476spans、16validate/8protocolcheck/18regression errors{}；33801crosspairs0exactdup，280correlation不是独立600单位。admission hash b4388ca60612f6734719b348bf30e05dd0752b7b754f47cc078b590e35c1e425；formal600/cleanholdout/正式20blocks/ranking均0，两repo来源及custody/live/stats/质量open。未fetch/读新gold，旧回执不改。
+
+## 2026-10-03 fixed-e3 独立集成子门
+
+2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。
+
+完整机器可核验字段见 `P7-REMAINING-GATES.json.fixed_e3_local_attempt_width4_acceptance`；原37行与所有整体任务状态不变。

@@ -1188,5 +1188,47 @@
     "gc_deleted_count": "remove_quiet ignores errors while deleted increments unconditionally; parent static confirmed, unpatched",
     "wal_rename_write_connection_window": "static hypothesis; higher-level serialization still requires review",
     "fault_execution": "platform blocked separate GC/WAL task; no alternate execution; full crash not accepted"
+  },
+  "fixed_e3_local_attempt_width4_acceptance": {
+    "status": "accepted_declared_local_protocol_subgate_only",
+    "production_source": "e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207",
+    "baseline_source": "513a98c9a94b15ec77153df41af26fa3c8c0b5e8",
+    "driver_source": "800d32d50bfe158cf86366fb913aabef73f8d965",
+    "candidate_evidence_source": "1be640ecb6fe093e6c45eaca74617c901c87a847",
+    "baseline_evidence_source": "186ac53e121fe9ec770a6a293e4291be3a6e36b1",
+    "formal_runs_each": 1,
+    "candidate": {
+      "drain_seconds": 182.999904792,
+      "cold_seconds": 22.08638641
+    },
+    "baseline": {
+      "drain_seconds": 257.929186553,
+      "cold_seconds": 22.218803684
+    },
+    "checks": "100000 exact counts/integrity/FK/query/C4/normalEOF/reopen",
+    "unchanged": "HTTP4/2; default0/1serial; claim16; fsync/cache layout",
+    "excluded": "PR127 facade and PR128/129/130 different production ancestors; old42/private localdiag/corpus/cache/DB/binary",
+    "limitations": "2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。",
+    "evidence": [
+      "docs/checkpoints/2026-10-03-fixed-e3-integration/README.md",
+      "docs/reviews/20261003-independent-e3",
+      "artifacts/checkpoints/candidate-independent-100k-gate-20261003",
+      "artifacts/checkpoints/candidate-independent-100k-recovery-20261003",
+      "artifacts/checkpoints/baseline-cloud-20261003-build-blocked",
+      "artifacts/checkpoints/baseline-cloud-20261003-resumed-once"
+    ],
+    "remaining": [
+      "realprovider",
+      "heldout",
+      "old EROFS",
+      "GC/WAL",
+      "overall quality",
+      "full P7",
+      "full P8-005"
+    ],
+    "strict_causal_speedup": false,
+    "statistical_significance": false,
+    "cgroup_independence": "unknown",
+    "complete_process_tree": "unknown"
   }
 }

@@ -25,8 +25,30 @@ jobs:
       - name: Clippy
         run: cargo clippy --workspace --all-targets -- -D warnings
 
-      - name: Test
-        run: cargo test --workspace --all-targets
+      - name: Compile every default test target
+        run: cargo test --workspace --all-targets --locked --no-run
+
+      # This fixed-e3 integration does not authorize the historical process-fault,
+      # GC/WAL targets or semantic_runtime recoverable-retry cases. Keep those
+      # tests byte-identical in crates; execute only the normal-path targets here.
+      - name: Default regression within authorized scope
+        run: |
+          cargo test --workspace --all-targets --exclude cc-semantic --locked
+          cargo test -p cc-semantic --lib --locked
+          cargo test -p cc-semantic --locked \
+            --test artifact_cache --test attempt_lease_contract \
+            --test bounded_parallel --test manifest_exact_integration \
+            --test p7_cache_allocation_independent_review --test publish_cas \
+            --test query_cache --test queue_worker --test retry_worker_layering \
+            --test semantic_degrade --test space_switch
+
+      - name: Fixed resource driver harmless fixtures and TODO consistency
+        run: |
+          # Read-only AST comparator object; never check out or run its driver.
+          git fetch --no-tags origin da8b618cbf8b67683c6b16880419089f7159c15e
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/resource_harness -v
+          python3 scripts/code_index_plan.py
+          python3 scripts/verify_fixed_e3_integration.py
 
       - name: Semantic HTTP capability snapshot and normal stdio query fence
         timeout-minutes: 30

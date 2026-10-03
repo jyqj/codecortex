@@ -1,0 +1,205 @@
+{
+  "authority": [
+    "docs/roadmap/code-index-v2/02-CONTRACTS.md C12",
+    "docs/roadmap/code-index-v2/03-SEMANTIC.md three-way spec split",
+    "docs/roadmap/code-index-v2/06-VALIDATION.md V11"
+  ],
+  "rows": [
+    {
+      "cache_class": "query vector",
+      "axes": [
+        "namespace",
+        "same dimension different model",
+        "dimension"
+      ],
+      "behavior_requirement": "Share ONE cache; changing only this axis causes a new factory and transport POST; repeat/original keys hit without either",
+      "production_entry": "QueryEncodingService + build_embedding_provider_with + OpenAiCompatibleProvider + injected memory transport",
+      "status": "passed_L2",
+      "proof_limits": "Isolated component key separation, not project space transition; actual project model switch/reembedding proven separately by PR47"
+    },
+    {
+      "cache_class": "query vector",
+      "axes": [
+        "query instruction",
+        "query max_tokens"
+      ],
+      "behavior_requirement": "Changed query-only frozen spec forces POST; repeated key hits; actual worker-created document artifact files and document POST count stay unchanged",
+      "production_entry": "same shared-cache service + actual product stdio document setup",
+      "status": "passed_L2",
+      "proof_limits": "No public query instruction config exists; this proves key separation, not instruction-prefix/model semantics"
+    },
+    {
+      "cache_class": "query vector",
+      "axes": [
+        "exact query bytes: case",
+        "leading whitespace",
+        "trailing newline",
+        "Unicode composed/decomposed"
+      ],
+      "behavior_requirement": "Each distinct admitted byte sequence gets its own POST; exact repeats hit without factory/transport",
+      "production_entry": "same production service",
+      "status": "passed_L2",
+      "proof_limits": "No whitespace/Unicode normalization quality claim"
+    },
+    {
+      "cache_class": "query vector",
+      "axes": [
+        "tokenizer"
+      ],
+      "behavior_requirement": "Only declared estimator admitted; unsupported identifier rejects before factory/transport/cache mutation",
+      "production_entry": "QueryEncodingService admission",
+      "status": "passed_fail_closed",
+      "proof_limits": "No second admitted tokenizer, so accepted alternate-tokenizer invalidation is not run"
+    },
+    {
+      "cache_class": "query vector",
+      "axes": [
+        "metric",
+        "encoding spec version"
+      ],
+      "behavior_requirement": "Frozen constructor admits only Cosine/current version; any future admitted version needs cross-build cache validation",
+      "production_entry": "VectorSpace frozen surface",
+      "status": "frozen_not_runtime_selectable",
+      "proof_limits": "No alternate metric/version run or fabricated mutation; cache is process-local"
+    },
+    {
+      "cache_class": "local result and graph result",
+      "axes": [
+        "strategy",
+        "intent",
+        "query",
+        "top_k",
+        "path_prefix",
+        "grep",
+        "preselect_limit",
+        "languages",
+        "file_paths",
+        "boost",
+        "conversation",
+        "recent",
+        "pinned",
+        "overlay",
+        "Some(empty) languages/files/hints"
+      ],
+      "behavior_requirement": "Every changed request produces observed miss in shared engine; identical repeat reuses allocation; local result equals fresh recomputation",
+      "production_entry": "SearchEngine::search/search_with_graph_context",
+      "status": "passed_L2",
+      "proof_limits": "21 positive/empty request variants; result counters and allocations, not key equality"
+    },
+    {
+      "cache_class": "local result",
+      "axes": [
+        "hard language/file set order",
+        "ordered boost/conversation/recent/pinned/overlay order"
+      ],
+      "behavior_requirement": "Equivalent hard set order hits same allocation; changing ordered hint sequence misses",
+      "production_entry": "SearchEngine::search",
+      "status": "passed_L2",
+      "proof_limits": "Graph ordered/set permutation behavior not separately asserted; graph per-field miss/repeat coverage exists"
+    },
+    {
+      "cache_class": "graph result",
+      "axes": [
+        "max_resolve",
+        "callers_per_sym",
+        "callees_per_sym",
+        "max_tests",
+        "max_routes",
+        "graph_budget_pct",
+        "token_budget"
+      ],
+      "behavior_requirement": "Each changed limit/budget misses then reuses same cached allocation on repeat",
+      "production_entry": "SearchEngine::search_with_graph_context",
+      "status": "passed_L2",
+      "proof_limits": ""
+    },
+    {
+      "cache_class": "local versus graph result",
+      "axes": [
+        "evidence_epoch"
+      ],
+      "behavior_requirement": "Typed evidence-only write preserves index epoch; local hits, graph misses",
+      "production_entry": "IndexDb::writes().upsert_runtime_evidence + SearchEngine",
+      "status": "passed_L2",
+      "proof_limits": ""
+    },
+    {
+      "cache_class": "chunk/source and local/graph result",
+      "axes": [
+        "index_epoch",
+        "source/doc version"
+      ],
+      "behavior_requirement": "Actual incremental parsed rebuild changes epoch; both result caches miss; same source path returns new bytes and never old bytes",
+      "production_entry": "CodeIndex::build_index(false) + SearchEngine",
+      "status": "passed_L2",
+      "proof_limits": "Actual source refresh; no manually seeded document version or epoch"
+    },
+    {
+      "cache_class": "local/final context",
+      "axes": [
+        "incarnation"
+      ],
+      "behavior_requirement": "Actual full DB rebuild changes persisted incarnation; newly captured public view serves new bytes and stable repetition",
+      "production_entry": "CodeIndex::build_index(true) + QueryHandle",
+      "status": "passed_L2",
+      "proof_limits": "No manual identity update; no claim that reset numeric epochs happened to be equal"
+    },
+    {
+      "cache_class": "config domain/final context",
+      "axes": [
+        "immutable search/ranking/query config",
+        "repo tier"
+      ],
+      "behavior_requirement": "Public set_project reload creates engine domain; changed actual lane weight observed; all immutable configuration/tier variants require separate product coverage",
+      "production_entry": "CodeIndex::set_project + QueryHandle",
+      "status": "partial_L2",
+      "proof_limits": "One actual search weight change observed. Complete ranking/query/tier axis behavior not run; separate engines do not prove a mutable-config collision"
+    },
+    {
+      "cache_class": "dense result/final context",
+      "axes": [
+        "semantic_epoch",
+        "vector space",
+        "query encoding spec"
+      ],
+      "behavior_requirement": "Dense-containing requests bypass ordinary complete result caches; current manifest and generation revalidated; vector may safely survive document generation",
+      "production_entry": "PR46 actual product generation test, PR47 actual space transition, SearchEngine semantic-cache bypass sites",
+      "status": "partial_integrated",
+      "proof_limits": "New tree replays original PR46/47 assertions. No claim of persistent dense result cache; bypass behavior not directly counter-instrumented in new matrix"
+    },
+    {
+      "cache_class": "final context",
+      "axes": [
+        "selector/budget/rerank versions"
+      ],
+      "behavior_requirement": "Whole-context assembly validates accepted generation and current source; sealed version constants need upgrade/cross-build protocol evidence",
+      "production_entry": "QueryHandle + C12 assembly fence",
+      "status": "partial_integrated",
+      "proof_limits": "Current versions fixed, no selectable alternate-version behavior; no structure-equality substitution"
+    },
+    {
+      "cache_class": "file/symbol/directory derived",
+      "axes": [
+        "seed tokens",
+        "parser/project-model/rules versions"
+      ],
+      "behavior_requirement": "Appropriate seed/revision changes invalidate derived caches through typed production paths",
+      "production_entry": "C12 derived cache row; existing index/resolver gates",
+      "status": "not_run_this_block",
+      "proof_limits": "Outside new query matrix; unchanged code fingerprint is not a fresh behavioral run"
+    },
+    {
+      "cache_class": "failure/cancel/deadline",
+      "axes": [
+        "publication control",
+        "degraded lane receipts"
+      ],
+      "behavior_requirement": "Failed/expired/cancelled encoding must not prime successful query cache; ordinary cache must not admit mixed/partial data",
+      "production_entry": "PR44 public HTTP deadlines/cancel and PR46 generation at new tree",
+      "status": "passed_declared_L3_subset",
+      "proof_limits": "Blocking HTTP can persist until clamped deadline; no immediate abort/public successful-late-cancel response claim"
+    }
+  ],
+  "no_struct_equality_as_behavior_evidence": true,
+  "full_V11_closed": false
+}

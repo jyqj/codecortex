@@ -41,7 +41,7 @@
 //! layout is created lazily by the first [`ArtifactCache::put`].
 
 use std::collections::{HashMap, VecDeque};
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::Mutex;
@@ -82,6 +82,40 @@ pub const CACHE_ROOT_ENV: &str = "CODECORTEX_SEMANTIC_CACHE_ROOT";
 const NAMESPACE_DOMAIN: &str = "cc-semantic.cache-namespace.v1";
 
 const MAX_NAMESPACE_BYTES: usize = 128;
+
+// v1 writer: four 64-byte hex strings, fixed field names/numbers, and a
+// model id of at most MAX_MODEL_ID_BYTES. JSON expands a model byte by at
+// most six (\u00XX); 1024 bytes covers every other field, including i64::MIN.
+// Do not derive this bound from untrusted metadata or file stat lengths.
+const MAX_ARTIFACT_METADATA_BYTES: usize = 1024 + 6 * crate::spec::MAX_MODEL_ID_BYTES;
+
+/// Consume at most the admitted length plus one sentinel byte. A fixed
+/// allocation and sliced reads keep growing/replaced files bounded without
+/// trusting a preceding stat, size hint, or the stream reaching EOF.
+fn read_artifact_bounded(
+    reader: &mut impl Read,
+    max_bytes: usize,
+) -> std::io::Result<Option<Vec<u8>>> {
+    let mut bytes = vec![0; max_bytes + 1];
+    let mut len = 0;
+    while len < bytes.len() {
+        match reader.read(&mut bytes[len..]) {
+            Ok(0) => break,
+            Ok(n) => len += n,
+            Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+            Err(e) => return Err(e),
+        }
+    }
+    if len > max_bytes {
+        return Ok(None);
+    }
+    bytes.truncate(len);
+    Ok(Some(bytes))
+}
+
+#[cfg(test)]
+#[path = "cache_read_bounds_tests.rs"]
+mod cache_read_bounds_tests;
 
 /// `artifact_ref` scheme prefix. A ref is
 /// `cas.v1:<namespace>:<space_id>:<input_digest>:<spec_digest>:<checksum>` —
@@ -257,9 +291,11 @@ impl ArtifactCache {
 
     /// Read a validated vector for `(space, input, spec)`.
     ///
-    /// Verification chain: sidecar JSON parse → format version → addressing
-    /// triple matches the requested tuple → blake3 payload checksum → payload
-    /// length vs `dimension` → dimension/model vs the frozen [`VectorSpace`] →
+    /// Fixed read budgets precede parsing/allocation from file contents:
+    /// payload <= requested dimension * 4, metadata <= v1 format budget.
+    /// Verification chain: bounded sidecar JSON parse → format version →
+    /// addressing triple → dimension/model vs frozen [`VectorSpace`] → bounded
+    /// payload read → blake3 checksum → exact payload length →
     /// finite f32 decode. Any failure past the file-existence gate is
     /// [`CacheRead::Corrupt`], never an error and never a partial payload.
     pub fn get(
@@ -274,7 +310,13 @@ impl ArtifactCache {
         let bin_path = dir.join(format!("{}.bin", spec.as_str()));
         let meta_path = dir.join(format!("{}.meta.json", spec.as_str()));
 
-        let (payload, meta_raw) = match (std::fs::read(&bin_path), std::fs::read(&meta_path)) {
+        // Open both before consuming either, preserving incomplete-object
+        // Miss behavior. Open handles pin inodes across atomic replacement;
+        // in-place growth is still constrained by bounded reads below.
+        let (mut payload_file, mut meta_file) = match (
+            std::fs::File::open(&bin_path),
+            std::fs::File::open(&meta_path),
+        ) {
             (Ok(p), Ok(m)) => (p, m),
             (Err(e), _) | (_, Err(e)) if e.kind() == std::io::ErrorKind::NotFound => {
                 return Ok(CacheRead::Miss)
@@ -287,6 +329,11 @@ impl ArtifactCache {
                 path: bin_path.clone(),
                 reason,
             })
+        };
+
+        let meta_raw = match read_artifact_bounded(&mut meta_file, MAX_ARTIFACT_METADATA_BYTES)? {
+            Some(bytes) => bytes,
+            None => return Ok(corrupt("meta json exceeds the v1 byte budget".into())),
         };
 
         let meta: ObjectMeta = match serde_json::from_slice(&meta_raw) {
@@ -307,6 +354,22 @@ impl ArtifactCache {
                 "meta addressing triple does not match the addressed location".to_string(),
             ));
         }
+        if meta.dimension != space.dimension() || meta.model_id != space.model_id() {
+            return Ok(corrupt(
+                "meta dimension/model_id do not match the requested frozen space".to_string(),
+            ));
+        }
+        // space.validate() bounds dimension to 1..=65536, so this arithmetic
+        // and allocation are independent of all mutable file contents.
+        let expected_payload_bytes = space.dimension() as usize * 4;
+        let payload = match read_artifact_bounded(&mut payload_file, expected_payload_bytes)? {
+            Some(bytes) => bytes,
+            None => {
+                return Ok(corrupt(
+                    "payload byte length exceeds the requested dimension byte budget".into(),
+                ))
+            }
+        };
         let checksum = bytes_hash(&payload);
         if meta.checksum != checksum {
             return Ok(corrupt(format!(
@@ -314,17 +377,12 @@ impl ArtifactCache {
                 meta.checksum
             )));
         }
-        if payload.len() != meta.dimension as usize * 4 {
+        if payload.len() != expected_payload_bytes {
             return Ok(corrupt(format!(
                 "payload byte length {} does not match meta dimension {}",
                 payload.len(),
                 meta.dimension
             )));
-        }
-        if meta.dimension != space.dimension() || meta.model_id != space.model_id() {
-            return Ok(corrupt(
-                "meta dimension/model_id do not match the requested frozen space".to_string(),
-            ));
         }
         let mut data = Vec::with_capacity(payload.len() / 4);
         for chunk in payload.as_chunks::<4>().0 {

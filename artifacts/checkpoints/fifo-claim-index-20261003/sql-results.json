@@ -1,0 +1,1033 @@
+{
+  "candidate": "UPDATE semantic_outbox SET state='claimed', lease_token=lower(hex(randomblob(16))), lease_expires_at=?1+?2, claim_owner=?3, attempt_count=attempt_count+1, updated_at=?4 WHERE task_id = CASE WHEN EXISTS(SELECT 1 FROM semantic_outbox INDEXED BY semantic_outbox_ready WHERE state='pending' AND available_at<=?1 AND space_id=?5) THEN (SELECT task_id FROM semantic_outbox INDEXED BY semantic_outbox_fifo_pending WHERE space_id=?5 AND state='pending' AND available_at<=?1 ORDER BY task_id ASC LIMIT 1) ELSE NULL END RETURNING task_id, lease_token, doc_key, doc_version, input_digest, op, lease_expires_at",
+  "original": "UPDATE semantic_outbox SET state='claimed',lease_token=lower(hex(randomblob(16))),lease_expires_at=?1+?2,claim_owner=?3,attempt_count=attempt_count+1,updated_at=?4 WHERE task_id=(SELECT task_id FROM semantic_outbox WHERE space_id=?5 AND state='pending' AND available_at<=?1 ORDER BY task_id ASC LIMIT 1) RETURNING task_id,lease_token,doc_key,doc_version,input_digest,op,lease_expires_at",
+  "results": [
+    {
+      "candidate": false,
+      "insert_commit_ms": 53.109862,
+      "n": 1000,
+      "page_count": 196,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.376773,
+        0.230672,
+        0.263173,
+        0.218002,
+        0.212315,
+        0.21787299999999998,
+        0.245321,
+        0.218919,
+        0.224861,
+        0.22412300000000002
+      ],
+      "scenario": "all_ready",
+      "selected": 1,
+      "sorts": 1,
+      "vm_steps": 9162
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 38.02351,
+      "n": 1000,
+      "page_count": 203,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.240179,
+        0.062204,
+        0.046926999999999996,
+        0.043906,
+        0.043775,
+        0.044514,
+        0.043414,
+        0.042429,
+        0.042745,
+        0.044206
+      ],
+      "scenario": "all_ready",
+      "selected": 1,
+      "sorts": 0,
+      "vm_steps": 195
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 55.365583,
+      "n": 1000,
+      "page_count": 196,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.12080400000000001,
+        0.018997,
+        0.015671,
+        0.015042,
+        0.015623,
+        0.014652,
+        0.014895,
+        0.014713,
+        0.015212,
+        0.01516
+      ],
+      "scenario": "all_future",
+      "selected": null,
+      "sorts": 1,
+      "vm_steps": 36
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 40.723729999999996,
+      "n": 1000,
+      "page_count": 203,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.15093800000000002,
+        0.019301,
+        0.014353,
+        0.014168,
+        0.014209000000000001,
+        0.014048,
+        0.018946,
+        0.013723,
+        0.013947000000000001,
+        0.014046999999999999
+      ],
+      "scenario": "all_future",
+      "selected": null,
+      "sorts": 0,
+      "vm_steps": 37
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 33.807364,
+      "n": 1000,
+      "page_count": 198,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.275598,
+        0.14452399999999999,
+        0.133902,
+        0.13369599999999998,
+        0.131434,
+        0.160578,
+        0.132769,
+        0.130071,
+        0.130226,
+        0.13103499999999998
+      ],
+      "scenario": "future_prefix",
+      "selected": 501,
+      "sorts": 1,
+      "vm_steps": 4663
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 58.519993,
+      "n": 1000,
+      "page_count": 205,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.27103700000000003,
+        0.113344,
+        0.13286900000000001,
+        0.106166,
+        0.18429199999999998,
+        0.100289,
+        0.09695,
+        0.095498,
+        0.09610199999999999,
+        0.098062
+      ],
+      "scenario": "future_prefix",
+      "selected": 501,
+      "sorts": 0,
+      "vm_steps": 2695
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 40.22038,
+      "n": 1000,
+      "page_count": 196,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.316845,
+        0.162103,
+        0.57815,
+        0.183251,
+        0.15415099999999998,
+        0.22996799999999998,
+        0.292294,
+        0.316639,
+        0.155099,
+        0.155464
+      ],
+      "scenario": "other_space_ready",
+      "selected": 1000,
+      "sorts": 1,
+      "vm_steps": 4167
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 34.772596,
+      "n": 1000,
+      "page_count": 202,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.30683499999999997,
+        0.165134,
+        0.155221,
+        0.235172,
+        0.154309,
+        0.152869,
+        0.14932800000000002,
+        0.15082600000000002,
+        0.147341,
+        0.151901
+      ],
+      "scenario": "other_space_ready",
+      "selected": 1000,
+      "sorts": 0,
+      "vm_steps": 4191
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 57.165788,
+      "n": 1000,
+      "page_count": 196,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.27179899999999996,
+        0.133042,
+        0.12344600000000001,
+        0.126567,
+        0.128265,
+        0.12504200000000001,
+        0.13081099999999998,
+        0.127738,
+        0.155253,
+        0.128298
+      ],
+      "scenario": "other_space_only",
+      "selected": null,
+      "sorts": 1,
+      "vm_steps": 4035
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 38.216519,
+      "n": 1000,
+      "page_count": 202,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.25630899999999995,
+        0.51471,
+        0.1359,
+        0.134757,
+        0.127899,
+        0.14938300000000002,
+        0.129484,
+        0.129208,
+        0.12703399999999998,
+        0.126461
+      ],
+      "scenario": "other_space_only",
+      "selected": null,
+      "sorts": 0,
+      "vm_steps": 4036
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 59.268086,
+      "n": 1000,
+      "page_count": 195,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.25942800000000005,
+        0.14175200000000002,
+        0.13483799999999999,
+        0.125145,
+        0.124636,
+        0.152014,
+        0.126307,
+        0.383793,
+        0.129851,
+        0.130468
+      ],
+      "scenario": "mixed",
+      "selected": 8,
+      "sorts": 1,
+      "vm_steps": 3663
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 55.476181,
+      "n": 1000,
+      "page_count": 200,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.211842,
+        0.071229,
+        0.065127,
+        0.055198000000000004,
+        0.051746999999999994,
+        0.05004,
+        0.084862,
+        0.055266,
+        0.050371000000000006,
+        0.050559999999999994
+      ],
+      "scenario": "mixed",
+      "selected": 8,
+      "sorts": 0,
+      "vm_steps": 205
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 219.960342,
+      "n": 5000,
+      "page_count": 344,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        1.26188,
+        1.223527,
+        1.043256,
+        1.0468899999999999,
+        0.982379,
+        0.945331,
+        1.086074,
+        0.970218,
+        0.95069,
+        0.9960920000000001
+      ],
+      "scenario": "all_ready",
+      "selected": 1,
+      "sorts": 1,
+      "vm_steps": 45162
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 252.242432,
+      "n": 5000,
+      "page_count": 373,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.24982200000000002,
+        0.07011,
+        0.049179,
+        0.046327,
+        0.044456,
+        0.045788999999999996,
+        0.044379,
+        0.045142,
+        0.044206,
+        0.045491000000000004
+      ],
+      "scenario": "all_ready",
+      "selected": 1,
+      "sorts": 0,
+      "vm_steps": 195
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 227.763513,
+      "n": 5000,
+      "page_count": 344,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.13027000000000002,
+        0.020169999999999997,
+        0.015345999999999999,
+        0.014843,
+        0.015126,
+        0.015308,
+        0.01499,
+        0.015019,
+        0.014841,
+        0.01528
+      ],
+      "scenario": "all_future",
+      "selected": null,
+      "sorts": 1,
+      "vm_steps": 36
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 262.471628,
+      "n": 5000,
+      "page_count": 373,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.179266,
+        0.021768,
+        0.014507,
+        0.014124999999999999,
+        0.014131999999999999,
+        0.014045,
+        0.014022999999999999,
+        0.01413,
+        0.013917,
+        0.01408
+      ],
+      "scenario": "all_future",
+      "selected": null,
+      "sorts": 0,
+      "vm_steps": 37
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 231.45903,
+      "n": 5000,
+      "page_count": 345,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.644057,
+        0.823426,
+        0.545101,
+        0.47481999999999996,
+        0.8040649999999999,
+        0.584309,
+        0.48628499999999997,
+        0.49167199999999994,
+        0.476206,
+        21.939953000000003
+      ],
+      "scenario": "future_prefix",
+      "selected": 2501,
+      "sorts": 1,
+      "vm_steps": 22663
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 258.83678799999996,
+      "n": 5000,
+      "page_count": 374,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        1.297252,
+        0.38325000000000004,
+        0.791101,
+        0.322333,
+        0.675333,
+        0.334982,
+        0.323117,
+        0.29048799999999997,
+        0.313653,
+        0.60548
+      ],
+      "scenario": "future_prefix",
+      "selected": 2501,
+      "sorts": 0,
+      "vm_steps": 12695
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 249.712555,
+      "n": 5000,
+      "page_count": 339,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.871469,
+        0.585839,
+        0.643577,
+        0.6003350000000001,
+        0.611706,
+        0.758517,
+        0.836461,
+        0.80992,
+        3.125204,
+        0.9999180000000001
+      ],
+      "scenario": "other_space_ready",
+      "selected": 5000,
+      "sorts": 1,
+      "vm_steps": 20167
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 296.522866,
+      "n": 5000,
+      "page_count": 366,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.874115,
+        0.803532,
+        0.657552,
+        0.627663,
+        0.648205,
+        0.668954,
+        0.851697,
+        0.613703,
+        0.636708,
+        0.675475
+      ],
+      "scenario": "other_space_ready",
+      "selected": 5000,
+      "sorts": 0,
+      "vm_steps": 20191
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 244.732636,
+      "n": 5000,
+      "page_count": 339,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.7847620000000001,
+        0.5980840000000001,
+        0.6068640000000001,
+        0.647876,
+        0.6422049999999999,
+        0.571604,
+        0.576445,
+        0.605693,
+        0.581482,
+        0.701502
+      ],
+      "scenario": "other_space_only",
+      "selected": null,
+      "sorts": 1,
+      "vm_steps": 20035
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 292.19886499999996,
+      "n": 5000,
+      "page_count": 366,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.773261,
+        0.5754980000000001,
+        0.73001,
+        0.667123,
+        0.607324,
+        0.656596,
+        0.877498,
+        0.677538,
+        0.648006,
+        0.690881
+      ],
+      "scenario": "other_space_only",
+      "selected": null,
+      "sorts": 0,
+      "vm_steps": 20036
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 272.890724,
+      "n": 5000,
+      "page_count": 337,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        1.1605050000000001,
+        0.557076,
+        0.538563,
+        0.423198,
+        0.42220199999999997,
+        0.437756,
+        0.420407,
+        0.455778,
+        0.447792,
+        0.51074
+      ],
+      "scenario": "mixed",
+      "selected": 8,
+      "sorts": 1,
+      "vm_steps": 17663
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 247.94996,
+      "n": 5000,
+      "page_count": 357,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.225225,
+        0.09265,
+        0.056493,
+        0.048101,
+        0.045766,
+        0.046306,
+        0.045718,
+        0.122042,
+        0.057055,
+        0.046588000000000004
+      ],
+      "scenario": "mixed",
+      "selected": 8,
+      "sorts": 0,
+      "vm_steps": 205
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 457.69087,
+      "n": 10000,
+      "page_count": 528,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        2.090996,
+        1.924498,
+        1.8555629999999999,
+        2.287417,
+        2.188068,
+        2.026069,
+        2.205639,
+        1.897017,
+        23.468775,
+        1.87155
+      ],
+      "scenario": "all_ready",
+      "selected": 1,
+      "sorts": 1,
+      "vm_steps": 90162
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 491.958694,
+      "n": 10000,
+      "page_count": 585,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.516968,
+        0.091396,
+        0.053542000000000006,
+        0.046826,
+        0.046291,
+        0.045668,
+        0.044498,
+        0.04435,
+        0.043579,
+        0.045102
+      ],
+      "scenario": "all_ready",
+      "selected": 1,
+      "sorts": 0,
+      "vm_steps": 195
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 446.215975,
+      "n": 10000,
+      "page_count": 528,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        0.132577,
+        0.019945,
+        0.015965,
+        0.015075999999999999,
+        0.014878,
+        0.015251,
+        0.015170999999999999,
+        0.015401,
+        0.014779,
+        0.014914
+      ],
+      "scenario": "all_future",
+      "selected": null,
+      "sorts": 1,
+      "vm_steps": 36
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 471.803657,
+      "n": 10000,
+      "page_count": 585,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.155201,
+        0.019969,
+        0.014713,
+        0.014202000000000001,
+        0.013975,
+        0.013871,
+        0.013730000000000001,
+        0.014025000000000001,
+        0.013845,
+        0.013988
+      ],
+      "scenario": "all_future",
+      "selected": null,
+      "sorts": 0,
+      "vm_steps": 37
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 639.180529,
+      "n": 10000,
+      "page_count": 530,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        1.271561,
+        0.9998870000000001,
+        0.944817,
+        1.269249,
+        0.938824,
+        1.0417919999999998,
+        1.055806,
+        0.968394,
+        0.9396819999999999,
+        1.0946980000000002
+      ],
+      "scenario": "future_prefix",
+      "selected": 5001,
+      "sorts": 1,
+      "vm_steps": 45163
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 498.08695200000005,
+      "n": 10000,
+      "page_count": 587,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.8150120000000001,
+        0.585861,
+        0.570298,
+        0.6137739999999999,
+        0.60952,
+        0.545069,
+        0.620268,
+        0.562253,
+        0.6140909999999999,
+        0.590233
+      ],
+      "scenario": "future_prefix",
+      "selected": 5001,
+      "sorts": 0,
+      "vm_steps": 25195
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 505.222337,
+      "n": 10000,
+      "page_count": 518,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        1.6086209999999999,
+        1.24255,
+        1.6033620000000002,
+        1.321366,
+        1.846091,
+        1.446117,
+        1.222617,
+        1.380386,
+        1.3444559999999999,
+        1.284226
+      ],
+      "scenario": "other_space_ready",
+      "selected": 10000,
+      "sorts": 1,
+      "vm_steps": 40167
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 528.351574,
+      "n": 10000,
+      "page_count": 572,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        1.51762,
+        1.313589,
+        1.631668,
+        1.376899,
+        1.375133,
+        1.349295,
+        1.213554,
+        1.4603570000000001,
+        1.1865860000000001,
+        1.251299
+      ],
+      "scenario": "other_space_ready",
+      "selected": 10000,
+      "sorts": 0,
+      "vm_steps": 40191
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 493.103964,
+      "n": 10000,
+      "page_count": 518,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        50.869599,
+        1.181575,
+        1.192797,
+        1.5273750000000001,
+        1.166267,
+        1.173882,
+        1.144344,
+        1.546659,
+        1.44354,
+        1.201067
+      ],
+      "scenario": "other_space_only",
+      "selected": null,
+      "sorts": 1,
+      "vm_steps": 40035
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 457.431017,
+      "n": 10000,
+      "page_count": 572,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        1.4033470000000001,
+        1.428727,
+        1.249041,
+        1.1728839999999998,
+        1.450881,
+        1.286761,
+        1.322368,
+        1.58488,
+        1.313876,
+        1.138434
+      ],
+      "scenario": "other_space_only",
+      "selected": null,
+      "sorts": 0,
+      "vm_steps": 40036
+    },
+    {
+      "candidate": false,
+      "insert_commit_ms": 612.384582,
+      "n": 10000,
+      "page_count": 514,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "USE TEMP B-TREE FOR ORDER BY"
+      ],
+      "rollback_claim_ms": [
+        1.079284,
+        0.8648469999999999,
+        0.829782,
+        1.2834070000000002,
+        1.131114,
+        0.9783630000000001,
+        1.3417819999999998,
+        0.950931,
+        1.414912,
+        0.818455
+      ],
+      "scenario": "mixed",
+      "selected": 8,
+      "sorts": 1,
+      "vm_steps": 35163
+    },
+    {
+      "candidate": true,
+      "insert_commit_ms": 469.19358,
+      "n": 10000,
+      "page_count": 553,
+      "plan": [
+        "SEARCH semantic_outbox USING INTEGER PRIMARY KEY (rowid=?)",
+        "SCALAR SUBQUERY 1",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_ready (state=? AND available_at<?)",
+        "SCALAR SUBQUERY 2",
+        "SEARCH semantic_outbox USING COVERING INDEX semantic_outbox_fifo_pending (space_id=?)"
+      ],
+      "rollback_claim_ms": [
+        0.26175,
+        0.068274,
+        0.051504,
+        0.046694,
+        0.046297,
+        0.046038,
+        0.047727,
+        0.046575,
+        0.044661,
+        0.046105
+      ],
+      "scenario": "mixed",
+      "selected": 8,
+      "sorts": 0,
+      "vm_steps": 205
+    }
+  ],
+  "sqlite": "3.53.2"
+}

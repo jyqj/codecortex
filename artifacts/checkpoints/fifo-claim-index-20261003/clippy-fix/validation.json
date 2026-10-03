@@ -1,0 +1,30 @@
+{
+  "fmt": {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  "diff-check": {
+    "command": [
+      "git",
+      "diff",
+      "--check",
+      "807f4710495a38bc6631549da2ab9623c83684b8"
+    ],
+    "exit_code": 0
+  },
+  "outbox-tests": {
+    "command": "cargo test -p cc-db --locked --test semantic_outbox",
+    "exit_code": 0,
+    "passed": 20
+  },
+  "clippy": {
+    "command": "cargo clippy -p cc-db --all-targets --locked -- -D warnings",
+    "exit_code": 0
+  }
+}

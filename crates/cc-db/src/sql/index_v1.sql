@@ -538,6 +538,8 @@ CREATE TABLE IF NOT EXISTS semantic_outbox (
     updated_at     TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS semantic_outbox_ready ON semantic_outbox(state, available_at, space_id);
+-- Physical FIFO access path only: no uniqueness or semantic/schema-version change.
+CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending';
 CREATE INDEX IF NOT EXISTS semantic_outbox_doc   ON semantic_outbox(doc_key, space_id, state);
 -- 合并 pending：同 doc 同空间至多一个活跃任务（P6-013 合并语义的 DB 层保证）
 CREATE UNIQUE INDEX IF NOT EXISTS semantic_outbox_live_per_doc

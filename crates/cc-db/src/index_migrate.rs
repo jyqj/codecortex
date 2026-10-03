@@ -45,7 +45,8 @@ pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 /// Check the stored schema version and apply the full schema if needed.
 ///
 /// Returns `Ok(Initialized)` if the database was freshly created (version was 0).
-/// Returns `Ok(UpToDate)` if the version already matches.
+/// Returns `Ok(UpToDate)` if the semantic version already matches, after
+/// idempotent physical index maintenance. This does not rebuild logical data.
 /// Returns `Ok(Mismatch)` for any other stored version — the caller should
 /// destructively reset the database and retry.
 pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
@@ -54,6 +55,13 @@ pub fn migrate_index_db(conn: &Connection) -> CcResult<SchemaStatus> {
         .map_err(db_err)?;
 
     if stored == CURRENT_SCHEMA_VERSION {
+        // Performance-only access path, also installed on pre-index v24 databases.
+        // Keep this separate from semantic migrations: no reparse, version bump,
+        // row rewrite, incarnation replacement or epoch movement. Errors propagate
+        // through the normal writable open seam; never bypass read-only refusal.
+        conn.execute_batch(
+            "CREATE INDEX IF NOT EXISTS semantic_outbox_fifo_pending ON semantic_outbox(space_id,task_id,available_at) WHERE state='pending'",
+        ).map_err(db_err)?;
         crate::read_generation::ensure(conn)?;
         return Ok(SchemaStatus::UpToDate);
     }

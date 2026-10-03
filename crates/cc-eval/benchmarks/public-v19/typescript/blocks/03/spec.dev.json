@@ -1,0 +1,227 @@
+[
+  {
+    "slug": "slash-normalizer-api",
+    "domain": "exact_api",
+    "query": "Locate normalizeSlashes, the path helper converting backslashes into forward slashes.",
+    "targets": [
+      "api/path.ts|normalizeSlashes"
+    ],
+    "rationale": "The helper performs replacement only if the input contains a backslash.",
+    "links": [],
+    "family": "v19.typescript.f0041"
+  },
+  {
+    "slug": "timing-recent-ring-order",
+    "domain": "behavior",
+    "query": "Where are timing samples retained in a bounded ring and snapshots returned from oldest to newest after wrapping?",
+    "targets": [
+      "api/timing.ts|TimingCollector.record",
+      "api/timing.ts|TimingCollector.getInfo"
+    ],
+    "rationale": "record overwrites the oldest slot and advances head modulo capacity; getInfo walks from head and copies accumulated totals.",
+    "links": [],
+    "family": "v19.typescript.f0045"
+  },
+  {
+    "slug": "cache-zero-ref-eviction",
+    "domain": "behavior",
+    "query": "Where are cache records evicted only after their last ownership reference is removed, including node-ID index cleanup?",
+    "targets": [
+      "api/sourceFileCache.ts|SourceFileCache.releaseRef"
+    ],
+    "rationale": "releaseRef walks versions backwards, removes the named ref, evicts empty records and removes the node-ID mapping only if it still points to the evicted record.",
+    "links": [],
+    "family": "v19.typescript.f0046"
+  },
+  {
+    "slug": "direct-node-parent-resolution",
+    "domain": "behavior",
+    "query": "Where does direct node lookup walk through synthetic NodeList parents so that materialized nodes report the real AST parent?",
+    "targets": [
+      "api/node/node.ts|RemoteSourceFile.getOrCreateNodeAtIndex"
+    ],
+    "rationale": "Parent indices skip KIND_NODE_LIST containers; recursion resolves the real parent, caches the new RemoteNode and records one materialization.",
+    "links": [],
+    "family": "v19.typescript.f0047"
+  },
+  {
+    "slug": "literal-preserving-deep-clone",
+    "domain": "behavior",
+    "query": "Where does deep cloning explicitly reconstruct string and numeric leaf literals with their text and tokenFlags?",
+    "targets": [
+      "ast/clone.ts|getSynthesizedDeepCloneWorker"
+    ],
+    "rationale": "When child visiting returns the original leaf, literals use their specialized factories with tokenFlags; other leaves use cloneNode, and text ranges are copied.",
+    "links": [],
+    "family": "v19.typescript.f0048"
+  },
+  {
+    "slug": "clone-parent-and-range-facets",
+    "domain": "architecture_facets",
+    "query": "Identify the clone helpers that assign parent links throughout a subtree and copy source text ranges onto an individual clone.",
+    "targets": [
+      "ast/clone.ts|setParentRecursive",
+      "ast/clone.ts|setTextRange"
+    ],
+    "rationale": "Parent links are assigned by recursive traversal; pos/end copying is conditional on a supplied range.",
+    "links": [],
+    "family": "v19.typescript.f0049"
+  },
+  {
+    "slug": "binary-section-assembly-facets",
+    "domain": "architecture_facets",
+    "query": "Identify binary AST section assembly and the string-table section encoding with offset pairs followed by pooled bytes.",
+    "targets": [
+      "api/node/encoder.ts|encodeNode",
+      "api/node/encoder.ts|StringTable.encode"
+    ],
+    "rationale": "encodeNode orders header, string offsets/data, extended data, structured data and nodes; StringTable.encode writes little-endian offset pairs before the byte pool.",
+    "links": [],
+    "family": "v19.typescript.f0050"
+  },
+  {
+    "slug": "async-batch-scheduling-facets",
+    "domain": "architecture_facets",
+    "query": "Identify automatic next-tick batch scheduling and the disposable manual batch context that defers scheduling.",
+    "targets": [
+      "api/async/client.ts|Client.scheduleImmediateBatch",
+      "api/async/client.ts|Client.batchContext"
+    ],
+    "rationale": "Automatic scheduling uses setImmediate; manual mode flushes an existing queue then sets a manual sentinel, and disposal restores immediate scheduling.",
+    "links": [],
+    "family": "v19.typescript.f0051"
+  },
+  {
+    "slug": "async-request-timing-record-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace asynchronous JSON-RPC request completion into the shared timing collector with round-trip and serialized payload byte counts.",
+    "targets": [
+      "api/async/client.ts|Client.sendRequestWithTiming",
+      "api/timing.ts|TimingCollector.record"
+    ],
+    "rationale": "The timed request computes JSON UTF-8 byte lengths, measures performance.now elapsed time and passes the sample into TimingCollector.record.",
+    "links": [
+      [
+        0,
+        1,
+        "this.timing.record({",
+        "calls"
+      ]
+    ],
+    "family": "v19.typescript.f0052"
+  },
+  {
+    "slug": "binary-node-decoder-injection",
+    "domain": "crossfile_chain",
+    "query": "Trace decodeNode creation of a remote source-file wrapper with a WTF-8 decoder implementation.",
+    "targets": [
+      "api/node/node.ts|decodeNode",
+      "api/node/node.ts|RemoteSourceFile.constructor",
+      "api/node/wtf8.ts|Wtf8Decoder.decode"
+    ],
+    "rationale": "decodeNode constructs RemoteSourceFile and injects Wtf8Decoder; the remote source file stores that decoder for binary string decoding, not eager text decoding.",
+    "links": [
+      [
+        0,
+        1,
+        "new RemoteSourceFile(",
+        "constructs"
+      ],
+      [
+        0,
+        2,
+        "new Wtf8Decoder()",
+        "constructs decoder whose decode method is target implementation"
+      ]
+    ],
+    "family": "v19.typescript.f0053"
+  },
+  {
+    "slug": "sync-custom-callback-adapter-chain",
+    "domain": "crossfile_chain",
+    "query": "Trace synchronous custom callback registration and its returned unregister disposer across client and channel modules.",
+    "targets": [
+      "api/sync/client.ts|Client.registerCallback",
+      "api/syncChannel.ts|SyncRpcChannel.registerCallback",
+      "api/syncChannel.ts|SyncRpcChannel.unregisterCallback"
+    ],
+    "rationale": "The client wraps JSON argument/result conversion; the channel registers in its callback map and the disposer deletes the registered entry.",
+    "links": [
+      [
+        0,
+        1,
+        "this.channel.registerCallback(",
+        "calls"
+      ],
+      [
+        0,
+        2,
+        "this.channel.unregisterCallback(name)",
+        "calls in disposer"
+      ]
+    ],
+    "family": "v19.typescript.f0055"
+  },
+  {
+    "slug": "cached-file-descriptor-mismatch",
+    "domain": "config_error",
+    "query": "Where does attaching a fetched source file reject a descriptor mismatch before setting the record file and symbolCache?",
+    "targets": [
+      "api/sourceFileCache.ts|SourceFileCache.attachFile",
+      "api/sourceFileCache.ts|descriptorsEqual"
+    ],
+    "rationale": "attachFile checks all descriptor identity fields via descriptorsEqual and throws before attaching if they differ.",
+    "links": [],
+    "family": "v19.typescript.f0056"
+  },
+  {
+    "slug": "nested-manual-batch-error",
+    "domain": "config_error",
+    "query": "Where is entering a second manual asynchronous batch context rejected?",
+    "targets": [
+      "api/async/client.ts|Client.batchContext"
+    ],
+    "rationale": "The manual sentinel causes Already in a manual batch context before changing queue or scheduling state.",
+    "links": [],
+    "family": "v19.typescript.f0057"
+  },
+  {
+    "slug": "msgpack-floating-point-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/node/msgpack.ts only, locate a writer for MessagePack float32 or float64 values.",
+    "scope": "api/node/msgpack.ts",
+    "absent_tokens": [
+      "float32",
+      "float64",
+      "writeFloat",
+      "setFloat"
+    ],
+    "rationale": "The complete minimal codec writes arrays, unsigned integers, strings and booleans; its numeric writer uses unsigned integer representations, not float markers.",
+    "family": "v19.typescript.f0058"
+  },
+  {
+    "slug": "sync-request-cancellation-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/api/syncChannel.ts only, locate AbortSignal-based cancellation of an in-flight synchronous request.",
+    "scope": "api/syncChannel.ts",
+    "absent_tokens": [
+      "AbortSignal",
+      "AbortController"
+    ],
+    "rationale": "The complete channel request loop performs blocking reads and handles responses, errors and callbacks. Constructor pipe readiness retries and EAGAIN retry sleeps are not request cancellation; no abort signal is accepted or observed.",
+    "family": "v19.typescript.f0059"
+  },
+  {
+    "slug": "clone-source-emission-noanswer",
+    "domain": "hardnegative_noanswer",
+    "query": "Within packages/typescript/src/ast/clone.ts only, locate an AST printer that emits JavaScript source text.",
+    "scope": "ast/clone.ts",
+    "absent_tokens": [
+      "createPrinter",
+      "printNode",
+      "emitJavaScript"
+    ],
+    "rationale": "The complete module clones nodes/arrays, text ranges and parent links. It imports factories and a visitor, with no source printer or emitter.",
+    "family": "v19.typescript.f0060"
+  }
+]

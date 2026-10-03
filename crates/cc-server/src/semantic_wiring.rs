@@ -258,24 +258,10 @@ pub fn assemble_with(
     // P7-002: config → (frozen space, capability sheet). Missing keys and
     // capability mismatches are config errors that name the key.
     let (space, capability) = resolve_provider(&config.semantic)?;
-    // Shared provider gate / circuit breaker (P7-005/P7-006): the SAME
-    // composition-root singletons the worker side uses. First-wins: if the
-    // permissive/breaker defaults were already claimed by a lazy getter, the
-    // explicit limits do not replace them (documented pre-existing caveat).
-    // `from_provider_config` validates the `semantic.max_concurrent*` keys
-    // with key-naming config errors; the limits are then re-derived for the
-    // OnceLock init (same mapping, cannot fail after that validation).
-    if cc_semantic::admission::ProviderGate::from_provider_config(&config.semantic)?.is_some() {
-        let per_project = match config.semantic.max_concurrent_per_project {
-            0 => None,
-            cap => Some(cap as usize),
-        };
-        let limits = cc_semantic::admission::GateLimits::validated(
-            config.semantic.max_concurrent as usize,
-            per_project,
-        )?;
-        crate::service_factory::init_semantic_provider_gate(limits);
-    }
+    // Adopt caps on the SAME shared gate, before publishing subsystem state.
+    // Busy adoption and conflicting explicit policies are configuration errors.
+    // The circuit breaker still has its separate pre-existing first-wins policy.
+    crate::service_factory::configured_semantic_provider_gate(&config.semantic)?;
     crate::service_factory::init_semantic_circuit_breaker(
         cc_semantic::providers::openai_compatible::BreakerLimits::from_provider_config(
             &config.semantic,

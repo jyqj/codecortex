@@ -41,22 +41,42 @@ mod provider_gate {
         &GATE
     }
 
-    /// The process-wide shared gate. First initialization wins; later
-    /// callers (and the default path) share the same instance.
+    /// The process-wide shared gate. Read-only getters create a permissive
+    /// instance without committing an explicit policy. All callers share it.
     pub fn semantic_provider_gate() -> Arc<ProviderGate> {
         slot()
             .get_or_init(|| Arc::new(ProviderGate::new(GateLimits::permissive())))
             .clone()
     }
 
-    /// Initialize the shared gate with explicit limits (the semantic
-    /// configuration's `max_concurrent` keys, mapped by
-    /// `ProviderGate::from_provider_config` at wiring time). Idempotent:
-    /// returns the existing instance if the gate was already initialized.
-    pub fn init_semantic_provider_gate(limits: GateLimits) -> Arc<ProviderGate> {
-        slot()
-            .get_or_init(|| Arc::new(ProviderGate::new(limits)))
-            .clone()
+    /// Adopt explicit caps only while the shared gate is idle. Equal explicit
+    /// caps are idempotent; conflicts and busy adoption propagate as config errors.
+    pub fn init_semantic_provider_gate(
+        limits: GateLimits,
+    ) -> cc_model::CcResult<Arc<ProviderGate>> {
+        let gate = semantic_provider_gate();
+        gate.configure_limits(limits)?;
+        Ok(gate)
+    }
+
+    /// Default/unlimited providers inherit the shared policy, including caps
+    /// adopted after their construction. Never give production wrappers None.
+    pub fn configured_semantic_provider_gate(
+        config: &cc_model::config::SemanticProviderConfig,
+    ) -> cc_model::CcResult<Arc<ProviderGate>> {
+        let limits = if config.enabled && config.max_concurrent > 0 {
+            GateLimits::validated(
+                config.max_concurrent as usize,
+                (config.max_concurrent_per_project > 0)
+                    .then_some(config.max_concurrent_per_project as usize),
+            )
+            .map_err(|error| {
+                cc_model::CcError::Config(format!("semantic.max_concurrent*: {error}"))
+            })?
+        } else {
+            GateLimits::permissive()
+        };
+        init_semantic_provider_gate(limits)
     }
 
     // ── shared provider circuit breaker (P7-006) ────────────────────────
@@ -107,8 +127,8 @@ mod provider_gate {
 
 #[cfg(feature = "semantic")]
 pub use provider_gate::{
-    init_semantic_circuit_breaker, init_semantic_provider_gate, semantic_circuit_breaker,
-    semantic_provider_gate,
+    configured_semantic_provider_gate, init_semantic_circuit_breaker, init_semantic_provider_gate,
+    semantic_circuit_breaker, semantic_provider_gate,
 };
 /// Plain-data evidence that the attached semantic port came from a
 /// successful composition-root wiring (`semantic.enabled = true`, config
@@ -312,11 +332,9 @@ mod provider_gate_tests {
         let first = semantic_provider_gate();
         let second = semantic_provider_gate();
         assert!(Arc::ptr_eq(&first, &second));
-        let initialized = init_semantic_provider_gate(GateLimits::validated(2, Some(1)).unwrap());
-        assert!(
-            Arc::ptr_eq(&initialized, &semantic_provider_gate()),
-            "init is idempotent first-wins and later getters share the instance"
-        );
+        let initialized = init_semantic_provider_gate(GateLimits::permissive()).unwrap();
+        assert!(Arc::ptr_eq(&initialized, &semantic_provider_gate()));
+        // Explicit-policy adoption is exercised in fresh test processes.
     }
 
     #[test]

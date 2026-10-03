@@ -82,7 +82,15 @@ const PROJECTION_MARKER_KEY: &str = "semantic_projection";
 /// `compiler` is an existing test-fixture-only field name; real receipts do not
 /// carry it and it is optional.
 const KNOWN_SEMANTIC_OPTION_KEYS: &[&str] = &[
-    "binding", "cargo", "command", "compiler", "features", "jobs", "profile", "rustc", "RUSTFLAGS",
+    "binding",
+    "cargo",
+    "command",
+    "compiler",
+    "features",
+    "jobs",
+    "profile",
+    "rustc",
+    "RUSTFLAGS",
     "SDKROOT",
 ];
 /// Semantic keys that must be present in every cell's `build_options`. Together
@@ -94,7 +102,15 @@ const KNOWN_SEMANTIC_OPTION_KEYS: &[&str] = &[
 /// stay compatible. The test fixture additionally carries the optional
 /// `compiler` key used by compiler-drift tests.
 const REQUIRED_SEMANTIC_OPTION_KEYS: &[&str] = &[
-    "command", "cargo", "rustc", "SDKROOT", "RUSTFLAGS", "profile", "features", "jobs", "binding",
+    "command",
+    "cargo",
+    "rustc",
+    "SDKROOT",
+    "RUSTFLAGS",
+    "profile",
+    "features",
+    "jobs",
+    "binding",
 ];
 /// Cross-cell comparison operates on this projection, never on the raw value.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -119,11 +135,16 @@ fn projected_semantic_identity(build_options: &Value) -> Result<ProjectedIdentit
     };
     for key in REQUIRED_SEMANTIC_OPTION_KEYS {
         if !map.contains_key(*key) {
-            return Err(invalid(format!("required build option key '{key}' missing")));
+            return Err(invalid(format!(
+                "required build option key '{key}' missing"
+            )));
         }
     }
     if let Some(marker) = map.get(PROJECTION_MARKER_KEY) {
-        let kind = marker.get("kind").and_then(Value::as_str).unwrap_or_default();
+        let kind = marker
+            .get("kind")
+            .and_then(Value::as_str)
+            .unwrap_or_default();
         let version = marker.get("version").and_then(Value::as_u64);
         if kind != SEMANTIC_PROJECTION_KIND
             || version != Some(u64::from(SEMANTIC_PROJECTION_VERSION))
@@ -313,7 +334,9 @@ pub fn validate(plan: &Plan, base: &Path) -> Result<BuildOptionsProjection> {
             .values()
             .any(|target| target == &projection.cargo_target_dir)
         {
-            return Err(invalid("cells share a CARGO_TARGET_DIR; independent per-cell targets are required"));
+            return Err(invalid(
+                "cells share a CARGO_TARGET_DIR; independent per-cell targets are required",
+            ));
         }
         positional_metrics.insert(v.id.clone(), projection.cargo_target_dir);
     }

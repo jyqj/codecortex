@@ -636,7 +636,11 @@ fn worker_limits_reject_structurally_meaningless_bounds() {
     assert!(WorkerLimits::validated(1, 60.0, 0.0, 0).is_err());
     let ok = WorkerLimits::validated(4, 60.0, 1.0, 3).expect("valid");
     assert_eq!(ok.renew_period(), 20.0, "heartbeat period = lease_secs/3");
-    assert_eq!(ok.claim_order, ClaimFairness::Fifo, "default stays arrival FIFO");
+    assert_eq!(
+        ok.claim_order,
+        ClaimFairness::Fifo,
+        "default stays arrival FIFO"
+    );
     assert_eq!(
         ok,
         WorkerLimits {
@@ -648,7 +652,8 @@ fn worker_limits_reject_structurally_meaningless_bounds() {
         }
     );
     assert_eq!(
-        ok.with_claim_order(ClaimFairness::DocRoundRobin).claim_order,
+        ok.with_claim_order(ClaimFairness::DocRoundRobin)
+            .claim_order,
         ClaimFairness::DocRoundRobin
     );
 }
@@ -674,7 +679,11 @@ fn drain_claim_order_defaults_to_fifo_and_rotation_is_opt_in() {
         world.handler(&no_input).handle(guard)
     })
     .unwrap();
-    assert_eq!((report.claimed, report.retried), (1, 1), "doc-a is served first");
+    assert_eq!(
+        (report.claimed, report.retried),
+        (1, 1),
+        "doc-a is served first"
+    );
     let report = drain_pending(&world.db, "worker", &limits(1), &mut |guard| {
         world.handler(&no_input).handle(guard)
     })
@@ -696,7 +705,11 @@ fn drain_claim_order_defaults_to_fifo_and_rotation_is_opt_in() {
         world.handler(&no_input).handle(guard)
     })
     .unwrap();
-    assert_eq!((report.claimed, report.retried), (1, 1), "doc-a first (only stale rows)");
+    assert_eq!(
+        (report.claimed, report.retried),
+        (1, 1),
+        "doc-a first (only stale rows)"
+    );
     let report = drain_pending(&world.db, "worker", &rotation, &mut |guard| {
         world.handler(&no_input).handle(guard)
     })

@@ -54,9 +54,9 @@ pub const FENCE_DIAGNOSTICS_KEY: &str = "dense_manifest_fence";
 /// the lane-driven annotation convention; a bare lane id is accepted
 /// defensively but never produced today).
 pub fn is_dense_hit(hit: &cc_model::search::SearchHit) -> bool {
-    hit.reasons
-        .iter()
-        .any(|reason| reason.as_str() == DENSE_LANE_ID || reason.starts_with(&format!("{DENSE_LANE_ID}@")))
+    hit.reasons.iter().any(|reason| {
+        reason.as_str() == DENSE_LANE_ID || reason.starts_with(&format!("{DENSE_LANE_ID}@"))
+    })
 }
 
 /// Memoized per-document fence verdicts over one hydrator lifetime. Verdicts

@@ -1,0 +1,76 @@
+[
+  {
+    "log": "base-counterexample.log",
+    "exit_code": 101,
+    "command": "RUSTC=<real rustc> <real cargo> test -p cc-server --features semantic-http --lib semantic_runtime::tests::bounded_parallel_existing_first_wins_counterexample -- --exact --ignored --nocapture"
+  },
+  {
+    "log": "base-counterexample-workspace-cache.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib semantic_runtime::tests::bounded_parallel_existing_first_wins_counterexample -- --exact --ignored --nocapture"
+  },
+  {
+    "log": "repaired-production-compile-failure.log",
+    "exit_code": 101,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib shared_provider_gate_cases_in_fresh_processes -- --nocapture"
+  },
+  {
+    "log": "repaired-production-initial.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib shared_provider_gate_cases_in_fresh_processes -- --nocapture"
+  },
+  {
+    "log": "repaired-production.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib shared_provider_gate_cases_in_fresh_processes -- --nocapture"
+  },
+  {
+    "log": "admission-tests.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-semantic --lib admission:: -- --nocapture"
+  },
+  {
+    "log": "runtime-tests.log",
+    "exit_code": 101,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib semantic_runtime:: -- --nocapture"
+  },
+  {
+    "log": "provider-factory-tests.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib semantic_provider_factory:: -- --nocapture"
+  },
+  {
+    "log": "service-factory-tests.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --lib service_factory::provider_gate_tests:: -- --nocapture"
+  },
+  {
+    "log": "production-regressions.log",
+    "exit_code": 0,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo test --locked -p cc-server --features semantic-http --test p7_query_production --test p7_production_fairness_model_review -- --nocapture"
+  },
+  {
+    "log": "clippy-proxy-failure.log",
+    "exit_code": 1,
+    "command": "CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo clippy --locked -p cc-semantic -p cc-server --all-targets --features semantic-http -- -D warnings"
+  },
+  {
+    "log": "clippy-direct.log",
+    "exit_code": 0,
+    "command": "PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:$PATH CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-clippy clippy --locked -p cc-semantic -p cc-server --all-targets --features semantic-http -- -D warnings"
+  },
+  {
+    "log": "clippy-final.log",
+    "exit_code": 0,
+    "command": "PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:$PATH CARGO_HOME=/workspace/.cargo RUSTC=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc /workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-clippy clippy --locked -p cc-semantic -p cc-server --all-targets --features semantic-http -- -D warnings"
+  },
+  {
+    "log": "fmt.log",
+    "exit_code": 0,
+    "command": "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt --check --edition 2021 crates/cc-semantic/src/admission.rs crates/cc-server/src/service_factory.rs crates/cc-server/src/semantic_wiring.rs crates/cc-server/src/semantic_runtime.rs crates/cc-server/src/shared_provider_gate_tests.rs"
+  },
+  {
+    "command": "git diff --check",
+    "exit_code": 0
+  }
+]

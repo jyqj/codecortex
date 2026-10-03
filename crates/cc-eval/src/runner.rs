@@ -98,7 +98,7 @@ impl CodeIndexBackend {
         // serves over stdio.
         let project = project_path.to_path_buf();
         let client = runtime.block_on(async {
-            let server = CodeCortexMcpServer::new(Some(&project));
+            let server = CodeCortexMcpServer::new(Some(&project))?;
             let (server_io, client_io) = tokio::io::duplex(1 << 20);
             tokio::spawn(async move {
                 match rmcp::serve_server(server, server_io).await {

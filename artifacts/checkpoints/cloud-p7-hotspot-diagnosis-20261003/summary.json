@@ -1,0 +1,25 @@
+{
+  "status": "running_prepared",
+  "source_sha": "3a378fbd3d9e443738f680ebb86f4b9dc47292a5",
+  "binary": "/tmp/p7-resource-hotspot-build/codecortex",
+  "binary_sha256": "616f6e3fbb8b945804ae5721445e2fb2fee15e158b692dd3121eb64d271e7333",
+  "profile": "release",
+  "release_build_source_sha": "3a378fbd3d9e443738f680ebb86f4b9dc47292a5",
+  "build_receipt_sha256": "ab464ea956145cddb3651677b39484ccb338be2f69aeefc4151a1dcd9bdcd681",
+  "cells": [],
+  "scales": [
+    {
+      "scale": 50000,
+      "status": "failed_or_incomplete",
+      "error": "",
+      "traceback": "Traceback (most recent call last):\n  File \"/workspace/codecortex/scripts/p7_release_hotspot_diagnosis.py\", line 163, in run\n    product.phase='cold-empty-index-build';t=time.monotonic_ns();data=product.tool('index',{'path':str(root)});builds.append({'profile':product.phase,'duration_ms':(time.monotonic_ns()-t)/1e6,'result':data})\n                                                                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/codecortex/scripts/p7_release_hotspot_diagnosis.py\", line 103, in tool\n    value=self.rpc('tools/call',{'name':name,'arguments':args},**kw)\n          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/workspace/codecortex/scripts/p7_release_hotspot_diagnosis.py\", line 96, in rpc\n    value=q.get(timeout=timeout);finish=time.monotonic_ns()\n          ^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/queue.py\", line 179, in get\n    raise Empty\n_queue.Empty\n",
+      "tmp_available": 3761684480
+    }
+  ],
+  "not_run": [],
+  "full_P7_015": false,
+  "full_V20": false,
+  "diagnostic_only": true,
+  "metric_comparison_admitted": false,
+  "fixed_endpoint": "http://127.0.0.1:34551/v1"
+}

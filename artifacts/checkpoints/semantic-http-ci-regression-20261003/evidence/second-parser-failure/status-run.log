@@ -1,0 +1,34 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.18s
+     Running unittests src/lib.rs (target/debug/deps/cc_server-398f8eaed910ff13)
+
+running 10 tests
+test capability_status::tests::attached_port_with_degradation_reports_degraded_state_and_reasons ... ok
+test capability_status::tests::detectable_incarnation_change_retries_then_returns_only_the_new_observation ... ok
+test capability_status::tests::identity_churn_is_bounded_and_never_reports_old_database_ready ... ok
+test capability_status::tests::old_active_space_cannot_report_configured_new_model_ready ... ok
+test capability_status::tests::ordinary_index_churn_returns_one_complete_observation_per_poll ... ok
+test capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder ... ok
+test capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs ... ok
+test capability_status::tests::stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready ... ok
+test capability_status::tests::unattached_healthy_or_unreported_states_are_never_degraded ... ok
+test capability_status::tests::wired_status_requires_an_active_space_and_reports_publication_gaps ... ok
+
+successes:
+
+---- capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs stdout ----
+STATUS_INTERLEAVE {"after":{"evidence_epoch":0,"incarnation":[140,56,162,123,97,209,195,32,193,171,41,169,198,51,214,223],"index_epoch":6,"semantic_epoch":2},"before":{"evidence_epoch":0,"incarnation":[140,56,162,123,97,209,195,32,193,171,41,169,198,51,214,223],"index_epoch":6,"semantic_epoch":1},"dense_state":"partial","returned":{"evidence_epoch":0,"incarnation":[140,56,162,123,97,209,195,32,193,171,41,169,198,51,214,223],"index_epoch":6,"semantic_epoch":1},"root_attempts":1}
+
+
+successes:
+    capability_status::tests::attached_port_with_degradation_reports_degraded_state_and_reasons
+    capability_status::tests::detectable_incarnation_change_retries_then_returns_only_the_new_observation
+    capability_status::tests::identity_churn_is_bounded_and_never_reports_old_database_ready
+    capability_status::tests::old_active_space_cannot_report_configured_new_model_ready
+    capability_status::tests::ordinary_index_churn_returns_one_complete_observation_per_poll
+    capability_status::tests::query_network_authorization_is_separate_and_requires_live_encoder
+    capability_status::tests::real_worker_publication_between_status_reads_never_mixes_epochs
+    capability_status::tests::stale_wiring_metadata_cannot_claim_an_unattached_port_is_ready
+    capability_status::tests::unattached_healthy_or_unreported_states_are_never_degraded
+    capability_status::tests::wired_status_requires_an_active_space_and_reports_publication_gaps
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 321 filtered out; finished in 0.38s

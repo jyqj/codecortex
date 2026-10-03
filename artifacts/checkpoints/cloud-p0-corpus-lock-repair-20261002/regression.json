@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "binary_sha256": "ce234d7eada3211f5e4b581a5aa37a7822806940b7d07ba5f9708a0b0379b340",
+  "observations": [
+    {
+      "case": "all-six-valid",
+      "exit_code": 0,
+      "stdout": "P0 authored smoke: 11 queries, 3 admitted files, locks valid\nP1-A current CodeCortex source subset: 14 queries, 9 admitted files, locks valid\nP1-B authored exact and component-scope contracts: 8 queries, 4 admitted files, locks valid\nP1-C paired EN/ZH intentions (authored dev): 18 queries, 6 admitted files, locks valid\np1c-bm25: 1 queries, 4 admitted files, locks valid\np1c-softscope: 2 queries, 4 admitted files, locks valid\n",
+      "stderr": ""
+    },
+    {
+      "case": "valid-copy",
+      "exit_code": 0,
+      "stdout": "P1-A current CodeCortex source subset: 14 queries, 9 admitted files, locks valid\n",
+      "stderr": "",
+      "validator_mutated_input": false
+    },
+    {
+      "case": "source-byte-drift",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "/tmp/p0-lock-negative-100v39y4/suite.json: invalid benchmark input: source or query content lock drift\n",
+      "validator_mutated_input": false
+    },
+    {
+      "case": "query-text-drift",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "/tmp/p0-lock-negative-rc79x9w1/suite.json: invalid benchmark input: source or query content lock drift\n",
+      "validator_mutated_input": false
+    },
+    {
+      "case": "gold-answer-drift",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "/tmp/p0-lock-negative-2eje3vj5/suite.json: invalid benchmark input: source or query content lock drift\n",
+      "validator_mutated_input": false
+    },
+    {
+      "case": "old-source-lock",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "/tmp/p0-lock-negative-xonlkck7/suite.json: invalid benchmark input: source or query content lock drift\n",
+      "validator_mutated_input": false
+    },
+    {
+      "case": "old-queries-lock",
+      "exit_code": 2,
+      "stdout": "",
+      "stderr": "/tmp/p0-lock-negative-q_5pwb9i/suite.json: invalid benchmark input: source or query content lock drift\n",
+      "validator_mutated_input": false
+    }
+  ],
+  "repository_inputs_unchanged": true
+}

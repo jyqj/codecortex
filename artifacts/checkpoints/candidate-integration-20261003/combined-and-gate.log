@@ -1,0 +1,48 @@
+
+running 1 test
+
+running 1 test
+PRODUCTION_GATE upper_global=4 upper_project=2 actual_http_held=4 old_default_doc_and_query=true neighbor=true default_after_explicit=true arc_identity=true released=0
+test semantic_runtime::shared_provider_gate_tests::production_wrappers_adopt_and_enforce ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.22s
+
+
+running 1 test
+BUSY_CONFIG wiring_runtime_and_project_errors=true old_permit_release=true retry_adoption=true
+test semantic_runtime::shared_provider_gate_tests::busy_config_errors_propagate ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.05s
+
+
+running 1 test
+REGISTRY_RACE same_arc=true linearized_adoption_or_busy=true released=0
+test semantic_runtime::shared_provider_gate_tests::concurrent_registry_init_and_acquire ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.00s
+
+
+running 1 test
+DEFAULT_DISABLED cache_lookups=0 credential_lookups=0 transport_builds=0 provider_calls=0
+test semantic_runtime::shared_provider_gate_tests::disabled_is_inert ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.01s
+
+
+running 1 test
+COMBINED width=0 actual_width=1 global=4 project=2 first_claims=16 first_done=15 ready_after_retry=4 final_done=19 backoff=1 early_retry_calls=0 closed_calls=0 live_claims=0 gate_after_join=0
+test semantic_runtime::shared_provider_gate_tests::combined_queue_serial ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.31s
+
+
+running 1 test
+COMBINED width=2 actual_width=2 global=4 project=2 first_claims=16 first_done=15 ready_after_retry=4 final_done=19 backoff=1 early_retry_calls=0 closed_calls=0 live_claims=0 gate_after_join=0
+test semantic_runtime::shared_provider_gate_tests::combined_queue_width_two ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 0.43s
+
+test semantic_runtime::shared_provider_gate_tests::shared_provider_gate_cases_in_fresh_processes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 344 filtered out; finished in 1.04s
+

@@ -301,11 +301,14 @@ pub struct ContextEnvelope {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::retrieval::{
-        LaneCoverage, LaneOutcome, LaneStatus, LANE_OUTCOME_SCHEMA_VERSION,
-    };
+    use crate::retrieval::{LaneCoverage, LaneOutcome, LaneStatus, LANE_OUTCOME_SCHEMA_VERSION};
 
-    fn receipt(lane_id: &str, status: LaneStatus, reason: Option<&str>, count: usize) -> LaneOutcome {
+    fn receipt(
+        lane_id: &str,
+        status: LaneStatus,
+        reason: Option<&str>,
+        count: usize,
+    ) -> LaneOutcome {
         LaneOutcome {
             schema_version: LANE_OUTCOME_SCHEMA_VERSION,
             lane_id: lane_id.into(),
@@ -380,10 +383,18 @@ mod tests {
         assert_eq!(ran_empty.candidate_count, 0);
         assert!(ran_empty.coverage.complete);
 
-        let timed_out = receipt("semantic", LaneStatus::Timeout, Some("semantic_deadline"), 0);
+        let timed_out = receipt(
+            "semantic",
+            LaneStatus::Timeout,
+            Some("semantic_deadline"),
+            0,
+        );
         let timed_out = LaneCoverageExplain::from_lane_outcome(&timed_out);
         assert_eq!(timed_out.status, LaneStatus::Timeout);
-        assert_eq!(timed_out.truncation_reason.as_deref(), Some("semantic_deadline"));
+        assert_eq!(
+            timed_out.truncation_reason.as_deref(),
+            Some("semantic_deadline")
+        );
         assert_eq!(timed_out.candidate_count, 0);
         assert!(!timed_out.coverage.complete);
 

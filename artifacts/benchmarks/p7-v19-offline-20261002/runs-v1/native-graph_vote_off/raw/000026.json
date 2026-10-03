@@ -1,0 +1,744 @@
+{
+  "evidence_summary": {
+    "files": [
+      "cc-model/src/id.rs"
+    ],
+    "graph_enrichment": {
+      "callees_added": 2,
+      "callers_added": 2,
+      "symbols_resolved": 3,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "machine_hit_nodes_omitted": 10,
+      "omitted_hits": 7,
+      "omitted_nodes": 0,
+      "original_hits": 10,
+      "original_nodes": 14,
+      "partial": true,
+      "references_omitted": true,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 15923
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 24,
+        "hydrate_requested": 24,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 24,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 1428
+          },
+          "text": {
+            "cache_hits": 1,
+            "legacy_auto_reads": 0,
+            "storage_reads": 23,
+            "utf8_bytes": 16978,
+            "zstd_decodes": 19
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 0,
+          "grep": 0,
+          "lexical": 24,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 25,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 3764
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 5,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 641,
+        "skipped_duplicates": 636,
+        "soft_scanned": 636,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 636,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 6436
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 636,
+                "utf8_bytes": 191371,
+                "zstd_decodes": 313
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 640,
+                "rows": 641,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 5135
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 5,
+                "utf8_bytes": 3355,
+                "zstd_decodes": 2
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 236,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 607,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 24,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 25
+          },
+          "elapsed_us": 3899,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "partial",
+          "truncation_reason": "candidate_limit",
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 641,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 22423,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": false,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 0,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "disabled",
+          "truncation_reason": null,
+          "weight": 0.0
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "locate",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 8,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 3,
+    "selection": {
+      "facets": {
+        "implementation": 10
+      },
+      "input_candidates": 24,
+      "intent": "locate",
+      "intent_facet_anchors": {},
+      "limit_omitted": 14,
+      "original_ranks": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 16978,
+        "redundant_bytes": 0,
+        "unique_bytes": 16978
+      },
+      "requested_limit": 10,
+      "selected": 10,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 9297,
+        "redundant_bytes": 0,
+        "unique_bytes": 9297
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": []
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 6,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          167,
+          122,
+          167,
+          51,
+          49,
+          37,
+          168,
+          119,
+          182,
+          108,
+          58,
+          152,
+          233,
+          186,
+          43,
+          224
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 157835,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 24
+    }
+  },
+  "intent": "locate",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "StableId > symbol_uid",
+        "chunk_id": "chunk:cc-model/src/id.rs:5",
+        "end_line": 33,
+        "file_path": "cc-model/src/id.rs",
+        "fused_score": 0.021568627450980395,
+        "graph_score": 0.3691042453358316,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "9bf3d2e08f820776166f511ebcd2a425a1a7da61394ef170c8b94bd5bc48cccc",
+            "doc_version": "59c0f7a0af140e55f92859dd887c874b94cc667e228659bb23040da6e83db621",
+            "encoding_key": "e9ae4cf4c945d0d2a1d581d2d65658dc68c122e8a00a0ce7f98796687bd378ef",
+            "entity_key": "72c8f144c589c228e97a225133bacf89302081dc6d5040714b53f08eb9d6361e"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 1143,
+              "start": 619
+            },
+            "signature": {
+              "end": 714,
+              "start": 619
+            },
+            "slice_digest": "420bc54d962f557dab2bc2f12c339712defe04bcdbde426f08cc2ae33b0ff561",
+            "source": {
+              "byte_len": 5984,
+              "content_digest": "b9624f2be9f8f4fe8aeb2314df1ae4d054efb4ace08b87220a87dbe11c6ae030",
+              "encoding": "utf8",
+              "snapshot_id": "0efbc85eaab3e13c659f872ab44fc041dca1d5330f04e874e3874fbefa5b664c"
+            },
+            "span": {
+              "end": 1143,
+              "start": 393
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "fts-summary",
+          "symbol:symbol_uid",
+          "symbol:symbol_uid_is_deterministic",
+          "preselect:fts-summary:+2.14",
+          "preselect:token-search:+4.80"
+        ],
+        "rerank_score": 0.7322999010517299,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ],
+          [
+            "boost:graph-rerank",
+            0.11073127360074947
+          ]
+        ],
+        "source": "index",
+        "start_line": 16,
+        "symbol_kind": "method",
+        "symbol_name": "symbol_uid",
+        "text": "    /// Generate a stable symbol UID from semantic identity.\n    ///\n    /// Inputs: file_path + qname + kind + normalized_signature.\n    /// Resilient to line-number drift — only changes when semantic identity changes.\n    pub fn symbol_uid(file_path: &str, qname: &str, kind: &str, signature: Option<&str>) -> String {\n        let mut h = Hasher::new();\n        h.update(b\"sym:\");\n        h.update(file_path.as_bytes());\n        h.update(b\"\\0\");\n        h.update(qname.as_bytes());\n        h.update(b\"\\0\");\n        h.update(kind.as_bytes());\n        if let Some(sig) = signature {\n            h.update(b\"\\0\");\n            h.update(Self::normalize_signature(sig).as_bytes());\n        }\n        format!(\"uid:{}\", &h.finalize().to_hex()[..24])\n    }"
+      },
+      {
+        "breadcrumb": "StableId > ref_id",
+        "chunk_id": "chunk:cc-model/src/id.rs:8",
+        "end_line": 63,
+        "file_path": "cc-model/src/id.rs",
+        "fused_score": 0.019642857142857146,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.16666666666666666,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "cc72b2242434d6b21583702ab7fa4a26551fd9732bfaeb101b56d800fb70955d",
+            "doc_version": "a2c87c43280c6d3962fd02cb3e42dbf2878ae4bdfd3c2e4587c34b41edf967a6",
+            "encoding_key": "5c4e67a7c1e5a1e4b9d7e0510113dbcf2c1f89798a3d146b68ac757c90b287d4",
+            "entity_key": "93805fbfcc65d272f10e8479e2e6c01aeb398f5386b9b2e327ac22250b2cf9a1"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 2235,
+              "start": 1821
+            },
+            "signature": {
+              "end": 1902,
+              "start": 1821
+            },
+            "slice_digest": "1c272657e8a266ee4d3bb7f422769fbde8fec984b76597910747014b80f0ab37",
+            "source": {
+              "byte_len": 5984,
+              "content_digest": "b9624f2be9f8f4fe8aeb2314df1ae4d054efb4ace08b87220a87dbe11c6ae030",
+              "encoding": "utf8",
+              "snapshot_id": "0efbc85eaab3e13c659f872ab44fc041dca1d5330f04e874e3874fbefa5b664c"
+            },
+            "span": {
+              "end": 2235,
+              "start": 1761
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@6",
+          "fts-summary",
+          "symbol:symbol_uid",
+          "symbol:symbol_uid_is_deterministic",
+          "preselect:fts-summary:+2.14",
+          "preselect:token-search:+4.80"
+        ],
+        "rerank_score": 0.36964285714285716,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.019642857142857146
+          ],
+          [
+            "overlap",
+            0.09999999999999999
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 50,
+        "symbol_kind": "method",
+        "symbol_name": "ref_id",
+        "text": "\n\n    /// Generate a deterministic symbol reference ID.\n    pub fn ref_id(file_path: &str, symbol_name: &str, line: u32, col: u32) -> String {\n        let mut h = Hasher::new();\n        h.update(b\"ref:\");\n        h.update(file_path.as_bytes());\n        h.update(b\"\\0\");\n        h.update(symbol_name.as_bytes());\n        h.update(b\":\");\n        h.update(&line.to_le_bytes());\n        h.update(&col.to_le_bytes());\n        format!(\"ref:{}\", &h.finalize().to_hex()[..16])\n    }"
+      },
+      {
+        "breadcrumb": "",
+        "chunk_id": "chunk:cc-model/src/id.rs:0",
+        "end_line": 8,
+        "file_path": "cc-model/src/id.rs",
+        "fused_score": 0.015277777777777779,
+        "graph_score": 0.0,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "rust",
+        "lexical_score": 0.045454545454545456,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "31276965eae7474f96a545c598fec4e576e06f6a29f1c5b3aabd24ed7b79c775",
+            "doc_version": "c6aef80f17f67572598090ed07e90703339910f79cd49ac08b890a315fa1d538",
+            "encoding_key": "5f3c443a919cd18e049b23c69288064f8bfe43229b2dedc9302bc264aa2806ba",
+            "entity_key": null
+          },
+          "source_evidence": {
+            "boundary": "ast_block",
+            "owner": null,
+            "signature": null,
+            "slice_digest": "337a295310628a437054b3a247378cc856ad3167f577c77d1971091910322e5f",
+            "source": {
+              "byte_len": 5984,
+              "content_digest": "b9624f2be9f8f4fe8aeb2314df1ae4d054efb4ace08b87220a87dbe11c6ae030",
+              "encoding": "utf8",
+              "snapshot_id": "0efbc85eaab3e13c659f872ab44fc041dca1d5330f04e874e3874fbefa5b664c"
+            },
+            "span": {
+              "end": 280,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@22",
+          "fts-summary",
+          "symbol:symbol_uid",
+          "symbol:symbol_uid_is_deterministic",
+          "preselect:fts-summary:+2.14",
+          "preselect:token-search:+4.80"
+        ],
+        "rerank_score": 0.36527777777777776,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.015277777777777779
+          ],
+          [
+            "overlap",
+            0.09999999999999999
+          ],
+          [
+            "boost:stage-a",
+            0.25
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": null,
+        "symbol_name": null,
+        "text": "//! Stable, deterministic ID generation.\n//!\n//! All IDs are derived from semantic identity via blake3 hashing.\n//! No random UUIDs — this ensures:\n//! - Incremental index alignment\n//! - Cross-revision symbol tracking\n//! - Stable graph edges\n//! - Reproducible context deltas\n"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "symbol identity resilient to line number drift",
+    "references": [
+      {
+        "body_omitted": true,
+        "chunk_id": "chunk:cc-index/src/indexer_phases/dirty.rs:35",
+        "document": {
+          "doc_key": "b016b1d6f0c5bd9254a060b32629b8b3b64ba7c7b02764bce0375d0d7a8617db",
+          "doc_version": "d05d62aa04dbd18241ebb36d095cde3b3752fa514d16b0f426b2b13c5a1ea25f",
+          "encoding_key": "3e30b082168f663561225cd452c7a1b991c2b1bde4b59b82096871fc2884ce1f",
+          "entity_key": "5b86edae84a6d20e9af1a31fe78223a65cfbdca99b5b8259f99d5882a83b3fb6"
+        },
+        "file_path": "cc-index/src/indexer_phases/dirty.rs",
+        "kind": "document_reference",
+        "language": "rust",
+        "reason": "output_budget",
+        "retrieval_reasons": [
+          "symbol:symbol"
+        ],
+        "source_digest": "0acec508376de861e202aa93a3a733e310fe33e9582a648964a3abb81d77f5a1",
+        "source_span": {
+          "end": 12316,
+          "start": 11182
+        },
+        "symbol_kind": "function",
+        "symbol_name": "symbol"
+      }
+    ],
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-model/src/id.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:f3dcff581198a38cd34425b4",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 114,
+      "text": "caller: symbol_uid_is_deterministic → symbol_uid (cc-model/src/id.rs:114)",
+      "title": "Caller: symbol_uid_is_deterministic",
+      "token_estimate": 18
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.75,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-model/src/id.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:2aad898f366d1e2c782c1d28",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 21,
+      "text": "callee: symbol_uid → new (cc-model/src/id.rs:21)",
+      "title": "Callee: new",
+      "token_estimate": 12
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 1.0,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-parsers/src/chunker.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:29a6ee8fa49825c69166e08e",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 161,
+      "text": "caller: from_structure → make_chunk (cc-parsers/src/chunker.rs:161)",
+      "title": "Caller: from_structure",
+      "token_estimate": 17
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.75,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "cc-parsers/src/chunker.rs",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:301f6c005f71679ceffd8f08",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 204,
+      "text": "callee: make_chunk → chunk_id (cc-parsers/src/chunker.rs:204)",
+      "title": "Callee: chunk_id",
+      "token_estimate": 15
+    }
+  ],
+  "query": "symbol identity resilient to line number drift",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [],
+  "summary": "Bounded evidence response; omitted source is represented by references where space permits.",
+  "task": "symbol identity resilient to line number drift",
+  "token_budget": 4000,
+  "token_estimate": 3981
+}

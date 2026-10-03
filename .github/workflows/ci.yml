@@ -28,6 +28,10 @@ jobs:
       - name: Test
         run: cargo test --workspace --all-targets
 
+      - name: Semantic HTTP capability snapshot and normal stdio query fence
+        timeout-minutes: 30
+        run: python3 artifacts/checkpoints/semantic-http-ci-regression-20261003/check.py --output-dir "$RUNNER_TEMP/semantic-http-ci-regression"
+
       - name: Eval suite
         run: cargo test -p cc-eval -- integration_fixtures_and_corpus --nocapture
 
@@ -36,8 +40,11 @@ jobs:
 
       - name: P0 real MCP subprocess adapter
         run: |
-          cargo build -p cc-server --bin codecortex --locked
-          CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex" \
+          python3 scripts/p7_stdio_build_receipt.py --package-kind default --output-dir "$RUNNER_TEMP/p7-017-default"
+          export P7_017_PACKAGE_KIND=default
+          export P7_017_BUILD_RECEIPT="$RUNNER_TEMP/p7-017-default/build-receipt.json"
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-default/codecortex" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p7-017-default-observations" \
             cargo test -p cc-eval --features eval-http --test benchmark_adapters --locked -- --ignored
           CODECORTEX_BENCH_BINARY="$PWD/target/debug/codecortex" \
             cargo test -p cc-eval --test p1a_retrieval --locked -- --ignored
@@ -165,6 +172,15 @@ jobs:
             --suite crates/cc-eval/benchmarks/manifests/p1c-intents.json \
             --suite crates/cc-eval/benchmarks/manifests/p1c-bm25.json \
             --suite crates/cc-eval/benchmarks/manifests/p1c-softscope.json
+
+      - name: P7 semantic product disabled stdio contract
+        run: |
+          python3 scripts/p7_stdio_build_receipt.py --package-kind semantic --output-dir "$RUNNER_TEMP/p7-017-semantic"
+          CODECORTEX_BENCH_BINARY="$RUNNER_TEMP/p7-017-semantic/codecortex" \
+          P7_017_PACKAGE_KIND=semantic \
+          P7_017_BUILD_RECEIPT="$RUNNER_TEMP/p7-017-semantic/build-receipt.json" \
+          CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p7-017-semantic-observations" \
+            cargo test -p cc-eval --test benchmark_adapters --locked -- --include-ignored
 
   msrv:
     runs-on: ubuntu-latest

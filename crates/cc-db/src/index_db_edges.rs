@@ -535,6 +535,23 @@ impl IndexDb {
             .map_err(db_err)?;
         }
 
+        // If every live file is an ordinary code file, no candidate test
+        // edge can be added. Avoid repeating an empty LIKE table scan for
+        // every changed code path, but retain deletions and the epoch commit.
+        // Non-integer flags use the existing decoding/validation path.
+        let has_test_candidates: bool = tx
+            .query_row(
+                "SELECT EXISTS(SELECT 1 FROM files WHERE is_test_file != 0 OR typeof(is_test_file) != 'integer')",
+                [],
+                |row| row.get(0),
+            )
+            .map_err(db_err)?;
+        if !has_test_candidates {
+            Self::bump_index_epoch_on(&tx)?;
+            tx.commit().map_err(db_err)?;
+            return Ok(());
+        }
+
         // For each changed file, query only candidate matches via SQL LIKE
         // instead of loading ALL test/code files and cross-joining.
         let changed_set: std::collections::HashSet<&str> =

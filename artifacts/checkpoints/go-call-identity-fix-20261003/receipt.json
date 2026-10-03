@@ -1,0 +1,180 @@
+{
+  "status": "minimal_production_fix_bounded_not_full_V20",
+  "base_sha": "ace2bc7983be2955831c9384e44d1bdd0749c909",
+  "diagnosis_sha": "b25723458a77edd2207ed1a52dceb0ea1009cb93",
+  "go_production_module_sha256": "f85699300963048c7bc86bf7a0cc2a31e75f39f730cf6e6718ad8b10c6bcf16f",
+  "base_go_file_sha256": "ea55f0de7f888b392d392c4ca2279a03ae4c890605d8820f8bd21a43e8a8a8e1",
+  "go_tests": {
+    "passed": 15,
+    "failed": 0,
+    "new_tests": 4
+  },
+  "checks": {
+    "strict_scoped_clippy": "passed",
+    "scoped_rustfmt": "passed",
+    "production_only_extract_single_call": true
+  },
+  "cache_version_invalidation": "required_main_integration_not_changed_here",
+  "provider_calls": 0,
+  "search_calls": 0,
+  "retained_index_calls": {
+    "fixed": 6,
+    "old": 3
+  },
+  "preliminary_index_calls": {
+    "old_expected_call_vs_actual_ref_conflict": 2,
+    "fixed_driver_compile_failure": 0
+  },
+  "commands": {
+    "tests": "CARGO_TARGET_DIR=/tmp/go-call-identity-target CARGO_INCREMENTAL=0 CARGO_BUILD_JOBS=1 cargo test --locked --offline -p cc-parsers --lib go::tests -- --nocapture",
+    "clippy": "cargo clippy --locked --offline -p cc-parsers --lib -- -D warnings",
+    "fixed_build": "cargo build --locked --offline -p cc-index --message-format=json; cwd /workspace/codecortex, production go module hashed",
+    "old_build": "cargo clean -p cc-parsers -p cc-index; cargo build --locked --offline -p cc-index --message-format=json; cwd /tmp/go-call-identity-old at exact base",
+    "fixed_probes": "run_probes.py --build-json /tmp/go-call-identity-fixed-build.jsonl --output /tmp/go-call-identity-fixed-probes-v2 --mode fixed",
+    "old_probes": "run_probes.py --build-json /tmp/go-call-identity-old-build-final.jsonl --output /tmp/go-call-identity-old-probes-v2 --mode old"
+  },
+  "not_certified": [
+    "persisted cache migration",
+    "full Gin project",
+    "all-language release quality",
+    "full V20",
+    "corpus status"
+  ],
+  "files": [
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/README.md",
+      "bytes": 5794,
+      "sha256": "9f84f92e2c7df87a8896a1b4fc747bbda58b7901d0e4c762a1e1c2bfc19e63d9"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/clippy.log",
+      "bytes": 1314,
+      "sha256": "c24f077b4cb7790f030b5e35770682af1b7d74a38164c156115e5448ba148d7c"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/arguments.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/build-receipt.json",
+      "bytes": 1814,
+      "sha256": "63a86ac663a5dff6f5d89631b4c6b6b3135734bee65904142097079bfc16aa9f"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/generic_method.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/locked_gin_context.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/multiline_unicode.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/nested.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/results.json",
+      "bytes": 2015,
+      "sha256": "2d309ea2b080efb650184b239e3f484c26512eaf201e1d6a328f781e1a437c95"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed/same_leaf_three.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed-build.log",
+      "bytes": 2590,
+      "sha256": "0cf974a4bdb77faab187aa5676895fcf005e164f0750a1783581f3f7d33d9c9a"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/fixed-probe-source.rs",
+      "bytes": 2221,
+      "sha256": "895fe7f9b079c0f6c1b6fb3add59b6577d3e64648ae90013f541061a4dba86b3"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/go-tests.log",
+      "bytes": 1202,
+      "sha256": "8a7672580286b9c274c80ee2cf33f35becc048d0e61abd358de780e429111a43"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old/build-receipt.json",
+      "bytes": 1810,
+      "sha256": "ac4b03b76359ad818280ab26602acd657d67d9b47ecae88e6f03ba431bb6c059"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old/locked_gin_context.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old/nested.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old/results.json",
+      "bytes": 1294,
+      "sha256": "9b97fd1f559ec3762ab889ba0af5b6131a95e10dddbd888c88d323b893fe972b"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old/same_leaf_three.stderr",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old-build.log",
+      "bytes": 223,
+      "sha256": "9b38b0b65206f581927693e3331f654a83042af0b894b6770a0cc4f37bf00868"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/old-clean.log",
+      "bytes": 38,
+      "sha256": "f899cecfa9a830af3d925c703af791b708302ec43975406463122a893319cc03"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/probe.rs",
+      "bytes": 2351,
+      "sha256": "23a0643cb11fd03eb504bb070278a4abd1143750b584700a730d6168bed0c804"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/public-source/LICENSE",
+      "bytes": 1099,
+      "sha256": "b104efb2c7700691650f27034e8541c5ae0ed9af54d884287f19a7467ca2fe7f"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/public-source/context.go",
+      "bytes": 48336,
+      "sha256": "b2336e5768f9175f2855c7df91bb48de0bbb533d74f6a6e7c3af5576491524ce"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/public-source-lock.json",
+      "bytes": 690,
+      "sha256": "5bb4b4bd25e0e75757fc4031c55238bbe35e0c18423249df68da651affb3a9fc"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/run_probes.py",
+      "bytes": 3136,
+      "sha256": "7ddc4b83b161c40ff0ea12d6171955287f8b6c13fdeffb26dbcb2c48dfc1006c"
+    },
+    {
+      "path": "artifacts/checkpoints/go-call-identity-fix-20261003/verify.py",
+      "bytes": 1987,
+      "sha256": "0bba3e96e20c192cca58cb8a31318a4f254c8c59fa376c31e0145b5705ee6e37"
+    },
+    {
+      "path": "crates/cc-parsers/src/go.rs",
+      "bytes": 74732,
+      "sha256": "13e0acf41328a20b4f6f19e6a64e8c8af8f9639cb0b6cad6c52212cd93d56d23"
+    }
+  ]
+}

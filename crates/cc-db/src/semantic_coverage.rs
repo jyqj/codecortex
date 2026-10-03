@@ -110,6 +110,9 @@ pub struct SemanticUncovered {
     pub file_path: String,
     /// The version that would be published next (the current base version).
     pub doc_version: String,
+    /// Authoritative `files.language`, matching the published manifest scan.
+    /// `None` means the file row is missing, not `Language::Unknown`.
+    pub language: Option<String>,
 }
 
 /// A coverage reading paired with the strict generation it was taken under.
@@ -209,8 +212,9 @@ pub fn uncovered_on(
     };
     let mut stmt = conn
         .prepare_cached(
-            "SELECT d.doc_key, d.file_path, d.doc_version \
+            "SELECT d.doc_key, d.file_path, d.doc_version, f.language \
              FROM document_manifest AS d \
+             LEFT JOIN files AS f ON f.file_path=d.file_path \
              WHERE d.encoding_key IS NOT NULL AND d.doc_key > ?2 \
              AND NOT EXISTS (SELECT 1 FROM semantic_manifest m \
                              WHERE m.doc_key=d.doc_key AND m.space_id=?1) \
@@ -225,6 +229,7 @@ pub fn uncovered_on(
                     doc_key: row.get(0)?,
                     file_path: row.get(1)?,
                     doc_version: row.get(2)?,
+                    language: row.get(3)?,
                 })
             },
         )
@@ -424,9 +429,42 @@ mod tests {
         );
         assert_eq!(page[0].file_path, "src/d2.rs");
         assert_eq!(page[0].doc_version, "v1");
+        assert_eq!(page[0].language.as_deref(), Some("rust"));
         assert!(uncovered_on(&conn, "d3", 2).unwrap().is_empty());
         // Deterministic single-row window past the published doc.
         assert_eq!(uncovered_on(&conn, "d1", 1).unwrap()[0].doc_key, "d2");
+    }
+
+    #[test]
+    fn uncovered_projects_authoritative_language_without_dropping_missing_files() {
+        let conn = v22_conn();
+        activate(&conn, "sp");
+        for key in ["d1", "d2", "d3"] {
+            seed_document(&conn, key, Some("enc"));
+        }
+        conn.execute(
+            "UPDATE files SET language='python' WHERE file_path='src/d1.rs'",
+            [],
+        )
+        .unwrap();
+        conn.execute(
+            "UPDATE files SET language='unknown' WHERE file_path='src/d2.rs'",
+            [],
+        )
+        .unwrap();
+        // Defensive LEFT JOIN semantics match the published scan. Normal
+        // FK-enforced writes would cascade the document away with its file.
+        conn.execute_batch(
+            "PRAGMA foreign_keys=OFF; DELETE FROM files WHERE file_path='src/d3.rs';",
+        )
+        .unwrap();
+        let rows = uncovered_on(&conn, "", 3).unwrap();
+        assert_eq!(rows.len(), 3);
+        assert_eq!(rows[0].language.as_deref(), Some("python"));
+        assert_eq!(rows[1].language.as_deref(), Some("unknown"));
+        assert_eq!(rows[2].language, None);
+        assert_eq!(uncovered_on(&conn, "d2", 1).unwrap(), rows[2..]);
+        assert_eq!(coverage_on(&conn).unwrap().uncovered, 3);
     }
 
     #[test]

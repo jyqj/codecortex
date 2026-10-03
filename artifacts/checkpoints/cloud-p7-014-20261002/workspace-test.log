@@ -1,0 +1,476 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling typenum v1.20.1
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+   Compiling cpufeatures v0.2.17
+   Compiling cc-semantic v1.0.0 (/workspace/codecortex/crates/cc-semantic)
+   Compiling generic-array v0.14.7
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling digest v0.10.7
+   Compiling sha2 v0.10.9
+   Compiling cc-search v1.0.0 (/workspace/codecortex/crates/cc-search)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+   Compiling cc-eval v1.0.0 (/workspace/codecortex/crates/cc-eval)
+   Compiling cc-parsers v1.0.0 (/workspace/codecortex/crates/cc-parsers)
+   Compiling cc-model v1.0.0 (/workspace/codecortex/crates/cc-model)
+   Compiling cc-db v1.0.0 (/workspace/codecortex/crates/cc-db)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 38s
+     Running unittests src/lib.rs (target/debug/deps/cc_db-dcf2a51af53c62c0)
+
+running 175 tests
+test direct_writer::tests::direct_writer_write_fn_error_propagates ... ok
+test direct_writer::tests::drop_index_stmts_match_create_set ... ok
+test direct_writer::tests::extract_index_stmts ... ok
+test direct_writer::tests::extract_table_stmts ... ok
+test direct_writer::tests::split_sql_handles_comments_and_strings ... ok
+test direct_writer::tests::direct_writer_creates_valid_db ... ok
+test direct_writer::tests::direct_writer_handles_fts_tables ... ok
+test epoch_rules::tests::combined_index_and_semantic_commit_bumps_each_exactly_once ... ok
+test epoch_rules::tests::boost_http_edge_confidence_bumps_evidence_clock ... ok
+test epoch_rules::tests::effect_set_membership_and_union_are_exact ... ok
+test epoch_rules::tests::auxiliary_commit_advances_no_clock ... ok
+test direct_writer::tests::direct_writer_bulk_insert_perf ... ok
+test epoch_rules::tests::lookup_covers_known_tables_and_rejects_metadata ... ok
+test epoch_rules::tests::empty_effect_set_commits_without_touching_any_clock ... ok
+test epoch_rules::tests::evidence_method_family_bumps_evidence_only ... ok
+test epoch_rules::tests::semantic_effect_starts_the_clock_from_none_to_one ... ok
+test epoch_rules::tests::declared_clock_matches_observed_bump_for_every_table ... ok
+test epoch_rules::tests::unit_of_work_commit_bumps_index_exactly_once ... ok
+test file_state_cache::tests::batch_delta_matches_direct_load ... ok
+test fts::tests::camel_case_split ... ok
+test fts::tests::expand_query ... ok
+test fts::tests::expand_query_snake_case ... ok
+test fts::tests::fts_sanitize_basic ... ok
+test file_state_cache::tests::foreign_files_writer_invalidates_then_rewarns ... ok
+test file_state_cache::tests::cache_hit_shares_the_same_allocation ... ok
+test index_db::tests::chunk_text_encoding_reads_plain_and_zstd ... ok
+test file_state_cache::tests::held_snapshot_is_immutable_across_batches ... ok
+test index_db::tests::empty_file_state ... ok
+test index_db::tests::app_maintained_fts_rowids_align_with_base_tables ... ok
+test index_db::tests::http_call_cross_service_chain ... ok
+test index_db::tests::generation_starts_at_zero_and_index_writes_bump_index_epoch ... ok
+test index_db::tests::mismatch_rebuild_stress_loop ... ignored
+test index_db::tests::full_rebuild_advances_both_epochs_past_previous_values ... ok
+test index_db::tests::metadata_round_trip ... ok
+test index_db::tests::open_creates_schema ... ok
+test index_db::tests::read_pool_connections_reject_writes ... ok
+test index_db::tests::precompressed_chunk_payloads_match_in_transaction_compression ... ok
+test index_db::tests::resolver_seed_symbols_excludes_requested_files ... ok
+test index_db::tests::replace_in_place_keeps_test_edges_removal_cascades ... ok
+test index_db::tests::rebuild_generation_exceeds_writes_committed_during_rebuild ... ok
+test index_db::tests::route_edge_resolution_provenance_round_trips ... ok
+test index_db::tests::batched_fts_deletes_cover_all_paths_across_chunk_boundary ... ok
+test index_db::tests::test_find_symbol_safe_with_injection_string ... ok
+test index_db::tests::test_find_symbol_safe_with_null_byte ... ok
+test index_db::tests::schema_mismatch_rebuild_advances_generation_past_old_values ... ok
+test index_db::tests::test_find_symbol_safe_with_union_injection ... ok
+test index_db::tests::test_metadata_safe_with_injection_key ... ok
+test index_db_arch::tests::test_adr_crud ... ok
+test index_db::tests::test_find_symbol_safe_with_unicode_injection ... ok
+test index_db_arch::tests::test_adr_upsert_conflict ... ok
+test index_db_arch::tests::test_extract_package_from_path ... ok
+test index_db_arch::tests::test_architecture_entry_points ... ok
+test index_db_arch::tests::test_architecture_languages ... ok
+test index_db_arch::tests::test_architecture_routes ... ok
+test index_db_edges::tests::evidence_writes_bump_only_evidence_epoch ... ok
+test index_db_edges::tests::http_edge_match_prefers_method_then_falls_back_to_path ... ok
+test index_db_edges::tests::postprocess_writes_bump_index_epoch ... ok
+test index_db_edges::tests::full_rebuild_matches_incremental_like_semantics ... ok
+test index_db_edges::tests::route_id_for_normalized_path_returns_first_match ... ok
+test index_db_edges::tests::test_co_change_edges_roundtrip ... ok
+test index_db_edges::tests::test_dispatch_sites_roundtrip ... ok
+test index_db_edges::tests::test_stem_to_base_clean ... ok
+test index_db_edges::tests::test_rebuild_test_edges_for_files ... ok
+test index_db_edges::tests::test_runtime_evidence_lifecycle ... ok
+test index_db_edges::tests::test_semantic_edges_roundtrip ... ok
+test index_db_frontier::tests::test_http_calls_by_caller_uid ... ok
+test index_db_frontier::tests::test_route_nodes_by_normalized_path ... ok
+test index_db_frontier::tests::test_route_rows_by_path ... ok
+test index_db_graph::tests::test_caller_callee_rows ... ok
+test index_db_graph::tests::step_error_after_side_connection_drop_is_err_not_empty_ok ... ok
+test index_db_graph::tests::test_find_symbols_by_names_and_kinds_matches_single ... ok
+test index_db_graph::tests::test_get_export_fingerprints_batch_matches_single ... ok
+test index_db_graph::tests::test_caller_callee_rows_by_uids_match_single_uid_queries ... ok
+test index_db_graph::tests::test_reexport_targets_for_files ... ok
+test index_db_graph::tests::test_get_export_fingerprints_empty_input ... ok
+test index_db_graph::tests::test_symbol_degree_details ... ok
+test index_db_graph::tests::test_reexport_targets_for_files_empty_input ... ok
+test index_db_graph::tests::test_symbol_degree_details_batch_matches_single ... ok
+test index_db_graph::tests::test_symbols_covering ... ok
+test index_db_graph_read::tests::async_consumer_rows_match_topic_in_name_or_properties ... ok
+test index_db_graph::tests::test_update_communities ... ok
+test index_db_graph_read::tests::call_edge_provenance_counts_breakdowns ... ok
+test index_db_graph_read::tests::child_symbol_outline_rows_ordered_by_start_line ... ok
+test index_db_graph_read::tests::community_adjacency_pairs_cross_community_only ... ok
+test index_db_graph_read::tests::callees_with_nonself_callers_excludes_self_loops ... ok
+test index_db_graph_read::tests::cross_file_call_file_pairs_skip_same_file_edges ... ok
+test index_db_graph_read::tests::dead_code_symbol_scan_applies_scope_like_filter ... ok
+test index_db_graph_read::tests::env_access_rows_filter_by_key_and_file_patterns ... ok
+test index_db_graph_read::tests::file_import_pairs_returns_only_resolved_distinct_pairs ... ok
+test index_db_graph_read::tests::direct_importers_exclude_self_and_respect_limit ... ok
+test index_db_graph_read::tests::import_witness_rows_keeps_import_string ... ok
+test index_db_graph_read::tests::importers_of_paths_batches_into_single_query ... ok
+test index_db_graph_read::tests::param_counts_for_uids_maps_null_to_none ... ok
+test index_db_graph_read::tests::reverse_callers_applies_confidence_and_limit ... ok
+test index_db_graph_read::tests::route_handler_rows_filters_by_path_substring ... ok
+test index_db_graph_read::tests::service_binding_rows_match_nodes_routes_and_edges ... ok
+test index_db_graph_read::tests::suggested_test_files_distinct_and_ordered ... ok
+test index_db_graph_read::tests::symbol_kind_counts_orders_by_frequency ... ok
+test index_db_graph_read::tests::symbol_names_for_uids_skips_missing ... ok
+test index_db_graph_read::tests::symbol_source_candidates_rank_exact_before_fuzzy ... ok
+test index_db_graph_read::tests::symbol_ref_containers_for_targets_returns_uid_container_pairs ... ok
+test index_db_graph_read::tests::symbols_lite_in_files_skips_files_not_requested_and_uidless ... ok
+test index_db_query::tests::read_pool_supports_explicit_read_transaction ... ok
+test index_db_query::tests::count_table_rows_counts_and_errors_on_missing_table ... ok
+test index_db_query::tests::test_file_symbols ... ok
+test index_db_query::tests::test_file_summary ... ok
+test index_db_query::tests::test_find_symbol_exact_and_like ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_empty_input ... ok
+test index_db_query::tests::test_query_json ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_fetches_batch ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_rejects_unverified_cached_text ... ok
+test index_db_retrieval::tests::chunk_spans_for_files_groups_by_file ... ok
+test index_db_retrieval::tests::fts_chunk_candidates_applies_scope_and_limit ... ok
+test index_db_retrieval::tests::fts_file_summaries_applies_prefix_and_limit ... ok
+test index_db_retrieval::tests::chunk_rows_by_ids_spans_multiple_in_batches ... ok
+test index_db_retrieval::tests::fts_file_summaries_empty_for_no_match ... ok
+test index_db_retrieval::tests::fts_file_summaries_orders_by_bm25 ... ok
+test index_db_retrieval::tests::path_token_file_hits_many_substring_match_per_token ... ok
+test index_db_retrieval::tests::fts_file_summaries_prefix_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::recent_indexed_files_newest_first ... ok
+test index_db_retrieval::tests::scan_chunks_for_grep_recency_order_early_stop_and_prefix_escaping ... ok
+test index_db_retrieval::tests::path_token_file_hits_many_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::symbol_seed_hits_exact_first_and_skips_null_uid ... ok
+test index_db_retrieval::tests::symbol_seed_hits_mixed_case_token_exact_first ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_exact_name_first_per_token ... ok
+test index_db_retrieval::tests::symbol_seed_hits_treats_underscore_as_literal ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_prefixed_keeps_exact_name_first_ordering ... ok
+test index_migrate::tests::fresh_db_initializes_schema ... ok
+test index_migrate::tests::adjacent_version_migrates_in_place_preserving_rows ... ok
+test index_db_retrieval::tests::symbol_uids_by_exact_names_matches_only_listed_names ... ok
+test index_db_retrieval::tests::symbol_token_hits_many_treats_underscore_as_literal ... ok
+test read_generation::tests::identity_and_epoch_corruption_never_become_zero_generation ... ok
+test index_migrate::tests::matching_version_returns_up_to_date ... ok
+test index_migrate::tests::old_version_returns_mismatch ... ok
+test index_migrate::tests::non_adjacent_versions_keep_rebuild_on_mismatch ... ok
+test seed_symbol_cache::tests::batch_delta_matches_direct_load ... ok
+test seed_symbol_cache::tests::build_respects_capacity_cap ... ok
+test seed_symbol_cache::tests::batch_duplicate_uid_folds_like_sql ... ok
+test seed_symbol_cache::tests::materialize_orders_and_excludes ... ok
+test seed_symbol_cache::tests::projection_strips_non_seed_fields ... ok
+test read_generation::tests::persisted_identity_survives_reopen_and_differs_at_equal_epochs ... ok
+test semantic_coverage::tests::coverage_reads_are_pure_and_zero_limit_is_rejected ... ok
+test seed_symbol_cache::tests::foreign_symbol_writer_invalidates_then_rewarns ... ok
+test read_generation::tests::staged_rebuild_gets_fresh_persistent_identity ... ok
+test semantic_coverage::tests::failed_counts_only_active_space_failures ... ok
+test semantic_coverage::tests::foreign_space_rows_never_count_as_published ... ok
+test semantic_coverage::tests::full_coverage_reports_no_gap_and_no_reason ... ok
+test semantic_coverage::tests::partial_coverage_reports_the_gap_and_the_uncovered_list ... ok
+test semantic_coverage::tests::unwired_semantic_reports_zero_coverage_without_inflating ... ok
+test semantic_coverage::tests::zero_eligible_is_explained_by_documents_and_encoding ... ok
+test semantic_gc_reads::tests::exact_ref_mark_is_reflexive_and_checksum_scoped ... ok
+test semantic_coverage::tests::stale_counts_live_tasks_lagging_the_base_manifest ... ok
+test semantic_gc_reads::tests::pair_mark_holds_across_spec_and_checksum_and_spaces_are_separate ... ok
+test semantic_gc_reads::tests::live_task_mark_covers_pending_and_claimed_but_not_terminal_states ... ok
+test semantic_manifest_reads::tests::deleted_document_cascades_out_of_the_candidate_stream ... ok
+test semantic_manifest_reads::tests::empty_space_scans_empty_and_zero_batch_is_rejected ... ok
+test semantic_manifest_reads::tests::scan_is_keyset_paginated_and_ordered ... ok
+test semantic_manifest_reads::tests::scan_is_space_isolated_at_the_load_layer ... ok
+test semantic_manifest_reads::tests::published_row_reads_the_single_current_publication_whatever_space ... ok
+test semantic_manifest_reads::tests::scan_joins_language_and_carries_provenance_columns ... ok
+test signature_agg::tests::row_agg_add_remove_round_trips ... ok
+test signature_agg::tests::row_agg_distinguishes_duplicate_multisets ... ok
+test signature_agg::tests::serialize_round_trips_and_rejects_other_versions ... ok
+test signature_agg::tests::empty_batch_initializes_missing_baseline ... ok
+test signature_agg::tests::file_scoped_writers_converge ... ok
+test sql_util::tests::escape_like_escapes_wildcards_and_backslash ... ok
+test signature_agg::tests::incremental_batch_add_modify_remove_converges ... ok
+test signature_agg::tests::synthetic_call_edge_lifecycle_converges ... ok
+test unit_of_work::tests::commit_with_evidence_bumps_evidence_only ... ok
+test unit_of_work::tests::commit_with_index_and_semantic_bumps_both_exactly_once ... ok
+test unit_of_work::tests::commit_applies_all_writes_and_bumps_epoch_once ... ok
+test signature_agg::tests::unit_of_work_synthesis_writes_converge ... ok
+test unit_of_work::tests::drop_without_commit_rolls_back_and_leaves_epoch_untouched ... ok
+test unit_of_work::tests::default_commit_keeps_index_only_semantics_and_semantic_absent ... ok
+test unit_of_work::tests::repeat_ack_without_visible_change_does_not_bump_semantic_epoch ... ok
+
+test result: ok. 174 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.91s
+
+     Running tests/fts_identifier_expansion.rs (target/debug/deps/fts_identifier_expansion-92df5d7f3b7db6dd)
+
+running 13 tests
+test full_identifier_and_all_components_are_both_useful ... ok
+test acronym_and_number_boundaries_preserve_every_distinct_component ... ok
+test expansion_requires_all_components_not_just_one ... ok
+test multiple_groups_share_one_atom_budget_without_dropping_originals ... ok
+test independent_natural_words_still_have_or_semantics ... ok
+test one_distinct_component_never_degrades_to_generic_fragment ... ok
+test original_terms_have_priority_and_an_expansion_is_never_truncated ... ok
+test oversized_identifier_group_is_omitted_as_a_whole ... ok
+test snake_whole_preserves_phrase_and_parts_support_reordering ... ok
+test unicode_original_terms_coexist_with_compound_all_components ... ok
+test source_token_limit_is_explicit_and_does_not_claim_full_input_coverage ... ok
+test literal_fts_operators_and_punctuation_cannot_control_match_syntax ... ok
+test unknown_identifier_does_not_buy_recall_from_a_generic_fragment ... ok
+
+test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/incremental_write_bench.rs (target/debug/deps/incremental_write_bench-c3d47edc42c7656b)
+
+running 2 tests
+test bench_concurrent_reads_during_incremental_writes ... ignored, read-during-write micro-benchmark; run explicitly with --release
+test bench_incremental_batch_write_10k ... ignored, write-path micro-benchmark; run explicitly with --release
+
+test result: ok. 0 passed; 0 failed; 2 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/p2b_resolution_store.rs (target/debug/deps/p2b_resolution_store-541a9b9d5fe7251a)
+
+running 4 tests
+test package_aggregate_tracks_files_and_test_visibility ... ok
+test corrupt_payload_is_rejected ... ok
+test dependency_manifest_roundtrip_reverse_lookup_delete_and_rollback ... ok
+test bounded_frontier_excludes_changed_files_before_counting_and_crosses_batches ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+     Running tests/p2c_freshness_store.rs (target/debug/deps/p2c_freshness_store-f8600c312cf138b4)
+
+running 4 tests
+test invalid_frontier_fails_before_file_commit_and_bad_hash_is_not_ready ... ok
+test stale_prepare_is_fenced_inside_the_writer_transaction ... ok
+test failed_file_batch_never_acknowledges_or_publishes_debt ... ok
+test debt_and_file_facts_share_epoch_and_survive_reopen ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/p2d_dependency_cost.rs (target/debug/deps/p2d_dependency_cost-f22d2097ec97dfc0)
+
+running 1 test
+test p2d_dependency_queries_bound_rows_across_unrelated_scale_and_completed_prefixes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.34s
+
+     Running tests/public_surface_store.rs (target/debug/deps/public_surface_store-06c7a47bf015cf6d)
+
+running 6 tests
+test a_bad_surface_rolls_back_the_whole_file_batch ... ok
+test nonempty_surface_roundtrip_canonicalizes_declaration_order ... ok
+test corrupt_fingerprint_and_new_format_fail_closed ... ok
+test surface_roundtrip_shares_file_epoch_and_cascades_on_delete ... ok
+test batched_surface_reads_cross_placeholder_boundary_without_losing_empty_unknown ... ok
+test previous_schema_cannot_reuse_absent_surface_evidence ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.54s
+
+     Running tests/semantic_coverage.rs (target/debug/deps/semantic_coverage-298f82d1085fb31d)
+
+running 3 tests
+test unwired_facade_reports_honest_zero_and_none_epoch ... ok
+test primitive_counts_agree_with_facade_on_a_stable_database ... ok
+test coverage_facade_pairs_a_strict_generation_snapshot_with_publication ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+     Running tests/semantic_lease.rs (target/debug/deps/semantic_lease-87850805f07fc052)
+
+running 9 tests
+test expired_lease_reclaimed_then_old_owner_fenced_out ... ok
+test claim_skips_future_and_serves_oldest_with_identity ... ok
+test fresh_token_per_attempt_and_old_token_dead_on_retry ... ok
+test concurrent_claim_exactly_one_winner ... ok
+test heartbeat_renews_and_lost_lease_heartbeats_fail ... ok
+test lease_lifecycle_is_auxiliary_zero_epoch_bumps ... ok
+test retry_exhaustion_dead_letters_to_failed ... ok
+test superseded_task_unclaimable_and_unackable ... ok
+test wrong_token_and_owner_mismatch_are_fenced ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.16s
+
+     Running tests/semantic_outbox.rs (target/debug/deps/semantic_outbox-7f3419865da61c35)
+
+running 17 tests
+test duplicate_live_upsert_conflicts_fail_stop ... ok
+test incremental_batch_without_active_space_keeps_default_behavior ... ok
+test no_active_space_is_a_full_noop ... ok
+test incremental_batch_with_active_space_enqueues_embed_and_bumps_semantic_once ... ok
+test file_removal_revokes_manifest_and_supersedes_without_embed ... ok
+test failed_batch_rolls_back_no_half_task ... ok
+test removals_revoke_manifest_and_supersede_without_embed ... ok
+test ready_query_uses_the_ready_index ... ok
+test ready_query_filters_and_orders ... ok
+test remove_files_batch_supersedes_without_embed ... ok
+test state_transition_table_is_exact ... ok
+test transition_guards_in_database ... ok
+test rewritten_doc_keeps_exactly_one_live_embed ... ok
+test rollback_leaves_no_outbox_or_manifest_trace ... ok
+test replace_files_batch_enqueues_embed_with_semantic_effect ... ok
+test upsert_supersedes_old_and_enqueues_one_pending_embed ... ok
+test two_active_spaces_fail_stop ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+
+     Running tests/semantic_publish.rs (target/debug/deps/semantic_publish-b11103c20ac44380)
+
+running 11 tests
+test deleted_document_is_fenced_out ... ok
+test expired_reclaimed_lease_fences_the_old_publish ... ok
+test facade_rejection_commits_retry_without_any_epoch_bump ... ok
+test duplicate_ack_of_identical_content_acks_without_bumping ... ok
+test input_digest_mismatch_is_fenced_out ... ok
+test lost_lease_is_fenced_out_without_touching_anything ... ok
+test publish_cas_happy_path_bumps_semantic_exactly_once ... ok
+test non_active_space_is_fenced_out ... ok
+test rejection_retries_with_backoff_then_dead_letters_on_exhaustion ... ok
+test stale_doc_version_cannot_attach_to_a_newer_document ... ok
+test stale_incarnation_is_fenced_out ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/semantic_queue.rs (target/debug/deps/semantic_queue-e63f5122a590505d)
+
+running 3 tests
+test facade_claim_renew_and_retry_keep_the_fenced_semantics ... ok
+test facade_reclaim_returns_only_expired_leases_to_pending ... ok
+test claim_fairness_doc_rotation_serves_the_least_recently_touched_doc_first ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.12s
+
+     Running tests/semantic_rebuild.rs (target/debug/deps/semantic_rebuild-505b7f6b80135432)
+
+running 3 tests
+test enqueue_semantic_rebuild_plan_requeues_desired_set_and_bumps_semantic_once_per_change ... ok
+test rebuild_epoch_vector_advances_and_semantic_epoch_starts_absent ... ok
+test pre_swap_process_is_fenced_out_of_publish_and_claim_after_the_swap ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.19s
+
+     Running tests/semantic_recovery.rs (target/debug/deps/semantic_recovery-e00032d10e8d7b62)
+
+running 4 tests
+test bounded_reclaim_pages_through_expired_leases_and_reports_exhaustion ... ok
+test desired_set_bounded_keyset_pagination_matches_the_unbounded_projection ... ok
+test hand_back_primitive_fences_and_never_consumes_an_attempt ... ok
+test dead_letter_census_counts_only_the_active_space_failures ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.14s
+
+     Running tests/semantic_schema.rs (target/debug/deps/semantic_schema-f3f6ca6657862fcd)
+
+running 6 tests
+test semantic_outbox_op_and_state_domains_are_typed ... ok
+test semantic_manifest_pk_fk_and_cascade ... ok
+test semantic_outbox_at_most_one_live_task_per_doc_and_space ... ok
+test fresh_database_carries_semantic_tables_at_current_version ... ok
+test semantic_spaces_state_domain_and_active_read_pattern ... ok
+test v21_file_database_opens_migrated_with_data_intact ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/semantic_space_switch.rs (target/debug/deps/semantic_space_switch-3299e8578a59c8be)
+
+running 10 tests
+test first_activation_has_no_previous_active_and_no_epoch_bump ... ok
+test re_switch_of_a_revoked_space_supersedes_stale_live_revokes_before_reenqueue ... ok
+test consume_revoke_never_touches_another_space_row_and_loses_to_stale_token ... ok
+test space_transition_table_admits_exactly_the_three_edges ... ok
+test consume_revoke_deletes_own_space_row_and_bumps_exactly_on_change ... ok
+test register_inserts_backfilling_and_refuses_any_existing_row ... ok
+test switch_requires_known_space_and_legal_target_state ... ok
+test space_switch_facades_end_to_end_epoch_and_states ... ok
+test switch_appends_pinned_false_audit_event_to_metadata_log ... ok
+test switch_revokes_old_activates_new_and_produces_revoke_tasks ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.18s
+
+     Running unittests src/lib.rs (target/debug/deps/cc_eval-fdd58e74b228d842)
+
+running 39 tests
+test benchmark::ablation::tests::exact_source_controls_reject_undeclared_edits_and_files ... ok
+test benchmark::ablation::tests::identical_options_except_target_dir_pass_with_positional_metrics ... ok
+test benchmark::ablation::tests::binary_and_compiler_drift_cannot_be_compared ... ok
+test benchmark::ablation::tests::malformed_plan_and_hints_fail_closed ... ok
+test benchmark::ablation::tests::matrix_requires_every_cell_and_unique_factor_paths ... ok
+test benchmark::ablation::tests::consistently_missing_required_semantic_key_is_rejected ... ok
+test benchmark::ablation::tests::missing_target_dir_is_rejected ... ok
+test benchmark::ablation::tests::rustflags_drift_is_rejected_by_semantic_projection ... ok
+test benchmark::ablation::tests::shared_target_dir_across_cells_is_rejected ... ok
+test benchmark::ablation::tests::unknown_build_option_key_fails_closed ... ok
+test benchmark::ablation::tests::rustc_version_drift_is_rejected_by_semantic_projection ... ok
+test benchmark::sampler::process_probe_tests::cpu_tick_conversion_is_checked_and_preserves_units ... ok
+test benchmark::ablation::tests::profile_features_jobs_binding_drift_is_rejected ... ok
+test benchmark::ablation::tests::unknown_projection_kind_or_version_is_rejected ... ok
+test synth::tests::synth_ground_truth_facts_match_emitted_content ... ok
+test tests::assertion_array_contains_item ... ok
+test tests::assertion_check_field_equals ... ok
+test tests::assertion_check_field_exists ... ok
+test tests::assertion_check_min_results ... ok
+test tests::assertion_check_output_contains ... ok
+test tests::assertion_expected_error_fail ... ok
+test tests::assertion_expected_error_pass ... ok
+test tests::assertion_expected_symbols_enforces_recall_threshold ... ok
+test tests::assertion_field_matches_regex ... ok
+test synth::tests::synth_generation_is_deterministic ... ok
+test benchmark::sampler::process_probe_tests::unresponsive_optional_probe_cannot_block_or_accumulate_workers ... ok
+test tests::assertion_negate ... ok
+test tests::bench_incremental_dirty_closure ... ignored, measures dirty-closure incremental rebuild latency; run explicitly
+test tests::bench_incremental_noop ... ignored, measures incremental no-op rebuild latency; run explicitly
+test tests::bench_incremental_single_file ... ignored, measures single-file incremental rebuild latency; run explicitly
+test tests::benchmark_incremental_index_report_correctness ... ignored, benchmarks incremental indexing report counters; run explicitly
+test tests::benchmark_real_workspace ... ignored, benchmarks the real workspace copy; run explicitly
+test tests::assertion_output_not_contains ... ok
+test tests::corpus_load_new_format ... ok
+test tests::incremental_latency_summary_computation ... ok
+test tests::report_summary_computation ... ok
+test benchmark::sampler::process_probe_tests::stalled_resource_probe_is_unavailable_not_zero_or_infinite_wait ... ok
+test tests::integration_fixtures_and_corpus ... ok
+test tests::benchmark_fixture ... FAILED
+
+failures:
+
+---- tests::benchmark_fixture stdout ----
+# Benchmark Results
+
+Generated: 2026-10-02T19:37:10.956732109+00:00
+Dataset: fixture
+Files: 18
+
+## Per-Tool Latency
+
+Methodology: cold = first call of a fresh MCP session per iteration (new IndexDb identity → cold graph adjacency + SQLite page caches, empty search LRUs; OS file cache retained). warm = repeated identical calls in one shared session after 1 discarded warmup (cache-hit path).
+
+Per case: cold = 1 fresh-session call, warm = best of 2 measured calls; percentiles aggregate across cases per tool.
+
+| Tool | Cases | cold p50 | cold max | warm p50 | warm p95 | warm max | Avg Output |
+|------|-------|----------|----------|----------|----------|----------|------------|
+| adr | 1 | 1.19ms | 1.19ms | 789µs | 789µs | 789µs | 11 B |
+| architecture | 6 | 7.97ms | 25.50ms | 4.03ms | 16.01ms | 16.01ms | 5.3 KB |
+| context | 8 | 188.42ms | 399.47ms | 143.12ms | 296.77ms | 296.77ms | 15.3 KB |
+| explore | 5 | 5.52ms | 7.33ms | 2.97ms | 4.84ms | 4.84ms | 2.2 KB |
+| files | 2 | 1.42ms | 2.34ms | 888µs | 1.40ms | 1.40ms | 1.2 KB |
+| graph_query | 9 | 2.24ms | 7.62ms | 1.54ms | 6.00ms | 6.00ms | 311 B |
+| impact | 7 | 3.28ms | 19.42ms | 3.22ms | 11.16ms | 11.16ms | 1.6 KB |
+| index | 1 | 498.55ms | 498.55ms | 564.33ms | 564.33ms | 564.33ms | 2.5 KB |
+| ingest_traces | 1 | 2.02ms | 2.02ms | 1.46ms | 1.46ms | 1.46ms | 157 B |
+| node | 6 | 3.35ms | 16.92ms | 2.18ms | 3.20ms | 3.20ms | 886 B |
+| relations | 8 | 4.46ms | 18.09ms | 1.78ms | 2.33ms | 2.33ms | 811 B |
+| search | 28 | 3.53ms | 159.39ms | 1.98ms | 112.94ms | 147.07ms | 4.0 KB |
+| status | 1 | 10.92ms | 10.92ms | 10.19ms | 10.19ms | 10.19ms | 13.6 KB |
+| trace | 11 | 3.77ms | 26.60ms | 1.87ms | 4.45ms | 4.45ms | 1.2 KB |
+
+## Summary
+
+- Total cases: 94
+- All tools under 500ms warm p95: NO
+
+
+thread 'tests::benchmark_fixture' (18181) panicked at crates/cc-eval/src/lib.rs:915:13:
+perf regression: tool 'index' warm p95 = 564.33ms (limit 500ms)
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::benchmark_fixture
+
+test result: FAILED. 33 passed; 1 failed; 5 ignored; 0 measured; 0 filtered out; finished in 15.63s
+
+error: test failed, to rerun pass `-p cc-eval --lib`

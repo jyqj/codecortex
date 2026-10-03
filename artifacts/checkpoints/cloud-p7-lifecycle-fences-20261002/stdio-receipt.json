@@ -1,0 +1,84 @@
+{
+  "scope": "L3 exact-binary stdio lifecycle with synthetic local source and loopback HTTP; no live provider/quality claim",
+  "binary": "/tmp/p7-recovery-product/codecortex-http-fences",
+  "binary_sha256": "06c7e96ba43d6247ca4155801672940dca6cc37f6886b80b625f223ba4970db0",
+  "cases": [
+    {
+      "case": "unconfigured",
+      "semantic_state": "not_configured",
+      "requests": 0,
+      "cache_created": false,
+      "process": {
+        "exit_code": 0,
+        "stderr_sha256": "f0fcb8ee2977207b4cc786cefb3eb3add70aa83f15538f0432e5912323b57701",
+        "stderr_bytes": 1831,
+        "idle_closed": false
+      }
+    },
+    {
+      "case": "disabled",
+      "semantic_state": "not_configured",
+      "requests": 0,
+      "cache_created": false,
+      "process": {
+        "exit_code": 0,
+        "stderr_sha256": "0de82559b09e14e48b4f9a2d97b98cd6ef5b2e45152dcfee6ca0126600ce058f",
+        "stderr_bytes": 1831,
+        "idle_closed": false
+      }
+    },
+    {
+      "case": "network_disabled",
+      "semantic_state": "port_attached_unverified",
+      "requests": 0,
+      "cache_created": false,
+      "process": {
+        "exit_code": 0,
+        "stderr_sha256": "0d9d32201ee47870a9c06b4b3c15a2637d875d98c7f6f9c8668eac86df42dab9",
+        "stderr_bytes": 1831,
+        "idle_closed": false
+      }
+    },
+    {
+      "case": "assembly_failed",
+      "reason": "semantic_provider_assembly_failed",
+      "requests": 0,
+      "process": {
+        "exit_code": 0,
+        "stderr_sha256": "ec8a230f1d8aa9c51cde9b26a82a8a30d071e8aa4c9b3e513c21f11204ea1cbc",
+        "stderr_bytes": 1951,
+        "idle_closed": false
+      }
+    },
+    {
+      "case": "wired_backfilling_ready_close_reopen",
+      "status_while_http_wait_ms": 1.9718839994311566,
+      "pending": 1,
+      "published": 1,
+      "requests": 1,
+      "reopen_extra_requests": 0,
+      "process": {
+        "exit_code": 0,
+        "stderr_sha256": "7069b6cfeba3c112ceffff50ef7038b8152f04b7a9f456f4ebce24069613d98e",
+        "stderr_bytes": 2462,
+        "idle_closed": true
+      }
+    },
+    {
+      "case": "provider_failed",
+      "requests": 3,
+      "failed_tasks": 1,
+      "published": 0,
+      "process": {
+        "exit_code": 0,
+        "stderr_sha256": "88f83c2053e947ad183f035b9a9e1a1e57cae599956bca093f8e76fbaa15b45b",
+        "stderr_bytes": 3093,
+        "idle_closed": true
+      }
+    }
+  ],
+  "passed": 6,
+  "failed": 0,
+  "source_sha": "1b8a3d54bc28581fd1d908ba5a9c9d155eff1e87",
+  "source_tree": "c28346465f565d5be415720a8b61a81877968b2d"
+}

@@ -1,0 +1,11 @@
+// Appended to index_db_tests.rs on unchanged production HEAD ee4c4fc0b41e298bf38b8269310053fa4b355c61.
+#[test]
+fn direct_rebuild_canonical_schema_matches_normal_temp_path() {
+    let tmp = TempDir::new().unwrap();
+    let db = IndexDb::open(&tmp.path().join("direct.sqlite3")).unwrap().0;
+    let mut unit = file_unit("src/c.rs");
+    unit.outcome.chunks = vec![chunk(0, "canonical searchable body")];
+    db.rebuild_with_direct_writer(|conn| IndexDb::insert_file_data(conn, &unit))
+        .unwrap();
+    assert_eq!(db.read_conn().unwrap().query_row("SELECT count(*) FROM chunks", [], |r| r.get::<_, i64>(0)).unwrap(), 1);
+}

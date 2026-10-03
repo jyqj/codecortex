@@ -11,7 +11,7 @@ async fn release_idle_sweep_preserves_pins_and_recovers_after_release() {
     for pin_count in [0, 4, 8, 16] {
         for repetition in 0..3 {
             let root = tempfile::tempdir().unwrap();
-            let session = ProjectSession::new(None);
+            let session = ProjectSession::new(None).unwrap();
             let mut runtimes = Vec::new();
             let mut weak_dbs = Vec::new();
             for n in 0..16 {

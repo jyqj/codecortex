@@ -1,0 +1,17 @@
+PASS: 14 source annotations; only authorized R09 query/answer changed
+PASS: historical obsolete R09 retained; current canonical definition/call verified
+PASS: scoring, timeout, seed, bounds/config preserved; one admitted source added
+Traceback (most recent call last):
+  File "/workspace/codecortex/artifacts/checkpoints/dev-corpus-lock-reconcile-20261003/verify_reconcile.py", line 70, in <module>
+    validate(0, 'unchanged isolated DEV inputs')
+  File "/workspace/codecortex/artifacts/checkpoints/dev-corpus-lock-reconcile-20261003/verify_reconcile.py", line 65, in validate
+    result = subprocess.run([str(BIN), 'validate', '--suite', str(manifest)], capture_output=True, text=True)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 548, in run
+    with Popen(*popenargs, **kwargs) as process:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1026, in __init__
+    self._execute_child(args, executable, preexec_fn, close_fds,
+  File "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/lib/python3.12/subprocess.py", line 1955, in _execute_child
+    raise child_exception_type(errno_num, err_msg, err_filename)
+FileNotFoundError: [Errno 2] No such file or directory: '/workspace/codecortex/target/debug/cc-eval'

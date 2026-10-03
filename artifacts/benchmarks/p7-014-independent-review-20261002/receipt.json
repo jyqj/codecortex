@@ -1,0 +1,81 @@
+{
+  "task": "P7-014 independent read-only production review",
+  "baseline_sha": "993a64ecd7a454b41bcab816c81d58cbc987bae2",
+  "baseline_branch": "codex/cloud-p7-recovery-integration",
+  "includes_reopen_fix": "afc663b10a9dc004e12137ed3ad7136aa194d6a3",
+  "production_changed": false,
+  "old_tests_changed": false,
+  "owned_test": "crates/cc-server/tests/p7_runtime_independent_review.rs",
+  "owned_test_sha256": "7a8548f0717e525d29edfbd143b560049c1f51abba91b13e979658c496d0ae1b",
+  "production_sha256": {
+    "crates/cc-server/src/semantic_runtime.rs": "b10b49293b0556623ba240a84b01916214124865361d8cb772253abc76c36cfd",
+    "crates/cc-server/src/semantic_wiring.rs": "d815b5768b8d732495820f38ca1cd4b66cfdd07e41e7cd22be838cc5d3830157",
+    "crates/cc-server/src/engine.rs": "f1d4f9bf5206804c1e0739965a8422c243c0ad11280d51283c502132e6f7bf6a",
+    "crates/cc-db/src/document_store.rs": "45b23cce977e09d986ebaf8c31d21a17decb880c5419006c6fc7349f2eb4f404",
+    "crates/cc-semantic/src/queue.rs": "b03baf60dea97008f21a3573141601a515ba57f61ff1710291eff7eec689374d",
+    "crates/cc-semantic/src/publish.rs": "5c857eb68966d38046e110511468e4ddc5e3811242ec9dc757ce7712662bc39a",
+    "crates/cc-db/src/semantic_publish.rs": "92ad4ae55786d45657ffd76aabd5f78485f01ca87b25270466655a02a05cf36b"
+  },
+  "toolchain": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2",
+  "runs": [
+    {
+      "feature": "semantic",
+      "command": "cargo test -p cc-server --features semantic --test p7_runtime_independent_review --locked --offline -- --nocapture",
+      "exit_code": 101,
+      "passed": 0,
+      "failed": 3,
+      "ignored": 0,
+      "observations_directory": "final-993a64e/semantic",
+      "cache_root": "/tmp/p7-014-final-semantic"
+    },
+    {
+      "feature": "semantic-http",
+      "command": "cargo test -p cc-server --features semantic-http --test p7_runtime_independent_review --locked --offline -- --nocapture",
+      "exit_code": 101,
+      "passed": 0,
+      "failed": 3,
+      "ignored": 0,
+      "observations_directory": "final-993a64e/semantic-http",
+      "cache_root": "/tmp/p7-014-final-semantic-http"
+    }
+  ],
+  "findings": [
+    {
+      "id": "closed-publication-window",
+      "expected_published_after_close": 0,
+      "actual": 1,
+      "evidence": "final-993a64e/semantic/close-publish-window.json"
+    },
+    {
+      "id": "cancel-unstarted-budget",
+      "provider_calls": 1,
+      "tasks_charged": 16,
+      "unstarted_attempts_consumed": 15,
+      "evidence": "final-993a64e/semantic/cancel-budget.json"
+    },
+    {
+      "id": "retired-degradation-projection",
+      "before": "degraded",
+      "after": "backfilling",
+      "reopened_ledger_still_degraded": true,
+      "evidence": "final-993a64e/semantic/retired-projection.json"
+    }
+  ],
+  "checks": {
+    "targeted_semantic_http_clippy": "passed -D warnings",
+    "owned_file_rustfmt": "passed",
+    "staged_and_baseline_diff_check": "passed"
+  },
+  "not_run": [
+    "full prior acceptance matrix",
+    "full workspace tests/lint",
+    "complete 130/1100 success/reopen matrix",
+    "complete pending/claimed/failed preservation matrix",
+    "real HTTP construction/destruction/cancellation (fake providers only)",
+    "live provider; prohibited"
+  ],
+  "network": "no socket/provider HTTP calls; fake in-process providers only",
+  "completion": "P7-014 blocked by three independently reproduced counterexamples; failure checkpoint, not green acceptance",
+  "older_baseline_evidence": "baseline-2b8eb20/receipt.json",
+  "production_diff_from_older_baseline": "empty for reviewed runtime/wiring/queue/publisher/publish-CAS files"
+}

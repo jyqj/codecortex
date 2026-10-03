@@ -54,7 +54,13 @@ fn put(
     data: &[f32],
 ) -> ArtifactRef {
     cache
-        .put(sp, &input(text), &spec.digest().expect("spec digest"), data, 1_000)
+        .put(
+            sp,
+            &input(text),
+            &spec.digest().expect("spec digest"),
+            data,
+            1_000,
+        )
         .expect("put")
 }
 
@@ -165,7 +171,10 @@ fn different_spaces_never_cross_hit() {
     let cache = ArtifactCache::open(&root, "ns".to_string()).expect("open");
 
     put(&cache, &sp_a, &spec_a, "doc", &vector(4, 1.0));
-    assert!(matches!(get(&cache, &sp_b, &spec_b, "doc"), CacheRead::Miss));
+    assert!(matches!(
+        get(&cache, &sp_b, &spec_b, "doc"),
+        CacheRead::Miss
+    ));
 }
 
 #[test]
@@ -231,9 +240,7 @@ fn corrupt_payload_is_detected_and_discard_degrades_to_miss() {
         CacheRead::Corrupt(_)
     ));
     // … but the object is discardable: explicit discard → subsequent reads Miss.
-    assert!(cache
-        .discard(&sp, &input_id, &spec_id)
-        .expect("discard"));
+    assert!(cache.discard(&sp, &input_id, &spec_id).expect("discard"));
     assert!(matches!(get(&cache, &sp, &spec, "doc"), CacheRead::Miss));
     // Discarding an absent object is a no-op reporting false.
     assert!(!cache.discard(&sp, &input_id, &spec_id).expect("discard 2"));
@@ -266,15 +273,12 @@ fn meta_tampering_is_detected_as_corrupt() {
     let mut meta: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&meta_path).expect("read meta"))
             .expect("parse meta");
-    meta["checksum"] =
-        serde_json::Value::String(cc_model::identity::bytes_hash(truncated));
+    meta["checksum"] = serde_json::Value::String(cc_model::identity::bytes_hash(truncated));
     std::fs::write(&meta_path, serde_json::to_vec(&meta).expect("meta")).expect("write meta");
     match get(&cache, &sp, &spec, "doc") {
-        CacheRead::Corrupt(report) => assert!(
-            report.reason.contains("dimension"),
-            "{}",
-            report.reason
-        ),
+        CacheRead::Corrupt(report) => {
+            assert!(report.reason.contains("dimension"), "{}", report.reason)
+        }
         other => panic!("expected Corrupt, got {other:?}"),
     }
     put(&cache, &sp, &spec, "doc", &vector(4, 1.0));
@@ -310,11 +314,9 @@ fn meta_tampering_is_detected_as_corrupt() {
     // (d) unreadable meta json
     std::fs::write(&meta_path, b"{not json").expect("write meta");
     match get(&cache, &sp, &spec, "doc") {
-        CacheRead::Corrupt(report) => assert!(
-            report.reason.contains("meta json"),
-            "{}",
-            report.reason
-        ),
+        CacheRead::Corrupt(report) => {
+            assert!(report.reason.contains("meta json"), "{}", report.reason)
+        }
         other => panic!("expected Corrupt, got {other:?}"),
     }
 
@@ -410,7 +412,7 @@ fn namespace_key_is_stable_distinct_and_path_safe() {
     assert!(a1.chars().all(|c| c.is_ascii_hexdigit()));
     assert_eq!(a1.len(), 64);
     assert!(cc_semantic::cache::namespace_key("  ").is_err());
-    assert!(ArtifactCache::open(&root(), a1).is_ok());
+    assert!(ArtifactCache::open(root(), a1).is_ok());
 }
 
 fn root() -> PathBuf {
@@ -432,7 +434,13 @@ fn artifact_ref_is_stable_and_content_scoped() {
     assert!(r1.as_str().starts_with("cas.v1:"));
     // Ref is scoped by every addressing component.
     let other_input = put(&cache, &sp, &spec, "other", &vector(4, 1.0));
-    let other_space = put(&cache, &space("fake/model-b", 4), &doc_spec(&space("fake/model-b", 4)), "doc", &vector(4, 1.0));
+    let other_space = put(
+        &cache,
+        &space("fake/model-b", 4),
+        &doc_spec(&space("fake/model-b", 4)),
+        "doc",
+        &vector(4, 1.0),
+    );
     let other_spec = put(
         &cache,
         &sp,
@@ -444,10 +452,7 @@ fn artifact_ref_is_stable_and_content_scoped() {
         assert_ne!(r1, other);
     }
     // The only sanctioned public constructor is the cache itself.
-    assert_eq!(
-        assert_hit(get(&cache, &sp, &spec, "doc")).artifact_ref,
-        r1
-    );
+    assert_eq!(assert_hit(get(&cache, &sp, &spec, "doc")).artifact_ref, r1);
 }
 
 // ── vector validation gate ───────────────────────────────────────────────
@@ -468,7 +473,10 @@ fn invalid_vectors_are_rejected_before_touching_the_cache() {
     assert!(cache
         .put(&sp, &doc, &digest, &[1.0, f32::INFINITY, 3.0, 4.0], 1)
         .is_err());
-    assert!(!root.exists(), "rejected vectors must not create the layout");
+    assert!(
+        !root.exists(),
+        "rejected vectors must not create the layout"
+    );
 }
 
 // ── no-secret red line ───────────────────────────────────────────────────
@@ -491,12 +499,7 @@ fn meta_contains_only_the_documented_fields() {
     let meta: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&meta_path).expect("read meta"))
             .expect("parse meta");
-    let mut keys: Vec<String> = meta
-        .as_object()
-        .expect("object")
-        .keys()
-        .cloned()
-        .collect();
+    let mut keys: Vec<String> = meta.as_object().expect("object").keys().cloned().collect();
     keys.sort();
     assert_eq!(
         keys,
@@ -553,10 +556,7 @@ fn cache_root_resolution_branches() {
         );
         // Empty override is treated as unset.
         assert_eq!(
-            resolve_cache_root_with(
-                lookup(vec![(CACHE_ROOT_ENV, "  ".to_string())]),
-                macos
-            ),
+            resolve_cache_root_with(lookup(vec![(CACHE_ROOT_ENV, "  ".to_string())]), macos),
             None
         );
     }
@@ -613,4 +613,3 @@ fn process_env_override_reaches_resolve_cache_root() {
 }
 
 static ENV_MUTEX: std::sync::Mutex<()> = std::sync::Mutex::new(());
-

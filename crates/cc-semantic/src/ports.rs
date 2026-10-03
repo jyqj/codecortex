@@ -169,7 +169,10 @@ mod tests {
         // the bytes they claim to describe.
         let d = doc("payload");
         assert!(d.verify().is_ok());
-        assert_eq!(d.input_digest.as_str(), crate::spec::input_bytes_digest(b"payload").expect("digest"));
+        assert_eq!(
+            d.input_digest.as_str(),
+            crate::spec::input_bytes_digest(b"payload").expect("digest")
+        );
 
         let q = QueryInput::from_bytes(b"query").expect("valid query input");
         assert!(q.verify().is_ok());

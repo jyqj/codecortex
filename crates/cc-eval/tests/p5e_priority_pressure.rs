@@ -38,7 +38,11 @@ fn fixture() -> tempfile::TempDir {
         std::fs::create_dir_all(p.parent().unwrap()).unwrap();
         std::fs::write(p, text).unwrap();
     }
-    for n in 0..8 {
+    // Keep two independent incidental documents. Eight noise documents made
+    // the default public response drop impl.py before the substage caps were
+    // applied as manifest/freshness receipts grew. The complete fixture must
+    // fit first; the unchanged caps below supply the actual output pressure.
+    for n in 0..2 {
         let text=format!("# repair_widget WidgetContract widget repair value repeated incidental noise\ndef noisy_widget_{n}(value):\n    return value + {n}\n");
         std::fs::write(root.path().join(format!("scope/noise_{n}.py")), text).unwrap();
     }
@@ -171,6 +175,8 @@ fn real_final_mcp_context_keeps_trusted_facet_then_support_then_incidental_under
             "actual incidental hits must coexist: {priority:?}"
         );
         let mut successful_caps = 0;
+        let mut facet_pressure_exercised = false;
+        let mut support_pressure_exercised = false;
         let mut one_fitting_cap_preserved_all_facets = false;
         for cap in [16000, 14000, 12000, 10000, 8000, 5000] {
             let packed = match pack_value(scoped.clone(), cap) {
@@ -227,6 +233,7 @@ fn real_final_mcp_context_keeps_trusted_facet_then_support_then_incidental_under
                 h["metadata"]["evidence_priority"] == "intent_facet"
                     && !ids.iter().any(|id| id == h["chunk_id"].as_str().unwrap())
             });
+            facet_pressure_exercised |= dropped_facet;
             if dropped_facet {
                 assert!(
                     !hits(&packed)
@@ -249,6 +256,7 @@ fn real_final_mcp_context_keeps_trusted_facet_then_support_then_incidental_under
                 h["metadata"]["evidence_priority"] == "distinctive_source_support"
                     && !ids.iter().any(|id| id == h["chunk_id"].as_str().unwrap())
             });
+            support_pressure_exercised |= dropped_support;
             if dropped_support {
                 assert!(
                     !hits(&packed)
@@ -263,6 +271,14 @@ fn real_final_mcp_context_keeps_trusted_facet_then_support_then_incidental_under
         assert!(
             one_fitting_cap_preserved_all_facets,
             "at least one fit-cap must preserve every real selected trusted facet body"
+        );
+        assert!(
+            facet_pressure_exercised,
+            "caps must actually evict a trusted facet"
+        );
+        assert!(
+            support_pressure_exercised,
+            "caps must actually evict source support"
         );
         assert!(
             successful_caps >= 2,

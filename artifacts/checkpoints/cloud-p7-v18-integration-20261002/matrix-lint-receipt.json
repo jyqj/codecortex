@@ -1,0 +1,39 @@
+{
+  "source_sha": "373448146fcd7114f99c0819f3fb02921f68a260",
+  "source_tree": "981f4da294cc5463333ca13bc33d4ddf30f0a757",
+  "base_sha": "7481731429118f45b6144518e8e9cfad3e02d7b4",
+  "change": "lexical block releases existing acceptance CodeIndex guard and read-pool connection before async waits; all existing assertions unchanged",
+  "strict_clippy": {
+    "command": "cargo clippy --workspace --all-targets --features cc-server/semantic-http --locked --offline -- -D warnings",
+    "toolchain": "Rust1.95.0",
+    "exit_code": 0
+  },
+  "acceptance_matrix": {
+    "command": "cargo test -p cc-server --test p7_acceptance_matrix --features semantic-http --locked --offline",
+    "passed": 7,
+    "failed": 0,
+    "ignored": 0,
+    "exit_code": 0
+  },
+  "format": "passed",
+  "diff_check": "passed",
+  "scope": "lint subitem closed; no full V18/P7-014 closure; production fix1b8a3d5 unchanged",
+  "pending": [
+    "independent lifecycle post-fix review",
+    "new p7_v18_parameter_contract target owned by independent worker",
+    "new p7_v18_fault_contract target owned by independent worker",
+    "P7-017 CI receipt hookup owned by its original author"
+  ],
+  "logs": [
+    {
+      "filename": "/tmp/p7-v18-matrix-clippy.log",
+      "sha256": "7674e99db249d58a8890fd402c9d0a70e50a3b2e5e99c0c050b595754467765f",
+      "bytes": 210
+    },
+    {
+      "filename": "/tmp/p7-v18-matrix-test.log",
+      "sha256": "58269b360f02639c09d1238a269dbf87e733cd25515d257b9f0bccca4e42d5dc",
+      "bytes": 1011
+    }
+  ]
+}

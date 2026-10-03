@@ -44,6 +44,8 @@ use crate::types::{ArtifactRef, DocSpecDigest, InputDigest};
 /// Why a publish attempt ended without touching the manifest.
 #[derive(Debug, Clone, PartialEq)]
 pub enum PublishVerdict {
+    /// Runtime closed at the transaction boundary; no manifest or retry write.
+    Cancelled,
     /// The manifest CAS accepted the attempt. `visible_set_changed == false`
     /// is the duplicate-ack case: the task is done and `semantic_epoch`
     /// deliberately did not move (Q4).
@@ -66,6 +68,7 @@ pub struct Publisher<'a> {
     space_digest: crate::types::SpaceDigest,
     doc_spec: &'a DocSpecDigest,
     expected_incarnation: [u8; 16],
+    lifecycle: Option<&'a cc_db::semantic_publish::LifecycleFence>,
 }
 
 impl<'a> Publisher<'a> {
@@ -87,7 +90,19 @@ impl<'a> Publisher<'a> {
             space_digest,
             doc_spec,
             expected_incarnation,
+            lifecycle: None,
         })
+    }
+
+    pub fn with_lifecycle(
+        mut self,
+        lifecycle: Option<&'a cc_db::semantic_publish::LifecycleFence>,
+    ) -> Self {
+        self.lifecycle = lifecycle;
+        self
+    }
+    pub fn is_cancelled(&self) -> bool {
+        self.lifecycle.is_some_and(|fence| !fence.is_open())
     }
 
     /// Publish one finished embedding for one claimed task (see module docs
@@ -160,7 +175,12 @@ impl<'a> Publisher<'a> {
             max_attempts: PUBLISH_MAX_ATTEMPTS,
             now_unix: now_unix as f64,
         };
-        let outcome = self.db.publish_semantic(&request)?;
+        let Some(outcome) = self
+            .db
+            .publish_semantic_with_lifecycle(&request, self.lifecycle)?
+        else {
+            return Ok(PublishVerdict::Cancelled);
+        };
         if outcome.published {
             Ok(PublishVerdict::Published {
                 visible_set_changed: outcome.visible_set_changed,

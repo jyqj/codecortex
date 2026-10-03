@@ -1,0 +1,224 @@
+[
+  {
+    "name": "rustc-version",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "-Vv"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "rustc-version.log"
+  },
+  {
+    "name": "build-server",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-server",
+      "--features",
+      "semantic-http",
+      "--lib",
+      "--locked",
+      "--offline",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "build-server.log"
+  },
+  {
+    "name": "shared_provider_gate_cases_in_fresh_processes",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::shared_provider_gate_tests::shared_provider_gate_cases_in_fresh_processes",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "shared_provider_gate_cases_in_fresh_processes.log"
+  },
+  {
+    "name": "recoverable_retry_drains_other_ready_documents",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::tests::recoverable_retry_drains_other_ready_documents",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "recoverable_retry_drains_other_ready_documents.log"
+  },
+  {
+    "name": "recoverable_retry_width_zero_drains_other_ready_documents",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::tests::recoverable_retry_width_zero_drains_other_ready_documents",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "recoverable_retry_width_zero_drains_other_ready_documents.log"
+  },
+  {
+    "name": "bounded_parallel_pins_running_and_factory_survive_until_physical_join",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_server-95cb67417ad6e0e1",
+      "--exact",
+      "semantic_runtime::tests::bounded_parallel_pins_running_and_factory_survive_until_physical_join",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "bounded_parallel_pins_running_and_factory_survive_until_physical_join.log"
+  },
+  {
+    "name": "build-queues",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-semantic",
+      "--test",
+      "bounded_parallel",
+      "--test",
+      "queue_worker",
+      "--locked",
+      "--offline",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "build-queues.log"
+  },
+  {
+    "name": "bounded_parallel",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/bounded_parallel-76fe7340d767772b",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "bounded_parallel.log"
+  },
+  {
+    "name": "queue_worker",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/queue_worker-31cf8d5dd14bb52a",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "queue_worker.log"
+  },
+  {
+    "name": "build-db",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+      "test",
+      "-p",
+      "cc-db",
+      "--lib",
+      "--test",
+      "semantic_outbox",
+      "--locked",
+      "--offline",
+      "--no-run",
+      "--message-format=json"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "build-db.log"
+  },
+  {
+    "name": "fifo",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/semantic_outbox-947815958ab5b588",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "fifo.log"
+  },
+  {
+    "name": "direct_rebuild_canonical_schema_matches_normal_temp_path",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_db-7ad8625c93e44eab",
+      "--exact",
+      "index_db::tests::direct_rebuild_canonical_schema_matches_normal_temp_path",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "direct_rebuild_canonical_schema_matches_normal_temp_path.log"
+  },
+  {
+    "name": "direct_rebuild_callback_and_index_errors_leave_live_database_unchanged",
+    "argv": [
+      "/workspace/codecortex/target/candidate-integration/debug/deps/cc_db-7ad8625c93e44eab",
+      "--exact",
+      "index_db::tests::direct_rebuild_callback_and_index_errors_leave_live_database_unchanged",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": true,
+    "log": "direct_rebuild_callback_and_index_errors_leave_live_database_unchanged.log"
+  },
+  {
+    "name": "strict-clippy",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo-clippy",
+      "clippy",
+      "-p",
+      "cc-semantic",
+      "-p",
+      "cc-server",
+      "--all-targets",
+      "--features",
+      "semantic-http",
+      "--locked",
+      "--offline",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "strict-clippy.log"
+  },
+  {
+    "name": "fmt",
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "--edition",
+      "2021",
+      "--check",
+      "/workspace/codecortex/crates/cc-semantic/src/admission.rs",
+      "/workspace/codecortex/crates/cc-semantic/src/queue.rs",
+      "/workspace/codecortex/crates/cc-semantic/tests/bounded_parallel.rs",
+      "/workspace/codecortex/crates/cc-server/src/service_factory.rs",
+      "/workspace/codecortex/crates/cc-server/src/semantic_wiring.rs",
+      "/workspace/codecortex/crates/cc-server/src/semantic_runtime.rs",
+      "/workspace/codecortex/crates/cc-server/src/shared_provider_gate_tests.rs"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "fmt.log"
+  },
+  {
+    "name": "diff-check",
+    "argv": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "executed_nonzero_tests": null,
+    "log": "diff-check.log"
+  }
+]

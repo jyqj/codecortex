@@ -1,0 +1,181 @@
+{
+  "executed_source_sha": "744789649d1e0f2f3b41077ec3d1f5caacbff0cc",
+  "baseline": "83a6b54ab1e71db033264e3b4e8d4f0a1d5319ad",
+  "integration_docs_head": "d94fb13616261ec879002e91fb3e46b2c73c31f6",
+  "toolchain": "Rust 1.95; CARGO_BUILD_JOBS=1",
+  "test_source_sha256": "f5a8afc1eccb52ff0f1b08dc314134da022403af988744659068dd30da63eaf8",
+  "production_changes": false,
+  "validation": [
+    {
+      "command": "cargo test -p cc-server --features semantic-http --test p7_v11_cache_consumption --test p7_v11_cache_key_matrix --test cache_key_review_behavior",
+      "passed": 8,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "command": "cargo test -p cc-server --features semantic --test p7_v11_cache_consumption",
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "command": "cargo clippy -p cc-server --features semantic-http --test p7_v11_cache_consumption -- -D warnings",
+      "exit": 0
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "exit": 0
+    }
+  ],
+  "scope": {
+    "level": "L2 actual parsed DB/SearchEngine/worker/query encoder/recall/public QueryHandle methods; synthetic local provider; not stdio/live models",
+    "field_count": 50,
+    "search_fields": 13,
+    "ranking_fields": 32,
+    "query_fields": 5,
+    "tier_states": 5,
+    "tier_preselection_counts": [
+      120,
+      120,
+      120,
+      150,
+      200
+    ],
+    "score_activation_changes_observed": 13,
+    "immutable_contract": "per-instance copied config and private LRUs; cold/warm/fresh actual local and graph results per field plus old-domain reuse; no same-engine config mutation API admitted; no individual score activation claim for untriggered fields",
+    "graph": "top_k_only1 versus context30; top_k2 result2; hard file/language sets permutation hits same Arc and equals fresh",
+    "dense": "real worker publication changes only semantic epoch; local and graph cached Arc preserved; current final hydration generation refreshed; actual encoding+recall candidates; repeated dense2local+2graph misses no hits; public QueryHandle2 dense graph misses and reselects changed intent/top_k",
+    "context": "final envelope freshly hydrates/selects/packs; no final ContextEnvelope cache; frozen selector/budget spec transitions remain not-run cross-build",
+    "paid_provider": false,
+    "source_egress": false
+  },
+  "failures_preserved": [
+    {
+      "log": "p7-consumption-dense-initial.log",
+      "cause": "Test expected raw lanes; actual bounded product packer legally projects explicit lane_receipts. Require real nonzero count in either admitted shape."
+    },
+    {
+      "log": "p7-consumption-locked.log",
+      "cause": "Unhinted tier fixture reaches FTS layer cap80 rather than overall preselect budget120. Added actual220 working-set hint paths to exercise the tier limit; no production change or relaxed numeric assertion."
+    }
+  ],
+  "imports": [
+    {
+      "original_sha": "bf6c121fe209e2bd601a0dc19d61e221a78cd2e3",
+      "integrated_sha": "d49355e",
+      "files": 3,
+      "byte_identical": true,
+      "admission_check_exit": 0,
+      "runtime_tests": 0
+    },
+    {
+      "original_sha": "bc8e22bd6b4f85774e7b84a3e6a30da8dc4a3b29",
+      "integrated_sha": "d94fb13",
+      "files": 9,
+      "byte_identical": true,
+      "artifact_hashes_match": 7,
+      "new_retrieval_tests": 0
+    }
+  ],
+  "raw": [
+    {
+      "profile": "semantic-http",
+      "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003/semantic-http-281914-dense-context.json",
+      "sha256": "4b2a80e94b443a1ffa634eba9b778c9e6c414359dde54098470d783fb2e01795"
+    },
+    {
+      "profile": "semantic-http",
+      "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003/semantic-http-281914-graph-extra.json",
+      "sha256": "e9ef60178e94f95fc228e7c0fc831471e736c47ae37b61ff496c5bb503938112"
+    },
+    {
+      "profile": "semantic-http",
+      "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003/semantic-http-281914-immutable-domains.json",
+      "sha256": "2c727d6e47420ad97f446e747f7d1ca6d9884f5802bf023d05c675309f0db4ee"
+    },
+    {
+      "profile": "semantic",
+      "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003/semantic-283759-dense-context.json",
+      "sha256": "c8485062413406c2a5d0d37565a93bc44e98557acda4915348d0a0f19ef65968"
+    },
+    {
+      "profile": "semantic",
+      "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003/semantic-283759-graph-extra.json",
+      "sha256": "e9ef60178e94f95fc228e7c0fc831471e736c47ae37b61ff496c5bb503938112"
+    },
+    {
+      "profile": "semantic",
+      "path": "artifacts/checkpoints/cloud-p7-v11-cache-consumption-20261003/semantic-283759-immutable-domains.json",
+      "sha256": "2c727d6e47420ad97f446e747f7d1ca6d9884f5802bf023d05c675309f0db4ee"
+    }
+  ],
+  "local_logs_hash_only": [
+    {
+      "local_filename": "/tmp/p7-consumption-initial.log",
+      "sha256": "6863c2c5f350c8710f9a919c5d89411bc26556c8c96cafc46d42bbdf12f6a37b",
+      "bytes": 516,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-dense-initial.log",
+      "sha256": "ef0f9845b6628a16b8d3d1055045f0176d66aba9cfc69bbb677a8137aa792e5a",
+      "bytes": 1174,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-fixed.log",
+      "sha256": "b03058362d0a5c54a5cb19966f56c033b8253c79459a705f003199db190c15e7",
+      "bytes": 603,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-final.log",
+      "sha256": "f34d1155e0fa3ec6d0b6b36bcf8476e3979c6209621037f0bcdd45796f3f5583",
+      "bytes": 603,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-locked.log",
+      "sha256": "b4403a3534b54aee1af62d3e4298ef0f169a95b11bab5a8b4e61a5ea628cafeb",
+      "bytes": 1188,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-source.log",
+      "sha256": "9a65d8d2afd1bd60da4083d733e562167818b44555be4ac3ba3a214984e4691e",
+      "bytes": 603,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-744-http.log",
+      "sha256": "5997669473160d0551be68c671dc66cd28ac13297ca465081d5883e2b5093aad",
+      "bytes": 3577,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-744-sem.log",
+      "sha256": "10956c04144a8eda522cf9521bf4375dffd560d4a4db4521c3e1baa81da7ec8c",
+      "bytes": 603,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-744-clippy.log",
+      "sha256": "983ccb7c384d97bd05236d6f97b633979e0b8a39e954b52cba232e4b7a6a92b9",
+      "bytes": 143,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-consumption-744-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "uploaded": false
+    },
+    {
+      "local_filename": "/tmp/p7-crossbuild-import-check.log",
+      "sha256": "ce009ba24be38a555305ada577f6fb616bd76448afd78e2fe82dd7d9bc1e5538",
+      "bytes": 103,
+      "uploaded": false
+    }
+  ],
+  "gate_decision": "Three main-owned offline V11 cache rows bounded-closed pending independent review/formal consolidation. V11, V19 and P7-014 remain open."
+}

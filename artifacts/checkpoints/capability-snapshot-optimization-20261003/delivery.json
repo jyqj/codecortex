@@ -1,0 +1,63 @@
+{
+  "status": "completed_v2_single_optimization",
+  "repository": "jyqj/codecortex",
+  "branch": "capability-snapshot-optimization-20261003",
+  "base_branch": "codex/cloud-index-fix-integration",
+  "base_sha": "6db4d396e5d994388ada1e97c3d28947ffdb9c81",
+  "production_freeze_commit": "11af963c33cfa68cc9497e355464c1d6d058adac",
+  "evidence_commit": "9d1aca37d7b631a2740343a1e174c4c22f10d096",
+  "remote_evidence_sha_verified": "9d1aca37d7b631a2740343a1e174c4c22f10d096",
+  "contract": {
+    "spec": "retrieval-capabilities-v2",
+    "consistency": "point_in_time",
+    "generation_scope": "observed_database_snapshot",
+    "identity_validation": "checked_at_observation_boundary",
+    "service_state_scope": "process_observed_separately",
+    "query_fence": "unchanged"
+  },
+  "checks": {
+    "commands_passed": 11,
+    "test_executions": 46,
+    "profile_overlap": true,
+    "record": "checks.json",
+    "scope_verification": "FINAL-VERIFICATION.json"
+  },
+  "fixed_1k_5k_AB": {
+    "runs": 8,
+    "all_final_ready": true,
+    "protocol": "AB-PROTOCOL.json",
+    "summary": "AB-SUMMARY.json",
+    "poll_mean_cost_reduction_percent": {
+      "1000": 84.52551091941488,
+      "5000": 90.99666063899456
+    },
+    "baseline_generation_changed_errors": 17,
+    "baseline_polls": 34,
+    "candidate_errors": 0,
+    "candidate_polls": 35,
+    "unfavorable_1k_pair1_ready_delta_ms": 197.747412,
+    "no_100k_extrapolation": true
+  },
+  "draft_pr": {
+    "status": "blocked",
+    "exit_code": 1,
+    "error": "Post https://api.github.com/graphql: Forbidden",
+    "action": "gh pr create --repo jyqj/codecortex --draft --base codex/cloud-index-fix-integration --head capability-snapshot-optimization-20261003 --title \"docs: decide capability snapshot as-of versus latest contract\" --body-file artifacts/checkpoints/capability-snapshot-optimization-20261003/PR-BODY.md",
+    "stopped_on_specific_rejection": true,
+    "alternate_permissions_credentials_channels_used": false,
+    "not_retried": true,
+    "historical_action": true
+  },
+  "limitations": [
+    "Linux local SQLite VFS identity behavior tested; other platforms/VFS unverified and unsupported identity results fail closed.",
+    "Finite two-pair local fake comparisons do not establish general worker-throughput causality.",
+    "Independent review and 100k remain separate tasks."
+  ],
+  "report": "README.md",
+  "review_body": "PR-BODY.md",
+  "independent_100k": "not_run_separate_task",
+  "real_provider_calls": 0,
+  "heldout": "not_read",
+  "merge_forcepush_deploy": "not performed",
+  "note": "This receipt is a follow-up artifact commit; its final HEAD is remotely verified and reported separately. No further production edits or testing after the production freeze."
+}

@@ -62,3 +62,5 @@ driver/candidate writer 的直接 rustfmt `--check` 均通过。检查 `/AGENTS.
 未测试 FIFO、100k/吞吐、GC/WAL kill/crash/fault、一般 swap/crash/任意 temporary rollback、真实 provider、DEV/heldout、远端全 CI。没有触碰曾拒写 cache、权限/凭据/安装流程，也没有修改生产、版本、DEV、CI 或中央 TODO。journal_mode=OFF 维持原生产约定，本审查只证明普通 synthetic API 错误的 staging 不发布。
 
 本独立单块验证已完成，具体待办见本目录 `TODO.md`；交付证据 commit 与自有 draft PR 后即停，不 merge/forcepush/deploy。
+
+交付：自有 draft [PR118](https://github.com/jyqj/codecortex/pull/118)，分支 `review/independent-direct-writer-20261003` 基于固定 candidate；证据 commit `198b85f52322624d9a26580075b41bd5858734e6` 从 origin fetch 后，68 个新增文件已逐字匹配本地。GitHub connector 创建 commit 并非 force 地更新远端 ref；收尾提交仅补充本目录交付记录。没有 merge/push 其他分支。

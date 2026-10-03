@@ -119,7 +119,8 @@ end-to-end improvement; durable cache and added index writes remain real costs.
       all 14 queries/answers/scoring/config and other admitted sources unchanged.
 - [x] Six-suite validation, source/query drift negative controls, benchmark_lock tests.
 - [x] Finish two finite normal pipeline pairs and report reads/writes without overclaim.
-- [ ] Commit/push/draft PR and verify exact remote delivery; then stop.
+- [x] Commit/push/draft PR and verify exact remote delivery; then stop.
+      PR114 draft created on PR110 base; implementation commit c73128b500c2a19daa8a293caa52afb711b03516 verified remotely. Final evidence receipt commit is verified in the delivery response.
 
 `correctness.log`: 20 outbox + 9 lease + 3 queue tests passed. `migration.log`:
 5 migration tests passed. `benchmark-lock.log`: 10 tests passed. `six-suite.log`
@@ -139,3 +140,10 @@ and PHASE_CASE_PREFIX for pipeline.py. Large fixtures/cache and binaries stay lo
 the actual five probe files in both build sources. The initial archive lacked .git:
 instrument.py applied all spans, but trailing git-diff receipt generation failed;
 the exact PR112 patch was then retained and verified rather than inventing a receipt.
+
+Delivery: https://github.com/jyqj/codecortex/pull/114 (draft, stacked on PR110).
+Implementation remote head c73128b500c2a19daa8a293caa52afb711b03516 was verified
+against origin and connector PR metadata. No concrete Forbidden, Username error
+or approval rejection occurred. Final receipt commit adds evidence only.
+Independent review and any production integration decision belong to the parent;
+this task ends after final remote verification, without further experiments.

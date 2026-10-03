@@ -51,4 +51,5 @@ CARGO_HOME=/workspace/.cargo PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-un
 - [ ] queue ready-frontier/end-flush、custody/report/joins 与生产接线：后续独立 session，当前未做。
 - [ ] cache warm 优化与 cache 验证：本轮未做。
 - [ ] 性能/资源/实际吞吐：后续另行授权；当前未知，不能宣称提速。
-- [ ] draft PR / CI 远端可用性：GitHub CLI REST 和 GraphQL 元数据读取均返回 Forbidden；connector 读取返回 Transport closed。branch push 和 draft 创建分别记录实际结果，不能把推送当成 PR/CI 成功。
+- [x] branch `codex/bounded-db-publication` 已正常 push；connector 明确确认创建 [Draft PR #127](https://github.com/jyqj/codecortex/pull/127)，`draft=true`、`merged=false`，base `candidate/integrate-startup-gate-parallel-retry-20261003` 的 SHA 正是 `513a98c9a94b15ec77153df41af26fa3c8c0b5e8`。创建回执时间 `2026-10-03T19:31:22Z`，当时 head `13a18e0931e1d84242cd21b7a0c2b066208f193f`，2 commits、6 files。随后只追加此文档回执提交。
+- [ ] 远端 CI 未查询/未验证；此前 GitHub CLI REST 和 GraphQL 元数据读取均返回 Forbidden，connector 初次读取返回 Transport closed；后续 connector draft 创建已成功，不能把早期读取失败说成最终 PR 创建失败。未 merge/deploy。

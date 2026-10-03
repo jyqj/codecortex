@@ -37,7 +37,7 @@ CARGO_HOME=/workspace/.cargo PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-un
 CARGO_HOME=/workspace/.cargo PATH=/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin:$PATH cargo test --locked -p cc-db --test semantic_publish --test semantic_lease
 ```
 
-原单项 publish 11/11、lease 9/9 通过：[regression.log](bounded-db-publication-evidence/regression.log)。改变文件 direct rustfmt --check 与 git diff --check 通过。未执行宽泛 runtime/workspace tests、kill/crash、OS 权限/EROFS/GCWAL 实验、真实 provider 或 benchmark。
+原单项 publish 11/11、lease 9/9 通过：[regression.log](bounded-db-publication-evidence/regression.log)。日志仅规范化尾部空行，原运行记录保留在 `/tmp/bounded-group-{red,green,regression}.log`；不更改测试输出内容。改变文件 direct rustfmt --check 与最终提交范围 git diff --check 通过。未执行宽泛 runtime/workspace tests、kill/crash、OS 权限/EROFS/GCWAL 实验、真实 provider 或 benchmark。
 
 ## 专项 TODO
 

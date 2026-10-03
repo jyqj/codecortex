@@ -45,11 +45,11 @@ required-facet coverage、graph correctness、Recall20、SymbolAccuracy、Duplic
 
 ## 原始证据与readback
 
-public-development-raw.tar.gz保留pilot和full的1200个文件（约30.95MB原始字节，4.04MB压缩），含每次run/replay commands/stdout/stderr、全部manifest/queries/normalized/scores/metrics/costs/latency/resources/failures与864个实际raw search response（81pilot+783full）。缺行suite原prepare失败manifest也保留。retained-licenses/按admission哈希保留15份原license/NOTICE/第三方BSD证明文档，raw公开source片段不脱离这些notices。
+public-development-raw.tar.gz保留pilot和full的1200个文件（约30.95MB原始字节，4.04MB压缩），含每次run/replay commands/stdout/stderr、全部manifest/queries/normalized/scores/metrics/costs/latency/resources/failures与864个实际raw search response（81pilot+783full）。缺行suite原prepare失败manifest也保留。retained-licenses.tar.gz及license-retention-manifest.json按admission哈希保留15份原license/NOTICE/第三方BSD证明文档（原CRLF/空白字节不变，以归档保留），raw公开source片段不脱离这些notices。
 
 archive SHA256：`ed873c1c105cffc91babf6b195d7f65a94e9d6b4f745b6616cd5aef2341148be`。
 
-readback.py重新解压、核验所有1200文件byte/SHA，使用同actual evaluator对18个run（pilot2/full16）离线replay，全部文件不变、退出码仍匹配原1/2；analysis summary逐字节一致。readback receipt SHA256 `a96991861beee04f3b4c84f58e7be60bdb18bd411a4c899c56787d3430b7a14e`。这证明失败证据可重放，**不把gate1/2变成pass**。5项有意义的脚本回归通过（未准入读取先拒绝、semantic feature拒绝、Partial拒答规则、宏/微/组件权重、真实missing schedule不出全局分数）。未重跑全仓tests/clippy/fmt，也未再次发出search调参。
+readback.py重新解压、核验所有1200文件byte/SHA，使用同actual evaluator对18个run（pilot2/full16）离线replay，全部文件不变、退出码仍匹配原1/2；analysis summary逐字节一致。readback receipt SHA256 `ecd13086051b374a804836669240e293802e7cc02c18a532a44543eac44ae1de`。这证明失败证据可重放，**不把gate1/2变成pass**。5项有意义的脚本回归通过（未准入读取先拒绝、semantic feature拒绝、Partial拒答规则、宏/微/组件权重、真实missing schedule不出全局分数）。未重跑全仓tests/clippy/fmt，也未再次发出search调参。
 
 ## 复现
 

@@ -24,3 +24,9 @@ P2-D adds blocking syntax/ownership regressions `P2D-JSTS-CALL-01` (regex-create
 These are observations against the frozen baseline. P0 does not repair or waive them in the product. A defect observation test verifies that the fixture can be inspected; it does not assert the product is correct. The mutation command deliberately exits 1 when A/B disagree. The smoke run deliberately exits 1 for the no-answer failure. G0 evaluates whether the measurement system and the failure ledger are trustworthy, not whether P1/P2 fixes are already complete.
 
 After a repair, retain the original fixture and old run, add the fixed-behavior assertion, then update this ledger with the new source/binary and run IDs. Never change gold merely to make a failed measurement green.
+
+## 2026-10-03 current Local observation (historical records retained)
+
+New exact source `6f3cee1f2d23b43af5271bcaeaea67b931fd4fb7`, default product SHA256 `ef339ca364f837515321a16d3438e02fb565fee1d2534629a87cab3118d31247`, run `v19-current-6f3-local-20261003`: unchanged S11 returns empty NoMatch in three actual stdio repetitions. This is a current fixture observation, not a general no-answer acceptance; earlier B15/S11 failures and original receipts above remain historical facts, unchanged.
+
+R09 fixed authored query names `compute_fingerprint_for_unit`, absent from its current locked declared source. Keep its original gold, three NoMatch rows, zero scores and original denominator; separately mark current material invalid/inconclusive, never retrieval pass. Intents24/source-subset39 Partial rows remain gate failures with packing and lane-limit reasons in raw; no tuning or scorer waiver. Eight suites/56dev/164requests and replay hashes live in `artifacts/checkpoints/cloud-p7-v19-current-local-20261003`. This is a new run, not restoration of the missing historical306 requests or600public/holdout quality.

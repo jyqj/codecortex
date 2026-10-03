@@ -1,0 +1,705 @@
+{
+  "evidence_summary": {
+    "files": [
+      "decoder.py",
+      "errors.py"
+    ],
+    "graph_enrichment": {
+      "callees_added": 1,
+      "callers_added": 2,
+      "symbols_resolved": 2,
+      "tests_found": 0
+    },
+    "packing": {
+      "compacted": true,
+      "configured_max_bytes": 18000,
+      "continuation": "Use files region/expand on retained references; recheck source version.",
+      "limit_bytes": 16000,
+      "omitted_hits": 0,
+      "omitted_nodes": 0,
+      "original_hits": 2,
+      "original_nodes": 5,
+      "partial": false,
+      "spec": "whole-json-intent-facets-source-support-before-incidental-v5",
+      "token_estimate_method": "ceil(serialized_utf8_bytes/4); not a tokenizer",
+      "used_bytes": 12963
+    },
+    "retrieval": {
+      "cost": {
+        "coverage": "originating_work; full scope: retrieval-cost schema v1",
+        "fused_candidates": 2,
+        "hydrate_requested": 2,
+        "hydration": {
+          "sql": {
+            "fullscan_steps": 0,
+            "rows": 2,
+            "sorts": 0,
+            "statements": 1,
+            "vm_steps": 130
+          },
+          "text": {
+            "cache_hits": 2,
+            "legacy_auto_reads": 0,
+            "storage_reads": 0,
+            "utf8_bytes": 267,
+            "zstd_decodes": 0
+          }
+        },
+        "lane_candidates": {
+          "exact_symbol": 0,
+          "graph": 2,
+          "grep": 0,
+          "lexical": 2,
+          "path": 0
+        },
+        "lexical_sql": {
+          "fullscan_steps": 0,
+          "rows": 2,
+          "sorts": 1,
+          "statements": 1,
+          "vm_steps": 59
+        },
+        "schema_version": 1
+      },
+      "grep": {
+        "fallback_scanned": 4,
+        "prefilter_failed": false,
+        "prefilter_scanned": 0,
+        "reason": null,
+        "scan_cap": 20000,
+        "scanned": 9,
+        "skipped_duplicates": 5,
+        "soft_scanned": 5,
+        "stages": [
+          {
+            "stage": "soft",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 5,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 86
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 5,
+                "utf8_bytes": 438,
+                "zstd_decodes": 1
+              }
+            }
+          },
+          {
+            "stage": "prefilter",
+            "work": {
+              "sql": {
+                "fullscan_steps": 0,
+                "rows": 0,
+                "sorts": 1,
+                "statements": 1,
+                "vm_steps": 14
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 0,
+                "utf8_bytes": 0,
+                "zstd_decodes": 0
+              }
+            }
+          },
+          {
+            "stage": "fallback",
+            "work": {
+              "sql": {
+                "fullscan_steps": 8,
+                "rows": 9,
+                "sorts": 0,
+                "statements": 1,
+                "vm_steps": 79
+              },
+              "text": {
+                "cache_hits": 0,
+                "legacy_auto_reads": 0,
+                "storage_reads": 4,
+                "utf8_bytes": 264,
+                "zstd_decodes": 0
+              }
+            }
+          }
+        ],
+        "status": "complete"
+      },
+      "lane_receipts": [
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 1318,
+          "lane_id": "exact_symbol",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 278,
+          "lane_id": "path",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.0
+        },
+        {
+          "candidate_count": 2,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 2
+          },
+          "elapsed_us": 376,
+          "lane_id": "lexical",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 1.1
+        },
+        {
+          "candidate_count": 0,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": 9,
+            "scope": "hard_scope",
+            "total_lower_bound": 0
+          },
+          "elapsed_us": 4245,
+          "lane_id": "grep",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.8
+        },
+        {
+          "candidate_count": 2,
+          "candidate_details_omitted": true,
+          "coverage": {
+            "complete": true,
+            "examined": null,
+            "scope": "hard_scope",
+            "total_lower_bound": 2
+          },
+          "elapsed_us": 1415,
+          "lane_id": "graph",
+          "schema_version": 1,
+          "status": "complete",
+          "truncation_reason": null,
+          "weight": 0.6
+        }
+      ],
+      "policy": {
+        "deadline_ms": 30000,
+        "details_omitted": true,
+        "effective": "local",
+        "graph_source_mapping": "uid_byte_decl_docs;not_whole_body:v2",
+        "intent": "fix",
+        "lane_timeout_ms": 20000,
+        "path_source_domain": "canonical_scoped_exact_else_bounded_tokens;not_whole_body:v3",
+        "requested": "local",
+        "semantic_state": "disabled",
+        "semantic_timeout_ms": 5000,
+        "semantic_top_k": 24,
+        "version": "query-policy-local-semantic-canonical-path-domain-v4"
+      },
+      "scope": {
+        "budget": {
+          "exact_symbol_candidates": 24,
+          "grep_candidates": 12,
+          "grep_enabled": true,
+          "grep_scan_cap": 20000,
+          "lexical_candidates": 24,
+          "path_candidates": 24,
+          "rerank_window": 40,
+          "top_k": 10,
+          "units": "chunks; grep_scan_cap=decompressions; scope_receipt_v1; not_total_cost"
+        },
+        "details_omitted": true,
+        "hard": {
+          "empty": false,
+          "explicit_file_count": null,
+          "languages": null,
+          "path_prefix": null,
+          "path_prefix_truncated": false,
+          "semantics": "conjunctive_case_sensitive_repo_paths; explicit_empty_denies"
+        },
+        "ordering": [
+          "exact_identity_first",
+          "rerank_score_desc",
+          "chunk_id_asc"
+        ],
+        "policy": "canonical-scoped-exact-path-domain-compact-context-budget-v22",
+        "schema_version": 1,
+        "soft": {
+          "contributions": "score_trace=additive; stage_a_already_included; raw_hint_paths_omitted",
+          "hint_entries": {
+            "overlay": 0,
+            "pinned": 0,
+            "recent": 0,
+            "working": 0
+          },
+          "preselected_count": 3,
+          "role": "ranking_and_scan_priority_only"
+        }
+      }
+    },
+    "search_hits": 2,
+    "selection": {
+      "facets": {
+        "implementation": 2
+      },
+      "input_candidates": 2,
+      "intent": "fix",
+      "intent_facet_anchors": {
+        "implementation": "chunk:errors.py:1"
+      },
+      "limit_omitted": 0,
+      "original_ranks": [
+        1,
+        2
+      ],
+      "overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 267,
+        "redundant_bytes": 0,
+        "unique_bytes": 267
+      },
+      "requested_limit": 10,
+      "selected": 2,
+      "selected_overlap": {
+        "fully_covered_candidates": 0,
+        "input_bytes": 267,
+        "redundant_bytes": 0,
+        "unique_bytes": 267
+      },
+      "source_covered_omissions": 0,
+      "source_support_anchors": [
+        "chunk:errors.py:1"
+      ],
+      "source_support_scope": "literal_program_cue_in_validated_twice_topk_window_only; not_global_uniqueness_or_exact_identity",
+      "spec": "anchored-facets-distinctive-source-union-v2",
+      "unmet_facets": [
+        "test",
+        "interface"
+      ]
+    },
+    "source_freshness": {
+      "budget_exhausted": false,
+      "checked_files": 3,
+      "dense_manifest_fence": {
+        "checked": 0,
+        "skip_disposition": "stale_publication_skipped",
+        "skipped": 0
+      },
+      "generation": {
+        "evidence_epoch": 1,
+        "incarnation": [
+          97,
+          190,
+          143,
+          161,
+          6,
+          66,
+          67,
+          56,
+          145,
+          30,
+          117,
+          40,
+          106,
+          79,
+          207,
+          201
+        ],
+        "index_epoch": 5,
+        "semantic_epoch": null
+      },
+      "hydrator": "current-document-scope-source-generation-v1",
+      "omitted_files": {},
+      "partial": false,
+      "read_budget_charged": 438,
+      "scope": "bounded per-file disk verification and optimistic full read generation; not an atomic filesystem snapshot",
+      "verified_hits": 2
+    }
+  },
+  "intent": "fix",
+  "invalidations": [],
+  "machine_pack": {
+    "hits": [
+      {
+        "breadcrumb": "safe_decode",
+        "chunk_id": "chunk:errors.py:1",
+        "end_line": 8,
+        "file_path": "errors.py",
+        "fused_score": 0.03333333333333334,
+        "graph_score": 0.06931471805599453,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 1.0,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "f0255fac63fefbb753b75761ae02c4b337ac7bc12cec823d714237c2c17a4f80",
+            "doc_version": "e941aede47c89f872d10f29b390ed86c3d761f6ec903252a70d2232f516e4ce1",
+            "encoding_key": "4e5db64b4857d4a48ec53e1b43800603ad377d2ba90634e26bbefda2ef12ad80",
+            "entity_key": "8dbd4f0eb99c10d3fb2c3f7d9db25bfb127b5375d28daf14ed52b368a41bb696"
+          },
+          "evidence_priority": "intent_facet",
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 141,
+              "start": 35
+            },
+            "signature": {
+              "end": 61,
+              "start": 35
+            },
+            "slice_digest": "f8cdfeb811d6060df7a107cf65c9cb3a40431954af29781885137656ca66d866",
+            "source": {
+              "byte_len": 142,
+              "content_digest": "27020a98ada34b2d926b82f65455ba40510a1b1754c6c4dfa5f6c66742ba2e1a",
+              "encoding": "utf8",
+              "snapshot_id": "8b9311dde72923cf6b779e755634a18525a7eb862d0172cc702b26328bf466c1"
+            },
+            "span": {
+              "end": 142,
+              "start": 32
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@1",
+          "symbol-exact",
+          "fts-summary",
+          "symbol:safe_decode",
+          "preselect:fts-summary:+2.04",
+          "preselect:token-search:+2.00"
+        ],
+        "rerank_score": 0.7458456234280773,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021568627450980395
+          ],
+          [
+            "rrf:graph",
+            0.011764705882352941
+          ],
+          [
+            "overlap",
+            0.35
+          ],
+          [
+            "boost:symbol-exact",
+            0.18
+          ],
+          [
+            "boost:stage-a",
+            0.16171787467794566
+          ],
+          [
+            "boost:graph-rerank",
+            0.020794415416798356
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": "function",
+        "symbol_name": "safe_decode",
+        "text": "\n\n\ndef safe_decode(raw):\n    try:\n        return decode_frame(raw)\n    except ValueError:\n        return None\n"
+      },
+      {
+        "breadcrumb": "decode_frame",
+        "chunk_id": "chunk:decoder.py:0",
+        "end_line": 5,
+        "file_path": "decoder.py",
+        "fused_score": 0.032692307692307694,
+        "graph_score": 0.1991759469228055,
+        "grep_score": 0.0,
+        "lane": null,
+        "language": "python",
+        "lexical_score": 0.5,
+        "metadata": {
+          "details_omitted": true,
+          "document": {
+            "doc_key": "db908a030fd2b84cd32f5e7d03cb2b8b5a6d3b5691fd9f7a655d909a909e9feb",
+            "doc_version": "e6503e9d800034b0f54fda60ce49b9c5118e3413a396dd17d266c324fe35b8dc",
+            "encoding_key": "63abc72d457bdede865b2c07dfd35c8fd5b74bb5f8072dbb4e22debe19d5b233",
+            "entity_key": "75db1a5625bcfe0e86943b950b1a72f9165dad11c63556d44696cfb9ddd87b81"
+          },
+          "source_evidence": {
+            "boundary": "symbol",
+            "owner": {
+              "end": 156,
+              "start": 0
+            },
+            "signature": {
+              "end": 27,
+              "start": 0
+            },
+            "slice_digest": "f6f08f8c298cd38d1c9594bcb54591d624b22b9fb44222add17d35f5aff1e71d",
+            "source": {
+              "byte_len": 157,
+              "content_digest": "f6f08f8c298cd38d1c9594bcb54591d624b22b9fb44222add17d35f5aff1e71d",
+              "encoding": "utf8",
+              "snapshot_id": "eca925ad2ae5773cfbfaf3c11dd08f5da81289e371fd6144d8513ca5e5280b91"
+            },
+            "span": {
+              "end": 157,
+              "start": 0
+            }
+          },
+          "source_freshness": {
+            "disk_checked": true,
+            "hydrator": "current-document-scope-source-generation-v1",
+            "status": "current_verified"
+          }
+        },
+        "reasons": [
+          "lexical@2",
+          "fts-summary",
+          "preselect:fts-summary:+1.75"
+        ],
+        "rerank_score": 0.30737087746228053,
+        "score_trace": [
+          [
+            "rrf:lexical",
+            0.021153846153846155
+          ],
+          [
+            "rrf:graph",
+            0.011538461538461537
+          ],
+          [
+            "overlap",
+            0.175
+          ],
+          [
+            "boost:stage-a",
+            0.06980217773155203
+          ],
+          [
+            "boost:graph-rerank",
+            0.029876392038420824
+          ]
+        ],
+        "source": "index",
+        "start_line": 1,
+        "symbol_kind": "function",
+        "symbol_name": "decode_frame",
+        "text": "def decode_frame(raw):\n    if not raw:\n        raise ValueError(\"empty frame\")\n    tag, payload = raw.split(b\":\", 1)\n    return tag.decode(\"ascii\"), payload\n"
+      }
+    ],
+    "kind": "code_index_context",
+    "query": "safe_decode ValueError",
+    "repo_size_tier": "Tiny",
+    "token_budget": 4000,
+    "top_k": 10
+  },
+  "nodes": [
+    {
+      "backing_file_path": "errors.py",
+      "backing_source": null,
+      "confidence": 0.8,
+      "depends_on": [],
+      "end_line": 8,
+      "file_path": "errors.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": {
+        "representation": "machine_hit_reference"
+      },
+      "node_id": "search:chunk:errors.py:1",
+      "node_type": "SEARCH_HIT",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "primary",
+      "score": 0.7458456234280773,
+      "source": "index",
+      "source_end_line": 8,
+      "source_start_line": 1,
+      "span_kind": "reference",
+      "start_line": 1,
+      "text": "",
+      "title": "errors.py safe_decode:1-8",
+      "token_estimate": 0
+    },
+    {
+      "backing_file_path": "decoder.py",
+      "backing_source": null,
+      "confidence": 0.8,
+      "depends_on": [],
+      "end_line": 5,
+      "file_path": "decoder.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": {
+        "representation": "machine_hit_reference"
+      },
+      "node_id": "search:chunk:decoder.py:0",
+      "node_type": "SEARCH_HIT",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "primary",
+      "score": 0.30737087746228053,
+      "source": "index",
+      "source_end_line": 5,
+      "source_start_line": 1,
+      "span_kind": "reference",
+      "start_line": 1,
+      "text": "",
+      "title": "decoder.py decode_frame:1-5",
+      "token_estimate": 0
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.85,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "errors.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:callee:uid:2269aeee918a1ca548964493",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 6,
+      "text": "callee: safe_decode → decode_frame (errors.py:6)",
+      "title": "Callee: decode_frame",
+      "token_estimate": 12
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.85,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "dispatcher.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:1307c1a6e55b5d87f6603d34",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 5,
+      "text": "caller: process_packet → decode_frame (dispatcher.py:5)",
+      "title": "Caller: process_packet",
+      "token_estimate": 14
+    },
+    {
+      "backing_file_path": null,
+      "backing_source": null,
+      "confidence": 0.85,
+      "depends_on": [],
+      "end_line": null,
+      "file_path": "errors.py",
+      "freshness": null,
+      "invalidation_keys": [],
+      "metadata": null,
+      "node_id": "graph:caller:uid:aea5414ad0bd4ec0e9919fc5",
+      "node_type": "CALL_EDGE",
+      "rank_explanation": null,
+      "reasons": [],
+      "relation": null,
+      "role": "neighbor",
+      "score": 0.0,
+      "source": "graph",
+      "source_end_line": null,
+      "source_start_line": null,
+      "span_kind": null,
+      "start_line": 6,
+      "text": "caller: safe_decode → decode_frame (errors.py:6)",
+      "title": "Caller: safe_decode",
+      "token_estimate": 12
+    }
+  ],
+  "query": "safe_decode ValueError",
+  "reasons": [
+    "hybrid search over code index",
+    "graph-enriched"
+  ],
+  "rendered_prompt": "Complete source is in machine_pack.hits; references have no source body.",
+  "resolution_freshness": {
+    "basis_epoch": null,
+    "complete": true,
+    "completed_files": 0,
+    "index_epoch": 5,
+    "reason": null,
+    "retry": null,
+    "root_count": 0,
+    "scope": "observed_resolution_invalidations",
+    "status": "ready"
+  },
+  "revision": 0,
+  "spans": [
+    {
+      "end_line": 8,
+      "file_path": "errors.py",
+      "label": "safe_decode",
+      "node_id": "search:chunk:errors.py:1",
+      "start_line": 1
+    },
+    {
+      "end_line": 5,
+      "file_path": "decoder.py",
+      "label": "decode_frame",
+      "node_id": "search:chunk:decoder.py:0",
+      "start_line": 1
+    }
+  ],
+  "summary": "Found 2 indexed code result(s) across 2 file(s) for `safe_decode ValueError`.",
+  "task": "safe_decode ValueError",
+  "token_budget": 4000,
+  "token_estimate": 3241
+}

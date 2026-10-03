@@ -34,3 +34,13 @@ python3 crates/cc-eval/benchmarks/public-v19/express/provenance/protocol-v1/chec
 正常 verify/check 不刷新 BLAKE3 lock；命令仅输出数量、哈希、状态。`migrate_protocol.py` 复现历史固定 commit 的迁移，would-be holdout 只在进程内计算 exact-byte commitment，不落盘、不打印正文；这不是独立 custody，也不挽救历史污染。重建 dev suite 后须显式 author freeze 再 validate。协议 checker 通过，四个实际 native/compat dev suite validate 通过；源/span检查收据在 review，质量结论仍无。
 
 `corpus-receipt.json`、`review-receipt.json` 只报告计数、哈希、作者/空审查者、暴露和 custody 状态。后续需作者 C / 指定 global reviewer 独立核验源/gold/家族/组件/负例/替代答案，再由独立 custodian 审计访问边界。作者不能签自己的独立 review。所有 formal complete block / accepted 计数保持 0，直到独立审查与 custody 条件真实满足。本成果不是已丢失历史 306 raw，也不是 live 质量结论。
+
+## 两个新增公开 dev 组件
+
+原 100 草稿/98 组件版本完整保留，原 native/compat gold、suite、旧 ID/split 映射与两组合并关系逐字节不变。新预留记录 `provenance/component-reservation-101-102.json` 在 `d82607e` 提交中先分配连续 serial，然后起草/计算 split；`f0101`、`f0102` 均按协议为 dev，没有改 key、重试或改旧 gold。
+
+新增义务分别是 app.use 的非空嵌套 middleware 数组识别/归一化，以及 res.sendFile 传输结束时 callback 优先级与错误转交条件。它们与原空 middleware 拒绝、子应用 mount、同步 path 检查和 etag 开关具有不同源事实/检验义务，独立性仍待跨仓审查者认定。
+
+`intake/supplement-002` 是两条新 dev 候选的 native/compat 块；`intake/public-dev-102` 是旧 dev 字节加新块字节的公开联合投影。合计 **102 个作者候选 ID、100 个待审组件、70 native dev /59 compat dev**。新增 holdout 为 0；原 32 个 would-be holdout 的污染/隔离/custody 阻塞不变。accepted/独立审查仍 0。联合集包含旧块与补块，不能重复累计。
+
+`corpus-receipt-supplement.json` 记录原文件逐字节保留验证、当前正文 SHA256、四个新增 suite BLAKE3 locks、checker 与 source/span 收据。`review/public-dev-review-entry.json` 是跨仓独立审查入口，只列 7 个公开源文件、MIT license、70/59 dev gold、suite 和必要 counts/hash 验证材料的精确 SHA256/Git blob；不列受隔离 would-be holdout 正文或旧 Git 历史。入口 allowlist 是证据范围，不冒充访问控制。

@@ -1,0 +1,75 @@
+[
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--name-only",
+      "8d2b312c066f0514fb5cee555767955bf34708d0",
+      "e3b932ed4b1e197022c0902fd4c11af3e87ae87e",
+      "--",
+      "crates",
+      "Cargo.lock"
+    ],
+    "exit": 0,
+    "stdout": "crates/cc-index/src/project_model/python_inventory.rs\ncrates/cc-index/tests/python_inventory_capture.rs\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "a17f05d674e82bc54aac6a664b2b69a87b276b36",
+      "e3b932ed4b1e197022c0902fd4c11af3e87ae87e",
+      "--",
+      "artifacts/checkpoints/python-inventory-independent-20261004"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--exit-code",
+      "e3b932ed4b1e197022c0902fd4c11af3e87ae87e",
+      "--",
+      "crates",
+      "Cargo.lock"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+      "-vV"
+    ],
+    "exit": 0,
+    "stdout": "rustc 1.95.0 (59807616e 2026-04-14)\nbinary: rustc\ncommit-hash: 59807616e1fa2540724bfbac14d7976d7e4a3860\ncommit-date: 2026-04-14\nhost: x86_64-unknown-linux-gnu\nrelease: 1.95.0\nLLVM version: 22.1.2\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustfmt",
+      "--edition",
+      "2021",
+      "--check",
+      "/workspace/inventory-delta-review/artifacts/checkpoints/python-inventory-p2-delta-independent-20261004/delta_tests.rs"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "assertion": "original thirteen fixture tests byte-identical",
+    "sha256": "b5ebe10d032b01edc894830a8fe6a31ff9f2b212cc1530982161a6aa5c929fb2",
+    "passed": true
+  },
+  {
+    "assertion": "product python_inventory prefix and suffix outside supported_document byte-identical to original reviewed source",
+    "passed": true
+  }
+]

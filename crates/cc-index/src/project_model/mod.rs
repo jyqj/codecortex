@@ -5,6 +5,7 @@ mod go_capture;
 mod jsonc;
 pub(crate) mod package;
 mod python;
+pub mod python_inventory;
 #[cfg(test)]
 mod python_provenance_tests;
 pub(crate) mod rust;

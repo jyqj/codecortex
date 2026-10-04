@@ -2243,6 +2243,8 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
 证据：尚无
 
+2026-10-04 AST/resource 后续 bounded 集成：固定 integration base `84d5d57978cfaa3a0dd7f63e39d7c7288b614d95`，旧 production anchor `e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696`，当前 fixed product `50a4933e48ef20b16401ac8f75c386a660aa8e5c`。只采纳 resource `08733fa`/独审 `a9050fa` 与 AST final `7d49beb`/原独审 `c2b2a22`/fixed 独审 `16d1344` 的有界 scope；新自编6项组合 tests 使用显式 DeclarationLimits、immutable borrowed inventory、实际 AST 和实际 config provenance 捕获/复用。R1旧失败 characterization 原文件逐byte保留于versioned history及 `.original`，仅一test迁移为正向精确bytes断言，manifest/patch可核验，当前不skip。source/node/depth/work/output预算与模型logical admission分开；config-only Explicit不能证明完整源码capture。AST适配及单次模型资源切片完成，完整/native-safe capture、重复/alias/absence/collision/owner政策、累计输出/缓存失效成本与版本化ingestion仍待做；之后才独立设计production optional DB/MCP identity persistence/协议。精确既有vec→array fix保留，lexical qname/UID/extraction/query weights/budgets/scorer/gold不改。新产品不继承旧100k，publicquality四仓FAIL/Gin/P7/V19仍OPEN。验证及交付见 `artifacts/checkpoints/python-resource-integration-20261004/README.md`；未运行formalDEV/100k/private42/GCWALfaults/旧post_index runtime或broad套件，无merge/deploy。
+
 ### [ ] P8-005｜完整规模1k到100k
 
 状态：`todo`；批次：`P8-A`；优先级：`normal`。

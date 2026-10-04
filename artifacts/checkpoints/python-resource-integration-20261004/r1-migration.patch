@@ -1,0 +1,56 @@
+diff --git a/crates/cc-parsers/tests/python_identity_independent.rs b/crates/cc-parsers/tests/python_identity_independent.rs
+index 31cd1aa..34cfbbd 100644
+--- a/crates/cc-parsers/tests/python_identity_independent.rs
++++ b/crates/cc-parsers/tests/python_identity_independent.rs
+@@ -116,9 +116,9 @@ fn independent_nested_exact_bytes_and_pure_model() {
+     );
+ }
+ #[test]
+-fn r1_valid_leading_trivia_and_bom_are_rejected_by_root_coverage_check() {
+-    // Characterization of a defect, not the desired contract: these recovery-free
+-    // modules have declarations but fail only because the module starts after trivia.
++fn r1_valid_leading_trivia_and_bom_preserve_original_bytes() {
++    // Current positive contract; exact old characterization is preserved in
++    // commit 003abc1 and the integration migration manifest.
+     for (source, start) in [
+         (b"\n\ndef f(): pass\n".as_slice(), 2),
+         (b"  # lead\r\n\r\ndef f(): pass\r\n  ".as_slice(), 2),
+@@ -132,11 +132,33 @@ fn r1_valid_leading_trivia_and_bom_are_rejected_by_root_coverage_check() {
+         assert!(!root.has_error());
+         assert_eq!(root.start_byte(), start);
+         assert_eq!(root.end_byte(), source.len());
+-        unavailable(
+-            source,
+-            PythonIdentityLimits::default(),
+-            PythonIdentityReason::UnsupportedAst,
+-        );
++        let v = inputs(source);
++        if source.len() > 6 {
++            assert_eq!(v.len(), 1);
++            assert_eq!(v[0].source_digest, content_digest(source));
++            assert_eq!(v[0].ancestry[0].name, "f");
++            let offset = if source.starts_with(b"  #") {
++                12
++            } else {
++                start
++            };
++            assert_eq!(
++                v[0].ancestry[0].span,
++                ByteSpan {
++                    start: offset,
++                    end: offset + 13
++                }
++            );
++            assert_eq!(
++                v[0].ancestry[0].name_span,
++                ByteSpan {
++                    start: offset + 4,
++                    end: offset + 5
++                }
++            );
++        } else {
++            assert!(v.is_empty());
++        }
+     }
+     for source in [b"".as_slice(), b"# only\r\n", b"# comment\n \t\n"] {
+         assert!(inputs(source).is_empty());

@@ -84,3 +84,21 @@ git diff --check
 最终结果：6 passed / 0 failed / 0 ignored；上述 lint/build/format/diff checks 均通过。
 没有运行旧 post_index、broad/private42/GCWALfaults、formalDEV、100k、全仓套件，未改
 DB/MCP/retrieval/qname/UID/抽取语义、gold/scorer/query。身份输出仍未启用，无 merge/deploy。
+
+## 待独立审查的模型资源 API 组合
+
+模型资源作者 source `08733fa26504e9792586513ebe81075f058b586e` 尚未独立审查；
+本 branch 没有导入/覆盖/合并该 source，也未在兼容 worktree 验证组合。DeclarationInput
+字段保持不变，所以 AST adapter 的生产输出无需依赖 snapshot constructor。
+
+后续组合方应在模型资源 API 独立审查通过后显式选择模型 budgets，使用
+`DeclarationSnapshot::with_limits(owner, owned_map_or_shared_borrow, roots, limits)` 与
+`resolve_with_limits(&input)`。共享借用形式为
+`DeclarationSnapshot<&BTreeMap<String, Vec<u8>>>`；通用 helper 可使用
+`F: DeclarationInventory`。这些 API 信息来自作者交接，本文不作为代码组合验证。
+本切片的模型 fixture 仍使用当前基线 `new`/`resolve`，其成功不证明新 API 的兼容性。
+
+作者交接说明兼容 `new` 默认有限：4096 files、64 MiB total、8 MiB/file、64 roots、
+256 package evidence、256 ancestry、4096 identifier bytes。未来 adapter/model 组合必须
+分别显式配置预算并保留各自拒绝结果，不能让模型预算替代 AST parser 的 source/timeout/
+traversal/output 预算，也不能把 snapshot capture/config assertion 升级为已验证生产接线。

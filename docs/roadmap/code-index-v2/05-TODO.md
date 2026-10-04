@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`a7b1a4141ca541e5a7ed2df182570528df4dd0d265f62346797a00a31a510b44`。
+> 任务总数：192；源文件 SHA-256：`70a35cb1a64cc77491e9d37f5daa80024b94e9a1d346286816c35136e44316d4`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2101,6 +2101,8 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 2026-10-03 新独立 fixed-e3 集成：唯一生产来源 e3c04fed903c4d0e3c26b5d7cf0e055a6f7c5207，显式 per-project>=2 local attempt width4，0/1 serial；HTTP4/2、claim16、fsync/cache layout 不变；PR127 facade 排除。PR125 b6b1639 独审限定通过。PR128 800d32d 只提取 driver/docs/tests；PR129 1be640e candidate 与 PR130 186ac53 baseline 各唯一正式100k，本地合成协议 count/FK/query/C4/normal EOF/reopen通过。candidate drain182.999904792s/cold22.086386410s，baseline257.929186553s/cold22.218803684s。独立云 cgroup关联/完整进程树未知，不宣称严格因果提速或统计显著。PR124/126失败、env-i DNS失败、旧EROFS及GC/WAL缺口保留。仅关闭本次固定协议子门，真实provider/heldout/质量/完整P7及P8-005均未验收。
 
 2026-10-04 AST/resource 后续 bounded 集成：固定 integration base `84d5d57978cfaa3a0dd7f63e39d7c7288b614d95`，旧 production anchor `e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696`，当前 fixed product `50a4933e48ef20b16401ac8f75c386a660aa8e5c`。只采纳 resource `08733fa`/独审 `a9050fa` 与 AST final `7d49beb`/原独审 `c2b2a22`/fixed 独审 `16d1344` 的有界 scope；新自编6项组合 tests 使用显式 DeclarationLimits、immutable borrowed inventory、实际 AST 和实际 config provenance 捕获/复用。R1旧失败 characterization 原文件逐byte保留于versioned history及 `.original`，仅一test迁移为正向精确bytes断言，manifest/patch可核验，当前不skip。source/node/depth/work/output预算与模型logical admission分开；config-only Explicit不能证明完整源码capture。AST适配及单次模型资源切片完成，完整/native-safe capture、重复/alias/absence/collision/owner政策、累计输出/缓存失效成本与版本化ingestion仍待做；之后才独立设计production optional DB/MCP identity persistence/协议。精确既有vec→array fix保留，lexical qname/UID/extraction/query weights/budgets/scorer/gold不改。新产品不继承旧100k，publicquality四仓FAIL/Gin/P7/V19仍OPEN。验证及交付见 `artifacts/checkpoints/python-resource-integration-20261004/README.md`；未运行formalDEV/100k/private42/GCWALfaults/旧post_index runtime或broad套件，无merge/deploy。
+
+2026-10-04 Python 完整 inventory→admission opt-in 后续：基于 PR138 delivery ba6197771da5425166fb0386d46c74f4a05e8273 / reviewed product 50a4933e48ef20b16401ac8f75c386a660aa8e5c，新增 fixed product 8d2b312c066f0514fb5cee555767955bf34708d0。单一显式 owner/EntireProject、无 exclusions，Linux descriptor enumeration、native/portable alias 与 hardlink 拒绝、完整 sizes preflight 后捕获 immutable bytes；复用实际 Loader/provenance、同源 AST 和 borrowed DeclarationSnapshot 显式 limits。支持单一 explicit setuptools collection root，保存全部 raw config/evidence；default/partial/unsupported scope/config typed refusal，marker absence/collision/full content 绑定，返回前 inventory/metadata/bytes 重检。新自编 real filesystem 9+drift1 与原 focused81 共91/0/0，官方 Rust1.95 --locked、strict scoped Clippy/fmt通过。不是 OS-atomic snapshot/hostile mutation+restore、hardRSS、release/规模认证；尚待独立审查，持久化/cache/versioned ingestion/publication guard/DB/MCP/retrieval协议仍未设计，旧 qname/UID/extraction/search 无改。无publicDEV/100k/holdout/第三方代码执行/excluded旧post_index/broad/private42/GCWALfaults；不翻parentcounts/status。详见 docs/internals/python-inventory-capture-v1.md 和 artifacts/checkpoints/python-inventory-capture-20261004/。已无冲突采纳 PR138 bf1e47ee1a355ef2634761a980546492fe877f7b 的 docs-only metadata correction，TODO只通过权威tasks和generator更新。
 
 ### [ ] P7-015｜后台回填与前台查询竞争测试
 

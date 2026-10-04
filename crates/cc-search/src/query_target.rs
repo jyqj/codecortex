@@ -190,17 +190,34 @@ fn member_role(word: &str) -> bool {
     )
 }
 
-// Match adjacent standalone prose words, not codeish subtokens or a raw
-// substring. Keep underscores/internal punctuation intact so RatherThan,
-// rather_than and rather.than do not acquire a new interpretation. The DSL
-// normalizes whitespace; edge punctuation and ASCII case do not alter words.
-// This finite phrase list is an abstention boundary, not general NL parsing.
+// Inspect original token spellings: generic punctuation trimming would turn
+// $rather $than or `rather()` `than()` into prose. Accept a plain phrase or
+// one wrapper spanning the whole pair, with the existing first-word comma.
+// Separate wrappers, call syntax, sigils and other punctuation abstain from
+// phrase recognition. This is a finite boundary, not general NL parsing.
 fn comparison_phrase(words: &[&str]) -> bool {
     words.windows(2).any(|pair| {
-        let left = comparison_word(pair[0]);
-        let right = comparison_word(pair[1]);
-        (left.eq_ignore_ascii_case("rather") && right.eq_ignore_ascii_case("than"))
-            || (left.eq_ignore_ascii_case("instead") && right.eq_ignore_ascii_case("of"))
+        [
+            ("", ""),
+            ("(", ")"),
+            ("\"", "\""),
+            ("'", "'"),
+            ("`", "`"),
+            ("“", "”"),
+            ("‘", "’"),
+        ]
+        .into_iter()
+        .any(|(opening, closing)| {
+            let Some(left) = pair[0].strip_prefix(opening) else {
+                return false;
+            };
+            let Some(right) = pair[1].strip_suffix(closing) else {
+                return false;
+            };
+            let left = left.strip_suffix(',').unwrap_or(left);
+            (left.eq_ignore_ascii_case("rather") && right.eq_ignore_ascii_case("than"))
+                || (left.eq_ignore_ascii_case("instead") && right.eq_ignore_ascii_case("of"))
+        })
     })
 }
 
@@ -421,6 +438,57 @@ mod tests {
             let dsl = crate::dsl::parse_search_dsl(query);
             let context = NameBonusContext::parse(&dsl, &QueryTarget::parse(&dsl));
             assert_eq!(context.contextual_owner.as_deref(), owner, "{query}");
+        }
+    }
+
+    #[test]
+    fn query_target_comparison_source_boundaries_keep_code_references() {
+        for query in [
+            "Which Beacon API calls `rather()` `than()` with Commit?",
+            "Which Beacon API calls $rather $than with Commit?",
+            "Which Beacon API calls rather() than() with Commit?",
+            "Which Beacon API calls `rather` `than` with Commit?",
+            "Which Beacon API calls \"rather\" \"than\" with Commit?",
+            "Which Beacon API calls 'rather' 'than' with Commit?",
+            "Which Beacon API calls (rather) (than) with Commit?",
+            "Which Beacon API calls rather: than: with Commit?",
+            "Which Beacon API calls rather! than? with Commit?",
+            "Which Beacon API calls $instead $of with Commit?",
+            "Which Beacon API calls `instead()` `of()` with Commit?",
+            "Which Beacon API calls (rather than] with Commit?",
+        ] {
+            let dsl = crate::dsl::parse_search_dsl(query);
+            let target = QueryTarget::parse(&dsl);
+            assert_eq!(target, QueryTarget::Ambiguous, "{query}");
+            let context = NameBonusContext::parse(&dsl, &target);
+            assert_eq!(
+                context.contextual_owner.as_deref(),
+                Some("beacon"),
+                "{query}"
+            );
+            assert!(!context.permits("Beacon", Some("class")), "{query}");
+        }
+        for phrase in [
+            "rather than",
+            "RATHER THAN",
+            "rather\tthan",
+            "rather\nthan",
+            "rather\u{2003}than",
+            "(rather than)",
+            "rather, than",
+            "\"rather than\"",
+            "`rather than`",
+            "instead of",
+            "INSTEAD OF",
+            "instead\tof",
+            "(instead of)",
+            "instead, of",
+            "“instead of”",
+        ] {
+            let query = format!("Which Beacon API {phrase} Sink accepts state?");
+            let dsl = crate::dsl::parse_search_dsl(&query);
+            let context = NameBonusContext::parse(&dsl, &QueryTarget::parse(&dsl));
+            assert_eq!(context, NameBonusContext::default(), "{query}");
         }
     }
 

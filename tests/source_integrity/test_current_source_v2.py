@@ -124,9 +124,9 @@ class CaptureSourceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssertionError, 'review/contract SHA'):
             guard.approved_union(r)
 
-    def test_ci_selects_explicit_v2_and_keeps_historical_p0(self):
+    def test_ci_selects_explicit_reviewed_version_and_keeps_historical_p0(self):
         ci = (guard.ROOT / '.github/workflows/ci.yml').read_text()
-        self.assertIn('verify_current_source_v2.py --source-version ' + guard.VERSION, ci)
+        self.assertIn('verify_current_source_v3.py --source-version query-owner-context-20261004-v3', ci)
         self.assertIn('scripts/p0_historical_corpus.py --validator target/debug/cc-eval', ci)
         self.assertNotIn('python3 scripts/verify_current_source.py\n', ci)
 

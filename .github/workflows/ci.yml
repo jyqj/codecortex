@@ -186,16 +186,14 @@ jobs:
           CODECORTEX_BENCH_OBSERVATIONS="$RUNNER_TEMP/p5d-observations" \
             cargo test -p cc-eval --test p5d_contract --locked -- --ignored
 
-      - name: P0 plan and corpus locks
+      - name: P0 plan and corpus locks (historical ten-file DEV subset)
         run: |
           python3 scripts/code_index_plan.py
-          cargo run -p cc-eval --bin cc-eval --locked -- validate \
-            --suite crates/cc-eval/benchmarks/manifests/p0-smoke.json \
-            --suite crates/cc-eval/benchmarks/manifests/p0-codecortex-subset.json \
-            --suite crates/cc-eval/benchmarks/manifests/p1b-exact.json \
-            --suite crates/cc-eval/benchmarks/manifests/p1c-intents.json \
-            --suite crates/cc-eval/benchmarks/manifests/p1c-bm25.json \
-            --suite crates/cc-eval/benchmarks/manifests/p1c-softscope.json
+          cargo build -p cc-eval --bin cc-eval --locked
+          PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests/historical_corpus -v
+          # Same validator and six locks; only the historical subset is materialized.
+          # Current product integrity is separately guarded by verify_current_source.py.
+          python3 scripts/p0_historical_corpus.py --validator target/debug/cc-eval
 
       - name: P7 semantic product disabled stdio contract
         run: |

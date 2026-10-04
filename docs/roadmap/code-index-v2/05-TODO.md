@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`a7b1a4141ca541e5a7ed2df182570528df4dd0d265f62346797a00a31a510b44`。
+> 任务总数：192；源文件 SHA-256：`7be62e4e1bbdd72993d6c51b072188f3d87fd4c1ce7a7a37d9228bd7fee8321c`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -135,7 +135,7 @@
 验证：V02
 回滚：保留原始测量与旧runner入口；停用新评分profile不改生产行为。
 证据：[{"target_sha": "4514630dcd26481cf6dbc2aff38824ed71ef06da", "covered_source_digest_sha256": "819fe341fbcb941bd704248ef1f18a24487108fd06ecc6a4435a610390a80d53", "run_id": "p0-final-validation / p0-final-runs", "artifacts": ["artifacts/benchmarks/p0-final-validation/validation.json", "artifacts/benchmarks/p0-final-runs/commands.json", "artifacts/benchmarks/p0-closeout/static-checks.json", "crates/cc-eval/tests/benchmark_lock.rs"], "commands_receipt": "artifacts/benchmarks/p0-final-validation/validation.json", "baseline_commands_receipt": "artifacts/benchmarks/p0-final-runs/commands.json", "review": "source/scope/negative cases reviewed; local validation only, see P0-IMPLEMENTATION.md", "rollback_status": "production behavior unchanged; remove new dev runner and revert benchmark-only dependency/config changes without modifying original source/index", "limitations": "MSRV and strict workspace gate not certified"}]
-实施备注：子模块和未解析LFS在P0 fail-closed拒绝；不宣称完整子模块锁支持。
+实施备注：子模块和未解析LFS在P0 fail-closed拒绝；不宣称完整子模块锁支持。 2026-10-04 PR138 historical DEV corpus锁修复：以原记录锁的Git提交277f2490fad3fa30f2812b5547bad033867c9ea5仅取授权10文件源码及原manifest/query bytes；原BLAKE3 source53ba52cf/query0e8d23b8、相对路径、旧gold逐字不变。scripts/p0_historical_corpus.py固定allowlist/anchor/SHA256 pins，在fresh temporary tree调用当前未改cc-eval validator；14 harmless positive/negative tests及其余5suite锁检查通过。原live source仍content-lock drift，明确本门只historical corpus validation，不认证current source质量或发行。current product50a4933独立versioned guard759 inputs通过，tracked crates/Cargo零改；证据artifacts/checkpoints/pr138-historical-corpus-20261004/verification.json。未执行formal retrieval/100k/private42/holdout/excluded runtime/GC-WAL faults；任务状态及P7/V19/质量门不变。
 
 ### [x] P0-010｜冻结后端适配接口
 

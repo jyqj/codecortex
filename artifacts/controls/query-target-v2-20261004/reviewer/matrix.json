@@ -1,0 +1,57 @@
+[
+  {
+    "id": "review-beacon-filename",
+    "query": "Beacon.spec.py",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "review-vessel-filename",
+    "query": "Vessel.yaml",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "review-beacon-class",
+    "query": "class Beacon",
+    "expected_model": "named:Beacon:class"
+  },
+  {
+    "id": "review-vessel-class",
+    "query": "class Vessel",
+    "expected_model": "named:Vessel:class"
+  },
+  {
+    "id": "review-function",
+    "query": "function pulse",
+    "expected_model": "named:pulse:function"
+  },
+  {
+    "id": "review-method",
+    "query": "method pulse on Beacon",
+    "expected_model": "named:pulse:method"
+  },
+  {
+    "id": "review-name",
+    "query": "name:Beacon Beacon.spec.py",
+    "expected_model": "named:Beacon:any"
+  },
+  {
+    "id": "review-colon",
+    "query": "lights::Vessel::pulse",
+    "expected_model": "named:pulse:any"
+  },
+  {
+    "id": "review-pointer",
+    "query": "(*Beacon).pulse",
+    "expected_model": "named:pulse:any"
+  },
+  {
+    "id": "review-mixed",
+    "query": "lights::Vessel.pulse",
+    "expected_model": "fallback"
+  },
+  {
+    "id": "review-existing-filename",
+    "query": "beacon.py",
+    "expected_model": "fallback"
+  }
+]

@@ -309,11 +309,20 @@ fn supported_document(doc: &ConfigDocument) -> Result<()> {
             return Err(CaptureRefusal::Configuration);
         }
     }
-    if let Some(p) = v
-        .pointer("/tool/setuptools/packages/find")
-        .and_then(|v| v.as_object())
-    {
-        if p.keys().any(|k| k != "where") {
+    if let Some(find) = v.pointer("/tool/setuptools/packages/find") {
+        // Each present directive must be complete independently. A valid
+        // package-dir must not mask find's absent/empty default collection.
+        let p = find.as_object().ok_or(CaptureRefusal::Configuration)?;
+        let where_ = p
+            .get("where")
+            .and_then(|v| v.as_array())
+            .filter(|values| !values.is_empty() && values.len() <= 32)
+            .ok_or(CaptureRefusal::Configuration)?;
+        if p.keys().any(|k| k != "where")
+            || where_
+                .iter()
+                .any(|value| value.as_str().is_none_or(str::is_empty))
+        {
             return Err(CaptureRefusal::Configuration);
         }
     }

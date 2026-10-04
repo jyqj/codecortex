@@ -56,6 +56,9 @@ Loader 实际 digest 必须等于 immutable inventory 内完整 `pyproject.toml`
 
 v1 只支持根 `pyproject.toml` 的 setuptools 空-key `package-dir` 和 `packages.find.where`
 collection-root 指令；可以同时给出同一个 normalized root，全部原始 directive/value 均保留。
+每个显式出现的 `packages.find` 必须自身是受支持的 object，且 `where` 是非空、至多 32 项的
+非空 string array；缺失/空/非法 collection 不得由另一个有效 package-dir 的 root 掩盖。
+normalized root 一致性和完整 evidence 继续由原 provenance 检查，不改变 legacy 默认政策。
 `./src`、`src/./` 和 `src` 的 lexical 合并有明确证据，不丢 supporting directive。
 defaults、无配置、非法/partial、多个 root、named mapping、nested/suffix pyproject、Poetry
 selector、find include/exclude/namespaces 及其他 setuptools keys 都明确 refusal。
@@ -104,7 +107,7 @@ checks 优先于贡献指南的 broad-suite 建议。官方 Rust `1.95.0 (598076
 原 Cargo.lock、`--locked`，无新 dependency。可复现脚本、实际 argv/exit/源码 SHA256 和
 日志（仅去除末尾空行）在 `artifacts/checkpoints/python-inventory-capture-20261004/`。
 
-本轮 91 tests passed / 0 failed / 0 ignored：新 integration 9、drift library 1、原组合 6、
+初次交付 91 tests passed / 0 failed / 0 ignored：新 integration 9、drift library 1、原组合 6、
 原 provenance library 12、模型 42、AST 21。新 integration 用自编 real filesystem fixture，
 含 regular package/initializer、conditional duplicate、BOM/CRLF/trivia、ignored marker、scope
 omission、raw 多指令、marker absence/collision、config rename/invalid/duplicate/unsupported、
@@ -117,3 +120,14 @@ extraction/search/resolver 生产行为无改动；只有新 API/module、tests/
 本 slice 尚待独立审查。未执行 publicDEV/100k/holdout、第三方项目代码或 excluded
 post_index/broad/private42/GCWALfaults。没有 merge/deploy、release 或质量/规模认证。
 正常 origin 交付结果另记 publication receipt。
+
+## P2 配置完整性修复
+
+独立审查 `a17f05d674e82bc54aac6a664b2b69a87b276b36` 在初次 source 发现：有效 package-dir
+掩盖 find 的 missing where / where=[]，实际 public API 错误准入。旧失败 test/report/logs
+完整保留在 `artifacts/checkpoints/python-inventory-independent-20261004/`，没有改为旧树已通过。
+修复只收紧本 opt-in `supported_document`；原 resolver/provenance/parser/model 均未改。
+当前复现及 unchanged independent tests/new public controls 的结果见
+`artifacts/checkpoints/python-inventory-partial-find-fix-20261004/README.md`。
+本修复仍待同一独审者 delta 复核；父 PR138 的 `da896b5` source-union guard 对旧 product50a493
+认证，与本新 capture source 分开，未复制、未声称新 capture 已进入旧 registry。

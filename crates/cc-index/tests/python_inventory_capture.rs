@@ -416,3 +416,72 @@ fn explicit_project_root_and_root_initializer_are_supported_without_defaults() {
         ["mod"]
     );
 }
+
+#[test]
+fn explicit_find_cannot_borrow_completeness_from_package_dir() {
+    let (dir, _) = fixture();
+    // The independent cases are first; nearby malformed/empty/default shapes
+    // must likewise refuse, both alone and beside another valid directive.
+    for find in [
+        "[tool.setuptools.packages.find]\n",
+        "[tool.setuptools.packages.find]\nwhere=[]\n",
+        "[tool.setuptools.packages.find]\nwhere=''\n",
+        "[tool.setuptools.packages.find]\nwhere='src'\n",
+        "[tool.setuptools.packages.find]\nwhere={}\n",
+        "[tool.setuptools.packages.find]\nwhere=[1]\n",
+        "[tool.setuptools.packages.find]\nwhere=['src',1]\n",
+        "[tool.setuptools.packages.find]\nwhere=['']\n",
+        "[tool.setuptools.packages.find]\nwhere=['src','']\n",
+        "[tool.setuptools.packages.find]\nwhere=['../src']\n",
+        "[tool.setuptools.packages.find]\nwhere=['src','other']\n",
+        "[tool.setuptools.packages.find]\nwhere=['src']\nwhere=['src']\n",
+        "[tool.setuptools.packages.find]\nwhere=['src']\ninclude=['harbor']\n",
+        "[tool.setuptools.packages]\nfind=[]\n",
+        "[tool.setuptools.packages]\nfind=false\n",
+    ] {
+        for prefix in ["", "[tool.setuptools.package-dir]\n\"\"='src'\n"] {
+            let config = format!("{prefix}{find}");
+            write(dir.path(), "pyproject.toml", config.as_bytes());
+            assert!(
+                matches!(
+                    capture(dir.path(), policies()),
+                    Err(CaptureRefusal::Configuration)
+                ),
+                "{config}"
+            );
+        }
+    }
+    let too_many = format!(
+        "[tool.setuptools.package-dir]\n\"\"='src'\n[tool.setuptools.packages.find]\nwhere=[{}]\n",
+        vec!["'src'"; 33].join(",")
+    );
+    write(dir.path(), "pyproject.toml", too_many.as_bytes());
+    assert!(matches!(
+        capture(dir.path(), policies()),
+        Err(CaptureRefusal::Configuration)
+    ));
+}
+
+#[test]
+fn standalone_and_combined_explicit_roots_keep_all_supporting_evidence() {
+    let (dir, _) = fixture();
+    for (config, values) in [
+        ("[tool.setuptools.package-dir]\n\"\"='./src'\n", vec!["./src"]),
+        ("[tool.setuptools.packages.find]\nwhere=['src/./']\n", vec!["src/./"]),
+        ("[tool.setuptools.package-dir]\n\"\"='./src'\n[tool.setuptools.packages.find]\nwhere=['src/./','src']\n", vec!["./src", "src/./", "src"]),
+        // Repeated explicit values are complete evidence, not duplicate TOML keys.
+        ("[tool.setuptools.packages.find]\nwhere=['src','src']\n", vec!["src", "src"]),
+    ] {
+        write(dir.path(), "pyproject.toml", config.as_bytes());
+        let c = capture(dir.path(), policies()).unwrap();
+        assert_eq!(c.inventory()["pyproject.toml"], config.as_bytes());
+        let evidence = &c.provenance().roots["src"];
+        assert_eq!(evidence.iter().map(|e| match e {
+            PythonRootEvidence::Explicit { value, .. } => value.as_str(),
+            other => panic!("{other:?}"),
+        }).collect::<Vec<_>>(), values);
+        let d = derived(&c.outcomes()["src/harbor/tide.py"][0]);
+        assert_eq!(d.binding().root.directive, serde_json::to_string(evidence).unwrap());
+        assert_eq!(d.binding().root.config_digest, content_digest(config.as_bytes()));
+    }
+}

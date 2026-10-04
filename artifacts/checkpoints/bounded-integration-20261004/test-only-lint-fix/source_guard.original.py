@@ -19,17 +19,7 @@ extras=[p for p in actual if p not in expected]
 assert set(extras)=={p for p in review_paths if p.startswith('crates/')}|{'crates/cc-model/tests/provenance_compatibility.rs'}
 for p,rev in (expected|review_paths).items():
  assert git('show',PRODUCT+':'+p)==git('show',rev+':'+p),(p,rev)
- original=git('show',PRODUCT+':'+p)
- if p == 'crates/cc-search/src/engine_lane_tests.rs':
-  exception=json.loads(Path(__file__).with_name('test-only-lint-fix').joinpath('transformation.json').read_text())
-  old=(exception['old_expression']+'\n').encode();new=(exception['new_expression']+'\n').encode()
-  preserved=Path(exception['original_evidence']).read_bytes()
-  assert preserved==original and original.count(old)==1,('original test bytes/unique expression',p)
-  assert hashlib.sha256(original).hexdigest()==exception['original_sha256']
-  assert Path(p).read_bytes()==original.replace(old,new),('test-only exception exceeded',p)
-  assert hashlib.sha256(Path(p).read_bytes()).hexdigest()==exception['transformed_sha256']
- else:
-  assert Path(p).read_bytes()==original,('working source/evidence drift',p)
+ assert Path(p).read_bytes()==git('show',PRODUCT+':'+p),('working source/evidence drift',p)
 assert Path('crates/cc-model/tests/provenance_compatibility.rs').read_bytes()==git('show','bc0d0a25:crates/cc-index/tests/provenance_review_support/prototype_compatibility.rs')
 for rev in SOURCES:
  for p in git('diff','--name-only',BASE,rev,'--','artifacts').decode().splitlines():
@@ -42,9 +32,5 @@ production=[p for p in actual if '/src/' in p and not p.endswith('_tests.rs')]
 references=git('grep','-n','declaration_identity',PRODUCT,'--',':(glob)crates/*/src/**').decode().splitlines()
 assert len(references)==1 and references[0].endswith('pub mod declaration_identity;'),references
 report=dict(base=BASE,product=PRODUCT,exact_source_union=True,source_history_preserved=True,review_evidence_unchanged=True,original_author_controls_unchanged=True,lock_unchanged=True,identity_unwired=True,production_paths=production,source_files={p:dict(source=rev,sha256=hashlib.sha256(Path(p).read_bytes()).hexdigest()) for p,rev in expected.items()},review_imports=review_paths)
-report['test_only_lint_exception']=exception
-report['final_tree_head']=git('rev-parse','HEAD').decode().strip()
-# The only changed crate path since the product anchor is the authorized test file.
-assert git('diff','--name-only',PRODUCT,'--','crates').decode().splitlines()==[exception['path']]
-Path(__file__).with_name('lint-fix-source-guard.json').write_text(json.dumps(report,indent=2)+'\n')
+Path(__file__).with_name('source-guard.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps({k:v for k,v in report.items() if k not in ['source_files','review_imports']},indent=2))

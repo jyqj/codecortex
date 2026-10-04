@@ -65,7 +65,9 @@ limitation 明确超限。Poetry 超过 32 项仍只收前 32 项并记录 `pyth
   非标准 pyproject 名或同 scope 多 document，provenance 显式标记 limitation。
 - pure prototype v1 不支持 multiple roots。normalized root 合并不等于可丢掉 supporting
   directives；未来转换必须保留完整 binding。根 `.` 的生产 lexical 值是空字符串，
-  pure prototype 构造器当前拒绝空根，转换策略须另行明确。当前没有自动转换。
+  pure prototype 构造器接受 normalized 空根，也把 `.` 归一化为空根；未来转换仍须
+  保留完整 binding，当前没有自动转换。原始错误文档假设的失败 probe 与独立复核
+  保留在 `docs/reviews/python-provenance-independent-20261004.md`，不改模型契约。
 - declaration AST 完整 ancestry/kind/range、源码摘要、owner、source inventory、namespace
   和 collision 规则均不在此改动验证范围内。也没有改变现存 declaration/qname 路径。
 

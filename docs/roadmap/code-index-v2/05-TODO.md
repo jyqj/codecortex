@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`adce5239a8a1830b96dd00e4dcbe74ec0bd190e6a5ae25b6d382305cb9a82cac`。
+> 任务总数：192；源文件 SHA-256：`c047fcaef0e480899484e84db95153b3f0ec8d9835216a89c984f9beb91ad7bd`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2203,7 +2203,8 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 验收：每份报告精确回到同一候选，后续改动使对应证据失效；相关旧功能回归通过；没有证据的项标not_run/blocked而非done。
 验证：V01；V02
 回滚：不发布未通过候选；恢复上个已验证binary/config，保留本轮raw报告。
-证据：尚无
+证据：[{"status": "bounded_groundwork_only_not_release_candidate", "product_sha": "e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696", "artifacts": ["artifacts/checkpoints/bounded-integration-20261004/README.md", "artifacts/checkpoints/bounded-integration-20261004/source-guard.json"], "limitations": "all-target lint FAIL; parentquality/P7/V19 OPEN; no new formal eval/100k"}]
+实施备注： 2026-10-04 bounded groundwork 集成：固定 base 37dd042，产品 e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696；仅纯未接线声明身份模型、Python 显式 root provenance、fixed query-target gate。49 scoped tests、70 engine/in-process MCP controls（683 fresh source-verified hits）、build/fmt/production strict lint 通过；all-target strict lint 因原样保留的 engine_lane_tests.rs:1235 useless_vec 失败。四仓 public quality FAIL、Gin broad-prose 回归、完整 P7/V19 保持 OPEN；既有 90858 的100k通过不认证新组合，未跑新100k或formal eval。证据 artifacts/checkpoints/bounded-integration-20261004；下一步 AST同源完整 ancestry/kind/range、完整capture/native alias/absence/collision、资源与失效策略、独立版本化 ingestion 后再设计可选DB/MCP identity。
 
 ### [ ] P8-002｜完成真实多仓native语料认证
 

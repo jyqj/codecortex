@@ -41,3 +41,7 @@ Config input is limited to 1 MiB per file, 16 MiB total bytes, 1024 inputs/roots
 `IndexReport.project_model` reports input digest, catalog size, config roots/inputs, discovery reads, parse-cache hits, root probes, inventory source, modes and diagnostics. `config_reads` counts discovery content reads, NOT publication verification reads, all filesystem metadata calls, or Rust/Go compact source-declaration capture (reported separately). Publication rechecks every captured config. Whole-file catalog/ancestor-set construction is still O(files); no claim of constant-time incremental indexing is made.
 
 Tests: `cc-index/tests/p3a_project_model.rs` (independent snapshot/config contracts), `cc-eval/tests/p3a_project_model.rs` (SQLite/full-incremental/real stdio), `cc-eval/tests/p3a_cost.rs` (explicit release measurements), plus retained P0/P1/P2 regressions. The implementation report and frozen receipts, not this capability document, establish which toolchains/platforms actually ran. No RSS, p95/p99, 100k, holdout or G3 certificate follows from a P3-A batch pass.
+
+## 2026-10-04 有界 groundwork
+
+固定组合产品 `e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696` 增加 Python 显式配置 root 来源证据与纯 opt-in 声明身份模型。来源证据不转换为生产身份；qname/UID/旧 identity/wire 路径未改，DB/MCP 未开启 identity 输出。normalized 空根及 `.` 被模型接受；旧文档失败假设保留在独立报告。AST 同源完整性、source capture/native alias/缺席与 collision、总资源和依赖失效仍待后续独立设计。详见 [组合验证与开放项](../../artifacts/checkpoints/bounded-integration-20261004/README.md)。

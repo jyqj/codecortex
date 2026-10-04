@@ -45,6 +45,9 @@ packages.find.where、Poetry from 收集 roots，未配置时仍回退到 `.`/`s
 显式 `ConfiguredRoot` 及原配置 bytes digest；`resolve(&DeclarationInput)` 返回
 `Derived(BoundDeclaration)` 或 `Unavailable(IdentityReason)`。非法路径/证据构造返回 `CcError`。
 不读取文件系统，不执行 Python，不解析配置或 AST，不写缓存/DB。
+后续有限 admission、借用 inventory 与 typed refusal 的现行 API 见
+[资源契约](declaration-identity-resource-contract.md)；原 `new` 保留有限 prototype policy，
+生产适配器必须显式选择 limits。
 `is_current(&BoundDeclaration)` 在当前 capture 重新推导并精确比较全部绑定，不只检查源码 hash。
 
 | 场景 | v1 结果 |

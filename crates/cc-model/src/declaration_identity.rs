@@ -109,12 +109,139 @@ pub enum IdentityOutcome {
     Unavailable(IdentityReason),
 }
 
+/// Caller-selected logical work limits. Zero admits only empty values; no unlimited mode.
+/// Byte limits use UTF-8 bytes / slice lengths, not capacity or allocator/RSS usage.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeclarationLimits {
+    pub max_files: usize,
+    pub max_total_bytes: usize,
+    pub max_file_bytes: usize,
+    pub max_roots: usize,
+    pub max_evidence: usize,
+    pub max_ancestry_depth: usize,
+    pub max_identifier_bytes: usize,
+}
+impl DeclarationLimits {
+    /// Finite compatibility policy for the unwired prototype, not production policy.
+    pub const PROTOTYPE: Self = Self {
+        max_files: 4096,
+        max_total_bytes: 64 * 1024 * 1024,
+        max_file_bytes: 8 * 1024 * 1024,
+        max_roots: 64,
+        max_evidence: 256,
+        max_ancestry_depth: 256,
+        max_identifier_bytes: 4096,
+    };
+
+    /// Size-only preflight, also usable before capture allocations. Counts and sums
+    /// are checked; supplied sizes must exactly match file_count. No bytes are hashed.
+    pub fn check_inventory_sizes(
+        self,
+        file_count: usize,
+        sizes: impl IntoIterator<Item = usize>,
+    ) -> DeclarationResult<usize> {
+        check(ResourceKind::FileCount, file_count, self.max_files)?;
+        let mut count = 0usize;
+        let mut total = 0usize;
+        for size in sizes {
+            count = add(ResourceKind::FileCount, count, 1)?;
+            check(ResourceKind::FileCount, count, file_count)?;
+            check(ResourceKind::FileBytes, size, self.max_file_bytes)?;
+            total = add(ResourceKind::TotalBytes, total, size)?;
+            check(ResourceKind::TotalBytes, total, self.max_total_bytes)?;
+        }
+        if count != file_count {
+            return Err(invalid().into());
+        }
+        Ok(total)
+    }
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResourceKind {
+    FileCount,
+    TotalBytes,
+    FileBytes,
+    Roots,
+    Evidence,
+    AncestryDepth,
+    IdentifierBytes,
+    MetadataBytes,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResourceRefusal {
+    LimitExceeded {
+        resource: ResourceKind,
+        limit: usize,
+        actual: usize,
+    },
+    ArithmeticOverflow {
+        resource: ResourceKind,
+    },
+}
+#[derive(Debug, thiserror::Error)]
+pub enum DeclarationError {
+    #[error("declaration resource refusal: {0:?}")]
+    Resource(ResourceRefusal),
+    #[error(transparent)]
+    Model(#[from] CcError),
+}
+pub type DeclarationResult<T> = Result<T, DeclarationError>;
+fn check(resource: ResourceKind, actual: usize, limit: usize) -> DeclarationResult<()> {
+    if actual > limit {
+        Err(DeclarationError::Resource(ResourceRefusal::LimitExceeded {
+            resource,
+            limit,
+            actual,
+        }))
+    } else {
+        Ok(())
+    }
+}
+fn add(resource: ResourceKind, a: usize, b: usize) -> DeclarationResult<usize> {
+    a.checked_add(b).ok_or(DeclarationError::Resource(
+        ResourceRefusal::ArithmeticOverflow { resource },
+    ))
+}
+fn compatibility_error(error: DeclarationError) -> CcError {
+    match error {
+        DeclarationError::Model(error) => error,
+        error => CcError::InvalidParams(error.to_string()),
+    }
+}
+fn metadata(value: &str) -> DeclarationResult<()> {
+    check(ResourceKind::MetadataBytes, value.len(), 4096)
+}
+
+mod sealed {
+    use std::collections::BTreeMap;
+    pub trait Inventory {}
+    impl Inventory for BTreeMap<String, Vec<u8>> {}
+    impl Inventory for &BTreeMap<String, Vec<u8>> {}
+}
+/// Sealed storage: only an owned map or shared borrow can carry admitted evidence.
+/// Custom providers cannot substitute changing content after digest validation.
+pub trait DeclarationInventory: sealed::Inventory {
+    fn inventory(&self) -> &BTreeMap<String, Vec<u8>>;
+}
+impl DeclarationInventory for BTreeMap<String, Vec<u8>> {
+    fn inventory(&self) -> &BTreeMap<String, Vec<u8>> {
+        self
+    }
+}
+impl DeclarationInventory for &BTreeMap<String, Vec<u8>> {
+    fn inventory(&self) -> &BTreeMap<String, Vec<u8>> {
+        self
+    }
+}
+
 /// Complete immutable inventory of regular files for one owner/config scope.
 /// Capture adapters must reject symlinks, native path aliases and incomplete scans.
 /// No I/O, environment lookup, default roots, import execution, or cache writes.
-pub struct DeclarationSnapshot {
+pub struct DeclarationSnapshot<F = BTreeMap<String, Vec<u8>>> {
     owner: String,
-    files: BTreeMap<String, Vec<u8>>,
+    files: F,
+    inventory: BTreeMap<String, String>,
+    limits: DeclarationLimits,
     roots: Vec<ConfiguredRoot>,
     digest: String,
 }
@@ -171,48 +298,65 @@ fn identifier(s: &str) -> bool {
         )
 }
 impl DeclarationSnapshot {
-    /// Rederive against this immutable capture. Source bytes alone are insufficient:
-    /// config, package boundaries, owner and complete inventory must also match.
-    pub fn is_current(&self, declaration: &BoundDeclaration) -> CcResult<bool> {
-        let binding = declaration.binding();
-        let input = DeclarationInput {
-            file_path: binding.file_path.clone(),
-            source_digest: binding.source_digest.clone(),
-            ancestry: binding.ancestry.clone(),
-        };
-        Ok(
-            matches!(self.resolve(&input)?, IdentityOutcome::Derived(current)
-            if current.as_ref() == declaration),
-        )
-    }
-
+    /// Compatibility only: uses DeclarationLimits::PROTOTYPE. Production adapters
+    /// must select policy explicitly via with_limits; this never admits unlimited data.
     pub fn new(
         owner: String,
         files: BTreeMap<String, Vec<u8>>,
-        mut roots: Vec<ConfiguredRoot>,
+        roots: Vec<ConfiguredRoot>,
     ) -> CcResult<Self> {
-        if owner.is_empty() || owner.len() > 4096 || owner.chars().any(char::is_control) {
-            return Err(invalid());
+        Self::with_limits(owner, files, roots, DeclarationLimits::PROTOTYPE)
+            .map_err(compatibility_error)
+    }
+}
+impl<F: DeclarationInventory> DeclarationSnapshot<F> {
+    /// Validate all sizes and metadata before normalization, hashes or output maps.
+    /// Passing &BTreeMap borrows immutable bytes for the lifetime of the snapshot;
+    /// passing BTreeMap moves bytes. Neither clones file contents. Caller allocations
+    /// made before this call are outside this contract; admission is atomic.
+    pub fn with_limits(
+        owner: String,
+        files: F,
+        mut roots: Vec<ConfiguredRoot>,
+        limits: DeclarationLimits,
+    ) -> DeclarationResult<Self> {
+        let captured = files.inventory();
+        check(ResourceKind::FileCount, captured.len(), limits.max_files)?;
+        check(ResourceKind::Roots, roots.len(), limits.max_roots)?;
+        limits.check_inventory_sizes(captured.len(), captured.values().map(Vec::len))?;
+        metadata(&owner)?;
+        if owner.is_empty() || owner.chars().any(char::is_control) {
+            return Err(invalid().into());
         }
-        // Inventory keys must already be canonical native repository spellings;
-        // never merge aliases. Portable user declaration/root paths normalize once.
-        if files
-            .keys()
-            .any(|p| !repo_path::is_canonical_file(p) || p.len() > 4096)
-        {
-            return Err(invalid());
+        for path in captured.keys() {
+            metadata(path)?;
+            if !repo_path::is_canonical_file(path) {
+                return Err(invalid().into());
+            }
         }
+        for root in &roots {
+            metadata(&root.directory)?;
+            metadata(&root.config_path)?;
+            metadata(&root.directive)?;
+            metadata(&root.config_digest)?;
+            if !repo_path::is_canonical_file(&root.config_path)
+                || root.directive.is_empty()
+                || root.directive.chars().any(char::is_control)
+            {
+                return Err(invalid().into());
+            }
+        }
+        // Normalize before hashing any content; paths are already size bounded.
         for root in &mut roots {
             root.directory = repo_path::normalize_relative(&root.directory)?;
-            if !repo_path::is_canonical_file(&root.config_path)
-                || root.directory.len() > 4096
-                || root.directive.is_empty()
-                || root.directive.len() > 4096
-                || root.directive.chars().any(char::is_control)
-                || files.get(&root.config_path).map(|b| content_digest(b))
-                    != Some(root.config_digest.clone())
-            {
-                return Err(invalid());
+        }
+        let inventory: BTreeMap<String, String> = captured
+            .iter()
+            .map(|(p, b)| (p.clone(), content_digest(b)))
+            .collect();
+        for root in &roots {
+            if inventory.get(&root.config_path) != Some(&root.config_digest) {
+                return Err(invalid().into());
             }
         }
         roots.sort_by(|a, b| {
@@ -221,22 +365,68 @@ impl DeclarationSnapshot {
                 .then(a.config_path.cmp(&b.config_path))
                 .then(a.directive.cmp(&b.directive))
         });
-        // Bind complete inventory and root evidence, including absence of package
-        // markers and competing modules. Conservative whole-scope invalidation.
-        let inventory: BTreeMap<_, _> = files.iter().map(|(p, b)| (p, content_digest(b))).collect();
-        let digest = hash(&("declaration-snapshot-v1", &owner, inventory, &roots))?;
+        let digest = hash(&("declaration-snapshot-v1", &owner, &inventory, &roots))?;
         Ok(Self {
             owner,
             files,
+            inventory,
+            limits,
             roots,
             digest,
         })
     }
+    pub fn limits(&self) -> DeclarationLimits {
+        self.limits
+    }
 
+    /// Rederive without cloning caller ancestry before budget checks.
+    pub fn is_current_with_limits(
+        &self,
+        declaration: &BoundDeclaration,
+    ) -> DeclarationResult<bool> {
+        let binding = declaration.binding();
+        Ok(
+            matches!(self.resolve_parts(&binding.file_path, &binding.source_digest, &binding.ancestry)?,
+            IdentityOutcome::Derived(current) if current.as_ref() == declaration),
+        )
+    }
+    pub fn is_current(&self, declaration: &BoundDeclaration) -> CcResult<bool> {
+        self.is_current_with_limits(declaration)
+            .map_err(compatibility_error)
+    }
+    /// Compatibility error envelope; typed resource refusals use resolve_with_limits.
     pub fn resolve(&self, input: &DeclarationInput) -> CcResult<IdentityOutcome> {
+        self.resolve_with_limits(input).map_err(compatibility_error)
+    }
+    pub fn resolve_with_limits(
+        &self,
+        input: &DeclarationInput,
+    ) -> DeclarationResult<IdentityOutcome> {
+        self.resolve_parts(&input.file_path, &input.source_digest, &input.ancestry)
+    }
+    fn resolve_parts(
+        &self,
+        file_path: &str,
+        source_digest: &str,
+        ancestry: &[DeclarationSegment],
+    ) -> DeclarationResult<IdentityOutcome> {
+        check(
+            ResourceKind::AncestryDepth,
+            ancestry.len(),
+            self.limits.max_ancestry_depth,
+        )?;
+        metadata(file_path)?;
+        metadata(source_digest)?;
+        for segment in ancestry {
+            check(
+                ResourceKind::IdentifierBytes,
+                segment.name.len(),
+                self.limits.max_identifier_bytes,
+            )?;
+        }
         use IdentityReason::*;
         let unavailable = |r| Ok(IdentityOutcome::Unavailable(r));
-        let file = repo_path::normalize_relative(&input.file_path)?;
+        let file = repo_path::normalize_relative(file_path)?;
         if self.roots.is_empty() {
             return unavailable(NoConfiguredRoot);
         }
@@ -253,20 +443,45 @@ impl DeclarationSnapshot {
             };
             relative
         };
-        let Some(bytes) = self.files.get(&file) else {
+        let package_count = relative
+            .split('/')
+            .count()
+            .checked_sub(1)
+            .ok_or_else(invalid)?;
+        check(
+            ResourceKind::Evidence,
+            package_count,
+            self.limits.max_evidence,
+        )?;
+        for (index, part) in relative.split('/').enumerate() {
+            let name = if index == package_count {
+                part.strip_suffix(".py").unwrap_or(part)
+            } else {
+                part
+            };
+            if index == package_count && part == "__init__.py" {
+                continue;
+            }
+            check(
+                ResourceKind::IdentifierBytes,
+                name.len(),
+                self.limits.max_identifier_bytes,
+            )?;
+        }
+        let Some(bytes) = self.files.inventory().get(&file) else {
             return unavailable(MissingSource);
         };
-        if input.source_digest != content_digest(bytes) {
+        if self.inventory.get(&file).map(String::as_str) != Some(source_digest) {
             return unavailable(StaleSource);
         }
-        if input.ancestry.is_empty() {
+        if ancestry.is_empty() {
             return unavailable(InvalidDeclaration);
         }
         let mut enclosing = ByteSpan {
             start: 0,
             end: bytes.len(),
         };
-        for segment in &input.ancestry {
+        for segment in ancestry {
             if !identifier(&segment.name) {
                 return unavailable(UnsupportedIdentifier);
             }
@@ -283,7 +498,7 @@ impl DeclarationSnapshot {
             }
             enclosing = segment.span;
         }
-        if input.ancestry[..input.ancestry.len() - 1]
+        if ancestry[..ancestry.len() - 1]
             .iter()
             .any(|s| s.kind == ScopeKind::Function)
         {
@@ -313,17 +528,25 @@ impl DeclarationSnapshot {
                 format!("{directory}/{part}")
             };
             let marker = format!("{directory}/__init__.py");
-            let Some(marker_bytes) = self.files.get(&marker) else {
+            let Some(marker_digest) = self.inventory.get(&marker) else {
                 return unavailable(NamespaceAncestry);
             };
-            if self.files.contains_key(&format!("{directory}.py")) {
+            if self
+                .files
+                .inventory()
+                .contains_key(&format!("{directory}.py"))
+            {
                 return unavailable(ModulePackageCollision);
             }
-            package_files.insert(marker, content_digest(marker_bytes));
+            package_files.insert(marker, marker_digest.clone());
         }
         if !initializer {
             let base = file.strip_suffix(".py").ok_or_else(invalid)?;
-            if self.files.contains_key(&format!("{base}/__init__.py")) {
+            if self
+                .files
+                .inventory()
+                .contains_key(&format!("{base}/__init__.py"))
+            {
                 return unavailable(ModulePackageCollision);
             }
             module.push(stem.into());
@@ -334,17 +557,13 @@ impl DeclarationSnapshot {
                 owner: self.owner.clone(),
                 source_root: root.directory.clone(),
                 module,
-                lexical: input
-                    .ancestry
-                    .iter()
-                    .map(|s| (s.name.clone(), s.kind))
-                    .collect(),
+                lexical: ancestry.iter().map(|s| (s.name.clone(), s.kind)).collect(),
             },
             binding: DeclarationBinding {
                 snapshot_digest: self.digest.clone(),
                 file_path: file,
-                source_digest: input.source_digest.clone(),
-                ancestry: input.ancestry.clone(),
+                source_digest: source_digest.to_owned(),
+                ancestry: ancestry.to_vec(),
                 root: root.clone(),
                 package_files,
             },

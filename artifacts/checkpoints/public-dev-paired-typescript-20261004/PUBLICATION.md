@@ -1,0 +1,7 @@
+# Publication terminal receipt
+
+Fixed evidence payload **366e039fcf5e4c71d70343ab3d659790718312ed** was normal-pushed successfully to evidence/public-dev-paired-typescript-20261004 and origin ref matched exactly. Product/source/input/run/score evidence is fixed by that commit and artifact-manifest.json. This additional commit only preserves original publication stdout/stderr and the delivery receipt; no new evaluation, score changes, CI assertions or product changes.
+
+The sole `gh pr create --draft` attempt, exact original body PR-BODY.md, base integration/packing-evidence-20261003 (observed source 37dd042), exited 1: `Post "https://api.github.com/graphql": Forbidden`. No draft created. Stop that action, no retry, alternate API, credentials or base workaround. This is GitHub API access failure, not automatic approval rejection or retrieval/infrastructure test failure. A normal Git push of these receipt-only files preserves reviewable failure evidence and does not create a PR.
+
+Terminal measurement: each arm build/prepare/index/readiness succeeded, 396/396 scheduled rows observed, all Partial, no missing/errors; 20 original run/replay quality exits 1 with identical retained bytes. Quality remains FAIL/not_certified. Native/compat same-profile scores unchanged; degenerate paired intervals inconclusive, strict no-answer 0/42 per arm. CI unconfirmed, central tasks open, no merge/deploy.

@@ -1526,18 +1526,52 @@ fn query_target_grouped_clause_preserves_bonus_and_exact_identity() {
         "Which Beacon API (instead of Sink) accepts state?",
         "Which Beacon API [(rather than the Sink)] accepts state?",
     ] {
-        let request = SearchRequest { query: query.into(), ..Default::default() };
+        let request = SearchRequest {
+            query: query.into(),
+            ..Default::default()
+        };
         let plan = build_plan(&engine, &request);
         let outcomes = vec![];
         let ranks = plan.lane_ranks(&outcomes);
-        for (name, kind, exact_identity) in [("Beacon", "class", false), ("Beacon", "class", true), ("Sink", "interface", false)] {
+        for (name, kind, exact_identity) in [
+            ("Beacon", "class", false),
+            ("Beacon", "class", true),
+            ("Sink", "interface", false),
+        ] {
             let mut chunk = fake_candidate_chunk();
-            chunk.symbol_name = Some(name.into()); chunk.symbol_kind = Some(kind.into());
-            let hit = plan.hit_from_chunk(chunk, &FusedScore { total: 0.5, by_lane: vec![], exact_identity }, &ranks).unwrap();
-            assert!(hit.reasons.iter().any(|r| r == "symbol-exact"), "{query} / {name}");
-            assert_eq!(hit.score_trace.iter().filter(|(k, _)| k == "boost:symbol-exact").map(|(_, v)| *v).collect::<Vec<_>>(), vec![0.18]);
-            assert_eq!(hit.reasons.iter().any(|r| r == "exact-target"), exact_identity);
-            assert_eq!(hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(), hit.rerank_score);
+            chunk.symbol_name = Some(name.into());
+            chunk.symbol_kind = Some(kind.into());
+            let hit = plan
+                .hit_from_chunk(
+                    chunk,
+                    &FusedScore {
+                        total: 0.5,
+                        by_lane: vec![],
+                        exact_identity,
+                    },
+                    &ranks,
+                )
+                .unwrap();
+            assert!(
+                hit.reasons.iter().any(|r| r == "symbol-exact"),
+                "{query} / {name}"
+            );
+            assert_eq!(
+                hit.score_trace
+                    .iter()
+                    .filter(|(k, _)| k == "boost:symbol-exact")
+                    .map(|(_, v)| *v)
+                    .collect::<Vec<_>>(),
+                vec![0.18]
+            );
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "exact-target"),
+                exact_identity
+            );
+            assert_eq!(
+                hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(),
+                hit.rerank_score
+            );
         }
     }
 }

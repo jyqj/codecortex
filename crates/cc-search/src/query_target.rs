@@ -125,7 +125,7 @@ impl NameBonusContext {
         let words: Vec<_> = text.split_whitespace().collect();
         // Conservative abstention for coordinated/comparative queries. This
         // is a documented finite grammar boundary, not a universal detector.
-        if words.iter().any(|word| comparison_or_coordination(word)) || comparison_phrase(&words) {
+        if words.iter().any(|word| comparison_or_coordination(word)) || comparison_phrase(text) {
             return Self::default();
         }
         let owner = match words.as_slice() {
@@ -190,34 +190,150 @@ fn member_role(word: &str) -> bool {
     )
 }
 
-// Inspect original token spellings: generic punctuation trimming would turn
-// $rather $than or `rather()` `than()` into prose. Accept a plain phrase or
-// one wrapper spanning the whole pair, with the existing first-word comma.
-// Separate wrappers, call syntax, sigils and other punctuation abstain from
-// phrase recognition. This is a finite boundary, not general NL parsing.
-fn comparison_phrase(words: &[&str]) -> bool {
+// A phrase is two maximal source words in the same validated lexical context.
+// Group closure can follow the pair or its entire clause; delimiters are never
+// erased between words. This is a lexical abstention rule, not intent parsing.
+fn comparison_phrase(text: &str) -> bool {
+    struct Group {
+        start: usize,
+        end: Option<usize>,
+        closing: char,
+        code: bool,
+    }
+    struct Word {
+        start: usize,
+        end: usize,
+        contexts: Vec<usize>,
+    }
+    fn word_char(c: char) -> bool {
+        c.is_alphanumeric() || c == '_'
+    }
+    fn opener(c: char) -> Option<char> {
+        match c {
+            '(' => Some(')'),
+            '[' => Some(']'),
+            '{' => Some('}'),
+            '"' => Some('"'),
+            '\'' => Some('\''),
+            '`' => Some('`'),
+            '“' => Some('”'),
+            '‘' => Some('’'),
+            _ => None,
+        }
+    }
+    let chars: Vec<_> = text.char_indices().collect();
+    let mut groups: Vec<Group> = Vec::new();
+    let mut stack: Vec<usize> = Vec::new();
+    let mut words: Vec<Word> = Vec::new();
+    let mut closed = std::collections::HashSet::new();
+    let mut i = 0;
+    while i < chars.len() {
+        let (at, c) = chars[i];
+        if c == '\\' {
+            // Escaped source characters cannot become grouping boundaries.
+            i += 2;
+            continue;
+        }
+        if word_char(c) {
+            let start = at;
+            i += 1;
+            while i < chars.len() && word_char(chars[i].1) {
+                i += 1;
+            }
+            words.push(Word {
+                start,
+                end: chars.get(i).map_or(text.len(), |v| v.0),
+                contexts: stack.clone(),
+            });
+            continue;
+        }
+        if matches!(c, '\'' | '’')
+            && i > 0
+            && word_char(chars[i - 1].1)
+            && chars.get(i + 1).is_some_and(|(_, next)| word_char(*next))
+        {
+            i += 1;
+            continue;
+        }
+        if let Some(&id) = stack.last() {
+            if groups[id].closing == c {
+                groups[id].end = Some(at);
+                groups[id].code |= chars.get(i + 1).is_some_and(|(_, next)| {
+                    word_char(*next)
+                        || matches!(next, '(' | '[' | '{' | '$' | '@' | '#' | '\\')
+                        || (*next == '.'
+                            && chars.get(i + 2).is_some_and(|(_, tail)| word_char(*tail)))
+                });
+                closed.insert(at);
+                stack.pop();
+                i += 1;
+                continue;
+            }
+        }
+        if matches!(c, ')' | ']' | '}' | '”' | '’') {
+            return false;
+        }
+        // Apostrophes inside/after ordinary words are not opening quotes.
+        if c == '\'' && i > 0 && word_char(chars[i - 1].1) {
+            i += 1;
+            continue;
+        }
+        if let Some(closing) = opener(c) {
+            let code = i > 0
+                && (word_char(chars[i - 1].1)
+                    || matches!(chars[i - 1].1, '$' | '@' | '#' | '.' | ':' | '\\')
+                    || closed.contains(&chars[i - 1].0));
+            let id = groups.len();
+            groups.push(Group {
+                start: at,
+                end: None,
+                closing,
+                code,
+            });
+            stack.push(id);
+        }
+        i += 1;
+    }
+    if !stack.is_empty() {
+        return false;
+    }
+    let plain = |word: &Word| {
+        if word.contexts.iter().any(|&id| groups[id].code) {
+            return false;
+        }
+        let before = text[..word.start].char_indices().next_back();
+        let before_ok = before.is_none_or(|(at, c)| {
+            c.is_whitespace() || c == ',' || word.contexts.iter().any(|&id| groups[id].start == at)
+        });
+        let after = text[word.end..].chars().next();
+        let after_ok = after.is_none_or(|c| {
+            c.is_whitespace()
+                || matches!(c, ',' | '?' | '!')
+                || (c == '.' && !text[word.end..].chars().nth(1).is_some_and(word_char))
+                || word
+                    .contexts
+                    .iter()
+                    .any(|&id| groups[id].end == Some(word.end))
+        });
+        before_ok && after_ok
+    };
     words.windows(2).any(|pair| {
-        [
-            ("", ""),
-            ("(", ")"),
-            ("\"", "\""),
-            ("'", "'"),
-            ("`", "`"),
-            ("“", "”"),
-            ("‘", "’"),
-        ]
-        .into_iter()
-        .any(|(opening, closing)| {
-            let Some(left) = pair[0].strip_prefix(opening) else {
-                return false;
-            };
-            let Some(right) = pair[1].strip_suffix(closing) else {
-                return false;
-            };
-            let left = left.strip_suffix(',').unwrap_or(left);
-            (left.eq_ignore_ascii_case("rather") && right.eq_ignore_ascii_case("than"))
-                || (left.eq_ignore_ascii_case("instead") && right.eq_ignore_ascii_case("of"))
-        })
+        let left = &pair[0];
+        let right = &pair[1];
+        let a = &text[left.start..left.end];
+        let b = &text[right.start..right.end];
+        if !((a.eq_ignore_ascii_case("rather") && b.eq_ignore_ascii_case("than"))
+            || (a.eq_ignore_ascii_case("instead") && b.eq_ignore_ascii_case("of")))
+        {
+            return false;
+        }
+        let gap = &text[left.end..right.start];
+        let whitespace = gap.strip_prefix(',').unwrap_or(gap);
+        left.contexts == right.contexts
+            && plain(left)
+            && plain(right)
+            && !whitespace.is_empty()
+            && whitespace.chars().all(char::is_whitespace)
     })
 }
 
@@ -497,16 +613,33 @@ mod tests {
             "../../../artifacts/reviews/query-owner-lexical-spans-correction-20261004/lexical-matrix.json"
         )).unwrap();
         for row in rows.as_array().unwrap() {
-            if !families.contains(&row["family"].as_str().unwrap()) { continue; }
+            if !families.contains(&row["family"].as_str().unwrap()) {
+                continue;
+            }
             let raw = row["query"].as_str().unwrap();
             let dsl = crate::dsl::parse_search_dsl(raw);
             let target = QueryTarget::parse(&dsl);
             assert_eq!(target, QueryTarget::Ambiguous, "{raw}");
             let context = NameBonusContext::parse(&dsl, &target);
             let comparative = row["comparative"].as_bool().unwrap();
-            assert_eq!(context.contextual_owner.as_deref(), if comparative { None } else { Some("beacon") }, "{raw}");
-            for kind in ["class", "interface", "type_alias", "enum", "module", "namespace"] {
-                assert_eq!(context.permits("Beacon", Some(kind)), comparative, "{raw} / {kind}");
+            assert_eq!(
+                context.contextual_owner.as_deref(),
+                if comparative { None } else { Some("beacon") },
+                "{raw}"
+            );
+            for kind in [
+                "class",
+                "interface",
+                "type_alias",
+                "enum",
+                "module",
+                "namespace",
+            ] {
+                assert_eq!(
+                    context.permits("Beacon", Some(kind)),
+                    comparative,
+                    "{raw} / {kind}"
+                );
             }
             assert!(context.permits("Beacon", Some("method")));
             assert!(context.permits("Beacon", None));

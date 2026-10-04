@@ -5,7 +5,7 @@
 1. 从原 free-text 的 Unicode 字母/数字/下划线连续区间提取 maximal word spans；不做 CamelCase、sigil、qualifier 或内部 punctuation 清理。匹配词仅 ASCII case-insensitive `rather`+`than` 或 `instead`+`of`。
 2. 两个 span 必须相邻；中间必须是非空 Unicode whitespace，或紧跟第一词的一个 ASCII comma 再接非空 whitespace。其他 punctuation、wrapper 切换、代码符号或中间词不属于该 inter-word delimiter。
 3. 记录匹配的 `()`/`[]`/`{}` grouping 及直/弯单、双引号/backtick 区间，每个区间有独立身份。两个 word 必须有相同的 context stack。wrapper 可以覆盖 pair，也可以覆盖其 target/article/完整子句；嵌套 grouping 按同一规则处理。分别包裹的 word、跨 wrapper 的 word 不共享 context。
-4. 紧邻 identifier/sigil/closing-expression 的 opening group 是代码 context；紧邻 closing group 的 call/index suffix 也使该 context 为代码。任何 code ancestor 都阻止 prose phrase。词紧邻 call/index opener、sigil、qualifier、escape 或非 prose boundary 也不是 prose word。一个 matched quote/backtick 中的纯 phrase 保持既有 positive；其 code-shaped body 不被清理成 phrase。
+4. 紧邻 identifier/sigil/closing-expression 的 opening group 是代码 context；紧邻 closing group 的 call/index、identifier 或 qualifier suffix 也使该 context 为代码。任何 code ancestor 都阻止 prose phrase。词紧邻 call/index opener、sigil、qualifier、escape 或非 prose boundary 也不是 prose word。一个 matched quote/backtick 中的纯 phrase 保持既有 positive；其 code-shaped body 不被清理成 phrase。
 5. 普通 word boundary 只包括源开头/结尾、whitespace、comma/句末标点以及实际匹配的 opening/closing group 边界。相邻 code characters 不剥离。引号内 escape 保留其 code 边界；word 内 apostrophe 不作为 grouping。未闭合或错配的结构不提供 phrase evidence。
 6. 只有所有 source contexts 完成验证后才判断 pair，避免在随后发现 call suffix/未闭合 context 之前过早认定 phrase。
 

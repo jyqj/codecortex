@@ -247,6 +247,10 @@ fn main() {
         ("Which Beacon API (rather than Sink)() with Commit?", None),
         ("Which Beacon API `rather than Sink`() with Commit?", None),
         ("Which Beacon API $\"rather than Sink\" with Commit?", None),
+        ("Which Beacon API (rather than Sink)suffix with Commit?", None),
+        ("Which Beacon API (rather than Sink).member with Commit?", None),
+        ("Which Beacon API \"rather than Sink\"suffix with Commit?", None),
+        ("Which Beacon API `rather than Sink`.member with Commit?", None),
         ("Which Beacon API instead, of with Commit?", None),
         ("Which Beacon API instead,\tof with Commit?", None),
         ("Which Beacon API instead, of with Commit?", None),
@@ -263,6 +267,10 @@ fn main() {
         ("Which Beacon API (instead of Sink)() with Commit?", None),
         ("Which Beacon API `instead of Sink`() with Commit?", None),
         ("Which Beacon API $\"instead of Sink\" with Commit?", None),
+        ("Which Beacon API (instead of Sink)suffix with Commit?", None),
+        ("Which Beacon API (instead of Sink).member with Commit?", None),
+        ("Which Beacon API \"instead of Sink\"suffix with Commit?", None),
+        ("Which Beacon API `instead of Sink`.member with Commit?", None),
     ];
     let mut result = json!({"variant":args[3],"source_text":text,"queries":{}});
     for (query, expected) in cases {

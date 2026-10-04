@@ -492,6 +492,43 @@ mod tests {
         }
     }
 
+    fn lexical_matrix_family(families: &[&str]) {
+        let rows: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../artifacts/reviews/query-owner-lexical-spans-correction-20261004/lexical-matrix.json"
+        )).unwrap();
+        for row in rows.as_array().unwrap() {
+            if !families.contains(&row["family"].as_str().unwrap()) { continue; }
+            let raw = row["query"].as_str().unwrap();
+            let dsl = crate::dsl::parse_search_dsl(raw);
+            let target = QueryTarget::parse(&dsl);
+            assert_eq!(target, QueryTarget::Ambiguous, "{raw}");
+            let context = NameBonusContext::parse(&dsl, &target);
+            let comparative = row["comparative"].as_bool().unwrap();
+            assert_eq!(context.contextual_owner.as_deref(), if comparative { None } else { Some("beacon") }, "{raw}");
+            for kind in ["class", "interface", "type_alias", "enum", "module", "namespace"] {
+                assert_eq!(context.permits("Beacon", Some(kind)), comparative, "{raw} / {kind}");
+            }
+            assert!(context.permits("Beacon", Some("method")));
+            assert!(context.permits("Beacon", None));
+            assert!(context.permits("Sink", Some("interface")));
+        }
+    }
+
+    #[test]
+    fn query_target_lexical_grouping_cross_product() {
+        lexical_matrix_family(&["grouping_product"]);
+    }
+
+    #[test]
+    fn query_target_lexical_code_decorations_cross_product() {
+        lexical_matrix_family(&["decorations_product"]);
+    }
+
+    #[test]
+    fn query_target_lexical_delimiters_and_independent_boundaries() {
+        lexical_matrix_family(&["delimiters", "independent"]);
+    }
+
     // Frozen neutral contract using the real DSL and code-aware tokenizer.
     #[test]
     fn neutral_owner_role_bonus_contract() {

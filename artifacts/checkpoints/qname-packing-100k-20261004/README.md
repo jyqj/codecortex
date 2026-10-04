@@ -51,4 +51,4 @@
 
 不提交 corpus/repo/cache/DB/WAL/SHM/binary/target/Cargo cache、旧私有诊断或42files。未读 public DEV gold，未改 product/qname/budget/ranking；未跑旧 post_index_worker_crosses_pages_and_reopen_reuses_artifacts 或包含它的 broad，未做旧 GC/WAL/kill/staging/EROFS/private42 export，未调用 public provider/真实 external account。只原自有 loopback。无 baseline 新 formal，无 merge/deploy。
 
-发布状态见 `publication-status.json`（后续保存正常 origin push 与唯一 draft 尝试的实际结果）。
+证据提交 `484edeb6acfabaf9fa02aa7b67234552bdfe254f` 已经正常 origin push 成功。唯一 draft PR 尝试返回 `Post "https://api.github.com/graphql": Forbidden`，已停止、无重试/绕路。实际 receipt 见 `publication-status.json` / `push-first.log` / `draft-attempt-once.log`，可审阅正文见 `PR-BODY.md`。

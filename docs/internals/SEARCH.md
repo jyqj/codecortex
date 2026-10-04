@@ -183,6 +183,26 @@ token search 各自取读池连接），命中按注册序合并——得分、�
   过滤命中、图连通度 `graph_rerank_weight`、查询 token 重叠
   `overlap_weight`）。每一项都是独立可调、可置零的。
 
+## Exact-name boost 的明确目标语法（V2）
+
+`query_target.rs` 只控制既有 `boost:symbol-exact` 的资格，不改变 +0.18 权重、
+其他分量、检索预算或 `exact-target` 身份排序层。优先复用 DSL `name:`；完整查询
+`class/interface/type/function/method NAME` 按产品 kind 判断（`type` 是 `type_alias`）；
+`method NAME on CONTAINER` 只奖励该 method 名字，`methods on CONTAINER` 没有已知
+member 名字，因而不给 name bonus。这些不是新的 hard scope 或 receiver resolver。
+
+完整纯 `A::B::member` 标识符链只把末段当 name hint；严格的单层
+`(*Receiver).member` 也可使用这个 hint。任何普通裸点分字符串，如 `A.member`、
+`Beacon.spec.py`、`Vessel.yaml`，都存在 filename/module/member 歧义，继续使用旧的
+query-token fallback。混合 dot/`::` 也 fallback。分类不检查文件是否存在，不依赖
+extension 清单、大小写或语言名字。明确 `name:` 仍可覆盖其余 dotted prose。
+一般自然语言同样 fallback，receiver/type 竞争的 broad-prose 回归尚未修复。
+
+修复前冻结的 V2 模型和实际 engine/MCP/normalizer delta 在
+[`query-target-v2-20261004`](../../artifacts/controls/query-target-v2-20261004/README.md)。
+旧 V1 的 28 条矩阵和结果作为历史保留；其中两个 dot-as-member 期望已明确 superseded，
+不能把新模型通过报告为旧期望继续通过。原始 public metrics 仍 **FAIL**，待独立验证。
+
 ## 缓存
 
 `engine.rs` 维护三级 LRU，按相应 epoch 键控。内容写入推进 index_epoch，运行时证据写入推进 evidence_epoch；纯辅助状态并不等同于内容变更。无需调用方手工失效钩子：

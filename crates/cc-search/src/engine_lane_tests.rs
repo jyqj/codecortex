@@ -1170,3 +1170,69 @@ fn graph_lane_does_not_break_existing_search() {
     let results = engine.search(&request).unwrap();
     assert!(!results.is_empty(), "lexical results should still work");
 }
+
+#[test]
+fn query_target_gates_only_name_bonus_and_preserves_exact_identity() {
+    let (engine, _tmp) = scoped_test_engine();
+    let request = SearchRequest {
+        query: "method Ignite on Lantern".into(),
+        ..Default::default()
+    };
+    let plan = build_plan(&engine, &request);
+    let outcomes = vec![];
+    let ranks = plan.lane_ranks(&outcomes);
+    let make_hit = |name: &str, kind: &str, exact_identity| {
+        let mut chunk = fake_candidate_chunk();
+        chunk.symbol_name = Some(name.into());
+        chunk.symbol_kind = Some(kind.into());
+        plan.hit_from_chunk(
+            chunk,
+            &FusedScore {
+                total: 0.5,
+                by_lane: vec![],
+                exact_identity,
+            },
+            &ranks,
+        )
+        .unwrap()
+    };
+    let member = make_hit("Ignite", "method", false);
+    let receiver = make_hit("Lantern", "class", false);
+    let collision = make_hit("Ignite", "class", false);
+    let exact = make_hit("Lantern", "class", true);
+    for (hit, boost) in [
+        (&member, true),
+        (&receiver, false),
+        (&collision, false),
+        (&exact, true),
+    ] {
+        assert_eq!(hit.reasons.iter().any(|r| r == "symbol-exact"), boost);
+        assert_eq!(
+            hit.score_trace
+                .iter()
+                .any(|(key, _)| key == "boost:symbol-exact"),
+            boost
+        );
+        assert_eq!(
+            hit.score_trace
+                .iter()
+                .map(|(_, amount)| amount)
+                .sum::<f64>(),
+            hit.rerank_score
+        );
+    }
+    // All non-name contributions are identical for the same receiver chunk.
+    assert_eq!(
+        receiver.score_trace,
+        exact
+            .score_trace
+            .iter()
+            .filter(|(key, _)| key != "boost:symbol-exact")
+            .cloned()
+            .collect::<Vec<_>>()
+    );
+    assert!(exact.reasons.iter().any(|r| r == "exact-target"));
+    let mut hits = vec![member, exact];
+    hits.sort_by(crate::plan::compare_hits);
+    assert_eq!(hits[0].symbol_name.as_deref(), Some("Lantern"));
+}

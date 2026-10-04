@@ -24,6 +24,7 @@ mod lanes;
 mod plan;
 pub mod preselect;
 pub mod query_policy;
+mod query_target;
 pub mod rrf;
 mod scope;
 mod score_trace;

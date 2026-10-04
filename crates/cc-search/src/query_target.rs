@@ -204,9 +204,23 @@ fn comparison_phrase(text: &str) -> bool {
         start: usize,
         end: usize,
         contexts: Vec<usize>,
+        after: usize,
     }
     fn word_char(c: char) -> bool {
         c.is_alphanumeric() || c == '_'
+    }
+    // Operators must be contiguous; terminal prose punctuation is not access.
+    fn qualifier_attachment(chars: &[(usize, char)], at: usize) -> bool {
+        let c = chars.get(at).map(|v| v.1);
+        let next = chars.get(at + 1).map(|v| v.1);
+        match (c, next) {
+            (Some(':'), Some(':')) | (Some('-'), Some('>')) => true,
+            (Some('.'), Some(member)) => word_char(member),
+            (Some('?'), Some('.')) => chars
+                .get(at + 2)
+                .is_some_and(|(_, member)| word_char(*member) || matches!(member, '(' | '[')),
+            _ => false,
+        }
     }
     fn opener(c: char) -> Option<char> {
         match c {
@@ -244,6 +258,7 @@ fn comparison_phrase(text: &str) -> bool {
                 start,
                 end: chars.get(i).map_or(text.len(), |v| v.0),
                 contexts: stack.clone(),
+                after: i,
             });
             continue;
         }
@@ -261,8 +276,7 @@ fn comparison_phrase(text: &str) -> bool {
                 groups[id].code |= chars.get(i + 1).is_some_and(|(_, next)| {
                     word_char(*next)
                         || matches!(next, '(' | '[' | '{' | '$' | '@' | '#' | '\\')
-                        || (*next == '.'
-                            && chars.get(i + 2).is_some_and(|(_, tail)| word_char(*tail)))
+                        || qualifier_attachment(&chars, i + 1)
                 });
                 closed.insert(at);
                 stack.pop();
@@ -298,7 +312,9 @@ fn comparison_phrase(text: &str) -> bool {
         return false;
     }
     let plain = |word: &Word| {
-        if word.contexts.iter().any(|&id| groups[id].code) {
+        if qualifier_attachment(&chars, word.after)
+            || word.contexts.iter().any(|&id| groups[id].code)
+        {
             return false;
         }
         let before = text[..word.start].char_indices().next_back();
@@ -674,9 +690,24 @@ mod tests {
             assert_eq!(target, QueryTarget::Ambiguous, "{raw}");
             let context = NameBonusContext::parse(&parsed, &target);
             let comparative = row["comparative"].as_bool().unwrap();
-            assert_eq!(context.contextual_owner.as_deref(), if comparative { None } else { Some("beacon") }, "{raw}");
-            for kind in ["class", "interface", "type_alias", "enum", "module", "namespace"] {
-                assert_eq!(context.permits("Beacon", Some(kind)), comparative, "{raw} / {kind}");
+            assert_eq!(
+                context.contextual_owner.as_deref(),
+                if comparative { None } else { Some("beacon") },
+                "{raw}"
+            );
+            for kind in [
+                "class",
+                "interface",
+                "type_alias",
+                "enum",
+                "module",
+                "namespace",
+            ] {
+                assert_eq!(
+                    context.permits("Beacon", Some(kind)),
+                    comparative,
+                    "{raw} / {kind}"
+                );
             }
             assert!(context.permits("Beacon", Some("method")));
             assert!(context.permits("Beacon", None));

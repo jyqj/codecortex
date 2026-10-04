@@ -19,6 +19,7 @@ pub mod jsts;
 pub mod lang_spec;
 mod parse_common;
 pub mod python;
+pub mod python_identity;
 pub mod rust;
 pub mod rust_modules;
 pub mod sfc;

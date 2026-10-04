@@ -1575,3 +1575,27 @@ fn query_target_grouped_clause_preserves_bonus_and_exact_identity() {
         }
     }
 }
+
+#[test]
+fn query_target_closing_qualifiers_preserve_identity_and_filter_priority() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "Which Beacon API calls (rather than Sink)::Commit with Commit?",
+        "Which Beacon API calls \"rather than Sink\"::Commit with Commit?",
+        "Which Beacon API calls [((rather than Sink))]::Commit with Commit?",
+        "Which Beacon API calls (rather than Sink)->Commit with Commit?",
+        "Which Beacon API calls (rather than Sink)?.Commit with Commit?",
+    ] {
+        for (prefix, exact_identity, boosted) in [("", false, false), ("", true, true), ("name:Beacon ", false, true), ("kind:class ", false, true)] {
+            let request = SearchRequest { query: format!("{prefix}{query}"), ..Default::default() };
+            let plan = build_plan(&engine, &request);
+            let outcomes = vec![]; let ranks = plan.lane_ranks(&outcomes);
+            let mut chunk = fake_candidate_chunk(); chunk.symbol_name = Some("Beacon".into()); chunk.symbol_kind = Some("class".into());
+            let hit = plan.hit_from_chunk(chunk, &FusedScore { total: 0.5, by_lane: vec![], exact_identity }, &ranks).unwrap();
+            assert_eq!(hit.reasons.iter().any(|r| r == "symbol-exact"), boosted, "{prefix}{query}");
+            assert_eq!(hit.score_trace.iter().any(|(k, _)| k == "boost:symbol-exact"), boosted);
+            assert_eq!(hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(), hit.rerank_score);
+            if exact_identity { assert!(hit.reasons.iter().any(|r| r == "exact-target")); }
+        }
+    }
+}

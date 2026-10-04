@@ -662,6 +662,28 @@ mod tests {
         lexical_matrix_family(&["delimiters", "independent"]);
     }
 
+    #[test]
+    fn query_target_closing_qualifier_context_cross_product() {
+        let rows: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../artifacts/reviews/query-owner-closing-qualifiers-correction-20261004/qualifier-matrix.json"
+        )).unwrap();
+        for row in rows.as_array().unwrap() {
+            let raw = row["query"].as_str().unwrap();
+            let parsed = crate::dsl::parse_search_dsl(raw);
+            let target = QueryTarget::parse(&parsed);
+            assert_eq!(target, QueryTarget::Ambiguous, "{raw}");
+            let context = NameBonusContext::parse(&parsed, &target);
+            let comparative = row["comparative"].as_bool().unwrap();
+            assert_eq!(context.contextual_owner.as_deref(), if comparative { None } else { Some("beacon") }, "{raw}");
+            for kind in ["class", "interface", "type_alias", "enum", "module", "namespace"] {
+                assert_eq!(context.permits("Beacon", Some(kind)), comparative, "{raw} / {kind}");
+            }
+            assert!(context.permits("Beacon", Some("method")));
+            assert!(context.permits("Beacon", None));
+            assert!(context.permits("Sink", Some("interface")));
+        }
+    }
+
     // Frozen neutral contract using the real DSL and code-aware tokenizer.
     #[test]
     fn neutral_owner_role_bonus_contract() {

@@ -97,3 +97,10 @@ ablation/release performance not_run. No excluded old suite, GC/WAL/kill/staging
 fault/private42 export/100k scaling test, protected future holdout, live provider,
 merge/deploy or new CI success declaration was run. Publication uses normal Git
 push and one draft PR attempt; a Forbidden response stops that action.
+
+## Delivery
+
+Fixed evidence payload `c13e21fa98b76bb31b3dca41f75f51db9efb00f0` was pushed and its origin ref verified.
+The only `gh pr create --draft` request returned GraphQL Forbidden (exit1);
+PR creation is blocked and stopped, with no alternate API or retry. Delivery
+logs/receipt are appended separately; no merge/deploy or new CI claim.

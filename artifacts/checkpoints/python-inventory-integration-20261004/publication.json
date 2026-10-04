@@ -1,0 +1,72 @@
+{
+  "created_head": "5802d9273395c9ac6cfe91cc78f96273becc4559",
+  "fixed_product": "780502322816e4fd1d61d8f77a98d7d6b635d9fb",
+  "normal_push_verified": true,
+  "draft_attempts": 1,
+  "request": {
+    "repository_full_name": "jyqj/codecortex",
+    "base": "integration/python-resource-contract-20261004",
+    "head": "integration/python-inventory-capture-v2",
+    "draft": true,
+    "title": "Integrate reviewed opt-in Python inventory capture with source registry v2",
+    "body": "从 PR138 当前固定 head 2d297de0e5c7776c358ab49ab2072659ac03c8fc 开始，原样采纳 PR139 final capture e3b932ed4b1e197022c0902fd4c11af3e87ae87e。原 source8d2b312、full review a17f05d（含红色 partial-find test/report/logs）及 fixed delta review1fe4dc5 全部逐byte保留；原失败断言在新树直接通过。接受范围仅 opt-in Linux/statx、EntireProject/no exclusions/全部.git 的 bounded capture→AST→model 声明准入。\n\n新增显式 python-inventory-20261004-v2 registry，独立重建 approved50a493 的原 source union + exact capture delta + 固定新fixture，完整764 crate/Cargo/lock inputs及hash；CI显式选择v2。保留 da896b source guard/v1 approved50a493 manifest 与 2d297 P0 historical materialization anchor277f249。无HEAD/latest自授权；packing/e3/P0及base2d成功CI37174586283保持historical，不认证当前capture质量。\n\n新3项实际filesystem→真实AST→borrowed model组合fixture，独立literal spans、全scope binding/marker/collision、配置与资源/累计output拒绝。当前112 scoped Rust tests + 30 source controls + 14 harmless historical P0 controls通过；strict workspace all-target Clippy/build、fmt、architecture/source/plan guards通过。初次scoped test compile diskfull（尚未执行tests）原日志保留，仅清理可重建incremental cache后原argv重跑通过。metadata通过tasks.json→generator --write→noargs；192任务状态不变。\n\nFixed product780502322816e4fd1d61d8f77a98d7d6b635d9fb；docs/registry5802d9273395c9ac6cfe91cc78f96273becc4559。完整provenance/命令/hash/边界：artifacts/checkpoints/python-inventory-integration-20261004/README.md。\n\n无新DB/MCP/retrieval输出、UID/qname/search/parser extraction/scorer/gold/weights/budgets变化。非runtime publication/质量/原子/RSS认证。未跑formalDEV/100k/excludedruntime/broad/private42/GCWALfaults、实际bindmount或OS设置变更；无merge/deploy。"
+  },
+  "response": {
+    "url": "https://github.com/jyqj/codecortex/pull/140",
+    "number": 140,
+    "state": "open",
+    "merged": false,
+    "mergeable": false,
+    "draft": true,
+    "body": "从 PR138 当前固定 head 2d297de0e5c7776c358ab49ab2072659ac03c8fc 开始，原样采纳 PR139 final capture e3b932ed4b1e197022c0902fd4c11af3e87ae87e。原 source8d2b312、full review a17f05d（含红色 partial-find test/report/logs）及 fixed delta review1fe4dc5 全部逐byte保留；原失败断言在新树直接通过。接受范围仅 opt-in Linux/statx、EntireProject/no exclusions/全部.git 的 bounded capture→AST→model 声明准入。\n\n新增显式 python-inventory-20261004-v2 registry，独立重建 approved50a493 的原 source union + exact capture delta + 固定新fixture，完整764 crate/Cargo/lock inputs及hash；CI显式选择v2。保留 da896b source guard/v1 approved50a493 manifest 与 2d297 P0 historical materialization anchor277f249。无HEAD/latest自授权；packing/e3/P0及base2d成功CI37174586283保持historical，不认证当前capture质量。\n\n新3项实际filesystem→真实AST→borrowed model组合fixture，独立literal spans、全scope binding/marker/collision、配置与资源/累计output拒绝。当前112 scoped Rust tests + 30 source controls + 14 harmless historical P0 controls通过；strict workspace all-target Clippy/build、fmt、architecture/source/plan guards通过。初次scoped test compile diskfull（尚未执行tests）原日志保留，仅清理可重建incremental cache后原argv重跑通过。metadata通过tasks.json→generator --write→noargs；192任务状态不变。\n\nFixed product780502322816e4fd1d61d8f77a98d7d6b635d9fb；docs/registry5802d9273395c9ac6cfe91cc78f96273becc4559。完整provenance/命令/hash/边界：artifacts/checkpoints/python-inventory-integration-20261004/README.md。\n\n无新DB/MCP/retrieval输出、UID/qname/search/parser extraction/scorer/gold/weights/budgets变化。非runtime publication/质量/原子/RSS认证。未跑formalDEV/100k/excludedruntime/broad/private42/GCWALfaults、实际bindmount或OS设置变更；无merge/deploy。",
+    "title": "Integrate reviewed opt-in Python inventory capture with source registry v2",
+    "base": "integration/python-resource-contract-20261004",
+    "base_sha": "2d297de0e5c7776c358ab49ab2072659ac03c8fc",
+    "head": "integration/python-inventory-capture-v2",
+    "head_sha": "5802d9273395c9ac6cfe91cc78f96273becc4559",
+    "head_repo_id": 1249213794,
+    "head_repo_full_name": "jyqj/codecortex",
+    "merge_commit_sha": null,
+    "user": {
+      "login": "jyqj",
+      "name": "jyqj",
+      "email": null,
+      "avatar_url": "https://avatars.githubusercontent.com/u/174292474?v=4",
+      "id": 174292474
+    },
+    "requested_reviewers": null,
+    "requested_team_reviewers": null,
+    "diff": null,
+    "comments": null,
+    "created_at": "2026-10-04T04:00:37Z",
+    "updated_at": "2026-10-04T04:00:37Z",
+    "closed_at": null,
+    "merged_at": null,
+    "commits": 8,
+    "changed_files": 87,
+    "additions": 8807,
+    "deletions": 4,
+    "display_url": "https://github.com/jyqj/codecortex/pull/140",
+    "display_title": "Integrate reviewed opt-in Python inventory capture with source registry v2"
+  },
+  "ci_at_created_head": {
+    "workflow_runs": [
+      {
+        "id": 37175722251,
+        "name": "CI",
+        "status": "in_progress",
+        "conclusion": null,
+        "run_number": 283,
+        "jobs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37175722251/jobs",
+        "logs_url": "https://api.github.com/repos/jyqj/codecortex/actions/runs/37175722251/logs",
+        "workflow_id": 284891610
+      }
+    ]
+  },
+  "ci_url": "https://github.com/jyqj/codecortex/actions/runs/37175722251",
+  "scope": "current source v2 integration; CI still in progress, base CI remains historical",
+  "receipt_commit": "docs only; final receipt SHA verified by remote ref and final delivery message",
+  "merge_deploy": false,
+  "permission_denials": 0,
+  "reroutes": 0
+}

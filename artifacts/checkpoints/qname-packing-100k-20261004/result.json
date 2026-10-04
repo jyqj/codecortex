@@ -1,0 +1,156 @@
+{
+  "status": "passed_declared_100k_local_scope",
+  "integration_head": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+  "product_head": "90858afae647a513537bf118932a7ba5020ee98b",
+  "product_tree": "cdeb6c61f0c9d3a93bcd4f19eccb171671c68d68",
+  "binary_sha256": "dbfe122aa507dd708cd141b264178ef84aae25fe6d0ceb8aacb8e140e79595ca",
+  "build_receipt_sha256": "cb3fe484f1f71cbfc1f7cf9a3ae5d1c4407ec0eacbc109285029fdcd353cd04f",
+  "current_named_config_sha256": "24d89a152d3453d301ebac8d1bcfe4d129f86a3ccd9e149beb75011416279b82",
+  "method_manifest_sha256": "082da783b24939608f2e598cce2b98b91ccac48fdacf6e6a61880ed60e649c87",
+  "source_fixture_ordered_manifest_sha256": "881ec28155e0cfe0ca1b73830276d1861f06169ada71a4e52fd2374cdae754de",
+  "formal_runs": 1,
+  "smoke_runs": 1,
+  "build_attempts": 1,
+  "build_exit_code": 0,
+  "build_seconds": 155.868148995,
+  "cold_seconds": 28.43643541199998,
+  "ready_drain_seconds": 176.764548183,
+  "formal_seconds": 227.98621376,
+  "ready_db": {
+    "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3",
+    "counts": {
+      "files": 100000,
+      "symbols": 100000,
+      "chunks": 100000,
+      "document_manifest": 100000,
+      "semantic_manifest": 100000,
+      "edge_tables": {
+        "call_edges": 0,
+        "test_edges": 0,
+        "data_flow_edges": 0,
+        "co_change_edges": 0,
+        "http_call_edges": 0,
+        "semantic_edges": 200000,
+        "infra_edges": 0
+      },
+      "outbox_states": {
+        "done": 100000
+      },
+      "attempt_count": 100000
+    },
+    "integrity": "ok",
+    "foreign_key_errors": 0,
+    "files": [
+      {
+        "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3-wal",
+        "logical_bytes": 16537712,
+        "allocated_bytes": 16539648
+      },
+      {
+        "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3",
+        "logical_bytes": 1191329792,
+        "allocated_bytes": 1191329792
+      },
+      {
+        "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3-shm",
+        "logical_bytes": 1867776,
+        "allocated_bytes": 1867776
+      }
+    ]
+  },
+  "C4_repeated": {
+    "requests": 4,
+    "observed_peak_inflight": 4,
+    "burst_wall_seconds": 0.037431964999996126,
+    "stable_hits": true
+  },
+  "C4_distinct": {
+    "requests": 4,
+    "observed_peak_inflight": 4,
+    "burst_wall_seconds": 0.023180690999993203,
+    "stable_hits": true
+  },
+  "product_exits": [
+    {
+      "exit_code": 0,
+      "forced": false,
+      "wall_seconds": 0.0638996729999235
+    },
+    {
+      "exit_code": 0,
+      "forced": false,
+      "wall_seconds": 0.007343351000031362
+    }
+  ],
+  "reopen_counts_and_hits_exact": true,
+  "guard_stop": null,
+  "deadline_300s_db": null,
+  "deadline_observation": "not reached: ready accepted before 300s; boundary observer stopped under original protocol",
+  "cleanup_tail_observation": {
+    "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3",
+    "counts": {
+      "files": 100000,
+      "symbols": 100000,
+      "chunks": 100000,
+      "document_manifest": 100000,
+      "semantic_manifest": 100000,
+      "edge_tables": {
+        "call_edges": 0,
+        "test_edges": 0,
+        "data_flow_edges": 0,
+        "co_change_edges": 0,
+        "http_call_edges": 0,
+        "semantic_edges": 200000,
+        "infra_edges": 0
+      },
+      "outbox_states": {
+        "done": 100000
+      },
+      "attempt_count": 100000
+    },
+    "integrity": "ok",
+    "foreign_key_errors": 0,
+    "files": [
+      {
+        "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3-wal",
+        "logical_bytes": 0,
+        "allocated_bytes": 0
+      },
+      {
+        "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3",
+        "logical_bytes": 1191362560,
+        "allocated_bytes": 1191362560
+      },
+      {
+        "path": "/workspace/qname-100k-measurements/current-once/measurement/live/n100000/repo/.codecortex/index.sqlite3-shm",
+        "logical_bytes": 32768,
+        "allocated_bytes": 32768
+      }
+    ],
+    "inspection_phase": "after cleanup; not within 300s ready deadline",
+    "elapsed_drain_seconds": 188.44945406800002
+  },
+  "cgroup_peak_sample_bytes": 8506327040,
+  "cgroup_peak_sample_components": {
+    "anon": 1945288704,
+    "file": 5102616576,
+    "slab": 1447197240,
+    "slab_reclaimable": 1442922360,
+    "slab_unreclaimable": 4274880
+  },
+  "product_root_rss_peak_sample_bytes": 2219831296,
+  "product_root_vmHWM_max_observed_bytes": 2220392448,
+  "reopen_product_root_rss_peak_sample_bytes": 49786880,
+  "process_tree_coverage": "incomplete: every sample reports missing per-thread children files on this proc mount",
+  "group_independence": "unknown",
+  "group_relation": "unknown: cgroup.procs readable but empty; owned role membership 0::/ observed separately",
+  "cgroup_memory_max": 17179869184,
+  "guard_bytes": 12884901888,
+  "historical_pass_inherited": false,
+  "strict_paired_causal_speedup": false,
+  "other_release_gates_required": true,
+  "excluded_tests_not_run": true,
+  "parent_V19_P7_closed": false,
+  "failed_runs_deleted": false,
+  "publication_status": "commit/push/draft pending"
+}

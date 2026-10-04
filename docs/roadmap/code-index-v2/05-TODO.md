@@ -1,6 +1,6 @@
 # 05｜逐项重构 TODO（由 tasks.json 派生）
 
-> 任务总数：192；源文件 SHA-256：`db1e9ba1346f3c88bfa5ec16f46fe037ec20ce75fa3a225cd1afa18b23f7afc2`。
+> 任务总数：192；源文件 SHA-256：`adce5239a8a1830b96dd00e4dcbe74ec0bd190e6a5ae25b6d382305cb9a82cac`。
 > 状态只改 tasks.json；使用 scripts/code_index_plan.py --write 生成本页。
 
 ## 总览
@@ -2055,6 +2055,10 @@ root明确授权只更正迁移后成本测试：真实fixture的2 Python函数�
 
 执行仅cargo test -p cc-eval --test p1d_cost --locked，directRust1.95/-Dwarnings，5passed/0failed/1ignored；exact target clippy warnings denied及workspace fmt通过。未运行p1d_cost_probe ignored规模、MCPignored或其他broad/excluded targets。原630source-manifest保留历史不重写：现628相符，仅ci_schema_guard_contract.rs及p1d_cost.rs两个测试改变；生产396项仍前述hash逐字不变。日志SHA256：{"p1d-cost-clippy.log": "309623d0888abccd8fb2b401aee9dc60b25027740c808ce36ce1ec3f44bfac1b", "p1d-cost-fixed.log": "33e72d5077e82ec298b9cb04ffcbca72946692fca51be9f9d50a8d790f7554dd", "p1d-cost-fmt.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"}. task状态/验收不变，同PR135继续draft，后续exacthead CI独立回读，不冒充总request/fullcost或质量认证。
 
+
+2026-10-03 独立集中整合：从 packing docs156e3ac/source90858af 起步，合并 PR135591c246、PR134最终29a29ed 与 DB独审2d5aec；保留所有原失败及有限P1/P2关闭报告，当前严格positiveproof替代历史decorated-class absentqname断言。SQL成本只含originating hydration；最终manifest/load_on(None)及warm当前请求未计，validation-work/AST authority待办保持open。精确导入PYGO974ccf5及固定candidate97c478c/独审4770690，仅explicit opt-in registration，无评分/新样本，JS及历史default/gold/scorer不变。packing独审在原线程01a1040d待回读，本次整合通过不替代独审；V19/P7/quality父项状态不变。
+
+2026-10-04 后续原线程完整阅读并接受 packing独审c0876c82a5d04d4068f0e3e3ef0a205c1a2207ce限定scoped-search范围。原独审prefix及两个target精确导入，独审39labels/真实legacy-generationproducer/Partial-noresurrection/指定widest15962余38有效；不推广全部数字/unscopedcontext/publicDEV/100k。只追加tests/docs，八crate/src及Cargo/lock保持90858；原等待状态是历史记录，现限定packing已接受。组合strictclippy检测DB独审test四处clone切片警告，原文件hash归档，当前只改std::slice::from_ref不改断言/产品/CI门槛。整体V19/P7/quality仍open。
 
 ### [ ] P7-012｜融合与部分覆盖语义
 

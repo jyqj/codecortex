@@ -20,12 +20,27 @@ def main():
     actual = set(subprocess.check_output(
         ['git', 'ls-files', '--', 'crates', 'Cargo.toml', 'Cargo.lock'],
         cwd=ROOT, text=True).splitlines())
-    assert actual == set(expected), 'tracked product path inventory differs'
+    packing_report = ROOT / 'docs/checkpoints/2026-10-03-packing-integration/source-manifest.json'
+    if packing_report.exists():
+        # The e3 manifest remains historical and immutable. Validate its original
+        # bytes at its pinned commit; current inputs have explicit packing/test pins.
+        from verify_packing_integration import main as verify_packing
+        verify_packing()
+        historical = set(subprocess.check_output(
+            ['git', 'ls-tree', '-r', '--name-only', product['source_commit'], '--',
+             'crates', 'Cargo.toml', 'Cargo.lock'], cwd=ROOT, text=True).splitlines())
+        assert historical == set(expected), 'historical e3 inventory differs'
+        for path, row in expected.items():
+            raw = subprocess.check_output(['git', 'show', f'{product["source_commit"]}:{path}'], cwd=ROOT)
+            assert hashlib.sha256(raw).hexdigest() == row['sha256'], f'historical e3 bytes differ: {path}'
+    else:
+        assert actual == set(expected), 'tracked product path inventory differs'
     # Detect an extra untracked crate input as well as tracked additions/deletions.
     disk = {p.relative_to(ROOT).as_posix() for p in (ROOT / 'crates').rglob('*') if p.is_file()}
-    assert disk == {p for p in expected if p.startswith('crates/')}, 'crate disk inventory differs'
-    for path, row in expected.items():
-        assert digest(ROOT / path) == row['sha256'], f'product bytes differ: {path}'
+    if not packing_report.exists():
+        assert disk == {p for p in expected if p.startswith('crates/')}, 'crate disk inventory differs'
+        for path, row in expected.items():
+            assert digest(ROOT / path) == row['sha256'], f'product bytes differ: {path}'
     imports = json.loads((REPORT / 'imported-identity.json').read_text())
     for row in imports['files']:
         assert digest(ROOT / row['path']) == row['sha256'], f'import bytes differ: {row["path"]}'
@@ -41,7 +56,9 @@ def main():
     forbidden = 'artifacts/checkpoints/localwidth4-100k-paired-20261003'
     assert not (ROOT / forbidden).exists(), 'excluded historical paired directory present'
     subprocess.run(['python3', 'scripts/code_index_plan.py'], cwd=ROOT, check=True)
-    print(json.dumps({'status': 'passed', 'production_source': product['source_commit'],
+    print(json.dumps({'status': 'passed', 'production_source': ('90858afae647a513537bf118932a7ba5020ee98b' if packing_report.exists() else product['source_commit']),
+                      'historical_e3_source': product['source_commit'],
+                      'e3_inventory_scope': ('historical_pinned_source' if packing_report.exists() else 'current_inputs'),
                       'production_paths': len(expected), 'crates_paths': product['crates_paths'],
                       'cargo_paths': product['cargo_paths'], 'imported_paths': len(imports['files']),
                       'production_identity_sha256': digest(REPORT / 'production-identity.json'),

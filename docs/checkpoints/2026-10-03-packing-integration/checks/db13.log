@@ -1,0 +1,39 @@
+["cargo", "test", "--locked", "-j", "2", "-p", "cc-index", "-p", "cc-server", "--test", "qname_db_independent_review", "--", "--nocapture"]
+   Compiling cc-server v1.0.0 (/workspace/codecortex/crates/cc-server)
+   Compiling cc-index v1.0.0 (/workspace/codecortex/crates/cc-index)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.69s
+     Running tests/qname_db_independent_review.rs (/workspace/target-packing-integration/debug/deps/qname_db_independent_review-e6dc9bc53218ff37)
+
+running 7 tests
+test independent_actual_pooled_sqlite_snapshot_pins_relations_until_transaction_end ... ok
+test independent_leading_docs_whitespace_and_same_name_neighbor_are_byte_bound ... ok
+test independent_original_byte_points_partial_legacy_no_symbol_and_utf8_owner_omit ... ok
+test independent_dirty_only_preserves_authority_and_changed_symbol_fails_closed ... ok
+hydration rows=4 admitted=3 absent=1 measured=SqlWork { statements: 14, rows: 16, vm_steps: Some(642), fullscan_steps: Some(0), sorts: Some(0) }
+test independent_ambiguity_omission_and_sql_survivor_with_measured_selects ... ok
+test independent_write_relation_rollback_and_fk_disabled_delete_trigger ... ok
+test independent_hydration_snapshot_survives_concurrent_real_replacements ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.24s
+
+     Running tests/qname_db_independent_review.rs (/workspace/target-packing-integration/debug/deps/qname_db_independent_review-5487b5bbcb84be32)
+
+running 6 tests
+independently generated actual base v24 -> schema25; module model stays 3; unchanged reopen generation preserved
+test independent_base_v24_cache_rebuilds_25_reparses_and_reopen_is_unchanged ... ok
+rejected cold+warm: row-version
+test independent_missing_association_cold_omits_and_warm_rejects_cached_identity ... ok
+test independent_generation_fence_discards_controlled_same_database_write ... ok
+cold rejected corrupt mirror: Some(Database("candidate document/source mirror mismatch"))
+test independent_warm_document_reference_mirror_must_fail_closed ... ok
+rejected cold+warm: source
+test independent_reopen_rename_removal_and_cached_generation_rejection ... ok
+rejected cold+warm: document
+rejected cold+warm: tag
+rejected cold+warm: symbol
+rejected cold+warm: current-file
+rejected cold+warm: source-row
+test independent_cold_and_warm_single_field_contradictions ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.06s
+

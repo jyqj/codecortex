@@ -166,3 +166,16 @@ ReadGeneration 已在 P5-C 中加入持久化 incarnation 和可选 semantic_epo
 ## 验证入口
 
 `p5b_execution.rs` 使用真实 parser、SQLite、单读连接及 fake 端口，覆盖 scope/version、慢端口、取消/Drop、超时、panic、旧句柄和公开新鲜度。`mcp_query_tests.rs` 通过真实 MCP 双工传输发送取消通知；p5b_execution 的 ignored 测试另启动实际 codecortex stdio 子进程。`execution.rs` 的测试区分排队取消与运行任务的额度；`p5b_cost.rs` 是 release 受控并发观测，不是尾延迟或 100k 认证。
+
+
+## 来源身份 SQL 收据的精确范围（2026-10-03 整合）
+
+既有 chunk UID 批量读取之后，schema25 的关联身份验证增加实际 SELECT 工作。
+`RetrievalCost.hydration` 计入 originating row hydration 的 chunk/document 与身份读取；
+小型两行真实 fixture 测得 9 statements / 10 yielded rows，显式单行验证测得 5 / 5。
+这些数值是命名语句的实际计数，不是所有请求或 SQLite 全局成本上限。
+最终 `verify_source_records` 的 manifest 读取及 `load_on(None)` 身份验证在 cold/warm
+公开组装都执行，却不计入该 hydration 收据；warm graph-window cache 复用原查询收据。
+因此 warm 收据不代表当前请求总 SQL，批量 UID 的旧说明也不能推广为关联验证无逐 hit 查询。
+DB 独审原失败与限制见 `docs/reviews/qname-db-20261003/README.md`，原文保留。
+额外 validation-work 收据及 AST taxonomy 全面审计仍为开放 authority TODO，不在本包改产品。

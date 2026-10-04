@@ -76,7 +76,7 @@ fn independent_ambiguity_omission_and_sql_survivor_with_measured_selects() {
     let repeated = unit("def beacon():\n    return 'first'\ndef beacon():\n    return 'second'\n");
     assert_eq!(repeated.outcome.symbol_identities.len(), 2);
     db.writes()
-        .replace_files_batch(std::slice::from_ref(&repeated))
+        .replace_files_batch(&[repeated.clone()])
         .unwrap();
     let rows = db
         .retrieval()
@@ -97,7 +97,7 @@ fn independent_dirty_only_preserves_authority_and_changed_symbol_fails_closed() 
     let path = dir.path().join("db.sqlite3");
     let db = IndexDb::open(&path).unwrap().0;
     db.writes()
-        .replace_files_batch(std::slice::from_ref(&original))
+        .replace_files_batch(&[original.clone()])
         .unwrap();
     let conn = rusqlite::Connection::open(&path).unwrap();
     let records = || {
@@ -110,7 +110,7 @@ fn independent_dirty_only_preserves_authority_and_changed_symbol_fails_closed() 
     };
     let before = records();
     db.writes()
-        .replace_reresolved_edges_only(std::slice::from_ref(&original))
+        .replace_reresolved_edges_only(&[original.clone()])
         .unwrap();
     assert_eq!(records(), before);
     db.retrieval()
@@ -139,7 +139,7 @@ fn independent_write_relation_rollback_and_fk_disabled_delete_trigger() {
     let path = dir.path().join("db.sqlite3");
     let db = IndexDb::open(&path).unwrap().0;
     db.writes()
-        .replace_files_batch(std::slice::from_ref(&original))
+        .replace_files_batch(&[original.clone()])
         .unwrap();
     let generation = db.reads().read_generation().unwrap();
     let mut bad = unit(&TEXT.replace("灯", "焰"));

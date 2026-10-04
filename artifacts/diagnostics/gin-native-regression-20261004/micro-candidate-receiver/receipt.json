@@ -1,0 +1,30 @@
+{
+  "arm": "candidate",
+  "source_sha": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+  "build": [
+    "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/cargo",
+    "build",
+    "--locked",
+    "-p",
+    "cc-eval",
+    "--lib",
+    "--message-format=json"
+  ],
+  "link": [
+    "/workspace/.rustup/toolchains/1.95.0-x86_64-unknown-linux-gnu/bin/rustc",
+    "--edition=2021",
+    "/workspace/codecortex/artifacts/diagnostics/gin-native-regression-20261004/micro_driver.rs",
+    "-L",
+    "dependency=/workspace/scratch/gin-native-20261004/target-candidate/debug/deps",
+    "-o",
+    "/workspace/scratch/gin-native-20261004/driver-candidate",
+    "--extern",
+    "cc_eval=/workspace/scratch/gin-native-20261004/target-candidate/debug/libcc_eval.rlib",
+    "--extern",
+    "cc_server=/workspace/scratch/gin-native-20261004/target-candidate/debug/deps/libcc_server-cc5ec53a177c3cc1.rlib",
+    "--extern",
+    "serde_json=/workspace/scratch/gin-native-20261004/target-candidate/debug/deps/libserde_json-496f49583a06f976.rlib"
+  ],
+  "binary_sha256": "f0c18354fe36f4dcec8caf412c6eb9c08ed28a19c1d457e37172c51b7f087799",
+  "product_diff": ""
+}

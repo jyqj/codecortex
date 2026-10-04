@@ -1,0 +1,3 @@
+Fixed Gin public DEV native Top1 regresses 27→21/55: 8 down, 2 up, 45 unchanged. New accurate Go type names trigger existing exact-symbol boosts and displace retained callable primaries. An independent receiver fixture reproduces Top1 1→0 through real index, engine/MCP, normalizer and unchanged scorer.
+
+Diagnostic-only: rehashes product/input binding; read-only replays 732 scores and 2964 normalizer projections; provides complete safe per-hit predicates and all-case evidence. No product/gold/scorer/budget/ranking change, fresh Gin suite retrieval, holdout or Requests scope. Original allPartial/qualityFAIL remains; no statistical significance, merge or deploy claim. Root may separately authorize a generic query-target/receiver interpretation study.

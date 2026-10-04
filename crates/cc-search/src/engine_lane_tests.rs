@@ -1401,3 +1401,62 @@ fn query_target_contextual_owner_uses_primary_query_not_conversation_context() {
         );
     }
 }
+
+#[test]
+fn query_target_comparison_phrase_preserves_bonus_trace_and_exact_identity() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "Which Beacon API rather than Sink accepts state?",
+        "Which Beacon API RATHER THAN Sink accepts state?",
+        "Which API on Beacon instead of Sink accepts state?",
+    ] {
+        let request = SearchRequest {
+            query: query.into(),
+            ..Default::default()
+        };
+        let plan = build_plan(&engine, &request);
+        let outcomes = vec![];
+        let ranks = plan.lane_ranks(&outcomes);
+        for (name, kind, exact_identity) in [
+            ("Beacon", "class", false),
+            ("Beacon", "class", true),
+            ("Sink", "interface", false),
+            ("Beacon", "method", false),
+        ] {
+            let mut chunk = fake_candidate_chunk();
+            chunk.symbol_name = Some(name.into());
+            chunk.symbol_kind = Some(kind.into());
+            let hit = plan
+                .hit_from_chunk(
+                    chunk,
+                    &FusedScore {
+                        total: 0.5,
+                        by_lane: vec![],
+                        exact_identity,
+                    },
+                    &ranks,
+                )
+                .unwrap();
+            assert!(
+                hit.reasons.iter().any(|r| r == "symbol-exact"),
+                "{query} / {name}"
+            );
+            assert_eq!(
+                hit.score_trace
+                    .iter()
+                    .filter(|(k, _)| k == "boost:symbol-exact")
+                    .map(|(_, v)| *v)
+                    .collect::<Vec<_>>(),
+                vec![0.18]
+            );
+            assert_eq!(
+                hit.score_trace.iter().map(|(_, v)| v).sum::<f64>(),
+                hit.rerank_score
+            );
+            assert_eq!(
+                hit.reasons.iter().any(|r| r == "exact-target"),
+                exact_identity
+            );
+        }
+    }
+}

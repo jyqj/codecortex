@@ -125,7 +125,7 @@ impl NameBonusContext {
         let words: Vec<_> = text.split_whitespace().collect();
         // Conservative abstention for coordinated/comparative queries. This
         // is a documented finite grammar boundary, not a universal detector.
-        if words.iter().any(|word| comparison_or_coordination(word)) {
+        if words.iter().any(|word| comparison_or_coordination(word)) || comparison_phrase(&words) {
             return Self::default();
         }
         let owner = match words.as_slice() {
@@ -190,8 +190,26 @@ fn member_role(word: &str) -> bool {
     )
 }
 
+// Match adjacent standalone prose words, not codeish subtokens or a raw
+// substring. Keep underscores/internal punctuation intact so RatherThan,
+// rather_than and rather.than do not acquire a new interpretation. The DSL
+// normalizes whitespace; edge punctuation and ASCII case do not alter words.
+// This finite phrase list is an abstention boundary, not general NL parsing.
+fn comparison_phrase(words: &[&str]) -> bool {
+    words.windows(2).any(|pair| {
+        let left = comparison_word(pair[0]);
+        let right = comparison_word(pair[1]);
+        (left.eq_ignore_ascii_case("rather") && right.eq_ignore_ascii_case("than"))
+            || (left.eq_ignore_ascii_case("instead") && right.eq_ignore_ascii_case("of"))
+    })
+}
+
+fn comparison_word(word: &str) -> &str {
+    word.trim_matches(|c: char| !c.is_alphanumeric() && c != '_')
+}
+
 fn comparison_or_coordination(word: &str) -> bool {
-    let word = word.trim_matches(|c: char| !c.is_alphanumeric() && c != '_');
+    let word = comparison_word(word);
     matches!(
         word.to_ascii_lowercase().as_str(),
         "and"
@@ -325,6 +343,85 @@ mod tests {
             Some("method"),
             &["lantern".into()]
         ));
+    }
+
+    #[test]
+    fn query_target_context_comparison_phrases_retain_fallback() {
+        for query in [
+            "Which Beacon API rather than Sink accepts state?",
+            "Which Beacon API RATHER THAN Sink accepts state?",
+            "Which Beacon API rather\tthan Sink accepts state?",
+            "Which Beacon API rather\nthan Sink accepts state?",
+            "Which Beacon API (rather than) Sink accepts state?",
+            "Which Beacon API rather, than Sink accepts state?",
+            "Which API on Beacon rather than Sink accepts state?",
+            "Which Beacon API instead of Sink accepts state?",
+            "What method of Beacon INSTEAD OF Sink accepts state?",
+        ] {
+            let dsl = crate::dsl::parse_search_dsl(query);
+            let target = QueryTarget::parse(&dsl);
+            assert_eq!(target, QueryTarget::Ambiguous, "{query}");
+            let context = NameBonusContext::parse(&dsl, &target);
+            assert_eq!(context, NameBonusContext::default(), "{query}");
+            let tokens = cc_db::fts::tokenize_codeish(&dsl.text);
+            for kind in [
+                "class",
+                "interface",
+                "type_alias",
+                "enum",
+                "module",
+                "namespace",
+            ] {
+                assert!(target.permits("Beacon", Some(kind), &tokens));
+                assert!(context.permits("Beacon", Some(kind)), "{query} / {kind}");
+            }
+            assert!(context.permits("Sink", Some("interface")));
+        }
+    }
+
+    #[test]
+    fn query_target_context_phrase_boundaries_and_independent_controls() {
+        // Do not use code-aware token splitting: identifiers and substrings
+        // are not standalone comparative words, nor are nonadjacent words.
+        for tail in [
+            "rather_than Sink accepts state",
+            "RatherThan Sink accepts state",
+            "rather.than Sink accepts state",
+            "prather than Sink accepts state",
+            "rather thanksgiving accepts state",
+            "rather more than Sink accepts state",
+            "rather _than Sink accepts state",
+            "instead_of Sink accepts state",
+            "InsteadOf Sink accepts state",
+            "instead often accepts state",
+            "instead only of Sink accepts state",
+        ] {
+            let query = format!("Which Beacon API {tail}?");
+            let dsl = crate::dsl::parse_search_dsl(&query);
+            let context = NameBonusContext::parse(&dsl, &QueryTarget::parse(&dsl));
+            assert_eq!(
+                context.contextual_owner.as_deref(),
+                Some("beacon"),
+                "{query}"
+            );
+            assert!(!context.permits("Beacon", Some("class")), "{query}");
+        }
+        // Exact independent probes, including the existing permissive tails.
+        for (query, owner) in [
+            ("Which Beacon API is deprecated?", Some("beacon")),
+            ("Which Beacon API rather than Sink accepts state?", None),
+            ("Which Beacon API calls Commit/Accept?", Some("beacon")),
+            ("Which Beacon API differs from Sink?", None),
+            ("name:Beacon Which Beacon API calls Commit?", None),
+            ("kind:class Which Beacon API calls Commit?", None),
+            ("Which Beacon API calls Commit and Accept?", None),
+            ("Which Beacon type stores the ready state?", None),
+            ("Beacon.Commit", None),
+        ] {
+            let dsl = crate::dsl::parse_search_dsl(query);
+            let context = NameBonusContext::parse(&dsl, &QueryTarget::parse(&dsl));
+            assert_eq!(context.contextual_owner.as_deref(), owner, "{query}");
+        }
     }
 
     // Frozen neutral contract using the real DSL and code-aware tokenizer.

@@ -108,6 +108,112 @@ fn member_name(text: &str) -> Option<&str> {
     (parts.len() > 1 && parts.iter().all(|part| identifier(part))).then(|| *parts.last().unwrap())
 }
 
+// Bounded English owner-role context, separate from explicit target identity.
+// This does not infer general natural-language intent or resolve receivers.
+#[derive(Debug, Default, PartialEq, Eq)]
+pub(crate) struct NameBonusContext {
+    contextual_owner: Option<String>,
+}
+
+impl NameBonusContext {
+    pub(crate) fn parse(query: &ParsedQuery, target: &QueryTarget) -> Self {
+        // Explicit target/kind instructions always outrank this soft hint.
+        if !matches!(target, QueryTarget::Ambiguous) || query.kind_filter.is_some() {
+            return Self::default();
+        }
+        let text = query.text.trim().trim_end_matches(['?', '.', '!']);
+        let words: Vec<_> = text.split_whitespace().collect();
+        // Conservative abstention for coordinated/comparative queries. This
+        // is a documented finite grammar boundary, not a universal detector.
+        if words.iter().any(|word| comparison_or_coordination(word)) {
+            return Self::default();
+        }
+        let owner = match words.as_slice() {
+            [head, owner, role, tail @ ..]
+                if question_head(head) && member_role(role) && !tail.is_empty() =>
+            {
+                Some(*owner)
+            }
+            [head, role, relation, owner, tail @ ..]
+                if question_head(head)
+                    && member_role(role)
+                    && matches!(relation.to_ascii_lowercase().as_str(), "on" | "of" | "in")
+                    && !tail.is_empty() =>
+            {
+                Some(*owner)
+            }
+            _ => None,
+        };
+        Self {
+            contextual_owner: owner
+                .filter(|owner| identifier(owner))
+                .map(str::to_lowercase),
+        }
+    }
+
+    pub(crate) fn permits(&self, name: &str, kind: Option<&str>) -> bool {
+        let Some(owner) = self.contextual_owner.as_deref() else {
+            return true;
+        };
+        // Do not hide hits or change their taxonomy. Withhold only this
+        // named container's additive bonus. Unknown kinds keep fallback;
+        // an unrelated type and a same-spelled method keep eligibility.
+        name.to_lowercase() != owner
+            || !matches!(
+                kind,
+                Some("class" | "interface" | "type_alias" | "enum" | "module" | "namespace")
+            )
+    }
+}
+
+fn question_head(word: &str) -> bool {
+    matches!(word.to_ascii_lowercase().as_str(), "which" | "what")
+}
+
+fn member_role(word: &str) -> bool {
+    // `api` does NOT imply a callable kind. Accepting its owner reading is
+    // the main product decision in this review candidate.
+    matches!(
+        word.to_ascii_lowercase().as_str(),
+        "api"
+            | "apis"
+            | "method"
+            | "methods"
+            | "function"
+            | "functions"
+            | "member"
+            | "members"
+            | "field"
+            | "fields"
+            | "property"
+            | "properties"
+    )
+}
+
+fn comparison_or_coordination(word: &str) -> bool {
+    let word = word.trim_matches(|c: char| !c.is_alphanumeric() && c != '_');
+    matches!(
+        word.to_ascii_lowercase().as_str(),
+        "and"
+            | "or"
+            | "vs"
+            | "versus"
+            | "compare"
+            | "compares"
+            | "compared"
+            | "comparing"
+            | "comparison"
+            | "between"
+            | "difference"
+            | "differences"
+            | "different"
+            | "differs"
+            | "similar"
+            | "similarity"
+            | "unlike"
+    )
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -219,5 +325,48 @@ mod tests {
             Some("method"),
             &["lantern".into()]
         ));
+    }
+
+    // Frozen neutral contract using the real DSL and code-aware tokenizer.
+    #[test]
+    fn neutral_owner_role_bonus_contract() {
+        let spec: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../artifacts/controls/query-context-owner-20261004/neutral-matrix.json"
+        ))
+        .unwrap();
+        for row in spec["rows"].as_array().unwrap() {
+            let raw = row["query"].as_str().unwrap();
+            let dsl = crate::dsl::parse_search_dsl(raw);
+            let target = QueryTarget::parse(&dsl);
+            let actual = match &target {
+                QueryTarget::Ambiguous => "fallback".into(),
+                QueryTarget::ContainerMethods => "no-name-boost".into(),
+                QueryTarget::Named { name, kind } => {
+                    format!("named:{name}:{}", kind.map_or("any", |k| k.as_str()))
+                }
+            };
+            assert_eq!(
+                actual,
+                row["expected_target_model"].as_str().unwrap(),
+                "target: {raw}"
+            );
+            let context = NameBonusContext::parse(&dsl, &target);
+            assert_eq!(
+                context.contextual_owner.as_deref(),
+                row["expected_context_owner"].as_str(),
+                "context: {raw}"
+            );
+            let tokens = cc_db::fts::tokenize_codeish(&dsl.text);
+            for probe in row["probes"].as_array().unwrap() {
+                let name = probe["name"].as_str().unwrap();
+                let kind = probe["kind"].as_str();
+                let permitted = target.permits(name, kind, &tokens) && context.permits(name, kind);
+                assert_eq!(
+                    permitted,
+                    probe["expected_bonus"].as_bool().unwrap(),
+                    "bonus: {raw} / {name} / {kind:?}"
+                );
+            }
+        }
     }
 }

@@ -27,6 +27,7 @@ pub(crate) struct SearchPlan {
     lexical_query: CompiledFtsQuery,
     query_tokens: Vec<String>,
     query_target: crate::query_target::QueryTarget,
+    name_bonus_context: crate::query_target::NameBonusContext,
     primary_query_tokens: Vec<String>,
     limits: LaneLimits,
     filters: HardScope,
@@ -163,6 +164,7 @@ impl SearchPlan {
         let query_tokens = tokenize_codeish(&query_text);
         let primary_query_tokens = tokenize_codeish(&dsl.text);
         let query_target = crate::query_target::QueryTarget::parse(&dsl);
+        let name_bonus_context = crate::query_target::NameBonusContext::parse(&dsl, &query_target);
         let limits = LaneLimits {
             top_k,
             exact_symbol: config.exact_symbol_top_k.max(top_k),
@@ -180,6 +182,7 @@ impl SearchPlan {
             lexical_query,
             query_tokens,
             query_target,
+            name_bonus_context,
             primary_query_tokens,
             limits,
             filters,
@@ -448,9 +451,12 @@ impl SearchPlan {
             // Exact-target is an independent identity tier. Preserve its
             // historical bonus eligibility; target hints gate other matches.
             if (fused.exact_identity && self.query_tokens.contains(&sym_name.to_lowercase()))
-                || self
+                || (self
                     .query_target
                     .permits(sym_name, symbol_kind.as_deref(), &self.query_tokens)
+                    && self
+                        .name_bonus_context
+                        .permits(sym_name, symbol_kind.as_deref()))
             {
                 trace.push("boost:symbol-exact", self.ranking.symbol_exact_bonus);
                 reasons.push("symbol-exact".into());

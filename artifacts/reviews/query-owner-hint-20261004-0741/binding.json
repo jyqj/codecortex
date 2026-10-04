@@ -1,0 +1,70 @@
+{
+  "base_ref": "3c8c204216cb54c41850c6da826a68fec3586430",
+  "delivery": "review-only freeze; no PR, acceptance, merge, or public-quality claim",
+  "candidate_patch_sha256": "d4b10a3813678587ac1a41289a33386cc8d0642ee42846cca85e2474045cb693",
+  "candidate_files": {
+    "crates/cc-search/src/query_target.rs": "4cc86d322accb0b9229269691c98bb3c1d49c45c40ef1e5545e8bb23bd06cba1",
+    "crates/cc-search/src/plan.rs": "98e9380818a6d4a9fbaec0077ed635335d852fc027a783ce32b20a394e88c9cc",
+    "crates/cc-search/src/engine_lane_tests.rs": "c8cd2e66f235bcdb74c8fa692bb67d8e9ae6d046f0491b79cc47b3f33fa1ee1b",
+    "artifacts/controls/query-context-owner-20261004/neutral-matrix.json": "5cdd857b22603b26ac5ef9827aca618462aa57d662ceded51a73ff3c66b871df"
+  },
+  "cargo_lock_sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
+  "source_registry_changed": false,
+  "ci_changed": false,
+  "central_todo_changed": false,
+  "focused_tests": {
+    "baseline": {
+      "passed": 6,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 298
+    },
+    "candidate": {
+      "passed": 10,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 298
+    },
+    "neutral_matrix_rows": 91,
+    "bonus_probes": 342
+  },
+  "micro": {
+    "variants": 3,
+    "queries_per_variant": 16,
+    "api_paths": [
+      "engine",
+      "in-process MCP"
+    ],
+    "arms": 2,
+    "common_hits": 380,
+    "expected_removed_owner_bonuses": 12,
+    "all_non_name_components_identical": true,
+    "membership_differences": 0,
+    "receiver_api_top1": [
+      0,
+      1
+    ],
+    "receiver_api_mrr": [
+      0.5,
+      1
+    ],
+    "strong_inversion_api_top1": [
+      0,
+      0
+    ]
+  },
+  "evidence_archive": {
+    "path": "evidence.tar.gz",
+    "sha256": "083ce321bc9ce2e3fef7bda0b2870fe11bf45ad13042b12edf69c7726f5deadc",
+    "bytes": 758868,
+    "members": 74,
+    "includes": "self-authored source/driver, raw synthetic engine/MCP results, unchanged native scorer outputs, compilation/test/link receipts, source/toolchain hashes; no executables, dependency cache, credentials, or private corpus"
+  },
+  "limitations": [
+    "bounded English owner-role grammar; API is not a callable-kind assertion",
+    "strong lexical inversion with API wording remains Top1=0",
+    "in-process MCP, not independent subprocess stdio",
+    "binaries are not archived; their hashes are build-receipt evidence",
+    "no formal public DEV, holdout, 100k, private export, original denied runtime, or all-workspace test suite"
+  ]
+}

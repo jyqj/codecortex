@@ -58,9 +58,9 @@ cloned_ref_to_slice_refs；checks/clippy.log 原样保存。只将四处单元�
 std::slice::from_ref，不改断言/产品。原测试完整字节保存在original-tests/，manifest绑定
 原hash和当前hash；验证器按这四处精确转换校验，不允许任意test漂移。最终clippy/fmt结果
 见final-checks，CI workflow和-D warnings门槛不改。未stage时的diff检查不含untracked
-PYGO目录；完整156e3ac..8189abd范围检查另见full-range-whitespace.log，exit2，只有固定
-原许可证Werkzeug LICENSE的CRLF（29行）提示whitespace。该文件与97c478c原字节/hash
-完全一致，保留许可原证据，不把完整范围宣称whitespace全通过。
+PYGO目录；完整156e3ac..8189abd范围检查另见full-range-whitespace.log，exit2，包含固定
+原许可证Werkzeug LICENSE的CRLF及原审查/当前原始日志末尾空行提示。许可证与97c478c
+原字节/hash完全一致；这些原证据及实际日志不改，不把完整范围宣称whitespace全通过。
 
 PYGO第一次loader因为缺原input Git对象在setUpClass失败、0tests，保留
 initial-pygo-missing-object.json；从normal origin取声明的精确pins后12tests通过，没有

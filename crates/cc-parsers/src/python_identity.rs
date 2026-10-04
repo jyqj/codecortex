@@ -90,7 +90,12 @@ pub fn declaration_inputs(
     if root.has_error() {
         return unavailable(SyntaxError);
     }
-    if root.kind() != "module" || root.start_byte() != 0 || root.end_byte() != source.len() {
+    // The pinned grammar can start modules after leading trivia/BOM, including
+    // an empty module at source.len(). The parser still consumed original bytes.
+    if root.kind() != "module"
+        || root.start_byte() > root.end_byte()
+        || root.end_byte() > source.len()
+    {
         return unavailable(UnsupportedAst);
     }
     let digest = content_digest(source);

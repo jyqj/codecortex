@@ -16,6 +16,12 @@ docs head `6b8f21a664c7b965ff99a12b3541fff98f7312eb`（其相对 source 只有�
 复用现有 `parse_common::parse_tree` 与锁定的 tree-sitter-python grammar；UTF-8 校验后 `&str`
 仍借用同一原始 byte slice。无解码重写、CRLF normalization、源码片段重解析、qname split、
 SymbolRecord 行号反推或 Python 执行。digest 直接覆盖传入 original bytes。
+锁定的 tree-sitter-python 0.23.6 可让 module span 从 leading blank/comment trivia 或 UTF-8
+BOM 后开始，纯 whitespace/BOM 的空 module 可位于 source.len()。root 仅要求 module kind
+与 0 <= start <= end <= source.len()，不要求覆盖完整 source。完整原始 bytes 仍送入 parser，
+全文件 has_error/MISSING 检查和 digest 覆盖前后 trivia/BOM 均保留。BOM 接受依据是该锁定
+语法的 recovery-free tree，不声明 CPython 编译合法性或 importability。R1 正向回归与原失败
+证据见 `docs/reviews/python-identity-r1-fix-20261004/README.md`。
 本独立 opt-in API 创建自己的 tree，不在现有 extraction 中增加解析或更改结果；未来若接线
 复用 extraction tree，必须另行设计原始 bytes/tree ownership，不能接受外部任意 tree assertion。
 

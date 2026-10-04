@@ -6,7 +6,7 @@
 
 `NameBonusContext` 在原有单词 comparison/coordination guard 外，增加相邻独立词 `rather than`、`instead of` 的 abstention。匹配忽略 ASCII case，使用 DSL 规范化后的 whitespace tokens，复用原有边缘标点清理规则；不拆开内部标点、下划线或 CamelCase。因此 `RatherThan`、`rather_than`、`rather.than`、子串以及被其他词隔开的 pair 不触发新解释。
 
-`QueryTarget` production 部分与 base/candidate 一致，`plan.rs` 与 candidate 逐字节一致。没有改变 exact-identity 优先、name:/kind: filters、ranking 常数、候选生成/过滤、taxonomy 或其他 fallback。两个源文件的完整修正见 `correction.patch`。原测试和两个既有 matrix 均未改写。
+`QueryTarget` production 部分与 base/candidate 一致，`plan.rs` 与 candidate 逐字节一致。没有改变 exact-identity 优先、name:/kind: filters、ranking 常数、候选生成/过滤、taxonomy 或其他 fallback。两个源文件的完整修正见 `correction.patch.gz`（原始 unified diff 压缩文件；归档内同时保留 `correction.patch`）。原测试和两个既有 matrix 均未改写。
 
 新增三项聚焦测试：真实 DSL/tokenizer 下的比较 phrase fallback；case/whitespace/标点/identifier/nonadjacent negative controls 与全部六个原独立 probe；SearchPlan 的 +0.18 trace、同名 method、Sink 和 exact-identity 保留。原候选加新测试的红阶段为 **10 passed / 3 failed / 298 filtered**，三项均在确切 `rather than` regression 处失败；日志保留。红阶段不是一个有 SHA 的已提交源码状态。
 
@@ -15,7 +15,7 @@
 Rust `1.95.0 (59807616e 2026-04-14)`；Cargo `1.95.0 (f2d3ce0bd 2026-03-21)`；default features、原 Cargo.lock；每次最多两条 build jobs，三个 arm 顺序执行，分别使用全新 `target-base`、`target-candidate`、`target-correction`。每臂 production `cc_search`/`cc_server`/`cc_eval` artifact 均检查 `fresh=false`。link receipts pin 对应 target-profile rlib 和可执行文件 SHA256。
 
 - `cargo +1.95.0 test --locked -p cc-search query_target --lib -j 2`：base **6 passed**，candidate **10 passed**，correction **13 passed**；均 0 failed / 0 ignored / 298 filtered。
-- scoped rustfmt 1.95、`git diff --check`、`cargo +1.95.0 clippy --locked -p cc-search --lib -j 2 -- -D warnings` 均通过。
+- scoped rustfmt 1.95、从独立证据 commit `416f671` 起的修正范围 `git diff --check`、`cargo +1.95.0 clippy --locked -p cc-search --lib -j 2 -- -D warnings` 均通过。
 - 各臂 `cargo +1.95.0 build --locked -p cc-eval --lib -j 2 --message-format=json-render-diagnostics` 成功；只编译 lib，没有运行 cc-eval tests。
 - 32 个自写查询 × 3 个全新 Go 源变体 × engine/in-process MCP = **192 个三臂 query/API 对照（576 个 arm 输出）**。独立 driver 的原 22 个 query/expected case 不变，新增 10 个 phrase/negative 查询不附造新 gold。所有返回 hit 经实际 source verifier 验证；未改 native scorer 的 unrelated-name 控制均拒绝。
 - 两组 paired comparison 合计 **1,768 common-hit 检查**：身份、文本、kind、source evidence、lane 分数、所有 non-name trace 与非 bonus reasons 一致；trace sum 与 rerank_score 相符。
@@ -36,3 +36,5 @@ receiver 的 API/method 查询两条路径均保留 Top1 **0→1**、MRR **.5→
 仓库及父目录无可用 AGENTS.md/.agents/skills；已读取 CONTRIBUTING.md 与作者/独立审查 README、binding、controls。按本任务显式限制，没有运行 CONTRIBUTING 中全仓/public/private benchmark 套件。未运行被禁止的 semantic runtime test 或可启用它的 suite，未运行 private exports、DB GC/WAL/kill/EROFS 或生产 endpoint；未修改 registry、CI、TODO、settings 或 credentials；没有 PR、main merge、deploy 或 force push。
 
 独立证据 manifest SHA256 `34bb334af90b1ebaee0229d04810e577326872a7702e99ea71e097fff811fa50`，complete archive SHA256 `d13f3d299939c15ec5e419e0640cf74e6ca30f2449b5210124eaddf20a2bbe98`，全部 60 项核验保持不变。之前失效的 shared-target attempt 仍按独立报告披露并保留；本次三臂重新构建没有复用其 receipt 或 executable。接受前仍由 parent 独立复审。
+
+从原 candidate `cbe347fa` 检查完整范围时，独立证据 `base-tests.log`/`candidate-tests.log` 各有一个既存 EOF blank-line warning；`diff-check.log` 原样保留这一非零检查结果。按用户要求不改这些历史日志。新增修正源码/证据从 `416f671` 起的 scoped checks 均为 exit=0，见 `source-diff-check.log`/`correction-diff-check.log`。单独 unified patch 改为 gzip，避免将 diff context 空行误算为新文件 trailing whitespace；解压内容与实际源码 diff 相同。

@@ -5,3 +5,5 @@ Diagnostic commit `679e5325e15c073a1a428498cfe3878ac9fece8b` successfully pushed
 Product/input and unchanged archive checks pass; 732 original score rows and 2964 raw normalizer hits replay exactly. All independent Go micro checks pass, including a real engine/MCP 1→0 receiver competition regression and correct interface/named-type controls. Native source quality remains FAIL/allPartial; no CI or statistical significance claim, merge or deployment.
 
 Scope is exclusively this directory and own scratch worktrees/fixtures. Root next action: inspect README, aggregate, predicates/cases and micro-summary; independently scope a generic query-target/receiver interpretation fix if authorized.
+
+Raw normal Git push stderr contains padded remote informational lines. Initial delivery diff-check flagged four trailing-whitespace lines; the scoped `.gitattributes` rule preserves these original receipt bytes and exempts only that receipt from end-of-line whitespace lint. Product/source quality and original raw archive are unaffected.

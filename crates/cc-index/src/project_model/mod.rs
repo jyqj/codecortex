@@ -5,6 +5,8 @@ mod go_capture;
 mod jsonc;
 pub(crate) mod package;
 mod python;
+#[cfg(test)]
+mod python_provenance_tests;
 pub(crate) mod rust;
 mod rust_capture;
 mod source_capture;
@@ -462,7 +464,7 @@ fn discover_inner(
         go_capture::capture(root, &catalog, &old.go_sources, scan)?;
     let go_model = go::build(&documents, &go_sources);
     let (rust_model, aliases) = rust::build(&documents, &catalog, &rust_sources)?;
-    let python_model = python::build(&documents);
+    let python_model = python::build(&documents, &loader.inputs);
     let mut groups = BTreeMap::new();
     for (path, doc) in &documents {
         if let cc_model::module_inputs::ConfigDocument::Package(p) = doc {

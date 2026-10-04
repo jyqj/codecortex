@@ -153,6 +153,53 @@ impl RustProject {
 }
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct PythonProject {
+    /// Additive evidence only; absence in old records means unknown provenance.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub provenance: BTreeMap<String, PythonRootProvenance>,
     pub roots: BTreeMap<String, Vec<String>>,
     pub diagnostics: BTreeMap<String, Vec<String>>,
+}
+
+/// Version of the derived Python evidence format, independent of resolver policy.
+pub const PYTHON_ROOT_PROVENANCE_VERSION: u32 = 1;
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PythonRootState {
+    #[default]
+    Unknown,
+    NoConfig,
+    InferredDefaults,
+    Explicit,
+    PartialOrUnsupported,
+    InvalidConfig,
+}
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum PythonRootEvidence {
+    #[default]
+    InferredDefault,
+    /// JSON pointer into the captured parsed document, including array index.
+    /// The original spelling is retained even when lexical normalization dedups.
+    Explicit { directive: String, value: String },
+}
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PythonConfigBinding {
+    /// Original repository-relative capture key; never synthesized from roots.
+    pub path: String,
+    /// BLAKE3 of original bytes, including comments and whitespace, if read.
+    pub digest: Option<String>,
+    /// Matching parsed document + digest + no capture error. Not inventory proof.
+    pub captured_document: bool,
+}
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct PythonRootProvenance {
+    pub version: u32,
+    pub state: PythonRootState,
+    pub config: Option<PythonConfigBinding>,
+    pub roots: BTreeMap<String, Vec<PythonRootEvidence>>,
+    /// Capture, malformed, unsupported and truncated input limitations. These
+    /// are separate from legacy resolver diagnostics and do not alter resolution.
+    pub limitations: Vec<String>,
 }

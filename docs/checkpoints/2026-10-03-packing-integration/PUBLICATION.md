@@ -13,6 +13,6 @@ Draft未创建。按指令停止，不重试旧PR动作、不改base、不走替
 最终SHA以交接响应/远端ref为准。产品source仍90858af；没有merge/forcepush/deploy。
 
 CI：workflow字节完全不改，push只匹配main，当前独立branch没有成功PR触发；不宣称组合CI绿。
-精确最终head的只读检查结果另记录head-checks.log；若API同样Forbidden则只表示无法读取，
+精确最终head的只读检查结果保存在交接环境/tmp/codecortex-final-head-checks.json；若API同样Forbidden则只表示无法读取，
 不虚构检查数量或失败结论。V19/P7/quality及组合cloud gate仍open，root已接受P1/P2和
 packing bounded独审，不替代组合CI或DEV/100k新session。

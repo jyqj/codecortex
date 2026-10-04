@@ -1,0 +1,56 @@
+{
+  "implementation": "c1aa6607aadbf27eb86ba63816982cf48ae277d0",
+  "base": "37dd042eaa1209a86e0cafdcd92ae77e036e76f5",
+  "before": "443ca67a45aec1b15939f746c082d1f6d5bf57f2",
+  "after_compile": [
+    "rustc",
+    "+1.95.0",
+    "--edition=2021",
+    "artifacts/controls/query-target-independent-20261004/driver.rs",
+    "-L",
+    "dependency=target/debug/deps",
+    "--extern",
+    "cc_eval=target/debug/deps/libcc_eval-c10568ffeac0e155.rlib",
+    "--extern",
+    "cc_server=target/debug/deps/libcc_server-54f8c2aefb185b1c.rlib",
+    "--extern",
+    "cc_model=target/debug/deps/libcc_model-f6188cc223001c5c.rlib",
+    "--extern",
+    "serde_json=target/debug/deps/libserde_json-c74784839d633be7.rlib",
+    "-o",
+    "/tmp/query-review-after-driver"
+  ],
+  "before_compile": [
+    "rustc",
+    "+1.95.0",
+    "--edition=2021",
+    "artifacts/controls/query-target-independent-20261004/driver.rs",
+    "-L",
+    "dependency=target/debug/deps",
+    "--extern",
+    "cc_eval=target/debug/deps/libcc_eval-c10568ffeac0e155.rlib",
+    "--extern",
+    "cc_server=target/debug/deps/libcc_server-54f8c2aefb185b1c.rlib",
+    "--extern",
+    "cc_model=target/debug/deps/libcc_model-f6188cc223001c5c.rlib",
+    "--extern",
+    "serde_json=target/debug/deps/libserde_json-c74784839d633be7.rlib",
+    "-o",
+    "/tmp/query-review-before-driver"
+  ],
+  "cargo_lock_sha256": "ea6b177872de3749702e2cd967f4504efff5bcc67cd2a2459205d182243d1000",
+  "production_changed_from_base": [
+    "crates/cc-search/src/engine_lane_tests.rs",
+    "crates/cc-search/src/lib.rs",
+    "crates/cc-search/src/plan.rs",
+    "crates/cc-search/src/query_target.rs"
+  ],
+  "review_scope": "Own controls and report only; no production edits",
+  "commands": [
+    "cargo +1.95.0 build --locked -p cc-eval --lib (after and frozen worktree before)",
+    "cargo +1.95.0 test --locked -p cc-search query_target --lib",
+    "cargo +1.95.0 fmt --all -- --check",
+    "python3 artifacts/controls/query-target-independent-20261004/check.py"
+  ],
+  "original_artifacts_untouched": true
+}

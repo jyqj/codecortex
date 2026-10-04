@@ -90,8 +90,10 @@ fn identifier(text: &str) -> bool {
         && chars.all(|c| c == '_' || c.is_alphanumeric())
 }
 
-/// Qualified member syntax identifies the last component, not its receiver.
-/// It does not resolve the qualifier or infer that every member is callable.
+/// Only pure `::` chains and the narrow `(*Receiver).member` form give a hint.
+/// Bare dotted strings can be filenames, modules or members: no extension,
+/// capitalization or filesystem evidence can make them explicit here.
+/// This does not resolve qualifiers or infer that every member is callable.
 fn member_name(text: &str) -> Option<&str> {
     if text.chars().any(char::is_whitespace) {
         return None;
@@ -102,7 +104,7 @@ fn member_name(text: &str) -> Option<&str> {
     } else {
         text
     };
-    let parts: Vec<_> = text.split("::").flat_map(|part| part.split('.')).collect();
+    let parts: Vec<_> = text.split("::").collect();
     (parts.len() > 1 && parts.iter().all(|part| identifier(part))).then(|| *parts.last().unwrap())
 }
 
@@ -111,9 +113,9 @@ mod tests {
     use super::*;
 
     #[test]
-    fn frozen_independent_matrix() {
+    fn frozen_v2_independent_matrix() {
         let rows: serde_json::Value = serde_json::from_str(include_str!(
-            "../../../artifacts/controls/query-target-20261004/matrix.json"
+            "../../../artifacts/controls/query-target-v2-20261004/matrix.json"
         ))
         .unwrap();
         for row in rows.as_array().unwrap() {
@@ -131,6 +133,53 @@ mod tests {
                 row["expected_model"].as_str().unwrap().to_lowercase(),
                 "{query}"
             );
+        }
+    }
+
+    #[test]
+    fn historical_v1_dot_expectations_are_explicitly_superseded() {
+        let rows: serde_json::Value = serde_json::from_str(include_str!(
+            "../../../artifacts/controls/query-target-20261004/matrix.json"
+        ))
+        .unwrap();
+        let mut superseded = Vec::new();
+        for row in rows.as_array().unwrap() {
+            let query = row["query"].as_str().unwrap();
+            if matches!(
+                row["id"].as_str(),
+                Some("qualified-dot" | "qualified-field")
+            ) {
+                assert!(row["expected_model"]
+                    .as_str()
+                    .unwrap()
+                    .starts_with("named:"));
+                assert_eq!(
+                    QueryTarget::parse(&crate::dsl::parse_search_dsl(query)),
+                    QueryTarget::Ambiguous
+                );
+                superseded.push(row["id"].as_str().unwrap());
+            }
+        }
+        assert_eq!(superseded, vec!["qualified-dot", "qualified-field"]);
+    }
+
+    #[test]
+    fn filename_counterexamples_retain_legacy_name_eligibility() {
+        for (query, container, suffix) in [
+            ("Beacon.spec.py", "Beacon", "py"),
+            ("Vessel.yaml", "Vessel", "yaml"),
+        ] {
+            let target = QueryTarget::parse(&crate::dsl::parse_search_dsl(query));
+            assert_eq!(target, QueryTarget::Ambiguous);
+            let tokens = cc_db::fts::tokenize_codeish(query);
+            assert!(target.permits(container, Some("class"), &tokens));
+            assert!(target.permits(suffix, Some("function"), &tokens));
+        }
+        let tokens = vec!["beacon".into(), "pulse".into()];
+        for query in ["lights::Beacon::pulse", "(*Beacon).pulse"] {
+            let target = QueryTarget::parse(&crate::dsl::parse_search_dsl(query));
+            assert!(target.permits("pulse", Some("method"), &tokens));
+            assert!(!target.permits("Beacon", Some("class"), &tokens));
         }
     }
 

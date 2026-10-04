@@ -4,11 +4,14 @@
 固定组合产品（含独立测试、不含本次文档修正与验证回执）：
 `e4a8df4cbc6dfae29af8cb0eac9ee83fbba4d696`。
 分支：`integration/bounded-groundwork-20261004`。
+test-only fix source：`d62215f6ab075aadb4da0f99d52a29ce22c027c5`。
 文档/回执提交与远端状态见交付响应和 `PUBLICATION.md`，不把文档 SHA 当作新产品源码。
 
 结论：三项 accepted limited scope 已整合；49 scoped tests 与70 frozen controls通过。
-**strict all-target lint FAIL**，因此不是完整 strict gate PASS、release 或 public quality 认证。
-没有生产冲突或手工 source resolution，没有新增 runtime source 修补。
+初始 strict all-target lint 失败历史保留；用户随后明确授权单表达式 test-only lint 修正，
+最终 `d62215f6ab075aadb4da0f99d52a29ce22c027c5` 上六条 affected tests、strict all-target
+lint、fmt与source guard均PASS。生产源码仍逐byte等于产品e4a8df4，不是release/public quality认证。
+没有生产冲突或新增runtime source修补。
 
 ## 精确来源和历史
 
@@ -45,15 +48,19 @@ Cargo JSON返回的 target-profile artifact，未按mtime或旧review binary选�
 | cc-search --lib query_target | 6 passed / 298 filtered / 0 ignored |
 | fmt --all --check | PASS |
 | build --workspace | PASS |
-| clippy --workspace --all-targets -D warnings | FAIL（exit101） |
+| clippy --workspace --all-targets -D warnings | 初始FAIL（exit101）；授权test-only修正后PASS |
 | clippy --workspace --lib --bins -D warnings | PASS |
 | source union/evidence/lock guard、wire absence guard | PASS |
 | 中央roadmap派生 | PASS；192 = 150 done / 41 todo / 1 in_progress |
 
-all-target lint 唯一诊断是原作者新增 `crates/cc-search/src/engine_lane_tests.rs:1235`
+初始all-target lint唯一诊断是原作者新增 `crates/cc-search/src/engine_lane_tests.rs:1235`
 `let mut hits = vec![member, exact]` 的 `clippy::useless_vec`。按只允许机械 module
 registration conflict resolution 的授权边界，保留精确原测试而未替换为array、降低lint
-或修改生产源。该严格测试目标 gate 仍OPEN。
+或修改生产源。随后用户明确授权仅把该expression替换为`[member, exact]`，
+未改assertions、未加lint allowance；affected六条tests及strict all-target lint重新通过。
+完整原测试bytes保存在`test-only-lint-fix/engine_lane_tests.rs.original`，digest与精确
+单表达式transformation保存在`transformation.json`；更新source guard仅承认这一test-only
+exception。初始失败日志/原guard报告/独立review证据不覆盖，最终回执在`test-only-lint-fix/`。
 
 70条独立delta-v2冻结控制均使用本次实际 CodeIndex + **in-process MCP wire** + 原
 normalizer/source verifier，非子进程stdio。覆盖direct type/callable、显式name/kind、
@@ -92,7 +99,7 @@ provenance字段不被误称为整份JSON字节兼容；旧缺失字段默认Unk
 - [x] 三组精确source history集成，独立reviews隔离导入并保留旧失败证据。
 - [x] normalized空根/`.`文档事实修正与组合兼容probe。
 - [x] combined scoped tests、实际engine/MCP controls及source/wire guards。
-- [ ] strict all-target lint：原作者test-only useless_vec待单独授权mechanical修正。
+- [x] strict all-target lint：单独授权的原作者test-only useless_vec机械修正，六条affected tests与strict gate通过。
 - [ ] AST adapter：同一source bytes/AST产生完整typed ancestry/kind/range，不用token assertion替代。
 - [ ] source capture：完整inventory、native alias/duplicate、marker absence/collision、owner与symlink/race政策。
 - [ ] resource/cache：总bytes/file-count/ancestry/identifier限制，验证capture复用与完整dependency/invalidation成本。
@@ -103,4 +110,5 @@ provenance字段不被误称为整份JSON字节兼容；旧缺失字段默认Unk
 用户报告既有 `90858afae647a513537bf118932a7ba5020ee98b` 的100k已通过，保留其精确
 旧source适用边界；它不自动认证本组合。未跑新100k、whole-public formal eval、excluded
 old post_index runtime或包含它的suite、private42/GCWAL faults。build/lint只编译targets。
-未merge到main、未deploy。正常origin fetch成功；push与唯一draft attempt另记实际终态。
+未merge到main、未deploy。正常origin fetch成功；初始push成功且唯一draft attempt已Forbidden。后续用户明确授权
+正常origin push文档/拒绝回执及test-only修正，并用git ls-remote核验SHA；不重试PR/API，详见PUBLICATION。

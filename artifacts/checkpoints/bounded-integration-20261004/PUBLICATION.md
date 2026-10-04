@@ -13,3 +13,10 @@
 `publication.json` / `receipts/draft-attempt.log`；请求正文保存在 `draft-body.md`。
 本地最后一个文档receipt提交保存该拒绝证据，拒绝后未再次push；因此本地HEAD与
 远端6b8f21a不同，但二者crates/Cargo源码完全一致。确切本地receipt SHA以交付响应为准。
+
+## 后续明确授权
+
+用户在同一source thread明确授权正常origin push文档/Forbidden回执与唯一test-only lint修正，
+不重试PR/API。test-only source `d62215f6ab075aadb4da0f99d52a29ce22c027c5`；生产source仍e4a8df4。
+后续正常push和git ls-remote精确SHA核验见`test-only-lint-fix/publication.json`与交付响应。
+没有追加PR/API调用、merge或deploy。

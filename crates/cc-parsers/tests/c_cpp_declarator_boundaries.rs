@@ -44,15 +44,14 @@ fn rejected_namespace_kind_and_poisoned_callable_names_use_ast_name() {
         .parse("micro.cpp", text, Language::Cpp)
         .unwrap();
     let native = parsed.symbols.iter().find(|s| s.name == "leaf").unwrap();
-    assert_eq!(
-        native.kind,
-        SymbolKind::Method,
-        "preexisting parser taxonomy debt"
-    );
+    assert_eq!(native.kind, SymbolKind::Function);
     let tree = tree(text, true);
     for poison in [None, Some("T"), Some("poison")] {
         let mut hints = parsed.symbols.clone();
         let hint = hints.iter_mut().find(|s| s.name == "leaf").unwrap();
+        // Namespace symbols are now correct. Keep exercising the rejected
+        // Method hint explicitly rather than depending on the old parser bug.
+        hint.kind = SymbolKind::Method;
         if let Some(name) = poison {
             hint.name = name.into();
             hint.kind = SymbolKind::Function;

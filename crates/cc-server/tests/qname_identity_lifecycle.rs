@@ -343,7 +343,7 @@ fn owned_v24_cache_rebuilds_and_unchanged_source_is_reparsed_at_v25() {
     assert_eq!(
         conn.pragma_query_value(None, "user_version", |r| r.get::<_, u32>(0))
             .unwrap(),
-        25
+        cc_db::index_migrate::CURRENT_SCHEMA_VERSION
     );
 }
 

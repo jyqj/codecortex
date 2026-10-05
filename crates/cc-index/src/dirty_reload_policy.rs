@@ -176,7 +176,11 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
             edge.callee_symbol_uid = None;
             edge.resolution_kind = ResolutionKind::Unresolved;
             edge.resolution_confidence = 0.0;
-            if edge.resolution_strategy != cc_model::resolution::PARSER_UNSUPPORTED_BINDING {
+            if !matches!(
+                edge.resolution_strategy.as_str(),
+                cc_model::resolution::PARSER_UNSUPPORTED_BINDING
+                    | cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING
+            ) {
                 edge.resolution_strategy = String::new();
             }
         }
@@ -197,7 +201,11 @@ pub(crate) fn parse_outcome_from_reloaded_edges(edges: FileEdgesForReresolve) ->
             sym_ref.target_file_path = None;
             sym_ref.resolution_kind = ResolutionKind::Unresolved;
             sym_ref.resolution_confidence = 0.0;
-            if sym_ref.resolution_strategy != cc_model::resolution::PARSER_UNSUPPORTED_BINDING {
+            if !matches!(
+                sym_ref.resolution_strategy.as_str(),
+                cc_model::resolution::PARSER_UNSUPPORTED_BINDING
+                    | cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING
+            ) {
                 sym_ref.resolution_strategy = String::new();
             }
         }

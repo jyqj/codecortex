@@ -11,6 +11,9 @@ pub const RESOLUTION_VERSION: u32 = 3;
 /// Syntax proves a binding exists but its target is not statically supported.
 /// Do not replace it with a coincidental global name or type-catalog fallback.
 pub const PARSER_UNSUPPORTED_BINDING: &str = "parser_unsupported_binding";
+/// A C++ namespace-function target lacks declaration-owner proof. Name-only
+/// resolution and type backfill must not turn this negative evidence into a UID.
+pub const CPP_NAMESPACE_UNPROVEN_BINDING: &str = "cpp_namespace_owner_unproven";
 pub const MAX_RESOLUTION_RECORDS: usize = 4096;
 pub const MAX_RESOLUTION_DEPENDENCIES: usize = 4096;
 pub const MAX_RESOLUTION_CANDIDATES: usize = 32;

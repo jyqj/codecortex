@@ -179,7 +179,10 @@ impl CapturedProject {
                         .next()
                         .unwrap_or(&call.callee_symbol),
                 ))
-                && call.resolution_strategy != PARSER_UNSUPPORTED_BINDING
+                && !matches!(
+                    call.resolution_strategy.as_str(),
+                    PARSER_UNSUPPORTED_BINDING | CPP_NAMESPACE_UNPROVEN_BINDING
+                )
             {
                 call.target_symbol_id = None;
                 call.callee_symbol_uid = None;
@@ -191,7 +194,10 @@ impl CapturedProject {
         }
         for sref in &mut outcome.symbol_refs {
             if blocked_name(sref.ref_name.as_deref().unwrap_or(&sref.symbol_name))
-                && sref.resolution_strategy != PARSER_UNSUPPORTED_BINDING
+                && !matches!(
+                    sref.resolution_strategy.as_str(),
+                    PARSER_UNSUPPORTED_BINDING | CPP_NAMESPACE_UNPROVEN_BINDING
+                )
             {
                 sref.target_symbol_id = None;
                 sref.target_symbol_uid = None;

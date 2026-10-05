@@ -40,7 +40,9 @@ use rusqlite::Connection;
 /// skip unchanged files and preserve those missing type edges/dependencies.
 // v25 reparses unchanged source to establish source-bound parser identities
 // and corrected Python lexical qnames. No legacy association backfill.
-pub const CURRENT_SCHEMA_VERSION: u32 = 25;
+// v26 reparses unchanged C++ namespace functions with corrected kind/qname/UID
+// and source-bound caller/callee ownership. Never retain legacy Method UIDs.
+pub const CURRENT_SCHEMA_VERSION: u32 = 26;
 
 pub(crate) const FULL_SCHEMA_SQL: &str = include_str!("sql/index_v1.sql");
 
@@ -146,7 +148,7 @@ mod tests {
     /// Semantic fixes require reparse even when table layout is unchanged.
     #[test]
     fn legacy_parse_and_resolution_versions_require_rebuild() {
-        for stored in [21, 22, 23] {
+        for stored in [21, 22, 23, 24, 25] {
             let conn = Connection::open_in_memory().unwrap();
             conn.execute_batch(FULL_SCHEMA_SQL).unwrap();
             conn.pragma_update(None, "user_version", stored).unwrap();

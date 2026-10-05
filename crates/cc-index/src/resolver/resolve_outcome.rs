@@ -4,6 +4,9 @@ use std::collections::{BTreeSet, HashMap};
 
 use cc_model::edge::{CallEdgeRecord, ResolutionKind};
 use cc_model::parse::ParseOutcome;
+use cc_model::resolution::{
+    ResolutionManifest, ResolutionOutcome, ResolutionRecord, CPP_NAMESPACE_UNPROVEN_BINDING,
+};
 use cc_model::symbol::SymbolKind;
 
 use crate::type_catalog::TypeCatalog;
@@ -11,6 +14,57 @@ use crate::type_catalog::TypeCatalog;
 use super::catalog::SymbolCatalog;
 use super::helpers::*;
 use super::types::*;
+
+/// With schema v26, the C++ parser produces Function + container only for its
+/// AST-proven namespace scope A. Use Scanner's language detector, not name or
+/// qname spelling guesses. Generic catalog lookup carries no C++ owner proof.
+fn needs_cpp_namespace_proof(entry: &CatalogEntry) -> bool {
+    entry.kind == SymbolKind::Function
+        && entry.container.is_some()
+        && cc_parsers::detect_language(&entry.file_path) == cc_model::Language::Cpp
+}
+
+fn namespace_negative(site_kind: &str, site_id: &str, query: &str) -> ResolutionRecord {
+    ResolutionRecord {
+        site_kind: site_kind.into(),
+        site_id: site_id.into(),
+        query: query.into(),
+        outcome: ResolutionOutcome::Unresolved {
+            reason: CPP_NAMESPACE_UNPROVEN_BINDING.into(),
+        },
+    }
+}
+
+fn block_namespace_ref(
+    sref: &mut cc_model::symbol::SymbolRefRecord,
+    manifest: &mut ResolutionManifest,
+) {
+    sref.target_symbol_id = None;
+    sref.target_symbol_uid = None;
+    sref.target_file_path = None;
+    sref.resolution_kind = ResolutionKind::Unresolved;
+    sref.resolution_confidence = 0.0;
+    sref.resolution_strategy = CPP_NAMESPACE_UNPROVEN_BINDING.into();
+    manifest.record(namespace_negative(
+        "symbol_ref",
+        &sref.ref_id,
+        &sref.symbol_name,
+    ));
+}
+
+fn block_namespace_call(edge: &mut CallEdgeRecord, manifest: &mut ResolutionManifest) {
+    edge.target_symbol_id = None;
+    edge.callee_symbol_uid = None;
+    edge.target_file_path = None;
+    edge.resolution_kind = ResolutionKind::Unresolved;
+    edge.resolution_confidence = 0.0;
+    edge.resolution_strategy = CPP_NAMESPACE_UNPROVEN_BINDING.into();
+    manifest.record(namespace_negative(
+        "call",
+        &edge.edge_id,
+        &edge.callee_symbol,
+    ));
+}
 
 /// Whether the type-catalog pass may touch an already-processed call edge.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -34,6 +88,7 @@ fn type_upgrade_gate(edge: &CallEdgeRecord) -> TypeUpgradeGate {
                 "ambiguous"
                     | "authoritative_unresolved"
                     | cc_model::resolution::PARSER_UNSUPPORTED_BINDING
+                    | CPP_NAMESPACE_UNPROVEN_BINDING
                     | cc_model::project_model::MODULE_BLOCKED_BINDING
             ) =>
         {
@@ -98,6 +153,10 @@ impl SymbolCatalog {
 
         // Resolve symbol refs
         for sref in &mut outcome.symbol_refs {
+            if sref.resolution_strategy == CPP_NAMESPACE_UNPROVEN_BINDING {
+                block_namespace_ref(sref, &mut outcome.resolution);
+                continue;
+            }
             if matches!(
                 sref.resolution_strategy.as_str(),
                 cc_model::resolution::PARSER_UNSUPPORTED_BINDING
@@ -157,6 +216,10 @@ impl SymbolCatalog {
                 }
                 if let NameResolution::Resolved(result) = decision {
                     let e = &self.entries[result.catalog_index];
+                    if needs_cpp_namespace_proof(e) {
+                        block_namespace_ref(sref, &mut outcome.resolution);
+                        continue;
+                    }
                     sref.target_symbol_id = Some(e.symbol_id.clone());
                     sref.target_file_path = Some(e.file_path.clone());
                     sref.target_symbol_uid = e.symbol_uid.clone();
@@ -171,6 +234,10 @@ impl SymbolCatalog {
 
         // Resolve call edges
         for edge in &mut outcome.call_edges {
+            if edge.resolution_strategy == CPP_NAMESPACE_UNPROVEN_BINDING {
+                block_namespace_call(edge, &mut outcome.resolution);
+                continue;
+            }
             if edge.resolution_strategy == cc_model::project_model::MODULE_BLOCKED_BINDING {
                 // A lost import must not retain a prior resolver's call classification.
                 edge.call_kind = "unresolved_import".into();
@@ -270,6 +337,10 @@ impl SymbolCatalog {
                 }
                 if let NameResolution::Resolved(result) = decision {
                     let e = &self.entries[result.catalog_index];
+                    if needs_cpp_namespace_proof(e) {
+                        block_namespace_call(edge, &mut outcome.resolution);
+                        continue;
+                    }
                     edge.target_symbol_id = Some(e.symbol_id.clone());
                     edge.target_file_path = Some(e.file_path.clone());
                     edge.callee_symbol_uid = e.symbol_uid.clone();
@@ -307,6 +378,10 @@ impl SymbolCatalog {
                     Some(candidate) => candidate,
                     None => continue,
                 };
+                if needs_cpp_namespace_proof(&self.entries[candidate.catalog_index]) {
+                    block_namespace_call(edge, &mut outcome.resolution);
+                    continue;
+                }
                 match gate {
                     TypeUpgradeGate::Backfill => candidate.apply(edge, &self.entries),
                     TypeUpgradeGate::Upgrade => {

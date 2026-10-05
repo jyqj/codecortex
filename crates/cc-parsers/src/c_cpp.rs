@@ -101,6 +101,91 @@ pub struct CCppParser {
     pub(crate) chunker: Chunker,
 }
 
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum LexicalOwner {
+    Global,
+    Namespace,
+    Type,
+}
+
+/// Keep legacy display containers separate from proven namespace provenance.
+/// This does not resolve qualified declarators or rewrite type identities.
+struct SymbolScope<'a> {
+    container: Option<&'a str>,
+    owner: LexicalOwner,
+    namespace_path: Option<Vec<String>>,
+}
+
+struct CallTarget<'a> {
+    ids: (&'a str, &'a str),
+    namespace_qname: Option<&'a str>,
+    ambiguous: bool,
+}
+
+impl SymbolScope<'_> {
+    fn global() -> Self {
+        Self {
+            container: None,
+            owner: LexicalOwner::Global,
+            namespace_path: Some(Vec::new()),
+        }
+    }
+
+    fn named_type(name: &str) -> SymbolScope<'_> {
+        SymbolScope {
+            container: Some(name),
+            owner: LexicalOwner::Type,
+            namespace_path: None,
+        }
+    }
+
+    fn named_namespace<'a>(
+        &self,
+        name: &'a str,
+        node: tree_sitter::Node<'_>,
+        source: &[u8],
+    ) -> SymbolScope<'a> {
+        let namespace_path = self.namespace_path.as_ref().and_then(|prefix| {
+            if node.has_error() || node.is_missing() {
+                return None;
+            }
+            let mut path = prefix.clone();
+            let mut pending = vec![node.child_by_field_name("name")?];
+            let mut visited = 0;
+            while let Some(part) = pending.pop() {
+                visited += 1;
+                if visited > 128 || part.has_error() || part.is_missing() {
+                    return None;
+                }
+                match part.kind() {
+                    "comment" => {}
+                    "namespace_identifier" => {
+                        if path.len() >= 64 {
+                            return None;
+                        }
+                        path.push(part.utf8_text(source).ok()?.to_string());
+                    }
+                    "nested_namespace_specifier" => {
+                        let mut cursor = part.walk();
+                        let children: Vec<_> = part.named_children(&mut cursor).collect();
+                        if children.is_empty() {
+                            return None;
+                        }
+                        pending.extend(children.into_iter().rev());
+                    }
+                    _ => return None,
+                }
+            }
+            (path.len() > prefix.len()).then_some(path)
+        });
+        SymbolScope {
+            container: Some(name),
+            owner: LexicalOwner::Namespace,
+            namespace_path,
+        }
+    }
+}
+
 impl CCppParser {
     pub fn new(lang: Language) -> Self {
         let (ts_lang, is_cpp) = match lang {
@@ -126,7 +211,13 @@ impl CCppParser {
     ) -> Vec<SymbolRecord> {
         let mut symbols = Vec::new();
         let root = tree.root_node();
-        self.walk_symbols(&root, source, file_path, None, &mut symbols);
+        self.walk_symbols(
+            &root,
+            source,
+            file_path,
+            &SymbolScope::global(),
+            &mut symbols,
+        );
         symbols
     }
 
@@ -136,15 +227,16 @@ impl CCppParser {
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
-        container: Option<&str>,
+        scope: &SymbolScope<'_>,
         symbols: &mut Vec<SymbolRecord>,
     ) {
+        let container = scope.container;
         let mut cursor = node.walk();
         for child in node.children(&mut cursor) {
             match child.kind() {
                 "function_definition" => {
                     if let Some(sym) =
-                        self.extract_function_definition(&child, source, file_path, container)
+                        self.extract_function_definition(&child, source, file_path, scope)
                     {
                         symbols.push(sym);
                     }
@@ -161,7 +253,13 @@ impl CCppParser {
                         symbols.push(sym);
                         // Walk body for nested declarations (methods in C++)
                         if let Some(body) = child.child_by_field_name("body") {
-                            self.walk_symbols(&body, source, file_path, Some(&name), symbols);
+                            self.walk_symbols(
+                                &body,
+                                source,
+                                file_path,
+                                &SymbolScope::named_type(&name),
+                                symbols,
+                            );
                         }
                     }
                 }
@@ -187,7 +285,13 @@ impl CCppParser {
                         let name = sym.name.clone();
                         symbols.push(sym);
                         if let Some(body) = child.child_by_field_name("body") {
-                            self.walk_symbols(&body, source, file_path, Some(&name), symbols);
+                            self.walk_symbols(
+                                &body,
+                                source,
+                                file_path,
+                                &SymbolScope::named_type(&name),
+                                symbols,
+                            );
                         }
                     }
                 }
@@ -196,13 +300,14 @@ impl CCppParser {
                         let name = sym.name.clone();
                         symbols.push(sym);
                         if let Some(body) = child.child_by_field_name("body") {
-                            self.walk_symbols(&body, source, file_path, Some(&name), symbols);
+                            let namespace = scope.named_namespace(&name, child, source);
+                            self.walk_symbols(&body, source, file_path, &namespace, symbols);
                         }
                     }
                 }
                 "template_declaration" if self.is_cpp => {
                     // Unwrap the template and extract the inner declaration
-                    self.walk_symbols(&child, source, file_path, container, symbols);
+                    self.walk_symbols(&child, source, file_path, scope, symbols);
                 }
                 "declaration" => {
                     // Skip plain declarations (variable decls, forward decls) at the top level
@@ -218,10 +323,19 @@ impl CCppParser {
         node: &tree_sitter::Node,
         source: &[u8],
         file_path: &str,
-        container: Option<&str>,
+        scope: &SymbolScope<'_>,
     ) -> Option<SymbolRecord> {
+        let container = scope.container;
         let declarator_node = node.child_by_field_name("declarator")?;
         let (name, params_node) = self.unwrap_function_declarator(&declarator_node, source)?;
+        let namespace_qname = (self.is_cpp && scope.owner == LexicalOwner::Namespace)
+            .then(|| {
+                let path = scope.namespace_path.as_ref()?;
+                let terminal = Self::unqualified_function_name(declarator_node)?;
+                (terminal.utf8_text(source).ok()? == name)
+                    .then(|| format!("{}::{}", path.join("::"), name))
+            })
+            .flatten();
 
         // Return type from the `type` field
         let type_node = node.child_by_field_name("type");
@@ -231,7 +345,7 @@ impl CCppParser {
 
         let (param_types, param_count) = self.extract_param_types(&params_node, source);
 
-        let kind = if container.is_some() {
+        let kind = if container.is_some() && namespace_qname.is_none() {
             SymbolKind::Method
         } else {
             SymbolKind::Function
@@ -246,10 +360,10 @@ impl CCppParser {
             None => format!("{}{}", name, params_text),
         };
 
-        let qname = match container {
+        let qname = namespace_qname.unwrap_or_else(|| match container {
             Some(c) => format!("{}::{}", c, name),
             None => name.to_string(),
-        };
+        });
 
         let symbol_id = StableId::edge_id(
             "sym",
@@ -294,6 +408,34 @@ impl CCppParser {
             base_types: None,
             implements: None,
         })
+    }
+
+    /// Eligibility for the bounded namespace repair. Never discard a qualifier,
+    /// inspect return types/parameters, or broaden native declarator support.
+    fn unqualified_function_name(mut node: tree_sitter::Node<'_>) -> Option<tree_sitter::Node<'_>> {
+        for _ in 0..64 {
+            if node.has_error() || node.is_missing() {
+                return None;
+            }
+            node = match node.kind() {
+                "identifier" => return Some(node),
+                "function_declarator" | "pointer_declarator" => {
+                    node.child_by_field_name("declarator")?
+                }
+                "reference_declarator" => node.named_child(0)?,
+                "parenthesized_declarator" => {
+                    let mut cursor = node.walk();
+                    let mut children = node.named_children(&mut cursor);
+                    let child = children.next()?;
+                    if children.next().is_some() {
+                        return None;
+                    }
+                    child
+                }
+                _ => return None,
+            };
+        }
+        None
     }
 
     /// Unwrap nested declarators to find the function_declarator and extract name + params.
@@ -705,13 +847,26 @@ impl CCppParser {
         let mut refs = Vec::new();
         let mut calls = Vec::new();
 
-        // Build name -> (symbol_id, symbol_uid) map
-        let mut by_name: HashMap<String, (&str, &str)> = HashMap::new();
+        // Preserve legacy-only lookup, but never attach newly corrected
+        // namespace identities through ambiguous short-name first matches.
+        let mut by_name: HashMap<String, CallTarget<'_>> = HashMap::new();
         for sym in symbols {
             if let Some(uid) = &sym.symbol_uid {
+                let namespace_qname =
+                    (self.is_cpp && sym.kind == SymbolKind::Function && sym.container.is_some())
+                        .then_some(sym.qname.as_deref())
+                        .flatten();
                 by_name
                     .entry(sym.name.clone())
-                    .or_insert((sym.symbol_id.as_str(), uid.as_str()));
+                    .and_modify(|target| {
+                        target.ambiguous = true;
+                        target.namespace_qname = target.namespace_qname.or(namespace_qname);
+                    })
+                    .or_insert(CallTarget {
+                        ids: (sym.symbol_id.as_str(), uid.as_str()),
+                        namespace_qname,
+                        ambiguous: false,
+                    });
             }
         }
 
@@ -731,7 +886,7 @@ impl CCppParser {
         source: &[u8],
         file_path: &str,
         keywords: &HashSet<&str>,
-        by_name: &HashMap<String, (&str, &str)>,
+        by_name: &HashMap<String, CallTarget<'_>>,
         symbols: &[SymbolRecord],
         current_fn: &Option<&SymbolRecord>,
         refs: &mut Vec<SymbolRefRecord>,
@@ -772,12 +927,19 @@ impl CCppParser {
         source: &[u8],
         symbols: &'a [SymbolRecord],
     ) -> Option<&'a SymbolRecord> {
-        let line = node.start_position().row as u32 + 1;
+        let start = node.start_position();
+        let end = node.end_position();
         let declarator = node.child_by_field_name("declarator")?;
         let (name, _) = self.unwrap_function_declarator(&declarator, source)?;
-        symbols
-            .iter()
-            .find(|s| s.name == name && s.start_line == line)
+        let mut matches = symbols.iter().filter(|s| {
+            s.name == name
+                && s.start_line == start.row as u32 + 1
+                && s.start_col == start.column as u32
+                && s.end_line == end.row as u32 + 1
+                && s.end_col == end.column as u32
+        });
+        let found = matches.next()?;
+        matches.next().is_none().then_some(found)
     }
 
     /// Extract a single call from a `call_expression` node.
@@ -788,7 +950,7 @@ impl CCppParser {
         source: &[u8],
         file_path: &str,
         keywords: &HashSet<&str>,
-        by_name: &HashMap<String, (&str, &str)>,
+        by_name: &HashMap<String, CallTarget<'_>>,
         caller_sym: &Option<&SymbolRecord>,
         refs: &mut Vec<SymbolRefRecord>,
         calls: &mut Vec<CallEdgeRecord>,
@@ -874,7 +1036,13 @@ impl CCppParser {
         let start_col = func_node.start_position().column as u32;
         let end_col = func_node.end_position().column as u32;
 
-        let target = by_name.get(&callee);
+        let target = by_name
+            .get(&callee)
+            .and_then(|target| Self::proven_call_target(target, func_node, source, *caller_sym));
+        let namespace_unproven = target.is_none()
+            && by_name
+                .get(&callee)
+                .is_some_and(|t| t.namespace_qname.is_some());
         let ref_id = StableId::ref_id(file_path, &callee, line_no, start_col);
 
         refs.push(SymbolRefRecord {
@@ -898,6 +1066,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if namespace_unproven {
+                cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
                 "unresolved".into()
             },
@@ -937,6 +1107,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if namespace_unproven {
+                cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
                 "unresolved".into()
             },
@@ -952,6 +1124,78 @@ impl CCppParser {
             registered_file: None,
             registered_line: None,
         });
+    }
+
+    fn proven_call_target<'a>(
+        target: &CallTarget<'a>,
+        node: tree_sitter::Node<'_>,
+        source: &[u8],
+        caller: Option<&SymbolRecord>,
+    ) -> Option<(&'a str, &'a str)> {
+        let Some(qname) = target.namespace_qname else {
+            return Some(target.ids);
+        };
+        if target.ambiguous {
+            return None;
+        }
+        let name = if node.kind() == "template_function" {
+            node.child_by_field_name("name")?
+        } else {
+            node
+        };
+        if name.kind() == "identifier" {
+            let caller = caller?;
+            if caller.kind != SymbolKind::Function || caller.container.is_none() {
+                return None;
+            }
+            return (caller.qname.as_deref()?.rsplit_once("::")?.0 == qname.rsplit_once("::")?.0)
+                .then_some(target.ids);
+        }
+        if name.kind() != "qualified_identifier" {
+            return None;
+        }
+        // Only a full AST spelling in global lexical context, or an explicit
+        // leading ::, proves this exact namespace path. Relative lookup, using
+        // declarations, aliases and type-member resolution remain out of scope.
+        let absolute = name.child(0).is_some_and(|n| n.kind() == "::");
+        if !absolute {
+            let mut parent = name.parent();
+            while let Some(p) = parent {
+                if matches!(
+                    p.kind(),
+                    "namespace_definition" | "class_specifier" | "struct_specifier"
+                ) {
+                    return None;
+                }
+                parent = p.parent();
+            }
+        }
+        let mut parts = Vec::new();
+        let mut pending = vec![name];
+        for _ in 0..128 {
+            let Some(part) = pending.pop() else {
+                return (parts.join("::") == qname).then_some(target.ids);
+            };
+            if part.has_error() || part.is_missing() {
+                return None;
+            }
+            match part.kind() {
+                "identifier" | "namespace_identifier" => {
+                    parts.push(part.utf8_text(source).ok()?);
+                }
+                "qualified_identifier" => {
+                    pending.push(part.child_by_field_name("name")?);
+                    if let Some(scope) = part.child_by_field_name("scope") {
+                        pending.push(scope);
+                    } else if part.child(0).is_none_or(|n| n.kind() != "::") {
+                        return None;
+                    }
+                }
+                "template_function" => pending.push(part.child_by_field_name("name")?),
+                _ => return None,
+            }
+        }
+        None
     }
 
     /// Resolve the bare callee name from a `field_expression` field node.
@@ -1024,7 +1268,7 @@ impl CCppParser {
         source: &[u8],
         file_path: &str,
         keywords: &HashSet<&str>,
-        by_name: &HashMap<String, (&str, &str)>,
+        by_name: &HashMap<String, CallTarget<'_>>,
         caller_sym: &Option<&SymbolRecord>,
         refs: &mut Vec<SymbolRefRecord>,
         calls: &mut Vec<CallEdgeRecord>,
@@ -1070,7 +1314,16 @@ impl CCppParser {
         let start_col = node.start_position().column as u32;
         let end_col = type_node.end_position().column as u32;
 
-        let target = by_name.get(&type_name);
+        // A namespace free function cannot prove a constructed type, including
+        // a colliding type/function short name. Keep legacy-only type lookup.
+        let target = by_name
+            .get(&type_name)
+            .filter(|target| target.namespace_qname.is_none())
+            .map(|target| target.ids);
+        let namespace_unproven = target.is_none()
+            && by_name
+                .get(&type_name)
+                .is_some_and(|t| t.namespace_qname.is_some());
         let ref_id = StableId::ref_id(file_path, &type_name, line_no, start_col);
 
         refs.push(SymbolRefRecord {
@@ -1094,6 +1347,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if namespace_unproven {
+                cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
                 "unresolved".into()
             },
@@ -1128,6 +1383,8 @@ impl CCppParser {
             resolution_confidence: if target.is_some() { 1.0 } else { 0.0 },
             resolution_strategy: if target.is_some() {
                 "parser_exact".into()
+            } else if namespace_unproven {
+                cc_model::resolution::CPP_NAMESPACE_UNPROVEN_BINDING.into()
             } else {
                 "unresolved".into()
             },
@@ -1323,7 +1580,7 @@ impl CCppParser {
         symbols: &[SymbolRecord],
         file_path: &str,
     ) -> Vec<DataFlowEdgeRecord> {
-        crate::dataflow_common::extract_env_accesses_with(
+        let mut edges = crate::dataflow_common::extract_env_accesses_with(
             content,
             file_path,
             &C_ENV_ACCESS_RE,
@@ -1332,7 +1589,37 @@ impl CCppParser {
                 crate::dataflow_common::find_enclosing_symbol(symbols, line)
                     .and_then(|s| s.symbol_uid.clone())
             },
-        )
+        );
+        if self.is_cpp {
+            // The shared helper is line-only. For lines involving corrected
+            // namespace functions, require the actual regex match byte point
+            // to belong to one callable span instead of choosing a neighbor.
+            for (edge, capture) in edges.iter_mut().zip(C_ENV_ACCESS_RE.captures_iter(content)) {
+                if !symbols.iter().any(|s| {
+                    s.kind == SymbolKind::Function
+                        && s.container.is_some()
+                        && s.start_line <= edge.line
+                        && edge.line <= s.end_line
+                }) {
+                    continue;
+                }
+                let start = capture.get(0).expect("full env match").start();
+                let line_start = content[..start].rfind('\n').map_or(0, |n| n + 1);
+                let point = (edge.line, (start - line_start) as u32);
+                let mut owners = symbols.iter().filter(|s| {
+                    matches!(s.kind, SymbolKind::Function | SymbolKind::Method)
+                        && (s.start_line, s.start_col) <= point
+                        && point < (s.end_line, s.end_col)
+                });
+                let first = owners.next();
+                edge.source_symbol_uid = if owners.next().is_none() {
+                    first.and_then(|s| s.symbol_uid.clone())
+                } else {
+                    None
+                };
+            }
+        }
+        edges
     }
 }
 

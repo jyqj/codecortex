@@ -113,6 +113,10 @@ fn member_name(text: &str) -> Option<&str> {
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(crate) struct NameBonusContext {
     contextual_owner: Option<String>,
+    // Literal bare names in the accepted primary-query tail only. Keeping
+    // these separate avoids treating the owner/role header or a tokenized
+    // qualified reference (Other.member) as member-name evidence.
+    member_names: Vec<String>,
 }
 
 impl NameBonusContext {
@@ -128,11 +132,11 @@ impl NameBonusContext {
         if words.iter().any(|word| comparison_or_coordination(word)) || comparison_phrase(text) {
             return Self::default();
         }
-        let owner = match words.as_slice() {
+        let (owner, tail) = match words.as_slice() {
             [head, owner, role, tail @ ..]
                 if question_head(head) && member_role(role) && !tail.is_empty() =>
             {
-                Some(*owner)
+                (Some(*owner), tail)
             }
             [head, role, relation, owner, tail @ ..]
                 if question_head(head)
@@ -140,15 +144,54 @@ impl NameBonusContext {
                     && matches!(relation.to_ascii_lowercase().as_str(), "on" | "of" | "in")
                     && !tail.is_empty() =>
             {
-                Some(*owner)
+                (Some(*owner), tail)
             }
-            _ => None,
+            _ => (None, &[][..]),
+        };
+        let contextual_owner = owner
+            .filter(|owner| identifier(owner))
+            .map(str::to_lowercase);
+        let member_names = if contextual_owner.is_some() && !member_exclusion(tail) {
+            tail.iter()
+                .map(|word| word.trim_end_matches(['?', '.', '!', ',', ';']))
+                .filter(|word| identifier(word))
+                .map(str::to_lowercase)
+                .collect()
+        } else {
+            Vec::new()
         };
         Self {
-            contextual_owner: owner
-                .filter(|owner| identifier(owner))
-                .map(str::to_lowercase),
+            contextual_owner,
+            member_names,
         }
+    }
+
+    /// Soft evidence of a named member of the contextual owner, never target
+    /// identity or a kind filter. Abstain on incomplete/ambiguous index data;
+    /// do not resolve namespaces, receiver aliases, or code references here.
+    pub(crate) fn supports_member(
+        &self,
+        name: &str,
+        kind: Option<&str>,
+        qname: Option<&str>,
+    ) -> bool {
+        let Some(owner) = self.contextual_owner.as_deref() else {
+            return false;
+        };
+        let lower = name.to_lowercase();
+        if !identifier(name)
+            || lower == owner
+            || !self.member_names.contains(&lower)
+            || kind.and_then(SymbolKind::from_str_lenient).is_none()
+        {
+            return false;
+        }
+        let Some((qualifier, member)) =
+            qname.and_then(|qname| qname.split_once("::").or_else(|| qname.split_once('.')))
+        else {
+            return false;
+        };
+        identifier(qualifier) && qualifier.to_lowercase() == owner && member == name
     }
 
     pub(crate) fn permits(&self, name: &str, kind: Option<&str>) -> bool {
@@ -164,6 +207,58 @@ impl NameBonusContext {
                 Some("class" | "interface" | "type_alias" | "enum" | "module" | "namespace")
             )
     }
+}
+
+// Conservative veto for the new soft member bonus only. Unlike the historical
+// comparison recognizer, even a code-attached exclusion word makes this new
+// evidence abstain: forgoing a bonus is safer than promoting an excluded name.
+// This finite lexical boundary is not a general negation/intent parser.
+fn member_exclusion(tail: &[&str]) -> bool {
+    tail.iter().any(|word| {
+        word.split(|c: char| !(c.is_alphanumeric() || matches!(c, '_' | '\'' | '’')))
+            .any(|part| {
+                let lower = part
+                    .trim_matches(['\'', '’'])
+                    .to_ascii_lowercase()
+                    .replace('’', "'");
+                matches!(
+                    lower.as_str(),
+                    "not"
+                        | "no"
+                        | "never"
+                        | "neither"
+                        | "nor"
+                        | "without"
+                        | "except"
+                        | "exclude"
+                        | "excludes"
+                        | "excluding"
+                        | "excluded"
+                        | "avoid"
+                        | "avoids"
+                        | "avoiding"
+                        | "avoided"
+                        | "unrelated"
+                        | "cannot"
+                        | "can't"
+                        | "don't"
+                        | "doesn't"
+                        | "didn't"
+                        | "won't"
+                        | "wouldn't"
+                        | "shouldn't"
+                        | "couldn't"
+                        | "mustn't"
+                        | "isn't"
+                        | "aren't"
+                        | "wasn't"
+                        | "weren't"
+                        | "hasn't"
+                        | "haven't"
+                        | "hadn't"
+                )
+            })
+    })
 }
 
 fn question_head(word: &str) -> bool {

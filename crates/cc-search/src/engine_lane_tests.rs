@@ -1634,3 +1634,424 @@ fn query_target_closing_qualifiers_preserve_identity_and_filter_priority() {
         }
     }
 }
+
+// Contextual membership is independent evidence, not an exact-target tier.
+fn contextual_member_test_hit(
+    plan: &SearchPlan,
+    name: &str,
+    kind: Option<&str>,
+    qname: Option<&str>,
+    exact: bool,
+) -> cc_model::search::SearchHit {
+    let mut chunk = fake_candidate_chunk();
+    chunk.chunk_id = format!("{name}:{kind:?}:{qname:?}:{exact}");
+    chunk.symbol_name = Some(name.into());
+    chunk.symbol_kind = kind.map(str::to_owned);
+    chunk.qname = qname.map(str::to_owned);
+    plan.hit_from_chunk(
+        chunk,
+        &FusedScore {
+            total: 0.5,
+            by_lane: vec![],
+            exact_identity: exact,
+        },
+        &plan.lane_ranks(&[]),
+    )
+    .unwrap()
+}
+
+#[test]
+fn query_target_contextual_member_requires_whole_tail_name_and_direct_qname() {
+    let (engine, _tmp) = scoped_test_engine();
+    for (query, name, kind, qname, expected) in [
+        (
+            "Which Lantern API changes the state with Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            true,
+        ),
+        (
+            "What member of Lantern reads Ready?",
+            "Ready",
+            Some("property"),
+            Some("Lantern::Ready"),
+            true,
+        ),
+        (
+            "Which Lantern API uses 中文?",
+            "中文",
+            Some("constant"),
+            Some("Lantern.中文"),
+            true,
+        ),
+        (
+            "Which 灯 API uses 照明?",
+            "照明",
+            Some("method"),
+            Some("灯::照明"),
+            true,
+        ),
+        (
+            "Which Lantern API uses State_Code?",
+            "State_Code",
+            Some("variable"),
+            Some("Lantern.State_Code"),
+            true,
+        ),
+        (
+            "Which Lantern API uses ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            true,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            None,
+            Some("Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("unknown"),
+            Some("Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            None,
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Shelf.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("pkg.Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern::nested.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern::.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern..Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.IgniteMore"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Other.Ignite?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses IgniteMore?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API is deprecated?",
+            "API",
+            Some("method"),
+            Some("Lantern.API"),
+            false,
+        ),
+        (
+            "Which Lantern API is deprecated?",
+            "Lantern",
+            Some("method"),
+            Some("Lantern.Lantern"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Lantern?",
+            "Lantern",
+            Some("method"),
+            Some("Lantern.Lantern"),
+            false,
+        ),
+        (
+            "Which Lantern API uses `Ignite`?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite/Reserve?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        ),
+        (
+            "Which Lantern API uses Ignite() ?",
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        ),
+    ] {
+        let plan = build_plan(
+            &engine,
+            &SearchRequest {
+                query: query.into(),
+                ..Default::default()
+            },
+        );
+        let hit = contextual_member_test_hit(&plan, name, kind, qname, false);
+        assert_eq!(
+            hit.reasons.iter().any(|r| r == "contextual-member"),
+            expected,
+            "{query} / {qname:?}"
+        );
+        assert_eq!(
+            hit.score_trace
+                .iter()
+                .any(|(k, _)| k == "boost:contextual-member"),
+            expected,
+            "{query} / {qname:?}"
+        );
+        assert_eq!(
+            hit.rerank_score,
+            hit.score_trace.iter().map(|(_, value)| value).sum::<f64>()
+        );
+    }
+}
+
+#[test]
+fn query_target_contextual_member_preserves_explicit_comparison_and_context_bypass() {
+    let (engine, _tmp) = scoped_test_engine();
+    for query in [
+        "name:Ignite Which Lantern API uses Ignite?",
+        "kind:method Which Lantern API uses Ignite?",
+        "method Ignite on Lantern",
+        "Lantern::Ignite",
+        "Which Lantern type exposes Ignite?",
+        "Which Lantern API calls Ignite and Reserve?",
+        "Which Lantern API rather than Shelf uses Ignite?",
+        "Which Lantern API (instead of Shelf) uses Ignite?",
+        "Which Lantern API differs from Shelf with Ignite?",
+        "Which Lantern API is deprecated?",
+    ] {
+        let plan = build_plan(
+            &engine,
+            &SearchRequest {
+                query: query.into(),
+                conversation_queries: Some(vec!["Which Lantern API uses Ignite?".into()]),
+                ..Default::default()
+            },
+        );
+        let hit = contextual_member_test_hit(
+            &plan,
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        );
+        assert!(
+            !hit.reasons.iter().any(|r| r == "contextual-member"),
+            "{query}"
+        );
+    }
+}
+
+#[test]
+fn query_target_contextual_member_is_bounded_traced_and_not_an_identity_tier() {
+    for bonus in [0.0, 0.04, 0.18] {
+        let (engine, _tmp) = engine_with(
+            SearchConfig::default(),
+            cc_model::config::RankingConfig {
+                symbol_exact_bonus: bonus,
+                ..Default::default()
+            },
+        );
+        let plan = build_plan(
+            &engine,
+            &SearchRequest {
+                query: "Which Lantern API uses Ignite via Reserve?".into(),
+                ..Default::default()
+            },
+        );
+        for name in ["Ignite", "Reserve"] {
+            let qualified = contextual_member_test_hit(
+                &plan,
+                name,
+                Some("method"),
+                Some(&format!("Lantern.{name}")),
+                false,
+            );
+            let unqualified = contextual_member_test_hit(&plan, name, Some("method"), None, false);
+            assert!((qualified.rerank_score - unqualified.rerank_score - bonus).abs() < 1e-12);
+            let extra: Vec<_> = qualified
+                .score_trace
+                .iter()
+                .filter(|(k, _)| k == "boost:contextual-member")
+                .collect();
+            assert_eq!(extra.len(), usize::from(bonus > 0.0));
+            if bonus > 0.0 {
+                assert_eq!(extra[0].1, bonus);
+            }
+            assert_eq!(
+                qualified
+                    .score_trace
+                    .iter()
+                    .filter(|(k, _)| k != "boost:contextual-member")
+                    .cloned()
+                    .collect::<Vec<_>>(),
+                unqualified.score_trace
+            );
+            assert_eq!(
+                qualified
+                    .reasons
+                    .iter()
+                    .filter(|r| *r != "contextual-member")
+                    .cloned()
+                    .collect::<Vec<_>>(),
+                unqualified.reasons
+            );
+            assert!(!qualified.reasons.iter().any(|r| r == "exact-target"));
+            let exact_owner =
+                contextual_member_test_hit(&plan, "Lantern", Some("class"), None, true);
+            let mut hits = [qualified, exact_owner];
+            hits.sort_by(crate::plan::compare_hits);
+            assert_eq!(hits[0].symbol_name.as_deref(), Some("Lantern"));
+        }
+    }
+}
+
+#[test]
+fn query_target_contextual_member_abstains_on_negative_and_exclusion_tails() {
+    let (engine, _tmp) = scoped_test_engine();
+    for tail in [
+        "does not call Ignite",
+        "never calls Ignite",
+        "changes the state without Ignite",
+        "is not Ignite",
+        "changes state, not Ignite",
+        "changes state except Ignite",
+        "avoids Ignite",
+        "is unrelated to Ignite",
+        "excludes Ignite",
+        "excluding Ignite",
+        "avoid Ignite",
+        "avoiding Ignite",
+        "excluded Ignite",
+        "cannot call Ignite",
+        "doesn't call Ignite",
+        "doesn’t call Ignite",
+        "won't call Ignite",
+        "can't call Ignite",
+        "mustn't call Ignite",
+        "neither uses Ignite",
+        "has no Ignite",
+        "nor Ignite",
+        "calls (not Ignite)",
+        "calls (not) with Ignite",
+        "calls not() with Ignite",
+        "calls $not with Ignite",
+        "calls Other.not with Ignite",
+        "calls NOT with Ignite",
+    ] {
+        let query = format!("Which Lantern API {tail}?");
+        let plan = build_plan(
+            &engine,
+            &SearchRequest {
+                query: query.clone(),
+                ..Default::default()
+            },
+        );
+        let hit = contextual_member_test_hit(
+            &plan,
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        );
+        assert!(
+            !hit.reasons.iter().any(|r| r == "contextual-member"),
+            "{query}"
+        );
+        assert!(
+            !hit.score_trace
+                .iter()
+                .any(|(k, _)| k == "boost:contextual-member"),
+            "{query}"
+        );
+        assert!(
+            hit.reasons.iter().any(|r| r == "symbol-exact"),
+            "historical member bonus: {query}"
+        );
+        let owner = contextual_member_test_hit(&plan, "Lantern", Some("class"), None, false);
+        assert!(
+            !owner.reasons.iter().any(|r| r == "symbol-exact"),
+            "historical owner suppression: {query}"
+        );
+    }
+    for tail in [
+        "calls not_ready with Ignite",
+        "calls nevermind with Ignite",
+        "calls notable with Ignite",
+        "calls unrelatedness with Ignite",
+    ] {
+        let plan = build_plan(
+            &engine,
+            &SearchRequest {
+                query: format!("Which Lantern API {tail}?"),
+                ..Default::default()
+            },
+        );
+        let hit = contextual_member_test_hit(
+            &plan,
+            "Ignite",
+            Some("method"),
+            Some("Lantern.Ignite"),
+            false,
+        );
+        assert!(
+            hit.reasons.iter().any(|r| r == "contextual-member"),
+            "whole source word boundary: {tail}"
+        );
+    }
+}

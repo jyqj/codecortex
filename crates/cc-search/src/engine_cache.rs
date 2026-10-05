@@ -50,7 +50,7 @@ pub(crate) fn fence_backoff_delay(attempt: u32) -> std::time::Duration {
 /// In-process cache domain. Bump when ranking/scope/diagnostic semantics change.
 /// Not a stable cross-build hash or a persisted document identity.
 pub(crate) const RETRIEVAL_POLICY: &str =
-    "canonical-scoped-exact-path-domain-compact-context-budget-v22";
+    "canonical-scoped-exact-path-domain-contextual-member-v23";
 
 /// Default LRU capacity for search results.
 /// Override with `CODECORTEX_SEARCH_RESULT_CACHE_SIZE`.
@@ -357,6 +357,7 @@ impl SearchEngine {
 
 #[cfg(test)]
 mod tests {
+    use std::hash::{Hash, Hasher};
     use std::sync::Arc;
 
     use cc_model::config::ProjectConfig;
@@ -365,6 +366,33 @@ mod tests {
 
     use crate::engine::SearchEngine;
     use crate::engine_test_support::{chunk_write_unit, insert_chunk_file, scoped_test_engine};
+
+    #[test]
+    fn query_target_contextual_member_has_distinct_policy_and_config_cache_domain() {
+        let config = cc_model::config::SearchConfig::default();
+        let ranking = cc_model::config::RankingConfig::default();
+        // Reproduce the previous fingerprint, with its exact policy identity.
+        let mut old = std::collections::hash_map::DefaultHasher::new();
+        "canonical-scoped-exact-path-domain-compact-context-budget-v22".hash(&mut old);
+        serde_json::to_string(&(&config, &ranking))
+            .unwrap()
+            .hash(&mut old);
+        config.lexical_weight.to_bits().hash(&mut old);
+        config.exact_symbol_weight.to_bits().hash(&mut old);
+        config.path_weight.to_bits().hash(&mut old);
+        config.grep_weight.to_bits().hash(&mut old);
+        config.graph_weight.to_bits().hash(&mut old);
+        let current = SearchEngine::ranking_fingerprint(&config, &ranking);
+        assert_ne!(current, old.finish());
+        let disabled = cc_model::config::RankingConfig {
+            symbol_exact_bonus: 0.0,
+            ..ranking
+        };
+        assert_ne!(
+            current,
+            SearchEngine::ranking_fingerprint(&config, &disabled)
+        );
+    }
 
     #[test]
     fn equal_epoch_new_incarnation_misses_both_result_caches() {

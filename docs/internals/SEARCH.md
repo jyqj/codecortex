@@ -9,6 +9,23 @@
 设计前提：**确定性、离线、纯词法/结构信号**。没有外部模型依赖，没有网络
 调用；在索引静止且读取成功时，同一索引、配置和查询保持确定性。并发写入时不将分阶段读取冒充单一事务快照。
 
+## 有界 owner/member 软证据
+
+既有 owner question grammar（如 `Which Beacon API ...`）只撤去该 owner
+container 的名称加分，不能保证短 member 胜过包含大量查询词的 container。
+现在 accepted query tail 中的完整 bare member 名与索引 direct qname
+（恰为 `Owner.member` 或 `Owner::member`）同时匹配，且 candidate kind 已知时，
+额外给予一次 `symbol_exact_bonus`。使用 `boost:contextual-member` trace 和
+`contextual-member` reason 独立记账；零配置关闭，不创建 exact-target 身份。
+
+只取 primary query tail，不从 role/header、conversation、名称片段、qualified
+references 或代码调用推断 member；末尾 `?.!,;` prose 标点可剥离。
+不解析嵌套 qname、receiver alias 或混合 qualifier；未知 kind 保守弃权。
+多个合格 member 同样得到有限加分，不声称唯一定位，API 也不意味着 callable。
+旧比较/并列弃权及显式 name/kind 优先级保留。此规则不改变候选生成、硬过滤、
+rerank window 或 exact-target 优先级；新增分数可能改变最终 top-k 顺序。
+新 member bonus 对 tail 中有限否定/排除词（如 not、never、without、except、avoids、unrelated 及常见否定缩写）保守弃权，连代码附件中的这些完整词也不新增 bonus；不会撤销旧名称加分或 owner suppression。词内片段如 not_ready、nevermind 不触发。此词表不是通用否定理解。一般自然语言和公开语料质量仍需独立验收。
+
 ## 图连接度不是独立相关性（P3-B 回归修正）
 
 Rust 内联模块提取扩大了真实符号覆盖，旧“按已加文件先验的 rerank 前缀选图种子，再加连接度”会放大测试辅助函数等弱文本匹配。现在图种子先按 exact-target、直接 lexical/grep 倒数排名、融合分数和稳定身份选择，仍遵守既有 max_resolve/图预算与硬范围；没有直接证据的 graph-only 候选不继续自我强化。图连接度分数仍保留原值用于解释，但实际加分为 `graph_score * graph_rerank_weight * max(lexical_score, grep_score)`，直接证据钳制到 [0,1]、非有限值记0，exact-target 支持为1。并不把不同通道的原始BM25/字符串命中数相加。
@@ -185,7 +202,7 @@ token search 各自取读池连接），命中按注册序合并——得分、�
 
 ## Exact-name boost 的明确目标语法（V2）
 
-`query_target.rs` 只控制既有 `boost:symbol-exact` 的资格，不改变 +0.18 权重、
+`query_target.rs` 中的 `QueryTarget` 只控制既有 `boost:symbol-exact` 的资格，不改变 +0.18 权重、
 其他分量、检索预算或 `exact-target` 身份排序层。优先复用 DSL `name:`；完整查询
 `class/interface/type/function/method NAME` 按产品 kind 判断（`type` 是 `type_alias`）；
 `method NAME on CONTAINER` 只奖励该 method 名字，`methods on CONTAINER` 没有已知

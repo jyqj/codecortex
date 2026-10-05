@@ -596,6 +596,8 @@ pub struct RankingConfig {
     #[serde(default = "default_overlap_weight")]
     pub overlap_weight: f64,
     /// Bonus when a query token exactly matches the chunk's symbol name.
+    /// Also caps the independent contextual owner/member-name bonus; zero
+    /// disables both. Contextual membership is soft evidence, not identity.
     #[serde(default = "default_symbol_exact_bonus")]
     pub symbol_exact_bonus: f64,
     /// Bonus when the file path starts with the requested path prefix.

@@ -461,6 +461,19 @@ impl SearchPlan {
                 trace.push("boost:symbol-exact", self.ranking.symbol_exact_bonus);
                 reasons.push("symbol-exact".into());
             }
+            // Independent owner + whole member-name evidence. This bounded
+            // soft bonus cannot create candidates or exact-target identity.
+            // Reuse the configured name-evidence cap, including its off switch.
+            if self.ranking.symbol_exact_bonus > 0.0
+                && self.name_bonus_context.supports_member(
+                    sym_name,
+                    symbol_kind.as_deref(),
+                    qname.as_deref(),
+                )
+            {
+                trace.push("boost:contextual-member", self.ranking.symbol_exact_bonus);
+                reasons.push("contextual-member".into());
+            }
         }
 
         if let Some(prefix) = self.filters.path_prefix.as_deref() {

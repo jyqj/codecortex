@@ -147,7 +147,7 @@ RRF 融合后折入每个命中最终 `rerank_score` 的加成。
 |------|------|------|
 | `graph_rerank_weight` | `0.3` | 图连通度得分对最终 `rerank_score` 的权重（0.0 关闭）。 |
 | `overlap_weight` | `0.35` | 查询 token 与文本重叠度加到融合分上的权重。 |
-| `symbol_exact_bonus` | `0.18` | 查询 token 与 chunk 符号名精确匹配的加成。 |
+| `symbol_exact_bonus` | `0.18` | 查询 token 与 chunk 符号名精确匹配的加成；同时限制独立 owner/member 软证据的单次加成，0 关闭两者。见 [检索说明](internals/SEARCH.md#有界-ownermember-软证据)。 |
 | `path_prefix_bonus` | `0.05` | 文件路径匹配请求的路径前缀的加成。 |
 | `doc_file_bonus` | `0.08` | 项目文档文件（README、docs/、ADR）的加成。 |
 | `working_set_boost` | `0.22` | 调用方 working set（`boost_file_paths`）内文件的加成。 |
